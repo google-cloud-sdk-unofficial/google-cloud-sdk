@@ -41,10 +41,11 @@ def _CommonArgs(parser):
       'Google Cloud Storage. If the source is a local directory, this '
       'command skips the files specified in the `--ignore-file`. If '
       '`--ignore-file` is not specified, use`.gcloudignore` file. If a '
-      '`.gitignore` file is present in the local source directory, gcloud '
-      'will use a Git-compatible `.gcloudignore` file that respects your '
-      '.gitignored files. The global `.gitignore` is not respected. For more '
-      'information on `.gcloudignore`, see `gcloud topic gcloudignore`.',
+      '`.gcloudignore` file is absent and a `.gitignore` file is present in '
+      'the local source directory, gcloud will use a generated Git-compatible '
+      '`.gcloudignore` file that respects your .gitignored files. The global '
+      '`.gitignore` is not respected. For more information on `.gcloudignore`, '
+      'see `gcloud topic gcloudignore`.',
   )
   source.add_argument(
       '--no-source',

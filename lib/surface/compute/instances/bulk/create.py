@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import metadata_utils
@@ -35,7 +34,6 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-
 
 DETAILED_HELP = {
     'brief':
@@ -98,7 +96,7 @@ def _CommonArgs(parser,
       'to work properly.')
   instances_flags.AddTagsArgs(parser)
   instances_flags.AddCustomMachineTypeArgs(parser)
-
+  instances_flags.AddNoAddressArg(parser)
   instances_flags.AddNetworkArgs(parser)
   instances_flags.AddNetworkTierArgs(parser, instance=True)
   instances_flags.AddBulkCreateNetworkingArgs(parser)

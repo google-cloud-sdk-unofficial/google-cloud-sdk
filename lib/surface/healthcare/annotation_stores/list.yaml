@@ -27,6 +27,5 @@
     format: |
       table(
           name.scope("annotationStores"):label=ID,
-          name.scope("locations").segment(0):label=LOCATION,
-          notificationConfig.pubsubTopic:label=TOPIC
+          name.scope("locations").segment(0):label=LOCATION
       )

@@ -107,7 +107,7 @@ class Move(base.SilentCommand):
 Move.detailed_help = {
     'brief': 'Move a disk between zones',
     'DESCRIPTION': (
-        '*{command}* facilitates moving a Google Compute Engine disk volume '
+        '*{command}* facilitates moving a Compute Engine disk volume '
         'from one zone to another. You cannot move a disk if it is attached to '
         'a running or stopped instance; use the gcloud compute instances move '
         'command instead.\n\n'

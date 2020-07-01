@@ -31,7 +31,7 @@ DETAILED_HELP = {
     'EXAMPLES':
         """\
       To execute a SQL SELECT statement against example-database under
-       example-instance, run:
+      example-instance, run:
 
         $ {command} example-database --instance=example-instance
         --sql='SELECT * FROM MyTable WHERE MyKey = 1'

@@ -27,7 +27,7 @@ from googlecloudsdk.core import properties
 
 
 class List(base.ListCommand):
-  """List Google Compute Engine external VPN gateways."""
+  """List Compute Engine external VPN gateways."""
 
   detailed_help = {
       'EXAMPLES':

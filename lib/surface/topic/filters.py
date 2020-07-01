@@ -124,7 +124,7 @@ class Filters(base.TopicCommand):
           ```=``` for those APIs is deprecated; for those APIs, if you want
           matching, you should use ```:``` instead of ```=```, and if you want
           to test for equality, you can use
-          _key_ <= _value_ AND _key_ >= _value.
+          _key_ <= _value_ AND _key_ >= _value_.
 
           _key_ *=(* _value_ ... *)*:::
 

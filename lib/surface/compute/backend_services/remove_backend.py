@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveBackend(base.UpdateCommand):
   """Remove a backend from a backend service.
 
@@ -147,8 +147,8 @@ class RemoveBackend(base.UpdateCommand):
         [self.GetSetRequest(client, backend_service_ref, new_object)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RemoveBackendAlpha(RemoveBackend):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class RemoveBackendAlphaBeta(RemoveBackend):
   """Remove a backend from a backend service.
 
   *{command}* is used to remove a backend from a backend

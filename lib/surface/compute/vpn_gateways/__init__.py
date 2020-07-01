@@ -36,7 +36,7 @@ VpnGateways.detailed_help = {
         Read and manipulate highly available (HA) VPN gateways for Cloud VPN.
 
         For more information about HA VPN gateways, see
-        [Cloud VPN overview](https://cloud.google.com/vpn/docs/concepts/overview).
+        [Cloud VPN overview](https://cloud.google.com//network-connectivity/docs/vpn/concepts/overview).
 
         See also: [VPN Gateways API](https://cloud.google.com/compute/docs/reference/rest/v1/vpnGateways).
     """,

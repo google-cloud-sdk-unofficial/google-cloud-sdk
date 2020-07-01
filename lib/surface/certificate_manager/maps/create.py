@@ -44,7 +44,7 @@ class Create(base.CreateCommand):
   def Args(parser):
     resource_args.AddCertificateMapResourceArg(parser, 'to create')
     labels_util.AddCreateLabelsFlags(parser)
-    flags.AddDescriptionFlagToParser(parser)
+    flags.AddDescriptionFlagToParser(parser, 'certificate map')
     flags.AddAsyncFlagToParser(parser)
 
   def Run(self, args):

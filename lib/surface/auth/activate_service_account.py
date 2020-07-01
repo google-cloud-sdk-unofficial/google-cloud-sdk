@@ -25,6 +25,7 @@ import json
 from googlecloudsdk.api_lib.auth import service_account as auth_service_account
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
+from googlecloudsdk.command_lib.auth import auth_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
@@ -99,9 +100,7 @@ class ActivateServiceAccount(base.SilentCommand):
 
     file_content, is_json = _IsJsonFile(args.key_file)
     if is_json:
-      use_google_auth = (not properties.VALUES.auth.
-                         disable_activate_service_account_google_auth.GetBool())
-      if use_google_auth:
+      if _UseGoogleAuth():
         cred = auth_service_account.CredentialsFromAdcDictGoogleAuth(
             file_content)
       else:
@@ -157,3 +156,19 @@ def _IsJsonFile(filename):
       raise auth_service_account.BadCredentialFileException(
           'Could not read json file {0}: {1}'.format(filename, e))
   return content, False
+
+
+# TODO(b/157745076): Remove condition 2 for when this method returns True once
+# activation via google-auth has been running stable for Googlers.
+def _UseGoogleAuth():
+  """Whether to use google-auth for activating service account.
+
+  Returns:
+    True if the below conditions are all met,
+    1. Property auth/disable_activate_service_account_google_auth is False;
+    2. The host on which gcloud runs is on Google domain.
+  """
+  google_auth_disabled = (
+      properties.VALUES.auth.disable_activate_service_account_google_auth
+      .GetBool())
+  return (not google_auth_disabled) and auth_util.IsHostGoogleDomain()

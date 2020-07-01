@@ -30,7 +30,7 @@ def _CommonArgs(parser):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine disk."""
+  """Describe a Compute Engine disk."""
 
   @staticmethod
   def Args(parser):
@@ -59,7 +59,7 @@ class Describe(base.DescribeCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DescribeBeta(Describe):
-  """Describe a Google Compute Engine disk."""
+  """Describe a Compute Engine disk."""
 
   @staticmethod
   def Args(parser):
@@ -69,7 +69,7 @@ class DescribeBeta(Describe):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(Describe):
-  """Describe a Google Compute Engine disk."""
+  """Describe a Compute Engine disk."""
 
   @staticmethod
   def Args(parser):
@@ -78,11 +78,11 @@ class DescribeAlpha(Describe):
 
 
 Describe.detailed_help = {
-    'brief': 'Describe a Google Compute Engine disk',
+    'brief': 'Describe a Compute Engine disk',
     'DESCRIPTION':
         """\
-        *{command}* displays all data associated with a Google Compute
-        Engine disk in a project.
+        *{command}* displays all data associated with a Compute Engine
+        disk in a project.
         """,
     'EXAMPLES':
         """\

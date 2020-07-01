@@ -36,7 +36,7 @@ from six.moves import zip
 
 
 DETAILED_HELP = {
-    'brief': 'Create snapshots of Google Compute Engine persistent disks.',
+    'brief': 'Create snapshots of Compute Engine persistent disks.',
     'DESCRIPTION': """
         *{command}* creates snapshots of persistent disks. Snapshots are useful
         for backing up data, copying a persistent disk, and even, creating a
@@ -105,8 +105,8 @@ class SnapshotDisks(base.SilentCommand):
   """Create snapshots of Google Compute Engine persistent disks."""
   snapshot_chain_enabled = False
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     SnapshotDisks.disks_arg = disks_flags.MakeDiskArg(plural=True)
     labels_util.AddCreateLabelsFlags(parser)
     _CommonArgs(parser)
@@ -220,13 +220,13 @@ class SnapshotDisks(base.SilentCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SnapshotDisksBeta(SnapshotDisks):
   """Create snapshots of Google Compute Engine persistent disks beta."""
-  snapshot_chain_enabled = False
+  snapshot_chain_enabled = True
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     SnapshotDisks.disks_arg = disks_flags.MakeDiskArg(plural=True)
     labels_util.AddCreateLabelsFlags(parser)
-    _CommonArgs(parser)
+    _CommonArgs(parser, snapshot_chain_enabled=cls.snapshot_chain_enabled)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -234,11 +234,11 @@ class SnapshotDisksAlpha(SnapshotDisksBeta):
   """Create snapshots of Google Compute Engine persistent disks alpha."""
   snapshot_chain_enabled = True
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     SnapshotDisks.disks_arg = disks_flags.MakeDiskArg(plural=True)
     labels_util.AddCreateLabelsFlags(parser)
-    _CommonArgs(parser, True)
+    _CommonArgs(parser, snapshot_chain_enabled=cls.snapshot_chain_enabled)
 
   def Run(self, args):
     return self._Run(args)

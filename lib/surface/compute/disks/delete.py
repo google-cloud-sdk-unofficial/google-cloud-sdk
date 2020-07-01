@@ -30,9 +30,9 @@ from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
-  """Delete Google Compute Engine persistent disks.
+  """Delete Compute Engine persistent disks.
 
-  *{command}* deletes one or more Google Compute Engine
+  *{command}* deletes one or more Compute Engine
   persistent disks. Disks can be deleted only if they are not
   being used by any virtual machine instances.
   """
@@ -99,10 +99,10 @@ class Delete(base.DeleteCommand):
     return holder.client.MakeRequests(requests)
 
 Delete.detailed_help = {
-    'brief': 'Delete a Google Compute Engine disk',
+    'brief': 'Delete a Compute Engine disk',
     'DESCRIPTION':
         """\
-        *{command}* deletes a Google Compute Engine disk. A disk can be
+        *{command}* deletes a Compute Engine disk. A disk can be
         deleted only if it is not attached to any virtual machine instances.
         """,
     'EXAMPLES':

@@ -124,7 +124,9 @@ class Replace(base.Command):
       original_service = client.GetService(service_ref)
 
       pretty_print.Info(
-          run_messages_util.GetStartDeployMessage(conn_context, service_ref))
+          run_messages_util.GetStartDeployMessage(
+              conn_context, service_ref,
+              operation='Applying new configuration'))
 
       deployment_stages = stages.ServiceStages()
       header = (
@@ -143,9 +145,11 @@ class Replace(base.Command):
             for_replace=True)
       if args.async_:
         pretty_print.Success(
-            'Service [{{bold}}{serv}{{reset}}] is deploying '
+            'New configuration for [{{bold}}{serv}{{reset}}] is being applied '
             'asynchronously.'.format(serv=service_ref.servicesId))
       else:
-        pretty_print.Success(
-            run_messages_util.GetSuccessMessageForSynchronousDeploy(
-                client, service_ref))
+        serv = client.GetService(service_ref)
+        pretty_print.Success('New configuration has been applied to service '
+                             '[{{bold}}{serv}{{reset}}].\n'
+                             'URL: {{bold}}{url}{{reset}}'.format(
+                                 serv=service_ref.Name(), url=serv.domain))

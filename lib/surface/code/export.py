@@ -25,6 +25,7 @@ from googlecloudsdk.core.util import files
 import six
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Export(base.Command):
   """Writes skaffold and kubernetes files for local development.

@@ -62,7 +62,7 @@
       type: str
       required: true
       help_text: |
-        The organization the Group being created belongs to.
+        The organization of the group the new membership is being added to.
 
     - arg_name: expiration
       release_tracks: [ALPHA]

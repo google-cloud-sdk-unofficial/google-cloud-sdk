@@ -68,7 +68,7 @@ def _Run(args, holder, forwarding_rules_arg):
 class Delete(base.DeleteCommand):
   """Delete forwarding rules.
 
-  *{command}* deletes one or more Google Compute Engine forwarding rules.
+  *{command}* deletes one or more Compute Engine forwarding rules.
   """
 
   FORWARDING_RULES_ARG = None

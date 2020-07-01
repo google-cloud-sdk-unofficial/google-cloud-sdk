@@ -72,6 +72,9 @@ class Create(base.Command):
         include_set=False)
     flags.AddUpdateFeedContentTypeArgs(parser)
     flags.AddFeedPubSubTopicArgs(parser, False)
+    flags.AddUpdateFeedConditionExpressionArgs(parser)
+    flags.AddUpdateFeedConditionTitleArgs(parser)
+    flags.AddUpdateFeedConditionDescriptionArgs(parser)
 
   def Run(self, args):
     parent = asset_utils.GetFeedParent(args.organization, args.project,

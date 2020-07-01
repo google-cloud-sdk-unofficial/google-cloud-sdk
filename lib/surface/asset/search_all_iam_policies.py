@@ -123,7 +123,6 @@ class SearchAllIamPoliciesBeta(base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class SearchAllIamPolicies(SearchAllIamPoliciesBeta):
   """Searches all IAM policies within the specified accessible scope, such as a project, folder or organization."""
 

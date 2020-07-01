@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.compute.http_health_checks import flags
 class Delete(base.DeleteCommand):
   """Delete HTTP health checks.
 
-  *{command}* deletes one or more Google Compute Engine
+  *{command}* deletes one or more Compute Engine
   HTTP health checks.
   """
 

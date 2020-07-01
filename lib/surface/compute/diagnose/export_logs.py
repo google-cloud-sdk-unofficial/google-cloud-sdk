@@ -43,7 +43,11 @@ _SUCCESS_MSG = """Log collection has begun.
 It may take several minutes for this operation to complete.
 
 Logs will be made available shortly at:
-gs://{0}/{1}"""
+gs://{0}/{1}
+
+Status has be sent to the serial port and viewed by running:
+gcloud compute instances get-serial-port-output $VM-NAME$ \
+--project=$PROJECT$ --zone=$ZONE$"""
 DETAILED_HELP = {
     'EXAMPLES':
         """\
@@ -52,6 +56,11 @@ DETAILED_HELP = {
           $ {command} example-instance --zone=us-central1
         """,
 }
+_SERVICE_ACCOUNT_TOKEN_CREATOR_ROLE_MISSING_MSG = """
+To use this feature you must grant the iam.serviceAccountTokenCreator role on the project.
+For more information please refer to Collecting diagnostic information:
+[https://cloud.google.com/compute/docs/instances/collecting-diagnostic-information]
+"""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -122,8 +131,16 @@ class ExportLogs(base_classes.BaseCommand):
     url_data = six.ensure_binary(
         'POST\n\n\n{0}\nx-goog-resumable:start\n/{1}/{2}'.format(
             expiration, bucket, filepath))
-    signature = six.ensure_binary(
-        self._diagnose_client.SignBlob(service_account, url_data))
+
+    signed_blob = ''
+    try:
+      signed_blob = self._diagnose_client.SignBlob(service_account, url_data)
+    except HttpError as e:
+      if e.status_code == 403:
+        log.Print(_SERVICE_ACCOUNT_TOKEN_CREATOR_ROLE_MISSING_MSG)
+      raise
+
+    signature = six.ensure_binary(signed_blob)
     encoded_sig = base64.b64encode(signature)
 
     url = ('https://storage.googleapis.com/'

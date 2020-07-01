@@ -225,12 +225,10 @@ class Register(base.CreateCommand):
       # Optional groups with required arguments are "modal,"
       # meaning that if any of the required arguments is specified,
       # all are required.
-      workload_identity = credentials.add_group(
-          hidden=True, help='Workload Identity')
+      workload_identity = credentials.add_group(help='Workload Identity')
       workload_identity.add_argument(
           '--enable-workload-identity',
           required=True,
-          hidden=True,
           action='store_true',
           help=textwrap.dedent("""\
             Enable Workload Identity when registering the cluster with Hub.
@@ -241,7 +239,6 @@ class Register(base.CreateCommand):
       workload_identity_mutex = workload_identity.add_group(mutex=True)
       workload_identity_mutex.add_argument(
           '--public-issuer-url',
-          hidden=True,
           type=str,
           help=textwrap.dedent("""\
             Skip auto-discovery and register the cluster with this issuer URL.
@@ -249,9 +246,10 @@ class Register(base.CreateCommand):
             JSON Web Key Set for validating the cluster's service account JWTs
             are served at a public endpoint different from the cluster API server.
             Requires gcloud alpha and --enable-workload-identity.
-            Mutually exclusive with --manage-workload-identity-bucket.
             """),
       )
+      # Keep this hidden as it is not used for user-facing workflows and will
+      # be eliminated in beta.
       workload_identity_mutex.add_argument(
           '--manage-workload-identity-bucket',
           hidden=True,

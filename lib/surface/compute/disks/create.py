@@ -39,16 +39,17 @@ from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.command_lib.compute.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.compute.resource_policies import flags as resource_flags
 from googlecloudsdk.command_lib.compute.resource_policies import util as resource_util
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 import six
 
 DETAILED_HELP = {
     'brief':
-        'Create Google Compute Engine persistent disks',
+        'Create Compute Engine persistent disks',
     'DESCRIPTION':
         """\
-        *{command}* creates one or more Google Compute Engine
+        *{command}* creates one or more Compute Engine
         persistent disks. When creating virtual machine instances,
         disks can be attached to the instances through the
         `gcloud compute instances create` command. Disks can also be
@@ -124,7 +125,8 @@ def _CommonArgs(parser,
                 include_physical_block_size_support=False,
                 vss_erase_enabled=False,
                 source_disk_enabled=False,
-                source_in_place_snapshot_enabled=False):
+                source_in_place_snapshot_enabled=False,
+                support_pd_interface=False):
   """Add arguments used for parsing in all command tracks."""
   Create.disks_arg.AddArgument(parser, operation_type='create')
   parser.add_argument(
@@ -160,6 +162,14 @@ def _CommonArgs(parser,
       list of available disk types, run `gcloud compute disk-types list`.
       The default disk type is pd-standard.
       """)
+
+  if support_pd_interface:
+    parser.add_argument(
+        '--interface',
+        help="""\
+        Specifies the disk interface to use for attaching this disk. Valid values
+        are `SCSI` and `NVME`. The default is `SCSI`.
+        """)
 
   parser.display_info.AddFormat(
       'table(name, zone.basename(), sizeGb, type.basename(), status)')
@@ -219,7 +229,7 @@ def _ParseGuestOsFeaturesToMessages(args, client_messages):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
-  """Create Google Compute Engine persistent disks."""
+  """Create Compute Engine persistent disks."""
 
   source_disk_enabled = False
   source_in_place_snapshot_enabled = False
@@ -397,7 +407,8 @@ class Create(base.Command):
            supports_kms_keys=False,
            supports_physical_block=False,
            support_multiwriter_disk=False,
-           support_vss_erase=False):
+           support_vss_erase=False,
+           support_pd_interface=False):
     compute_holder = self._GetApiHolder()
     client = compute_holder.client
 
@@ -464,6 +475,10 @@ class Create(base.Command):
       if supports_kms_keys:
         kwargs['diskEncryptionKey'] = kms_utils.MaybeGetKmsKey(
             args, client.messages, kwargs.get('diskEncryptionKey', None))
+
+      if support_pd_interface and args.interface:
+        kwargs['interface'] = arg_utils.ChoiceToEnum(
+            args.interface, client.messages.Disk.InterfaceValueValuesEnum)
 
       # end of alpha/beta features.
 
@@ -557,7 +572,7 @@ class Create(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
-  """Create Google Compute Engine persistent disks."""
+  """Create Compute Engine persistent disks."""
 
   source_disk_enabled = False
   source_in_place_snapshot_enabled = False
@@ -569,7 +584,8 @@ class CreateBeta(Create):
     _CommonArgs(
         parser,
         include_physical_block_size_support=True,
-        vss_erase_enabled=True)
+        vss_erase_enabled=True,
+        support_pd_interface=True)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
@@ -582,12 +598,13 @@ class CreateBeta(Create):
         supports_kms_keys=True,
         supports_physical_block=True,
         support_vss_erase=True,
-        support_multiwriter_disk=True)
+        support_multiwriter_disk=True,
+        support_pd_interface=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
-  """Create Google Compute Engine persistent disks."""
+  """Create Compute Engine persistent disks."""
 
   source_disk_enabled = True
   source_in_place_snapshot_enabled = True
@@ -601,7 +618,8 @@ class CreateAlpha(CreateBeta):
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
         source_disk_enabled=True,
-        source_in_place_snapshot_enabled=True)
+        source_in_place_snapshot_enabled=True,
+        support_pd_interface=True)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
@@ -614,7 +632,8 @@ class CreateAlpha(CreateBeta):
         supports_kms_keys=True,
         supports_physical_block=True,
         support_multiwriter_disk=True,
-        support_vss_erase=True)
+        support_vss_erase=True,
+        support_pd_interface=True)
 
 
 def _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder):

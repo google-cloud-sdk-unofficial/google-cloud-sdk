@@ -99,6 +99,8 @@ class Unregister(base.DeleteCommand):
     )
     hub_util.AddUnRegisterCommonArgs(parser)
 
+    # Keep this hidden as it is not used for user-facing workflows and will
+    # be eliminated in beta.
     if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
       workload_identity = parser.add_group(
           help='Workload Identity', hidden=True)

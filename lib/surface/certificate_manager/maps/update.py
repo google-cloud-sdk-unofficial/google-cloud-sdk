@@ -29,7 +29,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.UpdateCommand):
+class Update(base.UpdateCommand):
   """Update a certificate map.
 
   This command updates existing certificate map.
@@ -45,7 +45,7 @@ class Create(base.UpdateCommand):
   def Args(parser):
     resource_args.AddCertificateMapResourceArg(parser, 'to update')
     labels_util.AddUpdateLabelsFlags(parser)
-    flags.AddDescriptionFlagToParser(parser)
+    flags.AddDescriptionFlagToParser(parser, 'certificate map')
     flags.AddAsyncFlagToParser(parser)
 
   def Run(self, args):

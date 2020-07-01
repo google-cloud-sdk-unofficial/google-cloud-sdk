@@ -68,7 +68,7 @@ def GetAllowUnauth(args, operations, service_ref, service_exists):
   return allow_unauth
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Deploy(base.Command):
   """Deploy a container to Cloud Run."""
 
@@ -99,6 +99,7 @@ class Deploy(base.Command):
     flags.AddAllowUnauthenticatedFlag(managed_group)
     flags.AddCloudSQLFlags(managed_group)
     flags.AddRevisionSuffixArg(managed_group)
+    flags.AddVpcConnectorArg(managed_group)
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -127,16 +128,13 @@ class Deploy(base.Command):
     flags.AddPortFlag(parser)
     flags.AddCpuFlag(parser)
     flags.AddNoTrafficFlag(parser)
+    flags.AddServiceAccountFlag(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
     flags.AddImageArg(parser)
-
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddServiceAccountFlag(managed_group)
 
     # Flags only supported on GKE and Knative
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -221,19 +219,6 @@ class Deploy(base.Command):
                 operations, service_ref))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class BetaDeploy(Deploy):
-  """Deploy a container to Cloud Run."""
-
-  @staticmethod
-  def Args(parser):
-    Deploy.Args(parser)
-
-    # Flags specific to VPCAccess
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddVpcConnectorArg(managed_group)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaDeploy(Deploy):
   """Deploy a container to Cloud Run."""
@@ -244,12 +229,10 @@ class AlphaDeploy(Deploy):
 
     # Flags specific to VPCAccess
     managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddVpcConnectorArg(managed_group)
     flags.AddEgressSettingsFlag(managed_group)
 
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)
-    flags.AddServiceAccountFlagAlpha(parser)
     flags.AddDeployTagFlag(parser)
 
     # Flags inherited from gcloud builds submit

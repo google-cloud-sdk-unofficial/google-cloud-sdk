@@ -29,12 +29,12 @@ _EXTERNAL_VPN_GATEWAY_ARG = flags.ExternalVpnGatewayArgument()
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine external VPN gateway.
+  """Describe a Compute Engine external VPN gateway.
 
-  *{command}* is used to display all data associated with a Google Compute
-  Engine external VPN gateway in a project.
+  *{command}* is used to display all data associated with a Compute Engine
+  external VPN gateway in a project.
 
-  An external VPN gateway provides the information to Google Cloud Platform
+  An external VPN gateway provides the information to Google Cloud
   about your on-premises side or another Cloud provider's VPN gateway.
   """
 

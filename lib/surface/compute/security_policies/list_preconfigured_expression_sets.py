@@ -23,7 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListPreconfiguredExpressionSets(base.ListCommand):
   """List all available preconfigured expression sets.
 

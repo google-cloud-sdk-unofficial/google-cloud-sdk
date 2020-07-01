@@ -59,3 +59,4 @@ class DNS(base.Group):
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()
+    base.AllowGoogleAuth()

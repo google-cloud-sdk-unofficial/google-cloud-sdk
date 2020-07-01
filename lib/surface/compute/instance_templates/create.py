@@ -709,8 +709,7 @@ class CreateBeta(Create):
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)
     instances_flags.AddConfidentialComputeArgs(parser)
-    instance_templates_flags.AddServiceProxyConfigArgs(
-        parser, hide_arguments=True)
+    instance_templates_flags.AddServiceProxyConfigArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.

@@ -31,7 +31,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
-  r"""Update a Google Compute Engine persistent disk."""
+  r"""Update a Compute Engine persistent disk."""
 
   DISK_ARG = None
 
@@ -76,7 +76,7 @@ class Update(base.UpdateCommand):
 
 Update.detailed_help = {
     'DESCRIPTION':
-        '*{command}* updates a Google Compute Engine persistent disk.',
+        '*{command}* updates a Compute Engine persistent disk.',
     'EXAMPLES':
         """\
         To update labels 'k0' and 'k1' and remove label 'k3' of a disk, run:

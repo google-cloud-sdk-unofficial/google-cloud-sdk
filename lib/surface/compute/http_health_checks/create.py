@@ -57,7 +57,7 @@ class Create(base.CreateCommand):
         '--host',
         help="""\
         The value of the host header used in this HTTP health check request.
-        By default, this is empty and Google Compute Engine automatically sets
+        By default, this is empty and Compute Engine automatically sets
         the host header in health requests to the same external IP address as
         the forwarding rule associated with the target pool.
         """)
@@ -95,7 +95,7 @@ class Create(base.CreateCommand):
         type=arg_parsers.Duration(),
         default='5s',
         help="""\
-        If Google Compute Engine doesn't receive an HTTP 200 response from the
+        If Compute Engine doesn't receive an HTTP 200 response from the
         instance by the time specified by the value of this flag, the health
         check request is considered a failure. For example, specifying ``10s''
         will cause the check to wait for 10 seconds before considering the

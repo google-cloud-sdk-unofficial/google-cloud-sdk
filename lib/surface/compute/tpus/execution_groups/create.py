@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py.exceptions import HttpConflictError
+from apitools.base.py.exceptions import HttpNotFoundError
 
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
@@ -51,6 +52,15 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     responses = []
+    tpu = tpu_utils.TPUNode(self.ReleaseTrack())
+    if not args.tf_version:
+      try:
+        args.tf_version = tpu.LatestStableTensorflowVersion(args.zone)
+      except HttpNotFoundError:
+        responses.append('Could not find stable Tensorflow version, please '
+                         'set tensorflow version flag using --tf-version')
+        return responses
+
     if not args.vm_only:
       if args.dry_run:
         responses.append(
@@ -61,7 +71,6 @@ class Create(base.CreateCommand):
                 args.tf_version,
                 args.zone))
       else:
-        tpu = tpu_utils.TPUNode(self.ReleaseTrack())
         try:
           tpu_operation_ref = tpu.Create(args.name,
                                          args.accelerator_type, args.tf_version,
@@ -80,10 +89,14 @@ class Create(base.CreateCommand):
                            args.preemptible_vm))
     else:
       instance = tpu_utils.Instance(self.ReleaseTrack())
+      gce_image = args.gce_image
+      if not gce_image and not args.dry_run:
+        gce_image = instance.ResolveImageFromTensorflowVersion(
+            args.tf_version, 'ml-images', args.use_dl_images)
       try:
         instance_operation_ref = instance.Create(
             args.name, args.zone, args.machine_type,
-            utils.BytesToGb(args.disk_size), args.preemptible_vm)
+            utils.BytesToGb(args.disk_size), args.preemptible_vm, gce_image)
       except HttpConflictError:
         err_msg = ('GCE VM with name:{} already exists, '
                    'try a different name.').format(args.name)

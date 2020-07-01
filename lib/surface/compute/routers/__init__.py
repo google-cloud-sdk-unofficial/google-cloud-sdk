@@ -32,7 +32,7 @@ Routers.detailed_help = {
         List, create, and delete Cloud Routers.
 
         For more information about Cloud Routers, see the
-        [Cloud Router documentation](https://cloud.google.com/router/docs/concepts/overview).
+        [Cloud Router documentation](https://cloud.google.com//network-connectivity/docs/router/concepts/overview).
 
         See also: [Routers API](https://cloud.google.com/compute/docs/reference/rest/v1/routers).
     """,

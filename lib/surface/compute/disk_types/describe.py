@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.scope import ScopeEnum
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine disk type."""
+  """Describe a Compute Engine disk type."""
 
   @staticmethod
   def Args(parser):
@@ -73,9 +73,9 @@ class DescribeAlpha(Describe):
     Describe.DiskTypeArg.AddArgument(parser, operation_type='describe')
 
 Describe.detailed_help = {
-    'brief': 'Describe a Google Compute Engine disk type',
+    'brief': 'Describe a Compute Engine disk type',
     'DESCRIPTION': """\
-        *{command}* displays all data associated with a Google Compute
-        Engine disk type.
+        *{command}* displays all data associated with a Compute Engine
+        disk type.
         """,
 }

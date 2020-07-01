@@ -36,7 +36,7 @@ VpnTunnels.detailed_help = {
         Read and manipulate Cloud VPN tunnels.
 
         For more information about Cloud VPN tunnels, see the
-        [Cloud VPN tunnels documentation](https://cloud.google.com/vpn/docs/concepts/overview).
+        [Cloud VPN tunnels documentation](https://cloud.google.com//network-connectivity/docs/vpn/concepts/overview).
 
         See also: [VPN tunnels API](https://cloud.google.com/compute/docs/reference/rest/v1/vpnTunnels).
     """,

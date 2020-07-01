@@ -164,6 +164,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                 api_adapter.DASHBOARD: _ParseAddonDisabled,
                 api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
                 api_adapter.CLOUDRUN: _ParseAddonDisabled,
+                api_adapter.NODELOCALDNS: _ParseAddonDisabled,
             }),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
@@ -172,12 +173,14 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {ingress}=ENABLED|DISABLED
 {dashboard}=ENABLED|DISABLED
 {network_policy}=ENABLED|DISABLED
-{cloudrun}=ENABLED|DISABLED""".format(
+{cloudrun}=ENABLED|DISABLED
+{nodelocaldns}=ENABLED|DISABLED""".format(
     hpa=api_adapter.HPA,
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD,
     network_policy=api_adapter.NETWORK_POLICY,
     cloudrun=api_adapter.CLOUDRUN,
+    nodelocaldns=api_adapter.NODELOCALDNS,
     ))
 
   mutex_group.add_argument(
@@ -275,6 +278,7 @@ class Update(base.UpdateCommand):
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddRecurringMaintenanceWindowFlags(group, is_update=True)
     flags.AddResourceUsageExportFlags(group, is_update=True)
+    flags.AddReleaseChannelFlag(group, is_update=True, hidden=True)
     flags.AddWorkloadIdentityFlags(group)
     flags.AddWorkloadIdentityUpdateFlags(group)
     flags.AddDatabaseEncryptionFlag(group)
@@ -293,6 +297,16 @@ class Update(base.UpdateCommand):
         args.enable_resource_consumption_metering
     opts.enable_intra_node_visibility = args.enable_intra_node_visibility
     opts.enable_shielded_nodes = args.enable_shielded_nodes
+    opts.release_channel = args.release_channel
+    if args.disable_addons and api_adapter.NODELOCALDNS in args.disable_addons:
+      # NodeLocalDNS is being enabled or disabled
+      console_io.PromptContinue(
+          message='Enabling/Disabling NodeLocal DNSCache causes a re-creation '
+          'of all cluster nodes at versions 1.15 or above. '
+          'This operation is long-running and will block other '
+          'operations on the cluster (including delete) until it has run '
+          'to completion.',
+          cancel_on_no=True)
     return opts
 
   def Run(self, args):
@@ -580,8 +594,10 @@ class UpdateBeta(Update):
     flags.AddMasterGlobalAccessFlag(group)
     flags.AddEnableGvnicFlag(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
+    flags.AddNotificationConfigFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
+    flags.ValidateNotificationConfigFlag(args)
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
     opts.enable_pod_security_policy = args.enable_pod_security_policy
     opts.istio_config = args.istio_config
@@ -630,6 +646,7 @@ class UpdateBeta(Update):
     opts.enable_master_global_access = args.enable_master_global_access
     opts.enable_gvnic = args.enable_gvnic
     opts.disable_default_snat = args.disable_default_snat
+    opts.notification_config = args.notification_config
 
     return opts
 
@@ -673,6 +690,7 @@ class UpdateAlpha(Update):
     flags.AddVerticalPodAutoscalingFlag(group)
     flags.AddSecurityProfileForUpdateFlag(group)
     flags.AddIstioConfigFlag(parser)
+    flags.AddCloudRunConfigFlag(parser)
     flags.AddEnableIntraNodeVisibilityFlag(group)
     flags.AddWorkloadIdentityFlags(group, use_workload_pool=False)
     flags.AddWorkloadIdentityUpdateFlags(group)
@@ -685,8 +703,10 @@ class UpdateAlpha(Update):
     flags.AddTpuFlags(group, enable_tpu_service_networking=True)
     flags.AddMasterGlobalAccessFlag(group)
     flags.AddEnableGvnicFlag(group)
+    flags.AddNotificationConfigFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
+    flags.ValidateNotificationConfigFlag(args)
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
     opts.autoscaling_profile = args.autoscaling_profile
     opts.enable_pod_security_policy = args.enable_pod_security_policy
@@ -695,10 +715,12 @@ class UpdateAlpha(Update):
         args.clear_resource_usage_bigquery_dataset
     opts.security_profile = args.security_profile
     opts.istio_config = args.istio_config
+    opts.cloud_run_config = args.cloud_run_config
     opts.enable_intra_node_visibility = args.enable_intra_node_visibility
     opts.enable_network_egress_metering = args.enable_network_egress_metering
     opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
+    flags.ValidateCloudRunConfigUpdateArgs(args.cloud_run_config, args.disable_addons)
     if args.disable_addons and api_adapter.NODELOCALDNS in args.disable_addons:
       # NodeLocalDNS is being enabled or disabled
       console_io.PromptContinue(
@@ -736,5 +758,6 @@ class UpdateAlpha(Update):
     opts.enable_cost_management = args.enable_cost_management
     opts.enable_master_global_access = args.enable_master_global_access
     opts.enable_gvnic = args.enable_gvnic
+    opts.notification_config = args.notification_config
 
     return opts

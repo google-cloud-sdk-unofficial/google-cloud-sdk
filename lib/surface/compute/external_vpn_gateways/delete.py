@@ -39,12 +39,12 @@ class DeleteBatchPoller(poller.BatchPoller):
 
 
 class Delete(base.DeleteCommand):
-  """Delete a Google Compute Engine external VPN gateway.
+  """Delete a Compute Engine external VPN gateway.
 
-  *{command}* is used to delete all data associated with a Google Compute
-  Engine external VPN gateway in a project.
+  *{command}* is used to delete all data associated with a Compute Engine
+  external VPN gateway in a project.
 
-  An external VPN gateway provides the information to Google Cloud Platform
+  An external VPN gateway provides the information to Google Cloud
   about your on-premises side or another Cloud provider's VPN gateway.
   """
 

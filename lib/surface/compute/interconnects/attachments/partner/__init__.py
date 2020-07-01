@@ -32,7 +32,7 @@ InterconnectAttachments.detailed_help = {
 
         For more information about interconnect attachments for Partner
         Interconnect, see the documentation for
-        [Partner interconnect attachments](https://cloud.google.com/interconnect/docs/how-to/dedicated/creating-vlan-attachments).
+        [Partner interconnect attachments](https://cloud.google.com/network-connectivity/docs/interconnect/how-to/dedicated/creating-vlan-attachments).
 
         See also: [Interconnect attachments API](https://cloud.google.com/compute/docs/reference/rest/v1/interconnectAttachments).
     """,

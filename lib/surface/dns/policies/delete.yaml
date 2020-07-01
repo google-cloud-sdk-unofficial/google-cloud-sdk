@@ -14,7 +14,6 @@
     collection: dns.policies
     method: delete
     api_version: v1
-    use_google_auth: true
 
   arguments:
     resource:

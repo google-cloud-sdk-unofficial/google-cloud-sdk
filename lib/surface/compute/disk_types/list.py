@@ -30,7 +30,7 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List Google Compute Engine disk types."""
+  """List Compute Engine disk types."""
 
   @staticmethod
   def Args(parser):
@@ -103,7 +103,7 @@ def _AddAlphaBetaCommonArgs(parser):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(base.ListCommand):
-  """List Google Compute Engine disk types."""
+  """List Compute Engine disk types."""
 
   SCOPES = (base_classes.ScopeType.regional_scope,
             base_classes.ScopeType.zonal_scope)

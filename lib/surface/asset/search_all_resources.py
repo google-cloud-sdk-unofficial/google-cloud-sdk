@@ -172,7 +172,6 @@ class SearchAllResourcesBeta(base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class SearchAllResources(SearchAllResourcesBeta):
   """Searches all Cloud resources within the specified accessible scope, such as a project, folder or organization."""
 

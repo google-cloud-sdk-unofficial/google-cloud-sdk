@@ -30,7 +30,7 @@ InterconnectLocations.detailed_help = {
         Read and manipulate Cloud Interconnect locations.
 
         For more information about interconnect locations, see the
-        [interconnect locations documentation](https://cloud.google.com/interconnect/docs/concepts/colocation-facilities).
+        [interconnect locations documentation](https://cloud.google.com//network-connectivity/docs/interconnect/concepts/colocation-facilities).
 
         See also: [Interconnect locations API](https://cloud.google.com/compute/docs/reference/rest/v1/interconnectLocations).
     """,

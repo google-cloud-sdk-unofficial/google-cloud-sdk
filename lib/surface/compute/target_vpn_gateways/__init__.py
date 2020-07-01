@@ -36,7 +36,7 @@ TargetVpnGateways.detailed_help = {
         Read and manipulate Classic VPN gateways for Cloud VPN.
 
         For more information about Classic VPN gateways, see the
-        [Classic VPN gateways documentation](https://cloud.google.com/vpn/docs/concepts/overview#classic-vpn).
+        [Classic VPN gateways documentation](https://cloud.google.com/network-connectivity/docs/vpn/concepts/overview#classic-vpn).
 
         See also: [Classic VPN gateways API](https://cloud.google.com/compute/docs/reference/rest/v1/targetVpnGateways).
     """,

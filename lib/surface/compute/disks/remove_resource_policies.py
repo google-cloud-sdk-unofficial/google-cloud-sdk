@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.compute.resource_policies import util
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class DisksRemoveResourcePolicies(base.UpdateCommand):
-  """Remove resource policies from a Google Compute Engine disk."""
+  """Remove resource policies from a Compute Engine disk."""
 
   @staticmethod
   def Args(parser):
@@ -64,13 +64,13 @@ class DisksRemoveResourcePolicies(base.UpdateCommand):
 DisksRemoveResourcePolicies.detailed_help = {
     'DESCRIPTION':
         """\
-Remove resource policies from a Google Compute Engine disk.
+Remove resource policies from a Compute Engine disk.
 
-*{command}* removes resource policies from a Google Compute Engine disk.
+*{command}* removes resource policies from a Compute Engine disk.
 """,
     'EXAMPLES':
         """\
-The following command removes one resource policy from a Google Compute Engine disk.
+The following command removes one resource policy from a Compute Engine disk.
 
   $ {command} my-disk --zone=ZONE --resource-policies=POLICY
 """

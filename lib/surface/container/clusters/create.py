@@ -213,20 +213,6 @@ def ValidateBasicAuthFlags(args):
     raise util.Error(constants.USERNAME_PASSWORD_ERROR_MSG)
 
 
-def _AddReleaseChannelGroup(parser):
-  """Add flag group for release channels."""
-  versioning_groups = parser.add_mutually_exclusive_group("""\
---release-channel cannot be specified if Custom Version Flags
-(--cluster-version or --node-version) are used.
-""")
-  flags.AddReleaseChannelFlag(versioning_groups)
-  custom_version_group = versioning_groups.add_group("""\
-Custom Version Flags:
-""")
-  flags.AddClusterVersionFlag(custom_version_group)
-  flags.AddNodeVersionFlag(custom_version_group)
-
-
 def ParseCreateOptionsBase(args):
   """Parses the flags provided with the cluster creation command."""
   if args.IsSpecified('addons') and api_adapter.DASHBOARD in args.addons:
@@ -343,6 +329,7 @@ def ParseCreateOptionsBase(args):
       shielded_integrity_monitoring=args.shielded_integrity_monitoring,
       reservation_affinity=getattr(args, 'reservation_affinity', None),
       reservation=getattr(args, 'reservation', None),
+      release_channel=args.release_channel,
       enable_shielded_nodes=args.enable_shielded_nodes,
       max_surge_upgrade=args.max_surge_upgrade,
       max_unavailable_upgrade=args.max_unavailable_upgrade)
@@ -388,6 +375,9 @@ def AddMasterSignalsFlag(parser):
   flags.AddEnableMasterSignalsFlags(parser, for_create=True)
 
 
+def _AddHiddenRCFlag(parser):
+  flags.AddReleaseChannelFlag(parser, is_update=False, hidden=True)
+
 flags_to_add = {
     _GA: {
         'additionalzones': _AddAdditionalZonesFlag,
@@ -418,6 +408,7 @@ flags_to_add = {
         'nodeversion': flags.AddNodeVersionFlag,
         'preemptible': flags.AddPreemptibleFlag,
         'privatecluster': flags.AddPrivateClusterFlags,
+        'releasechannel': _AddHiddenRCFlag,
         'reservationaffinity': flags.AddReservationAffinityFlags,
         'resourceusageexport': flags.AddResourceUsageExportFlags,
         'surgeupgrade': flags.AddSurgeUpgradeFlag,
@@ -454,6 +445,7 @@ flags_to_add = {
             flags.AddEnableCloudRunAlphaFlag,
         'clusterautoscaling':
             flags.AddClusterAutoscalingFlags,
+        'clusterversion': flags.AddClusterVersionFlag,
         'disabledefaultsnat':
             AddDisableDefaultSnatFlagForClusterCreate,
         'intranodevisibility':
@@ -494,6 +486,9 @@ flags_to_add = {
             flags.AddNodeTaintsFlag,
         'nodeidentity':
             flags.AddClusterNodeIdentityFlags,
+        'nodeversion': flags.AddNodeVersionFlag,
+        'notificationconfig':
+            (lambda p: flags.AddNotificationConfigFlag(p, hidden=True)),
         'podsecuritypolicy':
             flags.AddPodSecurityPolicyFlag,
         'preemptible':
@@ -501,7 +496,7 @@ flags_to_add = {
         'privatecluster':
             AddPrivateClusterDeprecated,
         'releasechannel':
-            _AddReleaseChannelGroup,
+            flags.AddReleaseChannelFlag,
         'resourceusageexport':
             flags.AddResourceUsageExportFlags,
         'reservationaffinity':
@@ -529,6 +524,7 @@ flags_to_add = {
         'autoprovisioning': AddAutoprovisioning,
         'autorepair': AddAutoRepair,
         'autoscalingprofiles': flags.AddAutoscalingProfilesFlag,
+        'clusterversion': flags.AddClusterVersionFlag,
         'autoupgrade': AddEnableAutoUpgradeWithDefault,
         'binauthz': flags.AddEnableBinAuthzFlag,
         'bootdiskkms': flags.AddBootDiskKmsKeyFlag,
@@ -561,6 +557,9 @@ flags_to_add = {
         'networkpolicy': flags.AddNetworkPolicyFlags,
         'nodetaints': flags.AddNodeTaintsFlag,
         'nodeidentity': flags.AddClusterNodeIdentityFlags,
+        'nodeversion': flags.AddNodeVersionFlag,
+        'notificationconfig':
+            (lambda p: flags.AddNotificationConfigFlag(p, hidden=True)),
         'podsecuritypolicy': flags.AddPodSecurityPolicyFlag,
         'preemptible': flags.AddPreemptibleFlag,
         'privatecluster': AddPrivateClusterDeprecated,
@@ -568,7 +567,7 @@ flags_to_add = {
             (lambda p: flags.AddEnablePrivateIpv6AccessFlag(p, hidden=True)),
         'reservationaffinity': flags.AddReservationAffinityFlags,
         'resourceusageexport': flags.AddResourceUsageExportFlags,
-        'releasechannel': _AddReleaseChannelGroup,
+        'releasechannel': flags.AddReleaseChannelFlag,
         'stackdriver': flags.AddEnableStackdriverKubernetesFlag,
         'securityprofile': flags.AddSecurityProfileForCreateFlags,
         'surgeupgrade': (lambda p: flags.AddSurgeUpgradeFlag(p, default=1)),
@@ -728,6 +727,7 @@ class CreateBeta(Create):
     ops = ParseCreateOptionsBase(args)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
+    flags.ValidateNotificationConfigFlag(args)
     ops.boot_disk_kms_key = args.boot_disk_kms_key
     ops.min_cpu_platform = args.min_cpu_platform
     ops.enable_pod_security_policy = args.enable_pod_security_policy
@@ -738,7 +738,6 @@ class CreateBeta(Create):
     ops.security_group = args.security_group
     ops.identity_namespace = args.identity_namespace
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
-    ops.release_channel = args.release_channel
     ops.max_surge_upgrade = args.max_surge_upgrade
     ops.max_unavailable_upgrade = args.max_unavailable_upgrade
     ops.autoscaling_profile = args.autoscaling_profile
@@ -750,6 +749,7 @@ class CreateBeta(Create):
     ops.disable_default_snat = args.disable_default_snat
     ops.enable_master_metrics = args.enable_master_metrics
     ops.master_logs = args.master_logs
+    ops.notification_config = args.notification_config
     return ops
 
 
@@ -766,6 +766,7 @@ class CreateAlpha(Create):
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
     flags.ValidateCloudRunConfigCreateArgs(args.cloud_run_config, args.addons)
+    flags.ValidateNotificationConfigFlag(args)
     ops.boot_disk_kms_key = args.boot_disk_kms_key
     ops.autoscaling_profile = args.autoscaling_profile
     ops.local_ssd_volume_configs = args.local_ssd_volumes
@@ -788,7 +789,6 @@ class CreateAlpha(Create):
     ops.enable_network_egress_metering = args.enable_network_egress_metering
     ops.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     ops.enable_private_ipv6_access = args.enable_private_ipv6_access
-    ops.release_channel = args.release_channel
     ops.max_surge_upgrade = args.max_surge_upgrade
     ops.max_unavailable_upgrade = args.max_unavailable_upgrade
     ops.linux_sysctls = args.linux_sysctls
@@ -802,4 +802,5 @@ class CreateAlpha(Create):
     ops.enable_gvnic = args.enable_gvnic
     ops.enable_master_metrics = args.enable_master_metrics
     ops.master_logs = args.master_logs
+    ops.notification_config = args.notification_config
     return ops

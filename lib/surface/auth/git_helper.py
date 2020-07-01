@@ -43,6 +43,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.credentials import creds as c_creds
 from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import platforms
@@ -114,8 +115,10 @@ class GitHelper(base.Command):
 
     if args.method == GitHelper.GET:
       account = properties.VALUES.core.account.Get()
+      use_google_auth = (
+          not properties.VALUES.auth.disable_load_google_auth.GetBool())
       try:
-        cred = c_store.Load(account)
+        cred = c_store.Load(account, use_google_auth=use_google_auth)
         c_store.Refresh(cred)
       except c_store.Error as e:
         sys.stderr.write(textwrap.dedent("""\
@@ -134,10 +137,16 @@ class GitHelper(base.Command):
       else:
         sent_account = account
 
-      sys.stdout.write(textwrap.dedent("""\
+      if c_creds.IsOauth2ClientCredentials(cred):
+        access_token = cred.access_token
+      else:
+        access_token = cred.token
+
+      sys.stdout.write(
+          textwrap.dedent("""\
           username={username}
           password={password}
-          """).format(username=sent_account, password=cred.access_token))
+          """).format(username=sent_account, password=access_token))
     elif args.method == GitHelper.STORE:
       # On OSX, there is an additional credential helper that gets called before
       # ours does.  When we return a token, it gets cached there.  Git continues

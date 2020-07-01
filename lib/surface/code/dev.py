@@ -34,6 +34,7 @@ from googlecloudsdk.command_lib.code import local_files
 from googlecloudsdk.command_lib.code import yaml_helper
 from googlecloudsdk.core import config
 from googlecloudsdk.core import exceptions
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.updater import update_manager
 from googlecloudsdk.core.util import files as file_utils
@@ -86,6 +87,7 @@ def Skaffold(skaffold_config,
              context_name=None,
              namespace=None,
              env_vars=None,
+             debug=False,
              additional_flags=None):
   """Run skaffold and catch keyboard interrupts to kill the process.
 
@@ -94,6 +96,7 @@ def Skaffold(skaffold_config,
     context_name: Kubernetes context name.
     namespace: Kubernetes namespace name.
     env_vars: Additional environment variables with which to run skaffold.
+    debug: If true, turn on debugging output.
     additional_flags: Extra skaffold flags.
 
   Yields:
@@ -104,6 +107,8 @@ def Skaffold(skaffold_config,
     cmd += ['--kube-context', context_name]
   if namespace:
     cmd += ['--namespace', namespace]
+  if debug:
+    cmd += ['-vdebug']
   if additional_flags:
     cmd += additional_flags
 
@@ -157,6 +162,11 @@ def _SetImagePush(skaffold_file, shared_docker):
     with cross_platform_temp_file.NamedTempFile(
         yaml.dump(skaffold_yaml)) as patched_skaffold_file:
       yield patched_skaffold_file
+
+
+def _IsDebug():
+  """Return true if the verbosity is equal to debug."""
+  return properties.VALUES.core.verbosity.Get() == 'debug'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -223,7 +233,7 @@ class Dev(base.Command):
            self._WithKubeNamespace(args.namespace, kube_context.context_name), \
            _SetImagePush(skaffold_file, kube_context.shared_docker) as patched_skaffold_file, \
            Skaffold(patched_skaffold_file.name, kube_context.context_name,
-                    args.namespace, kube_context.env_vars,
+                    args.namespace, kube_context.env_vars, _IsDebug(),
                     args.additional_skaffold_flags) as skaffold:
         skaffold.wait()
 
@@ -255,7 +265,7 @@ class Dev(base.Command):
         cluster_name = kubernetes.DEFAULT_CLUSTER_NAME
 
       return kubernetes.Minikube(cluster_name, args.stop_cluster,
-                                 args.minikube_vm_driver)
+                                 args.minikube_vm_driver, _IsDebug())
 
     if args.IsSpecified('kube_context'):
       return External()

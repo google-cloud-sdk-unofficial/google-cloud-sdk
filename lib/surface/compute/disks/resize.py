@@ -94,7 +94,7 @@ class Resize(base.Command):
 Resize.detailed_help = {
     'brief': 'Resize a disk or disks',
     'DESCRIPTION': """\
-        *{command}* resizes a Google Compute Engine disk(s).
+        *{command}* resizes a Compute Engine disk(s).
 
         Only increasing disk size is supported. Disks can be resized
         regardless of whether they are attached.

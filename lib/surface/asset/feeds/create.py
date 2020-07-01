@@ -54,6 +54,9 @@ class Create(base.Command):
     flags.AddFeedCriteriaArgs(parser)
     flags.AddFeedContentTypeArgs(parser)
     flags.AddFeedPubSubTopicArgs(parser, True)
+    flags.AddFeedConditionExpressionArgs(parser)
+    flags.AddFeedConditionTitleArgs(parser)
+    flags.AddFeedConditionDescriptionArgs(parser)
 
   def Run(self, args):
     parent = asset_utils.GetParentNameForExport(args.organization, args.project,

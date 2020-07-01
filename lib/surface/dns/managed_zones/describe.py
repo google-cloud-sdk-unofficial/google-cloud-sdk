@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.dns import managed_zones
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dns import flags
 
 
@@ -46,6 +47,10 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     zones_client = managed_zones.Client.FromApiVersion('v1')
     zone_ref = args.CONCEPTS.zone.Parse()
+    # This is a special case in that the . and .. mess up the URI in the HTTP
+    # request.  All other bad arguments are handled server side.
+    if zone_ref.managedZone == '.' or zone_ref.managedZone == '..':
+      raise exceptions.BadArgumentException('describe', zone_ref.managedZone)
     return zones_client.Get(zone_ref)
 
 

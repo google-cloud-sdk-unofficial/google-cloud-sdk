@@ -34,7 +34,7 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.console import progress_tracker
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Update(base.Command):
   """Update Cloud Run environment variables and other configuration settings."""
 
@@ -57,6 +57,7 @@ class Update(base.Command):
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddCloudSQLFlags(managed_group)
     flags.AddRevisionSuffixArg(managed_group)
+    flags.AddVpcConnectorArg(managed_group)
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -84,15 +85,12 @@ class Update(base.Command):
     flags.AddPortFlag(parser)
     flags.AddCpuFlag(parser)
     flags.AddNoTrafficFlag(parser)
+    flags.AddServiceAccountFlag(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
   @staticmethod
   def Args(parser):
     Update.CommonArgs(parser)
-
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddServiceAccountFlag(managed_group)
 
     # Flags only supported on GKE and Knative
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -139,18 +137,6 @@ class Update(base.Command):
                 client, service_ref))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class BetaUpdate(Update):
-  """Update Cloud Run environment variables and other configuration settings."""
-
-  @staticmethod
-  def Args(parser):
-    Update.Args(parser)
-
-    # Flags specific to VPCAccess
-    flags.AddVpcConnectorArg(parser)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaUpdate(Update):
   """Update Cloud Run environment variables and other configuration settings."""
@@ -161,12 +147,10 @@ class AlphaUpdate(Update):
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddVpcConnectorArg(managed_group)
     flags.AddEgressSettingsFlag(managed_group)
 
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)
-    flags.AddServiceAccountFlagAlpha(parser)
     flags.AddDeployTagFlag(parser)
 
 

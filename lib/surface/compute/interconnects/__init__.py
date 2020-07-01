@@ -32,7 +32,7 @@ Interconnects.detailed_help = {
         Read and manipulate Cloud Interconnect connections.
 
         For more information about Cloud Interconnect, see the
-        [Cloud Interconnect documentation](https://cloud.google.com/interconnect/docs/concepts/overview).
+        [Cloud Interconnect documentation](https://cloud.google.com//network-connectivity/docs/interconnect/concepts/overview).
 
         See also: [Interconnects API](https://cloud.google.com/compute/docs/reference/rest/v1/interconnects).
     """,

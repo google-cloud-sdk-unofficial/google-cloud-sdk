@@ -65,7 +65,7 @@ class Import(base.Command):
             googleDevtoolsArtifactregistryV1alpha1ImportArtifactsRequest=import_request,
             parent=repo_ref.RelativeName()))
 
-    client.projects_locations_repositories.Import(request)
+    return client.projects_locations_repositories.Import(request)
 
 
 Import.detailed_help = {

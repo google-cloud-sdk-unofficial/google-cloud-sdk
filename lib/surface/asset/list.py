@@ -57,6 +57,8 @@ class List(base.ListCommand):
     common_args.ProjectArgument(
         help_text_to_prepend='The project which is the root asset.'
     ).AddToParser(parent_group)
+    flags.AddFolderArgs(parent_group,
+                        'The ID of the folder which is the root asset.')
     flags.AddSnapshotTimeArgs(parser)
     flags.AddAssetTypesArgs(parser)
     flags.AddListContentTypeArgs(parser)
@@ -64,6 +66,6 @@ class List(base.ListCommand):
 
   def Run(self, args):
     parent = asset_utils.GetParentNameForExport(args.organization, args.project,
-                                                '')
+                                                args.folder)
     client = client_util.AssetListClient(parent)
     return client.List(args)

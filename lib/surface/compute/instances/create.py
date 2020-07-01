@@ -99,12 +99,10 @@ def _CommonArgs(parser,
                 supports_location_hint=False,
                 supports_erase_vss=False,
                 snapshot_csek=False,
-                image_csek=False,
-                enable_pd_interface=False):
+                image_csek=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
-  instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms,
-                              enable_pd_interface=enable_pd_interface)
+  instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
   instances_flags.AddCreateDiskArgs(
       parser,
       enable_kms=enable_kms,
@@ -200,7 +198,6 @@ class Create(base.CreateCommand):
   _deprecate_maintenance_policy = False
   _support_create_disk_snapshots = True
   _support_boot_snapshot_uri = True
-  _enable_pd_interface = False
 
   @classmethod
   def Args(cls, parser):
@@ -264,11 +261,16 @@ class Create(base.CreateCommand):
         skip_defaults=skip_defaults,
         support_public_dns=self._support_public_dns)
 
+    confidential_vm = (self._support_confidential_compute and
+                       args.IsSpecified('confidential_compute') and
+                       args.confidential_compute)
+
     create_boot_disk = not (
         instance_utils.UseExistingBootDisk((args.disk or []) +
                                            (args.create_disk or [])))
     image_uri = create_utils.GetImageUri(args, compute_client, create_boot_disk,
-                                         project, resource_parser)
+                                         project, resource_parser,
+                                         confidential_vm)
 
     shielded_instance_config = create_utils.BuildShieldedInstanceConfigMessage(
         messages=compute_client.messages, args=args)
@@ -505,7 +507,6 @@ class CreateBeta(Create):
   _deprecate_maintenance_policy = False
   _support_create_disk_snapshots = True
   _support_boot_snapshot_uri = True
-  _enable_pd_interface = True
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -531,8 +532,7 @@ class CreateBeta(Create):
         enable_kms=cls._support_kms,
         enable_resource_policy=cls._support_disk_resource_policy,
         supports_erase_vss=cls._support_erase_vss,
-        supports_min_node_cpu=cls._support_min_node_cpu,
-        enable_pd_interface=cls._enable_pd_interface)
+        supports_min_node_cpu=cls._support_min_node_cpu)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -567,7 +567,6 @@ class CreateAlpha(CreateBeta):
   _deprecate_maintenance_policy = True
   _support_create_disk_snapshots = True
   _support_boot_snapshot_uri = True
-  _enable_pd_interface = True
 
   @classmethod
   def Args(cls, parser):
@@ -581,8 +580,7 @@ class CreateAlpha(CreateBeta):
         supports_location_hint=cls._support_location_hint,
         supports_erase_vss=cls._support_erase_vss,
         snapshot_csek=cls._support_source_snapshot_csek,
-        image_csek=cls._support_image_csek,
-        enable_pd_interface=cls._enable_pd_interface)
+        image_csek=cls._support_image_csek)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)

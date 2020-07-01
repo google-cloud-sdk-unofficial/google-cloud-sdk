@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Routes to/from Google Compute Engine VMs."""
+"""Routes to/from Compute Engine VMs."""
 
 
 from __future__ import absolute_import
@@ -41,7 +41,7 @@ import six
 DETAILED_HELP = {
     'EXAMPLES':
         """\
-        To route to/from Google Compute Engine virtual machine instances, run:
+        To route to/from Compute Engine virtual machine instances, run:
 
           $ {command}
         """,
@@ -49,9 +49,9 @@ DETAILED_HELP = {
 
 
 class Routes(base_classes.BaseCommand):
-  """Routes to/from Google Compute Engine virtual machine instances.
+  """Routes to/from Compute Engine virtual machine instances.
 
-  Routes to/from Google Compute Engine virtual machine instances.
+  Routes to/from Compute Engine virtual machine instances.
 
   NOTE: The name filtering will cycle through all the VMs in the project.
   Depending on the size of the project, this could be a considerable amount
@@ -155,7 +155,7 @@ class Routes(base_classes.BaseCommand):
     """Runs a traceroute from localhost to a GCE VM.
 
     Args:
-      instance: Google Compute Engine VM.
+      instance: Compute Engine VM.
       traceroute_args: Additional traceroute args to be passed on.
       dry_run: Whether to only print commands instead of running them.
       resource_registry: gcloud class used for obtaining data from the
@@ -179,7 +179,7 @@ class Routes(base_classes.BaseCommand):
     """Runs a traceroute from a GCE VM to localhost.
 
     Args:
-      instance: Google Compute Engine VM.
+      instance: Compute Engine VM.
       user: The user to use to SSH into the instance.
       external_route_ip: the ip to which traceroute from the VM
       traceroute_args: Additional traceroute args to be passed on.
@@ -215,7 +215,7 @@ class Routes(base_classes.BaseCommand):
     """Checks whether the instance has traceroute in PATH.
 
     Args:
-      instance: Google Compute Engine VM.
+      instance: Compute Engine VM.
       user: The user to use to SSH into the instance.
       dry_run: Whether to only print commands instead of running them.
       resource_registry: gcloud class used for obtaining data from the
@@ -261,7 +261,7 @@ class Routes(base_classes.BaseCommand):
     """Returns the localhost ip as seen from the VM.
 
     Args:
-      instance: Google Compute Engine VM.
+      instance: Compute Engine VM.
       user: The user to use to SSH into the instance.
       dry_run: Whether to only print commands instead of running them.
       resource_registry: gcloud class used for obtaining data from the
@@ -327,7 +327,7 @@ class _RoutesArgs(object):
         help="""\
             The name or ID of a container inside of the virtual machine instance
             to connect to. This only applies to virtual machines that are using
-            a Google Container-Optimized virtual machine image.
+            a Container-Optimized OS virtual machine image.
             For more information, see
             [](https://cloud.google.com/compute/docs/containers)
             """)

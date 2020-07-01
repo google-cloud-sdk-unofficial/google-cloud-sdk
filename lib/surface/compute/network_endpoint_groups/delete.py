@@ -35,7 +35,7 @@ To delete a network endpoint group named ``my-neg'':
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete a Google Compute Engine network endpoint group."""
 
@@ -89,8 +89,8 @@ class Delete(base.DeleteCommand):
     return result
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(Delete):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DeleteAlphaBeta(Delete):
   """Delete a Google Compute Engine network endpoint group."""
 
   support_regional_scope = True

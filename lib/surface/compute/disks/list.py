@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.compute.disks import flags
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List Google Compute Engine persistent disks."""
+  """List Compute Engine persistent disks."""
 
   @staticmethod
   def Args(parser):

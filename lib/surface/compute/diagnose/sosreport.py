@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Sosreport from Google Compute Engine VMs."""
+"""Sosreport from Compute Engine VMs."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -42,7 +42,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SosReport(base.Command):
-  """Sosreport run from a Google Compute Engine VM.
+  """Sosreport run from a Compute Engine VM.
 
   This command is designed to obtain relevant debug information from a VM in a
   standard way for expediting support cases.

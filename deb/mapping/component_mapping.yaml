@@ -29,3 +29,4 @@ kubectl: kubectl
 minikube: google-cloud-sdk-minikube
 pubsub-emulator: google-cloud-sdk-pubsub-emulator
 skaffold: google-cloud-sdk-skaffold
+kustomize: unavailable

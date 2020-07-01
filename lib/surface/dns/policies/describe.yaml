@@ -12,7 +12,6 @@
     collection: dns.policies
     method: get
     api_version: v1
-    use_google_auth: true
 
   arguments:
     resource:
