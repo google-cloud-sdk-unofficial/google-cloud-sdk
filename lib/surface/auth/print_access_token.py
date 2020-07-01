@@ -69,11 +69,12 @@ class AccessToken(base.Command):
   def Run(self, args):
     """Run the helper command."""
 
-    disable_google_auth = properties.VALUES.auth.disable_google_auth.GetBool()
+    disable_load_google_auth = (
+        properties.VALUES.auth.disable_load_google_auth.GetBool())
     cred = c_store.Load(
         args.account,
         allow_account_impersonation=True,
-        use_google_auth=not disable_google_auth)
+        use_google_auth=not disable_load_google_auth)
     c_store.Refresh(cred)
     if c_creds.IsOauth2ClientCredentials(cred):
       token = cred.access_token

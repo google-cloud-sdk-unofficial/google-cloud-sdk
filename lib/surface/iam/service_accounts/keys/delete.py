@@ -35,8 +35,13 @@ class Delete(base.Command):
     parser.add_argument('--iam-account',
                         required=True,
                         type=iam_util.GetIamAccountFormatValidator(),
-                        help='The service account whose key to '
-                        'delete.')
+                        help="""\
+                          The service account from which to delete a key.
+
+                          To list all service accounts in the project, run:
+
+                            $ gcloud iam service-accounts list
+                        """)
 
     parser.add_argument('key',
                         metavar='KEY-ID',

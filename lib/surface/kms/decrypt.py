@@ -88,7 +88,10 @@ class Decrypt(base.Command):
         'automatically. You must keep track of this information and provide '
         'the key version in the decryption request. The key version itself '
         'is not sensitive data and does not need to be encrypted.')
-    flags.AddCiphertextFileFlag(parser, 'to decrypt')
+    flags.AddCiphertextFileFlag(
+        parser,
+        'to decrypt. This file should contain the result of encrypting '
+        'a file with `gcloud kms encrypt`')
     flags.AddPlaintextFileFlag(parser, 'to output')
     flags.AddAadFileFlag(parser)
 

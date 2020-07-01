@@ -40,7 +40,7 @@ DETAILED_HELP = {
 
         To list only the labels when describing a resource, use --format:
 
-          $ {parent_command} describe example-snapshot --format='default(labels)'
+          $ {parent_command} describe example-snapshot --format="default(labels)"
         """,
 }
 

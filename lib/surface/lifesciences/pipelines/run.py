@@ -402,10 +402,15 @@ reasonable default value is used.''')
                         (value, name)]))
         elif name in is_local_file:
           env[name] = input_generator.Generate()
-          pipeline.actions.insert(0, lifesciences_messages.Action(
-              imageUri=CLOUD_SDK_IMAGE,
-              commands=['/bin/sh', '-c', 'echo "%s" | base64 -d > ${%s}' %
-                        (base64.b64encode(value.encode()), name)]))
+          pipeline.actions.insert(
+              0,
+              lifesciences_messages.Action(
+                  imageUri=CLOUD_SDK_IMAGE,
+                  commands=[
+                      '/bin/sh', '-c',
+                      'echo "%s" | base64 -d > ${%s}' %
+                      (base64.b64encode(value.encode()).decode(), name)
+                  ]))
         else:
           env[name] = value
 

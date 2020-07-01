@@ -245,6 +245,7 @@ class AlphaDeploy(Deploy):
     # Flags specific to VPCAccess
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddVpcConnectorArg(managed_group)
+    flags.AddEgressSettingsFlag(managed_group)
 
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)

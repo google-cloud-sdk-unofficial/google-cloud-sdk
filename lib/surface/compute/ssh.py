@@ -53,15 +53,14 @@ def AddSSHArgs(parser):
       action='append',
       help="""\
       Additional flags to be passed to *ssh(1)*. It is recommended that flags
-      be passed using an assignment operator and quotes. This flag will
-      replace occurences of ``%USER%'' and ``%INSTANCE%'' with their
-      dereferenced values. Example:
+      be passed using an assignment operator and quotes. Example:
 
-        $ {command} example-instance --zone=us-central1-a --ssh-flag="-vvv" --ssh-flag="-L 80:%INSTANCE%:80"
+        $ {command} example-instance --zone=us-central1-a --ssh-flag="-vvv" --ssh-flag="-L 80:localhost:80"
 
-      is equivalent to passing the flags ``--vvv'' and ``-L
-      80:162.222.181.197:80'' to *ssh(1)* if the external IP address of
-      'example-instance' is 162.222.181.197.
+      This flag will replace occurences of ``%USER%'' and ``%INSTANCE%'' with
+      their dereferenced values. For example, passing ``80:%INSTANCE%:80`` into
+      the flag is equivalent to passing ``80:162.222.181.197:80'' to *ssh(1)*
+      if the external IP address of 'example-instance' is 162.222.181.197.
 
       If connecting to the instance's external IP, then %INSTANCE% is replaced
       with that, otherwise it is replaced with the internal IP.

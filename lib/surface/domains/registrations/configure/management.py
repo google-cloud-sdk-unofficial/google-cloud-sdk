@@ -33,8 +33,6 @@ class ConfigureManagement(base.UpdateCommand):
   Configure management settings of a registration. This includes settings
   related to transfers, billing and renewals of a registration.
 
-  This command can only be called on registrations in state ACTIVE or SUSPENDED.
-
   ## EXAMPLES
 
   To unlock a transfer lock of a registration for ``example.com'', run:

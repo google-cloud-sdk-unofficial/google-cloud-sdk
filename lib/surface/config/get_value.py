@@ -32,7 +32,8 @@ import six
 class GetValue(base.Command):
   """Print the value of a Cloud SDK property.
 
-  {command} prints the property value from your active configuration only.
+  {command} prints the property value from your active client side configuration
+  only.
 
   ## AVAILABLE PROPERTIES
 

@@ -40,6 +40,9 @@ class Call(base.Command):
 
       $ {command} helloWorld --data='{"message": "Hello World!"}'
 
+  Note that this method has a limited quota which cannot be increased. It is
+  intended for testing and debugging and should not be used in production.
+
   """
 
   @staticmethod

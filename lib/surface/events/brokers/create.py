@@ -112,8 +112,8 @@ class Create(base.Command):
           service_account_ref, _DATA_PLANE_SECRET_MIN_REQUIRED_ROLES)
       if console_io.CanPrompt():
         console_io.PromptContinue(
-            message='This will create a new key for the provided '
-            'service account.',
+            message='This will create a new key for the '
+            'service account [{}].'.format(sa_email),
             cancel_on_no=True)
       _, key_ref = client.CreateOrReplaceServiceAccountSecret(
           secret_ref, service_account_ref)

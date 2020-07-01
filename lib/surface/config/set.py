@@ -129,11 +129,10 @@ class Set(base.Command):
         completer=completers.PropertiesCompleter,
         help='Property to be set. Note that SECTION/ is optional while '
         'referring to properties in the core section, i.e., using either '
-        '`core/project` or `project` is a valid way of setting a project, '
-        'while using section names is essential for setting specific properties'
-        ' like `compute/region`. Consult the Cloud SDK properties page for'
-        ' a comprehensive list of properties: '
-        'https://cloud.google.com/sdk/docs/properties')
+        '`core/project` or `project` is a valid way of setting a project. '
+        'Using section names is required for setting other properties like '
+        '`compute/region`. Consult the Available Properties section below '
+        'for a comprehensive list of properties.')
     parser.add_argument(
         'value',
         completer=completers.PropertyValueCompleter,

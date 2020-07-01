@@ -91,6 +91,6 @@ Update.detailed_help = {
 
         To list only the labels when describing a resource, use --format to filter the result:
 
-            $ {parent_command} describe example-disk --format='default(labels)'
+            $ {parent_command} describe example-disk --format="default(labels)"
         """,
 }

@@ -325,7 +325,7 @@ def _ParseReservationPath(path):
   return (project_id, location, reservation_id)
 
 
-def _ParseCapacityCommitmentIdentifier(identifier):
+def _ParseCapacityCommitmentIdentifier(identifier, allow_commas):
   """Parses the capacity commitment identifier string into its components.
 
   Args:
@@ -333,6 +333,7 @@ def _ParseCapacityCommitmentIdentifier(identifier):
       format
     "project_id:capacity_commitment_id",
       "project_id:location.capacity_commitment_id", or "capacity_commitment_id".
+    allow_commas: whether to allow commas in the capacity commitment id.
 
   Returns:
     A tuple of three elements: containing project_id, location
@@ -342,12 +343,21 @@ def _ParseCapacityCommitmentIdentifier(identifier):
   Raises:
     BigqueryError: if the identifier could not be parsed.
   """
-  pattern = re.compile(
-      r"""
-  ^((?P<project_id>[\w:\-.]*[\w:\-]+):)?
-  ((?P<location>[\w\-]+)\.)?
-  (?P<capacity_commitment_id>[\w]*)$
-  """, re.X)
+  pattern = None
+  if allow_commas:
+    pattern = re.compile(
+        r"""
+    ^((?P<project_id>[\w:\-.]*[\w:\-]+):)?
+    ((?P<location>[\w\-]+)\.)?
+    (?P<capacity_commitment_id>[\w|,]*)$
+    """, re.X)
+  else:
+    pattern = re.compile(
+        r"""
+    ^((?P<project_id>[\w:\-.]*[\w:\-]+):)?
+    ((?P<location>[\w\-]+)\.)?
+    (?P<capacity_commitment_id>[\w]*)$
+    """, re.X)
 
   match = re.search(pattern, identifier)
   if not match:
@@ -819,7 +829,7 @@ class BigqueryHttp(http_request.HttpRequest):
     """Raises a BigQueryError given an HttpError."""
     # have a json payload. We know how to handle those.
     if e.resp.get('content-type', '').startswith('application/json'):
-      content = json.loads(e.content)
+      content = json.loads(e.content.decode('utf-8'))
       BigqueryClient.RaiseError(content)
     else:
       # If the HttpError is not a json object, it is a communication error.
@@ -1249,25 +1259,19 @@ class BigqueryClient(object):
   def GetReservationApiClient(self, reservationserver_address=None):
     """Return the apiclient that supports reservation operations."""
     path = reservationserver_address
+    # Alpha feature actually is hosted in beta endpoint.
+    if self.api_version == 'v1beta1' or self.api_version == 'autoscale_alpha':
+      reservation_version = 'v1beta1'
+    else:
+      reservation_version = 'v1'
     if path is None:
       path = 'https://bigqueryreservation.googleapis.com'
     if not self._op_reservation_client:
-      discovery_url = (path + '/$discovery/rest?version=V1BETA1')
+      discovery_url = (
+          path + '/$discovery/rest?version=' + reservation_version)
       self._op_reservation_client = self.BuildApiClient(
       discovery_url=discovery_url)
     return self._op_reservation_client
-
-  def GetBiReservationApiClient(self, bi_reservationserver_address=None):
-    """Return the apiclient that supports bi reservation operations."""
-    path = bi_reservationserver_address
-
-    if path is None:
-      path = 'https://bigquerybiengine.googleapis.com'
-    if not self._op_bi_reservation_client:
-      discovery_url = (path + '/$discovery/rest?version=v1')
-      self._op_bi_reservation_client = self.BuildApiClient(
-      discovery_url=discovery_url)
-    return self._op_bi_reservation_client
 
   def GetConnectionV1ApiClient(self, connection_service_address=None):
     """Return the apiclient that supports connections operations."""
@@ -1592,8 +1596,13 @@ class BigqueryClient(object):
     reservation_id = reservation_id or default_reservation_id
     if not reservation_id:
       raise BigqueryError('Reservation name not specified.')
-    return ApiClientHelper.ReservationReference(
-        projectId=project_id, location=location, reservationId=reservation_id)
+    if (self.api_version == 'autoscale_alpha'
+       ):
+      return ApiClientHelper.AutoscaleAlphaReservationReference(
+          projectId=project_id, location=location, reservationId=reservation_id)
+    else:
+      return ApiClientHelper.ReservationReference(
+          projectId=project_id, location=location, reservationId=reservation_id)
 
   def GetBiReservationReference(self, default_location=None):
     """Determine a ReservationReference from an identifier and location."""
@@ -1610,11 +1619,12 @@ class BigqueryClient(object):
                                      identifier=None,
                                      path=None,
                                      default_location=None,
-                                     default_capacity_commitment_id=None):
+                                     default_capacity_commitment_id=None,
+                                     allow_commas=None):
     """Determine a CapacityCommitmentReference from an identifier and location."""
     if identifier is not None:
       project_id, location, capacity_commitment_id = _ParseCapacityCommitmentIdentifier(
-          identifier)
+          identifier, allow_commas)
     elif path is not None:
       project_id, location, capacity_commitment_id = _ParseCapacityCommitmentPath(
           path)
@@ -1765,7 +1775,11 @@ class BigqueryClient(object):
     return transfer_client.projects().locations().transferConfigs().runs().get(
         name=identifier).execute()
 
-  def CreateReservation(self, reference, slots, use_idle_slots):
+  def CreateReservation(self,
+                        reference,
+                        slots,
+                        use_idle_slots,
+                        autoscale_max_slots=None):
     """Create a reservation with the given reservation reference.
 
     Arguments:
@@ -1773,13 +1787,25 @@ class BigqueryClient(object):
       slots: Number of slots allocated to this reservation subtree.
       use_idle_slots: Specifies whether queries can use idle slots from other
         reservations. Only applicable for v1beta1.
+      autoscale_max_slots: Number of slots to be scaled when needed.
 
     Returns:
       Reservation object that was created.
+
+    Raises:
+      BigqueryError: if autoscale_max_slots is used with other version.
     """
     reservation = {}
     reservation['slot_capacity'] = slots
     reservation['ignore_idle_slots'] = not use_idle_slots
+    if autoscale_max_slots is not None:
+      if (self.api_version != 'autoscale_alpha'
+         ):
+        raise BigqueryError(
+            'Autoscale is only supported in autoscale_alpha. Please '
+            'specify \'--api_version=autoscale_alpha\' and retry.')
+      reservation['autoscale'] = {}
+      reservation['autoscale']['max_slots'] = autoscale_max_slots
     client = self.GetReservationApiClient()
 
     parent = 'projects/%s/locations/%s' % (reference.projectId,
@@ -1816,10 +1842,10 @@ class BigqueryClient(object):
     Returns:
       List of BI reservations in the given project/location.
     """
-    parent = 'projects/%s/locations/%s/reservations/default' % (
-        reference.projectId, reference.location)
-    client = self.GetBiReservationApiClient()
-    response = client.projects().locations().reservations().get(
+    parent = 'projects/%s/locations/%s/biReservation' % (reference.projectId,
+                                                         reference.location)
+    client = self.GetReservationApiClient()
+    response = client.projects().locations().getBiReservation(
         name=parent).execute()
     return response
 
@@ -1859,7 +1885,7 @@ class BigqueryClient(object):
     Raises:
       ValueError: if reservation_size is malformed.
     """
-    client = self.GetBiReservationApiClient()
+    client = self.GetReservationApiClient()
 
     if (reservation_size.upper().endswith('GB') and
         reservation_size[:-2].isdigit()):
@@ -1876,27 +1902,16 @@ class BigqueryClient(object):
 
     reservation_size = int(reservation_digits) * 1024 * 1024 * 1024
 
-    if reservation_size == 0:
-      client.projects().locations().reservations().delete(
-          name=reference.path()).execute()
-
-      object_info = {}
-      object_info['size'] = 0
-      return object_info
-
-    reservation = {}
+    bi_reservation = {}
     update_mask = ''
-    reservation['size'] = reservation_size
+    bi_reservation['size'] = reservation_size
     update_mask += 'size,'
-    try:
-      return client.projects().locations().reservations().patch(
-          name=reference.path(), updateMask=update_mask,
-          body=reservation).execute()
-    except BaseException:
-      return client.projects().locations().reservations().create(
-          parent=reference.create_path(), body=reservation).execute()
+    return client.projects().locations().updateBiReservation(
+        name=reference.path(), updateMask=update_mask,
+        body=bi_reservation).execute()
 
-  def UpdateReservation(self, reference, slots, use_idle_slots):
+  def UpdateReservation(self, reference, slots, use_idle_slots,
+                        autoscale_max_slots):
     """Updates a reservation with the given reservation reference.
 
     Arguments:
@@ -1904,9 +1919,13 @@ class BigqueryClient(object):
       slots: Number of slots allocated to this reservation subtree.
       use_idle_slots: Specifies whether queries can use idle slots from other
         reservations. Only applicable for v1beta1.
+      autoscale_max_slots: Number of slots to be scaled when needed.
 
     Returns:
       Reservation object that was updated.
+
+    Raises:
+      BigqueryError: if autoscale_max_slots is used with other version.
     """
     reservation = {}
     update_mask = ''
@@ -1917,12 +1936,32 @@ class BigqueryClient(object):
     if use_idle_slots is not None:
       reservation['ignore_idle_slots'] = not use_idle_slots
       update_mask += 'ignore_idle_slots,'
+
+    if autoscale_max_slots is not None:
+      if (self.api_version != 'autoscale_alpha'
+         ):
+        raise BigqueryError(
+            'Autoscale is only supported in autoscale_alpha. Please '
+            'specify \'--api_version=autoscale_alpha\' and retry.')
+      if autoscale_max_slots != 0:
+        reservation['autoscale'] = {}
+        reservation['autoscale']['max_slots'] = autoscale_max_slots
+        update_mask += 'autoscale.max_slots,'
+      else:
+        # Disable autoscale.
+        update_mask += 'autoscale,'
     client = self.GetReservationApiClient()
     return client.projects().locations().reservations().patch(
         name=reference.path(), updateMask=update_mask,
         body=reservation).execute()
 
-  def CreateCapacityCommitment(self, reference, slots, plan, renewal_plan):
+  def CreateCapacityCommitment(
+      self,
+      reference,
+      slots,
+      plan,
+      renewal_plan):
+    # pylint: disable=g-doc-args
     """Create a capacity commitment.
 
     Arguments:
@@ -1941,8 +1980,9 @@ class BigqueryClient(object):
     client = self.GetReservationApiClient()
     parent = 'projects/%s/locations/%s' % (reference.projectId,
                                            reference.location)
-    return client.projects().locations().capacityCommitments().create(
-        parent=parent, body=capacity_commitment).execute()
+    request = client.projects().locations().capacityCommitments().create(
+        parent=parent, body=capacity_commitment)
+    return request.execute()
 
   def ListCapacityCommitments(self, reference, page_size, page_token):
     """Lists capacity commitments for given project and location.
@@ -2014,6 +2054,54 @@ class BigqueryClient(object):
     return client.projects().locations().capacityCommitments().patch(
         name=reference.path(), updateMask=','.join(update_mask),
         body=capacity_commitment).execute()
+
+  def SplitCapacityCommitment(self, reference, slots):
+    """Splits a capacity commitment with the given reference into two.
+
+    Arguments:
+      reference: Capacity commitment to split.
+      slots: Number of slots in the first capacity commitment after the split.
+
+    Returns:
+      List of capacity commitment objects after the split.
+
+    Raises:
+      BigqueryError: if capacity commitment cannot be updated.
+    """
+    if slots is None:
+      raise BigqueryError('Please specify slots for the split.')
+    client = self.GetReservationApiClient()
+    body = {'slotCount': slots}
+    response = client.projects().locations().capacityCommitments().split(
+        name=reference.path(), body=body).execute()
+    if 'first' not in response or 'second' not in response:
+      raise BigqueryError('internal error')
+    return [response['first'], response['second']]
+
+  def MergeCapacityCommitments(self, location, capacity_commitment_ids):
+    """Merges capacity commitments into one.
+
+    Arguments:
+      location: Capacity commitments location.
+      capacity_commitment_ids: List of capacity commitment ids.
+
+    Returns:
+      Merged capacity commitment.
+
+    Raises:
+      BigqueryError: if capacity commitment cannot be merged.
+    """
+    if not self.project_id:
+      raise BigqueryError('project id must be specified.')
+    if not location:
+      raise BigqueryError('location must be specified.')
+    if capacity_commitment_ids is None or len(capacity_commitment_ids) < 2:
+      raise BigqueryError('at least 2 capacity commitments must be specified.')
+    client = self.GetReservationApiClient()
+    parent = 'projects/%s/locations/%s' % (self.project_id, location)
+    body = {'capacityCommitmentIds': capacity_commitment_ids}
+    return client.projects().locations().capacityCommitments().merge(
+        parent=parent, body=body).execute()
 
   def CreateReservationAssignment(self, reference, job_type, assignee_type,
                                   assignee_id):
@@ -2466,6 +2554,9 @@ class BigqueryClient(object):
       formatter.AddColumns(list(object_info.keys()))
     elif reference_type == ApiClientHelper.ReservationReference:
       formatter.AddColumns(('name', 'slotCapacity', 'useIdleSlots'))
+    elif reference_type == ApiClientHelper.AutoscaleAlphaReservationReference:
+      formatter.AddColumns(('name', 'slotCapacity', 'useIdleSlots',
+                            'autoscale_max_slots', 'autoscale_current_slots'))
     elif reference_type == ApiClientHelper.CapacityCommitmentReference:
       formatter.AddColumns(('name', 'slotCount', 'plan', 'renewalPlan', 'state',
                             'commitmentEndTime'))
@@ -2999,7 +3090,7 @@ class BigqueryClient(object):
 
     Arguments:
       reservation: reservation to format.
-      reference_type: Type of reservation (v1beta1).
+      reference_type: Type of reservation.
 
     Returns:
       A dictionary of reservation properties.
@@ -3018,13 +3109,20 @@ class BigqueryClient(object):
     # Default values not passed along in the response.
     if 'slotCapacity' not in list(result.keys()):
       result['slotCapacity'] = '0'
-    if reference_type == ApiClientHelper.ReservationReference:
-      if ('ignoreIdleSlots' not in list(result.keys()) or
-          result['ignoreIdleSlots'] == 'False'):
-        result['useIdleSlots'] = 'True'
-      else:
-        result['useIdleSlots'] = 'False'
+    if ('ignoreIdleSlots' not in list(result.keys()) or
+        result['ignoreIdleSlots'] == 'False'):
+      result['useIdleSlots'] = 'True'
+    else:
+      result['useIdleSlots'] = 'False'
     result.pop('ignoreIdleSlots', None)
+    if (reference_type == ApiClientHelper.AutoscaleAlphaReservationReference and
+        'autoscale' in list(result.keys())):
+      if 'maxSlots' in list(result['autoscale'].keys()):
+        result['autoscale_max_slots'] = result['autoscale']['maxSlots']
+      result['autoscale_current_slots'] = '0'
+      if 'currentSlots' in list(result['autoscale'].keys()):
+        result['autoscale_current_slots'] = result['autoscale']['currentSlots']
+      result.pop('autoscale', None)
     return result
 
   @staticmethod
@@ -4723,7 +4821,6 @@ class BigqueryClient(object):
       job_request['jobReference'] = job_reference
       if location:
         job_reference['location'] = location
-
     media_upload = ''
     if upload_file:
       resumable = True
@@ -5879,7 +5976,7 @@ class ApiClientHelper(object):
       return len(self._required_fields.union(self._optional_fields))
 
     def __str__(self):
-      return self._format_str % dict(self)
+      return six.ensure_str(self._format_str % dict(self))
 
     def __repr__(self):
       return "%s '%s'" % (self.typename, self)
@@ -5985,6 +6082,10 @@ class ApiClientHelper(object):
     def path(self):
       return self._path_str % dict(self)
 
+  class AutoscaleAlphaReservationReference(ReservationReference):
+    """Reference for autoscale_alpha, which has more features than stable versions."""
+    pass
+
   class CapacityCommitmentReference(Reference):
     """Helper class to provide a reference to capacity commitment."""
     _required_fields = frozenset(
@@ -6015,7 +6116,7 @@ class ApiClientHelper(object):
     """ Helper class to provide a reference to bi reservation. """
     _required_fields = frozenset(('projectId', 'location'))
     _format_str = '%(projectId)s:%(location)s'
-    _path_str = 'projects/%(projectId)s/locations/%(location)s/reservations/default'
+    _path_str = 'projects/%(projectId)s/locations/%(location)s/biReservation'
     _create_path_str = 'projects/%(projectId)s/locations/%(location)s'
     typename = 'bi reservation'
 

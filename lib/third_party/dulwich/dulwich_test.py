@@ -16,10 +16,7 @@ import unittest
 from dulwich import tests
 from dulwich.tests import utils
 
-if sys.version_info.major <= 2:
-  import unittest2
-else:
-  unittest2 = unittest
+if sys.version_info.major >= 3:
   from importlib import reload
 
 # Hold on to the original unittest.TestCase. It is overwritten as a side effect
@@ -72,5 +69,5 @@ if __name__ == '__main__':
   sys.getfilesystemencoding = lambda: 'ascii'
   print('ENCODING: ' + sys.getfilesystemencoding(), file=sys.stderr)
   googletest.ThisTestIsUsefulWithoutCallingMain()
-  result = unittest2.TextTestRunner().run(tests.test_suite())
+  result = unittest.TextTestRunner().run(tests.test_suite())
   sys.exit(not result.wasSuccessful())

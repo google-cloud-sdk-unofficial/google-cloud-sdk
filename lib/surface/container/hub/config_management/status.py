@@ -38,6 +38,23 @@ class ConfigmanagementFeatureState(object):
     self.last_synced = NA
     self.sync_branch = NA
 
+  def update_sync_state(self, fs):
+    """update config_sync state for the membership that has nomos installed.
+
+    Args:
+      fs: ConfigmanagementFeatureState
+    """
+    if not (fs.configSyncState and fs.configSyncState.syncState):
+      self.status = 'SYNC_STATE_UNSPECIFIED'
+    else:
+      self.status = fs.configSyncState.syncState.code
+      # (b/153566864) limit the last_synced_token to 7 or 8 characters.
+      if fs.configSyncState.syncState.syncToken:
+        self.last_synced_token = fs.configSyncState.syncState.syncToken[:7]
+      self.last_synced = fs.configSyncState.syncState.lastSyncTime
+      if has_config_sync_git(fs):
+        self.sync_branch = fs.membershipConfig.configSync.git.syncBranch
+
 
 class Status(base.ListCommand):
   r"""Prints the status of all clusters with Configuration Management installed.
@@ -101,24 +118,44 @@ class Status(base.ListCommand):
         cluster.status = 'CODE_UNSPECIFIED'
       elif md.value.code.name != 'OK':
         cluster.status = md.value.code.name
-      # (b/153566864) For cluster not being initialzed
-      elif not (fs and fs.configSyncState and fs.configSyncState.syncState and
-                fs.configSyncState.syncState.code):
-        cluster.status = 'NOT_INSTALLED'
       else:
-        cluster.status = fs.configSyncState.syncState.code
-        if fs.configSyncState.syncState.syncToken:
-          cluster.last_synced_token = fs.configSyncState.syncState.syncToken[:7]
-        cluster.last_synced = fs.configSyncState.syncState.lastSync
-        if fs.configSyncState.syncState.errors is not None:
-          for error in fs.configSyncState.syncState.errors:
-            nomos_errors.append({
-                'cluster': name,
-                'error': error.errorMessage
-            })
-        if (fs.membershipConfig and fs.membershipConfig.configSync and
-            fs.membershipConfig.configSync.git):
-          cluster.sync_branch = fs.membershipConfig.configSync.git.syncBranch
+        # operator errors could occur regardless of the deployment_state
+        if has_operator_error(fs):
+          append_error(name, fs.operatorState.errors, nomos_errors)
+        # (b/154174276, b/156293028)
+        # check operator_state to see if nomos has been installed
+        if not has_operator_state(fs):
+          cluster.status = 'OPERATOR_STATE_UNSPECIFIED'
+        else:
+          cluster.status = fs.operatorState.deploymentState.name
+          if cluster.status == 'INSTALLED':
+            cluster.update_sync_state(fs)
+            if has_config_sync_error(fs):
+              append_error(name, fs.configSyncState.syncState.errors,
+                           nomos_errors)
       nomos_status.append(cluster)
     return {'nomos_errors': nomos_errors, 'nomos_status': nomos_status}
 
+
+def has_operator_state(fs):
+  return fs and fs.operatorState and fs.operatorState.deploymentState
+
+
+def has_operator_error(fs):
+  return fs and fs.operatorState and fs.operatorState.errors
+
+
+def has_config_sync_error(fs):
+  return fs and fs.configSyncState and fs.configSyncState.syncState and fs.configSyncState.syncState.errors
+
+
+def has_config_sync_git(fs):
+  return fs.membershipConfig and fs.membershipConfig.configSync and fs.membershipConfig.configSync.git
+
+
+def append_error(cluster, state_errors, nomos_errors):
+  for error in state_errors:
+    nomos_errors.append({
+        'cluster': cluster,
+        'error': error.errorMessage
+    })

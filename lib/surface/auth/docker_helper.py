@@ -59,7 +59,8 @@ class DockerHelper(base.Command):
       }
 
     elif args.method == DockerHelper.GET:
-      use_google_auth = not properties.VALUES.auth.disable_google_auth.GetBool()
+      use_google_auth = (
+          not properties.VALUES.auth.disable_load_google_auth.GetBool())
       cred = c_store.Load(use_google_auth=use_google_auth)
       c_store.RefreshIfExpireWithinWindow(cred, window=TOKEN_MIN_LIFETIME)
       url = sys.stdin.read().strip()

@@ -11,7 +11,7 @@
 
       The following command prints all supported notification channel types:
 
-        $ {command} --format='value(type)'
+        $ {command} --format="value(type)"
 
   request:
     collection: monitoring.projects.notificationChannelDescriptors

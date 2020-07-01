@@ -35,6 +35,7 @@
 __author__ = 'robinson@google.com (Will Robinson)'
 
 import sys
+import warnings
 
 try:
   import unittest2 as unittest  #PY26
@@ -56,6 +57,9 @@ from google.protobuf import text_format
 TEST_EMPTY_MESSAGE_DESCRIPTOR_ASCII = """
 name: 'TestEmptyMessage'
 """
+
+
+warnings.simplefilter('error', DeprecationWarning)
 
 
 class DescriptorTest(unittest.TestCase):
@@ -191,6 +195,14 @@ class DescriptorTest(unittest.TestCase):
     self.assertTrue(enum_descriptor.has_options)
     self.assertTrue(enum_value_descriptor.has_options)
     self.assertFalse(other_enum_value_descriptor.has_options)
+
+  def testCustomOptionsCopyTo(self):
+    message_descriptor = (unittest_custom_options_pb2.
+                          TestMessageWithCustomOptions.DESCRIPTOR)
+    message_proto = descriptor_pb2.DescriptorProto()
+    message_descriptor.CopyToProto(message_proto)
+    self.assertEqual(len(message_proto.options.ListFields()),
+                     2)
 
   def testDifferentCustomOptionTypes(self):
     kint32min = -2**31
@@ -452,6 +464,17 @@ class DescriptorTest(unittest.TestCase):
     self.assertEqual('attribute is not writable: has_options',
                      str(e.exception))
 
+  def testDefault(self):
+    message_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
+    field = message_descriptor.fields_by_name['repeated_int32']
+    self.assertEqual(field.default_value, [])
+    field = message_descriptor.fields_by_name['repeated_nested_message']
+    self.assertEqual(field.default_value, [])
+    field = message_descriptor.fields_by_name['optionalgroup']
+    self.assertEqual(field.default_value, None)
+    field = message_descriptor.fields_by_name['optional_nested_message']
+    self.assertEqual(field.default_value, None)
+
 
 class NewDescriptorTest(DescriptorTest):
   """Redo the same tests as above, but with a separate DescriptorPool."""
@@ -630,6 +653,14 @@ class GeneratedDescriptorTest(unittest.TestCase):
     values_iter = iter(enum.values)
     del enum
     self.assertEqual('FOO', next(values_iter).name)
+
+  def testDescriptorNestedTypesContainer(self):
+    message_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
+    nested_message_descriptor = unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR
+    self.assertEqual(len(message_descriptor.nested_types), 3)
+    self.assertFalse(None in message_descriptor.nested_types)
+    self.assertTrue(
+        nested_message_descriptor in message_descriptor.nested_types)
 
   def testServiceDescriptor(self):
     service_descriptor = unittest_pb2.DESCRIPTOR.services_by_name['TestService']

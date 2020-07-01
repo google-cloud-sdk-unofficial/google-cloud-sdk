@@ -19,8 +19,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import datetime
-
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.config import config_helper
@@ -98,13 +96,14 @@ class ConfigurationHelper(base.Command):
         default='0s')
 
   def Run(self, args):
-    cred = store.Load()
+    use_google_auth = (
+        not properties.VALUES.auth.disable_load_google_auth.GetBool())
+    cred = store.Load(use_google_auth=use_google_auth)
 
-    min_expiry_time_not_met = not cred.token_expiry or (
-        cred.token_expiry.utcnow() >
-        cred.token_expiry - datetime.timedelta(seconds=args.min_expiry))
-    if args.force_auth_refresh or min_expiry_time_not_met:
+    if args.force_auth_refresh:
       store.Refresh(cred)
+    else:
+      store.RefreshIfExpireWithinWindow(cred, '{}'.format(args.min_expiry))
 
     config_name = named_configs.ConfigurationStore.ActiveConfig().name
     props = properties.VALUES.AllValues()

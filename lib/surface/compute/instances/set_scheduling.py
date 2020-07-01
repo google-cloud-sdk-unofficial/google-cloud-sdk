@@ -52,8 +52,10 @@ class SetSchedulingInstances(base.SilentCommand):
         help="""\
         The instances will be restarted if they are terminated by Compute
         Engine.  This does not affect terminations performed by the user.
+        This option is mutually exclusive with --preemptible.
         """)
 
+    flags.AddPreemptibleVmArgs(parser)
     flags.AddMaintenancePolicyArgs(parser)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
     flags.INSTANCE_ARG.AddArgument(parser)
@@ -71,6 +73,9 @@ class SetSchedulingInstances(base.SilentCommand):
     scheduling_options = client.messages.Scheduling()
 
     scheduling_options.automaticRestart = args.restart_on_failure
+
+    if args.IsSpecified('preemptible'):
+      scheduling_options.preemptible = args.preemptible
 
     cleared_fields = []
 
@@ -125,7 +130,10 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
         help="""\
         The instances will be restarted if they are terminated by Compute
         Engine.  This does not affect terminations performed by the user.
+        This option is mutually exclusive with --preemptible.
         """)
+
+    flags.AddPreemptibleVmArgs(parser)
     flags.AddMaintenancePolicyArgs(parser)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
     flags.INSTANCE_ARG.AddArgument(parser)
@@ -151,8 +159,10 @@ class SetSchedulingInstancesAlpha(SetSchedulingInstancesBeta):
         help="""\
         The instances will be restarted if they are terminated by Compute
         Engine.  This does not affect terminations performed by the user.
+        This option is mutually exclusive with --preemptible.
         """)
 
+    flags.AddPreemptibleVmArgs(parser)
     # Deprecated in Alpha
     flags.AddMaintenancePolicyArgs(parser, deprecate=True)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)

@@ -50,7 +50,6 @@
         connector. For example, 10.132.0.0/28. Range must be unique and
         non-overlapping with existing ranges in the network.
     - arg_name: min-throughput
-      release_tracks: [GA, BETA]
       api_field: connector.minThroughput
       required: false
       help_text: |
@@ -59,7 +58,6 @@
         or the default maximum throughput value.
       default: 200
     - arg_name: max-throughput
-      release_tracks: [GA, BETA]
       api_field: connector.maxThroughput
       required: false
       help_text: |

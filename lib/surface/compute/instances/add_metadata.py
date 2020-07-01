@@ -42,7 +42,7 @@ DETAILED_HELP = {
         In order to retrieve custom metadata, run:
 
             $ gcloud compute instances describe example-instance --zone
-            us-central1-a --format='value(metadata)'
+            us-central1-a --format="value(metadata)"
 
         where example-instance is the name of the virtual machine instance
         you're querying custom metadata from. For more information about

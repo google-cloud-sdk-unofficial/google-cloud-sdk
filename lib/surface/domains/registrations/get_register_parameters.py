@@ -32,7 +32,8 @@ class GetRegisterParameters(base.DescribeCommand):
   Get parameters needed to register a new domain, including
   price, availability, supported privacy modes and notices.
 
-  This command uses fresh information from the registry.
+  In contrast to the search-domains command, this command returns up-to-date
+  domain name availability information.
 
   ## EXAMPLES
 

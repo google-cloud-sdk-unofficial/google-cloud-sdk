@@ -99,7 +99,13 @@ class ActivateServiceAccount(base.SilentCommand):
 
     file_content, is_json = _IsJsonFile(args.key_file)
     if is_json:
-      cred = auth_service_account.CredentialsFromAdcDict(file_content)
+      use_google_auth = (not properties.VALUES.auth.
+                         disable_activate_service_account_google_auth.GetBool())
+      if use_google_auth:
+        cred = auth_service_account.CredentialsFromAdcDictGoogleAuth(
+            file_content)
+      else:
+        cred = auth_service_account.CredentialsFromAdcDict(file_content)
       if args.password_file or args.prompt_for_password:
         raise c_exc.InvalidArgumentException(
             '--password-file',

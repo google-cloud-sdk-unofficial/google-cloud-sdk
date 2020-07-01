@@ -255,7 +255,7 @@ UpdateBeta.detailed_help = {
 
         To list existing labels, run:
 
-          $ {parent_command} describe example-fr --format='default(labels)'
+          $ {parent_command} describe example-fr --format="default(labels)"
         """
 }
 
@@ -286,6 +286,6 @@ UpdateAlpha.detailed_help = {
 
         To list existing labels, run:
 
-          $ {parent_command} describe example-fr --format='default(labels)'
+          $ {parent_command} describe example-fr --format="default(labels)"
         """
 }

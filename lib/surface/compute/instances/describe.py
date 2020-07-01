@@ -43,7 +43,7 @@ DETAILED_HELP = {
         To output only a set of fields from the available information, specify
         it  using the '--format' flag:
 
-          $ {1} {0} --format='yaml(name,status,disks)'
+          $ {1} {0} --format="yaml(name,status,disks)"
         """.format('test-instance', '{command}'),
 }
 

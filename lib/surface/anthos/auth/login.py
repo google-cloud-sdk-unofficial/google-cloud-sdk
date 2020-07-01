@@ -71,11 +71,16 @@ class Login(base.BinaryBackedCommand):
     flags.GetLoginConfigCertFlag().AddToParser(parser)
     flags.GetDryRunFlag('Print out the generated kubectl commands '
                         'but do not execute them.').AddToParser(parser)
+    flags.GetSetPreferredAuthenticationFlag().AddToParser(parser)
 
   def Run(self, args):
+    command_executor = anthoscli_backend.AnthosAuthWrapper()
     cluster = args.CLUSTER
     config_file = args.login_config
-    command_executor = anthoscli_backend.AnthosAuthWrapper()
+    force_update = args.set_preferred_auth
+    anthoscli_backend.GetPreferredAuthForCluster(
+        cluster, config_file or command_executor.default_config_path,
+        force_update)
     log.status.Print(self._LOGIN_CONFIG_MESSAGE)
     response = command_executor(
         command='login',

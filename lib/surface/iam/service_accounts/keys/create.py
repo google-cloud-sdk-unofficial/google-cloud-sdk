@@ -54,7 +54,13 @@ class Create(base.Command):
     parser.add_argument('--iam-account',
                         required=True,
                         type=iam_util.GetIamAccountFormatValidator(),
-                        help='The service account for which to create a key.')
+                        help="""\
+                        The service account for which to create a key.
+
+                        To list all service accounts in the project, run:
+
+                          $ gcloud iam service-accounts list
+                        """)
 
     parser.add_argument('output',
                         metavar='OUTPUT-FILE',

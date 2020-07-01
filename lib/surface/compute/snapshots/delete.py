@@ -31,6 +31,14 @@ DETAILED_HELP = {
         and 'snapshot-2', run:
 
           $ {command} snapshot-1 snapshot-2
+
+        To list all snapshots that were created before a specific date, use
+        the --filter flag with the `{parent_command} list` command.
+
+          $ {parent_command} list --filter="creationTimestamp<'2017-01-01'"
+
+        For more information on how to use --filter with the list command,
+        run $ gcloud topic filters.
         """,
 }
 

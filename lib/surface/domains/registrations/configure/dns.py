@@ -35,12 +35,11 @@ class ConfigureDNS(base.UpdateCommand):
   Configure DNS settings of a Cloud Domains registration.
 
   In most cases, this command is used for changing the authoritative name
-  servers for the given domain. However, advanced options are available.
+  servers and DNSSEC options for the given domain. However, advanced options
+  like glue records are available.
 
-  This command can only be called on registrations in state ACTIVE or SUSPENDED.
-
-  When using Cloud DNS Zone or Google Domains name servers the DNS Security
-  (DNSSEC) will be enabled by default (if possible). It can be disabled using
+  When using Cloud DNS Zone or Google Domains name servers, DNSSEC will be
+  enabled by default where possible. You can disable it using the
   --disable-dnssec flag.
 
   ## EXAMPLES
@@ -61,7 +60,7 @@ class ConfigureDNS(base.UpdateCommand):
 
     $ {command} example.com --dns-settings-from-file=dns_settings.yaml
 
-  To disable DNS Security (DNSSEC), run:
+  To disable DNSSEC, run:
 
     $ {command} example.com --disable-dnssec
 
@@ -113,7 +112,7 @@ class ConfigureDNS(base.UpdateCommand):
     name_servers_changed = updated.dns_provider and not dns_util.NameServersEquivalent(
         registration.dnsSettings, dns_settings)
     if ds_records_present and name_servers_changed:
-      log.warning('Name servers should not be changed if Ds '
+      log.warning('Name servers should not be changed if DS '
                   'records are present. Disable DNSSEC first and wait '
                   '24 hours before you change name servers. Otherwise '
                   'your domain may stop serving.')

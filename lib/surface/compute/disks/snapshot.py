@@ -37,7 +37,7 @@ from six.moves import zip
 
 DETAILED_HELP = {
     'brief': 'Create snapshots of Google Compute Engine persistent disks.',
-    'DESCRIPTION': """\
+    'DESCRIPTION': """
         *{command}* creates snapshots of persistent disks. Snapshots are useful
         for backing up data, copying a persistent disk, and even, creating a
         custom image. Snapshots can be created from persistent disks even while
@@ -49,8 +49,12 @@ DETAILED_HELP = {
         {command} waits until the operation returns a status of `READY` or
         `FAILED`, or reaches the maximum timeout, and returns the last known
         details of the snapshot.
+
+        Note: To create snapshots, the following IAM permissions are necessary
+        ``compute.disks.createSnapshot'', ``compute.snapshots.create'',
+        ``compute.snapshots.get'', and ``compute.zoneOperations.get''.
         """,
-    'EXAMPLES': """\
+    'EXAMPLES': """
         To create a snapshot named `snapshot-test` of a persistent disk named `test`
         in zone `us-central1-a`, run:
 

@@ -48,7 +48,7 @@ class Update(base.UpdateCommand):
 
   To list existing labels
 
-    $ {parent_command} describe example-tunnel --format='default(labels)'
+    $ {parent_command} describe example-tunnel --format="default(labels)"
 
   """
 

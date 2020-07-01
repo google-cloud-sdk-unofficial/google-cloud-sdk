@@ -38,12 +38,12 @@ class Uninstall(base.TopicCommand):
 
       * Locate your installation directory by running:
 
-        $ gcloud info --format='value(installation.sdk_root)'
+        $ gcloud info --format="value(installation.sdk_root)"
 
       * Locate your user config directory (typically `~/.config/gcloud`
         on MacOS and Linux) by running:
 
-        $ gcloud info --format='value(config.paths.global_config_dir)'
+        $ gcloud info --format="value(config.paths.global_config_dir)"
 
       * Delete both these directories.
 

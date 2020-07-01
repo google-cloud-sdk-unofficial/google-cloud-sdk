@@ -107,7 +107,7 @@ class Create(base.SilentCommand):
     Returns:
       Nothing.
     """
-    op = scm.CreateQuotaOverrideCall(args.service, args.consumer, args.metric,
+    op = scm.UpdateQuotaOverrideCall(args.service, args.consumer, args.metric,
                                      args.unit, args.dimensions, args.value,
                                      args.force)
     if op.done:

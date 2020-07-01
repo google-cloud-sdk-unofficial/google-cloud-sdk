@@ -18,6 +18,9 @@ request:
   BETA:
     api_version: beta
 
+response:
+  result_attribute: queryValue.items
+
 arguments:
   resource:
     help_text: The instance to get the Guest Attributes for.
@@ -37,9 +40,7 @@ arguments:
 output:
   format: |
     table(
-      queryValue.items.namespace.list(separator='
-    '),
-      queryValue.items.key.list(separator='
-    '),
-      queryValue.items.value.list(separator='
-    '))
+      namespace,
+      key,
+      value
+    )

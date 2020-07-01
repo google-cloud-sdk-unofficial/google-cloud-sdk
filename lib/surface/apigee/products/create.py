@@ -22,12 +22,11 @@ from googlecloudsdk.api_lib import apigee
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.apigee import argument_groups
 from googlecloudsdk.command_lib.apigee import defaults
+from googlecloudsdk.command_lib.apigee import prompts
 from googlecloudsdk.command_lib.apigee import resource_args
-
-
-class _HashDelimitedArgList(arg_parsers.ArgList):
-  DEFAULT_DELIM_CHAR = "#"
+from googlecloudsdk.core.console import console_io
 
 
 class Deploy(base.DescribeCommand):
@@ -49,9 +48,20 @@ class Deploy(base.DescribeCommand):
           starting with a simple API product including only required elements,
           and then provisioning credentials to apps to enable them to start
           testing your APIs.
+
+          At minimum, a new API product requires an internal name, access
+          policy, and declaration of what environments and API proxies to
+          include in the product. If these aren't provided, interactive calls
+          will prompt for the missing values, and non-interactive calls will
+          fail.
           """,
       "EXAMPLES":
           """
+          To create a basic API product in the active Cloud Platform project by
+          answering interactive prompts, run:
+
+              $ {command}
+
           To create an API product that publicly exposes all API proxies
           deployed to the ``prod'' environment, run:
 
@@ -100,6 +110,8 @@ class Deploy(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
+    # Can't use fallthroughs for optional resource arguments, as they won't run
+    # unless at least one argument from the set is provided.
     resource_args.AddSingleResourceArgument(
         parser,
         "organization.product",
@@ -107,7 +119,7 @@ class Deploy(base.DescribeCommand):
         "name are restricted to: ```A-Za-z0-9._-$ %```.",
         validate=True,
         argument_name="INTERNAL_NAME",
-        fallthroughs=[defaults.GCPProductOrganizationFallthrough()])
+        required=False)
 
     environment_group = parser.add_mutually_exclusive_group()
 
@@ -186,11 +198,12 @@ creation of the API product will fail.""")
 
     # Resource paths conform to RFC 2396's segment format, so a "," may appear
     # in one, but a "#" will not. " " or "|" would also have worked, but would
-    # have been harder to read in help text (spaces ).
+    # have been harder to read in help text; spaces and pipes have special
+    # meaning in usage strings.
     proxies_group.add_argument(
         "--resources",
         metavar="RESOURCE",
-        type=_HashDelimitedArgList(min_length=1),
+        type=argument_groups.HashDelimitedArgList(min_length=1),
         help="""\
 API resources to be bundled in the API product, separated by `#` signs.
 
@@ -270,7 +283,88 @@ requests are allowed every 12 hours.""")
 
   def Run(self, args):
     """Run the deploy command."""
-    # TODO(b/150221336): add interactive mode for required arguments.
+    if args.organization is None:
+      args.organization = defaults.OrganizationFromGCPProduct()
+
+    if console_io.CanPrompt():
+      if args.organization is None:
+
+        def _ListOrgs():
+          response = apigee.OrganizationsClient.List()
+          if "organizations" in response:
+            return [item["organization"] for item in response["organizations"]]
+          else:
+            return []
+
+        args.organization = prompts.ResourceFromFreeformPrompt(
+            "organization",
+            "the organization in which to create the API product", _ListOrgs)
+
+      if args.INTERNAL_NAME is None:
+        product_matcher = resource_args.ValidPatternForEntity("product")
+        valid_product = lambda name: product_matcher.search(name) is not None
+        args.INTERNAL_NAME = console_io.PromptWithValidator(
+            valid_product, "Empty or invalid API product name.",
+            "Enter an internal name for the new API product: ")
+
+      org_identifier = {"organizationsId": args.organization}
+      if args.environments is None:
+        list_envs = lambda: apigee.EnvironmentsClient.List(org_identifier)
+        choice = console_io.PromptChoice(
+            ["Include all environments", "Choose environments to include"],
+            prompt_string=("What environments should be accessible in the API "
+                           "product?"))
+        if choice == 0:
+          args.environments = []
+        else:
+          args.environments = prompts.ResourceListFromPrompt(
+              "environment", list_envs)
+
+      if not args.apis and not args.resources and not args.all_proxies:
+        choice = console_io.PromptChoice(
+            [
+                "Include all API proxies",
+                "Choose API proxies and/or basepaths to include"
+            ],
+            prompt_string=("What API proxies should be accessible in the API "
+                           "product?"))
+        if choice == 0:
+          args.all_proxies = True
+        else:
+
+          def _ListDeployedProxies():
+            response = apigee.DeploymentsClient.List(org_identifier)
+            return sorted(list(set(item["apiProxy"] for item in response)))
+
+          args.apis = prompts.ResourceListFromPrompt(
+              "api", _ListDeployedProxies, "Include all deployed API proxies")
+
+          resource_options = [
+              "Restrict proxy access by resource path",
+              "Include all resource paths of the product's API proxies"
+          ]
+          if console_io.PromptChoice(resource_options) == 0:
+            args.resources = prompts.ListFromFreeformPrompt(
+                "Enter a resource path that should be included: ",
+                "Include another resource path",
+                "Include all resource paths of the product's API proxies")
+          else:
+            args.resources = []
+
+          if not args.resources and not args.apis:
+            # User explicitly chose to include all proxies and resources.
+            args.all_proxies = True
+
+      if args.access is None:
+        option = console_io.PromptChoice([
+            "Public - visible in the Apigee developer portal",
+            ("Private - callable by external developers but not visible in the "
+             "Apigee developer portal"),
+            "Internal - not callable by external developers"
+        ],
+                                         message="Choose an access policy.")
+        args.access = ["public", "private", "internal"][option]
+
     if args.environments is None:
       raise exceptions.OneOfArgumentsRequiredException(
           ["--environments", "--all-environments"],
@@ -300,8 +394,8 @@ requests are allowed every 12 hours.""")
             "--" + quota_args_missing[0].replace("_", "-"),
             "Must specify all quota arguments to use quotas.")
     else:
-      args.quota = "%d"%args.quota
-      args.quota_interval = "%d"%args.quota_interval
+      args.quota = "%d" % args.quota
+      args.quota_interval = "%d" % args.quota_interval
 
     attributes = [{"name": "access", "value": args.access}]
     if args.attributes:

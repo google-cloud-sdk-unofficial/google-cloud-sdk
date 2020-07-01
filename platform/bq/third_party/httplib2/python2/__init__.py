@@ -19,7 +19,7 @@ __contributors__ = [
     "Alex Yu",
 ]
 __license__ = "MIT"
-__version__ = '0.14.0'
+__version__ = '0.17.3'
 
 import base64
 import calendar
@@ -129,7 +129,7 @@ if ssl is None:
     _ssl_wrap_socket = _ssl_wrap_socket_unsupported
 
 if sys.version_info >= (2, 3):
-    from iri2uri import iri2uri
+    from .iri2uri import iri2uri
 else:
 
     def iri2uri(uri):
@@ -290,6 +290,12 @@ HOP_BY_HOP = [
     "transfer-encoding",
     "upgrade",
 ]
+
+# https://tools.ietf.org/html/rfc7231#section-8.1.3
+SAFE_METHODS = ("GET", "HEAD")  # TODO add "OPTIONS", "TRACE"
+
+# To change, assign to `Http().redirect_codes`
+REDIRECT_CODES = frozenset((300, 301, 302, 303, 307, 308))
 
 
 def _get_end2end_headers(response):
@@ -1162,7 +1168,6 @@ class HTTPConnectionWithTimeout(httplib.HTTPConnection):
             raise ProxiesUnavailableError(
                 "Proxy support missing but proxy use was requested!"
             )
-        msg = "getaddrinfo returns an empty list"
         if self.proxy_info and self.proxy_info.isgood():
             use_proxy = True
             proxy_type, proxy_host, proxy_port, proxy_rdns, proxy_user, proxy_pass, proxy_headers = (
@@ -1176,6 +1181,8 @@ class HTTPConnectionWithTimeout(httplib.HTTPConnection):
 
             host = self.host
             port = self.port
+
+        socket_err = None
 
         for res in socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM):
             af, socktype, proto, canonname, sa = res
@@ -1218,7 +1225,8 @@ class HTTPConnectionWithTimeout(httplib.HTTPConnection):
                     self.sock.connect((self.host, self.port) + sa[2:])
                 else:
                     self.sock.connect(sa)
-            except socket.error as msg:
+            except socket.error as e:
+                socket_err = e
                 if self.debuglevel > 0:
                     print("connect fail: (%s, %s)" % (self.host, self.port))
                     if use_proxy:
@@ -1241,7 +1249,7 @@ class HTTPConnectionWithTimeout(httplib.HTTPConnection):
                 continue
             break
         if not self.sock:
-            raise socket.error(msg)
+            raise socket_err or socket.error("getaddrinfo returns an empty list")
 
 
 class HTTPSConnectionWithTimeout(httplib.HTTPSConnection):
@@ -1338,7 +1346,6 @@ class HTTPSConnectionWithTimeout(httplib.HTTPSConnection):
     def connect(self):
         "Connect to a host on a given (SSL) port."
 
-        msg = "getaddrinfo returns an empty list"
         if self.proxy_info and self.proxy_info.isgood():
             use_proxy = True
             proxy_type, proxy_host, proxy_port, proxy_rdns, proxy_user, proxy_pass, proxy_headers = (
@@ -1352,6 +1359,8 @@ class HTTPSConnectionWithTimeout(httplib.HTTPSConnection):
 
             host = self.host
             port = self.port
+
+        socket_err = None
 
         address_info = socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM)
         for family, socktype, proto, canonname, sockaddr in address_info:
@@ -1435,7 +1444,8 @@ class HTTPSConnectionWithTimeout(httplib.HTTPSConnection):
                     raise
             except (socket.timeout, socket.gaierror):
                 raise
-            except socket.error as msg:
+            except socket.error as e:
+                socket_err = e
                 if self.debuglevel > 0:
                     print("connect fail: (%s, %s)" % (self.host, self.port))
                     if use_proxy:
@@ -1458,7 +1468,7 @@ class HTTPSConnectionWithTimeout(httplib.HTTPSConnection):
                 continue
             break
         if not self.sock:
-            raise socket.error(msg)
+            raise socket_err or socket.error("getaddrinfo returns an empty list")
 
 
 SCHEME_TO_CONNECTION = {
@@ -1657,9 +1667,13 @@ class Http(object):
         # If set to False then no redirects are followed, even safe ones.
         self.follow_redirects = True
 
+        self.redirect_codes = REDIRECT_CODES
+
         # Which HTTP methods do we apply optimistic concurrency to, i.e.
         # which methods get an "if-match:" etag header added to them.
         self.optimistic_concurrency_methods = ["PUT", "PATCH"]
+
+        self.safe_methods = list(SAFE_METHODS)
 
         # If 'follow_redirects' is True, and this is set to True then
         # all redirecs are followed, including unsafe ones.
@@ -1673,6 +1687,16 @@ class Http(object):
 
         # Keep Authorization: headers on a redirect.
         self.forward_authorization_headers = False
+
+    def close(self):
+        """Close persistent connections, clear sensitive data.
+        Not thread-safe, requires external synchronization against concurrent requests.
+        """
+        existing, self.connections = self.connections, {}
+        for _, c in existing.iteritems():
+            c.close()
+        self.certificates.clear()
+        self.clear_credentials()
 
     def __getstate__(self):
         state_dict = copy.copy(self.__dict__)
@@ -1844,10 +1868,10 @@ class Http(object):
 
         if (
             self.follow_all_redirects
-            or (method in ["GET", "HEAD"])
-            or response.status == 303
+            or method in self.safe_methods
+            or response.status in (303, 308)
         ):
-            if self.follow_redirects and response.status in [300, 301, 302, 303, 307]:
+            if self.follow_redirects and response.status in self.redirect_codes:
                 # Pick out the location header and basically start from the beginning
                 # remembering first to strip the ETag header and decrement our 'depth'
                 if redirections:
@@ -1867,7 +1891,7 @@ class Http(object):
                             response["location"] = urlparse.urljoin(
                                 absolute_uri, location
                             )
-                    if response.status == 301 and method in ["GET", "HEAD"]:
+                    if response.status == 308 or (response.status == 301 and method in self.safe_methods):
                         response["-x-permanent-redirect-url"] = response["location"]
                         if "content-location" not in response:
                             response["content-location"] = absolute_uri
@@ -1904,7 +1928,7 @@ class Http(object):
                         response,
                         content,
                     )
-            elif response.status in [200, 203] and method in ["GET", "HEAD"]:
+            elif response.status in [200, 203] and method in self.safe_methods:
                 # Don't cache 206's since we aren't going to handle byte range requests
                 if "content-location" not in response:
                     response["content-location"] = absolute_uri
@@ -1950,7 +1974,7 @@ class Http(object):
         a string that contains the response entity body.
         """
         conn_key = ''
-        
+
         try:
             if headers is None:
                 headers = {}
@@ -2004,6 +2028,7 @@ class Http(object):
                 headers["accept-encoding"] = "gzip, deflate"
 
             info = email.Message.Message()
+            cachekey = None
             cached_value = None
             if self.cache:
                 cachekey = defrag_uri.encode("utf-8")
@@ -2024,8 +2049,6 @@ class Http(object):
                         self.cache.delete(cachekey)
                         cachekey = None
                         cached_value = None
-            else:
-                cachekey = None
 
             if (
                 method in self.optimistic_concurrency_methods
@@ -2037,13 +2060,15 @@ class Http(object):
                 # http://www.w3.org/1999/04/Editing/
                 headers["if-match"] = info["etag"]
 
-            if method not in ["GET", "HEAD"] and self.cache and cachekey:
-                # RFC 2616 Section 13.10
+            # https://tools.ietf.org/html/rfc7234
+            # A cache MUST invalidate the effective Request URI as well as [...] Location and Content-Location
+            # when a non-error status code is received in response to an unsafe request method.
+            if self.cache and cachekey and method not in self.safe_methods:
                 self.cache.delete(cachekey)
 
             # Check the vary header in the cache to see if this request
             # matches what varies in the cache.
-            if method in ["GET", "HEAD"] and "vary" in info:
+            if method in self.safe_methods and "vary" in info:
                 vary = info["vary"]
                 vary_headers = vary.lower().replace(" ", "").split(",")
                 for header in vary_headers:
@@ -2054,11 +2079,14 @@ class Http(object):
                         break
 
             if (
-                cached_value
-                and method in ["GET", "HEAD"]
-                and self.cache
+                self.cache
+                and cached_value
+                and (method in self.safe_methods or info["status"] == "308")
                 and "range" not in headers
             ):
+                redirect_method = method
+                if info["status"] not in ("307", "308"):
+                    redirect_method = "GET"
                 if "-x-permanent-redirect-url" in info:
                     # Should cached permanent redirects be counted in our redirection count? For now, yes.
                     if redirections <= 0:
@@ -2069,7 +2097,7 @@ class Http(object):
                         )
                     (response, new_content) = self.request(
                         info["-x-permanent-redirect-url"],
-                        method="GET",
+                        method=redirect_method,
                         headers=headers,
                         redirections=redirections - 1,
                     )
@@ -2166,7 +2194,7 @@ class Http(object):
                 conn = self.connections.pop(conn_key, None)
                 if conn:
                     conn.close()
-                    
+
             if self.force_exception_to_status_code:
                 if isinstance(e, HttpLib2ErrorWithResponse):
                     response = e.response

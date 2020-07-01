@@ -352,9 +352,10 @@ class DeployBeta(base.Command):
   def Args(parser):
     """Register flags for this command."""
     Deploy.Args(parser)
+    flags.AddBuildWorkerPoolMutexGroup(parser)
 
   def Run(self, args):
-    return _Run(args, track=self.ReleaseTrack())
+    return _Run(args, track=self.ReleaseTrack(), enable_build_worker_pool=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -368,7 +369,4 @@ class DeployAlpha(base.Command):
     flags.AddBuildWorkerPoolMutexGroup(parser)
 
   def Run(self, args):
-    return _Run(
-        args,
-        track=self.ReleaseTrack(),
-        enable_build_worker_pool=True)
+    return _Run(args, track=self.ReleaseTrack(), enable_build_worker_pool=True)

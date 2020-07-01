@@ -35,7 +35,12 @@ class Delete(base.DeleteCommand):
 
   This command can fail for the following reasons:
   * The project specified does not exist.
-  * The active account does not have Owner permissions for the given project.
+  * The active account does not have IAM role `role/owner` or another IAM role
+    with the `resourcemanager.projects.delete` permission for the given project.
+
+  See [Access control for projects using
+  IAM](https://cloud.google.com/resource-manager/docs/access-control-proj) for
+  more information.
 
   ## EXAMPLES
 

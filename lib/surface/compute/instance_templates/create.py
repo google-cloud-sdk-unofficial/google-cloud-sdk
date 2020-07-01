@@ -355,17 +355,17 @@ def AddServiceProxyArgsToMetadata(args):
 
     args.metadata['enable-osconfig'] = 'true'
     gce_software_declaration = collections.OrderedDict()
-    mesh_agent_recipe = collections.OrderedDict()
+    service_proxy_agent_recipe = collections.OrderedDict()
 
-    mesh_agent_recipe['name'] = 'install-gce-mesh-agent'
-    mesh_agent_recipe['desired_state'] = 'INSTALLED'
-    mesh_agent_recipe['installSteps'] = [{
+    service_proxy_agent_recipe['name'] = 'install-gce-service-proxy-agent'
+    service_proxy_agent_recipe['desired_state'] = 'INSTALLED'
+    service_proxy_agent_recipe['installSteps'] = [{
         'scriptRun': {
             'script': service_proxy_aux_data.startup_script
         }
     }]
 
-    gce_software_declaration['softwareRecipes'] = [mesh_agent_recipe]
+    gce_software_declaration['softwareRecipes'] = [service_proxy_agent_recipe]
 
     args.metadata['gce-software-declaration'] = json.dumps(
         gce_software_declaration)
@@ -706,6 +706,8 @@ class CreateBeta(Create):
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)
     instances_flags.AddConfidentialComputeArgs(parser)
+    instance_templates_flags.AddServiceProxyConfigArgs(
+        parser, hide_arguments=True)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.

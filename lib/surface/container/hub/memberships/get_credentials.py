@@ -31,7 +31,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 KUBECONTEXT_FORMAT = 'connectgateway_{project}_{membership}'
-SERVER_FORMAT = 'https://{env}connectgateway.googleapis.com/{version}/projects/{project_number}/memberships/{membership}'
+SERVER_FORMAT = 'https://{env}.googleapis.com/{version}/projects/{project_number}/memberships/{membership}'
 REQUIRED_PERMISSIONS = [
     'gkehub.memberships.get',
     # TODO(b/153385543): add Gateway IAM permission here when its rolled out.
@@ -138,11 +138,12 @@ class GetCredentials(base.Command):
     endpoint_overrides = properties.VALUES.api_endpoint_overrides.AllValues()
     hub_endpoint_override = endpoint_overrides.get('gkehub', '')
     if not hub_endpoint_override:
-      return ''  # hub_endpoint_override will be empty string for Prod.
+      # hub_endpoint_override will be empty string for Prod.
+      return 'connectgateway'
     elif 'autopush-gkehub' in hub_endpoint_override:
-      return 'autopush-'
+      return 'autopush-connectgateway.sandbox'
     elif 'staging-gkehub' in hub_endpoint_override:
-      return 'staging-'
+      return 'staging-connectgateway.sandbox'
     else:
       raise Exception('Unknown api_endpoint_overrides for gkehub.')
 

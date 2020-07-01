@@ -17,7 +17,7 @@
         $ {command} \
           --filter='type="email"' \
           --sort-by=labels.email_address \
-          --format='value(labels.email_address)'
+          --format="value(labels.email_address)"
 
   request:
     collection: monitoring.projects.notificationChannels

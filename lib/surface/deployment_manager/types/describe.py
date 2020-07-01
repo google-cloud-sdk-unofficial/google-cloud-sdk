@@ -38,7 +38,7 @@ class Describe(base.DescribeCommand, dm_base.DmCommand):
 
           If you want to see information for a composite type you can use
 
-            $ {command} NAME --provider=composite --format='yaml[json-decode] (composite_type)'
+            $ {command} NAME --provider=composite --format="yaml[json-decode] (composite_type)"
           """,
   }
 

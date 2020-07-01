@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import alias_ip_range_utils
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils as api_utils
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
@@ -28,6 +29,7 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a Google Compute Engine virtual machine network interface.
 
@@ -40,29 +42,62 @@ class Update(base.UpdateCommand):
   as the interface's alias IP.
   """
 
-  @staticmethod
-  def Args(parser):
+  support_network_migration = False
+
+  @classmethod
+  def Args(cls, parser):
     instances_flags.INSTANCE_ARG.AddArgument(parser)
     parser.add_argument(
         '--network-interface',
         default='nic0',
         help='The name of the network interface to update.')
+    alias_network_migration_help = ''
+    if cls.support_network_migration:
+      parser.add_argument(
+          '--network',
+          type=str,
+          help='Specifies the network this network interface belongs to.')
+      parser.add_argument(
+          '--subnetwork',
+          type=str,
+          help='Specifies the subnetwork this network interface belongs to.')
+      parser.add_argument(
+          '--private-network-ip',
+          dest='private_network_ip',
+          type=str,
+          help="""\
+          Assign the given RFC1918 IP address to the interface. Can be specified
+          only together with --network and/or --subnetwork to choose the IP
+          address in the new subnetwork. If unspecified, then the old IP address
+          will be allocated in the new subnetwork. If the old IP address is not
+          available in the new subnetwork, then another available IP address
+          will be allocated automatically from the new subnetwork CIDR range.
+          """)
+      alias_network_migration_help = """
+
+        Can be specified together with --network and/or --subnetwork to choose
+        IP alias ranges in the new subnetwork. If unspecified, then old IP alias
+        ranges will be allocated in the new subnetwork. If old IP alias ranges
+        are not available in the new subnetwork, then other available IP alias
+        ranges of the same size will be allocated in the new subnetwork."""
+
     parser.add_argument(
         '--aliases',
         type=str,
         help="""
         The IP alias ranges to allocate for this interface. If there are
-        multiple IP alias ranges, they are separated by semicolons.
+        multiple IP alias ranges, they are separated by semicolons.{0}
 
         For example:
 
             --aliases="10.128.1.0/24;r1:/32"
-        """)
+        """.format(alias_network_migration_help))
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
+    resources = holder.resources
 
     instance_ref = instances_flags.INSTANCE_ARG.ResolveAsResource(
         args, holder.resources,
@@ -82,10 +117,31 @@ class Update(base.UpdateCommand):
               args.network_interface, ', '.join(
                   [i.name for i in instance.networkInterfaces])))
 
+    network_uri = None
+    if getattr(args, 'network', None) is not None:
+      network_uri = resources.Parse(
+          args.network, {
+              'project': instance_ref.project
+          },
+          collection='compute.networks').SelfLink()
+
+    subnetwork_uri = None
+    if getattr(args, 'subnetwork', None) is not None:
+      region = api_utils.ZoneNameToRegionName(instance_ref.zone)
+      subnetwork_uri = resources.Parse(
+          args.subnetwork, {
+              'project': instance_ref.project,
+              'region': region
+          },
+          collection='compute.subnetworks').SelfLink()
+
     patch_network_interface = messages.NetworkInterface(
         aliasIpRanges=(
             alias_ip_range_utils.CreateAliasIpRangeMessagesFromString(
                 messages, True, args.aliases)),
+        network=network_uri,
+        subnetwork=subnetwork_uri,
+        networkIP=getattr(args, 'private_network_ip', None),
         fingerprint=fingerprint)
 
     request = messages.ComputeInstancesUpdateNetworkInterfaceRequest(
@@ -108,3 +164,19 @@ class Update(base.UpdateCommand):
         operation_poller, operation_ref,
         'Updating network interface [{0}] of instance [{1}]'.format(
             args.network_interface, instance_ref.Name()))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  r"""Update a Google Compute Engine virtual machine network interface.
+
+  *{command}* updates network interfaces of a Google Compute Engine
+  virtual machine. For example:
+
+    $ {command} example-instance --zone us-central1-a --aliases r1:172.16.0.1/32
+
+  sets 172.16.0.1/32 from range r1 of the default interface's subnetwork
+  as the interface's alias IP.
+  """
+
+  support_network_migration = True

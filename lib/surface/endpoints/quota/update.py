@@ -85,10 +85,6 @@ class Update(base.SilentCommand):
         required=True,
         help='The unit of a metric to update a quota override for.')
     parser.add_argument(
-        '--override-id',
-        required=True,
-        help='The override ID of the override previous created.')
-    parser.add_argument(
         '--dimensions',
         type=arg_parsers.ArgDict(),
         metavar='KEY=VALUE',
@@ -114,8 +110,8 @@ class Update(base.SilentCommand):
       Nothing.
     """
     op = scm.UpdateQuotaOverrideCall(args.service, args.consumer, args.metric,
-                                     args.unit, args.override_id,
-                                     args.dimensions, args.value, args.force)
+                                     args.unit, args.dimensions, args.value,
+                                     args.force)
     if op.done:
       return
     op = services_util.WaitOperation(op.name, scm.GetOperation)

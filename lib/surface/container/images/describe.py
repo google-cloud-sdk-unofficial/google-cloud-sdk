@@ -53,10 +53,10 @@ class Describe(base.DescribeCommand):
   Find the digest for a tag:
 
     $ {command} gcr.io/myproject/myimage:tag \
-      --format='value(image_summary.digest)'
+      --format="value(image_summary.digest)"
           OR
     $ {command} gcr.io/myproject/myimage:tag \
-      --format='value(image_summary.fully_qualified_digest)'
+      --format="value(image_summary.fully_qualified_digest)"
 
   """
 
@@ -102,10 +102,10 @@ class DescribeAlphaAndBeta(Describe):
   Find the digest for a tag:
 
     $ {command} gcr.io/myproject/myimage:tag \
-      --format='value(image_summary.digest)'
+      --format="value(image_summary.digest)"
           OR
     $ {command} gcr.io/myproject/myimage:tag \
-      --format='value(image_summary.fully_qualified_digest)'
+      --format="value(image_summary.fully_qualified_digest)"
 
   See package vulnerabilities found by the Container Analysis API for the
   specified image:

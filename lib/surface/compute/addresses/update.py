@@ -49,7 +49,7 @@ class Update(base.UpdateCommand):
 
   To list existing labels for address 'example-address', run:
 
-    $ {parent_command} describe example-address --format='default(labels)'
+    $ {parent_command} describe example-address --format="default(labels)"
 
   """
 

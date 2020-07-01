@@ -75,8 +75,9 @@ class Login(base.Command):
     parser.add_argument(
         '--launch-browser',
         action='store_true', default=True, dest='launch_browser',
-        help='Launch a browser for authorization. If not enabled or DISPLAY '
-        'variable is not set, prints a URL to standard output to be copied.')
+        help='Launch a browser for authorization. If not enabled or if it '
+        'is not possible to launch a browser, prints a URL to standard output '
+        'to be copied.')
     parser.add_argument(
         '--activate', action='store_true', default=True,
         help='Set the new account to active.')

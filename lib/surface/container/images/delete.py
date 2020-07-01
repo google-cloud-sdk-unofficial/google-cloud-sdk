@@ -65,7 +65,7 @@ class Delete(base.DeleteCommand):
           filter digests that lack tags:
 
             $ gcloud container images list-tags [HOSTNAME]/[PROJECT-ID]/[IMAGE]\
-              --filter='-tags:*'  --format='get(digest)' --limit=$BIG_NUMBER
+              --filter='-tags:*'  --format="get(digest)" --limit=$BIG_NUMBER
 
           Then, delete these tagless images without prompting by running:
 

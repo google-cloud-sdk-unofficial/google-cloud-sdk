@@ -55,7 +55,7 @@ class Formats(base.TopicCommand):
           Each *gcloud* *list* command has a default format expression. The
           *--format* flag can alter or replace the default. For example,
 
-              --format='[box]'
+              --format="[box]"
 
           adds box decorations to a default table, and
 

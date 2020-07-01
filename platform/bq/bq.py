@@ -109,6 +109,7 @@ JobIdGeneratorIncrementing = bigquery_client.JobIdGeneratorIncrementing
 JobIdGeneratorRandom = bigquery_client.JobIdGeneratorRandom
 JobIdGeneratorFingerprint = bigquery_client.JobIdGeneratorFingerprint
 ReservationReference = bigquery_client.ApiClientHelper.ReservationReference
+AutoscaleAlphaReservationReference = bigquery_client.ApiClientHelper.AutoscaleAlphaReservationReference
 CapacityCommitmentReference = bigquery_client.ApiClientHelper.CapacityCommitmentReference  # pylint: disable=line-too-long
 ReservationAssignmentReference = bigquery_client.ApiClientHelper.ReservationAssignmentReference  # pylint: disable=line-too-long
 ConnectionReference = bigquery_client.ApiClientHelper.ConnectionReference
@@ -119,7 +120,7 @@ ConnectionReference = bigquery_client.ApiClientHelper.ConnectionReference
 def _GetVersion():
   """Returns content of VERSION file which is same directory as this file."""
   root = 'bq'
-  return six.ensure_text(pkgutil.get_data(root, 'VERSION'))
+  return six.ensure_str(pkgutil.get_data(root, 'VERSION'))
 
 
 _VERSION_NUMBER = _GetVersion()
@@ -132,7 +133,7 @@ if os.environ.get('CLOUDSDK_WRAPPER') == '1':
 else:
   _CLIENT_ID = '977385342095.apps.googleusercontent.com'
   _CLIENT_SECRET = 'wbER7576mc_1YOII0dGk7jEE'
-  _CLIENT_USER_AGENT = 'bq/' + str(_VERSION_NUMBER)
+  _CLIENT_USER_AGENT = 'bq/' + _VERSION_NUMBER
 
 _GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive'
 _BIGQUERY_SCOPE = 'https://www.googleapis.com/auth/bigquery'
@@ -148,10 +149,11 @@ _CLIENT_INFO = {
 _BIGQUERY_TOS_MESSAGE = (
     'In order to get started, please visit the Google APIs Console to '
     'create a project and agree to our Terms of Service:\n'
-    '\thttp://code.google.com/apis/console\n\n'
+    '\thttps://console.cloud.google.com/\n\n'
     'For detailed sign-up instructions, please see our Getting Started '
     'Guide:\n'
-    '\thttps://developers.google.com/bigquery/docs/getting-started\n\n'
+    '\thttps://cloud.google.com/bigquery/docs/quickstarts/'
+    'quickstart-command-line\n\n'
     'Once you have completed the sign-up process, please try your command '
     'again.')
 _DELIMITER_MAP = {
@@ -1164,9 +1166,11 @@ class BigqueryCmd(NewCmd):
                              platform.python_implementation(),
                              platform.python_version(),
                              platform.platform()
-                         ]), _VERSION_NUMBER, sys.argv,
+                         ]),
+                         six.ensure_str(_VERSION_NUMBER),
+                         [six.ensure_str(item) for item in sys.argv],
                          time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()),
-                         trace)
+                         six.ensure_str(trace))
 
     codecs.register_error('strict', codecs.replace_errors)
     message = bigquery_client.EncodeForPrinting(e)
@@ -1445,11 +1449,10 @@ class _Load(BigqueryCmd):
     comma-separated list of entries of the form name[:type], where type will
     default to string if not specified.
 
-    In the case that <schema> is a filename, it should contain a
-    single array object, each entry of which should be an object with
-    properties 'name', 'type', and (optionally) 'mode'. See the online
-    documentation for more detail:
-      https://developers.google.com/bigquery/preparing-data-for-bigquery
+    In the case that <schema> is a filename, it should be a JSON file
+    containing a single array, each entry of which should be an object with
+    properties 'name', 'type', and (optionally) 'mode'. For more detail:
+    https://cloud.google.com/bigquery/docs/schemas#specifying_a_json_schema_file
 
     Note: the case of a single-entry schema with no type specified is
     ambiguous; one can use name:string to force interpretation as a
@@ -1723,6 +1726,25 @@ class _MakeExternalTableDefinition(BigqueryCmd):
     It produces a definition with the most commonly used values for options.
     You can modify the output to override option values.
 
+    The <source_uris> argument is a comma-separated list of URIs indicating
+    the data referenced by this external table.
+
+    The <schema> argument should be either the name of a JSON file or a text
+    schema.
+
+    In the case that the schema is provided in text form, it should be a
+    comma-separated list of entries of the form name[:type], where type will
+    default to string if not specified.
+
+    In the case that <schema> is a filename, it should be a JSON file
+    containing a single array, each entry of which should be an object with
+    properties 'name', 'type', and (optionally) 'mode'. For more detail:
+    https://cloud.google.com/bigquery/docs/schemas#specifying_a_json_schema_file
+
+    Note: the case of a single-entry schema with no type specified is
+    ambiguous; one can use name:string to force interpretation as a
+    text schema.
+
     Usage:
       mkdef <source_uris> [<schema>]
 
@@ -1730,23 +1752,8 @@ class _MakeExternalTableDefinition(BigqueryCmd):
       bq mkdef 'gs://bucket/file.csv' field1:integer,field2:string
 
     Arguments:
-      source_uris: a comma-separated list of uris.
-      schema: The <schema> argument should be either the name of a JSON file or
-        a text schema.
-
-        In the case that the schema is provided in text form, it should be a
-        comma-separated list of entries of the form name[:type], where type will
-        default to string if not specified.
-
-        In the case that <schema> is a filename, it should contain a
-        single array object, each entry of which should be an object with
-        properties 'name', 'type', and (optionally) 'mode'. See the online
-        documentation for more detail:
-          https://developers.google.com/bigquery/preparing-data-for-bigquery
-
-        Note: the case of a single-entry schema with no type specified is
-        ambiguous; one can use name:string to force interpretation as a
-        text schema.
+      source_uris: Comma-separated list of URIs.
+      schema: Either a text schema or JSON file, as above.
     """
     # pylint: disable=line-too-long
     json.dump(
@@ -2095,13 +2102,14 @@ class _Query(BigqueryCmd):
             name=scheduled_queries_reference).execute()
       except:
         raise bigquery_client.BigqueryAccessDeniedError(
-            'Scheduled query is not enable on the project, please enable at '
+            'Scheduled queries are not enabled on this project. Please enable '
+            'them at '
             'https://console.cloud.google.com/bigquery/scheduled-queries',
             {'reason': 'notFound'}, [])
       if self.use_legacy_sql is None or self.use_legacy_sql:
         raise app.UsageError(
-            'Scheduled query could only be created with GoogleSQL query. '
-            'Please retry with GoogleSQL and set --use_legacy_sql flag to true.'
+            'Scheduled queries do not support legacy SQL. Please use standard '
+            'SQL and set the --use_legacy_sql flag to false.'
         )
       destination_table = ''
       target_dataset = self.target_dataset
@@ -2285,7 +2293,8 @@ class _Query(BigqueryCmd):
                                                      {}).get('stackFrames', []))
         if len(stack_frames) <= 0:
           break
-        sys.stdout.write('%s; ' % stack_frames[0].get('text', ''))
+        sys.stdout.write('%s; ' %
+                         six.ensure_str(stack_frames[0].get('text', '')))
         if len(stack_frames) >= 2:
           sys.stdout.write('\n')
         # Print stack traces
@@ -2548,7 +2557,7 @@ class _Partition(BigqueryCmd):  # pylint: disable=missing-docstring
         'Cannot determine table associated with "%s"' % (destination_table,))
 
     source_dataset = source_table_prefix.GetDatasetReference()
-    source_id_prefix = source_table_prefix.tableId
+    source_id_prefix = six.ensure_str(source_table_prefix.tableId)
     source_id_len = len(source_id_prefix)
 
     job_id_prefix = _GetJobIdFromFlags()
@@ -2565,8 +2574,9 @@ class _Partition(BigqueryCmd):  # pylint: disable=missing-docstring
     dates = []
     representative_table = None
     for result in results:
-      if result['tableId'].startswith(source_id_prefix):
-        suffix = result['tableId'][source_id_len:]
+      table_id = six.ensure_str(result['tableId'])
+      if table_id.startswith(source_id_prefix):
+        suffix = table_id[source_id_len:]
         try:
           table_date = datetime.datetime.strptime(suffix, '%Y%m%d')
 
@@ -2743,7 +2753,7 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         'Use a space-separated list of label keys and values '
         'in the form "labels.key:value". Datasets must match '
         'all provided filter expressions. See '
-        'https://cloud.google.com/bigquery/docs/labeling-datasets'
+        'https://cloud.google.com/bigquery/docs/filtering-labels'
         '#filtering_datasets_using_labels '
         'for details'
         '\nFor transfer configurations, the filter expression, '
@@ -2782,13 +2792,6 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
     flags.DEFINE_boolean(
         'connection', None,
         'List all connections for given project/location',
-        flag_values=fv)
-    flags.DEFINE_enum(
-        'reservation_version',
-        'V1BETA1', ['V1BETA1'],
-        'API version for reservation service. Options include:'
-        '\n V1BETA1'
-        '\n Used in conjunction with --reservation.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -2954,7 +2957,10 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
     elif self.reservation:
       bi_response = None
       response = []
-      object_type = ReservationReference
+      if FLAGS.api_version == 'autoscale_alpha':
+        object_type = AutoscaleAlphaReservationReference
+      else:
+        object_type = ReservationReference
       reference = client.GetReservationReference(
           identifier=identifier,
           default_location=FLAGS.location,
@@ -3639,7 +3645,7 @@ class _Make(BigqueryCmd):
         'data_location',
         None,
         'Geographic location of the data. See details at '
-        'https://cloud.google.com/bigquery/docs/dataset-locations.',
+        'https://cloud.google.com/bigquery/docs/locations.',
         flag_values=fv)
     flags.DEFINE_integer(
         'expiration',
@@ -3804,6 +3810,12 @@ class _Make(BigqueryCmd):
         'If true, any query running in this reservation will be able to use '
         'idle slots from other reservations.',
         flag_values=fv)
+    flags.DEFINE_integer(
+        'autoscale_max_slots',
+        None,
+        'Number of slots to be scaled when needed. Autoscale will be enabled '
+        'when setting this.',
+        flag_values=fv)
     flags.DEFINE_enum(
         'job_type',
         None, ['QUERY', 'PIPELINE', 'ML_EXTERNAL'],
@@ -3940,7 +3952,8 @@ class _Make(BigqueryCmd):
         object_info = client.CreateReservation(
             reference=reference,
             slots=self.slots,
-            use_idle_slots=self.use_idle_slots)
+            use_idle_slots=self.use_idle_slots,
+            autoscale_max_slots=self.autoscale_max_slots)
       except BaseException as e:
         raise bigquery_client.BigqueryError(
             "Failed to create reservation '%s': %s" % (identifier, e))
@@ -3952,9 +3965,11 @@ class _Make(BigqueryCmd):
           default_location=FLAGS.location,
           default_capacity_commitment_id=' ')
       try:
-        object_info = client.CreateCapacityCommitment(reference, self.slots,
-                                                      self.plan,
-                                                      self.renewal_plan)
+        object_info = client.CreateCapacityCommitment(
+            reference,
+            self.slots,
+            self.plan,
+            self.renewal_plan)
       except BaseException as e:
         raise bigquery_client.BigqueryError(
             "Failed to create capacity commitment in '%s': %s" %
@@ -4248,6 +4263,18 @@ class _Update(BigqueryCmd):
         '\n ANNUAL',
         flag_values=fv)
     flags.DEFINE_boolean(
+        'split',
+        None,
+        'If true, splits capacity commitment into two. Split parts are defined '
+        'by the --slots param.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'merge',
+        None,
+        'If true, merges capacity commitments into one. At least two comma '
+        'separated capacity commitment ids must be specified.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
         'reservation_assignment',
         None,
         'Updates a reservation assignment and so that the assignee will use a '
@@ -4270,6 +4297,12 @@ class _Update(BigqueryCmd):
         None,
         'If true, any query running in this reservation will be able to use '
         'idle slots from other reservations.',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'autoscale_max_slots',
+        None,
+        'Number of slots to be scaled when needed. Autoscale will be enabled '
+        'when setting this.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'transfer_config',
@@ -4546,9 +4579,14 @@ class _Update(BigqueryCmd):
       bq update --reservation --location=US --project_id=my-project
           --reservation_size=2G
       bq update --capacity_commitment --location=US --project_id=my-project
-          --plan=MONTHLY --renewal_plan=FLEX
-      bq update --reservation_assignment --reservation_id=proj:US.reservation1
-          reservation2.<reservation_assignment_id>
+          --plan=MONTHLY --renewal_plan=FLEX commitment_id
+      bq update --capacity_commitment --location=US --project_id=my-project
+        --split --slots=500 commitment_id
+      bq update --capacity_commitment --location=US --project_id=my-project
+        --merge commitment_id1,commitment_id2
+      bq update --reservation_assignment
+          --destination_reservation_id=proj:US.new_reservation
+          proj:US.old_reservation.assignment_id
       bq update --connection_credential='{"username":"u", "password":"p"}'
         --location=US --project_id=my-project existing_connection
     """
@@ -4579,21 +4617,46 @@ class _Update(BigqueryCmd):
           object_info = client.UpdateReservation(
               reference=reference,
               slots=self.slots,
-              use_idle_slots=self.use_idle_slots)
+              use_idle_slots=self.use_idle_slots,
+              autoscale_max_slots=self.autoscale_max_slots)
           _PrintObjectInfo(object_info, reference, custom_format='show')
       except BaseException as e:
         raise bigquery_client.BigqueryError(
             "Failed to update reservation '%s': %s" % (identifier, e))
     elif self.capacity_commitment:
       try:
+        if self.split and self.merge:
+          raise bigquery_client.BigqueryError(
+              'Cannot specify both --split and --merge.')
         reference = client.GetCapacityCommitmentReference(
-            identifier=identifier, default_location=FLAGS.location)
-        object_info = client.UpdateCapacityCommitment(reference, self.plan,
-                                                      self.renewal_plan)
-        _PrintObjectInfo(object_info, reference, custom_format='show')
+            identifier=identifier,
+            default_location=FLAGS.location,
+            allow_commas=self.merge)
+        if self.split:
+          response = client.SplitCapacityCommitment(reference, self.slots)
+          _PrintObjectsArray(response, objects_type=CapacityCommitmentReference)
+        elif self.merge:
+          object_info = client.MergeCapacityCommitments(
+              reference.location, reference.capacityCommitmentId.split(','))
+          reference = client.GetCapacityCommitmentReference(
+              path=object_info['name'])
+          _PrintObjectInfo(
+              object_info,
+              reference,
+              custom_format='show')
+        else:
+          object_info = client.UpdateCapacityCommitment(reference, self.plan,
+                                                        self.renewal_plan)
+          _PrintObjectInfo(object_info, reference, custom_format='show')
       except BaseException as e:
-        raise bigquery_client.BigqueryError(
-            "Failed to update capacity commitment '%s': %s" % (identifier, e))
+        err = ''
+        # Merge error is not specific to identifier, so making it more generic.
+        if self.merge:
+          err = 'Capacity commitments merge failed: %s' % (e)
+        else:
+          err = "Failed to update capacity commitment '%s': %s" % (identifier,
+                                                                   e)
+        raise bigquery_client.BigqueryError(err)
     elif self.reservation_assignment:
       try:
         reference = client.GetReservationAssignmentReference(
@@ -4604,9 +4667,6 @@ class _Update(BigqueryCmd):
             default_location=FLAGS.location)
         moved_reference = client.GetReservationAssignmentReference(
             path=object_info['name'])
-        print(
-            'Moved assignment from reservation \'%s\' to \'%s\'' %
-            (reference.reservation_path(), moved_reference.reservation_path()))
         _PrintObjectInfo(
             object_info,
             moved_reference,
@@ -5029,7 +5089,7 @@ class _Show(BigqueryCmd):
         'assignee_id',
         None,
         'Project/folder/organization ID, to which the reservation is assigned. '
-        'Used in conjuction with --reservation_assignment.',
+        'Used in conjunction with --reservation_assignment.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'connection',
@@ -5214,7 +5274,9 @@ def _PrintJobMessages(printable_job_info):
                   dataset=dataset_id,
                   table=table_id))
       else:
-        print('%s %s.%s.%s\n' % (op, project_id, dataset_id, table_id))
+        print('%s %s.%s.%s\n' %
+              (six.ensure_str(op), six.ensure_str(project_id),
+               six.ensure_str(dataset_id), six.ensure_str(table_id)))
   elif 'DDL Target Routine' in printable_job_info:
     ddl_target_routine = printable_job_info['DDL Target Routine']
     project_id = ddl_target_routine.get('projectId')
@@ -5546,7 +5608,8 @@ class _Insert(BigqueryCmd):
           entry_errors = entry['errors']
           sys.stdout.write('record %d errors: ' % (entry['index'],))
           for error in entry_errors:
-            print('\t%s: %s' % (error['reason'], error.get('message')))
+            print('\t%s: %s' % (six.ensure_str(error['reason']),
+                                six.ensure_str(error.get('message'))))
     return 1 if errors else 0
 
 
@@ -6044,7 +6107,7 @@ class _Init(BigqueryCmd):
     print()
     if not projects:
       print('No projects found for this user. Please go to ')
-      print('  https://code.google.com/apis/console')
+      print('  https://console.cloud.google.com/')
       print('and create a project.')
       print()
     else:
@@ -6234,6 +6297,8 @@ def _StructTypeSplit(type_string):
     if len(splits) != 2:
       raise app.UsageError('Struct parameter missing name for field')
     yield splits
+
+
 
 
 def _ParseParameterValue(type_dict, value_input):

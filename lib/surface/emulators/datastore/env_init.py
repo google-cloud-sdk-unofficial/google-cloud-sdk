@@ -34,6 +34,11 @@ class EnvInit(base.Command):
   To print the env variables exports for a datastore emulator, run:
 
     $ {command} --data-dir=DATA-DIR
+
+  You can use this command to set env vars in a bash script by adding the below
+  line in the script.
+
+    eval $({command} --data-dir=DATA-DIR)
   """
 
   @staticmethod

@@ -32,10 +32,8 @@ class Export(base.DeleteCommand):
   """Export a Cloud Domains registration.
 
   Export the domain to direct management by Google Domains. The domain remains
-  valid until expiry. See https://support.google.com/domains/answer/6339340 for
-  information how to access it in Google Domains after exporting.
-
-  Export can only be called on registrations in state ACTIVE or SUSPENDED.
+  valid until expiry. For information on how to access it in Google Domains
+  after exporting, see https://support.google.com/domains/answer/6339340.
 
   ## EXAMPLES
 

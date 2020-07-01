@@ -47,7 +47,7 @@ class SnapshotsAddLabels(base.UpdateCommand):
 
   To list existing labels
 
-    $ {parent_command} describe example-snapshot --format='default(labels)'
+    $ {parent_command} describe example-snapshot --format="default(labels)"
   """
 
   @staticmethod

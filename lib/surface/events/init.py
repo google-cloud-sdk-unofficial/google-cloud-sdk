@@ -114,7 +114,8 @@ class Init(base.Command):
       iam_util.BindMissingRolesWithPrompt(
           service_account_ref, _CONTROL_PLANE_REQUIRED_ROLES)
       _PromptIfCanPrompt(
-          '\nThis will create a new key for the provided service account.')
+          '\nThis will create a new key for the service account [{}].'
+          .format(sa_email))
       _, key_ref = client.CreateOrReplaceServiceAccountSecret(
           secret_ref, service_account_ref)
 

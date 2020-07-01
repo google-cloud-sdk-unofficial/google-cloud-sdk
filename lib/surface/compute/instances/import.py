@@ -199,6 +199,7 @@ Import.detailed_help = {
         *  Translate the boot disk to make it bootable in Google Compute Engine.
         *  Create a VM instance using OVF metadata and imported disks and boot it.
 
+        OVF import tool requires Cloud Build to be enabled. See [](https://cloud.google.com/compute/docs/import/import-ovf-files#enable-cloud-build)
         Virtual machine instances, images and disks in Compute engine and files
         stored on Cloud Storage incur charges. See [](https://cloud.google.com/compute/docs/images/importing-virtual-disks#resource_cleanup).
         """,

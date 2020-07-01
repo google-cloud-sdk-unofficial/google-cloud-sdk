@@ -34,11 +34,9 @@ class ConfigureContacts(base.UpdateCommand):
   Configure registration's contact settings: email, phone number, postal
   address and also contact privacy.
 
-  In some cases such changes will have to be confirmed via email sent to the
-  registrant before they take effect. In order to resend the email, execute
+  In some cases such changes have to be confirmed through an email sent to
+  the registrant before they take effect. In order to resend the email, execute
   this command again.
-
-  This command can only be called on registrations in state ACTIVE or SUSPENDED.
 
   ## EXAMPLES
 
@@ -119,8 +117,8 @@ class ConfigureContacts(base.UpdateCommand):
       note = None
       if not args.async_ and self.CheckPendingContacts(registration_ref):
         note = ('Note:\nThe contact settings are currently pending.\nIn order '
-                'to finalize the update you need to confirm the '
-                'change using an email sent to the registrant.')
+                'to finalize the update you need to confirm the change.\nAn '
+                'email with instructions has been sent to the registrant.')
       log.UpdatedResource(
           registration_ref.Name(), 'registration', args.async_, details=note)
 

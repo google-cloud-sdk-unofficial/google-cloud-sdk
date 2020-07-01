@@ -37,20 +37,20 @@ class Register(base.CreateCommand):
   """Register a new domain.
 
   Create a new Cloud Domains registration resource by registering a new domain.
-  The resource id is equal to the domain name.
+  The new resource's ID will be equal to the domain name.
 
-  After this command finishes, the resource will be in state
+  After this command executes, the resource will be in state
   REGISTRATION_PENDING. The registration process should complete in less than 5
-  minutes and after that the resource will be in state ACTIVE. In very rare
+  minutes. After that the resource will be in state ACTIVE. In rare
   cases this process can take much longer due, for example, to a downtime of the
   domain registry.
 
-  Also in rare cases the domain may end up in state REGISTRATION_FAILED. In that
-  case delete the registration resource and try again.
+  Also in rare cases, the domain may end up in state REGISTRATION_FAILED. In
+  that case, delete the registration resource and try again.
 
-  When using Cloud DNS Zone or Google Domains name servers the DNS Security
-  (DNSSEC) will be enabled by default (if possible). It can be disabled using
-  --disable-dnssec flag.
+  When using Cloud DNS Zone or Google Domains name servers, DNSSEC will be
+  enabled by default where possible. You can choose to not enable DNSSEC by
+  using the --disable-dnssec flag.
 
   ## EXAMPLES
 

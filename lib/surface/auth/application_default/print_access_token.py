@@ -82,6 +82,6 @@ class PrintAccessToken(base.Command):
     if isinstance(creds, google_auth_creds.Credentials):
       creds = c_google_auth.UserCredWithReauth.FromGoogleAuthUserCredentials(
           creds)
-    with c_store.HandleGoogleAuthCredentialsRefreshError():
+    with c_store.HandleGoogleAuthCredentialsRefreshError(for_adc=True):
       creds.refresh(http.GoogleAuthRequest())
     return creds

@@ -69,6 +69,23 @@ DETAILED_HELP = {
         and 'example-instance-3' in the 'us-central1-a' zone, run:
 
           $ {command} example-instance-1 example-instance-2 example-instance-3 --zone=us-central1-a
+
+        To create an instance called 'instance-1' from a source snapshot called
+        'instance-snapshot' in zone 'us-central2-a' and attached regional disk
+        'disk-1', run:
+
+          $ {command} instance-1 --source-snapshot=https://compute.googleapis.com/compute/v1/projects/myproject/global/snapshots/instance-snapshot --zone=central2-a --disk=name=disk1,scope=regional
+
+        To create an instance called instance-1 as a shielded vm with
+        secure boot, virtual trusted platform module (vTPM) enabled and
+        integrity monitoring, run:
+
+          $ {command} instance-1 --zone=central2-a --shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring
+
+        To create an preemptible instance called 'instance-1', run:
+
+          $ {command} instance-1 --machine-type=n1-standard-1 --zone=us-central1-b --preemptible --no-restart-on-failure --maintenance-policy=terminate
+
         """,
 }
 

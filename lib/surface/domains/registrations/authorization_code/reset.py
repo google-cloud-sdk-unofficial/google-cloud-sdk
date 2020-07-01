@@ -30,8 +30,8 @@ class ResetAuthorizationCode(base.DescribeCommand):
 
   Resets authorization code of a specific registration.
 
-  Can only be called after 60 days have elapsed since initial registration.
-  Also, the registration must be in state ACTIVE.
+  You can call this API only after 60 days have elapsed since initial
+  registration.
 
   ## EXAMPLES
 

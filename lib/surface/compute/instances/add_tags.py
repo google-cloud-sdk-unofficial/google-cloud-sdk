@@ -42,7 +42,7 @@ DETAILED_HELP = {
 
         To list instances with their respective status and tags, run:
 
-          $ gcloud compute instances list --format='table(name,status,tags.list())'
+          $ gcloud compute instances list --format="table(name,status,tags.list())"
 
         To list instances tagged with a specific tag, `tag1`, run:
 

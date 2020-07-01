@@ -150,7 +150,7 @@ class Run(base.Command):
 
         command_util.RunKubectlCommand(
             command_util.AddKubectlNamespace(kubectl_ns, kubectl_args),
-            out_func=log.status.Print)
+            out_func=log.out.Print)
       except command_util.KubectlError as e:
         raise self.ConvertKubectlError(e, env_obj)
 

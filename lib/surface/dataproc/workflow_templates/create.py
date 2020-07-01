@@ -21,13 +21,15 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
+from googlecloudsdk.command_lib.dataproc import workflow_templates
 from googlecloudsdk.command_lib.util.args import labels_util
+import six
 
 DETAILED_HELP = {
     'EXAMPLES':
         """\
-      To create a workflow template named 'my-workflow-template' in region
-      'us-central1' with label params 'key1'='value1' and 'key2'='value2', run:
+      To create a workflow template named ``my-workflow-template'' in region
+      ``us-central1'' with label params 'key1'='value1' and 'key2'='value2', run:
 
         $ {command} my-workflow-template --region=us-central1 --labels="key1=value1,key2=value2"
       """,
@@ -43,6 +45,7 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     dataproc = dp.Dataproc(cls.ReleaseTrack())
     labels_util.AddCreateLabelsFlags(parser)
+    workflow_templates.AddDagTimeoutFlag(parser, False)
     flags.AddTemplateResourceArg(parser, 'create', dataproc.api_version)
 
   def Run(self, args):
@@ -57,9 +60,13 @@ class Create(base.CreateCommand):
     parent = '/'.join(template_ref.RelativeName().split('/')[0:4])
 
     workflow_template = messages.WorkflowTemplate(
-        id=template_ref.Name(), name=template_ref.RelativeName(),
+        id=template_ref.Name(),
+        name=template_ref.RelativeName(),
         labels=labels_util.ParseCreateArgs(
             args, messages.WorkflowTemplate.LabelsValue))
+
+    if args.dag_timeout:
+      workflow_template.dagTimeout = six.text_type(args.dag_timeout) + 's'
 
     request = messages.DataprocProjectsRegionsWorkflowTemplatesCreateRequest(
         parent=parent, workflowTemplate=workflow_template)

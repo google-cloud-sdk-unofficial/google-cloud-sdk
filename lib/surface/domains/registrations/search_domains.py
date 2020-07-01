@@ -39,6 +39,9 @@ class SearchDomains(base.DescribeCommand):
 
   Search for available domains relevant to a specified query.
 
+  This command uses cached domain name availability information. Use the
+  get-register-params command to get up-to-date availability information.
+
   ## EXAMPLES
 
   To search for domains for ``my-new-project'', run:
@@ -58,7 +61,8 @@ class SearchDomains(base.DescribeCommand):
     parser.display_info.AddFormat(_FORMAT)
     base.Argument(
         'domain_query',
-        help='Domains search query.',
+        help=('Domain search query. '
+              'May be a domain name or arbitrary search terms.'),
     ).AddToParser(parser)
 
   def Run(self, args):
