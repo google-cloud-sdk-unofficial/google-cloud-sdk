@@ -106,7 +106,7 @@ class Set(base.UpdateCommand):
   FORWARDING_RULE_ARG = None
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
   _include_l7_internal_load_balancing = True
-  _support_target_grpc_proxy = False
+  _support_target_grpc_proxy = True
 
   detailed_help = {
       'DESCRIPTION': ("""
@@ -115,9 +115,10 @@ class Set(base.UpdateCommand):
 
           When creating a forwarding rule, exactly one of  ``--target-instance'',
           ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
-          ``--target-ssl-proxy'', ``--target-tcp-proxy'' or
-          ``--target-vpn-gateway'' must be specified.""".format(
-              overview=flags.FORWARDING_RULES_OVERVIEW)),
+          ``--target-grpc-proxy'', ``--target-ssl-proxy'',
+          ``--target-tcp-proxy'' or ``--target-vpn-gateway''
+          must be specified.""".format(overview=flags.FORWARDING_RULES_OVERVIEW)
+                     ),
   }
 
   @classmethod
@@ -135,7 +136,7 @@ class Set(base.UpdateCommand):
 class SetBeta(Set):
   """Modify a forwarding rule to direct network traffic to a new target."""
   _include_l7_internal_load_balancing = True
-  _support_target_grpc_proxy = False
+  _support_target_grpc_proxy = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -143,16 +144,3 @@ class SetAlpha(SetBeta):
   """Modify a forwarding rule to direct network traffic to a new target."""
   _include_l7_internal_load_balancing = True
   _support_target_grpc_proxy = True
-
-  detailed_help = {
-      'DESCRIPTION': ("""
-          *{{command}}* is used to set a new target for a forwarding
-          rule. {overview}
-
-          When creating a forwarding rule, exactly one of  ``--target-instance'',
-          ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
-          ``--target-grpc-proxy'', ``--target-ssl-proxy'',
-          ``--target-tcp-proxy'' or ``--target-vpn-gateway''
-          must be specified.""".format(overview=flags.FORWARDING_RULES_OVERVIEW)
-                     ),
-  }

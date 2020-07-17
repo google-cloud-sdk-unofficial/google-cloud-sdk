@@ -70,8 +70,8 @@ class Describe(base.DescribeCommand):
             InstalledPackages.rpm:format=
               "table[box,title='Installed Packages (RPM)']
                 (Name:sort=1,Arch,Version)",
-            InstalledPackages.Zypper_patches:format=
-              "table[box,title='Installed Patches (Zypper)'](
+            InstalledPackages.zypperPatches:format=
+              "table[box,title='Installed Patches (Zypper Patch)'](
                 Name:sort=1,
                 Category,
                 Severity,
@@ -101,8 +101,8 @@ class Describe(base.DescribeCommand):
             PackageUpdates.yum:format=
               "table[box,title='Package Updates Available (Yum)']
                 (Name:sort=1,Arch,Version)",
-            PackageUpdates.Zypper_patches:format=
-              "table[box,title='Patches Available (Zypper)'](
+            PackageUpdates.zypperPatches:format=
+              "table[box,title='Patches Available (Zypper Patch)'](
                 Name:sort=1,
                 Category,
                 Severity,

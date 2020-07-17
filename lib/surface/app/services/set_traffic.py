@@ -45,15 +45,15 @@ class SetTraffic(base.Command):
       'EXAMPLES': """\
           To send all traffic to 'v2' of service 's1', run:
 
-            $ {command} s1 --splits v2=1
+            $ {command} s1 --splits=v2=1
 
           To split traffic evenly between 'v1' and 'v2' of service 's1', run:
 
-            $ {command} s1 --splits v2=.5,v1=.5
+            $ {command} s1 --splits=v2=.5,v1=.5
 
           To split traffic across all services:
 
-            $ {command} --splits v2=.5,v1=.5
+            $ {command} --splits=v2=.5,v1=.5
           """,
   }
 

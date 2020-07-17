@@ -31,6 +31,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import times
 
 _CERTIFICATE_COLLECTION_NAME = 'privateca.projects.locations.certificateAuthorities.certificates'
@@ -133,6 +134,13 @@ class Revoke(base.SilentCommand):
 
   def Run(self, args):
     cert_ref = _ParseCertificateResource(args)
+
+    if not console_io.PromptContinue(
+        message='You are about to revoke Certificate [{}]'.format(
+            cert_ref.RelativeName()),
+        default=True):
+      log.status.Print('Aborted by user.')
+      return
 
     reason = flags.ParseRevocationChoiceToEnum(args.reason)
 

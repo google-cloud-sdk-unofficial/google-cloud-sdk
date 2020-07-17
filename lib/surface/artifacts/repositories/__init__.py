@@ -34,6 +34,10 @@ class Repositories(base.Group):
 
     $ {command} delete my-repo
 
+  To describe a repository with the name `my-repo`, run:
+
+    $ {command} describe my-repo
+
   To list all Artifact Registry repositories, run:
 
     $ {command} list

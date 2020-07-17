@@ -30,6 +30,7 @@ DEFAULT_LIST_FORMAT = """\
          format:label=FORMAT,
          description:label=DESCRIPTION,
          name.segment(3):label=LOCATION,
+         kmsKeyName.yesno(yes='Customer-managed key', no='Google-managed key'):label=ENCRYPTION,
          createTime.date(tz=LOCAL),
          updateTime.date(tz=LOCAL))",
 

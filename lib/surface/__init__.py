@@ -30,6 +30,11 @@ class Gcloud(base.Group):
 
   The *gcloud* CLI manages authentication, local configuration, developer
   workflow, and interactions with the Google Cloud Platform APIs.
+
+  For a quick introduction to the gcloud command-line tool, a list of commonly
+  used commands, and a look at how these commands are structured, refer to the
+  gcloud command-line tool cheat sheet,
+  https://cloud.google.com/sdk/docs/cheatsheet, or run `gcloud cheat-sheet`.
   """
 
   @staticmethod

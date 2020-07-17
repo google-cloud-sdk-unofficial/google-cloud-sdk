@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.images import flags
 
 
 class Delete(base.DeleteCommand):
-  """Delete Google Compute Engine images."""
+  """Delete Compute Engine images."""
 
   @staticmethod
   def Args(parser):
@@ -56,7 +56,7 @@ class Delete(base.DeleteCommand):
 
 Delete.detailed_help = {
     'DESCRIPTION':
-        '*{command}* deletes one or more Google Compute Engine images.',
+        '*{command}* deletes one or more Compute Engine images.',
     'EXAMPLES':
         """
         To delete images 'my-image1' and 'my-image2', run:

@@ -52,7 +52,6 @@ def _Run(holder, target_grpc_proxy_ref):
   return client.MakeRequests([(collection, 'Get', request)])[0]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Display detailed information about a target gRPC proxy."""
 

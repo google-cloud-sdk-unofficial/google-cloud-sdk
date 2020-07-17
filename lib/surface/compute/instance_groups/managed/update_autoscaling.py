@@ -74,10 +74,10 @@ class UpdateAutoscaling(base.Command):
 
     if self.scale_in:
       if args.IsSpecified('clear_scale_in_control'):
-        new_autoscaler.autoscalingPolicy.scaleDownControl = None
+        new_autoscaler.autoscalingPolicy.scaleInControl = None
       else:
-        new_autoscaler.autoscalingPolicy.scaleDownControl = \
-          mig_utils.BuildScaleDown(args, client.messages)
+        new_autoscaler.autoscalingPolicy.scaleInControl = \
+          mig_utils.BuildScaleIn(args, client.messages)
 
     if self.predictive and args.IsSpecified(
         'cpu_utilization_predictive_method'):
@@ -95,7 +95,7 @@ class UpdateAutoscaling(base.Command):
     if self.scale_in and args.IsSpecified('clear_scale_in_control'):
       # Apitools won't send null fields unless explicitly told to.
       with client.apitools_client.IncludeFields(
-          ['autoscalingPolicy.scaleDownControl']):
+          ['autoscalingPolicy.scaleInControl']):
         return autoscalers_client.Patch(igm_ref, new_autoscaler)
     else:
       return autoscalers_client.Patch(igm_ref, new_autoscaler)
@@ -133,7 +133,7 @@ UpdateAutoscaling.detailed_help = {
         """\
         To update an existing instance group:
 
-            $ {command} --mode=only-up
+            $ {command} --mode=only-scale-out
 
         """,
     'DESCRIPTION': """
@@ -146,7 +146,7 @@ multiple policies can be found here: [](https://cloud.google.com/compute/docs/au
 In contrast to *{parent_command} set-autoscaling*, this command *only* updates
 specified fields. For instance:
 
-    $ {command} --mode only-up
+    $ {command} --mode only-scale-out
 
 would change the *mode* field of the autoscaler policy, but leave the rest of
 the settings intact.

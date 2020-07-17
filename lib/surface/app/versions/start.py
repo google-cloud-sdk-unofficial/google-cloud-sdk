@@ -55,11 +55,11 @@ class Start(base.Command):
 
           To start a single version on a single service, run:
 
-            $ {command} --service servicename v1
+            $ {command} --service=servicename v1
 
           To start multiple versions in a single service, run:
 
-            $ {command} --service servicename v1 v2
+            $ {command} --service=servicename v1 v2
           """,
   }
 

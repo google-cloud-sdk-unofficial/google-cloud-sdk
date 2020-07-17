@@ -44,7 +44,7 @@ class List(base.ListCommand):
 
           To list all versions for a specific service, run:
 
-            $ {command} --service service1
+            $ {command} --service=service1
 
           To list only versions that are receiving traffic, run:
 

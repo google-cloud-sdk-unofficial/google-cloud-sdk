@@ -2247,6 +2247,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--async": "bool",
                     "--description": "value",
+                    "--kms-key": "value",
                     "--location": "value",
                     "--repository-format": [
                       "apt",
@@ -2261,6 +2262,12 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--async": "bool",
+                    "--location": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
                     "--location": "value"
                   }
                 },
@@ -4326,16 +4333,14 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update-reservations": {
                   "commands": {},
                   "flags": {
-                    "--accelerator": "value",
-                    "--local-ssd": "value",
-                    "--machine-type": "value",
-                    "--min-cpu-platform": "value",
+                    "--dest-accelerator": "value",
+                    "--dest-local-ssd": "value",
+                    "--dest-reservation": "value",
                     "--region": "dynamic",
-                    "--require-specific-reservation": "bool",
-                    "--reservation": "dynamic",
-                    "--reservation-zone": "dynamic",
                     "--reservations-from-file": "value",
-                    "--vm-count": "value"
+                    "--source-accelerator": "value",
+                    "--source-local-ssd": "value",
+                    "--source-reservation": "value"
                   }
                 }
               },
@@ -5964,6 +5969,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--mode": [
                           "off",
                           "on",
+                          "only-scale-out",
                           "only-up"
                         ],
                         "--region": "dynamic",
@@ -6046,6 +6052,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--mode": [
                           "off",
                           "on",
+                          "only-scale-out",
                           "only-up"
                         ],
                         "--region": "dynamic",
@@ -26893,6 +26900,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--async": "bool",
                     "--description": "value",
+                    "--kms-key": "value",
                     "--location": "value",
                     "--repository-format": [
                       "apt",
@@ -26907,6 +26915,12 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--async": "bool",
+                    "--location": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
                     "--location": "value"
                   }
                 },
@@ -28444,16 +28458,14 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update-reservations": {
                   "commands": {},
                   "flags": {
-                    "--accelerator": "value",
-                    "--local-ssd": "value",
-                    "--machine-type": "value",
-                    "--min-cpu-platform": "value",
+                    "--dest-accelerator": "value",
+                    "--dest-local-ssd": "value",
+                    "--dest-reservation": "value",
                     "--region": "dynamic",
-                    "--require-specific-reservation": "bool",
-                    "--reservation": "dynamic",
-                    "--reservation-zone": "dynamic",
                     "--reservations-from-file": "value",
-                    "--vm-count": "value"
+                    "--source-accelerator": "value",
+                    "--source-local-ssd": "value",
+                    "--source-reservation": "value"
                   }
                 }
               },
@@ -28893,6 +28905,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--service-label": "value",
                     "--subnet": "value",
                     "--subnet-region": "dynamic",
+                    "--target-grpc-proxy": "value",
                     "--target-http-proxy": "value",
                     "--target-http-proxy-region": "dynamic",
                     "--target-https-proxy": "value",
@@ -28969,6 +28982,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "dynamic",
                     "--subnet": "value",
                     "--subnet-region": "dynamic",
+                    "--target-grpc-proxy": "value",
                     "--target-http-proxy": "value",
                     "--target-http-proxy-region": "dynamic",
                     "--target-https-proxy": "value",
@@ -29560,6 +29574,8 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--clear-labels": "bool",
+                    "--description": "value",
+                    "--family": "value",
                     "--remove-labels": "value",
                     "--update-labels": "value"
                   }
@@ -29907,6 +29923,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--mode": [
                           "off",
                           "on",
+                          "only-scale-out",
                           "only-up"
                         ],
                         "--region": "dynamic",
@@ -29985,6 +30002,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--mode": [
                           "off",
                           "on",
+                          "only-scale-out",
                           "only-up"
                         ],
                         "--region": "dynamic",
@@ -33427,6 +33445,38 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--local-host-port": "value",
                 "--zone": "dynamic"
               }
+            },
+            "target-grpc-proxies": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--description": "value",
+                    "--url-map": "dynamic",
+                    "--validate-for-proxyless": "bool"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--regexp": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
             },
             "target-http-proxies": {
               "commands": {
@@ -47595,6 +47645,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--service-label": "value",
                 "--subnet": "value",
                 "--subnet-region": "dynamic",
+                "--target-grpc-proxy": "value",
                 "--target-http-proxy": "value",
                 "--target-http-proxy-region": "dynamic",
                 "--target-https-proxy": "value",
@@ -47671,6 +47722,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--region": "dynamic",
                 "--subnet": "value",
                 "--subnet-region": "dynamic",
+                "--target-grpc-proxy": "value",
                 "--target-http-proxy": "value",
                 "--target-http-proxy-region": "dynamic",
                 "--target-https-proxy": "value",
@@ -48488,6 +48540,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--mode": [
                       "off",
                       "on",
+                      "only-scale-out",
                       "only-up"
                     ],
                     "--region": "dynamic",
@@ -48551,6 +48604,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--mode": [
                       "off",
                       "on",
+                      "only-scale-out",
                       "only-up"
                     ],
                     "--region": "dynamic",
@@ -51525,6 +51579,38 @@ STATIC_COMPLETION_CLI_TREE = {
             "--zone": "dynamic"
           }
         },
+        "target-grpc-proxies": {
+          "commands": {
+            "create": {
+              "commands": {},
+              "flags": {
+                "--description": "value",
+                "--url-map": "dynamic",
+                "--validate-for-proxyless": "bool"
+              }
+            },
+            "delete": {
+              "commands": {},
+              "flags": {}
+            },
+            "describe": {
+              "commands": {},
+              "flags": {}
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--page-size": "value",
+                "--regexp": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
+              }
+            }
+          },
+          "flags": {}
+        },
         "target-http-proxies": {
           "commands": {
             "create": {
@@ -52609,6 +52695,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--autoprovisioning-max-unavailable-upgrade": "value",
                 "--autoprovisioning-scopes": "value",
                 "--autoprovisioning-service-account": "value",
+                "--boot-disk-kms-key": "value",
                 "--cluster-ipv4-cidr": "value",
                 "--cluster-secondary-range-name": "value",
                 "--cluster-version": "value",
@@ -52957,6 +53044,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--accelerator": "value",
+                "--boot-disk-kms-key": "value",
                 "--cluster": "value",
                 "--disk-size": "value",
                 "--disk-type": [

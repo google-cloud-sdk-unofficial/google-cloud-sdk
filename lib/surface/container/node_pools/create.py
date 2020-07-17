@@ -118,6 +118,7 @@ def ParseCreateNodePoolOptionsBase(args):
                                                   args.metadata_from_file)
   return api_adapter.CreateNodePoolOptions(
       accelerators=args.accelerator,
+      boot_disk_kms_key=args.boot_disk_kms_key,
       machine_type=args.machine_type,
       disk_size_gb=utils.BytesToGb(args.disk_size),
       scopes=args.scopes,
@@ -161,6 +162,7 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _Args(parser)
+    flags.AddBootDiskKmsKeyFlag(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)

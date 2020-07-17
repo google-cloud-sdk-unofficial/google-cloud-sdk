@@ -56,7 +56,6 @@ def _Run(holder, target_grpc_proxy_refs):
   return client.MakeRequests(requests)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Delete one or more target gRPC proxies."""
 

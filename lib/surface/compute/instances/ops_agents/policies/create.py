@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # pylint: disable=line-too-long
-"""Implements command to create a new guest policy."""
+"""Implements command to create an ops agents policy."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -34,16 +34,37 @@ from googlecloudsdk.core import properties
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
-  """Create a policy that manages Google Cloud Operations Suite agents across Google Cloud Compute instances."""
+  """Create a Google Cloud Operations Suite Agents (Ops Agents) policy.
+
+  *{command}* creates a policy that facilitates agent management across Google
+  Cloud Compute instances based on user specified instance filters. This policy
+  installs, specifies versioning, enables autoupgrade, and removes Ops Agents.
+
+  The command returns the content of the created policy or an error indicating
+  why the creation fails. The created policy takes effect asynchronously. It
+  can take 10 ~ 15 minutes for the VMs to enforce the newly created policy.
+  """
 
   detailed_help = {
       'DESCRIPTION':
           '{description}',
       'EXAMPLES':
           """\
-          To create a guest policy ``policy1'' in the current project, run:
+          To create a policy named ``ops-agents-test-policy'' that targets a
+          single CentOS 7 VM instance named
+          ``zones/us-central1-a/instances/test-instance'' for testing or
+          development, and installs both Logging and Monitoring Agents on that
+          VM instance, run:
 
-            $ {command} policy1 --project=my-project --os-types=short-name=centos,version=7 --description="A test policy to install agents" --agents="type=logging,version=1.x.x,enable-autoupgrade=true,package-state=installed;type=metrics,version=6.x.x,enable-autoupgrade=false,package-state=installed" --instances=zones/us-central1-a/instances/test-instance-1,zones/us-central1-a/instances/test-instance-2 --group-labels="env=prod,product=myproduct;env=staging,product=myproduct" --zones="us-central1-a,us-central1-b"
+            $ {command} ops-agents-test-policy --agents="type=logging;type=metrics" --description="A test policy." --os-types=short-name=centos,version=7 --instances=zones/us-central1-a/instances/test-instance
+
+          To create a policy named ``ops-agents-prod-policy'' that targets all
+          CentOS 7 VMs in zone ``us-central1-a'' with either
+          ``env=prod,product=myapp'' or ``env=staging,product=myapp'' labels,
+          and makes sure the logging agent and metrics agent versions are pinned
+          to specific major versions for staging and production, run:
+
+          $ {command} ops-agents-prod-policy --agents="type=logging,version=1.*.*;type=metrics,version=6.*.*" --description="A prod policy." --os-types=short-name=centos,version=7 --zones=us-central1-a --group-labels="env=prod,product=myapp;env=staging,product=myapp"
           """,
   }
 
@@ -52,6 +73,7 @@ class Create(base.Command):
     """See base class."""
     parser_utils.AddSharedArgs(parser)
     parser_utils.AddMutationArgs(parser)
+    parser_utils.AddCreateArgs(parser)
 
   def Run(self, args):
     """See base class."""

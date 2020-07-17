@@ -41,7 +41,6 @@ def _Run(args, holder):
   return lister.Invoke(request_data, list_implementation)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List target gRPC proxies."""
 

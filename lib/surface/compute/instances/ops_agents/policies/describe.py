@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Implements command to delete a specified guest policy."""
+"""Implements command to describe an ops agents policy."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -33,16 +33,25 @@ from googlecloudsdk.core import properties
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe a policy that manages Google Cloud Operations Suite agents across Google Cloud Compute instances."""
+  """Describe a Google Cloud Operations Suite Agents (Ops Agents) policy.
+
+  *{command}* describes a policy that facilitates agent management across Google
+  Cloud Compute instances based on user specified instance filters. This policy
+  installs, specifies versioning, enables autoupgrade, and removes Ops Agents.
+
+  The command returns the content of one policy. If no policies are found, it
+  returns a ``NOT_FOUND'' error.
+  """
 
   detailed_help = {
       'DESCRIPTION':
           '{description}',
       'EXAMPLES':
           """\
-          To describe an Ops agents policy named ``policy1'' in the current project, run:
+          To describe an Ops agents policy named ``ops-agents-test-policy'' in
+          the current project, run:
 
-            $ {command} policy1
+            $ {command} ops-agents-test-policy
           """,
   }
 

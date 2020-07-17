@@ -34,8 +34,7 @@ KUBECONTEXT_FORMAT = 'connectgateway_{project}_{membership}'
 SERVER_FORMAT = 'https://{env}.googleapis.com/{version}/projects/{project_number}/memberships/{membership}'
 REQUIRED_PERMISSIONS = [
     'gkehub.memberships.get',
-    # TODO(b/153385543): add Gateway IAM permission here when its rolled out.
-    # 'gkehub.gateway.get',
+    'gkehub.gateway.get',
 ]
 
 

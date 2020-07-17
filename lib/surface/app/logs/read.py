@@ -86,7 +86,7 @@ Read.detailed_help = {
 
         To show only the 10 latest log entries for the default service, run:
 
-          $ {command} --limit 10 --service=default
+          $ {command} --limit=10 --service=default
 
         To show only the logs from the request log for standard apps, run:
 

@@ -35,7 +35,8 @@ class Cheatsheet(base.TopicCommand):
   * `gcloud version`: Display version and installed components.
   * `gcloud components install`: Install specific components.
   * `gcloud components update`: Update your Cloud SDK to the latest version.
-  * `gcloud config set project`: Set a default Google Cloud project to work on.
+  * `gcloud config set` `project`: Set a default Google Cloud project to
+                                   work on.
   * `gcloud info`: Display current `gcloud` tool environment details.
 
   ### Help
@@ -91,7 +92,7 @@ class Cheatsheet(base.TopicCommand):
     a project.
   * `gcloud iam service-accounts add-iam-policy-binding`: Add an IAM policy
     binding to a service account.
-  * `gcloud iam service-accounts set-iam-policy-binding`: Replace existing IAM
+  * `gcloud iam service-accounts set-iam-policy`: Replace existing IAM
     policy binding.
   * `gcloud iam service-accounts keys list`: List a service account's keys.
 
@@ -99,7 +100,7 @@ class Cheatsheet(base.TopicCommand):
   Manage containerized applications on Kubernetes
 
   * `gcloud auth configure-docker`: Register the `gcloud` tool as a Docker
-  credential helper.
+    credential helper.
   * `gcloud container clusters create`: Create a cluster to run GKE containers.
   * `gcloud container clusters list`: List clusters for running GKE containers.
   * `gcloud container clusters get-credentials`: Update `kubeconfig` to get

@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import copy
+import ipaddress
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
@@ -29,7 +29,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 from googlecloudsdk.core import log
-import ipaddress
 import six
 from six.moves import range  # pylint: disable=redefined-builtin
 
@@ -344,7 +343,7 @@ class Create(base.CreateCommand):
 
   _support_global_access = True
   _support_l7_internal_load_balancing = True
-  _support_target_grpc_proxy = False
+  _support_target_grpc_proxy = True
   _support_psc_google_apis = False
 
   @classmethod
@@ -367,7 +366,7 @@ class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
   _support_l7_internal_load_balancing = True
-  _support_target_grpc_proxy = False
+  _support_target_grpc_proxy = True
   _support_psc_google_apis = False
 
 
@@ -386,8 +385,8 @@ Create.detailed_help = {
 
 When creating a forwarding rule, exactly one of  ``--target-instance'',
 ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
-``--target-ssl-proxy'', ``--target-tcp-proxy'', ``--target-vpn-gateway''
-or ``--backend-service'' must be specified.""".format(
+``--target-grpc-proxy'', ``--target-ssl-proxy'', ``--target-tcp-proxy'',
+``--target-vpn-gateway'' or ``--backend-service'' must be specified.""".format(
     overview=flags.FORWARDING_RULES_OVERVIEW)),
     'EXAMPLES':
         """
@@ -405,15 +404,7 @@ or ``--backend-service'' must be specified.""".format(
 }
 
 CreateBeta.detailed_help = Create.detailed_help
-CreateAlpha.detailed_help = copy.deepcopy(Create.detailed_help)
-CreateAlpha.detailed_help['DESCRIPTION'] = """
-*{{command}}* is used to create a forwarding rule. {overview}
-
-When creating a forwarding rule, exactly one of  ``--target-instance'',
-``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
-``--target-ssl-proxy'', ``--target-tcp-proxy'', ``--target-vpn-gateway'',
-``--target-google-apis-bundle'' or ``--backend-service'' must be specified.""".format(
-    overview=flags.FORWARDING_RULES_OVERVIEW)
+CreateAlpha.detailed_help = Create.detailed_help
 
 
 def _GetPortRange(ports_range_list):

@@ -62,7 +62,7 @@ class Login(base.BinaryBackedCommand):
     cluster = args.CLUSTER
     config_file = args.login_config
     force_update = args.set_preferred_auth
-    anthoscli_backend.GetPreferredAuthForCluster(
+    _, ldapuser, ldappass = anthoscli_backend.GetPreferredAuthForCluster(
         cluster, config_file or command_executor.default_config_path,
         force_update)
     log.status.Print(messages.LOGIN_CONFIG_MESSAGE)
@@ -75,5 +75,7 @@ class Login(base.BinaryBackedCommand):
         login_config_cert=args.login_config_cert,
         dry_run=args.dry_run,
         show_exec_error=args.show_exec_error,
+        ldap_user=ldapuser,
+        ldap_pass=ldappass,
         env=anthoscli_backend.GetEnvArgsForCommand())
     return anthoscli_backend.LoginResponseHandler(response)

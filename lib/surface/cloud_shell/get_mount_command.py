@@ -34,7 +34,7 @@ class SshAlpha(base.Command):
           """\
         *{command}* starts your Cloud Shell if it is not already running, then
         prints out a command that allows you to mount the Cloud Shell home
-        directory onto your local fiulesystem using *sshfs*. You must install
+        directory onto your local file system using *sshfs*. You must install
         and run sshfs yourself.
 
         After mounting the Cloud Shell home directory, any changes you make

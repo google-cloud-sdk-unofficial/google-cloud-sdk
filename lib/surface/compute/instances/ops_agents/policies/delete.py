@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Implements command to delete a specified guest policy."""
+"""Implements command to delete an ops agents policy."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,16 +32,29 @@ from googlecloudsdk.core import properties
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
-  """Delete a policy that manages Google Cloud Operations Suite agents across Google Cloud Compute instances."""
+  """Delete a Google Cloud Operations Suite Agents (Ops Agents) policy.
+
+  *{command}* deletes a policy that facilitates agent management across Google
+  Cloud Compute instances based on user specified instance filters. This policy
+  installs, specifies versioning, enables autoupgrade, and removes Ops Agents.
+
+  The command returns a response indicating whether the deletion is successful.
+  Once a policy is deleted, it takes 10 ~ 15 minutes to be wiped out from the
+  applicable instances. The existing agents that have been installed in the
+  instances will remain untouched. In order to remove the agents from the
+  instances, first update the policy to set the agent ``package-state'' to
+  ``removed'', wait for the policy to take effect, then delete the policy.
+  """
 
   detailed_help = {
       'DESCRIPTION':
           '{description}',
       'EXAMPLES':
           """\
-          To delete an Ops agents policy named ``policy1'' in the current project, run:
+          To delete an Ops agents policy named ``ops-agents-test-policy'' in the
+          current project, run:
 
-            $ {command} policy1
+            $ {command} ops-agents-test-policy
           """,
   }
 

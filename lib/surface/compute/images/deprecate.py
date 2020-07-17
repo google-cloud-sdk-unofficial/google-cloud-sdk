@@ -44,7 +44,7 @@ def _ResolveTime(absolute, relative_sec, current_time):
 
 
 class DeprecateImages(base.SilentCommand):
-  """Manage deprecation status of Google Compute Engine images.
+  """Manage deprecation status of Compute Engine images.
 
   *{command}* is used to deprecate images.
   """

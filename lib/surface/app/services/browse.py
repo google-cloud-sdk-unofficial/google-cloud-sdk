@@ -48,7 +48,7 @@ class Browse(base.Command):
 
           To show multiple services side-by-side with a specific version, run:
 
-              $ {command} s1 s2 --version v1
+              $ {command} s1 s2 --version=v1
           """,
   }
 

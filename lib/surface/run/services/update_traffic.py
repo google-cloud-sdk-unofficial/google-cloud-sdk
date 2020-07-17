@@ -39,7 +39,7 @@ from googlecloudsdk.core.resource import resource_printer
 @base.ReleaseTracks(base.ReleaseTrack.GA,
                     base.ReleaseTrack.BETA)
 class AdjustTraffic(base.Command):
-  """Adjust the trafic assignments for a Cloud Run service."""
+  """Adjust the traffic assignments for a Cloud Run service."""
 
   detailed_help = {
       'DESCRIPTION':

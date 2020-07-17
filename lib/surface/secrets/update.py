@@ -31,8 +31,7 @@ class Update(base.UpdateCommand):
   r"""Update a secret's metadata.
 
       Update a secret's metadata (e.g. labels). This command will
-      return an error if given a secret that does not exist. To upsert the
-      creation of a secret, use the `--create-if-missing` flag.
+      return an error if given a secret that does not exist.
 
       ## EXAMPLES
 
@@ -101,8 +100,7 @@ class UpdateBeta(Update):
   r"""Update a secret's metadata.
 
       Update a secret's metadata (e.g. labels). This command will
-      return an error if given a secret that does not exist. To upsert the
-      creation of a secret, use the `--create-if-missing` flag.
+      return an error if given a secret that does not exist.
 
       ## EXAMPLES
 

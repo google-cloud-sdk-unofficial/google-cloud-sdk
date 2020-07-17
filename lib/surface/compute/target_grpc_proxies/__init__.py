@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class TargetGrpcProxies(base.Group):
   """List, create, and delete target gRPC proxies."""
 

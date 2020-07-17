@@ -29,7 +29,7 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List Google Compute Engine images."""
+  """List Compute Engine images."""
 
   @staticmethod
   def Args(parser):

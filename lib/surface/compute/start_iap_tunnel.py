@@ -60,11 +60,21 @@ class StartIapTunnel(base.Command):
         'instance_port',
         type=arg_parsers.BoundedInt(lower_bound=1, upper_bound=65535),
         help="The name or number of the instance's port to connect to.")
+
+    local_host_port_help_text = """\
+`LOCAL_HOST:LOCAL_PORT` on which gcloud should bind and listen for connections
+that should be tunneled.
+
+`LOCAL_PORT` may be omitted, in which case it is treated as 0 and an arbitrary
+unused local port is chosen. The colon also may be omitted in that case.
+
+If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
     parser.add_argument(
         '--local-host-port',
         type=lambda arg: arg_parsers.HostPort.Parse(arg, ipv6_enabled=True),
         default='localhost:0',
-        help='Host:port to which the proxy should be bound.')
+        help=local_host_port_help_text)
+
     # It would be logical to put --local-host-port and --listen-on-stdin in a
     # mutex group, but then the help text would display a message saying "At
     # most one of these may be specified" even though it only shows

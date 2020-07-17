@@ -28,7 +28,7 @@ from googlecloudsdk.core import log
 
 DETAILED_HELP = {
     'DESCRIPTION':
-        '*{command}* updates labels for a Google Compute image.',
+        '*{command}* updates labels for a Compute Engine image.',
     'EXAMPLES':
         """\
       To update labels ``k0'' and ``k1'' and remove labels with key ``k3'', run:
@@ -58,20 +58,19 @@ def _Args(cls, parser, patch_enable=False):
   if patch_enable:
     parser.add_argument(
         '--description',
-        help=('An optional text description for the image being created.'))
+        help=('An optional text description for the image.'))
 
     parser.add_argument(
         '--family',
-        help=('Family of the image. When creating an instance or disk, '
-              'specifying a family will cause the latest non-deprecated image '
-              'in the family to be used.')
+        help=('Name of the image family to use. If an image family is '
+              'specified when you create an instance or disk, the latest '
+              'non-deprecated image in the family is used.')
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  """Update a Google Compute Engine image."""
+  """Update a Compute Engine image."""
 
   DISK_IMAGE_ARG = None
   detailed_help = DETAILED_HELP
@@ -148,9 +147,9 @@ class Update(base.UpdateCommand):
     return result
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
-  """Update Google Compute Engine images."""
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a Compute Engine image."""
 
   @classmethod
   def Args(cls, parser):
@@ -158,3 +157,9 @@ class UpdateAlpha(Update):
 
   def Run(self, args):
     return self._Run(args, patch_enable=True)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Update a Compute Engine image."""
+

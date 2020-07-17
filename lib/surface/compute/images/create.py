@@ -74,7 +74,7 @@ def _Args(parser, messages, supports_force_create=False):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create Google Compute Engine images."""
+  """Create Compute Engine images."""
 
   _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = False
 
@@ -204,7 +204,7 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
-  """Create Google Compute Engine images."""
+  """Create Compute Engine images."""
 
   # Used in CreateRequests. We only want to allow RSA key wrapping in
   # alpha/beta, *not* GA.
@@ -224,7 +224,7 @@ class CreateBeta(Create):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
-  """Create Google Compute Engine images."""
+  """Create Compute Engine images."""
 
   _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = True
 
@@ -242,7 +242,7 @@ class CreateAlpha(Create):
 
 Create.detailed_help = {
     'brief':
-        'Create Google Compute Engine images',
+        'Create Compute Engine images',
     'DESCRIPTION':
         """\
         *{command}* is used to create custom disk images.

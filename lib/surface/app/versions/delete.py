@@ -47,7 +47,7 @@ class Delete(base.DeleteCommand):
       'EXAMPLES': """\
           To delete a specific version of a specific service, run:
 
-            $ {command} --service myService v1
+            $ {command} --service=myService v1
 
           To delete a named version across all services, run:
 
@@ -55,7 +55,7 @@ class Delete(base.DeleteCommand):
 
           To delete multiple versions of a specific service, run:
 
-            $ {command} --service myService v1 v2
+            $ {command} --service=myService v1 v2
 
           To delete multiple named versions across all services, run:
 

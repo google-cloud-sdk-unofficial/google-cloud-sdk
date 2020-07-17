@@ -56,15 +56,15 @@ class SshGa(base.Command):
       'EXAMPLES': """\
           To SSH into an App Engine Flexible instance, run:
 
-              $ {command} --service s1 --version v1 i1
+              $ {command} --service=s1 --version v1=i1
 
           To SSH into the app container within an instance, run:
 
-              $ {command} --service s1 --version v1 i1 --container=gaeapp
+              $ {command} --service=s1 --version=v1 i1 --container=gaeapp
 
           To SSH into the app container and run a remote command, run:
 
-              $ {command} --service s1 --version v1 i1 --container=gaeapp -- echo hello
+              $ {command} --service=s1 --version=v1 i1 --container=gaeapp -- echo hello
           """,
   }
 

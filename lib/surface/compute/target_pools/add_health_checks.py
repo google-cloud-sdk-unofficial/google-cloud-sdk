@@ -28,10 +28,10 @@ from googlecloudsdk.command_lib.compute.target_pools import flags
 
 
 class AddHealthChecks(base.SilentCommand):
-  """Add an HTTP health check to a target pool.
+  """Add a legacy HTTP health check to a target pool.
 
-  *{command}* is used to add an HTTP health check
-  to a target pool. Health checks are used to determine
+  *{command}* is used to add a legacy HTTP health check
+  to a target pool. Legacy health checks are used to determine
   the health status of instances in the target pool. Only one
   health check can be attached to a target pool, so this command
   will fail if there as already a health check attached to the target

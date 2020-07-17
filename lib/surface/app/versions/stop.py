@@ -55,11 +55,11 @@ class Stop(base.Command):
 
           To stop a single version on a single service, run:
 
-            $ {command} --service servicename v1
+            $ {command} --service=servicename v1
 
           To stop multiple versions in a single service, run:
 
-            $ {command} --service servicename v1 v2
+            $ {command} --service=servicename v1 v2
 
           Note that that last example may be more simply written using the
           `services stop` command (see its documentation for details).

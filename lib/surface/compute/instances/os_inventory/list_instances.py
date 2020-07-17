@@ -98,7 +98,7 @@ class ListInstances(base.ListCommand):
 
   _GUEST_ATTRIBUTES_PACKAGE_FIELD_KEYS = ('InstalledPackages', 'PackageUpdates')
 
-  _SPECIAL_PACKAGE_MANAGERS = ('wua', 'qfe', 'Zypper_patches')
+  _SPECIAL_PACKAGE_MANAGERS = ('wua', 'qfe', 'zypperPatches')
   _REGULAR_PACKAGE_MANAGERS = ('deb', 'googet', 'rpm', 'gem', 'pip')
 
   @staticmethod

@@ -52,8 +52,7 @@ def _DetailedHelp():
   }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
+class Create(base.CreateCommand):
   """Create a target gRPC proxy."""
 
   URL_MAP_ARG = None

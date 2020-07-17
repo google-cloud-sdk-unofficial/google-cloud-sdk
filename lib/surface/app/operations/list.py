@@ -34,7 +34,7 @@ class List(base.ListCommand):
 
           To list only 100 App Engine operations, run:
 
-              $ {command} --limit 100
+              $ {command} --limit=100
 
           To list only pending App Engine operations, run:
 
