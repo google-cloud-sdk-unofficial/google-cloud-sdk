@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 class FirewallRules(base.Group):
-  """List, create, update, and delete Google Compute Engine firewall rules."""
+  """List, create, update, and delete Compute Engine firewall rules."""
 
 
 FirewallRules.category = base.NETWORKING_CATEGORY

@@ -49,7 +49,7 @@ class UpdateFirewall(base.UpdateCommand):
         with_egress_support=cls.with_egress_firewall,
         with_service_account=cls.with_service_account)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
-    flags.AddEnableLogging(parser, default=None)
+    flags.AddEnableLogging(parser)
 
   def ValidateArgument(self, messages, args):
     self.new_allowed = firewalls_utils.ParseRules(
@@ -255,7 +255,7 @@ class BetaUpdateFirewall(UpdateFirewall):
         with_egress_support=cls.with_egress_firewall,
         with_service_account=cls.with_service_account)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
-    flags.AddEnableLogging(parser, default=None)
+    flags.AddEnableLogging(parser)
     flags.AddLoggingMetadata(parser, messages)
 
   def Modify(self, client, args, existing, cleared_fields):
@@ -292,7 +292,7 @@ class AlphaUpdateFirewall(BetaUpdateFirewall):
         with_egress_support=cls.with_egress_firewall,
         with_service_account=cls.with_service_account)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
-    flags.AddEnableLogging(parser, default=None)
+    flags.AddEnableLogging(parser)
     flags.AddLoggingMetadata(parser, messages)
 
 

@@ -113,9 +113,9 @@ class Predict(base.Command):
 _DETAILED_HELP = {
     'DESCRIPTION':
         """\
-*{command}* performs prediction locally with the given instances. It requires
-the TensorFlow SDK be installed locally. The output format mirrors
-`gcloud ai-platform predict` (online prediction).
+*{command}* performs prediction locally with the given instances. It requires the
+[TensorFlow SDK](https://www.tensorflow.org/install) be installed locally. The
+output format mirrors `gcloud ai-platform predict` (online prediction).
 
 You cannot use this command with custom prediction routines.
 """

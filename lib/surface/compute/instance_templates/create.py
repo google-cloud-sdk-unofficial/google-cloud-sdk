@@ -60,7 +60,8 @@ def _CommonArgs(
     support_kms=False,
     support_resource_policy=False,
     support_min_node_cpu=False,
-    support_location_hint=False
+    support_location_hint=False,
+    support_multi_writer=True
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -68,7 +69,8 @@ def _CommonArgs(
   instances_flags.AddDiskArgs(parser, enable_kms=support_kms)
   instances_flags.AddCreateDiskArgs(parser, enable_kms=support_kms,
                                     resource_policy=support_resource_policy,
-                                    support_boot=True)
+                                    support_boot=True,
+                                    support_multi_writer=support_multi_writer)
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
   else:
@@ -647,7 +649,8 @@ class Create(base.CreateCommand):
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
         support_min_node_cpu=cls._support_min_node_cpu,
-        support_location_hint=cls._support_location_hint
+        support_location_hint=cls._support_location_hint,
+        support_multi_writer=False
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(

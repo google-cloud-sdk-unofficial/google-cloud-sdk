@@ -31,7 +31,7 @@ from googlecloudsdk.core.console import progress_tracker
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a Google Compute Engine firewall rule."""
+  """Create a Compute Engine firewall rule."""
 
   FIREWALL_RULE_ARG = None
   NETWORK_ARG = None
@@ -49,7 +49,7 @@ class Create(base.CreateCommand):
         with_egress_support=True,
         with_service_account=True)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=False)
-    flags.AddEnableLogging(parser, default=None)
+    flags.AddEnableLogging(parser)
     parser.display_info.AddCacheUpdater(flags.FirewallsCompleter)
 
   def _CreateFirewall(self, holder, args):
@@ -133,7 +133,7 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BetaCreate(Create):
-  """Create a Google Compute Engine firewall rule."""
+  """Create a Compute Engine firewall rule."""
 
   @classmethod
   def Args(cls, parser):
@@ -150,7 +150,7 @@ class BetaCreate(Create):
         with_egress_support=True,
         with_service_account=True)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=False)
-    flags.AddEnableLogging(parser, default=None)
+    flags.AddEnableLogging(parser)
     flags.AddLoggingMetadata(parser, messages)
 
   def _CreateFirewall(self, holder, args):
@@ -175,7 +175,7 @@ class BetaCreate(Create):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaCreate(BetaCreate):
-  """Create a Google Compute Engine firewall rule."""
+  """Create a Compute Engine firewall rule."""
 
   @classmethod
   def Args(cls, parser):
@@ -192,12 +192,12 @@ class AlphaCreate(BetaCreate):
         with_egress_support=True,
         with_service_account=True)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=False)
-    flags.AddEnableLogging(parser, default=None)
+    flags.AddEnableLogging(parser)
     flags.AddLoggingMetadata(parser, messages)
 
 
 Create.detailed_help = {
-    'brief': 'Create a Google Compute Engine firewall rule.',
+    'brief': 'Create a Compute Engine firewall rule.',
     'DESCRIPTION': """
 *{command}* is used to create firewall rules to allow/deny
 incoming/outgoing traffic.

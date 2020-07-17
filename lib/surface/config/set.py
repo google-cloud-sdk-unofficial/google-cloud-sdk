@@ -95,7 +95,7 @@ class Set(base.Command):
 
   ## EXAMPLES
 
-  To set the project `property` in the core section, run:
+  To set the `project` property in the core section, run:
 
     $ {command} project myProject
 

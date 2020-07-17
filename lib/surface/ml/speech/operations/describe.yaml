@@ -4,7 +4,8 @@
       Get information about a long-running speech recognition operation.
     examples: |
       To fetch details for the operation '12345':
-      $ {command} 12345
+
+        $ {command} 12345
 
   request:
     collection: speech.operations

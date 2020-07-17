@@ -23,9 +23,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute.instances.ops_agents import ops_agents_policy as agent_policy
 from googlecloudsdk.api_lib.compute.instances.ops_agents.converters import guest_policy_to_ops_agents_policy_converter as to_ops_agents
 from googlecloudsdk.api_lib.compute.instances.ops_agents.converters import ops_agents_policy_to_guest_policy_converter as to_guest_policy
+from googlecloudsdk.api_lib.compute.instances.ops_agents.validators import ops_agents_policy_validator as validator
 from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute.instances.ops_agents.policies import parser_utils as ops_agents_command_utils
+from googlecloudsdk.command_lib.compute.instances.ops_agents.policies import parser_utils
 from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_command_utils
 from googlecloudsdk.core import properties
 
@@ -42,14 +43,15 @@ class Create(base.Command):
           """\
           To create a guest policy ``policy1'' in the current project, run:
 
-            $ {command} policy1 --project=my-project --os-types=architecture=x86_64,short-name=centos,version=7 --description="A test policy to install agents" --agents="type=logging,version=1.x.x,enable-autoupgrade=true,package-state=installed;type=metrics,version=6.x.x,enable-autoupgrade=false,package-state=installed" --instances=zones/us-central1-a/instances/test-instance-1,zones/us-central1-a/instances/test-instance-2 --group-labels="env=prod,product=myproduct;env=staging,product=myproduct" --zones="us-central1-a,us-central1-b"
+            $ {command} policy1 --project=my-project --os-types=short-name=centos,version=7 --description="A test policy to install agents" --agents="type=logging,version=1.x.x,enable-autoupgrade=true,package-state=installed;type=metrics,version=6.x.x,enable-autoupgrade=false,package-state=installed" --instances=zones/us-central1-a/instances/test-instance-1,zones/us-central1-a/instances/test-instance-2 --group-labels="env=prod,product=myproduct;env=staging,product=myproduct" --zones="us-central1-a,us-central1-b"
           """,
   }
 
   @staticmethod
   def Args(parser):
     """See base class."""
-    ops_agents_command_utils.AddArgs(parser)
+    parser_utils.AddSharedArgs(parser)
+    parser_utils.AddMutationArgs(parser)
 
   def Run(self, args):
     """See base class."""
@@ -62,6 +64,7 @@ class Create(base.Command):
     ops_agents_policy = agent_policy.CreateOpsAgentPolicy(
         args.description, args.agents, args.group_labels, args.os_types,
         args.zones, args.instances)
+    validator.ValidateOpsAgentsPolicy(ops_agents_policy)
     guest_policy = to_guest_policy.ConvertOpsAgentPolicyToGuestPolicy(
         messages, ops_agents_policy)
     project = properties.VALUES.core.project.GetOrFail()

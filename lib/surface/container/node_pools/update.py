@@ -161,7 +161,7 @@ class UpdateBeta(Update):
 
     flags.AddNodePoolLocationsFlag(group)
 
-    flags.AddSystemConfigFlag(group, hidden=True)
+    flags.AddSystemConfigFlag(group, hidden=False)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)

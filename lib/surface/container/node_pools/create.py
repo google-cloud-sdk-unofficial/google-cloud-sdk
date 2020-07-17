@@ -261,7 +261,7 @@ class CreateBeta(Create):
     flags.AddMaxUnavailableUpgradeFlag(
         parser, for_node_pool=True, is_create=True)
     flags.AddReservationAffinityFlags(parser, for_node_pool=True)
-    flags.AddSystemConfigFlag(parser, hidden=True)
+    flags.AddSystemConfigFlag(parser, hidden=False)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)

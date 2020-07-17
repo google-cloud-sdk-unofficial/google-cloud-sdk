@@ -21,12 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Insights(base.Group):
-  """Manage Cloud resource insights."""
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class InsightsGA(base.Group):
   """Manage Cloud resource insights."""

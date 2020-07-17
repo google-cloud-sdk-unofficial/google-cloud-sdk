@@ -32,7 +32,8 @@ class Describe(base.DescribeCommand):
     interconnect location in a project.
 
     Example of usage:
-    $ {command} my-location
+
+      $ {command} my-location
   """
 
   INTERCONNECT_LOCATION_ARG = None

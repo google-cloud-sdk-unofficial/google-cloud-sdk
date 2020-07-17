@@ -28,10 +28,10 @@ RESOURCE_TYPE = 'firewall rules'
 
 DETAILED_HELP = {
     'brief':
-        'List Google Compute Engine ' + RESOURCE_TYPE,
+        'List Compute Engine ' + RESOURCE_TYPE,
     'DESCRIPTION':
         """\
-          *{{command}}* displays all Google Compute Engine {0} in a project.
+          *{{command}}* displays all Compute Engine {0} in a project.
           """.format(RESOURCE_TYPE)
 }
 
@@ -51,7 +51,7 @@ EXAMPLE_FORMAT = """\
 
 
 class List(base.ListCommand):
-  """List Google Compute Engine firewall rules."""
+  """List Compute Engine firewall rules."""
 
   @staticmethod
   def Args(parser):

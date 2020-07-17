@@ -81,7 +81,6 @@ DETAILED_HELP = {
 
 
 def _SourceArgs(parser,
-                source_disk_enabled=False,
                 source_in_place_snapshot_enabled=False):
   """Add mutually exclusive source args."""
   source_parent_group = parser.add_group()
@@ -117,14 +116,12 @@ def _SourceArgs(parser,
   disks_flags.SOURCE_SNAPSHOT_ARG.AddArgument(source_group)
   if source_in_place_snapshot_enabled:
     disks_flags.SOURCE_IN_PLACE_SNAPSHOT_ARG.AddArgument(source_group)
-  if source_disk_enabled:
-    disks_flags.SOURCE_DISK_ARG.AddArgument(source_group)
+  disks_flags.SOURCE_DISK_ARG.AddArgument(source_group)
 
 
 def _CommonArgs(parser,
                 include_physical_block_size_support=False,
                 vss_erase_enabled=False,
-                source_disk_enabled=False,
                 source_in_place_snapshot_enabled=False,
                 support_pd_interface=False):
   """Add arguments used for parsing in all command tracks."""
@@ -133,7 +130,6 @@ def _CommonArgs(parser,
       '--description',
       help='An optional, textual description for the disks being created.')
 
-  # TODO(b/158105978) Add help text for pd-balanced before GA.
   # TODO(b/158105562) Add help text for pd-extreme before GA.
   parser.add_argument(
       '--size',
@@ -147,11 +143,13 @@ def _CommonArgs(parser,
         assumed. For example, ``10GB'' will produce 10 gigabyte
         disks. Disk size must be a multiple of 1 GB. Limit your boot disk size
         to 2TB to account for MBR partition table limitations. If disk size is
-        not specified, the default size of {}GB for standard disks and {}GB for
-        pd-ssd disks will be used. For details about disk size limits,
-        refer to: https://cloud.google.com/compute/docs/disks
+        not specified, the default size of {}GB for pd-standard disks, {}GB for
+        pd-balanced disks, and {}GB for pd-ssd disks will be used. For details
+        about disk size limits, refer to:
+        https://cloud.google.com/compute/docs/disks
         """.format(
             constants.DEFAULT_DISK_SIZE_GB_MAP[constants.DISK_TYPE_PD_STANDARD],
+            constants.DEFAULT_DISK_SIZE_GB_MAP[constants.DISK_TYPE_PD_BALANCED],
             constants.DEFAULT_DISK_SIZE_GB_MAP[constants.DISK_TYPE_PD_SSD]))
 
   parser.add_argument(
@@ -182,7 +180,7 @@ def _CommonArgs(parser,
             'be added onto the created disks to indicate the licensing and '
             'billing policies.'))
 
-  _SourceArgs(parser, source_disk_enabled, source_in_place_snapshot_enabled)
+  _SourceArgs(parser, source_in_place_snapshot_enabled)
 
   csek_utils.AddCsekKeyArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
@@ -231,7 +229,6 @@ def _ParseGuestOsFeaturesToMessages(args, client_messages):
 class Create(base.Command):
   """Create Compute Engine persistent disks."""
 
-  source_disk_enabled = False
   source_in_place_snapshot_enabled = False
 
   @classmethod
@@ -265,11 +262,6 @@ class Create(base.Command):
   def GetFromImage(self, args):
     return args.image or args.image_family
 
-  def GetFromSourceDisk(self, args):
-    if not self.source_disk_enabled:
-      return False
-    return args.source_disk
-
   def GetFromSourceInPlaceSnapshot(self, args):
     if not self.source_in_place_snapshot_enabled:
       return False
@@ -281,7 +273,7 @@ class Create(base.Command):
     if size_gb:
       # if disk size is given, use it.
       pass
-    elif (args.source_snapshot or from_image or self.GetFromSourceDisk(args) or
+    elif (args.source_snapshot or from_image or args.source_disk or
           self.GetFromSourceInPlaceSnapshot(args)):
       # if source is a snapshot/image/disk/in-place-snapshot, it is ok not to
       # set size_gb since disk size can be obtained from the source.
@@ -414,10 +406,8 @@ class Create(base.Command):
 
     self.show_unformated_message = not (args.IsSpecified('image') or
                                         args.IsSpecified('image_family') or
-                                        args.IsSpecified('source_snapshot'))
-    if self.source_disk_enabled:
-      self.show_unformated_message = self.show_unformated_message and not (
-          args.IsSpecified('source_disk'))
+                                        args.IsSpecified('source_snapshot') or
+                                        args.IsSpecified('source_disk'))
     if self.source_in_place_snapshot_enabled:
       self.show_unformated_message = self.show_unformated_message and not (
           args.IsSpecified('source_in_place_snapshot'))
@@ -511,9 +501,7 @@ class Create(base.Command):
           type=type_uri,
           physicalBlockSizeBytes=physical_block_size_bytes,
           **kwargs)
-      if self.source_disk_enabled:
-        source_disk_ref = self.GetSourceDiskUri(args, compute_holder)
-        disk.sourceDisk = source_disk_ref
+      disk.sourceDisk = self.GetSourceDiskUri(args, compute_holder)
       if self.source_in_place_snapshot_enabled:
         disk.sourceInPlaceSnapshot = self.GetSourceInPlaceSnapshotUri(
             args, compute_holder)
@@ -574,7 +562,6 @@ class Create(base.Command):
 class CreateBeta(Create):
   """Create Compute Engine persistent disks."""
 
-  source_disk_enabled = False
   source_in_place_snapshot_enabled = False
 
   @classmethod
@@ -606,7 +593,6 @@ class CreateBeta(Create):
 class CreateAlpha(CreateBeta):
   """Create Compute Engine persistent disks."""
 
-  source_disk_enabled = True
   source_in_place_snapshot_enabled = True
 
   @classmethod
@@ -617,7 +603,6 @@ class CreateAlpha(CreateBeta):
         parser,
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
-        source_disk_enabled=True,
         source_in_place_snapshot_enabled=True,
         support_pd_interface=True)
     image_utils.AddGuestOsFeaturesArg(parser, messages)

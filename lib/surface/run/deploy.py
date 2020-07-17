@@ -47,10 +47,11 @@ def GetAllowUnauth(args, operations, service_ref, service_exists):
   Args:
     args: argparse.Namespace, Command line arguments
     operations: serverless_operations.ServerlessOperations, Serverless client.
-    service_ref: protorpc.messages.Message, A resource reference object
-      for the service See googlecloudsdk.core.resources.Registry.ParseResourceId
-      for details.
+    service_ref: protorpc.messages.Message, A resource reference object for the
+      service See googlecloudsdk.core.resources.Registry.ParseResourceId for
+      details.
     service_exists: True if the service being changed already exists.
+
   Returns:
     allow_unauth value where
      True means to enable unauthenticated acess for the service.
@@ -73,10 +74,12 @@ class Deploy(base.Command):
   """Deploy a container to Cloud Run."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           Deploys container images to Google Cloud Run.
           """,
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           To deploy a container to the service `my-backend` on Cloud Run:
 
               $ {command} my-backend --image=gcr.io/my/image
@@ -151,22 +154,26 @@ class Deploy(base.Command):
     # Build an image from source if source specified.
     if include_build:
       # Create a tag for the image creation
-      if image is None and not args.IsSpecified('config'):
+      if (image is None and not args.IsSpecified('config') and
+          not args.IsSpecified('pack')):
         image = 'gcr.io/{projectID}/cloud-run-source-deploy/{service}:{tag}'.format(
             projectID=properties.VALUES.core.project.Get(required=True),
             service=service_ref.servicesId,
             tag=uuid.uuid4().hex)
+
       messages = cloudbuild_util.GetMessagesModule()
-      build_config = submit_util.CreateBuildConfig(
+      build_config = submit_util.CreateBuildConfigAlpha(
           image, args.no_cache, messages, args.substitutions, args.config,
           args.IsSpecified('source'), False, args.source,
           args.gcs_source_staging_dir, args.ignore_file, args.gcs_log_dir,
-          args.machine_type, args.disk_size)
+          args.machine_type, args.disk_size, args.pack)
+
+      if args.IsSpecified('pack'):
+        image = args.pack[0].get('image')
 
       build, build_op = submit_util.Build(messages, True, build_config, True)
       build_op_ref = resources.REGISTRY.ParseRelativeName(
-          build_op.name, 'cloudbuild.operations'
-      )
+          build_op.name, 'cloudbuild.operations')
       build_log_url = build.logUrl
     # Deploy a container with an image
     conn_context = connection_context.GetConnectionContext(
@@ -183,8 +190,9 @@ class Deploy(base.Command):
 
       pretty_print.Info(
           messages_util.GetStartDeployMessage(conn_context, service_ref))
-      has_latest = (service is None or
-                    traffic.LATEST_REVISION_KEY in service.spec_traffic)
+      has_latest = (
+          service is None or
+          traffic.LATEST_REVISION_KEY in service.spec_traffic)
       deployment_stages = stages.ServiceStages(
           include_iam_policy_set=allow_unauth is not None,
           include_route=has_latest,

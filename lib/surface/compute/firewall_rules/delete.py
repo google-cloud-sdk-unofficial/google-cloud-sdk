@@ -26,9 +26,9 @@ from googlecloudsdk.command_lib.compute.firewall_rules import flags
 
 
 class Delete(base.DeleteCommand):
-  """Delete Google Compute Engine firewall rules.
+  """Delete Compute Engine firewall rules.
 
-  *{command}* deletes one or more Google Compute Engine firewall
+  *{command}* deletes one or more Compute Engine firewall
   rules.
   """
 

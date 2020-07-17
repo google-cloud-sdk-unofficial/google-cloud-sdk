@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for creating Google Compute Engine commitments."""
+"""Command for creating Compute Engine commitments."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -44,7 +44,7 @@ def _CommonArgsAlphaBeta(track, parser):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
-  """Create Google Compute Engine commitments."""
+  """Create Compute Engine commitments."""
   detailed_help = {
       'EXAMPLES': '''
         To create a commitment called ``commitment-1'' in the ``us-central1''
@@ -112,7 +112,7 @@ class Create(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
-  """Create Google Compute Engine commitments."""
+  """Create Compute Engine commitments."""
 
   @classmethod
   def Args(cls, parser):
@@ -138,7 +138,7 @@ class CreateBeta(Create):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
-  """Create Google Compute Engine commitments."""
+  """Create Compute Engine commitments."""
 
   @classmethod
   def Args(cls, parser):

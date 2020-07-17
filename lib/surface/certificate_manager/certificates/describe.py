@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.certificate_manager import certificates
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.certificate_manager import resource_args
+from googlecloudsdk.core.resource import resource_projector
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -42,4 +43,7 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     client = certificates.CertificateClient()
-    return client.Get(args.CONCEPTS.certificate.Parse())
+    cert = client.Get(args.CONCEPTS.certificate.Parse())
+    serialized = resource_projector.MakeSerializable(cert)
+    serialized['certificatePem'] = cert.certificatePem.decode('utf-8')
+    return serialized

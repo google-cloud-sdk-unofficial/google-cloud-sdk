@@ -39,14 +39,16 @@ from googlecloudsdk.core import log
 def _Args(parser,
           release_track,
           container_mount_enabled=False,
-          enable_guest_accelerators=False):
+          enable_guest_accelerators=False,
+          support_multi_writer=True):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(
       parser, container_mount_enabled=container_mount_enabled)
   instances_flags.AddCreateDiskArgs(
-      parser, container_mount_enabled=container_mount_enabled)
+      parser, container_mount_enabled=container_mount_enabled,
+      support_multi_writer=support_multi_writer)
   if release_track != base.ReleaseTrack.GA:
     instances_flags.AddLocalSsdArgsWithSize(parser)
   instances_flags.AddCanIpForwardArgs(parser)
@@ -92,7 +94,8 @@ class CreateWithContainer(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, base.ReleaseTrack.GA, container_mount_enabled=True)
+    _Args(parser, base.ReleaseTrack.GA, container_mount_enabled=True,
+          support_multi_writer=False)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_GA_API_VERSION)
 

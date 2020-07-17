@@ -25,10 +25,10 @@ from googlecloudsdk.command_lib.compute.firewall_rules import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine firewall rule.
+  """Describe a Compute Engine firewall rule.
 
-  *{command}* displays all data associated with a Google Compute
-  Engine firewall rule in a project.
+  *{command}* displays all data associated with a Compute Engine
+  firewall rule in a project.
   """
 
   FIREWALL_ARG = None

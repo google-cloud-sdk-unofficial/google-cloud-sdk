@@ -505,7 +505,7 @@ flags_to_add = {
             flags.AddEnableStackdriverKubernetesFlag,
         'surgeupgrade': (lambda p: flags.AddSurgeUpgradeFlag(p, default=1)),
         'systemconfig':
-            lambda p: flags.AddSystemConfigFlag(p, hidden=True),
+            lambda p: flags.AddSystemConfigFlag(p, hidden=False),
         'tpu':
             AddTpuWithServiceNetworking,
         'verticalpodautoscaling':

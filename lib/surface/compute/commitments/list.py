@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Listing Google Compute Engine commitments."""
+"""Listing Compute Engine commitments."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,7 +25,7 @@ from googlecloudsdk.calliope import base
 
 
 class List(base.ListCommand):
-  """List Google Compute Engine commitments."""
+  """List Compute Engine commitments."""
 
   detailed_help = {
       'EXAMPLES': '''

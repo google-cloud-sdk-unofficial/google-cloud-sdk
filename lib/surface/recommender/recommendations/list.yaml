@@ -30,10 +30,10 @@
   output:
     format: |
       table(
-        name.basename(): label=ID,
+        name.basename(): label=RECOMMENDATION_ID,
         name.segment(3): label=LOCATION,
         name.segment(5): label=RECOMMENDER,
         primaryImpact.category: label=PRIMARY_IMPACT_CATEGORY,
-        stateInfo.state: label=STATE,
+        stateInfo.state: label=RECOMMENDATION_STATE,
         lastRefreshTime: label=LAST_REFRESH_TIME
       )

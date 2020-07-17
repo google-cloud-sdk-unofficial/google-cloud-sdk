@@ -50,4 +50,7 @@ class List(base.ListCommand):
     """Run the list command."""
     identifiers = args.CONCEPTS.organization.Parse().AsDict()
     result = apigee.APIsClient.List(identifiers)
-    return [item["name"] for item in result["proxies"]]
+
+    if "proxies" not in result:
+      return []
+    return (item["name"] for item in result["proxies"])

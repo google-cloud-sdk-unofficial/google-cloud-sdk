@@ -107,7 +107,7 @@ class UpdateHelper(object):
       flags.AddFailoverRatio(parser)
 
     if support_logging:
-      flags.AddEnableLogging(parser, default=None)
+      flags.AddEnableLogging(parser)
       flags.AddLoggingSampleRate(parser)
 
     AddIapFlag(parser)

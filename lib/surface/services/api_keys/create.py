@@ -27,53 +27,53 @@ from googlecloudsdk.core import properties
 
 OP_BASE_CMD = 'gcloud services operations '
 OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
+DETAILED_HELP = {
+    'EXAMPLES':
+        """
+        To create a key with display name and allowed ips specified:
 
+          $ {command} --display-name="test name" --allowed-ips=2620:15c:2c4:203:2776:1f90:6b3b:217,104.133.8.78
 
-class Create(base.CreateCommand):
-  r"""Create an API key.
+        To create a key with allowed referrers restriction:
 
-    ## EXAMPLES
+          $ {command} --allowed-referrers="https://www.example.com/*,http://sub.example.com/*"
 
-    To create a key with display name and allowed ips specified:
-    $ {command} --display-name="test name" \
-        --allowed-ips=2620:15c:2c4:203:2776:1f90:6b3b:217,104.133.8.78
+        To create a key with allowed ios app bundle ids:
 
-    To create a key with allowed referrers restriction:
-    $ {command} \
-        --allowed-referrers="https://www.example.com/*,http://sub.example.com/*"
+          $ {command} --allowed-bundle-ids=my.app
 
-    To create a key with allowed ios app bundle ids:
-    $ {command} --allowed-bundle-ids=my.app
+        To create a key with allowed android application:
 
-    To create a key with allowed android application:
-    $ {command} \
-        --allowed-application=sha1_fingerprint=foo1,package_name=bar.foo \
-        --allowed-application=sha1_fingerprint=foo2,package_name=foo.bar
+          $ {command} --allowed-application=sha1_fingerprint=foo1,package_name=bar.foo --allowed-application=sha1_fingerprint=foo2,package_name=foo.bar
 
-    To create a key with allowed api targets (service name only):
-    $ {command} \
-        --api-target=service=bar.service.com \
-        --api-target=service=foo.service.com
+        To create a key with allowed api targets (service name only):
 
-    To create a keys with allowed api targets (service and methods are
-    specified):
+          $ {command} --api-target=service=bar.service.com --api-target=service=foo.service.com
 
-    $ {command} --flags-file=my-flags.yaml
+        To create a keys with allowed api targets (service and methods are
+        specified):
+
+          $ {command} --flags-file=my-flags.yaml
 
         The content of 'my-flags.yaml' is as following:
 
         ```
-          - --api-target:
-              service:
-                - "foo.service.com"
-          - --api-target:
-              service:
-                - "bar.service.com"
-              methods:
-                - "foomethod"
-                - "barmethod"
+        - --api-target:
+            service:
+              - "foo.service.com"
+        - --api-target:
+            service:
+              - "bar.service.com"
+            methods:
+              - "foomethod"
+              - "barmethod"
         ```
-  """
+        """
+}
+
+
+class Create(base.CreateCommand):
+  """Create an API key."""
 
   @staticmethod
   def Args(parser):
@@ -128,3 +128,4 @@ class Create(base.CreateCommand):
         return op
       op = services_util.WaitOperation(op.name, apikeys.GetOperation)
     services_util.PrintOperationWithResponse(op)
+  detailed_help = DETAILED_HELP

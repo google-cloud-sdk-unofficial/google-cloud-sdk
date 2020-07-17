@@ -6,7 +6,8 @@
       transcription.
     examples: |
       To wait for the result of operation '12345':
-      $ {command} 12345
+
+        $ {command} 12345
 
   request:
     collection: speech.operations

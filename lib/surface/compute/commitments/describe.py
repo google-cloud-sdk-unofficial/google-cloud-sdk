@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Describing Google Compute Engine commitments."""
+"""Describing Compute Engine commitments."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.commitments import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine commitment."""
+  """Describe a Compute Engine commitment."""
   detailed_help = {
       'EXAMPLES': '''
         To describe the commitment called ``commitment-1'' in the ``us-central1''

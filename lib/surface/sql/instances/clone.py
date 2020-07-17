@@ -62,7 +62,7 @@ def _CheckSourceAndDestination(source_instance_ref, destination_instance_ref):
             dest=destination_instance_ref.project))
 
 
-def _UpdateRequestFromArgs(request, args, sql_messages, supports_point_in_time):
+def _UpdateRequestFromArgs(request, args, sql_messages):
   """Update request with point-in-time recovery options."""
 
   if args.bin_log_file_name and args.bin_log_position:
@@ -70,18 +70,17 @@ def _UpdateRequestFromArgs(request, args, sql_messages, supports_point_in_time):
     clone_context.binLogCoordinates = sql_messages.BinLogCoordinates(
         binLogFileName=args.bin_log_file_name,
         binLogPosition=args.bin_log_position)
-  elif supports_point_in_time and args.point_in_time:
+  elif args.point_in_time:
     clone_context = request.instancesCloneRequest.cloneContext
     clone_context.pointInTime = args.point_in_time.strftime(
         '%Y-%m-%dT%H:%M:%S.%fZ')
 
 
-def RunBaseCloneCommand(args, supports_point_in_time=False):
+def RunBaseCloneCommand(args):
   """Clones a Cloud SQL instance.
 
   Args:
     args: argparse.Namespace, The arguments used to invoke this command.
-    supports_point_in_time: bool, Whether the point_in_time field is supported.
 
   Returns:
     A dict object representing the operations resource describing the
@@ -105,7 +104,7 @@ def RunBaseCloneCommand(args, supports_point_in_time=False):
               kind='sql#cloneContext',
               destinationInstanceName=destination_instance_ref.instance)))
 
-  _UpdateRequestFromArgs(request, args, sql_messages, supports_point_in_time)
+  _UpdateRequestFromArgs(request, args, sql_messages)
 
   # Check if source is V1; raise error if so.
   # Check if source has customer-managed key; show warning if so.
@@ -149,7 +148,7 @@ def RunBaseCloneCommand(args, supports_point_in_time=False):
   return rsource
 
 
-def AddBaseArgs(parser, pitr_options_group):
+def AddBaseArgs(parser):
   """Add args common to all release tracks to parser."""
   base.ASYNC_FLAG.AddToParser(parser)
   parser.display_info.AddFormat(flags.GetInstanceListFormat())
@@ -158,6 +157,8 @@ def AddBaseArgs(parser, pitr_options_group):
       completer=flags.InstanceCompleter,
       help='Cloud SQL instance ID of the source.')
   parser.add_argument('destination', help='Cloud SQL instance ID of the clone.')
+
+  pitr_options_group = parser.add_group(mutex=True, required=False)
   bin_log_group = pitr_options_group.add_group(
       mutex=False,
       required=False,
@@ -183,10 +184,6 @@ def AddBaseArgs(parser, pitr_options_group):
       a source instance from.
       For example, 123 (a numeric value).
       """)
-
-
-def AddAlphaArgs(pitr_options_group):
-  """Add args for the alpha release track to parser."""
   pitr_options_group.add_argument(
       '--point-in-time',
       type=arg_parsers.Datetime.Parse,
@@ -195,67 +192,33 @@ def AddAlphaArgs(pitr_options_group):
       Represents the state of an instance at any given point in time inside a
       write-ahead log file. Enable point-in-time recovery on the source
       instance to create a write-ahead log file. Uses RFC 3339 format in UTC
-      timezone. If specified, defines a past state of your instance to clone.
+      timezone. If specified, defines a past state of the instance to clone.
       For example, '2012-11-15T16:19:00.094Z'.
       """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Clone(base.CreateCommand):
-  # pylint: disable=line-too-long
-  """Clones a Cloud SQL instance.
-
-  *{command}* creates a clone of the Cloud SQL instance. The source and the
-  destination instances must be in the same project. Once created, the clone is
-  an independent Cloud SQL instance.
-
-  The binary log coordinates, if specified, act as the point up to which the
-  source instance is cloned. If not specified, the source instance is
-  cloned up to the most recent binary log coordinates at the time the command is
-  executed.
-
-  ## EXAMPLES
-
-  To clone a source instance to the most recent binary log coordinates:
-
-    $ {command} instance-foo instance-bar
-
-  To clone at specific binary log coordinates:
-
-    $ {command} instance-foo instance-bar --bin-log-file-name mysql-bin.000020 --bin-log-position 170
-  """
-
-  @classmethod
-  def Args(cls, parser):
-    """Declare flag and positional arguments for the command parser."""
-    pitr_options_group = parser.add_group(mutex=True, required=False)
-    AddBaseArgs(parser, pitr_options_group)
-    parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
-
-  def Run(self, args):
-    return RunBaseCloneCommand(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CloneAlpha(base.CreateCommand):
   # pylint: disable=line-too-long
   """Clones a Cloud SQL instance.
 
   *{command}* creates a clone of a Cloud SQL instance. The clone is an
   independent copy of the source instance with the same data and settings.
-  Source and destination instances must be in the same project. You can clone
-  the current state of an instance, or from an earlier point in time.
+  Source and destination instances must be in the same project. An instance can
+  be cloned from its current state, or from an earlier point in time.
 
   For MySQL: The binary log coordinates, if specified, act as the point in time
-  the source instance is cloned from. If not specified, you clone the current
-  state.
+  the source instance is cloned from. If not specified, the current state of the
+  instance is cloned.
 
-  For PostgreSQL: The point in time, if specified, defines a past state of your
-  instance to clone.
+  For PostgreSQL: The point in time, if specified, defines a past state of the
+  instance to clone. If not specified, the current state of the instance is
+  cloned.
 
   ## EXAMPLES
 
-  To clone a MySQL instance from its current state (most recent binary log
+  To clone an instance from its current state (most recent binary log
   coordinates):
 
     $ {command} instance-foo instance-bar
@@ -272,10 +235,9 @@ class CloneAlpha(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    pitr_options_group = parser.add_group(mutex=True, required=False)
-    AddBaseArgs(parser, pitr_options_group)
-    AddAlphaArgs(pitr_options_group)
+    """Declare flag and positional arguments for the command parser."""
+    AddBaseArgs(parser)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
 
   def Run(self, args):
-    return RunBaseCloneCommand(args, supports_point_in_time=True)
+    return RunBaseCloneCommand(args)

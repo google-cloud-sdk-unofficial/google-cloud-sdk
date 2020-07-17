@@ -99,7 +99,8 @@ def _CommonArgs(parser,
                 supports_location_hint=False,
                 supports_erase_vss=False,
                 snapshot_csek=False,
-                image_csek=False):
+                image_csek=False,
+                support_multi_writer=True):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
@@ -110,7 +111,8 @@ def _CommonArgs(parser,
       resource_policy=enable_resource_policy,
       source_snapshot_csek=snapshot_csek,
       image_csek=image_csek,
-      support_boot=True)
+      support_boot=True,
+      support_multi_writer=support_multi_writer)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(parser, instances=True)
   instances_flags.AddAcceleratorArgs(parser)
@@ -201,7 +203,7 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgs(parser, enable_kms=cls._support_kms)
+    _CommonArgs(parser, enable_kms=cls._support_kms, support_multi_writer=False)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)

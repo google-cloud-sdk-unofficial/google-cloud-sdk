@@ -27,10 +27,10 @@
   output:
     format: |
       table(
-        name.basename(): label=ID,
+        name.basename(): label=INSIGHT_ID,
         name.segment(3): label=LOCATION,
         name.segment(5): label=INSIGHT_TYPE,
         category: label=CATEGORY,
-        stateInfo.state: label=STATE,
+        stateInfo.state: label=INSIGHT_STATE,
         lastRefreshTime: label=LAST_REFRESH_TIME
       )

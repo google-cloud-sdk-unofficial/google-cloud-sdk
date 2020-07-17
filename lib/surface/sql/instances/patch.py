@@ -208,6 +208,7 @@ def AddBaseArgs(parser):
   flags.AddStorageAutoIncrease(parser)
   flags.AddStorageSize(parser)
   flags.AddTier(parser, is_patch=True)
+  flags.AddEnablePointInTimeRecovery(parser)
 
 
 def AddBetaArgs(parser):
@@ -217,9 +218,9 @@ def AddBetaArgs(parser):
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
 
 
-def AddAlphaArgs(parser):
+def AddAlphaArgs(unused_parser):
   """Adds alpha args and flags to the parser."""
-  flags.AddEnablePointInTimeRecovery(parser)
+  pass
 
 
 def RunBasePatchCommand(args, release_track):
@@ -247,6 +248,16 @@ def RunBasePatchCommand(args, release_track):
       args.instance,
       params={'project': properties.VALUES.core.project.GetOrFail},
       collection='sql.instances')
+
+  if args.IsSpecified('no_backup'):
+    if args.IsSpecified('enable_bin_log'):
+      raise exceptions.ArgumentError(
+          '`--enable-bin-log` cannot be specified when --no-backup is '
+          'specified')
+    elif args.IsSpecified('enable_point_in_time_recovery'):
+      raise exceptions.ArgumentError(
+          '`--enable-point-in-time-recovery` cannot be specified when '
+          '--no-backup is specified')
 
   # If --authorized-networks is used, confirm that the user knows the networks
   # will get overwritten.

@@ -33,6 +33,8 @@ from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import http
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import encoding
+from six.moves import http_client as httplib
+
 
 SERIAL_PORT_GATEWAY = 'ssh-serialport.googleapis.com'
 CONNECTION_PORT = '9600'
@@ -161,7 +163,7 @@ class ConnectToSerialPort(base.Command):
       http_client = http.Http()
       http_response = http_client.request(HOST_KEY_URL)
       known_hosts = ssh.KnownHosts.FromDefaultFile()
-      if http_response[0]['status'] == '200':
+      if int(http_response[0]['status']) == httplib.OK:
         host_key = encoding.Decode(http_response[1]).strip()
         known_hosts.Add(hostname, host_key, overwrite=True)
         known_hosts.Write()

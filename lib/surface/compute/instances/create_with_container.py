@@ -36,14 +36,16 @@ from googlecloudsdk.core import log
 
 def _Args(parser,
           deprecate_maintenance_policy=False,
-          container_mount_enabled=False):
+          container_mount_enabled=False,
+          support_multi_writer=True):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(
       parser, True, container_mount_enabled=container_mount_enabled)
   instances_flags.AddCreateDiskArgs(
-      parser, container_mount_enabled=container_mount_enabled)
+      parser, container_mount_enabled=container_mount_enabled,
+      support_multi_writer=support_multi_writer)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddContainerMountDiskFlag(parser)
   instances_flags.AddAddressArgs(parser, instances=True)
@@ -86,7 +88,7 @@ class CreateWithContainer(base.CreateCommand):
   @staticmethod
   def Args(parser):
     """Register parser args."""
-    _Args(parser, container_mount_enabled=True)
+    _Args(parser, container_mount_enabled=True, support_multi_writer=False)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArg(

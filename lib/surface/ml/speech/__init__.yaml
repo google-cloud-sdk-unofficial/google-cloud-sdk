@@ -1,11 +1,13 @@
 examples:
   recognize: |
     To get a transcript of an audio file 'my-recording.wav':
-    $ {command} 'my-recording.wav' --language-code=en-US
+
+      $ {command} 'my-recording.wav' --language-code=en-US
 
     To get a transcript of an audio file in bucket 'gs://bucket/myaudio' with a
     custom sampling rate and encoding that uses hints and filters profanity:
-    $ {command} 'gs://bucket/myaudio' --language-code=es-ES --sample-rate=2200 --hints=Bueno --encoding=OGG_OPUS --filter-profanity
+
+      $ {command} 'gs://bucket/myaudio' --language-code=es-ES --sample-rate=2200 --hints=Bueno --encoding=OGG_OPUS --filter-profanity
 
 args_v1:
 - api_field: audio

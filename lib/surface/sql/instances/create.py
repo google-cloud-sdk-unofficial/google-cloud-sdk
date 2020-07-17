@@ -147,6 +147,7 @@ def AddBaseArgs(parser):
       parser,
       'instance',
       flag_overrides=kms_flag_overrides)
+  flags.AddEnablePointInTimeRecovery(parser)
 
 
 def AddBetaArgs(parser):
@@ -157,9 +158,9 @@ def AddBetaArgs(parser):
   labels_util.AddCreateLabelsFlags(parser)
 
 
-def AddAlphaArgs(parser):
+def AddAlphaArgs(unused_parser):
   """Declare alpha flags for this command parser."""
-  flags.AddEnablePointInTimeRecovery(parser)
+  pass
 
 
 def RunBaseCreateCommand(args, release_track):
@@ -252,6 +253,16 @@ def RunBaseCreateCommand(args, release_track):
     raise exceptions.RequiredArgumentException(
         '--root-password',
         '`--root-password` is required when creating SQL Server instances.')
+
+  if not args.backup:
+    if args.IsSpecified('enable_bin_log'):
+      raise sql_exceptions.ArgumentError(
+          '`--enable-bin-log` cannot be specified when --no-backup is '
+          'specified')
+    elif args.IsSpecified('enable_point_in_time_recovery'):
+      raise sql_exceptions.ArgumentError(
+          '`--enable-point-in-time-recovery` cannot be specified when '
+          '--no-backup is specified')
 
   instance_resource = (
       command_util.InstancesV1Beta4.ConstructCreateInstanceFromArgs(
