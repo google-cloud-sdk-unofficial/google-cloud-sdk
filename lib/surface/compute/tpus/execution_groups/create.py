@@ -24,9 +24,9 @@ from apitools.base.py.exceptions import HttpNotFoundError
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.command_lib.compute.tpus import flags as tpus_flags
 from googlecloudsdk.command_lib.compute.tpus.execution_groups import util as tpu_utils
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -47,8 +47,7 @@ class Create(base.CreateCommand):
     tpus_flags.AddPortForwardingFlag(parser)
     tpus_flags.AddGceImageFlag(parser)
     tpus_flags.AddDiskSizeFlag(parser)
-
-    instance_flags.AddMachineTypeArgs(parser)
+    tpus_flags.AddMachineTypeArgs(parser)
 
   def Run(self, args):
     responses = []
@@ -57,13 +56,13 @@ class Create(base.CreateCommand):
       try:
         args.tf_version = tpu.LatestStableTensorflowVersion(args.zone)
       except HttpNotFoundError:
-        responses.append('Could not find stable Tensorflow version, please '
-                         'set tensorflow version flag using --tf-version')
+        log.err.Print('Could not find stable Tensorflow version, please '
+                      'set tensorflow version flag using --tf-version')
         return responses
 
     if not args.vm_only:
       if args.dry_run:
-        responses.append(
+        log.status.Print(
             'Creating TPU with Name:{}, Accelerator type:{}, TF version:{}, '
             'Zone:{}'.format(
                 args.name,
@@ -76,13 +75,12 @@ class Create(base.CreateCommand):
                                          args.accelerator_type, args.tf_version,
                                          args.zone, args.preemptible)
         except HttpConflictError:
-          responses.append('TPU Node with name:{} already exists, '
-                           'try a different name'.format(
-                               args.name))
+          log.err.Print('TPU Node with name:{} already exists, '
+                        'try a different name'.format(args.name))
           return responses
 
     if args.dry_run:
-      responses.append('Creating GCE VM with Name:{}, Zone:{}, Machine Type:{},'
+      log.status.Print('Creating GCE VM with Name:{}, Zone:{}, Machine Type:{},'
                        ' Disk Size(GB):{}, Preemptible:{}'.format(
                            args.name, args.zone,
                            args.machine_type, utils.BytesToGb(args.disk_size),
@@ -103,21 +101,20 @@ class Create(base.CreateCommand):
         if not args.vm_only:
           err_msg += (' TPU Node:{} creation is underway and will '
                       'need to be deleted.'.format(args.name))
-        responses.append(err_msg)
+        log.err.Print(err_msg)
         return responses
 
     if not args.vm_only and not args.dry_run:
       responses.append(
           tpu.WaitForOperation(tpu_operation_ref, 'Creating TPU node:{}'.format(
               args.name)))
-
     if not args.dry_run:
       instance_create_response = instance.WaitForOperation(
           instance_operation_ref, 'Creating GCE VM:{}'.format(args.name))
       responses.append(instance_create_response)
 
     if args.dry_run:
-      responses.append('SSH to GCE VM:{}'.format(args.name))
+      log.status.Print('SSH to GCE VM:{}'.format(args.name))
     else:
       ssh_helper = tpu_utils.SSH(self.ReleaseTrack())
       responses.append(ssh_helper.SSHToInstance(args, instance_create_response))

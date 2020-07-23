@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to list available environment upgrades."""
+"""Command to list suggested environment upgrades."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,7 +28,7 @@ from googlecloudsdk.core import log
 class ListUpgrades(base.ListCommand):
   """List the Cloud Composer image version upgrades for a specific environment.
 
-  {command} prints a table listing the available image-version upgrades with the
+  {command} prints a table listing the suggested image-version upgrades with the
   following columns:
   * Image Version ID
   * Composer 'default' flag
@@ -40,13 +40,13 @@ class ListUpgrades(base.ListCommand):
     resource_args.AddEnvironmentResourceArg(parser, 'to list upgrades')
     base.URI_FLAG.RemoveFromParser(parser)
     parser.display_info.AddFormat(
-        'table[box,title="AVAILABLE UPGRADES"]('
+        'table[box,title="SUGGESTED UPGRADES"]('
         'imageVersionId:label="IMAGE VERSION",'
         'isDefault:label="COMPOSER DEFAULT",'
         'supportedPythonVersions.list():label="SUPPORTED PYTHON VERSIONS")')
 
   def Run(self, args):
     env_ref = args.CONCEPTS.environment.Parse()
-    log.status.Print('Fetching list of available upgrades...')
+    log.status.Print('Fetching list of suggested upgrades...')
     return image_versions_command_util.ListImageVersionUpgrades(
         env_ref, release_track=self.ReleaseTrack())

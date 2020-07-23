@@ -17,27 +17,45 @@
 import enum
 
 
-BASE_URL = 'https://cloudasset.googleapis.com/v1p1alpha1/'
-DOCS_URL = 'https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/quickstart-cloud-asset-inventory'
+BASE_URL = 'https://cloudbuild.googleapis.com/v1beta1/'
+DOCS_URL = 'https://cloud.google.com/cloud-build/docs/'
 
 
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
-  IAMPOLICIES = (
-      'iamPolicies',
-      'iamPolicies',
+  PROJECTS = (
+      'projects',
+      'projects/{projectId}',
       {},
-      [],
+      ['projectId'],
       True
   )
-  OPERATIONS = (
-      'operations',
+  PROJECTS_LOCATIONS = (
+      'projects.locations',
+      'projects/{projectsId}/locations/{locationsId}',
+      {},
+      ['projectsId', 'locationsId'],
+      True
+  )
+  PROJECTS_LOCATIONS_OPERATIONS = (
+      'projects.locations.operations',
       '{+name}',
       {
           '':
-              '{v1p1alpha1Id}/{v1p1alpha1Id1}/operations/{operationsId}/'
-              '{operationsId1}',
+              'projects/{projectsId}/locations/{locationsId}/operations/'
+              '{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_WORKERPOOLS = (
+      'projects.locations.workerPools',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/workerPools/'
+              '{workerPoolsId}',
       },
       ['name'],
       True

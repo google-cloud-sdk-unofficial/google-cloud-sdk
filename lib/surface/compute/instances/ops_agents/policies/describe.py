@@ -19,8 +19,8 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
+from googlecloudsdk.api_lib.compute.instances.ops_agents import exceptions as ops_agents_exceptions
 from googlecloudsdk.api_lib.compute.instances.ops_agents.converters import guest_policy_to_ops_agents_policy_converter as to_ops_agents
-from googlecloudsdk.api_lib.compute.instances.ops_agents.policies import exceptions as policy_exceptions
 from googlecloudsdk.api_lib.compute.instances.ops_agents.validators import guest_policy_validator
 from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils
 from googlecloudsdk.calliope import base
@@ -78,12 +78,15 @@ class Describe(base.DescribeCommand):
     try:
       get_response = service.Get(get_request)
     except apitools_exceptions.HttpNotFoundError:
-      raise policy_exceptions.NotFoundError(policy_id=args.POLICY_ID)
+      raise ops_agents_exceptions.PolicyNotFoundError(
+          policy_id=args.POLICY_ID)
     if not guest_policy_validator.IsOpsAgentPolicy(get_response):
-      raise policy_exceptions.NotFoundError(policy_id=args.POLICY_ID)
+      raise ops_agents_exceptions.PolicyNotFoundError(
+          policy_id=args.POLICY_ID)
     try:
       ops_agents_policy = to_ops_agents.ConvertGuestPolicyToOpsAgentPolicy(
           get_response)
     except calliope_exceptions.BadArgumentException:
-      raise policy_exceptions.MalformedError(policy_id=args.POLICY_ID)
+      raise ops_agents_exceptions.PolicyMalformedError(
+          policy_id=args.POLICY_ID)
     return ops_agents_policy

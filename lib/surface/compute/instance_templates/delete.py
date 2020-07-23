@@ -27,9 +27,9 @@ from googlecloudsdk.command_lib.compute.instance_templates import flags
 
 
 class Delete(base.DeleteCommand):
-  """Delete Google Compute Engine virtual machine instance templates.
+  """Delete Compute Engine virtual machine instance templates.
 
-  *{command}* deletes one or more Google Compute Engine virtual machine
+  *{command}* deletes one or more Compute Engine virtual machine
   instance templates.
 
   ## EXAMPLES

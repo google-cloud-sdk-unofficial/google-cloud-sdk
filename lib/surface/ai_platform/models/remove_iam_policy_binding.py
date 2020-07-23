@@ -26,14 +26,12 @@ from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
 
 
-def _GetRemoveIamPolicyBindingArgs(parser,
-                                   hide_region_flag=True,
-                                   add_condition=False):
+def _GetRemoveIamPolicyBindingArgs(parser, add_condition=False):
   iam_util.AddArgsForRemoveIamPolicyBinding(parser, add_condition=add_condition)
   flags.GetModelResourceArg(
       required=True,
       verb='for which to remove IAM policy binding from').AddToParser(parser)
-  flags.GetRegionArg(hidden=hide_region_flag).AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
   base.URI_FLAG.RemoveFromParser(parser)
 
 
@@ -99,8 +97,7 @@ class RemoveIamPolicyBindingBeta(base.Command):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    _GetRemoveIamPolicyBindingArgs(
-        parser, hide_region_flag=False, add_condition=False)
+    _GetRemoveIamPolicyBindingArgs(parser, add_condition=False)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -140,8 +137,7 @@ class RemoveIamPolicyBindingAlpha(base.Command):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    _GetRemoveIamPolicyBindingArgs(
-        parser, hide_region_flag=False, add_condition=True)
+    _GetRemoveIamPolicyBindingArgs(parser, add_condition=True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

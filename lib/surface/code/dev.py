@@ -41,13 +41,15 @@ from googlecloudsdk.core.util import files as file_utils
 import six
 
 
-def _EmptyHandler(unused_signum, unused_stack):
-  """Do nothing signal handler."""
-  pass
+# In integration tests SIGINT doesn't generate KeyboardInterrupt. Create a
+# signal handler that forces the generation of KeyboardInterrupt.
+def _KeyboardInterruptHandler(unused_signum, unused_stack):
+  """Raise a KeyboardInterrupt."""
+  raise KeyboardInterrupt()
 
 
 class _SigInterruptedHandler(object):
-  """Context manager to capture CTRL-C and send it to a handler."""
+  """Context manager to capture SIGINT and send it to a handler."""
 
   def __init__(self, handler):
     self._orig_handler = None
@@ -114,7 +116,7 @@ def Skaffold(skaffold_config,
 
   # Supress the current Ctrl-C handler and pass the signal to the child
   # process.
-  with _SigInterruptedHandler(_EmptyHandler):
+  with _SigInterruptedHandler(_KeyboardInterruptHandler):
     # Skaffold needs to be able to run minikube and kind. Those tools
     # may live in the SDK root as installed gcloud components. Place the
     # SDK root in the path for skaffold.

@@ -34,10 +34,9 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveDagTimeout(base.CreateCommand):
-  """Remove DAG timeout from workflow template command."""
+  """Remove DAG timeout from workflow template."""
 
   detailed_help = DETAILED_HELP
 

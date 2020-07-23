@@ -626,7 +626,7 @@ def _RunCreate(compute_api,
 class Create(base.CreateCommand):
   """Create a Compute Engine virtual machine instance template.
 
-  *{command}* facilitates the creation of Google Compute Engine
+  *{command}* facilitates the creation of Compute Engine
   virtual machine instance templates. For example, running:
 
       $ {command} INSTANCE-TEMPLATE
@@ -679,7 +679,7 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a Compute Engine virtual machine instance template.
 
-  *{command}* facilitates the creation of Google Compute Engine
+  *{command}* facilitates the creation of Compute Engine
   virtual machine instance templates. For example, running:
 
       $ {command} INSTANCE-TEMPLATE
@@ -738,7 +738,7 @@ class CreateBeta(Create):
 class CreateAlpha(Create):
   """Create a Compute Engine virtual machine instance template.
 
-  *{command}* facilitates the creation of Google Compute Engine
+  *{command}* facilitates the creation of Compute Engine
   virtual machine instance templates. For example, running:
 
       $ {command} INSTANCE-TEMPLATE
@@ -796,10 +796,10 @@ class CreateAlpha(Create):
 
 DETAILED_HELP = {
     'brief':
-        'Create a Compute Engine virtual machine instance template',
+        'Create a Compute Engine virtual machine instance template.',
     'DESCRIPTION':
-        '*{command}* facilitates the creation of Google Compute '
-        'Engine virtual machine instance templates. Instance '
+        '*{command}* facilitates the creation of Compute Engine '
+        'virtual machine instance templates. Instance '
         'templates are global resources, and can be used to create '
         'instances in any zone.',
     'EXAMPLES':

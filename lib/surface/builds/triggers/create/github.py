@@ -34,11 +34,11 @@ class CreateGitHub(base.CreateCommand):
           """\
             To create a push trigger for all branches:
 
-              $ {command} --repo-owner="GoogleCloudPlatform" --repo-name="cloud-builders" --branch-pattern=".*" --build-config="cloudbuild.yaml"
+              $ {command} --name="my-trigger" --repo-owner="GoogleCloudPlatform" --repo-name="cloud-builders" --branch-pattern=".*" --build-config="cloudbuild.yaml"
 
             To create a pull request trigger for master:
 
-              $ {command} --repo-owner="GoogleCloudPlatform" --repo-name="cloud-builders" --pull-request-pattern="^master$" --build-config="cloudbuild.yaml"
+              $ {command} --name="my-trigger" --repo-owner="GoogleCloudPlatform" --repo-name="cloud-builders" --pull-request-pattern="^master$" --build-config="cloudbuild.yaml"
           """,
   }
 

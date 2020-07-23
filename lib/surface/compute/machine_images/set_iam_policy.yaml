@@ -1,7 +1,7 @@
 release_tracks: [ALPHA, BETA]
 
 help_text:
-  brief: Set the IAM policy for a Google Compute Engine machine image.
+  brief: Set the IAM policy for a Compute Engine machine image.
   description: |
     Sets the IAM policy for the given machine image as defined in a JSON or YAML file.
 

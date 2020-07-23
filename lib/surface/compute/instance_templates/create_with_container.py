@@ -515,20 +515,18 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
 CreateWithContainer.detailed_help = {
     'brief':
         """\
-    Creates Google Compute Engine virtual machine instance template running
-    Docker images.
+    Creates a Compute Engine a virtual machine instance template that runs
+    a Docker container.
     """,
     'DESCRIPTION':
         """\
-        *{command}* creates a Google Compute Engine virtual
-        machine instance template that runs a container image. For example:
+        *{command}* creates a Compute Engine virtual
+        machine instance template that runs a container image. To create
+        an instance template named 'instance-template-1' that runs the
+        'busybox' image, run:
 
           $ {command} instance-template-1 \
              --container-image=gcr.io/google-containers/busybox
-
-        creates an instance template that runs the 'busybox' image.
-        The created instance template will have the name
-        'instance-template-1'
 
         For more examples, refer to the *EXAMPLES* section below.
         """,

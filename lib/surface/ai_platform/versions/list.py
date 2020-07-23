@@ -25,9 +25,9 @@ from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import versions_util
 
 
-def _AddListArgs(parser, hide_region_arg=True):
+def _AddListArgs(parser):
   flags.GetModelName(positional=False, required=True).AddToParser(parser)
-  flags.GetRegionArg(hidden=hide_region_arg).AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
   parser.display_info.AddFormat(
       'table(name.basename(), deploymentUri, state)')
 
@@ -56,7 +56,7 @@ class ListBeta(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    _AddListArgs(parser, hide_region_arg=False)
+    _AddListArgs(parser)
 
   def Run(self, args):
     return _Run(args)

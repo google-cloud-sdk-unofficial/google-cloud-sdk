@@ -41,6 +41,24 @@ class Update(base.Command):
   The command returns the content of the updated policy or an error indicating
   why the update fails. The updated policy takes effect asynchronously. It
   can take 10 ~ 15 minutes for the VMs to enforce the updated policy.
+
+  The available flags for the ``update'' command are similar to the flags for
+  the ``create'' command. All the flags for ``update'' are optional. If a flag
+  is not specified, it retains the original value. The full value of each flag
+  needs to be re-stated during ``update''. Take the ``--agents'' flag for
+  example:
+
+  If the original policy specified two agents (e.g.
+  ``--agents="type=logging;type=metrics"''), yet only one agent (e.g.
+  ``--agents="type=logging"'') is specified in a *{command}* command, the other
+  agent will no longer be managed and enforced by the policy. In order to remove
+  the metrics agent in this case, set the package state explicitly to
+  ``removed'' (e.g.
+  ``--agents="type=logging;type=metrics,package-state=removed"'').
+
+  In order to explicitly clear the ``--group-labels'', ``--instances'', and
+  ``--zones'' instance filters, use the following flags as documented below:
+  ``--clear-group-labels'', ``--clear-instances'', and ``--clear-zones'' flags.
   """
 
 # TODO(b/160345689): We need to update command description sample with each
@@ -57,7 +75,7 @@ class Update(base.Command):
           development, and install both Logging and Monitoring Agents on that
           VM instance, run:
 
-          $ {command} ops-agents-test-policy --agents="type=logging;type=metrics" --instances=zones/us-central1-a/instances/test-instance --os-types=short-name=centos,version=7
+          $ {command} ops-agents-test-policy --agent-rules="type=logging;type=metrics" --instances=zones/us-central1-a/instances/test-instance --os-types=short-name=centos,version=7
 
           To update a policy named ``ops-agents-prod-policy'' to target all
           CentOS 7 VMs in zone ``us-central1-a'' with either
@@ -65,7 +83,7 @@ class Update(base.Command):
           labels, and make sure the logging agent and metrics agent versions are
           pinned to specific major versions for staging and production, run:
 
-          $ {command} ops-agents-prod-policy --agents="type=logging,version=1.*.*;type=metrics,version=6.*.*" --group-labels="env=prod,product=myapp;env=staging,product=myapp" --os-types=short-name=centos,version=7 --zones=us-central1-a
+          $ {command} ops-agents-prod-policy --agent-rules="type=logging,version=1.*.*;type=metrics,version=6.*.*" --group-labels="env=prod,product=myapp;env=staging,product=myapp" --os-types=short-name=centos,version=7 --zones=us-central1-a
 
           To update a policy named ``ops-agents-labels-policy'' to clear the
           instances filters and use a group labels filter instead to target VMs
@@ -100,8 +118,8 @@ class Update(base.Command):
     current_ops_agents_policy = guest_policy_to_ops_agents_policy_converter.ConvertGuestPolicyToOpsAgentPolicy(
         current_guest_policy)
     updated_ops_agents_policy = ops_agents_policy.UpdateOpsAgentsPolicy(
-        current_ops_agents_policy, args.description, args.agents, args.os_types,
-        [] if args.clear_group_labels else args.group_labels,
+        current_ops_agents_policy, args.description, args.agent_rules,
+        args.os_types, [] if args.clear_group_labels else args.group_labels,
         [] if args.clear_zones else args.zones,
         [] if args.clear_instances else args.instances)
     ops_agents_policy_validator.ValidateOpsAgentsPolicy(

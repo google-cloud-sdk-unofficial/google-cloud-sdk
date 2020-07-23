@@ -194,12 +194,12 @@ def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
   return client.MakeRequests([set_request])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a gRPC health check."""
 
   _include_l7_internal_load_balancing = True
-  _include_log_config = True
+  _include_log_config = False
   detailed_help = _DetailedHelp()
 
   @classmethod
@@ -211,3 +211,15 @@ class Update(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self._include_l7_internal_load_balancing,
                 self._include_log_config)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+
+  _include_log_config = True
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+
+  pass

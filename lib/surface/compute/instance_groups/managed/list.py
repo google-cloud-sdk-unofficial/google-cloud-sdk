@@ -27,7 +27,7 @@ from googlecloudsdk.core import log
 
 
 class List(base.ListCommand):
-  """List Google Compute Engine managed instance groups."""
+  """List Compute Engine managed instance groups."""
 
   @staticmethod
   def Args(parser):

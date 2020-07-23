@@ -222,7 +222,8 @@ def _Run(args,
   deny_all_users_invoke = flags.ShouldDenyAllUsersInvoke(args)
 
   if is_new_function:
-    if (not ensure_all_users_invoke and not deny_all_users_invoke and
+    if (function.httpsTrigger and not ensure_all_users_invoke and
+        not deny_all_users_invoke and
         api_util.CanAddFunctionIamPolicyBinding(_GetProject(args))):
       ensure_all_users_invoke = console_io.PromptContinue(
           prompt_string=(
@@ -231,7 +232,8 @@ def _Run(args,
           default=False)
 
     op = api_util.CreateFunction(function, function_ref.Parent().RelativeName())
-    if (not ensure_all_users_invoke and not deny_all_users_invoke):
+    if (function.httpsTrigger and not ensure_all_users_invoke and
+        not deny_all_users_invoke):
       template = ('Function created with limited-access IAM policy. '
                   'To enable unauthorized access consider "%s"')
       log.warning(template % _CreateBindPolicyCommand(args.NAME, args.region))
@@ -296,8 +298,11 @@ def _Run(args,
         log_stackdriver_url[0] = False
 
   if op:
+    try_set_invoker = None
+    if function.httpsTrigger:
+      try_set_invoker = TryToSetInvokerPermission
     api_util.WaitForFunctionUpdateOperation(
-        op, try_set_invoker=TryToSetInvokerPermission,
+        op, try_set_invoker=try_set_invoker,
         on_every_poll=[TryToLogStackdriverURL])
   return api_util.GetFunction(function.name)
 

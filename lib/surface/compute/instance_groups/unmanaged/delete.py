@@ -26,9 +26,9 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags
 
 
 class Delete(base.DeleteCommand):
-  r"""Delete Google Compute Engine unmanaged instance groups.
+  r"""Delete Compute Engine unmanaged instance groups.
 
-    *{command}* deletes one or more Google Compute Engine unmanaged
+    *{command}* deletes one or more Compute Engine unmanaged
   instance groups. This command just deletes the instance group and does
   not delete the individual virtual machine instances
   in the instance group.

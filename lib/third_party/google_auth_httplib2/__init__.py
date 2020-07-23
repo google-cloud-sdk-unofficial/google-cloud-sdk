@@ -21,6 +21,7 @@ import logging
 from google.auth import exceptions
 from google.auth import transport
 import httplib2
+from six.moves import http_client
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -115,7 +116,9 @@ class Request(transport.Request):
             response, data = self.http.request(
                 url, method=method, body=body, headers=headers, **kwargs)
             return _Response(response, data)
-        except httplib2.HttpLib2Error as exc:
+        # httplib2 should catch the lower http error, this is a bug and
+        # needs to be fixed there.  Catch the error for the meanwhile.
+        except (httplib2.HttpLib2Error, http_client.HTTPException) as exc:
             raise exceptions.TransportError(exc)
 
 
@@ -224,6 +227,10 @@ class AuthorizedHttp(object):
 
         return response, content
 
+    def add_certificate(self, key, cert, domain, password=None):
+        """Proxy to httplib2.Http.add_certificate."""
+        self.http.add_certificate(key, cert, domain, password=password)
+
     @property
     def connections(self):
         """Proxy to httplib2.Http.connections."""
@@ -233,3 +240,23 @@ class AuthorizedHttp(object):
     def connections(self, value):
         """Proxy to httplib2.Http.connections."""
         self.http.connections = value
+
+    @property
+    def follow_redirects(self):
+        """Proxy to httplib2.Http.follow_redirects."""
+        return self.http.follow_redirects
+
+    @follow_redirects.setter
+    def follow_redirects(self, value):
+        """Proxy to httplib2.Http.follow_redirects."""
+        self.http.follow_redirects = value
+
+    @property
+    def timeout(self):
+        """Proxy to httplib2.Http.timeout."""
+        return self.http.timeout
+
+    @timeout.setter
+    def timeout(self, value):
+        """Proxy to httplib2.Http.timeout."""
+        self.http.timeout = value

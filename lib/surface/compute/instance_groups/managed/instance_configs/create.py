@@ -122,7 +122,7 @@ Create.detailed_help = {
     'DESCRIPTION':
         """\
         *{command}* creates a per-instance config for an instance controlled by
-        a Google Compute Engine managed instance group. An instance with a per
+        a Compute Engine managed instance group. An instance with a per
         instance config preserves the specified metadata and/or disks during
         instance recreation and deletion.
 

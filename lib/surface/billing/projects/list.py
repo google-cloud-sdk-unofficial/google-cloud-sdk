@@ -72,6 +72,12 @@ class List(base.ListCommand):
 
   *{command}* ACCOUNT_ID -- lists all active projects, for the specified
   billing account id.
+
+  ## EXAMPLES
+
+  To list projects linked to billing account `0X0X0X-0X0X0X-0X0X0X`, run:
+
+      $ {command} --billing-account=0X0X0X-0X0X0X-0X0X0X
   """
 
   @staticmethod

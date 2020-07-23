@@ -23,9 +23,9 @@ from googlecloudsdk.calliope import base
 
 
 class UnmanagedInstanceGroups(base.Group):
-  """Read and manipulate Google Compute Engine unmanaged instance groups."""
+  """Read and manipulate Compute Engine unmanaged instance groups."""
 
 UnmanagedInstanceGroups.detailed_help = {
     'brief': (
-        'Read and manipulate Google Compute Engine unmanaged instance group'),
+        'Read and manipulate Compute Engine unmanaged instance group'),
 }

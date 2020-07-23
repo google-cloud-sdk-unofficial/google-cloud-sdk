@@ -31,20 +31,20 @@ import six
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateGA(base.UpdateCommand):
-  r"""Update Google Compute Engine  managed instance groups.
+  r"""Update Compute Engine managed instance groups.
 
-  *{command}* allows you to specify or modify AutoHealingPolicy for an existing
+  *{command}* lets you specify or modify AutoHealingPolicy for an existing
   managed instance group.
 
-  When updating the AutoHealingPolicy, you may specify the health check, initial
+  When updating the AutoHealingPolicy, you can specify the health check, initial
   delay, or both. If the field is unspecified, its value won't be modified. If
-  `--health-check` is specified, the health check will be used to monitor the
+  `--health-check` is specified, the health check is used to monitor the
   health of your application. Whenever the health check signal for the instance
-  becomes `UNHEALTHY`, the autohealing action (`RECREATE`) on an instance will
-  be performed.
+  becomes `UNHEALTHY`, the autohealing action (`RECREATE`) on an instance is
+  performed.
 
-  If no health check is specified, the instance autohealing will be triggered by
-  the instance status only (i.e. the autohealing action (`RECREATE`) on an
+  If no health check is specified, the instance autohealing is triggered by
+  the instance status only (i.e., the autohealing action (`RECREATE`) on an
   instance will be performed if `instance.status` is not `RUNNING`).
   """
 
@@ -149,7 +149,7 @@ class UpdateGA(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class UpdateBeta(UpdateGA):
-  r"""Update Google Compute Engine managed instance groups."""
+  r"""Update Compute Engine managed instance groups."""
 
   @staticmethod
   def Args(parser):
@@ -234,10 +234,10 @@ class UpdateBeta(UpdateGA):
 
 UpdateBeta.detailed_help = {
     'brief':
-        'Update Google Compute Engine managed instance groups.',
+        'Update Compute Engine managed instance groups.',
     'DESCRIPTION':
         """\
-        Update Google Compute Engine managed instance groups.
+        Update Compute Engine managed instance groups.
 
         *{command}* allows you to specify or modify the StatefulPolicy and
         AutoHealingPolicy for an existing managed instance group.

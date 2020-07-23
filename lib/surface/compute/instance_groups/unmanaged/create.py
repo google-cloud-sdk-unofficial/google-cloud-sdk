@@ -31,7 +31,7 @@ from googlecloudsdk.command_lib.compute.instance_groups.unmanaged import flags a
 class Create(base.CreateCommand):
   """Create a Compute Engine unmanaged instance group.
 
-    *{command}* creates a new Google Compute Engine unmanaged
+    *{command}* creates a new Compute Engine unmanaged
   instance group.
   For example:
 

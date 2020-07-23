@@ -1,6 +1,6 @@
 release_tracks: [ALPHA, BETA, GA]
 help_text:
-  brief: Set the IAM policy for a Google Compute Engine instance template.
+  brief: Set the IAM policy for a Compute Engine instance template.
   description: |
     Sets the IAM policy for the given instance template as defined in a JSON or YAML file.
 

@@ -34,7 +34,7 @@ from six.moves import zip
 
 
 class Delete(base.DeleteCommand):
-  """Delete Google Compute Engine managed instance group."""
+  """Delete Compute Engine managed instance group."""
 
   @staticmethod
   def Args(parser):
@@ -176,9 +176,9 @@ class Delete(base.DeleteCommand):
 
 
 Delete.detailed_help = {
-    'brief': 'Delete Google Compute Engine managed instance groups',
+    'brief': 'Delete Compute Engine managed instance groups',
     'DESCRIPTION': """\
-        *{command}* deletes one or more Google Compute Engine managed instance
+        *{command}* deletes one or more Compute Engine managed instance
 groups.
         """,
 }

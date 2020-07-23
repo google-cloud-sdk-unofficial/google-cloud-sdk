@@ -1,7 +1,7 @@
 release_tracks: [ALPHA, BETA]
 
 help_text:
-  brief: Get the IAM policy for a Google Compute Engine machine image.
+  brief: Get the IAM policy for a Compute Engine machine image.
   description: |
     *{command}* displays the IAM policy associated with a Compute Engine machine image in a
     project. If formatted as JSON, the output can be edited and used as a policy file for {command}

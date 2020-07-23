@@ -266,6 +266,7 @@ class Update(base.UpdateCommand):
     flags.AddStartCredentialRotationFlag(group)
     flags.AddCompleteIpRotationFlag(group)
     flags.AddCompleteCredentialRotationFlag(group)
+    flags.AddCloudRunConfigFlag(parser)
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group)
@@ -278,7 +279,7 @@ class Update(base.UpdateCommand):
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddRecurringMaintenanceWindowFlags(group, is_update=True)
     flags.AddResourceUsageExportFlags(group, is_update=True)
-    flags.AddReleaseChannelFlag(group, is_update=True, hidden=True)
+    flags.AddReleaseChannelFlag(group, is_update=True, hidden=False)
     flags.AddWorkloadIdentityFlags(group)
     flags.AddWorkloadIdentityUpdateFlags(group)
     flags.AddDatabaseEncryptionFlag(group)
@@ -292,12 +293,14 @@ class Update(base.UpdateCommand):
     opts.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     opts.clear_resource_usage_bigquery_dataset = \
         args.clear_resource_usage_bigquery_dataset
+    opts.cloud_run_config = args.cloud_run_config
     opts.enable_network_egress_metering = args.enable_network_egress_metering
     opts.enable_resource_consumption_metering = \
         args.enable_resource_consumption_metering
     opts.enable_intra_node_visibility = args.enable_intra_node_visibility
     opts.enable_shielded_nodes = args.enable_shielded_nodes
     opts.release_channel = args.release_channel
+    flags.ValidateCloudRunConfigUpdateArgs(args.cloud_run_config, args.disable_addons)
     if args.disable_addons and api_adapter.NODELOCALDNS in args.disable_addons:
       # NodeLocalDNS is being enabled or disabled
       console_io.PromptContinue(
@@ -583,6 +586,7 @@ class UpdateBeta(Update):
     flags.AddVerticalPodAutoscalingFlag(group)
     flags.AddResourceUsageExportFlags(group, is_update=True)
     flags.AddIstioConfigFlag(parser)
+    flags.AddCloudRunConfigFlag(parser)
     flags.AddEnableIntraNodeVisibilityFlag(group)
     flags.AddWorkloadIdentityFlags(group, use_workload_pool=False)
     flags.AddWorkloadIdentityUpdateFlags(group)
@@ -595,12 +599,14 @@ class UpdateBeta(Update):
     flags.AddEnableGvnicFlag(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
     flags.AddNotificationConfigFlag(group, hidden=True)
+    flags.AddPrivateIpv6GoogleAccessTypeFlag('v1beta1', group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     flags.ValidateNotificationConfigFlag(args)
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
     opts.enable_pod_security_policy = args.enable_pod_security_policy
     opts.istio_config = args.istio_config
+    opts.cloud_run_config = args.cloud_run_config
     opts.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     opts.enable_intra_node_visibility = args.enable_intra_node_visibility
     opts.clear_resource_usage_bigquery_dataset = \
@@ -608,6 +614,7 @@ class UpdateBeta(Update):
     opts.enable_network_egress_metering = args.enable_network_egress_metering
     opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
+    flags.ValidateCloudRunConfigUpdateArgs(args.cloud_run_config, args.disable_addons)
     if args.disable_addons and api_adapter.NODELOCALDNS in args.disable_addons:
       # NodeLocalDNS is being enabled or disabled
       console_io.PromptContinue(
@@ -647,6 +654,7 @@ class UpdateBeta(Update):
     opts.enable_gvnic = args.enable_gvnic
     opts.disable_default_snat = args.disable_default_snat
     opts.notification_config = args.notification_config
+    opts.private_ipv6_google_access_type = args.private_ipv6_google_access_type
 
     return opts
 
@@ -704,6 +712,7 @@ class UpdateAlpha(Update):
     flags.AddMasterGlobalAccessFlag(group)
     flags.AddEnableGvnicFlag(group)
     flags.AddNotificationConfigFlag(group, hidden=True)
+    flags.AddPrivateIpv6GoogleAccessTypeFlag('v1alpha1', group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     flags.ValidateNotificationConfigFlag(args)
@@ -759,5 +768,6 @@ class UpdateAlpha(Update):
     opts.enable_master_global_access = args.enable_master_global_access
     opts.enable_gvnic = args.enable_gvnic
     opts.notification_config = args.notification_config
+    opts.private_ipv6_google_access_type = args.private_ipv6_google_access_type
 
     return opts

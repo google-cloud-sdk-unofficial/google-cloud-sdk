@@ -36,7 +36,7 @@ table[box](
 )
 """
 
-ALPHA_MESSAGE_FORMAT = """\
+BETA_MESSAGE_FORMAT = """\
 table[box](
   message.data.decode(base64).decode(utf-8),
   message.messageId,
@@ -94,13 +94,13 @@ class Pull(base.ListCommand):
     return _Run(args, args.limit)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class PullBeta(Pull):
   """Pulls one or more Cloud Pub/Sub messages from a subscription."""
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(MESSAGE_FORMAT)
+    parser.display_info.AddFormat(BETA_MESSAGE_FORMAT)
     resource_args.AddSubscriptionResourceArg(parser, 'to pull messages from.')
     flags.AddPullFlags(parser, add_deprecated=True, add_wait=True)
 
@@ -114,14 +114,3 @@ class PullBeta(Pull):
       max_messages = args.max_messages
     return_immediately = not args.wait if args.IsSpecified('wait') else True
     return _Run(args, max_messages, return_immediately)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class PullAlpha(PullBeta):
-  """Pulls one or more Cloud Pub/Sub messages from a subscription."""
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat(ALPHA_MESSAGE_FORMAT)
-    resource_args.AddSubscriptionResourceArg(parser, 'to pull messages from.')
-    flags.AddPullFlags(parser, add_deprecated=True, add_wait=True)

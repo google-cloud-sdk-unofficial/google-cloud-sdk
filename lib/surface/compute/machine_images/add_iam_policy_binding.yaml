@@ -1,7 +1,7 @@
 release_tracks: [ALPHA, BETA]
 
 help_text:
-  brief: Add IAM policy binding to the IAM policy of a Google Compute Engine machine image.
+  brief: Add IAM policy binding to the IAM policy of a Compute Engine machine image.
   description: |
     Add an IAM policy binding to the IAM policy of a Compute Engine machine image. A policy binding
     consists of a member and a role.

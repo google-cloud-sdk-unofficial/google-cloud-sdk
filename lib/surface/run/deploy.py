@@ -69,7 +69,7 @@ def GetAllowUnauth(args, operations, service_ref, service_exists):
   return allow_unauth
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Deploy(base.Command):
   """Deploy a container to Cloud Run."""
 
@@ -225,6 +225,16 @@ class Deploy(base.Command):
         pretty_print.Success(
             messages_util.GetSuccessMessageForSynchronousDeploy(
                 operations, service_ref))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaDeploy(Deploy):
+  """Deploy a container to Cloud Run."""
+
+  @staticmethod
+  def Args(parser):
+    Deploy.Args(parser)
+    flags.AddDeployTagFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -36,7 +36,7 @@ _OUTPUT_FILTER = ['[Daisy', '[import-', 'starting build', '  import', 'ERROR']
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Import(base.CreateCommand):
-  """Import a machine image into Google Compute Engine from OVF."""
+  """Import a machine image into Compute Engine from OVF."""
 
   @classmethod
   def Args(cls, parser):
@@ -85,7 +85,7 @@ class Import(base.CreateCommand):
     except resources.UnknownCollectionException:
       raise exceptions.InvalidArgumentException(
           'source-uri',
-          'must be a path to an object or a directory in Google Cloud Storage')
+          'must be a path to an object or a directory in Cloud Storage')
 
   def Run(self, args):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -115,8 +115,8 @@ Import.detailed_help = {
 
         Importing OVF involves:
         *  Unpacking OVF package (if in OVA format) to Cloud Storage.
-        *  Import disks from OVF to Google Compute Engine.
-        *  Translate the boot disk to make it bootable in Google Compute Engine.
+        *  Import disks from OVF to Compute Engine.
+        *  Translate the boot disk to make it bootable in Compute Engine.
         *  Create a machine image using OVF metadata and imported disks.
 
         Virtual instances, images, machine images, and disks in Compute engine

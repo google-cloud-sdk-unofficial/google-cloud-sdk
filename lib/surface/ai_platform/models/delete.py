@@ -26,9 +26,9 @@ from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
 
 
-def _AddDeleteArgs(parser, hide_region_flag=True):
+def _AddDeleteArgs(parser):
   flags.GetModelName().AddToParser(parser)
-  flags.GetRegionArg(hidden=hide_region_flag).AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
 
 
 def _Run(args):
@@ -74,7 +74,7 @@ class DeleteBeta(Delete):
 
   @staticmethod
   def Args(parser):
-    _AddDeleteArgs(parser, hide_region_flag=False)
+    _AddDeleteArgs(parser)
 
   def Run(self, args):
     return _Run(args)

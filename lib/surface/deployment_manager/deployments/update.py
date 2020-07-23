@@ -37,6 +37,8 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
+import six
+
 # Number of seconds (approximately) to wait for update operation to complete.
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
 
@@ -282,7 +284,8 @@ More information is available at https://cloud.google.com/deployment-manager/doc
           deletePolicy=(self.messages.DeploymentmanagerDeploymentsUpdateRequest.
                         DeletePolicyValueValuesEnum(parsed_delete_flag)))
       client = self.client
-      client.additional_http_headers['X-Cloud-DM-Patch'] = patch_request
+      client.additional_http_headers['X-Cloud-DM-Patch'] = six.text_type(
+          patch_request)
       operation = client.deployments.Update(request)
 
       # Fetch and print the latest fingerprint of the deployment.

@@ -76,29 +76,17 @@ class Publish(base.Command):
     return _Run(args, args.message)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class PublishBeta(Publish):
   """Publishes a message to the specified topic."""
 
   @classmethod
   def Args(cls, parser):
     resource_args.AddTopicResourceArg(parser, 'to publish messages to.')
-    flags.AddPublishMessageFlags(parser, add_deprecated=True)
+    flags.AddPublishMessageFlags(
+        parser, add_deprecated=True, support_message_ordering=True)
 
   def Run(self, args):
     message_body = flags.ParseMessageBody(args)
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
     return _Run(args, message_body, legacy_output=legacy_output)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class PublishAlpha(PublishBeta):
-  """Publishes a message to the specified topic."""
-
-  @classmethod
-  def Args(cls, parser):
-    resource_args.AddTopicResourceArg(parser, 'to publish messages to.')
-    flags.AddPublishMessageFlags(
-        parser,
-        add_deprecated=True,
-        support_message_ordering=True)

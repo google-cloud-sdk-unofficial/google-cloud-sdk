@@ -82,6 +82,7 @@ def AddBaseArgs(parser):
   flags.AddBackupStartTime(parser)
   flags.AddBackupLocation(parser, allow_empty=False)
   flags.AddCPU(parser)
+  flags.AddInstanceCollation(parser)
   flags.AddDatabaseFlags(parser)
   flags.AddEnableBinLog(parser, show_negated_in_help=False)
   parser.add_argument(

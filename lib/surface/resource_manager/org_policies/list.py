@@ -25,7 +25,8 @@ from googlecloudsdk.command_lib.resource_manager import org_policies_base
 from googlecloudsdk.command_lib.resource_manager import org_policies_flags as flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Organization Policies associated with the specified resource.
 

@@ -43,7 +43,7 @@ _DETAILED_HELP = {
         `appengine-web.xml` file inside the WEB-INF directory. {command}
         skips files specified in the .gcloudignore file (see `gcloud topic
         gcloudignore` for more information).
-        For Java11 Standard, you can either use the yaml file, or a Maven pom.xml or, if the
+        For Java11 Standard, you can either use the yaml file, a Maven pom.xml, or a Gradle build.gradle. Alternatively, if the
         application is a single self-contained jar, you can give the path to the
         jar and a simple service configuration will be generated. You can deploy
         Java11 Maven source projects by specifying the location of your
@@ -67,6 +67,10 @@ _DETAILED_HELP = {
         To deploy an App Engine Standard Java11 Maven source project, run:
 
           $ {command} ~/my_app/pom.xml
+
+        To deploy an App Engine Standard Java11 Gradle source project, run:
+
+          $ {command} ~/my_app/build.gradle
 
         By default, the service is deployed the current project configured via:
 
