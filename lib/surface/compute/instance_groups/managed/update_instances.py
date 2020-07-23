@@ -31,7 +31,7 @@ from googlecloudsdk.command_lib.compute.managed_instance_groups import update_in
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class UpdateInstances(base.Command):
-  r"""Immediately update selected instances in a Google Compute Engine managed instance group."""
+  r"""Immediately update selected instances in a Compute Engine managed instance group."""
 
   @staticmethod
   def Args(parser):
@@ -138,8 +138,8 @@ class UpdateInstances(base.Command):
 
 UpdateInstances.detailed_help = {
     'brief':
-        'Immediately update selected instances in a Google Compute '
-        'Engine managed instance group.',
+        'Immediately update selected instances in a Compute Engine '
+        'managed instance group.',
     'DESCRIPTION':
         """\
           When using a managed instance group, it's possible that your intended

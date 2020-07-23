@@ -37,7 +37,7 @@ class CreateCSR(base.CreateCommand):
           """\
             To create a push trigger for all branches:
 
-              $ {command} --repo="my-repo" --branch-pattern=".*" --build-config="cloudbuild.yaml"
+              $ {command} --name="my-trigger" --repo="my-repo" --branch-pattern=".*" --build-config="cloudbuild.yaml"
           """,
   }
 
@@ -82,6 +82,7 @@ class CreateCSR(base.CreateCommand):
     repo_ref = args.CONCEPTS.repo.Parse()
     repo = repo_ref.reposId
     trigger = messages.BuildTrigger(
+        name=args.name,
         description=args.description,
         triggerTemplate=messages.RepoSource(
             repoName=repo,

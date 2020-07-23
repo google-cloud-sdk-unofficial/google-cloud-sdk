@@ -56,7 +56,7 @@ class Create(base.Command):
           development, and installs both Logging and Monitoring Agents on that
           VM instance, run:
 
-            $ {command} ops-agents-test-policy --agents="type=logging;type=metrics" --description="A test policy." --os-types=short-name=centos,version=7 --instances=zones/us-central1-a/instances/test-instance
+            $ {command} ops-agents-test-policy --agent-rules="type=logging;type=metrics" --description="A test policy." --os-types=short-name=centos,version=7 --instances=zones/us-central1-a/instances/test-instance
 
           To create a policy named ``ops-agents-prod-policy'' that targets all
           CentOS 7 VMs in zone ``us-central1-a'' with either
@@ -64,7 +64,7 @@ class Create(base.Command):
           and makes sure the logging agent and metrics agent versions are pinned
           to specific major versions for staging and production, run:
 
-          $ {command} ops-agents-prod-policy --agents="type=logging,version=1.*.*;type=metrics,version=6.*.*" --description="A prod policy." --os-types=short-name=centos,version=7 --zones=us-central1-a --group-labels="env=prod,product=myapp;env=staging,product=myapp"
+          $ {command} ops-agents-prod-policy --agent-rules="type=logging,version=1.*.*;type=metrics,version=6.*.*" --description="A prod policy." --os-types=short-name=centos,version=7 --zones=us-central1-a --group-labels="env=prod,product=myapp;env=staging,product=myapp"
           """,
   }
 
@@ -84,7 +84,7 @@ class Create(base.Command):
     messages = osconfig_api_utils.GetClientMessages(
         release_track, api_version_override='v1beta')
     ops_agents_policy = agent_policy.CreateOpsAgentPolicy(
-        args.description, args.agents, args.group_labels, args.os_types,
+        args.description, args.agent_rules, args.group_labels, args.os_types,
         args.zones, args.instances)
     validator.ValidateOpsAgentsPolicy(ops_agents_policy)
     guest_policy = to_guest_policy.ConvertOpsAgentPolicyToGuestPolicy(

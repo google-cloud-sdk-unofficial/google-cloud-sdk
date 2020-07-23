@@ -25,7 +25,8 @@ from googlecloudsdk.command_lib.resource_manager import org_policies_flags as fl
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class DeletePolicy(base.DeleteCommand):
   """Delete an Organization Policy.
 

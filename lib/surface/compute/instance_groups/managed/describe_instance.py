@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
@@ -85,10 +84,8 @@ class DescribeInstance(base.DescribeCommand):
 
     if errors:
       utils.RaiseToolException(errors)
-    instances = instance_groups_utils.UnwrapResponse(results,
-                                                     'managedInstances')
     instance_with_name = next(
-        (instance for instance in instances
+        (instance for instance in results
          if resources.ParseURL(instance.instance).Name() == args.instance),
         None)
     if not instance_with_name:

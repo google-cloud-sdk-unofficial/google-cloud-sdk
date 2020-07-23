@@ -106,7 +106,7 @@ def ValidateAndFixUpdatePolicyAgainstStateful(update_policy, group_ref,
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGA(base.CreateCommand):
-  """Create Google Compute Engine managed instance groups."""
+  """Create Compute Engine managed instance groups."""
 
   @staticmethod
   def Args(parser):
@@ -284,7 +284,7 @@ CreateGA.detailed_help = {
         'Create a Compute Engine managed instance group',
     'DESCRIPTION':
         """\
-        *{command}* creates a Google Compute Engine managed instance group.
+        *{command}* creates a Compute Engine managed instance group.
 
 For example, running:
 
@@ -298,7 +298,7 @@ in the ``us-central1-a'' zone.
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(CreateGA):
-  """Create Google Compute Engine managed instance groups."""
+  """Create Compute Engine managed instance groups."""
 
   @classmethod
   def Args(cls, parser):
@@ -343,7 +343,7 @@ CreateBeta.detailed_help = CreateGA.detailed_help
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
-  """Create Google Compute Engine managed instance groups."""
+  """Create Compute Engine managed instance groups."""
 
   @classmethod
   def Args(cls, parser):

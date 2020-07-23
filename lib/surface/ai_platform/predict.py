@@ -28,7 +28,7 @@ from googlecloudsdk.core import log
 INPUT_INSTANCES_LIMIT = 100
 
 
-def _AddPredictArgs(parser, hide_region_flag=True):
+def _AddPredictArgs(parser):
   """Register flags for this command."""
   parser.add_argument('--model', required=True, help='Name of the model.')
   parser.add_argument(
@@ -87,7 +87,7 @@ versions run
       This flag accepts "-" for stdin.
       """)
 
-  flags.GetRegionArg(hidden=hide_region_flag).AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
   flags.SIGNATURE_NAME.AddToParser(parser)
 
 
@@ -166,7 +166,7 @@ class PredictBeta(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    _AddPredictArgs(parser, hide_region_flag=False)
+    _AddPredictArgs(parser)
 
   def Run(self, args):
     return _Run(args)

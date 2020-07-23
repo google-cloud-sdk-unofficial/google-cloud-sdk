@@ -34,7 +34,7 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.console import progress_tracker
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update Cloud Run environment variables and other configuration settings."""
 
@@ -135,6 +135,20 @@ class Update(base.Command):
         pretty_print.Success(
             messages_util.GetSuccessMessageForSynchronousDeploy(
                 client, service_ref))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaUpdate(Update):
+  """Update Cloud Run environment variables and other configuration settings."""
+
+  @staticmethod
+  def Args(parser):
+    Update.CommonArgs(parser)
+    flags.AddDeployTagFlag(parser)
+
+    # Flags only supported on GKE and Knative
+    cluster_group = flags.GetClusterArgGroup(parser)
+    flags.AddMinInstancesFlag(cluster_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -26,11 +26,9 @@ from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
 
 
-def _AddIamPolicyBindingFlags(parser,
-                              add_condition=False,
-                              hide_region_flag=True):
+def _AddIamPolicyBindingFlags(parser, add_condition=False):
   flags.GetModelName().AddToParser(parser)
-  flags.GetRegionArg(hidden=hide_region_flag).AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
   iam_util.AddArgsForAddIamPolicyBinding(
       parser, flags.MlEngineIamRolesCompleter, add_condition=add_condition)
 
@@ -65,7 +63,7 @@ class AddIamPolicyBindingBeta(AddIamPolicyBinding):
 
   @staticmethod
   def Args(parser):
-    _AddIamPolicyBindingFlags(parser, hide_region_flag=False)
+    _AddIamPolicyBindingFlags(parser)
 
   def Run(self, args):
     return _Run(args)
@@ -84,8 +82,7 @@ class AddIamPolicyBindingAlpha(base.Command):
 
   @staticmethod
   def Args(parser):
-    _AddIamPolicyBindingFlags(
-        parser, add_condition=True, hide_region_flag=False)
+    _AddIamPolicyBindingFlags(parser, add_condition=True)
 
   def Run(self, args):
     with endpoint_util.MlEndpointOverrides(region=args.region):

@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
-from googlecloudsdk.api_lib.compute.instances.ops_agents.policies import exceptions as policies_exceptions
+from googlecloudsdk.api_lib.compute.instances.ops_agents import exceptions as ops_agents_exceptions
 from googlecloudsdk.api_lib.compute.instances.ops_agents.validators import guest_policy_validator
 from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils
 from googlecloudsdk.calliope import base
@@ -80,10 +80,10 @@ class Delete(base.DeleteCommand):
     try:
       get_response = service.Get(get_request)
     except apitools_exceptions.HttpNotFoundError:
-      raise policies_exceptions.NotFoundError(
+      raise ops_agents_exceptions.PolicyNotFoundError(
           policy_id=args.POLICY_ID)
     if not guest_policy_validator.IsOpsAgentPolicy(get_response):
-      raise policies_exceptions.NotFoundError(
+      raise ops_agents_exceptions.PolicyNotFoundError(
           policy_id=args.POLICY_ID)
 
     delete_request = messages.OsconfigProjectsGuestPoliciesDeleteRequest(

@@ -26,11 +26,11 @@ from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
 
 
-def _AddSetIamPolicyArgs(parser, hide_region_flag=True):
+def _AddSetIamPolicyArgs(parser):
   flags.GetModelResourceArg(
       positional=True, required=True,
       verb='to set IAM policy for').AddToParser(parser)
-  flags.GetRegionArg(hidden=hide_region_flag).AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
   iam_util.AddArgForPolicyFile(parser)
 
 
@@ -82,7 +82,7 @@ class SetIamPolicyBeta(base.Command):
 
   @staticmethod
   def Args(parser):
-    _AddSetIamPolicyArgs(parser, hide_region_flag=False)
+    _AddSetIamPolicyArgs(parser)
 
   def Run(self, args):
     return _Run(args)

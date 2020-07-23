@@ -26,7 +26,7 @@ from googlecloudsdk.calliope import base
 
 
 class List(base.ListCommand):
-  """List Google Compute Engine unmanaged instance groups."""
+  """List Compute Engine unmanaged instance groups."""
 
   @staticmethod
   def Args(parser):

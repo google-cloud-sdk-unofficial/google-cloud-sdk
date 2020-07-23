@@ -394,7 +394,7 @@ _DETAILED_HELP_TEXT = ("""
                  files. If errors occurred, gsutil's exit status will be
                  non-zero even if this flag is set. This option is implicitly
                  set when running "gsutil -m rsync...".
-                 
+
                  NOTE: -C only applies to the actual copying operation. If an
                  error occurs while iterating over the files in the local
                  directory (e.g., invalid Unicode file name) gsutil will print
@@ -402,7 +402,7 @@ _DETAILED_HELP_TEXT = ("""
 
   -d             Delete extra files under dst_url not found under src_url. By
                  default extra files are not deleted.
-                 
+
                  NOTE: this option can delete data quickly if you specify the
                  wrong source/destination combination. See the help section
                  above, "BE CAREFUL WHEN USING -d OPTION!".
@@ -424,16 +424,14 @@ _DETAILED_HELP_TEXT = ("""
                  original files.
 
                  Note that if you want to use the top-level -m option to
-                 parallelize copies along with the -j/-J options, you should
-                 prefer using multiple processes instead of multiple threads;
-                 when using -j/-J, multiple threads in the same process are
-                 bottlenecked by Python's GIL. Thread and process count can be
-                 set using the "parallel_thread_count" and
-                 "parallel_process_count" boto config options, e.g.:
+                 parallelize copies along with the -j/-J options, your
+                 performance may be bottlenecked by the
+                 "max_upload_compression_buffer_size" boto config option,
+                 which is set to 2 GiB by default. This compression buffer
+                 size can be changed to a higher limit, e.g.:
 
-                   gsutil -o "GSUtil:parallel_process_count=8" \\
-                     -o "GSUtil:parallel_thread_count=1" \\
-                     -m rsync -j /local/source/dir gs://bucket/path
+                   gsutil -o "GSUtil:max_upload_compression_buffer_size=8G" \
+                     -m rsync -j html,txt /local/source/dir gs://bucket/path
 
   -J             Applies gzip transport encoding to file uploads. This option
                  works like the -j option described above, but it applies to
@@ -1361,7 +1359,13 @@ def _RsyncFunc(cls, diff_to_apply, thread_state=None):
     else:
       cls.logger.info('Removing %s', dst_url)
       if dst_url.IsFileUrl():
-        os.unlink(dst_url.object_name)
+        try:
+          os.unlink(dst_url.object_name)
+        except FileNotFoundError:
+          # Missing file errors occur occasionally with .gstmp files
+          # and can be ignored for deletes.
+          cls.logger.debug('%s was already removed', dst_url)
+          pass
       else:
         try:
           gsutil_api.DeleteObject(dst_url.bucket_name,
@@ -1594,8 +1598,9 @@ class RsyncCommand(Command):
         logger=self.logger)
     if not have_existing_container:
       raise CommandException(
-          'arg (%s) does not name a directory, bucket, or bucket subdir.' %
-          url_str)
+          'arg (%s) does not name a directory, bucket, or bucket subdir.\n'
+          'If there is an object with the same path, please add a trailing\n'
+          'slash to specify the directory.' % url_str)
     return url
 
   def RunCommand(self):

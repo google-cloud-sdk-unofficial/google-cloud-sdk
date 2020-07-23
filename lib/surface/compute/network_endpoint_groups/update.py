@@ -40,12 +40,13 @@ To remove two endpoints from a network endpoint group:
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  """Update a Google Compute Engine network endpoint group."""
+  """Update a Compute Engine network endpoint group."""
 
   detailed_help = DETAILED_HELP
   support_global_scope = True
   support_hybrid_neg = False
   support_l4ilb_neg = False
+  support_vm_ip_neg = False
 
   @classmethod
   def Args(cls, parser):
@@ -55,7 +56,8 @@ class Update(base.UpdateCommand):
         parser,
         support_global_scope=cls.support_global_scope,
         support_hybrid_neg=cls.support_hybrid_neg,
-        support_l4ilb_neg=cls.support_l4ilb_neg)
+        support_l4ilb_neg=cls.support_l4ilb_neg,
+        support_vm_ip_neg=cls.support_vm_ip_neg)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -82,7 +84,8 @@ class Update(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaUpdate(Update):
-  """Update a Google Compute Engine network endpoint group."""
+  """Update a Compute Engine network endpoint group."""
 
   support_hybrid_neg = True
   support_l4ilb_neg = True
+  support_vm_ip_neg = True

@@ -119,14 +119,14 @@ def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a gRPC health check."""
 
   detailed_help = _DetailedHelp()
 
   _include_l7_internal_load_balancing = True
-  _include_log_config = True
+  _include_log_config = False
 
   @classmethod
   def Args(cls, parser):
@@ -137,3 +137,15 @@ class Create(base.CreateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self._include_l7_internal_load_balancing,
                 self._include_log_config)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+
+  _include_log_config = True
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+
+  pass

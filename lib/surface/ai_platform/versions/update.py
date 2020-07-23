@@ -28,12 +28,44 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-def _AddUpdateArgs(parser, hide_region_arg=True):
+def _AddUpdateArgs(parser):
   """Get arguments for the `ai-platform versions update` command."""
   flags.AddVersionResourceArg(parser, 'to update')
   flags.GetDescriptionFlag('version').AddToParser(parser)
-  flags.GetRegionArg(hidden=hide_region_arg).AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
   labels_util.AddUpdateLabelsFlags(parser)
+  base.Argument(
+      '--config',
+      metavar='YAML_FILE',
+      help="""\
+          Path to a YAML configuration file containing configuration parameters
+          for the
+          [version](https://cloud.google.com/ml/reference/rest/v1/projects.models.versions)
+          to create.
+
+          The file is in YAML format. Note that not all attributes of a version
+          are configurable; available attributes (with example values) are:
+
+              description: A free-form description of the version.
+              manualScaling:
+                nodes: 10  # The number of nodes to allocate for this model.
+              autoScaling:
+                minNodes: 0  # The minimum number of nodes to allocate for this model.
+
+          The name of the version must always be specified via the required
+          VERSION argument.
+
+          Only one of manualScaling or autoScaling can be specified. If both
+          are specified in same yaml file, an error will be returned.
+
+          Labels cannot currently be set in the config.yaml; please use
+          the command-line flags to alter them.
+
+          If an option is specified both in the configuration file and via
+          command-line arguments, the command-line arguments override the
+          configuration file.
+      """
+  ).AddToParser(parser)
 
 
 def _Run(args):
@@ -63,38 +95,7 @@ class UpdateBeta(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    _AddUpdateArgs(parser, hide_region_arg=False)
-    base.Argument(
-        '--config',
-        help="""\
-            Path to a YAML configuration file containing configuration parameters
-            for the
-            [version](https://cloud.google.com/ml/reference/rest/v1/projects.models.versions)
-            to create.
-
-            The file is in YAML format. Note that not all attributes of a version
-            are configurable; available attributes (with example values) are:
-
-                description: A free-form description of the version.
-                manualScaling:
-                  nodes: 10  # The number of nodes to allocate for this model.
-                autoScaling:
-                  minNodes: 0  # The minimum number of nodes to allocate for this model.
-
-            The name of the version must always be specified via the required
-            VERSION argument.
-
-            Only one of manualScaling or autoScaling can be specified. If both
-            are specified in same yaml file, an error will be returned.
-
-            Labels cannot currently be set in the config.yaml; please use
-            the command-line flags to alter them.
-
-            If an option is specified both in the configuration file and via
-            command-line arguments, the command-line arguments override the
-            configuration file.
-        """
-    ).AddToParser(parser)
+    _AddUpdateArgs(parser)
 
   def Run(self, args):
     return _Run(args)

@@ -136,7 +136,7 @@ class Create(base.CreateCommand):
     return _Run(args, enable_labels=True)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateBeta(Create):
   """Creates one or more Cloud Pub/Sub subscriptions."""
 
@@ -150,32 +150,11 @@ class CreateBeta(Create):
         'to create.',
         plural=True)
     resource_args.AddResourceArgs(parser, [topic, subscription])
-    flags.AddSubscriptionSettingsFlags(parser, support_filtering=True)
+    flags.AddSubscriptionSettingsFlags(
+        parser, support_message_ordering=True, support_filtering=True)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
     flags.ValidateFilterString(args)
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
     return _Run(args, enable_labels=True, legacy_output=legacy_output)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Creates one or more Cloud Pub/Sub subscriptions."""
-
-  @classmethod
-  def Args(cls, parser):
-    topic_help_text = ('from which this subscription is receiving messages. '
-                       'Each subscription is attached to a single topic.')
-    topic = resource_args.CreateTopicResourceArg(
-        topic_help_text, positional=False)
-    subscription = resource_args.CreateSubscriptionResourceArg(
-        'to create.', plural=True)
-    resource_args.AddResourceArgs(parser, [topic, subscription])
-    flags.AddSubscriptionSettingsFlags(
-        parser, support_message_ordering=True, support_filtering=True)
-    labels_util.AddCreateLabelsFlags(parser)
-
-  @exceptions.CatchHTTPErrorRaiseHTTPException()
-  def Run(self, args):
-    return super(CreateAlpha, self).Run(args)

@@ -42,13 +42,12 @@ class Create(base.CreateCommand):
   Create a secret with an automatic replication policy without creating any
   versions:
 
-    $ {command} my-secret --replication-policy=automatic
+    $ {command} my-secret
 
   Create a new secret named 'my-secret' with an automatic replication policy
   and data from a file:
 
     $ {command} my-secret --data-file=/tmp/secret
-    --replication-policy=automatic
 
   Create a new secret named 'my-secret' in 'us-central1' with data from a file:
 
@@ -68,10 +67,6 @@ class Create(base.CreateCommand):
       'if you pass or pipe a variable that is undefined. Please verify that '
       'the --data-file flag is not the empty string. If you are not providing '
       'secret data, omit the --data-file flag.')
-
-  MISSING_POLICY_MESSAGE = (
-      'The --replication-policy flag is required. Valid values are "automatic"'
-      ' and "user-managed".')
 
   INVALID_POLICY_MESSAGE = (
       'The value provided for --replication-policy is invalid. Valid values '
@@ -105,6 +100,11 @@ class Create(base.CreateCommand):
       'secrets/locations property is set. Please either use a "user-managed" '
       'replication policy or unset secrets/locations.')
 
+  NO_POLICY_AND_LOCATIONS_MESSAGE = (
+      'Locations are only allowed when creating a secret with a "user-managed" '
+      'replication policy. Please use the --replication-policy flag to set it '
+      'or remove --locations to use an automatic replication policy.')
+
   @staticmethod
   def Args(parser):
     secrets_args.AddSecret(
@@ -122,10 +122,9 @@ class Create(base.CreateCommand):
     replication_policy = args.replication_policy
     if not replication_policy:
       replication_policy = properties.VALUES.secrets.replication_policy.Get()
-
-    if not replication_policy:
-      raise exceptions.RequiredArgumentException('replication-policy',
-                                                 self.MISSING_POLICY_MESSAGE)
+    default_to_automatic = replication_policy is None
+    if default_to_automatic:
+      replication_policy = 'automatic'
     if replication_policy not in {'user-managed', 'automatic'}:
       if args.replication_policy:
         raise exceptions.InvalidArgumentException('replication-policy',
@@ -150,6 +149,9 @@ class Create(base.CreateCommand):
         if args.replication_policy:
           raise exceptions.InvalidArgumentException(
               'locations', self.AUTOMATIC_AND_LOCATIONS_MESSAGE)
+        if default_to_automatic:
+          raise exceptions.InvalidArgumentException(
+              'locations', self.NO_POLICY_AND_LOCATIONS_MESSAGE)
         raise exceptions.InvalidArgumentException(
             'locations', self.AUTOMATIC_PROP_AND_LOCATIONS_MESSAGE)
       if locations:
@@ -183,21 +185,21 @@ class CreateBeta(Create):
   r"""Create a new secret.
 
   Create a secret with the given name and creates a secret version with the
-  given data, if any. If a secret already exists with the given name, this
-  command will return an error.
+  given data, if any. Note, the created secret ends with a newline.
+  If a secret already exists with the given name, this command will return
+  an error.
 
   ## EXAMPLES
 
   Create a secret with an automatic replication policy without creating any
   versions:
 
-    $ {command} my-secret --replication-policy=automatic
+    $ {command} my-secret
 
   Create a new secret named 'my-secret' with an automatic replication policy
   and data from a file:
 
     $ {command} my-secret --data-file=/tmp/secret
-    --replication-policy=automatic
 
   Create a new secret named 'my-secret' in 'us-central1' with data from a file:
 

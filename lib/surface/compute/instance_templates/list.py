@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.instance_templates import flags
 
 
 class List(base.ListCommand):
-  """List Google Compute Engine virtual machine instance templates."""
+  """List Compute Engine virtual machine instance templates."""
 
   @staticmethod
   def Args(parser):

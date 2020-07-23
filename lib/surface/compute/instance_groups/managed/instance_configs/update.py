@@ -224,7 +224,7 @@ UpdateBeta.detailed_help = {
     'DESCRIPTION':
         """\
         *{command}* updates the per instance config of an instance controlled by
-        a Google Compute Engine managed instance group. The command lets you
+        a Compute Engine managed instance group. The command lets you
         change the list of instance-specific stateful resources, that is, the
         list of resources that are preserved during instance restarts and
         recreations.

@@ -83,7 +83,7 @@ class ListInstances(base.ListCommand):
     if errors:
       utils.RaiseToolException(errors)
 
-    return instance_groups_utils.UnwrapResponse(results, 'items')
+    return results
 
 
 ListInstances.detailed_help = {

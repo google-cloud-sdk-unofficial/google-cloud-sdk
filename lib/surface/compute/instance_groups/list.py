@@ -42,7 +42,7 @@ def _Args(parser):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List Google Compute Engine instance groups."""
+  """List Compute Engine instance groups."""
 
   @staticmethod
   def Args(parser):
@@ -91,7 +91,7 @@ class List(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ListBetaAlpha(List):
-  """List Google Compute Engine managed instance groups."""
+  """List Compute Engine managed instance groups."""
 
   @staticmethod
   def Args(parser):

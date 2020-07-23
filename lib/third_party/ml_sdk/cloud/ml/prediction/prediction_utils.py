@@ -419,9 +419,14 @@ def load_joblib_or_pickle_model(model_path):
         # add a dependency to sklearn anywhere that prediction_lib is called.
         from sklearn.externals import joblib  # pylint: disable=g-import-not-at-top
       except Exception as e:  # pylint: disable=broad-except
-        error_msg = "Could not import sklearn module."
-        logging.exception(error_msg)
-        raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
+        try:
+          # Load joblib only when needed. If we put this at the top, we need to
+          # add a dependency to joblib anywhere that prediction_lib is called.
+          import joblib  # pylint: disable=g-import-not-at-top
+        except Exception as e:  # pylint: disable=broad-except
+          error_msg = "Could not import joblib module."
+          logging.exception(error_msg)
+          raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
 
       logging.info("Loading model %s using joblib.", model_file_name)
       return joblib.load(model_file_name)

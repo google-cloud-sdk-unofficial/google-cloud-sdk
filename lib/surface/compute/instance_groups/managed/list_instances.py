@@ -33,7 +33,7 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListInstances(base.ListCommand):
-  """List Google Compute Engine instances present in managed instance group."""
+  """List Compute Engine instances present in managed instance group."""
 
   @staticmethod
   def Args(parser):
@@ -79,7 +79,7 @@ class ListInstances(base.ListCommand):
 
     if errors:
       utils.RaiseToolException(errors)
-    return instance_groups_utils.UnwrapResponse(results, 'managedInstances')
+    return results
 
 
 ListInstances.detailed_help = {
@@ -121,7 +121,7 @@ ListInstances.detailed_help = {
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListInstancesBeta(ListInstances):
-  """List Google Compute Engine instances present in managed instance group."""
+  """List Compute Engine instances present in managed instance group."""
 
   @staticmethod
   def Args(parser):
@@ -138,7 +138,7 @@ ListInstancesBeta.detailed_help = ListInstances.detailed_help
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListInstancesAlpha(ListInstances):
-  """List Google Compute Engine instances present in managed instance group."""
+  """List Compute Engine instances present in managed instance group."""
 
   @staticmethod
   def Args(parser):

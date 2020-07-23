@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
+from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
@@ -28,7 +29,7 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 
 
 class ListInstances(base.ListCommand):
-  """List Google Compute Engine instances present in instance group."""
+  """List Compute Engine instances present in instance group."""
 
   @staticmethod
   def Args(parser):
@@ -79,13 +80,15 @@ class ListInstances(base.ListCommand):
           project=group_ref.project)
 
     errors = []
-    results = client.MakeRequests(
+    results = request_helper.MakeRequests(
         requests=[(service, 'ListInstances', request)],
-        errors_to_collect=errors)
+        http=client.apitools_client.http,
+        batch_url=client.batch_url,
+        errors=errors)
 
     if errors:
       utils.RaiseToolException(errors)
-    return instance_groups_utils.UnwrapResponse(results, 'items')
+    return results
 
 
 ListInstances.detailed_help = {

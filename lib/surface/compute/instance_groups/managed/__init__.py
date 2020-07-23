@@ -23,9 +23,9 @@ from googlecloudsdk.calliope import base
 
 
 class ManagedInstanceGroups(base.Group):
-  """Read and manipulate Google Compute Engine managed instance groups."""
+  """Read and manipulate Compute Engine managed instance groups."""
 
 ManagedInstanceGroups.detailed_help = {
     'brief': (
-        'Read and manipulate Google Compute Engine managed instance groups'),
+        'Read and manipulate Compute Engine managed instance groups'),
 }

@@ -26,7 +26,8 @@ from googlecloudsdk.command_lib.resource_manager import org_policies_flags as fl
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Deny(base.Command):
   r"""Add values to an Organization Policy denied_values list policy.
 

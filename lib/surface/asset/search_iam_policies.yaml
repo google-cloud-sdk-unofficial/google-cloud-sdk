@@ -1,14 +1,9 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [BETA]
   BETA:
     hidden: true
   help_text:
     brief: Searches accessible IAM policies that match a query.
     description: Searches accessible IAM policies that match a query.
-    ALPHA:
-      examples: |
-        To search your accessible IAM policies that contains `amy@mycompany.com`, run:
-
-            $ {command} --query='policy : "amy@mydomain.com"'
     BETA:
       examples: |
         To search your accessible IAM policies that contains `amy@mycompany.com`, under your
@@ -19,8 +14,6 @@
   request:
     collection: cloudasset.iamPolicies
     method: search
-    ALPHA:
-      api_version: v1p1alpha1
     BETA:
       api_version: v1p1beta1
       modify_request_hooks:

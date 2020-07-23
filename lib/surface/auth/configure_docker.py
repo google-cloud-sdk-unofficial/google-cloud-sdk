@@ -72,6 +72,11 @@ class ConfigureDocker(base.Command):
         nargs='?',
         help='The comma-separated list of registries to configure the credential helper for.'
     )
+    parser.add_argument(
+        '--include-artifact-registry',
+        action='store_true',
+        help='Whether to include all Artifact Registry domains.',
+        hidden=True)
 
   def Run(self, args):
     """Run the configure-docker command."""
@@ -113,11 +118,17 @@ class ConfigureDocker(base.Command):
       registries = filter(self.CheckValidRegistry, args.registries.split(','))
       new_helpers = cred_utils.GetGcloudCredentialHelperConfig(registries)
     else:
-      log.status.Print('Adding credentials for all GCR repositories.')
+      # If include-artifact-registry is set, add all GCR and AR repos, otherwise
+      # just GCR repos.
+      if args.include_artifact_registry:
+        log.status.Print('Adding credentials for all GCR and AR repositories.')
+      else:
+        log.status.Print('Adding credentials for all GCR repositories.')
       log.warning('A long list of credential helpers may cause delays running '
                   '\'docker build\'. We recommend passing the registry name to '
                   'configure only the registry you are using.')
-      new_helpers = cred_utils.GetGcloudCredentialHelperConfig()
+      new_helpers = cred_utils.GetGcloudCredentialHelperConfig(
+          None, args.include_artifact_registry)
 
     # Merge in the new settings so that existing configs are preserved.
     merged_helper_map = current_helper_map.copy()

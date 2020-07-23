@@ -40,15 +40,13 @@ Learn more about regional endpoints and see a list of available regions:
 
 
 def _AddCreateArgs(parser,
-                   support_console_logging=False,
-                   hide_region_flag=True):
+                   support_console_logging=False):
   """Get arguments for the `ai-platform models create` command."""
   flags.GetModelName().AddToParser(parser)
   flags.GetDescriptionFlag('model').AddToParser(parser)
   region_group = parser.add_mutually_exclusive_group()
   region_group.add_argument(
       '--region',
-      hidden=hide_region_flag,
       help=_REGION_FLAG_HELPTEXT)
   region_group.add_argument(
       '--regions',
@@ -110,7 +108,7 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    _AddCreateArgs(parser, support_console_logging=True, hide_region_flag=False)
+    _AddCreateArgs(parser, support_console_logging=True)
 
   def Run(self, args):
     self._Run(args, support_console_logging=True)

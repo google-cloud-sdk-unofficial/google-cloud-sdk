@@ -41,10 +41,10 @@ def _GetUri(model):
   return ref.SelfLink()
 
 
-def _AddListArgs(parser, hide_region_flag=True):
+def _AddListArgs(parser):
   parser.display_info.AddFormat(_DEFAULT_FORMAT)
   parser.display_info.AddUriFunc(_GetUri)
-  flags.GetRegionArg(hidden=hide_region_flag).AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
 
 
 def _Run(args):
@@ -70,7 +70,7 @@ class ListBeta(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    _AddListArgs(parser, hide_region_flag=False)
+    _AddListArgs(parser)
 
   def Run(self, args):
     return _Run(args)

@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import operations_util
 
 
-def _AddListArgs(parser, hide_region_flag=True):
+def _AddListArgs(parser):
   list_format = """\
     table(
         name.basename(),
@@ -34,7 +34,7 @@ def _AddListArgs(parser, hide_region_flag=True):
     )
 """
   parser.display_info.AddFormat(list_format)
-  flags.GetRegionArg(hidden=hide_region_flag).AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
 
 
 def _Run(args):
@@ -61,7 +61,7 @@ class ListBeta(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    _AddListArgs(parser, hide_region_flag=False)
+    _AddListArgs(parser)
 
   def Run(self, args):
     return _Run(args)

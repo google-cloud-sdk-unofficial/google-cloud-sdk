@@ -35,7 +35,7 @@ To describe a network endpoint group:
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine network endpoint group."""
+  """Describe a Compute Engine network endpoint group."""
 
   detailed_help = DETAILED_HELP
   support_global_scope = True
@@ -82,6 +82,6 @@ class Describe(base.DescribeCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DescribeAlphaBeta(Describe):
-  """Describe a Google Compute Engine network endpoint group."""
+  """Describe a Compute Engine network endpoint group."""
 
   support_regional_scope = True

@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.tpus import flags as tpus_flags
 from googlecloudsdk.command_lib.compute.tpus.execution_groups import util as tpu_utils
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -51,7 +52,7 @@ class Resume(base.Command):
                                        args.accelerator_type, args.tf_version,
                                        args.zone, args.preemptible)
       except HttpConflictError:
-        responses.append('TPU Node with name:{} already exists, '
+        log.status.Print('TPU Node with name:{} already exists, '
                          'try a different name'.format(
                              args.execution_group_name))
         return responses
@@ -61,7 +62,7 @@ class Resume(base.Command):
       instance_operation_ref = instance.Start(
           args.execution_group_name, args.zone)
     except HttpNotFoundError:
-      responses.append('Instance:{} not found, possibly deleted.'.format(
+      log.status.Print('Instance:{} not found, possibly deleted.'.format(
           args.execution_group_name))
       return responses
 
