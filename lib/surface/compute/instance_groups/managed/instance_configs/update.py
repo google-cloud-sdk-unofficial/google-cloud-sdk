@@ -38,84 +38,104 @@ class UpdateBeta(base.UpdateCommand):
   """Update per instance config of a managed instance group."""
 
   @staticmethod
-  def _CombinePerInstanceConfigMessage(
-      holder, configs_getter, igm_ref, instance_ref, update_stateful_disks,
-      remove_stateful_disks, update_stateful_metadata,
-      remove_stateful_metadata):
-    disk_getter = instance_disk_getter.InstanceDiskGetter(
-        instance_ref=instance_ref, holder=holder)
-    messages = holder.client.messages
-    per_instance_config = configs_getter.get_instance_config(
-        igm_ref=igm_ref, instance_ref=instance_ref)
-    remove_stateful_disks_set = set(remove_stateful_disks or [])
-    removed_stateful_disks_set = set()
-    update_stateful_disks_dict = UpdateBeta._UpdateStatefulDisksToDict(
-        update_stateful_disks)
+  def _PatchDiskData(messages, preserved_disk, update_disk_data):
+    """Patch preserved disk according to arguments of `update_disk_data`."""
+    auto_delete = update_disk_data.get('auto-delete')
+    if update_disk_data.get('source'):
+      preserved_disk.source = update_disk_data.get('source')
+    if update_disk_data.get('mode'):
+      preserved_disk.mode = instance_configs_messages.GetMode(
+          messages=messages, mode=update_disk_data.get('mode'))
+    if auto_delete:
+      preserved_disk.autoDelete = auto_delete.GetAutoDeleteEnumValue(
+          messages.PreservedStatePreservedDisk.AutoDeleteValueValuesEnum)
+    return preserved_disk
+
+  @staticmethod
+  def _UpdateStatefulDisks(messages, per_instance_config, disks_to_update_dict,
+                           disks_to_remove_set, disk_getter):
+    """Patch and return the updated list of stateful disks."""
     new_stateful_disks = []
-    existing_disks = []
-    if per_instance_config.preservedState.disks:
-      existing_disks =\
-          per_instance_config.preservedState.disks.additionalProperties
+    existing_disks = ((
+        per_instance_config.preservedState.disks.additionalProperties)
+                      if per_instance_config.preservedState.disks else [])
+    removed_stateful_disks_set = set()
     for current_stateful_disk in existing_disks:
       disk_name = current_stateful_disk.key
       # Disk to be removed
-      if disk_name in remove_stateful_disks_set:
+      if disk_name in disks_to_remove_set:
         removed_stateful_disks_set.add(disk_name)
         continue
       # Disk to be updated
-      if disk_name in update_stateful_disks_dict:
-        update_disk_data = update_stateful_disks_dict[disk_name]
-        source = update_disk_data.get('source')
-        mode = update_disk_data.get('mode')
-        auto_delete = update_disk_data.get('auto-delete')
-        if not (source or mode):
-          raise exceptions.InvalidArgumentException(
-              parameter_name='--stateful-disk',
-              message=('[source] or [mode] is required when updating'
-                       ' [device-name] already existing in instance config'))
-        preserved_disk = current_stateful_disk.value
-        if source:
-          preserved_disk.source = source
-        if mode:
-          preserved_disk.mode = instance_configs_messages.GetMode(
-              messages=messages, mode=mode)
-        if auto_delete:
-          preserved_disk.autoDelete = auto_delete.GetAutoDeleteEnumValue(
-              messages.PreservedStatePreservedDisk.AutoDeleteValueValuesEnum)
-        del update_stateful_disks_dict[disk_name]
+      if disk_name in disks_to_update_dict:
+        UpdateBeta._PatchDiskData(messages, current_stateful_disk.value,
+                                  disks_to_update_dict[disk_name])
+        del disks_to_update_dict[disk_name]
       new_stateful_disks.append(current_stateful_disk)
-    unremoved_stateful_disks = (
-        remove_stateful_disks_set.difference(removed_stateful_disks_set))
-    if unremoved_stateful_disks:
+    # Verify that there are no extraneous disks to be removed.
+    unremoved_stateful_disks_set = (
+        disks_to_remove_set.difference(removed_stateful_disks_set))
+    if unremoved_stateful_disks_set:
       raise exceptions.InvalidArgumentException(
           parameter_name='--remove-stateful-disk',
-          message=('The following are invalid stateful disks: `{0}`'
-                   .format(','.join(unremoved_stateful_disks))))
-    for update_stateful_disk in update_stateful_disks_dict.values():
+          message=('The following are invalid stateful disks: `{0}`'.format(
+              ','.join(unremoved_stateful_disks_set))))
+    for update_stateful_disk in disks_to_update_dict.values():
       new_stateful_disks.append(
           instance_configs_messages.MakePreservedStateDiskEntry(
               messages=messages,
               stateful_disk_data=update_stateful_disk,
               disk_getter=disk_getter))
+    return new_stateful_disks
 
+  @staticmethod
+  def _UpdateStatefulMetadata(messages, per_instance_config,
+                              update_stateful_metadata,
+                              remove_stateful_metadata):
+    """Patch and return updated stateful metadata."""
     existing_metadata = []
     if per_instance_config.preservedState.metadata:
-      existing_metadata = per_instance_config.preservedState\
-          .metadata.additionalProperties
+      existing_metadata = per_instance_config.preservedState \
+        .metadata.additionalProperties
     new_stateful_metadata = {
         metadata.key: metadata.value
         for metadata in existing_metadata
     }
-    for stateful_metadata_key_to_remove in remove_stateful_metadata or []:
-      if stateful_metadata_key_to_remove in new_stateful_metadata:
-        del new_stateful_metadata[stateful_metadata_key_to_remove]
+    for metadata_key in remove_stateful_metadata or []:
+      if metadata_key in new_stateful_metadata:
+        del new_stateful_metadata[metadata_key]
       else:
         raise exceptions.InvalidArgumentException(
             parameter_name='--remove-stateful-metadata',
             message=('stateful metadata key to remove `{0}` does not exist in'
-                     ' the given instance config'.format(
-                         stateful_metadata_key_to_remove)))
+                     ' the given instance config'.format(metadata_key)))
     new_stateful_metadata.update(update_stateful_metadata)
+    return new_stateful_metadata
+
+  @staticmethod
+  def _CombinePerInstanceConfigMessage(holder, configs_getter, igm_ref,
+                                       instance_ref, update_stateful_disks,
+                                       remove_stateful_disks,
+                                       update_stateful_metadata,
+                                       remove_stateful_metadata):
+    # Patch stateful disks.
+    disk_getter = instance_disk_getter.InstanceDiskGetter(
+        instance_ref=instance_ref, holder=holder)
+    messages = holder.client.messages
+    per_instance_config = configs_getter.get_instance_config(
+        igm_ref=igm_ref, instance_ref=instance_ref)
+    disks_to_remove_set = set(remove_stateful_disks or [])
+    disks_to_update_dict = {
+        update_stateful_disk.get('device-name'): update_stateful_disk
+        for update_stateful_disk in (update_stateful_disks or [])
+    }
+    new_stateful_disks = UpdateBeta._UpdateStatefulDisks(
+        messages, per_instance_config, disks_to_update_dict,
+        disks_to_remove_set, disk_getter)
+    # Patch stateful metadata.
+    new_stateful_metadata = UpdateBeta._UpdateStatefulMetadata(
+        messages, per_instance_config, update_stateful_metadata,
+        remove_stateful_metadata)
 
     # Create preserved state
     preserved_state = messages.PreservedState()
@@ -129,14 +149,6 @@ class UpdateBeta(base.UpdateCommand):
     )
     per_instance_config.preservedState = preserved_state
     return per_instance_config
-
-  @staticmethod
-  def _UpdateStatefulDisksToDict(update_stateful_disks):
-    update_stateful_disks_dict = {}
-    for update_stateful_disk in update_stateful_disks or []:
-      update_stateful_disks_dict[update_stateful_disk.get(
-          'device-name')] = update_stateful_disk
-    return update_stateful_disks_dict
 
   @staticmethod
   def _CreateInstanceReference(holder, igm_ref, instance_name):

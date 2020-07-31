@@ -73,15 +73,15 @@ class ListUsableSubnets(base.ListCommand):
 ListUsableSubnets.detailed_help = {
     'brief':
         """\
-        List Google Compute Engine subnetworks permitted for use.
+        List Compute Engine subnetworks permitted for use.
         """,
     'DESCRIPTION':
         """\
-        *{command}* is used to list Google Compute Engine subnetworks in a
+        *{command}* is used to list Compute Engine subnetworks in a
         project that the user has permission to use.
 
         By default, usable subnetworks are listed for the default Google Cloud
-        Platform project and user account. These values can be overridden by
+        project and user account. These values can be overridden by
         setting the global flags: `--project=PROJECT_ID` and/or
         `--account=ACCOUNT`.
         """,

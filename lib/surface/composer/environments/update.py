@@ -61,7 +61,8 @@ class Update(base.Command):
                       env_ref,
                       args,
                       support_environment_upgrades=False,
-                      support_web_server_access_control=False):
+                      support_web_server_access_control=False,
+                      support_cloud_sql_machine_type=False):
 
     params = dict(
         env_ref=env_ref,
@@ -90,6 +91,8 @@ class Update(base.Command):
           environments_api_util.BuildWebServerAllowedIps(
               args.update_web_server_allow_ip, args.web_server_allow_all,
               args.web_server_deny_all))
+    if support_cloud_sql_machine_type:
+      params['cloud_sql_machine_type'] = args.cloud_sql_machine_type
 
     return patch_util.ConstructPatch(**params)
 
@@ -110,15 +113,19 @@ class UpdateBeta(Update):
 
   @staticmethod
   def AlphaAndBetaArgs(parser):
+    """Arguments available only in both alpha and beta."""
     Update.Args(parser)
 
     # Environment upgrade arguments
     UpdateBeta.support_environment_upgrades = True
     flags.AddEnvUpgradeFlagsToGroup(Update.update_type_group)
+
     UpdateBeta.support_web_server_access_control = False
+    flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(Update.update_type_group)
 
   @staticmethod
   def Args(parser):
+    """Arguments available only in beta, not in alpha."""
     UpdateBeta.AlphaAndBetaArgs(parser)
     UpdateBeta.support_web_server_access_control = True
     web_server_group = Update.update_type_group.add_mutually_exclusive_group()
@@ -151,7 +158,7 @@ class UpdateBeta(Update):
 
     field_mask, patch = self._ConstructPatch(
         env_ref, args, UpdateBeta.support_environment_upgrades,
-        UpdateBeta.support_web_server_access_control)
+        UpdateBeta.support_web_server_access_control, True)
 
     return patch_util.Patch(
         env_ref,

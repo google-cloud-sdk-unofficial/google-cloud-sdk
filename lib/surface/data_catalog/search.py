@@ -118,6 +118,13 @@ class Search(base.Command):
         help="""\
             List of Cloud Organization IDs to include in the search.
         """)
+    scope_group.add_argument(
+        '--restricted-locations',
+        type=arg_parsers.ArgList(),
+        metavar='LOCATION',
+        help="""\
+            List of locations to search within.
+        """)
 
   def Run(self, args):
     """Run the search command."""

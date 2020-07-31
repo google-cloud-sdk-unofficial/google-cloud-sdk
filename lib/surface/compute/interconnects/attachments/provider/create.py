@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.compute.interconnects.attachments import flags a
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
-  """Create a Google Compute Engine partner provider interconnect attachment.
+  """Create a Compute Engine partner provider interconnect attachment.
 
   *{command}* is used to create partner provider interconnect attachments. An
   interconnect attachment binds the underlying connectivity of an Interconnect
@@ -91,7 +91,7 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
-  """Create a Google Compute Engine partner provider interconnect attachment.
+  """Create a Compute Engine partner provider interconnect attachment.
 
   *{command}* is used to create partner provider interconnect attachments. An
   interconnect attachment binds the underlying connectivity of an Interconnect

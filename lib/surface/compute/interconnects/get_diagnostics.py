@@ -25,9 +25,9 @@ from googlecloudsdk.command_lib.compute.interconnects import flags
 
 
 class GetDiagnostics(base.DescribeCommand):
-  """Get diagnostics of a Google Compute Engine interconnect.
+  """Get diagnostics of a Compute Engine interconnect.
 
-    *{command}* displays all runtime data associated with Google Compute Engine
+    *{command}* displays all runtime data associated with Compute Engine
     interconnect in a project.
   """
 

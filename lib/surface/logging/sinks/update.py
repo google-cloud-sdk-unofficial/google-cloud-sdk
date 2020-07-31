@@ -32,7 +32,7 @@ class Update(base.UpdateCommand):
   """Updates a sink.
 
   Changes the *[destination]* or *--log-filter* associated with a sink.
-  The new destination must already exist and Stackdriver Logging must have
+  The new destination must already exist and Cloud Logging must have
   permission to write to it.
   Log entries are exported to the new destination immediately.
 

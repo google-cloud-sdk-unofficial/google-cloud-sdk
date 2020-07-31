@@ -28,7 +28,7 @@ from googlecloudsdk.core.resource import resource_projector
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List Google Compute Engine network peerings."""
+  """List Compute Engine network peerings."""
 
   @staticmethod
   def Args(parser):
@@ -78,7 +78,7 @@ class List(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListBeta(List):
-  """List Google Compute Engine network peerings."""
+  """List Compute Engine network peerings."""
 
   @staticmethod
   def Args(parser):

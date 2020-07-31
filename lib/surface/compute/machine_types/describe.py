@@ -25,10 +25,10 @@ from googlecloudsdk.command_lib.compute.machine_types import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine machine type.
+  """Describe a Compute Engine machine type.
 
-  *{command}* displays all data associated with a Google Compute
-  Engine machine type.
+  *{command}* displays all data associated with a Compute Engine
+  machine type.
 
   ## EXAMPLES
   To describe a machine type 'MACHINE-TYPE' in zone 'us-central1-f', run:

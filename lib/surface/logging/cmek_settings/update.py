@@ -34,7 +34,7 @@ class Update(base.Command):
   Use this command to update the *--kms-key-name* associated with the
   Stackdriver Logs Router.
 
-  The Cloud KMS key must already exist and Stackdriver Logging must have
+  The Cloud KMS key must already exist and Cloud Logging must have
   permission to access it.
 
   Customer-managed encryption keys (CMEK) for the Logs Router can currently

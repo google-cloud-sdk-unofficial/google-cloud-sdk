@@ -126,10 +126,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    if Create.ReleaseTrack() == base.ReleaseTrack.GA:
-      flags.AddKeyResourceArgument(parser, 'to create')
-    else:
-      resource_args.AddKmsKeyResourceArgForKMS(parser, True, 'key')
+    resource_args.AddKmsKeyResourceArgForKMS(parser, True, 'key')
     flags.AddRotationPeriodFlag(parser)
     flags.AddNextRotationTimeFlag(parser)
     flags.AddSkipInitialVersionCreationFlag(parser)
@@ -166,12 +163,8 @@ class Create(base.CreateCommand):
           'algorithms for --purpose={}: {}'.format(args.purpose,
                                                    ', '.join(valid_algorithms)))
 
-    if Create.ReleaseTrack() == base.ReleaseTrack.GA:
-      crypto_key_ref = flags.ParseCryptoKeyName(args)
-      parent_ref = flags.ParseParentFromResource(crypto_key_ref)
-    else:
-      crypto_key_ref = args.CONCEPTS.key.Parse()
-      parent_ref = crypto_key_ref.Parent()
+    crypto_key_ref = args.CONCEPTS.key.Parse()
+    parent_ref = crypto_key_ref.Parent()
     req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCreateRequest(
         parent=parent_ref.RelativeName(),
         cryptoKeyId=crypto_key_ref.Name(),

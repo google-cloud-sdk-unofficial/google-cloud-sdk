@@ -39,11 +39,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    if Create.ReleaseTrack() == base.ReleaseTrack.GA:
-      flags.AddLocationFlag(parser, 'keyring')
-      flags.AddKeyRingArgument(parser, 'to create')
-    else:
-      resource_args.AddKmsKeyringResourceArgForKMS(parser, True, 'keyring')
+    resource_args.AddKmsKeyringResourceArgForKMS(parser, True, 'keyring')
 
     parser.display_info.AddCacheUpdater(flags.KeyRingCompleter)
 
@@ -51,12 +47,8 @@ class Create(base.CreateCommand):
     client = cloudkms_base.GetClientInstance()
     messages = cloudkms_base.GetMessagesModule()
 
-    if Create.ReleaseTrack() == base.ReleaseTrack.GA:
-      key_ring_ref = flags.ParseKeyRingName(args)
-      parent_ref = flags.ParseParentFromResource(key_ring_ref)
-    else:
-      key_ring_ref = args.CONCEPTS.keyring.Parse()
-      parent_ref = key_ring_ref.Parent()
+    key_ring_ref = args.CONCEPTS.keyring.Parse()
+    parent_ref = key_ring_ref.Parent()
     req = messages.CloudkmsProjectsLocationsKeyRingsCreateRequest(
         parent=parent_ref.RelativeName(),
         keyRingId=key_ring_ref.Name(),

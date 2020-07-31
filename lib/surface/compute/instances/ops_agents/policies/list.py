@@ -54,7 +54,6 @@ def _Args(parser):
       {'description': _TransformGuestPolicyDescription})
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List Google Cloud Operations Suite Agents (Ops Agents) policies.

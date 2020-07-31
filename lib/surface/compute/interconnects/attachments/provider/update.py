@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
-  """Update a Google Compute Engine partner provider interconnect attachment.
+  """Update a Compute Engine partner provider interconnect attachment.
 
   *{command}* is used to update partner provider interconnect attachments. An
   interconnect attachment binds the underlying connectivity of an Interconnect
@@ -82,7 +82,7 @@ class Update(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateGa(Update):
-  """Update a Google Compute Engine partner provider interconnect attachment.
+  """Update a Compute Engine partner provider interconnect attachment.
 
   *{command}* is used to update partner provider interconnect attachments. An
   interconnect attachment binds the underlying connectivity of an Interconnect

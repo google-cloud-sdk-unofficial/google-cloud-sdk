@@ -39,7 +39,7 @@ def PrintPairingKeyEpilog(pairing_key):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
-  """Create a Google Compute Engine partner interconnect attachment.
+  """Create a Compute Engine partner interconnect attachment.
 
   *{command}* is used to create partner interconnect attachments. A partner
   interconnect attachment binds the underlying connectivity of a provider's
@@ -101,7 +101,7 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
-  """Create a Google Compute Engine partner interconnect attachment.
+  """Create a Compute Engine partner interconnect attachment.
 
   *{command}* is used to create partner interconnect attachments. A partner
   interconnect attachment binds the underlying connectivity of a provider's

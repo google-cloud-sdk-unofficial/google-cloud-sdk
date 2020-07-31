@@ -25,7 +25,7 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Logging(base.Group):
-  """Manage Stackdriver Logging."""
+  """Manage Cloud Logging."""
 
   category = base.MANAGEMENT_TOOLS_CATEGORY
 

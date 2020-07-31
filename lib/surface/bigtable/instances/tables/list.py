@@ -33,7 +33,6 @@ def _GetUriFunction(resource):
   return table_ref.SelfLink()
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ListInstances(base.ListCommand):
   """List existing Bigtable instance tables.
 

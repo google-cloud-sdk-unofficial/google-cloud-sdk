@@ -37,8 +37,12 @@ def AddBaseArgs(parser):
   flags.AddPassword(parser)
 
 
-def AddAlphaArgs(parser):
+def AddBetaArgs(parser):
   flags.AddType(parser)
+
+
+def AddAlphaArgs(parser):
+  AddBetaArgs(parser)
 
 
 def RunBaseCreateCommand(args, release_track):
@@ -61,7 +65,7 @@ def RunBaseCreateCommand(args, release_track):
       collection='sql.instances')
   operation_ref = None
 
-  if release_track == base.ReleaseTrack.ALPHA:
+  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
     user_type = users.ParseUserType(sql_messages, args)
     new_user = sql_messages.User(
         kind='sql#user',
@@ -100,7 +104,7 @@ def RunBaseCreateCommand(args, release_track):
   return result
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Creates a user in a given instance.
 
@@ -118,12 +122,28 @@ class Create(base.CreateCommand):
     return RunBaseCreateCommand(args, self.ReleaseTrack())
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
   """Creates a user in a given instance.
 
-  Creates a user in a given instance with specified username, host, and
-  password.
+  Creates a user in a given instance with specified username, host,
+  type, and password.
+  """
+
+  @staticmethod
+  def Args(parser):
+    AddBaseArgs(parser)
+    AddBetaArgs(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+    parser.display_info.AddCacheUpdater(flags.UserCompleter)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Creates a user in a given instance.
+
+  Creates a user in a given instance with specified username, host,
+  type, and password.
   """
 
   @staticmethod
@@ -132,6 +152,3 @@ class CreateAlpha(base.CreateCommand):
     AddAlphaArgs(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.UserCompleter)
-
-  def Run(self, args):
-    return RunBaseCreateCommand(args, self.ReleaseTrack())

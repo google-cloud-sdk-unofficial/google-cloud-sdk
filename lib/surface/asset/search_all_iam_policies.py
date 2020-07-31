@@ -54,10 +54,13 @@ def AddScopeArgument(parser):
       metavar='SCOPE',
       required=False,
       help=("""\
-        A scope can be a project, a folder or an organization. The search is
+        A scope can be a project, a folder, or an organization. The search is
         limited to the IAM policies within this scope. The caller must be
         granted the ``cloudasset.assets.searchAllIamPolicies'' permission
-        on the desired scope.
+        on the desired scope. If not specified, the [configured project property](https://cloud.google.com//sdk/docs/configurations#setting_configuration_properties)
+        will be used. To find the configured project, run:
+        ```gcloud config get-value project```. To change the setting, run:
+        ```gcloud config set project PROJECT_ID```.
 
         The allowed values are:
 
@@ -65,10 +68,6 @@ def AddScopeArgument(parser):
           * ```projects/{PROJECT_NUMBER}``` (e.g. ``projects/12345678'')
           * ```folders/{FOLDER_NUMBER}``` (e.g. ``folders/1234567'')
           * ```organizations/{ORGANIZATION_NUMBER}``` (e.g. ``organizations/123456'')
-
-        If not specified, the configured project will be used. To find the
-        configured project, run: ```gcloud config get-value project```. To
-        change the setting, run: ```gcloud config set project PROJECT_ID```.
         """))
 
 
@@ -78,27 +77,38 @@ def AddQueryArgument(parser):
       metavar='QUERY',
       required=False,
       help=("""\
-        The query statement. An empty query can be specified to search all the
-        IAM policies within the specified ```--scope```.
+        The query statement. See [how to construct a
+        query](https://cloud.google.com/asset-inventory/docs/searching-iam-policies#how_to_construct_a_query)
+        for more information. If not specified or empty, it will search all the
+        IAM policies within the specified ```scope```. Note that the query
+        string is compared against each Cloud IAM policy binding, including its
+        members, roles, and Cloud IAM conditions. The returned Cloud IAM
+        policies will only contain the bindings that match your query. To learn
+        more about the IAM policy structure, see [IAM policy doc](https://cloud.google.com/iam/docs/policies#structure).
 
         Examples:
 
-        * ```policy : "amy@gmail.com"``` to find Cloud IAM policy bindings that
+        * ```policy : "amy@gmail.com"``` to find IAM policy bindings that
           specify user ``amy@gmail.com''.
-        * ```policy : "roles/compute.admin"``` to find Cloud IAM policy bindings
+        * ```policy : "roles/compute.admin"``` to find IAM policy bindings
           that specify the Compute Admin role.
         * ```policy.role.permissions : "storage.buckets.update"``` to find Cloud
           IAM policy bindings that specify a role containing the
-          ``storage.buckets.update'' permission.
-        * ```resource : "organizations/123456"``` to find Cloud IAM policy
+          ``storage.buckets.update'' permission. Note that if callers don't have
+          ``iam.roles.get'' access to a role's included permissions, policy
+          bindings that specify this role will be dropped from the search
+          results.
+        * ```resource : "organizations/123456"``` to find IAM policy
           bindings that are set on ``organizations/123456''.
+        * ```"Important"``` to find IAM policy bindings that contain
+          ``Important'' as a word in any of the searchable fields (except for
+          the included permissions).
+        * ```"*por*"``` to find IAM policy bindings which contain ``por'' as a
+          substring in any of the searchable fields (except for the included
+          permissions).
         * ```(resource : ("instance1" OR "instance2") AND policy : "amy")```
-          to find Cloud IAM policy bindings that are set on resources
+          to find IAM policy bindings that are set on resources
           ``instance1'' or ``instance2'' and also specify user ``amy''.
-
-        See [how to construct a
-        query](https://cloud.google.com/asset-inventory/docs/searching-iam-policies#how_to_construct_a_query)
-        for more information.
         """))
 
 

@@ -252,10 +252,6 @@ def ParseCreateOptionsBase(args, is_autogke):
 
   metadata = metadata_utils.ConstructMetadataDict(args.metadata,
                                                   args.metadata_from_file)
-
-  flags.ValidateCloudRunConfigCreateArgs(
-      getattr(args, 'cloud_run_config', None), getattr(args, 'addons', None))
-
   # TODO(b/154823988)
   # getattr should use the same defaults from the flags for the message
   return api_adapter.CreateClusterOptions(
@@ -268,7 +264,6 @@ def ParseCreateOptionsBase(args, is_autogke):
           args, 'cluster_secondary_range_name',
           None),
       cluster_version=getattr(args, 'cluster_version', None),
-      cloud_run_config=getattr(args, 'cloud_run_config', None),
       node_version=getattr(args, 'node_version', None),
       create_subnetwork=getattr(args, 'create_subnetwork', None),
       disk_type=getattr(args, 'disk_type', None),
@@ -338,6 +333,7 @@ def ParseCreateOptionsBase(args, is_autogke):
         getattr(args, 'enable_resource_consumption_metering', None),
       database_encryption_key=getattr(args, 'database_encryption_key', None),
       workload_pool=getattr(args, 'workload_pool', None),
+      identity_provider=getattr(args, 'identity_provider', None),
       workload_metadata=getattr(args, 'workload_metadata', None),
       workload_metadata_from_node=\
         getattr(args, 'workload_metadata_from_node', None),
@@ -378,6 +374,7 @@ def ParseCreateOptionsBase(args, is_autogke):
       max_unavailable_upgrade=getattr(args, 'max_unavailable_upgrade', None),
       auto_gke=is_autogke)
 
+
 GA = 'ga'
 BETA = 'beta'
 ALPHA = 'alpha'
@@ -407,8 +404,8 @@ def AddTpuWithServiceNetworking(parser):
   flags.AddTpuFlags(parser, enable_tpu_service_networking=True)
 
 
-def AddWorkloadIdentityNoPool(parser):
-  flags.AddWorkloadIdentityFlags(parser, use_workload_pool=False)
+def AddWorkloadIdentityWithProvider(parser):
+  flags.AddWorkloadIdentityFlags(parser, use_identity_provider=True)
 
 
 def AddDisableDefaultSnatFlagForClusterCreate(parser):
@@ -422,6 +419,7 @@ def AddMasterSignalsFlag(parser):
 def AddPrivateIPv6Flag(api, parser):
   flags.AddPrivateIpv6GoogleAccessTypeFlag(api, parser, hidden=True)
 
+
 flags_to_add = {
     GA: {
         'additionalzones': _AddAdditionalZonesFlag,
@@ -433,7 +431,6 @@ flags_to_add = {
         'binauthz': flags.AddEnableBinAuthzFlag,
         'bootdiskkms': flags.AddBootDiskKmsKeyFlag,
         'cloudrunalpha': flags.AddEnableCloudRunAlphaFlag,
-        'cloudrunconfig': flags.AddCloudRunConfigFlag,
         'clusterautoscaling': flags.AddClusterAutoscalingFlags,
         'clusterversion': flags.AddClusterVersionFlag,
         'intranodevisibility': flags.AddEnableIntraNodeVisibilityFlag,
@@ -489,8 +486,6 @@ flags_to_add = {
             flags.AddBootDiskKmsKeyFlag,
         'cloudrunalpha':
             flags.AddEnableCloudRunAlphaFlag,
-        'cloudrunconfig':
-            flags.AddCloudRunConfigFlag,
         'clusterautoscaling':
             flags.AddClusterAutoscalingFlags,
         'clusterversion':
@@ -499,6 +494,8 @@ flags_to_add = {
             flags.AddEnableConfidentialNodesFlag,
         'datapath':
             (lambda p: flags.AddDatapathProviderFlag(p, hidden=True)),
+        'dataplanev2':
+            flags.AddDataplaneV2Flag,
         'disabledefaultsnat':
             AddDisableDefaultSnatFlagForClusterCreate,
         'intranodevisibility':
@@ -566,7 +563,7 @@ flags_to_add = {
         'verticalpodautoscaling':
             flags.AddVerticalPodAutoscalingFlag,
         'workloadidentity':
-            AddWorkloadIdentityNoPool,
+            AddWorkloadIdentityWithProvider,
         'workloadmetadata':
             (lambda p: flags.AddWorkloadMetadataFlag(p, use_mode=False)),
     },
@@ -601,12 +598,16 @@ flags_to_add = {
             flags.AddCloudRunConfigFlag,
         'clusterautoscaling':
             flags.AddClusterAutoscalingFlags,
+        'clusterdns':
+            flags.AddClusterDNSFlags,
         'confidentialnodes':
             flags.AddEnableConfidentialNodesFlag,
         'costmanagementconfig':
             flags.AddCostManagementConfigFlag,
         'datapath':
             lambda p: flags.AddDatapathProviderFlag(p, hidden=True),
+        'dataplanev2':
+            flags.AddDataplaneV2Flag,
         'disabledefaultsnat':
             AddDisableDefaultSnatFlagForClusterCreate,
         'gvnic':
@@ -684,7 +685,7 @@ flags_to_add = {
         'verticalpodautoscaling':
             flags.AddVerticalPodAutoscalingFlag,
         'workloadidentity':
-            AddWorkloadIdentityNoPool,
+            AddWorkloadIdentityWithProvider,
         'workloadmetadata':
             (lambda p: flags.AddWorkloadMetadataFlag(p, use_mode=False)),
     },
@@ -854,7 +855,6 @@ class CreateBeta(Create):
     ops.enable_vertical_pod_autoscaling = \
         getattr(args, 'enable_vertical_pod_autoscaling', None)
     ops.security_group = getattr(args, 'security_group', None)
-    ops.identity_namespace = getattr(args, 'identity_namespace', None)
     flags.ValidateIstioConfigCreateArgs(
         getattr(args, 'istio_config', None), getattr(args, 'addons', None))
     ops.max_surge_upgrade = getattr(args, 'max_surge_upgrade', None)
@@ -869,6 +869,7 @@ class CreateBeta(Create):
     ops.enable_gvnic = getattr(args, 'enable_gvnic', None)
     ops.system_config_from_file = getattr(args, 'system_config_from_file', None)
     ops.datapath_provider = getattr(args, 'datapath_provider', None)
+    ops.dataplane_v2 = getattr(args, 'enable_dataplane_v2', None)
     ops.disable_default_snat = getattr(args, 'disable_default_snat', None)
     ops.enable_master_metrics = getattr(args, 'enable_master_metrics', None)
     ops.master_logs = getattr(args, 'master_logs', None)
@@ -892,6 +893,7 @@ class CreateAlpha(Create):
     ops = ParseCreateOptionsBase(args, self.autogke)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
+    flags.ValidateCloudRunConfigCreateArgs(args.cloud_run_config, args.addons)
     flags.ValidateNotificationConfigFlag(args)
     ops.boot_disk_kms_key = getattr(args, 'boot_disk_kms_key', None)
     ops.autoscaling_profile = getattr(args, 'autoscaling_profile', None)
@@ -906,7 +908,7 @@ class CreateAlpha(Create):
     ops.enable_tpu_service_networking = \
         getattr(args, 'enable_tpu_service_networking', None)
     ops.istio_config = getattr(args, 'istio_config', None)
-    ops.identity_namespace = getattr(args, 'identity_namespace', None)
+    ops.cloud_run_config = getattr(args, 'cloud_run_config', None)
     ops.security_group = getattr(args, 'security_group', None)
     flags.ValidateIstioConfigCreateArgs(
         getattr(args, 'istio_config', None), getattr(args, 'addons', None))
@@ -933,6 +935,7 @@ class CreateAlpha(Create):
     ops.enable_logging_monitoring_system_only = \
         getattr(args, 'enable_logging_monitoring_system_only', None)
     ops.datapath_provider = getattr(args, 'datapath_provider', None)
+    ops.dataplane_v2 = getattr(args, 'enable_dataplane_v2', None)
     ops.enable_master_global_access = \
         getattr(args, 'enable_master_global_access', None)
     ops.enable_gvnic = getattr(args, 'enable_gvnic', None)
@@ -943,4 +946,7 @@ class CreateAlpha(Create):
         args, 'private_ipv6_google_access_type', None)
     ops.enable_confidential_nodes = \
         getattr(args, 'enable_confidential_nodes', None)
+    ops.cluster_dns = getattr(args, 'cluster_dns', None)
+    ops.cluster_dns_scope = getattr(args, 'cluster_dns_scope', None)
+    ops.cluster_dns_domain = getattr(args, 'cluster_dns_domain', None)
     return ops

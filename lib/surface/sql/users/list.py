@@ -52,7 +52,7 @@ def RunBaseListCommand(args):
           project=project_id, instance=args.instance)).items
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """Lists Cloud SQL users in a given instance.
 
@@ -69,8 +69,22 @@ class List(base.ListCommand):
     return RunBaseListCommand(args)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """Lists Cloud SQL users in a given instance.
+
+  Lists Cloud SQL users in a given instance in the alphabetical
+  order of the user name.
+  """
+
+  @staticmethod
+  def Args(parser):
+    AddBaseArgs(parser)
+    parser.display_info.AddFormat(flags.USERS_FORMAT_BETA)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
+class ListAlpha(ListBeta):
   """Lists Cloud SQL users in a given instance.
 
   Lists Cloud SQL users in a given instance in the alphabetical
@@ -81,6 +95,3 @@ class ListAlpha(base.ListCommand):
   def Args(parser):
     AddBaseArgs(parser)
     parser.display_info.AddFormat(flags.USERS_FORMAT_ALPHA)
-
-  def Run(self, args):
-    return RunBaseListCommand(args)

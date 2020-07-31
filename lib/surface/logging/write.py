@@ -100,7 +100,7 @@ Write.detailed_help = {
         resource type.
 
         {command} should be used for simple testing purposes.
-        Check Stackdriver Logging agent for a proper way to send log entries:
+        Check Cloud Logging agent for a proper way to send log entries:
         [](https://cloud.google.com/logging/docs/agent/)
     """,
     'EXAMPLES': """\

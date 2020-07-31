@@ -31,7 +31,7 @@ from googlecloudsdk.command_lib.compute.interconnects.attachments import flags
 class Delete(base.DeleteCommand):
   """Delete interconnects.
 
-  *{command}* deletes Google Compute Engine interconnect attachment.
+  *{command}* deletes Compute Engine interconnect attachment.
   """
 
   INTERCONNECT_ATTACHMENT_ARG = None

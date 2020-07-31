@@ -87,6 +87,7 @@ class Train(base.Command):
     _AddSubmitTrainingArgs(parser)
     flags.AddCustomContainerFlags(
         parser, support_tpu_tf_version=cls._SUPPORT_TPU_TF_VERSION)
+    flags.AddKmsKeyFlag(parser, 'job')
     parser.display_info.AddFormat(jobs_util.JOB_FORMAT)
 
   def Run(self, args):

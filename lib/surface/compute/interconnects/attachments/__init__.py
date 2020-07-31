@@ -23,5 +23,5 @@ from googlecloudsdk.calliope import base
 
 
 class InterconnectAttachments(base.Group):
-  """Read and manipulate Google Compute Engine interconnect attachments."""
+  """Read and manipulate Compute Engine interconnect attachments."""
   pass

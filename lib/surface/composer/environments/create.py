@@ -362,6 +362,7 @@ class CreateBeta(Create):
     flags.WEB_SERVER_ALLOW_IP.AddToParser(web_server_group)
     flags.WEB_SERVER_ALLOW_ALL.AddToParser(web_server_group)
     flags.WEB_SERVER_DENY_ALL.AddToParser(web_server_group)
+    flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(parser)
 
   def Run(self, args):
     if self._support_web_server_access_control:
@@ -413,6 +414,7 @@ class CreateBeta(Create):
         web_server_ipv4_cidr=args.web_server_ipv4_cidr,
         cloud_sql_ipv4_cidr=args.cloud_sql_ipv4_cidr,
         web_server_access_control=self.web_server_access_control,
+        cloud_sql_machine_type=args.cloud_sql_machine_type,
         release_track=self.ReleaseTrack())
 
 
@@ -432,6 +434,7 @@ class CreateAlpha(CreateBeta):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
+    flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(parser)
 
     # Private IP falgs without ranges missing in alpha.
     flags.AddPrivateIpEnvironmentFlags(parser, False)
@@ -475,4 +478,5 @@ class CreateAlpha(CreateBeta):
         private_environment=args.enable_private_environment,
         private_endpoint=args.enable_private_endpoint,
         master_ipv4_cidr=args.master_ipv4_cidr,
+        cloud_sql_machine_type=args.cloud_sql_machine_type,
         release_track=self.ReleaseTrack())

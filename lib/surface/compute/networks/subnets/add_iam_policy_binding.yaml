@@ -1,8 +1,8 @@
 release_tracks: [GA, BETA, ALPHA]
 help_text:
-  brief: Add an IAM policy binding to a Google Compute Engine subnetwork.
+  brief: Add an IAM policy binding to a Compute Engine subnetwork.
   description: |
-    Add an IAM policy binding to a Google Compute Engine subnetwork.
+    Add an IAM policy binding to a Compute Engine subnetwork.
 
   examples: |
     To add an IAM policy binding for the role of 'roles/compute.securityAdmin' for the user 'test-user@gmail.com'
@@ -42,9 +42,9 @@ arguments:
 
 ALPHA:
   help_text:
-    brief: Add IAM policy binding to a Google Compute Engine subnetwork.
+    brief: Add IAM policy binding to a Compute Engine subnetwork.
     description: |
-      Add an IAM policy binding to the IAM policy of a Google Compute Engine subnetwork. One binding consists of a member,
+      Add an IAM policy binding to the IAM policy of a Compute Engine subnetwork. One binding consists of a member,
       a role, and an optional condition.
 
     examples: |

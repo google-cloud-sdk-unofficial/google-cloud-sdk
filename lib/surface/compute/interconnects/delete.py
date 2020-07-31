@@ -27,9 +27,9 @@ from googlecloudsdk.command_lib.compute.interconnects import flags
 
 
 class Delete(base.DeleteCommand):
-  """Delete Google Compute Engine interconnects.
+  """Delete Compute Engine interconnects.
 
-  *{command}* deletes Google Compute Engine interconnects. Interconnects
+  *{command}* deletes Compute Engine interconnects. Interconnects
    can only be deleted when no other resources (e.g.,
    InterconnectAttachments) refer to them.
   """

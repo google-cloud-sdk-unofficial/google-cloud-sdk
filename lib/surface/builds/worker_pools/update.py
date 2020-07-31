@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import workerpool_config
 from googlecloudsdk.api_lib.compute import utils as compute_utils
@@ -28,7 +29,8 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-class Update(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(base.UpdateCommand):
   """Update a workerpool used by Google Cloud Build.
 
   Update a worker pool used by Google Cloud Build.
@@ -42,7 +44,8 @@ class Update(base.UpdateCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    parser = workerpool_flags.AddWorkerpoolUpdateArgs(parser)
+    parser = workerpool_flags.AddWorkerpoolUpdateArgs(
+        parser, release_track=base.ReleaseTrack.BETA)
     parser.display_info.AddFormat("""
           table(
             name,
@@ -62,8 +65,104 @@ class Update(base.UpdateCommand):
       Some value that we want to have printed later.
     """
 
-    client = cloudbuild_util.GetClientInstanceAlpha()
-    messages = cloudbuild_util.GetMessagesModuleAlpha()
+    release_track = self.ReleaseTrack()
+    client = cloudbuild_util.GetClientInstance(release_track)
+    messages = cloudbuild_util.GetMessagesModule(release_track)
+
+    parent = properties.VALUES.core.project.Get(required=True)
+
+    # Get the workerpool proto from either the flags or the specified file.
+    wp = messages.WorkerPool()
+    wp_region = args.region
+    if args.config_from_file is not None:
+      wp = workerpool_config.LoadWorkerpoolConfigFromPath(
+          args.config_from_file, messages)
+    else:
+      wp.name = args.WORKER_POOL
+      if args.peered_network is not None:
+        network_config = messages.NetworkConfig()
+        network_config.peeredNetwork = args.peered_network
+        wp.networkConfig = network_config
+      worker_config = messages.WorkerConfig()
+      if args.worker_machine_type is not None:
+        worker_config.machineType = args.worker_machine_type
+      if args.worker_disk_size is not None:
+        worker_config.diskSizeGb = compute_utils.BytesToGb(
+            args.worker_disk_size)
+      wp.workerConfig = worker_config
+
+    # Get the workerpool ref
+    wp_resource = resources.REGISTRY.Parse(
+        None,
+        collection='cloudbuild.projects.locations.workerPools',
+        api_version=cloudbuild_util.RELEASE_TRACK_TO_API_VERSION[release_track],
+        params={
+            'projectsId': parent,
+            'locationsId': wp_region,
+            'workerPoolsId': wp.name,
+        })
+
+    update_mask = cloudbuild_util.MessageToFieldPaths(wp)
+    req = messages.CloudbuildProjectsLocationsWorkerPoolsPatchRequest(
+        name=wp_resource.RelativeName(),
+        workerPool=wp,
+        updateMask=','.join(update_mask))
+    # Send the Update request
+    updated_op = client.projects_locations_workerPools.Patch(req)
+
+    raw_dict = encoding.MessageToDict(updated_op.response)
+    updated_wp = encoding.DictToMessage(raw_dict, messages.WorkerPool)
+
+    log.UpdatedResource(wp_resource)
+
+    # Format the workerpool name for display
+    try:
+      updated_wp.name = cloudbuild_util.WorkerPoolShortName(updated_wp.name)
+    except ValueError:
+      pass  # Must be an old version.
+
+    return updated_wp
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(base.UpdateCommand):
+  """Update a workerpool used by Google Cloud Build.
+
+  Update a worker pool used by Google Cloud Build.
+  """
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser-like object. It is mocked out in order
+        to capture some information, but behaves like an ArgumentParser.
+    """
+    parser = workerpool_flags.AddWorkerpoolUpdateArgs(
+        parser, release_track=base.ReleaseTrack.ALPHA)
+    parser.display_info.AddFormat("""
+          table(
+            name,
+            createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
+            state
+          )
+        """)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+
+    release_track = self.ReleaseTrack()
+    client = cloudbuild_util.GetClientInstance(release_track)
+    messages = cloudbuild_util.GetMessagesModule(release_track)
 
     parent = properties.VALUES.core.project.Get(required=True)
 
@@ -92,7 +191,7 @@ class Update(base.UpdateCommand):
     wp_resource = resources.REGISTRY.Parse(
         None,
         collection='cloudbuild.projects.workerPools',
-        api_version='v1alpha2',
+        api_version=cloudbuild_util.RELEASE_TRACK_TO_API_VERSION[release_track],
         params={
             'projectsId': parent,
             'workerPoolsId': wp.name,

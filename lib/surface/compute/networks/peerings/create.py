@@ -55,7 +55,7 @@ def _MakeRequests(client, requests, is_async):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Create(base.Command):
-  r"""Create a Google Compute Engine network peering.
+  r"""Create a Compute Engine network peering.
 
   *{command}* is used to create peerings between virtual networks. Each side of
   a peering association is set up independently. Peering will be active only

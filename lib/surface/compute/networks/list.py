@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.networks import flags
 
 
 class List(base.ListCommand):
-  """List Google Compute Engine networks."""
+  """List Compute Engine networks."""
 
   @staticmethod
   def Args(parser):

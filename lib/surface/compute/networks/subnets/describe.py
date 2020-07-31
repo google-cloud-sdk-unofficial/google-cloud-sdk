@@ -26,10 +26,10 @@ from googlecloudsdk.command_lib.compute.networks.subnets import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine subnetwork.
+  """Describe a Compute Engine subnetwork.
 
-  *{command}* displays all data associated with a Google Compute
-  Engine subnetwork.
+  *{command}* displays all data associated with a Compute Engine
+  subnetwork.
   """
 
   SUBNETWORK_ARG = None

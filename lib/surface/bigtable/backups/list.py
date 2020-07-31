@@ -48,17 +48,19 @@ class ListBackups(base.ListCommand):
   """List existing Bigtable backups."""
 
   detailed_help = {
-      'DESCRIPTION': textwrap.dedent("""\
+      'DESCRIPTION':
+          textwrap.dedent("""
           List existing Bigtable backups.
           """),
-      'EXAMPLES': textwrap.dedent("""\
+      'EXAMPLES':
+          textwrap.dedent("""
           To list all backups in an instance, run:
 
-            $ {command} --instance INSTANCE_NAME
+            $ {command} --instance=INSTANCE_NAME
 
           To list all backups in a cluster, run:
 
-            $ {command} --instance INSTANCE_NAME --cluster CLUSTER_NAME
+            $ {command} --instance=INSTANCE_NAME --cluster=CLUSTER_NAME
           """),
   }
 

@@ -26,15 +26,15 @@ from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class RestoreTables(base.RestoreCommand):
   """Restore a Cloud Bigtable backup to a new table."""
   detailed_help = {
-      'DESCRIPTION': textwrap.dedent("""\
+      'DESCRIPTION':
+          textwrap.dedent("""
           This command restores a Cloud Bigtable backup to a new table in the same instance.
           """),
-      'EXAMPLES': textwrap.dedent("""\
+      'EXAMPLES':
+          textwrap.dedent("""
           To restore table 'table2' from backup 'backup1', run:
 
             $ {command} --source-instance=instance1 --source-cluster=cluster1 --source=backup1 --destination-instance=instance1 --destination=table2
@@ -88,4 +88,3 @@ class RestoreTables(base.RestoreCommand):
     return util.AwaitTable(
         operation_ref,
         'Creating bigtable table {0}'.format(table_ref.Name()))
-

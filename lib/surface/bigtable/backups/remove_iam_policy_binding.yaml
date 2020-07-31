@@ -1,4 +1,3 @@
-release_tracks: [ALPHA]
 help_text:
   brief: Remove an IAM policy binding from a Cloud Bigtable Backup.
   description: |
