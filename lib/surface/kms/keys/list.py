@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.command_lib.kms import resource_args
 
 
@@ -43,11 +42,7 @@ class List(base.ListCommand):
     # The format of a CryptoKeyVersion name is:
     # 'projects/*/locations/*/keyRings/*/cryptoKeys/*/cryptoKeyVersions/*'
     # The CryptoKeyVersionId is captured by segment(9).
-    if List.ReleaseTrack() == base.ReleaseTrack.GA:
-      flags.AddKeyRingFlag(parser, 'key')
-      flags.AddLocationFlag(parser, 'key')
-    else:
-      resource_args.AddKmsKeyringResourceArgForKMS(parser, True, '--keyring')
+    resource_args.AddKmsKeyringResourceArgForKMS(parser, True, '--keyring')
 
     parser.display_info.AddFormat("""
         table(
@@ -64,10 +59,7 @@ class List(base.ListCommand):
     client = cloudkms_base.GetClientInstance()
     messages = cloudkms_base.GetMessagesModule()
 
-    if List.ReleaseTrack() == base.ReleaseTrack.GA:
-      key_ring_ref = flags.ParseKeyRingName(args)
-    else:
-      key_ring_ref = args.CONCEPTS.keyring.Parse()
+    key_ring_ref = args.CONCEPTS.keyring.Parse()
 
     request = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysListRequest(
         parent=key_ring_ref.RelativeName())

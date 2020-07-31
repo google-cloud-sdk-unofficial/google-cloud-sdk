@@ -48,6 +48,7 @@ class Create(base.CreateCommand):
     tpus_flags.AddGceImageFlag(parser)
     tpus_flags.AddDiskSizeFlag(parser)
     tpus_flags.AddMachineTypeArgs(parser)
+    tpus_flags.AddNetworkArgs(parser)
 
   def Run(self, args):
     responses = []
@@ -64,16 +65,18 @@ class Create(base.CreateCommand):
       if args.dry_run:
         log.status.Print(
             'Creating TPU with Name:{}, Accelerator type:{}, TF version:{}, '
-            'Zone:{}'.format(
+            'Zone:{}, Network:{}'.format(
                 args.name,
                 args.accelerator_type,
                 args.tf_version,
-                args.zone))
+                args.zone,
+                args.network))
       else:
         try:
           tpu_operation_ref = tpu.Create(args.name,
                                          args.accelerator_type, args.tf_version,
-                                         args.zone, args.preemptible)
+                                         args.zone, args.preemptible,
+                                         args.network)
         except HttpConflictError:
           log.err.Print('TPU Node with name:{} already exists, '
                         'try a different name'.format(args.name))
@@ -81,10 +84,11 @@ class Create(base.CreateCommand):
 
     if args.dry_run:
       log.status.Print('Creating GCE VM with Name:{}, Zone:{}, Machine Type:{},'
-                       ' Disk Size(GB):{}, Preemptible:{}'.format(
+                       ' Disk Size(GB):{}, Preemptible:{}, Network:{}'.format(
                            args.name, args.zone,
                            args.machine_type, utils.BytesToGb(args.disk_size),
-                           args.preemptible_vm))
+                           args.preemptible_vm,
+                           args.network))
     else:
       instance = tpu_utils.Instance(self.ReleaseTrack())
       gce_image = args.gce_image
@@ -94,7 +98,8 @@ class Create(base.CreateCommand):
       try:
         instance_operation_ref = instance.Create(
             args.name, args.zone, args.machine_type,
-            utils.BytesToGb(args.disk_size), args.preemptible_vm, gce_image)
+            utils.BytesToGb(args.disk_size), args.preemptible_vm, gce_image,
+            args.network)
       except HttpConflictError:
         err_msg = ('GCE VM with name:{} already exists, '
                    'try a different name.').format(args.name)

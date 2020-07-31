@@ -50,10 +50,13 @@ def AddScopeArgument(parser):
       metavar='SCOPE',
       required=False,
       help=("""\
-        A scope can be a project, a folder or an organization. The search is
+        A scope can be a project, a folder, or an organization. The search is
         limited to the Cloud resources within this scope. The caller must be
         granted the ``cloudasset.assets.searchAllResources'' permission on
-        the desired scope.
+        the desired scope. If not specified, the [configured project property](https://cloud.google.com//sdk/docs/configurations#setting_configuration_properties)
+        will be used. To find the configured project, run:
+        ```gcloud config get-value project```. To change the setting, run:
+        ```gcloud config set project PROJECT_ID```.
 
         The allowed values are:
 
@@ -61,10 +64,6 @@ def AddScopeArgument(parser):
           * ```projects/{PROJECT_NUMBER}``` (e.g., ``projects/12345678'')
           * ```folders/{FOLDER_NUMBER}``` (e.g., ``folders/1234567'')
           * ```organizations/{ORGANIZATION_NUMBER}``` (e.g. ``organizations/123456'')
-
-        If not specified, the configured project will be used. To find the
-        configured project, run: ```gcloud config get-value project```. To
-        change the setting, run: ```gcloud config set project PROJECT_ID```.
         """))
 
 
@@ -74,15 +73,17 @@ def AddQueryArgument(parser):
       metavar='QUERY',
       required=False,
       help=("""\
-        The query statement. An empty query can be specified to search all the
-        resources within the specified ```--scope```.
+        The query statement. See [how to construct a
+        query](https://cloud.google.com/asset-inventory/docs/searching-resources#how_to_construct_a_query)
+        for more details. If not specified or empty, it will search all the
+        resources within the specified ```scope```.
 
         Examples:
 
         * ```name : "Important"``` to find Cloud resources whose name contains
           ``Important'' as a word.
         * ```displayName : "Impor*"``` to find Cloud resources whose display
-           name contains ``Impor'' as a word prefix.
+           name contains ``Impor'' as a prefix.
         * ```description : "*por*"``` to find Cloud resources whose description
           contains ``por'' as a substring.
         * ```location : "us-west*"``` to find Cloud resources whose location is
@@ -96,17 +97,13 @@ def AddQueryArgument(parser):
         * ```"Important"``` to find Cloud resources which contain ``Important''
           as a word in any of the searchable fields.
         * ```"Impor*"``` to find Cloud resources which contain ``Impor'' as a
-          word prefix in any of the searchable fields.
+          prefix in any of the searchable fields.
         * ```"*por*"``` to find Cloud resources which contain ``por'' as a
           substring in any of the searchable fields.
         * ```("Important" AND location : ("us-west1" OR "global"))``` to find
           Cloud resources which contain ``Important'' as a word in any of the
           searchable fields and are also located in the ``us-west1'' region or
           the ``global'' location.
-
-        See [how to construct a
-        query](https://cloud.google.com/asset-inventory/docs/searching-resources#how_to_construct_a_query)
-        for more details.
         """))
 
 
@@ -117,9 +114,10 @@ def AddAssetTypesArgument(parser):
       type=arg_parsers.ArgList(),
       default=[],
       help=("""\
-        A list of asset types to search. Example:
-        ``compute.googleapis.com/Instance''. If not specified or empty, it will
+        A list of asset types to search. If not specified or empty, it will
         search all the [searchable asset types](https://cloud.google.com/asset-inventory/docs/supported-asset-types#searchable_asset_types).
+        Example: ``cloudresourcemanager.googleapis.com/Project,compute.googleapis.com/Instance''
+        to search project and VM instance resources.
         """))
 
 
@@ -134,9 +132,7 @@ def AddOrderByArgument(parser):
         name to indicate descending order. Redundant space characters are
         ignored. Example: ``location DESC, name''. Only string fields in the
         response are sortable, including `name`, `displayName`, `description`
-        and `location`. All the other fields such as repeated fields (e.g.,
-        `networkTags`), map fields (e.g., `labels`) and struct fields (e.g.,
-        `additionalAttributes`) are not supported.
+        and `location`.
 
         Both ```--order-by``` and ```--sort-by``` flags can be used to sort the
         output, with the following differences:

@@ -45,7 +45,7 @@ def EpilogText(network_name):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  r"""Create a Google Compute Engine network.
+  r"""Create a Compute Engine network.
 
   *{command}* is used to create virtual networks. A network
   performs the same function that a router does in a home
@@ -111,7 +111,7 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
-  """Create a Google Compute Engine network.
+  """Create a Compute Engine network.
 
   *{command}* is used to create virtual networks. A network
   performs the same function that a router does in a home

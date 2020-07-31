@@ -110,10 +110,7 @@ class Update(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    if Update.ReleaseTrack() == base.ReleaseTrack.GA:
-      flags.AddKeyResourceArgument(parser, 'to update')
-    else:
-      resource_args.AddKmsKeyResourceArgForKMS(parser, True, 'key')
+    resource_args.AddKmsKeyResourceArgForKMS(parser, True, 'key')
     flags.AddRotationPeriodFlag(parser)
     flags.AddNextRotationTimeFlag(parser)
     flags.AddRemoveRotationScheduleFlag(parser)
@@ -153,10 +150,7 @@ class Update(base.UpdateCommand):
   def UpdatePrimaryVersion(self, args):
     client = cloudkms_base.GetClientInstance()
     messages = cloudkms_base.GetMessagesModule()
-    if Update.ReleaseTrack() == base.ReleaseTrack.GA:
-      crypto_key_ref = flags.ParseCryptoKeyName(args)
-    else:
-      crypto_key_ref = args.CONCEPTS.key.Parse()
+    crypto_key_ref = args.CONCEPTS.key.Parse()
     req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysUpdatePrimaryVersionRequest(  # pylint: disable=line-too-long
         name=crypto_key_ref.RelativeName(),
         updateCryptoKeyPrimaryVersionRequest=(
@@ -174,10 +168,7 @@ class Update(base.UpdateCommand):
   def UpdateOthers(self, args, crypto_key, fields_to_update):
     client = cloudkms_base.GetClientInstance()
     messages = cloudkms_base.GetMessagesModule()
-    if Update.ReleaseTrack() == base.ReleaseTrack.GA:
-      crypto_key_ref = flags.ParseCryptoKeyName(args)
-    else:
-      crypto_key_ref = args.CONCEPTS.key.Parse()
+    crypto_key_ref = args.CONCEPTS.key.Parse()
 
     labels_update = labels_util.Diff.FromUpdateArgs(args).Apply(
         messages.CryptoKey.LabelsValue, crypto_key.labels)
@@ -254,10 +245,7 @@ class Update(base.UpdateCommand):
     # Try to get the cryptoKey and raise an exception if the key doesn't exist.
     client = cloudkms_base.GetClientInstance()
     messages = cloudkms_base.GetMessagesModule()
-    if Update.ReleaseTrack() == base.ReleaseTrack.GA:
-      crypto_key_ref = flags.ParseCryptoKeyName(args)
-    else:
-      crypto_key_ref = args.CONCEPTS.key.Parse()
+    crypto_key_ref = args.CONCEPTS.key.Parse()
     crypto_key = client.projects_locations_keyRings_cryptoKeys.Get(
         messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysGetRequest(
             name=crypto_key_ref.RelativeName()))

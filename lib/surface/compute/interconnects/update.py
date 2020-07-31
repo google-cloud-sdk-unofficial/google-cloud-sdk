@@ -43,7 +43,7 @@ def _ArgsCommon(cls, parser, support_labels=False):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  """Update a Google Compute Engine interconnect.
+  """Update a Compute Engine interconnect.
 
   *{command}* is used to update interconnects. An interconnect represents a
   single specific connection between Google and the customer.
@@ -92,7 +92,7 @@ class Update(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpdateLabels(Update):
-  """Update a Google Compute Engine interconnect.
+  """Update a Compute Engine interconnect.
 
   *{command}* is used to update interconnects. An interconnect represents a
   single specific connection between Google and the customer.

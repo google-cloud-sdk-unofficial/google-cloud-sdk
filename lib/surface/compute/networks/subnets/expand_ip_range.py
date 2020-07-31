@@ -129,7 +129,7 @@ class ExpandIpRange(base.SilentCommand):
 
 
 ExpandIpRange.detailed_help = {
-    'brief': 'Expand the IP range of a Google Compute Engine subnetwork',
+    'brief': 'Expand the IP range of a Compute Engine subnetwork',
     'DESCRIPTION': """
 *{command}* is used to expand the IP range of a subnetwork.
 """,

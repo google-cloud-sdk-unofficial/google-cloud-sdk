@@ -73,7 +73,7 @@ DETAILED_ALPHA_BETA_HELP = {
 # TODO(b/62055574): Improve test coverage in this file.
 
 
-def _WhitelistClientIP(instance_ref,
+def _AllowlistClientIP(instance_ref,
                        sql_client,
                        sql_messages,
                        resources,
@@ -82,7 +82,7 @@ def _WhitelistClientIP(instance_ref,
 
   Makes an API call to add CLIENT_IP to the authorized networks list.
   The server knows to interpret the string CLIENT_IP as the address with which
-  the client reaches the server. This IP will be whitelisted for 1 minute.
+  the client reaches the server. This IP will be allowlisted for 1 minute.
 
   Args:
     instance_ref: resources.Resource, The instance we're connecting to.
@@ -92,7 +92,7 @@ def _WhitelistClientIP(instance_ref,
       version to be used.
     resources: resources.Registry, The registry that can create resource refs
       for the sql version to be used.
-    minutes: How long the client IP will be whitelisted for, in minutes.
+    minutes: How long the client IP will be allowlisted for, in minutes.
 
   Returns:
     string, The name of the authorized network rule. Callers can use this name
@@ -143,7 +143,7 @@ def _WhitelistClientIP(instance_ref,
 
   operation_ref = resources.Create(
       'sql.operations', operation=result.name, project=instance_ref.project)
-  message = ('Whitelisting your IP for incoming connection for '
+  message = ('Allowlisting your IP for incoming connection for '
              '{0} {1}'.format(minutes, text.Pluralize(minutes, 'minute')))
 
   operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
@@ -224,7 +224,7 @@ def RunConnectCommand(args, supports_database=False):
 
   instance_ref = instances_command_util.GetInstanceRef(args, client)
 
-  acl_name = _WhitelistClientIP(instance_ref, sql_client, sql_messages,
+  acl_name = _AllowlistClientIP(instance_ref, sql_client, sql_messages,
                                 client.resource_parser)
 
   # Get the client IP that the server sees. Sadly we can only do this by
@@ -237,8 +237,8 @@ def RunConnectCommand(args, supports_database=False):
         should_retry_if=lambda x, s: x[1] is None,  # client_ip is None
         sleep_ms=500)
   except retry.RetryException:
-    raise exceptions.UpdateError('Could not whitelist client IP. Server did '
-                                 'not reply with the whitelisted IP.')
+    raise exceptions.UpdateError('Could not allowlist client IP. Server did '
+                                 'not reply with the allowlisted IP.')
 
   # Check for the mysql or psql executable based on the db version.
   db_type = instance_info.databaseVersion.name.split('_')[0]

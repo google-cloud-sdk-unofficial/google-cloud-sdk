@@ -27,9 +27,9 @@ from googlecloudsdk.command_lib.compute.interconnects.attachments import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine interconnect attachment.
+  """Describe a Compute Engine interconnect attachment.
 
-    *{command}* displays all data associated with Google Compute Engine
+    *{command}* displays all data associated with Compute Engine
     interconnect attachment in a project.
   """
 

@@ -27,7 +27,7 @@ from googlecloudsdk.core import properties
 
 
 class List(base.ListCommand):
-  """List Google Compute Engine interconnect locations."""
+  """List Compute Engine interconnect locations."""
 
   @classmethod
   def Args(cls, parser):

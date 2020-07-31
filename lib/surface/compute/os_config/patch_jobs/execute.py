@@ -87,7 +87,7 @@ def _AddCommonInstanceFilterFlags(mutually_exclusive_group):
 
 
 def _AddTopLevelArguments(parser):
-  """Adds top-level argument flags for the Beta track."""
+  """Adds top-level argument flags for the Beta and GA tracks."""
   instance_filter_group = parser.add_mutually_exclusive_group(
       required=True,
       help='Filters for selecting which instances to patch:',
@@ -126,7 +126,6 @@ def _AddTopLevelArgumentsAlpha(parser):
       patching initially fails. If omitted, the agent uses its default retry
       strategy.""",
   )
-  _AddPatchRolloutArguments(parser)
 
 
 def _AddPatchRolloutArguments(parser):
@@ -776,11 +775,8 @@ def _CreatePatchInstanceFilter(messages, filter_all, filter_group_labels,
   )
 
 
-def _CreatePatchRollout(args, messages, release_track):
+def _CreatePatchRollout(args, messages):
   """Creates a PatchRollout message from input arguments."""
-  if base.ReleaseTrack.GA == release_track:
-    return None
-
   if not any([
       args.rollout_mode, args.rollout_disruption_budget,
       args.rollout_disruption_budget_percent
@@ -972,6 +968,11 @@ class Execute(base.Command):
       pre-patch and post-patch, run:
 
             $ {command} --instance-filter-all --pre-patch-linux-executable="/bin/script" --pre-patch-linux-success-codes=0,200 --pre-patch-windows-executable="C:\\Users\\user\\script.ps1" --post-patch-linux-executable="gs://my-bucket/linux-script#123" --post-patch-windows-executable="gs://my-bucket/windows-script#678"
+
+      To patch all instances zone-by-zone with no more than 50 percent of the
+      instances in the same zone disrupted at a given time, run:
+
+            $ {command} --instance-filter-all --rollout-mode=zone-by-zone --rollout-disruption-budget-percent=50
       """
   }
 
@@ -982,6 +983,7 @@ class Execute(base.Command):
     _AddTopLevelArguments(parser)
     _AddCommonTopLevelArguments(parser)
     _AddPatchConfigArguments(parser)
+    _AddPatchRolloutArguments(parser)
 
   def Run(self, args):
     project = properties.VALUES.core.project.GetOrFail()
@@ -992,7 +994,7 @@ class Execute(base.Command):
 
     duration = _GetDuration(args)
     patch_config = _CreatePatchConfig(args, messages)
-    patch_rollout = _CreatePatchRollout(args, messages, release_track)
+    patch_rollout = _CreatePatchRollout(args, messages)
 
     request = _CreateExecuteRequest(
         messages,
@@ -1019,62 +1021,7 @@ class Execute(base.Command):
 class ExecuteBeta(Execute):
   """Execute an OS patch on the specified VM instances."""
 
-  detailed_help = {
-      'EXAMPLES':
-          """\
-      To start a patch job named `my patch job` that patches all instances in the
-      current project, run:
-
-            $ {command} --display-name="my patch job" --instance-filter-all
-
-      To patch an instance named `instance-1` in the `us-east1-b` zone, run:
-
-            $ {command} --instance-filter-names="zones/us-east1-b/instances/instance-1"
-
-      To patch all instances in the `us-central1-b` and `europe-west1-d` zones, run:
-
-            $ {command} --instance-filter-zones="us-central1-b,europe-west1-d"
-
-      To patch all instances where the `env` label is `test` and `app` label is
-      `web`, run:
-
-            $ {command} --instance-filter-group-labels="env=test,app=web"
-
-      To patch all instances where the `env` label is `test` and `app` label is
-      `web` or where the `env` label is `staging` and `app` label is `web`, run:
-
-            $ {command} --instance-filter-group-labels="env=test,app=web" --instance-filter-group-labels="env=staging,app=web"
-
-      To apply security and critical patches to Windows instances with the prefix
-      `windows-` in the instance name, run:
-
-            $ {command} --instance-filter-name-prefixes="windows-" --windows-classifications=SECURITY,CRITICAL
-
-      To update only `KB4339284` on Windows instances with the prefix `windows-` in
-      the instance name, run:
-
-            $ {command} --instance-filter-name-prefixes="windows-" --windows-exclusive-patches=KB4339284
-
-      To patch all instances in the current project and specify scripts to run
-      pre-patch and post-patch, run:
-
-            $ {command} --instance-filter-all --pre-patch-linux-executable="/bin/script" --pre-patch-linux-success-codes=0,200 --pre-patch-windows-executable="C:\\Users\\user\\script.ps1" --post-patch-linux-executable="gs://my-bucket/linux-script#123" --post-patch-windows-executable="gs://my-bucket/windows-script#678"
-
-      To patch all instances zone-by-zone with no more than 50 percent of the
-      instances in the same zone disrupted at a given time, run:
-
-            $ {command} --instance-filter-all --rollout-mode=zone-by-zone --rollout-disruption-budget-percent=50
-      """
-  }
-
   _command_prefix = 'gcloud beta compute os-config patch-jobs'
-
-  @staticmethod
-  def Args(parser):
-    _AddTopLevelArguments(parser)
-    _AddPatchRolloutArguments(parser)
-    _AddCommonTopLevelArguments(parser)
-    _AddPatchConfigArguments(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -1136,6 +1083,7 @@ class ExecuteAlpha(ExecuteBeta):
     _AddTopLevelArgumentsAlpha(parser)
     _AddCommonTopLevelArguments(parser)
     _AddPatchConfigArguments(parser)
+    _AddPatchRolloutArguments(parser)
 
   def Run(self, args):
     project = properties.VALUES.core.project.GetOrFail()
@@ -1146,7 +1094,7 @@ class ExecuteAlpha(ExecuteBeta):
 
     duration = _GetDuration(args)
     patch_config = _CreatePatchConfig(args, messages)
-    patch_rollout = _CreatePatchRollout(args, messages, release_track)
+    patch_rollout = _CreatePatchRollout(args, messages)
 
     request = _CreateExecuteRequestAlpha(
         messages,

@@ -36,7 +36,7 @@ class Create(base.CreateCommand):
   An empty filter matches all logs.
   The sink's destination can be a Cloud Storage bucket, a BigQuery dataset,
   or a Cloud Pub/Sub topic.
-  The destination must already exist and Stackdriver Logging must have
+  The destination must already exist and Cloud Logging must have
   permission to write to it.
   Log entries are exported as soon as the sink is created.
   See https://cloud.google.com/logging/docs/export/configure_export_v2#dest-auth.
@@ -164,7 +164,7 @@ class CreateAlpha(Create):
   An empty filter matches all logs.
   The sink's destination can be a Cloud Storage bucket, a BigQuery dataset,
   or a Cloud Pub/Sub topic.
-  The destination must already exist and Stackdriver Logging must have
+  The destination must already exist and Cloud Logging must have
   permission to write to it.
   Log entries are exported as soon as the sink is created.
   See https://cloud.google.com/logging/docs/export/configure_export_v2#dest-auth.

@@ -50,7 +50,7 @@ class CreateGitHub(base.CreateCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-
+    messages = cloudbuild_util.GetMessagesModule()
     flag_config = trigger_utils.AddTriggerArgs(parser)
     flag_config.add_argument(
         '--repo-owner', help='Owner of the GitHub Repository.', required=True)
@@ -78,8 +78,10 @@ RE2 and described at https://github.com/google/re2/wiki/Syntax.
 """)
     pr_config.add_argument(
         '--comment-control',
-        help='Require a repository collaborator owner to comment \'/gcbrun\' on a pull request before running the build.',
-        action='store_true')
+        default=messages.PullRequestFilter.CommentControlValueValuesEnum
+        .COMMENTS_ENABLED,
+        help='Require a repository collaborator or owner to comment \'/gcbrun\' on a pull request before running the build.'
+    )
 
     trigger_utils.AddBuildConfigArgs(flag_config)
 
@@ -109,7 +111,8 @@ RE2 and described at https://github.com/google/re2/wiki/Syntax.
       gh.pullRequest = messages.PullRequestFilter(
           branch=args.pull_request_pattern)
       if args.comment_control:
-        gh.pullRequest.commentControl = messages.PullRequestFilter.CommentControlValueValuesEnum.COMMENTS_ENABLED
+        gh.pullRequest.commentControl = messages.PullRequestFilter.CommentControlValueValuesEnum(
+            args.comment_control)
     else:
       # Push event
       gh.push = messages.PushFilter(

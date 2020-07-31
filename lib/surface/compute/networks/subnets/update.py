@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.networks.subnets import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  """Updates properties of an existing Google Compute Engine subnetwork."""
+  """Updates properties of an existing Compute Engine subnetwork."""
 
   _include_alpha_logging = False
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
@@ -97,14 +97,14 @@ class Update(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
-  """Updates properties of an existing Google Compute Engine subnetwork."""
+  """Updates properties of an existing Compute Engine subnetwork."""
 
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
-  """Updates properties of an existing Google Compute Engine subnetwork."""
+  """Updates properties of an existing Compute Engine subnetwork."""
 
   _include_alpha_logging = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION

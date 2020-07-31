@@ -207,8 +207,7 @@ def _Run(args,
       function.sourceUploadUrl):
     updated_fields.extend(
         source_util.SetFunctionSourceProps(function, function_ref, args.source,
-                                           args.stage_bucket, args.ignore_file,
-                                           update_date=True))
+                                           args.stage_bucket, args.ignore_file))
 
   # Apply label args to function
   if labels_util.SetFunctionLabels(function, args.update_labels,

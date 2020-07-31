@@ -1,17 +1,15 @@
-- release_tracks: [ALPHA]
+help_text:
+  brief: Retrieves information about a backup.
+  description: Retrieves information about a backup.
+  examples: |
+    To describe a backup, run:
 
-  help_text:
-    brief: Retrieves information about a backup.
-    description: Retrieves information about a backup.
-    examples: |
-      To describe a backup, run:
+      $ {command} BACKUP_NAME --instance=INSTANCE_NAME --cluster=CLUSTER_NAME
 
-        $ {command} BACKUP_NAME --instance=INSTANCE_NAME --cluster=CLUSTER_NAME
+request:
+  collection: bigtableadmin.projects.instances.clusters.backups
 
-  request:
-    collection: bigtableadmin.projects.instances.clusters.backups
-
-  arguments:
-    resource:
-      help_text: Cloud Bigtable backup to describe.
-      spec: !REF googlecloudsdk.command_lib.bigtable.resources:backup
+arguments:
+  resource:
+    help_text: Cloud Bigtable backup to describe.
+    spec: !REF googlecloudsdk.command_lib.bigtable.resources:backup

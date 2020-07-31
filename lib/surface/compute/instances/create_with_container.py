@@ -123,7 +123,7 @@ class CreateWithContainer(base.CreateCommand):
       if resource_parser.Parse(image_uri).project != 'cos-cloud':
         log.warning('This container deployment mechanism requires a '
                     'Container-Optimized OS image in order to work. Select an '
-                    'image from a cos-cloud project (cost-stable, cos-beta, '
+                    'image from a cos-cloud project (cos-stable, cos-beta, '
                     'cos-dev image families).')
     else:
       image_uri = containers_utils.ExpandKonletCosImageFlag(compute_client)

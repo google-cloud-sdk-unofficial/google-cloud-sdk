@@ -40,6 +40,7 @@ class Resume(base.Command):
     tpus_flags.AddTfVersionFlagForResume(parser)
     tpus_flags.AddPreemptibleFlag(parser)
     tpus_flags.AddVmOnlyFlag(parser)
+    tpus_flags.AddNetworkArgsForResume(parser)
 
   def Run(self, args):
     responses = []
@@ -50,7 +51,8 @@ class Resume(base.Command):
       try:
         tpu_operation_ref = tpu.Create(args.execution_group_name,
                                        args.accelerator_type, args.tf_version,
-                                       args.zone, args.preemptible)
+                                       args.zone, args.preemptible,
+                                       args.network)
       except HttpConflictError:
         log.status.Print('TPU Node with name:{} already exists, '
                          'try a different name'.format(

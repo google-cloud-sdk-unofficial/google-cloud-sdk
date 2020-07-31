@@ -26,9 +26,9 @@ from googlecloudsdk.command_lib.compute.networks import flags
 
 
 class Delete(base.DeleteCommand):
-  r"""Delete Google Compute Engine networks.
+  r"""Delete Compute Engine networks.
 
-  *{command}* deletes one or more Google Compute Engine
+  *{command}* deletes one or more Compute Engine
   networks. Networks can only be deleted when no other resources
   (e.g., virtual machine instances) refer to them.
 

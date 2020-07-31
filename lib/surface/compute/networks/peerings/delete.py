@@ -24,9 +24,9 @@ from googlecloudsdk.core import properties
 
 
 class Delete(base.DeleteCommand):
-  r"""Delete a Google Compute Engine network peering.
+  r"""Delete a Compute Engine network peering.
 
-  *{command}* deletes a Google Compute Engine network peering.
+  *{command}* deletes a Compute Engine network peering.
 
   ## EXAMPLES
 

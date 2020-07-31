@@ -26,9 +26,9 @@ from googlecloudsdk.command_lib.compute.interconnects.locations import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine interconnect location.
+  """Describe a Compute Engine interconnect location.
 
-    Displays all data associated with Google Compute Engine
+    Displays all data associated with Compute Engine
     interconnect location in a project.
 
     Example of usage:

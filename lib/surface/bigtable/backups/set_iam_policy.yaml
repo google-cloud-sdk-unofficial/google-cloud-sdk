@@ -1,4 +1,3 @@
-release_tracks: [ALPHA]
 help_text:
   brief: Set an IAM policy on a Cloud Bigtable Backup.
   description: |

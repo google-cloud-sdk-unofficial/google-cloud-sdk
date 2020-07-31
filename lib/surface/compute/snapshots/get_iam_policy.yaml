@@ -18,14 +18,12 @@ request:
   collection: compute.snapshots
   use_relative_name: false
   api_version: v1
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=optionsRequestedPolicyVersion
   BETA:
     api_version: beta
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=optionsRequestedPolicyVersion
   ALPHA:
     api_version: alpha
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=optionsRequestedPolicyVersion
 
 arguments:
   resource:

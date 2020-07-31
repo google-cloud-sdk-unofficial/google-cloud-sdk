@@ -33,7 +33,7 @@ _DOCUMENTATION_LINK = 'https://cloud.google.com/interconnect/docs/how-to/dedicat
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
-  """Create a Google Compute Engine dedicated interconnect attachment.
+  """Create a Compute Engine dedicated interconnect attachment.
 
   *{command}* is used to create a dedicated interconnect attachments. An
   interconnect attachment is what binds the underlying connectivity of an
@@ -101,7 +101,7 @@ class Create(base.CreateCommand):
         mtu=getattr(args, 'mtu', None))
 
   def Epilog(self, resources_were_displayed):
-    message = ('You must configure your Google Cloud Router with an interface '
+    message = ('You must configure your Cloud Router with an interface '
                'and BGP peer for your created VLAN attachment. See also {} for '
                'more detailed help.'.format(_DOCUMENTATION_LINK))
     log.status.Print(message)
@@ -109,7 +109,7 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
-  """Create a Google Compute Engine dedicated interconnect attachment.
+  """Create a Compute Engine dedicated interconnect attachment.
 
   *{command}* is used to create a dedicated interconnect attachments. An
   interconnect attachment is what binds the underlying connectivity of an

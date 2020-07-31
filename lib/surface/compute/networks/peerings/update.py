@@ -28,7 +28,7 @@ from googlecloudsdk.core import properties
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Update(base.Command):
-  r"""Update a Google Compute Engine network peering.
+  r"""Update a Compute Engine network peering.
 
   ## EXAMPLES
 

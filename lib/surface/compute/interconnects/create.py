@@ -53,7 +53,7 @@ _DOCUMENTATION_LINK = 'https://cloud.google.com/interconnect/docs/how-to/dedicat
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a Google Compute Engine interconnect.
+  """Create a Compute Engine interconnect.
 
   *{command}* is used to create interconnects. An interconnect represents a
   single specific connection between Google and the customer.
@@ -106,7 +106,7 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateBeta(Create):
-  """Create a Google Compute Engine interconnect.
+  """Create a Compute Engine interconnect.
 
   *{command}* is used to create interconnects. An interconnect represents a
   single specific connection between Google and the customer.

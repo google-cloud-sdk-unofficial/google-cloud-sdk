@@ -59,7 +59,7 @@ class Import(base.CreateCommand):
     instances_flags.AddCustomMachineTypeArgs(parser)
     labels_util.AddCreateLabelsFlags(parser)
     daisy_utils.AddCommonDaisyArgs(
-        parser, add_log_location=False, operation='an import')
+        parser, operation='an import')
     daisy_utils.AddExtraCommonDaisyArgs(parser)
     daisy_utils.AddOVFSourceUriArg(parser)
     parser.add_argument(

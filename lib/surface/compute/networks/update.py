@@ -31,7 +31,7 @@ from googlecloudsdk.core.console import console_io
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  r"""Update a Google Compute Engine Network.
+  r"""Update a Compute Engine Network.
 
   *{command}* is used to update virtual networks. The updates that
   cabe be performed on a network are changing the BGP routing mode
@@ -120,7 +120,7 @@ class Update(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(Update):
-  """Update a Google Compute Engine Network."""
+  """Update a Compute Engine Network."""
 
   @classmethod
   def Args(cls, parser):
@@ -132,9 +132,9 @@ class UpdateAlpha(Update):
 
 Update.detailed_help = {
     'brief':
-        'Update a Google Compute Engine network',
+        'Update a Compute Engine network',
     'DESCRIPTION':
         """\
 
-        *{command}* is used to update Google Compute Engine networks."""
+        *{command}* is used to update Compute Engine networks."""
 }

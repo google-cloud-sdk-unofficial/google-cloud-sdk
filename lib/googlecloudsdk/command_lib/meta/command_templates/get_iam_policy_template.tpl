@@ -12,7 +12,7 @@
 ## WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ## See the License for the specific language governing permissions and
 ## limitations under the License.
-release_tracks: [GA, BETA, ALPHA]
+release_tracks: ${release_tracks}
 help_text:
   brief: Get the IAM policy for the ${singular_name}.
   description: |
@@ -28,19 +28,13 @@ help_text:
       $ {command} my-${singular_name} ${flags}
 
 request:
-  collection: ${api_name}.${plural_name}
-  use_relative_name: false
+  collection: ${collection_name}
+  use_relative_name: ${use_rel_name}
   api_version: ${api_version}
-  BETA:
-    api_version: beta
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=optionsRequestedPolicyVersion
-  ALPHA:
-    api_version: alpha
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=optionsRequestedPolicyVersion
 
 arguments:
   resource:
     help_text: The ${singular_name} for which to display the IAM policy.
+    # the following should point to the resource argument definition under your
+    # surface's command_lib directory:
     spec: !REF googlecloudsdk.command_lib.${api_name}.resources:${singular_name}

@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 class MachineTypes(base.Group):
-  """Read Google Compute Engine virtual machine types."""
+  """Read Compute Engine virtual machine types."""
 
 
 MachineTypes.category = base.INFO_CATEGORY

@@ -29,7 +29,7 @@ from googlecloudsdk.core import log
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
-  """Get the effective firewalls of a Google Compute Engine network.
+  """Get the effective firewalls of a Compute Engine network.
 
   *{command}* Get the effective firewalls applied on the network. For example:
 
