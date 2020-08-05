@@ -62,7 +62,8 @@ class Update(base.Command):
                       args,
                       support_environment_upgrades=False,
                       support_web_server_access_control=False,
-                      support_cloud_sql_machine_type=False):
+                      support_cloud_sql_machine_type=False,
+                      support_web_server_machine_type=False):
 
     params = dict(
         env_ref=env_ref,
@@ -93,6 +94,8 @@ class Update(base.Command):
               args.web_server_deny_all))
     if support_cloud_sql_machine_type:
       params['cloud_sql_machine_type'] = args.cloud_sql_machine_type
+    if support_web_server_machine_type:
+      params['web_server_machine_type'] = args.web_server_machine_type
 
     return patch_util.ConstructPatch(**params)
 
@@ -122,6 +125,7 @@ class UpdateBeta(Update):
 
     UpdateBeta.support_web_server_access_control = False
     flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(Update.update_type_group)
+    flags.WEB_SERVER_MACHINE_TYPE.AddToParser(Update.update_type_group)
 
   @staticmethod
   def Args(parser):
@@ -158,7 +162,7 @@ class UpdateBeta(Update):
 
     field_mask, patch = self._ConstructPatch(
         env_ref, args, UpdateBeta.support_environment_upgrades,
-        UpdateBeta.support_web_server_access_control, True)
+        UpdateBeta.support_web_server_access_control, True, True)
 
     return patch_util.Patch(
         env_ref,

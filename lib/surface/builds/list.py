@@ -22,6 +22,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import filter_rewrite
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.builds import flags
 from googlecloudsdk.core import properties
 
 
@@ -50,6 +51,7 @@ class List(base.ListCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
+    flags.AddRegionFlag(parser)
     parser.add_argument(
         '--ongoing',
         help='Only list builds that are currently QUEUED or WORKING.',
@@ -77,8 +79,9 @@ class List(base.ListCommand):
     Returns:
       Some value that we want to have printed later.
     """
+    build_region = args.region
 
-    client = cloudbuild_util.GetClientInstance()
+    client = cloudbuild_util.GetClientInstance(region=build_region)
     messages = cloudbuild_util.GetMessagesModule()
 
     args.filter, server_filter = filter_rewrite.Backend(args.ongoing).Rewrite(

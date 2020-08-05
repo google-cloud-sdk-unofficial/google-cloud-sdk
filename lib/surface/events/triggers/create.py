@@ -120,8 +120,8 @@ class Create(base.Command):
                 'matching this event type.'.format(trigger_obj.name))
           # If the trigger has the right attributes, check if there's already
           # a source that matches the attributes as well.
-          source_ref = util.GetSourceRef(
-              source_obj.name, source_obj.namespace, event_type.crd)
+          source_ref = util.GetSourceRef(source_obj.name, source_obj.namespace,
+                                         event_type.crd, client.IsCluster())
           if client.GetSource(source_ref, event_type.crd) is not None:
             raise exceptions.TriggerCreationError(
                 'Trigger [{}] already exists.'.format(trigger_obj.name))

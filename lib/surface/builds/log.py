@@ -43,6 +43,7 @@ class Log(base.Command):
 
   @staticmethod
   def Args(parser):
+    flags.AddRegionFlag(parser)
     flags.AddBuildArg(parser, intro='The build whose logs shall be printed.')
     parser.add_argument(
         '--stream',
@@ -60,8 +61,9 @@ class Log(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
+    build_region = args.region
 
-    client = cloudbuild_util.GetClientInstance()
+    client = cloudbuild_util.GetClientInstance(region=build_region)
     messages = cloudbuild_util.GetMessagesModule()
 
     build_ref = resources.REGISTRY.Parse(

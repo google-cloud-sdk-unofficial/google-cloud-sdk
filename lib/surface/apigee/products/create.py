@@ -379,11 +379,6 @@ requests are allowed every 12 hours.""")
       raise exceptions.OneOfArgumentsRequiredException(
           ["--apis", "--resources", "--all-proxies"],
           "All API products must include at least one API proxy or resource.")
-    if args.all_proxies and args.apis:
-      raise exceptions.ConflictingArgumentsException("--apis", "--all-proxies")
-    if args.all_proxies and args.resources:
-      raise exceptions.ConflictingArgumentsException("--resources",
-                                                     "--all-proxies")
 
     quota_args_missing = [
         arg for arg in vars(args) if "quota" in arg and vars(args)[arg] is None

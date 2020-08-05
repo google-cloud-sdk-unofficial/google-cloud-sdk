@@ -39,6 +39,7 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
+    flags.AddRegionFlag(parser)
     flags.AddBuildArg(parser, intro='The build to describe.')
 
   def Run(self, args):
@@ -51,8 +52,9 @@ class Describe(base.DescribeCommand):
     Returns:
       Some value that we want to have printed later.
     """
+    build_region = args.region
 
-    client = cloudbuild_util.GetClientInstance()
+    client = cloudbuild_util.GetClientInstance(region=build_region)
 
     build_ref = resources.REGISTRY.Parse(
         args.build,

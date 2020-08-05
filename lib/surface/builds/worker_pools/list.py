@@ -63,13 +63,13 @@ class ListBeta(base.ListCommand):
       Some value that we want to have printed later.
     """
 
+    wp_region = args.region
+
     release_track = self.ReleaseTrack()
-    client = cloudbuild_util.GetClientInstance(release_track)
+    client = cloudbuild_util.GetClientInstance(release_track, region=wp_region)
     messages = cloudbuild_util.GetMessagesModule(release_track)
 
     parent = properties.VALUES.core.project.Get(required=True)
-
-    wp_region = args.region
 
     # Get the parent project ref
     parent_resource = resources.REGISTRY.Create(
@@ -85,7 +85,7 @@ class ListBeta(base.ListCommand):
     # Format the workerpool names for display
     for wp in wp_list:
       try:
-        wp.name = cloudbuild_util.WorkerPoolShortName(wp.name)
+        wp.name = cloudbuild_util.RegionalWorkerPoolShortName(wp.name)
       except ValueError:
         pass  # Must be an old version.
 
@@ -145,7 +145,7 @@ class ListAlpha(base.ListCommand):
     # Format the workerpool names for display
     for wp in wp_list:
       try:
-        wp.name = cloudbuild_util.WorkerPoolShortName(wp.name)
+        wp.name = cloudbuild_util.GlobalWorkerPoolShortName(wp.name)
       except ValueError:
         pass  # Must be an old version.
 

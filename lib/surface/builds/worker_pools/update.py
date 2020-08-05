@@ -65,15 +65,16 @@ class UpdateBeta(base.UpdateCommand):
       Some value that we want to have printed later.
     """
 
+    wp_region = args.region
+
     release_track = self.ReleaseTrack()
-    client = cloudbuild_util.GetClientInstance(release_track)
+    client = cloudbuild_util.GetClientInstance(release_track, region=wp_region)
     messages = cloudbuild_util.GetMessagesModule(release_track)
 
     parent = properties.VALUES.core.project.Get(required=True)
 
     # Get the workerpool proto from either the flags or the specified file.
     wp = messages.WorkerPool()
-    wp_region = args.region
     if args.config_from_file is not None:
       wp = workerpool_config.LoadWorkerpoolConfigFromPath(
           args.config_from_file, messages)
@@ -117,7 +118,8 @@ class UpdateBeta(base.UpdateCommand):
 
     # Format the workerpool name for display
     try:
-      updated_wp.name = cloudbuild_util.WorkerPoolShortName(updated_wp.name)
+      updated_wp.name = cloudbuild_util.RegionalWorkerPoolShortName(
+          updated_wp.name)
     except ValueError:
       pass  # Must be an old version.
 
@@ -209,7 +211,8 @@ class UpdateAlpha(base.UpdateCommand):
 
     # Format the workerpool name for display
     try:
-      updated_wp.name = cloudbuild_util.WorkerPoolShortName(updated_wp.name)
+      updated_wp.name = cloudbuild_util.GlobalWorkerPoolShortName(
+          updated_wp.name)
     except ValueError:
       pass  # Must be an old version.
 

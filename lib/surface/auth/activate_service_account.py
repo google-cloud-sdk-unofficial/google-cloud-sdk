@@ -25,7 +25,6 @@ import json
 from googlecloudsdk.api_lib.auth import service_account as auth_service_account
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
-from googlecloudsdk.command_lib.auth import auth_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
@@ -104,6 +103,11 @@ class ActivateServiceAccount(base.SilentCommand):
         cred = auth_service_account.CredentialsFromAdcDictGoogleAuth(
             file_content)
       else:
+        # TODO(b/161992086): Remove the flow of activating via oauth2client once
+        # this legacy auth lib is deprecated. Leave this option for now so that
+        # the users are able to fall back to the old flow of if any issues
+        # related to google-auth comes up. The users can do this by setting
+        # property auth/disable_activate_service_account_google_auth to True.
         cred = auth_service_account.CredentialsFromAdcDict(file_content)
       if args.password_file or args.prompt_for_password:
         raise c_exc.InvalidArgumentException(
@@ -158,17 +162,14 @@ def _IsJsonFile(filename):
   return content, False
 
 
-# TODO(b/157745076): Remove condition 2 for when this method returns True once
-# activation via google-auth has been running stable for Googlers.
+# TODO(b/161992086): Remove this method once oauth2client is deprecated.
 def _UseGoogleAuth():
   """Whether to use google-auth for activating service account.
 
   Returns:
-    True if the below conditions are all met,
-    1. Property auth/disable_activate_service_account_google_auth is False;
-    2. The host on which gcloud runs is on Google domain.
+    True if property auth/disable_activate_service_account_google_auth is False.
   """
   google_auth_disabled = (
       properties.VALUES.auth.disable_activate_service_account_google_auth
       .GetBool())
-  return (not google_auth_disabled) and auth_util.IsHostGoogleDomain()
+  return not google_auth_disabled

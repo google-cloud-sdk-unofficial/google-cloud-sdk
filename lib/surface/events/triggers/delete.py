@@ -77,7 +77,7 @@ class Delete(base.Command):
         if trigger_obj is not None:
           source_crds = client.ListSourceCustomResourceDefinitions()
           source_ref, source_crd = util.GetSourceRefAndCrdForTrigger(
-              trigger_obj, source_crds)
+              trigger_obj, source_crds, client.IsCluster())
           if source_ref and source_crd:
             # Delete the source before the trigger because we need the trigger
             # to exist to be able to find the source. Otherwise, we could end up

@@ -19,10 +19,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import argparse
+import re
 
 from googlecloudsdk.api_lib.composer import environments_util as environments_api_util
 from googlecloudsdk.api_lib.composer import util as api_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.composer import image_versions_util as image_versions_command_util
 from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.command_lib.composer import util as command_util
 from googlecloudsdk.core import log
@@ -80,7 +82,7 @@ class Run(base.Command):
         help='Command line arguments to the subcommand.',
         example='{command} myenv trigger_dag -- some_dag --run_id=foo')
 
-  def BypassConfirmationPrompt(self, args):
+  def BypassConfirmationPrompt(self, args, airflow_version):
     """Bypasses confirmations with "yes" responses.
 
     Prevents certain Airflow CLI subcommands from presenting a confirmation
@@ -90,10 +92,17 @@ class Run(base.Command):
     Args:
       args: argparse.Namespace, An object that contains the values for the
         arguments specified in the .Args() method.
+      airflow_version: String, an Airflow semantic version.
     """
-    prompting_subcommands = ['delete_dag', 'backfill']
-    if args.subcommand in prompting_subcommands and set(
-        args.cmd_args).isdisjoint({'-y', '--yes'}):
+    # Value is the lowest Airflow version for which this command needs to bypass
+    # the confirmation prompt.
+    prompting_subcommands = {'delete_dag': None, 'backfill': '1.10.6'}
+    if args.subcommand in prompting_subcommands \
+        and (prompting_subcommands[args.subcommand] is None \
+             or image_versions_command_util.CompareVersions(
+                 airflow_version,
+                 prompting_subcommands[args.subcommand]) >= 0) \
+        and set(args.cmd_args).isdisjoint({'-y', '--yes'}):
       args.cmd_args.append('--yes')
 
   def DeprecationWarningPrompt(self, args):
@@ -107,6 +116,9 @@ class Run(base.Command):
   def ConvertKubectlError(self, error, env_obj):
     del env_obj  # Unused argument.
     return error
+
+  def _ExtractAirflowVersion(self, image_version):
+    return re.findall(r'-airflow-([\d\.]+)', image_version)[0]
 
   def Run(self, args):
     self.DeprecationWarningPrompt(args)
@@ -129,8 +141,9 @@ class Run(base.Command):
 
     with command_util.TemporaryKubeconfig(cluster_location_id, cluster_id):
       try:
-        kubectl_ns = command_util.FetchKubectlNamespace(
-            env_obj.config.softwareConfig.imageVersion)
+        image_version = env_obj.config.softwareConfig.imageVersion
+        airflow_version = self._ExtractAirflowVersion(image_version)
+        kubectl_ns = command_util.FetchKubectlNamespace(image_version)
         pod = command_util.GetGkePod(
             pod_substr=WORKER_POD_SUBSTR, kubectl_namespace=kubectl_ns)
 
@@ -138,7 +151,7 @@ class Run(base.Command):
             'Executing within the following Kubernetes cluster namespace: '
             '{}'.format(kubectl_ns))
 
-        self.BypassConfirmationPrompt(args)
+        self.BypassConfirmationPrompt(args, airflow_version)
         kubectl_args = [
             'exec', pod,
             '--stdin', '--tty',

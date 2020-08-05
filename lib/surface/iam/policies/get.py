@@ -20,17 +20,9 @@ from __future__ import unicode_literals
 
 import textwrap
 
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.iam import policies as apis
 from googlecloudsdk.calliope import base
-
-
-def GetClientInstance(no_http=False):
-  return apis.GetClientInstance('iam', 'v2alpha1', no_http=no_http)
-
-
-def GetMessagesModule(client=None):
-  client = client or GetClientInstance()
-  return client.MESSAGES_MODULE
+from googlecloudsdk.command_lib.iam import policies_flags as flags
 
 
 @base.Hidden
@@ -50,19 +42,13 @@ class Get(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    # TODO(b/150467260): Allow passing in decoded format as well.
-    parser.add_argument(
-        '--attachment-point',
-        required=True,
-        help='The resource to which the policy is attached.')
-
-    parser.add_argument('--kind', required=True, help='The kind of the policy.')
-
-    parser.add_argument('policy_id', help='The id of the policy.')
+    flags.GetAttachmentPointFlag().AddToParser(parser)
+    flags.GetKindFlag().AddToParser(parser)
+    flags.GetPolicyIDFlag().AddToParser(parser)
 
   def Run(self, args):
-    client = GetClientInstance()
-    messages = GetMessagesModule()
+    client = apis.GetClientInstance()
+    messages = apis.GetMessagesModule()
 
     result = client.policies.Get(
         messages.IamPoliciesGetRequest(name='policies/{}/{}/{}'.format(

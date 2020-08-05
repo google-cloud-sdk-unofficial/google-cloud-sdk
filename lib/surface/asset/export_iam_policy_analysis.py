@@ -110,6 +110,7 @@ def AddOptionsGroup(parser):
   AddExpandResourcesArgs(options_group)
   AddOutputResourceEdgesArgs(options_group)
   AddOutputGroupEdgesArgs(options_group)
+  AddAnalyzeServiceAccountImpersonationArgs(options_group)
 
 
 def AddExpandGroupsArgs(parser):
@@ -174,6 +175,22 @@ def AddOutputPartialResultBeforeTimeoutArgs(parser):
   parser.set_defaults(output_partial_result_before_timeout=False)
 
 
+def AddAnalyzeServiceAccountImpersonationArgs(parser):
+  """Adds analyze service account impersonation arg into options.
+
+  Args:
+    parser: the option group.
+  """
+
+  parser.add_argument(
+      '--analyze-service-account-impersonation',
+      action='store_true',
+      help=(
+          'If true, the response will include access analysis from identities '
+          'to resources via service account impersonation. Default is false.'))
+  parser.set_defaults(analyze_service_account_impersonation=False)
+
+
 def AddDestinationArgs(parser):
   destination_group = parser.add_group(
       mutex=True,
@@ -220,6 +237,12 @@ class ExportIamPolicyAnalysisBeta(base.Command):
           project, run:
 
             $ {command} --organization=YOUR_ORG_ID --full-resource-name=YOUR_PROJECT_FULL_RESOURCE_NAME --identity='user:u1@foo.com' --output-path='gs://YOUR_BUCKET_NAME/YOUR_OBJECT_NAME'
+
+          To find out which users have been granted the
+          iam.serviceAccounts.actAs permission on any applicable resources, run:
+
+            $ {command} --organization=YOUR_ORG_ID --permissions='iam.serviceAccounts.actAs' --output-path='gs://YOUR_BUCKET_NAME/YOUR_OBJECT_NAME'
+
       """
   }
 
