@@ -123,7 +123,8 @@ def _CommonArgs(parser,
                 include_physical_block_size_support=False,
                 vss_erase_enabled=False,
                 source_in_place_snapshot_enabled=False,
-                support_pd_interface=False):
+                support_pd_interface=False,
+                support_provisioned_iops=False):
   """Add arguments used for parsing in all command tracks."""
   Create.disks_arg.AddArgument(parser, operation_type='create')
   parser.add_argument(
@@ -181,6 +182,18 @@ def _CommonArgs(parser,
             'billing policies.'))
 
   _SourceArgs(parser, source_in_place_snapshot_enabled)
+
+  if support_provisioned_iops:
+    parser.add_argument(
+        '--provisioned-iops',
+        type=arg_parsers.BoundedInt(constants.MIN_PROVISIONED_IOPS,
+                                    constants.MAX_PROVISIONED_IOPS),
+        help=('Provisioned IOPS of pd-extreme disk to create. If specified, '
+              'the value must be in the range between {min} and {max}. If not '
+              'specified, the default value is {default}.').format(
+                  min=constants.MIN_PROVISIONED_IOPS,
+                  max=constants.MAX_PROVISIONED_IOPS,
+                  default=constants.DEFAULT_PROVISIONED_IOPS))
 
   csek_utils.AddCsekKeyArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
@@ -400,7 +413,8 @@ class Create(base.Command):
            supports_physical_block=False,
            support_multiwriter_disk=False,
            support_vss_erase=False,
-           support_pd_interface=False):
+           support_pd_interface=False,
+           support_provisioned_iops=False):
     compute_holder = self._GetApiHolder()
     client = compute_holder.client
 
@@ -524,6 +538,14 @@ class Create(base.Command):
 
       disk.licenses = self.ParseLicenses(args)
 
+      if support_provisioned_iops and args.IsSpecified('provisioned_iops'):
+        if type_uri.endswith('/pd-extreme'):
+          disk.provisionedIops = args.provisioned_iops
+        else:
+          raise exceptions.InvalidArgumentException(
+              '--provisioned-iops',
+              '--provisioned-iops can be used only with pd-extreme disk type.')
+
       if disk_ref.Collection() == 'compute.disks':
         request = client.messages.ComputeDisksInsertRequest(
             disk=disk,
@@ -604,7 +626,8 @@ class CreateAlpha(CreateBeta):
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
         source_in_place_snapshot_enabled=True,
-        support_pd_interface=True)
+        support_pd_interface=True,
+        support_provisioned_iops=True)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
@@ -618,7 +641,8 @@ class CreateAlpha(CreateBeta):
         supports_physical_block=True,
         support_multiwriter_disk=True,
         support_vss_erase=True,
-        support_pd_interface=True)
+        support_pd_interface=True,
+        support_provisioned_iops=True)
 
 
 def _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder):

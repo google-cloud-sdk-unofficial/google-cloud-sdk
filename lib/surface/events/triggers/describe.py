@@ -79,7 +79,7 @@ class Describe(base.Command):
       if trigger_obj is not None:
         source_crds = client.ListSourceCustomResourceDefinitions()
         source_ref, source_crd = util.GetSourceRefAndCrdForTrigger(
-            trigger_obj, source_crds)
+            trigger_obj, source_crds, client.IsCluster())
         if source_ref and source_crd:
           source_obj = client.GetSource(source_ref, source_crd)
 

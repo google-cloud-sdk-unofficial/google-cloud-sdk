@@ -259,7 +259,7 @@ requests are allowed every 12 hours.""")
       product["quotaTimeUnit"] = args.quota_unit
     # Check that AFTER these updates, all three quota settings are present.
     quota_field_names = ["quota", "quotaInterval", "quotaTimeUnit"]
-    quota_fields_exist = (field in product for field in quota_field_names)
+    quota_fields_exist = [field in product for field in quota_field_names]
     if any(quota_fields_exist) and not all(quota_fields_exist):
       if not args.quota_interval:
         missing_arg = "--quota-interval"

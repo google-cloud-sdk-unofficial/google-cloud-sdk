@@ -27,12 +27,12 @@ from googlecloudsdk.command_lib.compute.resource_policies import flags
 from googlecloudsdk.command_lib.compute.resource_policies import util
 
 
-def _CommonArgs(parser, api_version):
+def _CommonArgs(parser, api_version, track):
   """A helper function to build args based on different API version."""
   messages = apis.GetMessagesModule('compute', api_version)
   flags.MakeResourcePolicyArg().AddArgument(parser)
   flags.AddCommonArgs(parser)
-  flags.AddGroupPlacementArgs(parser, messages)
+  flags.AddGroupPlacementArgs(parser, messages, track)
   parser.display_info.AddCacheUpdater(None)
 
 
@@ -42,7 +42,8 @@ class CreateGroupPlacement(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser, api_version=compute_api.COMPUTE_ALPHA_API_VERSION)
+    _CommonArgs(parser, compute_api.COMPUTE_ALPHA_API_VERSION,
+                base.ReleaseTrack.ALPHA)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -54,7 +55,8 @@ class CreateGroupPlacement(base.CreateCommand):
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
 
     messages = holder.client.messages
-    resource_policy = util.MakeGroupPlacementPolicy(policy_ref, args, messages)
+    resource_policy = util.MakeGroupPlacementPolicy(policy_ref, args, messages,
+                                                    self.ReleaseTrack())
     create_request = messages.ComputeResourcePoliciesInsertRequest(
         resourcePolicy=resource_policy,
         project=policy_ref.project,
@@ -70,7 +72,8 @@ class CreateGroupPlacementBeta(CreateGroupPlacement):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser, api_version=compute_api.COMPUTE_BETA_API_VERSION)
+    _CommonArgs(parser, compute_api.COMPUTE_BETA_API_VERSION,
+                base.ReleaseTrack.BETA)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -79,7 +82,9 @@ class CreateGroupPlacementGa(CreateGroupPlacement):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser, api_version=compute_api.COMPUTE_GA_API_VERSION)
+    _CommonArgs(parser, compute_api.COMPUTE_GA_API_VERSION,
+                base.ReleaseTrack.GA)
+
 
 CreateGroupPlacement.detailed_help = {
     'DESCRIPTION':

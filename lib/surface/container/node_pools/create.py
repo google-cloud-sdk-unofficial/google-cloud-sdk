@@ -152,7 +152,9 @@ def ParseCreateNodePoolOptionsBase(args):
       reservation=args.reservation,
       sandbox=args.sandbox,
       max_surge_upgrade=args.max_surge_upgrade,
-      max_unavailable_upgrade=args.max_unavailable_upgrade)
+      max_unavailable_upgrade=args.max_unavailable_upgrade,
+      node_group=args.node_group
+      )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -180,6 +182,7 @@ class Create(base.CreateCommand):
     flags.AddSurgeUpgradeFlag(parser, for_node_pool=True)
     flags.AddMaxUnavailableUpgradeFlag(
         parser, for_node_pool=True, is_create=True)
+    flags.AddNodeGroupFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -264,6 +267,7 @@ class CreateBeta(Create):
         parser, for_node_pool=True, is_create=True)
     flags.AddReservationAffinityFlags(parser, for_node_pool=True)
     flags.AddSystemConfigFlag(parser, hidden=False)
+    flags.AddNodeGroupFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -287,7 +291,6 @@ class CreateAlpha(Create):
     ops.local_ssd_volume_configs = args.local_ssd_volumes
     ops.boot_disk_kms_key = args.boot_disk_kms_key
     ops.sandbox = args.sandbox
-    ops.node_group = args.node_group
     ops.linux_sysctls = args.linux_sysctls
     ops.node_locations = args.node_locations
     ops.system_config_from_file = args.system_config_from_file

@@ -63,7 +63,8 @@ For more information please refer to Collecting diagnostic information:
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class ExportLogs(base_classes.BaseCommand):
   """Triggers instance to gather logs and upload them to a Cloud Storage Bucket.
 

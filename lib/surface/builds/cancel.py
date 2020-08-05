@@ -45,6 +45,7 @@ class Cancel(base.Command):
 
   @staticmethod
   def Args(parser):
+    flags.AddRegionFlag(parser)
     parser.add_argument(
         'builds',
         completer=flags.BuildsCompleter,
@@ -62,8 +63,9 @@ class Cancel(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
+    build_region = args.region
 
-    client = cloudbuild_util.GetClientInstance()
+    client = cloudbuild_util.GetClientInstance(region=build_region)
     messages = cloudbuild_util.GetMessagesModule()
 
     cancelled = []

@@ -24,13 +24,13 @@ import signal
 import subprocess
 import sys
 
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.code import cross_platform_temp_file
 from googlecloudsdk.command_lib.code import flags
 from googlecloudsdk.command_lib.code import kubernetes
 from googlecloudsdk.command_lib.code import local
 from googlecloudsdk.command_lib.code import local_files
+from googlecloudsdk.command_lib.code import skaffold_events
 from googlecloudsdk.command_lib.code import yaml_helper
 from googlecloudsdk.core import config
 from googlecloudsdk.core import exceptions
@@ -38,6 +38,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.updater import update_manager
 from googlecloudsdk.core.util import files as file_utils
+import portpicker
 import six
 
 
@@ -90,7 +91,7 @@ def Skaffold(skaffold_config,
              namespace=None,
              env_vars=None,
              debug=False,
-             additional_flags=None):
+             events_port=None):
   """Run skaffold and catch keyboard interrupts to kill the process.
 
   Args:
@@ -99,20 +100,20 @@ def Skaffold(skaffold_config,
     namespace: Kubernetes namespace name.
     env_vars: Additional environment variables with which to run skaffold.
     debug: If true, turn on debugging output.
-    additional_flags: Extra skaffold flags.
+    events_port: If set, turn on the events api and expose it on this port.
 
   Yields:
     The skaffold process.
   """
   cmd = [_FindSkaffold(), 'dev', '-f', skaffold_config, '--port-forward']
   if context_name:
-    cmd += ['--kube-context', context_name]
+    cmd += ['--kube-context=%s' % context_name]
   if namespace:
-    cmd += ['--namespace', namespace]
+    cmd += ['--namespace=%s' % namespace]
   if debug:
     cmd += ['-vdebug']
-  if additional_flags:
-    cmd += additional_flags
+  if events_port:
+    cmd += ['--enable-rpc', '--rpc-http-port=%s' % events_port]
 
   # Supress the current Ctrl-C handler and pass the signal to the child
   # process.
@@ -212,11 +213,11 @@ class Dev(base.Command):
 
     # For testing only
     parser.add_argument(
-        '--additional-skaffold-flags',
-        type=arg_parsers.ArgList(),
-        metavar='FLAG',
+        '--skaffold-events-port',
+        type=int,
         hidden=True,
-        help='Additional flags with which to run skaffold.')
+        help='Local port on which the skaffold events api is exposed. If not '
+        'set, a random port is selected.')
 
   def Run(self, args):
     settings = local.Settings.FromArgs(args)
@@ -230,13 +231,16 @@ class Dev(base.Command):
         kubernetes_config) as kubernetes_file:
       skaffold_config = six.ensure_text(
           local_file_generator.SkaffoldConfig(kubernetes_file.name))
+      skaffold_event_port = (
+          args.skaffold_events_port or portpicker.pick_unused_port())
       with cross_platform_temp_file.NamedTempFile(skaffold_config) as skaffold_file, \
            self._GetKubernetesEngine(args) as kube_context, \
            self._WithKubeNamespace(args.namespace, kube_context.context_name), \
            _SetImagePush(skaffold_file, kube_context.shared_docker) as patched_skaffold_file, \
            Skaffold(patched_skaffold_file.name, kube_context.context_name,
                     args.namespace, kube_context.env_vars, _IsDebug(),
-                    args.additional_skaffold_flags) as skaffold:
+                    skaffold_event_port) as skaffold, \
+           skaffold_events.PrintUrlThreadContext(settings.service_name, skaffold_event_port):
         skaffold.wait()
 
   @staticmethod

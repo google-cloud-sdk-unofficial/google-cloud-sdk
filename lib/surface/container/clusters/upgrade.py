@@ -83,8 +83,7 @@ def ParseUpgradeOptionsBase(args):
       node_pool=args.node_pool,
       image_type=args.image_type,
       image=args.image,
-      image_project=args.image_project,
-      concurrent_node_count=getattr(args, 'concurrent_node_count', None))
+      image_project=args.image_project)
 
 
 def _Args(parser):
@@ -155,7 +154,6 @@ class Upgrade(base.Command):
     location = location_get(args)
     cluster_ref = adapter.ParseCluster(args.name, location)
     project_id = properties.VALUES.core.project.Get(required=True)
-    concurrent_node_count = getattr(args, 'concurrent_node_count', None)
 
     try:
       cluster = adapter.GetCluster(cluster_ref)
@@ -181,8 +179,7 @@ class Upgrade(base.Command):
         cluster=cluster,
         master=args.master,
         node_pool_name=args.node_pool,
-        new_version=args.cluster_version,
-        concurrent_node_count=concurrent_node_count)
+        new_version=args.cluster_version)
 
     console_io.PromptContinue(
         message=upgrade_message, throw_if_unattended=True, cancel_on_no=True)
@@ -262,7 +259,6 @@ class UpgradeAlpha(Upgrade):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddConcurrentNodeCountFlag(parser)
     flags.AddSecurityProfileForUpgradeFlags(parser)
 
   def ParseUpgradeOptions(self, args):

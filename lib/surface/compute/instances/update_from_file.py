@@ -27,7 +27,6 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core.console import console_io
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class UpdateFromFile(base.Command):

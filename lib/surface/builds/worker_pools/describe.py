@@ -57,13 +57,14 @@ class DescribeBeta(base.DescribeCommand):
       Some value that we want to have printed later.
     """
 
+    wp_region = args.region
+
     release_track = self.ReleaseTrack()
-    client = cloudbuild_util.GetClientInstance(release_track)
+    client = cloudbuild_util.GetClientInstance(release_track, region=wp_region)
     messages = cloudbuild_util.GetMessagesModule(release_track)
 
     parent = properties.VALUES.core.project.Get(required=True)
 
-    wp_region = args.region
     wp_name = args.WORKER_POOL
 
     # Get the workerpool ref
@@ -84,7 +85,7 @@ class DescribeBeta(base.DescribeCommand):
 
     # Format the workerpool name for display
     try:
-      wp.name = cloudbuild_util.WorkerPoolShortName(wp.name)
+      wp.name = cloudbuild_util.RegionalWorkerPoolShortName(wp.name)
     except ValueError:
       pass  # Must be an old version.
 
@@ -144,7 +145,7 @@ class DescribeAlpha(base.DescribeCommand):
 
     # Format the workerpool name for display
     try:
-      wp.name = cloudbuild_util.WorkerPoolShortName(wp.name)
+      wp.name = cloudbuild_util.GlobalWorkerPoolShortName(wp.name)
     except ValueError:
       pass  # Must be an old version.
 

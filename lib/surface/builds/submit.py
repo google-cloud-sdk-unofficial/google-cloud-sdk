@@ -52,6 +52,7 @@ def _CommonArgs(parser):
       action='store_true',
       help='Specify that no source should be uploaded with this build.')
 
+  flags.AddRegionFlag(parser)
   flags.AddGcsSourceStagingDirFlag(parser)
   flags.AddGcsLogDirFlag(parser)
   flags.AddTimeoutFlag(parser)
@@ -136,6 +137,7 @@ class Submit(base.CreateCommand):
     Raises:
       FailedBuildException: If the build is completed and not 'SUCCESS'.
     """
+    build_region = args.region
 
     messages = cloudbuild_util.GetMessagesModule()
 
@@ -146,8 +148,11 @@ class Submit(base.CreateCommand):
         args.gcs_source_staging_dir, args.ignore_file, args.gcs_log_dir,
         args.machine_type, args.disk_size)
 
+    build_region = submit_util.DetermineBuildRegion(build_config, build_region)
+
     # Start the build.
-    build, _ = submit_util.Build(messages, args.async_, build_config)
+    build, _ = submit_util.Build(
+        messages, args.async_, build_config, build_region=build_region)
     return build
 
 
@@ -194,6 +199,7 @@ class SubmitAlpha(SubmitBeta):
     Raises:
       FailedBuildException: If the build is completed and not 'SUCCESS'.
     """
+    build_region = args.region
 
     messages = cloudbuild_util.GetMessagesModule()
 
@@ -204,6 +210,9 @@ class SubmitAlpha(SubmitBeta):
         args.gcs_source_staging_dir, args.ignore_file, args.gcs_log_dir,
         args.machine_type, args.disk_size, args.pack)
 
+    build_region = submit_util.DetermineBuildRegion(build_config, build_region)
+
     # Start the build.
-    build, _ = submit_util.Build(messages, args.async_, build_config)
+    build, _ = submit_util.Build(
+        messages, args.async_, build_config, build_region=build_region)
     return build

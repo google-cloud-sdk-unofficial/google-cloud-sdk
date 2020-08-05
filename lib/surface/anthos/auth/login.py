@@ -78,4 +78,5 @@ class Login(base.BinaryBackedCommand):
         ldap_user=ldapuser,
         ldap_pass=ldappass,
         env=anthoscli_backend.GetEnvArgsForCommand())
-    return anthoscli_backend.LoginResponseHandler(response)
+    return anthoscli_backend.LoginResponseHandler(
+        response, list_clusters_only=(cluster is None))

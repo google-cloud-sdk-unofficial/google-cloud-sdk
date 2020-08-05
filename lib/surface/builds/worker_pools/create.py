@@ -65,15 +65,14 @@ class CreateBeta(base.CreateCommand):
       Some value that we want to have printed later.
     """
 
-    release_track = self.ReleaseTrack()
-    client = cloudbuild_util.GetClientInstance(release_track)
-    messages = cloudbuild_util.GetMessagesModule(release_track)
+    wp_region = args.region
 
-    parent = properties.VALUES.core.project.Get(required=True)
+    release_track = self.ReleaseTrack()
+    client = cloudbuild_util.GetClientInstance(release_track, region=wp_region)
+    messages = cloudbuild_util.GetMessagesModule(release_track)
 
     # Get the workerpool proto from either the flags or the specified file.
     wp = messages.WorkerPool()
-    wp_region = args.region
     if args.config_from_file is not None:
       wp = workerpool_config.LoadWorkerpoolConfigFromPath(
           args.config_from_file, messages)
@@ -90,6 +89,8 @@ class CreateBeta(base.CreateCommand):
         worker_config.diskSizeGb = compute_utils.BytesToGb(
             args.worker_disk_size)
       wp.workerConfig = worker_config
+
+    parent = properties.VALUES.core.project.Get(required=True)
 
     # Get the parent project.location ref
     parent_resource = resources.REGISTRY.Create(
@@ -122,7 +123,8 @@ class CreateBeta(base.CreateCommand):
 
     # Format the workerpool name for display
     try:
-      created_wp.name = cloudbuild_util.WorkerPoolShortName(created_wp.name)
+      created_wp.name = cloudbuild_util.RegionalWorkerPoolShortName(
+          created_wp.name)
     except ValueError:
       pass  # Must be an old version.
 
@@ -217,7 +219,8 @@ class CreateAlpha(base.CreateCommand):
 
     # Format the workerpool name for display
     try:
-      created_wp.name = cloudbuild_util.WorkerPoolShortName(created_wp.name)
+      created_wp.name = cloudbuild_util.GlobalWorkerPoolShortName(
+          created_wp.name)
     except ValueError:
       pass  # Must be an old version.
 
