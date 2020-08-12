@@ -2317,6 +2317,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "gradle": {
                   "commands": {},
                   "flags": {
+                    "--json-key": "value",
                     "--location": "value",
                     "--repository": "value"
                   }
@@ -2324,6 +2325,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "mvn": {
                   "commands": {},
                   "flags": {
+                    "--json-key": "value",
                     "--location": "value",
                     "--repository": "value"
                   }
@@ -2331,6 +2333,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "npm": {
                   "commands": {},
                   "flags": {
+                    "--json-key": "value",
                     "--location": "value",
                     "--repository": "value",
                     "--scope": "value"
@@ -2916,6 +2919,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--async": "bool",
                     "--cluster": "dynamic",
+                    "--cluster-config": "value",
                     "--cluster-num-nodes": "value",
                     "--cluster-storage-type": [
                       "hdd",
@@ -2926,11 +2930,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--instance-type": [
                       "DEVELOPMENT",
                       "PRODUCTION"
-                    ],
-                    "--kms-key": "dynamic",
-                    "--kms-keyring": "dynamic",
-                    "--kms-location": "dynamic",
-                    "--kms-project": "dynamic"
+                    ]
                   }
                 },
                 "delete": {
@@ -3513,7 +3513,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--region": "value",
                 "--substitutions": "value",
                 "--tag": "value",
-                "--timeout": "value"
+                "--timeout": "value",
+                "--worker-pool": "value"
               }
             },
             "triggers": {
@@ -6321,7 +6322,6 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--region": "dynamic",
                         "--remove-stateful-disks": "value",
                         "--stateful-disk": "value",
-                        "--update-stateful-disk": "value",
                         "--zone": "dynamic"
                       }
                     },
@@ -8773,6 +8773,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--description": "value",
                     "--enable": "bool",
                     "--filter-cidr-ranges": "value",
+                    "--filter-direction": [
+                      "both",
+                      "egress",
+                      "ingress"
+                    ],
                     "--filter-protocols": "value",
                     "--mirrored-instances": "value",
                     "--mirrored-subnets": "value",
@@ -8822,6 +8827,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--collector-ilb": "value",
                     "--description": "value",
                     "--enable": "bool",
+                    "--filter-direction": [
+                      "both",
+                      "egress",
+                      "ingress"
+                    ],
                     "--region": "dynamic",
                     "--remove-filter-cidr-ranges": "value",
                     "--remove-filter-protocols": "value",
@@ -11928,73 +11938,6 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
-            "memberships": {
-              "commands": {
-                "create": {
-                  "commands": {},
-                  "flags": {
-                    "--async": "bool",
-                    "--description": "value",
-                    "--gke-cluster-self-link": "value",
-                    "--labels": "value",
-                    "--location": "value"
-                  }
-                },
-                "delete": {
-                  "commands": {},
-                  "flags": {
-                    "--async": "bool",
-                    "--location": "value"
-                  }
-                },
-                "describe": {
-                  "commands": {},
-                  "flags": {
-                    "--location": "value"
-                  }
-                },
-                "list": {
-                  "commands": {},
-                  "flags": {
-                    "--filter": "value",
-                    "--limit": "value",
-                    "--page-size": "value",
-                    "--sort-by": "value",
-                    "--uri": "bool"
-                  }
-                },
-                "register": {
-                  "commands": {},
-                  "flags": {
-                    "--context": "value",
-                    "--kubeconfig": "value",
-                    "--manifest-output-file": "value",
-                    "--proxy": "value",
-                    "--service-account-key-file": "value"
-                  }
-                },
-                "unregister": {
-                  "commands": {},
-                  "flags": {
-                    "--context": "value",
-                    "--kubeconfig": "value"
-                  }
-                },
-                "update": {
-                  "commands": {},
-                  "flags": {
-                    "--async": "bool",
-                    "--clear-labels": "bool",
-                    "--description": "value",
-                    "--gke-cluster-self-link": "value",
-                    "--location": "value",
-                    "--remove-labels": "value",
-                    "--update-labels": "value"
-                  }
-                }
-              },
-              "flags": {}
-            },
             "node-pools": {
               "commands": {
                 "create": {
@@ -13847,6 +13790,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--api-options-file": "value",
                     "--async": "bool",
+                    "--custom-certificate-authority-roots": "value",
                     "--description": "value",
                     "--descriptor-url": "value",
                     "--labels": "value"
@@ -13877,6 +13821,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--api-options-file": "value",
                     "--async": "bool",
+                    "--custom-certificate-authority-roots": "value",
                     "--description": "value",
                     "--descriptor-url": "value",
                     "--remove-labels": "value",
@@ -21072,7 +21017,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--message-retention-period": "value",
                     "--partitions": "value",
                     "--per-partition-bytes": "value",
-                    "--scale": "value",
+                    "--per-partition-publish-mib": "value",
+                    "--per-partition-subscribe-mib": "value",
                     "--zone": "value"
                   }
                 },
@@ -21113,7 +21059,8 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--message-retention-period": "value",
                     "--per-partition-bytes": "value",
-                    "--scale": "value",
+                    "--per-partition-publish-mib": "value",
+                    "--per-partition-subscribe-mib": "value",
                     "--zone": "value"
                   }
                 }
@@ -22565,6 +22512,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--context": "value",
                     "--cpu": "value",
+                    "--image": "value",
                     "--kubeconfig": "value",
                     "--labels": "value",
                     "--max-instances": "value",
@@ -24290,6 +24238,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "never",
                       "on-demand"
                     ],
+                    "--active-directory-domain": "value",
                     "--assign-ip": "bool",
                     "--async": "bool",
                     "--authorized-networks": "value",
@@ -24410,6 +24359,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "never",
                       "on-demand"
                     ],
+                    "--active-directory-domain": "value",
                     "--assign-ip": "bool",
                     "--async": "bool",
                     "--authorized-gae-apps": "value",
@@ -27392,6 +27342,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "gradle": {
                   "commands": {},
                   "flags": {
+                    "--json-key": "value",
                     "--location": "value",
                     "--repository": "value"
                   }
@@ -27399,6 +27350,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "mvn": {
                   "commands": {},
                   "flags": {
+                    "--json-key": "value",
                     "--location": "value",
                     "--repository": "value"
                   }
@@ -27406,6 +27358,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "npm": {
                   "commands": {},
                   "flags": {
+                    "--json-key": "value",
                     "--location": "value",
                     "--repository": "value",
                     "--scope": "value"
@@ -28310,7 +28263,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--region": "value",
                 "--substitutions": "value",
                 "--tag": "value",
-                "--timeout": "value"
+                "--timeout": "value",
+                "--worker-pool": "value"
               }
             },
             "triggers": {
@@ -30720,7 +30674,6 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--region": "dynamic",
                         "--remove-stateful-disks": "value",
                         "--stateful-disk": "value",
-                        "--update-stateful-disk": "value",
                         "--zone": "dynamic"
                       }
                     },
@@ -35755,73 +35708,6 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
-            "memberships": {
-              "commands": {
-                "create": {
-                  "commands": {},
-                  "flags": {
-                    "--async": "bool",
-                    "--description": "value",
-                    "--gke-cluster-self-link": "value",
-                    "--labels": "value",
-                    "--location": "value"
-                  }
-                },
-                "delete": {
-                  "commands": {},
-                  "flags": {
-                    "--async": "bool",
-                    "--location": "value"
-                  }
-                },
-                "describe": {
-                  "commands": {},
-                  "flags": {
-                    "--location": "value"
-                  }
-                },
-                "list": {
-                  "commands": {},
-                  "flags": {
-                    "--filter": "value",
-                    "--limit": "value",
-                    "--page-size": "value",
-                    "--sort-by": "value",
-                    "--uri": "bool"
-                  }
-                },
-                "register": {
-                  "commands": {},
-                  "flags": {
-                    "--context": "value",
-                    "--kubeconfig": "value",
-                    "--manifest-output-file": "value",
-                    "--proxy": "value",
-                    "--service-account-key-file": "value"
-                  }
-                },
-                "unregister": {
-                  "commands": {},
-                  "flags": {
-                    "--context": "value",
-                    "--kubeconfig": "value"
-                  }
-                },
-                "update": {
-                  "commands": {},
-                  "flags": {
-                    "--async": "bool",
-                    "--clear-labels": "bool",
-                    "--description": "value",
-                    "--gke-cluster-self-link": "value",
-                    "--location": "value",
-                    "--remove-labels": "value",
-                    "--update-labels": "value"
-                  }
-                }
-              },
-              "flags": {}
-            },
             "node-pools": {
               "commands": {
                 "create": {
@@ -36437,7 +36323,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "build": {
                   "commands": {},
                   "flags": {
+                    "--env": "value",
+                    "--flex-template-base-image": "value",
                     "--image": "value",
+                    "--image-gcr-path": "value",
+                    "--jar": "value",
                     "--metadata-file": "value",
                     "--print-only": "bool",
                     "--sdk-language": [
@@ -37836,6 +37726,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--api-options-file": "value",
                     "--async": "bool",
+                    "--custom-certificate-authority-roots": "value",
                     "--description": "value",
                     "--descriptor-url": "value",
                     "--labels": "value"
@@ -37866,6 +37757,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--api-options-file": "value",
                     "--async": "bool",
+                    "--custom-certificate-authority-roots": "value",
                     "--description": "value",
                     "--descriptor-url": "value",
                     "--remove-labels": "value",
@@ -43614,7 +43506,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--message-retention-period": "value",
                     "--partitions": "value",
                     "--per-partition-bytes": "value",
-                    "--scale": "value",
+                    "--per-partition-publish-mib": "value",
+                    "--per-partition-subscribe-mib": "value",
                     "--zone": "value"
                   }
                 },
@@ -43655,7 +43548,8 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--message-retention-period": "value",
                     "--per-partition-bytes": "value",
-                    "--scale": "value",
+                    "--per-partition-publish-mib": "value",
+                    "--per-partition-subscribe-mib": "value",
                     "--zone": "value"
                   }
                 }
@@ -44744,6 +44638,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--context": "value",
                     "--cpu": "value",
+                    "--image": "value",
                     "--kubeconfig": "value",
                     "--labels": "value",
                     "--max-instances": "value",
@@ -47439,7 +47334,8 @@ STATIC_COMPLETION_CLI_TREE = {
             "--region": "value",
             "--substitutions": "value",
             "--tag": "value",
-            "--timeout": "value"
+            "--timeout": "value",
+            "--worker-pool": "value"
           }
         }
       },
@@ -49350,6 +49246,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--region": "dynamic",
                     "--size": "value",
+                    "--stateful-disk": "value",
                     "--target-pool": "value",
                     "--template": "value",
                     "--zone": "dynamic",
@@ -49520,6 +49417,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "dynamic",
                     "--scale-based-on-cpu": "bool",
                     "--scale-based-on-load-balancing": "bool",
+                    "--scale-in-control": "value",
                     "--target-cpu-utilization": "value",
                     "--target-load-balancing-utilization": "value",
                     "--zone": "dynamic"
@@ -49569,12 +49467,15 @@ STATIC_COMPLETION_CLI_TREE = {
                       "PROACTIVE"
                     ],
                     "--region": "dynamic",
+                    "--remove-stateful-disks": "value",
+                    "--stateful-disk": "value",
                     "--zone": "dynamic"
                   }
                 },
                 "update-autoscaling": {
                   "commands": {},
                   "flags": {
+                    "--clear-scale-in-control": "bool",
                     "--mode": [
                       "off",
                       "on",
@@ -49582,6 +49483,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "only-up"
                     ],
                     "--region": "dynamic",
+                    "--scale-in-control": "value",
                     "--zone": "dynamic"
                   }
                 },
@@ -49763,6 +49665,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--metadata": "value",
                 "--metadata-from-file": "value",
                 "--min-cpu-platform": "value",
+                "--min-node-cpu": "value",
                 "--network": "value",
                 "--network-interface": "value",
                 "--network-tier": "value",
@@ -50019,6 +49922,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--metadata": "value",
                 "--metadata-from-file": "value",
                 "--min-cpu-platform": "value",
+                "--min-node-cpu": "value",
                 "--network": "value",
                 "--network-interface": "value",
                 "--network-tier": "value",
@@ -50403,11 +50307,13 @@ STATIC_COMPLETION_CLI_TREE = {
             "set-scheduling": {
               "commands": {},
               "flags": {
+                "--clear-min-node-cpu": "bool",
                 "--clear-node-affinities": "bool",
                 "--maintenance-policy": [
                   "MIGRATE",
                   "TERMINATE"
                 ],
+                "--min-node-cpu": "value",
                 "--node": "value",
                 "--node-affinity-file": "value",
                 "--node-group": "value",
@@ -52350,6 +52256,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create": {
                   "commands": {},
                   "flags": {
+                    "--cpu-overcommit-type": [
+                      "enabled",
+                      "none"
+                    ],
                     "--description": "value",
                     "--node-affinity-labels": "value",
                     "--node-requirements": "value",
@@ -53697,6 +53607,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--create-subnetwork": "value",
                 "--database-encryption-key": "value",
                 "--default-max-pods-per-node": "value",
+                "--disable-default-snat": "bool",
                 "--disk-size": "value",
                 "--disk-type": [
                   "pd-ssd",
@@ -53857,6 +53768,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--complete-ip-rotation": "bool",
                 "--database-encryption-key": "value",
                 "--disable-database-encryption": "bool",
+                "--disable-default-snat": "bool",
                 "--disable-workload-identity": "bool",
                 "--enable-autoprovisioning": "bool",
                 "--enable-autoprovisioning-autorepair": "bool",
@@ -60831,6 +60743,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 ],
                 "--context": "value",
                 "--cpu": "value",
+                "--image": "value",
                 "--kubeconfig": "value",
                 "--labels": "value",
                 "--max-instances": "value",

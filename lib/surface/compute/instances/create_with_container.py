@@ -44,7 +44,8 @@ def _Args(parser,
   instances_flags.AddDiskArgs(
       parser, True, container_mount_enabled=container_mount_enabled)
   instances_flags.AddCreateDiskArgs(
-      parser, container_mount_enabled=container_mount_enabled,
+      parser,
+      container_mount_enabled=container_mount_enabled,
       support_multi_writer=support_multi_writer)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddContainerMountDiskFlag(parser)
@@ -91,8 +92,8 @@ class CreateWithContainer(base.CreateCommand):
     _Args(parser, container_mount_enabled=True, support_multi_writer=False)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
-    instances_flags.AddPrivateIpv6GoogleAccessArg(
-        parser, utils.COMPUTE_GA_API_VERSION)
+    instances_flags.AddPrivateIpv6GoogleAccessArg(parser,
+                                                  utils.COMPUTE_GA_API_VERSION)
 
   def _ValidateArgs(self, args):
     self._ValidateTrackSpecificArgs(args)
@@ -172,8 +173,8 @@ class CreateWithContainer(base.CreateCommand):
     source_instance_template = instance_utils.GetSourceInstanceTemplate(
         args, resource_parser, self.SOURCE_INSTANCE_TEMPLATE)
     skip_defaults = instance_utils.GetSkipDefaults(source_instance_template)
-    scheduling = instance_utils.GetScheduling(args, compute_client,
-                                              skip_defaults)
+    scheduling = instance_utils.GetScheduling(
+        args, compute_client, skip_defaults, support_min_node_cpu=False)
     service_accounts = instance_utils.GetServiceAccounts(
         args, compute_client, skip_defaults)
     user_metadata = instance_utils.GetValidatedMetadata(args, compute_client)
@@ -318,16 +319,11 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.ValidatePublicDnsFlags(args)
     instances_flags.ValidatePublicPtrFlags(args)
 
-  def _GetNetworkInterfaces(self, args, client, holder, project, location, scope,
-                            skip_defaults):
-    return create_utils.GetNetworkInterfacesAlpha(
-        args,
-        client,
-        holder,
-        project,
-        location,
-        scope,
-        skip_defaults)
+  def _GetNetworkInterfaces(self, args, client, holder, project, location,
+                            scope, skip_defaults):
+    return create_utils.GetNetworkInterfacesAlpha(args, client, holder, project,
+                                                  location, scope,
+                                                  skip_defaults)
 
 
 CreateWithContainer.detailed_help = {

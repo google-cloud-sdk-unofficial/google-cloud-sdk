@@ -30,6 +30,7 @@ from googlecloudsdk.command_lib.run import flags as serverless_flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 
 
 SerializedTriggerAndSource = collections.namedtuple(
@@ -74,6 +75,12 @@ class Describe(base.Command):
 
     trigger_ref = args.CONCEPTS.trigger.Parse()
     with eventflow_operations.Connect(conn_context) as client:
+      if client.IsCluster():
+        trigger_ref = resources.REGISTRY.Parse(
+            trigger_ref.RelativeName(),
+            collection=util.ANTHOS_TRIGGER_COLLECTION_NAME,
+            api_version=client.api_version)
+
       trigger_obj = client.GetTrigger(trigger_ref)
       source_obj = None
       if trigger_obj is not None:

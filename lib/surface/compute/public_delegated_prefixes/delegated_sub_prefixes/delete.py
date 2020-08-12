@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.public_delegated_prefixes import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.UpdateCommand):
-  r"""Deletes a Google Compute Engine delegated sub prefix.
+  r"""Deletes a Compute Engine delegated sub prefix.
 
   ## EXAMPLES
 

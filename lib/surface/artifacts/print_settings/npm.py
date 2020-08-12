@@ -46,6 +46,10 @@ class Npm(base.Command):
 
       $ {command} --repository="my-repository"
 
+    To print a snippet using service account key:
+
+      $ {command} --json-key=path/to/key.json
+
     To print a snippet for the repository set in the `artifacts/repository`
     property with scope @my-company:
 
@@ -56,6 +60,7 @@ class Npm(base.Command):
   @staticmethod
   def Args(parser):
     flags.GetRepoFlag().AddToParser(parser)
+    flags.GetJsonKeyFlag().AddToParser(parser)
     flags.GetScopeFlag().AddToParser(parser)
     parser.display_info.AddFormat("value(npm)")
 

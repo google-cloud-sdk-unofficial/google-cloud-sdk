@@ -65,6 +65,7 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
     type_providers.AddApiOptionsFileFlag(parser)
     type_providers.AddDescriptionFlag(parser)
     type_providers.AddDescriptorUrlFlag(parser)
+    type_providers.AddCustomCaCertificateFlag(parser)
     labels_util.AddUpdateLabelsFlags(parser, enable_clear=False)
 
   def Run(self, args):
@@ -93,11 +94,13 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
         self.messages.TypeProviderLabelEntry,
         labels_util.GetUpdateLabelsDictFromArgs(args),
         labels_util.GetRemoveLabelsListFromArgs(args))
-    type_provider = self.messages.TypeProvider(name=name,
-                                               description=args.description,
-                                               descriptorUrl=(args.
-                                                              descriptor_url),
-                                               labels=labels)
+    type_provider = self.messages.TypeProvider(
+        name=name,
+        description=args.description,
+        descriptorUrl=(args.
+                       descriptor_url),
+        customCertificateAuthorityRoots=args.custom_certificate_authority_roots,
+        labels=labels)
     type_providers.AddOptions(self.messages,
                               args.api_options_file,
                               type_provider)

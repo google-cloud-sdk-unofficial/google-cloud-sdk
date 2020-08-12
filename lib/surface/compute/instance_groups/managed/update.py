@@ -29,24 +29,10 @@ from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_heal
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class UpdateGA(base.UpdateCommand):
-  r"""Update Compute Engine managed instance groups.
-
-  *{command}* lets you specify or modify AutoHealingPolicy for an existing
-  managed instance group.
-
-  When updating the AutoHealingPolicy, you can specify the health check, initial
-  delay, or both. If the field is unspecified, its value won't be modified. If
-  `--health-check` is specified, the health check is used to monitor the
-  health of your application. Whenever the health check signal for the instance
-  becomes `UNHEALTHY`, the autohealing action (`RECREATE`) on an instance is
-  performed.
-
-  If no health check is specified, the instance autohealing is triggered by
-  the instance status only (i.e., the autohealing action (`RECREATE`) on an
-  instance will be performed if `instance.status` is not `RUNNING`).
-  """
+  r"""Update a Compute Engine managed instance group."""
 
   @staticmethod
   def Args(parser):
@@ -64,96 +50,6 @@ class UpdateGA(base.UpdateCommand):
     autohealing_params_group = autohealing_group.add_group()
     auto_healing_utils.AddAutohealingArgs(autohealing_params_group)
     instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
-
-  def _GetValidatedAutohealingPolicies(self, holder, client, args,
-                                       igm_resource):
-    health_check = managed_instance_groups_utils.GetHealthCheckUri(
-        holder.resources, args)
-    auto_healing_policies = (
-        managed_instance_groups_utils.ModifyAutohealingPolicies(
-            igm_resource.autoHealingPolicies, client.messages, args,
-            health_check))
-    managed_instance_groups_utils.ValidateAutohealingPolicies(
-        auto_healing_policies)
-    return auto_healing_policies
-
-  def _PatchRedistributionType(self, igm_patch, args, igm_resource, client,
-                               holder):
-    igm_ref = (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
-               .ResolveAsResource)(
-                   args,
-                   holder.resources,
-                   default_scope=compute_scope.ScopeEnum.ZONE,
-                   scope_lister=flags.GetDefaultScopeLister(client))
-    instance_groups_flags.ValidateMigInstanceRedistributionTypeFlag(
-        args.GetValue('instance_redistribution_type'), igm_ref)
-    igm_patch.updatePolicy = (managed_instance_groups_utils
-                              .ApplyInstanceRedistributionTypeToUpdatePolicy)(
-                                  client,
-                                  args.GetValue('instance_redistribution_type'),
-                                  igm_resource.updatePolicy)
-
-  def _MakePatchRequest(self, client, igm_ref, igm_updated_resource):
-    if igm_ref.Collection() == 'compute.instanceGroupManagers':
-      service = client.apitools_client.instanceGroupManagers
-      request = client.messages.ComputeInstanceGroupManagersPatchRequest(
-          instanceGroupManager=igm_ref.Name(),
-          instanceGroupManagerResource=igm_updated_resource,
-          project=igm_ref.project,
-          zone=igm_ref.zone)
-    else:
-      service = client.apitools_client.regionInstanceGroupManagers
-      request = client.messages.ComputeRegionInstanceGroupManagersPatchRequest(
-          instanceGroupManager=igm_ref.Name(),
-          instanceGroupManagerResource=igm_updated_resource,
-          project=igm_ref.project,
-          region=igm_ref.region)
-    return client.MakeRequests([(service, 'Patch', request)])
-
-  def _CreateInstanceGroupManagerPatch(self, args, igm_resource, client,
-                                       holder):
-    """Create IGM resource patch."""
-    patch_instance_group_manager = client.messages.InstanceGroupManager()
-    auto_healing_policies = self._GetValidatedAutohealingPolicies(
-        holder, client, args, igm_resource)
-    if auto_healing_policies is not None:
-      patch_instance_group_manager.autoHealingPolicies = auto_healing_policies
-    if args.IsSpecified('instance_redistribution_type'):
-      self._PatchRedistributionType(patch_instance_group_manager, args,
-                                    igm_resource, client, holder)
-    return patch_instance_group_manager
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    igm_ref = (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
-               .ResolveAsResource)(
-                   args,
-                   holder.resources,
-                   default_scope=compute_scope.ScopeEnum.ZONE,
-                   scope_lister=flags.GetDefaultScopeLister(client))
-
-    if igm_ref.Collection() not in [
-        'compute.instanceGroupManagers', 'compute.regionInstanceGroupManagers'
-    ]:
-      raise ValueError('Unknown reference type {0}'.format(
-          igm_ref.Collection()))
-
-    igm_resource = managed_instance_groups_utils.GetInstanceGroupManagerOrThrow(
-        igm_ref, client)
-
-    patch_instance_group_manager = self._CreateInstanceGroupManagerPatch(
-        args, igm_resource, client, holder)
-    return self._MakePatchRequest(client, igm_ref, patch_instance_group_manager)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class UpdateBeta(UpdateGA):
-  r"""Update Compute Engine managed instance groups."""
-
-  @staticmethod
-  def Args(parser):
-    UpdateGA.Args(parser)
     instance_groups_flags.AddMigUpdateStatefulFlags(parser)
 
   def _GetUpdatedStatefulPolicy(self,
@@ -221,44 +117,114 @@ class UpdateBeta(UpdateGA):
         args.remove_stateful_disks)
     return igm_patch
 
+  def _GetValidatedAutohealingPolicies(self, holder, client, args,
+                                       igm_resource):
+    health_check = managed_instance_groups_utils.GetHealthCheckUri(
+        holder.resources, args)
+    auto_healing_policies = (
+        managed_instance_groups_utils.ModifyAutohealingPolicies(
+            igm_resource.autoHealingPolicies, client.messages, args,
+            health_check))
+    managed_instance_groups_utils.ValidateAutohealingPolicies(
+        auto_healing_policies)
+    return auto_healing_policies
+
+  def _PatchRedistributionType(self, igm_patch, args, igm_resource, client,
+                               holder):
+    igm_ref = (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
+               .ResolveAsResource)(
+                   args,
+                   holder.resources,
+                   default_scope=compute_scope.ScopeEnum.ZONE,
+                   scope_lister=flags.GetDefaultScopeLister(client))
+    instance_groups_flags.ValidateMigInstanceRedistributionTypeFlag(
+        args.GetValue('instance_redistribution_type'), igm_ref)
+    igm_patch.updatePolicy = (managed_instance_groups_utils
+                              .ApplyInstanceRedistributionTypeToUpdatePolicy)(
+                                  client,
+                                  args.GetValue('instance_redistribution_type'),
+                                  igm_resource.updatePolicy)
+
+  def _MakePatchRequest(self, client, igm_ref, igm_updated_resource):
+    if igm_ref.Collection() == 'compute.instanceGroupManagers':
+      service = client.apitools_client.instanceGroupManagers
+      request = client.messages.ComputeInstanceGroupManagersPatchRequest(
+          instanceGroupManager=igm_ref.Name(),
+          instanceGroupManagerResource=igm_updated_resource,
+          project=igm_ref.project,
+          zone=igm_ref.zone)
+    else:
+      service = client.apitools_client.regionInstanceGroupManagers
+      request = client.messages.ComputeRegionInstanceGroupManagersPatchRequest(
+          instanceGroupManager=igm_ref.Name(),
+          instanceGroupManagerResource=igm_updated_resource,
+          project=igm_ref.project,
+          region=igm_ref.region)
+    return client.MakeRequests([(service, 'Patch', request)])
+
   def _CreateInstanceGroupManagerPatch(self, args, igm_resource, client,
                                        holder):
-    igm_patch = super(UpdateBeta, self)._CreateInstanceGroupManagerPatch(
-        args, igm_resource, client, holder)
-
+    """Create IGM resource patch."""
+    patch_instance_group_manager = client.messages.InstanceGroupManager()
+    auto_healing_policies = self._GetValidatedAutohealingPolicies(
+        holder, client, args, igm_resource)
+    if auto_healing_policies is not None:
+      patch_instance_group_manager.autoHealingPolicies = auto_healing_policies
+    if args.IsSpecified('instance_redistribution_type'):
+      self._PatchRedistributionType(patch_instance_group_manager, args,
+                                    igm_resource, client, holder)
     if self._StatefulArgsSet(args):
-      igm_patch = self._PatchStatefulPolicy(igm_patch, args, igm_resource,
-                                            client, holder)
-    return igm_patch
+      patch_instance_group_manager = (
+          self._PatchStatefulPolicy(patch_instance_group_manager, args,
+                                    igm_resource, client, holder))
+    return patch_instance_group_manager
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    igm_ref = (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
+               .ResolveAsResource)(
+                   args,
+                   holder.resources,
+                   default_scope=compute_scope.ScopeEnum.ZONE,
+                   scope_lister=flags.GetDefaultScopeLister(client))
+
+    if igm_ref.Collection() not in [
+        'compute.instanceGroupManagers', 'compute.regionInstanceGroupManagers'
+    ]:
+      raise ValueError('Unknown reference type {0}'.format(
+          igm_ref.Collection()))
+
+    igm_resource = managed_instance_groups_utils.GetInstanceGroupManagerOrThrow(
+        igm_ref, client)
+
+    patch_instance_group_manager = self._CreateInstanceGroupManagerPatch(
+        args, igm_resource, client, holder)
+    return self._MakePatchRequest(client, igm_ref, patch_instance_group_manager)
 
 
-UpdateBeta.detailed_help = {
+UpdateGA.detailed_help = {
     'brief':
-        'Update Compute Engine managed instance groups.',
+        'Update a Compute Engine managed instance group.',
     'DESCRIPTION':
         """\
-        Update Compute Engine managed instance groups.
+      Update a Compute Engine managed instance group.
 
-        *{command}* allows you to specify or modify the StatefulPolicy and
-        AutoHealingPolicy for an existing managed instance group.
+      *{command}* allows you to specify or modify the stateful policy and
+      autohealing policy for an existing managed instance group.
 
-        Stateful Policy defines what stateful resources should be preserved for
-        the group. When instances in the group are removed or recreated, those
-        stateful properties are always applied to them. This command allows you
-        to change the preserved resources by adding more disks or removing
-        existing disks and allows you to turn on and off preserving instance
-        names.
+      A stateful policy defines which resources should be preserved across the
+      group. When instances in the group are recreated, stateful resources are
+      preserved. This command allows you to update stateful resources,
+      specifically to add or remove stateful disks.
 
-        When updating the AutoHealingPolicy, you may specify the health check,
-        initial delay, or both. If the field is unspecified, its value won't be
-        modified. If `--health-check` is specified, the health check will be
-        used to monitor the health of your application. Whenever the health
-        check signal for the instance becomes `UNHEALTHY`, the autohealing
-        action (`RECREATE`) on an instance will be performed.
+      When updating the autohealing policy, you can specify the health check,
+      initial delay, or both. If either field is unspecified, its value won't
+      be modified. If `--health-check` is specified, the health check monitors
+      the health of your application. Whenever the health check signal for an
+      instance becomes `UNHEALTHY`, the autohealer recreates the instance.
 
-        If no health check is specified, the instance autohealing will be
-        triggered by the instance status only (i.e. the autohealing action
-        (`RECREATE`) on an instance will be performed if `instance.status`
-        is not `RUNNING`).
-        """
+      If no health check exists, instance autohealing is triggered only by
+      instance status: if an instance is not `RUNNING`, the group recreates it.
+      """
 }

@@ -170,7 +170,8 @@ class Filters(base.TopicCommand):
           pattern _value_.
 
           For more about regular expression syntax, see:
-          https://docs.python.org/3/library/re.html#re-syntax
+          https://docs.python.org/3/library/re.html#re-syntax which follows the
+          PCRE dialect.
 
           """)
           .format(description=resource_topics.ResourceDescription('filter')),

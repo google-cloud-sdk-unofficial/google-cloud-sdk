@@ -104,7 +104,7 @@ def ValidateAndFixUpdatePolicyAgainstStateful(update_policy, group_ref,
         'Use --instance-redistribution-type=NONE')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class CreateGA(base.CreateCommand):
   """Create Compute Engine managed instance groups."""
 
@@ -117,6 +117,18 @@ class CreateGA(base.CreateCommand):
     igm_arg.AddArgument(parser, operation_type='create')
     instance_groups_flags.AddZonesFlag(parser)
     instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
+    instance_groups_flags.AddMigCreateStatefulFlags(parser)
+
+  @staticmethod
+  def _CreateStatefulPolicy(args, client):
+    """Create stateful policy from disks of args --stateful-disk."""
+    stateful_disks = []
+    for stateful_disk_dict in (args.stateful_disk or []):
+      stateful_disks.append(
+          policy_utils.MakeStatefulPolicyPreservedStateDiskEntry(
+              client.messages, stateful_disk_dict))
+    stateful_disks.sort(key=lambda x: x.key)
+    return policy_utils.MakeStatefulPolicy(client.messages, stateful_disks)
 
   def CreateGroupReference(self, args, client, resources):
     if args.zones:
@@ -230,7 +242,7 @@ class CreateGA(base.CreateCommand):
                          client, args.GetValue('instance_redistribution_type'),
                          None)
 
-    return client.messages.InstanceGroupManager(
+    instance_group_manager = client.messages.InstanceGroupManager(
         name=group_ref.Name(),
         description=args.description,
         instanceTemplate=template_ref.SelfLink(),
@@ -244,6 +256,19 @@ class CreateGA(base.CreateCommand):
             args.zones, holder.resources, client.messages),
         updatePolicy=update_policy,
     )
+
+    # Handle stateful args
+    instance_groups_flags.ValidateManagedInstanceGroupStatefulProperties(args)
+    if args.stateful_disk:
+      instance_group_manager.statefulPolicy = (
+          self._CreateStatefulPolicy(args, client))
+
+    # Validate updatePolicy + statefulPolicy combination
+    ValidateAndFixUpdatePolicyAgainstStateful(
+        instance_group_manager.updatePolicy, group_ref,
+        instance_group_manager.statefulPolicy, client)
+
+    return instance_group_manager
 
   def Run(self, args):
     """Creates and issues an instanceGroupManagers.Insert request.
@@ -296,58 +321,13 @@ in the ``us-central1-a'' zone.
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(CreateGA):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateGA):
   """Create Compute Engine managed instance groups."""
 
   @classmethod
   def Args(cls, parser):
     CreateGA.Args(parser)
-    instance_groups_flags.AddMigCreateStatefulFlags(parser)
-
-  @staticmethod
-  def _CreateStatefulPolicy(args, client):
-    """Create stateful policy from disks of args --stateful-disk."""
-    stateful_disks = []
-    for stateful_disk_dict in (args.stateful_disk or []):
-      stateful_disks.append(
-          policy_utils.MakeStatefulPolicyPreservedStateDiskEntry(
-              client.messages, stateful_disk_dict))
-    stateful_disks.sort(key=lambda x: x.key)
-    return policy_utils.MakeStatefulPolicy(client.messages, stateful_disks)
-
-  def _CreateInstanceGroupManager(
-      self, args, group_ref, template_ref, client, holder):
-    """Create parts of Instance Group Manager shared for the track."""
-    instance_group_manager = (
-        super(CreateBeta,
-              self)._CreateInstanceGroupManager(args, group_ref, template_ref,
-                                                client, holder))
-
-    # Handle stateful args
-    instance_groups_flags.ValidateManagedInstanceGroupStatefulProperties(args)
-    if args.stateful_disk:
-      instance_group_manager.statefulPolicy = (
-          self._CreateStatefulPolicy(args, client))
-
-    # Validate updatePolicy + statefulPolicy combination
-    ValidateAndFixUpdatePolicyAgainstStateful(
-        instance_group_manager.updatePolicy, group_ref,
-        instance_group_manager.statefulPolicy, client)
-
-    return instance_group_manager
-
-
-CreateBeta.detailed_help = CreateGA.detailed_help
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create Compute Engine managed instance groups."""
-
-  @classmethod
-  def Args(cls, parser):
-    CreateBeta.Args(parser)
     instance_groups_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
 
   def _CreateDistributionPolicy(self,
@@ -383,4 +363,4 @@ class CreateAlpha(CreateBeta):
     return instance_group_manager
 
 
-CreateAlpha.detailed_help = CreateBeta.detailed_help
+CreateAlpha.detailed_help = CreateGA.detailed_help

@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.public_delegated_prefixes import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describes a Google Compute Engine public delegated prefix.
+  """Describes a Compute Engine public delegated prefix.
 
   ## EXAMPLES
 

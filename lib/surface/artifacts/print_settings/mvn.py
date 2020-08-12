@@ -41,12 +41,17 @@ class Maven(base.Command):
     To print a snippet for repository `my-repository` in the default location:
 
       $ {command} --repository="my-repository"
+
+    To print a snippet using service account key:
+
+      $ {command} --json-key=path/to/key.json
     """,
   }
 
   @staticmethod
   def Args(parser):
     flags.GetRepoFlag().AddToParser(parser)
+    flags.GetJsonKeyFlag().AddToParser(parser)
     parser.display_info.AddFormat("value(mvn)")
 
   def Run(self, args):
@@ -62,4 +67,3 @@ class Maven(base.Command):
 
     log.status.Print("Note: Language package support is in Alpha.\n")
     return {"mvn": settings_util.GetMavenSnippet(args)}
-

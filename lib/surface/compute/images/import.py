@@ -192,6 +192,12 @@ class Import(base.CreateCommand):
       location closest to the source is chosen automatically.
       """)
 
+    parser.add_argument(
+        '--sysprep-windows',
+        action='store_true',
+        hidden=True,
+        help='Whether to generalize the image using Windows Sysprep.')
+
   def Run(self, args):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
@@ -421,11 +427,6 @@ class ImportBeta(Import):
   def Args(cls, parser):
     super(ImportBeta, cls).Args(parser)
     daisy_utils.AddExtraCommonDaisyArgs(parser)
-    parser.add_argument(
-        '--sysprep-windows',
-        action='store_true',
-        hidden=True,
-        help='Whether to generalize the image using Windows Sysprep.')
 
   def _RunImageImport(self, args, import_args, tags, output_filter):
     return daisy_utils.RunImageImport(args, import_args, tags, _OUTPUT_FILTER,

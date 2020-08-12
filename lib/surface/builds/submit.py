@@ -60,6 +60,7 @@ def _CommonArgs(parser):
   flags.AddMachineTypeFlag(parser)
   flags.AddDiskSizeFlag(parser)
   flags.AddSubstitutionsFlag(parser)
+  flags.AddWorkerPoolFlag(parser)
 
   flags.AddNoCacheFlag(parser)
   flags.AddAsyncFlag(parser)
@@ -146,7 +147,7 @@ class Submit(base.CreateCommand):
         args.tag, args.no_cache, messages, args.substitutions, args.config,
         args.IsSpecified('source'), args.no_source, args.source,
         args.gcs_source_staging_dir, args.ignore_file, args.gcs_log_dir,
-        args.machine_type, args.disk_size)
+        args.machine_type, args.disk_size, args.worker_pool)
 
     build_region = submit_util.DetermineBuildRegion(build_config, build_region)
 
@@ -208,7 +209,9 @@ class SubmitAlpha(SubmitBeta):
         args.tag, args.no_cache, messages, args.substitutions, args.config,
         args.IsSpecified('source'), args.no_source, args.source,
         args.gcs_source_staging_dir, args.ignore_file, args.gcs_log_dir,
-        args.machine_type, args.disk_size, args.pack)
+        args.machine_type, args.disk_size, args.worker_pool, args.pack,
+        arg_cluster_name=args.cluster,
+        arg_cluster_location=args.cluster_location)
 
     build_region = submit_util.DetermineBuildRegion(build_config, build_region)
 

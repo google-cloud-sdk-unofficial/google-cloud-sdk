@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: Update a Deployment Rollout.
@@ -32,6 +32,8 @@
       api_version: v1alpha
     BETA:
       api_version: v1beta
+    GA:
+      api_version: v1
     method: previewRollout
     modify_method_hook:
       googlecloudsdk.command_lib.game.servers.deployments.update_hooks:ChooseUpdateOrPreviewMethod

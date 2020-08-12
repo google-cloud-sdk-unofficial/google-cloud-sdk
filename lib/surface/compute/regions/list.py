@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute import completers
 
 
 class List(base.ListCommand):
-  """List Google Compute Engine regions."""
+  """List Compute Engine regions."""
 
   @staticmethod
   def Args(parser):

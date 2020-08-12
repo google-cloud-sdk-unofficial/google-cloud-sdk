@@ -25,7 +25,7 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """Lists Google Compute Engine public delegated prefixes."""
+  """Lists Compute Engine public delegated prefixes."""
 
   @staticmethod
   def Args(parser):

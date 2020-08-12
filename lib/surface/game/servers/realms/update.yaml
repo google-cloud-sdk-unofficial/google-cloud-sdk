@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: Update a Realm.
@@ -25,6 +25,8 @@
       api_version: v1alpha
     BETA:
       api_version: v1beta
+    GA:
+      api_version: v1
     method: previewUpdate
     modify_method_hook:
       googlecloudsdk.command_lib.game.servers.realms.update_hooks:ChooseUpdateOrPreviewMethod

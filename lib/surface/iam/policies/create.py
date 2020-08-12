@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to get a policy on the given resource."""
+"""Command to create a policy on the given attachment point."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -47,17 +47,17 @@ class Create(base.CreateCommand):
     flags.GetAttachmentPointFlag().AddToParser(parser)
     flags.GetKindFlag().AddToParser(parser)
     flags.GetPolicyIDFlag().AddToParser(parser)
-
-    parser.add_argument(
-        '--policy-file', required=True, help='The contents of the policy.')
+    flags.GetPolicyFileFlag().AddToParser(parser)
 
   def Run(self, args):
     client = apis.GetClientInstance()
     messages = apis.GetMessagesModule()
 
+    attachment_point = args.attachment_point.replace('/', '%2F')
+
     result = client.policies.CreatePolicy(
         messages.IamPoliciesCreatePolicyRequest(
-            parent='policies/{}/{}'.format(args.attachment_point, args.kind),
+            parent='policies/{}/{}'.format(attachment_point, args.kind),
             policyId=args.policy_id,
             googleIamV2alpha1Policy=apis.ParseYamlOrJsonPolicyFile(
                 args.policy_file, messages.GoogleIamV2alpha1Policy)))

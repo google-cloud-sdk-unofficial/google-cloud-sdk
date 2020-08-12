@@ -24,10 +24,10 @@ import textwrap
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.util import exceptions as core_api_exceptions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.hub import agent_util as agent_util
-from googlecloudsdk.command_lib.container.hub import api_util as api_util
-from googlecloudsdk.command_lib.container.hub import exclusivity_util as exclusivity_util
-from googlecloudsdk.command_lib.container.hub import kube_util as kube_util
+from googlecloudsdk.command_lib.container.hub import agent_util
+from googlecloudsdk.command_lib.container.hub import api_util
+from googlecloudsdk.command_lib.container.hub import exclusivity_util
+from googlecloudsdk.command_lib.container.hub import kube_util
 from googlecloudsdk.command_lib.container.hub import util as hub_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import exceptions
@@ -380,23 +380,23 @@ class Register(base.CreateCommand):
             raise
           obj = api_util.GetMembership(resource_name, self.ReleaseTrack())
           if not obj.externalId:
-            raise exceptions.Error('invalid membership {} does not have '
-                                   'external_id field set. We cannot determine '
-                                   'if registration is requested against a '
-                                   'valid existing Membership. Consult the '
-                                   'documentation on container hub memberships '
-                                   'update for more information or run gcloud '
-                                   'container hub memberships delete {} if you '
-                                   'are sure that this is an invalid or '
-                                   'otherwise stale Membership'.format(
-                                       membership_id, membership_id))
+            raise exceptions.Error(
+                'invalid membership {0} does not have '
+                'external_id field set. We cannot determine '
+                'if registration is requested against a '
+                'valid existing Membership. Consult the '
+                'documentation on container hub memberships '
+                'update for more information or run gcloud '
+                'container hub memberships delete {0} if you '
+                'are sure that this is an invalid or '
+                'otherwise stale Membership'.format(membership_id))
           if obj.externalId != uuid:
-            raise exceptions.Error('membership {} already exists in the project'
-                                   ' with another cluster. If this operation is'
-                                   ' intended, please run `gcloud container '
-                                   'hub memberships delete {}` and register '
-                                   'again.'.format(membership_id,
-                                                   membership_id))
+            raise exceptions.Error(
+                'membership {0} already exists in the project'
+                ' with another cluster. If this operation is'
+                ' intended, please run `gcloud container '
+                'hub memberships delete {0}` and register '
+                'again.'.format(membership_id))
 
           # The membership exists with same cluster_name.
           already_exists = True
@@ -404,12 +404,34 @@ class Register(base.CreateCommand):
       # In case of an existing membership, check with the user to upgrade the
       # Connect-Agent.
       if already_exists:
-        console_io.PromptContinue(
-            message='A membership [{}] for the cluster [{}] already exists. '
-            'Continuing will reinstall the Connect agent deployment to use a '
-            'new image (if one is available).'.format(resource_name,
-                                                      args.CLUSTER_NAME),
-            cancel_on_no=True)
+        # Update Membership if issuer is updated by the user from an empty value
+        # to a non-empty value or vice versa. UpdateMembership API will error
+        # out if the user tries to modify the issuer URL.
+        if self.ReleaseTrack() is base.ReleaseTrack.ALPHA and (
+            (obj.authority and not issuer_url) or
+            (issuer_url and not obj.authority) or
+            (obj.authority and (obj.authority.issuer != issuer_url))):
+          console_io.PromptContinue(
+              message=hub_util.GenerateWIUpdateMsgString(
+                  obj, issuer_url, resource_name, args.CLUSTER_NAME),
+              cancel_on_no=True)
+          try:
+            api_util.UpdateMembership(resource_name, obj, 'authority',
+                                      self.ReleaseTrack(), issuer_url)
+            log.status.Print(
+                'Updated the membership [{}] for the cluster [{}]'.format(
+                    resource_name, args.CLUSTER_NAME))
+          except Exception as e:
+            raise exceptions.Error(
+                'Error in updating the membership [{}]:{}'.format(
+                    resource_name, e))
+        else:
+          console_io.PromptContinue(
+              message='A membership [{}] for the cluster [{}] already exists. '
+              'Continuing will reinstall the Connect agent deployment to use a '
+              'new image (if one is available).'.format(resource_name,
+                                                        args.CLUSTER_NAME),
+              cancel_on_no=True)
       else:
         log.status.Print(
             'Created a new membership [{}] for the cluster [{}]'.format(

@@ -43,7 +43,7 @@ DETAILED_HELP = {
       ``cloudasset.assets.searchAllIamPolicies'' permission on the organization
       and run:
 
-        $ {command} search-all-iam-policies --scope='organizations/123456' --query='policy : "amy@mycompany.com"'
+        $ {command} --scope='organizations/123456' --query='policy:amy@mycompany.com'
       """
 }
 
@@ -88,25 +88,25 @@ def AddQueryArgument(parser):
 
         Examples:
 
-        * ```policy : "amy@gmail.com"``` to find IAM policy bindings that
+        * ```policy:amy@gmail.com``` to find IAM policy bindings that
           specify user ``amy@gmail.com''.
-        * ```policy : "roles/compute.admin"``` to find IAM policy bindings
+        * ```policy:roles/compute.admin``` to find IAM policy bindings
           that specify the Compute Admin role.
-        * ```policy.role.permissions : "storage.buckets.update"``` to find Cloud
+        * ```policy.role.permissions:storage.buckets.update``` to find Cloud
           IAM policy bindings that specify a role containing the
           ``storage.buckets.update'' permission. Note that if callers don't have
           ``iam.roles.get'' access to a role's included permissions, policy
           bindings that specify this role will be dropped from the search
           results.
-        * ```resource : "organizations/123456"``` to find IAM policy
+        * ```resource:organizations/123456``` to find IAM policy
           bindings that are set on ``organizations/123456''.
-        * ```"Important"``` to find IAM policy bindings that contain
+        * ```Important``` to find IAM policy bindings that contain
           ``Important'' as a word in any of the searchable fields (except for
           the included permissions).
-        * ```"*por*"``` to find IAM policy bindings which contain ``por'' as a
+        * ```*por*``` to find IAM policy bindings that contain ``por'' as a
           substring in any of the searchable fields (except for the included
           permissions).
-        * ```(resource : ("instance1" OR "instance2") AND policy : "amy")```
+        * ```resource:(instance1 OR instance2) policy:amy```
           to find IAM policy bindings that are set on resources
           ``instance1'' or ``instance2'' and also specify user ``amy''.
         """))

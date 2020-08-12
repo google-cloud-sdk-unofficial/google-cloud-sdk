@@ -22,6 +22,12 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class RealmsGA(base.Group):
+  """Deploy and manage Cloud Game Server Realms."""
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA,
                     base.ReleaseTrack.BETA)
 class Realms(base.Group):

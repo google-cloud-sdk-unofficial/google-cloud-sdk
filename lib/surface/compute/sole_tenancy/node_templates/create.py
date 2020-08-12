@@ -34,7 +34,7 @@ def _CommonArgs(parser, api_version):
   flags.GetServerBindingMapperFlag(messages).choice_arg.AddToParser(parser)
 
 
-def _Run(args, track, enable_disk=False, overcommit=False):
+def _Run(args, track, enable_disk=False):
   """Creates a node template."""
   holder = base_classes.ComputeApiHolder(track)
   client = holder.client
@@ -49,8 +49,7 @@ def _Run(args, track, enable_disk=False, overcommit=False):
       node_template_ref,
       args,
       messages,
-      enable_disk=enable_disk,
-      overcommit=overcommit)
+      enable_disk=enable_disk)
   request = messages.ComputeNodeTemplatesInsertRequest(
       nodeTemplate=node_template,
       project=node_template_ref.project,
@@ -74,26 +73,23 @@ class Create(base.CreateCommand):
            $ {command} my-node-template --node-type=n1-node-96-624
        """
   }
-  overcommit = False
   enable_disk = False
 
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, 'v1')
+    flags.AddCpuOvercommitTypeFlag(parser)
 
   def Run(self, args):
     return _Run(
         args,
         self.ReleaseTrack(),
-        enable_disk=self.enable_disk,
-        overcommit=self.overcommit)
+        enable_disk=self.enable_disk)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a Compute Engine node template."""
-
-  overcommit = True
 
   @staticmethod
   def Args(parser):

@@ -95,7 +95,6 @@ def _CommonArgs(parser,
                 enable_kms=False,
                 deprecate_maintenance_policy=False,
                 enable_resource_policy=False,
-                supports_min_node_cpu=False,
                 supports_location_hint=False,
                 supports_erase_vss=False,
                 snapshot_csek=False,
@@ -143,6 +142,7 @@ def _CommonArgs(parser,
   instances_flags.AddNetworkTierArgs(parser, instance=True)
   instances_flags.AddShieldedInstanceConfigArgs(parser)
   instances_flags.AddDisplayDeviceArg(parser)
+  instances_flags.AddMinNodeCpuArg(parser)
 
   instances_flags.AddReservationAffinityGroup(
       parser,
@@ -152,9 +152,6 @@ def _CommonArgs(parser,
   maintenance_flags.AddResourcePoliciesArgs(parser, 'added to', 'instance')
 
   sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
-
-  if supports_min_node_cpu:
-    instances_flags.AddMinNodeCpuArg(parser)
 
   if supports_location_hint:
     instances_flags.AddLocationHintArg(parser)
@@ -190,7 +187,6 @@ class Create(base.CreateCommand):
   _support_disk_resource_policy = False
   _support_erase_vss = False
   _support_machine_image_key = False
-  _support_min_node_cpu = False
   _support_location_hint = False
   _support_source_snapshot_csek = False
   _support_image_csek = False
@@ -209,8 +205,8 @@ class Create(base.CreateCommand):
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
     instances_flags.AddLocalSsdArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
-    instances_flags.AddPrivateIpv6GoogleAccessArg(
-        parser, utils.COMPUTE_GA_API_VERSION)
+    instances_flags.AddPrivateIpv6GoogleAccessArg(parser,
+                                                  utils.COMPUTE_GA_API_VERSION)
 
   def Collection(self):
     return 'compute.instances'
@@ -245,7 +241,6 @@ class Create(base.CreateCommand):
         compute_client,
         skip_defaults,
         support_node_affinity=True,
-        support_min_node_cpu=self._support_min_node_cpu,
         support_location_hint=self._support_location_hint)
     tags = instance_utils.GetTags(args, compute_client)
     labels = instance_utils.GetLabels(args, compute_client)
@@ -263,9 +258,9 @@ class Create(base.CreateCommand):
         skip_defaults=skip_defaults,
         support_public_dns=self._support_public_dns)
 
-    confidential_vm = (self._support_confidential_compute and
-                       args.IsSpecified('confidential_compute') and
-                       args.confidential_compute)
+    confidential_vm = (
+        self._support_confidential_compute and
+        args.IsSpecified('confidential_compute') and args.confidential_compute)
 
     create_boot_disk = not (
         instance_utils.UseExistingBootDisk((args.disk or []) +
@@ -499,7 +494,6 @@ class CreateBeta(Create):
   _support_disk_resource_policy = True
   _support_erase_vss = True
   _support_machine_image_key = True
-  _support_min_node_cpu = True
   _support_location_hint = False
   _support_source_snapshot_csek = False
   _support_image_csek = False
@@ -533,8 +527,7 @@ class CreateBeta(Create):
         enable_regional=cls._support_regional,
         enable_kms=cls._support_kms,
         enable_resource_policy=cls._support_disk_resource_policy,
-        supports_erase_vss=cls._support_erase_vss,
-        supports_min_node_cpu=cls._support_min_node_cpu)
+        supports_erase_vss=cls._support_erase_vss)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -559,7 +552,6 @@ class CreateAlpha(CreateBeta):
   _support_disk_resource_policy = True
   _support_erase_vss = True
   _support_machine_image_key = True
-  _support_min_node_cpu = True
   _support_location_hint = True
   _support_source_snapshot_csek = True
   _support_image_csek = True
@@ -578,7 +570,6 @@ class CreateAlpha(CreateBeta):
         enable_kms=cls._support_kms,
         deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
         enable_resource_policy=cls._support_disk_resource_policy,
-        supports_min_node_cpu=cls._support_min_node_cpu,
         supports_location_hint=cls._support_location_hint,
         supports_erase_vss=cls._support_erase_vss,
         snapshot_csek=cls._support_source_snapshot_csek,
