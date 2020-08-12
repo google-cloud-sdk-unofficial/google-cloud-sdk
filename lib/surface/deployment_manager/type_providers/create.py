@@ -67,6 +67,7 @@ class Create(base.CreateCommand, dm_base.DmCommand):
     type_providers.AddApiOptionsFileFlag(parser)
     type_providers.AddDescriptionFlag(parser)
     type_providers.AddDescriptorUrlFlag(parser)
+    type_providers.AddCustomCaCertificateFlag(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
@@ -93,6 +94,7 @@ class Create(base.CreateCommand, dm_base.DmCommand):
         name=type_provider_ref.typeProvider,
         description=args.description,
         descriptorUrl=args.descriptor_url,
+        customCertificateAuthorityRoots=args.custom_certificate_authority_roots,
         labels=labels)
 
     type_providers.AddOptions(self.messages,

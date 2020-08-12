@@ -28,7 +28,7 @@ from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.DeleteCommand):
-  r"""Deletes a Google Compute Engine public delegated prefix.
+  r"""Deletes a Compute Engine public delegated prefix.
 
   ## EXAMPLES
 

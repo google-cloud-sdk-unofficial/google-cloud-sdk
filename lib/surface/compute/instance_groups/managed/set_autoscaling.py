@@ -58,7 +58,6 @@ class SetAutoscaling(base.Command):
                                resources,
                                igm_ref,
                                args,
-                               scale_in=False,
                                predictive=False):
     autoscaler = managed_instance_groups_utils.AutoscalerForMigByRef(
         client, resources, igm_ref)
@@ -71,7 +70,6 @@ class SetAutoscaling(base.Command):
         igm_ref,
         autoscaler_name,
         autoscaler,
-        scale_in=scale_in,
         predictive=predictive)
     return autoscaler_resource, new_one
 
@@ -152,7 +150,7 @@ class SetAutoscalingBeta(SetAutoscaling):
   def Args(parser):
     managed_instance_groups_utils.AddAutoscalerArgs(
         parser=parser, autoscaling_file_enabled=True,
-        stackdriver_metrics_flags=True, scale_in=True)
+        stackdriver_metrics_flags=True)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
@@ -173,7 +171,7 @@ class SetAutoscalingBeta(SetAutoscaling):
         igm_ref, client)
 
     autoscaler_resource, is_new = self.CreateAutoscalerResource(
-        client, holder.resources, igm_ref, args, scale_in=True)
+        client, holder.resources, igm_ref, args)
 
     managed_instance_groups_utils.ValidateGeneratedAutoscalerIsValid(
         args, autoscaler_resource)
@@ -205,7 +203,6 @@ class SetAutoscalingAlpha(SetAutoscaling):
         parser=parser,
         autoscaling_file_enabled=True,
         stackdriver_metrics_flags=True,
-        scale_in=True,
         predictive=True)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
@@ -231,7 +228,6 @@ class SetAutoscalingAlpha(SetAutoscaling):
         holder.resources,
         igm_ref,
         args,
-        scale_in=True,
         predictive=True)
 
     managed_instance_groups_utils.ValidateGeneratedAutoscalerIsValid(

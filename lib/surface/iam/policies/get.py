@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to get a policy on the given resource."""
+"""Command to get a policy on the given attachment point."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -50,7 +50,9 @@ class Get(base.DescribeCommand):
     client = apis.GetClientInstance()
     messages = apis.GetMessagesModule()
 
+    attachment_point = args.attachment_point.replace('/', '%2F')
+
     result = client.policies.Get(
         messages.IamPoliciesGetRequest(name='policies/{}/{}/{}'.format(
-            args.attachment_point, args.kind, args.policy_id)))
+            attachment_point, args.kind, args.policy_id)))
     return result

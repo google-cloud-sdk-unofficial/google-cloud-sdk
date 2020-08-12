@@ -34,7 +34,8 @@ class PreviewTimeFieldNotRelevantError(exceptions.Error):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA,
-                    base.ReleaseTrack.BETA)
+                    base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete a Game Server Cluster."""
 

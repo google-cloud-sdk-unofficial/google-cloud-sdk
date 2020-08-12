@@ -59,8 +59,9 @@ class SetSchedulingInstances(base.SilentCommand):
     flags.AddMaintenancePolicyArgs(parser)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
     flags.INSTANCE_ARG.AddArgument(parser)
+    flags.AddMinNodeCpuArg(parser, is_update=True)
 
-  def _Run(self, args, support_min_node_cpu=False):
+  def _Run(self, args):
     """Issues request necessary for setting scheduling options."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -79,12 +80,11 @@ class SetSchedulingInstances(base.SilentCommand):
 
     cleared_fields = []
 
-    if support_min_node_cpu:
-      if args.IsSpecified('min_node_cpu'):
-        scheduling_options.minNodeCpus = int(args.min_node_cpu)
-      elif args.IsSpecified('clear_min_node_cpu'):
-        scheduling_options.minNodeCpus = None
-        cleared_fields.append('minNodeCpus')
+    if args.IsSpecified('min_node_cpu'):
+      scheduling_options.minNodeCpus = int(args.min_node_cpu)
+    elif args.IsSpecified('clear_min_node_cpu'):
+      scheduling_options.minNodeCpus = None
+      cleared_fields.append('minNodeCpus')
 
     if args.IsSpecified('maintenance_policy'):
       scheduling_options.onHostMaintenance = (
@@ -140,7 +140,7 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
     flags.AddMinNodeCpuArg(parser, is_update=True)
 
   def Run(self, args):
-    return self._Run(args, support_min_node_cpu=True)
+    return self._Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

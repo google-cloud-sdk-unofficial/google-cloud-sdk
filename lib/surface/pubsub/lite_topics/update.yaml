@@ -7,7 +7,7 @@ help_text:
 
         $ {command} mytopic \
             --zone=us-central1-a \
-            --scale=2
+            --per-partition-publish-mib=10
 
 request:
   collection: pubsublite.admin.projects.locations.topics
@@ -24,6 +24,7 @@ arguments:
   - group:
       required: true
       params:
-      - _REF_: googlecloudsdk.command_lib.pubsub.flags:scale
+      - _REF_: googlecloudsdk.command_lib.pubsub.flags:per-partition-publish-mib
+      - _REF_: googlecloudsdk.command_lib.pubsub.flags:per-partition-subscribe-mib
       - _REF_: googlecloudsdk.command_lib.pubsub.flags:per-partition-bytes
       - _REF_: googlecloudsdk.command_lib.pubsub.flags:message-retention-period

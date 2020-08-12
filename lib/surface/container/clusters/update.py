@@ -165,6 +165,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                 api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
                 api_adapter.CLOUDRUN: _ParseAddonDisabled,
                 api_adapter.NODELOCALDNS: _ParseAddonDisabled,
+                api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
             }),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
@@ -174,12 +175,14 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {dashboard}=ENABLED|DISABLED
 {network_policy}=ENABLED|DISABLED
 {cloudrun}=ENABLED|DISABLED
+{configconnector}=ENABLED|DISABLED
 {nodelocaldns}=ENABLED|DISABLED""".format(
     hpa=api_adapter.HPA,
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD,
     network_policy=api_adapter.NETWORK_POLICY,
     cloudrun=api_adapter.CLOUDRUN,
+    configconnector=api_adapter.CONFIGCONNECTOR,
     nodelocaldns=api_adapter.NODELOCALDNS,
     ))
 
@@ -283,6 +286,7 @@ class Update(base.UpdateCommand):
     flags.AddWorkloadIdentityUpdateFlags(group)
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
+    flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
     flags.AddVerticalPodAutoscalingFlag(group)
     flags.AddAutoprovisioningFlags(group, ga=True)
     flags.AddEnableShieldedNodesFlags(group)
@@ -307,6 +311,7 @@ class Update(base.UpdateCommand):
           'operations on the cluster (including delete) until it has run '
           'to completion.',
           cancel_on_no=True)
+    opts.disable_default_snat = args.disable_default_snat
     return opts
 
   def Run(self, args):

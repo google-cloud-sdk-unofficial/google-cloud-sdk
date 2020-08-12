@@ -25,10 +25,12 @@ from googlecloudsdk.command_lib.compute.packet_mirrorings import flags
 from googlecloudsdk.command_lib.compute.packet_mirrorings import utils
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Google Compute Engine packet mirroring policy."""
 
   PACKET_MIRRORING_ARG = None
+  enable_filter_direction = False
 
   @classmethod
   def Args(cls, parser):
@@ -37,7 +39,8 @@ class Create(base.CreateCommand):
     cls.PACKET_MIRRORING_ARG = flags.PacketMirroringArgument()
     cls.PACKET_MIRRORING_ARG.AddArgument(parser, operation_type='create')
 
-    flags.AddCreateArgs(parser)
+    flags.AddCreateArgs(
+        parser, enable_filter_direction=cls.enable_filter_direction)
 
   def Collection(self):
     return 'compute.packetMirrorings'
@@ -72,6 +75,10 @@ class Create(base.CreateCommand):
         pm_filter.cidrRanges.extend(args.filter_cidr_ranges)
       if args.filter_protocols:
         pm_filter.IPProtocols.extend(args.filter_protocols)
+
+    if self.enable_filter_direction and args.filter_direction:
+      pm_filter.direction = messages.PacketMirroringFilter.DirectionValueValuesEnum(
+          args.filter_direction.upper())
 
     mirrored_resources_info = messages.PacketMirroringMirroredResourceInfo(
         subnetworks=mirrored_subnet_infos,
@@ -120,3 +127,10 @@ Create.detailed_help = {
         --filter-cidr-ranges 11.22.33.44/32
     """,
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a Google Compute Engine packet mirroring policy."""
+
+  enable_filter_direction = True

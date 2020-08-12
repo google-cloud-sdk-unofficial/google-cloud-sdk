@@ -59,7 +59,6 @@ def _CommonArgs(
     support_local_ssd_size=False,
     support_kms=False,
     support_resource_policy=False,
-    support_min_node_cpu=False,
     support_location_hint=False,
     support_multi_writer=True
 ):
@@ -92,11 +91,9 @@ def _CommonArgs(
   labels_util.AddCreateLabelsFlags(parser)
   instances_flags.AddNetworkTierArgs(parser, instance=True)
   instances_flags.AddPrivateNetworkIpArgs(parser)
+  instances_flags.AddMinNodeCpuArg(parser)
 
   sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
-
-  if support_min_node_cpu:
-    instances_flags.AddMinNodeCpuArg(parser)
 
   if support_location_hint:
     instances_flags.AddLocationHintArg(parser)
@@ -384,7 +381,6 @@ def _RunCreate(compute_api,
                args,
                support_source_instance,
                support_kms=False,
-               support_min_node_cpu=False,
                support_confidential_compute=False,
                support_location_hint=False):
   """Common routine for creating instance template.
@@ -397,8 +393,6 @@ def _RunCreate(compute_api,
         arguments specified in the .Args() method.
       support_source_instance: indicates whether source instance is supported.
       support_kms: Indicate whether KMS is integrated or not.
-      support_min_node_cpu: Indicate whether the --min-node-cpu flag for
-        sole tenancy overcommit is supported.
       support_confidential_compute: Indicate whether confidential compute is
         supported.
       support_location_hint: Indicate whether location hint is supported.
@@ -466,10 +460,6 @@ def _RunCreate(compute_api,
   node_affinities = sole_tenancy_util.GetSchedulingNodeAffinityListFromArgs(
       args, client.messages)
 
-  min_node_cpu = None
-  if support_min_node_cpu and args.IsSpecified('min_node_cpu'):
-    min_node_cpu = args.min_node_cpu
-
   location_hint = None
   if support_location_hint and args.IsSpecified('location_hint'):
     location_hint = args.location_hint
@@ -480,7 +470,7 @@ def _RunCreate(compute_api,
       preemptible=args.preemptible,
       restart_on_failure=args.restart_on_failure,
       node_affinities=node_affinities,
-      min_node_cpu=min_node_cpu,
+      min_node_cpu=args.min_node_cpu,
       location_hint=location_hint)
 
   if args.no_service_account:
@@ -638,7 +628,6 @@ class Create(base.CreateCommand):
   """
   _support_source_instance = True
   _support_kms = True
-  _support_min_node_cpu = False
   _support_location_hint = False
 
   @classmethod
@@ -648,7 +637,6 @@ class Create(base.CreateCommand):
         release_track=base.ReleaseTrack.GA,
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
-        support_min_node_cpu=cls._support_min_node_cpu,
         support_location_hint=cls._support_location_hint,
         support_multi_writer=False
     )
@@ -671,7 +659,6 @@ class Create(base.CreateCommand):
         args,
         support_source_instance=self._support_source_instance,
         support_kms=self._support_kms,
-        support_min_node_cpu=self._support_min_node_cpu,
         support_location_hint=self._support_location_hint)
 
 
@@ -692,7 +679,6 @@ class CreateBeta(Create):
   _support_source_instance = True
   _support_kms = True
   _support_resource_policy = True
-  _support_min_node_cpu = True
   _support_location_hint = False
   _support_confidential_compute = True
 
@@ -705,7 +691,6 @@ class CreateBeta(Create):
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
         support_resource_policy=cls._support_resource_policy,
-        support_min_node_cpu=cls._support_min_node_cpu,
         support_location_hint=cls._support_location_hint
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
@@ -729,7 +714,6 @@ class CreateBeta(Create):
         args=args,
         support_source_instance=self._support_source_instance,
         support_kms=self._support_kms,
-        support_min_node_cpu=self._support_min_node_cpu,
         support_location_hint=self._support_location_hint,
         support_confidential_compute=self._support_confidential_compute)
 
@@ -751,7 +735,6 @@ class CreateAlpha(Create):
   _support_source_instance = True
   _support_kms = True
   _support_resource_policy = True
-  _support_min_node_cpu = True
   _support_confidential_compute = True
   _support_location_hint = True
 
@@ -764,7 +747,6 @@ class CreateAlpha(Create):
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
         support_resource_policy=cls._support_resource_policy,
-        support_min_node_cpu=cls._support_min_node_cpu,
         support_location_hint=cls._support_location_hint
     )
     instances_flags.AddLocalNvdimmArgs(parser)
@@ -789,7 +771,6 @@ class CreateAlpha(Create):
         args=args,
         support_source_instance=self._support_source_instance,
         support_kms=self._support_kms,
-        support_min_node_cpu=self._support_min_node_cpu,
         support_confidential_compute=self._support_confidential_compute,
         support_location_hint=self._support_location_hint)
 

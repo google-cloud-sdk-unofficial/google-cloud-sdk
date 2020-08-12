@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: Create a Game Server Cluster.
@@ -29,6 +29,8 @@
       api_version: v1alpha
     BETA:
       api_version: v1beta
+    GA:
+      api_version: v1
 
   arguments:
     resource:
@@ -58,7 +60,7 @@
             {membership_id}. If project is not specified, the project of the Game Server Cluster resource
             is used to generate the full name of the GKE Hub membership.
     - arg_name: gke-cluster
-      release_tracks: [BETA]
+      release_tracks: [BETA, GA]
       api_field: gameServerCluster.connectionInfo.gkeClusterReference.cluster
       required: true
       help_text: |

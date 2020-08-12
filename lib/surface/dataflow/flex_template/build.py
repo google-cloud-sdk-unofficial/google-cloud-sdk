@@ -34,9 +34,16 @@ def _CommonRun(args):
   Returns:
     A Job message.
   """
+  image_path = args.image
+  if not args.image:
+    image_path = args.image_gcr_path
+    apis.Templates.BuildAndStoreFlexTemplateImage(
+        args.image_gcr_path, args.flex_template_base_image, args.jar, args.env,
+        args.sdk_language)
+
   return apis.Templates.BuildAndStoreFlexTemplateFile(
-      args.template_file_gcs_path, args.image, args.metadata_file,
-      args.sdk_language, args.print_only)
+      args.template_file_gcs_path, image_path,
+      args.metadata_file, args.sdk_language, args.print_only)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -57,6 +64,8 @@ class RunBeta(base.Command):
 
   @staticmethod
   def Args(parser):
+    image_args = parser.add_mutually_exclusive_group(required=True)
+    image_building_args = image_args.add_argument_group()
     parser.add_argument(
         'template_file_gcs_path',
         metavar='TEMPLATE_FILE_GCS_PATH',
@@ -65,11 +74,10 @@ class RunBeta(base.Command):
         type=arg_parsers.RegexpValidator(r'^gs://.*',
                                          'Must begin with \'gs://\''))
 
-    parser.add_argument(
+    image_args.add_argument(
         '--image',
-        help=('Path to the any image registry location of the flex template '
-              'image.'),
-        required=True)
+        help=('Path to the any image registry location of the prebuilt flex '
+              'template image.'))
 
     parser.add_argument(
         '--sdk-language',
@@ -89,6 +97,54 @@ class RunBeta(base.Command):
         default=False,
         action=actions.StoreBooleanProperty(
             properties.VALUES.dataflow.print_only))
+
+    image_building_args.add_argument(
+        '--image-gcr-path',
+        help=('The Google Container Registry location to store the flex '
+              'template image to be built.'),
+        type=arg_parsers.RegexpValidator(r'^gcr.io/.*',
+                                         'Must begin with \'gcr.io/\''),
+        required=True)
+
+    image_building_args.add_argument(
+        '--jar',
+        metavar='JAR',
+        type=arg_parsers.ArgList(),
+        action=arg_parsers.UpdateAction,
+        help=('Local path to your dataflow pipeline jar file and all their '
+              'dependent jar files required for the flex template classpath. '
+              'You can pass them as a comma separated list or repeat '
+              'individually with --jar flag. Ex: --jar="code.jar,dep.jar" or '
+              '--jar code.jar, --jar dep.jar.'),
+        required=True)
+
+    image_building_args.add_argument(
+        '--flex-template-base-image',
+        help=('Flex template base image to be used while building the '
+              'container image. Allowed choices are JAVA8, JAVA11 or gcr.io '
+              'path of the specific version of the base image. For JAVA8 and '
+              'JAVA11 option, we use the latest base image version to build '
+              'the container. You can also provide a specific version from '
+              'this link  https://gcr.io/dataflow-templates-base/'),
+        type=arg_parsers.RegexpValidator(
+            r'^JAVA11$|^JAVA8$|^gcr.io/.*',
+            'Must be JAVA11 or JAVA8 or begin with \'gcr.io/\''),
+        required=True)
+
+    image_building_args.add_argument(
+        '--env',
+        metavar='ENV',
+        type=arg_parsers.ArgDict(),
+        action=arg_parsers.UpdateAction,
+        help=
+        ('Environment variables to create for the Dockerfile. '
+         'You can pass them as a comma separated list or repeat individually '
+         'with --env flag. Ex: --env="A=B,C=D" or --env A=B, --env C=D.'
+         'You can find the list of supported environment variables in this '
+         'link. https://cloud.google.com/dataflow/docs/guides/templates/'
+         'troubleshooting-flex-templates'
+         '#setting_required_dockerfile_environment_variables'),
+        required=True)
 
   def Run(self, args):
     return _CommonRun(args)

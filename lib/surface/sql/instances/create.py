@@ -159,9 +159,9 @@ def AddBetaArgs(parser):
   labels_util.AddCreateLabelsFlags(parser)
 
 
-def AddAlphaArgs(unused_parser):
+def AddAlphaArgs(parser):
   """Declare alpha flags for this command parser."""
-  pass
+  flags.AddActiveDirectoryDomain(parser)
 
 
 def RunBaseCreateCommand(args, release_track):

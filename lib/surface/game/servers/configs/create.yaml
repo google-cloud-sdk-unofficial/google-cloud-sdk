@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: Create a Game Server Config.
@@ -35,6 +35,9 @@
       api_version: v1alpha
     BETA:
       api_version: v1beta
+    GA:
+      api_version: v1
+
     modify_request_hooks:
     - googlecloudsdk.command_lib.game.servers.configs.create_hooks:ProcessConfigsFiles
 

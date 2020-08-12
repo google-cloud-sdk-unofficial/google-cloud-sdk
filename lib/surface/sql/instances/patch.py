@@ -49,7 +49,15 @@ class _Result(object):
 def _PrintAndConfirmWarningMessage(args, database_version):
   """Print and confirm warning indicating the effect of applying the patch."""
   continue_msg = None
-  if any([args.tier, args.enable_database_replication is not None]):
+
+  # TODO(b/162789572): `in` check is only required until GA.
+  active_directory_changed = ('active_directory_domain' in args and
+                              args.active_directory_domain is not None)
+  if any([
+      args.tier,
+      args.enable_database_replication is not None,
+      active_directory_changed,
+  ]):
     continue_msg = ('WARNING: This patch modifies a value that requires '
                     'your instance to be restarted. Submitting this patch '
                     'will immediately restart your instance if it\'s running.')
@@ -218,9 +226,9 @@ def AddBetaArgs(parser):
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
 
 
-def AddAlphaArgs(unused_parser):
+def AddAlphaArgs(parser):
   """Adds alpha args and flags to the parser."""
-  pass
+  flags.AddActiveDirectoryDomain(parser)
 
 
 def RunBasePatchCommand(args, release_track):

@@ -8,7 +8,6 @@ help_text:
         $ {command} mytopic \
             --zone=us-central1-a \
             --partitions=1 \
-            --scale=1 \
             --per-partition-bytes=30GiB \
             --message-retention-period=2w
 
@@ -29,8 +28,10 @@ arguments:
   - _REF_: googlecloudsdk.command_lib.pubsub.flags:topic-name
   - _REF_: googlecloudsdk.command_lib.pubsub.flags:partitions
     required: true
-  - _REF_: googlecloudsdk.command_lib.pubsub.flags:scale
-    default: 1
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:per-partition-publish-mib
+    default: 4
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:per-partition-subscribe-mib
+    default: 8
   - _REF_: googlecloudsdk.command_lib.pubsub.flags:per-partition-bytes
     required: true
   - _REF_: googlecloudsdk.command_lib.pubsub.flags:message-retention-period

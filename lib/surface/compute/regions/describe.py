@@ -25,10 +25,10 @@ from googlecloudsdk.command_lib.compute.regions import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine region.
+  """Describe a Compute Engine region.
 
-    *{command}* displays all data associated with a Google Compute
-  Engine region.
+    *{command}* displays all data associated with a Compute Engine
+  region.
   """
 
   @staticmethod

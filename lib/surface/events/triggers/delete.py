@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.run import flags as serverless_flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
@@ -89,6 +90,11 @@ class Delete(base.Command):
               # Source could have been deleted but trigger deletion failed
               # and this command was re-run, which is fine.
               pass
+      if client.IsCluster():
+        trigger_ref = resources.REGISTRY.Parse(
+            trigger_ref.RelativeName(),
+            collection=util.ANTHOS_TRIGGER_COLLECTION_NAME,
+            api_version=client.api_version)
       client.DeleteTrigger(trigger_ref)
 
     log.DeletedResource(trigger_ref.Name(), 'trigger')

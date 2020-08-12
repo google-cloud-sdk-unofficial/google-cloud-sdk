@@ -22,8 +22,8 @@ from googlecloudsdk.calliope import base
 from surface.container.clusters import create
 
 auto_flags = [
-    'args', 'addons', 'masterauth', 'networkpolicy', 'nodeidentity',
-    'releasechannel', 'privatecluster', 'ipalias'
+    'args', 'masterauth', 'nodeidentity',
+    'releasechannel', 'privatecluster', 'ipalias_additional'
 ]
 
 

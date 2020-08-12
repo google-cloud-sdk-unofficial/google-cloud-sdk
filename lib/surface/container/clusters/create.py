@@ -103,12 +103,7 @@ characters.
       hidden=True,
       help='Timeout (seconds) for waiting on the operation to complete.')
   flags.AddAsyncFlag(parser)
-  parser.add_argument(
-      '--num-nodes',
-      type=arg_parsers.BoundedInt(1),
-      help='The number of nodes to be created in each of the cluster\'s zones.',
-      default=3)
-  flags.AddMachineTypeFlag(parser)
+
   parser.add_argument(
       '--subnetwork',
       help="""\
@@ -129,74 +124,8 @@ Cannot be used with the "--create-subnetwork" option.
       'notation (e.g. 10.0.0.0/14).  Prior to Kubernetes version 1.7.0 '
       'this must be a subset of 10.0.0.0/8; however, starting with version '
       '1.7.0 can be any RFC 1918 IP range.')
-  parser.add_argument(
-      '--enable-cloud-logging',
-      action=actions.DeprecationAction(
-          '--enable-cloud-logging',
-          warn='From 1.14, legacy Stackdriver GKE logging is deprecated. Thus, '
-          'flag `--enable-cloud-logging` is also deprecated. Please use '
-          '`--enable-stackdriver-kubernetes` instead, to migrate to new '
-          'Stackdriver Kubernetes Engine monitoring and logging. For more '
-          'details, please read: '
-          'https://cloud.google.com/monitoring/kubernetes-engine/migration.',
-          action='store_true'),
-      help='Automatically send logs from the cluster to the Google Cloud '
-      'Logging API. This flag is deprecated, use '
-      '`--enable-stackdriver-kubernetes` instead.')
-  parser.add_argument(
-      '--enable-cloud-monitoring',
-      action=actions.DeprecationAction(
-          '--enable-cloud-monitoring',
-          warn='From 1.14, legacy Stackdriver GKE monitoring is deprecated. '
-          'Thus, flag `--enable-cloud-monitoring` is also deprecated. Please '
-          'use `--enable-stackdriver-kubernetes` instead, to migrate to new '
-          'Stackdriver Kubernetes Engine monitoring and logging. For more '
-          'details, please read: '
-          'https://cloud.google.com/monitoring/kubernetes-engine/migration.',
-          action='store_true'),
-      help='Automatically send metrics from pods in the cluster to the Google '
-      'Cloud Monitoring API. VM metrics will be collected by Google Compute '
-      'Engine regardless of this setting. This flag is deprecated, use '
-      '`--enable-stackdriver-kubernetes` instead.')
-  parser.add_argument(
-      '--disk-size',
-      type=arg_parsers.BinarySize(lower_bound='10GB'),
-      help='Size for node VM boot disks. Defaults to 100GB.')
-  flags.AddBasicAuthFlags(parser)
-  parser.add_argument(
-      '--max-nodes-per-pool',
-      type=arg_parsers.BoundedInt(100, api_adapter.MAX_NODES_PER_POOL),
-      help='The maximum number of nodes to allocate per default initial node '
-      'pool. Kubernetes Engine will automatically create enough nodes pools '
-      'such that each node pool contains less than '
-      '--max-nodes-per-pool nodes. Defaults to {nodes} nodes, but can be set '
-      'as low as 100 nodes per pool on initial create.'.format(
-          nodes=api_adapter.MAX_NODES_PER_POOL))
-  flags.AddImageTypeFlag(parser, 'cluster')
-  flags.AddImageFlag(parser, hidden=True)
-  flags.AddImageProjectFlag(parser, hidden=True)
-  flags.AddImageFamilyFlag(parser, hidden=True)
-  flags.AddNodeLabelsFlag(parser)
-  flags.AddTagsFlag(
-      parser, """\
-Applies the given Compute Engine tags (comma separated) on all nodes in the new
-node-pool. Example:
 
-  $ {command} example-cluster --tags=tag1,tag2
-
-New nodes, including ones created by resize or recreate, will have these tags
-on the Compute Engine API instance object and can be used in firewall rules.
-See https://cloud.google.com/sdk/gcloud/reference/compute/firewall-rules/create
-for examples.
-""")
   parser.display_info.AddFormat(util.CLUSTERS_FORMAT)
-  flags.AddIssueClientCertificateFlag(parser)
-  flags.AddAcceleratorArgs(parser)
-  flags.AddDiskTypeFlag(parser)
-  flags.AddMetadataFlags(parser)
-  flags.AddDatabaseEncryptionFlag(parser)
-  flags.AddShieldedInstanceFlags(parser)
-  flags.AddEnableShieldedNodesFlags(parser)
 
 
 def ValidateBasicAuthFlags(args):
@@ -266,6 +195,7 @@ def ParseCreateOptionsBase(args, is_autogke):
       cluster_version=getattr(args, 'cluster_version', None),
       node_version=getattr(args, 'node_version', None),
       create_subnetwork=getattr(args, 'create_subnetwork', None),
+      disable_default_snat=getattr(args, 'disable_default_snat', None),
       disk_type=getattr(args, 'disk_type', None),
       enable_autorepair=enable_autorepair,
       enable_autoscaling=getattr(args, 'enable_autoscaling', None),
@@ -422,46 +352,66 @@ def AddPrivateIPv6Flag(api, parser):
 
 flags_to_add = {
     GA: {
+        'accelerator': flags.AddAcceleratorArgs,
         'additionalzones': _AddAdditionalZonesFlag,
         'addons': flags.AddAddonsFlags,
         'autorepair': AddAutoRepair,
         'autoprovisioning': AddAutoprovisioningGA,
         'autoupgrade': AddEnableAutoUpgradeWithDefault,
         'args': _Args,
+        'basicauth': flags.AddBasicAuthFlags,
         'binauthz': flags.AddEnableBinAuthzFlag,
         'bootdiskkms': flags.AddBootDiskKmsKeyFlag,
+        'cloudlogging': flags.AddEnableCloudLogging,
+        'cloudmonitoring': flags.AddEnableCloudMonitoring,
         'cloudrunalpha': flags.AddEnableCloudRunAlphaFlag,
         'clusterautoscaling': flags.AddClusterAutoscalingFlags,
         'clusterversion': flags.AddClusterVersionFlag,
+        'disabledefaultsnat': AddDisableDefaultSnatFlagForClusterCreate,
+        'databaseencryption': flags.AddDatabaseEncryptionFlag,
+        'disksize': flags.AddDiskSizeFlag,
+        'disktype': flags.AddDiskTypeFlag,
+        'imageflags': flags.AddImageFlagsCreate,
         'intranodevisibility': flags.AddEnableIntraNodeVisibilityFlag,
-        'ipalias': flags.AddIPAliasFlags,
+        'ipalias': flags.AddIpAliasCoreFlag,
+        'ipalias_additional': flags.AddIPAliasRelatedFlags,
+        'issueclientcert': flags.AddIssueClientCertificateFlag,
         'kubernetesalpha': flags.AddEnableKubernetesAlphaFlag,
         'labels': flags.AddLabelsFlag,
         'legacyauth': flags.AddEnableLegacyAuthorizationFlag,
         'localssd': flags.AddLocalSSDFlag,
+        'machinetype': flags.AddMachineTypeFlag,
         'maintenancewindow': flags.AddMaintenanceWindowGroup,
         'masterauth': flags.AddMasterAuthorizedNetworksFlags,
+        'maxnodes': flags.AddMaxNodesPerPool,
         'maxpodspernode': flags.AddMaxPodsPerNodeFlag,
         'maxunavailable': flags.AddMaxUnavailableUpgradeFlag,
+        'metadata': flags.AddMetadataFlags,
         'mincpu': flags.AddMinCpuPlatformFlag,
         'networkpolicy': flags.AddNetworkPolicyFlags,
         'nodeidentity': flags.AddClusterNodeIdentityFlags,
+        'nodelabels': flags.AddNodeLabelsFlag,
         'nodelocations': flags.AddNodeLocationsFlag,
         'nodetaints': flags.AddNodeTaintsFlag,
         'nodeversion': flags.AddNodeVersionFlag,
+        'numnodes': flags.AddNumNodes,
         'preemptible': flags.AddPreemptibleFlag,
         'privatecluster': flags.AddPrivateClusterFlags,
         'releasechannel': flags.AddReleaseChannelFlag,
         'reservationaffinity': flags.AddReservationAffinityFlags,
         'resourceusageexport': flags.AddResourceUsageExportFlags,
+        'shieldedinstance': flags.AddShieldedInstanceFlags,
+        'shieldednodes': flags.AddEnableShieldedNodesFlags,
         'surgeupgrade': flags.AddSurgeUpgradeFlag,
         'stackdriver': flags.AddEnableStackdriverKubernetesFlag,
+        'tags': flags.AddTagsCreate,
         'tpu': flags.AddTpuFlags,
         'verticalpodautoscaling': flags.AddVerticalPodAutoscalingFlag,
         'workloadidentity': flags.AddWorkloadIdentityFlags,
         'workloadmetadata': flags.AddWorkloadMetadataFlag,
     },
     BETA: {
+        'accelerator': flags.AddAcceleratorArgs,
         'additionalzones':
             _AddAdditionalZonesGroup,
         'addons':
@@ -480,10 +430,13 @@ flags_to_add = {
             flags.AddAuthenticatorSecurityGroupFlags,
         'autoupgrade':
             AddEnableAutoUpgradeWithDefault,
+        'basicauth': flags.AddBasicAuthFlags,
         'binauthz':
             flags.AddEnableBinAuthzFlag,
         'bootdiskkms':
             flags.AddBootDiskKmsKeyFlag,
+        'cloudlogging': flags.AddEnableCloudLogging,
+        'cloudmonitoring': flags.AddEnableCloudMonitoring,
         'cloudrunalpha':
             flags.AddEnableCloudRunAlphaFlag,
         'clusterautoscaling':
@@ -492,16 +445,22 @@ flags_to_add = {
             flags.AddClusterVersionFlag,
         'confidentialnodes':
             flags.AddEnableConfidentialNodesFlag,
+        'databaseencryption': flags.AddDatabaseEncryptionFlag,
         'datapath':
             (lambda p: flags.AddDatapathProviderFlag(p, hidden=True)),
         'dataplanev2':
             flags.AddDataplaneV2Flag,
         'disabledefaultsnat':
             AddDisableDefaultSnatFlagForClusterCreate,
+        'disksize': flags.AddDiskSizeFlag,
+        'disktype': flags.AddDiskTypeFlag,
+        'imageflags': flags.AddImageFlagsCreate,
         'intranodevisibility':
             flags.AddEnableIntraNodeVisibilityFlag,
-        'ipalias':
-            flags.AddIPAliasFlags,
+        'ipalias': flags.AddIpAliasCoreFlag,
+        'ipalias_additional':
+            flags.AddIPAliasRelatedFlags,
+        'issueclientcert': flags.AddIssueClientCertificateFlag,
         'istioconfig':
             flags.AddIstioConfigFlag,
         'kubernetesalpha':
@@ -516,6 +475,7 @@ flags_to_add = {
             flags.AddLabelsFlag,
         'legacyauth':
             flags.AddEnableLegacyAuthorizationFlag,
+        'machinetype': flags.AddMachineTypeFlag,
         'maintenancewindow':
             flags.AddMaintenanceWindowGroup,
         'masterglobalaccess':
@@ -524,10 +484,12 @@ flags_to_add = {
             flags.AddMasterAuthorizedNetworksFlags,
         'mastersignals':
             AddMasterSignalsFlag,
+        'maxnodes': flags.AddMaxNodesPerPool,
         'maxpodspernode':
             flags.AddMaxPodsPerNodeFlag,
         'maxunavailable':
             (lambda p: flags.AddMaxUnavailableUpgradeFlag(p, is_create=True)),
+        'metadata': flags.AddMetadataFlags,
         'mincpu':
             flags.AddMinCpuPlatformFlag,
         'networkpolicy':
@@ -538,8 +500,10 @@ flags_to_add = {
             flags.AddClusterNodeIdentityFlags,
         'nodeversion':
             flags.AddNodeVersionFlag,
+        'nodelabels': flags.AddNodeLabelsFlag,
         'notificationconfig':
             (lambda p: flags.AddNotificationConfigFlag(p, hidden=True)),
+        'numnodes': flags.AddNumNodes,
         'podsecuritypolicy':
             flags.AddPodSecurityPolicyFlag,
         'preemptible':
@@ -553,11 +517,14 @@ flags_to_add = {
             flags.AddResourceUsageExportFlags,
         'reservationaffinity':
             flags.AddReservationAffinityFlags,
+        'shieldedinstance': flags.AddShieldedInstanceFlags,
+        'shieldednodes': flags.AddEnableShieldedNodesFlags,
         'stackdriver':
             flags.AddEnableStackdriverKubernetesFlag,
         'surgeupgrade': (lambda p: flags.AddSurgeUpgradeFlag(p, default=1)),
         'systemconfig':
             lambda p: flags.AddSystemConfigFlag(p, hidden=False),
+        'tags': flags.AddTagsCreate,
         'tpu':
             AddTpuWithServiceNetworking,
         'verticalpodautoscaling':
@@ -568,6 +535,7 @@ flags_to_add = {
             (lambda p: flags.AddWorkloadMetadataFlag(p, use_mode=False)),
     },
     ALPHA: {
+        'accelerator': flags.AddAcceleratorArgs,
         'additionalzones':
             _AddAdditionalZonesGroup,
         'addons':
@@ -584,6 +552,8 @@ flags_to_add = {
             AddAutoRepair,
         'autoscalingprofiles':
             flags.AddAutoscalingProfilesFlag,
+        'basicauth': flags.AddBasicAuthFlags,
+        'cloudlogging': flags.AddEnableCloudLogging,
         'clusterversion':
             flags.AddClusterVersionFlag,
         'autoupgrade':
@@ -592,6 +562,7 @@ flags_to_add = {
             flags.AddEnableBinAuthzFlag,
         'bootdiskkms':
             flags.AddBootDiskKmsKeyFlag,
+        'cloudmonitoring': flags.AddEnableCloudMonitoring,
         'cloudrunalpha':
             flags.AddEnableCloudRunAlphaFlag,
         'cloudrunconfig':
@@ -604,20 +575,26 @@ flags_to_add = {
             flags.AddEnableConfidentialNodesFlag,
         'costmanagementconfig':
             flags.AddCostManagementConfigFlag,
+        'databaseencryption': flags.AddDatabaseEncryptionFlag,
         'datapath':
             lambda p: flags.AddDatapathProviderFlag(p, hidden=True),
         'dataplanev2':
             flags.AddDataplaneV2Flag,
         'disabledefaultsnat':
             AddDisableDefaultSnatFlagForClusterCreate,
+        'disksize': flags.AddDiskSizeFlag,
+        'disktype': flags.AddDiskTypeFlag,
         'gvnic':
             flags.AddEnableGvnicFlag,
         'ilbsubsetting':
             flags.AddILBSubsettingFlags,
+        'imageflags': flags.AddImageFlagsCreate,
         'intranodevisibility':
             flags.AddEnableIntraNodeVisibilityFlag,
-        'ipalias':
-            flags.AddIPAliasFlags,
+        'ipalias': flags.AddIpAliasCoreFlag,
+        'ipalias_additional':
+            flags.AddIPAliasRelatedFlags,
+        'issueclientcert': flags.AddIssueClientCertificateFlag,
         'istioconfig':
             flags.AddIstioConfigFlag,
         'kubernetesalpha':
@@ -632,12 +609,14 @@ flags_to_add = {
             flags.AddLocalSSDAndLocalSSDVolumeConfigsFlag,
         'loggingmonitoring':
             flags.AddEnableLoggingMonitoringSystemOnlyFlag,
+        'machinetype': flags.AddMachineTypeFlag,
         'npname':
             lambda p: flags.AddInitialNodePoolNameArg(p, hidden=False),
         'maxunavailable':
             (lambda p: flags.AddMaxUnavailableUpgradeFlag(p, is_create=True)),
         'masterglobalaccess':
             flags.AddMasterGlobalAccessFlag,
+        'maxnodes': flags.AddMaxNodesPerPool,
         'maxpodspernode':
             flags.AddMaxPodsPerNodeFlag,
         'maintenancewindow':
@@ -646,6 +625,7 @@ flags_to_add = {
             flags.AddMasterAuthorizedNetworksFlags,
         'mastersignals':
             AddMasterSignalsFlag,
+        'metadata': flags.AddMetadataFlags,
         'mincpu':
             flags.AddMinCpuPlatformFlag,
         'networkpolicy':
@@ -656,8 +636,10 @@ flags_to_add = {
             flags.AddClusterNodeIdentityFlags,
         'nodeversion':
             flags.AddNodeVersionFlag,
+        'nodelabels': flags.AddNodeLabelsFlag,
         'notificationconfig':
             (lambda p: flags.AddNotificationConfigFlag(p, hidden=True)),
+        'numnodes': flags.AddNumNodes,
         'podsecuritypolicy':
             flags.AddPodSecurityPolicyFlag,
         'preemptible':
@@ -673,6 +655,8 @@ flags_to_add = {
             flags.AddResourceUsageExportFlags,
         'releasechannel':
             flags.AddReleaseChannelFlag,
+        'shieldedinstance': flags.AddShieldedInstanceFlags,
+        'shieldednodes': flags.AddEnableShieldedNodesFlags,
         'stackdriver':
             flags.AddEnableStackdriverKubernetesFlag,
         'securityprofile':
@@ -680,6 +664,7 @@ flags_to_add = {
         'surgeupgrade': (lambda p: flags.AddSurgeUpgradeFlag(p, default=1)),
         'systemconfig':
             lambda p: flags.AddSystemConfigFlag(p, hidden=False),
+        'tags': flags.AddTagsCreate,
         'tpu':
             AddTpuWithServiceNetworking,
         'verticalpodautoscaling':

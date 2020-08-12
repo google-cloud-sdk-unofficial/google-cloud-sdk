@@ -98,8 +98,7 @@ class Create(base.Command):
     # if mapping to a non-CRoGKE service
     if flags.GetPlatform() == flags.PLATFORM_MANAGED:
       client = global_methods.GetServerlessClientInstance()
-      all_domains = global_methods.ListVerifiedDomains(
-          client, flags.GetRegion(args))
+      all_domains = global_methods.ListVerifiedDomains(client)
       # If not already verified, explain and error out
       if all(d.id not in domain_mapping_ref.Name() for d in all_domains):
         if not all_domains:

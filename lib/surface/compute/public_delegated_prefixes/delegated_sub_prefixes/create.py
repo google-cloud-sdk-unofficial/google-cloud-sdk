@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.public_delegated_prefixes import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.UpdateCommand):
-  r"""Creates a Google Compute Engine delegated sub prefix.
+  r"""Creates a Compute Engine delegated sub prefix.
 
   ## EXAMPLES
 
