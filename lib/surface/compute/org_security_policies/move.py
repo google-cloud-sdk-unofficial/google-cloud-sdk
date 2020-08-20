@@ -32,7 +32,7 @@ import six
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Move(base.UpdateCommand):
-  """Move a Google Compute Engine organization security policy.
+  """Move a Compute Engine organization security policy.
 
   *{command}* is used to move is used to move organization security policies to
   new parent nodes.

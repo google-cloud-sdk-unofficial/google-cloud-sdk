@@ -117,7 +117,7 @@ def _Run(args, holder, ssl_certificate_ref):
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Create a Google Compute Engine SSL certificate.
+  """Create a Compute Engine SSL certificate.
 
   *{command}* is used to create SSL certificates which can be used to configure
   a target HTTPS proxy. An SSL certificate consists of a certificate and
@@ -151,7 +151,7 @@ class Create(base.CreateCommand):
 
 Create.detailed_help = {
     'brief':
-        'Create a Google Compute Engine SSL certificate',
+        'Create a Compute Engine SSL certificate',
     'DESCRIPTION':
         """\
         *{command}* creates SSL certificates, which you can use in a target

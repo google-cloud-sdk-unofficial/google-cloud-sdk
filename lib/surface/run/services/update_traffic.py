@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.run import traffic_pair
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import display
+from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
@@ -115,6 +116,8 @@ class AdjustTraffic(base.Command):
     if not changes:
       raise exceptions.NoConfigurationChangeError(
           'No traffic configuration change requested.')
+    changes.append(
+        config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()))
 
     is_managed = flags.GetPlatform() == flags.PLATFORM_MANAGED
     with serverless_operations.Connect(conn_context) as client:
@@ -161,4 +164,3 @@ class BetaAdjustTraffic(AdjustTraffic):
   def Args(cls, parser):
     cls.CommonArgs(parser)
     flags.AddTrafficTagsFlags(parser)
-

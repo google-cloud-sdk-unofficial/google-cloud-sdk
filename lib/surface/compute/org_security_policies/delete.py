@@ -28,7 +28,7 @@ import six
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
-  """Delete a Google Compute Engine organization security policy.
+  """Delete a Compute Engine organization security policy.
 
   *{command}* is used to delete organization security policies. An organization
   security policy is a set of rules that controls access to various resources.

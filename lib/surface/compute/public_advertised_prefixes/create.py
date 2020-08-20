@@ -28,7 +28,7 @@ from googlecloudsdk.core import log
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  r"""Creates a Google Compute Engine public advertised prefix.
+  r"""Creates a Compute Engine public advertised prefix.
 
   ## EXAMPLES
 

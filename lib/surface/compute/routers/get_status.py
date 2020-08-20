@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for getting the status of Google Compute Engine routers."""
+"""Command for getting the status of Compute Engine routers."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,10 +26,10 @@ from googlecloudsdk.command_lib.compute.routers import flags
 
 
 class Describe(base.DescribeCommand):
-  """Get status of a Google Compute Engine router.
+  """Get status of a Compute Engine router.
 
-  *{command}* displays all runtime data associated with a Google Compute
-  Engine router.
+  *{command}* displays all runtime data associated with a Compute Engine
+  router.
   """
 
   ROUTER_ARG = None

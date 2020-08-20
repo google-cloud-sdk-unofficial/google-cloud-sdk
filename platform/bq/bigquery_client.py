@@ -28,6 +28,7 @@ import tempfile
 import textwrap
 import time
 import traceback
+import uuid
 
 # To configure apiclient logging.
 from absl import flags
@@ -65,6 +66,7 @@ _GCS_SCHEME_PREFIX = 'gs://'
 CONNECTION_TYPE_TO_PROPERTY_MAP = {
     'CLOUD_SQL': 'cloudSql',
     'AWS': 'aws',
+    'Azure': 'azure',
 }
 CONNECTION_PROPERTY_TO_TYPE_MAP = {
     p: t for t, p in six.iteritems(CONNECTION_TYPE_TO_PROPERTY_MAP)
@@ -87,6 +89,20 @@ def MakeIamRoleIdPropertiesJson(iam_role_id):
   """
 
   return '{"crossAccountRole": {"iamRoleId": "%s"}}' % iam_role_id
+
+
+def MakeTenantIdPropertiesJson(tenant_id):
+  """Returns propeties for a connection with tenant id.
+
+  Args:
+    tenant_id: tenant id.
+
+  Returns:
+    JSON string with properties to create a connection with customer's tenant
+    id.
+  """
+
+  return '{"customerTenantId": "%s"}' % tenant_id
 
 
 def MaybePrintManualInstructionsForConnection(connection):
@@ -827,7 +843,6 @@ class BigqueryHttp(http_request.HttpRequest):
   @staticmethod
   def RaiseErrorFromHttpError(e):
     """Raises a BigQueryError given an HttpError."""
-    # have a json payload. We know how to handle those.
     if e.resp.get('content-type', '').startswith('application/json'):
       content = json.loads(e.content.decode('utf-8'))
       BigqueryClient.RaiseError(content)
@@ -1065,6 +1080,7 @@ class BigqueryClient(object):
         disable_ssl_certificate_validation=flags.FLAGS.disable_ssl_validation
     )
 
+
     return http
 
 
@@ -1280,7 +1296,7 @@ class BigqueryClient(object):
     if path is None:
       path = 'https://bigqueryconnection.googleapis.com'
     if not self._op_connection_service_client:
-      discovery_url = (path + '/$discovery/rest?version=v1beta1')
+      discovery_url = (path + '/$discovery/rest?version=v1')
       self._op_connection_service_client = self.BuildApiClient(
       discovery_url=discovery_url)
     return self._op_connection_service_client
@@ -1581,8 +1597,8 @@ class BigqueryClient(object):
         identifier=identifier)
     if project_id and self.project_id and project_id != self.project_id:
       raise BigqueryError(
-          'Specified project should be the same as the project of the '
-          'reservation.')
+          "Specified project '%s' should be the same as the project of the "
+          "reservation '%s'." % (self.project_id, project_id))
     project_id = project_id or self.project_id
     if not project_id:
       raise BigqueryError('Project id not specified.')
@@ -1591,8 +1607,8 @@ class BigqueryClient(object):
       raise BigqueryError('Location not specified.')
     if default_location and location != default_location:
       raise BigqueryError(
-          'Specified location should be the same as the location of the '
-          'reservation.')
+          "Specified location '%s' should be the same as the location of the "
+          "reservation '%s'." % (default_location, location))
     reservation_id = reservation_id or default_reservation_id
     if not reservation_id:
       raise BigqueryError('Reservation name not specified.')
@@ -2192,8 +2208,6 @@ class BigqueryClient(object):
     Raises:
       BigqueryError: If required parameters are not passed in.
     """
-    if not self.project_id:
-      raise BigqueryError('project_id not specified.')
     if not location:
       raise BigqueryError('location not specified.')
     if not job_type:
@@ -2206,10 +2220,10 @@ class BigqueryClient(object):
     # format string for assignee below.
     assignee = '%ss/%s' % (assignee_type.lower(), assignee_id)
     query = 'assignee=%s' % assignee
-    parent = 'projects/%s/locations/%s' % (self.project_id, location)
+    parent = 'projects/-/locations/%s' % location
     client = self.GetReservationApiClient()
 
-    response = client.projects().locations().searchAssignments(
+    response = client.projects().locations().searchAllAssignments(
         parent=parent, query=query).execute()
     assignments = []
     if 'assignments' in response:
@@ -2232,9 +2246,15 @@ class BigqueryClient(object):
     return client.projects().locations().connections().get(
         name=reference.path()).execute()
 
-  def CreateConnection(self, project_id, location,
-                       connection_type, properties, display_name=None,
-                       description=None, connection_id=None):
+  def CreateConnection(self,
+                       project_id,
+                       location,
+                       connection_type,
+                       properties,
+                       connection_credential=None,
+                       display_name=None,
+                       description=None,
+                       connection_id=None):
     """Create a connection with the given connection reference.
 
     Arguments:
@@ -2242,6 +2262,7 @@ class BigqueryClient(object):
       location: Location of connection.
       connection_type: Type of connection, allowed values: ['CLOUD_SQL']
       properties: Connection properties in JSON format.
+      connection_credential: Connection credentials in JSON format.
       display_name: Friendly name for the connection.
       description: Description of the connection.
       connection_id: Optional connection ID.
@@ -2261,6 +2282,11 @@ class BigqueryClient(object):
     property_name = CONNECTION_TYPE_TO_PROPERTY_MAP.get(connection_type)
     if property_name:
       connection[property_name] = json.loads(properties)
+
+      if connection_credential:
+        connection[property_name]['credential'] = \
+          json.loads(connection_credential)
+
     else:
       raise ValueError('connection_type %s is unsupported' % connection_type)
 
@@ -2269,14 +2295,20 @@ class BigqueryClient(object):
     return client.projects().locations().connections().create(
         parent=parent, connectionId=connection_id, body=connection).execute()
 
-  def UpdateConnection(self, reference, connection_type, properties,
-                       display_name=None, description=None):
+  def UpdateConnection(self,
+                       reference,
+                       connection_type,
+                       properties,
+                       connection_credential=None,
+                       display_name=None,
+                       description=None):
     """Update connection with the given connection reference.
 
     Arguments:
       reference: Connection to update
       connection_type: Type of connection, allowed values: ['CLOUD_SQL']
       properties: Connection properties
+      connection_credential: Connection credentials in JSON format.
       display_name: Friendly name for the connection
       description: Description of the connection
 
@@ -2296,21 +2328,36 @@ class BigqueryClient(object):
       update_mask.append('description')
 
     if connection_type == 'CLOUD_SQL':
-      cloudsql_properties = json.loads(properties)
-      connection['cloudSql'] = cloudsql_properties
-      if cloudsql_properties.get('instanceId'):
-        update_mask.append('cloudSql.instanceId')
-      if cloudsql_properties.get('database'):
-        update_mask.append('cloudSql.database')
-      if cloudsql_properties.get('type'):
-        update_mask.append('cloudSql.type')
+      if properties:
+        cloudsql_properties = json.loads(properties)
+        connection['cloudSql'] = cloudsql_properties
+        if cloudsql_properties.get('instanceId'):
+          update_mask.append('cloudSql.instanceId')
+        if cloudsql_properties.get('database'):
+          update_mask.append('cloudSql.database')
+        if cloudsql_properties.get('type'):
+          update_mask.append('cloudSql.type')
+      else:
+        connection['cloudSql'] = {}
 
-    if connection_type == 'AWS':
-      aws_properties = json.loads(properties)
-      connection['aws'] = aws_properties
-      if aws_properties.get('crossAccountRole') and \
-          aws_properties['crossAccountRole'].get('iamRoleId'):
-        update_mask.append('aws.crossAccountRole.iamRoleId')
+      if connection_credential:
+        connection['cloudSql']['credential'] = json.loads(connection_credential)
+        update_mask.append('cloudSql.credential')
+
+    elif connection_type == 'AWS':
+
+      if properties:
+        aws_properties = json.loads(properties)
+        connection['aws'] = aws_properties
+        if aws_properties.get('crossAccountRole') and \
+            aws_properties['crossAccountRole'].get('iamRoleId'):
+          update_mask.append('aws.crossAccountRole.iamRoleId')
+      else:
+        connection['aws'] = {}
+
+      if connection_credential:
+        connection['aws']['credential'] = json.loads(connection_credential)
+      update_mask.append('aws.credential')
 
     client = self.GetConnectionV1ApiClient()
 
@@ -2343,31 +2390,7 @@ class BigqueryClient(object):
     parent = 'projects/%s/locations/%s' % (project_id, location)
     client = self.GetConnectionV1ApiClient()
     return client.projects().locations().connections().list(
-        parent=parent, maxResults=max_results, pageToken=page_token).execute()
-
-  def UpdateConnectionCredential(self, reference, connection_type,
-                                 credential_json):
-    """Updates connection credential for the reference.
-
-    Arguments:
-      reference: Connection reference.
-      connection_type: Type of connection, allowed values: ['CLOUD_SQL'].
-      credential_json: Connection type specific credential in JSON format.
-    """
-
-    credential = {}
-
-    property_name = CONNECTION_TYPE_TO_PROPERTY_MAP.get(connection_type)
-    if property_name:
-      credential[property_name] = json.loads(credential_json)
-    else:
-      raise ValueError('connection_type %s is unsupported' % connection_type)
-
-    name = reference.path() + '/credential'
-
-    client = self.GetConnectionV1ApiClient()
-    client.projects().locations().connections().updateCredential(
-        name=name, body=credential).execute()
+        parent=parent, pageToken=page_token, pageSize=max_results).execute()
 
   def ReadSchemaAndRows(self, table_dict, start_row=None, max_rows=None,
                         selected_fields=None):
@@ -2556,10 +2579,10 @@ class BigqueryClient(object):
       formatter.AddColumns(('name', 'slotCapacity', 'useIdleSlots'))
     elif reference_type == ApiClientHelper.AutoscaleAlphaReservationReference:
       formatter.AddColumns(('name', 'slotCapacity', 'useIdleSlots',
-                            'autoscale_max_slots', 'autoscale_current_slots'))
+                            'autoscaleMaxSlots', 'autoscaleCurrentSlots'))
     elif reference_type == ApiClientHelper.CapacityCommitmentReference:
       formatter.AddColumns(('name', 'slotCount', 'plan', 'renewalPlan', 'state',
-                            'commitmentEndTime'))
+                            'commitmentStartTime', 'commitmentEndTime'))
     elif reference_type == ApiClientHelper.ReservationAssignmentReference:
       formatter.AddColumns(('name', 'jobType', 'assignee'))
     elif reference_type == ApiClientHelper.ConnectionReference:
@@ -2839,7 +2862,9 @@ class BigqueryClient(object):
     """
     result = {}
     result['Id'] = model_info['modelReference']['modelId']
-    result['Model Type'] = model_info['modelType']
+    result['Model Type'] = ''
+    if 'modelType' in model_info:
+      result['Model Type'] = model_info['modelType']
     if 'labels' in model_info:
       result['Labels'] = _FormatLabels(model_info['labels'])
     if 'creationTime' in model_info:
@@ -3118,10 +3143,10 @@ class BigqueryClient(object):
     if (reference_type == ApiClientHelper.AutoscaleAlphaReservationReference and
         'autoscale' in list(result.keys())):
       if 'maxSlots' in list(result['autoscale'].keys()):
-        result['autoscale_max_slots'] = result['autoscale']['maxSlots']
-      result['autoscale_current_slots'] = '0'
+        result['autoscaleMaxSlots'] = result['autoscale']['maxSlots']
+      result['autoscaleCurrentSlots'] = '0'
       if 'currentSlots' in list(result['autoscale'].keys()):
-        result['autoscale_current_slots'] = result['autoscale']['currentSlots']
+        result['autoscaleCurrentSlots'] = result['autoscale']['currentSlots']
       result.pop('autoscale', None)
     return result
 
@@ -4037,7 +4062,7 @@ class BigqueryClient(object):
       range_partitioning: if set, enables range partitioning on the table and
         configures the partitioning.
       require_partition_filter: if set, partition filter is required for
-        queires over this table.
+        queiries over this table.
       destination_kms_key: User specified KMS key for encryption.
       location: an optional location for which to create tables or views.
 
@@ -4104,6 +4129,7 @@ class BigqueryClient(object):
                            params=None,
                            auth_info=None,
                            service_account_name=None,
+                           notification_pubsub_topic=None,
                            schedule_args=None):
     """Updates a transfer config.
 
@@ -4119,6 +4145,8 @@ class BigqueryClient(object):
         update credentials.
       service_account_name: The service account that the user could act as and
         used as the credential to create transfer runs from the transfer config.
+      notification_pubsub_topic: The Pub/Sub topic where notifications will be
+        sent after transfer runs associated with this transfer config finish.
       schedule_args: Optional parameters to customize data transfer schedule.
 
     Raises:
@@ -4177,6 +4205,10 @@ class BigqueryClient(object):
           options_to_copy=current_config.get('scheduleOptions'))
       update_mask.append('transfer_config.scheduleOptions')
 
+    if notification_pubsub_topic:
+      update_items['notification_pubsub_topic'] = notification_pubsub_topic
+      update_mask.append('transfer_config.notification_pubsub_topic')
+
     if auth_info is not None and AUTHORIZATION_CODE in auth_info:
       update_mask.append(AUTHORIZATION_CODE)
 
@@ -4205,7 +4237,9 @@ class BigqueryClient(object):
                            params=None,
                            auth_info=None,
                            service_account_name=None,
-                           schedule_args=None):
+                           notification_pubsub_topic=None,
+                           schedule_args=None,
+                           location=None):
     """Create a transfer config corresponding to TransferConfigReference.
 
     Args:
@@ -4223,7 +4257,10 @@ class BigqueryClient(object):
         credentials.
       service_account_name: The service account that the user could act as and
         used as the credential to create transfer runs from the transfer config.
+      notification_pubsub_topic: The Pub/Sub topic where notifications will be
+        sent after transfer runs associated with this transfer config finish.
       schedule_args: Optional parameters to customize data transfer schedule.
+      location: The location where the new transfer config will run.
 
     Raises:
       BigqueryNotFoundError: if a requested item is not found.
@@ -4238,9 +4275,6 @@ class BigqueryClient(object):
     # The backend will check if the dataset exists.
     if target_dataset:
       create_items['destinationDatasetId'] = target_dataset
-    else:
-      raise BigqueryError(
-          'A destination dataset must be provided.')
 
     if display_name:
       create_items['displayName'] = display_name
@@ -4266,14 +4300,20 @@ class BigqueryClient(object):
       raise BigqueryError(
           'Parameters must be provided.')
 
-    # The location is infererred by the data transfer service from the
-    # dataset location.
-    parent = reference + '/locations/-'
+    if location:
+      parent = reference + '/locations/' + location
+    else:
+      # The location is infererred by the data transfer service from the
+      # dataset location.
+      parent = reference + '/locations/-'
 
     if schedule_args:
       if schedule_args.schedule is not None:
         create_items['schedule'] = schedule_args.schedule
       create_items['scheduleOptions'] = schedule_args.ToScheduleOptionsPayload()
+
+    if notification_pubsub_topic:
+      create_items['notification_pubsub_topic'] = notification_pubsub_topic
 
     new_transfer_config = transfer_client.projects().locations(
     ).transferConfigs().create(
@@ -4393,7 +4433,7 @@ class BigqueryClient(object):
       clustering: if set, enables clustering on the table and configures the
         clustering spec.
       require_partition_filter: if set, partition filter is required for
-        queires over this table.
+        queiries over this table.
       etag: if set, checks that etag in the existing table matches.
       encryption_configuration: Updates the encryption configuration.
       location: an optional location for which to update tables or views.
@@ -4846,6 +4886,8 @@ class BigqueryClient(object):
       dry_run=None,
       use_cache=None,
       preserve_nulls=None,
+      request_id=None,
+      maximum_bytes_billed=None,
       max_results=None,
       timeout_ms=None,
       min_completion_ratio=None,
@@ -4866,6 +4908,8 @@ class BigqueryClient(object):
           assumptions about whether or how long a query result will be cached.
       preserve_nulls: Optional. Indicates whether to preserve nulls in input
           data. Temporary flag; will be removed in a future version.
+      request_id: Optional. The idempotency token for jobs.query
+      maximum_bytes_billed: Optional. Upper limit on the number of billed bytes.
       max_results: Maximum number of results to return.
       timeout_ms: Timeout, in milliseconds, for the call to query().
       min_completion_ratio: Optional. Specifies the minimum fraction of
@@ -4899,9 +4943,17 @@ class BigqueryClient(object):
       request['userDefinedFunctionResources'] = udf_resources
     if self.dataset_id:
       request['defaultDataset'] = self.GetQueryDefaultDataset(self.dataset_id)
+
+    # If the request id flag is set, generate a random one if it is not provided
+    # explicitly.
+    if request_id is None and flags.FLAGS.jobs_query_use_request_id:
+      request_id = str(uuid.uuid4())
+
     _ApplyParameters(
         request,
         preserve_nulls=preserve_nulls,
+        request_id=request_id,
+        maximum_bytes_billed=maximum_bytes_billed,
         use_query_cache=use_cache,
         timeout_ms=timeout_ms,
         max_results=max_results,
@@ -5228,6 +5280,8 @@ class BigqueryClient(object):
       dry_run=None,
       use_cache=None,
       preserve_nulls=None,
+      request_id=None,
+      maximum_bytes_billed=None,
       max_results=None,
       wait=sys.maxsize,
       min_completion_ratio=None,
@@ -5248,6 +5302,8 @@ class BigqueryClient(object):
           assumptions about whether or how long a query result will be cached.
       preserve_nulls: Optional. Indicates whether to preserve nulls in input
           data. Temporary flag; will be removed in a future version.
+      request_id: Optional. Specifies the idempotency token for the request.
+      maximum_bytes_billed: Optional. Upper limit on maximum bytes billed.
       max_results: Optional. Maximum number of results to return.
       wait: (optional, default maxint) Max wait time in seconds.
       min_completion_ratio: Optional. Specifies the minimum fraction of
@@ -5284,6 +5340,9 @@ class BigqueryClient(object):
     if not query:
       raise BigqueryClientError('No query string provided')
 
+    if request_id is not None and not flags.FLAGS.jobs_query_use_request_id:
+      raise BigqueryClientError('request_id is not yet supported')
+
     if wait_printer_factory:
       printer = wait_printer_factory()
     else:
@@ -5317,6 +5376,8 @@ class BigqueryClient(object):
           result = self._StartQueryRpc(
               query=query,
               preserve_nulls=preserve_nulls,
+              request_id=request_id,
+              maximum_bytes_billed=maximum_bytes_billed,
               use_cache=use_cache,
               dry_run=dry_run,
               min_completion_ratio=min_completion_ratio,

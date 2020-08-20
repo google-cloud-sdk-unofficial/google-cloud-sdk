@@ -2,7 +2,7 @@
 
   help_text:
     brief: |
-      Delete a connection profile.
+      Delete a Database Migration Service connection profile.
     description: |
       Deletes a connection profile. A connection profile can only be deleted if it is not in use by
       any active migration jobs.

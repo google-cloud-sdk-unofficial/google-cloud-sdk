@@ -47,7 +47,12 @@ class UpdatePerimeterDryRun(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
+    UpdatePerimeterDryRun.ArgsVersioned(parser, version='v1')
+
+  @staticmethod
+  def ArgsVersioned(parser, version='v1'):
     perimeters.AddResourceArg(parser, 'to update')
+    perimeters.AddUpdateDirectionalPoliciesGroupArgs(parser, version)
     repeated.AddPrimitiveArgs(
         parser,
         'Service Perimeter',
@@ -85,6 +90,7 @@ class UpdatePerimeterDryRun(base.UpdateCommand):
         action='store_true',
         help="""Return immediately, without waiting for the operation in
                 progress to complete.""")
+
 
   def Run(self, args):
     client = zones_api.Client(version=self._API_VERSION)
@@ -132,13 +138,21 @@ class UpdatePerimeterDryRun(base.UpdateCommand):
         levels=updated_access_levels,
         restricted_services=updated_restricted_services,
         vpc_allowed_services=updated_vpc_services,
-        enable_vpc_accessible_services=updated_vpc_enabled)
+        enable_vpc_accessible_services=updated_vpc_enabled,
+        ingress_policies=perimeters.ParseUpdateDirectionalPoliciesArgs(
+            args, self._API_VERSION, 'ingress-policies'),
+        egress_policies=perimeters.ParseUpdateDirectionalPoliciesArgs(
+            args, self._API_VERSION, 'egress-policies'))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdatePerimeterDryRunAlpha(UpdatePerimeterDryRun):
   """Updates the dry-run mode configuration for a Service Perimeter."""
   _API_VERSION = 'v1alpha'
+
+  @staticmethod
+  def Args(parser):
+    UpdatePerimeterDryRun.ArgsVersioned(parser, version='v1alpha')
 
 
 detailed_help = {

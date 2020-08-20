@@ -74,9 +74,9 @@ class Create(base.CreateCommand):
 
   detailed_help = DETAILED_HELP
   support_global_scope = True
-  support_regional_scope = False
+  support_regional_scope = True
   support_neg_type = False
-  support_hybrid_neg = False
+  support_hybrid_neg = True
   support_l4ilb_neg = False
   support_vm_ip_neg = False
 
@@ -196,14 +196,11 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a Compute Engine network endpoint group."""
 
-  support_regional_scope = True
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Create a Google Compute Engine network endpoint group."""
 
-  support_hybrid_neg = True
   support_l4ilb_neg = True
   support_neg_type = True
   support_vm_ip_neg = True

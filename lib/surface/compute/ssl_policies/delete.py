@@ -43,9 +43,9 @@ class DeleteBatchPoller(poller.BatchPoller):
 
 
 class Delete(base.DeleteCommand):
-  """Delete Google Compute Engine SSL policies.
+  """Delete Compute Engine SSL policies.
 
-  *{command}* is used to delete one or more Google Compute Engine SSL policies.
+  *{command}* is used to delete one or more Compute Engine SSL policies.
   SSL policies can only be deleted when no other resources (e.g.,
   Target HTTPS proxies, Target SSL proxies) refer to them.
 

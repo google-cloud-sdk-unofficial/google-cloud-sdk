@@ -1,7 +1,7 @@
 - release_tracks: [ALPHA]
 
   help_text:
-    brief: List connection profiles.
+    brief: List Database Migration Service connection profiles.
     description: List connection profiles.
     examples: |
       To list all connection profiles in a project and region 'us-central1', run:

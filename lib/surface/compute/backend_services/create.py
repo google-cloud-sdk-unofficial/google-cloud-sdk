@@ -84,7 +84,7 @@ class CreateHelper(object):
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
            support_logging, support_multinic, support_client_only,
-           support_grpc_protocol):
+           support_grpc_protocol, support_all_protocol):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -103,7 +103,10 @@ class CreateHelper(object):
     flags.AddTimeout(parser)
     flags.AddPortName(parser)
     flags.AddProtocol(
-        parser, default=None, support_grpc_protocol=support_grpc_protocol)
+        parser,
+        default=None,
+        support_grpc_protocol=support_grpc_protocol,
+        support_all_protocol=support_all_protocol)
     flags.AddEnableCdn(parser)
     flags.AddSessionAffinity(parser, support_client_only=support_client_only)
     flags.AddAffinityCookieTtl(parser)
@@ -324,6 +327,7 @@ class CreateGA(base.CreateCommand):
   _support_multinic = True
   _support_client_only = False
   _support_grpc_protocol = True
+  _support_all_protocol = False
 
   @classmethod
   def Args(cls, parser):
@@ -335,7 +339,8 @@ class CreateGA(base.CreateCommand):
         support_logging=cls._support_logging,
         support_multinic=cls._support_multinic,
         support_client_only=cls._support_client_only,
-        support_grpc_protocol=cls._support_grpc_protocol)
+        support_grpc_protocol=cls._support_grpc_protocol,
+        support_all_protocol=cls._support_all_protocol)
 
   def Run(self, args):
     """Issues request necessary to create Backend Service."""
@@ -370,6 +375,7 @@ class CreateBeta(CreateGA):
   _support_multinic = True
   _support_client_only = False
   _support_grpc_protocol = True
+  _support_all_protocol = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -392,3 +398,4 @@ class CreateAlpha(CreateBeta):
   """
   _support_client_only = True
   _support_grpc_protocol = True
+  _support_all_protocol = True

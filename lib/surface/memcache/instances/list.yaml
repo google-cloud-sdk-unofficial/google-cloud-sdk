@@ -2,14 +2,15 @@
     brief: |
       List Memorystore Memcached instances.
     description: |
-      List all Memcached instances under the specified project and
-      locations.
+      List all Memcached instances under the specified project and region.
 
-      You can specify the maximum number of instances to list using the
-      `--limit` flag.
+      Specify the maximum number of instances to list using the `--limit` flag.
     examples: |
-      The following command lists a maximum of five instances in region
-      `us-central1` :
+      To list all Memcached instances in region `us-central1`, run:
+
+          $ {command} --region=us-central1
+
+      To list up to five Memcached instances in region `us-central1`, run:
 
           $ {command} --limit=5 --region=us-central1
 
@@ -17,7 +18,7 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.memcache.resources:region
       help_text: |
-        The location of the instances to display.
+        Region of the instances to display.
 
   request: &request
     collection: memcache.projects.locations.instances
@@ -29,7 +30,7 @@
     format: |
       table(
         name.basename():label=INSTANCE_NAME:sort=2,
-        name.segment(3):label=LOCATION,
+        name.segment(3):label=REGION,
         authorizedNetwork.basename():label=NETWORK,
         nodeCount:label=NODE_COUNT,
         nodeConfig.cpuCount:label=NODE_CPU,

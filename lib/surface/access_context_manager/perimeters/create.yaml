@@ -88,7 +88,34 @@
           it also belongs to a regular service perimeter). Both restricted and
           unrestricted service lists, as well as access level lists,
           must be empty.
+    - api_field: servicePerimeter.status.ingressPolicies
+      release_tracks: [ALPHA]
+      metavar: YAML_FILE
+      arg_name: ingress-policies
+      help_text: |
+        Path to a file containing a list of Ingress Policies.
 
+        This file contains a list of YAML-compliant objects representing
+        Ingress Policies described in the API reference.
+
+        For more information about the alpha version, see:
+        https://cloud.google.com/access-context-manager/docs/reference/rest/v1alpha/accessPolicies.servicePerimeters
+      repeated: false
+      processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseIngressPolicies:api_version=v1alpha
+    - api_field: servicePerimeter.status.egressPolicies
+      release_tracks: [ALPHA]
+      metavar: YAML_FILE
+      arg_name: egress-policies
+      help_text: |
+        Path to a file containing a list of Engress Policies.
+
+        This file contains a list of YAML-compliant objects representing
+        Engress Policies described in the API reference.
+
+        For more information about the alpha version, see:
+        https://cloud.google.com/access-context-manager/docs/reference/rest/v1alpha/accessPolicies.servicePerimeters
+      repeated: false
+      processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseEgressPolicies:api_version=v1alpha
     - group:
         params:
         - api_field: servicePerimeter.status.vpcAccessibleServices.allowedServices

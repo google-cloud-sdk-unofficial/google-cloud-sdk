@@ -1,6 +1,6 @@
 release_tracks: [ALPHA, BETA, GA]
 help_text:
-  brief: Set the IAM policy for a Google Compute Engine resource policy.
+  brief: Set the IAM policy for a Compute Engine resource policy.
   description: |
     Set the IAM policy for the given resource policy as defined in a JSON or YAML file.
 

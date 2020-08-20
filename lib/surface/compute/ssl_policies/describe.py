@@ -29,10 +29,10 @@ _SSL_POLICY_ARG = flags.GetSslPolicyArgument()
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine ssl policy.
+  """Describe a Compute Engine ssl policy.
 
-  *{command}* is used to display all data associated with a Google Compute
-  Engine SSL policy in a project.
+  *{command}* is used to display all data associated with a Compute Engine
+  SSL policy in a project.
 
   An SSL policy specifies the server-side support for SSL features. An SSL
   policy can be attached to a TargetHttpsProxy or a TargetSslProxy. This affects

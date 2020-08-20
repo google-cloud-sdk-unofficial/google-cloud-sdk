@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for updating Google Compute Engine routers."""
+"""Command for updating Compute Engine routers."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -31,7 +31,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  """Update a Google Compute Engine router."""
+  """Update a Compute Engine router."""
 
   ROUTER_ARG = None
 
@@ -173,7 +173,7 @@ class Update(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class UpdateBeta(Update):
-  """Update a Google Compute Engine router."""
+  """Update a Compute Engine router."""
 
   ROUTER_ARG = None
 
@@ -188,6 +188,6 @@ class UpdateBeta(Update):
 Update.detailed_help = {
     'DESCRIPTION':
         """
-        *{command}* is used to update a Google Compute Engine router.
+        *{command}* is used to update a Compute Engine router.
         """,
 }

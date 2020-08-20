@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 
 
 class List(base.ListCommand):
-  """List Google Compute Engine snapshots."""
+  """List Compute Engine snapshots."""
 
   @staticmethod
   def Args(parser):

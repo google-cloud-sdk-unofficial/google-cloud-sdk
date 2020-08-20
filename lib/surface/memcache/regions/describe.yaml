@@ -1,6 +1,6 @@
 - help_text:
     brief: |
-      Show metadata for a Memorystore Memcached region.
+      Display metadata for a Memorystore Memcached region.
     description: |
       Display all metadata associated with a Memorystore Memcached region given a valid
       region name.
@@ -10,7 +10,7 @@
         * The active account does not have permission to access the given
           region.
     examples: |
-      The following command prints metadata for the region `us-central1`
+      To display the metadata for the region `us-central1`, run:
 
         $ {command} us-central1
 
@@ -18,8 +18,7 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.memcache.resources:region
       help_text: |
-        Arguments and flags that specify the Memorystore Memcached region you want to
-        describe.
+        Arguments and flags that specify the Memorystore Memcached region to describe.
 
   request: &request
     collection: memcache.projects.locations

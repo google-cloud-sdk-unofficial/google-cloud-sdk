@@ -23,14 +23,14 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class OrgSecurityPolicies(base.Group):
-  """Manage Google Compute Organization Engine security policies.
+  """Manage Compute Engine organization security policies.
 
-  Manage Google Compute Organization Engine security policies. Organization
+  Manage Compute Engine organization security policies. Organization
   security policies are used to control incoming/outgoing traffic.
   """
   category = base.COMPUTE_CATEGORY
 
 
 OrgSecurityPolicies.detailed_help = {
-    'brief': ('Manage Google Compute Engine organization security policies.'),
+    'brief': ('Manage Compute Engine organization security policies.'),
 }

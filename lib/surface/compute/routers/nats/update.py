@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for updating a NAT on a Google Compute Engine router."""
+"""Command for updating a NAT on a Compute Engine router."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,7 +32,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  """Update a NAT on a Google Compute Engine router."""
+  """Update a NAT on a Compute Engine router."""
 
   @classmethod
   def Args(cls, parser):
@@ -117,13 +117,13 @@ class Update(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpdateAlpha(Update):
-  """Update a NAT on a Google Compute Engine router."""
+  """Update a NAT on a Compute Engine router."""
 
 
 Update.detailed_help = {
     'DESCRIPTION':
         """
-        *{command}* is used to update a NAT in a Google Compute Engine router.
+        *{command}* is used to update a NAT in a Compute Engine router.
         """,
     'EXAMPLES':
         """\

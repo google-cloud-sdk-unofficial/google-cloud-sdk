@@ -38,10 +38,18 @@ def AddFolderArgs(parser):
       help='The folder ID to perform the analysis.')
 
 
+def AddProjectArgs(parser):
+  parser.add_argument(
+      '--project',
+      metavar='PROJECT_ID',
+      help='The project ID or number to perform the analysis.')
+
+
 def AddParentArgs(parser):
   parent_group = parser.add_mutually_exclusive_group(required=True)
   AddOrganizationArgs(parent_group, required=False)
   AddFolderArgs(parent_group)
+  AddProjectArgs(parent_group)
 
 
 def AddResourceSelectorGroup(parser):
@@ -260,7 +268,8 @@ class AnalyzeIamPolicyBeta(base.Command):
   """Analyzes accessible IAM policies that match a request."""
 
   detailed_help = {
-      'DESCRIPTION': ' Analyzes accessible IAM policies that match a request.',
+      'DESCRIPTION':
+          ' Analyzes accessible IAM policies that match a request.',
       'EXAMPLES':
           """\
           To find out which users have been granted the

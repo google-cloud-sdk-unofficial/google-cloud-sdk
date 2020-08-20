@@ -30,7 +30,8 @@ from googlecloudsdk.command_lib.compute.backend_services import backend_services
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class AddBackend(base.UpdateCommand):
   """Add a backend to a backend service.
 
@@ -48,7 +49,7 @@ class AddBackend(base.UpdateCommand):
   """
 
   support_global_neg = True
-  support_region_neg = False
+  support_region_neg = True
   support_failover = True
 
   @classmethod
@@ -200,42 +201,3 @@ class AddBackend(base.UpdateCommand):
 
     return client.MakeRequests(
         [self._GetSetRequest(client, backend_service_ref, new_object)])
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class AddBackendAlphaBeta(AddBackend):
-  """Add a backend to a backend service.
-
-  *{command}* adds a backend to a backend service. A
-  backend is a group of VMs or network endpoints that can handle
-  requests sent to a load balancer.
-
-  To modify the parameters of a backend after it has been added
-  to the backend service, use
-  `gcloud compute backend-services update-backend` or
-  `gcloud compute backend-services edit`.
-
-  For more information about the available settings, see
-  https://cloud.google.com/load-balancing/docs/backend-service.
-  """
-
-  support_global_neg = True
-  support_region_neg = True
-
-  def _CreateBackendMessage(self, messages, group_uri, balancing_mode, args):
-    """Overrides."""
-
-    backend_services_utils.ValidateBalancingModeArgs(messages, args)
-    return messages.Backend(
-        balancingMode=balancing_mode,
-        capacityScaler=args.capacity_scaler,
-        description=args.description,
-        group=group_uri,
-        maxRate=args.max_rate,
-        maxRatePerInstance=args.max_rate_per_instance,
-        maxRatePerEndpoint=args.max_rate_per_endpoint,
-        maxUtilization=args.max_utilization,
-        maxConnections=args.max_connections,
-        maxConnectionsPerInstance=args.max_connections_per_instance,
-        maxConnectionsPerEndpoint=args.max_connections_per_endpoint,
-        failover=args.failover)

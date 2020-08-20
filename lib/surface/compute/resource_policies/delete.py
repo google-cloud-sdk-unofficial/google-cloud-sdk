@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.resource_policies import flags
 
 
 class Delete(base.DeleteCommand):
-  """Delete a Google Compute Engine resource policy."""
+  """Delete a Compute Engine resource policy."""
 
   @staticmethod
   def Args(parser):
@@ -54,11 +54,11 @@ class Delete(base.DeleteCommand):
 Delete.detailed_help = {
     'DESCRIPTION':
         """\
-Delete a Google Compute Engine resource policy.
+Delete a Compute Engine resource policy.
 """,
     'EXAMPLES':
         """\
-The following command deletes a Google Compute Engine resource policy.
+The following command deletes a Compute Engine resource policy.
 
   $ {command} my-resource-policy --region=REGION
 """

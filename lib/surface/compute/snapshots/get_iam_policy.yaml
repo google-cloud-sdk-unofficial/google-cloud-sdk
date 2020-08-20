@@ -1,7 +1,7 @@
 release_tracks: [ALPHA, BETA, GA]
 
 help_text:
-  brief: Get the IAM policy for a Google Compute Engine snapshot.
+  brief: Get the IAM policy for a Compute Engine snapshot.
   description: |
     *{command}* displays the IAM policy associated with a snapshot.
     If formatted as JSON, the output can be edited and used as

@@ -29,7 +29,7 @@ import six
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
-  r"""Create a Google Compute Engine security policy rule.
+  r"""Create a Compute Engine security policy rule.
 
   *{command}* is used to create organization security policy rules.
   """
@@ -135,7 +135,7 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
-  r"""Create a Google Compute Engine security policy rule.
+  r"""Create a Compute Engine security policy rule.
 
   *{command}* is used to create organization security policy rules.
   """

@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.run import global_methods
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
@@ -93,6 +94,9 @@ class Create(base.Command):
                           if flags.GetPlatform() != flags.PLATFORM_MANAGED else
                           None))
     domain_mapping_ref = args.CONCEPTS.domain.Parse()
+    changes = [
+        config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
+    ]
 
     # Check if the provided domain has already been verified
     # if mapping to a non-CRoGKE service
@@ -117,7 +121,7 @@ class Create(base.Command):
     with serverless_operations.Connect(conn_context) as client:
       try:
         mapping = client.CreateDomainMapping(domain_mapping_ref, args.service,
-                                             args.force_override)
+                                             changes, args.force_override)
       except exceptions.DomainMappingAlreadyExistsError as e:
         if console_io.CanPrompt() and console_io.PromptContinue(
             ('This domain is already being used as a mapping elsewhere. '
@@ -126,7 +130,7 @@ class Create(base.Command):
             prompt_string='Override the existing mapping'):
           client.DeleteDomainMapping(domain_mapping_ref)
           mapping = client.CreateDomainMapping(domain_mapping_ref, args.service,
-                                               True)
+                                               changes, True)
         else:
           raise e
 

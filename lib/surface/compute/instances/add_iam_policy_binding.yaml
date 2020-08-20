@@ -38,26 +38,6 @@ iam:
   message_type_overrides:
     policy: Policy
     set_iam_policy_request: ComputeInstancesSetIamPolicyRequest
-  ALPHA:
-    enable_condition: true
-    policy_version: 3
-    get_iam_policy_version_path: optionsRequestedPolicyVersion
-  BETA:
-    enable_condition: true
-    policy_version: 3
-    get_iam_policy_version_path: optionsRequestedPolicyVersion
-
-GA:
-  help_text:
-    brief: Add IAM policy binding to a Google Compute Engine instance.
-    description: |
-      Add an IAM policy binding to a Google Compute Engine instance.
-
-    examples: |
-      To add an IAM policy binding for the role of 'roles/compute.securityAdmin' for the user 'test-user@gmail.com'
-      with instance 'my-instance' and zone 'ZONE', run:
-
-        $ {command} my-instance --zone=ZONE --member='user:test-user@gmail.com' --role='roles/compute.securityAdmin'
-
-      See https://cloud.google.com/iam/docs/managing-policies for details of
-      policy role and member types.
+  enable_condition: true
+  policy_version: 3
+  get_iam_policy_version_path: optionsRequestedPolicyVersion

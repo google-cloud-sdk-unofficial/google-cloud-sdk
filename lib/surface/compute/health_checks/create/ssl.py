@@ -32,7 +32,7 @@ def _DetailedHelp():
       'DESCRIPTION':
           """\
           *{command}* is used to create a non-legacy health check using the SSL
-          protocol. You can use this health check for Google Cloud Platform
+          protocol. You can use this health check for Google Cloud
           load balancers or for managed instance group autohealing. For more
           information, see the health checks overview at:
           [](https://cloud.google.com/load-balancing/docs/health-check-concepts)

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for adding an interface to a Google Compute Engine router."""
+"""Command for adding an interface to a Compute Engine router."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,9 +32,9 @@ from googlecloudsdk.command_lib.compute.vpn_tunnels import (flags as
 
 
 class AddInterface(base.UpdateCommand):
-  """Add an interface to a Google Compute Engine router.
+  """Add an interface to a Compute Engine router.
 
-  *{command}* is used to add an interface to a Google Compute Engine
+  *{command}* is used to add an interface to a Compute Engine
   router.
   """
 

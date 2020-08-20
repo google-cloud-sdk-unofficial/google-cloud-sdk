@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.public_advertised_prefixes import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describes a Google Compute Engine public advertised prefix.
+  """Describes a Compute Engine public advertised prefix.
 
   ## EXAMPLES
 

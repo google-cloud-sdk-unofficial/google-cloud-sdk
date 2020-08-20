@@ -26,7 +26,7 @@ from googlecloudsdk.core import properties
 
 
 class List(base.ListCommand):
-  """List Google Compute Engine SSL policies."""
+  """List Compute Engine SSL policies."""
 
   @staticmethod
   def Args(parser):

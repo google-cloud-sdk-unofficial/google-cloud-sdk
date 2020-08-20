@@ -24,4 +24,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Create(base.Group):
-  """Create Google Compute Engine Resource Policies."""
+  """Create Compute Engine Resource Policies."""

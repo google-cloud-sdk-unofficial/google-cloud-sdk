@@ -27,7 +27,7 @@ import six
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
-  """Create a Google Compute Engine organization security policy.
+  """Create a Compute Engine organization security policy.
 
   *{command}* is used to create organization security policies. An organization
   security policy is a set of rules that controls access to various resources.

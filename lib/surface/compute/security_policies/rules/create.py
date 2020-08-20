@@ -28,7 +28,7 @@ from googlecloudsdk.core import properties
 
 
 class Create(base.CreateCommand):
-  r"""Create a Google Compute Engine security policy rule.
+  r"""Create a Compute Engine security policy rule.
 
   *{command}* is used to create security policy rules.
 

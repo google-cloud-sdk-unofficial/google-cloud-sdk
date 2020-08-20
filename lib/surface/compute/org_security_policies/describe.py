@@ -28,7 +28,7 @@ import six
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine organization security policy.
+  """Describe a Compute Engine organization security policy.
 
   *{command}* is used to describe organization security policies. An
   organization security policy is a set of rules that controls access to various

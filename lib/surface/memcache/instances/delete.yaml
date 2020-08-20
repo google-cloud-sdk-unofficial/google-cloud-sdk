@@ -9,8 +9,7 @@
         * The active account does not have permission to access the given
           instance.
     examples: |
-      The following command deletes an instance with the name
-      `my-memcache-instance` in region `us-central1`:
+      To delete an instance named `my-memcache-instance` in region `us-central1`, run:
 
         $ {command} my-memcache-instance --region=us-central1
 
@@ -18,8 +17,7 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.memcache.resources:instance
       help_text: |
-        Arguments and flags that specify the Memcached instance you want
-        to delete.
+        Arguments and flags that specify the Memcached instance to delete.
 
   async:
     collection: memcache.projects.locations.operations

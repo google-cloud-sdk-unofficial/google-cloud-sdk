@@ -38,7 +38,7 @@ def _CommonArgs(parser, api_version, track):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateGroupPlacement(base.CreateCommand):
-  """Create a Google Compute Engine group placement resource policy."""
+  """Create a Compute Engine group placement resource policy."""
 
   @staticmethod
   def Args(parser):
@@ -68,7 +68,7 @@ class CreateGroupPlacement(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateGroupPlacementBeta(CreateGroupPlacement):
-  """Create a Google Compute Engine group placement resource policy."""
+  """Create a Compute Engine group placement resource policy."""
 
   @staticmethod
   def Args(parser):
@@ -78,7 +78,7 @@ class CreateGroupPlacementBeta(CreateGroupPlacement):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGroupPlacementGa(CreateGroupPlacement):
-  """Create a Google Compute Engine group placement resource policy."""
+  """Create a Compute Engine group placement resource policy."""
 
   @staticmethod
   def Args(parser):
@@ -89,11 +89,11 @@ class CreateGroupPlacementGa(CreateGroupPlacement):
 CreateGroupPlacement.detailed_help = {
     'DESCRIPTION':
         """\
-Create a Google Compute Engine Group Placement Resource Policy.
+Create a Compute Engine Group Placement Resource Policy.
 """,
     'EXAMPLES':
         """\
-To create a Google Compute Engine group placement policy with two
+To create a Compute Engine group placement policy with two
 availability domains, run:
   $ {command} my-resource-policy --region=REGION --availability-domain-count=2
 """

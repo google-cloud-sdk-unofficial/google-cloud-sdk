@@ -1,8 +1,8 @@
 release_tracks: [ALPHA, BETA, GA]
 help_text:
-  brief: Remove IAM policy binding from a Google Compute Engine reservation.
+  brief: Remove IAM policy binding from a Compute Engine reservation.
   description: |
-    Remove an IAM policy binding from the IAM policy of a Google Compute Engine reservation. One binding consists of a member,
+    Remove an IAM policy binding from the IAM policy of a Compute Engine reservation. One binding consists of a member,
     a role, and an optional condition.
 
   examples: |

@@ -35,13 +35,14 @@ To delete a network endpoint group named ``my-neg'':
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete a Compute Engine network endpoint group."""
 
   detailed_help = DETAILED_HELP
   support_global_scope = True
-  support_regional_scope = False
+  support_regional_scope = True
 
   @classmethod
   def Args(cls, parser):
@@ -87,10 +88,3 @@ class Delete(base.DeleteCommand):
     result = client.MakeRequests([(service, 'Delete', request)])
     log.DeletedResource(neg_ref.Name(), 'network endpoint group')
     return result
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class DeleteAlphaBeta(Delete):
-  """Delete a Compute Engine network endpoint group."""
-
-  support_regional_scope = True

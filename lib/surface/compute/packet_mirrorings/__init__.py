@@ -22,12 +22,12 @@ from googlecloudsdk.calliope import base
 
 
 class PacketMirrorings(base.Group):
-  """Manage Google Compute Engine packet mirroring resources."""
+  """Manage Compute Engine packet mirroring resources."""
 
 
 PacketMirrorings.detailed_help = {
-    'brief': 'Manage Google Compute Engine packet mirroring resources.',
-    'DESCRIPTION': 'Manage Google Compute Engine packet mirroring resources.',
+    'brief': 'Manage Compute Engine packet mirroring resources.',
+    'DESCRIPTION': 'Manage Compute Engine packet mirroring resources.',
 }
 
 PacketMirrorings.category = base.NETWORKING_CATEGORY

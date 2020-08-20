@@ -23,25 +23,31 @@ from surface.container.clusters import create
 
 auto_flags = [
     'args', 'masterauth', 'nodeidentity',
-    'releasechannel', 'privatecluster', 'ipalias_additional'
+    'releasechannel', 'privatecluster', 'ipalias_additional',
 ]
+
+flag_overrides = {}  # Change default flag values in create-auto
+auto_flag_defaults = dict(list(create.base_flag_defaults.items()) + \
+                          list(flag_overrides.items()))
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(create.CreateBeta):
   autogke = True
+  default_flag_values = auto_flag_defaults
 
   @staticmethod
   def Args(parser):
-    create.AddFlags(create.BETA, parser, auto_flags)
+    create.AddFlags(create.BETA, parser, auto_flag_defaults, auto_flags)
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(create.CreateAlpha):
   autogke = True
+  auto_flag_defaults = auto_flag_defaults
 
   @staticmethod
   def Args(parser):
-    create.AddFlags(create.ALPHA, parser, auto_flags)
+    create.AddFlags(create.ALPHA, parser, auto_flag_defaults, auto_flags)

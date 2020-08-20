@@ -33,9 +33,10 @@ from googlecloudsdk.core import properties
 from six.moves import map
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
-  """Delete per instance configs from managed instance group."""
+  """Delete per-instance configs from managed instance group."""
 
   @staticmethod
   def Args(parser):
@@ -136,10 +137,10 @@ class Delete(base.DeleteCommand):
 
 Delete.detailed_help = {
     'brief':
-        'Delete per instance configs from managed instance group.',
+        'Delete per-instance configs from a managed instance group.',
     'DESCRIPTION':
         """\
-        *{command}* deletes one or more per instance configs from a Google
+        *{command}* deletes one or more per-instance configs from a Google
         Compute Engine managed instance group.
 
         Changes are applied immediately to the corresponding instances, by
@@ -152,8 +153,8 @@ Delete.detailed_help = {
 
           $ {command} my-group --region=europe-west4 --instances=my-instance
 
-        This will remove all metadata and detach all disks that were defined in
-        per-instance config (unless also defined in the instance template, in
-        which case it remains attached).
+        This removes all metadata and detaches all disks that were defined in
+        the per-instance config (except for disks that are also defined in the
+        instance template, which remain attached).
         """
 }

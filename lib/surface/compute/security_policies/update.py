@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.compute.security_policies import security_polici
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
-  """Update a Google Compute Engine security policy.
+  """Update a Compute Engine security policy.
 
   *{command}* is used to update security policies.
 

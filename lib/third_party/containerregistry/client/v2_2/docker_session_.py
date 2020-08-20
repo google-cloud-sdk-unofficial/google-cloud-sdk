@@ -71,6 +71,9 @@ class Push(object):
     self._mount = mount
     self._threads = threads
 
+  def name(self):
+    return self._name
+
   def _scheme_and_host(self):
     return '{scheme}://{registry}'.format(
         scheme=docker_http.Scheme(self._name.registry),

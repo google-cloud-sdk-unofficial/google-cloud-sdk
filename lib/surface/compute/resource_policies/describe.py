@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.resource_policies import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine resource policy."""
+  """Describe a Compute Engine resource policy."""
 
   @staticmethod
   def Args(parser):
@@ -53,11 +53,11 @@ class Describe(base.DescribeCommand):
 Describe.detailed_help = {
     'DESCRIPTION':
         """\
-Describe a Google Compute Engine resource policy.
+Describe a Compute Engine resource policy.
 """,
     'EXAMPLES':
         """\
-The following command shows the details of a Google Compute Engine resource policy.
+The following command shows the details of a Compute Engine resource policy.
 
   $ {command} my-resource-policy --region=REGION
 """

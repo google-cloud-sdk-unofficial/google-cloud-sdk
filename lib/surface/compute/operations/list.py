@@ -66,7 +66,7 @@ def AddFlags(parser, is_ga):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List Google Compute Engine operations."""
+  """List Compute Engine operations."""
 
   @staticmethod
   def Args(parser):
@@ -189,7 +189,7 @@ class List(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListBeta(List):
-  """List Google Compute Engine operations."""
+  """List Compute Engine operations."""
 
   @staticmethod
   def Args(parser):
@@ -197,9 +197,9 @@ class ListBeta(List):
 
 List.detailed_help = base_classes.GetGlobalRegionalListerHelp('operations')
 ListBeta.detailed_help = {
-    'brief': 'List Google Compute Engine operations',
+    'brief': 'List Compute Engine operations',
     'DESCRIPTION': """
-        *{command}* displays all Google Compute Engine operations in a
+        *{command}* displays all Compute Engine operations in a
         project.
 
         By default, all global, regional, and zonal operations are listed. The

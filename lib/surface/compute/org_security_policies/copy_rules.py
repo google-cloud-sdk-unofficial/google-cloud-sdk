@@ -28,7 +28,7 @@ import six
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CopyRules(base.UpdateCommand):
-  """Replace the rules of a Google Compute Engine organization security policy with rules from another policy.
+  """Replace the rules of a Compute Engine organization security policy with rules from another policy.
 
   *{command}* is used to replace the rules of organization security policies. An
    organization security policy is a set of rules that controls access to

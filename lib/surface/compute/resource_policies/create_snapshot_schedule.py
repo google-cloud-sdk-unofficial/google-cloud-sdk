@@ -53,7 +53,7 @@ Start time for the disk snapshot schedule. See $ gcloud topic datetimes for info
 @base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateSnapshotScheduleBeta(base.CreateCommand):
-  """Create a Google Compute Engine Snapshot Schedule Resource Policy.
+  """Create a Compute Engine Snapshot Schedule Resource Policy.
 
   *{command} creates a Resource Policy which can be attached to disks and
   specifies a schedule for taking disk snapshots and how long these snapshots
@@ -88,7 +88,7 @@ class CreateSnapshotScheduleBeta(base.CreateCommand):
 @base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateSnapshotScheduleAlpha(CreateSnapshotScheduleBeta):
-  """Create a Google Compute Engine Snapshot Schedule Resource Policy.
+  """Create a Compute Engine Snapshot Schedule Resource Policy.
 
   *{command} creates a Resource Policy which can be attached to disks and
   specifies a schedule for taking disk snapshots and how long these snapshots
@@ -103,11 +103,11 @@ class CreateSnapshotScheduleAlpha(CreateSnapshotScheduleBeta):
 CreateSnapshotScheduleBeta.detailed_help = {
     'DESCRIPTION':
         """\
-Create a Google Compute Engine Snapshot Schedule Resource Policy.
+Create a Compute Engine Snapshot Schedule Resource Policy.
 """,
     'EXAMPLES':
         """\
-The following command creates a Google Compute Engine Snapshot Schedule Resource Policy with a daily snapshot and a one day snapshot retention policy.
+The following command creates a Compute Engine Snapshot Schedule Resource Policy with a daily snapshot and a one day snapshot retention policy.
 
   $ {command} my-resource-policy --region=REGION --start-time=04:00Z --daily-schedule --max-retention-days=1
 """

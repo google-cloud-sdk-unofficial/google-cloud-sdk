@@ -22,4 +22,4 @@ from googlecloudsdk.calliope import base
 
 
 class SecurityPolicyRules(base.Group):
-  """Read and manipulate Google Compute Engine security policies rules."""
+  """Read and manipulate Compute Engine security policies rules."""

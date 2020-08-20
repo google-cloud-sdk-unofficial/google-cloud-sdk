@@ -116,7 +116,10 @@ class Replace(base.Command):
                 'Cloud Run (fully managed).'.format(project, project_number))
       new_service.metadata.namespace = namespace
 
-      changes = [config_changes.ReplaceServiceChange(new_service)]
+      changes = [
+          config_changes.ReplaceServiceChange(new_service),
+          config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
+      ]
       service_ref = resources.REGISTRY.Parse(
           new_service.metadata.name,
           params={'namespacesId': new_service.metadata.namespace},

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for updating a BGP peer on a Google Compute Engine router."""
+"""Command for updating a BGP peer on a Compute Engine router."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -31,7 +31,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateBgpPeer(base.UpdateCommand):
-  """Update a BGP peer on a Google Compute Engine router."""
+  """Update a BGP peer on a Compute Engine router."""
 
   ROUTER_ARG = None
 
@@ -180,7 +180,7 @@ class UpdateBgpPeer(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBgpPeerBeta(UpdateBgpPeer):
-  """Update a BGP peer on a Google Compute Engine router."""
+  """Update a BGP peer on a Compute Engine router."""
 
   ROUTER_ARG = None
 
@@ -195,7 +195,7 @@ class UpdateBgpPeerBeta(UpdateBgpPeer):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateBgpPeerAlpha(UpdateBgpPeerBeta):
-  """Update a BGP peer on a Google Compute Engine router."""
+  """Update a BGP peer on a Compute Engine router."""
 
   ROUTER_ARG = None
 
@@ -303,7 +303,7 @@ def _UpdateBgpPeerBfdMessageMode(messages, peer, args):
 UpdateBgpPeer.detailed_help = {
     'DESCRIPTION':
         """
-        *{command}* is used to update a BGP peer on a Google Compute Engine
+        *{command}* is used to update a BGP peer on a Compute Engine
         router.
         """,
 }

@@ -34,7 +34,7 @@ def _DetailedHelp():
           'Delete health checks.',
       'DESCRIPTION':
           """\
-      *{command}* deletes one or more Google Compute Engine
+      *{command}* deletes one or more Compute Engine
       health checks.
       """,
   }

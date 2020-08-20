@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.api_gateway import apis
 from googlecloudsdk.api_lib.api_gateway import operations as ops
-from googlecloudsdk.api_lib.endpoints import services_util as endpoints
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.api_gateway import common_flags
 from googlecloudsdk.command_lib.api_gateway import operations_util
@@ -48,20 +47,16 @@ class Create(base.CreateCommand):
   def Args(parser):
     base.ASYNC_FLAG.AddToParser(parser)
     common_flags.AddDisplayNameArg(parser)
+    common_flags.AddManagedServiceFlag(parser)
     labels_util.AddCreateLabelsFlags(parser)
     resource_args.AddApiResourceArg(parser, 'created', positional=True)
 
   def Run(self, args):
     api_ref = args.CONCEPTS.api.Parse()
-    service_name = common_flags.ProcessApiRefToEndpointsService(api_ref)
     api_client = apis.ApiClient()
 
-    # Check if OP service exists with Api name, create if not, activate it
-    if not endpoints.DoesServiceExist(service_name):
-      endpoints.CreateService(service_name, api_ref.projectsId)
-
     resp = api_client.Create(api_ref,
-                             service_name,
+                             managed_service=args.managed_service,
                              labels=args.labels,
                              display_name=args.display_name)
 

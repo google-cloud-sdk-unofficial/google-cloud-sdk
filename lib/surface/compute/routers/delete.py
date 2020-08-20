@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for deleting Google Compute Engine routers."""
+"""Command for deleting Compute Engine routers."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,9 +27,9 @@ from googlecloudsdk.command_lib.compute.routers import flags
 
 
 class Delete(base.DeleteCommand):
-  """Delete Google Compute Engine routers.
+  """Delete Compute Engine routers.
 
-  *{command}* deletes one or more Google Compute Engine
+  *{command}* deletes one or more Compute Engine
   routers. Routers can only be deleted when no other resources
   (e.g., virtual machine instances) refer to them.
   """

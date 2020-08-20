@@ -28,7 +28,9 @@ from googlecloudsdk.command_lib.compute.in_place_snapshots import flags as ips_f
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List Google Compute Engine persistent in-place snapshots."""
+  """List Compute Engine persistent in-place snapshots."""
+
+  _return_partial_success = True
 
   @staticmethod
   def Args(parser):
@@ -47,6 +49,7 @@ class List(base.ListCommand):
         client,
         zonal_service=client.apitools_client.zoneInPlaceSnapshots,
         regional_service=client.apitools_client.regionInPlaceSnapshots,
-        aggregation_service=client.apitools_client.zoneInPlaceSnapshots)
+        aggregation_service=client.apitools_client.zoneInPlaceSnapshots,
+        return_partial_success=self._return_partial_success)
 
     return lister.Invoke(request_data, list_implementation)

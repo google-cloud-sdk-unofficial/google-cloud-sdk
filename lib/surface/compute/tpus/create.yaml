@@ -22,6 +22,10 @@
 
   request:
     _COMMON_: create_request
+    BETA:
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetParentRequestHook
+      - googlecloudsdk.command_lib.compute.tpus.util:CreateValidateVPCHook
 
   async:
     collection: tpu.projects.locations.operations
@@ -41,6 +45,8 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:range
     - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:preemptible
     - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:reserved
+      release_tracks: [BETA]
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:service_networking
       release_tracks: [BETA]
 
 

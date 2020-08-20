@@ -27,7 +27,7 @@ from googlecloudsdk.core import resources
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine operation."""
+  """Describe a Compute Engine operation."""
 
   def __init__(self, *args, **kwargs):
     super(Describe, self).__init__(*args, **kwargs)
@@ -92,10 +92,10 @@ class Describe(base.DescribeCommand):
 def DetailedHelp():
   """Construct help text based on the command release track."""
   detailed_help = {
-      'brief': 'Describe a Google Compute Engine operation',
+      'brief': 'Describe a Compute Engine operation',
       'DESCRIPTION': """
-        *{command}* displays all data associated with a Google Compute
-        Engine operation in a project.
+        *{command}* displays all data associated with a Compute Engine
+        operation in a project.
         """,
       'EXAMPLES': """
         To get details about a global operation, run:

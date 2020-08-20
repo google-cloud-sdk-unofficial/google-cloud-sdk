@@ -97,6 +97,8 @@ import six
 from six.moves import map
 from six.moves import zip
 
+import wcwidth
+
 
 class FormatterException(Exception):
   pass
@@ -322,12 +324,17 @@ class PrettyFormatter(TableFormatter):
     for line in entry_lines:
       if align == 'c':
         left_padding, right_padding = PrettyFormatter.CenteredPadding(
-            cell_width, len(line))
+            cell_width, wcwidth.wcswidth(line))
         content_lines.append(' %s%s%s ' % (
             ' ' * left_padding, line, ' ' * right_padding))
       elif align in ('l', 'r'):
-        fmt = ' %*s ' if align == 'r' else ' %-*s '
-        content_lines.append(fmt % (cell_width, line))
+        padding = ' ' * (cell_width - wcwidth.wcswidth(line))
+        fmt = ' %s%s '
+        if align == 'l':
+          output = fmt % (line, padding)
+        else:
+          output = fmt % (padding, line)
+        content_lines.append(output)
       else:
         raise FormatterException('Unknown alignment: %s' % (align,))
     return itertools.chain(top_lines, content_lines, bottom_lines)
@@ -398,7 +405,8 @@ class PrettyFormatter(TableFormatter):
       raise FormatterException('Invalid row length: %s' % (len(row),))
     split_rows = [six.text_type(entry).split('\n') for entry in row]
     self.row_heights.append(max(len(lines) for lines in split_rows))
-    column_widths = (max(len(line) for line in entry) for entry in split_rows)
+    column_widths = (
+        max(wcwidth.wcswidth(line) for line in entry) for entry in split_rows)
     self.column_widths = [
         max(width, current)
         for width, current in zip(column_widths, self.column_widths)

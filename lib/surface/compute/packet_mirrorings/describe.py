@@ -27,9 +27,9 @@ from googlecloudsdk.command_lib.compute.packet_mirrorings import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine packet mirroring policy.
+  """Describe a Compute Engine packet mirroring policy.
 
-    *{command}* displays all data associated with Google Compute Engine packet
+    *{command}* displays all data associated with Compute Engine packet
     mirroring in a project.
   """
 
@@ -52,7 +52,7 @@ class Describe(base.DescribeCommand):
 
 
 Describe.detailed_help = {
-    'DESCRIPTION': 'Describe a Google Compute Engine Packet Mirroring policy.',
+    'DESCRIPTION': 'Describe a Compute Engine Packet Mirroring policy.',
     'EXAMPLES':
     """\
     Describe the Packet Mirroring policy pm-1 in region us-central1.

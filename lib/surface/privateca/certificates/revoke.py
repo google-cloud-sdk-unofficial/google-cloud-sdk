@@ -159,14 +159,6 @@ class Revoke(base.SilentCommand):
     certificate = operations.GetMessageFromResponse(response,
                                                     messages.Certificate)
 
-    log.status.Print('Publishing a new Certificate Revocation List.')
-    client.projects_locations_certificateAuthorities.PublishCrl(
-        messages
-        .PrivatecaProjectsLocationsCertificateAuthoritiesPublishCrlRequest(
-            name=cert_ref.Parent().RelativeName(),
-            publishCertificateRevocationListRequest=messages
-            .PublishCertificateRevocationListRequest()))
-
     revoke_time = times.ParseDateTime(
         certificate.revocationDetails.revocationTime)
     log.status.Print('Revoked certificate [{}] at {}.'.format(

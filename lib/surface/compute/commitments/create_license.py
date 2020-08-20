@@ -24,9 +24,17 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.commitments import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.Command):
   """Create Compute Engine license-based commitments."""
+  detailed_help = {
+      'EXAMPLES': '''
+        To create a commitment called ``commitment-1'' in the ``us-central1''
+        region with 36-month plan, sles-sap-12 license, 1-2 cores, run:
+
+          $ {command} commitment-1 --plan=36-month --license=https://www.googleapis.com/compute/v1/projects/suse-sap-cloud/global/licenses/sles-sap-12 --region=us-central1 --amount=1 --cores-per-license=1-2
+      '''
+  }
 
   @classmethod
   def Args(cls, parser):
@@ -59,3 +67,8 @@ class Create(base.Command):
         region=commitment_ref.region))
     return client.MakeRequests([(client.apitools_client.regionCommitments,
                                  'Insert', request)])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create Compute Engine license-based commitments."""

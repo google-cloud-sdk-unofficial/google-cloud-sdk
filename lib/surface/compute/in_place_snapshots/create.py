@@ -42,7 +42,7 @@ def _CommonArgs(parser):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
-  """Create Google Compute Engine in-place snapshots."""
+  """Create Compute Engine in-place snapshots."""
 
   @classmethod
   def Args(cls, parser):

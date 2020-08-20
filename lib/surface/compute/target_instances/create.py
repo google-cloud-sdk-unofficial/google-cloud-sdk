@@ -121,6 +121,7 @@ class CreateBeta(CreateGA):
   source. For more information on target instances, see
   [](https://cloud.google.com/compute/docs/protocol-forwarding/#targetinstances)
   """
+  _support_network = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

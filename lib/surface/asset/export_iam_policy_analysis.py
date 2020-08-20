@@ -42,10 +42,18 @@ def AddFolderArgs(parser):
       help='The folder ID to perform the analysis.')
 
 
+def AddProjectArgs(parser):
+  parser.add_argument(
+      '--project',
+      metavar='PROJECT_ID',
+      help='The project ID or number to perform the analysis.')
+
+
 def AddParentArgs(parser):
   parent_group = parser.add_mutually_exclusive_group(required=True)
   AddOrganizationArgs(parent_group, required=False)
   AddFolderArgs(parent_group)
+  AddProjectArgs(parent_group)
 
 
 def AddResourceSelectorGroup(parser):
@@ -257,7 +265,7 @@ class ExportIamPolicyAnalysisBeta(base.Command):
 
   def Run(self, args):
     parent = asset_utils.GetParentNameForAnalyzeIamPolicy(
-        args.organization, args.folder)
+        args.organization, args.project, args.folder)
     client = client_util.IamPolicyAnalysisExportClient(parent)
     operation = client.Export(args)
 

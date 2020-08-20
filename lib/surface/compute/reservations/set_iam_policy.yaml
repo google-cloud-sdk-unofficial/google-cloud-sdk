@@ -1,6 +1,6 @@
 release_tracks: [ALPHA, BETA, GA]
 help_text:
-  brief: Set the IAM policy for a Google Compute Engine reservation.
+  brief: Set the IAM policy for a Compute Engine reservation.
   description: |
     Set the IAM policy for the given reservation as defined in a JSON or YAML file.
 

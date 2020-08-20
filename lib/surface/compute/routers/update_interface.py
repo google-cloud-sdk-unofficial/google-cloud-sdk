@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for updating an interface on a Google Compute Engine router."""
+"""Command for updating an interface on a Compute Engine router."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -34,9 +34,9 @@ from googlecloudsdk.core import log
 
 
 class UpdateInterface(base.UpdateCommand):
-  """Update an interface on a Google Compute Engine router.
+  """Update an interface on a Compute Engine router.
 
-  *{command}* is used to update an interface on a Google Compute Engine
+  *{command}* is used to update an interface on a Compute Engine
   router.
   """
 
