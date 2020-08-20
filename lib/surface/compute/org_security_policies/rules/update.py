@@ -29,7 +29,7 @@ import six
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
-  r"""Update a Google Compute Engine security policy rule.
+  r"""Update a Compute Engine security policy rule.
 
   *{command}* is used to update organization security policy rules.
   """
@@ -148,7 +148,7 @@ class Update(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(Update):
-  r"""Update a Google Compute Engine security policy rule.
+  r"""Update a Compute Engine security policy rule.
 
   *{command}* is used to update organization security policy rules.
   """

@@ -33,9 +33,10 @@ from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class UpdateBeta(base.UpdateCommand):
-  """Update per instance config of a managed instance group."""
+  """Update per-instance config of a managed instance group."""
 
   @staticmethod
   def _PatchDiskData(messages, preserved_disk, update_disk_data):
@@ -168,7 +169,7 @@ class UpdateBeta(base.UpdateCommand):
   def Args(parser):
     instance_groups_flags.GetInstanceGroupManagerArg(
         region_flag=True).AddArgument(
-            parser, operation_type='update per instance config for')
+            parser, operation_type='update per-instance config for')
     instance_groups_flags.AddMigStatefulFlagsForUpdateInstanceConfigs(parser)
     instance_groups_flags.AddMigStatefulUpdateInstanceFlag(parser)
 
@@ -232,10 +233,10 @@ class UpdateBeta(base.UpdateCommand):
 
 UpdateBeta.detailed_help = {
     'brief':
-        'Update per instance config of a managed instance group.',
+        'Update per-instance config of a managed instance group.',
     'DESCRIPTION':
         """\
-        *{command}* updates the per instance config of an instance controlled by
+        *{command}* updates the per-instance config of an instance controlled by
         a Compute Engine managed instance group. The command lets you
         change the list of instance-specific stateful resources, that is, the
         list of resources that are preserved during instance restarts and
@@ -254,7 +255,7 @@ UpdateBeta.detailed_help = {
 
           $ {command} my-group --region=europe-west4 --instance=my-instance --stateful-disk=device-name=my-disk-3,source=projects/my-project/zones/us-central1-a/disks/my-disk-3 --remove-stateful-disks=my-disk-1,my-disk-2 --stateful-metadata='my-key=my-value'
 
-        If ``my-disk-3'' did not exist previously in the per instance config,
+        If ``my-disk-3'' did not exist previously in the per-instance config,
         and if it does not exist in the group's instance template, then the
         command adds ``my-disk-3'' to ``my-instance''. The command also removes
         stateful configuration for ``my-disk-1'' and ``my-disk-2''; if these

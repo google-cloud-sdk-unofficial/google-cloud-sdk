@@ -31,7 +31,7 @@ import six
 
 
 class Create(base.CreateCommand):
-  """Create a Google Compute Engine security policy.
+  """Create a Compute Engine security policy.
 
   *{command}* is used to create security policies. A security policy policy is a
   set of rules that controls access to various resources.

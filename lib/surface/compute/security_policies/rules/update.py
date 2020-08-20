@@ -29,7 +29,7 @@ from googlecloudsdk.core import properties
 
 
 class Update(base.UpdateCommand):
-  r"""Update a Google Compute Engine security policy rule.
+  r"""Update a Compute Engine security policy rule.
 
   *{command}* is used to update security policy rules.
 

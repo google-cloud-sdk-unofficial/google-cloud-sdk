@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 
 
 class List(base.ListCommand):
-  """List Google Compute Engine resource policies."""
+  """List Compute Engine resource policies."""
 
   @staticmethod
   def Args(parser):

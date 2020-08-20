@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.in_place_snapshots import flags as ips_f
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
-  """Delete Google Compute Engine in-place snapshots."""
+  """Delete Compute Engine in-place snapshots."""
 
   def _GetCommonScopeNameForRefs(self, refs):
     """Gets common scope for references."""

@@ -601,6 +601,7 @@ class UpdateBeta(Update):
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
     flags.AddNotificationConfigFlag(group, hidden=True)
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1beta1', group, hidden=True)
+    flags.AddKubernetesObjectsExportConfig(group)
 
   def ParseUpdateOptions(self, args, locations):
     flags.ValidateNotificationConfigFlag(args)
@@ -654,6 +655,8 @@ class UpdateBeta(Update):
     opts.disable_default_snat = args.disable_default_snat
     opts.notification_config = args.notification_config
     opts.private_ipv6_google_access_type = args.private_ipv6_google_access_type
+    opts.kubernetes_objects_changes_target = args.kubernetes_objects_changes_target
+    opts.kubernetes_objects_snapshots_target = args.kubernetes_objects_snapshots_target
 
     return opts
 
@@ -712,6 +715,7 @@ class UpdateAlpha(Update):
     flags.AddEnableGvnicFlag(group)
     flags.AddNotificationConfigFlag(group, hidden=True)
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1alpha1', group, hidden=True)
+    flags.AddKubernetesObjectsExportConfig(group)
 
   def ParseUpdateOptions(self, args, locations):
     flags.ValidateNotificationConfigFlag(args)
@@ -769,5 +773,7 @@ class UpdateAlpha(Update):
     opts.enable_gvnic = args.enable_gvnic
     opts.notification_config = args.notification_config
     opts.private_ipv6_google_access_type = args.private_ipv6_google_access_type
+    opts.kubernetes_objects_changes_target = args.kubernetes_objects_changes_target
+    opts.kubernetes_objects_snapshots_target = args.kubernetes_objects_snapshots_target
 
     return opts

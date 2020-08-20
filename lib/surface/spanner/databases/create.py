@@ -54,6 +54,13 @@ class Create(base.CreateCommand):
               'the database is not created. Full DDL specification is at '
               'https://cloud.google.com/spanner/docs/data-definition-language'
              ).AddToParser(parser)
+    flags.DdlFile(
+        help_text='Path of a file that contains semi-colon separated DDL (data '
+        'definition language) statements to run inside the newly created '
+        'database. If there is an error in any statement, the database is not '
+        'created. Full DDL specification is at '
+        'https://cloud.google.com/spanner/docs/data-definition-language.'
+        ' If --ddl_file is set, --ddl is ignored.').AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.DatabaseCompleter)
 
@@ -70,7 +77,7 @@ class Create(base.CreateCommand):
     database_ref = args.CONCEPTS.database.Parse()
     instance_ref = database_ref.Parent()
     op = databases.Create(instance_ref, args.database,
-                          flags.SplitDdlIntoStatements(args.ddl or []))
+                          flags.SplitDdlIntoStatements(args))
     if args.async_:
       return op
     return database_operations.Await(op, 'Creating database')

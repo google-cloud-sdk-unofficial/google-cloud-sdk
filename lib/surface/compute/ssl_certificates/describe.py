@@ -30,10 +30,10 @@ from googlecloudsdk.command_lib.compute.ssl_certificates import ssl_certificates
                     base.ReleaseTrack.GA)
 @base.UnicodeIsSupported
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine SSL certificate.
+  """Describe a Compute Engine SSL certificate.
 
     *{command}* displays all data (except private keys) associated with
-    Google Compute Engine SSL certificate in a project.
+    Compute Engine SSL certificate in a project.
   """
 
   SSL_CERTIFICATE_ARG = None
@@ -69,11 +69,11 @@ class Describe(base.DescribeCommand):
 
 Describe.detailed_help = {
     'brief':
-        'Describe a Google Compute Engine SSL certificate',
+        'Describe a Compute Engine SSL certificate',
     'DESCRIPTION':
         """\
         *{command}* displays all data (except private keys) associated with
-        Google Compute Engine SSL certificate in a project.
+        Compute Engine SSL certificate in a project.
         """,
     'EXAMPLES':
         """\

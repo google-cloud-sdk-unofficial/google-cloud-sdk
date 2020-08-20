@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.compute.security_policies import flags
 class Delete(base.DeleteCommand):
   """Delete security policies.
 
-    *{command}* deletes Google Compute Engine security policies. Security
+    *{command}* deletes Compute Engine security policies. Security
     policies can only be deleted when no other resources (e.g.,
     backend services) refer to them.
   """

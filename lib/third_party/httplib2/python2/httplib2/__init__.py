@@ -19,7 +19,7 @@ __contributors__ = [
     "Alex Yu",
 ]
 __license__ = "MIT"
-__version__ = '0.14.0'
+__version__ = "0.18.1"
 
 import base64
 import calendar
@@ -276,6 +276,12 @@ HOP_BY_HOP = [
     "transfer-encoding",
     "upgrade",
 ]
+
+# https://tools.ietf.org/html/rfc7231#section-8.1.3
+SAFE_METHODS = ("GET", "HEAD")  # TODO add "OPTIONS", "TRACE"
+
+# To change, assign to `Http().redirect_codes`
+REDIRECT_CODES = frozenset((300, 301, 302, 303, 307, 308))
 
 
 def _get_end2end_headers(response):
@@ -1161,9 +1167,9 @@ class HTTPConnectionWithTimeout(httplib.HTTPConnection):
 
             host = self.host
             port = self.port
-        
+
         socket_err = None
-        
+
         for res in socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM):
             af, socktype, proto, canonname, sa = res
             try:
@@ -1339,9 +1345,9 @@ class HTTPSConnectionWithTimeout(httplib.HTTPSConnection):
 
             host = self.host
             port = self.port
-            
+
         socket_err = None
-        
+
         address_info = socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM)
         for family, socktype, proto, canonname, sockaddr in address_info:
             try:
@@ -1647,9 +1653,13 @@ class Http(object):
         # If set to False then no redirects are followed, even safe ones.
         self.follow_redirects = True
 
+        self.redirect_codes = REDIRECT_CODES
+
         # Which HTTP methods do we apply optimistic concurrency to, i.e.
         # which methods get an "if-match:" etag header added to them.
         self.optimistic_concurrency_methods = ["PUT", "PATCH"]
+
+        self.safe_methods = list(SAFE_METHODS)
 
         # If 'follow_redirects' is True, and this is set to True then
         # all redirecs are followed, including unsafe ones.
@@ -1844,10 +1854,10 @@ class Http(object):
 
         if (
             self.follow_all_redirects
-            or (method in ["GET", "HEAD"])
-            or response.status == 303
+            or method in self.safe_methods
+            or response.status in (303, 308)
         ):
-            if self.follow_redirects and response.status in [300, 301, 302, 303, 307]:
+            if self.follow_redirects and response.status in self.redirect_codes:
                 # Pick out the location header and basically start from the beginning
                 # remembering first to strip the ETag header and decrement our 'depth'
                 if redirections:
@@ -1867,7 +1877,7 @@ class Http(object):
                             response["location"] = urlparse.urljoin(
                                 absolute_uri, location
                             )
-                    if response.status == 301 and method in ["GET", "HEAD"]:
+                    if response.status == 308 or (response.status == 301 and method in self.safe_methods):
                         response["-x-permanent-redirect-url"] = response["location"]
                         if "content-location" not in response:
                             response["content-location"] = absolute_uri
@@ -1904,7 +1914,7 @@ class Http(object):
                         response,
                         content,
                     )
-            elif response.status in [200, 203] and method in ["GET", "HEAD"]:
+            elif response.status in [200, 203] and method in self.safe_methods:
                 # Don't cache 206's since we aren't going to handle byte range requests
                 if "content-location" not in response:
                     response["content-location"] = absolute_uri
@@ -1961,6 +1971,9 @@ class Http(object):
                 headers["user-agent"] = "Python-httplib2/%s (gzip)" % __version__
 
             uri = iri2uri(uri)
+            # Prevent CWE-75 space injection to manipulate request via part of uri.
+            # Prevent CWE-93 CRLF injection to modify headers via part of uri.
+            uri = uri.replace(" ", "%20").replace("\r", "%0D").replace("\n", "%0A")
 
             (scheme, authority, request_uri, defrag_uri) = urlnorm(uri)
 
@@ -2004,6 +2017,7 @@ class Http(object):
                 headers["accept-encoding"] = "gzip, deflate"
 
             info = email.Message.Message()
+            cachekey = None
             cached_value = None
             if self.cache:
                 cachekey = defrag_uri.encode("utf-8")
@@ -2024,8 +2038,6 @@ class Http(object):
                         self.cache.delete(cachekey)
                         cachekey = None
                         cached_value = None
-            else:
-                cachekey = None
 
             if (
                 method in self.optimistic_concurrency_methods
@@ -2037,13 +2049,15 @@ class Http(object):
                 # http://www.w3.org/1999/04/Editing/
                 headers["if-match"] = info["etag"]
 
-            if method not in ["GET", "HEAD"] and self.cache and cachekey:
-                # RFC 2616 Section 13.10
+            # https://tools.ietf.org/html/rfc7234
+            # A cache MUST invalidate the effective Request URI as well as [...] Location and Content-Location
+            # when a non-error status code is received in response to an unsafe request method.
+            if self.cache and cachekey and method not in self.safe_methods:
                 self.cache.delete(cachekey)
 
             # Check the vary header in the cache to see if this request
             # matches what varies in the cache.
-            if method in ["GET", "HEAD"] and "vary" in info:
+            if method in self.safe_methods and "vary" in info:
                 vary = info["vary"]
                 vary_headers = vary.lower().replace(" ", "").split(",")
                 for header in vary_headers:
@@ -2054,11 +2068,14 @@ class Http(object):
                         break
 
             if (
-                cached_value
-                and method in ["GET", "HEAD"]
-                and self.cache
+                self.cache
+                and cached_value
+                and (method in self.safe_methods or info["status"] == "308")
                 and "range" not in headers
             ):
+                redirect_method = method
+                if info["status"] not in ("307", "308"):
+                    redirect_method = "GET"
                 if "-x-permanent-redirect-url" in info:
                     # Should cached permanent redirects be counted in our redirection count? For now, yes.
                     if redirections <= 0:
@@ -2069,7 +2086,7 @@ class Http(object):
                         )
                     (response, new_content) = self.request(
                         info["-x-permanent-redirect-url"],
-                        method="GET",
+                        method=redirect_method,
                         headers=headers,
                         redirections=redirections - 1,
                     )

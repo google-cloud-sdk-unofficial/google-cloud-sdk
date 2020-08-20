@@ -35,8 +35,7 @@ from googlecloudsdk.core.resource import resource_filter
 from googlecloudsdk.core.resource import resource_projector
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class ListInstances(base.ListCommand):
   r"""List instances with specific OS inventory data values.
 
@@ -100,6 +99,8 @@ class ListInstances(base.ListCommand):
 
   _SPECIAL_PACKAGE_MANAGERS = ('wua', 'qfe', 'zypperPatches')
   _REGULAR_PACKAGE_MANAGERS = ('deb', 'googet', 'rpm', 'gem', 'pip')
+
+  _return_partial_success = False
 
   @staticmethod
   def Args(parser):
@@ -263,10 +264,74 @@ class ListInstances(base.ListCommand):
     list_implementation = lister.MultiScopeLister(
         client,
         zonal_service=client.apitools_client.instances,
-        aggregation_service=client.apitools_client.instances)
+        aggregation_service=client.apitools_client.instances,
+        return_partial_success=self._return_partial_success)
 
     instances_iterator = lister.Invoke(request_data, list_implementation)
     instances = list(instances_iterator)
 
     responses = self._GetAllGuestInventoryGuestAttributes(holder, instances)
     return self._GetInventoryFilteredInstances(instances, responses, query)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListInstancesAlpha(ListInstances):
+  r"""List instances with specific OS inventory data values.
+
+  {command} displays all Google Compute Engine instances in a project matching
+  an inventory filter. Run $ gcloud topic filters to see the supported filter
+  syntax.
+
+  ## EXAMPLES
+
+  To list all instances with OS inventory data in a project in table form, run:
+
+        $ {command}
+
+  To list the URIs of all instances whose OS short name contains rhel, run:
+
+        $ {command} --inventory-filter="ShortName:rhel" --uri
+
+  To list the URIs of all instances whose OS short name is equal to rhel, run:
+
+        $ {command} --os-shortname="rhel" --uri
+
+  To list all instances with package google-cloud-sdk of version 235.0.0-0
+  installed, run:
+
+        $ {command} --package-name="google-cloud-sdk" \
+        --package-version="235.0.0-0"
+
+  To list all instances with package name matching a regex ^google-cloud*
+  available for update through apt, run:
+
+        $ {command} --inventory-filter="\
+        PackageUpdates.apt[].Name~^google-cloud*"
+
+  To list all instances with package update google-cloud-sdk of version greater
+  than or equal to 235.0.0-0 available through apt, run:
+
+        $ {command} --inventory-filter="\
+        PackageUpdates.apt[].['google-cloud-sdk'].Version>=235.0.0-0"
+
+  To list all instances missing the Stackdriver monitoring package
+  stackdriver-agent, run:
+
+        $ {command} --inventory-filter="\
+        NOT(InstalledPackages:stackdriver-agent)"
+
+  To list all Windows instances with an installed qfe hotfix whose ID equals
+  KB4462930, run:
+
+        $ {command} --inventory-filter="\
+        InstalledPackages.qfe[].HotFixID=KB4462930"
+
+  To list all Windows instances with a wua update whose description contains the
+  word Security, run:
+
+        $ {command} --inventory-filter="\
+        InstalledPackages.wua[].Description:Security"
+
+  """
+
+  _return_partial_success = True

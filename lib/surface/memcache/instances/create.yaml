@@ -4,23 +4,22 @@
       Create a Memorystore Memcached instance.
     description: |
       Create a new Memorystore Memcached instance with the given name.
-    examples: |
-      The following command creates a Memcached instance with the name
-      'my-memcache-instance' in region 'us-central1' using a non default
-      network, requesting 3 nodes each with 2 CPUs and 2GB of RAM.
 
-        $ {command} my-memcache-instance \
-            --display-name="Example MC Instance" \
-            --authorized-network=projects/project1/global/networks/network_mc \
-            --node-count=3 --node-cpu=2 --node-memory=2GB \
-            --region=us-central1
+      This command can fail for the following reasons:
+        * An instance with the same name already exists.
+        * The active account does not have the necessary permissions to create instances.
+    examples: |
+      To create a Memcached instance named 'my-memcache-instance' in region 'us-central1'
+      with 3 nodes, each with 2 CPUs and 2GB of memory, run:
+
+        $ {command} my-memcache-instance --region=us-central1 \
+            --node-count=3 --node-cpu=2 --node-memory=2GB
 
   arguments:
     resource:
       spec: !REF googlecloudsdk.command_lib.memcache.resources:instance
       help_text: |
-        Arguments and flags that specify the Memcached instance you want
-        to create.
+        Arguments and flags that specify the Memcached instance to create.
     params:
     - arg_name: display-name
       api_field: instance.displayName
@@ -29,7 +28,7 @@
       api_field: instance.labels.additionalProperties
       metavar: KEY=VALUE
       help_text: |
-        A list of label KEY=VALUE pairs to add.
+        List of label KEY=VALUE pairs to add.
       type:
         arg_dict:
           flatten: true
@@ -39,7 +38,7 @@
     - arg_name: authorized-network
       api_field: instance.authorizedNetwork
       help_text: |
-        The full name of the Google Compute Engine network to which the instance
+        Full name of the Google Compute Engine network to which the instance
         is connected. If unspecified, the default network will be used.
     - arg_name: zones
       api_field: instance.zones
@@ -50,7 +49,7 @@
         provided, the service will by default create nodes in all zones in the
         region specified by --region flag.
     - arg_name: node-count
-      help_text: Number of memcache nodes in this instance.
+      help_text: Number of memcache nodes in this instance. Valid values range from 1 to 20.
       api_field: instance.nodeCount
       required: true
     - arg_name: node-cpu
@@ -64,10 +63,9 @@
       api_field: instance.nodeConfig.memorySizeMb
       required: true
       help_text: |
-        A whole number value indicating how much memory is desired per node.
-        The value must be a whole number followed by a size unit of 'MB' for
-        megabyte, or 'GB' for gigabyte, ie '3072MB' or '9GB'. The value must
-        be between 1,024MB and 307,200MB.
+        Amount of memory allocated per node in this instance. The value must be a whole number
+        followed by a size unit of 'MB' for megabyte, or 'GB' for gigabyte, ie '3072MB' or '9GB'.
+        The value must be between 1024MB and 307200MB.
       default: 1024MB
       type: googlecloudsdk.command_lib.memcache.instances_util:NodeMemory
     - arg_name: memcached-version

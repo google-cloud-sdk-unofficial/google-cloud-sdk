@@ -30,9 +30,9 @@ from googlecloudsdk.command_lib.compute.ssl_certificates import ssl_certificates
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
-  """Delete Google Compute Engine SSL certificates.
+  """Delete Compute Engine SSL certificates.
 
-  *{command}* deletes one or more Google Compute Engine SSL certificates.
+  *{command}* deletes one or more Compute Engine SSL certificates.
   SSL certificates can only be deleted when no other resources (e.g.,
   target HTTPS proxies) refer to them.
   """
@@ -76,10 +76,10 @@ class Delete(base.DeleteCommand):
 
 Delete.detailed_help = {
     'brief':
-        'Delete Google Compute Engine SSL certificates',
+        'Delete Compute Engine SSL certificates',
     'DESCRIPTION':
         """\
-        *{command}* deletes one or more Google Compute Engine SSL certificates.
+        *{command}* deletes one or more Compute Engine SSL certificates.
         SSL certificates can only be deleted when no other resources (for
         example, target HTTPS proxies) refer to them.
         """,

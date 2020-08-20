@@ -21,9 +21,16 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Workflows(base.Group):
+  """Manage your Cloud Workflows resources."""
+
+  category = base.TOOLS_CATEGORY
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class WorkflowsAlpha(base.Group):
   """Manage your Cloud Workflows resources."""
 
   category = base.TOOLS_CATEGORY

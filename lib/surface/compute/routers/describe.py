@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for describing Google Compute Engine routers."""
+"""Command for describing Compute Engine routers."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,10 +26,10 @@ from googlecloudsdk.command_lib.compute.routers import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine router.
+  """Describe a Compute Engine router.
 
-  *{command}* displays all data associated with a Google Compute
-  Engine router.
+  *{command}* displays all data associated with a Compute Engine
+  router.
   """
 
   ROUTERS_ARG = None

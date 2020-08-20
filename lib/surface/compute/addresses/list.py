@@ -33,8 +33,11 @@ def _TransformAddressRange(resource):
   return address
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List addresses."""
+
+  _return_partial_success = False
 
   @staticmethod
   def Args(parser):
@@ -63,14 +66,22 @@ class List(base.ListCommand):
         client,
         regional_service=client.apitools_client.addresses,
         global_service=client.apitools_client.globalAddresses,
-        aggregation_service=client.apitools_client.addresses)
+        aggregation_service=client.apitools_client.addresses,
+        return_partial_success=self._return_partial_success)
 
     return lister.Invoke(request_data, list_implementation)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """List addresses."""
+
+  _return_partial_success = True
+
+
 List.detailed_help = {
     'brief': 'List addresses',
-    'DESCRIPTION': """\
+    'DESCRIPTION': """
         *{command}* lists summary information of addresses in a project. The
         *--uri* option can be used to display URIs instead. Users who want to
         see more data should use `gcloud compute addresses describe`.
@@ -79,7 +90,7 @@ List.detailed_help = {
         The results can be narrowed down by providing the *--regions* or
         *--global* flag.
         """,
-    'EXAMPLES': """\
+    'EXAMPLES': """
         To list all addresses in a project in table form, run:
 
           $ {command}

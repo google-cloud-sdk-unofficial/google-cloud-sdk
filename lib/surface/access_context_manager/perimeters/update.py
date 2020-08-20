@@ -62,11 +62,15 @@ class UpdatePerimetersGA(base.UpdateCommand):
         vpc_allowed_services=perimeters.ParseVpcRestriction(
             args, result, self._API_VERSION),
         enable_vpc_accessible_services=args.enable_vpc_accessible_services,
-    )
+        ingress_policies=perimeters.ParseUpdateDirectionalPoliciesArgs(
+            args, self._API_VERSION, 'ingress-policies'),
+        egress_policies=perimeters.ParseUpdateDirectionalPoliciesArgs(
+            args, self._API_VERSION, 'egress-policies'))
 
   def Patch(self, client, args, result, perimeter_ref, description, title,
             perimeter_type, resources, restricted_services, levels,
-            vpc_allowed_services, enable_vpc_accessible_services):
+            vpc_allowed_services, enable_vpc_accessible_services,
+            ingress_policies, egress_policies):
     return client.Patch(
         perimeter_ref,
         description=description,
@@ -76,7 +80,9 @@ class UpdatePerimetersGA(base.UpdateCommand):
         restricted_services=restricted_services,
         levels=levels,
         vpc_allowed_services=vpc_allowed_services,
-        enable_vpc_accessible_services=enable_vpc_accessible_services)
+        enable_vpc_accessible_services=enable_vpc_accessible_services,
+        ingress_policies=ingress_policies,
+        egress_policies=egress_policies)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

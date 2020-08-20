@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.snapshots import flags
 DETAILED_HELP = {
     'EXAMPLES':
         """\
-        To delete Google Compute Engine snapshots with the names 'snapshot-1'
+        To delete Compute Engine snapshots with the names 'snapshot-1'
         and 'snapshot-2', run:
 
           $ {command} snapshot-1 snapshot-2
@@ -44,9 +44,9 @@ DETAILED_HELP = {
 
 
 class Delete(base.DeleteCommand):
-  """Delete Google Compute Engine snapshots.
+  """Delete Compute Engine snapshots.
 
-  *{command}* deletes one or more Google Compute Engine snapshots.
+  *{command}* deletes one or more Compute Engine snapshots.
   """
 
   detailed_help = DETAILED_HELP

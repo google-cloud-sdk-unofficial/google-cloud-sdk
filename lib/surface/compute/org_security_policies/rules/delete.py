@@ -29,7 +29,7 @@ import six
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
-  """Delete a Google Compute Engine organization security policy rule.
+  """Delete a Compute Engine organization security policy rule.
 
   *{command}* is used to delete organization security policy rule.
   """

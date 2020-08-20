@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.org_security_policies import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
-  """List Google Compute Engine organization security policies.
+  """List Compute Engine organization security policies.
 
   *{command}* is used to list organization security policies. An organization
   security policy is a set of rules that controls access to various resources.

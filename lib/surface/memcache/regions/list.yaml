@@ -1,11 +1,10 @@
 - help_text:
     brief: |
-      List Memorystore Memcached regions
+      List Memorystore Memcached regions.
     description: |
       List all regions where Memorystore Memcached API is available.
     examples: |
-      The following command lists all the regions where you can create Memcached
-      instances:
+      To list all the regions where you can create Memcached instances, run:
 
           $ {command}
 

@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.snapshots import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine snapshot."""
+  """Describe a Compute Engine snapshot."""
 
   @staticmethod
   def Args(parser):
@@ -49,8 +49,8 @@ class Describe(base.DescribeCommand):
 
 
 Describe.detailed_help = {
-    'brief': 'Describe a Google Compute Engine snapshot',
-    'DESCRIPTION': """\
+    'brief': 'Describe a Compute Engine snapshot',
+    'DESCRIPTION': """
     *{command}* displays all data associated with a Compute Engine snapshot
     in a project.
 
@@ -73,7 +73,7 @@ Describe.detailed_help = {
     ```
     """,
 
-    'EXAMPLES': """\
+    'EXAMPLES': """
 
     To run `{command}`, you'll need the name of a snapshot. To list existing
     snapshots by name, run:

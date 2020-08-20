@@ -1,7 +1,7 @@
 - release_tracks: [ALPHA]
 
   help_text:
-    brief: Show details about a connection profile.
+    brief: Show details about a Database Migration Service connection profile.
     description: Show details about a connection profile.
     examples: |
       To show details about a connection profile, run:

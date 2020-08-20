@@ -26,9 +26,9 @@ from googlecloudsdk.command_lib.compute.security_policies import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine security policy.
+  """Describe a Compute Engine security policy.
 
-    *{command}* displays all data associated with Google Compute Engine security
+    *{command}* displays all data associated with Compute Engine security
     policy in a project.
   """
 

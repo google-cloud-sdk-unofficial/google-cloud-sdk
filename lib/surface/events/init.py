@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import collections
+
 from googlecloudsdk.api_lib.events import iam_util
 from googlecloudsdk.api_lib.services import services_util
 from googlecloudsdk.api_lib.services import serviceusage
@@ -34,15 +36,6 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
-_CONTROL_PLANE_SECRET_NAME = 'google-cloud-key'
-# This is the superset of roles needed across the available source types.
-_CONTROL_PLANE_REQUIRED_ROLES = [
-    'roles/cloudscheduler.admin',
-    'roles/logging.configWriter',
-    'roles/logging.privateLogViewer',
-    'roles/pubsub.admin',
-    'roles/storage.admin',
-]
 _CONTROL_PLANE_NAMESPACE = 'cloud-run-events'
 _CONTROL_PLANE_REQUIRED_SERVICES = [
     # cloudresourcemanager isn't required for eventing itself, but is required
@@ -55,6 +48,62 @@ _CONTROL_PLANE_REQUIRED_SERVICES = [
     'storage-api.googleapis.com',
     'storage-component.googleapis.com',
 ]
+
+ServiceAccountConfig = collections.namedtuple(
+        'ServiceAccountConfig',
+        ['arg_name', 'display_name', 'description', 'default_service_account',
+         'recommended_roles', 'additional_wi_roles', 'secret_name'])
+
+_CONTROL_PLANE_SERVICE_ACCOUNT_CONFIG = ServiceAccountConfig(
+    arg_name='service_account',
+    display_name='Cloud Run Events',
+    description='Cloud Run Events on-cluster Infrastructure',
+    default_service_account=iam_util.EVENTS_CONTROL_PLANE_SERVICE_ACCOUNT,
+    recommended_roles=[
+        # CloudSchedulerSource
+        'roles/cloudscheduler.admin',
+        # CloudAuditLogsSource
+        'roles/logging.configWriter',
+        # CloudAuditLogsSource
+        'roles/logging.privateLogViewer',
+        # All Sources
+        'roles/pubsub.admin',
+        # CloudStorageSource
+        'roles/storage.admin',
+    ],
+    additional_wi_roles=[],
+    secret_name='google-cloud-key',
+)
+
+_BROKER_SERVICE_ACCOUNT_CONFIG = ServiceAccountConfig(
+    arg_name='broker_service_account',
+    display_name='Cloud Run Events Broker',
+    description='Cloud Run Events on-cluster Broker',
+    default_service_account=iam_util.EVENTS_BROKER_SERVICE_ACCOUNT,
+    recommended_roles=[
+        'roles/pubsub.editor',
+    ],
+    additional_wi_roles=[
+        'roles/monitoring.metricWriter',
+        'roles/cloudtrace.agent',
+    ],
+    secret_name='google-broker-key',
+)
+
+_SOURCES_SERVICE_ACCOUNT_CONFIG = ServiceAccountConfig(
+    arg_name='sources_service_account',
+    display_name='Cloud Run Events Sources',
+    description='Cloud Run Events on-cluster Sources',
+    default_service_account=iam_util.EVENTS_SOURCES_SERVICE_ACCOUNT,
+    recommended_roles=[
+        'roles/pubsub.editor',
+    ],
+    additional_wi_roles=[
+        'roles/monitoring.metricWriter',
+        'roles/cloudtrace.agent',
+    ],
+    secret_name='google-cloud-sources-key',
+)
 
 
 class Init(base.Command):
@@ -78,7 +127,9 @@ class Init(base.Command):
   @staticmethod
   def CommonArgs(parser):
     """Defines arguments common to all release tracks."""
-    flags.AddServiceAccountFlag(parser)
+    flags.AddControlPlaneServiceAccountFlag(parser)
+    flags.AddBrokerServiceAccountFlag(parser)
+    flags.AddSourcesServiceAccountFlag(parser)
 
   @staticmethod
   def Args(parser):
@@ -94,43 +145,16 @@ class Init(base.Command):
     conn_context = connection_context.GetConnectionContext(
         args, serverless_flags.Product.EVENTS, self.ReleaseTrack())
 
-    _EnableMissingServices(project)
-    if not args.IsSpecified('service_account'):
-      sa_email = iam_util.GetOrCreateEventingServiceAccountWithPrompt()
-    else:
-      sa_email = args.service_account
-
-    service_account_ref = resources.REGISTRY.Parse(
-        sa_email,
-        params={'projectsId': '-'},
-        collection=core_iam_util.SERVICE_ACCOUNTS_COLLECTION)
-    secret_ref = resources.REGISTRY.Parse(
-        _CONTROL_PLANE_SECRET_NAME,
-        params={'namespacesId': _CONTROL_PLANE_NAMESPACE},
-        collection='run.api.v1.namespaces.secrets',
-        api_version='v1')
-
     with eventflow_operations.Connect(conn_context) as client:
-      iam_util.BindMissingRolesWithPrompt(
-          service_account_ref, _CONTROL_PLANE_REQUIRED_ROLES)
-      _PromptIfCanPrompt(
-          '\nThis will create a new key for the service account [{}].'
-          .format(sa_email))
-      _, key_ref = client.CreateOrReplaceServiceAccountSecret(
-          secret_ref, service_account_ref)
+      _EnableMissingServices(project)
 
-    command_string = 'gcloud '
-    if self.ReleaseTrack() != base.ReleaseTrack.GA:
-      command_string += self.ReleaseTrack().prefix + ' '
-    command_string += 'events brokers create'
-    log.status.Print('Initialized cluster [{}] for Cloud Run eventing with '
-                     'key [{}] for service account [{}]. '
-                     'Next, create a broker in the namespace(s) you plan to '
-                     'use via `{}`.'.format(
-                         args.CONCEPTS.cluster.Parse().Name(),
-                         key_ref.Name(),
-                         service_account_ref.Name(),
-                         command_string))
+      for sa_config in [_CONTROL_PLANE_SERVICE_ACCOUNT_CONFIG,
+                        _BROKER_SERVICE_ACCOUNT_CONFIG,
+                        _SOURCES_SERVICE_ACCOUNT_CONFIG]:
+        _ConfigureServiceAccount(sa_config, client, args)
+
+    log.status.Print(_InitializedMessage(
+        self.ReleaseTrack(), conn_context.cluster_name))
 
 
 def _EnableMissingServices(project):
@@ -154,6 +178,68 @@ def _EnableMissingServices(project):
   if not op.done:
     op = services_util.WaitOperation(op.name, serviceusage.GetOperation)
   log.status.Print('Services successfully enabled.')
+
+
+def _ConfigureServiceAccount(sa_config, client, args):
+  """Configures a service account for eventing."""
+
+  log.status.Print('Configuring service account for {}.'.format(
+      sa_config.description))
+  if not args.IsSpecified(sa_config.arg_name):
+    sa_email = iam_util.GetOrCreateServiceAccountWithPrompt(
+        sa_config.default_service_account,
+        sa_config.display_name,
+        sa_config.description)
+  else:
+    sa_email = getattr(args, sa_config.arg_name)
+
+  # We use projectsId of '-' to handle the case where a user-provided service
+  # account may belong to a different project and we need to obtain a key for
+  # that service account.
+  #
+  # The IAM utils used below which print or bind roles are implemented to
+  # specifically operate on the current project and are not impeded by this
+  # projectless ref.
+  service_account_ref = resources.REGISTRY.Parse(
+      sa_email,
+      params={'projectsId': '-'},
+      collection=core_iam_util.SERVICE_ACCOUNTS_COLLECTION)
+
+  should_bind_roles = not args.IsSpecified(sa_config.arg_name)
+  iam_util.PrintOrBindMissingRolesWithPrompt(
+      service_account_ref, sa_config.recommended_roles, should_bind_roles)
+
+  secret_ref = resources.REGISTRY.Parse(
+      sa_config.secret_name,
+      params={'namespacesId': _CONTROL_PLANE_NAMESPACE},
+      collection='run.api.v1.namespaces.secrets',
+      api_version='v1')
+
+  _PromptIfCanPrompt(
+      'This will create a new key for the service account [{}].'
+      .format(sa_email))
+  _, key_ref = client.CreateOrReplaceServiceAccountSecret(
+      secret_ref, service_account_ref)
+  log.status.Print('Added key [{}] to cluster for [{}].'.format(
+      key_ref.Name(), sa_email))
+
+  log.status.Print('Finished configuring service account for {}.\n'.format(
+      sa_config.description))
+
+
+def _InitializedMessage(release_track, cluster_name):
+  command_prefix = 'gcloud '
+  if release_track != base.ReleaseTrack.GA:
+    command_prefix += release_track.prefix + ' '
+  ns_init_command = command_prefix + 'events namespaces init'
+  brokers_create_command = command_prefix + 'events brokers create'
+  return ('Initialized cluster [{}] for Cloud Run eventing. '
+          'Next, initialize the namespace(s) you plan to use and '
+          'create a broker via `{}` and `{}`.'.format(
+              cluster_name,
+              ns_init_command,
+              brokers_create_command,
+          ))
 
 
 def _PromptIfCanPrompt(message):

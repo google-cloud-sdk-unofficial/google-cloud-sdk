@@ -26,7 +26,7 @@ from googlecloudsdk.core import properties
 
 
 class Describe(base.DescribeCommand):
-  """Describe the Google Compute Engine project resource."""
+  """Describe the Compute Engine project resource."""
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -40,9 +40,9 @@ class Describe(base.DescribeCommand):
 
 
 Describe.detailed_help = {
-    'brief': 'Describe the Google Compute Engine project resource',
+    'brief': 'Describe the Compute Engine project resource',
     'DESCRIPTION': """\
-        *{command}* displays all data associated with the Google
+        *{command}* displays all data associated with the
         Compute Engine project resource. The project resource contains
         data such as global quotas, common instance metadata, and the
         project's creation time.

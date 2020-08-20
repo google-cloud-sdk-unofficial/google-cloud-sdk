@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for removing a BGP peer from a Google Compute Engine router."""
+"""Command for removing a BGP peer from a Compute Engine router."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -37,9 +37,9 @@ class PeerNotFoundError(exceptions.Error):
 
 
 class RemoveBgpPeer(base.UpdateCommand):
-  """Remove a BGP peer from a Google Compute Engine router.
+  """Remove a BGP peer from a Compute Engine router.
 
-  *{command}* removes a BGP peer from a Google Compute Engine router.
+  *{command}* removes a BGP peer from a Compute Engine router.
   """
 
   ROUTER_ARG = None

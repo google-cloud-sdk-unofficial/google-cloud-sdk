@@ -76,5 +76,8 @@ class Deny(base.Command):
     else:
       policy.listPolicy = messages.ListPolicy(deniedValues=args.denied_value)
 
+    if policy.restoreDefault:
+      policy.restoreDefault = None
+
     return service.SetOrgPolicy(
         org_policies_base.SetOrgPolicyRequest(args, policy))

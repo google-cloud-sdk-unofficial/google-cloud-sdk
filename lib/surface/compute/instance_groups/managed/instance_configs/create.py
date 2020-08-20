@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for creating per instance config."""
+"""Command for creating per-instance config."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,15 +32,16 @@ import six
 
 
 # TODO(b/70321546): rewrite help
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Create per instance config for an instance in a managed instance group."""
+  """Create per-instance config for an instance in a managed instance group."""
 
   @staticmethod
   def Args(parser):
     instance_groups_flags.GetInstanceGroupManagerArg(
         region_flag=True).AddArgument(
-            parser, operation_type='create a per instance config for')
+            parser, operation_type='create a per-instance config for')
     instance_groups_flags.AddMigStatefulFlagsForInstanceConfigs(parser)
     instance_groups_flags.AddMigStatefulUpdateInstanceFlag(parser)
 
@@ -122,8 +123,8 @@ Create.detailed_help = {
     'DESCRIPTION':
         """\
         *{command}* creates a per-instance config for an instance controlled by
-        a Compute Engine managed instance group. An instance with a per
-        instance config preserves the specified metadata and/or disks during
+        a Compute Engine managed instance group. An instance with a per-instance
+        config preserves the specified metadata and/or disks during
         instance recreation and deletion.
 
         Once created, the config is applied immediately to the corresponding
@@ -138,7 +139,7 @@ Create.detailed_help = {
 
           $ {command} my-group --region=europe-west4 --instance=my-instance --stateful-disk=device-name=my-disk,source=projects/my-project/zones/us-central1-a/disks/my-disk-3 --stateful-metadata="my-key=my-value"
 
-        If ``my-disk'' did not exist previously in the per instance config,
+        If ``my-disk'' did not exist previously in the per-instance config,
         and if it does not exist in the group's instance template, then the
         command adds ``my-disk'' to my-instance.
         """

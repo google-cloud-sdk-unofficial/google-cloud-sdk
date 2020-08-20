@@ -43,7 +43,7 @@ class List(base.ListCommand):
     table(
       name.segment(5):label=API_ID,
       displayName,
-      apiController.managedService,
+      managedService,
       state,
       createTime.date()
       )

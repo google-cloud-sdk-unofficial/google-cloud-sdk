@@ -61,6 +61,12 @@
       api_field: instance.connectMode
       help_text: |
         Network connection mode used by instances.
+    - arg_name: tls-mode
+      release_tracks: [ALPHA]
+      hidden: true
+      api_field: instance.tlsMode
+      help_text: |
+        TLS mode used by the instance.
     - arg_name: display-name
       api_field: instance.displayName
       help_text: |
@@ -119,5 +125,10 @@
     collection: redis.projects.locations.operations
 
   request:
-    api_version: v1
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
     collection: redis.projects.locations.instances

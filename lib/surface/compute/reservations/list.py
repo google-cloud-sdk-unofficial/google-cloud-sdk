@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""List Google Compute Engine reservations."""
+"""List Compute Engine reservations."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,7 +25,7 @@ from googlecloudsdk.calliope import base
 
 
 class List(base.ListCommand):
-  """List Google Compute Engine reservations."""
+  """List Compute Engine reservations."""
 
   @staticmethod
   def Args(parser):
@@ -51,7 +51,7 @@ class List(base.ListCommand):
 
 
 List.detailed_help = {
-    'brief': 'List Google Compute Engine reservations.',
+    'brief': 'List Compute Engine reservations.',
     'EXAMPLES': '''
       To list all Compute Engine reservations, run:
 

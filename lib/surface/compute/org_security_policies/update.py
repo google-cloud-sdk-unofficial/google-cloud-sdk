@@ -28,7 +28,7 @@ import six
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
-  """Update a Google Compute Engine organization security policy.
+  """Update a Compute Engine organization security policy.
 
   *{command}* is used to update organization security policies. An organization
   security policy is a set of rules that controls access to various resources.

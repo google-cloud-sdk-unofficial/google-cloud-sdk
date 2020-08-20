@@ -45,11 +45,17 @@ class Update(base.UpdateCommand):
   def Args(parser):
     """See base class."""
     resource_args.AddDatabaseResourceArg(parser, 'of which the ddl to update')
-    flags.Ddl(required=True, help_text='Semi-colon separated DDL '
+    flags.Ddl(help_text='Semi-colon separated DDL '
               '(data definition language) statements to '
               'run inside the database. If a statement fails, all subsequent '
               'statements in the batch are automatically cancelled.'
              ).AddToParser(parser)
+    flags.DdlFile(
+        help_text='Path of a file containing semi-colon separated DDL (data '
+        'definition language) statements to run inside the database. If a '
+        'statement fails, all subsequent statements in the batch are '
+        'automatically cancelled. If --ddl_file is set, --ddl is ignored.'
+    ).AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -63,7 +69,7 @@ class Update(base.UpdateCommand):
       Some value that we want to have printed later.
     """
     op = databases.UpdateDdl(args.CONCEPTS.database.Parse(),
-                             flags.SplitDdlIntoStatements(args.ddl or []))
+                             flags.SplitDdlIntoStatements(args))
     if args.async_:
       return log.status.Print(
           'Schema update in progress. Operation name={}'.format(op.name))

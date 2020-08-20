@@ -48,9 +48,9 @@ DETAILED_HELP = {
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  r"""Update a Google Compute Engine snapshot.
+  r"""Update a Compute Engine snapshot.
 
-  *{command}* updates labels for a Google Compute snapshot.
+  *{command}* updates labels for a Compute Engine snapshot.
   """
 
   detailed_help = DETAILED_HELP

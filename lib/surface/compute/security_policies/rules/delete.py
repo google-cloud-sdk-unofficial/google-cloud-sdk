@@ -29,7 +29,7 @@ from googlecloudsdk.core import properties
 
 
 class Delete(base.DeleteCommand):
-  """Delete Google Compute Engine security policy rules.
+  """Delete Compute Engine security policy rules.
 
   *{command}* is used to delete security policy rules.
   """

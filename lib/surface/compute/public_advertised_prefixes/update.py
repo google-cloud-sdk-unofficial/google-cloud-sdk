@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.public_advertised_prefixes import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
-  r"""Updates a Google Compute Engine public advertised prefix.
+  r"""Updates a Compute Engine public advertised prefix.
 
   ## EXAMPLES
 

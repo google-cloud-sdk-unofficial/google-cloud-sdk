@@ -33,13 +33,14 @@ To describe a network endpoint group:
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine network endpoint group."""
 
   detailed_help = DETAILED_HELP
   support_global_scope = True
-  support_regional_scope = False
+  support_regional_scope = True
 
   @classmethod
   def Args(cls, parser):
@@ -78,10 +79,3 @@ class Describe(base.DescribeCommand):
       service = holder.client.apitools_client.globalNetworkEndpointGroups
 
     return client.MakeRequests([(service, 'Get', request)])[0]
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class DescribeAlphaBeta(Describe):
-  """Describe a Compute Engine network endpoint group."""
-
-  support_regional_scope = True

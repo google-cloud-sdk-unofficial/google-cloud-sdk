@@ -25,22 +25,25 @@ from googlecloudsdk.core import log
 
 
 class Deploy(base.DescribeCommand):
-  """Deploys an Apigee API proxy."""
+  """Deploy an API proxy to an environment."""
 
   detailed_help = {
-      "DESCRIPTION": """\
-  Deploy an Apigee API proxy to an environment.
+      "DESCRIPTION":
+          """\
+   {description}
 
-  This command expects the API proxy's base path to not already be in use by a
-  deployed proxy in the target environment. If it is in use, the deployment will
-  fail by default. To instead undeploy the existing API proxy as part of the new
-  deployment, use the `--override` command.
+  `{command}` installs an API proxy revision in an Apigee runtime environment.
+
+  By default, the API proxy's base path must not already be in use by a deployed
+  proxy in the target environment. To allow Apigee to undeploy any conflicting
+  API proxy as part of the deployment, use the `--override` command.
 
   Once a particular revision of an API proxy has been deployed, that revision
   can no longer be modified. Any updates to the API proxy must be saved as a new
   revision.
   """,
-      "EXAMPLES": """\
+      "EXAMPLES":
+          """\
   To deploy the latest revision of the API proxy named ``demo'' to the ``test''
   environment, given that the API proxy and environment's matching Cloud
   Platform project has been set in gcloud settings, run:
@@ -51,40 +54,50 @@ class Deploy(base.DescribeCommand):
   run, and replace any conflicting deployment that might already exist, run:
 
     $ {command} 3 --organization=my-org --environment=test --api=demo --override
+
+  To deploy that proxy and print the resulting deployment as a JSON object, run:
+
+    $ {command} 3 --organization=my-org --environment=test --api=demo --format=json
   """
   }
 
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        "--override", action="store_true",
-        help=("Whether to force the deployment of the new revision over the " +
-              "currently deployed revision by overriding conflict checks.\n\n" +
+        "--override",
+        action="store_true",
+        help=("Force the deployment of the new revision, overriding any " +
+              "currently deployed revision that would conflict with it.\n\n" +
               "If an existing API proxy revision is deployed, set this flag " +
               "to ensure seamless deployment with zero downtime. In this " +
               "case, the existing revision remains deployed until the new " +
-              "revision is fully deployed. If not set, you must undeploy " +
-              "the currently deployed revision before deploying the new " +
-              "revision."))
+              "revision is fully deployed.\n\n" +
+              "If unset, `{command}` will fail unless all conflicting API " +
+              "proxies are first undeployed from the environment. To do " +
+              "this, run `{parent_command} undeploy` on the conflicting " +
+              "deployment."))
 
     help_text = {
-        "api": "The API proxy to be deployed.",
-        "environment": "The environment in which to deploy the API proxy.",
-        "organization": "The Apigee organization of the proxy and environment."
+        "api": ("API proxy to be deployed. To get a list of available API " +
+                "proxies, run `{{parent_command}} list`."),
+        "environment": ("Environment in which to deploy the API proxy. To " +
+                        "get a list of available environments, run " +
+                        "`{{grandparent_command}} environments list`."),
+        "organization": ("Apigee organization of the proxy and environment. " +
+                         "If unspecified, the Cloud Platform project's "
+                         "associated organization will be used."),
     }
     fallthroughs = [defaults.GCPProductOrganizationFallthrough(),
                     defaults.StaticFallthrough("revision", "latest")]
     resource_args.AddSingleResourceArgument(
-        parser, "organization.environment.api.revision",
-        "The API proxy revision to be deployed, and the environment in which "
-        "to deploy it. The revision defaults to `latest`, a special value "
-        "which will use the latest revision of the API proxy.",
-        fallthroughs=fallthroughs, help_texts=help_text)
-
-    # The default "/" basepath is added on the server side.
-    parser.add_argument("--basepath",
-                        help=("Base path where the API proxy revision should "
-                              "be deployed. Defaults to `/` if not provided."))
+        parser,
+        "organization.environment.api.revision",
+        "API proxy revision to be deployed and environment in which to deploy "
+        "it. Revisions can either be a positive revision number, or the "
+        "special value ``latest'', which will deploy the latest revision of "
+        "the API proxy. If revision is unspecified, the default is ``latest''.",
+        fallthroughs=fallthroughs,
+        help_texts=help_text)
 
   def Run(self, args):
     """Run the deploy command."""
@@ -94,5 +107,5 @@ class Deploy(base.DescribeCommand):
       log.status.Print("Using current latest revision `%s`"%latest_revision)
       identifiers["revisionsId"] = latest_revision
 
-    result = apigee.APIsClient.Deploy(identifiers, args.override, args.basepath)
+    result = apigee.APIsClient.Deploy(identifiers, args.override)
     return result

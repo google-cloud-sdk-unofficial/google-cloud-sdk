@@ -29,7 +29,7 @@ import six
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine organization security policy rule.
+  """Describe a Compute Engine organization security policy rule.
 
   *{command}* is used to describe organization security policy rule.
   """

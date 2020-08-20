@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for creating Google Compute Engine routers."""
+"""Command for creating Compute Engine routers."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,7 +32,7 @@ import six
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a Google Compute Engine router.
+  """Create a Compute Engine router.
 
      *{command}* is used to create a router to provide dynamic routing to VPN
      tunnels and interconnects.
@@ -145,7 +145,7 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateBeta(Create):
-  """Create a Google Compute Engine router.
+  """Create a Compute Engine router.
 
      *{command}* is used to create a router to provide dynamic routing to VPN
      tunnels and interconnects.

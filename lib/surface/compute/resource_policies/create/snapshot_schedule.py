@@ -47,7 +47,7 @@ Start time for the disk snapshot schedule in UTC. For example, `--start-time="15
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateSnapshotSchedule(base.CreateCommand):
-  """Create a Google Compute Engine Snapshot Schedule Resource Policy."""
+  """Create a Compute Engine Snapshot Schedule Resource Policy."""
 
   @staticmethod
   def Args(parser):
@@ -76,7 +76,7 @@ class CreateSnapshotSchedule(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateSnapshotScheduleBeta(CreateSnapshotSchedule):
-  """Create a Google Compute Engine Snapshot Schedule Resource Policy."""
+  """Create a Compute Engine Snapshot Schedule Resource Policy."""
 
   @staticmethod
   def Args(parser):
@@ -85,7 +85,7 @@ class CreateSnapshotScheduleBeta(CreateSnapshotSchedule):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateSnapshotScheduleAlpha(CreateSnapshotScheduleBeta):
-  """Create a Google Compute Engine Snapshot Schedule Resource Policy."""
+  """Create a Compute Engine Snapshot Schedule Resource Policy."""
 
   @staticmethod
   def Args(parser):
@@ -95,11 +95,11 @@ class CreateSnapshotScheduleAlpha(CreateSnapshotScheduleBeta):
 CreateSnapshotSchedule.detailed_help = {
     'DESCRIPTION':
         """\
-Create a Google Compute Engine Snapshot Schedule Resource Policy.
+Create a Compute Engine Snapshot Schedule Resource Policy.
 """,
     'EXAMPLES':
         """\
-The following command creates a Google Compute Engine Snapshot Schedule Resource Policy with a daily snapshot taken at 13:00Z and a one day snapshot retention policy.
+The following command creates a Compute Engine Snapshot Schedule Resource Policy with a daily snapshot taken at 13:00Z and a one day snapshot retention policy.
 
   $ {command} my-resource-policy --region=REGION --start-time=13:00 --daily-schedule --max-retention-days=1
 """

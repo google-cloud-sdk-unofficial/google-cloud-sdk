@@ -23,17 +23,22 @@ from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Compute Engine node types."""
 
   detailed_help = {
-      'brief': 'List Compute Engine node types.',
-      'EXAMPLES': """
+      'brief':
+          'List Compute Engine node types.',
+      'EXAMPLES':
+          """
          To list node types, run:
 
            $ {command}
        """
   }
+
+  _return_partial_success = False
 
   @staticmethod
   def Args(parser):
@@ -52,9 +57,17 @@ class List(base.ListCommand):
 
     request_data = lister.ParseMultiScopeFlags(args, holder.resources)
     list_implementation = lister.MultiScopeLister(
-        client, aggregation_service=client.apitools_client.nodeTypes)
+        client,
+        aggregation_service=client.apitools_client.nodeTypes,
+        return_partial_success=self._return_partial_success)
 
     return list(lister.Invoke(request_data, list_implementation))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+
+  _return_partial_success = True
 
 
 List.detailed_help = base_classes.GetZonalListerHelp('node types')

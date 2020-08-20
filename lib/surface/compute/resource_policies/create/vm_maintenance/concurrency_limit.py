@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.resource_policies import util
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateVmMaintenanceConcurrentSet(base.CreateCommand):
-  """Create a Google Compute Engine VM Maintenance Resource Policy.
+  """Create a Compute Engine VM Maintenance Resource Policy.
 
   *{command} creates a Resource Policy which can be attached to instances and
   specifies amount of instances in the group that can go to maintenance.
@@ -64,7 +64,7 @@ class CreateVmMaintenanceConcurrentSet(base.CreateCommand):
 CreateVmMaintenanceConcurrentSet.detailed_help = {
     'DESCRIPTION':
     """\
-Create a Google Compute Engine VM Maintenance Resource Policy that,
+Create a Compute Engine VM Maintenance Resource Policy that,
 when attached to an instance, recognizes that instance as a part of a group of
 instances where only up the configured amount of instances in that group can
 undergo simultaneous maintenance.

@@ -94,5 +94,8 @@ class Describe(base.DescribeCommand):
       # Suppress the attestation content in the printed output. Users can use
       # --attestation-file to obtain it, instead.
       version.attestation.content = None
+      # Suppress the attestation content in the printed output. Users can use
+      # get-certificate-chain to obtain it, instead.
+      version.attestation.certChains = None
 
     return version

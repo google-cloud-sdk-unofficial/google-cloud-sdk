@@ -23,11 +23,11 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class InPlaceSnapshots(base.Group):
-  """List, create, and delete Google Compute Engine in place snapshots."""
+  """List, create, and delete Compute Engine in place snapshots."""
 
 
 InPlaceSnapshots.category = base.INSTANCES_CATEGORY
 
 InPlaceSnapshots.detailed_help = {
-    'brief': 'Create, list and delete Google Compute Engine in place snapshots',
+    'brief': 'Create, list and delete Compute Engine in place snapshots',
 }

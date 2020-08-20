@@ -91,22 +91,18 @@ class Create(base.CreateCommand):
     api_config_ref = args.CONCEPTS.api_config.Parse()
     api_ref = api_config_ref.Parent()
 
-    service_name = common_flags.ProcessApiRefToEndpointsService(api_ref)
-
-    # Check if OP service exists with Api name, create if not, activate it
-    if not endpoints.DoesServiceExist(service_name):
-      endpoints.CreateService(service_name, api_ref.projectsId)
-
     # Check to see if Api exists, create if not
     if not apis.DoesExist(api_ref):
-      res = apis.Create(api_ref, service_name)
+      res = apis.Create(api_ref)
       operations_util.PrintOperationResult(
           res.name, ops,
           wait_string='Waiting for API [{}] to be created'.format(
               api_ref.Name()))
 
-    # Create OP ServiceConfig and Rollout
+    # Get the service name from the existing API.
+    service_name = apis.Get(api_ref).managedService
 
+    # Create OP ServiceConfig and Rollout
     # Creating a suffix to avoid name collisions on ServiceConfig IDs.
     suffix = '-' + str(int(time.time()))
     length = MAX_SERVICE_CONFIG_ID_LENGTH - len(suffix)

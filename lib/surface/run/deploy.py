@@ -24,8 +24,10 @@ import uuid
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.builds import flags as build_flags
 from googlecloudsdk.command_lib.builds import submit_util
+from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import messages_util
@@ -166,17 +168,21 @@ class Deploy(base.Command):
           args.gcs_source_staging_dir, args.ignore_file, args.gcs_log_dir,
           args.machine_type, args.disk_size, args.worker_pool, args.pack)
 
-      if args.IsSpecified('pack'):
-        args.image = args.pack[0].get('image')
-
       build, build_op = submit_util.Build(messages, True, build_config, True)
       build_op_ref = resources.REGISTRY.ParseRelativeName(
           build_op.name, 'cloudbuild.operations')
       build_log_url = build.logUrl
+      args.image = build.images[0]
+    elif not args.IsSpecified('image'):
+      raise c_exceptions.RequiredArgumentException(
+          '--image', 'Requires a container image to deploy (e.g. '
+          '`gcr.io/cloudrun/hello:latest`) if no build source is provided.')
     # Deploy a container with an image
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())
     changes = flags.GetConfigurationChanges(args)
+    changes.append(
+        config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()))
 
     with serverless_operations.Connect(conn_context) as operations:
       service = operations.GetService(service_ref)

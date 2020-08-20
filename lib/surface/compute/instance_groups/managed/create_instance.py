@@ -28,7 +28,8 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs import instance_configs_messages
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class CreateInstanceGA(base.CreateCommand):
   """Create a new virtual machine instance in a managed instance group."""
 
@@ -37,12 +38,7 @@ class CreateInstanceGA(base.CreateCommand):
     instance_groups_flags.GetInstanceGroupManagerArg(
         region_flag=True).AddArgument(
             parser, operation_type='create instance in')
-    instance_groups_flags.AddCreateInstancesFlags(
-        parser, add_stateful_args=False)
-
-  @classmethod
-  def ShouldSetStatefulConfig(cls):
-    return False
+    instance_groups_flags.AddCreateInstancesFlags(parser)
 
   @staticmethod
   def _CreateNewInstanceReference(holder, igm_ref, instance_name):
@@ -72,9 +68,8 @@ class CreateInstanceGA(base.CreateCommand):
     return instance_ref
 
   def Run(self, args):
-    if self.ShouldSetStatefulConfig():
-      instance_groups_flags.ValidateMigStatefulFlagsForInstanceConfigs(
-          args, need_disk_source=True)
+    instance_groups_flags.ValidateMigStatefulFlagsForInstanceConfigs(
+        args, need_disk_source=True)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -89,18 +84,13 @@ class CreateInstanceGA(base.CreateCommand):
     instance_ref = self._CreateNewInstanceReference(
         holder=holder, igm_ref=igm_ref, instance_name=args.instance)
 
-    stateful_disks = (
-        args.stateful_disk if self.ShouldSetStatefulConfig() else [])
-    stateful_metadata = (
-        args.stateful_metadata if self.ShouldSetStatefulConfig() else {})
     per_instance_config_message = (
         instance_configs_messages.CreatePerInstanceConfigMessage)(
             holder,
             instance_ref,
-            stateful_disks,
-            stateful_metadata,
-            disk_getter=NonExistentDiskGetter(),
-            set_preserved_state=self.ShouldSetStatefulConfig())
+            args.stateful_disk,
+            args.stateful_metadata,
+            disk_getter=NonExistentDiskGetter())
 
     operation_ref, service = instance_configs_messages.CallCreateInstances(
         holder=holder,
@@ -114,40 +104,6 @@ class CreateInstanceGA(base.CreateCommand):
 
 
 CreateInstanceGA.detailed_help = {
-    'brief':
-        ('Create a new virtual machine instance in a managed instance group '
-         'with a defined name.'),
-    'DESCRIPTION':
-        '*{command}* creates a  virtual machine instance with a defined name.',
-    'EXAMPLES':
-        """\
-        To create an instance `instance-1` in `my-group`
-        (in region europe-west4), run:
-
-            $ {command} \\
-                  my-group --region=europe-west4 --instance=instance-1
-        """
-}
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CreateInstanceBeta(CreateInstanceGA):
-  """Create a new virtual machine instance in a managed instance group."""
-
-  @staticmethod
-  def Args(parser):
-    instance_groups_flags.GetInstanceGroupManagerArg(
-        region_flag=True).AddArgument(
-            parser, operation_type='create instance in')
-    instance_groups_flags.AddCreateInstancesFlags(
-        parser, add_stateful_args=True)
-
-  @classmethod
-  def ShouldSetStatefulConfig(cls):
-    return True
-
-
-CreateInstanceBeta.detailed_help = {
     'brief':
         ('Create a new virtual machine instance in a managed instance group '
          'with a defined name and optionally its stateful configuration.'),

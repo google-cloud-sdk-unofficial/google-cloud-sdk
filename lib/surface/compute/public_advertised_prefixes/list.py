@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 
 
 class List(base.ListCommand):
-  """Lists Google Compute Engine public advertised prefixes."""
+  """Lists Compute Engine public advertised prefixes."""
 
   @staticmethod
   def Args(parser):

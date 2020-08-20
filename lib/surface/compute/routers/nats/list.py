@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to list NATs on a Google Compute Engine router."""
+"""Command to list NATs on a Compute Engine router."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.routers.nats import flags as nats_flags
 
 
 class AlphaList(base.DescribeCommand):
-  """Lists the NATs on a Google Compute Engine router."""
+  """Lists the NATs on a Compute Engine router."""
 
   @classmethod
   def Args(cls, parser):
@@ -53,7 +53,7 @@ class AlphaList(base.DescribeCommand):
 AlphaList.detailed_help = {
     'DESCRIPTION':
         textwrap.dedent("""\
-        *{command}* is used to list the NATs on a Google Compute Engine router.
+        *{command}* is used to list the NATs on a Compute Engine router.
      """),
     'EXAMPLES':
     """\

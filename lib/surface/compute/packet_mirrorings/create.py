@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.packet_mirrorings import utils
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a Google Compute Engine packet mirroring policy."""
+  """Create a Compute Engine packet mirroring policy."""
 
   PACKET_MIRRORING_ARG = None
   enable_filter_direction = False
@@ -105,7 +105,7 @@ class Create(base.CreateCommand):
     return packet_mirroring.Create(template, is_async=args.async_ or False)
 
 Create.detailed_help = {
-    'DESCRIPTION': 'Create a Google Compute Engine packet mirroring policy.',
+    'DESCRIPTION': 'Create a Compute Engine packet mirroring policy.',
     'EXAMPLES':
     """\
     Mirror all tcp traffic to/from all instances in subnet my-subnet in

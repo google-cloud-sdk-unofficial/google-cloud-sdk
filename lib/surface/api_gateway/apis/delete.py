@@ -21,9 +21,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.api_gateway import apis
 from googlecloudsdk.api_lib.api_gateway import operations
-from googlecloudsdk.api_lib.endpoints import services_util as endpoints
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.api_gateway import common_flags
 from googlecloudsdk.command_lib.api_gateway import operations_util
 from googlecloudsdk.command_lib.api_gateway import resource_args
 from googlecloudsdk.core.console import console_io
@@ -76,8 +74,6 @@ class Delete(base.DeleteCommand):
     """
 
     api_ref = args.CONCEPTS.api.Parse()
-    service_name = common_flags.ProcessApiRefToEndpointsService(api_ref)
-
     # Prompt with a warning before continuing.
     console_io.PromptContinue(
         message='Are you sure? This will delete the API \'{}\', '
@@ -88,7 +84,6 @@ class Delete(base.DeleteCommand):
         throw_if_unattended=True,
         cancel_on_no=True)
 
-    self.__DeleteEndpointsService(service_name)
     resp = apis.ApiClient().Delete(api_ref)
 
     wait = 'Waiting for API [{}] to be deleted'.format(
@@ -97,13 +92,3 @@ class Delete(base.DeleteCommand):
     return operations_util.PrintOperationResult(
         resp.name, operations.OperationsClient(), wait_string=wait,
         is_async=args.async_)
-
-  def __DeleteEndpointsService(self, service_name):
-    messages = endpoints.GetMessagesModule()
-    client = endpoints.GetClientInstance()
-
-    request = messages.ServicemanagementServicesDeleteRequest(
-        serviceName=service_name)
-    operation = client.services.Delete(request)
-
-    return endpoints.ProcessOperationResult(operation, False)

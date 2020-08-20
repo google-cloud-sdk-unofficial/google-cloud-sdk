@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for removing a NAT from a Google Compute Engine router."""
+"""Command for removing a NAT from a Compute Engine router."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -30,9 +30,9 @@ from googlecloudsdk.command_lib.compute.routers.nats import nats_utils
 
 
 class AlphaDelete(base.DeleteCommand):
-  """Remove a NAT from a Google Compute Engine router.
+  """Remove a NAT from a Compute Engine router.
 
-  *{command}* removes a NAT from a Google Compute Engine router.
+  *{command}* removes a NAT from a Compute Engine router.
   """
 
   ROUTER_ARG = None
@@ -96,7 +96,7 @@ class AlphaDelete(base.DeleteCommand):
 AlphaDelete.detailed_help = {
     'DESCRIPTION':
         textwrap.dedent("""\
-          *{command}* is used to delete a NAT on a Google Compute Engine router.
+          *{command}* is used to delete a NAT on a Compute Engine router.
     """),
     'EXAMPLES':
     """\

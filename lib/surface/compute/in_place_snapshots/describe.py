@@ -29,7 +29,7 @@ def _CommonArgs(parser):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine in-place snapshot."""
+  """Describe a Compute Engine in-place snapshot."""
 
   @staticmethod
   def Args(parser):
@@ -56,10 +56,10 @@ class Describe(base.DescribeCommand):
 
 Describe.detailed_help = {
     'brief':
-        'Describe a Google Compute Engine in-place snapshot',
+        'Describe a Compute Engine in-place snapshot',
     'DESCRIPTION':
         """\
-        *{command}* displays all data associated with a Google Compute
+        *{command}* displays all data associated with a Compute
         Engine in-place snapshot in a project.
         """,
     'EXAMPLES':

@@ -1,21 +1,28 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: |
-      Apply updated parameters to a Memorystore Memcached instance.
+      Apply parameter update to nodes in a Memorystore Memcached instance.
     description: |
-      Apply updated parameters to the nodes of a Memorystore Memcached instance with the given name.
-    examples: |
-      The following command applies updated parameters to nodes 'node-1' and 'node-2' of a Memcached
-      instance with the name 'my-memcache-instance' in region 'us-central1'
+      Apply a parameter update to nodes in a Memcached instance from the current configuration
+      parameters staged in the instance metadata.
 
-        $ {command} my-memcache-instance --node-ids=node-1,node-2 \
-            --region=us-central1
+      Applying a parameter update to a node causes a full cache flush on that node.
+    examples: |
+      To apply parameter update to nodes 'node-1' and 'node-2' of a Memcached
+      instance named 'my-memcache-instance' in region 'us-central1', run:
+
+        $ {command} my-memcache-instance --node-ids=node-1,node-2 --region=us-central1
+
+      To apply parameter update to all nodes of a Memcached instance named 'my-memcache-instance'
+      in region 'us-central1', run:
+
+        $ {command} my-memcache-instance --apply-all --region=us-central1
 
   arguments:
     resource:
       spec: !REF googlecloudsdk.command_lib.memcache.resources:instance
       help_text: |
-        Arguments and flags that specify the Memcached instance you want to apply parameters to.
+        Arguments and flags that specify the Memcached instance on which to apply parameter update.
     params:
     - group:
         mutex: true
@@ -25,11 +32,11 @@
           api_field: applyParametersRequest.nodeIds
           type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
           help_text: |
-            The nodes on which to apply the updated parameters.
+            Nodes on which to apply the parameter update.
         - arg_name: apply-all
           api_field: applyParametersRequest.applyAll
           help_text: |
-            Apply the updated parameters onto all nodes.
+            Apply the parameter update onto all nodes.
 
   async:
     collection: memcache.projects.locations.operations

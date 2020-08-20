@@ -76,5 +76,8 @@ class Allow(base.Command):
     else:
       policy.listPolicy = messages.ListPolicy(allowedValues=args.allowed_value)
 
+    if policy.restoreDefault:
+      policy.restoreDefault = None
+
     return service.SetOrgPolicy(
         org_policies_base.SetOrgPolicyRequest(args, policy))

@@ -46,7 +46,7 @@ DEFAULT_LIST_FORMAT = """\
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListRules(base.DescribeCommand, base.ListCommand):
-  """List the rules of a Google Compute Engine organization security policy.
+  """List the rules of a Compute Engine organization security policy.
 
   *{command}* is used to list the rules of an organization security policy.
   """

@@ -120,7 +120,7 @@ class GcloudignoreHelp(base.TopicCommand):
   This `.gcloudignore` would prevent the upload of the `node_modules/` directory
   and any files ending in `~`:
 
-    node_modules/
+    /node_modules/
     *~
 
   This `.gcloudignore` (similar to the one generated when Git files are

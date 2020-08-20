@@ -23,4 +23,4 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Group):
-  """Create Google Compute Engine VM Maintenance Resource Policies."""
+  """Create Compute Engine VM Maintenance Resource Policies."""

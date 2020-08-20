@@ -183,6 +183,22 @@ class PrettyFormatterTest(TableFormatterTest):
         '|     | c    |',
     ], list(formatter.FormatRow(formatter.rows[2], 3, column_widths=[3, 4])))
 
+  def testFormatRowsEastAsian(self):
+    formatter = table_formatter.PrettyFormatter()
+    formatter.AddColumns(('a'))
+    formatter.AddRow([u'English'])
+    formatter.AddRow([u'中文 Chinese'])
+    formatter.AddRow([u'日本語 Japanese'])
+
+    # Note that the rows do not line up when viewed in a browser. But when they
+    # are displayed in a terminal, where one Chinese/Japanese character takes up
+    # the space of exactly 2 Latin letters, they will line up perfectly.
+    self.assertEqual([
+        u'| English         |',
+        u'| 中文 Chinese    |',
+        u'| 日本語 Japanese |',
+    ], list(formatter.FormatRows()))
+
   def testHeaderLines(self):
     formatter = table_formatter.PrettyFormatter()
     formatter.AddColumns(('a', 'b'))
@@ -290,6 +306,21 @@ class SparsePrettyFormatterTest(TableFormatterTest):
     formatter.AddColumns(('a', 'b'))
     self.assertEqual('', str(formatter))
     self.assertEqual('', self.wrap_print(formatter))
+
+  def testEastAsian(self):
+    formatter = table_formatter.SparsePrettyFormatter(
+        skip_header_when_empty=False)
+    formatter.AddColumns(('a', 'b'))
+    formatter.AddRow([u'中文', u'中文'])
+    formatter.AddRow([u'日本語', u'日本語'])
+    table_repr = '\n'.join((
+        '    a        b     ',
+        ' -------- -------- ',
+        '  中文     中文    ',
+        '  日本語   日本語  ',
+    ))
+    table_repr = six.ensure_str(table_repr)
+    self.assertEqual(table_repr, formatter._EncodedStr('utf8'))
 
 
 class PrettyJsonFormatterTest(TableFormatterTest):

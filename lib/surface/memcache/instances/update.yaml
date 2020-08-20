@@ -2,30 +2,38 @@
     brief: |
       Update a Memorystore Memcached instance.
     description: |
-      Update the metadata and/or configuration parameters of a Memcached instance.
+      Update a Memcached instance with one or more of the following actions:
+        * Scale up or down the number of nodes in the instance.
+        * Stage an update to instance configuration parameters.
+        * Update the instance metadata (display name, labels).
+
+      Updating parameters cannot be combined with any other update actions in the same call.
+      All other update actions can be combined in the same call.
     examples: |
-      The following command updates a Memcached instance with the name
-      'my-memcache-instance' in region 'us-central1' to have the display name
-      "Cache for Foo Service", and the two labels, 'env' and 'service'.
+      To scale a Memcached instance named 'my-memcache-instance' in region 'us-central1' to have
+      3 nodes, run:
 
-        $ {command} my-memcache-instance --display-name="Cache for Foo Service" \
-            --labels=env=test,service=foo
+        $ {command} my-memcache-instance --node-count=3 --region=us-central1
 
-      The following command updates a Memcached instance with the name
-      'my-memcache-instance' in region 'us-central1' to have parameters
-      'protocol' and 'track-sizes'.
+      To stage an update to the parameters 'protocol' and 'track-sizes' for a Memcached instance
+      named 'my-memcache-instance' in region 'us-central1', run:
 
-        $ {command} my-memcache-instance \
-            --parameters=protocol=ascii,track-sizes=true \
+        $ {command} my-memcache-instance --parameters="protocol=ascii,track-sizes=true" \
             --region=us-central1
+
+      To update a Memcached instance named 'my-memcache-instance' in region 'us-central1' to
+      have the display name "Foo Cache Service" and the labels 'env' and 'service', run:
+
+        $ {command} my-memcache-instance --display-name="Foo Cache Service" \
+            --labels="env=test,service=foo"
+
 
   release_tracks: [ALPHA, BETA]
   arguments:
     resource:
       spec: !REF googlecloudsdk.command_lib.memcache.resources:instance
       help_text: |
-        Arguments and flags that specify the Memcached instance you want
-        to update.
+        Arguments and flags that specify the Memcached instance to update.
     params:
     - group:
         mutex: true
@@ -40,7 +48,7 @@
               api_field: instance.labels.additionalProperties
               metavar: KEY=VALUE
               help_text: |
-                A list of label KEY=VALUE pairs to add.
+                List of label KEY=VALUE pairs to add.
               type:
                 arg_dict:
                   flatten: true
@@ -50,7 +58,7 @@
             - arg_name: node-count
               api_field: instance.nodeCount
               help_text: |
-                Number of memcache nodes in this instance.
+                Number of memcache nodes in this instance. Valid values range from 1 to 20.
         - arg_name: parameters
           api_field: instance.parameters.params
           metavar: KEY=VALUE

@@ -27,7 +27,7 @@ _SSL_POLICY_ARG = flags.GetSslPolicyArgument()
 
 
 class Create(base.CreateCommand):
-  """Create a new Google Compute Engine SSL policy.
+  """Create a new Compute Engine SSL policy.
 
   *{command}* creates a new SSL policy.
 

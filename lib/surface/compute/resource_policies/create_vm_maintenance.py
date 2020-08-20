@@ -33,7 +33,7 @@ Use `compute resource-policies create vm-maintenance` instead.
 @base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateVmMaintenance(base.CreateCommand):
-  """Create a Google Compute Engine VM Maintenance Resource Policy.
+  """Create a Compute Engine VM Maintenance Resource Policy.
 
   *{command} creates a Resource Policy which can be attached to instances and
   specifies what kind of maintenance operations may be performed and when
@@ -77,11 +77,11 @@ class CreateVmMaintenance(base.CreateCommand):
 CreateVmMaintenance.detailed_help = {
     'DESCRIPTION':
         """\
-Create a Google Compute Engine VM Maintenance Resource Policy.
+Create a Compute Engine VM Maintenance Resource Policy.
 """,
     'EXAMPLES':
         """\
-The following command creates a Google Compute Engine VM Maintenance Resource Policy with a daily maintenance activity window that starts at 04:00Z.
+The following command creates a Compute Engine VM Maintenance Resource Policy with a daily maintenance activity window that starts at 04:00Z.
 
   $ {command} my-resource-policy --region=REGION --start-time=04:00Z --daily-window
 """

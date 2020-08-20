@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for listing Google Compute Engine routers."""
+"""Command for listing Compute Engine routers."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.routers import flags
 
 
 class List(base.ListCommand):
-  """List Google Compute Engine routers."""
+  """List Compute Engine routers."""
 
   @staticmethod
   def Args(parser):

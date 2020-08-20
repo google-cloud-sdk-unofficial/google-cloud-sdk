@@ -18,27 +18,19 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.events import iam_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.events import eventflow_operations
 from googlecloudsdk.command_lib.events import exceptions
 from googlecloudsdk.command_lib.events import flags
 from googlecloudsdk.command_lib.events import resource_args
-from googlecloudsdk.command_lib.iam import iam_util as core_iam_util
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags as serverless_flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
-from googlecloudsdk.core import resources
-from googlecloudsdk.core.console import console_io
 
 
 _DEFAULT_BROKER_NAME = 'default'
-
-_DATA_PLANE_SECRET_NAME = 'google-cloud-key'
-# These permissions are needed at a minimum for all Source kinds
-_DATA_PLANE_SECRET_MIN_REQUIRED_ROLES = frozenset(['roles/pubsub.editor'])
 
 _INJECTION_LABELS = {'knative-eventing-injection': 'enabled'}
 
@@ -63,7 +55,6 @@ class Create(base.Command):
   @staticmethod
   def CommonArgs(parser):
     """Defines arguments common to all release tracks."""
-    flags.AddServiceAccountFlag(parser)
     flags.AddBrokerArg(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
         '--namespace',
@@ -91,35 +82,10 @@ class Create(base.Command):
     conn_context = connection_context.GetConnectionContext(
         args, serverless_flags.Product.EVENTS, self.ReleaseTrack())
 
-    if not args.IsSpecified('service_account'):
-      sa_email = iam_util.GetOrCreateEventingServiceAccountWithPrompt()
-    else:
-      sa_email = args.service_account
-
-    service_account_ref = resources.REGISTRY.Parse(
-        sa_email,
-        params={'projectsId': '-'},
-        collection=core_iam_util.SERVICE_ACCOUNTS_COLLECTION)
     namespace_ref = args.CONCEPTS.namespace.Parse()
-    secret_ref = resources.REGISTRY.Parse(
-        _DATA_PLANE_SECRET_NAME,
-        params={'namespacesId': namespace_ref.Name()},
-        collection='run.api.v1.namespaces.secrets',
-        api_version='v1')
 
     with eventflow_operations.Connect(conn_context) as client:
-      iam_util.BindMissingRolesWithPrompt(
-          service_account_ref, _DATA_PLANE_SECRET_MIN_REQUIRED_ROLES)
-      if console_io.CanPrompt():
-        console_io.PromptContinue(
-            message='This will create a new key for the '
-            'service account [{}].'.format(sa_email),
-            cancel_on_no=True)
-      _, key_ref = client.CreateOrReplaceServiceAccountSecret(
-          secret_ref, service_account_ref)
       client.UpdateNamespaceWithLabels(namespace_ref, _INJECTION_LABELS)
 
-    log.status.Print('Created broker [{}] in namespace [{}] with '
-                     'key [{}] for service account [{}].'.format(
-                         args.BROKER, namespace_ref.Name(), key_ref.Name(),
-                         service_account_ref.Name()))
+    log.status.Print('Created broker [{}] in namespace [{}].'.format(
+        args.BROKER, namespace_ref.Name()))

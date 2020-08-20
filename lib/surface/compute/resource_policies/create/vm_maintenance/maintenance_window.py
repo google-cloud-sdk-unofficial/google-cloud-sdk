@@ -27,9 +27,9 @@ from googlecloudsdk.command_lib.compute.resource_policies import util
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateVmMaintenanceMaintenanceWindow(base.CreateCommand):
-  """Create a Google Compute Engine VM Maintenance Resource Policy.
+  """Create a Compute Engine VM Maintenance Resource Policy.
 
-  *{command} creates a Google Compute Engine VM Maintenance Resource Policy
+  *{command} creates a Compute Engine VM Maintenance Resource Policy
   that, contains a window in which maintenance should start.
   """
 
@@ -70,12 +70,12 @@ class CreateVmMaintenanceMaintenanceWindow(base.CreateCommand):
 CreateVmMaintenanceMaintenanceWindow.detailed_help = {
     'DESCRIPTION':
     """\
-Create a Google Compute Engine VM Maintenance Resource Policy that
+Create a Compute Engine VM Maintenance Resource Policy that
 contains time window in which maintenance should start.
 """,
     'EXAMPLES':
     """\
-  The following command creates a Google Compute Engine VM Maintenance Resource
+  The following command creates a Compute Engine VM Maintenance Resource
   Policy with a daily maintenance activity window that starts at 04:00Z.
 
     $ {command} my-resource-policy --region=REGION --start-time=04:00 --daily-window

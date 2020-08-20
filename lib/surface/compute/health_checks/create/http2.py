@@ -34,7 +34,7 @@ def _DetailedHelp():
           """\
           *{command}* is used to create a non-legacy health check using the
           HTTP/2 protocol. You can use this health check for Google Cloud
-          Platform load balancers or for managed instance group autohealing.
+          load balancers or for managed instance group autohealing.
           For more information, see the health checks overview at:
           [](https://cloud.google.com/load-balancing/docs/health-check-concepts)
           """,

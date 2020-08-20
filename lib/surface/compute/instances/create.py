@@ -318,7 +318,8 @@ class Create(base.CreateCommand):
             resource_parser=resource_parser,
             project=instance_ref.project,
             location=instance_ref.zone,
-            scope=compute_scopes.ScopeEnum.ZONE)
+            scope=compute_scopes.ScopeEnum.ZONE,
+            confidential_vm=confidential_vm)
 
       can_ip_forward = instance_utils.GetCanIpForward(args, skip_defaults)
       guest_accelerators = create_utils.GetAccelerators(

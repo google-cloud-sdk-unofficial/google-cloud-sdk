@@ -40,6 +40,8 @@ class DescribePerimeterDryRun(base.DescribeCommand):
     policies.ValidateAccessPolicyArg(perimeter_ref, args)
     perimeter = client.Get(perimeter_ref)
     print(perimeters.GenerateDryRunConfigDiff(perimeter, self._API_VERSION))
+    perimeters.PrintDirectionalPoliciesDryRunConfigDiff(perimeter,
+                                                        self._API_VERSION)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

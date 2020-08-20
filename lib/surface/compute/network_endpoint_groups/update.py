@@ -44,7 +44,7 @@ class Update(base.UpdateCommand):
 
   detailed_help = DETAILED_HELP
   support_global_scope = True
-  support_hybrid_neg = False
+  support_hybrid_neg = True
   support_l4ilb_neg = False
   support_vm_ip_neg = False
 
@@ -86,6 +86,5 @@ class Update(base.UpdateCommand):
 class AlphaUpdate(Update):
   """Update a Compute Engine network endpoint group."""
 
-  support_hybrid_neg = True
   support_l4ilb_neg = True
   support_vm_ip_neg = True

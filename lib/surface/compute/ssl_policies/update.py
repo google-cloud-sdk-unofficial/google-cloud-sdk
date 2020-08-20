@@ -28,7 +28,7 @@ _SSL_POLICY_ARG = flags.GetSslPolicyArgument()
 
 
 class Update(base.UpdateCommand):
-  """Update a Google Compute Engine SSL policy.
+  """Update a Compute Engine SSL policy.
 
   *{command}* is used to update SSL policies.
 

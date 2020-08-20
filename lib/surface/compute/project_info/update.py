@@ -25,9 +25,9 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  r"""Update a Google Compute Engine project resource.
+  r"""Update a Compute Engine project resource.
 
-  *{command}* is used to update a Google Compute Engine project resource.
+  *{command}* is used to update a Compute Engine project resource.
   """
 
   @classmethod
@@ -59,15 +59,15 @@ class Update(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
-  r"""Update a Google Compute Engine project resource.
+  r"""Update a Compute Engine project resource.
 
-  *{command}* is used to update a Google Compute Engine project resource.
+  *{command}* is used to update a Compute Engine project resource.
   """
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
-  r"""Update a Google Compute Engine project resource.
+  r"""Update a Compute Engine project resource.
 
-  *{command}* is used to update a Google Compute Engine project resource.
+  *{command}* is used to update a Compute Engine project resource.
   """

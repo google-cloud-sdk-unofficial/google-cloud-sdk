@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for adding a BGP peer to a Google Compute Engine router."""
+"""Command for adding a BGP peer to a Compute Engine router."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -31,7 +31,7 @@ import six
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddBgpPeer(base.UpdateCommand):
-  """Add a BGP peer to a Google Compute Engine router."""
+  """Add a BGP peer to a Compute Engine router."""
 
   ROUTER_ARG = None
 
@@ -131,7 +131,7 @@ class AddBgpPeer(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AddBgpPeerBeta(AddBgpPeer):
-  """Add a BGP peer to a Google Compute Engine router."""
+  """Add a BGP peer to a Compute Engine router."""
 
   ROUTER_ARG = None
 
@@ -147,7 +147,7 @@ class AddBgpPeerBeta(AddBgpPeer):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AddBgpPeerAlpha(AddBgpPeerBeta):
-  """Add a BGP peer to a Google Compute Engine router."""
+  """Add a BGP peer to a Compute Engine router."""
 
   ROUTER_ARG = None
 

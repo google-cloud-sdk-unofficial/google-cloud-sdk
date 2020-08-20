@@ -54,7 +54,8 @@ def _Run(args):
     raise util.RequestsFailedError(failed, 'detach')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class DetachSubscription(base.UpdateCommand):
   """Detaches one or more Cloud Pub/Sub subscriptions."""
 

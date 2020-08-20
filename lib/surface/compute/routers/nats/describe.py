@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for describing a NAT in a Google Compute Engine router."""
+"""Command for describing a NAT in a Compute Engine router."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.compute.routers.nats import nats_utils
 
 
 class AlphaDescribe(base.DescribeCommand):
-  """Describe a NAT in a Google Compute Engine router.
+  """Describe a NAT in a Compute Engine router.
   """
 
   ROUTER_ARG = None
@@ -58,7 +58,7 @@ class AlphaDescribe(base.DescribeCommand):
 AlphaDescribe.detailed_help = {
     'DESCRIPTION':
         textwrap.dedent("""
-        *{command}* is used to describe a NAT in a Google Compute Engine router.
+        *{command}* is used to describe a NAT in a Compute Engine router.
     """),
     'EXAMPLES':
     """\

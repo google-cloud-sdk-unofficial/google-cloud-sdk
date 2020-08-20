@@ -31,9 +31,9 @@ from googlecloudsdk.command_lib.util.args import labels_util
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class SnapshotsAddLabels(base.UpdateCommand):
-  """Add labels to Google Compute Engine snapshots.
+  """Add labels to Compute Engine snapshots.
 
-  *{command}* adds labels to a Google Compute snapshot.
+  *{command}* adds labels to a Compute Engine snapshot.
   For example, running:
 
     $ {command} example-snapshot --labels=k0=v0,k1=v1
