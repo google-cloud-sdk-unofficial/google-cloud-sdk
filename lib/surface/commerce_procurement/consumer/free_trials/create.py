@@ -25,7 +25,7 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
-  """Creates the free trial resource from Create API."""
+  """Creates the Free Trial resource from the Create API."""
 
   @staticmethod
   def Args(parser):
@@ -37,11 +37,11 @@ class Create(base.Command):
     parser.add_argument(
         '--provider-id',
         required=True,
-        help='Id of the provider under which the product belongs.')
+        help='ID of the provider to which the product belongs.')
     parser.add_argument(
         '--product-external-name',
         required=True,
-        help='Product external name to create free trial against.')
+        help='Product external name to offer the free trial of.')
 
   def Run(self, args):
     """Runs the command.

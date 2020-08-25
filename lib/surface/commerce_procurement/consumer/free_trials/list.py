@@ -25,33 +25,33 @@ DETAILED_HELP = {
     'EXAMPLES':
         """
         The filter is a query string that can match a selected set of attributes
-        with string values. For example
+        with string values. For example:
 
             $ {command} --filter "product_external_name=1234-5678-ABCD-EFG"
 
-        Supported query attributes are
+        Supported query attributes are the following:
 
             * `product_external_name`
-            * `provider`
+            * `provider` (in the naming format of "provider/{provider-id}")
 
         If the query contains some special characters other than letters,
         underscore, or digits, the phrase must be quoted with double quotes. For
         example, where the product name needs to be quoted because it contains
-        special character colon.
+        the special character colon:
 
             $ {command} --filter "product_external_name=\\"foo:bar\\""
 
-        Queries can be combined with `AND`, `OR`, and `NOT` to form more complex
+        Queries can be combined with AND, OR, and NOT to form more complex
         queries. They can also be grouped to force a desired evaluation order.
-        For example,
+        For example:
 
             $ {command} --filter "provider=providers/E-1234 OR provider=providers/5678 AND NOT (product_external_name=foo-product)"
 
-        Connective `AND` can be omitted between two predicates. For example
+        Connective AND can be omitted between two predicates. For example:
 
             $ {command} --filter "provider=providers/E-1234 product_external_name=foo"
 
-        is equivalent to
+        is equivalent to:
 
             $ {command} --filter "provider=providers/E-1234 AND product_external_name=foo"
 
@@ -62,7 +62,7 @@ DETAILED_HELP = {
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.Command):
-  """Outputs the List of Free Trial object resulting from the List API."""
+  """Returns the List of Free Trial objects resulting from the List API."""
 
   @staticmethod
   def Args(parser):
@@ -74,10 +74,10 @@ class List(base.Command):
     parser.add_argument(
         '--page-size', type=int, help=('Maximum number of resources per page.'))
     parser.add_argument(
-        '--page-token', help=('Token to specify next page in the list.'))
+        '--page-token',
+        help=('Token that specifies the next page in the list.'))
     parser.add_argument(
-        '--filter',
-        help=('The filter that can be used to limit the list request.'))
+        '--filter', help=('Filter that limits the list request.'))
 
   def Run(self, args):
     """Runs the command.

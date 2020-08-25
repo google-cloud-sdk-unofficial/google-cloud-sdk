@@ -75,6 +75,30 @@
         Labels for group resource.
         Example of labels "--labels cloudidentity.googleapis.com/groups.discussion_forum"
 
+    - arg_name: posix-group
+      release_tracks: [ALPHA]
+      api_field: group.posixGroups
+      metavar: POSIX_GROUP
+      type:
+        arg_dict:
+          flatten: false
+          spec:
+          - api_field: gid
+            arg_name: gid
+            type: int
+          - api_field: name
+            arg_name: name
+            type: str
+
+      help_text: |
+        Group id (gid) and name of the POSIX group that you want to associate
+        with the specified Cloud Identity group. You can specify multiple POSIX
+        groups with multiple instances of this flag.
+
+        For example, use '--posix-group=gid=1005,name=eng' to add a single
+        group, or '--posix-group=gid=1005,name=eng
+        --posix-group=gid=1006,name=docs' to add multiple groups.
+
   request:
     collection: cloudidentity.groups
     disable_resource_check: true

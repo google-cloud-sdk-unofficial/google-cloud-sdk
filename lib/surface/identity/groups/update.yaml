@@ -53,18 +53,64 @@
           type: bool
           help_text: Clear existing description on group being updated.
 
+    - group:
+        release_tracks: [ALPHA]
+        mutex: true
+        params:
+        - arg_name: add-posix-group
+          api_field: group.posixGroups
+          metavar: POSIX_GROUP
+          type:
+            arg_dict:
+              flatten: false
+              spec:
+              - api_field: gid
+                arg_name: gid
+                type: int
+              - api_field: name
+                arg_name: name
+                type: str
+          help_text: |
+            Group id (gid) and a name for a POSIX group that you want to add
+            to the specified Cloud Identity group. You can specify multiple
+            POSIX groups to add with multiple instances of this flag.
+
+            For example, use '--add-posix-group=gid=1005,name=eng'
+            to add a single group, or '--add-posix-group=gid=1005,name=eng
+            --add-posix-group=gid=1006,name=docs' to add multiple groups.
+        - arg_name: remove-posix-groups
+          type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+          metavar: POSIX_GROUP
+          help_text: |
+            Remove POSIX groups from the specified Cloud Identity group.
+            You can specify multiple POSIX groups by either name or gid by
+            using a comma-separated list.
+
+            For example, use '--remove-posix-groups=1005,1006' to remove POSIX
+            groups with group ids '1005' and '1006', or use
+            '--remove-posix-groups=eng,docs' to remove POSIX groups named 'eng'
+            and 'docs'.
+        - arg_name: clear-posix-groups
+          type: bool
+          help_text: |
+            Clear all POSIX groups from the specified Cloud Identity
+            group.
 
   request:
     collection: cloudidentity.groups
     disable_resource_check: true
     method: patch
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.identity.groups.hooks:SetResourceName
-    - googlecloudsdk.command_lib.identity.groups.hooks:SetGroupUpdateMask
     ALPHA:
       api_version: v1alpha1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.identity.groups.hooks:SetResourceName
+      - googlecloudsdk.command_lib.identity.groups.hooks:SetGroupUpdateMask
+      - googlecloudsdk.command_lib.identity.groups.hooks:UpdatePosixGroups
     BETA:
       api_version: v1beta1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.identity.groups.hooks:SetResourceName
+      - googlecloudsdk.command_lib.identity.groups.hooks:SetGroupUpdateMask
 
   response:
     result_attribute: response

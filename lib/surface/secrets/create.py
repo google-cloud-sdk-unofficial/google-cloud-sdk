@@ -30,12 +30,12 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
+  # pylint: disable=line-too-long
   r"""Create a new secret.
 
   Create a secret with the given name and creates a secret version with the
-  given data, if any. Note, the created secret ends with a newline.
-  If a secret already exists with the given name, this command will return
-  an error.
+  given data, if any. If a secret already exists with the given name, this
+  command will return an error.
 
   ## EXAMPLES
 
@@ -58,9 +58,15 @@ class Create(base.CreateCommand):
   Create a new secret named 'my-secret' in 'us-central1' and 'us-east1' with
   the value "s3cr3t":
 
-    $ echo "s3cr3t" | {command} my-secret --data-file=- \
-        --replication-policy=user-managed --locations=us-central1,us-east1
+    $ printf "s3cr3t" | {command} my-secret --data-file=- --replication-policy=user-managed --locations=us-central1,us-east1
+
+  Create a new secret named 'my-secret' in 'us-central1' and 'us-east1' with
+  the value "s3cr3t" in PowerShell (Note: PowerShell will add a newline to the
+  resulting secret):
+
+    $ Write-Output "s3cr3t" | {command} my-secret --data-file=- --replication-policy=user-managed --locations=us-central1,us-east1
   """
+  # pylint: enable=line-too-long
 
   EMPTY_DATA_FILE_MESSAGE = (
       'The value provided for --data-file is the empty string. This can happen '
@@ -182,6 +188,7 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
+  # pylint: disable=line-too-long
   r"""Create a new secret.
 
   Create a secret with the given name and creates a secret version with the
@@ -210,9 +217,15 @@ class CreateBeta(Create):
   Create a new secret named 'my-secret' in 'us-central1' and 'us-east1' with
   the value "s3cr3t":
 
-    $ echo "s3cr3t" | {command} my-secret --data-file=- \
-        --replication-policy=user-managed --locations=us-central1,us-east1
+    $ printf "s3cr3t" | {command} my-secret --data-file=- --replication-policy=user-managed --locations=us-central1,us-east1
+
+  Create a new secret named 'my-secret' in 'us-central1' and 'us-east1' with
+  the value "s3cr3t" in PowerShell (Note: PowerShell will add a newline to the
+  resulting secret):
+
+    $ Write-Output "s3cr3t" | {command} my-secret --data-file=- --replication-policy=user-managed --locations=us-central1,us-east1
   """
+  # pylint: enable=line-too-long
 
   @staticmethod
   def Args(parser):

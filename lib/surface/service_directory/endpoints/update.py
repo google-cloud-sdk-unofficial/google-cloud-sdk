@@ -52,6 +52,8 @@ class Update(base.UpdateCommand):
     client = endpoints.EndpointsClient()
     endpoint_ref = args.CONCEPTS.endpoint.Parse()
     metadata = util.ParseMetadataArg(args.metadata, _RESOURCE_TYPE)
+
+    result = client.Update(endpoint_ref, args.address, args.port, metadata)
     log.UpdatedResource(endpoint_ref.endpointsId, _RESOURCE_TYPE)
 
-    return client.Update(endpoint_ref, args.address, args.port, metadata)
+    return result

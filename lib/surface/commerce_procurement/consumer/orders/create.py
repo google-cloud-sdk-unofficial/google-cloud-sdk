@@ -26,18 +26,18 @@ from googlecloudsdk.command_lib.commerce_procurement import resource_args
 DETAILED_HELP = {
     'EXAMPLES':
         """
-        To purchase a product based order, you will need to specify product
-        request. For example
+        To purchase a product-based order, you must specify product request. For
+        example:
 
             $ {command} --product-request product-external-name=productId,flavor-external-name=flavorId
 
-        To specify parameters, you should follow the pattern
-        "ParameterName=ParameterType:ParameterValue". For example
+        To specify parameters, you must follow the pattern
+        "ParameterName=ParameterType:ParameterValue". For example:
 
             $ {command} --product-request product-external-name=productId,flavor-external-name=flavorId,region=str:us-west-1
 
-        To purchase a quote based order, you will need to specify quote external
-        name. For example
+        To purchase a quote-based order, you must specify quote external name.
+        For example:
 
             $ {command} --quote-external-name quoteId
         """,
@@ -47,7 +47,7 @@ DETAILED_HELP = {
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
-  """Creates the order resource from place API."""
+  """Creates the order resource from the Place API."""
 
   @staticmethod
   def Args(parser):
@@ -57,15 +57,15 @@ class Create(base.Command):
       parser: argparse.ArgumentParser to register arguments with.
     """
     resource_args.AddBillingAccountResourceArg(
-        parser, 'Parent billing account to place order under.')
+        parser, 'Parent Cloud Billing account to place order under.')
     parser.add_argument(
         '--display-name', required=True, help='Display name of the order.')
     parser.add_argument(
         '--provider-id',
         required=True,
-        help='Id of the provider for which the order is created.')
+        help='ID of the provider for which the order is created.')
     parser.add_argument(
-        '--request-id', help='Id of the request for idempotency purpose.')
+        '--request-id', help='ID of the request for idempotency purposes.')
 
     product_quote_group = parser.add_mutually_exclusive_group(required=True)
     product_quote_group.add_argument(
@@ -74,10 +74,10 @@ class Create(base.Command):
             required_keys=['product-external-name', 'flavor-external-name']),
         metavar='KEY=VALUE',
         action='append',
-        help='Request about product info to place order against.')
+        help='Request for information about the product in the order.')
     product_quote_group.add_argument(
         '--quote-external-name',
-        help='External name of the quote to place order against.')
+        help='External name of the quote for the order.')
 
   def Run(self, args):
     """Runs the command.

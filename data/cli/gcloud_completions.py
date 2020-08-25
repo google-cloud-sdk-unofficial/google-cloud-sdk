@@ -3925,6 +3925,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-private-environment": "bool",
                     "--env-variables": "value",
                     "--image-version": "value",
+                    "--kms-key": "dynamic",
+                    "--kms-keyring": "dynamic",
+                    "--kms-location": "dynamic",
+                    "--kms-project": "dynamic",
                     "--labels": "value",
                     "--location": "value",
                     "--machine-type": "value",
@@ -4820,7 +4824,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--resource-policies": "value",
                     "--size": "value",
                     "--source-disk": "dynamic",
-                    "--source-in-place-snapshot": "dynamic",
+                    "--source-instant-snapshot": "dynamic",
                     "--source-snapshot": "dynamic",
                     "--type": "dynamic",
                     "--zone": "dynamic"
@@ -5862,57 +5866,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     }
                   },
                   "flags": {}
-                }
-              },
-              "flags": {}
-            },
-            "in-place-snapshots": {
-              "commands": {
-                "add-labels": {
-                  "commands": {},
-                  "flags": {
-                    "--labels": "value",
-                    "--region": "dynamic",
-                    "--zone": "dynamic"
-                  }
-                },
-                "create": {
-                  "commands": {},
-                  "flags": {
-                    "--labels": "value",
-                    "--region": "dynamic",
-                    "--source-disk": "dynamic",
-                    "--source-disk-region": "dynamic",
-                    "--source-disk-zone": "dynamic",
-                    "--zone": "dynamic"
-                  }
-                },
-                "delete": {
-                  "commands": {},
-                  "flags": {
-                    "--region": "dynamic",
-                    "--zone": "dynamic"
-                  }
-                },
-                "describe": {
-                  "commands": {},
-                  "flags": {
-                    "--region": "dynamic",
-                    "--zone": "dynamic"
-                  }
-                },
-                "list": {
-                  "commands": {},
-                  "flags": {
-                    "--filter": "value",
-                    "--limit": "value",
-                    "--page-size": "value",
-                    "--regexp": "value",
-                    "--regions": "value",
-                    "--sort-by": "value",
-                    "--uri": "bool",
-                    "--zones": "value"
-                  }
                 }
               },
               "flags": {}
@@ -7263,6 +7216,7 @@ STATIC_COMPLETION_CLI_TREE = {
                             "--clear-instances": "bool",
                             "--clear-zones": "bool",
                             "--description": "value",
+                            "--etag": "value",
                             "--group-labels": "value",
                             "--instances": "value",
                             "--os-types": "value",
@@ -7550,6 +7504,57 @@ STATIC_COMPLETION_CLI_TREE = {
                     }
                   },
                   "flags": {}
+                }
+              },
+              "flags": {}
+            },
+            "instant-snapshots": {
+              "commands": {
+                "add-labels": {
+                  "commands": {},
+                  "flags": {
+                    "--labels": "value",
+                    "--region": "dynamic",
+                    "--zone": "dynamic"
+                  }
+                },
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--labels": "value",
+                    "--region": "dynamic",
+                    "--source-disk": "dynamic",
+                    "--source-disk-region": "dynamic",
+                    "--source-disk-zone": "dynamic",
+                    "--zone": "dynamic"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--zone": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--zone": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--regexp": "value",
+                    "--regions": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool",
+                    "--zones": "value"
+                  }
                 }
               },
               "flags": {}
@@ -12570,6 +12575,44 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {
                 "create": {
                   "commands": {
+                    "cloudsql": {
+                      "commands": {},
+                      "flags": {
+                        "--activation-policy": [
+                          "ALWAYS",
+                          "NEVER"
+                        ],
+                        "--authorized-networks": "value",
+                        "--auto-storage-increase": "value",
+                        "--data-disk-size": "value",
+                        "--data-disk-type": [
+                          "PD_HDD",
+                          "PD_SSD"
+                        ],
+                        "--database-flags": "value",
+                        "--database-version": [
+                          "MYSQL_5_6",
+                          "MYSQL_5_7",
+                          "POSTGRES_11",
+                          "POSTGRES_9_6"
+                        ],
+                        "--display-name": "value",
+                        "--enable-ip-v4": "value",
+                        "--labels": "value",
+                        "--private-network": "value",
+                        "--provider": [
+                          "CLOUDSQL",
+                          "RDS"
+                        ],
+                        "--region": "dynamic",
+                        "--require-ssl": "value",
+                        "--source-id": "dynamic",
+                        "--storage-auto-resize-limit": "value",
+                        "--tier": "value",
+                        "--user-labels": "value",
+                        "--zone": "value"
+                      }
+                    },
                     "mysql": {
                       "commands": {},
                       "flags": {
@@ -15520,6 +15563,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "run": {
                       "commands": {},
                       "flags": {
+                        "--additional-ipas": "value",
                         "--app": "value",
                         "--async": "bool",
                         "--client-details": "value",
@@ -17440,6 +17484,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--dynamic-user-query": "value",
                     "--labels": "value",
                     "--organization": "value",
+                    "--posix-group": "value",
                     "--with-initial-owner": [
                       "initial-group-config-unspecified",
                       "with-initial-owner"
@@ -17543,10 +17588,13 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update": {
                   "commands": {},
                   "flags": {
+                    "--add-posix-group": "value",
                     "--clear-description": "bool",
                     "--clear-display-name": "bool",
+                    "--clear-posix-groups": "bool",
                     "--description": "value",
-                    "--display-name": "value"
+                    "--display-name": "value",
+                    "--remove-posix-groups": "value"
                   }
                 }
               },
@@ -22267,6 +22315,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--min-instances": "value",
                 "--namespace": "value",
                 "--no-traffic": "bool",
+                "--pack": "value",
                 "--platform": [
                   "gke",
                   "kubernetes",
@@ -22285,6 +22334,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--set-config-maps": "value",
                 "--set-env-vars": "value",
                 "--set-secrets": "value",
+                "--source": "value",
                 "--tag": "value",
                 "--timeout": "value",
                 "--update-config-maps": "value",
@@ -31571,7 +31621,10 @@ STATIC_COMPLETION_CLI_TREE = {
                       "commands": {},
                       "flags": {
                         "--aliases": "value",
+                        "--network": "value",
                         "--network-interface": "value",
+                        "--private-network-ip": "value",
+                        "--subnetwork": "value",
                         "--zone": "dynamic"
                       }
                     }
@@ -38830,6 +38883,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "run": {
                       "commands": {},
                       "flags": {
+                        "--additional-ipas": "value",
                         "--app": "value",
                         "--async": "bool",
                         "--client-details": "value",
@@ -45014,6 +45068,242 @@ STATIC_COMPLETION_CLI_TREE = {
           },
           "flags": {}
         },
+        "scc": {
+          "commands": {
+            "assets": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--asset": "value",
+                    "--resource-name": "value"
+                  }
+                },
+                "get-parent": {
+                  "commands": {},
+                  "flags": {
+                    "--asset": "value",
+                    "--resource-name": "value"
+                  }
+                },
+                "get-project": {
+                  "commands": {},
+                  "flags": {
+                    "--asset": "value",
+                    "--resource-name": "value"
+                  }
+                },
+                "group": {
+                  "commands": {},
+                  "flags": {
+                    "--compare-duration": "value",
+                    "--filter": "value",
+                    "--group-by": "value",
+                    "--page-size": "value",
+                    "--page-token": "value",
+                    "--read-time": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--compare-duration": "value",
+                    "--field-mask": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--order-by": "value",
+                    "--page-size": "value",
+                    "--page-token": "value",
+                    "--read-time": "value",
+                    "--sort-by": "value"
+                  }
+                },
+                "list-marks": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--organization": "value",
+                    "--page-size": "value",
+                    "--page-token": "value",
+                    "--read-time": "value",
+                    "--sort-by": "value"
+                  }
+                },
+                "run-discovery": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "update-marks": {
+                  "commands": {},
+                  "flags": {
+                    "--organization": "value",
+                    "--security-marks": "value",
+                    "--start-time": "value",
+                    "--update-mask": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "findings": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--category": "value",
+                    "--event-time": "value",
+                    "--external-uri": "value",
+                    "--organization": "value",
+                    "--resource-name": "value",
+                    "--source": "dynamic",
+                    "--source-properties": "value",
+                    "--state": [
+                      "active",
+                      "inactive",
+                      "state-unspecified"
+                    ]
+                  }
+                },
+                "group": {
+                  "commands": {},
+                  "flags": {
+                    "--compare-duration": "value",
+                    "--filter": "value",
+                    "--group-by": "value",
+                    "--page-size": "value",
+                    "--page-token": "value",
+                    "--read-time": "value",
+                    "--source": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--compare-duration": "value",
+                    "--field-mask": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--order-by": "value",
+                    "--page-size": "value",
+                    "--page-token": "value",
+                    "--read-time": "value",
+                    "--sort-by": "value",
+                    "--source": "value"
+                  }
+                },
+                "list-marks": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--organization": "value",
+                    "--page-size": "value",
+                    "--page-token": "value",
+                    "--read-time": "value",
+                    "--sort-by": "value",
+                    "--source": "dynamic"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--event-time": "value",
+                    "--external-uri": "value",
+                    "--organization": "value",
+                    "--source": "dynamic",
+                    "--source-properties": "value",
+                    "--state": [
+                      "active",
+                      "inactive",
+                      "state-unspecified"
+                    ],
+                    "--update-mask": "value"
+                  }
+                },
+                "update-marks": {
+                  "commands": {},
+                  "flags": {
+                    "--organization": "value",
+                    "--security-marks": "value",
+                    "--source": "dynamic",
+                    "--start-time": "value",
+                    "--update-mask": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "notifications": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--description": "value",
+                    "--filter": "value",
+                    "--organization": "value",
+                    "--pubsub-topic": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--organization": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--organization": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--description": "value",
+                    "--filter": "value",
+                    "--organization": "value",
+                    "--pubsub-topic": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "operations": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--organization": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "sources": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--source": "value",
+                    "--source-display-name": "value"
+                  }
+                }
+              },
+              "flags": {}
+            }
+          },
+          "flags": {}
+        },
         "scheduler": {
           "commands": {
             "jobs": {
@@ -47915,6 +48205,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--prefix-length": "value",
                 "--purpose": [
                   "GCE_ENDPOINT",
+                  "SHARED_LOADBALANCER_VIP",
                   "VPC_PEERING"
                 ],
                 "--region": "dynamic",
@@ -48629,6 +48920,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 ],
                 "--disabled": "bool",
                 "--enable-logging": "bool",
+                "--logging-metadata": [
+                  "exclude-all",
+                  "include-all"
+                ],
                 "--network": "value",
                 "--priority": "value",
                 "--rules": "value",
@@ -48666,6 +48961,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--destination-ranges": "value",
                 "--disabled": "bool",
                 "--enable-logging": "bool",
+                "--logging-metadata": [
+                  "exclude-all",
+                  "include-all"
+                ],
                 "--priority": "value",
                 "--rules": "value",
                 "--source-ranges": "value",
@@ -53959,6 +54258,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--enable-kubernetes-alpha": "bool",
                 "--enable-legacy-authorization": "bool",
                 "--enable-master-authorized-networks": "bool",
+                "--enable-master-global-access": "bool",
                 "--enable-network-egress-metering": "bool",
                 "--enable-network-policy": "bool",
                 "--enable-private-endpoint": "bool",
@@ -54109,6 +54409,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--enable-intra-node-visibility": "bool",
                 "--enable-legacy-authorization": "bool",
                 "--enable-master-authorized-networks": "bool",
+                "--enable-master-global-access": "bool",
                 "--enable-network-egress-metering": "bool",
                 "--enable-network-policy": "bool",
                 "--enable-resource-consumption-metering": "bool",
@@ -54801,6 +55102,35 @@ STATIC_COMPLETION_CLI_TREE = {
     },
     "dataflow": {
       "commands": {
+        "flex-template": {
+          "commands": {
+            "build": {
+              "commands": {},
+              "flags": {
+                "--env": "value",
+                "--flex-template-base-image": "value",
+                "--image": "value",
+                "--image-gcr-path": "value",
+                "--jar": "value",
+                "--metadata-file": "value",
+                "--print-only": "bool",
+                "--sdk-language": [
+                  "JAVA",
+                  "PYTHON"
+                ]
+              }
+            },
+            "run": {
+              "commands": {},
+              "flags": {
+                "--parameters": "value",
+                "--region": "value",
+                "--template-file-gcs-location": "value"
+              }
+            }
+          },
+          "flags": {}
+        },
         "jobs": {
           "commands": {
             "cancel": {
@@ -61438,6 +61768,242 @@ STATIC_COMPLETION_CLI_TREE = {
         "--region": "value"
       }
     },
+    "scc": {
+      "commands": {
+        "assets": {
+          "commands": {
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--asset": "value",
+                "--resource-name": "value"
+              }
+            },
+            "get-parent": {
+              "commands": {},
+              "flags": {
+                "--asset": "value",
+                "--resource-name": "value"
+              }
+            },
+            "get-project": {
+              "commands": {},
+              "flags": {
+                "--asset": "value",
+                "--resource-name": "value"
+              }
+            },
+            "group": {
+              "commands": {},
+              "flags": {
+                "--compare-duration": "value",
+                "--filter": "value",
+                "--group-by": "value",
+                "--page-size": "value",
+                "--page-token": "value",
+                "--read-time": "value"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--compare-duration": "value",
+                "--field-mask": "value",
+                "--filter": "value",
+                "--limit": "value",
+                "--order-by": "value",
+                "--page-size": "value",
+                "--page-token": "value",
+                "--read-time": "value",
+                "--sort-by": "value"
+              }
+            },
+            "list-marks": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--organization": "value",
+                "--page-size": "value",
+                "--page-token": "value",
+                "--read-time": "value",
+                "--sort-by": "value"
+              }
+            },
+            "run-discovery": {
+              "commands": {},
+              "flags": {}
+            },
+            "update-marks": {
+              "commands": {},
+              "flags": {
+                "--organization": "value",
+                "--security-marks": "value",
+                "--start-time": "value",
+                "--update-mask": "value"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "findings": {
+          "commands": {
+            "create": {
+              "commands": {},
+              "flags": {
+                "--category": "value",
+                "--event-time": "value",
+                "--external-uri": "value",
+                "--organization": "value",
+                "--resource-name": "value",
+                "--source": "dynamic",
+                "--source-properties": "value",
+                "--state": [
+                  "active",
+                  "inactive",
+                  "state-unspecified"
+                ]
+              }
+            },
+            "group": {
+              "commands": {},
+              "flags": {
+                "--compare-duration": "value",
+                "--filter": "value",
+                "--group-by": "value",
+                "--page-size": "value",
+                "--page-token": "value",
+                "--read-time": "value",
+                "--source": "value"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--compare-duration": "value",
+                "--field-mask": "value",
+                "--filter": "value",
+                "--limit": "value",
+                "--order-by": "value",
+                "--page-size": "value",
+                "--page-token": "value",
+                "--read-time": "value",
+                "--sort-by": "value",
+                "--source": "value"
+              }
+            },
+            "list-marks": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--organization": "value",
+                "--page-size": "value",
+                "--page-token": "value",
+                "--read-time": "value",
+                "--sort-by": "value",
+                "--source": "dynamic"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--event-time": "value",
+                "--external-uri": "value",
+                "--organization": "value",
+                "--source": "dynamic",
+                "--source-properties": "value",
+                "--state": [
+                  "active",
+                  "inactive",
+                  "state-unspecified"
+                ],
+                "--update-mask": "value"
+              }
+            },
+            "update-marks": {
+              "commands": {},
+              "flags": {
+                "--organization": "value",
+                "--security-marks": "value",
+                "--source": "dynamic",
+                "--start-time": "value",
+                "--update-mask": "value"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "notifications": {
+          "commands": {
+            "create": {
+              "commands": {},
+              "flags": {
+                "--description": "value",
+                "--filter": "value",
+                "--organization": "value",
+                "--pubsub-topic": "value"
+              }
+            },
+            "delete": {
+              "commands": {},
+              "flags": {
+                "--organization": "value"
+              }
+            },
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--organization": "value"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--page-size": "value",
+                "--sort-by": "value"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--description": "value",
+                "--filter": "value",
+                "--organization": "value",
+                "--pubsub-topic": "value"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "operations": {
+          "commands": {
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--organization": "value"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "sources": {
+          "commands": {
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--source": "value",
+                "--source-display-name": "value"
+              }
+            }
+          },
+          "flags": {}
+        }
+      },
+      "flags": {}
+    },
     "scheduler": {
       "commands": {
         "jobs": {
@@ -62509,6 +63075,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--database-version": [
                   "MYSQL_5_6",
                   "MYSQL_5_7",
+                  "MYSQL_8_0",
                   "POSTGRES_10",
                   "POSTGRES_11",
                   "POSTGRES_12",
@@ -62597,6 +63164,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--database-version": [
                   "MYSQL_5_6",
                   "MYSQL_5_7",
+                  "MYSQL_8_0",
                   "POSTGRES_10",
                   "POSTGRES_11",
                   "POSTGRES_12",

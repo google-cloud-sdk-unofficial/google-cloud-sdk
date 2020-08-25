@@ -257,6 +257,7 @@ class AlphaDeploy(Deploy):
     flags.AddConfigFlags(parser)
     flags.AddSourceFlag(parser)
     flags.AddBuildTimeoutFlag(parser)
+    # TODO(b/165145546): Remove advanced build flags for 'gcloud run deploy'
     build_flags.AddGcsSourceStagingDirFlag(parser, True)
     build_flags.AddGcsLogDirFlag(parser, True)
     build_flags.AddMachineTypeFlag(parser, True)

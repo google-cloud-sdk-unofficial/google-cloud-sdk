@@ -56,6 +56,8 @@ class Create(base.CreateCommand):
     client = services.ServicesClient()
     service_ref = args.CONCEPTS.service.Parse()
     metadata = util.ParseMetadataArg(args.metadata, _RESOURCE_TYPE)
+
+    result = client.Create(service_ref, metadata)
     log.CreatedResource(service_ref.servicesId, _RESOURCE_TYPE)
 
-    return client.Create(service_ref, metadata)
+    return result

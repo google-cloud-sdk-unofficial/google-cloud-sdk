@@ -30,6 +30,7 @@ from googlecloudsdk.command_lib.code import flags
 from googlecloudsdk.command_lib.code import kubernetes
 from googlecloudsdk.command_lib.code import local
 from googlecloudsdk.command_lib.code import local_files
+from googlecloudsdk.command_lib.code import run_subprocess
 from googlecloudsdk.command_lib.code import skaffold_events
 from googlecloudsdk.command_lib.code import yaml_helper
 from googlecloudsdk.core import config
@@ -225,7 +226,7 @@ class Dev(base.Command):
 
     kubernetes_config = six.ensure_text(local_file_generator.KubernetesConfig())
 
-    self._EnsureDockerInstalled()
+    self._EnsureDockerRunning()
 
     with cross_platform_temp_file.NamedTempFile(
         kubernetes_config) as kubernetes_file:
@@ -299,7 +300,17 @@ class Dev(base.Command):
       yield
 
   @staticmethod
-  def _EnsureDockerInstalled():
-    """Make sure docker is installed."""
-    if not file_utils.FindExecutableOnPath('docker'):
+  def _EnsureDockerRunning():
+    """Make sure docker is running."""
+    docker = file_utils.FindExecutableOnPath('docker')
+    if not docker:
       raise RuntimeMissingDependencyError('Cannot locate docker on $PATH.')
+    try:
+      # docker info returns 0 if it can connect to the docker daemon and
+      # returns a non-zero error code if it cannot. run_subprocess
+      # checks raises an error if the process does not return 0.
+      run_subprocess.Run([docker, 'info'], timeout_sec=20, show_output=False)
+    except subprocess.CalledProcessError:
+      raise RuntimeMissingDependencyError(
+          'Unable to reach docker daemon. Make sure docker is running '
+          'and reachable.')

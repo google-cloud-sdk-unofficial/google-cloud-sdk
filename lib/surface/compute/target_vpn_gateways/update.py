@@ -30,9 +30,9 @@ from googlecloudsdk.command_lib.util.args import labels_util
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
-  r"""Update a Google Compute Engine Cloud VPN Classic Target VPN Gateway.
+  r"""Update a Compute Engine Cloud VPN Classic Target VPN Gateway.
 
-  *{command}* updates labels for a Google Compute Engine Cloud VPN Classic
+  *{command}* updates labels for a Compute Engine Cloud VPN Classic
   Target VPN gateway.  For example:
 
     $ {command} example-gateway --region us-central1 \

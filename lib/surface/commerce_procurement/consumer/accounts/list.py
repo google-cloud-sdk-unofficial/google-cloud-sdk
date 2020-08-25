@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.commerce_procurement import resource_args
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """Outputs the List of Account object resulting from the List API."""
+  """Returns the List of Account objects resulting from the List API."""
 
   @staticmethod
   def Args(parser):
@@ -36,13 +36,14 @@ class List(base.ListCommand):
       parser: argparse.ArgumentParser to register arguments with.
     """
     resource_args.AddBillingAccountResourceArg(
-        parser, 'Parent billing account to list accounts.')
+        parser, 'Parent Cloud Billing account to list accounts.')
     base.FILTER_FLAG.RemoveFromParser(parser)
     base.LIMIT_FLAG.RemoveFromParser(parser)
     base.SORT_BY_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     parser.add_argument(
-        '--page-token', help=('Token to specify next page in the list.'))
+        '--page-token',
+        help=('Token that specifies the next page in the list.'))
 
   def Run(self, args):
     """Runs the command.

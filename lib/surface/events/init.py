@@ -146,12 +146,20 @@ class Init(base.Command):
         args, serverless_flags.Product.EVENTS, self.ReleaseTrack())
 
     with eventflow_operations.Connect(conn_context) as client:
+      if client.IsClusterInitialized():
+        console_io.PromptContinue(
+            message='This cluster has already been initialized.',
+            prompt_string='Would you like to re-run initialization?',
+            cancel_on_no=True)
+
       _EnableMissingServices(project)
 
       for sa_config in [_CONTROL_PLANE_SERVICE_ACCOUNT_CONFIG,
                         _BROKER_SERVICE_ACCOUNT_CONFIG,
                         _SOURCES_SERVICE_ACCOUNT_CONFIG]:
         _ConfigureServiceAccount(sa_config, client, args)
+
+      client.MarkClusterInitialized()
 
     log.status.Print(_InitializedMessage(
         self.ReleaseTrack(), conn_context.cluster_name))

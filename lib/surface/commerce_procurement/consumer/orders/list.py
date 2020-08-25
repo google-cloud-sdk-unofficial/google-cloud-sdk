@@ -26,24 +26,24 @@ DETAILED_HELP = {
     'EXAMPLES':
         """
         The filter is a query string that can match a selected set of attributes
-        with string values. For example
+        with string values. For example:
 
             $ {command} --filter "display_name=TEST"
 
-        Supported query attributes are
+        Supported query attributes are the following:
 
             * `display_name`
 
-        If the query contains some special characters other than letters,
-        underscore, or digits, the phrase must be quoted with double quotes. For
-        example, where the product name needs to be quoted because it contains
-        special character colon.
+        If the query contains special characters other than letters, underscore,
+        or digits, the phrase must be quoted with double quotes. For example,
+        where the display name needs to be quoted because it contains the
+        special character colon:
 
             $ {command} --filter "display_name=\\"foo:bar\\""
 
-        Queries can be combined with `AND`, `OR`, and `NOT` to form more complex
+        Queries can be combined with AND, OR, and NOT to form more complex
         queries. They can also be grouped to force a desired evaluation order.
-        For example,
+        For example:
 
             $ {command} --filter "display_name=foo OR display_name=bar"
         """,
@@ -53,7 +53,7 @@ DETAILED_HELP = {
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.Command):
-  """Outputs the List of Order object resulting from the List API."""
+  """Returns the List of Order objects resulting from the List API."""
 
   @staticmethod
   def Args(parser):
@@ -63,14 +63,14 @@ class List(base.Command):
       parser: argparse.ArgumentParser to register arguments with.
     """
     resource_args.AddBillingAccountResourceArg(
-        parser, 'Parent billing account to list orders.')
+        parser, 'Parent Cloud Billing account to list orders for.')
     parser.add_argument(
         '--page-size', type=int, help=('Maximum number of resources per page.'))
     parser.add_argument(
-        '--page-token', help=('Token to specify next page in the list.'))
+        '--page-token',
+        help=('Token that specifies the next page in the list.'))
     parser.add_argument(
-        '--filter',
-        help=('The filter that can be used to limit the list request.'))
+        '--filter', help=('Filter that limits the list request.'))
 
   def Run(self, args):
     """Runs the command.

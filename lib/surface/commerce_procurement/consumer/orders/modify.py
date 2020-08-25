@@ -27,34 +27,33 @@ DETAILED_HELP = {
     'EXAMPLES':
         """
         To modify an order to another product plan or update parameters, you
-        will need to specify product request. To specify parameters, you should
-        follow the pattern "ParameterName=ParameterType:ParameterValue". For
-        example
+        must specify product request. To specify parameters, you must follow the
+        pattern "ParameterName=ParameterType:ParameterValue". For example:
 
             $ {command} --product-request line-item-id=lineItemId,line-item-change-type=UPDATE,product-external-name=productId,flavor-external-name=flavorId,region=str:us-west-1
 
-        To cancel a product plan based order, you will need to specify product
-        request. For example
+        To cancel a product plan-based order, you must specify the product
+        request. For example:
 
             $ {command} --product-request line-item-id=lineItemId,line-item-change-type=CANCEL
 
-        To revert cancellation on a product plan based order, you will need to
-        specify product request. For example
+        To revert cancellation on a product plan-based order, you must specify
+        the product request. For example:
 
             $ {command} --product-request line-item-id=lineItemId,line-item-change-type=REVERT_CANCELLATION
 
-        To update an order to another quote, you will need to specify quote
-        related fields. For example
+        To update an order to another quote, you must specify the fields that
+        are related to the quote. For example:
 
             $ {command} --quote-change-type UPDATE --new-quote-external-name quoteId
 
-        To cancel a quote based order, you will need to specify quote change
-        type. For example
+        To cancel a quote-based order, you must specify the quote change type.
+        For example:
 
             $ {command} --quote-change-type CANCEL
 
-        To revert cancellation on a quote based order, you will need to specify
-        quote change type. For example
+        To revert cancellation on a quote-based order, you must specify the
+        quote change type. For example:
 
             $ {command} --quote-change-type REVERT_CANCELLATION
         """,
@@ -64,7 +63,7 @@ DETAILED_HELP = {
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Modify(base.Command):
-  """Modify the order resource from modify API."""
+  """Modifies the order resource from the Modify API."""
 
   @staticmethod
   def Args(parser):
@@ -75,7 +74,7 @@ class Modify(base.Command):
     """
     resource_args.AddOrderResourceArg(parser, 'Order to modify.')
     parser.add_argument(
-        '--etag', help='The weak etag for validation check if specified.')
+        '--etag', help='The weak etag for validation check, if specified.')
 
     product_quote_group = parser.add_mutually_exclusive_group(required=True)
     product_quote_group.add_argument(
@@ -84,13 +83,16 @@ class Modify(base.Command):
             required_keys=['line-item-id', 'line-item-change-type']),
         metavar='KEY=VALUE',
         action='append',
-        help='Request about product info to place order against.')
+        help='Request about product info to modify order against.')
     quote_request_group = product_quote_group.add_group(
-        help='Quote related modification.')
+        help='Quote-related modification.')
     quote_request_group.add_argument(
-        '--quote-change-type', required=True, help='Display name of the order.')
+        '--quote-change-type',
+        required=True,
+        help='Change type on quote based purchase.')
     quote_request_group.add_argument(
-        '--new-quote-external-name', help='Display name of the order.')
+        '--new-quote-external-name',
+        help='The external name of the quote the order will use.')
 
   def Run(self, args):
     """Runs the command.

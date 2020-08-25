@@ -45,6 +45,8 @@ class Delete(base.DeleteCommand):
   def Run(self, args):
     client = namespaces.NamespacesClient()
     namespace_ref = args.CONCEPTS.namespace.Parse()
+
+    result = client.Delete(namespace_ref)
     log.DeletedResource(namespace_ref.namespacesId, _RESOURCE_TYPE)
 
-    return client.Delete(namespace_ref)
+    return result

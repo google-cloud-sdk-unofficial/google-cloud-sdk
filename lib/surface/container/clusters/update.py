@@ -290,6 +290,7 @@ class Update(base.UpdateCommand):
     flags.AddVerticalPodAutoscalingFlag(group)
     flags.AddAutoprovisioningFlags(group, ga=True)
     flags.AddEnableShieldedNodesFlags(group)
+    flags.AddMasterGlobalAccessFlag(group, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -300,6 +301,7 @@ class Update(base.UpdateCommand):
     opts.enable_resource_consumption_metering = \
         args.enable_resource_consumption_metering
     opts.enable_intra_node_visibility = args.enable_intra_node_visibility
+    opts.enable_master_global_access = args.enable_master_global_access
     opts.enable_shielded_nodes = args.enable_shielded_nodes
     opts.release_channel = args.release_channel
     if args.disable_addons and api_adapter.NODELOCALDNS in args.disable_addons:
@@ -596,7 +598,7 @@ class UpdateBeta(Update):
     flags.AddReleaseChannelFlag(group, is_update=True, hidden=False)
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddTpuFlags(group, enable_tpu_service_networking=True)
-    flags.AddMasterGlobalAccessFlag(group)
+    flags.AddMasterGlobalAccessFlag(group, is_update=True)
     flags.AddEnableGvnicFlag(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
     flags.AddNotificationConfigFlag(group, hidden=True)
@@ -711,7 +713,7 @@ class UpdateAlpha(Update):
     flags.AddReleaseChannelFlag(group, is_update=True, hidden=False)
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddTpuFlags(group, enable_tpu_service_networking=True)
-    flags.AddMasterGlobalAccessFlag(group)
+    flags.AddMasterGlobalAccessFlag(group, is_update=True)
     flags.AddEnableGvnicFlag(group)
     flags.AddNotificationConfigFlag(group, hidden=True)
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1alpha1', group, hidden=True)

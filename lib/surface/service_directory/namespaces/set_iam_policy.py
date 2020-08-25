@@ -51,5 +51,7 @@ class SetIamPolicy(base.Command):
     namespace_ref = args.CONCEPTS.namespace.Parse()
     policy = iam_util.ParsePolicyFile(args.policy_file, client.msgs.Policy)
 
+    result = client.SetIamPolicy(namespace_ref, policy)
     iam_util.LogSetIamPolicy(namespace_ref.Name(), _RESOURCE_TYPE)
-    return client.SetIamPolicy(namespace_ref, policy)
+
+    return result

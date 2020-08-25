@@ -40,7 +40,7 @@ def ToFileReference(path, remote):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SshAlpha(base.Command):
+class ScpAlpha(base.Command):
   """Copies files between Cloud Shell and the local machine."""
 
   detailed_help = {

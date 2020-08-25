@@ -28,8 +28,7 @@ from googlecloudsdk.command_lib.compute.addresses import flags
 from six.moves import zip  # pylint: disable=redefined-builtin
 
 
-def _Args(cls, parser, support_shared_loadbalancer_vip,
-          support_psc_google_apis):
+def _Args(cls, parser, support_psc_google_apis):
   """Argument parsing."""
 
   cls.ADDRESSES_ARG = flags.AddressArgument(required=False)
@@ -40,8 +39,7 @@ def _Args(cls, parser, support_shared_loadbalancer_vip,
   flags.AddAddressesAndIPVersions(parser, required=False)
   flags.AddNetworkTier(parser)
   flags.AddPrefixLength(parser)
-  flags.AddPurpose(parser, support_shared_loadbalancer_vip,
-                   support_psc_google_apis)
+  flags.AddPurpose(parser, support_psc_google_apis)
 
   cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
   cls.SUBNETWORK_ARG.AddArgument(parser)
@@ -96,7 +94,6 @@ class Create(base.CreateCommand):
   SUBNETWORK_ARG = None
   NETWORK_ARG = None
 
-  _support_shared_loadbalancer_vip = False
   _support_psc_google_apis = False
 
   @classmethod
@@ -104,7 +101,6 @@ class Create(base.CreateCommand):
     _Args(
         cls,
         parser,
-        support_shared_loadbalancer_vip=cls._support_shared_loadbalancer_vip,
         support_psc_google_apis=cls._support_psc_google_apis)
 
   def ConstructNetworkTier(self, messages, args):
@@ -176,21 +172,14 @@ class Create(base.CreateCommand):
 
     return names, addresses
 
-  def CheckPurposeInSubnetwork(self, messages, purpose,
-                               support_shared_loadbalancer_vip):
-    if support_shared_loadbalancer_vip:
-      if (purpose != messages.Address.PurposeValueValuesEnum.GCE_ENDPOINT and
-          purpose !=
-          messages.Address.PurposeValueValuesEnum.SHARED_LOADBALANCER_VIP):
-        raise exceptions.InvalidArgumentException(
-            '--purpose',
-            'must be GCE_ENDPOINT or SHARED_LOADBALANCER_VIP for regional '
-            'internal addresses.')
-    else:
-      if purpose != messages.Address.PurposeValueValuesEnum.GCE_ENDPOINT:
-        raise exceptions.InvalidArgumentException(
-            '--purpose',
-            'must be GCE_ENDPOINT for regional internal addresses.')
+  def CheckPurposeInSubnetwork(self, messages, purpose):
+    if (purpose != messages.Address.PurposeValueValuesEnum.GCE_ENDPOINT and
+        purpose !=
+        messages.Address.PurposeValueValuesEnum.SHARED_LOADBALANCER_VIP):
+      raise exceptions.InvalidArgumentException(
+          '--purpose',
+          'must be GCE_ENDPOINT or SHARED_LOADBALANCER_VIP for regional '
+          'internal addresses.')
 
   def GetAddress(self, messages, args, address, address_ref, resource_parser):
     network_tier = self.ConstructNetworkTier(messages, args)
@@ -225,8 +214,7 @@ class Create(base.CreateCommand):
           args, resource_parser).SelfLink()
       purpose = messages.Address.PurposeValueValuesEnum(args.purpose or
                                                         'GCE_ENDPOINT')
-      self.CheckPurposeInSubnetwork(messages, purpose,
-                                    self._support_shared_loadbalancer_vip)
+      self.CheckPurposeInSubnetwork(messages, purpose)
     else:
       subnetwork_url = None
 
@@ -323,8 +311,6 @@ class CreateBeta(Create):
 
   """
 
-  _support_shared_loadbalancer_vip = True
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
@@ -378,5 +364,4 @@ class CreateAlpha(Create):
       --purpose=PRIVATE_SERVICE_CONNECT --network=default
   """
 
-  _support_shared_loadbalancer_vip = True
   _support_psc_google_apis = True

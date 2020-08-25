@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.commerce_procurement import resource_args
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Outputs the Order object resulting from the Get API."""
+  """Returns the Order object resulting from the Get API."""
 
   @staticmethod
   def Args(parser):

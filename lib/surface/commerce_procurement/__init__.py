@@ -24,6 +24,6 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CommerceProcurement(base.Group):
-  """Manage Google Cloud Commerce Procurement resources."""
+  """Manages Google Cloud Commerce Procurement resources."""
 
   category = base.COMMERCE_CATEGORY

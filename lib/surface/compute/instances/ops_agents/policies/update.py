@@ -90,6 +90,12 @@ class Update(base.Command):
           ``env=staging,product=myapp'' labels, run:
 
           $ {command} ops-agents-labels-policy --clear-instances --group-labels="env=prod,product=myapp;env=staging,product=myapp"
+
+          To perform the same update as above, conditionally on the fact that
+          the policy's etag (retrieved by an earlier command) is
+          ``f59741c8-bb5e-4ee6-bf6f-c4ebeb6b06e0'', run:
+
+          $ {command} ops-agents-labels-policy --clear-instances --group-labels="env=prod,product=myapp;env=staging,product=myapp" --etag f59741c8-bb5e-4ee6-bf6f-c4ebeb6b06e0
           """,
   }
 
@@ -117,8 +123,9 @@ class Update(base.Command):
     current_ops_agents_policy = guest_policy_to_ops_agents_policy_converter.ConvertGuestPolicyToOpsAgentPolicy(
         current_guest_policy)
     updated_ops_agents_policy = ops_agents_policy.UpdateOpsAgentsPolicy(
-        current_ops_agents_policy, args.description, args.agent_rules,
-        args.os_types, [] if args.clear_group_labels else args.group_labels,
+        current_ops_agents_policy, args.description,
+        args.etag, args.agent_rules, args.os_types,
+        [] if args.clear_group_labels else args.group_labels,
         [] if args.clear_zones else args.zones,
         [] if args.clear_instances else args.instances)
     ops_agents_policy_validator.ValidateOpsAgentsPolicy(

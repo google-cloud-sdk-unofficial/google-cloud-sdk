@@ -104,4 +104,5 @@ class SshAlpha(base.Command):
     while not self.done.is_set():
       self.done.wait(
           (util.MIN_CREDS_EXPIRY - datetime.timedelta(minutes=2)).seconds)
-      util.AuthorizeEnvironment()
+      if not self.done.is_set():
+        util.AuthorizeEnvironment()

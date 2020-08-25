@@ -38,6 +38,8 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
+    messages = apis.GetMessagesModule('compute',
+                                      compute_api.COMPUTE_GA_API_VERSION)
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
     cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='create')
@@ -50,6 +52,7 @@ class Create(base.CreateCommand):
         with_service_account=True)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=False)
     flags.AddEnableLogging(parser)
+    flags.AddLoggingMetadata(parser, messages)
     parser.display_info.AddCacheUpdater(flags.FirewallsCompleter)
 
   def _CreateFirewall(self, holder, args):
@@ -110,9 +113,18 @@ class Create(base.CreateCommand):
     firewall.sourceServiceAccounts = args.source_service_accounts
     firewall.targetServiceAccounts = args.target_service_accounts
 
-    if args.enable_logging is not None:
+    if args.IsSpecified('logging_metadata') and not args.enable_logging:
+      raise exceptions.InvalidArgumentException(
+          '--logging-metadata',
+          'cannot toggle logging metadata if logging is not enabled.')
+
+    if args.IsSpecified('enable_logging'):
       log_config = client.messages.FirewallLogConfig(enable=args.enable_logging)
+      if args.IsSpecified('logging_metadata'):
+        log_config.metadata = flags.GetLoggingMetadataArg(
+            client.messages).GetEnumForChoice(args.logging_metadata)
       firewall.logConfig = log_config
+
     return firewall, firewall_ref.project
 
   def Run(self, args):
@@ -152,25 +164,6 @@ class BetaCreate(Create):
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=False)
     flags.AddEnableLogging(parser)
     flags.AddLoggingMetadata(parser, messages)
-
-  def _CreateFirewall(self, holder, args):
-    client = holder.client
-    firewall, project = super(BetaCreate, self)._CreateFirewall(holder, args)
-
-    if args.IsSpecified('logging_metadata') and not args.enable_logging:
-      raise exceptions.InvalidArgumentException(
-          '--logging-metadata',
-          'cannot toggle logging metadata if logging is not enabled.')
-
-    if args.IsSpecified('enable_logging'):
-      log_config = client.messages.FirewallLogConfig(enable=args.enable_logging)
-
-      if args.IsSpecified('logging_metadata'):
-        log_config.metadata = flags.GetLoggingMetadataArg(
-            client.messages).GetEnumForChoice(args.logging_metadata)
-      firewall.logConfig = log_config
-
-    return firewall, project
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

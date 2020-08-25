@@ -24,10 +24,16 @@ from googlecloudsdk.command_lib.apigee import resource_args
 
 
 class Describe(base.DescribeCommand):
-  """Describes an Apigee API proxy."""
+  """Describe an Apigee API proxy."""
 
   detailed_help = {
-      "EXAMPLES": """\
+      "DESCRIPTION":
+          """\
+  {description}
+
+  `{command}` shows metadata about an API proxy and its revisions.""",
+      "EXAMPLES":
+          """\
   To describe an API proxy called ``proxy-name'' given that its matching Cloud
   Platform project has been set in gcloud settings, run:
 
@@ -54,7 +60,7 @@ class Describe(base.DescribeCommand):
     parser.add_argument("--verbose", action="store_true",
                         help="Include proxy revision info in the description.")
     resource_args.AddSingleResourceArgument(
-        parser, "organization.api", "The API proxy to be described.",
+        parser, "organization.api", "API proxy to be described.",
         fallthroughs=[defaults.GCPProductOrganizationFallthrough()])
 
   def Run(self, args):

@@ -21,12 +21,28 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from surface.container.clusters import create
 
+# Select which flags are auto flags
 auto_flags = [
-    'args', 'masterauth', 'nodeidentity',
-    'releasechannel', 'privatecluster', 'ipalias_additional',
+    'args',
+    'ipalias_additional',
+    'masterauth',
+    'nodeidentity',
+    'privatecluster',
+    'releasechannel',
 ]
 
-flag_overrides = {}  # Change default flag values in create-auto
+# Change default flag values in create-auto
+flag_overrides = {
+    'num_nodes': 1,
+    'enable_private_nodes': True,
+    'enable_ip_alias': True,
+    'enable_master_authorized_networks': False,
+    'privatecluster': {
+        'enable_private_nodes': None,
+        'private_cluster': None,
+    },
+}
+
 auto_flag_defaults = dict(list(create.base_flag_defaults.items()) + \
                           list(flag_overrides.items()))
 
@@ -46,7 +62,7 @@ class CreateBeta(create.CreateBeta):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(create.CreateAlpha):
   autogke = True
-  auto_flag_defaults = auto_flag_defaults
+  default_flag_values = auto_flag_defaults
 
   @staticmethod
   def Args(parser):

@@ -27,10 +27,10 @@ from googlecloudsdk.command_lib.composer import image_versions_util
 from googlecloudsdk.command_lib.composer import parsers
 from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.command_lib.composer import util as command_util
+from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 import six
-
 
 PREREQUISITE_OPTION_ERROR_MSG = """\
 Cannot specify --{opt} without --{prerequisite}.
@@ -455,6 +455,20 @@ class CreateAlpha(CreateBeta):
         currently supported executor types are CELERY and KUBERNETES.
         Defaults to CELERY. Cannot be updated.""")
 
+    # Workaround to add hidden resource flag, as per b/130564349.
+    group_parser = parser.add_argument_group(hidden=True)
+    permission_info = '{} must hold permission {}'.format(
+        "The 'Cloud Composer Service Agent' service account",
+        "'Cloud KMS CryptoKey Encrypter/Decrypter'")
+    kms_resource_args.AddKmsKeyResourceArg(
+        group_parser, 'environment', permission_info=permission_info)
+
+  def Run(self, args):
+    self.kms_key = None
+    if args.kms_key:
+      self.kms_key = flags.GetAndValidateKmsEncryptionKey(args)
+    return super(CreateAlpha, self).Run(args)
+
   def GetOperationMessage(self, args):
     """See base class."""
     return environments_api_util.Create(
@@ -479,6 +493,7 @@ class CreateAlpha(CreateBeta):
         services_secondary_range_name=args.services_secondary_range_name,
         cluster_ipv4_cidr_block=args.cluster_ipv4_cidr,
         services_ipv4_cidr_block=args.services_ipv4_cidr,
+        kms_key=self.kms_key,
         private_environment=args.enable_private_environment,
         private_endpoint=args.enable_private_endpoint,
         master_ipv4_cidr=args.master_ipv4_cidr,

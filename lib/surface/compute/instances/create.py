@@ -589,6 +589,7 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
+    instances_flags.AddMaintenanceFreezeDuration(parser)
 
 
 Create.detailed_help = DETAILED_HELP

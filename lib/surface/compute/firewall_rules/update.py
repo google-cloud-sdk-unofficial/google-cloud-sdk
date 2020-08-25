@@ -35,12 +35,13 @@ class UpdateFirewall(base.UpdateCommand):
 
   with_egress_firewall = True
   with_service_account = True
-  support_logging_metadata = False
 
   FIREWALL_RULE_ARG = None
 
   @classmethod
   def Args(cls, parser):
+    messages = apis.GetMessagesModule('compute',
+                                      compute_api.COMPUTE_GA_API_VERSION)
     cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
     cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='update')
     firewalls_utils.AddCommonArgs(
@@ -50,6 +51,7 @@ class UpdateFirewall(base.UpdateCommand):
         with_service_account=cls.with_service_account)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
     flags.AddEnableLogging(parser)
+    flags.AddLoggingMetadata(parser, messages)
 
   def ValidateArgument(self, messages, args):
     self.new_allowed = firewalls_utils.ParseRules(
@@ -69,8 +71,7 @@ class UpdateFirewall(base.UpdateCommand):
           for x in (args.source_service_accounts, args.target_service_accounts))
     args_unset = args_unset and args.disabled is None
     args_unset = (args_unset and args.enable_logging is None)
-    if self.support_logging_metadata:
-      args_unset = args_unset and not args.logging_metadata
+    args_unset = args_unset and not args.logging_metadata
     if args_unset:
       raise calliope_exceptions.ToolException(
           'At least one property must be modified.')
@@ -120,6 +121,16 @@ class UpdateFirewall(base.UpdateCommand):
         firewallResource=replacement,
         project=resource_reference.project)
     return (client.apitools_client.firewalls, 'Patch', request)
+
+  def _AddLoggingMetadata(self, messages, args, log_config):
+    if args.IsSpecified('logging_metadata'):
+      if log_config is None or not log_config.enable:
+        raise calliope_exceptions.InvalidArgumentException(
+            '--logging-metadata',
+            'cannot toggle logging metadata if logging is not enabled.')
+
+      log_config.metadata = flags.GetLoggingMetadataArg(
+          messages).GetEnumForChoice(args.logging_metadata)
 
   def Modify(self, client, args, existing, cleared_fields):
     """Returns a modified Firewall message and included fields."""
@@ -212,8 +223,12 @@ class UpdateFirewall(base.UpdateCommand):
 
     if args.IsSpecified('enable_logging'):
       log_config = client.messages.FirewallLogConfig(enable=args.enable_logging)
+      self._AddLoggingMetadata(client.messages, args, log_config)
     else:
-      log_config = existing.logConfig
+      log_config = (
+          encoding.CopyProtoMessage(existing.logConfig)
+          if existing.logConfig is not None else None)
+      self._AddLoggingMetadata(client.messages, args, log_config)
 
     new_firewall = client.messages.Firewall(
         name=existing.name,
@@ -241,8 +256,6 @@ class UpdateFirewall(base.UpdateCommand):
 class BetaUpdateFirewall(UpdateFirewall):
   """Update a firewall rule."""
 
-  support_logging_metadata = True
-
   @classmethod
   def Args(cls, parser):
     messages = apis.GetMessagesModule('compute',
@@ -257,23 +270,6 @@ class BetaUpdateFirewall(UpdateFirewall):
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
     flags.AddEnableLogging(parser)
     flags.AddLoggingMetadata(parser, messages)
-
-  def Modify(self, client, args, existing, cleared_fields):
-    new_firewall = super(BetaUpdateFirewall, self).Modify(
-        client, args, existing, cleared_fields)
-
-    if args.IsSpecified('logging_metadata'):
-      log_config = encoding.CopyProtoMessage(existing.logConfig)
-      if log_config is None or not log_config.enable:
-        raise calliope_exceptions.InvalidArgumentException(
-            '--logging-metadata',
-            'cannot toggle logging metadata if logging is not enabled.')
-
-      log_config.metadata = flags.GetLoggingMetadataArg(
-          client.messages).GetEnumForChoice(args.logging_metadata)
-      new_firewall.logConfig = log_config
-
-    return new_firewall
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
