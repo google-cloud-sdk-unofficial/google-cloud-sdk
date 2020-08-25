@@ -29,7 +29,7 @@ class Delete(base.DeleteCommand):
   """Delete a Compute Engine node template."""
 
   detailed_help = {
-      'brief': 'Delete a Google Compute Engine node template.',
+      'brief': 'Delete a Compute Engine node template.',
       'EXAMPLES': """
          To delete a node template, run:
 

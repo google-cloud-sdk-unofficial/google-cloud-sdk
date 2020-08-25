@@ -55,6 +55,8 @@ class Create(base.CreateCommand):
     client = namespaces.NamespacesClient()
     namespace_ref = args.CONCEPTS.namespace.Parse()
     labels = util.ParseLabelsArg(args.labels)
+
+    result = client.Create(namespace_ref, labels)
     log.CreatedResource(namespace_ref.namespacesId, _RESOURCE_TYPE)
 
-    return client.Create(namespace_ref, labels)
+    return result

@@ -58,6 +58,8 @@ class Create(base.CreateCommand):
     client = endpoints.EndpointsClient()
     endpoint_ref = args.CONCEPTS.endpoint.Parse()
     metadata = util.ParseMetadataArg(args.metadata, _RESOURCE_TYPE)
+
+    result = client.Create(endpoint_ref, args.address, args.port, metadata)
     log.CreatedResource(endpoint_ref.endpointsId, _RESOURCE_TYPE)
 
-    return client.Create(endpoint_ref, args.address, args.port, metadata)
+    return result

@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.compute.target_pools import flags
 class Delete(base.DeleteCommand):
   """Delete target pools.
 
-  *{command}* deletes one or more Google Compute Engine target pools.
+  *{command}* deletes one or more Compute Engine target pools.
   """
 
   TARGET_POOL_ARG = None

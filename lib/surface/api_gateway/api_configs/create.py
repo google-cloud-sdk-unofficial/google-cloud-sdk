@@ -20,10 +20,10 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import os
-import time
 
 from googlecloudsdk.api_lib.api_gateway import api_configs as api_configs_client
 from googlecloudsdk.api_lib.api_gateway import apis as apis_client
+from googlecloudsdk.api_lib.api_gateway import base as apigateway_base
 from googlecloudsdk.api_lib.api_gateway import operations as operations_client
 from googlecloudsdk.api_lib.endpoints import services_util as endpoints
 from googlecloudsdk.calliope import arg_parsers
@@ -35,6 +35,8 @@ from googlecloudsdk.command_lib.api_gateway import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import http_encoding
+
+import google.protobuf.descriptor_pb2 as descriptor
 
 MAX_SERVICE_CONFIG_ID_LENGTH = 50
 
@@ -99,38 +101,27 @@ class Create(base.CreateCommand):
           wait_string='Waiting for API [{}] to be created'.format(
               api_ref.Name()))
 
-    # Get the service name from the existing API.
-    service_name = apis.Get(api_ref).managedService
-
-    # Create OP ServiceConfig and Rollout
-    # Creating a suffix to avoid name collisions on ServiceConfig IDs.
-    suffix = '-' + str(int(time.time()))
-    length = MAX_SERVICE_CONFIG_ID_LENGTH - len(suffix)
-    config_id = api_config_ref.Name()[:length] + suffix
-
-    if args.openapi_spec:
-      service_config_id = self.__PushOpenApiServiceFile(
-          args.openapi_spec,
-          service_name,
-          api_config_ref.projectsId,
-          config_id=config_id)
+    open_api_docs = []
+    svc_configs = []
+    grpc_svc_defs = []
+    if args.grpc_files:
+      args.grpc_files = [f.strip() for f in args.grpc_files]
+      svc_configs, grpc_svc_defs = self.__GrpcMessages(args.grpc_files)
     else:
-      service_config_id = self.__PushGrpcConfigFiles(
-          args.grpc_files,
-          service_name,
-          api_config_ref.projectsId,
-          config_id=config_id)
-    rollout = endpoints.CreateRollout(service_config_id, service_name)
+      args.openapi_spec = [f.strip() for f in args.openapi_spec]
+      open_api_docs = self.__OpenApiMessage(args.openapi_spec)
 
-    # Create ApiConfig object using the service config and rollout
+    # Create ApiConfig object.
     # Only piece affected by async right now
     resp = api_configs.Create(api_config_ref,
-                              rollout['rolloutId'],
                               labels=args.labels,
                               display_name=args.display_name,
-                              backend_auth=args.backend_auth_service_account)
+                              backend_auth=args.backend_auth_service_account,
+                              managed_service_configs=svc_configs,
+                              grpc_service_defs=grpc_svc_defs,
+                              open_api_docs=open_api_docs)
 
-    wait = 'Waiting for API Config [{}] to be created for API [{}]'.format(
+    wait = 'Waiting for API Config [{0}] to be created for API [{1}]'.format(
         api_config_ref.Name(), api_ref.Name())
 
     return operations_util.PrintOperationResult(
@@ -140,24 +131,19 @@ class Create(base.CreateCommand):
         wait_string=wait,
         is_async=args.async_)
 
-  def __PushOpenApiServiceFile(self, open_api_specs, service_name, project_id,
-                               config_id):
-    """Creates a new ServiceConfig in Service Management from OpenAPI spec.
+  def __OpenApiMessage(self, open_api_specs):
+    """Parses the Open API scoped configuraiton files into their necessary API Gateway message types.
 
     Args:
-      open_api_specs: Specs to be pushed to Service Management
-      service_name: Name of the service to push configs to
-      project_id: Project the service belongs to
-      config_id: ID to assign to the new ServiceConfig
+      open_api_specs: Specs to be used with the API Gateway API Configuration
 
     Returns:
-      ServiceConfig Id
+      List of ApigatewayApiConfigOpenApiDocument messages
 
     Raises:
       BadFileException: If there is something wrong with the files
     """
-    messages = endpoints.GetMessagesModule()
-    file_types = messages.ConfigFile.FileTypeValueValuesEnum
+    messages = apigateway_base.GetMessagesModule()
     config_files = []
     for config_file in open_api_specs:
       config_contents = endpoints.ReadServiceConfigFile(config_file)
@@ -166,10 +152,10 @@ class Create(base.CreateCommand):
       if config_dict:
         if 'swagger' in config_dict:
           # Always use YAML for OpenAPI because JSON is a subset of YAML.
-          config_files.append(self.__MakeConfigFileMessage(
-              config_contents,
-              config_file,
-              file_types.OPEN_API_YAML))
+          document = self.__MakeApigatewayApiConfigFileMessage(config_contents,
+                                                               config_file)
+          config_files.append(messages.ApigatewayApiConfigOpenApiDocument(
+              document=document))
         elif 'openapi' in config_dict:
           raise calliope_exceptions.BadFileException(
               'API Gateway does not currently support OpenAPI v3 configurations.'
@@ -181,82 +167,55 @@ class Create(base.CreateCommand):
       else:
         raise calliope_exceptions.BadFileException(
             'OpenAPI files should be of JSON or YAML format')
+    return config_files
 
-    return self.__PushServiceConfigFiles(
-        config_files, service_name, project_id, config_id)
-
-  def __PushGrpcConfigFiles(self, files, service_name, project_id, config_id):
-    """Creates a new ServiceConfig in SerivceManagement from gRPC files.
+  def __GrpcMessages(self, files):
+    """Parses the GRPC scoped configuraiton files into their necessary API Gateway message types.
 
     Args:
-      files: Files to be pushed to Service Management
-      service_name: Name of the service to push configs to
-      project_id: Project the service belongs to
-      config_id: ID to assign to the new ServiceConfig
+      files: Files to be sent in as managed service configs and GRPC service
+      definitions
 
     Returns:
-      ServiceConfig Id
+      List of ApigatewayApiConfigFileMessage, list of
+      ApigatewayApiConfigGrpcServiceDefinition messages
 
     Raises:
       BadFileException: If there is something wrong with the files
     """
-    messages = endpoints.GetMessagesModule()
-    file_types = messages.ConfigFile.FileTypeValueValuesEnum
-    # TODO(b/77867100): remove .proto support and deprecation warning.
-    give_proto_deprecate_warning = False
-    config_files = []
 
+    grpc_service_definitions = []
+    service_configs = []
     for config_file in files:
       config_contents = endpoints.ReadServiceConfigFile(config_file)
-
       config_dict = self.__ValidJsonOrYaml(config_file, config_contents)
       if config_dict:
         if config_dict.get('type') == 'google.api.Service':
-          config_files.append(
-              self.__MakeConfigFileMessage(config_contents, config_file,
-                                           file_types.SERVICE_CONFIG_YAML))
-        elif 'name' in config_dict:
-          # This is a special case. If we have been provided a Google Service
-          # Configuration file which has a service 'name' field, but no 'type'
-          # field, we have to assume that this is a normalized service config,
-          # and can be uploaded via the CreateServiceConfig API. Therefore,
-          # we can short circute the process here.
-          if len(files) > 1:
-            raise calliope_exceptions.BadFileException(
-                ('Ambiguous input. Found normalized service configuration in '
-                 'file [{0}], but received multiple input files. To upload '
-                 'normalized service config, please provide it separately from '
-                 'other input files to avoid ambiguity.'
-                ).format(config_file))
-
-          return self. __PushServiceConfigFiles(
-              files, service_name, project_id, config_id, normalized=True)
+          service_configs.append(
+              self.__MakeApigatewayApiConfigFileMessage(config_contents,
+                                                        config_file))
         else:
           raise calliope_exceptions.BadFileException(
-              'The file {} is not a valid api configuration file'.format(
-                  config_file))
+              'The file {} is not a valid api configuration file. The '
+              'configuration type is expected to be of "google.api.Service".'.
+              format(config_file))
       elif endpoints.IsProtoDescriptor(config_file):
-        config_files.append(
-            self.__MakeConfigFileMessage(config_contents, config_file,
-                                         file_types.FILE_DESCRIPTOR_SET_PROTO))
+        grpc_service_definitions.append(
+            self.__MakeApigatewayApiConfigGrpcServiceDefinitionMessage(
+                config_contents, config_file))
       elif endpoints.IsRawProto(config_file):
-        give_proto_deprecate_warning = True
-        config_files.append(
-            self.__MakeConfigFileMessage(config_contents, config_file,
-                                         file_types.PROTO_FILE))
+        raise calliope_exceptions.BadFileException(
+            ('[{}] cannot be used as it is an uncompiled proto'
+             ' file. However, uncompiled proto files can be included for'
+             ' display purposes when compiled as a source for a passed in proto'
+             ' descriptor.'
+             ).format(config_file))
       else:
         raise calliope_exceptions.BadFileException(
             ('Could not determine the content type of file [{0}]. Supported '
-             'extensions are .json .yaml .yml .pb and .descriptor'
+             'extensions are .descriptor .json .pb .yaml and .yml'
             ).format(config_file))
-
-    if give_proto_deprecate_warning:
-      log.warning(
-          'Support for uploading uncompiled .proto files is deprecated and '
-          'will soon be removed. Use compiled descriptor sets (.pb) instead.\n')
-
-    return self.__PushServiceConfigFiles(
-        config_files, service_name, project_id, config_id)
+    return service_configs, grpc_service_definitions
 
   def __ValidJsonOrYaml(self, file_name, file_contents):
     """Whether or not this is a valid json or yaml file.
@@ -283,57 +242,77 @@ class Create(base.CreateCommand):
     else:
       return False
 
-  def __PushServiceConfigFiles(self, files, service_name, project_id, config_id,
-                               normalized=False):
-    """Creates a new ServiceConfig in Service Management.
-
-    Args:
-      files: Files to be pushed to Service Management
-      service_name: Name of the service to push configs to
-      project_id: Project the service belongs to
-      config_id: ID to assign to the new ServiceConfig
-      normalized: Whether or not this is a normalized google service
-
-    Returns:
-      ServiceConfig Id
-    """
-    if normalized:
-      config_contents = endpoints.ReadServiceConfigFile(files[0])
-      push_config_result = endpoints.PushNormalizedGoogleServiceConfig(
-          service_name,
-          project_id,
-          endpoints.LoadJsonOrYaml(config_contents),
-          config_id=config_id)
-      service_config_id = push_config_result.id
-    else:
-      push_config_result = endpoints.PushMultipleServiceConfigFiles(
-          service_name, files, False, config_id=config_id)
-      service_config_id = (
-          endpoints.GetServiceConfigIdFromSubmitConfigSourceResponse(
-              push_config_result))
-
-    return service_config_id
-
-  def __MakeConfigFileMessage(self, file_contents, filename, file_type):
+  def __MakeApigatewayApiConfigFileMessage(self, file_contents, filename,
+                                           is_binary=False):
     """Constructs a ConfigFile message from a config file.
 
     Args:
       file_contents: The contents of the config file.
-      filename: The full path to the config file.
-      file_type: FileTypeValueValuesEnum describing the type of config file.
+      filename: The path to the config file.
+      is_binary: If set to true, the file_contents won't be encoded.
 
     Returns:
-      The constructed ConfigFile message.
+      The constructed ApigatewayApiConfigFile message.
     """
 
-    messages = endpoints.GetMessagesModule()
-
-    file_types = messages.ConfigFile.FileTypeValueValuesEnum
-    if file_type != file_types.FILE_DESCRIPTOR_SET_PROTO:
+    messages = apigateway_base.GetMessagesModule()
+    if not is_binary:
       # File is human-readable text, not binary; needs to be encoded.
       file_contents = http_encoding.Encode(file_contents)
-    return messages.ConfigFile(
-        fileContents=file_contents,
-        filePath=os.path.basename(filename),
-        fileType=file_type,
+    return messages.ApigatewayApiConfigFile(
+        contents=file_contents,
+        path=os.path.basename(filename),
     )
+
+  def __MakeApigatewayApiConfigGrpcServiceDefinitionMessage(self,
+                                                            proto_desc_contents,
+                                                            proto_desc_file):
+    """Constructs a GrpcServiceDefinition message from a proto descriptor and the provided list of input files.
+
+    Args:
+      proto_desc_contents: The contents of the proto descriptor file.
+      proto_desc_file: The path to the proto descriptor file.
+
+    Returns:
+      The constructed ApigatewayApiConfigGrpcServiceDefinition message.
+    """
+
+    messages = apigateway_base.GetMessagesModule()
+    fds = descriptor.FileDescriptorSet.FromString(proto_desc_contents)
+    proto_desc_dir = os.path.dirname(proto_desc_file)
+    grpc_sources = []
+    included_source_paths = []
+    not_included_source_paths = []
+
+    # Iterate over the file descriptors dependency files and attempt to resolve
+    # the gRPC source proto files from it.
+    for file_descriptor in fds.file:
+      source_path = os.path.join(proto_desc_dir, file_descriptor.name)
+      if os.path.exists(source_path):
+        source_contents = endpoints.ReadServiceConfigFile(source_path)
+        file = self.__MakeApigatewayApiConfigFileMessage(source_contents,
+                                                         source_path)
+        included_source_paths.append(source_path)
+        grpc_sources.append(file)
+      else:
+        not_included_source_paths.append(source_path)
+
+    if not_included_source_paths:
+      log.warning('Proto descriptor\'s source protos [{0}] were not found on'
+                  ' the file system and will not be included in the submitted'
+                  ' GRPC service definition. If you meant to include these'
+                  ' files, ensure the proto compiler was invoked in the same'
+                  ' directory where the proto descriptor [{1}] now resides.'.
+                  format(', '.join(not_included_source_paths), proto_desc_file))
+
+    # Log which files are being passed in as to ensure the user is informed of
+    # all files being passed into the gRPC service definition.
+    if included_source_paths:
+      log.info('Added the source protos [{0}] to the GRPC service definition'
+               ' for the provided proto descriptor [{1}].'.
+               format(', '.join(included_source_paths), proto_desc_file))
+
+    file_descriptor_set = self.__MakeApigatewayApiConfigFileMessage(
+        proto_desc_contents, proto_desc_file, True)
+    return messages.ApigatewayApiConfigGrpcServiceDefinition(
+                fileDescriptorSet=file_descriptor_set, source=grpc_sources)

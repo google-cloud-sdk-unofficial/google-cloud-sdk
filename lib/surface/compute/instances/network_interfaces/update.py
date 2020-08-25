@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a Google Compute Engine virtual machine network interface.
 
@@ -66,20 +66,21 @@ class Update(base.UpdateCommand):
           dest='private_network_ip',
           type=str,
           help="""\
-          Assign the given RFC1918 IP address to the interface. Can be specified
-          only together with --network and/or --subnetwork to choose the IP
-          address in the new subnetwork. If unspecified, then the old IP address
-          will be allocated in the new subnetwork. If the old IP address is not
-          available in the new subnetwork, then another available IP address
+          Assign the given IP address to the interface. Can be specified only
+          together with --network and/or --subnetwork to choose the IP address
+          in the new subnetwork. If unspecified, then the previous IP address
+          will be allocated in the new subnetwork. If the previous IP address is
+          not available in the new subnetwork, then another available IP address
           will be allocated automatically from the new subnetwork CIDR range.
           """)
       alias_network_migration_help = """
 
         Can be specified together with --network and/or --subnetwork to choose
-        IP alias ranges in the new subnetwork. If unspecified, then old IP alias
-        ranges will be allocated in the new subnetwork. If old IP alias ranges
-        are not available in the new subnetwork, then other available IP alias
-        ranges of the same size will be allocated in the new subnetwork."""
+        IP alias ranges in the new subnetwork. If unspecified, then the previous
+        IP alias ranges will be allocated in the new subnetwork. If the previous
+        IP alias ranges are not available in the new subnetwork, then other
+        available IP alias ranges of the same size will be allocated in the new
+        subnetwork."""
 
     parser.add_argument(
         '--aliases',
@@ -166,7 +167,7 @@ class Update(base.UpdateCommand):
             args.network_interface, instance_ref.Name()))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpdateAlpha(Update):
   r"""Update a Google Compute Engine virtual machine network interface.
 

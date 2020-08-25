@@ -48,5 +48,7 @@ class AddIamPolicyBinding(base.Command):
     client = services.ServicesClient()
     service_ref = args.CONCEPTS.service.Parse()
 
+    result = client.AddIamPolicyBinding(service_ref, args.member, args.role)
     iam_util.LogSetIamPolicy(service_ref.Name(), _RESOURCE_TYPE)
-    return client.AddIamPolicyBinding(service_ref, args.member, args.role)
+
+    return result

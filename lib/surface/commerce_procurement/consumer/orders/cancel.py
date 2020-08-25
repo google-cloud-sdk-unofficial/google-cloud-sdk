@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.commerce_procurement import resource_args
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Cancel(base.Command):
-  """Cancels the order resource from Cancel API."""
+  """Cancels the order resource from the Cancel API."""
 
   @staticmethod
   def Args(parser):
@@ -37,7 +37,7 @@ class Cancel(base.Command):
     """
     resource_args.AddOrderResourceArg(parser, 'Order to describe.')
     parser.add_argument(
-        '--etag', help='The weak etag for validation check if specified.')
+        '--etag', help='The weak etag for validation check, if specified.')
 
   def Run(self, args):
     """Runs the command.

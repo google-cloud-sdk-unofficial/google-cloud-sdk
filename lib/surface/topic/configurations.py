@@ -55,7 +55,7 @@ class TestingArgFiles(base.TopicCommand):
 
   # Creating configurations
 
-  Named configurations maybe be defined by users or built into gcloud.
+  Named configurations may be defined by users or built into gcloud.
 
   User defined configurations have lowercase names, such as
   'johndoe', 'default', 'jeff-staging', or 'foo2'.  These are defined

@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.compute.target_instances import flags
 class Delete(base.DeleteCommand):
   """Delete target instances.
 
-  *{command}* deletes one or more Google Compute Engine target
+  *{command}* deletes one or more Compute Engine target
   instances. Target instances can be deleted only if they are
   not being used by any other resources like forwarding rules.
   """

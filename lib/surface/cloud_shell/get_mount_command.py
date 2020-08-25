@@ -26,7 +26,7 @@ from googlecloudsdk.core.util import platforms
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SshAlpha(base.Command):
+class GetMountCommandAlpha(base.Command):
   """Prints a command to mount the Cloud Shell home directory via sshfs."""
 
   detailed_help = {

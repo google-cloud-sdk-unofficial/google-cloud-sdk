@@ -33,6 +33,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 import six
 
+_IPA_MIME_TYPE = 'application/octet-stream'
+
 
 @base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -138,11 +140,14 @@ class Run(base.ListCommand):
                                                  args.results_dir, tr_client,
                                                  tr_messages, storage_client)
     if getattr(args, 'app', None):
-      bucket_ops.UploadFileToGcs(args.app, 'application/octet-stream')
+      bucket_ops.UploadFileToGcs(args.app, _IPA_MIME_TYPE)
     if args.test:
       bucket_ops.UploadFileToGcs(args.test, 'application/zip')
     if args.xctestrun_file:
       bucket_ops.UploadFileToGcs(args.xctestrun_file, 'text/xml')
+    additional_ipas = getattr(args, 'additional_ipas', None) or []
+    for additional_ipa in additional_ipas:
+      bucket_ops.UploadFileToGcs(additional_ipa, _IPA_MIME_TYPE)
     bucket_ops.LogGcsResultsUrl()
 
     tr_history_picker = history_picker.ToolResultsHistoryPicker(

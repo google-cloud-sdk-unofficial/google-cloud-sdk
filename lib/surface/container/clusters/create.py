@@ -218,6 +218,7 @@ def ParseCreateOptionsBase(args, is_autogke, get_default):
       enable_legacy_authorization=get_default('enable_legacy_authorization'),
       enable_master_authorized_networks=\
         get_default('enable_master_authorized_networks'),
+      enable_master_global_access=get_default('enable_master_global_access'),
       enable_network_policy=get_default('enable_network_policy'),
       enable_private_nodes=get_default('enable_private_nodes'),
       enable_private_endpoint=get_default('enable_private_endpoint'),
@@ -304,8 +305,10 @@ def AddAutoRepair(parser):
   flags.AddEnableAutoRepairFlag(parser, for_create=True)
 
 
-def AddPrivateClusterDeprecated(parser):
-  flags.AddPrivateClusterFlags(parser, with_deprecated=True)
+def AddPrivateClusterDeprecated(parser, default=None):
+  default_value = {} if default is None else default
+  flags.AddPrivateClusterFlags(parser, default=default_value,
+                               with_deprecated=True)
 
 
 def AddEnableAutoUpgradeWithDefault(parser):
@@ -386,6 +389,7 @@ flags_to_add = {
         'machinetype': flags.AddMachineTypeFlag,
         'maintenancewindow': flags.AddMaintenanceWindowGroup,
         'masterauth': flags.AddMasterAuthorizedNetworksFlags,
+        'masterglobalaccess': flags.AddMasterGlobalAccessFlag,
         'maxnodes': flags.AddMaxNodesPerPool,
         'maxpodspernode': flags.AddMaxPodsPerNodeFlag,
         'maxunavailable': flags.AddMaxUnavailableUpgradeFlag,
@@ -901,7 +905,6 @@ class CreateBeta(Create):
         get_default('enable_tpu_service_networking')
     ops.enable_logging_monitoring_system_only = \
         get_default('enable_logging_monitoring_system_only')
-    ops.enable_master_global_access = get_default('enable_master_global_access')
     ops.enable_gvnic = get_default('enable_gvnic')
     ops.system_config_from_file = get_default('system_config_from_file')
     ops.datapath_provider = get_default('datapath_provider')
@@ -975,7 +978,6 @@ class CreateAlpha(Create):
         get_default('enable_logging_monitoring_system_only')
     ops.datapath_provider = get_default('datapath_provider')
     ops.dataplane_v2 = get_default('enable_dataplane_v2')
-    ops.enable_master_global_access = get_default('enable_master_global_access')
     ops.enable_gvnic = get_default('enable_gvnic')
     ops.enable_master_metrics = get_default('enable_master_metrics')
     ops.master_logs = get_default('master_logs')

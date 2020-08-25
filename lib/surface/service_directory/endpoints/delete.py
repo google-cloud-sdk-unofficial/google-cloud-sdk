@@ -45,6 +45,8 @@ class Delete(base.DeleteCommand):
   def Run(self, args):
     client = endpoints.EndpointsClient()
     endpoint_ref = args.CONCEPTS.endpoint.Parse()
+
+    result = client.Delete(endpoint_ref)
     log.DeletedResource(endpoint_ref.endpointsId, _RESOURCE_TYPE)
 
-    return client.Delete(endpoint_ref)
+    return result

@@ -50,5 +50,7 @@ class RemoveIamPolicyBinding(base.Command):
     client = services.ServicesClient()
     service_ref = args.CONCEPTS.service.Parse()
 
+    result = client.RemoveIamPolicyBinding(service_ref, args.member, args.role)
     iam_util.LogSetIamPolicy(service_ref.Name(), _RESOURCE_TYPE)
-    return client.RemoveIamPolicyBinding(service_ref, args.member, args.role)
+
+    return result

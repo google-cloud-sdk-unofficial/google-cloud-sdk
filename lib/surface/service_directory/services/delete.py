@@ -45,6 +45,8 @@ class Delete(base.DeleteCommand):
   def Run(self, args):
     client = services.ServicesClient()
     service_ref = args.CONCEPTS.service.Parse()
+
+    result = client.Delete(service_ref)
     log.DeletedResource(service_ref.servicesId, _RESOURCE_TYPE)
 
-    return client.Delete(service_ref)
+    return result

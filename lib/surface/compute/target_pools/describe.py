@@ -25,10 +25,10 @@ from googlecloudsdk.command_lib.compute.target_pools import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine target pool.
+  """Describe a Compute Engine target pool.
 
-  *{command}* displays all data associated with a Google Compute
-  Engine target pool in a project.
+  *{command}* displays all data associated with a Compute Engine
+  target pool in a project.
   """
 
   TARGET_POOL_ARG = None

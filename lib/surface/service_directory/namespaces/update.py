@@ -49,6 +49,8 @@ class Update(base.UpdateCommand):
     client = namespaces.NamespacesClient()
     namespace_ref = args.CONCEPTS.namespace.Parse()
     labels = util.ParseLabelsArg(args.labels)
+
+    result = client.Update(namespace_ref, labels)
     log.UpdatedResource(namespace_ref.namespacesId, _RESOURCE_TYPE)
 
-    return client.Update(namespace_ref, labels)
+    return result

@@ -41,10 +41,10 @@ class List(base.ListCommand):
 
   LIST_FORMAT = """
     table(
-      name.segment(8):label=CONFIG_ID,
-      name.segment(6):label=API_ID,
+      name.segment(7):label=CONFIG_ID,
+      name.segment(5):label=API_ID,
       displayName,
-      serviceRollout.rolloutId,
+      serviceConfigId,
       state,
       createTime.date()
       )

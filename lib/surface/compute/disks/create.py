@@ -80,8 +80,7 @@ DETAILED_HELP = {
 }
 
 
-def _SourceArgs(parser,
-                source_in_place_snapshot_enabled=False):
+def _SourceArgs(parser, source_instant_snapshot_enabled=False):
   """Add mutually exclusive source args."""
   source_parent_group = parser.add_group()
   source_group = source_parent_group.add_mutually_exclusive_group()
@@ -114,15 +113,15 @@ def _SourceArgs(parser,
         version of an image is needed.
         """)
   disks_flags.SOURCE_SNAPSHOT_ARG.AddArgument(source_group)
-  if source_in_place_snapshot_enabled:
-    disks_flags.SOURCE_IN_PLACE_SNAPSHOT_ARG.AddArgument(source_group)
+  if source_instant_snapshot_enabled:
+    disks_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(source_group)
   disks_flags.SOURCE_DISK_ARG.AddArgument(source_group)
 
 
 def _CommonArgs(parser,
                 include_physical_block_size_support=False,
                 vss_erase_enabled=False,
-                source_in_place_snapshot_enabled=False,
+                source_instant_snapshot_enabled=False,
                 support_pd_interface=False,
                 support_provisioned_iops=False):
   """Add arguments used for parsing in all command tracks."""
@@ -181,7 +180,7 @@ def _CommonArgs(parser,
             'be added onto the created disks to indicate the licensing and '
             'billing policies.'))
 
-  _SourceArgs(parser, source_in_place_snapshot_enabled)
+  _SourceArgs(parser, source_instant_snapshot_enabled)
 
   if support_provisioned_iops:
     parser.add_argument(
@@ -242,7 +241,7 @@ def _ParseGuestOsFeaturesToMessages(args, client_messages):
 class Create(base.Command):
   """Create Compute Engine persistent disks."""
 
-  source_in_place_snapshot_enabled = False
+  source_instant_snapshot_enabled = False
 
   @classmethod
   def Args(cls, parser):
@@ -275,10 +274,10 @@ class Create(base.Command):
   def GetFromImage(self, args):
     return args.image or args.image_family
 
-  def GetFromSourceInPlaceSnapshot(self, args):
-    if not self.source_in_place_snapshot_enabled:
+  def GetFromSourceInstantSnapshot(self, args):
+    if not self.source_instant_snapshot_enabled:
       return False
-    return args.source_in_place_snapshot
+    return args.source_instant_snapshot
 
   def GetDiskSizeGb(self, args, from_image):
     size_gb = utils.BytesToGb(args.size)
@@ -287,8 +286,8 @@ class Create(base.Command):
       # if disk size is given, use it.
       pass
     elif (args.source_snapshot or from_image or args.source_disk or
-          self.GetFromSourceInPlaceSnapshot(args)):
-      # if source is a snapshot/image/disk/in-place-snapshot, it is ok not to
+          self.GetFromSourceInstantSnapshot(args)):
+      # if source is a snapshot/image/disk/instant-snapshot, it is ok not to
       # set size_gb since disk size can be obtained from the source.
       pass
     elif args.type in constants.DEFAULT_DISK_SIZE_GB_MAP:
@@ -342,12 +341,12 @@ class Create(base.Command):
       return snapshot_ref.SelfLink()
     return None
 
-  def GetSourceInPlaceSnapshotUri(self, args, compute_holder):
-    if args.source_in_place_snapshot:
-      in_place_snapshot_ref = disks_flags.SOURCE_IN_PLACE_SNAPSHOT_ARG.ResolveAsResource(
+  def GetSourceInstantSnapshotUri(self, args, compute_holder):
+    if args.source_instant_snapshot:
+      instant_snapshot_ref = disks_flags.SOURCE_INSTANT_SNAPSHOT_ARG.ResolveAsResource(
           args, compute_holder.resources)
-      if in_place_snapshot_ref:
-        return in_place_snapshot_ref.SelfLink()
+      if instant_snapshot_ref:
+        return instant_snapshot_ref.SelfLink()
     return None
 
   def GetSourceDiskUri(self, args, compute_holder):
@@ -422,9 +421,9 @@ class Create(base.Command):
                                         args.IsSpecified('image_family') or
                                         args.IsSpecified('source_snapshot') or
                                         args.IsSpecified('source_disk'))
-    if self.source_in_place_snapshot_enabled:
+    if self.source_instant_snapshot_enabled:
       self.show_unformated_message = self.show_unformated_message and not (
-          args.IsSpecified('source_in_place_snapshot'))
+          args.IsSpecified('source_instant_snapshot'))
 
     disk_refs = self.ValidateAndParseDiskRefs(args, compute_holder)
     from_image = self.GetFromImage(args)
@@ -516,8 +515,8 @@ class Create(base.Command):
           physicalBlockSizeBytes=physical_block_size_bytes,
           **kwargs)
       disk.sourceDisk = self.GetSourceDiskUri(args, compute_holder)
-      if self.source_in_place_snapshot_enabled:
-        disk.sourceInPlaceSnapshot = self.GetSourceInPlaceSnapshotUri(
+      if self.source_instant_snapshot_enabled:
+        disk.sourceInstantSnapshot = self.GetSourceInstantSnapshotUri(
             args, compute_holder)
       if (support_multiwriter_disk and
           disk_ref.Collection() == 'compute.regionDisks' and
@@ -584,7 +583,7 @@ class Create(base.Command):
 class CreateBeta(Create):
   """Create Compute Engine persistent disks."""
 
-  source_in_place_snapshot_enabled = False
+  source_instant_snapshot_enabled = False
 
   @classmethod
   def Args(cls, parser):
@@ -615,7 +614,7 @@ class CreateBeta(Create):
 class CreateAlpha(CreateBeta):
   """Create Compute Engine persistent disks."""
 
-  source_in_place_snapshot_enabled = True
+  source_instant_snapshot_enabled = True
 
   @classmethod
   def Args(cls, parser):
@@ -625,7 +624,7 @@ class CreateAlpha(CreateBeta):
         parser,
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
-        source_in_place_snapshot_enabled=True,
+        source_instant_snapshot_enabled=True,
         support_pd_interface=True,
         support_provisioned_iops=True)
     image_utils.AddGuestOsFeaturesArg(parser, messages)

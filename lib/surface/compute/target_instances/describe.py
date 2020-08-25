@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.target_instances import flags
 class Describe(base.DescribeCommand):
   """Describe a target instance.
 
-    *{command}* displays all data associated with a Google Compute
+    *{command}* displays all data associated with a Compute
   Engine target instance in a project.
   """
 

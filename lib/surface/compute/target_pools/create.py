@@ -36,7 +36,7 @@ class Create(base.CreateCommand):
   *{command}* is used to create a target pool. A target pool resource
   defines a group of instances that can receive incoming traffic
   from forwarding rules. When a forwarding rule directs traffic to a
-  target pool, Google Compute Engine picks an instance from the
+  target pool, Compute Engine picks an instance from the
   target pool based on a hash of the source and
   destination IP addresses and ports. For more
   information on load balancing, see

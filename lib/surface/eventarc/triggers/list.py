@@ -50,8 +50,8 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddLocationResourceArg(parser,
-                                 'The location for which to list triggers.')
+    flags.AddLocationResourceArg(
+        parser, 'The location for which to list triggers.', required=True)
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(triggers.GetTriggerURI)
 

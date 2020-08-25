@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.secrets import fmt as secrets_fmt
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Access(base.DescribeCommand):
+  # pylint: disable=line-too-long
   r"""Access a secret version's data.
 
   Access the data for the specified secret version.
@@ -35,7 +36,14 @@ class Access(base.DescribeCommand):
   Access the data for version 123 of the secret 'my-secret':
 
     $ {command} 123 --secret=my-secret
+
+  Note: The output will be formatted as UTF-8 which can corrupt binary secrets.
+  To get the raw bytes, have Cloud SDK print the response as base64-encoded and
+  decode:
+
+    $ {command} 123 --secret=my-secret --format='get(payload.data)' | tr '_-' '/+' | base64 -d
   """
+  # pylint: enable=line-too-long
 
   @staticmethod
   def Args(parser):
@@ -50,6 +58,7 @@ class Access(base.DescribeCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AccessBeta(Access):
+  # pylint: disable=line-too-long
   r"""Access a secret version's data.
 
   Access the data for the specified secret version.
@@ -59,7 +68,14 @@ class AccessBeta(Access):
   Access the data for version 123 of the secret 'my-secret':
 
     $ {command} 123 --secret=my-secret
+
+  Note: The output will be formatted as UTF-8 which can corrupt binary secrets.
+  To get the raw bytes, have Cloud SDK print the response as base64-encoded and
+  decode:
+
+    $ {command} 123 --secret=my-secret --format='get(payload.data)' | tr '_-' '/+' | base64 -d
   """
+  # pylint: enable=line-too-long
 
   @staticmethod
   def Args(parser):

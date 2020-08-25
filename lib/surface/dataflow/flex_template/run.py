@@ -25,26 +25,8 @@ from googlecloudsdk.command_lib.dataflow import dataflow_util
 from googlecloudsdk.core import properties
 
 
-def _CommonRun(args):
-  """Runs the command.
-
-  Args:
-    args: The arguments that were provided to this command invocation.
-
-  Returns:
-    A Job message.
-  """
-  arguments = apis.TemplateArguments(
-      project_id=properties.VALUES.core.project.Get(required=True),
-      region_id=dataflow_util.GetRegion(args),
-      job_name=args.job_name,
-      gcs_location=args.template_file_gcs_location,
-      parameters=args.parameters)
-  return apis.Templates.CreateJobFromFlexTemplate(arguments)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class RunBeta(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class Run(base.Command):
   """Runs a job from the specified path."""
 
   detailed_help = {
@@ -60,6 +42,11 @@ class RunBeta(base.Command):
 
   @staticmethod
   def Args(parser):
+    """Register flags for this command.
+
+    Args:
+      parser: argparse.ArgumentParser to register arguments with.
+    """
     parser.add_argument(
         'job_name',
         metavar='JOB_NAME',
@@ -95,4 +82,19 @@ class RunBeta(base.Command):
          '#setting-other-cloud-dataflow-pipeline-options'))
 
   def Run(self, args):
-    return _CommonRun(args)
+    """Runs the command.
+
+    Args:
+      args: The arguments that were provided to this command invocation.
+
+    Returns:
+      A Job message.
+    """
+    arguments = apis.TemplateArguments(
+        project_id=properties.VALUES.core.project.Get(required=True),
+        region_id=dataflow_util.GetRegion(args),
+        job_name=args.job_name,
+        gcs_location=args.template_file_gcs_location,
+        parameters=args.parameters)
+    return apis.Templates.CreateJobFromFlexTemplate(arguments)
+

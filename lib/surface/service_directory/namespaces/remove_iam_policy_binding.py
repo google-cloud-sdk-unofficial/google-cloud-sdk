@@ -50,5 +50,8 @@ class RemoveIamPolicyBinding(base.Command):
     client = namespaces.NamespacesClient()
     namespace_ref = args.CONCEPTS.namespace.Parse()
 
+    result = client.RemoveIamPolicyBinding(namespace_ref, args.member,
+                                           args.role)
     iam_util.LogSetIamPolicy(namespace_ref.Name(), _RESOURCE_TYPE)
-    return client.RemoveIamPolicyBinding(namespace_ref, args.member, args.role)
+
+    return result

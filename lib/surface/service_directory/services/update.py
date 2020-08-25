@@ -50,6 +50,8 @@ class Update(base.UpdateCommand):
     client = services.ServicesClient()
     service_ref = args.CONCEPTS.service.Parse()
     metadata = util.ParseMetadataArg(args.metadata, _RESOURCE_TYPE)
+
+    result = client.Update(service_ref, metadata)
     log.UpdatedResource(service_ref.servicesId, _RESOURCE_TYPE)
 
-    return client.Update(service_ref, metadata)
+    return result

@@ -20,9 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.privateca import base as privateca_base
-from googlecloudsdk.api_lib.privateca import locations
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
@@ -46,12 +44,8 @@ class Describe(base.DescribeCommand):
     concept_parsers.ConceptParser.ForResource(
         'REUSABLE_CONFIG',
         resource_args.CreateReusableConfigResourceSpec(
-            location_fallthrough=deps.Fallthrough(
-                function=lambda: locations.GetSupportedLocations()[0],
-                hint=('location will default to the first location supported '
-                      'by the service'),
-                active=False,
-                plural=False)),
+            location_fallthroughs=[
+                resource_args.LOCATION_PROPERTY_FALLTHROUGH]),
         'The reusable config to describe.',
         required=True).AddToParser(parser)
 

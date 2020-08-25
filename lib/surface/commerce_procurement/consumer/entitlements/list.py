@@ -25,7 +25,7 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """Outputs the List of Entitlement object resulting from the List API."""
+  """Returns the List of Entitlement objects resulting from the List API."""
 
   @staticmethod
   def Args(parser):
@@ -39,7 +39,8 @@ class List(base.ListCommand):
     base.SORT_BY_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     parser.add_argument(
-        '--page-token', help=('Token to specify next page in the list.'))
+        '--page-token',
+        help=('Token that specifies the next page in the list.'))
 
   def Run(self, args):
     """Runs the command.

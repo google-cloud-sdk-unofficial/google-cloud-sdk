@@ -38,7 +38,13 @@ class Create(base.CreateCommand):
   Create a new version of an existing secret named 'my-secret' with secret data
   "s3cr3t":
 
-    $ echo "s3cr3t" | {command} my-secret --data-file=-
+    $ printf "s3cr3t" | {command} my-secret --data-file=-
+
+  Create a new version of an existing secret named 'my-secret' with secret data
+  "s3cr3t" using PowerShell (Note: PowerShell will add a newline to the
+  resulting secret):
+
+    $ Write-Output "s3cr3t" | {command} my-secret --data-file=-
 
   Create a new version of an existing secret named 'my-secret' with secret data
   from a file:
@@ -84,7 +90,13 @@ class CreateBeta(Create):
   Create a new version of an existing secret named 'my-secret' with secret data
   "s3cr3t":
 
-    $ echo "s3cr3t" | {command} " my-secret --data-file=-
+    $ printf "s3cr3t" | {command} my-secret --data-file=-
+
+  Create a new version of an existing secret named 'my-secret' with secret data
+  "s3cr3t" using PowerShell (Note: PowerShell will add a newline to the
+  resulting secret):
+
+    $ Write-Output "s3cr3t" | {command} my-secret --data-file=-
 
   Create a new version of an existing secret named 'my-secret' with secret data
   from a file:

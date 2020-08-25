@@ -30,7 +30,7 @@ def _DetailedHelp():
           'Display detailed information about a target gRPC proxy.',
       'DESCRIPTION':
           """\
-        *{command}* displays all data associated with a Google Compute Engine
+        *{command}* displays all data associated with a Compute Engine
         target gRPC proxy.
       """,
       'EXAMPLES':

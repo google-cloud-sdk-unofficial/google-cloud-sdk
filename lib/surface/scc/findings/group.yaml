@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: Filter an organization or source's findings and groups them by their specified properties.
