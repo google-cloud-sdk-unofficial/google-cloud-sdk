@@ -32,9 +32,9 @@ _VPN_GATEWAY_ARG = flags.GetVpnGatewayArgument()
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  r"""Update a Google Compute Engine Highly Available VPN gateway.
+  r"""Update a Compute Engine Highly Available VPN gateway.
 
-  *{command}* updates labels for a Google Compute Engine Highly Available VPN
+  *{command}* updates labels for a Compute Engine Highly Available VPN
   gateway.
 
   For example:

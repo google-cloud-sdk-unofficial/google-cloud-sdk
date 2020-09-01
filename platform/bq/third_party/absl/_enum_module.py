@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Import workaround so that Bazel, Py2/Py3, and enum34 package work together.
 
 This works around a problem due to the combination of Bazel putting

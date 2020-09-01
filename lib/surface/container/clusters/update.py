@@ -363,6 +363,7 @@ class Update(base.UpdateCommand):
     if hasattr(args, 'node_locations') and args.node_locations is not None:
       locations = sorted(args.node_locations)
 
+    flags.LogBasicAuthDeprecationWarning(args)
     if args.IsSpecified('username') or args.IsSpecified('enable_basic_auth'):
       flags.MungeBasicAuthFlags(args)
       options = api_adapter.SetMasterAuthOptions(

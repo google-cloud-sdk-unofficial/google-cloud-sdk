@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.0.59",
+  "CLI_VERSION": "2.0.60",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -267,7 +267,7 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "DESCRIPTION": "Execute a query.\n\nQuery should be specifed on command line, or passed\non stdin.\n",
+        "DESCRIPTION": "Execute a query.\n\nQuery should be specified on command line, or passed\non stdin.\n",
         "EXAMPLES": "bq query 'select count(*) from\npublicdata:samples.shakespeare'\necho 'select count(*) from\npublicdata:samples.shakespeare' | bq query\n\nUsage:\nquery [<sql_query>]\n"
       }
     },

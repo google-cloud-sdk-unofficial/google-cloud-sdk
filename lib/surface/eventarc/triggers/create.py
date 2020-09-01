@@ -45,8 +45,9 @@ class Create(base.CreateCommand):
     flags.AddTriggerResourceArg(parser, 'The trigger to create.', required=True)
     flags.AddMatchingCriteriaArg(parser, required=True)
     flags.AddServiceAccountResourceArg(parser)
-    flags.AddDestinationRunServiceResourceArg(parser, required=True)
+    flags.AddDestinationRunServiceArg(parser, required=True)
     flags.AddDestinationRunPathArg(parser)
+    flags.AddDestinationRunRegionArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -54,10 +55,10 @@ class Create(base.CreateCommand):
     client = triggers.TriggersClient()
     trigger_ref = args.CONCEPTS.trigger.Parse()
     service_account_ref = args.CONCEPTS.service_account.Parse()
-    destination_run_service_ref = args.CONCEPTS.destination_run_service.Parse()
     operation = client.Create(trigger_ref, args.matching_criteria,
-                              service_account_ref, destination_run_service_ref,
-                              args.destination_run_path)
+                              service_account_ref, args.destination_run_service,
+                              args.destination_run_path,
+                              args.destination_run_region)
     if args.async_:
       return operation
     return client.WaitFor(operation)

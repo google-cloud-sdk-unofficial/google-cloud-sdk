@@ -25,9 +25,9 @@ from googlecloudsdk.command_lib.compute.zones import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine zone.
+  """Describe a Compute Engine zone.
 
-  *{command}* displays all data associated with a Google Compute Engine zone.
+  *{command}* displays all data associated with a Compute Engine zone.
   """
 
   @staticmethod

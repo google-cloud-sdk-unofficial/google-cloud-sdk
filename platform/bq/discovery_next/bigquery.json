@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20200804",
+ "revision": "20200821",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -1543,6 +1543,10 @@
      "type": "string",
      "description": "[Output-only] Slot-milliseconds for the job.",
      "format": "int64"
+    },
+    "transactionInfoTemplate": {
+     "$ref": "TransactionInfo",
+     "description": "[Output-only] [Alpha] Information of the multi-statement transaction if this job is part of one."
     }
    }
   },
@@ -2812,6 +2816,16 @@
     }
    }
   },
+  "TransactionInfo": {
+   "id": "TransactionInfo",
+   "type": "object",
+   "properties": {
+    "transactionId": {
+     "type": "string",
+     "description": "[Output-only] // [Alpha] Id of the transaction."
+    }
+   }
+  },
   "UserDefinedFunctionResource": {
    "id": "UserDefinedFunctionResource",
    "type": "object",
@@ -2904,12 +2918,14 @@
     },
     "modelType": {
      "description": "Output only. Type of the model resource.",
+     "readOnly": true,
+     "type": "string",
      "enumDescriptions": [
       "",
       "Linear regression model.",
       "Logistic regression based classification model.",
       "K-means clustering model.",
-      "[Beta] Matrix factorization model.",
+      "Matrix factorization model.",
       "[Beta] DNN classifier model.",
       "[Beta] An imported TensorFlow model.",
       "[Beta] DNN regressor model.",
@@ -2919,8 +2935,6 @@
       "[Beta] AutoML Tables regression model.",
       "[Beta] AutoML Tables classification model."
      ],
-     "readOnly": true,
-     "type": "string",
      "enum": [
       "MODEL_TYPE_UNSPECIFIED",
       "LINEAR_REGRESSION",
@@ -3005,12 +3019,12 @@
     },
     "lossType": {
      "description": "Type of loss function used during training run.",
+     "type": "string",
      "enumDescriptions": [
       "",
       "Mean squared loss, used for linear regression.",
       "Mean log loss, used for logistic regression."
      ],
-     "type": "string",
      "enum": [
       "LOSS_TYPE_UNSPECIFIED",
       "MEAN_SQUARED_LOSS",
@@ -3054,6 +3068,7 @@
     },
     "dataSplitMethod": {
      "description": "The data split type for training and evaluation, e.g. RANDOM.",
+     "type": "string",
      "enumDescriptions": [
       "",
       "Splits data randomly.",
@@ -3062,7 +3077,6 @@
       "Data split will be skipped.",
       "Splits data automatically: Uses NO_SPLIT if the data size is small. Otherwise uses RANDOM."
      ],
-     "type": "string",
      "enum": [
       "DATA_SPLIT_METHOD_UNSPECIFIED",
       "RANDOM",
@@ -3083,12 +3097,12 @@
     },
     "learnRateStrategy": {
      "description": "The strategy to determine learn rate for the current iteration.",
+     "type": "string",
      "enumDescriptions": [
       "",
       "Use line search to determine learning rate.",
       "Use a constant learning rate."
      ],
-     "type": "string",
      "enum": [
       "LEARN_RATE_STRATEGY_UNSPECIFIED",
       "LINE_SEARCH",
@@ -3118,12 +3132,12 @@
     },
     "distanceType": {
      "description": "Distance type for clustering models.",
+     "type": "string",
      "enumDescriptions": [
       "",
       "Eculidean distance.",
       "Cosine distance."
      ],
-     "type": "string",
      "enum": [
       "DISTANCE_TYPE_UNSPECIFIED",
       "EUCLIDEAN",
@@ -3141,12 +3155,12 @@
     },
     "optimizationStrategy": {
      "description": "Optimization strategy for training linear regression models.",
+     "type": "string",
      "enumDescriptions": [
       "",
       "Uses an iterative batch gradient descent algorithm.",
       "Uses a normal equation to solve linear regression problem."
      ],
-     "type": "string",
      "enum": [
       "OPTIMIZATION_STRATEGY_UNSPECIFIED",
       "BATCH_GRADIENT_DESCENT",
@@ -3193,12 +3207,12 @@
     },
     "feedbackType": {
      "description": "Feedback type that specifies which algorithm to run for matrix factorization.",
+     "type": "string",
      "enumDescriptions": [
       "",
       "Use weighted-als for implicit feedback problems.",
       "Use nonweighted-als for explicit feedback problems."
      ],
-     "type": "string",
      "enum": [
       "FEEDBACK_TYPE_UNSPECIFIED",
       "IMPLICIT",
@@ -3212,13 +3226,13 @@
     },
     "kmeansInitializationMethod": {
      "description": "The method used to initialize the centroids for kmeans algorithm.",
+     "type": "string",
      "enumDescriptions": [
       "",
       "Initializes the centroids randomly.",
       "Initializes the centroids using data specified in kmeans_initialization_column.",
       "Initializes with kmeans++."
      ],
-     "type": "string",
      "enum": [
       "KMEANS_INITIALIZATION_METHOD_UNSPECIFIED",
       "RANDOM",
@@ -3248,6 +3262,7 @@
     },
     "dataFrequency": {
      "description": "The data frequency of a time series.",
+     "type": "string",
      "enumDescriptions": [
       "",
       "Automatically inferred from timestamps.",
@@ -3258,7 +3273,6 @@
       "Daily data.",
       "Hourly data."
      ],
-     "type": "string",
      "enum": [
       "DATA_FREQUENCY_UNSPECIFIED",
       "AUTO_FREQUENCY",
@@ -3276,6 +3290,7 @@
     },
     "holidayRegion": {
      "description": "The geographical region based on which the holidays are considered in time series modeling. If a valid value is specified, then holiday effects modeling is enabled.",
+     "type": "string",
      "enumDescriptions": [
       "Holiday region unspecified.",
       "Global.",
@@ -3347,7 +3362,6 @@
       "Viet Nam",
       "South Africa"
      ],
-     "type": "string",
      "enum": [
       "HOLIDAY_REGION_UNSPECIFIED",
       "GLOBAL",
@@ -3540,15 +3554,6 @@
     },
     "seasonalPeriods": {
      "description": "Seasonal periods. Repeated because multiple periods are supported for one time series.",
-     "enumDescriptions": [
-      "",
-      "No seasonality",
-      "Daily period, 24 hours.",
-      "Weekly period, 7 days.",
-      "Monthly period, 30 days or irregular.",
-      "Quarterly period, 90 days or irregular.",
-      "Yearly period, 365 days or irregular."
-     ],
      "type": "array",
      "items": {
       "type": "string",
@@ -3601,15 +3606,6 @@
     },
     "seasonalPeriods": {
      "description": "Seasonal periods. Repeated because multiple periods are supported for one time series.",
-     "enumDescriptions": [
-      "",
-      "No seasonality",
-      "Daily period, 24 hours.",
-      "Weekly period, 7 days.",
-      "Monthly period, 30 days or irregular.",
-      "Quarterly period, 90 days or irregular.",
-      "Yearly period, 365 days or irregular."
-     ],
      "type": "array",
      "items": {
       "type": "string",
@@ -4085,15 +4081,6 @@
     },
     "seasonalPeriods": {
      "description": "Seasonal periods. Repeated because multiple periods are supported for one time series.",
-     "enumDescriptions": [
-      "",
-      "No seasonality",
-      "Daily period, 24 hours.",
-      "Weekly period, 7 days.",
-      "Monthly period, 30 days or irregular.",
-      "Quarterly period, 90 days or irregular.",
-      "Yearly period, 365 days or irregular."
-     ],
      "type": "array",
      "items": {
       "type": "string",
@@ -4163,15 +4150,6 @@
     },
     "seasonalPeriods": {
      "description": "Seasonal periods. Repeated because multiple periods are supported for one time series.",
-     "enumDescriptions": [
-      "",
-      "No seasonality",
-      "Daily period, 24 hours.",
-      "Weekly period, 7 days.",
-      "Monthly period, 30 days or irregular.",
-      "Quarterly period, 90 days or irregular.",
-      "Yearly period, 365 days or irregular."
-     ],
      "type": "array",
      "items": {
       "type": "string",
@@ -4234,6 +4212,7 @@
    "properties": {
     "typeKind": {
      "description": "Required. The top level type of this field. Can be any standard SQL data type (e.g., \"INT64\", \"DATE\", \"ARRAY\").",
+     "type": "string",
      "enumDescriptions": [
       "Invalid type.",
       "Encoded as a string in decimal format.",
@@ -4251,7 +4230,6 @@
       "Encoded as a list with types matching Type.array_type.",
       "Encoded as a list with fields of type Type.struct_type[i]. List is used because a JSON object cannot have duplicate field names."
      ],
-     "type": "string",
      "enum": [
       "TYPE_KIND_UNSPECIFIED",
       "INT64",
@@ -4325,12 +4303,12 @@
     },
     "routineType": {
      "description": "Required. The type of routine.",
+     "type": "string",
      "enumDescriptions": [
       "",
       "Non-builtin permanent scalar function.",
       "Stored procedure."
      ],
-     "type": "string",
      "enum": [
       "ROUTINE_TYPE_UNSPECIFIED",
       "SCALAR_FUNCTION",
@@ -4351,12 +4329,12 @@
     },
     "language": {
      "description": "Optional. Defaults to \"SQL\".",
+     "type": "string",
      "enumDescriptions": [
       "",
       "SQL language.",
       "JavaScript language."
      ],
-     "type": "string",
      "enum": [
       "LANGUAGE_UNSPECIFIED",
       "SQL",
@@ -4391,12 +4369,12 @@
     },
     "determinismLevel": {
      "description": "Optional. [Experimental] The determinism level of the JavaScript UDF if defined.",
+     "type": "string",
      "enumDescriptions": [
       "The determinism of the UDF is unspecified.",
       "The UDF is deterministic, meaning that 2 function calls with the same inputs always produce the same result, even across 2 query runs.",
       "The UDF is not deterministic."
      ],
-     "type": "string",
      "enum": [
       "DETERMINISM_LEVEL_UNSPECIFIED",
       "DETERMINISTIC",
@@ -4416,12 +4394,12 @@
     },
     "argumentKind": {
      "description": "Optional. Defaults to FIXED_TYPE.",
+     "type": "string",
      "enumDescriptions": [
       "",
       "The argument is a variable with fully specified type, which can be a struct or an array, but not a table.",
       "The argument is any type, including struct or array, but not a table. To be added: FIXED_TABLE, ANY_TABLE"
      ],
-     "type": "string",
      "enum": [
       "ARGUMENT_KIND_UNSPECIFIED",
       "FIXED_TYPE",
@@ -4430,13 +4408,13 @@
     },
     "mode": {
      "description": "Optional. Specifies whether the argument is input or output. Can be set for procedures only.",
+     "type": "string",
      "enumDescriptions": [
       "",
       "The argument is input-only.",
       "The argument is output-only.",
       "The argument is both an input and an output."
      ],
-     "type": "string",
      "enum": [
       "MODE_UNSPECIFIED",
       "IN",
@@ -4584,13 +4562,13 @@
    "properties": {
     "logType": {
      "description": "The log type that this config enables.",
+     "type": "string",
      "enumDescriptions": [
       "Default case. Should never be this.",
       "Admin reads. Example: CloudIAM getIamPolicy",
       "Data writes. Example: CloudSQL Users create",
       "Data reads. Example: CloudSQL Users list"
      ],
-     "type": "string",
      "enum": [
       "LOG_TYPE_UNSPECIFIED",
       "ADMIN_READ",

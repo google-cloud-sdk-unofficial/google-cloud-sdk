@@ -38,6 +38,7 @@ from googleapiclient import discovery
 from googleapiclient import http as http_request
 from googleapiclient import model
 import httplib2
+import inflection
 import six
 from six.moves import map
 from six.moves import range
@@ -67,6 +68,7 @@ CONNECTION_TYPE_TO_PROPERTY_MAP = {
     'CLOUD_SQL': 'cloudSql',
     'AWS': 'aws',
     'Azure': 'azure',
+    'SQL_DATA_SOURCE': 'sqlDataSource',
 }
 CONNECTION_PROPERTY_TO_TYPE_MAP = {
     p: t for t, p in six.iteritems(CONNECTION_TYPE_TO_PROPERTY_MAP)
@@ -120,6 +122,13 @@ def MaybePrintManualInstructionsForConnection(connection):
            connection['aws']['crossAccountRole'].get('iamUserId'),
            connection['aws']['crossAccountRole'].get('externalId')))
 
+  if connection.get('azure'):
+    print(('Please create a Service Principal in your directory '
+           'for appId: \'%s\',\n'
+           'and perform role assignment to app: \'%s\' to allow BigQuery '
+           'to access your Azure data. \n') %
+          (connection['azure'].get('clientId'),
+           connection['azure'].get('application')))
 
 
 
@@ -1605,7 +1614,7 @@ class BigqueryClient(object):
     location = location or default_location
     if not location:
       raise BigqueryError('Location not specified.')
-    if default_location and location != default_location:
+    if default_location and location.lower() != default_location.lower():
       raise BigqueryError(
           "Specified location '%s' should be the same as the location of the "
           "reservation '%s'." % (default_location, location))
@@ -1794,15 +1803,15 @@ class BigqueryClient(object):
   def CreateReservation(self,
                         reference,
                         slots,
-                        use_idle_slots,
+                        ignore_idle_slots,
                         autoscale_max_slots=None):
     """Create a reservation with the given reservation reference.
 
     Arguments:
       reference: Reservation to create.
       slots: Number of slots allocated to this reservation subtree.
-      use_idle_slots: Specifies whether queries can use idle slots from other
-        reservations. Only applicable for v1beta1.
+      ignore_idle_slots: Specifies whether queries should ignore idle slots from
+        other reservations.
       autoscale_max_slots: Number of slots to be scaled when needed.
 
     Returns:
@@ -1813,7 +1822,7 @@ class BigqueryClient(object):
     """
     reservation = {}
     reservation['slot_capacity'] = slots
-    reservation['ignore_idle_slots'] = not use_idle_slots
+    reservation['ignore_idle_slots'] = ignore_idle_slots
     if autoscale_max_slots is not None:
       if (self.api_version != 'autoscale_alpha'
          ):
@@ -1926,15 +1935,15 @@ class BigqueryClient(object):
         name=reference.path(), updateMask=update_mask,
         body=bi_reservation).execute()
 
-  def UpdateReservation(self, reference, slots, use_idle_slots,
+  def UpdateReservation(self, reference, slots, ignore_idle_slots,
                         autoscale_max_slots):
     """Updates a reservation with the given reservation reference.
 
     Arguments:
       reference: Reservation to update.
       slots: Number of slots allocated to this reservation subtree.
-      use_idle_slots: Specifies whether queries can use idle slots from other
-        reservations. Only applicable for v1beta1.
+      ignore_idle_slots: Specifies whether queries should ignore idle slots from
+        other reservations.
       autoscale_max_slots: Number of slots to be scaled when needed.
 
     Returns:
@@ -1949,8 +1958,8 @@ class BigqueryClient(object):
       reservation['slot_capacity'] = slots
       update_mask += 'slot_capacity,'
 
-    if use_idle_slots is not None:
-      reservation['ignore_idle_slots'] = not use_idle_slots
+    if ignore_idle_slots is not None:
+      reservation['ignore_idle_slots'] = ignore_idle_slots
       update_mask += 'ignore_idle_slots,'
 
     if autoscale_max_slots is not None:
@@ -2319,6 +2328,23 @@ class BigqueryClient(object):
     connection = {}
     update_mask = []
 
+    def GetUpdateMask(base_path, json_properties):
+      """Creates an update mask from json_properties.
+
+      Arguments:
+        base_path: 'cloud_sql'
+        json_properties:
+        {
+          'host': ... ,
+          'instanceId': ...
+        }
+      Returns:
+         list of  paths in snake case:
+         mask = ['cloud_sql.host', 'cloud_sql.instance_id']
+      """
+      return [base_path + '.' + inflection.underscore(json_property)
+              for json_property in json_properties]
+
     if display_name:
       connection['friendlyName'] = display_name
       update_mask.append('friendlyName')
@@ -2331,12 +2357,10 @@ class BigqueryClient(object):
       if properties:
         cloudsql_properties = json.loads(properties)
         connection['cloudSql'] = cloudsql_properties
-        if cloudsql_properties.get('instanceId'):
-          update_mask.append('cloudSql.instanceId')
-        if cloudsql_properties.get('database'):
-          update_mask.append('cloudSql.database')
-        if cloudsql_properties.get('type'):
-          update_mask.append('cloudSql.type')
+
+        update_mask.extend(
+            GetUpdateMask(connection_type.lower(), cloudsql_properties))
+
       else:
         connection['cloudSql'] = {}
 
@@ -2358,6 +2382,22 @@ class BigqueryClient(object):
       if connection_credential:
         connection['aws']['credential'] = json.loads(connection_credential)
       update_mask.append('aws.credential')
+
+    elif connection_type == 'SQL_DATA_SOURCE':
+      if properties:
+        sql_data_source_properties = json.loads(properties)
+        connection['sqlDataSource'] = sql_data_source_properties
+
+        update_mask.extend(
+            GetUpdateMask(connection_type.lower(), sql_data_source_properties))
+
+      else:
+        connection['sqlDataSource'] = {}
+
+      if connection_credential:
+        connection['sqlDataSource']['credential'] = json.loads(
+            connection_credential)
+        update_mask.append('sqlDataSource.credential')
 
     client = self.GetConnectionV1ApiClient()
 
@@ -2556,6 +2596,8 @@ class BigqueryClient(object):
             formatter.AddColumns(('Last modified', 'Schema', 'Type',
                                   'Total URIs', 'Expiration'))
             use_default = False
+          elif object_info['type'] == 'SNAPSHOT':
+            formatter.AddColumns(('Base Table', 'Snapshot TimeStamp'))
         if use_default:
           formatter.AddColumns(('Last modified', 'Schema',
                                 'Total Rows', 'Total Bytes',
@@ -2576,10 +2618,12 @@ class BigqueryClient(object):
     elif reference_type == ApiClientHelper.EncryptionServiceAccount:
       formatter.AddColumns(list(object_info.keys()))
     elif reference_type == ApiClientHelper.ReservationReference:
-      formatter.AddColumns(('name', 'slotCapacity', 'useIdleSlots'))
+      formatter.AddColumns(('name', 'slotCapacity', 'ignoreIdleSlots',
+                            'creationTime', 'updateTime'))
     elif reference_type == ApiClientHelper.AutoscaleAlphaReservationReference:
-      formatter.AddColumns(('name', 'slotCapacity', 'useIdleSlots',
-                            'autoscaleMaxSlots', 'autoscaleCurrentSlots'))
+      formatter.AddColumns(
+          ('name', 'slotCapacity', 'ignoreIdleSlots', 'autoscaleMaxSlots',
+           'autoscaleCurrentSlots', 'creationTime', 'updateTime'))
     elif reference_type == ApiClientHelper.CapacityCommitmentReference:
       formatter.AddColumns(('name', 'slotCount', 'plan', 'renewalPlan', 'state',
                             'commitmentStartTime', 'commitmentEndTime'))
@@ -3057,6 +3101,10 @@ class BigqueryClient(object):
               result['externalDataConfiguration']['sourceUris'])
     if 'encryptionConfiguration' in result:
       result['kmsKeyName'] = result['encryptionConfiguration']['kmsKeyName']
+    if 'snapshotDefinition' in result:
+      result['Base Table'] = result['snapshotDefinition']['baseTableReference']
+      result['Snapshot TimeStamp'] = result['snapshotDefinition'][
+          'snapshotTime']
     return result
 
 
@@ -3134,12 +3182,8 @@ class BigqueryClient(object):
     # Default values not passed along in the response.
     if 'slotCapacity' not in list(result.keys()):
       result['slotCapacity'] = '0'
-    if ('ignoreIdleSlots' not in list(result.keys()) or
-        result['ignoreIdleSlots'] == 'False'):
-      result['useIdleSlots'] = 'True'
-    else:
-      result['useIdleSlots'] = 'False'
-    result.pop('ignoreIdleSlots', None)
+    if 'ignoreIdleSlots' not in list(result.keys()):
+      result['ignoreIdleSlots'] = 'False'
     if (reference_type == ApiClientHelper.AutoscaleAlphaReservationReference and
         'autoscale' in list(result.keys())):
       if 'maxSlots' in list(result['autoscale'].keys()):
@@ -3847,6 +3891,8 @@ class BigqueryClient(object):
       write_disposition=None,
       ignore_already_exists=False,
       encryption_configuration=None,
+      operation_type='COPY',
+      destination_expiration_time=None,
       **kwds):
     """Copies a table.
 
@@ -3882,6 +3928,12 @@ class BigqueryClient(object):
     if encryption_configuration:
       copy_config[
           'destinationEncryptionConfiguration'] = encryption_configuration
+
+    if operation_type:
+      copy_config['operationType'] = operation_type
+
+    if destination_expiration_time:
+      copy_config['destinationExpirationTime'] = destination_expiration_time
 
     _ApplyParameters(
         copy_config,

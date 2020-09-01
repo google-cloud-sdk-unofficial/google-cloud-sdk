@@ -145,7 +145,7 @@ _DETAILED_HELP = {
         r"""Submit an AI Platform training job.
 
 This creates temporary files and executes Python code staged
-by a user on Google Cloud Storage. Model code can either be
+by a user on Cloud Storage. Model code can either be
 specified with a path, e.g.:
 
     $ {command} my_job \
@@ -174,7 +174,7 @@ even with the `--stream-logs` flag, the job will continue to run after this
 command exits and must be cancelled with `gcloud ai-platform jobs cancel JOB_ID`).
 
 For more information, see:
-https://cloud.google.com/ml/docs/concepts/training-overview
+https://cloud.google.com/ai-platform/training/docs/overview
 """
 }
 

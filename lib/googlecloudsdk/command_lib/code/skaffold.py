@@ -20,16 +20,117 @@ from __future__ import unicode_literals
 
 import contextlib
 import datetime
+import os.path
+import signal
+import subprocess
+import sys
 import threading
 
 from googlecloudsdk.command_lib.code import json_stream
+from googlecloudsdk.core import config
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_attr
+from googlecloudsdk.core.updater import update_manager
+from googlecloudsdk.core.util import files as file_utils
 import six
 
 
 class StopThreadError(BaseException):
   """The thread has been stopped by a ThreadEvent."""
+
+
+# In integration tests SIGINT doesn't generate KeyboardInterrupt. Create a
+# signal handler that forces the generation of KeyboardInterrupt.
+def _KeyboardInterruptHandler(unused_signum, unused_stack):
+  """Raise a KeyboardInterrupt."""
+  raise KeyboardInterrupt()
+
+
+class _SigInterruptedHandler(object):
+  """Context manager to capture SIGINT and send it to a handler."""
+
+  def __init__(self, handler):
+    self._orig_handler = None
+    self._handler = handler
+
+  def __enter__(self):
+    self._orig_handler = signal.getsignal(signal.SIGINT)
+    signal.signal(signal.SIGINT, self._handler)
+
+  def __exit__(self, exc_type, exc_value, tb):
+    signal.signal(signal.SIGINT, self._orig_handler)
+
+
+def _FindOrInstallSkaffoldComponent():
+  if (config.Paths().sdk_root and
+      update_manager.UpdateManager.EnsureInstalledAndRestart(['skaffold'])):
+    return os.path.join(config.Paths().sdk_root, 'bin', 'skaffold')
+  return None
+
+
+def _FindSkaffold():
+  """Find the path to the skaffold executable."""
+  skaffold = (
+      _FindOrInstallSkaffoldComponent() or
+      file_utils.FindExecutableOnPath('skaffold'))
+  if not skaffold:
+    raise EnvironmentError('Unable to locate skaffold.')
+  return skaffold
+
+
+@contextlib.contextmanager
+def Skaffold(skaffold_config,
+             context_name=None,
+             namespace=None,
+             env_vars=None,
+             debug=False,
+             events_port=None):
+  """Run skaffold and catch keyboard interrupts to kill the process.
+
+  Args:
+    skaffold_config: Path to skaffold configuration yaml file.
+    context_name: Kubernetes context name.
+    namespace: Kubernetes namespace name.
+    env_vars: Additional environment variables with which to run skaffold.
+    debug: If true, turn on debugging output.
+    events_port: If set, turn on the events api and expose it on this port.
+
+  Yields:
+    The skaffold process.
+  """
+  cmd = [_FindSkaffold(), 'dev', '-f', skaffold_config, '--port-forward']
+  if context_name:
+    cmd += ['--kube-context=%s' % context_name]
+  if namespace:
+    cmd += ['--namespace=%s' % namespace]
+  if debug:
+    cmd += ['-vdebug']
+  if events_port:
+    cmd += ['--enable-rpc', '--rpc-http-port=%s' % events_port]
+
+  # Supress the current Ctrl-C handler and pass the signal to the child
+  # process.
+  with _SigInterruptedHandler(_KeyboardInterruptHandler):
+    # Skaffold needs to be able to run minikube and kind. Those tools
+    # may live in the SDK root as installed gcloud components. Place the
+    # SDK root in the path for skaffold.
+    env = os.environ.copy()
+    if env_vars:
+      env.update((six.ensure_str(name), six.ensure_str(value))
+                 for name, value in env_vars.items())
+    if config.Paths().sdk_root:
+      env['PATH'] = six.ensure_str(env['PATH'] + os.pathsep +
+                                   config.Paths().sdk_root)
+
+    try:
+      p = subprocess.Popen(cmd, env=env)
+      yield p
+    except KeyboardInterrupt:
+      p.terminate()
+      p.wait()
+
+    sys.stdout.flush()
+    sys.stderr.flush()
 
 
 class PrintUrlThreadContext(object):
@@ -123,7 +224,7 @@ def ReadEventStream(response):
   Yields:
     Events from the JSON payloads.
   """
-  for payload in json_stream.ReadJsonStream(response.fp, ignore_non_json=True):
+  for payload in json_stream.ReadJsonStream(response):
     if not isinstance(payload, dict):
       continue
     event = payload['result']['event']

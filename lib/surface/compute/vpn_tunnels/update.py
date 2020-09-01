@@ -32,9 +32,9 @@ _VPN_TUNNEL_ARG = vpn_tunnel_flags.VpnTunnelArgument()
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
-  r"""Update a Google Compute Engine VPN tunnel.
+  r"""Update a Compute Engine VPN tunnel.
 
-  *{command}* updates labels for a Google Compute Engine VPN tunnel.
+  *{command}* updates labels for a Compute Engine VPN tunnel.
   For example:
 
     $ {command} example-tunnel --region us-central1 \

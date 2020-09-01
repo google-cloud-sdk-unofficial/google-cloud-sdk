@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Exception classes in ABSL flags library.
 
 Do NOT import this module directly. Import the flags package and use the
@@ -24,6 +25,7 @@ from __future__ import print_function
 import sys
 
 from absl.flags import _helpers
+
 
 _helpers.disclaim_module_ids.add(id(sys.modules[__name__]))
 
@@ -49,12 +51,12 @@ class DuplicateFlagError(Error):
     Args:
       flagname: str, the name of the flag being redefined.
       flag_values: FlagValues, the FlagValues instance containing the first
-        definition of flagname.
+          definition of flagname.
       other_flag_values: FlagValues, if it is not None, it should be the
-        FlagValues object where the second definition of flagname occurs. If it
-        is None, we assume that we're being called when attempting to create the
-        flag a second time, and we use the module calling this one as the source
-        of the second definition.
+          FlagValues object where the second definition of flagname occurs.
+          If it is None, we assume that we're being called when attempting
+          to create the flag a second time, and we use the module calling
+          this one as the source of the second definition.
 
     Returns:
       An instance of DuplicateFlagError.
@@ -68,7 +70,7 @@ class DuplicateFlagError(Error):
           flagname, default='<unknown>')
     flag_summary = flag_values[flagname].help
     msg = ("The flag '%s' is defined twice. First from %s, Second from %s.  "
-           'Description from first occurrence: %s') % (
+           "Description from first occurrence: %s") % (
                flagname, first_module, second_module, flag_summary)
     return cls(msg)
 
@@ -94,8 +96,8 @@ class UnrecognizedFlagError(Error):
       tip = '. Did you mean: %s ?' % ', '.join(suggestions)
     else:
       tip = ''
-    super(UnrecognizedFlagError,
-          self).__init__('Unknown command line flag \'%s\'%s' % (flagname, tip))
+    super(UnrecognizedFlagError, self).__init__(
+        'Unknown command line flag \'%s\'%s' % (flagname, tip))
 
 
 class UnparsedFlagAccessError(Error):

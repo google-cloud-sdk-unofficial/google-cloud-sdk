@@ -1,4 +1,5 @@
-- help_text:
+- release_tracks: [BETA, ALPHA]
+  help_text:
     brief: |
       Describe a Cloud Filestore backup.
     description: |
@@ -28,7 +29,10 @@
         Region (e.g. us-central1) for the backup.
 
   request:
-    api_version: v1p1alpha1
+    ALPHA:
+      api_version: v1p1alpha1
+    BETA:
+      api_version: v1beta1
     collection: file.projects.locations.backups
     disable_resource_check: true
     modify_request_hooks:

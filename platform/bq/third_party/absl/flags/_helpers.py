@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Internal helper functions for Abseil Python flags library."""
 
 from __future__ import absolute_import
@@ -36,9 +37,10 @@ except ImportError:
 import six
 from six.moves import range  # pylint: disable=redefined-builtin
 
+
 _DEFAULT_HELP_WIDTH = 80  # Default width of help output.
 _MIN_HELP_WIDTH = 40  # Minimal "sane" width of help output. We assume that any
-# value below 40 is unreasonable.
+                      # value below 40 is unreasonable.
 
 # Define the allowed error rate in an input string to get suggestions.
 #
@@ -62,10 +64,12 @@ _ILLEGAL_XML_CHARS_REGEX = re.compile(
 # define key flag.
 disclaim_module_ids = set([id(sys.modules[__name__])])
 
+
 # Define special flags here so that help may be generated for them.
 # NOTE: Please do NOT use SPECIAL_FLAGS from outside flags module.
 # Initialized inside flagvalues.py.
 SPECIAL_FLAGS = None
+
 
 # This points to the flags module, initialized in flags/__init__.py.
 # This should only be used in adopt_module_key_flags to take SPECIAL_FLAGS into
@@ -160,9 +164,9 @@ def create_xml_dom_element(doc, name, value):
   Args:
     doc: minidom.Document, the DOM document it should create nodes from.
     name: str, the tag of XML element.
-    value: object, whose string representation will be used as the value of the
-      XML element. Illegal or highly discouraged xml 1.0 characters are
-      stripped.
+    value: object, whose string representation will be used
+        as the value of the XML element. Illegal or highly discouraged xml 1.0
+        characters are stripped.
 
   Returns:
     An instance of minidom.Element.
@@ -254,7 +258,6 @@ def _damerau_levenshtein(a, b):
 
     memo[x, y] = d
     return d
-
   return distance(a, b)
 
 
@@ -266,8 +269,8 @@ def text_wrap(text, length=None, indent='', firstline_indent=None):
 
   Args:
     text: str, text to wrap.
-    length: int, maximum length of a line, includes indentation. If this is None
-      then use get_help_width()
+    length: int, maximum length of a line, includes indentation.
+        If this is None then use get_help_width()
     indent: str, indent for all but first line.
     firstline_indent: str, indent for first line; if None, fall back to indent.
 
@@ -315,7 +318,7 @@ def text_wrap(text, length=None, indent='', firstline_indent=None):
   return '\n'.join(result)
 
 
-def flag_dict_to_args(flag_map):
+def flag_dict_to_args(flag_map, multi_flags=None):
   """Convert a dict of values into process call parameters.
 
   This method is used to convert a dictionary into a sequence of parameters
@@ -323,13 +326,17 @@ def flag_dict_to_args(flag_map):
 
   Args:
     flag_map: dict, a mapping where the keys are flag names (strings).
-        values are treated according to their type: * If value is None, then
-          only the name is emitted. * If value is True, then only the name is
-          emitted. * If value is False, then only the name prepended with 'no'
-          is emitted. * If value is a string then --name=value is emitted. * If
-          value is a collection, this will emit --name=value1,value2,value3. *
-          Everything else is converted to string an passed as such.
-
+        values are treated according to their type:
+        * If value is None, then only the name is emitted.
+        * If value is True, then only the name is emitted.
+        * If value is False, then only the name prepended with 'no' is emitted.
+        * If value is a string then --name=value is emitted.
+        * If value is a collection, this will emit --name=value1,value2,value3,
+          unless the flag name is in multi_flags, in which case this will emit
+          --name=value1 --name=value2 --name=value3.
+        * Everything else is converted to string an passed as such.
+    multi_flags: set, names (strings) of flags that should be treated as
+        multi-flags.
   Yields:
     sequence of string suitable for a subprocess execution.
   """
@@ -347,7 +354,11 @@ def flag_dict_to_args(flag_map):
     else:
       # Now we attempt to deal with collections.
       try:
-        yield '--%s=%s' % (key, ','.join(str(item) for item in value))
+        if multi_flags and key in multi_flags:
+          for item in value:
+            yield '--%s=%s' % (key, str(item))
+        else:
+          yield '--%s=%s' % (key, ','.join(str(item) for item in value))
       except TypeError:
         # Default case.
         yield '--%s=%s' % (key, value)

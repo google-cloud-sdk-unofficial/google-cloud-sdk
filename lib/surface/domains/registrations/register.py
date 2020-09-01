@@ -86,7 +86,7 @@ class Register(base.CreateCommand):
     for field in ['registrantContact', 'adminContact', 'technicalContact']:
       if not contacts.get_assigned_value(field):
         raise exceptions.Error('Providing {} is required.'.format(field))
-    # TODO(b/146630685): Call Register with validate_only to check contacts.
+    # TODO(b/166210862): Call Register with validate_only to check contacts.
 
   def Run(self, args):
     client = registrations.RegistrationsClient()

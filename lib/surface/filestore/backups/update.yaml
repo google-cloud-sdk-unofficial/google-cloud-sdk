@@ -1,4 +1,5 @@
-- help_text:
+- release_tracks: [BETA, ALPHA]
+  help_text:
     brief: |
       Update a Cloud Filestore backup.
     description: |
@@ -12,7 +13,7 @@
       The following command updates the Cloud Filestore Backup named 'my-backup' in region
       us-central1 to change the description to 'A new description.'
 
-       $ {command} my-backup --region=us-central1 --description="A new description."
+        $ {command} my-backup --region=us-central1 --description="A new description."
 
   arguments:
     params:
@@ -40,7 +41,10 @@
     collection: file.projects.locations.operations
 
   request:
-    api_version: v1p1alpha1
+    ALPHA:
+      api_version: v1p1alpha1
+    BETA:
+      api_version: v1beta1
     display_resource_type: backup
     collection: file.projects.locations.backups
     modify_request_hooks:

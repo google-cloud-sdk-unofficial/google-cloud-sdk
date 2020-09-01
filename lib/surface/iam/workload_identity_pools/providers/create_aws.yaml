@@ -56,4 +56,3 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.attribute_mapping
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.aws_account_id
       required: true
-    - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.aws_sts_uri

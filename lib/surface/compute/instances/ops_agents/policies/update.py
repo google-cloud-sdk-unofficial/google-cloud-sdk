@@ -60,9 +60,6 @@ class Update(base.Command):
   ``--clear-group-labels'', ``--clear-instances'', and ``--clear-zones'' flags.
   """
 
-# TODO(b/160345689): We need to update command description sample with each
-# field that we are updating in the commands. Also Sync gcloud command
-# implementation help text with user guide.
   detailed_help = {
       'DESCRIPTION':
           '{description}',

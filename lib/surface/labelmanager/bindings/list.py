@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.labelmanager import utils
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-# TODO(b/145234946): Add e2e test for ListLabelBindings and test --uri flag.
 class List(base.ListCommand):
   """Lists LabelBindings bound to the specified resource or LabelValue.
 

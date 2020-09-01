@@ -30,7 +30,7 @@ from googlecloudsdk.core import properties
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List Google Compute Engine Highly Available VPN Gateways."""
+  """List Compute Engine Highly Available VPN Gateways."""
 
   detailed_help = {
       'EXAMPLES':

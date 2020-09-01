@@ -17,8 +17,8 @@
 import enum
 
 
-BASE_URL = 'https://domains.googleapis.com/v1alpha1/'
-DOCS_URL = 'https://cloud.google.com/cloud-domains/'
+BASE_URL = 'https://apigateway.googleapis.com/v1beta/'
+DOCS_URL = ' https://cloud.google.com/api-gateway/docs'
 
 
 class Collections(enum.Enum):
@@ -41,6 +41,38 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_APIS = (
+      'projects.locations.apis',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/apis/{apisId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_APIS_CONFIGS = (
+      'projects.locations.apis.configs',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/apis/{apisId}/'
+              'configs/{configsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_GATEWAYS = (
+      'projects.locations.gateways',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/gateways/'
+              '{gatewaysId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_OPERATIONS = (
       'projects.locations.operations',
       '{+name}',
@@ -48,17 +80,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/operations/'
               '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_REGISTRATIONS = (
-      'projects.locations.registrations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/registrations/'
-              '{registrationsId}',
       },
       ['name'],
       True

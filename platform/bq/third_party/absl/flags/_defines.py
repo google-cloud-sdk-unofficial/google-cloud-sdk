@@ -31,6 +31,18 @@ from absl.flags import _flagvalues
 from absl.flags import _helpers
 from absl.flags import _validators
 
+# pylint: disable=unused-import
+try:
+  from typing import Text, List, Any
+except ImportError:
+  pass
+
+try:
+  import enum
+except ImportError:
+  pass
+# pylint: enable=unused-import
+
 _helpers.disclaim_module_ids.add(id(sys.modules[__name__]))
 
 
@@ -54,12 +66,12 @@ def _register_bounds_validator_if_needed(parser, name, flag_values):
     _validators.register_validator(name, checker, flag_values=flag_values)
 
 
-def DEFINE(
+def DEFINE(  # pylint: disable=invalid-name
     parser,
     name,
     default,
-    help,
-    flag_values=_flagvalues.FLAGS,  # pylint: disable=redefined-builtin,invalid-name
+    help,  # pylint: disable=redefined-builtin
+    flag_values=_flagvalues.FLAGS,
     serializer=None,
     module_name=None,
     **args):
@@ -82,8 +94,11 @@ def DEFINE(
     module_name: str, the name of the Python module declaring this flag. If not
       provided, it will be computed using the stack trace of this call.
     **args: dict, the extra keyword args that are passed to Flag __init__.
+
+  Returns:
+    a handle to defined flag.
   """
-  DEFINE_flag(
+  return DEFINE_flag(
       _flag.Flag(parser, serializer, name, default, help, **args), flag_values,
       module_name)
 
@@ -104,6 +119,9 @@ def DEFINE_flag(flag, flag_values=_flagvalues.FLAGS, module_name=None):  # pylin
       registered. This should almost never need to be overridden.
     module_name: str, the name of the Python module declaring this flag. If not
       provided, it will be computed using the stack trace of this call.
+
+  Returns:
+    a handle to defined flag.
   """
   # Copying the reference to flag_values prevents pychecker warnings.
   fv = flag_values
@@ -115,6 +133,8 @@ def DEFINE_flag(flag, flag_values=_flagvalues.FLAGS, module_name=None):  # pylin
     module, module_name = _helpers.get_calling_module_object_and_name()
   flag_values.register_flag_by_module(module_name, flag)
   flag_values.register_flag_by_module_id(id(module), flag)
+  return _flagvalues.FlagHolder(
+      fv, flag, ensure_non_none_value=flag.default is not None)
 
 
 def _internal_declare_key_flags(flag_names,
@@ -247,7 +267,7 @@ def DEFINE_string(  # pylint: disable=invalid-name,redefined-builtin
   """Registers a flag whose value can be any string."""
   parser = _argument_parser.ArgumentParser()
   serializer = _argument_parser.ArgumentSerializer()
-  DEFINE(parser, name, default, help, flag_values, serializer, **args)
+  return DEFINE(parser, name, default, help, flag_values, serializer, **args)
 
 
 def DEFINE_boolean(  # pylint: disable=invalid-name,redefined-builtin
@@ -276,8 +296,11 @@ def DEFINE_boolean(  # pylint: disable=invalid-name,redefined-builtin
     module_name: str, the name of the Python module declaring this flag. If not
       provided, it will be computed using the stack trace of this call.
     **args: dict, the extra keyword args that are passed to Flag __init__.
+
+  Returns:
+    a handle to defined flag.
   """
-  DEFINE_flag(
+  return DEFINE_flag(
       _flag.BooleanFlag(name, default, help, **args), flag_values, module_name)
 
 
@@ -288,7 +311,7 @@ def DEFINE_float(  # pylint: disable=invalid-name,redefined-builtin
     lower_bound=None,
     upper_bound=None,
     flag_values=_flagvalues.FLAGS,
-    **args):  # pylint: disable=invalid-name
+    **args):
   """Registers a flag whose value must be a float.
 
   If lower_bound or upper_bound are set, then this flag must be
@@ -303,11 +326,15 @@ def DEFINE_float(  # pylint: disable=invalid-name,redefined-builtin
     flag_values: FlagValues, the FlagValues instance with which the flag will be
       registered. This should almost never need to be overridden.
     **args: dict, the extra keyword args that are passed to DEFINE.
+
+  Returns:
+    a handle to defined flag.
   """
   parser = _argument_parser.FloatParser(lower_bound, upper_bound)
   serializer = _argument_parser.ArgumentSerializer()
-  DEFINE(parser, name, default, help, flag_values, serializer, **args)
+  result = DEFINE(parser, name, default, help, flag_values, serializer, **args)
   _register_bounds_validator_if_needed(parser, name, flag_values=flag_values)
+  return result
 
 
 def DEFINE_integer(  # pylint: disable=invalid-name,redefined-builtin
@@ -332,11 +359,15 @@ def DEFINE_integer(  # pylint: disable=invalid-name,redefined-builtin
     flag_values: FlagValues, the FlagValues instance with which the flag will be
       registered. This should almost never need to be overridden.
     **args: dict, the extra keyword args that are passed to DEFINE.
+
+  Returns:
+    a handle to defined flag.
   """
   parser = _argument_parser.IntegerParser(lower_bound, upper_bound)
   serializer = _argument_parser.ArgumentSerializer()
-  DEFINE(parser, name, default, help, flag_values, serializer, **args)
+  result = DEFINE(parser, name, default, help, flag_values, serializer, **args)
   _register_bounds_validator_if_needed(parser, name, flag_values=flag_values)
+  return result
 
 
 def DEFINE_enum(  # pylint: disable=invalid-name,redefined-builtin
@@ -363,8 +394,11 @@ def DEFINE_enum(  # pylint: disable=invalid-name,redefined-builtin
     module_name: str, the name of the Python module declaring this flag. If not
       provided, it will be computed using the stack trace of this call.
     **args: dict, the extra keyword args that are passed to Flag __init__.
+
+  Returns:
+    a handle to defined flag.
   """
-  DEFINE_flag(
+  return DEFINE_flag(
       _flag.EnumFlag(name, default, help, enum_values, **args), flag_values,
       module_name)
 
@@ -376,6 +410,7 @@ def DEFINE_enum_class(  # pylint: disable=invalid-name,redefined-builtin
     help,
     flag_values=_flagvalues.FLAGS,
     module_name=None,
+    case_sensitive=False,
     **args):
   """Registers a flag whose value can be the name of enum members.
 
@@ -388,11 +423,21 @@ def DEFINE_enum_class(  # pylint: disable=invalid-name,redefined-builtin
       registered. This should almost never need to be overridden.
     module_name: str, the name of the Python module declaring this flag. If not
       provided, it will be computed using the stack trace of this call.
+    case_sensitive: bool, whether to map strings to members of the enum_class
+      without considering case.
     **args: dict, the extra keyword args that are passed to Flag __init__.
+
+  Returns:
+    a handle to defined flag.
   """
-  DEFINE_flag(
-      _flag.EnumClassFlag(name, default, help, enum_class, **args), flag_values,
-      module_name)
+  return DEFINE_flag(
+      _flag.EnumClassFlag(
+          name,
+          default,
+          help,
+          enum_class,
+          case_sensitive=case_sensitive,
+          **args), flag_values, module_name)
 
 
 def DEFINE_list(  # pylint: disable=invalid-name,redefined-builtin
@@ -413,10 +458,13 @@ def DEFINE_list(  # pylint: disable=invalid-name,redefined-builtin
       registered. This should almost never need to be overridden.
     **args: Dictionary with extra keyword args that are passed to the Flag
       __init__.
+
+  Returns:
+    a handle to defined flag.
   """
   parser = _argument_parser.ListParser()
   serializer = _argument_parser.CsvListSerializer(',')
-  DEFINE(parser, name, default, help, flag_values, serializer, **args)
+  return DEFINE(parser, name, default, help, flag_values, serializer, **args)
 
 
 def DEFINE_spaceseplist(  # pylint: disable=invalid-name,redefined-builtin
@@ -441,11 +489,14 @@ def DEFINE_spaceseplist(  # pylint: disable=invalid-name,redefined-builtin
       registered. This should almost never need to be overridden.
     **args: Dictionary with extra keyword args that are passed to the Flag
       __init__.
+
+  Returns:
+    a handle to defined flag.
   """
   parser = _argument_parser.WhitespaceSeparatedListParser(
       comma_compat=comma_compat)
   serializer = _argument_parser.ListSerializer(' ')
-  DEFINE(parser, name, default, help, flag_values, serializer, **args)
+  return DEFINE(parser, name, default, help, flag_values, serializer, **args)
 
 
 def DEFINE_multi(  # pylint: disable=invalid-name,redefined-builtin
@@ -481,8 +532,11 @@ def DEFINE_multi(  # pylint: disable=invalid-name,redefined-builtin
       not provided, it will be computed using the stack trace of this call.
     **args: Dictionary with extra keyword args that are passed to the Flag
       __init__.
+
+  Returns:
+    a handle to defined flag.
   """
-  DEFINE_flag(
+  return DEFINE_flag(
       _flag.MultiFlag(parser, serializer, name, default, help, **args),
       flag_values, module_name)
 
@@ -510,10 +564,14 @@ def DEFINE_multi_string(  # pylint: disable=invalid-name,redefined-builtin
       registered. This should almost never need to be overridden.
     **args: Dictionary with extra keyword args that are passed to the Flag
       __init__.
+
+  Returns:
+    a handle to defined flag.
   """
   parser = _argument_parser.ArgumentParser()
   serializer = _argument_parser.ArgumentSerializer()
-  DEFINE_multi(parser, serializer, name, default, help, flag_values, **args)
+  return DEFINE_multi(parser, serializer, name, default, help, flag_values,
+                      **args)
 
 
 def DEFINE_multi_integer(  # pylint: disable=invalid-name,redefined-builtin
@@ -542,10 +600,14 @@ def DEFINE_multi_integer(  # pylint: disable=invalid-name,redefined-builtin
       registered. This should almost never need to be overridden.
     **args: Dictionary with extra keyword args that are passed to the Flag
       __init__.
+
+  Returns:
+    a handle to defined flag.
   """
   parser = _argument_parser.IntegerParser(lower_bound, upper_bound)
   serializer = _argument_parser.ArgumentSerializer()
-  DEFINE_multi(parser, serializer, name, default, help, flag_values, **args)
+  return DEFINE_multi(parser, serializer, name, default, help, flag_values,
+                      **args)
 
 
 def DEFINE_multi_float(  # pylint: disable=invalid-name,redefined-builtin
@@ -574,10 +636,14 @@ def DEFINE_multi_float(  # pylint: disable=invalid-name,redefined-builtin
       registered. This should almost never need to be overridden.
     **args: Dictionary with extra keyword args that are passed to the Flag
       __init__.
+
+  Returns:
+    a handle to defined flag.
   """
   parser = _argument_parser.FloatParser(lower_bound, upper_bound)
   serializer = _argument_parser.ArgumentSerializer()
-  DEFINE_multi(parser, serializer, name, default, help, flag_values, **args)
+  return DEFINE_multi(parser, serializer, name, default, help, flag_values,
+                      **args)
 
 
 def DEFINE_multi_enum(  # pylint: disable=invalid-name,redefined-builtin
@@ -607,10 +673,14 @@ def DEFINE_multi_enum(  # pylint: disable=invalid-name,redefined-builtin
     case_sensitive: Whether or not the enum is to be case-sensitive.
     **args: Dictionary with extra keyword args that are passed to the Flag
       __init__.
+
+  Returns:
+    a handle to defined flag.
   """
   parser = _argument_parser.EnumParser(enum_values, case_sensitive)
   serializer = _argument_parser.ArgumentSerializer()
-  DEFINE_multi(parser, serializer, name, default, help, flag_values, **args)
+  return DEFINE_multi(parser, serializer, name, default, help, flag_values,
+                      **args)
 
 
 def DEFINE_multi_enum_class(  # pylint: disable=invalid-name,redefined-builtin
@@ -620,6 +690,7 @@ def DEFINE_multi_enum_class(  # pylint: disable=invalid-name,redefined-builtin
     help,
     flag_values=_flagvalues.FLAGS,
     module_name=None,
+    case_sensitive=False,
     **args):
   """Registers a flag whose value can be a list of enum members.
 
@@ -639,18 +710,24 @@ def DEFINE_multi_enum_class(  # pylint: disable=invalid-name,redefined-builtin
       registered. This should almost never need to be overridden.
     module_name: A string, the name of the Python module declaring this flag. If
       not provided, it will be computed using the stack trace of this call.
+    case_sensitive: bool, whether to map strings to members of the enum_class
+      without considering case.
     **args: Dictionary with extra keyword args that are passed to the Flag
       __init__.
+
+  Returns:
+    a handle to defined flag.
   """
-  DEFINE_flag(
-      _flag.MultiEnumClassFlag(name, default, help, enum_class), flag_values,
-      module_name, **args)
+  return DEFINE_flag(
+      _flag.MultiEnumClassFlag(
+          name, default, help, enum_class, case_sensitive=case_sensitive),
+      flag_values, module_name, **args)
 
 
-def DEFINE_alias(
+def DEFINE_alias(  # pylint: disable=invalid-name
     name,
     original_name,
-    flag_values=_flagvalues.FLAGS,  # pylint: disable=invalid-name
+    flag_values=_flagvalues.FLAGS,
     module_name=None):
   """Defines an alias flag for an existing one.
 
@@ -661,6 +738,9 @@ def DEFINE_alias(
       registered. This should almost never need to be overridden.
     module_name: A string, the name of the module that defines this flag.
 
+  Returns:
+    a handle to defined flag.
+
   Raises:
     flags.FlagError:
       UnrecognizedFlagError: if the referenced flag doesn't exist.
@@ -670,15 +750,20 @@ def DEFINE_alias(
     raise _exceptions.UnrecognizedFlagError(original_name)
   flag = flag_values[original_name]
 
-  class _Parser(_argument_parser.ArgumentParser):
-    """The parser for the alias flag calls the original flag parser."""
+  class _FlagAlias(_flag.Flag):
+    """Overrides Flag class so alias value is copy of original flag value."""
 
     def parse(self, argument):
       flag.parse(argument)
-      return flag.value
+      self.present += 1
 
-  class _FlagAlias(_flag.Flag):
-    """Overrides Flag class so alias value is copy of original flag value."""
+    def _parse_from_default(self, value):
+      # The value was already parsed by the aliased flag, so there is no
+      # need to call the parser on it a second time.
+      # Additionally, because of how MultiFlag parses and merges values,
+      # it isn't possible to delegate to the aliased flag and still get
+      # the correct values.
+      return value
 
     @property
     def value(self):
@@ -690,9 +775,9 @@ def DEFINE_alias(
 
   help_msg = 'Alias for --%s.' % flag.name
   # If alias_name has been used, flags.DuplicatedFlag will be raised.
-  DEFINE_flag(
+  return DEFINE_flag(
       _FlagAlias(
-          _Parser(),
+          flag.parser,
           flag.serializer,
           name,
           flag.default,
