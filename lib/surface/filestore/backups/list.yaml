@@ -1,4 +1,5 @@
-- help_text:
+- release_tracks: [BETA, ALPHA]
+  help_text:
     brief: |
       List Cloud Filestore backups.
     description: |
@@ -22,7 +23,10 @@
       override_resource_collection: true
 
   request:
-    api_version: v1p1alpha1
+    ALPHA:
+      api_version: v1p1alpha1
+    BETA:
+      api_version: v1beta1
     collection: file.projects.locations.backups
     modify_request_hooks:
     - googlecloudsdk.command_lib.filestore.util:AddDefaultLocationToListRequest

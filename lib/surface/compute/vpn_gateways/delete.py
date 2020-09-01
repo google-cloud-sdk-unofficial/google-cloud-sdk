@@ -40,9 +40,9 @@ class DeleteBatchPoller(poller.BatchPoller):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
-  """Delete Google Compute Engine Highly Available VPN Gateways.
+  """Delete Compute Engine Highly Available VPN Gateways.
 
-  *{command}* is used to delete one or more Google Compute Engine Highly
+  *{command}* is used to delete one or more Compute Engine Highly
   Available VPN Gateways. VPN Gateways can only be deleted when no VPN tunnels
   refer to them.
 

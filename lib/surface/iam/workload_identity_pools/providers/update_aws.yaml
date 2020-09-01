@@ -17,8 +17,8 @@
   command_type: UPDATE
 
   help_text:
-    brief: Update a new AWS-type WorkloadIdentityPoolProvider.
-    description: Update a new AWS-type WorkloadIdentityPoolProvider.
+    brief: Update an AWS WorkloadIdentityPoolProvider.
+    description: Update an AWS WorkloadIdentityPoolProvider.
     examples: |
       The following command updates an AWS WorkloadIdentityPoolProvider with the ID
       'my-workload-identity-pool-provider'. Explicit values for all required and optional
@@ -54,4 +54,3 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.attribute_condition
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.attribute_mapping
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.aws_account_id
-    - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.aws_sts_uri

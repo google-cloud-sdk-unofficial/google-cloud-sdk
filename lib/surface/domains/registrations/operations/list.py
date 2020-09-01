@@ -58,5 +58,4 @@ class List(base.ListCommand):
 
     location_ref = args.CONCEPTS.location.Parse()
 
-    # TODO(b/110077203): Add server-side filtering.
     return client.List(location_ref, args.limit, args.page_size)

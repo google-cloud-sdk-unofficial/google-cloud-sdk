@@ -33,7 +33,7 @@ _NETWORK_ARG = network_flags.NetworkArgumentForOtherResource("""\
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a new Google Compute Engine Highly Available VPN gateway.
+  """Create a new Compute Engine Highly Available VPN gateway.
 
   *{command}* creates a new Highly Available VPN gateway.
 

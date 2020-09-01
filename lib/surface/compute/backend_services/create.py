@@ -84,7 +84,7 @@ class CreateHelper(object):
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
            support_logging, support_multinic, support_client_only,
-           support_grpc_protocol, support_all_protocol):
+           support_grpc_protocol, support_all_protocol, support_subsetting):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -122,6 +122,9 @@ class CreateHelper(object):
     parser.display_info.AddCacheUpdater(flags.BackendServicesCompleter)
     signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
 
+    if support_subsetting:
+      flags.AddSubsettingPolicy(parser)
+
     if support_failover:
       flags.AddConnectionDrainOnFailover(parser, default=None)
       flags.AddDropTrafficIfUnhealthy(parser, default=None)
@@ -135,11 +138,12 @@ class CreateHelper(object):
       flags.AddNetwork(parser)
 
   def __init__(self, support_l7_internal_load_balancer, support_failover,
-               support_logging, support_multinic):
+               support_logging, support_multinic, support_subsetting):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
     self._support_multinic = support_multinic
+    self._support_subsetting = support_subsetting
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
     """Returns a global backend service create request."""
@@ -228,6 +232,8 @@ class CreateHelper(object):
     backend_services_utils.ApplyFailoverPolicyArgs(client.messages, args,
                                                    backend_service,
                                                    self._support_failover)
+    if self._support_subsetting:
+      backend_services_utils.ApplySubsettingArgs(client, args, backend_service)
 
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
@@ -328,6 +334,7 @@ class CreateGA(base.CreateCommand):
   _support_client_only = False
   _support_grpc_protocol = True
   _support_all_protocol = False
+  _support_subsetting = False
 
   @classmethod
   def Args(cls, parser):
@@ -340,7 +347,8 @@ class CreateGA(base.CreateCommand):
         support_multinic=cls._support_multinic,
         support_client_only=cls._support_client_only,
         support_grpc_protocol=cls._support_grpc_protocol,
-        support_all_protocol=cls._support_all_protocol)
+        support_all_protocol=cls._support_all_protocol,
+        support_subsetting=cls._support_subsetting)
 
   def Run(self, args):
     """Issues request necessary to create Backend Service."""
@@ -351,7 +359,8 @@ class CreateGA(base.CreateCommand):
         ._support_l7_internal_load_balancer,
         support_failover=self._support_failover,
         support_logging=self._support_logging,
-        support_multinic=self._support_multinic).Run(args, holder)
+        support_multinic=self._support_multinic,
+        support_subsetting=self._support_subsetting).Run(args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -376,6 +385,7 @@ class CreateBeta(CreateGA):
   _support_client_only = False
   _support_grpc_protocol = True
   _support_all_protocol = False
+  _support_subsetting = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -399,3 +409,4 @@ class CreateAlpha(CreateBeta):
   _support_client_only = True
   _support_grpc_protocol = True
   _support_all_protocol = True
+  _support_subsetting = True

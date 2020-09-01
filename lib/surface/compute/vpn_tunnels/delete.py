@@ -42,7 +42,7 @@ class DeleteBatchPoller(poller.BatchPoller):
 class Delete(base.DeleteCommand):
   """Delete VPN tunnels.
 
-  *{command}* deletes one or more Google Compute Engine VPN tunnels.
+  *{command}* deletes one or more Compute Engine VPN tunnels.
   """
 
   @staticmethod

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief:  Import HL7v2 messages from Google Cloud Storage into a Cloud Healthcare API HL7v2 store.
@@ -13,6 +13,8 @@
     method: import
     ALPHA:
       api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
 
   arguments:
     resource:

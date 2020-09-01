@@ -128,30 +128,6 @@ Cannot be used with the "--create-subnetwork" option.
   parser.display_info.AddFormat(util.CLUSTERS_FORMAT)
 
 
-def ValidateBasicAuthFlags(args):
-  """Validates flags associated with basic auth.
-
-  Overwrites username if enable_basic_auth is specified; checks that password is
-  set if username is non-empty.
-
-  Args:
-    args: an argparse namespace. All the arguments that were provided to this
-      command invocation.
-
-  Raises:
-    util.Error, if username is non-empty and password is not set.
-  """
-  if hasattr(args, 'enable_basic_auth') and \
-      args.IsSpecified('enable_basic_auth'):
-    if not args.enable_basic_auth:
-      args.username = ''
-    # `enable_basic_auth == true` is a no-op defaults are resoved server-side
-    # based on the version of the cluster. For versions before 1.12, this is
-    # 'admin', otherwise '' (disabled).
-  if not args.username and args.IsSpecified('password'):
-    raise util.Error(constants.USERNAME_PASSWORD_ERROR_MSG)
-
-
 def MaybeLogAuthWarning(args):
   if (hasattr(args, 'issue_client_certificate') and \
       args.IsSpecified('issue_client_certificate')):
@@ -174,9 +150,10 @@ def ParseCreateOptionsBase(args, is_autogke, get_default):
         'workloads and applications. See: '
         'https://cloud.google.com/kubernetes-engine/docs/concepts/dashboards')
 
+  flags.LogBasicAuthDeprecationWarning(args)
   flags.MungeBasicAuthFlags(args)
-
   MaybeLogAuthWarning(args)
+
   enable_ip_alias = get_default('enable_ip_alias')
   if hasattr(args, 'enable_ip_alias'):
     flags.WarnForUnspecifiedIpAllocationPolicy(args)
@@ -187,8 +164,7 @@ def ParseCreateOptionsBase(args, is_autogke, get_default):
     flags.WarnForNodeModification(args, enable_autorepair)
 
   metadata = metadata_utils.ConstructMetadataDict(
-      get_default('metadata'),
-      get_default('metadata_from_file'))
+      get_default('metadata'), get_default('metadata_from_file'))
 
   return api_adapter.CreateClusterOptions(
       accelerators=get_default('accelerator'),
@@ -307,8 +283,8 @@ def AddAutoRepair(parser):
 
 def AddPrivateClusterDeprecated(parser, default=None):
   default_value = {} if default is None else default
-  flags.AddPrivateClusterFlags(parser, default=default_value,
-                               with_deprecated=True)
+  flags.AddPrivateClusterFlags(
+      parser, default=default_value, with_deprecated=True)
 
 
 def AddEnableAutoUpgradeWithDefault(parser):
@@ -355,6 +331,7 @@ def DefaultAttribute(flagname, flag_defaults):
 
 def AttrValue(args, flagname, flag_defaults):
   return getattr(args, flagname, DefaultAttribute(flagname, flag_defaults))
+
 
 flags_to_add = {
     GA: {
@@ -741,6 +718,7 @@ def AddFlags(channel, parser, flag_defaults, allowlist=None):
       else:
         add_flag_for_channel[flagname](parser)
 
+
 base_flag_defaults = {
     'num_nodes': 3,
 }
@@ -937,8 +915,7 @@ class CreateAlpha(Create):
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
     flags.ValidateCloudRunConfigCreateArgs(
-        get_default('cloud_run_config'),
-        get_default('addons'))
+        get_default('cloud_run_config'), get_default('addons'))
     flags.ValidateNotificationConfigFlag(args)
     ops.boot_disk_kms_key = get_default('boot_disk_kms_key')
     ops.autoscaling_profile = get_default('autoscaling_profile')

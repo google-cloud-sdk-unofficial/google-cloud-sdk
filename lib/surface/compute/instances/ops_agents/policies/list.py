@@ -121,9 +121,11 @@ class List(base.ListCommand):
             guest_policy.name,
         )
         yield agent_policy.OpsAgentPolicy(
-            None, None,
+            assignment=None,
+            agent_rules=None,
             description='<MALFORMED>',
+            etag=None,
             name=guest_policy.name,
             update_time=guest_policy.updateTime,
-            create_time=guest_policy.createTime,
+            create_time=guest_policy.createTime
         )

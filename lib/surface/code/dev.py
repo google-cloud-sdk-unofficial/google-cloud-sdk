@@ -19,10 +19,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import contextlib
-import os.path
-import signal
 import subprocess
-import sys
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.code import cross_platform_temp_file
@@ -31,114 +28,18 @@ from googlecloudsdk.command_lib.code import kubernetes
 from googlecloudsdk.command_lib.code import local
 from googlecloudsdk.command_lib.code import local_files
 from googlecloudsdk.command_lib.code import run_subprocess
-from googlecloudsdk.command_lib.code import skaffold_events
+from googlecloudsdk.command_lib.code import skaffold
 from googlecloudsdk.command_lib.code import yaml_helper
-from googlecloudsdk.core import config
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import yaml
-from googlecloudsdk.core.updater import update_manager
 from googlecloudsdk.core.util import files as file_utils
 import portpicker
 import six
 
 
-# In integration tests SIGINT doesn't generate KeyboardInterrupt. Create a
-# signal handler that forces the generation of KeyboardInterrupt.
-def _KeyboardInterruptHandler(unused_signum, unused_stack):
-  """Raise a KeyboardInterrupt."""
-  raise KeyboardInterrupt()
-
-
-class _SigInterruptedHandler(object):
-  """Context manager to capture SIGINT and send it to a handler."""
-
-  def __init__(self, handler):
-    self._orig_handler = None
-    self._handler = handler
-
-  def __enter__(self):
-    self._orig_handler = signal.getsignal(signal.SIGINT)
-    signal.signal(signal.SIGINT, self._handler)
-
-  def __exit__(self, exc_type, exc_value, tb):
-    signal.signal(signal.SIGINT, self._orig_handler)
-
-
-def _FindOrInstallSkaffoldComponent():
-  if (config.Paths().sdk_root and
-      update_manager.UpdateManager.EnsureInstalledAndRestart(['skaffold'])):
-    return os.path.join(config.Paths().sdk_root, 'bin', 'skaffold')
-  return None
-
-
-def _FindSkaffold():
-  """Find the path to the skaffold executable."""
-  skaffold = (
-      _FindOrInstallSkaffoldComponent() or
-      file_utils.FindExecutableOnPath('skaffold'))
-  if not skaffold:
-    raise EnvironmentError('Unable to locate skaffold.')
-  return skaffold
-
-
 class RuntimeMissingDependencyError(exceptions.Error):
   """A runtime dependency is missing."""
-
-
-@contextlib.contextmanager
-def Skaffold(skaffold_config,
-             context_name=None,
-             namespace=None,
-             env_vars=None,
-             debug=False,
-             events_port=None):
-  """Run skaffold and catch keyboard interrupts to kill the process.
-
-  Args:
-    skaffold_config: Path to skaffold configuration yaml file.
-    context_name: Kubernetes context name.
-    namespace: Kubernetes namespace name.
-    env_vars: Additional environment variables with which to run skaffold.
-    debug: If true, turn on debugging output.
-    events_port: If set, turn on the events api and expose it on this port.
-
-  Yields:
-    The skaffold process.
-  """
-  cmd = [_FindSkaffold(), 'dev', '-f', skaffold_config, '--port-forward']
-  if context_name:
-    cmd += ['--kube-context=%s' % context_name]
-  if namespace:
-    cmd += ['--namespace=%s' % namespace]
-  if debug:
-    cmd += ['-vdebug']
-  if events_port:
-    cmd += ['--enable-rpc', '--rpc-http-port=%s' % events_port]
-
-  # Supress the current Ctrl-C handler and pass the signal to the child
-  # process.
-  with _SigInterruptedHandler(_KeyboardInterruptHandler):
-    # Skaffold needs to be able to run minikube and kind. Those tools
-    # may live in the SDK root as installed gcloud components. Place the
-    # SDK root in the path for skaffold.
-    env = os.environ.copy()
-    if env_vars:
-      env.update((six.ensure_str(name), six.ensure_str(value))
-                 for name, value in env_vars.items())
-    if config.Paths().sdk_root:
-      env['PATH'] = six.ensure_str(env['PATH'] + os.pathsep +
-                                   config.Paths().sdk_root)
-
-    try:
-      p = subprocess.Popen(cmd, env=env)
-      yield p
-    except KeyboardInterrupt:
-      p.terminate()
-      p.wait()
-
-    sys.stdout.flush()
-    sys.stderr.flush()
 
 
 @contextlib.contextmanager
@@ -198,7 +99,7 @@ class Dev(base.Command):
 
     parser.add_argument(
         '--stop-cluster',
-        default=False,
+        default=True,
         action='store_true',
         help='If running on minikube or kind, stop the minkube profile or '
         'kind cluster at the end of the session.')
@@ -238,11 +139,11 @@ class Dev(base.Command):
            self._GetKubernetesEngine(args) as kube_context, \
            self._WithKubeNamespace(args.namespace, kube_context.context_name), \
            _SetImagePush(skaffold_file, kube_context.shared_docker) as patched_skaffold_file, \
-           Skaffold(patched_skaffold_file.name, kube_context.context_name,
-                    args.namespace, kube_context.env_vars, _IsDebug(),
-                    skaffold_event_port) as skaffold, \
-           skaffold_events.PrintUrlThreadContext(settings.service_name, skaffold_event_port):
-        skaffold.wait()
+           skaffold.Skaffold(patched_skaffold_file.name, kube_context.context_name,
+                             args.namespace, kube_context.env_vars, _IsDebug(),
+                             skaffold_event_port) as running_process, \
+           skaffold.PrintUrlThreadContext(settings.service_name, skaffold_event_port):
+        running_process.wait()
 
   @staticmethod
   def _GetKubernetesEngine(args):
@@ -304,7 +205,9 @@ class Dev(base.Command):
     """Make sure docker is running."""
     docker = file_utils.FindExecutableOnPath('docker')
     if not docker:
-      raise RuntimeMissingDependencyError('Cannot locate docker on $PATH.')
+      raise RuntimeMissingDependencyError(
+          'Cannot locate docker on $PATH. Install docker from '
+          'https://docs.docker.com/get-docker/.')
     try:
       # docker info returns 0 if it can connect to the docker daemon and
       # returns a non-zero error code if it cannot. run_subprocess

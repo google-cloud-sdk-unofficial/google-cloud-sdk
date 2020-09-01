@@ -23,7 +23,7 @@ import textwrap
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CloudShell(base.Group):
   """Manage Google Cloud Shell."""
 

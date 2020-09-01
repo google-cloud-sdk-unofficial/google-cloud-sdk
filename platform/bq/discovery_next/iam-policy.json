@@ -419,21 +419,6 @@
         },
         "modelType": {
           "description": "Output only. Type of the model resource.",
-          "enumDescriptions": [
-            "",
-            "Linear regression model.",
-            "Logistic regression based classification model.",
-            "K-means clustering model.",
-            "[Beta] Matrix factorization model.",
-            "[Beta] DNN classifier model.",
-            "[Beta] An imported TensorFlow model.",
-            "[Beta] DNN regressor model.",
-            "[Beta] Boosted tree regressor model.",
-            "[Beta] Boosted tree classifier model.",
-            "[Beta] ARIMA model.",
-            "[Beta] AutoML Tables regression model.",
-            "[Beta] AutoML Tables classification model."
-          ],
           "readOnly": true,
           "type": "string",
           "enumDescriptions": [
@@ -441,7 +426,7 @@
             "Linear regression model.",
             "Logistic regression based classification model.",
             "K-means clustering model.",
-            "[Beta] Matrix factorization model.",
+            "Matrix factorization model.",
             "[Beta] DNN classifier model.",
             "[Beta] An imported TensorFlow model.",
             "[Beta] DNN regressor model.",
@@ -554,11 +539,6 @@
         },
         "lossType": {
           "description": "Type of loss function used during training run.",
-          "enumDescriptions": [
-            "",
-            "Mean squared loss, used for linear regression.",
-            "Mean log loss, used for logistic regression."
-          ],
           "type": "string",
           "enumDescriptions": [
             "",
@@ -608,14 +588,6 @@
         },
         "dataSplitMethod": {
           "description": "The data split type for training and evaluation, e.g. RANDOM.",
-          "enumDescriptions": [
-            "",
-            "Splits data randomly.",
-            "Splits data with the user provided tags.",
-            "Splits data sequentially.",
-            "Data split will be skipped.",
-            "Splits data automatically: Uses NO_SPLIT if the data size is small. Otherwise uses RANDOM."
-          ],
           "type": "string",
           "enumDescriptions": [
             "",
@@ -645,11 +617,6 @@
         },
         "learnRateStrategy": {
           "description": "The strategy to determine learn rate for the current iteration.",
-          "enumDescriptions": [
-            "",
-            "Use line search to determine learning rate.",
-            "Use a constant learning rate."
-          ],
           "type": "string",
           "enumDescriptions": [
             "",
@@ -685,11 +652,6 @@
         },
         "distanceType": {
           "description": "Distance type for clustering models.",
-          "enumDescriptions": [
-            "",
-            "Eculidean distance.",
-            "Cosine distance."
-          ],
           "type": "string",
           "enumDescriptions": [
             "",
@@ -713,11 +675,6 @@
         },
         "optimizationStrategy": {
           "description": "Optimization strategy for training linear regression models.",
-          "enumDescriptions": [
-            "",
-            "Uses an iterative batch gradient descent algorithm.",
-            "Uses a normal equation to solve linear regression problem."
-          ],
           "type": "string",
           "enumDescriptions": [
             "",
@@ -770,11 +727,6 @@
         },
         "feedbackType": {
           "description": "Feedback type that specifies which algorithm to run for matrix factorization.",
-          "enumDescriptions": [
-            "",
-            "Use weighted-als for implicit feedback problems.",
-            "Use nonweighted-als for explicit feedback problems."
-          ],
           "type": "string",
           "enumDescriptions": [
             "",
@@ -794,12 +746,6 @@
         },
         "kmeansInitializationMethod": {
           "description": "The method used to initialize the centroids for kmeans algorithm.",
-          "enumDescriptions": [
-            "",
-            "Initializes the centroids randomly.",
-            "Initializes the centroids using data specified in kmeans_initialization_column.",
-            "Initializes with kmeans++."
-          ],
           "type": "string",
           "enumDescriptions": [
             "",
@@ -836,16 +782,6 @@
         },
         "dataFrequency": {
           "description": "The data frequency of a time series.",
-          "enumDescriptions": [
-            "",
-            "Automatically inferred from timestamps.",
-            "Yearly data.",
-            "Quarterly data.",
-            "Monthly data.",
-            "Weekly data.",
-            "Daily data.",
-            "Hourly data."
-          ],
           "type": "string",
           "enumDescriptions": [
             "",
@@ -874,77 +810,6 @@
         },
         "holidayRegion": {
           "description": "The geographical region based on which the holidays are considered in time series modeling. If a valid value is specified, then holiday effects modeling is enabled.",
-          "enumDescriptions": [
-            "Holiday region unspecified.",
-            "Global.",
-            "North America.",
-            "Japan and Asia Pacific: Korea, Greater China, India, Australia, and New Zealand.",
-            "Europe, the Middle East and Africa.",
-            "Latin America and the Caribbean.",
-            "United Arab Emirates",
-            "Argentina",
-            "Austria",
-            "Australia",
-            "Belgium",
-            "Brazil",
-            "Canada",
-            "Switzerland",
-            "Chile",
-            "China",
-            "Colombia",
-            "Czechoslovakia",
-            "Czech Republic",
-            "Germany",
-            "Denmark",
-            "Algeria",
-            "Ecuador",
-            "Estonia",
-            "Egypt",
-            "Spain",
-            "Finland",
-            "France",
-            "Great Britain (United Kingdom)",
-            "Greece",
-            "Hong Kong",
-            "Hungary",
-            "Indonesia",
-            "Ireland",
-            "Israel",
-            "India",
-            "Iran",
-            "Italy",
-            "Japan",
-            "Korea (South)",
-            "Latvia",
-            "Morocco",
-            "Mexico",
-            "Malaysia",
-            "Nigeria",
-            "Netherlands",
-            "Norway",
-            "New Zealand",
-            "Peru",
-            "Philippines",
-            "Pakistan",
-            "Poland",
-            "Portugal",
-            "Romania",
-            "Serbia",
-            "Russian Federation",
-            "Saudi Arabia",
-            "Sweden",
-            "Singapore",
-            "Slovenia",
-            "Slovakia",
-            "Thailand",
-            "Turkey",
-            "Taiwan",
-            "Ukraine",
-            "United States",
-            "Venezuela",
-            "Viet Nam",
-            "South Africa"
-          ],
           "type": "string",
           "enumDescriptions": [
             "Holiday region unspecified.",
@@ -1209,15 +1074,6 @@
         },
         "seasonalPeriods": {
           "description": "Seasonal periods. Repeated because multiple periods are supported for one time series.",
-          "enumDescriptions": [
-            "",
-            "No seasonality",
-            "Daily period, 24 hours.",
-            "Weekly period, 7 days.",
-            "Monthly period, 30 days or irregular.",
-            "Quarterly period, 90 days or irregular.",
-            "Yearly period, 365 days or irregular."
-          ],
           "type": "array",
           "items": {
             "type": "string",
@@ -1270,15 +1126,6 @@
         },
         "seasonalPeriods": {
           "description": "Seasonal periods. Repeated because multiple periods are supported for one time series.",
-          "enumDescriptions": [
-            "",
-            "No seasonality",
-            "Daily period, 24 hours.",
-            "Weekly period, 7 days.",
-            "Monthly period, 30 days or irregular.",
-            "Quarterly period, 90 days or irregular.",
-            "Yearly period, 365 days or irregular."
-          ],
           "type": "array",
           "items": {
             "type": "string",
@@ -1754,15 +1601,6 @@
         },
         "seasonalPeriods": {
           "description": "Seasonal periods. Repeated because multiple periods are supported for one time series.",
-          "enumDescriptions": [
-            "",
-            "No seasonality",
-            "Daily period, 24 hours.",
-            "Weekly period, 7 days.",
-            "Monthly period, 30 days or irregular.",
-            "Quarterly period, 90 days or irregular.",
-            "Yearly period, 365 days or irregular."
-          ],
           "type": "array",
           "items": {
             "type": "string",
@@ -1832,15 +1670,6 @@
         },
         "seasonalPeriods": {
           "description": "Seasonal periods. Repeated because multiple periods are supported for one time series.",
-          "enumDescriptions": [
-            "",
-            "No seasonality",
-            "Daily period, 24 hours.",
-            "Weekly period, 7 days.",
-            "Monthly period, 30 days or irregular.",
-            "Quarterly period, 90 days or irregular.",
-            "Yearly period, 365 days or irregular."
-          ],
           "type": "array",
           "items": {
             "type": "string",
@@ -1903,23 +1732,6 @@
       "properties": {
         "typeKind": {
           "description": "Required. The top level type of this field. Can be any standard SQL data type (e.g., \"INT64\", \"DATE\", \"ARRAY\").",
-          "enumDescriptions": [
-            "Invalid type.",
-            "Encoded as a string in decimal format.",
-            "Encoded as a boolean \"false\" or \"true\".",
-            "Encoded as a number, or string \"NaN\", \"Infinity\" or \"-Infinity\".",
-            "Encoded as a string value.",
-            "Encoded as a base64 string per RFC 4648, section 4.",
-            "Encoded as an RFC 3339 timestamp with mandatory \"Z\" time zone string: 1985-04-12T23:20:50.52Z",
-            "Encoded as RFC 3339 full-date format string: 1985-04-12",
-            "Encoded as RFC 3339 partial-time format string: 23:20:50.52",
-            "Encoded as RFC 3339 full-date \"T\" partial-time: 1985-04-12T23:20:50.52",
-            "Encoded as WKT",
-            "Encoded as a decimal string.",
-            "Encoded as a decimal string.",
-            "Encoded as a list with types matching Type.array_type.",
-            "Encoded as a list with fields of type Type.struct_type[i]. List is used because a JSON object cannot have duplicate field names."
-          ],
           "type": "string",
           "enumDescriptions": [
             "Invalid type.",
@@ -2196,11 +2008,11 @@
           "$ref": "TimePartitioning"
         },
         "rangePartitioning": {
-          "description": "[Experimental] Range partitioning specification for the destination table. Only one of timePartitioning and rangePartitioning should be specified.",
+          "description": "Range partitioning specification for the destination table. Only one of timePartitioning and rangePartitioning should be specified.",
           "$ref": "RangePartitioning"
         },
         "clustering": {
-          "description": "[Experimental] Clustering specification for the destination table. Must be specified with time-based partitioning, data in the table will be first partitioned and subsequently clustered.",
+          "description": "Clustering specification for the destination table.",
           "$ref": "Clustering"
         },
         "destinationEncryptionConfiguration": {
@@ -2345,12 +2157,11 @@
           "type": "string"
         },
         "skipLeadingRows": {
-          "description": "[Optional] The number of rows at the top of a CSV file that BigQuery will skip when reading the data. The default value is 0. This property is useful if you have header rows in the file that should be skipped. When autodetect is on, the behavior is the following: * skipLeadingRows unspecified - Autodetect tries to detect headers in the first row. If they are not detected, the row is read as data. Otherwise data is read starting from the second row. * skipLeadingRows is 0 - Instructs autodetect that there are no headers and data should be read starting from the first row. * skipLeadingRows = N > 0 - Autodetect skips N-1 rows and tries to detect headers in row N. If headers are not detected, row N is just skipped. Otherwise row N is used to extract column names for the detected schema.",
+          "description": "[Optional] The number of rows at the top of a CSV file that BigQuery will skip when reading the data. The default value is 0. This property is useful if you have header rows in the file that should be skipped. When autodetect is on, the behavior is the following: * skipLeadingRows unspecified - Autodetect tries to detect headers in the first row. If they are not detected, the row is read as data. Otherwise data is read starting from the second row. * skipLeadingRows is 0 - Instructs autodetect that there are no headers and data should be read starting from the first row. * skipLeadingRows = N > 0 - Autodetect skips N-1 rows and tries to detect headers in row N. If headers are not detected, row N is just skipped. Otherwise row N is used to extract column names for the detected schema. [Optional] The value that is used to quote data sections in a CSV file. BigQuery converts the string to ISO-8859-1 encoding, and then uses the first byte of the encoded string to split the data in its raw, binary state. The default value is a double-quote (\"). If your data does not contain quoted sections, set the property value to an empty string. If your data contains quoted newline characters, you must also set the allowQuotedNewlines property to true. To include the specific quote character within a quoted value, precede it with an additional matching quote character. For example, if you want to escape the default character ' \" ', use ' \"\" '.",
           "type": "string",
           "format": "int64"
         },
         "quote": {
-          "description": "[Optional] The value that is used to quote data sections in a CSV file. BigQuery converts the string to ISO-8859-1 encoding, and then uses the first byte of the encoded string to split the data in its raw, binary state. The default value is a double-quote (\"). If your data does not contain quoted sections, set the property value to an empty string. If your data contains quoted newline characters, you must also set the allowQuotedNewlines property to true.",
           "pattern": ".?",
           "type": "string"
         },
@@ -2669,11 +2480,6 @@
         },
         "keyResultStatement": {
           "description": "Determines which statement in the script represents the \"key result\", used to populate the schema and query results of the script job. Default is LAST.",
-          "enumDescriptions": [
-            "",
-            "",
-            ""
-          ],
           "type": "string",
           "enumDescriptions": [
             "",
@@ -2753,7 +2559,7 @@
           "type": "string"
         },
         "quote": {
-          "description": "[Optional] The value that is used to quote data sections in a CSV file. BigQuery converts the string to ISO-8859-1 encoding, and then uses the first byte of the encoded string to split the data in its raw, binary state. The default value is a double-quote ('\"'). If your data does not contain quoted sections, set the property value to an empty string. If your data contains quoted newline characters, you must also set the allowQuotedNewlines property to true. @default \"",
+          "description": "[Optional] The value that is used to quote data sections in a CSV file. BigQuery converts the string to ISO-8859-1 encoding, and then uses the first byte of the encoded string to split the data in its raw, binary state. The default value is a double-quote ('\"'). If your data does not contain quoted sections, set the property value to an empty string. If your data contains quoted newline characters, you must also set the allowQuotedNewlines property to true. To include the specific quote character within a quoted value, precede it with an additional matching quote character. For example, if you want to escape the default character ' \" ', use ' \"\" '. @default \"",
           "pattern": ".?",
           "type": "string"
         },
@@ -2809,11 +2615,11 @@
           "$ref": "TimePartitioning"
         },
         "rangePartitioning": {
-          "description": "[Experimental] Range partitioning specification for the destination table. Only one of timePartitioning and rangePartitioning should be specified.",
+          "description": "Range partitioning specification for the destination table. Only one of timePartitioning and rangePartitioning should be specified.",
           "$ref": "RangePartitioning"
         },
         "clustering": {
-          "description": "[Experimental] Clustering specification for the destination table. Must be specified with time-based partitioning, data in the table will be first partitioned and subsequently clustered.",
+          "description": "Clustering specification for the destination table.",
           "$ref": "Clustering"
         },
         "destinationEncryptionConfiguration": {
@@ -2934,7 +2740,7 @@
     },
     "JobReference": {
       "id": "JobReference",
-      "description": "A job reference is a fully qualified identifier for refering to a job.",
+      "description": "A job reference is a fully qualified identifier for referring to a job.",
       "type": "object",
       "properties": {
         "projectId": {
@@ -3512,11 +3318,6 @@
       "properties": {
         "evaluationKind": {
           "description": "Whether this child job was a statement or expression.",
-          "enumDescriptions": [
-            "",
-            "The statement appears directly in the script.",
-            "The statement evaluates an expression that appears in the script."
-          ],
           "type": "string",
           "enumDescriptions": [
             "",
@@ -4013,11 +3814,6 @@
         },
         "routineType": {
           "description": "Required. The type of routine.",
-          "enumDescriptions": [
-            "",
-            "Non-builtin permanent scalar function.",
-            "Stored procedure."
-          ],
           "type": "string",
           "enumDescriptions": [
             "",
@@ -4044,11 +3840,6 @@
         },
         "language": {
           "description": "Optional. Defaults to \"SQL\".",
-          "enumDescriptions": [
-            "",
-            "SQL language.",
-            "JavaScript language."
-          ],
           "type": "string",
           "enumDescriptions": [
             "",
@@ -4089,11 +3880,6 @@
         },
         "determinismLevel": {
           "description": "Optional. [Experimental] The determinism level of the JavaScript UDF if defined.",
-          "enumDescriptions": [
-            "The determinism of the UDF is unspecified.",
-            "The UDF is deterministic, meaning that 2 function calls with the same inputs always produce the same result, even across 2 query runs.",
-            "The UDF is not deterministic."
-          ],
           "type": "string",
           "enumDescriptions": [
             "The determinism of the UDF is unspecified.",
@@ -4119,11 +3905,6 @@
         },
         "argumentKind": {
           "description": "Optional. Defaults to FIXED_TYPE.",
-          "enumDescriptions": [
-            "",
-            "The argument is a variable with fully specified type, which can be a struct or an array, but not a table.",
-            "The argument is any type, including struct or array, but not a table. To be added: FIXED_TABLE, ANY_TABLE"
-          ],
           "type": "string",
           "enumDescriptions": [
             "",
@@ -4138,12 +3919,6 @@
         },
         "mode": {
           "description": "Optional. Specifies whether the argument is input or output. Can be set for procedures only.",
-          "enumDescriptions": [
-            "",
-            "The argument is input-only.",
-            "The argument is output-only.",
-            "The argument is both an input and an output."
-          ],
           "type": "string",
           "enumDescriptions": [
             "",
@@ -4693,12 +4468,6 @@
       "properties": {
         "logType": {
           "description": "The log type that this config enables.",
-          "enumDescriptions": [
-            "Default case. Should never be this.",
-            "Admin reads. Example: CloudIAM getIamPolicy",
-            "Data writes. Example: CloudSQL Users create",
-            "Data reads. Example: CloudSQL Users list"
-          ],
           "type": "string",
           "enumDescriptions": [
             "Default case. Should never be this.",

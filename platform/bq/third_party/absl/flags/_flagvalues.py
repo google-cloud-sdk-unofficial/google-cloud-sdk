@@ -33,6 +33,14 @@ from absl.flags import _flag
 from absl.flags import _helpers
 import six
 
+# pylint: disable=unused-import
+try:
+  import typing
+  from typing import Text, Optional
+except ImportError:
+  typing = None
+# pylint: enable=unused-import
+
 # Add flagvalues module to disclaimed module ids.
 _helpers.disclaim_module_ids.add(id(sys.modules[__name__]))
 
@@ -244,7 +252,7 @@ class FlagValues(object):
         while flag_obj in flags_in_module:
           flags_in_module.remove(flag_obj)
 
-  def _get_flags_defined_by_module(self, module):
+  def get_flags_for_module(self, module):
     """Returns the list of flags defined by a module.
 
     Args:
@@ -257,6 +265,8 @@ class FlagValues(object):
     """
     if not isinstance(module, str):
       module = module.__name__
+    if module == '__main__':
+      module = sys.argv[0]
 
     return list(self.flags_by_module_dict().get(module, []))
 
@@ -273,11 +283,13 @@ class FlagValues(object):
     """
     if not isinstance(module, str):
       module = module.__name__
+    if module == '__main__':
+      module = sys.argv[0]
 
     # Any flag is a key flag for the module that defined it.  NOTE:
     # key_flags is a fresh list: we can update it without affecting the
     # internals of this FlagValues object.
-    key_flags = self._get_flags_defined_by_module(module)
+    key_flags = self.get_flags_for_module(module)
 
     # Take into account flags explicitly declared as key for a module.
     for flag in self.key_flags_by_module_dict().get(module, []):
@@ -497,11 +509,17 @@ class FlagValues(object):
     fl[name].using_default_value = False
     return value
 
-  def _assert_all_validators(self):
+  def validate_all_flags(self):
+    """Verifies whether all flags pass validation.
+
+    Raises:
+      AttributeError: Raised if validators work with a non-existing flag.
+      IllegalFlagValueError: Raised if validation fails for at least one
+          validator.
+    """
     all_validators = set()
     for flag in six.itervalues(self._flags()):
-      for validator in flag.validators:
-        all_validators.add(validator)
+      all_validators.update(flag.validators)
     self._assert_validators(all_validators)
 
   def _assert_validators(self, validators):
@@ -628,7 +646,7 @@ class FlagValues(object):
           name, value, suggestions=suggestions)
 
     self.mark_as_parsed()
-    self._assert_all_validators()
+    self.validate_all_flags()
     return [program_name] + unparsed_args
 
   def __getstate__(self):
@@ -884,7 +902,7 @@ class FlagValues(object):
 
   def _render_our_module_flags(self, module, output_lines, prefix=''):
     """Returns a help string for a given module."""
-    flags = self._get_flags_defined_by_module(module)
+    flags = self.get_flags_for_module(module)
     if flags:
       self._render_module_flags(module, flags, output_lines, prefix)
 
@@ -1273,3 +1291,84 @@ class FlagValues(object):
 
 
 FLAGS = FlagValues()
+
+if typing:
+  _T = typing.TypeVar('_T')
+  _Base = typing.Generic[_T]
+else:
+  _Base = object
+
+
+class FlagHolder(_Base):
+  """Holds a defined flag.
+
+  This facilitates a cleaner api around global state. Instead of
+
+  ```
+  flags.DEFINE_integer('foo', ...)
+  flags.DEFINE_integer('bar', ...)
+  ...
+  def method():
+    # prints parsed value of 'bar' flag
+    print(flags.FLAGS.foo)
+    # runtime error due to typo or possibly bad coding style.
+    print(flags.FLAGS.baz)
+  ```
+
+  it encourages code like
+
+  ```
+  FOO_FLAG = flags.DEFINE_integer('foo', ...)
+  BAR_FLAG = flags.DEFINE_integer('bar', ...)
+  ...
+  def method():
+    print(FOO_FLAG.value)
+    print(BAR_FLAG.value)
+  ```
+
+  since the name of the flag appears only once in the source code.
+  """
+
+  def __init__(self, flag_values, flag, ensure_non_none_value=False):
+    """Constructs a FlagHolder instance providing typesafe access to flag.
+
+    Args:
+      flag_values: The container the flag is registered to.
+      flag: The flag object for this flag.
+      ensure_non_none_value: Is the value of the flag allowed to be None.
+    """
+    self._flagvalues = flag_values
+    # We take the entire flag object, but only keep the name. Why?
+    # - We want FlagHolder[T] to be generic container
+    # - flag_values contains all flags, so has no reference to T.
+    # - typecheckers don't like to see a generic class where none of the ctor
+    #   arguments refer to the generic type.
+    self._name = flag.name
+    # We intentionally do NOT check if the default value is None.
+    # This allows future use of this for "required flags with None default"
+    self._ensure_non_none_value = ensure_non_none_value
+
+  @property
+  def name(self):
+    return self._name
+
+  @property
+  def value(self):
+    """Returns the value of the flag.
+
+    If _ensure_non_none_value is True, then return value is not None.
+
+    Raises:
+      UnparsedFlagAccessError: if flag parsing has not finished.
+      IllegalFlagValueError: if value is None unexpectedly.
+    """
+    val = getattr(self._flagvalues, self._name)
+    if self._ensure_non_none_value and val is None:
+      raise _exceptions.IllegalFlagValueError(
+          'Unexpected None value for flag %s' % self._name)
+    return val
+
+  @property
+  def default(self):
+    """Returns the default value of the flag."""
+    return self._flagvalues[self._name].default

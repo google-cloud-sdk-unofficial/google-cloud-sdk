@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for getting the status of Google Compute Engine VPN Gateways."""
+"""Command for getting the status of Compute Engine VPN Gateways."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.vpn_gateways import flags
 
 
 class Describe(base.DescribeCommand):
-  """Get status of a Google Compute Engine Highly Available VPN Gateway.
+  """Get status of a Compute Engine Highly Available VPN Gateway.
 
   *{command}* is used to display high availability configuration status for the
   Cloud VPN gateway, the command will show you the high availability

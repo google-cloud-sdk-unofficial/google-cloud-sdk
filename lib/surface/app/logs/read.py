@@ -69,7 +69,9 @@ class Read(base.Command):
 Read.detailed_help = {
     'DESCRIPTION': """\
         Display the latest log entries from stdout, stderr and crash log for the
-        current Google App Engine app in a human readable format.
+        current Google App Engine app in a human readable format. This command
+        requires that the caller have the logging.logEntries.list
+        permission.
     """,
     'EXAMPLES': """\
         To display the latest entries for the current app, run:

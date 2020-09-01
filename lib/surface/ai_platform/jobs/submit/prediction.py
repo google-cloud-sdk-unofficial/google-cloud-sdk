@@ -49,7 +49,7 @@ def _AddSubmitPredictionArgs(parser):
   model_group = parser.add_mutually_exclusive_group(required=True)
   model_group.add_argument(
       '--model-dir',
-      help=('Google Cloud Storage location where '
+      help=('Cloud Storage location where '
             'the model files are located.'))
   model_group.add_argument(
       '--model', help='Name of the model to use for prediction.')
@@ -70,7 +70,7 @@ version of the model will be used. To list versions for a model, run
       required=True,
       metavar='INPUT_PATH',
       help="""\
-Google Cloud Storage paths to the instances to run prediction on.
+Cloud Storage paths to the instances to run prediction on.
 
 Wildcards (```*```) accepted at the *end* of a path. More than one path can be
 specified if multiple file patterns are needed. For example,
@@ -88,12 +88,12 @@ aren't a first-class Cloud Storage concept) of `my-bucket`.
   jobs_util.DataFormatFlagMap().choice_arg.AddToParser(parser)
   parser.add_argument(
       '--output-path', required=True,
-      help='Google Cloud Storage path to which to save the output. '
+      help='Cloud Storage path to which to save the output. '
       'Example: gs://my-bucket/output.')
   parser.add_argument(
       '--region',
       required=True,
-      help='The Google Compute Engine region to run the job in.')
+      help='The Compute Engine region to run the job in.')
   parser.add_argument(
       '--max-worker-count',
       required=False,

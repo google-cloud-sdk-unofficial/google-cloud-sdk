@@ -27,6 +27,7 @@ kind: google-cloud-sdk-kind
 kpt: google-cloud-sdk-kpt
 kubectl: kubectl
 minikube: google-cloud-sdk-minikube
+nomos: unavailable
 pubsub-emulator: google-cloud-sdk-pubsub-emulator
 skaffold: google-cloud-sdk-skaffold
 kustomize: unavailable

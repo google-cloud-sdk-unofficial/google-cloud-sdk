@@ -62,7 +62,6 @@ class Update(base.Command):
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
-    flags.AddEndpointVisibilityEnum(cluster_group)
     flags.AddSecretsFlags(cluster_group)
     flags.AddConfigMapsFlags(cluster_group)
     flags.AddHttp2Flag(cluster_group)
@@ -97,6 +96,7 @@ class Update(base.Command):
     # Flags only supported on GKE and Knative
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddMinInstancesFlag(cluster_group)
+    flags.AddEndpointVisibilityEnum(cluster_group)
 
   def Run(self, args):
     """Update the service resource.
@@ -155,6 +155,7 @@ class BetaUpdate(Update):
     # Flags only supported on GKE and Knative
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddMinInstancesFlag(cluster_group)
+    flags.AddEndpointVisibilityEnum(cluster_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -169,9 +170,14 @@ class AlphaUpdate(Update):
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddEgressSettingsFlag(managed_group)
 
+    # Flags only supported on GKE and Knative
+    cluster_group = flags.GetClusterArgGroup(parser)
+    flags.AddEndpointVisibilityEnum(cluster_group, deprecated=True)
+
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)
     flags.AddDeployTagFlag(parser)
+    flags.AddIngressFlag(parser)
 
 
 AlphaUpdate.__doc__ = Update.__doc__

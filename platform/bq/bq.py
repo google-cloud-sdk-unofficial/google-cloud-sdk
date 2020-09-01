@@ -62,13 +62,6 @@ import oauth2client_4_0.tools
 
 from pyglib import appcommands
 
-import six
-from six.moves import input
-from six.moves import map
-from six.moves import range
-from six.moves import zip
-import six.moves.http_client
-
 import yaml
 
 
@@ -76,6 +69,14 @@ import yaml
 # google.apputils package.
 if sys.path and sys.path[0] != _THIRD_PARTY_DIR:
   sys.path.insert(0, _THIRD_PARTY_DIR)
+
+# pylint: disable=g-bad-import-order
+import six
+from six.moves import input
+from six.moves import map
+from six.moves import range
+from six.moves import zip
+import six.moves.http_client
 
 import table_formatter
 import bigquery_client
@@ -306,7 +307,7 @@ class CachedCredentialLoader(CredentialLoader):
 
   def Load(self):
     cred = self._LoadFromCache() if self._read_cache_first else None
-    if cred and not cred.access_token_expired:
+    if cred:
       return cred
 
     cred = super(CachedCredentialLoader, self).Load()
@@ -2019,7 +2020,7 @@ class _Query(BigqueryCmd):
     # pylint: disable=g-doc-exception
     """Execute a query.
 
-    Query should be specifed on command line, or passed on stdin.
+    Query should be specified on command line, or passed on stdin.
 
     Examples:
       bq query 'select count(*) from publicdata:samples.shakespeare'
@@ -2126,11 +2127,6 @@ class _Query(BigqueryCmd):
             self.destination_table).GetDatasetReference().datasetId
         destination_table = client.GetTableReference(
             self.destination_table).tableId
-      if not target_dataset:
-        raise app.UsageError(
-            'target_dataset is required to create a scheduled query, you could '
-            'set the target_dataset with --target_dataset flag or '
-            '--destination_table flag.')
       credentials = transfer_client.projects().dataSources().checkValidCreds(
           name=scheduled_queries_reference, body={}).execute()
       auth_info = {}
@@ -2156,7 +2152,8 @@ class _Query(BigqueryCmd):
           display_name=self.display_name,
           params=json.dumps(params),
           auth_info=auth_info,
-          schedule_args=schedule_args)
+          schedule_args=schedule_args,
+          location=FLAGS.location)
       print(('Transfer configuration \'%s\' successfully created.' %
              transfer_name))
       return
@@ -3319,6 +3316,23 @@ class _Copy(BigqueryCmd):
         None,
         'Cloud KMS key for encryption of the destination table data.',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'snapshot',
+        False,
+        'Create a table snapshot of source table.',
+        short_name='s',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'restore',
+        False,
+        'Restore table snapshot to a live table.',
+        short_name='r',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'expiration',
+        None,
+        'Expiration time, in seconds from now, of the destination table.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, source_tables, dest_table):
@@ -3350,10 +3364,19 @@ class _Copy(BigqueryCmd):
             print('NOT copying %s, exiting.' % (source_references_str,))
             return 0
     operation = 'copied'
+    if self.snapshot:
+      operation_type = 'SNAPSHOT'
+      operation = 'snapshotted'
+    elif self.restore:
+      operation_type = 'RESTORE'
+      operation = 'restored'
+    else:
+      operation_type = 'COPY'
     kwds = {
         'write_disposition': write_disposition,
         'ignore_already_exists': ignore_already_exists,
         'job_id': _GetJobIdFromFlags(),
+        'operation_type': operation_type,
     }
     if FLAGS.location:
       kwds['location'] = FLAGS.location
@@ -3362,6 +3385,10 @@ class _Copy(BigqueryCmd):
       kwds['encryption_configuration'] = {
           'kmsKeyName': self.destination_kms_key
       }
+    if self.expiration:
+      datetime_utc = datetime.datetime.utcfromtimestamp(
+          int(self.expiration + time.time()))
+      kwds['destination_expiration_time'] = _FormatRfc3339(datetime_utc)
     job = client.CopyTable(source_references, dest_reference, **kwds)
     if job is None:
       print("Table '%s' already exists, skipping" % (dest_reference,))
@@ -3827,6 +3854,13 @@ class _Make(BigqueryCmd):
         'use_idle_slots',
         True,
         'If true, any query running in this reservation will be able to use '
+        'idle slots from other reservations. Used if ignore_idle_slots is '
+        'None.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'ignore_idle_slots',
+        None,
+        'If false, any query running in this reservation will be able to use '
         'idle slots from other reservations.',
         flag_values=fv)
     flags.DEFINE_integer(
@@ -3973,10 +4007,13 @@ class _Make(BigqueryCmd):
       reference = client.GetReservationReference(
           identifier=identifier, default_location=FLAGS.location)
       try:
+        ignore_idle_arg = self.ignore_idle_slots
+        if ignore_idle_arg is None:
+          ignore_idle_arg = not self.use_idle_slots
         object_info = client.CreateReservation(
             reference=reference,
             slots=self.slots,
-            use_idle_slots=self.use_idle_slots,
+            ignore_idle_slots=ignore_idle_arg,
             autoscale_max_slots=self.autoscale_max_slots)
       except BaseException as e:
         raise bigquery_client.BigqueryError(
@@ -4024,15 +4061,6 @@ class _Make(BigqueryCmd):
       if self.data_source:
         data_sources_reference = (
             reference + '/dataSources/' + self.data_source)
-        try:
-          transfer_client.projects().dataSources().get(
-              name=data_sources_reference).execute()
-        except:
-          raise bigquery_client.BigqueryNotFoundError(
-              'Unknown data source %r. Please make sure BQ Data Transfer API '
-              'is enabled in Cloud Console, and the data source is enrolled in '
-              'Cloud Marketplace.' % (self.data_source), {'reason': 'notFound'},
-              [])
         credentials = transfer_client.projects().dataSources().checkValidCreds(
             name=data_sources_reference, body={}).execute()
       else:
@@ -4324,6 +4352,13 @@ class _Update(BigqueryCmd):
         'use_idle_slots',
         None,
         'If true, any query running in this reservation will be able to use '
+        'idle slots from other reservations. Used if ignore_idle_slots is '
+        'None.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'ignore_idle_slots',
+        None,
+        'If false, any query running in this reservation will be able to use '
         'idle slots from other reservations.',
         flag_values=fv)
     flags.DEFINE_integer(
@@ -4648,10 +4683,13 @@ class _Update(BigqueryCmd):
           reference = client.GetReservationReference(
               identifier=identifier,
               default_location=FLAGS.location)
+          ignore_idle_arg = self.ignore_idle_slots
+          if ignore_idle_arg is None and self.use_idle_slots is not None:
+            ignore_idle_arg = not self.use_idle_slots
           object_info = client.UpdateReservation(
               reference=reference,
               slots=self.slots,
-              use_idle_slots=self.use_idle_slots,
+              ignore_idle_slots=ignore_idle_arg,
               autoscale_max_slots=self.autoscale_max_slots)
           _PrintObjectInfo(object_info, reference, custom_format='show')
       except BaseException as e:

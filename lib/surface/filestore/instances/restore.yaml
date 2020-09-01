@@ -1,10 +1,16 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [BETA, ALPHA]
   help_text:
-    brief: |
-      Restore a Cloud Filestore instance to a snapshot.
-    description: |
-      Restore an existing Cloud Filestore instance to an existing snapshot.
+    ALPHA:
+      brief: |
+        Restore a Cloud Filestore instance to a snapshot or backup.
+      description: |
+        Restore an existing Cloud Filestore instance to an existing snapshot or
+        backup.
+    BETA:
+      brief: |
+        Restore a Cloud Filestore instance to a backup.
+      description: |
+        Restore an existing Cloud Filestore instance to an existing backup.
 
   arguments:
     resource:
@@ -17,43 +23,61 @@
       api_field: restoreInstanceRequest.fileShare
       help_text: |
         File share destination of the restored snapshot.
+    - arg_name: source-backup
+      release_tracks: [BETA]
+      required: true
+      help_text: |
+        Name of the Filestore backup to restore from.
+    - arg_name: source-backup-region
+      release_tracks: [BETA]
+      required: true
+      help_text: |
+        Region of the Filestore backup to restore from.
+
     - group:
-        mutex: true
+        release_tracks: [ALPHA]
         required: true
-        params:
-        - group:
-            help_text: |
-              The name and region of the Filestore snapshot to restore from.
-            params:
-            - arg_name: source-snapshot
-              required: true
+        ALPHA:
+          mutex: true
+          params:
+          - group:
               help_text: |
-                Name of the Filestore snapshot to restore from.
-            - arg_name: source-snapshot-region
-              required: false
+                The name and region of the Filestore snapshot to restore from.
+              params:
+              - arg_name: source-snapshot
+                required: true
+                help_text: |
+                  Name of the Filestore snapshot to restore from.
+              - arg_name: source-snapshot-region
+                required: false
+                help_text: |
+                  Region of the Filestore snapshot to restore from. If unspecified, it
+                  is assumed that the Filestore snapshot is local.
+          - group:
               help_text: |
-                Region of the Filestore snapshot to restore from. If unspecified, it
-                is assumed that the Filestore snapshot is local.
-        - group:
-            help_text: |
-              The name and region of the Filestore backup to restore from.
-            params:
-            - arg_name: source-backup
-              required: true
-              help_text: |
-                Name of the Filestore backup to restore from.
-            - arg_name: source-backup-region
-              required: true
-              help_text: |
-                Region of the Filestore backup to restore from.
+                The name and region of the Filestore backup to restore from.
+              params:
+              - arg_name: source-backup
+                required: true
+                help_text: |
+                  Name of the Filestore backup to restore from.
+              - arg_name: source-backup-region
+                required: true
+                help_text: |
+                  Region of the Filestore backup to restore from.
 
   request:
-    api_version: v1p1alpha1
+    ALPHA:
+      api_version: v1p1alpha1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.filestore.backups.util:AddBackupNameToRequest
+      - googlecloudsdk.command_lib.filestore.snapshots.util:AddSnapshotNameToRequest
+    BETA:
+      api_version: v1beta1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.filestore.backups.util:AddBackupNameToRequest
     collection: file.projects.locations.instances
     method: restore
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.filestore.backups.util:AddBackupNameToRequest
-    - googlecloudsdk.command_lib.filestore.snapshots.util:AddSnapshotNameToRequest
 
   async:
     collection: file.projects.locations.operations

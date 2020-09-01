@@ -819,10 +819,10 @@ else:
 
 def with_metaclass(meta, *bases):
     """Create a base class with a metaclass."""
-    # No need for a dummy metaclass if `meta` is already present in
+    # Don't use the provided metaclass if `meta` is already present in
     # the inheritance hierarchy. See also a note in `add_metaclass`.
     if any(isinstance(cls, meta) for cls in bases):
-        return type('temporary_class', bases, {})
+        meta = type
 
     # This requires a bit of explanation: the basic idea is to make a dummy
     # metaclass for one level of class instantiation that replaces itself with

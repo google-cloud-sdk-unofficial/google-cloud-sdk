@@ -30,10 +30,10 @@ _VPN_GATEWAY_ARG = flags.GetVpnGatewayArgument()
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine Highly Available VPN Gateway.
+  """Describe a Compute Engine Highly Available VPN Gateway.
 
-  *{command}* is used to display all data associated with a Google Compute
-  Engine Highly Available VPN Gateway in a project.
+  *{command}* is used to display all data associated with a Compute Engine
+  Highly Available VPN Gateway in a project.
 
   Highly Available VPN Gateway provides a means to create a VPN solution with a
   higher availability SLA compared to Classic Target VPN Gateway.

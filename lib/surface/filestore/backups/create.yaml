@@ -1,10 +1,11 @@
-- help_text:
+- release_tracks: [BETA, ALPHA]
+  help_text:
     brief:  Create a Cloud Filestore backup.
     description: |
       Create a Cloud Filestore backup of an instance file share.
 
       This command can fail for the following reasons:
-        * An instance with the same name already exists.
+        * A backup with the same name already exists.
         * The active account does not have permission to create backups.
     examples: |
       To create a backup with the name 'my-backup' in a particular region like 'us-central1'
@@ -56,7 +57,10 @@
     collection: file.projects.locations.operations
 
   request:
-    api_version: v1p1alpha1
+    ALPHA:
+      api_version: v1p1alpha1
+    BETA:
+      api_version: v1beta1
     display_resource_type: backup
     collection: file.projects.locations.backups
     # Disable validating that a backups resource arg is specified (as we are using the

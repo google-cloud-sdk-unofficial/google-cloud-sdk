@@ -27,6 +27,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.events import eventflow_operations
 from googlecloudsdk.command_lib.events import exceptions
 from googlecloudsdk.command_lib.events import flags
+from googlecloudsdk.command_lib.events import stages
 from googlecloudsdk.command_lib.iam import iam_util as core_iam_util
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags as serverless_flags
@@ -34,6 +35,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.console import progress_tracker
 
 
 _CONTROL_PLANE_NAMESPACE = 'cloud-run-events'
@@ -140,12 +142,30 @@ class Init(base.Command):
     if serverless_flags.GetPlatform() == serverless_flags.PLATFORM_MANAGED:
       raise exceptions.UnsupportedArgumentError(
           'This command is only available with Cloud Run for Anthos.')
-
     project = properties.VALUES.core.project.Get(required=True)
     conn_context = connection_context.GetConnectionContext(
         args, serverless_flags.Product.EVENTS, self.ReleaseTrack())
 
     with eventflow_operations.Connect(conn_context) as client:
+      cloud_run_obj = client.GetCloudRun()
+      if cloud_run_obj is None:
+        pass
+      elif cloud_run_obj.eventing_enabled:
+        log.status.Print('Eventing already enabled.')
+      else:
+        tracker_stages = stages.EventingStages()
+
+        # Enable eventing
+        with progress_tracker.StagedProgressTracker(
+            'Enabling eventing...',
+            tracker_stages,
+            failure_message='Failed to enable eventing') as tracker:
+          response = client.UpdateCloudRunWithEventingEnabled()
+
+          # Wait for Operator to enable eventing
+          client.PollCloudRunResource(tracker)
+          log.status.Print('Enabled eventing successfully.')
+
       if client.IsClusterInitialized():
         console_io.PromptContinue(
             message='This cluster has already been initialized.',

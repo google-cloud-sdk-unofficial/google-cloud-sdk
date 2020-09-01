@@ -59,7 +59,6 @@ class List(base.ListCommand):
     messages = privateca_base.GetMessagesModule()
 
     location = args.location if args.IsSpecified('location') else '-'
-    # TODO(b/150170650): Add location validation.
 
     parent_resource = 'projects/{}/locations/{}'.format(
         properties.VALUES.core.project.GetOrFail(),

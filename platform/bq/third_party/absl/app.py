@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Generic entry point for Abseil Python applications.
 
 To use this module, define a 'main' function with a single 'argv' argument and
@@ -47,27 +48,25 @@ except ImportError:
 FLAGS = flags.FLAGS
 
 flags.DEFINE_boolean('run_with_pdb', False, 'Set to true for PDB debug mode')
-flags.DEFINE_boolean(
-    'pdb_post_mortem', False,
-    'Set to true to handle uncaught exceptions with PDB '
-    'post mortem.')
-flags.DEFINE_boolean(
-    'run_with_profiling', False, 'Set to true for profiling the script. '
-    'Execution will be slower, and the output format might '
-    'change over time.')
-flags.DEFINE_string(
-    'profile_file', None, 'Dump profile information to a file (for python -m '
-    'pstats). Implies --run_with_profiling.')
-flags.DEFINE_boolean(
-    'use_cprofile_for_profiling', True,
-    'Use cProfile instead of the profile module for '
-    'profiling. This has no effect unless '
-    '--run_with_profiling is set.')
-flags.DEFINE_boolean(
-    'only_check_args',
-    False,
-    'Set to true to validate args and exit.',
-    allow_hide_cpp=True)
+flags.DEFINE_boolean('pdb_post_mortem', False,
+                     'Set to true to handle uncaught exceptions with PDB '
+                     'post mortem.')
+flags.DEFINE_alias('pdb', 'pdb_post_mortem')
+flags.DEFINE_boolean('run_with_profiling', False,
+                     'Set to true for profiling the script. '
+                     'Execution will be slower, and the output format might '
+                     'change over time.')
+flags.DEFINE_string('profile_file', None,
+                    'Dump profile information to a file (for python -m '
+                    'pstats). Implies --run_with_profiling.')
+flags.DEFINE_boolean('use_cprofile_for_profiling', True,
+                     'Use cProfile instead of the profile module for '
+                     'profiling. This has no effect unless '
+                     '--run_with_profiling is set.')
+flags.DEFINE_boolean('only_check_args', False,
+                     'Set to true to validate args and exit.',
+                     allow_hide_cpp=True)
+
 
 # If main() exits via an abnormal exception, call into these
 # handlers before exiting.
@@ -100,11 +99,8 @@ class HelpFlag(flags.BooleanFlag):
 
   def __init__(self):
     super(HelpFlag, self).__init__(
-        self.NAME,
-        False,
-        'show this help',
-        short_name=self.SHORT_NAME,
-        allow_hide_cpp=True)
+        self.NAME, False, 'show this help',
+        short_name=self.SHORT_NAME, allow_hide_cpp=True)
 
   def parse(self, arg):
     if self._parse(arg):
@@ -139,9 +135,7 @@ class HelpXMLFlag(flags.BooleanFlag):
 
   def __init__(self):
     super(HelpXMLFlag, self).__init__(
-        'helpxml',
-        False,
-        'like --helpfull, but generates XML output',
+        'helpxml', False, 'like --helpfull, but generates XML output',
         allow_hide_cpp=True)
 
   def parse(self, arg):
@@ -155,7 +149,7 @@ def parse_flags_with_usage(args):
 
   Args:
     args: [str], a non-empty list of the command line arguments including
-      program name.
+        program name.
 
   Returns:
     [str], a non-empty list of remaining command line arguments after parsing
@@ -195,10 +189,10 @@ def _register_and_parse_flags_with_usage(
 
   Args:
     argv: [str], a non-empty list of the command line arguments including
-      program name, sys.argv is used if None.
+        program name, sys.argv is used if None.
     flags_parser: Callable[[List[Text]], Any], the function used to parse flags.
-      The return value of this function is passed to `main` untouched. It must
-      guarantee FLAGS is parsed after this function is called.
+        The return value of this function is passed to `main` untouched.
+        It must guarantee FLAGS is parsed after this function is called.
 
   Returns:
     The return value of `flags_parser`. When using the default `flags_parser`,
@@ -230,7 +224,6 @@ def _register_and_parse_flags_with_usage(
   _register_and_parse_flags_with_usage.done = True
 
   return args_to_main
-
 
 _register_and_parse_flags_with_usage.done = False
 
@@ -283,16 +276,17 @@ def run(
 
   Args:
     main: The main function to execute. It takes an single argument "argv",
-      which is a list of command line arguments with parsed flags removed. If it
-      returns an integer, it is used as the process's exit code.
+        which is a list of command line arguments with parsed flags removed.
+        If it returns an integer, it is used as the process's exit code.
     argv: A non-empty list of the command line arguments including program name,
-      sys.argv is used if None.
+        sys.argv is used if None.
     flags_parser: Callable[[List[Text]], Any], the function used to parse flags.
-      The return value of this function is passed to `main` untouched. It must
-      guarantee FLAGS is parsed after this function is called. - Parses command
-      line flags with the flag module. - If there are any errors, prints
-      usage(). - Calls main() with the remaining arguments. - If main() raises a
-      UsageError, prints usage and the error message.
+        The return value of this function is passed to `main` untouched.
+        It must guarantee FLAGS is parsed after this function is called.
+  - Parses command line flags with the flag module.
+  - If there are any errors, prints usage().
+  - Calls main() with the remaining arguments.
+  - If main() raises a UsageError, prints usage and the error message.
   """
   try:
     args = _run_init(
@@ -327,7 +321,6 @@ def run(
     _call_exception_handlers(e)
     raise
 
-
 # Callbacks which have been deferred until after _run_init has been called.
 _init_callbacks = collections.deque()
 
@@ -346,8 +339,8 @@ def call_after_init(callback):
 
   Args:
     callback: a callable to be called once ABSL has finished initialization.
-      This may be immediate if initialization has already finished. It takes no
-      arguments and returns nothing.
+      This may be immediate if initialization has already finished. It
+      takes no arguments and returns nothing.
   """
   if _run_init.done:
     callback()
@@ -383,20 +376,18 @@ def _run_init(
 _run_init.done = False
 
 
-def usage(shorthelp=False,
-          writeto_stdout=False,
-          detailed_error=None,
+def usage(shorthelp=False, writeto_stdout=False, detailed_error=None,
           exitcode=None):
   """Writes __main__'s docstring to stderr with some help text.
 
   Args:
-    shorthelp: bool, if True, prints only flags from the main module, rather
-      than all flags.
-    writeto_stdout: bool, if True, writes help message to stdout, rather than to
-      stderr.
+    shorthelp: bool, if True, prints only flags from the main module,
+        rather than all flags.
+    writeto_stdout: bool, if True, writes help message to stdout,
+        rather than to stderr.
     detailed_error: str, additional detail about why usage info was presented.
     exitcode: optional integer, if set, exits with this status code after
-      writing help.
+        writing help.
   """
   if writeto_stdout:
     stdfile = sys.stdout
@@ -455,7 +446,9 @@ class ExceptionHandler(object):
     """Do something with the current exception.
 
     Args:
-      exc: Exception, the current exception  This method must be overridden.
+      exc: Exception, the current exception
+
+    This method must be overridden.
     """
     raise NotImplementedError()
 
@@ -474,7 +467,6 @@ def install_exception_handler(handler):
   FlagsError or UsageError.
   """
   if not isinstance(handler, ExceptionHandler):
-    raise TypeError(
-        'handler of type %s does not inherit from ExceptionHandler' %
-        type(handler))
+    raise TypeError('handler of type %s does not inherit from ExceptionHandler'
+                    % type(handler))
   EXCEPTION_HANDLERS.append(handler)

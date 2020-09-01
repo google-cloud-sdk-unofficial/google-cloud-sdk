@@ -32,7 +32,6 @@ Did you mean to run distributed training?\
 """
 
 
-# TODO(b/31687602) Add link to documentation of env vars once created
 class RunLocal(base.Command):
   r"""Run an AI Platform training job locally.
 
@@ -55,6 +54,13 @@ class RunLocal(base.Command):
 
   Unlike submitting a training job, the --package-path parameter can be
   omitted, and will use your current working directory.
+
+  AI Platform Training sets a TF_CONFIG environment variable on each VM in
+  your training job. You can use TF_CONFIG to access the cluster description
+  and the task description for each VM.
+
+  Learn more about TF_CONFIG:
+  https://cloud.google.com/ai-platform/training/docs/distributed-training-details.
   """
 
   @staticmethod

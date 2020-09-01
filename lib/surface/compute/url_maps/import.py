@@ -37,7 +37,7 @@ def _DetailedHelp():
           'Import a URL map.',
       'DESCRIPTION':
           """\
-          Imports a URL map's configuration to a file.
+          Imports a URL map's configuration from a file.
           """,
       'EXAMPLES':
           """\

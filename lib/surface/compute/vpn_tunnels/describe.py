@@ -29,10 +29,10 @@ _VPN_TUNNEL_ARG = flags.VpnTunnelArgument()
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine VPN tunnel.
+  """Describe a Compute Engine VPN tunnel.
 
-    *{command}* displays all data associated with a Google Compute
-  Engine VPN tunnel in a project.
+    *{command}* displays all data associated with a Compute Engine
+  VPN tunnel in a project.
   """
 
   @staticmethod

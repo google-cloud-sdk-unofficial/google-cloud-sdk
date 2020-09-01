@@ -17,8 +17,8 @@
   command_type: CREATE
 
   help_text:
-    brief: Create a new OIDC-type WorkloadIdentityPoolProvider.
-    description: Create a new OIDC-type WorkloadIdentityPoolProvider.
+    brief: Create a new OIDC WorkloadIdentityPoolProvider.
+    description: Create a new OIDC WorkloadIdentityPoolProvider.
     examples: |
       The following command creates a disabled OIDC WorkloadIdentityPoolProvider in the default
       project with the ID 'my-workload-identity-pool'. Explicit values for all required and optional

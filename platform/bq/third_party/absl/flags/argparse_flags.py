@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """This module provides argparse integration with absl.flags.
 
 argparse_flags.ArgumentParser is a drop-in replacement for
@@ -97,6 +98,7 @@ import sys
 
 from absl import flags
 
+
 _BUILT_IN_FLAGS = frozenset({
     'help',
     'helpshort',
@@ -116,9 +118,9 @@ class ArgumentParser(argparse.ArgumentParser):
     Args:
       **kwargs: same as argparse.ArgumentParser, except:
           1. It also accepts `inherited_absl_flags`: the absl flags to inherit.
-            The default is the global absl.flags.FLAGS instance. Pass None to
-            ignore absl flags. 2. The `prefix_chars` argument must be the
-            default value '-'.
+             The default is the global absl.flags.FLAGS instance. Pass None to
+             ignore absl flags.
+          2. The `prefix_chars` argument must be the default value '-'.
 
     Raises:
       ValueError: Raised when prefix_chars is not '-'.
@@ -140,15 +142,11 @@ class ArgumentParser(argparse.ArgumentParser):
       # Also add the --helpshort and --helpfull flags.
       self.add_argument(
           # Action 'help' defines a similar flag to -h/--help.
-          '--helpshort',
-          action='help',
-          default=argparse.SUPPRESS,
-          help=argparse.SUPPRESS)
+          '--helpshort', action='help',
+          default=argparse.SUPPRESS, help=argparse.SUPPRESS)
       self.add_argument(
-          '--helpfull',
-          action=_HelpFullAction,
-          default=argparse.SUPPRESS,
-          help='show full help message and exit')
+          '--helpfull', action=_HelpFullAction,
+          default=argparse.SUPPRESS, help='show full help message and exit')
 
     if self._inherited_absl_flags:
       self.add_argument('--undefok', help=argparse.SUPPRESS)
@@ -167,8 +165,8 @@ class ArgumentParser(argparse.ArgumentParser):
     undefok_missing = object()
     undefok = getattr(namespace, 'undefok', undefok_missing)
 
-    namespace, args = super(ArgumentParser,
-                            self).parse_known_args(args, namespace)
+    namespace, args = super(ArgumentParser, self).parse_known_args(
+        args, namespace)
 
     # For Python <= 2.7.8: https://bugs.python.org/issue9351, a bug where
     # sub-parsers don't preserve existing namespace attributes.
@@ -189,7 +187,7 @@ class ArgumentParser(argparse.ArgumentParser):
         del namespace.undefok
       self._inherited_absl_flags.mark_as_parsed()
       try:
-        self._inherited_absl_flags._assert_all_validators()  # pylint: disable=protected-access
+        self._inherited_absl_flags.validate_all_flags()
       except flags.IllegalFlagValueError as e:
         self.error(str(e))
 
@@ -227,16 +225,12 @@ class ArgumentParser(argparse.ArgumentParser):
       # Only add the `no` form to the long name.
       argument_names.append('--no' + flag_name)
       self.add_argument(
-          *argument_names,
-          action=_BooleanFlagAction,
-          help=helptext,
+          *argument_names, action=_BooleanFlagAction, help=helptext,
           metavar=flag_instance.name.upper(),
           flag_instance=flag_instance)
     else:
       self.add_argument(
-          *argument_names,
-          action=_FlagAction,
-          help=helptext,
+          *argument_names, action=_FlagAction, help=helptext,
           metavar=flag_instance.name.upper(),
           flag_instance=flag_instance)
 
@@ -346,11 +340,8 @@ class _HelpFullAction(argparse.Action):
       if main_module in modules:
         # The main module flags are already printed in parser.print_help().
         modules.remove(main_module)
-      print(
-          absl_flags._get_help_for_modules(  # pylint: disable=protected-access
-              modules,
-              prefix='',
-              include_special_flags=True))
+      print(absl_flags._get_help_for_modules(  # pylint: disable=protected-access
+          modules, prefix='', include_special_flags=True))
     parser.exit()
 
 

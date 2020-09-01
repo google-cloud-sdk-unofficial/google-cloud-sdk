@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Module to enforce different constraints on flags.
 
 Flags validators can be registered using following functions / decorators:
@@ -55,9 +56,9 @@ class Validator(object):
     """Constructor to create all validators.
 
     Args:
-      checker: function to verify the constraint. Input of this method varies,
-        see SingleFlagValidator and multi_flags_validator for a detailed
-        description.
+      checker: function to verify the constraint.
+          Input of this method varies, see SingleFlagValidator and
+          multi_flags_validator for a detailed description.
       message: str, error message to be shown to the user.
     """
     self.checker = checker
@@ -73,7 +74,6 @@ class Validator(object):
 
     Args:
       flag_values: flags.FlagValues, the FlagValues instance to get flags from.
-
     Raises:
       Error: Raised if constraint is not satisfied.
     """
@@ -97,7 +97,6 @@ class Validator(object):
 
     Args:
       flag_values: flags.FlagValues, containing all flags.
-
     Returns:
       The input to be given to checker. The return type depends on the specific
       validator.
@@ -118,13 +117,13 @@ class SingleFlagValidator(Validator):
 
     Args:
       flag_name: string, name of the flag.
-      checker: function to verify the validator. input  - value of the
-        corresponding flag (string, boolean, etc). output - bool, True if
-        validator constraint is satisfied. If constraint is not satisfied, it
-        should either return False or raise
-        flags.ValidationError(desired_error_message).
+      checker: function to verify the validator.
+          input  - value of the corresponding flag (string, boolean, etc).
+          output - bool, True if validator constraint is satisfied.
+              If constraint is not satisfied, it should either return False or
+              raise flags.ValidationError(desired_error_message).
       message: str, error message to be shown to the user if validator's
-        condition is not satisfied.
+          condition is not satisfied.
     """
     super(SingleFlagValidator, self).__init__(checker, message)
     self.flag_name = flag_name
@@ -140,7 +139,6 @@ class SingleFlagValidator(Validator):
 
     Args:
       flag_values: flags.FlagValues, the FlagValues instance to get flags from.
-
     Returns:
       object, the input to be given to checker.
     """
@@ -160,14 +158,15 @@ class MultiFlagsValidator(Validator):
 
     Args:
       flag_names: [str], containing names of the flags used by checker.
-      checker: function to verify the validator. input  - dict, with keys()
-        being flag_names, and value for each key being the value of the
-        corresponding flag (string, boolean, etc). output - bool, True if
-        validator constraint is satisfied. If constraint is not satisfied, it
-        should either return False or raise
-        flags.ValidationError(desired_error_message).
+      checker: function to verify the validator.
+          input  - dict, with keys() being flag_names, and value for each
+              key being the value of the corresponding flag (string, boolean,
+              etc).
+          output - bool, True if validator constraint is satisfied.
+              If constraint is not satisfied, it should either return False or
+              raise flags.ValidationError(desired_error_message).
       message: str, error message to be shown to the user if validator's
-        condition is not satisfied
+          condition is not satisfied
     """
     super(MultiFlagsValidator, self).__init__(checker, message)
     self.flag_names = flag_names
@@ -177,7 +176,6 @@ class MultiFlagsValidator(Validator):
 
     Args:
       flag_values: flags.FlagValues, the FlagValues instance to get flags from.
-
     Returns:
       dict, with keys() being self.lag_names, and value for each key
       being the value of the corresponding flag (string, boolean, etc).
@@ -207,16 +205,16 @@ def register_validator(flag_name,
     flag_name: str, name of the flag to be checked.
     checker: callable, a function to validate the flag.
         input - A single positional argument: The value of the corresponding
-          flag (string, boolean, etc.  This value will be passed to checker by
-          the library). output - bool, True if validator constraint is
-          satisfied. If constraint is not satisfied, it should either return
-          False or raise flags.ValidationError(desired_error_message).
+            flag (string, boolean, etc.  This value will be passed to checker
+            by the library).
+        output - bool, True if validator constraint is satisfied.
+            If constraint is not satisfied, it should either return False or
+            raise flags.ValidationError(desired_error_message).
     message: str, error text to be shown to the user if checker returns False.
-      If checker raises flags.ValidationError, message from the raised error
-      will be shown.
+        If checker raises flags.ValidationError, message from the raised
+        error will be shown.
     flag_values: flags.FlagValues, optional FlagValues instance to validate
-      against.
-
+        against.
   Raises:
     AttributeError: Raised when flag_name is not registered as a valid flag
         name.
@@ -225,8 +223,7 @@ def register_validator(flag_name,
   _add_validator(flag_values, v)
 
 
-def validator(flag_name,
-              message='Flag validation failed',
+def validator(flag_name, message='Flag validation failed',
               flag_values=_flagvalues.FLAGS):
   """A function decorator for defining a flag validator.
 
@@ -241,11 +238,10 @@ def validator(flag_name,
   Args:
     flag_name: str, name of the flag to be checked.
     message: str, error text to be shown to the user if checker returns False.
-      If checker raises flags.ValidationError, message from the raised error
-      will be shown.
+        If checker raises flags.ValidationError, message from the raised
+        error will be shown.
     flag_values: flags.FlagValues, optional FlagValues instance to validate
-      against.
-
+        against.
   Returns:
     A function decorator that registers its function argument as a validator.
   Raises:
@@ -254,10 +250,10 @@ def validator(flag_name,
   """
 
   def decorate(function):
-    register_validator(
-        flag_name, function, message=message, flag_values=flag_values)
+    register_validator(flag_name, function,
+                       message=message,
+                       flag_values=flag_values)
     return function
-
   return decorate
 
 
@@ -272,21 +268,23 @@ def register_multi_flags_validator(flag_names,
 
   Args:
     flag_names: [str], a list of the flag names to be checked.
-    multi_flags_checker: callable, a function to validate the flag. input -
-      dict, with keys() being flag_names, and value for each key being the value
-      of the corresponding flag (string, boolean, etc). output - bool, True if
-      validator constraint is satisfied. If constraint is not satisfied, it
-      should either return False or raise flags.ValidationError.
+    multi_flags_checker: callable, a function to validate the flag.
+        input - dict, with keys() being flag_names, and value for each key
+            being the value of the corresponding flag (string, boolean, etc).
+        output - bool, True if validator constraint is satisfied.
+            If constraint is not satisfied, it should either return False or
+            raise flags.ValidationError.
     message: str, error text to be shown to the user if checker returns False.
-      If checker raises flags.ValidationError, message from the raised error
-      will be shown.
+        If checker raises flags.ValidationError, message from the raised
+        error will be shown.
     flag_values: flags.FlagValues, optional FlagValues instance to validate
-      against.
+        against.
 
   Raises:
     AttributeError: Raised when a flag is not registered as a valid flag name.
   """
-  v = MultiFlagsValidator(flag_names, multi_flags_checker, message)
+  v = MultiFlagsValidator(
+      flag_names, multi_flags_checker, message)
   _add_validator(flag_values, v)
 
 
@@ -307,10 +305,10 @@ def multi_flags_validator(flag_names,
   Args:
     flag_names: [str], a list of the flag names to be checked.
     message: str, error text to be shown to the user if checker returns False.
-      If checker raises flags.ValidationError, message from the raised error
-      will be shown.
+        If checker raises flags.ValidationError, message from the raised
+        error will be shown.
     flag_values: flags.FlagValues, optional FlagValues instance to validate
-      against.
+        against.
 
   Returns:
     A function decorator that registers its function argument as a validator.
@@ -320,8 +318,10 @@ def multi_flags_validator(flag_names,
   """
 
   def decorate(function):
-    register_multi_flags_validator(
-        flag_names, function, message=message, flag_values=flag_values)
+    register_multi_flags_validator(flag_names,
+                                   function,
+                                   message=message,
+                                   flag_values=flag_values)
     return function
 
   return decorate
@@ -347,8 +347,7 @@ def mark_flag_as_required(flag_name, flag_values=_flagvalues.FLAGS):
   Args:
     flag_name: str, name of the flag
     flag_values: flags.FlagValues, optional FlagValues instance where the flag
-      is defined.
-
+        is defined.
   Raises:
     AttributeError: Raised when flag_name is not registered as a valid flag
         name.
@@ -377,8 +376,7 @@ def mark_flags_as_required(flag_names, flag_values=_flagvalues.FLAGS):
   Args:
     flag_names: Sequence[str], names of the flags.
     flag_values: flags.FlagValues, optional FlagValues instance where the flags
-      are defined.
-
+        are defined.
   Raises:
     AttributeError: If any of flag name has not already been defined as a flag.
   """
@@ -386,8 +384,7 @@ def mark_flags_as_required(flag_names, flag_values=_flagvalues.FLAGS):
     mark_flag_as_required(flag_name, flag_values)
 
 
-def mark_flags_as_mutual_exclusive(flag_names,
-                                   required=False,
+def mark_flags_as_mutual_exclusive(flag_names, required=False,
                                    flag_values=_flagvalues.FLAGS):
   """Ensures that only one flag among flag_names is not None.
 
@@ -400,10 +397,10 @@ def mark_flags_as_mutual_exclusive(flag_names,
   Args:
     flag_names: [str], names of the flags.
     required: bool. If true, exactly one of the flags must have a value other
-      than None. Otherwise, at most one of the flags can have a value other than
-      None, and it is valid for all of the flags to be None.
+        than None. Otherwise, at most one of the flags can have a value other
+        than None, and it is valid for all of the flags to be None.
     flag_values: flags.FlagValues, optional FlagValues instance where the flags
-      are defined.
+        are defined.
   """
   for flag_name in flag_names:
     if flag_values[flag_name].default is not None:
@@ -424,17 +421,16 @@ def mark_flags_as_mutual_exclusive(flag_names,
       flag_names, validate_mutual_exclusion, flag_values=flag_values)
 
 
-def mark_bool_flags_as_mutual_exclusive(flag_names,
-                                        required=False,
+def mark_bool_flags_as_mutual_exclusive(flag_names, required=False,
                                         flag_values=_flagvalues.FLAGS):
   """Ensures that only one flag among flag_names is True.
 
   Args:
     flag_names: [str], names of the flags.
     required: bool. If true, exactly one flag must be True. Otherwise, at most
-      one flag can be True, and it is valid for all flags to be False.
+        one flag can be True, and it is valid for all flags to be False.
     flag_values: flags.FlagValues, optional FlagValues instance where the flags
-      are defined.
+        are defined.
   """
   for flag_name in flag_names:
     if not flag_values[flag_name].boolean:
@@ -446,8 +442,9 @@ def mark_bool_flags_as_mutual_exclusive(flag_names,
     flag_count = sum(bool(val) for val in flags_dict.values())
     if flag_count == 1 or (not required and flag_count == 0):
       return True
-    raise _exceptions.ValidationError('{} one of ({}) must be True.'.format(
-        'Exactly' if required else 'At most', ', '.join(flag_names)))
+    raise _exceptions.ValidationError(
+        '{} one of ({}) must be True.'.format(
+            'Exactly' if required else 'At most', ', '.join(flag_names)))
 
   register_multi_flags_validator(
       flag_names, validate_boolean_mutual_exclusion, flag_values=flag_values)
@@ -459,7 +456,6 @@ def _add_validator(fv, validator_instance):
   Args:
     fv: flags.FlagValues, the FlagValues instance to add the validator.
     validator_instance: validators.Validator, the validator to add.
-
   Raises:
     KeyError: Raised when validators work with a non-existing flag.
   """

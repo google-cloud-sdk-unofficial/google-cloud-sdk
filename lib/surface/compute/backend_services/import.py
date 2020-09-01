@@ -33,8 +33,7 @@ from googlecloudsdk.core.console import console_io
 DETAILED_HELP = {
     'DESCRIPTION':
         """\
-        Imports a backend service's configuration to a file.
-        This configuration can be imported at a later time.
+        Imports a backend service's configuration from a file.
         """,
     'EXAMPLES':
         """\

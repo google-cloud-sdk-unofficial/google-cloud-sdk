@@ -66,7 +66,8 @@ class UpdateHelper(object):
 
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
-           support_logging, support_client_only, support_grpc_protocol):
+           support_logging, support_client_only, support_grpc_protocol,
+           support_subsetting, support_all_protocol):
     """Add all arguments for updating a backend service."""
 
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
@@ -89,7 +90,10 @@ class UpdateHelper(object):
     flags.AddTimeout(parser, default=None)
     flags.AddPortName(parser)
     flags.AddProtocol(
-        parser, default=None, support_grpc_protocol=support_grpc_protocol)
+        parser,
+        default=None,
+        support_grpc_protocol=support_grpc_protocol,
+        support_all_protocol=support_all_protocol)
 
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser)
@@ -101,6 +105,9 @@ class UpdateHelper(object):
     flags.AddAffinityCookieTtl(parser)
     signed_url_flags.AddSignedUrlCacheMaxAge(
         parser, required=False, unspecified_help='')
+    if support_subsetting:
+      flags.AddSubsettingPolicy(parser)
+
     if support_failover:
       flags.AddConnectionDrainOnFailover(parser, default=None)
       flags.AddDropTrafficIfUnhealthy(parser, default=None)
@@ -114,10 +121,11 @@ class UpdateHelper(object):
     flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
 
   def __init__(self, support_l7_internal_load_balancer, support_failover,
-               support_logging):
+               support_logging, support_subsetting):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
+    self._support_subsetting = support_subsetting
 
   def Modify(self, client, resources, args, existing):
     """Modify Backend Service."""
@@ -162,6 +170,9 @@ class UpdateHelper(object):
     if args.connection_draining_timeout is not None:
       replacement.connectionDraining = client.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
+
+    if self._support_subsetting:
+      backend_services_utils.ApplySubsettingArgs(client, args, replacement)
 
     backend_services_utils.ApplyCdnPolicyArgs(
         client,
@@ -222,7 +233,9 @@ class UpdateHelper(object):
         if self._support_logging else False,
         args.IsSpecified('health_checks'),
         args.IsSpecified('https_health_checks'),
-        args.IsSpecified('no_health_checks')
+        args.IsSpecified('no_health_checks'),
+        args.IsSpecified('subsetting_policy')
+        if self._support_subsetting else False
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 
@@ -358,7 +371,9 @@ class UpdateGA(base.UpdateCommand):
   _support_logging = True
   _support_failover = True
   _support_client_only = False
+  _support_all_protocol = False
   _support_grpc_protocol = True
+  _support_subsetting = False
 
   @classmethod
   def Args(cls, parser):
@@ -369,14 +384,16 @@ class UpdateGA(base.UpdateCommand):
         support_failover=cls._support_failover,
         support_logging=cls._support_logging,
         support_client_only=cls._support_client_only,
-        support_grpc_protocol=cls._support_grpc_protocol)
+        support_grpc_protocol=cls._support_grpc_protocol,
+        support_subsetting=cls._support_subsetting,
+        support_all_protocol=cls._support_all_protocol)
 
   def Run(self, args):
     """Issues requests necessary to update the Backend Services."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return UpdateHelper(self._support_l7_internal_load_balancer,
-                        self._support_failover,
-                        self._support_logging).Run(args, holder)
+                        self._support_failover, self._support_logging,
+                        self._support_subsetting).Run(args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -387,7 +404,9 @@ class UpdateBeta(UpdateGA):
   """
 
   _support_client_only = False
+  _support_all_protocol = False
   _support_grpc_protocol = True
+  _support_subsetting = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -398,4 +417,6 @@ class UpdateAlpha(UpdateGA):
   """
 
   _support_client_only = True
+  _support_all_protocol = True
   _support_grpc_protocol = True
+  _support_subsetting = True
