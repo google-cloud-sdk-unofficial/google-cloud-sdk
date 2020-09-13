@@ -37,6 +37,7 @@ SerializedTriggerAndSource = collections.namedtuple(
     'SerializedTriggerAndSource', 'serialized_trigger serialized_source')
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Describe(base.Command):
   """Get details about a given trigger."""
 

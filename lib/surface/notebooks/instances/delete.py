@@ -26,20 +26,20 @@ from googlecloudsdk.command_lib.notebooks import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-        Request for deleting notebook instance.
+        Request for deleting notebook instances.
     """,
     'EXAMPLES':
         """
     To delete an instance, run:
 
-        $ {command} /projects/example-project/locations/us-central1-b/instances/example-instance
+        $ {command} example-instance --location=us-central1-b
     """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
-  """Request for deleting instance."""
+  """Request for deleting instances."""
 
   @staticmethod
   def Args(parser):

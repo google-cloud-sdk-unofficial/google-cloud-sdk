@@ -41,8 +41,44 @@ import google.protobuf.descriptor_pb2 as descriptor
 MAX_SERVICE_CONFIG_ID_LENGTH = 50
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.CreateCommand):
+def _RegisterParserArgs(parser, track):
+  """Register parser args common to all tracks.
+
+  Args:
+    parser: The parser being configured
+    track: The command track
+  """
+  base.ASYNC_FLAG.AddToParser(parser)
+  common_flags.AddDisplayNameArg(parser)
+  labels_util.AddCreateLabelsFlags(parser)
+  resource_args.AddApiConfigResourceArg(parser, 'created', positional=True)
+  common_flags.AddBackendAuthServiceAccountFlag(parser)
+
+  group = parser.add_group(mutex=True,
+                           required=True,
+                           help='Configuration files for the API.')
+  group.add_argument(
+      '--openapi-spec',
+      type=arg_parsers.ArgList(),
+      metavar='FILE',
+      help=('The OpenAPI v2 specifications containing service '
+            'configuration information, and API specification for the gateway'
+            '.'))
+
+  # When we add gRPC support back to beta, we can remove this and combine the
+  # track-specific commands.
+  if track == 'alpha':
+    group.add_argument(
+        '--grpc-files',
+        type=arg_parsers.ArgList(),
+        metavar='FILE',
+        help=('Files describing the GRPC service. Google Service Configuration '
+              'files in JSON or YAML formats as well as Proto '
+              'descriptors should be listed.'))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(base.CreateCommand):
   """Add a new config to an API."""
 
   detailed_help = {
@@ -61,29 +97,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    base.ASYNC_FLAG.AddToParser(parser)
-    common_flags.AddDisplayNameArg(parser)
-    labels_util.AddCreateLabelsFlags(parser)
-    resource_args.AddApiConfigResourceArg(parser, 'created', positional=True)
-    common_flags.AddBackendAuthServiceAccountFlag(parser)
-
-    group = parser.add_group(mutex=True,
-                             required=True,
-                             help='Configuration files for the API.')
-    group.add_argument(
-        '--openapi-spec',
-        type=arg_parsers.ArgList(),
-        metavar='FILE',
-        help=('The OpenAPI v2 specifications containing service '
-              'configuration information, and API specification for the gateway'
-              '.'))
-    group.add_argument(
-        '--grpc-files',
-        type=arg_parsers.ArgList(),
-        metavar='FILE',
-        help=('Files describing the GRPC service. Google Service Configuration '
-              'files in JSON or YAML formats as well as Proto '
-              'descriptors should be listed.'))
+    _RegisterParserArgs(parser, 'beta')
 
   def Run(self, args):
     apis = apis_client.ApiClient()
@@ -104,7 +118,8 @@ class Create(base.CreateCommand):
     open_api_docs = []
     svc_configs = []
     grpc_svc_defs = []
-    if args.grpc_files:
+    # When we add gRPC support back, we can remove the 'hasattr' call.
+    if hasattr(args, 'grpc_files') and args.grpc_files:
       args.grpc_files = [f.strip() for f in args.grpc_files]
       svc_configs, grpc_svc_defs = self.__GrpcMessages(args.grpc_files)
     else:
@@ -316,3 +331,12 @@ class Create(base.CreateCommand):
         proto_desc_contents, proto_desc_file, True)
     return messages.ApigatewayApiConfigGrpcServiceDefinition(
                 fileDescriptorSet=file_descriptor_set, source=grpc_sources)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Add a new config to an API."""
+
+  @staticmethod
+  def Args(parser):
+    _RegisterParserArgs(parser, 'alpha')

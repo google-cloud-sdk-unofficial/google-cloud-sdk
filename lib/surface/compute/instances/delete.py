@@ -53,9 +53,9 @@ DETAILED_HELP = {
 
 
 class Delete(base.DeleteCommand):
-  """Delete Google Compute Engine virtual machine instances.
+  """Delete Compute Engine virtual machine instances.
 
-  *{command}* deletes one or more Google Compute Engine virtual machine
+  *{command}* deletes one or more Compute Engine virtual machine
   instances.
   """
 

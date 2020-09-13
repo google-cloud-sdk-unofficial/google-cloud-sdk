@@ -23,7 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.firestore import create_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
   """Create a Google Cloud Firestore in Datastore Mode database."""
   product_name = 'Google Cloud Firestore in Datastore Mode'

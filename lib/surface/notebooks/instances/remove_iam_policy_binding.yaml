@@ -7,7 +7,7 @@ help_text:
     To remove an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
     on the instance 'instance-id', run:
 
-      $ {command} /projects/example-project/locations/us-central1-b/instances/example-instance --member='user:test-user@gmail.com' --role='roles/editor'
+      $ {command} example-instance --member='user:test-user@gmail.com' --role='roles/editor' --location=us-central1-a
 
     See https://cloud.google.com/iam/docs/managing-policies for details of
     policy role and member types.

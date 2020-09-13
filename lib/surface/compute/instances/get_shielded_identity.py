@@ -26,10 +26,10 @@ from googlecloudsdk.command_lib.compute.instances import flags
 
 
 class GetShieldedIdentity(base.DescribeCommand):
-  """Get the Shielded identity for a Google Compute Engine instance.
+  """Get the Shielded identity for a Compute Engine instance.
 
-  *{command}* displays the Shielded identity associated with a Google Compute
-  Engine instance in a project.
+  *{command}* displays the Shielded identity associated with a
+  Compute Engine instance in a project.
   """
 
   detailed_help = {

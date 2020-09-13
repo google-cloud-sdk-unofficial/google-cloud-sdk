@@ -2,9 +2,9 @@
 
   help_text:
     brief: |
-      Delete a migration job.
+      Delete a Database Migration Service migration job.
     description: |
-      Delete a Cloud Database Migration Service migration job.
+      Delete a Database Migration Service migration job.
     examples: |
       To delete a connection profile:
 
@@ -16,7 +16,7 @@
   arguments:
     resource:
       help_text: |
-        Migration job resource - Cloud Database Migration Service migration job to delete.
+        Migration job resource - Database Migration Service migration job to delete.
       spec: !REF googlecloudsdk.command_lib.database_migration.resources:migration_job
 
     params:

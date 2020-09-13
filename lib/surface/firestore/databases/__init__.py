@@ -21,7 +21,5 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Databases(base.Group):
   """Manage Creation of Cloud Firestore in Native mode Database."""
-

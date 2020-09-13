@@ -1,8 +1,8 @@
 - release_tracks: [ALPHA]
 
   help_text:
-    brief: List migration jobs.
-    description: List migration jobs.
+    brief: List Database Migration Service migration jobs.
+    description: List Database Migration Service migration jobs.
     examples: |
       To list all migration jobs in a project and region 'us-central1', run:
 

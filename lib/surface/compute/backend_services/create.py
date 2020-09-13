@@ -24,6 +24,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import cdn_flags_utils as cdn_flags
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_services_utils
@@ -84,7 +85,8 @@ class CreateHelper(object):
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
            support_logging, support_multinic, support_client_only,
-           support_grpc_protocol, support_all_protocol, support_subsetting):
+           support_grpc_protocol, support_all_protocol, support_subsetting,
+           support_flexible_cache_step_one):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -137,13 +139,18 @@ class CreateHelper(object):
     if support_multinic:
       flags.AddNetwork(parser)
 
+    if support_flexible_cache_step_one:
+      cdn_flags.AddFlexibleCacheStepOne(parser, 'backend service')
+
   def __init__(self, support_l7_internal_load_balancer, support_failover,
-               support_logging, support_multinic, support_subsetting):
+               support_logging, support_multinic, support_subsetting,
+               support_flexible_cache_step_one):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
     self._support_multinic = support_multinic
     self._support_subsetting = support_subsetting
+    self._support_flexible_cache_step_one = support_flexible_cache_step_one
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
     """Returns a global backend service create request."""
@@ -175,7 +182,8 @@ class CreateHelper(object):
         args,
         backend_service,
         is_update=False,
-        apply_signed_url_cache_max_age=True)
+        apply_signed_url_cache_max_age=True,
+        support_flexible_cache_step_one=self._support_flexible_cache_step_one)
 
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
@@ -185,6 +193,9 @@ class CreateHelper(object):
       backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
     if args.custom_request_header is not None:
       backend_service.customRequestHeaders = args.custom_request_header
+    if self._support_flexible_cache_step_one \
+        and args.custom_response_header is not None:
+      backend_service.customResponseHeaders = args.custom_response_header
 
     self._ApplyIapArgs(client.messages, args.iap, backend_service)
 
@@ -335,6 +346,7 @@ class CreateGA(base.CreateCommand):
   _support_grpc_protocol = True
   _support_all_protocol = False
   _support_subsetting = False
+  _support_flexible_cache_step_one = False
 
   @classmethod
   def Args(cls, parser):
@@ -348,7 +360,8 @@ class CreateGA(base.CreateCommand):
         support_client_only=cls._support_client_only,
         support_grpc_protocol=cls._support_grpc_protocol,
         support_all_protocol=cls._support_all_protocol,
-        support_subsetting=cls._support_subsetting)
+        support_subsetting=cls._support_subsetting,
+        support_flexible_cache_step_one=cls._support_flexible_cache_step_one)
 
   def Run(self, args):
     """Issues request necessary to create Backend Service."""
@@ -360,6 +373,7 @@ class CreateGA(base.CreateCommand):
         support_failover=self._support_failover,
         support_logging=self._support_logging,
         support_multinic=self._support_multinic,
+        support_flexible_cache_step_one=self._support_flexible_cache_step_one,
         support_subsetting=self._support_subsetting).Run(args, holder)
 
 
@@ -383,6 +397,7 @@ class CreateBeta(CreateGA):
   """
   _support_multinic = True
   _support_client_only = False
+  _support_flexible_cache_step_one = True
   _support_grpc_protocol = True
   _support_all_protocol = False
   _support_subsetting = False
@@ -410,3 +425,4 @@ class CreateAlpha(CreateBeta):
   _support_grpc_protocol = True
   _support_all_protocol = True
   _support_subsetting = True
+  _support_flexible_cache_step_one = True

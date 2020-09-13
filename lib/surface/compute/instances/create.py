@@ -47,7 +47,7 @@ from six.moves import zip
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-        *{command}* facilitates the creation of Google Compute Engine
+        *{command}* facilitates the creation of Compute Engine
         virtual machines.
 
         When an instance is in RUNNING state and the system begins to boot,
@@ -178,7 +178,7 @@ def _CommonArgs(parser,
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create Google Compute Engine virtual machine instances."""
+  """Create Compute Engine virtual machine instances."""
 
   _support_regional = False
   _support_kms = True
@@ -486,7 +486,7 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
-  """Create Google Compute Engine virtual machine instances."""
+  """Create Compute Engine virtual machine instances."""
 
   _support_regional = True
   _support_kms = True
@@ -544,7 +544,7 @@ class CreateBeta(Create):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
-  """Create Google Compute Engine virtual machine instances."""
+  """Create Compute Engine virtual machine instances."""
 
   _support_regional = True
   _support_kms = True

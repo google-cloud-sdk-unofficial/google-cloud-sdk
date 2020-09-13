@@ -32,8 +32,8 @@ class DeleteAccessConfig(base.SilentCommand):
   detailed_help = {
       'DESCRIPTION': """
         *{command}* is used to delete access configurations from network
-        interfaces of Google Compute Engine virtual machines. Access
-        configurations allow you to assign a public, external IP to a virtual
+        interfaces of Compute Engine virtual machines. Access
+        configurations let you assign a public, external IP to a virtual
         machine.
       """,
       'EXAMPLES': """

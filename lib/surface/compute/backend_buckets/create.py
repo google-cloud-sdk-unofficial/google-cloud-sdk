@@ -18,13 +18,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.compute import backend_buckets_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import cdn_flags_utils as cdn_flags
 from googlecloudsdk.command_lib.compute import signed_url_flags
+from googlecloudsdk.command_lib.compute.backend_buckets import backend_buckets_utils
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a backend bucket.
 
@@ -34,16 +36,20 @@ class Create(base.CreateCommand):
   """
 
   BACKEND_BUCKET_ARG = None
+  _support_flexible_cache_step_one = False
 
   @classmethod
   def Args(cls, parser):
     """Set up arguments for this command."""
     parser.display_info.AddFormat(backend_buckets_flags.DEFAULT_LIST_FORMAT)
-    backend_buckets_utils.AddUpdatableArgs(cls, parser, 'create')
+    backend_buckets_flags.AddUpdatableArgs(cls, parser, 'create')
     backend_buckets_flags.REQUIRED_GCS_BUCKET_ARG.AddArgument(parser)
     parser.display_info.AddCacheUpdater(
         backend_buckets_flags.BackendBucketsCompleter)
     signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
+
+    if cls._support_flexible_cache_step_one:
+      cdn_flags.AddFlexibleCacheStepOne(parser, 'backend bucket')
 
   def CreateBackendBucket(self, args):
     """Creates and returns the backend bucket."""
@@ -55,17 +61,23 @@ class Create(base.CreateCommand):
 
     enable_cdn = args.enable_cdn or False
 
-    cdn_policy = None
-    if args.IsSpecified('signed_url_cache_max_age'):
-      cdn_policy = client.messages.BackendBucketCdnPolicy(
-          signedUrlCacheMaxAgeSec=args.signed_url_cache_max_age)
-
-    return client.messages.BackendBucket(
+    backend_bucket = client.messages.BackendBucket(
         description=args.description,
         name=backend_buckets_ref.Name(),
         bucketName=args.gcs_bucket_name,
-        enableCdn=enable_cdn,
-        cdnPolicy=cdn_policy)
+        enableCdn=enable_cdn)
+
+    if self._support_flexible_cache_step_one \
+        and args.custom_response_header is not None:
+      backend_bucket.customResponseHeaders = args.custom_response_header
+
+    backend_buckets_utils.ApplyCdnPolicyArgs(
+        client,
+        args,
+        backend_bucket,
+        support_flexible_cache_step_one=self._support_flexible_cache_step_one)
+
+    return backend_bucket
 
   def Run(self, args):
     """Issues the request necessary for creating a backend bucket."""
@@ -81,3 +93,14 @@ class Create(base.CreateCommand):
         backendBucket=backend_bucket, project=backend_buckets_ref.project)
     return client.MakeRequests([(client.apitools_client.backendBuckets,
                                  'Insert', request)])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class CreateAlphaBeta(Create):
+  """Create a backend bucket.
+
+  *{command}* is used to create backend buckets. Backend buckets
+  define Google Cloud Storage buckets that can serve content. URL
+  maps define which requests are sent to which backend buckets.
+  """
+  _support_flexible_cache_step_one = True

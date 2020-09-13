@@ -7,7 +7,7 @@
     examples: |
       To list recommendations:
 
-        $ {command} --project=project-name --location=global --recommender=google.iam.policy.google.compute.instance.MachineTypeRecommender
+        $ {command} --project=project-name --location=global --recommender=google.compute.instance.MachineTypeRecommender
 
   request:
     collection: recommender.projects.locations.recommenders.recommendations

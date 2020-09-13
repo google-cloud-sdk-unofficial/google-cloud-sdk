@@ -35,6 +35,7 @@ _DEFAULT_BROKER_NAME = 'default'
 _INJECTION_LABELS = {'knative-eventing-injection': 'enabled'}
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Create(base.Command):
   """Create a broker to initialize a namespace for eventing."""
 

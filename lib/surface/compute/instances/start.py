@@ -161,11 +161,11 @@ def DetailedHelp():
   """Construct help text based on the command release track."""
   detailed_help = {
       'brief': 'Start a stopped virtual machine instance.',
-      'DESCRIPTION': """\
-        *{command}* is used to start a stopped Google Compute Engine virtual
+      'DESCRIPTION': """
+        *{command}* is used to start a stopped Compute Engine virtual
         machine. Only a stopped virtual machine can be started.
         """,
-      'EXAMPLES': """\
+      'EXAMPLES': """
         To start a stopped instance named 'example-instance' in zone
         ``us-central1-a'', run:
 

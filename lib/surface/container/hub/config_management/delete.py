@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command to update MultiClusterIngress Feature."""
+"""The command to update Config Management Feature."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -30,9 +30,11 @@ MEMBERSHIP_FLAG = '--membership'
 
 
 class Delete(base.UpdateCommand):
-  """Remove Configmanagement Feature Spec for the given membership.
+  """Remove the ConfigManagement Feature Spec for the given membership.
 
-  This command remove Configmanagement Feature Spec for the given membership.
+  This command removes the ConfigManagement Feature Spec for the given
+  membership. The existing ConfigManagement resources in the clusters will
+  become unmanaged.
 
   ## Examples
 

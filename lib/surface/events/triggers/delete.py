@@ -32,6 +32,7 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Delete(base.Command):
   """Delete a trigger."""
 

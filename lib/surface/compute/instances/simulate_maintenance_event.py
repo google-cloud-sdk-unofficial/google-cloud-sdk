@@ -94,7 +94,7 @@ SimulateMaintenanceEvent.detailed_help = {
         'Simulate maintenance of virtual machine instances',
     'DESCRIPTION':
         """\
-        *{command}* simulates a maintenance event on Google
+        *{command}* simulates a maintenance event on
         Compute Engine virtual machines.
         """,
     'EXAMPLES':

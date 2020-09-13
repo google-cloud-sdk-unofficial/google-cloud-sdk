@@ -602,7 +602,7 @@ class UpdateBeta(Update):
     flags.AddMasterGlobalAccessFlag(group, is_update=True)
     flags.AddEnableGvnicFlag(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
-    flags.AddNotificationConfigFlag(group, hidden=True)
+    flags.AddNotificationConfigFlag(group)
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1beta1', group, hidden=True)
     flags.AddKubernetesObjectsExportConfig(group)
 
@@ -716,7 +716,7 @@ class UpdateAlpha(Update):
     flags.AddTpuFlags(group, enable_tpu_service_networking=True)
     flags.AddMasterGlobalAccessFlag(group, is_update=True)
     flags.AddEnableGvnicFlag(group)
-    flags.AddNotificationConfigFlag(group, hidden=True)
+    flags.AddNotificationConfigFlag(group)
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1alpha1', group, hidden=True)
     flags.AddKubernetesObjectsExportConfig(group)
 

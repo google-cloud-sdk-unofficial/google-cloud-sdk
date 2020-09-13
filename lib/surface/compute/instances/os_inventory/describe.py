@@ -35,9 +35,9 @@ import six
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine virtual instance's OS inventory data.
+  """Describe a Compute Engine virtual instance's OS inventory data.
 
-  *{command}* displays all OS inventory data associated with a Google Compute
+  *{command}* displays all OS inventory data associated with a Compute
   Engine virtual machine instance.
 
   ## EXAMPLES

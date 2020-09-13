@@ -32,7 +32,7 @@ DETAILED_HELP = {
         """
     To create an instance from an environment, run:
 
-      $ {command} example-instance --location=us-central1-b --environment=example-env --environment-location=us-central1-a --machine-type=n1-standard-4
+      $ {command} example-instance --environment=example-env --environment-location=us-central1-a --machine-type=n1-standard-4  example-instance --location=us-central1-b
 
     To create an instance from a VmImage family, run:
 
@@ -44,7 +44,7 @@ DETAILED_HELP = {
 
     To create an instance from a Container Repository, run:
 
-      $ {command} example-instance --container-repository=gcr.io/deeplearning-platform-release/base-cpu --container-tag=test-tag --machine-type=n1-standard-4
+      $ {command} example-instance --container-repository=gcr.io/deeplearning-platform-release/base-cpu --container-tag=test-tag --machine-type=n1-standard-4 --location=us-central1-b
     """,
 }
 

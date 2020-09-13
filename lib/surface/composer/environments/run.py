@@ -139,6 +139,8 @@ class Run(base.Command):
     cluster_id = env_obj.config.gkeCluster
     cluster_location_id = command_util.ExtractGkeClusterLocationId(env_obj)
 
+    tty = 'no-tty' not in args
+
     with command_util.TemporaryKubeconfig(cluster_location_id, cluster_id):
       try:
         image_version = env_obj.config.softwareConfig.imageVersion
@@ -152,12 +154,11 @@ class Run(base.Command):
             '{}'.format(kubectl_ns))
 
         self.BypassConfirmationPrompt(args, airflow_version)
-        kubectl_args = [
-            'exec', pod,
-            '--stdin', '--tty',
-            '--container', WORKER_CONTAINER, '--',
-            'airflow', args.subcommand
-        ]
+        kubectl_args = ['exec', pod, '--stdin']
+        if tty:
+          kubectl_args.append('--tty')
+        kubectl_args.extend(
+            ['--container', WORKER_CONTAINER, '--', 'airflow', args.subcommand])
         if args.cmd_args:
           kubectl_args.extend(args.cmd_args)
 

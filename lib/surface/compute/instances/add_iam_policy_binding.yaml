@@ -1,8 +1,8 @@
 release_tracks: [GA, BETA, ALPHA]
 help_text:
-  brief: Add IAM policy binding to a Google Compute Engine instance.
+  brief: Add IAM policy binding to a Compute Engine instance.
   description: |
-    Add an IAM policy binding to the IAM policy of a Google Compute Engine instance. One binding consists of a member,
+    Add an IAM policy binding to the IAM policy of a Compute Engine instance. One binding consists of a member,
     a role, and an optional condition.
 
   examples: |

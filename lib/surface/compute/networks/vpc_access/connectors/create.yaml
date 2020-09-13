@@ -53,7 +53,7 @@
       api_field: connector.minThroughput
       required: false
       help_text: |
-        Minimum throughput in Mbps. Value must be a multiple of 100 between 200 and 1000.
+        Minimum throughput in Mbps. Value must be a multiple of 100 from 200 through 900.
         Must be lower than the value specified by `--max-throughput`; the set value, if applicable,
         or the default maximum throughput value.
       default: 200
@@ -61,7 +61,7 @@
       api_field: connector.maxThroughput
       required: false
       help_text: |
-        Maximum throughput in Mbps. Value must be a multiple of 100 between 200 and 1000.
+        Maximum throughput in Mbps. Value must be a multiple of 100 from 300 through 1000.
         Must be higher than the value specified by `--min-throughput`; the set value, if applicable,
         or the default minimum throughput value.
       default: 300

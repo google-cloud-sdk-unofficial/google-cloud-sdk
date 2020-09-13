@@ -26,20 +26,20 @@ from googlecloudsdk.command_lib.notebooks import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-        Request for checking if notebook instance is upgradeable.
+        Request for checking if a notebook instance is upgradeable.
     """,
     'EXAMPLES':
         """
     To check if an instance can be upgraded, run:
 
-        $ {command} /projects/example-project/locations/us-central1-b/instances/example-instance
+        $ {command} example-instance --location=us-central1-a
     """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class IsUpgradeable(base.DescribeCommand):
-  """Request for check if instance is upgradable."""
+  """Request for checking if a notebook instance is upgradeable."""
 
   @staticmethod
   def Args(parser):

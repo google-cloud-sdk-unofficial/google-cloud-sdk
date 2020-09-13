@@ -27,7 +27,7 @@ from googlecloudsdk.core import resources
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ApiGateway(base.Group):
   """Manage Cloud API Gateway resources.
 
@@ -39,4 +39,4 @@ class ApiGateway(base.Group):
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()
-    resources.REGISTRY.RegisterApiByName('apigateway', 'v1alpha1')
+    resources.REGISTRY.RegisterApiByName('apigateway', 'v1beta')

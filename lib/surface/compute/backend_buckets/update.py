@@ -20,15 +20,17 @@ from __future__ import unicode_literals
 
 from apitools.base.py import encoding
 
-from googlecloudsdk.api_lib.compute import backend_buckets_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import cdn_flags_utils as cdn_flags
 from googlecloudsdk.command_lib.compute import signed_url_flags
+from googlecloudsdk.command_lib.compute.backend_buckets import backend_buckets_utils
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a backend bucket.
 
@@ -36,20 +38,37 @@ class Update(base.UpdateCommand):
   """
 
   BACKEND_BUCKET_ARG = None
+  _support_flexible_cache_step_one = False
 
   @classmethod
   def Args(cls, parser):
     """Set up arguments for this command."""
-    backend_buckets_utils.AddUpdatableArgs(cls, parser, 'update')
+    backend_buckets_flags.AddUpdatableArgs(cls, parser, 'update')
     backend_buckets_flags.GCS_BUCKET_ARG.AddArgument(parser)
     signed_url_flags.AddSignedUrlCacheMaxAge(
         parser, required=False, unspecified_help='')
+
+    if cls._support_flexible_cache_step_one:
+      cdn_flags.AddFlexibleCacheStepOne(
+          parser, 'backend bucket', update_command=True)
 
   def AnyArgsSpecified(self, args):
     """Returns true if any args for updating backend bucket were specified."""
     return (args.IsSpecified('description') or
             args.IsSpecified('gcs_bucket_name') or
             args.IsSpecified('enable_cdn'))
+
+  def AnyFlexibleCacheArgsSpecified(self, args):
+    """Returns true if any Flexible Cache args for updating backend bucket were specified."""
+    return self._support_flexible_cache_step_one and any(
+        (args.IsSpecified('cache_mode'), args.IsSpecified('client_ttl'),
+         args.IsSpecified('no_client_ttl'), args.IsSpecified('default_ttl'),
+         args.IsSpecified('no_default_ttl'), args.IsSpecified('max_ttl'),
+         args.IsSpecified('no_max_ttl'), args.IsSpecified('negative_caching'),
+         args.IsSpecified('negative_caching_policy'),
+         args.IsSpecified('no_negative_caching_policies'),
+         args.IsSpecified('custom_response_header'),
+         args.IsSpecified('no_custom_response_headers')))
 
   def GetGetRequest(self, client, backend_bucket_ref):
     """Returns a request to retrieve the backend bucket."""
@@ -86,9 +105,21 @@ class Update(base.UpdateCommand):
     if args.enable_cdn is not None:
       replacement.enableCdn = args.enable_cdn
 
-    if args.IsSpecified('signed_url_cache_max_age'):
-      replacement.cdnPolicy = client.messages.BackendBucketCdnPolicy(
-          signedUrlCacheMaxAgeSec=args.signed_url_cache_max_age)
+    backend_buckets_utils.ApplyCdnPolicyArgs(
+        client,
+        args,
+        replacement,
+        is_update=True,
+        cleared_fields=cleared_fields,
+        support_flexible_cache_step_one=self._support_flexible_cache_step_one)
+
+    if self._support_flexible_cache_step_one:
+      if args.custom_response_header is not None:
+        replacement.customResponseHeaders = args.custom_response_header
+      if args.no_custom_response_headers:
+        replacement.customResponseHeaders = []
+      if not replacement.customResponseHeaders:
+        cleared_fields.append('customResponseHeaders')
 
     if not replacement.description:
       cleared_fields.append('description')
@@ -122,7 +153,17 @@ class Update(base.UpdateCommand):
 
   def Run(self, args):
     """Issues the request necessary for updating a backend bucket."""
-    if not self.AnyArgsSpecified(args) and not args.IsSpecified(
-        'signed_url_cache_max_age'):
+    if not self.AnyArgsSpecified(args)\
+        and not args.IsSpecified('signed_url_cache_max_age')\
+        and not self.AnyFlexibleCacheArgsSpecified(args):
       raise exceptions.ToolException('At least one property must be modified.')
     return self.MakeRequests(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class UpdateAlphaBeta(Update):
+  """Update a backend bucket.
+
+  *{command}* is used to update backend buckets.
+  """
+  _support_flexible_cache_step_one = True

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command to enable MultiClusterServiceDiscovery Feature."""
+"""The command to enable MultiClusterServices Feature."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,19 +22,19 @@ from googlecloudsdk.command_lib.container.hub.features import base
 
 
 class Enable(base.EnableCommand):
-  """Enable MultiClusterServiceDiscovery Feature.
+  """Enable MultiClusterServices Feature.
 
-  This command enables MultiClusterServiceDiscovery Feature in Hub.
+  This command enables MultiClusterServices Feature in Hub.
 
   ## Examples
 
-  Enable MultiClusterServiceDiscovery Feature:
+  Enable MultiClusterServices Feature:
 
     $ {command}
   """
 
   FEATURE_NAME = 'multiclusterservicediscovery'
-  FEATURE_DISPLAY_NAME = 'MultiClusterServiceDiscovery'
+  FEATURE_DISPLAY_NAME = 'Multi Cluster Services'
 
   def Run(self, args):
     self.RunCommand(

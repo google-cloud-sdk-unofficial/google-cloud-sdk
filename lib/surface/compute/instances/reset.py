@@ -27,7 +27,7 @@ DETAILED_HELP = {
     'brief': 'Reset a virtual machine instance.',
     'DESCRIPTION':
         """\
-          *{command}* is used to perform a hard reset on a Google
+          *{command}* is used to perform a hard reset on a
         Compute Engine virtual machine.
 
         This will not perform a clean shutdown of the guest OS on the instance.

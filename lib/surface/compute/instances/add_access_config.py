@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.compute.instances import flags
 DETAILED_HELP = {
     'DESCRIPTION': """
 *{command}* is used to create access configurations for network
-interfaces of Google Compute Engine virtual machines. This allows you
+interfaces of Compute Engine virtual machines. This allows you
 to assign a public, external IP to a virtual machine.
 """,
     'EXAMPLES': """
@@ -79,7 +79,7 @@ def _Args(parser, support_public_dns):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddAccessConfigInstances(base.SilentCommand):
-  """Create a Google Compute Engine virtual machine access configuration."""
+  """Create a Compute Engine virtual machine access configuration."""
 
   _support_public_dns = False
 
@@ -139,14 +139,14 @@ class AddAccessConfigInstances(base.SilentCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AddAccessConfigInstancesBeta(AddAccessConfigInstances):
-  """Create a Google Compute Engine virtual machine access configuration."""
+  """Create a Compute Engine virtual machine access configuration."""
 
   _support_public_dns = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AddAccessConfigInstancesAlpha(AddAccessConfigInstances):
-  """Create a Google Compute Engine virtual machine access configuration."""
+  """Create a Compute Engine virtual machine access configuration."""
 
   _support_public_dns = True
 

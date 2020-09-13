@@ -26,13 +26,13 @@ from googlecloudsdk.command_lib.notebooks import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-        Request for starting notbook instance.
+        Request for starting notebook instances.
     """,
     'EXAMPLES':
         """
     To start an instance, run:
 
-        $ {command} /projects/example-project/locations/us-central1-b/instances/example-instance
+        $ {command} example-instance --location=us-central1-a
     """,
 }
 

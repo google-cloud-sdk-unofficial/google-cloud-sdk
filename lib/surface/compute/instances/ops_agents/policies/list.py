@@ -56,10 +56,10 @@ def _Args(parser):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List Google Cloud Operations Suite Agents (Ops Agents) policies.
+  """List Google Cloud's operations suite agents (Ops Agents) policies.
 
-  {command} lists policies that facilitate agent management across Google Cloud
-  Compute instances based on user specified instance filters. These policies
+  {command} lists policies that facilitate agent management across Compute
+  Engine instances based on user specified instance filters. These policies
   install, specify versioning, enable autoupgrade, and remove Ops Agents.
 
   The command returns a list of policies, including the ``ID'', ``DESCRIPTION'',

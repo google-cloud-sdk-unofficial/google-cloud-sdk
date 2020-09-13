@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.api_gateway import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List API Gateway operations."""
 

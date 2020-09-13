@@ -31,7 +31,7 @@ DETAILED_HELP = {
     'brief': 'Stop a virtual machine instance.',
     'DESCRIPTION':
         """\
-        *{command}* is used to stop a Google Compute Engine virtual machine.
+        *{command}* is used to stop a Compute Engine virtual machine.
         Stopping a VM performs a clean shutdown, much like invoking the shutdown
         functionality of a workstation or laptop. Stopping a VM with a local SSD
         is not supported and will result in an API error. Stopping a VM which is

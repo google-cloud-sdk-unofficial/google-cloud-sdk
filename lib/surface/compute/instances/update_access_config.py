@@ -27,9 +27,9 @@ from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
-    'DESCRIPTION': """\
+    'DESCRIPTION': """
         *{command}* is used to update access configurations for network
-        interfaces of Google Compute Engine virtual machines.
+        interfaces of Compute Engine virtual machines.
         """,
     'EXAMPLES': """
     To update network interface of an instance to 'nic0', run:
@@ -53,7 +53,7 @@ def _Args(parser, support_public_dns, support_network_tier):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateAccessConfigInstances(base.UpdateCommand):
-  """Update a Google Compute Engine virtual machine access configuration."""
+  """Update a Compute Engine virtual machine access configuration."""
 
   _support_public_dns = False
   _support_network_tier = False
@@ -164,7 +164,7 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateAccessConfigInstancesBeta(UpdateAccessConfigInstances):
-  """Update a Google Compute Engine virtual machine access configuration."""
+  """Update a Compute Engine virtual machine access configuration."""
 
   _support_public_dns = False
   _support_network_tier = False
@@ -172,7 +172,7 @@ class UpdateAccessConfigInstancesBeta(UpdateAccessConfigInstances):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAccessConfigInstancesAlpha(UpdateAccessConfigInstances):
-  """Update a Google Compute Engine virtual machine access configuration."""
+  """Update a Compute Engine virtual machine access configuration."""
 
   _support_public_dns = True
   _support_network_tier = True

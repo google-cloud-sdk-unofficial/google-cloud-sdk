@@ -28,10 +28,10 @@ from googlecloudsdk.core import log
 
 DETAILED_HELP = {
     'brief':
-        'Remove tags from Google Compute Engine virtual machine instances.',
+        'Remove tags from Compute Engine virtual machine instances.',
     'DESCRIPTION':
         """\
-        *{command}* is used to remove tags from Google Compute Engine virtual
+        *{command}* is used to remove tags from Compute Engine virtual
         machine instances.
         """,
     'EXAMPLES':
@@ -45,7 +45,7 @@ DETAILED_HELP = {
 
 
 class RemoveTags(base.UpdateCommand):
-  """Remove tags from Google Compute Engine virtual machine instances."""
+  """Remove tags from Compute Engine virtual machine instances."""
 
   @staticmethod
   def Args(parser):

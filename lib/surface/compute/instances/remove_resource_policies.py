@@ -27,10 +27,10 @@ from googlecloudsdk.command_lib.compute.resource_policies import util
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class InstancesRemoveResourcePolicies(base.UpdateCommand):
-  """Remove resource policies to Google Compute Engine VM instances.
+  """Remove resource policies to Compute Engine VM instances.
 
-    *{command}* removes resource policies from Google Compute
-    Engine virtual instances.
+    *{command}* removes resource policies from Compute Engine
+    virtual instances.
   """
 
   @staticmethod

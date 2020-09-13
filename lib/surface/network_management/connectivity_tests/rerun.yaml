@@ -22,5 +22,8 @@
 
   request: &request
     method: rerun
-    api_version: v1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
     collection: networkmanagement.projects.locations.global.connectivityTests

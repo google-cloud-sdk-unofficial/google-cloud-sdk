@@ -29,10 +29,10 @@ from googlecloudsdk.core import log
 
 DETAILED_HELP = {
     'brief':
-        'Add tags to Google Compute Engine virtual machine instances.',
+        'Add tags to Compute Engine virtual machine instances.',
     'DESCRIPTION':
         """\
-        *{command}* is used to add tags to Google Compute Engine virtual
+        *{command}* is used to add tags to Compute Engine virtual
         machine instances.
 
         Tags can be used to identify the instances when adding network
@@ -59,7 +59,7 @@ DETAILED_HELP = {
 
 
 class InstancesAddTags(base.UpdateCommand):
-  """Add tags to Google Compute Engine virtual machine instances."""
+  """Add tags to Compute Engine virtual machine instances."""
 
   @staticmethod
   def Args(parser):

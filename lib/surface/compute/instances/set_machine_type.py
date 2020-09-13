@@ -38,7 +38,7 @@ def _CommonArgs(parser):
 
 
 class SetMachineType(base.SilentCommand):
-  """Set machine type for Google Compute Engine virtual machine instances."""
+  """Set machine type for Compute Engine virtual machine instances."""
 
   @staticmethod
   def Args(parser):
@@ -94,9 +94,9 @@ class SetMachineType(base.SilentCommand):
 
 
 SetMachineType.detailed_help = {
-    'brief': 'Set machine type for Google Compute Engine virtual machines',
-    'DESCRIPTION': """\
-        ``{command}'' allows you to change the machine type of a virtual machine
+    'brief': 'Set machine type for Compute Engine virtual machines',
+    'DESCRIPTION': """
+        ``{command}'' lets you change the machine type of a virtual machine
         in the *TERMINATED* state (that is, a virtual machine instance that
         has been stopped).
 

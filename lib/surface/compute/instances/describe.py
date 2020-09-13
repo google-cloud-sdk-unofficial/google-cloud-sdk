@@ -27,7 +27,7 @@ DETAILED_HELP = {
     'brief': 'Describe a virtual machine instance.',
     'DESCRIPTION':
         """\
-        *{command}* displays all data associated with a Google Compute
+        *{command}* displays all data associated with a Compute
         Engine virtual machine instance.
 
         It's possible to limit the the scope of the description by using the

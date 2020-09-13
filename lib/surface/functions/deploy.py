@@ -40,14 +40,64 @@ from googlecloudsdk.core.console import console_io
 from six.moves import urllib
 
 
-def _ApplyEnvVarsArgsToFunction(function, args):
+def _ApplyBuildEnvVarsArgsToFunction(function, args):
+  """Determines if build environment variables have to be updated.
+
+  It compares the cli args with the existing build environment variables to
+  compute the resulting build environment variables.
+
+  Args:
+    function: CloudFunction message to be checked and filled with build env vars
+      based on the flags
+    args: all cli args
+
+  Returns:
+    updated_fields: update mask containing the list of fields that are
+    considered for updating based on the cli args and existing variables
+  """
+
   updated_fields = []
-  old_env_vars = env_vars_api_util.GetFunctionEnvVarsAsDict(function)
+  old_build_env_vars = env_vars_api_util.GetEnvVarsAsDict(
+      function.buildEnvironmentVariables)
+  build_env_var_flags = map_util.GetMapFlagsFromArgs('build-env-vars', args)
+  new_build_env_vars = map_util.ApplyMapFlags(old_build_env_vars,
+                                              **build_env_var_flags)
+  if old_build_env_vars != new_build_env_vars:
+    build_env_vars_type_class = api_util.GetApiMessagesModule(
+        track=base.ReleaseTrack.ALPHA
+    ).CloudFunction.BuildEnvironmentVariablesValue
+    function.buildEnvironmentVariables = env_vars_api_util.DictToEnvVarsProperty(
+        build_env_vars_type_class, new_build_env_vars)
+    updated_fields.append('buildEnvironmentVariables')
+  return updated_fields
+
+
+def _ApplyEnvVarsArgsToFunction(function, args):
+  """Determines if environment variables have to be updated.
+
+  It compares the cli args with the existing environment variables to compute
+  the resulting build environment variables.
+
+  Args:
+    function: CloudFunction message to be checked and filled with env vars based
+      on the flags
+    args: all cli args
+
+  Returns:
+    updated_fields: update mask containing the list of fields that are
+    considered for updating based on the cli args and existing variables
+  """
+
+  updated_fields = []
+  old_env_vars = env_vars_api_util.GetEnvVarsAsDict(
+      function.environmentVariables)
   env_var_flags = map_util.GetMapFlagsFromArgs('env-vars', args)
   new_env_vars = map_util.ApplyMapFlags(old_env_vars, **env_var_flags)
   if old_env_vars != new_env_vars:
+    env_vars_type_class = api_util.GetApiMessagesModule(
+    ).CloudFunction.EnvironmentVariablesValue
     function.environmentVariables = env_vars_api_util.DictToEnvVarsProperty(
-        new_env_vars)
+        env_vars_type_class, new_env_vars)
     updated_fields.append('environmentVariables')
   return updated_fields
 
@@ -214,6 +264,9 @@ def _Run(args,
                                    args.remove_labels, args.clear_labels):
     updated_fields.append('labels')
 
+  # Apply build environment variables args to function
+  updated_fields.extend(_ApplyBuildEnvVarsArgsToFunction(function, args))
+
   # Apply environment variables args to function
   updated_fields.extend(_ApplyEnvVarsArgsToFunction(function, args))
 
@@ -374,6 +427,8 @@ class DeployAlpha(base.Command):
     """Register flags for this command."""
     Deploy.Args(parser)
     flags.AddBuildWorkerPoolMutexGroup(parser)
+    # Add flags for specifying build environment variables
+    env_vars_util.AddBuildEnvVarsFlags(parser)
 
   def Run(self, args):
     return _Run(args, track=self.ReleaseTrack(), enable_build_worker_pool=True)

@@ -59,12 +59,12 @@ class UpdateContainer(base.UpdateCommand):
 UpdateContainer.detailed_help = {
     'brief':
         """\
-    Updates Google Compute engine virtual machine instances running container
+    Updates Compute Engine virtual machine instances running container
     images.
     """,
     'DESCRIPTION':
         """\
-    *{command}* updates Google Compute Engine virtual
+    *{command}* updates Compute Engine virtual
     machines that runs a Docker image. For example:
 
       $ {command} instance-1 --zone us-central1-a \

@@ -29,10 +29,10 @@ from googlecloudsdk.command_lib.compute.sole_tenancy import util as sole_tenancy
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetSchedulingInstances(base.SilentCommand):
-  """Set scheduling options for Google Compute Engine virtual machines.
+  """Set scheduling options for Compute Engine virtual machines.
 
-    *${command}* is used to configure scheduling options for Google Compute
-  Engine virtual machines.
+    *${command}* is used to configure scheduling options for
+  Compute Engine virtual machines.
   """
 
   detailed_help = {
@@ -116,10 +116,10 @@ class SetSchedulingInstances(base.SilentCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SetSchedulingInstancesBeta(SetSchedulingInstances):
-  """Set scheduling options for Google Compute Engine virtual machines.
+  """Set scheduling options for Compute Engine virtual machines.
 
-    *${command}* is used to configure scheduling options for Google Compute
-  Engine virtual machines.
+    *${command}* is used to configure scheduling options for
+  Compute Engine virtual machines.
   """
 
   @classmethod
@@ -145,10 +145,10 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetSchedulingInstancesAlpha(SetSchedulingInstancesBeta):
-  """Set scheduling options for Google Compute Engine virtual machines.
+  """Set scheduling options for Compute Engine virtual machines.
 
-    *${command}* is used to configure scheduling options for Google Compute
-  Engine virtual machines.
+    *${command}* is used to configure scheduling options for
+  Compute Engine virtual machines.
   """
 
   @classmethod

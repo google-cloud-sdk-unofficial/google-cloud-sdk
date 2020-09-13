@@ -33,7 +33,7 @@ from googlecloudsdk.core import log
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetMinCpuPlatform(base.UpdateCommand):
   # pylint: disable=line-too-long
-  """Set minimum CPU platform for Google Compute Engine virtual machine instance."""
+  """Set minimum CPU platform for Compute Engine virtual machine instance."""
   # pylint: enable=line-too-long
 
   @staticmethod
@@ -83,7 +83,7 @@ class SetMinCpuPlatform(base.UpdateCommand):
 
 
 SetMinCpuPlatform.detailed_help = {
-    'brief': ('Set minimum CPU platform for Google Compute Engine virtual '
+    'brief': ('Set minimum CPU platform for Compute Engine virtual '
               'machines'),
     'DESCRIPTION':
         """\

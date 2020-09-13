@@ -36,7 +36,7 @@ class TailSerialPortOutput(base.Command):
   # pylint:disable=line-too-long
   """Periodically fetch new output from a virtual machine instance's serial port and display it as it becomes available.
 
-  {command} is used to tail the output from a Google Compute
+  {command} is used to tail the output from a Compute
   Engine virtual machine instance's serial port. The serial port output
   from the instance will be printed to standard output. This
   information can be useful for diagnostic purposes.

@@ -501,7 +501,7 @@ flags_to_add = {
         'nodelabels':
             flags.AddNodeLabelsFlag,
         'notificationconfig':
-            (lambda p: flags.AddNotificationConfigFlag(p, hidden=True)),
+            flags.AddNotificationConfigFlag,
         'num_nodes':
             flags.AddNumNodes,
         'podsecuritypolicy':
@@ -657,7 +657,7 @@ flags_to_add = {
         'nodelabels':
             flags.AddNodeLabelsFlag,
         'notificationconfig':
-            (lambda p: flags.AddNotificationConfigFlag(p, hidden=True)),
+            flags.AddNotificationConfigFlag,
         'num_nodes':
             flags.AddNumNodes,
         'podsecuritypolicy':

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Hub Features."""
+"""Command group for MultiClusterServiceDiscovery Feature."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,15 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Features(base.Group):
-  """Manage features on all Hub memberships(registered clusters).
-
-  Manage features on all Hub memberships(registered clusters)
-
-  ## EXAMPLES
-
-  Manage features on all Hub memberships(registered clusters):
-
-    $ {command} a-feature --help
-  """
+class MultiClusterServiceDiscovery(base.Group):
+  """Manage MultiClusterServiceDiscovery Feature."""
   pass

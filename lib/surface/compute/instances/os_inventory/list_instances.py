@@ -39,7 +39,7 @@ from googlecloudsdk.core.resource import resource_projector
 class ListInstances(base.ListCommand):
   r"""List instances with specific OS inventory data values.
 
-  {command} displays all Google Compute Engine instances in a project matching
+  {command} displays all Compute Engine instances in a project matching
   an inventory filter. Run $ gcloud topic filters to see the supported filter
   syntax.
 
