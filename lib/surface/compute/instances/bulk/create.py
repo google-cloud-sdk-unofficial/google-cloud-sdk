@@ -42,7 +42,7 @@ DETAILED_HELP = {
         """,
     'DESCRIPTION':
         """
-        *{command}* facilitates the creation of multiple Google Compute Engine
+        *{command}* facilitates the creation of multiple Compute Engine
         virtual machines with a single command. They offer a number of advantages
         compared to the single instance creation command. This includes the
         ability to automatically pick a zone in which to create instances based
@@ -133,7 +133,7 @@ def _CommonArgs(parser,
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(base.Command):
-  """Create Google Compute Engine virtual machine instances."""
+  """Create Compute Engine virtual machine instances."""
 
   _support_nvdimm = False
   _support_public_dns = False

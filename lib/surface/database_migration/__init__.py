@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The command group for the Cloud Database Migration Service CLI."""
+"""The command group for the Database Migration Service CLI."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,9 +24,9 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DatabaseMigration(base.Group):
-  """Manage Cloud Database Migration Service resources.
+  """Manage Database Migration Service resources.
 
-  Commands for managing Cloud Database Migration Service resources.
+  Commands for managing Database Migration Service resources.
   """
 
   category = base.DATABASES_CATEGORY

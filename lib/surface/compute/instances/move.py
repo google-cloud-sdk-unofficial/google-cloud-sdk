@@ -97,7 +97,7 @@ Move.detailed_help = {
     'brief': ('Move an instance and its attached persistent disks between '
               'zones.'),
     'DESCRIPTION': """
-        *{command}* facilitates moving a Google Compute Engine virtual machine
+        *{command}* facilitates moving a Compute Engine virtual machine
         from one zone to another. Moving a virtual machine may incur downtime
         if the guest OS must be shutdown in order to quiesce disk volumes
         prior to snapshotting.

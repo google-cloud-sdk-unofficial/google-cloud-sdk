@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.api_gateway import resource_args
 from googlecloudsdk.core import exceptions
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Show details about the Cloud API Gateway operation."""
 

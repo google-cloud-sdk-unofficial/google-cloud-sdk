@@ -26,20 +26,20 @@ from googlecloudsdk.command_lib.notebooks import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-        Request for stoping notbook instance.
+        Request for stopping notebook instances.
     """,
     'EXAMPLES':
         """
     To stop an instance, run:
 
-        $ {command} /projects/example-project/locations/us-central1-b/instances/example-instance
+        $ {command} example-instance --location=us-central1-a
     """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Stop(base.Command):
-  """Request for stoping instances."""
+  """Request for stopping instances."""
 
   @staticmethod
   def Args(parser):

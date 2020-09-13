@@ -26,13 +26,13 @@ from googlecloudsdk.command_lib.notebooks import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-        Request for registering notbook instance.
+        Request for registering notebook instances.
     """,
     'EXAMPLES':
         """
     To register an old type instance, run:
 
-        $ {command} /projects/example-project/locations/us-central1-b/instances/example-instance
+        $ {command} example-instance --location=us-central1-b
     """,
 }
 

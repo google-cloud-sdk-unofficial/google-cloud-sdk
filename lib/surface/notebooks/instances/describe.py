@@ -26,13 +26,13 @@ from googlecloudsdk.command_lib.notebooks import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-        Request for describing notbook instance.
+        Request for describing notebook instances.
     """,
     'EXAMPLES':
         """
     To describe an instance, run:
 
-        $ {command} /projects/example-project/locations/us-central1-b/instances/example-instance
+        $ {command} example-instance --location=us-central1-b
     """,
 }
 

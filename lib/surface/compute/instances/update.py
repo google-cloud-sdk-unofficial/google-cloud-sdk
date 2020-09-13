@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 
 DETAILED_HELP = {
     'DESCRIPTION': """
-        *{command}* updates labels and requested CPU Platform for a Google
+        *{command}* updates labels and requested CPU Platform for a
         Compute
         Engine virtual machine.
     """,
@@ -52,7 +52,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  """Update a Google Compute Engine virtual machine."""
+  """Update a Compute Engine virtual machine."""
 
   @staticmethod
   def Args(parser):
@@ -258,7 +258,7 @@ class Update(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
-  """Update a Google Compute Engine virtual machine."""
+  """Update a Compute Engine virtual machine."""
 
   @staticmethod
   def Args(parser):
@@ -277,7 +277,7 @@ class UpdateBeta(Update):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
-  """Update a Google Compute Engine virtual machine."""
+  """Update a Compute Engine virtual machine."""
 
   @staticmethod
   def Args(parser):

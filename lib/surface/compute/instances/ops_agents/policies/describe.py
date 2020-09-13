@@ -32,10 +32,10 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe a Google Cloud Operations Suite Agents (Ops Agents) policy.
+  """Describe a Google Cloud's operations suite agents (Ops Agents) policy.
 
-  *{command}* describes a policy that facilitates agent management across Google
-  Cloud Compute instances based on user specified instance filters. This policy
+  *{command}* describes a policy that facilitates agent management across
+  Compute Engine instances based on user specified instance filters. This policy
   installs, specifies versioning, enables autoupgrade, and removes Ops Agents.
 
   The command returns the content of one policy. If no policies are found, it
@@ -47,7 +47,7 @@ class Describe(base.DescribeCommand):
           '{description}',
       'EXAMPLES':
           """\
-          To describe an Ops agents policy named ``ops-agents-test-policy'' in
+          To describe an Ops Agents policy named ``ops-agents-test-policy'' in
           the current project, run:
 
             $ {command} ops-agents-test-policy

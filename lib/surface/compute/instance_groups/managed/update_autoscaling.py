@@ -43,6 +43,8 @@ class UpdateAutoscaling(base.Command):
   """Update autoscaling parameters of a managed instance group."""
 
   predictive = False
+  scheduled = False
+  min_max = False
 
   @staticmethod
   def Args(parser):
@@ -86,6 +88,17 @@ class UpdateAutoscaling(base.Command):
       new_autoscaler.autoscalingPolicy.cpuUtilization.predictiveMethod = arg_utils.ChoiceToEnum(
           args.cpu_utilization_predictive_method, cpu_predictive_enum)
 
+    if self.scheduled:
+      scheduled = mig_utils.BuildScheduled(args, client.messages)
+      if scheduled:
+        new_autoscaler.autoscalingPolicy.scalingSchedules = scheduled
+
+    if self.min_max:
+      if args.IsSpecified('min_num_replicas'):
+        new_autoscaler.autoscalingPolicy.minNumReplicas = args.min_num_replicas
+      if args.IsSpecified('max_num_replicas'):
+        new_autoscaler.autoscalingPolicy.maxNumReplicas = args.max_num_replicas
+
     return self._SendPatchRequest(args, client, autoscalers_client, igm_ref,
                                   new_autoscaler)
 
@@ -116,11 +129,15 @@ class UpdateAutoscalingAlpha(UpdateAutoscalingBeta):
   """Update autoscaling parameters of a managed instance group."""
 
   predictive = True
+  scheduled = True
+  min_max = True
 
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
+    mig_utils.AddMinMaxControl(parser, max_required=False)
     mig_utils.AddPredictiveAutoscaling(parser)
+    mig_utils.AddScheduledAutoscaling(parser, patch_args=True)
 
 UpdateAutoscaling.detailed_help = {
     'brief': 'Update autoscaling parameters of a managed instance group',

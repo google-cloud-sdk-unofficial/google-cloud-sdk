@@ -156,6 +156,7 @@ class CreateBeta(CreateGA):
     flags.SERVICE_ACCOUNT.AddToParser(parser)
     flags.AddUserCodeArgs(parser)
     flags.AddExplainabilityFlags(parser)
+    flags.AddContainerFlags(parser)
 
   def Run(self, args):
     with endpoint_util.MlEndpointOverrides(region=args.region):
@@ -184,7 +185,15 @@ class CreateBeta(CreateGA):
           accelerator_config=accelerator,
           explanation_method=args.explanation_method,
           num_integral_steps=args.num_integral_steps,
-          num_paths=args.num_paths)
+          num_paths=args.num_paths,
+          image=args.image,
+          command=args.command,
+          container_args=args.args,
+          env_vars=args.env_vars,
+          ports=args.ports,
+          predict_route=args.predict_route,
+          health_route=args.health_route,
+          containers_hidden=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -200,7 +209,6 @@ class CreateAlpha(CreateBeta):
   @staticmethod
   def Args(parser):
     CreateBeta.Args(parser)
-    flags.AddContainerFlags(parser)
 
   def Run(self, args):
     with endpoint_util.MlEndpointOverrides(region=args.region):

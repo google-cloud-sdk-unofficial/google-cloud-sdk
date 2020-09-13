@@ -33,7 +33,7 @@ class GetSerialPortOutputException(exceptions.Error):
 class GetSerialPortOutput(base.Command):
   """Read output from a virtual machine instance's serial port.
 
-  {command} is used to get the output from a Google Compute
+  {command} is used to get the output from a Compute
   Engine virtual machine's serial port. The serial port output
   from the virtual machine will be printed to standard output. This
   information can be useful for diagnostic purposes.

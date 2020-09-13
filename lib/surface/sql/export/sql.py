@@ -26,6 +26,7 @@ from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import export_util
+from googlecloudsdk.command_lib.sql import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
@@ -47,6 +48,7 @@ class Sql(base.Command):
           allowed.
     """
     export_util.AddBaseExportFlags(parser)
+    flags.AddOffloadArgument(parser)
     parser.add_argument(
         '--table',
         '-t',

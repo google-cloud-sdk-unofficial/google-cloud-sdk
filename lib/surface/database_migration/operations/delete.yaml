@@ -1,8 +1,8 @@
 - release_tracks: [ALPHA]
 
   help_text:
-    brief: Delete a Cloud Database Migration Service operation.
-    description: Delete a Cloud Database Migration Service operation.
+    brief: Delete a Database Migration Service operation.
+    description: Delete a Database Migration Service operation.
     examples: |
       To delete an operation.
 
@@ -15,5 +15,5 @@
   arguments:
     resource:
       help_text: |
-        Operation resource - Cloud Database Migration Service operation to delete.
+        Operation resource - Database Migration Service operation to delete.
       spec: !REF googlecloudsdk.command_lib.database_migration.resources:operation

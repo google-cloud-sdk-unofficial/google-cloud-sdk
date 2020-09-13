@@ -97,8 +97,8 @@ class Revoke(base.Command):
               '[{}] appears to be a service account. Service account tokens '
               'cannot be revoked, but they will expire automatically. To '
               'prevent use of the service account token earlier than the '
-              'expiration, revoke the parent service account or service '
-              'account key.'.format(account))
+              'expiration, delete or disable the parent service account.'
+              .format(account))
         else:
           log.warning(
               '[{}] already inactive (previously revoked?)'.format(account))

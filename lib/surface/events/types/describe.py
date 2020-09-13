@@ -26,23 +26,26 @@ from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags as serverless_flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Describe(base.Command):
   """Get the details about a given event type."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """
           {description}
           """,
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """
           To get the details about a given event type:
 
               $ {command} EVENT_TYPE
           """,
   }
 
-  @staticmethod
-  def CommonArgs(parser):
-    flags.AddEventTypePositionalArg(parser)
+  @classmethod
+  def CommonArgs(cls, parser):
+    flags.AddEventTypePositionalArg(parser, cls.ReleaseTrack())
     flags.AddSourceFlag(parser)
     parser.display_info.AddFormat("""multi[separator='\n'](
         details:format="yaml",
@@ -55,9 +58,9 @@ class Describe(base.Command):
           name:label=PARAMETER:sort=2,
           description:wrap)")""")
 
-  @staticmethod
-  def Args(parser):
-    Describe.CommonArgs(parser)
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
 
   def Run(self, args):
     conn_context = connection_context.GetConnectionContext(

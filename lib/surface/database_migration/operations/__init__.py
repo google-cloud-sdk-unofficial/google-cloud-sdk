@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The operations command group for Cloud Database Migration Service."""
+"""The operations command group for Database Migration Service."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 
 
 class Operations(base.Group):
-  """Manage Cloud Database Migration Service operations.
+  """Manage Database Migration Service operations.
 
-  Commands for managing Cloud Database Migration Service operations.
+  Commands for managing Database Migration Service operations.
   """

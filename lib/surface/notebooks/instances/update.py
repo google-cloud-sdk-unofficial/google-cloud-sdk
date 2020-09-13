@@ -26,21 +26,21 @@ from googlecloudsdk.command_lib.notebooks import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-        Request for updating notbook instance.
+        Request for updating notebook instances.
     """,
     'EXAMPLES':
         """
     To update machine type for an instance, run:
 
-        $ {command} /projects/example-project/locations/us-central1-b/instances/example-instance --machine-type=n1-standard-8
+        $ {command} example-instance --machine-type=n1-standard-8 --location=us-central1-a
 
     To update labels for an instance, run:
 
-        $ {command} /projects/example-project/locations/us-central1-b/instances/example-instance --labels=k1=v1,k2=v2
+        $ {command} example-instance --labels=k1=v1,k2=v2 --location=us-central1-a
 
     To update labels and accelerator cores, run:
 
-        $ {command} /projects/example-project/locations/us-central1-b/instances/example-instance --labels=k1=v1,k2=v2 --accelerator-core-count=2
+        $ {command} example-instance --labels=k1=v1,k2=v2 --accelerator-core-count=2 --location=us-central1-a
     """,
 }
 

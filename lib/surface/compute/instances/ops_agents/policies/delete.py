@@ -31,16 +31,17 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
-  """Delete a Google Cloud Operations Suite Agents (Ops Agents) policy.
+  """Delete a Google Cloud's operations suite agents (Ops Agents) policy.
 
-  *{command}* deletes a policy that facilitates agent management across Google
-  Cloud Compute instances based on user specified instance filters. This policy
+  *{command}* deletes a policy that facilitates agent management across
+  Compute Engine instances based on user specified instance filters. This policy
   installs, specifies versioning, enables autoupgrade, and removes Ops Agents.
 
-  The command returns a response indicating whether the deletion is successful.
-  Once a policy is deleted, it takes 10 ~ 15 minutes to be wiped out from the
-  applicable instances. The existing agents that have been installed in the
-  instances will remain untouched. In order to remove the agents from the
+  The command returns a response indicating whether the deletion succeeded.
+  After a policy is deleted, it takes 10-15 minutes to be wiped from the
+  applicable instances. Deleting a policy does not delete any existing agents
+  managed by that policy, but the agents become unmanaged by any policies. To
+  remove the agents from the
   instances, first update the policy to set the agent ``package-state'' to
   ``removed'', wait for the policy to take effect, then delete the policy.
   """

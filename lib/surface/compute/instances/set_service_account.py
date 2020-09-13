@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.compute.instances import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetServiceAccount(base.SilentCommand):
-  """Set service account and scopes for a Google Compute Engine instance."""
+  """Set service account and scopes for a Compute Engine instance."""
 
   detailed_help = {
       'EXAMPLES': """

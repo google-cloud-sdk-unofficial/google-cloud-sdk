@@ -27,13 +27,43 @@ from googlecloudsdk.core import properties
 
 NA = 'NA'
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+   Prints the status of Config Management Feature:
+
+    $ {command}
+
+    Name             Status  Last_Synced_Token   Sync_Branch  Last_Synced_Time
+    managed-cluster  SYNCED  2945500b7f          acme         2020-03-23
+    11:12:31 -0700 PDT
+
+  View the status for the cluster named `managed-cluster-a`:
+
+    $ {command} --filter="acm_status.name:managed-cluster-a"
+
+  Use a regular expression to list status for multiple clusters:
+
+    $ {command} --filter="acm_status.name ~ managed-cluster.*"
+
+  List all clusters where current status is `SYNCED`:
+
+    $ {command} --filter="acm_status.config_sync:SYNCED"
+
+  List all the clusters where sync_branch is `v1` and current Config Sync status
+  is not `SYNCED`:
+
+    $ {command} --filter="acm_status.sync_branch:v1 AND -acm_status.config_sync:SYNCED"
+  """,
+}
+
 
 class ConfigmanagementFeatureState(object):
   """feature state class stores nomos status."""
 
   def __init__(self, clusterName):
     self.name = clusterName
-    self.status = NA
+    self.config_sync = NA
     self.last_synced_token = NA
     self.last_synced = NA
     self.sync_branch = NA
@@ -45,9 +75,9 @@ class ConfigmanagementFeatureState(object):
       fs: ConfigmanagementFeatureState
     """
     if not (fs.configSyncState and fs.configSyncState.syncState):
-      self.status = 'SYNC_STATE_UNSPECIFIED'
+      self.config_sync = 'SYNC_STATE_UNSPECIFIED'
     else:
-      self.status = fs.configSyncState.syncState.code
+      self.config_sync = fs.configSyncState.syncState.code
       # (b/153566864) limit the last_synced_token to 7 or 8 characters.
       if fs.configSyncState.syncState.syncToken:
         self.last_synced_token = fs.configSyncState.syncState.syncToken[:7]
@@ -57,21 +87,13 @@ class ConfigmanagementFeatureState(object):
 
 
 class Status(base.ListCommand):
-  r"""Prints the status of all clusters with Configuration Management installed.
+  r"""Prints the status of all clusters with Config Management installed.
 
   This command prints the status of Config Management Feature
   resource in Hub.
 
-  ## EXAMPLES
-
-  Prints the status of Config Management Feature:
-
-    $ {command}
-
-    Name             Status  Last_Synced_Token   Sync_Branch  Last_Synced_Time
-    mamaged-cluster  SYNCED  2945500b7f          acme         2020-03-23
-    11:12:31 -0700 PDT
   """
+  detailed_help = DETAILED_HELP
 
   FEATURE_NAME = 'configmanagement'
   FEATURE_DISPLAY_NAME = 'Anthos Config Management'
@@ -79,13 +101,13 @@ class Status(base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat("""
-    multi(nomos_status:format='table(
+    multi(acm_status:format='table(
             name:label=Name:sort=1,
-            status:label=Status,
+            config_sync:label=Status,
             last_synced_token:label="Last_Synced_Token",
             sync_branch:label="Sync_Branch",
             last_synced:label="Last_Synced_Time"
-      )' , nomos_errors:format=list)
+      )' , acm_errors:format=list)
     """)
 
   def Run(self, args):
@@ -106,8 +128,8 @@ class Status(base.ListCommand):
     if response.featureState is None or response.featureState.detailsByMembership is None:
       return None
     membership_details = response.featureState.detailsByMembership
-    nomos_status = []
-    nomos_errors = []
+    acm_status = []
+    acm_errors = []
     for md in membership_details.additionalProperties:
       name = os.path.basename(md.key)
       cluster = ConfigmanagementFeatureState(name)
@@ -115,26 +137,26 @@ class Status(base.ListCommand):
       # (b/153587485) Show FeatureState.code if it's not OK
       # as it indicates an unreachable cluster or a dated syncState.code
       if md.value.code is None:
-        cluster.status = 'CODE_UNSPECIFIED'
+        cluster.config_sync = 'CODE_UNSPECIFIED'
       elif md.value.code.name != 'OK':
-        cluster.status = md.value.code.name
+        cluster.config_sync = md.value.code.name
       else:
         # operator errors could occur regardless of the deployment_state
         if has_operator_error(fs):
-          append_error(name, fs.operatorState.errors, nomos_errors)
+          append_error(name, fs.operatorState.errors, acm_errors)
         # (b/154174276, b/156293028)
         # check operator_state to see if nomos has been installed
         if not has_operator_state(fs):
-          cluster.status = 'OPERATOR_STATE_UNSPECIFIED'
+          cluster.config_sync = 'OPERATOR_STATE_UNSPECIFIED'
         else:
-          cluster.status = fs.operatorState.deploymentState.name
-          if cluster.status == 'INSTALLED':
+          cluster.config_sync = fs.operatorState.deploymentState.name
+          if cluster.config_sync == 'INSTALLED':
             cluster.update_sync_state(fs)
             if has_config_sync_error(fs):
               append_error(name, fs.configSyncState.syncState.errors,
-                           nomos_errors)
-      nomos_status.append(cluster)
-    return {'nomos_errors': nomos_errors, 'nomos_status': nomos_status}
+                           acm_errors)
+      acm_status.append(cluster)
+    return {'acm_errors': acm_errors, 'acm_status': acm_status}
 
 
 def has_operator_state(fs):
@@ -153,9 +175,9 @@ def has_config_sync_git(fs):
   return fs.membershipConfig and fs.membershipConfig.configSync and fs.membershipConfig.configSync.git
 
 
-def append_error(cluster, state_errors, nomos_errors):
+def append_error(cluster, state_errors, acm_errors):
   for error in state_errors:
-    nomos_errors.append({
+    acm_errors.append({
         'cluster': cluster,
         'error': error.errorMessage
     })

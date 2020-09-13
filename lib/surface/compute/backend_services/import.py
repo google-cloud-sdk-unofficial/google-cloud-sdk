@@ -44,9 +44,8 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
-class Import(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ImportGA(base.UpdateCommand):
   """Import a backend service.
 
   If the specified backend service already exists, it will be overwritten.
@@ -55,6 +54,7 @@ class Import(base.UpdateCommand):
   edit its configuration, and then import the new configuration.
   """
 
+  _support_flexible_cache_step_one = False
   detailed_help = DETAILED_HELP
 
   @classmethod
@@ -165,6 +165,36 @@ class Import(base.UpdateCommand):
       cleared_fields.append('consistentHash')
     if hasattr(backend_service, 'outlierDetection') is None:
       cleared_fields.append('outlierDetection')
+    if not backend_service.customRequestHeaders:
+      cleared_fields.append('customRequestHeaders')
+    if self._support_flexible_cache_step_one:
+      if not backend_service.customResponseHeaders:
+        cleared_fields.append('customResponseHeaders')
+      if backend_service.cdnPolicy:
+        cdn_policy = backend_service.cdnPolicy
+        if cdn_policy.defaultTtl is None:
+          cleared_fields.append('cdnPolicy.defaultTtl')
+        if cdn_policy.clientTtl is None:
+          cleared_fields.append('cdnPolicy.clientTtl')
+        if cdn_policy.maxTtl is None:
+          cleared_fields.append('cdnPolicy.maxTtl')
+        if not cdn_policy.negativeCachingPolicy:
+          cleared_fields.append('cdnPolicy.negativeCachingPolicy')
+      else:
+        cleared_fields.append('cdnPolicy')
 
     with client.apitools_client.IncludeFields(cleared_fields):
       return self.SendPatchRequest(client, backend_service_ref, backend_service)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class ImportAlphaBeta(ImportGA):
+  """Import a backend service.
+
+  If the specified backend service already exists, it will be overwritten.
+  Otherwise, a new backend service will be created.
+  To edit a backend service you can export the backend service to a file,
+  edit its configuration, and then import the new configuration.
+  """
+
+  _support_flexible_cache_step_one = True

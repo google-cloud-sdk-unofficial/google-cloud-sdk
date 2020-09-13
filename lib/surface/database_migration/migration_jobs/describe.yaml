@@ -1,8 +1,8 @@
 - release_tracks: [ALPHA]
 
   help_text:
-    brief: Show details about a migration job.
-    description: Show details about a migration job.
+    brief: Show details about a Database Migration Service migration job.
+    description: Show details about a Database Migration Service migration job.
     examples: |
       To show details about a migration job, run:
 

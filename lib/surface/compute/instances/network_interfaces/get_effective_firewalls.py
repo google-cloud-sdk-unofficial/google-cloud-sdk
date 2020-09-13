@@ -30,15 +30,15 @@ from googlecloudsdk.core import log
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
-  r"""Get the effective firewalls on a Google Compute Engine virtual machine network interface.
+  r"""Get the effective firewalls on a Compute Engine virtual machine network interface.
 
   *{command}* Get the effective firewalls applied on the network interfaces of
-  a Google Compute Engine virtual machine. For example:
+  a Compute Engine virtual machine. For example:
 
     $ {command} example-instance --zone us-central1-a
 
   gets the effective firewalls applied on the default network interface of a
-  Google Compute Engine virtual machine "example-instance" in zone
+  Compute Engine virtual machine "example-instance" in zone
   us-central1-a
   """
 

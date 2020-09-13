@@ -25,6 +25,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import export_util
+from googlecloudsdk.command_lib.sql import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
@@ -46,6 +47,7 @@ class Csv(base.Command):
           allowed.
     """
     export_util.AddBaseExportFlags(parser)
+    flags.AddOffloadArgument(parser)
     parser.add_argument(
         '--query',
         required=True,

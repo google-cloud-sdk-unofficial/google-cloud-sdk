@@ -28,6 +28,7 @@ from googlecloudsdk.api_lib.compute.backend_services import (
     client as backend_service_client)
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import cdn_flags_utils as cdn_flags
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_services_utils
@@ -67,7 +68,8 @@ class UpdateHelper(object):
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
            support_logging, support_client_only, support_grpc_protocol,
-           support_subsetting, support_all_protocol):
+           support_subsetting, support_all_protocol,
+           support_flexible_cache_step_one):
     """Add all arguments for updating a backend service."""
 
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
@@ -119,17 +121,26 @@ class UpdateHelper(object):
 
     AddIapFlag(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
+    if support_flexible_cache_step_one:
+      cdn_flags.AddFlexibleCacheStepOne(
+          parser, 'backend service', update_command=True)
 
-  def __init__(self, support_l7_internal_load_balancer, support_failover,
-               support_logging, support_subsetting):
+  def __init__(self,
+               support_l7_internal_load_balancer,
+               support_failover,
+               support_logging,
+               support_subsetting,
+               support_flexible_cache_step_one=False):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
     self._support_subsetting = support_subsetting
+    self._support_flexible_cache_step_one = support_flexible_cache_step_one
 
   def Modify(self, client, resources, args, existing):
     """Modify Backend Service."""
     replacement = encoding.CopyProtoMessage(existing)
+    cleared_fields = []
 
     if args.connection_draining_timeout is not None:
       replacement.connectionDraining = client.messages.ConnectionDraining(
@@ -138,6 +149,16 @@ class UpdateHelper(object):
       replacement.customRequestHeaders = []
     if args.custom_request_header is not None:
       replacement.customRequestHeaders = args.custom_request_header
+    if not replacement.customRequestHeaders:
+      cleared_fields.append('customRequestHeaders')
+
+    if self._support_flexible_cache_step_one:
+      if args.custom_response_header is not None:
+        replacement.customResponseHeaders = args.custom_response_header
+      if args.no_custom_response_headers:
+        replacement.customResponseHeaders = []
+      if not replacement.customResponseHeaders:
+        cleared_fields.append('customResponseHeaders')
 
     if args.IsSpecified('description'):
       replacement.description = args.description
@@ -179,13 +200,11 @@ class UpdateHelper(object):
         args,
         replacement,
         is_update=True,
-        apply_signed_url_cache_max_age=True)
+        apply_signed_url_cache_max_age=True,
+        cleared_fields=cleared_fields,
+        support_flexible_cache_step_one=self._support_flexible_cache_step_one)
 
     self._ApplyIapArgs(client, args.iap, existing, replacement)
-
-    cleared_fields = []
-    if not replacement.customRequestHeaders:
-      cleared_fields.append('customRequestHeaders')
 
     backend_services_utils.ApplyFailoverPolicyArgs(
         client.messages,
@@ -235,7 +254,31 @@ class UpdateHelper(object):
         args.IsSpecified('https_health_checks'),
         args.IsSpecified('no_health_checks'),
         args.IsSpecified('subsetting_policy')
-        if self._support_subsetting else False
+        if self._support_subsetting else False,
+        args.IsSpecified('cache_mode')
+        if self._support_flexible_cache_step_one else False,
+        args.IsSpecified('client_ttl')
+        if self._support_flexible_cache_step_one else False,
+        args.IsSpecified('no_client_ttl')
+        if self._support_flexible_cache_step_one else False,
+        args.IsSpecified('default_ttl')
+        if self._support_flexible_cache_step_one else False,
+        args.IsSpecified('no_default_ttl')
+        if self._support_flexible_cache_step_one else False,
+        args.IsSpecified('max_ttl')
+        if self._support_flexible_cache_step_one else False,
+        args.IsSpecified('no_max_ttl')
+        if self._support_flexible_cache_step_one else False,
+        args.IsSpecified('negative_caching')
+        if self._support_flexible_cache_step_one else False,
+        args.IsSpecified('negative_caching_policy')
+        if self._support_flexible_cache_step_one else False,
+        args.IsSpecified('no_negative_caching_policies')
+        if self._support_flexible_cache_step_one else False,
+        args.IsSpecified('custom_response_header')
+        if self._support_flexible_cache_step_one else False,
+        args.IsSpecified('no_custom_response_headers')
+        if self._support_flexible_cache_step_one else False
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 
@@ -374,6 +417,7 @@ class UpdateGA(base.UpdateCommand):
   _support_all_protocol = False
   _support_grpc_protocol = True
   _support_subsetting = False
+  _support_flexible_cache_step_one = False
 
   @classmethod
   def Args(cls, parser):
@@ -386,14 +430,17 @@ class UpdateGA(base.UpdateCommand):
         support_client_only=cls._support_client_only,
         support_grpc_protocol=cls._support_grpc_protocol,
         support_subsetting=cls._support_subsetting,
-        support_all_protocol=cls._support_all_protocol)
+        support_all_protocol=cls._support_all_protocol,
+        support_flexible_cache_step_one=cls._support_flexible_cache_step_one)
 
   def Run(self, args):
     """Issues requests necessary to update the Backend Services."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return UpdateHelper(self._support_l7_internal_load_balancer,
                         self._support_failover, self._support_logging,
-                        self._support_subsetting).Run(args, holder)
+                        self._support_subsetting,
+                        self._support_flexible_cache_step_one).Run(
+                            args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -407,6 +454,7 @@ class UpdateBeta(UpdateGA):
   _support_all_protocol = False
   _support_grpc_protocol = True
   _support_subsetting = False
+  _support_flexible_cache_step_one = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -420,3 +468,4 @@ class UpdateAlpha(UpdateGA):
   _support_all_protocol = True
   _support_grpc_protocol = True
   _support_subsetting = True
+  _support_flexible_cache_step_one = True

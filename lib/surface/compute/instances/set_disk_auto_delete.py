@@ -35,7 +35,7 @@ class SetDiskAutoDelete(base.UpdateCommand):
   """Set auto-delete behavior for disks.
 
     *${command}* is used to configure the auto-delete behavior for disks
-  attached to Google Compute Engine virtual machines. When
+  attached to Compute Engine virtual machines. When
   auto-delete is on, the persistent disk is deleted when the
   instance it is attached to is deleted.
   """

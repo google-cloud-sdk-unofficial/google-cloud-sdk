@@ -1,8 +1,8 @@
 release_tracks: [GA, BETA, ALPHA]
 help_text:
-  brief: Get the IAM policy for a Google Compute Engine instance.
+  brief: Get the IAM policy for a Compute Engine instance.
   description: |
-    *{command}* displays the IAM policy associated with a Google
+    *{command}* displays the IAM policy associated with a
     Compute Engine instance in a project. If formatted as JSON,
     the output can be edited and used as a policy file for
     set-iam-policy. The output includes an "etag" field

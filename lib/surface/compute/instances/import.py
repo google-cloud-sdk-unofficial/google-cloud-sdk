@@ -39,7 +39,7 @@ _OUTPUT_FILTER = ['[Daisy', '[import-', 'starting build', '  import', 'ERROR']
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Import(base.CreateCommand):
-  """Import an instance into Google Compute Engine from OVF."""
+  """Import an instance into Compute Engine from OVF."""
 
   _OS_CHOICES = os_choices.OS_CHOICES_INSTANCE_IMPORT_GA
 
@@ -144,7 +144,7 @@ class Import(base.CreateCommand):
     except resources.UnknownCollectionException:
       raise exceptions.InvalidArgumentException(
           'source-uri',
-          'must be a path to an object or a directory in Google Cloud Storage')
+          'must be a path to an object or a directory in Cloud Storage')
 
     return daisy_utils.RunOVFImportBuild(
         args=args,
@@ -175,7 +175,7 @@ class Import(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ImportBeta(Import):
-  """Import an instance into Google Compute Engine from OVF."""
+  """Import an instance into Compute Engine from OVF."""
 
   _OS_CHOICES = os_choices.OS_CHOICES_INSTANCE_IMPORT_BETA
 
@@ -186,17 +186,17 @@ class ImportBeta(Import):
 
 Import.detailed_help = {
     'brief': (
-        'Create Google Compute Engine virtual machine instances from virtual '
+        'Create Compute Engine virtual machine instances from virtual '
         'appliance in OVA/OVF format.'),
     'DESCRIPTION':
         """\
-        *{command}* creates Google Compute Engine virtual machine instances from
+        *{command}* creates Compute Engine virtual machine instances from
         virtual appliance in OVA/OVF format.
 
         Importing OVF involves:
         *  Unpacking OVF package (if in OVA format) to Cloud Storage.
-        *  Import disks from OVF to Google Compute Engine.
-        *  Translate the boot disk to make it bootable in Google Compute Engine.
+        *  Import disks from OVF to Compute Engine.
+        *  Translate the boot disk to make it bootable in Compute Engine.
         *  Create a VM instance using OVF metadata and imported disks and boot it.
 
         OVF import tool requires Cloud Build to be enabled. See [](https://cloud.google.com/compute/docs/import/import-ovf-files#enable-cloud-build)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google LLC. All Rights Reserved.
+# Copyright 2020 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,30 +12,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command to get the status of MultiClusterServiceDiscovery Feature."""
+"""The types command group for Eventarc."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.command_lib.container.hub.features import base
+from googlecloudsdk.calliope import base
 
 
-class Describe(base.DescribeCommand):
-  """Describe the status of MultiClusterServiceDiscovery Feature resource.
-
-  This command describes the status of MultiClusterServiceDiscovery Feature
-  resource in Hub.
-
-  ## Examples
-
-  Describe MultiClusterServiceDiscovery Feature:
-
-    $ {command}
-  """
-
-  FEATURE_NAME = 'multiclusterservicediscovery'
-  FEATURE_DISPLAY_NAME = 'MultiClusterServiceDiscovery'
-
-  def Run(self, args):
-    return self.RunCommand(args)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class Types(base.Group):
+  """Explore event types in Eventarc."""

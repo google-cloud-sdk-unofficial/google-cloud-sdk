@@ -31,9 +31,9 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  r"""Update a Google Compute Engine virtual machine network interface.
+  r"""Update a Compute Engine virtual machine network interface.
 
-  *{command}* updates network interfaces of a Google Compute Engine
+  *{command}* updates network interfaces of a Compute Engine
   virtual machine. For example:
 
     $ {command} example-instance --zone us-central1-a --aliases r1:172.16.0.1/32
@@ -169,9 +169,9 @@ class Update(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpdateAlpha(Update):
-  r"""Update a Google Compute Engine virtual machine network interface.
+  r"""Update a Compute Engine virtual machine network interface.
 
-  *{command}* updates network interfaces of a Google Compute Engine
+  *{command}* updates network interfaces of a Compute Engine
   virtual machine. For example:
 
     $ {command} example-instance --zone us-central1-a --aliases r1:172.16.0.1/32

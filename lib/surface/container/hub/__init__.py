@@ -40,7 +40,15 @@ class Hub(base.Group):
 
     $ {command} memberships --help
 
-  Manage features on all memberships:
+  Manage Config Management feature on all memberships:
 
-    $ {command} features --help
+    $ {command} config-management --help
+
+  Manage MultiClusterIngress feature on all memberships:
+
+    $ {command} ingress --help
+
+  Manage MultiClusterServices feature on all memberships:
+
+    $ {command} multi-cluster-services --help
   """

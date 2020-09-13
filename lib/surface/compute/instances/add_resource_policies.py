@@ -28,9 +28,9 @@ from googlecloudsdk.command_lib.compute.resource_policies import util
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class InstancesAddResourcePolicies(base.UpdateCommand):
-  """Add resource policies to Google Compute Engine VM instances.
+  """Add resource policies to Compute Engine VM instances.
 
-    *{command}* adds resource policies to Google Compute Engine
+    *{command}* adds resource policies to Compute Engine
     virtual instances. These policies define time windows in which
     live migrations take place.
 

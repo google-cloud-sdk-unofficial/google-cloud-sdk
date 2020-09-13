@@ -42,7 +42,6 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    # TODO(b/65059086): Display UNSPECIFIED default value to SslManagementType
     parser.display_info.AddFormat("""
         table(
           id:sort=1,

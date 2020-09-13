@@ -26,13 +26,13 @@ from googlecloudsdk.command_lib.notebooks import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-        Request for upgrading notebook instance.
+        Request for upgrading notebook instances.
     """,
     'EXAMPLES':
         """
     To upgrade an instance, run:
 
-        $ {command} /projects/example-project/locations/us-central1-b/instances/example-instance
+        $ {command} example-instance --location=us-central1-a
     """,
 }
 

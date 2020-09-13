@@ -31,7 +31,7 @@ DETAILED_HELP = {
         'Suspend a virtual machine instance.',
     'DESCRIPTION':
         """\
-        *{command}* is used to suspend a Google Compute Engine virtual machine.
+        *{command}* is used to suspend a Compute Engine virtual machine.
         Suspending a VM is the equivalent of sleep or standby mode: the guest
         receives an ACPI S3 suspend signal, after which all VM state is saved to
         temporary storage. An instance can only be suspended while it is in the
@@ -57,7 +57,7 @@ DETAILED_HELP = {
 class Suspend(base.SilentCommand):
   """Suspend a virtual machine instance.
 
-  *{command}* is used to suspend a Google Compute Engine virtual machine.
+  *{command}* is used to suspend a Compute Engine virtual machine.
   Suspending a VM is the equivalent of sleep or standby mode:
   the guest receives an ACPI S3 suspend signal, after which all VM state
   is saved to temporary storage.  An instance can only be suspended while

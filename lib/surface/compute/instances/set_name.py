@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.instances import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class InstanceSetName(base.SilentCommand):
-  """Set name for Google Compute Engine virtual machine instances."""
+  """Set name for Compute Engine virtual machine instances."""
 
   @staticmethod
   def Args(parser):
@@ -73,11 +73,11 @@ class InstanceSetName(base.SilentCommand):
 
 
 InstanceSetName.detailed_help = {
-    'brief': 'Set the name of a Google Compute Engine virtual machine.',
-    'DESCRIPTION': """\
-        ``{command}'' allows you to change the name of a virtual machine.
+    'brief': 'Set the name of a Compute Engine virtual machine.',
+    'DESCRIPTION': """
+        ``{command}'' lets you change the name of a virtual machine.
         """,
-    'EXAMPLES': """\
+    'EXAMPLES': """
         To change the name of ``instance-1'' to ``instance-2'':
 
           $ {command} instance-1 --new-name=instance-2

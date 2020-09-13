@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.api_gateway import resource_args
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Wait(base.Command):
   """Wait for a Cloud API Gateway operation to complete."""
 

@@ -30,6 +30,18 @@
           help_text: |
             The IP address of the source which can be an external or internal IP.
             An IPv6 address is only allowed when the test's destination is a global load balancer VIP.
+        - arg_name: source-gke-master-cluster
+          release_tracks: [BETA]
+          hidden: true
+          api_field: connectivityTest.source.gkeMasterCluster
+          help_text: |
+            A cluster URI for Google Kubernetes Engine master as the source endpoint.
+        - arg_name: source-cloud-sql-instance
+          release_tracks: [BETA]
+          hidden: true
+          api_field: connectivityTest.source.cloudSqlInstance
+          help_text: |
+            A Cloud SQL instance URI as the source endpoint.
     - arg_name: source-network
       api_field: connectivityTest.source.network
       help_text: |
@@ -62,6 +74,18 @@
           help_text: |
             The IP address of the destination which can be an external or internal IP.
             An IPv6 address is only allowed when the test's destination is a global load balancer VIP.
+        - arg_name: destination-gke-master-cluster
+          release_tracks: [BETA]
+          hidden: true
+          api_field: connectivityTest.destination.gkeMasterCluster
+          help_text: |
+            A cluster URI for Google Kubernetes Engine master as the destination endpoint.
+        - arg_name: destination-cloud-sql-instance
+          release_tracks: [BETA]
+          hidden: true
+          api_field: connectivityTest.destination.cloudSqlInstance
+          help_text: |
+            A Cloud SQL instance URI as the destination endpoint.
     - arg_name: destination-network
       api_field: connectivityTest.destination.network
       help_text: |
@@ -104,10 +128,19 @@
     collection: networkmanagement.projects.locations.global.operations
 
   request:
-    api_version: v1
+    BETA:
+      api_version: v1beta1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.network_management.util:ValidateInstanceNames
+      - googlecloudsdk.command_lib.network_management.util:ValidateNetworkURIs
+      - googlecloudsdk.command_lib.network_management.util:AppendLocationsGlobalToParent
+      - googlecloudsdk.command_lib.network_management.util:ValidateGKEMasterClustersURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateCloudSQLInstancesURIs
+    GA:
+      api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.network_management.util:ValidateInstanceNames
+      - googlecloudsdk.command_lib.network_management.util:ValidateNetworkURIs
+      - googlecloudsdk.command_lib.network_management.util:AppendLocationsGlobalToParent
     collection: networkmanagement.projects.locations.global.connectivityTests
     method: create
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.network_management.util:ValidateInstanceNames
-    - googlecloudsdk.command_lib.network_management.util:ValidateNetworkURIs
-    - googlecloudsdk.command_lib.network_management.util:AppendLocationsGlobalToParent

@@ -329,12 +329,12 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
 CreateWithContainer.detailed_help = {
     'brief':
         """\
-    Creates Google Compute engine virtual machine instances running
+    Creates Compute Engine virtual machine instances running
     container images.
     """,
     'DESCRIPTION':
         """\
-        *{command}* creates Google Compute Engine virtual
+        *{command}* creates Compute Engine virtual
         machines that runs a Docker image. For example:
 
           $ {command} instance-1 --zone us-central1-a \

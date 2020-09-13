@@ -34,7 +34,7 @@ DETAILED_HELP = {
         'Resume a virtual machine instance.',
     'DESCRIPTION':
         """\
-        *{command}* is used to resume a previously suspended Google Compute
+        *{command}* is used to resume a previously suspended Compute
         Engine virtual machine.
         """,
     'EXAMPLES':
@@ -50,7 +50,7 @@ DETAILED_HELP = {
 class Resume(base.SilentCommand):
   """Resume a virtual machine instance.
 
-  *{command}* is used to resume a previously suspended Google Compute Engine
+  *{command}* is used to resume a previously suspended Compute Engine
   virtual machine.
   """
 
