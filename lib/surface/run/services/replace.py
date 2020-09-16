@@ -61,7 +61,6 @@ class Replace(base.Command):
 
   @staticmethod
   def Args(parser):
-
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
@@ -81,6 +80,9 @@ class Replace(base.Command):
         type=arg_parsers.YAMLFileContents(),
         help='The absolute path to the YAML file with a Knative '
         'service definition for the service to update or deploy.')
+
+    # No output by default, can be overridden by --format
+    parser.display_info.AddFormat('none')
 
   def Run(self, args):
     """Create or Update service from YAML."""
@@ -124,7 +126,7 @@ class Replace(base.Command):
           new_service.metadata.name,
           params={'namespacesId': new_service.metadata.namespace},
           collection='run.namespaces.services')
-      original_service = client.GetService(service_ref)
+      service_obj = client.GetService(service_ref)
 
       pretty_print.Info(
           run_messages_util.GetStartDeployMessage(
@@ -133,13 +135,13 @@ class Replace(base.Command):
 
       deployment_stages = stages.ServiceStages()
       header = (
-          'Deploying...' if original_service else 'Deploying new service...')
+          'Deploying...' if service_obj else 'Deploying new service...')
       with progress_tracker.StagedProgressTracker(
           header,
           deployment_stages,
           failure_message='Deployment failed',
           suppress_output=args.async_) as tracker:
-        client.ReleaseService(
+        service_obj = client.ReleaseService(
             service_ref,
             changes,
             tracker,
@@ -149,10 +151,11 @@ class Replace(base.Command):
       if args.async_:
         pretty_print.Success(
             'New configuration for [{{bold}}{serv}{{reset}}] is being applied '
-            'asynchronously.'.format(serv=service_ref.servicesId))
+            'asynchronously.'.format(serv=service_obj.name))
       else:
-        serv = client.GetService(service_ref)
+        service_obj = client.GetService(service_ref)
         pretty_print.Success('New configuration has been applied to service '
                              '[{{bold}}{serv}{{reset}}].\n'
                              'URL: {{bold}}{url}{{reset}}'.format(
-                                 serv=service_ref.Name(), url=serv.domain))
+                                 serv=service_obj.name, url=service_obj.domain))
+      return service_obj

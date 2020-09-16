@@ -22,7 +22,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.auth import exceptions as auth_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
-from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import creds as c_creds
 from googlecloudsdk.core.credentials import store as c_store
 
@@ -71,12 +70,10 @@ class AccessToken(base.Command):
   def Run(self, args):
     """Run the helper command."""
 
-    disable_load_google_auth = (
-        properties.VALUES.auth.disable_load_google_auth.GetBool())
     cred = c_store.Load(
         args.account,
         allow_account_impersonation=True,
-        use_google_auth=not disable_load_google_auth)
+        use_google_auth=True)
     c_store.Refresh(cred)
     if c_creds.IsOauth2ClientCredentials(cred):
       token = cred.access_token

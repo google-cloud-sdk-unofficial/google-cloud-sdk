@@ -34,7 +34,7 @@ def _CommonArgs(parser, api_version):
   flags.GetServerBindingMapperFlag(messages).choice_arg.AddToParser(parser)
 
 
-def _Run(args, track, enable_disk=False):
+def _Run(args, track, enable_disk=False, enable_accelerator=False):
   """Creates a node template."""
   holder = base_classes.ComputeApiHolder(track)
   client = holder.client
@@ -48,8 +48,12 @@ def _Run(args, track, enable_disk=False):
   node_template = util.CreateNodeTemplate(
       node_template_ref,
       args,
-      messages,
-      enable_disk=enable_disk)
+      project=node_template_ref.project,
+      region=node_template_ref.region,
+      messages=messages,
+      resource_parser=holder.resources,
+      enable_disk=enable_disk,
+      enable_accelerator=enable_accelerator)
   request = messages.ComputeNodeTemplatesInsertRequest(
       nodeTemplate=node_template,
       project=node_template_ref.project,
@@ -74,6 +78,7 @@ class Create(base.CreateCommand):
        """
   }
   enable_disk = False
+  enable_accelerator = False
 
   @staticmethod
   def Args(parser):
@@ -84,17 +89,23 @@ class Create(base.CreateCommand):
     return _Run(
         args,
         self.ReleaseTrack(),
-        enable_disk=self.enable_disk)
+        enable_disk=self.enable_disk,
+        enable_accelerator=self.enable_accelerator)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a Compute Engine node template."""
 
+  enable_disk = True
+  enable_accelerator = True
+
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, 'beta')
     flags.AddCpuOvercommitTypeFlag(parser)
+    flags.AddDiskArgToParser(parser)
+    flags.AddAcceleratorArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -108,3 +119,4 @@ class CreateAlpha(CreateBeta):
     _CommonArgs(parser, 'alpha')
     flags.AddCpuOvercommitTypeFlag(parser)
     flags.AddDiskArgToParser(parser)
+    flags.AddAcceleratorArgs(parser)

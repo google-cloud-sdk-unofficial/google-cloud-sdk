@@ -32,8 +32,16 @@ class Export(base.DeleteCommand):
   """Export a Cloud Domains registration.
 
   Export the domain to direct management by Google Domains. The domain remains
-  valid until expiry. For information on how to access it in Google Domains
-  after exporting, see https://support.google.com/domains/answer/6339340.
+  valid until expiry.
+
+  After you export a registered domain, the auto-renewal will be disabled, but
+  you will continue to incur billing charges until the next yearly renewal date.
+  You will also become the sole owner of the domain in Google Domains, and Cloud
+  IAM is not used anymore.
+
+  To manage your domain after exporting, visit Google Domains at
+  https://domains.google.com/registrar, or see
+  https://support.google.com/domains/answer/3251174 for more information.
 
   ## EXAMPLES
 
@@ -65,7 +73,8 @@ class Export(base.DeleteCommand):
         registration_ref.Name(),
         'registration',
         is_async=args.async_,
-        details=('Note:\nRegistration remains valid until expiry. See '
-                 'https://support.google.com/domains/answer/6339340 for '
-                 'information how to access it in Google Domains.'))
+        details=('Note:\nRegistration remains valid until expiry. Manage it in '
+                 'Google Domains at https://domains.google.com/registrar, or '
+                 'see https://support.google.com/domains/answer/3251174 for '
+                 'more information.'))
     return response

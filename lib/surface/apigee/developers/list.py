@@ -36,9 +36,9 @@ class List(base.ListCommand):
               $ {command}
 
           To list all developers in an Apigee organization called ``my-org'',
-          run:
+          formatted as JSON objects, run:
 
-              $ {command} --organization=my-org
+              $ {command} --organization=my-org --format=json
           """
   }
 
@@ -47,14 +47,15 @@ class List(base.ListCommand):
     resource_args.AddSingleResourceArgument(
         parser,
         "organization",
-        "The Apigee organization whose developers should be listed.",
+        "Apigee organization whose developers should be listed. If "
+        "unspecified, the Cloud Platform project's associated organization "
+        "will be used.",
         positional=False,
         required=True,
         fallthroughs=[defaults.GCPProductOrganizationFallthrough()])
-    parser.display_info.AddFormat("list")
+    parser.display_info.AddFormat("list(email)")
 
   def Run(self, args):
     """Run the list command."""
     identifiers = args.CONCEPTS.organization.Parse().AsDict()
-    for item in apigee.DevelopersClient.List(identifiers):
-      yield item["email"]
+    return apigee.DevelopersClient.List(identifiers)

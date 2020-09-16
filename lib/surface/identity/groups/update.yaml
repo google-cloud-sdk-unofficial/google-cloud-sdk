@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC. All Rights Reserved.
+# Copyright 2020 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -96,6 +96,15 @@
             Clear all POSIX groups from the specified Cloud Identity
             group.
 
+    - arg_name: labels
+      release_tracks: [BETA]
+      ALPHA:
+        hidden: true
+      type: str
+      help_text: |
+        A commna-separated list of labels for group resource to be updated.
+        Example of labels "--labels cloudidentity.googleapis.com/groups.discussion_forum,cloudidentity.googleapis.com/groups.security"
+
   request:
     collection: cloudidentity.groups
     disable_resource_check: true
@@ -111,6 +120,7 @@
       modify_request_hooks:
       - googlecloudsdk.command_lib.identity.groups.hooks:SetResourceName
       - googlecloudsdk.command_lib.identity.groups.hooks:SetGroupUpdateMask
+      - googlecloudsdk.command_lib.identity.groups.hooks:SetLabels
 
   response:
     result_attribute: response

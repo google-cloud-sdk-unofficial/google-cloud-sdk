@@ -27,34 +27,40 @@ class Undeploy(base.SilentCommand):
   """Undeploy an Apigee API proxy from an environment."""
 
   detailed_help = {
-      "DESCRIPTION": "Undeploy an Apigee API proxy from an environment.",
-      "EXAMPLES": """\
+      "EXAMPLES":
+          """\
   To undeploy an API proxy called ``my-api'' from the ``test'' environment of
   the active Cloud Platform project, run:
 
     $ {command} --environment=test --api=my-api
 
-  To undeploy revision 3 of an `my-api` from the `test` environment of Apigee
-  organization ``test-org'', run:
+  To undeploy revision 3 of an `my-api` from the `test` environment of the
+  organization named ``test-org'', run:
 
-    $ {command} --organization=test-org --environment=test --api=my-api 3
+    $ {command} 3 --organization=test-org --environment=test --api=my-api
   """}
 
   @staticmethod
   def Args(parser):
     help_text = {
-        "api": "The API proxy to be undeployed.",
-        "environment": "The environment from which to undeploy the API proxy.",
-        "organization": "The organization of the proxy and environment."
+        "api": "API proxy to be undeployed. Must currently be deployed. To "
+               "get a list of available deployed proxies, run "
+               "`{{grandparent_command}} deployments list --environment=ENV`.",
+        "environment": "Environment from which to undeploy the API proxy. To "
+                       "get a list of available environments, run "
+                       "`{{grandparent_command}} environments list`.",
+        "organization": "Apigee organization of the proxy and environment."
     }
+
     fallthroughs = [defaults.GCPProductOrganizationFallthrough(),
                     defaults.StaticFallthrough("revision", "auto")]
     resource_args.AddSingleResourceArgument(
         parser, "organization.environment.api.revision",
-        "The API proxy revision to be undeployed, and the environment from "
-        "which it should be removed. The revision defaults to `auto`, which "
-        "will undeploy whichever revision is currently deployed, unless there "
-        "is more than one such revision.",
+        "API proxy revision to be undeployed and environment from which it "
+        "should be removed.\n\n"
+        "Revisions can either be a positive revision number, or the special "
+        "value ``auto'', which will undeploy whatever revision is currently "
+        "deployed. If revision is unspecified, the default is ``auto''.",
         fallthroughs=fallthroughs, help_texts=help_text)
 
   def Run(self, args):

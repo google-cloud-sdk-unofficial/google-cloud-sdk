@@ -88,6 +88,8 @@ class Update(base.Command):
     flags.AddServiceAccountFlag(parser)
     flags.AddImageArg(parser, required=False)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
+    # No output by default, can be overridden by --format
+    parser.display_info.AddFormat('none')
 
   @staticmethod
   def Args(parser):
@@ -106,6 +108,8 @@ class Update(base.Command):
 
     Args:
       args: Args!
+    Returns:
+      googlecloudsdk.api_lib.run.Service, the updated service
     """
     changes = flags.GetConfigurationChanges(args)
     if not changes:
@@ -133,14 +137,17 @@ class Update(base.Command):
           deployment_stages,
           failure_message='Deployment failed',
           suppress_output=args.async_) as tracker:
-        client.ReleaseService(
+        service = client.ReleaseService(
             service_ref, changes, tracker, asyn=args.async_, prefetch=service)
+
       if args.async_:
-        pretty_print.Success('Deploying asynchronously.')
+        pretty_print.Success('Service [{{bold}}{serv}{{reset}}] is deploying '
+                             'asynchronously.'.format(serv=service.name))
       else:
+        service = client.GetService(service_ref)
         pretty_print.Success(
-            messages_util.GetSuccessMessageForSynchronousDeploy(
-                client, service_ref))
+            messages_util.GetSuccessMessageForSynchronousDeploy(service))
+      return service
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

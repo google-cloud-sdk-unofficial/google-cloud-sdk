@@ -19,8 +19,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.cloudresourcemanager import organizations
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.organizations import flags
 from googlecloudsdk.command_lib.organizations import orgs_base
 
@@ -47,12 +47,4 @@ class GetIamPolicy(orgs_base.OrganizationCommand, base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
-    messages = self.OrganizationsMessages()
-    request = messages.CloudresourcemanagerOrganizationsGetIamPolicyRequest(
-        getIamPolicyRequest=messages.GetIamPolicyRequest(
-            options=messages.GetPolicyOptions(
-                requestedPolicyVersion=
-                iam_util.MAX_LIBRARY_IAM_SUPPORTED_VERSION)),
-        organizationsId=args.id)
-
-    return self.OrganizationsClient().GetIamPolicy((request))
+    return organizations.Client().GetIamPolicy(args.id)

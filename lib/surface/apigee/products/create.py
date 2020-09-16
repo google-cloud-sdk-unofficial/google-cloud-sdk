@@ -37,17 +37,18 @@ class Deploy(base.DescribeCommand):
           """
           Create an Apigee API product.
 
-          An API product is a collection of API resources combined with quota
-          settings and metadata, used to deliver customized and productized API
-          bundles to the developer community. Call this after the API resources
-          to be collected have already been deployed to a public-facing
-          environment.
+          `{command}` publishes a collection of API proxy resources as an API
+          product.
+
+          API products combine their underlying API proxies with quota settings
+          and metadata, to deliver customized and productized API bundles to
+          the developer community.
 
           API products enable the repackaging of APIs on-the-fly, without having
           to do any additional coding or configuration. Apigee recommends
           starting with a simple API product including only required elements,
           and then provisioning credentials to apps to enable them to start
-          testing your APIs.
+          testing those APIs.
 
           At minimum, a new API product requires an internal name, access
           policy, and declaration of what environments and API proxies to
@@ -67,8 +68,22 @@ class Deploy(base.DescribeCommand):
 
               $ {command} kitchen-sink --environments=prod --all-proxies --public-access
 
+          To require manual approval of developers before they can access the
+          new API product, run:
+
+              $ {command} kitchen-sink --environments=prod --all-proxies --public-access --manual-approval
+
+          To hide the new API product while still making it accessible to
+          developers, run:
+
+              $ {command} kitchen-sink --environments=prod --all-proxies --private-access
+
+          To restrict the new API product to internal users only, run:
+
+              $ {command} kitchen-sink --environments=prod --all-proxies --internal-access
+
           To expose all API proxies that are deployed to a URI fragment
-          beginning with `/v1` or `/v0`, run:
+          beginning with ``/v1'' or ``/v0'', run:
 
               $ {command} legacy --all-environments --resources="/v0/**#/v1/**" --public-access
 
@@ -83,23 +98,9 @@ class Deploy(base.DescribeCommand):
               $ {command} legacy-consumer --environments=prod --apis=menu,cart,delivery-tracker --resources="/v0/**#/v1/**" --public-access
 
           To impose a quota of 50 calls per half-hour on a new all-inclusive API
-          product, run:
+          product, and output the new API product as a JSON object, run:
 
-              $ {command} kitchen-sink --environments=prod --all-proxies --public-access --quota=50 --quota-interval=30 --quota-unit=minute
-
-          To require manual approval of developers before they can access the
-          new API product, run:
-
-              $ {command} kitchen-sink --environments=prod --all-proxies --public-access --manual-approval
-
-          To hide the new API product while still making it accessible to
-          developers, run:
-
-              $ {command} kitchen-sink --environments=prod --all-proxies --private-access
-
-          To restrict the new API product to internal users only, run:
-
-              $ {command} kitchen-sink --environments=prod --all-proxies --internal-access
+              $ {command} kitchen-sink --environments=prod --all-proxies --public-access --quota=50 --quota-interval=30 --quota-unit=minute --format=json
 
           To specify a human-friendly display name and description for the
           product, run:
@@ -115,8 +116,8 @@ class Deploy(base.DescribeCommand):
     resource_args.AddSingleResourceArgument(
         parser,
         "organization.product",
-        "The API product to be created. Characters in a product's internal "
-        "name are restricted to: ```A-Za-z0-9._-$ %```.",
+        "API product to be created. Characters in a product's internal name "
+        "are restricted to: ```A-Za-z0-9._-$ %```.",
         validate=True,
         argument_name="INTERNAL_NAME",
         required=False)
@@ -130,9 +131,12 @@ class Deploy(base.DescribeCommand):
         help=("Environments to which the API product is bound. Requests to "
               "environments that are not listed are rejected, preventing "
               "developers from accessing those resources through API Proxies "
-              "deployed in another environment. For example, this can prevent "
-              "resources associated with API proxies in ``prod'' from being "
-              "accessed by API proxies deployed in ``test''."))
+              "deployed in another environment.\n\n"
+              "For example, this can prevent resources associated with API "
+              "proxies in a ``prod'' environment from also granting access to "
+              "matching API proxies deployed in a ``test'' environment.\n\n"
+              "To get a list of available environments, run:\n\n"
+              "    $ {grandparent_command} environments list"))
 
     environment_group.add_argument(
         "--all-environments",
@@ -143,7 +147,7 @@ class Deploy(base.DescribeCommand):
 
     parser.add_argument(
         "--display-name",
-        help=("The name to be displayed in the UI or developer portal to "
+        help=("Name to be displayed in the UI or developer portal to "
               "developers registering for API access."))
 
     access_group = parser.add_mutually_exclusive_group()
@@ -190,11 +194,18 @@ class Deploy(base.DescribeCommand):
 Comma-separated names of API proxies to which this API product is bound. Only
 those API proxies will be accessible through the new API product.
 
-If not specified, all deployed API proxies will be included in the product, so
+If not provided, all deployed API proxies will be included in the product, so
 long as they match the other parameters.
 
 The API proxy names must already be deployed to the bound environments, or
-creation of the API product will fail.""")
+creation of the API product will fail. To get a list of deployed API proxies,
+run:
+
+    $ {grandparent_command} deployments list
+
+To deploy an API proxy, run:
+
+    $ {grandparent_command} apis deploy""")
 
     # Resource paths conform to RFC 2396's segment format, so a "," may appear
     # in one, but a "#" will not. " " or "|" would also have worked, but would
@@ -210,7 +221,7 @@ API resources to be bundled in the API product, separated by `#` signs.
 By default, the resource paths are mapped from the `proxy.pathsuffix` variable.
 
 The proxy path suffix is defined as the URI fragment following the
-ProxyEndpoint base path. For example, if `/forecastrss` is given as an element
+ProxyEndpoint base path. For example, if ``/forecastrss'' is given as an element
 of this list, and the base path defined for the API proxy is `/weather`, then
 only requests to `/weather/forecastrss` are permitted by the API product.
 
@@ -226,8 +237,11 @@ the API product supports requests to `/v1/weatherapikey` and to any sub-URIs,
 such as `/v1/weatherapikey/forecastrss`, `/v1/weatherapikey/region/CA`, and so
 on.
 
-If not specified, all deployed API resources will be included in the product, so
-long as they match the other parameters.""")
+If not provided, all deployed API resources will be included in the product, so
+long as they match the other parameters.
+
+The API proxy resources must already be deployed to the bound environments, or
+creation of the API product will fail.""")
 
     quota_group = parser.add_argument_group(
         ("To impose a quota limit on calls to the API product, specify all of "
@@ -236,25 +250,33 @@ long as they match the other parameters.""")
     quota_group.add_argument(
         "--quota",
         type=int,
-        help="""The number of request messages permitted per app by this API
-product for the specified `--quota-interval` and `--quota-unit`.
+        help="""Number of request messages permitted per app by this API product
+for the specified `--quota-interval` and `--quota-unit`.
 
-For example, `--quota=50 --quota-interval=12 --quota-unit=hour` means 50
-requests are allowed every 12 hours.""")
+For example, to create an API product that allows 50 requests every twelve hours
+to every deployed API proxy, run:
+
+    $ {command} PRODUCT --all-environments --all-proxies --public-access --quota=50 --quota-interval=12 --quota-unit=hour
+
+If specified, `--quota-interval` and `--quota-unit` must be specified too.""")
     quota_group.add_argument(
         "--quota-interval",
         type=int,
-        help=("The time interval over which the number of "
-              "request messages is calculated."))
+        help=("Time interval over which the number of request messages is "
+              "calculated.\n\n"
+              "If specified, `--quota` and `--quota-unit` must be specified "
+              "too."))
     quota_group.add_argument(
         "--quota-unit",
         choices=["minute", "hour", "day", "month"],
-        help=("The time unit for `--quota-interval`."))
+        help=("Time unit for `--quota-interval`.\n\n"
+              "If specified, `--quota` and `--quota-interval` must be "
+              "specified too."))
 
     parser.add_argument(
         "--description",
-        help=("An overview of the API product. Include key information about "
-              "the API product that is not captured by other fields."))
+        help=("Overview of the API product. Include key information about the "
+              "API product that is not captured by other fields."))
 
     parser.add_argument(
         "--manual-approval",

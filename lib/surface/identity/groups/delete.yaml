@@ -29,6 +29,10 @@
       help_text: |
         The email address of the group being deleted.
 
+  input:
+    confirmation_prompt: |
+      You are about to delete a group.
+
   request:
     collection: cloudidentity.groups
     disable_resource_check: true

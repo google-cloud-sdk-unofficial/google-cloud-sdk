@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class PrivateCa(base.Group):
   """Manage private PKI on Google cloud.
 

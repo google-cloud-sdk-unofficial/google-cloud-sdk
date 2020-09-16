@@ -96,9 +96,7 @@ class ConfigurationHelper(base.Command):
         default='0s')
 
   def Run(self, args):
-    use_google_auth = (
-        not properties.VALUES.auth.disable_load_google_auth.GetBool())
-    cred = store.Load(use_google_auth=use_google_auth)
+    cred = store.Load(use_google_auth=True)
 
     if args.force_auth_refresh:
       store.Refresh(cred)

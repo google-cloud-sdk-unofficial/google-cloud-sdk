@@ -40,6 +40,12 @@ class Create(base.CreateCommand):
         '--retention-days', type=int,
         help='The period logs will be retained, after which logs will '
         'automatically be deleted. The default is 30 days.')
+    parser.add_argument(
+        '--enable-analytics',
+        type=bool,
+        default=False,
+        help='Whether to opt the bucket into advanced log analytics. This '
+        'field may only be set at bucket creation and cannot be changed later.')
     util.AddBucketLocationArg(
         parser, True,
         'Location in which to create the bucket. Once the bucket is created, '
@@ -60,6 +66,8 @@ class Create(base.CreateCommand):
       bucket_data['retentionDays'] = args.retention_days
     if args.IsSpecified('description'):
       bucket_data['description'] = args.description
+    if args.IsSpecified('enable_analytics'):
+      bucket_data['analyticsEnabled'] = args.enable_analytics
 
     return util.GetClient().projects_locations_buckets.Create(
         util.GetMessages().LoggingProjectsLocationsBucketsCreateRequest(

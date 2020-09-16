@@ -24,6 +24,7 @@ from surface.container.clusters import create
 # Select which flags are auto flags
 auto_flags = [
     'args',
+    'clusterversion',
     'ipalias_additional',
     'masterauth',
     'nodeidentity',

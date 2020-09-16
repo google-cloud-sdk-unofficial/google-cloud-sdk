@@ -45,7 +45,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class EventsBeta(base.Group):
   """Manage Cloud Run for Anthos events."""

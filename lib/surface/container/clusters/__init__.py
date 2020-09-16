@@ -23,7 +23,6 @@ from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container import container_command_util
 from googlecloudsdk.command_lib.container import flags
-from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
 
 

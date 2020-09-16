@@ -174,7 +174,7 @@ class CreateHelper(object):
           client.messages.ConnectionDraining(
               drainingTimeoutSec=args.connection_draining_timeout))
 
-    if args.enable_cdn:
+    if args.enable_cdn is not None:
       backend_service.enableCDN = args.enable_cdn
 
     backend_services_utils.ApplyCdnPolicyArgs(
@@ -193,9 +193,12 @@ class CreateHelper(object):
       backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
     if args.custom_request_header is not None:
       backend_service.customRequestHeaders = args.custom_request_header
-    if self._support_flexible_cache_step_one \
-        and args.custom_response_header is not None:
-      backend_service.customResponseHeaders = args.custom_response_header
+    if self._support_flexible_cache_step_one:
+      if args.custom_response_header is not None:
+        backend_service.customResponseHeaders = args.custom_response_header
+      if (backend_service.cdnPolicy is not None and
+          backend_service.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
+        backend_service.enableCDN = True
 
     self._ApplyIapArgs(client.messages, args.iap, backend_service)
 

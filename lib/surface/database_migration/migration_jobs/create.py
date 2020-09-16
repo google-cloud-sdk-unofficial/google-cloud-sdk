@@ -55,11 +55,12 @@ class MySQL(base.Command):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    resource_args.AddMigrationJobResourceArgs(parser, 'to create')
+    resource_args.AddMigrationJobResourceArgs(
+        parser, 'to create', required=True)
     mj_flags.AddDisplayNameFlag(parser)
-    mj_flags.AddTypeFlag(parser)
+    mj_flags.AddTypeFlag(parser, required=True)
     mj_flags.AddDumpPathFlag(parser)
-    mj_flags.AddConnectivityGroupFlag(parser)
+    mj_flags.AddConnectivityGroupFlag(parser, required=True)
     flags.AddLabelsCreateFlags(parser)
 
   def Run(self, args):

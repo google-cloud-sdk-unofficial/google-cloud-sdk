@@ -25,7 +25,6 @@ from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.privateca import flags
-from googlecloudsdk.command_lib.privateca import operations
 from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
@@ -147,17 +146,12 @@ class Revoke(base.SilentCommand):
     client = privateca_base.GetClientInstance()
     messages = privateca_base.GetMessagesModule()
 
-    operation = client.projects_locations_certificateAuthorities_certificates.Revoke(
+    certificate = client.projects_locations_certificateAuthorities_certificates.Revoke(
         messages.
         PrivatecaProjectsLocationsCertificateAuthoritiesCertificatesRevokeRequest(
             name=cert_ref.RelativeName(),
             revokeCertificateRequest=messages.RevokeCertificateRequest(
-                reason=reason,
-                requestId=request_utils.GenerateRequestId())))
-
-    response = operations.Await(operation, 'Revoking Certificate.')
-    certificate = operations.GetMessageFromResponse(response,
-                                                    messages.Certificate)
+                reason=reason, requestId=request_utils.GenerateRequestId())))
 
     revoke_time = times.ParseDateTime(
         certificate.revocationDetails.revocationTime)

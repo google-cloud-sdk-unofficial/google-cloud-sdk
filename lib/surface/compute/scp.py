@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import iap_tunnel
 from googlecloudsdk.command_lib.compute import scp_utils
+from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.util.ssh import ip
 
 _DETAILED_HELP = {
@@ -96,6 +97,8 @@ def _Args(parser):
       '--scp-flag',
       action='append',
       help='Extra flag to be sent to scp. This flag may be repeated.')
+
+  ssh_utils.AddVerifyInternalIpArg(parser)
 
   routing_group = parser.add_mutually_exclusive_group()
   routing_group.add_argument(

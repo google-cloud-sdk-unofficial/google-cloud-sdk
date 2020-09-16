@@ -115,12 +115,15 @@ class Create(base.CreateCommand):
         presentation_specs.ResourcePresentationSpec(
             '--reusable-config',
             privateca_resource_args.CreateReusableConfigResourceSpec(
-                location_fallthroughs=[deps.Fallthrough(
-                    function=lambda: '',
-                    hint=('location will default to the same location as the '
-                          'CA'),
-                    active=False,
-                    plural=False)]),
+                location_fallthroughs=[
+                    deps.Fallthrough(
+                        function=lambda: '',
+                        hint=(
+                            'location will default to the same location as the '
+                            'CA'),
+                        active=False,
+                        plural=False)
+                ]),
             'The Reusable Config containing X.509 values for this CA.',
             flag_name_overrides={
                 'location': '',
@@ -177,11 +180,8 @@ class Create(base.CreateCommand):
         certificate=self.messages.Certificate(
             name=certificate_name, lifetime=lifetime, pemCsr=csr))
 
-    operation = self.client.projects_locations_certificateAuthorities_certificates.Create(
+    return self.client.projects_locations_certificateAuthorities_certificates.Create(
         cert_request)
-    cert_response = operations.Await(operation, 'Signing CA cert.')
-    return operations.GetMessageFromResponse(cert_response,
-                                             self.messages.Certificate)
 
   def _ActivateCertificateAuthority(self, ca_ref, certificate):
     """Activates the given CA using the given certificate."""
@@ -190,7 +190,9 @@ class Create(base.CreateCommand):
         activateCertificateAuthorityRequest=self.messages
         .ActivateCertificateAuthorityRequest(
             pemCaCertificate=certificate.pemCertificate,
-            pemCaCertificateChain=certificate.pemCertificateChain))
+            subordinateConfig=self.messages.SubordinateConfig(
+                pemIssuerChain=self.messages.SubordinateConfigChain(
+                    pemCertificates=certificate.pemCertificateChain))))
     operation = self.client.projects_locations_certificateAuthorities.Activate(
         activate_request)
     return operations.Await(operation, 'Activating CA.')
@@ -223,9 +225,9 @@ class Create(base.CreateCommand):
                 requestId=request_utils.GenerateRequestId())),
         'Creating Certificate Authority.')
 
-    csr_response = self.client.projects_locations_certificateAuthorities.GetCsr(
+    csr_response = self.client.projects_locations_certificateAuthorities.Fetch(
         self.messages
-        .PrivatecaProjectsLocationsCertificateAuthoritiesGetCsrRequest(
+        .PrivatecaProjectsLocationsCertificateAuthoritiesFetchRequest(
             name=ca_ref.RelativeName()))
     csr = csr_response.pemCsr
 

@@ -120,6 +120,9 @@ class Update(base.UpdateCommand):
         replacement.customResponseHeaders = []
       if not replacement.customResponseHeaders:
         cleared_fields.append('customResponseHeaders')
+      if (replacement.cdnPolicy is not None and
+          replacement.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
+        replacement.enableCdn = True
 
     if not replacement.description:
       cleared_fields.append('description')

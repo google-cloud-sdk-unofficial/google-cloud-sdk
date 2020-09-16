@@ -27,7 +27,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.command_lib.privateca import flags
 from googlecloudsdk.command_lib.privateca import key_generation
-from googlecloudsdk.command_lib.privateca import operations
 from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -123,12 +122,15 @@ class Create(base.CreateCommand):
         presentation_specs.ResourcePresentationSpec(
             '--reusable-config',
             resource_args.CreateReusableConfigResourceSpec(
-                location_fallthroughs=[deps.Fallthrough(
-                    function=lambda: '',
-                    hint=('location will default to the same location as the '
-                          'certificate'),
-                    active=False,
-                    plural=False)]),
+                location_fallthroughs=[
+                    deps.Fallthrough(
+                        function=lambda: '',
+                        hint=(
+                            'location will default to the same location as the '
+                            'certificate'),
+                        active=False,
+                        plural=False)
+                ]),
             'The Reusable Config containing X.509 values for this certificate.',
             flag_name_overrides={
                 'location': '',
@@ -201,11 +203,8 @@ class Create(base.CreateCommand):
           ('To create a certificate, please specify either a CSR or the '
            '--generate-key flag to create a new key.'))
 
-    operation = client.projects_locations_certificateAuthorities_certificates.Create(
+    certificate = client.projects_locations_certificateAuthorities_certificates.Create(
         request)
-    cert_response = operations.Await(operation, 'Creating Certificate.')
-    certificate = operations.GetMessageFromResponse(cert_response,
-                                                    messages.Certificate)
 
     if args.IsSpecified('cert_output_file'):
       self._WritePemChain(certificate.pemCertificate,

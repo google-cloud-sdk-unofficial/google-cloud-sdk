@@ -29,12 +29,18 @@ from googlecloudsdk.command_lib.apigee import resource_args
 
 
 class Update(base.DescribeCommand):
-  """Modifies an existing Apigee API product."""
+  """Update an existing Apigee API product."""
 
   detailed_help = {
       "DESCRIPTION":
           """
           {description}
+
+          `{command}` applies a set of modifications to an existing API product.
+
+          To create a new API product, run:
+
+              $ {parent_command} create
           """,
       "EXAMPLES":
           """
@@ -64,7 +70,7 @@ class Update(base.DescribeCommand):
 
           To set the API product's custom attribute ``foo'' to the value ``bar'', updating that attribute if it exists and creating it if it doesn't, and remove the attribute ``baz'' if it exists, run:
 
-              $ {command} my-prod --add-attribute=foo=bar  --remove-attribute=baz
+              $ {command} my-prod --add-attribute="foo=bar"  --remove-attribute=baz
 
           To update the list of API proxies included in the API product, run:
 
@@ -74,9 +80,10 @@ class Update(base.DescribeCommand):
 
               $ {command} my-prod --add-environment=test --all-apis --all-resources
 
-          To update the list of API resources included in the API product, run:
+          To update the list of API resources included in the API product, and
+          output the updated API product as a JSON object, run:
 
-              $ {command} my-prod --add-resource=NEW_ONE,NEW_TWO --remove-resource=OLD_ONE,OLD_TWO
+              $ {command} my-prod --add-resource="NEW_ONE#NEW_TWO" --remove-resource="OLD_ONE#OLD_TWO" --format=json
           """
   }
 
@@ -85,7 +92,9 @@ class Update(base.DescribeCommand):
     resource_args.AddSingleResourceArgument(
         parser,
         "organization.product",
-        "The API product to be updated.",
+        "API product to be updated. To get a list of available API products, "
+        "run:\n\n\n"
+        "    $ {parent_command} list\n\n",
         fallthroughs=[defaults.GCPProductOrganizationFallthrough()])
 
     argument_groups.AddEditableListArgument(
@@ -95,9 +104,12 @@ class Update(base.DescribeCommand):
         "Environments to which the API product is bound. Requests to "
         "environments that are not listed are rejected, preventing developers "
         "from accessing those resources even if they can access the same API "
-        "proxies in another environment. For example, this can prevent "
-        "applications with access to production APIs from accessing the "
-        "alpha or beta versions of those APIs.",
+        "proxies in another environment.\n\n"
+        "For example, this can be used to prevent applications with access to "
+        "production APIs from accessing the alpha or beta versions of those "
+        "APIs.\n\n"
+        "To get a list of available environments, run:\n\n"
+        "    $ {grandparent_command} environments list",
         clear_arg="--all-environments",
         clear_help="Make all environments accessible through this API product.",
         dest="environments")
@@ -105,7 +117,7 @@ class Update(base.DescribeCommand):
     parser.add_argument(
         "--display-name",
         dest="set_displayName",
-        help=("The name to be displayed in the UI or developer portal to "
+        help=("Name to be displayed in the UI or developer portal to "
               "developers registering for API access."))
 
     access_group = parser.add_mutually_exclusive_group()
@@ -138,7 +150,14 @@ class Update(base.DescribeCommand):
 proxies will be accessible through the API product.
 
 The API proxy names must already be deployed to the bound environments, or
-creation of the API product will fail.""",
+creation of the API product will fail. To get a list of deployed API proxies,
+run:
+
+    $ {grandparent_command} deployments list
+
+To deploy an API proxy, run:
+
+    $ {grandparent_command} apis deploy.""",
         dest="proxies",
         clear_arg="--all-apis",
         clear_help="Include all deployed API proxies in the product, so long "
@@ -152,7 +171,7 @@ creation of the API product will fail.""",
 By default, the resource paths are mapped from the `proxy.pathsuffix` variable.
 
 The proxy path suffix is defined as the URI fragment following the
-ProxyEndpoint base path. For example, if `/forecastrss` is given as an element
+ProxyEndpoint base path. For example, if ``/forecastrss'' is given as an element
 of this list, and the base path defined for the API proxy is `/weather`, then
 only requests to `/weather/forecastrss` are permitted by the API product.
 
@@ -166,7 +185,10 @@ defined by the API proxy.
 For example, if the base path of the API proxy is `/v1/weatherapikey`, then
 the API product supports requests to `/v1/weatherapikey` and to any sub-URIs,
 such as `/v1/weatherapikey/forecastrss`, `/v1/weatherapikey/region/CA`, and so
-on.""",
+on.
+
+The API proxy resources must already be deployed to the bound environments, or
+creation of the API product will fail.""",
         dest="apiResources",
         collector_type=argument_groups.HashDelimitedArgList(),
         clear_arg="--all-resources",
@@ -181,20 +203,20 @@ on.""",
     quota_group.add_argument(
         "--quota",
         type=int,
-        help="""The number of request messages permitted per app by this API
+        help="""Number of request messages permitted per app by this API
 product for the specified `--quota-interval` and `--quota-unit`.
 
-For example, `--quota=50 --quota-interval=12 --quota-unit=hour` means 50
-requests are allowed every 12 hours.""")
+For example, `--quota=50`, `--quota-interval=12`, and `--quota-unit=hour` means
+50 requests are allowed every 12 hours.""")
     quota_group.add_argument(
         "--quota-interval",
         type=int,
-        help=("The time interval over which the number of "
+        help=("Time interval over which the number of "
               "request messages is calculated."))
     quota_group.add_argument(
         "--quota-unit",
         choices=["minute", "hour", "day", "month"],
-        help=("The time unit for `--quota-interval`."))
+        help=("Time unit for `--quota-interval`."))
 
     quota_mutex.add_argument(
         "--clear-quota",
@@ -203,7 +225,7 @@ requests are allowed every 12 hours.""")
 
     argument_groups.AddClearableArgument(
         parser, "description",
-        "An overview of the API product. Include key information about the API "
+        "Overview of the API product. Include key information about the API "
         "product that is not captured by other fields.",
         "Remove the API product's description.")
 

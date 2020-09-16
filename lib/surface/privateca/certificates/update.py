@@ -22,7 +22,6 @@ from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.privateca import operations
 from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 
@@ -60,15 +59,13 @@ class Update(base.UpdateCommand):
 
     original_cert.labels = labels_update.labels
 
-    operation = client.projects_locations_certificateAuthorities_certificates.Patch(
+    return client.projects_locations_certificateAuthorities_certificates.Patch(
         messages.
         PrivatecaProjectsLocationsCertificateAuthoritiesCertificatesPatchRequest(
             name=original_cert.name,
             certificate=original_cert,
             updateMask='labels',
             requestId=request_utils.GenerateRequestId()))
-
-    return operations.Await(operation, 'Updating Certificate.')
 
   def Run(self, args):
     client = privateca_base.GetClientInstance()

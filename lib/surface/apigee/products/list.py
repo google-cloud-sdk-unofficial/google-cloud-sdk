@@ -35,10 +35,10 @@ class List(base.ListCommand):
 
               $ {command}
 
-          To list all API products in an Apigee organization called ``my-org'',
-          run:
+          To get a JSON array of all the API products in an organization named
+          ``my-org'', run:
 
-              $ {command} --organization=my-org
+              $ {command} --organization=my-org --format=json
           """
   }
 
@@ -47,14 +47,13 @@ class List(base.ListCommand):
     resource_args.AddSingleResourceArgument(
         parser,
         "organization",
-        "The Apigee organization whose products should be listed.",
+        "Apigee organization whose products should be listed.",
         positional=False,
         required=True,
         fallthroughs=[defaults.GCPProductOrganizationFallthrough()])
-    parser.display_info.AddFormat("list")
+    parser.display_info.AddFormat("list(name)")
 
   def Run(self, args):
     """Run the list command."""
     identifiers = args.CONCEPTS.organization.Parse().AsDict()
-    for item in apigee.ProductsClient.List(identifiers):
-      yield item["name"]
+    return apigee.ProductsClient.List(identifiers)
