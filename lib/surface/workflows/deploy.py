@@ -44,6 +44,7 @@ class Deploy(base.CacheCommand):
     api_version = workflows.ReleaseTrackToApiVersion(self.ReleaseTrack())
     client = workflows.WorkflowsClient(api_version)
     workflow_ref = flags.ParseWorkflow(args)
+    validate.WorkflowNameConforms(workflow_ref.Name())
     old_workflow = client.Get(workflow_ref)
     first_deployment = old_workflow is None
     workflow, updated_fields = client.BuildWorkflowFromArgs(args)

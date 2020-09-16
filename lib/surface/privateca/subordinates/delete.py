@@ -19,6 +19,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from dateutil import tz
+
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
@@ -26,31 +28,47 @@ from googlecloudsdk.command_lib.privateca import operations
 from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import times
 
 
 class Delete(base.DeleteCommand):
-  r"""Permanently delete a subordinate certificate authority.
+  r"""Schedule a subordinate certificate authority for deletion.
 
-    Permanently deletes a subordinate certificate authority.
+    Schedule a subordinate certificate authority for deletion in 30 days.
 
-    Note that the KMS key will not be affected by this operation. You will need
-    to delete the KMS key separately once the CA is deleted.
+    Note that any user-managed KMS keys or Google Cloud Storage buckets
+    will not be affected by this operation. You will need to delete the user-
+    managed resources separately once the CA is deleted. Any Google-managed
+    resources will be cleaned up.
+
+    The CA specified in this command MUST:
+
+      1) be disabled.
+      2) have no un-revoked or un-expired certificates. Use the revoke command
+         to revoke any active certificates.
+
+    You can use the restore command to halt this process.
 
     ## EXAMPLES
 
-    To delete a subordinate CA:
+    To schedule a subordinate CA for deletion:
 
       $ {command} server-tls-1 --location 'us-west1'
 
-    To delete a subordinate CA while skipping the confirmation input:
+    To schedule a subordinate CA for deletion while skipping the confirmation
+    input:
 
       $ {command} server-tls-1 --location 'us-west1' --quiet
+
+    To un-do the scheduled deletion for a subordinate CA:
+
+      $ {parent_command} restore server-tls-1 --location 'us-west1'
   """
 
   @staticmethod
   def Args(parser):
     resource_args.AddCertificateAuthorityPositionalResourceArg(
-        parser, 'to delete')
+        parser, 'to schedule deletion for')
 
   def Run(self, args):
     client = privateca_base.GetClientInstance()
@@ -59,8 +77,8 @@ class Delete(base.DeleteCommand):
     ca_ref = args.CONCEPTS.certificate_authority.Parse()
 
     if not console_io.PromptContinue(
-        message='You are about to delete Certificate Authority [{}]'.format(
-            ca_ref.RelativeName()),
+        message='You are about to schedule Certificate Authority [{}] for deletion in 30 days'
+        .format(ca_ref.RelativeName()),
         default=True):
       log.status.Print('Aborted by user.')
       return
@@ -73,12 +91,21 @@ class Delete(base.DeleteCommand):
         messages.CertificateAuthority.TypeValueValuesEnum.SUBORDINATE,
         current_ca)
 
-    operation = client.projects_locations_certificateAuthorities.Delete(
-        messages.PrivatecaProjectsLocationsCertificateAuthoritiesDeleteRequest(
+    operation = client.projects_locations_certificateAuthorities.ScheduleDelete(
+        messages
+        .PrivatecaProjectsLocationsCertificateAuthoritiesScheduleDeleteRequest(
             name=ca_ref.RelativeName(),
-            requestId=request_utils.GenerateRequestId()))
+            scheduleDeleteCertificateAuthorityRequest=messages
+            .ScheduleDeleteCertificateAuthorityRequest(
+                requestId=request_utils.GenerateRequestId())))
 
-    operations.Await(operation, 'Deleting Subordinate CA')
+    ca_response = operations.Await(operation,
+                                   'Scheduling Subordinate CA for deletion')
+    ca = operations.GetMessageFromResponse(ca_response,
+                                           messages.CertificateAuthority)
 
-    log.status.Print('Deleted Subordinate CA [{}].'.format(
-        ca_ref.RelativeName()))
+    formatted_deletion_time = times.ParseDateTime(ca.deleteTime).astimezone(
+        tz.tzutc()).strftime('%Y-%m-%dT%H:%MZ')
+
+    log.status.Print('Scheduled Subordinate CA [{}] for deletion at {}.'.format(
+        ca_ref.RelativeName(), formatted_deletion_time))

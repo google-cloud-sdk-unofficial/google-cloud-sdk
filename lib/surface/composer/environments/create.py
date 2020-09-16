@@ -178,6 +178,7 @@ information on how to structure KEYs and VALUEs, run
       version will be selected. The version numbers that are used will
       be stored.""")
   flags.AddIpAliasEnvironmentFlags(parser)
+  flags.AddPrivateIpEnvironmentFlags(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -191,19 +192,16 @@ class Create(base.Command):
   """
 
   detailed_help = DETAILED_HELP
-  _support_web_server_cloud_sql_private_ip_ranges = True
   _support_web_server_access_control = False
 
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
-    flags.AddPrivateIpEnvironmentFlags(parser, True)
 
   def Run(self, args):
     self.ParseIpAliasConfigOptions(args)
     self.ParsePrivateEnvironmentConfigOptions(args)
-    if self._support_web_server_cloud_sql_private_ip_ranges:
-      self.ParsePrivateEnvironmentWebServerCloudSqlRanges(args)
+    self.ParsePrivateEnvironmentWebServerCloudSqlRanges(args)
 
     flags.ValidateDiskSize('--disk-size', args.disk_size)
     self.env_ref = args.CONCEPTS.environment.Parse()
@@ -431,17 +429,11 @@ class CreateAlpha(CreateBeta):
     {top_command} composer operations describe
   """
 
-  _support_web_server_cloud_sql_private_ip_ranges = False
-  _support_web_server_access_control = False
+  _support_web_server_access_control = True
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser)
-    flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(parser)
-    flags.WEB_SERVER_MACHINE_TYPE.AddToParser(parser)
-
-    # Private IP falgs without ranges missing in alpha.
-    flags.AddPrivateIpEnvironmentFlags(parser, False)
+    CreateBeta.Args(parser)
 
     # Adding alpha arguments
     parser.add_argument(
@@ -496,7 +488,10 @@ class CreateAlpha(CreateBeta):
         kms_key=self.kms_key,
         private_environment=args.enable_private_environment,
         private_endpoint=args.enable_private_endpoint,
+        web_server_ipv4_cidr=args.web_server_ipv4_cidr,
+        cloud_sql_ipv4_cidr=args.cloud_sql_ipv4_cidr,
         master_ipv4_cidr=args.master_ipv4_cidr,
+        web_server_access_control=self.web_server_access_control,
         cloud_sql_machine_type=args.cloud_sql_machine_type,
         web_server_machine_type=args.web_server_machine_type,
         release_track=self.ReleaseTrack())

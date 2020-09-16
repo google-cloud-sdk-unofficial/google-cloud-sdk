@@ -115,10 +115,8 @@ class GitHelper(base.Command):
 
     if args.method == GitHelper.GET:
       account = properties.VALUES.core.account.Get()
-      use_google_auth = (
-          not properties.VALUES.auth.disable_load_google_auth.GetBool())
       try:
-        cred = c_store.Load(account, use_google_auth=use_google_auth)
+        cred = c_store.Load(account, use_google_auth=True)
         c_store.Refresh(cred)
       except c_store.Error as e:
         sys.stderr.write(textwrap.dedent("""\

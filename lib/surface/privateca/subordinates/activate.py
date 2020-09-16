@@ -94,6 +94,9 @@ class Activate(base.SilentCommand):
             name=ca_ref.RelativeName(),
             activateCertificateAuthorityRequest=messages
             .ActivateCertificateAuthorityRequest(
-                pemCaCertificate=pem_cert, pemCaCertificateChain=pem_chain)))
+                pemCaCertificate=pem_cert,
+                subordinateConfig=messages.SubordinateConfig(
+                    pemIssuerChain=messages.SubordinateConfigChain(
+                        pemCertificates=pem_chain)))))
 
     operations.Await(operation, 'Activating Certificate Authority.')

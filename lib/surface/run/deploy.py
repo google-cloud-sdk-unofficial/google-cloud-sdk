@@ -133,6 +133,8 @@ class Deploy(base.Command):
     flags.AddNoTrafficFlag(parser)
     flags.AddServiceAccountFlag(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
+    # No output by default, can be overridden by --format
+    parser.display_info.AddFormat('none')
 
   @staticmethod
   def Args(parser):
@@ -208,7 +210,7 @@ class Deploy(base.Command):
           deployment_stages,
           failure_message='Deployment failed',
           suppress_output=args.async_) as tracker:
-        operations.ReleaseService(
+        service = operations.ReleaseService(
             service_ref,
             changes,
             tracker,
@@ -217,14 +219,15 @@ class Deploy(base.Command):
             prefetch=service,
             build_op_ref=build_op_ref,
             build_log_url=build_log_url)
+
       if args.async_:
-        pretty_print.Success(
-            'Service [{{bold}}{serv}{{reset}}] is deploying '
-            'asynchronously.'.format(serv=service_ref.servicesId))
+        pretty_print.Success('Service [{{bold}}{serv}{{reset}}] is deploying '
+                             'asynchronously.'.format(serv=service.name))
       else:
+        service = operations.GetService(service_ref)
         pretty_print.Success(
-            messages_util.GetSuccessMessageForSynchronousDeploy(
-                operations, service_ref))
+            messages_util.GetSuccessMessageForSynchronousDeploy(service))
+      return service
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

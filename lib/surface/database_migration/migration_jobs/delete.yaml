@@ -6,7 +6,7 @@
     description: |
       Delete a Database Migration Service migration job.
     examples: |
-      To delete a connection profile:
+      To delete a migration job:
 
           $ {command} MIGRATION_JOB --region=us-central1
 

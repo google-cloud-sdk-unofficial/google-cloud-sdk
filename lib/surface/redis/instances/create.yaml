@@ -61,12 +61,12 @@
       api_field: instance.connectMode
       help_text: |
         Network connection mode used by instances.
-    - arg_name: tls-mode
+    - arg_name: transit-encryption-mode
       release_tracks: [ALPHA]
       hidden: true
-      api_field: instance.tlsMode
+      api_field: instance.transitEncryptionMode
       help_text: |
-        TLS mode used by the instance.
+        Transit encryption mode used by the instance.
     - arg_name: display-name
       api_field: instance.displayName
       help_text: |

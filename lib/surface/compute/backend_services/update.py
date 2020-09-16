@@ -204,6 +204,11 @@ class UpdateHelper(object):
         cleared_fields=cleared_fields,
         support_flexible_cache_step_one=self._support_flexible_cache_step_one)
 
+    if self._support_flexible_cache_step_one:
+      if (replacement.cdnPolicy is not None and
+          replacement.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
+        replacement.enableCDN = True
+
     self._ApplyIapArgs(client, args.iap, existing, replacement)
 
     backend_services_utils.ApplyFailoverPolicyArgs(

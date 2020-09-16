@@ -60,7 +60,10 @@ class Describe(base.DescribeCommand):
     parser.add_argument("--verbose", action="store_true",
                         help="Include proxy revision info in the description.")
     resource_args.AddSingleResourceArgument(
-        parser, "organization.api", "API proxy to be described.",
+        parser,
+        "organization.api",
+        "API proxy to be described. To get a list of available API proxies, "
+        "run `{parent_command} list`.",
         fallthroughs=[defaults.GCPProductOrganizationFallthrough()])
 
   def Run(self, args):

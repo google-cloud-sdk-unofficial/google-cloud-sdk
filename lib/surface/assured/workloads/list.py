@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.assured import endpoint_util
 from googlecloudsdk.api_lib.assured import workloads as apis
 from googlecloudsdk.calliope import base
+import six
 
 _DETAILED_HELP = {
     'DESCRIPTION':
@@ -41,7 +42,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List all Assured Workloads environments that belong to a given parent organization."""
 
@@ -60,8 +61,8 @@ class List(base.ListCommand):
   def Run(self, args):
     """Run the list command."""
     with endpoint_util.AssuredWorkloadsEndpointOverridesFromResource(
-        resource=args.parent):
-      client = apis.WorkloadsClient()
+        release_track=six.text_type(self.ReleaseTrack()), resource=args.parent):
+      client = apis.WorkloadsClient(self.ReleaseTrack())
       return client.List(
           parent=args.parent,
           limit=args.limit,

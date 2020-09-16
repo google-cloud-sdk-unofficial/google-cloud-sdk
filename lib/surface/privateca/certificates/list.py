@@ -23,34 +23,11 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.util import common_args
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.command_lib.privateca import response_utils
 from googlecloudsdk.command_lib.privateca import text_utils
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
-from googlecloudsdk.core import properties
-
-
-def _ParseParentName(args):
-  """Gets the parent resource name under which to list certificates."""
-  ca_ref = args.CONCEPTS.issuer.Parse()
-  if ca_ref:
-    return ca_ref.RelativeName()
-
-  if args.IsSpecified('issuer'):
-    raise exceptions.InvalidArgumentException(
-        '--issuer',
-        ('The issuer flag is not fully specified. Please add the '
-         "--issuer-location flag or specify the issuer's full resource name."))
-
-  project = properties.VALUES.core.project.GetOrFail()
-
-  if args.IsSpecified('location'):
-    return 'projects/{}/locations/{}/certificateAuthorities/-'.format(
-        project, args.location)
-
-  return 'projects/{}/locations/-/certificateAuthorities/-'.format(project)
 
 
 class List(base.ListCommand):
@@ -58,20 +35,15 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    base.Argument(
-        '--location',
-        help='Location of the certificates.'
-    ).AddToParser(parser)
-    concept_parsers.ConceptParser(
-        [
-            presentation_specs.ResourcePresentationSpec(
-                '--issuer',
-                resource_args.CreateCertificateAuthorityResourceSpec(
-                    'CERTIFICATE_AUTHORITY'),
-                'The issuing Certificate Authority.',
-                required=False,
-                prefixes=True),
-        ]).AddToParser(parser)
+    concept_parsers.ConceptParser([
+        presentation_specs.ResourcePresentationSpec(
+            '--issuer',
+            resource_args.CreateCertificateAuthorityResourceSpec(
+                'CERTIFICATE_AUTHORITY'),
+            'The issuing Certificate Authority.',
+            required=True,
+            prefixes=True),
+    ]).AddToParser(parser)
     base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
 
     parser.display_info.AddFormat("""
@@ -92,9 +64,9 @@ class List(base.ListCommand):
     client = privateca_base.GetClientInstance()
     messages = privateca_base.GetMessagesModule()
 
-    parent = _ParseParentName(args)
+    parent = args.CONCEPTS.issuer.Parse()
     request = messages.PrivatecaProjectsLocationsCertificateAuthoritiesCertificatesListRequest(
-        parent=parent,
+        parent=parent.RelativeName(),
         orderBy=common_args.ParseSortByArg(args.sort_by),
         pageSize=args.page_size,
         filter=args.filter)

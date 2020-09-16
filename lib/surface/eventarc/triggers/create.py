@@ -27,7 +27,7 @@ _DETAILED_HELP = {
         '{description}',
     'EXAMPLES':
         """ \
-        To create a new trigger 'my-trigger' for events of type 'google.cloud.pubsub.topic.v1.messagePublished' with destination Cloud Run service 'my-service', run:
+        To create a new trigger ``my-trigger'' for events of type ``google.cloud.pubsub.topic.v1.messagePublished'' with destination Cloud Run service ``my-service'', run:
 
           $ {command} my-trigger --matching-criteria="type=google.cloud.pubsub.topic.v1.messagePublished" --destination-run-service=my-service
         """,

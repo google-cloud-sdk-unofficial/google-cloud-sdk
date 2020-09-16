@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.assured import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+import six
 
 _DETAILED_HELP = {
     'DESCRIPTION':
@@ -39,7 +40,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Delete Assured Workloads environment."""
 
@@ -57,6 +58,12 @@ class Delete(base.DeleteCommand):
       return
 
     with endpoint_util.AssuredWorkloadsEndpointOverridesFromResource(
+        release_track=six.text_type(self.ReleaseTrack()),
         resource=args.resource):
-      client = apis.WorkloadsClient()
-      return client.Delete(name=args.resource, etag=args.etag)
+      client = apis.WorkloadsClient(self.ReleaseTrack())
+      self.resource_name = args.resource
+      return client.Delete(name=self.resource_name, etag=args.etag)
+
+  def Epilog(self, resources_were_displayed):
+    log.DeletedResource(self.resource_name,
+                        kind='Assured Workloads environment')

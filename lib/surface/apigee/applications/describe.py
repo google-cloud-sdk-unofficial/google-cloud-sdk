@@ -40,9 +40,9 @@ class Describe(base.DescribeCommand):
               $ {command} 46d6151e-0000-4dfa-b9c7-c03b8b58bb2f
 
           To describe that application in the Apigee organization ``my-org'',
-          run:
+          formatted as a JSON object, run:
 
-              $ {command} 46d6151e-0000-4dfa-b9c7-c03b8b58bb2f --organization=my-org
+              $ {command} 46d6151e-0000-4dfa-b9c7-c03b8b58bb2f --organization=my-org --format=json
           """
   }
 
@@ -50,7 +50,8 @@ class Describe(base.DescribeCommand):
   def Args(parser):
     resource_args.AddSingleResourceArgument(
         parser, "organization.app",
-        "The application to be described.",
+        "Application to be described. To get a list of available applications, "
+        "run `{parent_command} list`.",
         argument_name="APPLICATION",
         fallthroughs=[defaults.GCPProductOrganizationFallthrough()])
 

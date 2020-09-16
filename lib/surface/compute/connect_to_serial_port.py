@@ -32,6 +32,7 @@ from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import http
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import encoding
 from six.moves import http_client as httplib
 
@@ -228,7 +229,9 @@ class ConnectToSerialPort(base.Command):
     # since the normal way to terminate the serial port connection is ~. and
     # that causes ssh to exit with 255.
     try:
-      return_code = cmd.Run(ssh_helper.env, force_connect=True)
+      return_code = cmd.Run(
+          ssh_helper.env,
+          force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
     except ssh.CommandError:
       return_code = 255
     if return_code:

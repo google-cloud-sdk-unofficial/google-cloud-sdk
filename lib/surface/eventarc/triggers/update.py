@@ -27,7 +27,7 @@ _DETAILED_HELP = {
         '{description}',
     'EXAMPLES':
         """ \
-        To update the trigger 'my-trigger' by setting its destination Cloud Run service to 'my-service', run:
+        To update the trigger ``my-trigger'' by setting its destination Cloud Run service to ``my-service'', run:
 
           $ {command} my-trigger --destination-run-service=my-service
         """,

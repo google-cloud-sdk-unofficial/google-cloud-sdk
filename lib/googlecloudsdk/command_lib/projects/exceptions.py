@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2017 Google LLC. All Rights Reserved.
+# Copyright 2020 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,26 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""The gcloud resources command group."""
+"""Exceptions thrown by Resource Settings commands."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base
+from googlecloudsdk.core import exceptions
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Resources(base.Group):
-  """List and search resources accessible from your account.
+class ProjectsError(exceptions.Error):
+  """Top-level exception for Projects errors."""
 
-  The {command} group allows you to list and search the Google Cloud resources
-  that you have access to. Currently, only a limited subset of Cloud resource
-  types are supported.
-  """
-  category = base.IDENTITY_AND_SECURITY_CATEGORY
 
-  def Filter(self, context, args):
-    del context, args
-    base.DisableUserProjectQuota()
+class AncestorsIamPolicyAccessDeniedError(ProjectsError):
+  """Exception for no permission for accessing ancestors' IAM policy."""

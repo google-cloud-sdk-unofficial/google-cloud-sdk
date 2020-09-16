@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [BETA]
   help_text:
     brief:  Remove IAM policy binding for a root Certificate Authority.
     description: |
@@ -18,7 +18,7 @@
 
   request:
     collection: privateca.projects.locations.certificateAuthorities
-    api_version: v1alpha1
+    api_version: v1beta1
 
   arguments:
     resource:

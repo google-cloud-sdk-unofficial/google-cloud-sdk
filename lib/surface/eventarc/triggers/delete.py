@@ -27,7 +27,7 @@ _DETAILED_HELP = {
         '{description}',
     'EXAMPLES':
         """ \
-        To delete the trigger 'my-trigger', run:
+        To delete the trigger ``my-trigger'', run:
 
           $ {command} my-trigger
         """,

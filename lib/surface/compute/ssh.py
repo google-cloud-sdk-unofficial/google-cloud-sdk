@@ -33,6 +33,7 @@ from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.command_lib.util.ssh import containers
 from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import retry
 
 
@@ -142,6 +143,7 @@ class Ssh(base.Command):
     AddContainerArg(parser)
     flags.AddZoneFlag(
         parser, resource_type='instance', operation_type='connect to')
+    ssh_utils.AddVerifyInternalIpArg(parser)
 
     routing_group = parser.add_mutually_exclusive_group()
     AddInternalIPArg(routing_group)
@@ -253,7 +255,9 @@ class Ssh(base.Command):
       log.status.Print('Waiting for SSH key to propagate.')
       # TODO(b/35355795): Don't force_connect
       try:
-        poller.Poll(ssh_helper.env, force_connect=True)
+        poller.Poll(
+            ssh_helper.env,
+            force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
       except retry.WaitException:
         raise ssh_utils.NetworkError()
 
@@ -262,7 +266,9 @@ class Ssh(base.Command):
                                              options)
 
     # Errors from SSH itself result in an ssh.CommandError being raised
-    return_code = cmd.Run(ssh_helper.env, force_connect=True)
+    return_code = cmd.Run(
+        ssh_helper.env,
+        force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
     if return_code:
       # This is the return code of the remote command.  Problems with SSH itself
       # will result in ssh.CommandError being raised above.

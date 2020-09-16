@@ -24,7 +24,6 @@ from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import flags
-from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
@@ -116,11 +115,6 @@ class Update(base.UpdateCommand):
     location = location_get(args)
     pool_ref = adapter.ParseNodePool(args.name, location)
     options = self.ParseUpdateNodePoolOptions(args)
-
-    if options.enable_autorepair is not None:
-      log.status.Print(
-          messages.AutoUpdateUpgradeRepairMessage(options.enable_autorepair,
-                                                  'autorepair'))
 
     try:
       operation_ref = adapter.UpdateNodePool(pool_ref, options)

@@ -51,6 +51,6 @@ class GetCsr(base.Command):
     messages = privateca_base.GetMessagesModule()
     ca_ref = args.CONCEPTS.certificate_authority.Parse()
 
-    return client.projects_locations_certificateAuthorities.GetCsr(
-        messages.PrivatecaProjectsLocationsCertificateAuthoritiesGetCsrRequest(
+    return client.projects_locations_certificateAuthorities.Fetch(
+        messages.PrivatecaProjectsLocationsCertificateAuthoritiesFetchRequest(
             name=ca_ref.RelativeName()))

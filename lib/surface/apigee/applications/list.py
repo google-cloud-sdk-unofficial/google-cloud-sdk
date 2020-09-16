@@ -32,8 +32,6 @@ class List(base.ListCommand):
   """List Apigee applications."""
 
   detailed_help = {
-      "DESCRIPTION":
-          "List Apigee applications.",
       "EXAMPLES":
           """
           To list all Apigee applications in the active Cloud Platform project,
@@ -43,9 +41,9 @@ class List(base.ListCommand):
 
           To list all Apigee applications belonging to the developer
           ``horse@example.com'' in an Apigee organization called ``my-org'',
-          run:
+          formatted as JSON, run:
 
-              $ {command} --developer=horse@example.com --organization=my-org
+              $ {command} --developer=horse@example.com --organization=my-org --format=json
           """
   }
 
@@ -58,10 +56,12 @@ class List(base.ListCommand):
     resource_args.AddSingleResourceArgument(
         parser,
         "organization.developer",
-        "The Apigee organization, and optionally developer, whose applications "
-        "should be listed.",
+        "Apigee organization, and optionally developer, whose applications "
+        "should be listed. If developer is not specified, all developers will "
+        "be listed.\n\n"
+        "To get a list of valid developers, run:\n\n"
+        "    $ {grandparent_command} developers list\n\n",
         positional=False,
-        help_texts={"organization": "The organization for the applications."},
         fallthroughs=fallthroughs)
     parser.display_info.AddFormat("table(appId, name)")
 

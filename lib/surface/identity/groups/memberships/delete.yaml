@@ -45,3 +45,7 @@
       required: true
       help_text: |
         The email address of the group or user being removed from the group identified by group-email.
+
+  input:
+    confirmation_prompt: |
+      You are about to delete a membership.

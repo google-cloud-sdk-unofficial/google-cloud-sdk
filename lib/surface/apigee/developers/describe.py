@@ -39,9 +39,10 @@ class Describe(base.DescribeCommand):
 
               $ {command} larry@example.com
 
-          To describe that developer in the Apigee organization ``my-org'', run:
+          To describe that developer in the Apigee organization ``my-org'',
+          formatted as a JSON object, run:
 
-              $ {command} --organization=my-org larry@example.com
+              $ {command} larry@example.com --organization=my-org --format=json
           """
   }
 
@@ -49,7 +50,8 @@ class Describe(base.DescribeCommand):
   def Args(parser):
     resource_args.AddSingleResourceArgument(
         parser, "organization.developer",
-        "The developer to be described.",
+        "Email address of the developer to be described. To get a list of "
+        "available developers, run `{parent_command} list`.",
         fallthroughs=[defaults.GCPProductOrganizationFallthrough()])
 
   def Run(self, args):

@@ -30,7 +30,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import constants
 from googlecloudsdk.command_lib.container import container_command_util as cmd_util
 from googlecloudsdk.command_lib.container import flags
-from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
@@ -218,11 +217,6 @@ class Create(base.CreateCommand):
                     'instance metadata endpoints disabled, run '
                     '`node-pools create` with the flag '
                     '`--metadata disable-legacy-endpoints=true`.')
-
-      if options.enable_autorepair is not None:
-        log.status.Print(
-            messages.AutoUpdateUpgradeRepairMessage(options.enable_autorepair,
-                                                    'autorepair'))
 
       if options.accelerators is not None:
         log.status.Print(constants.KUBERNETES_GPU_LIMITATION_MSG)

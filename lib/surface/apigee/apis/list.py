@@ -27,21 +27,29 @@ class List(base.ListCommand):
   """List Apigee API proxies."""
 
   detailed_help = {
-      "EXAMPLES": """\
+      "EXAMPLES":
+          """\
   To list all API proxies for the active Cloud Platform project, run:
 
       $ {command}
 
-  To list all API proxies in an Apigee organization called ``my-org'', run:
+  To list all API proxies in an organization called ``my-org'', run:
 
       $ {command} --organization=my-org
+
+  To list all API proxies in an organization called ``my-org'', formatted as a
+  JSON array, run:
+
+      $ {command} --organization=my-org --format=json
   """}
 
   @staticmethod
   def Args(parser):
     resource_args.AddSingleResourceArgument(
         parser, "organization",
-        "The organization whose API proxies should be listed.",
+        "Apigee organization whose API proxies should be listed. If "
+        "unspecified, the Cloud Platform project's associated organization "
+        "will be used.",
         positional=False, required=True,
         fallthroughs=[defaults.GCPProductOrganizationFallthrough()])
     parser.display_info.AddFormat("list")

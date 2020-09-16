@@ -27,7 +27,7 @@ _DETAILED_HELP = {
         '{description}',
     'EXAMPLES':
         """ \
-        To describe the trigger 'my-trigger', run:
+        To describe the trigger ``my-trigger'', run:
 
           $ {command} my-trigger
         """,

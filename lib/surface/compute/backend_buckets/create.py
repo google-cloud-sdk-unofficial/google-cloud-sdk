@@ -67,15 +67,18 @@ class Create(base.CreateCommand):
         bucketName=args.gcs_bucket_name,
         enableCdn=enable_cdn)
 
-    if self._support_flexible_cache_step_one \
-        and args.custom_response_header is not None:
-      backend_bucket.customResponseHeaders = args.custom_response_header
-
     backend_buckets_utils.ApplyCdnPolicyArgs(
         client,
         args,
         backend_bucket,
         support_flexible_cache_step_one=self._support_flexible_cache_step_one)
+
+    if self._support_flexible_cache_step_one:
+      if args.custom_response_header is not None:
+        backend_bucket.customResponseHeaders = args.custom_response_header
+      if (backend_bucket.cdnPolicy is not None and
+          backend_bucket.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
+        backend_bucket.enableCdn = True
 
     return backend_bucket
 

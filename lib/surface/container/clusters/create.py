@@ -32,7 +32,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import constants
 from googlecloudsdk.command_lib.container import container_command_util as cmd_util
 from googlecloudsdk.command_lib.container import flags
-from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -161,11 +160,14 @@ def ParseCreateOptionsBase(args, is_autogke, get_default):
   enable_autorepair = False
   if hasattr(args, 'enable_autorepair'):
     enable_autorepair = cmd_util.GetAutoRepair(args)
-    flags.WarnForNodeModification(args, enable_autorepair)
+    if enable_autorepair:
+      flags.WarnForNodeModification(args, enable_autorepair)
 
   metadata = metadata_utils.ConstructMetadataDict(
       get_default('metadata'), get_default('metadata_from_file'))
 
+  flags.ValidateCloudRunConfigCreateArgs(
+      get_default('cloud_run_config'), get_default('addons'))
   return api_adapter.CreateClusterOptions(
       accelerators=get_default('accelerator'),
       additional_zones=get_default('additional_zones'),
@@ -174,6 +176,7 @@ def ParseCreateOptionsBase(args, is_autogke, get_default):
       cluster_ipv4_cidr=get_default('cluster_ipv4_cidr'),
       cluster_secondary_range_name=get_default('cluster_secondary_range_name'),
       cluster_version=get_default('cluster_version'),
+      cloud_run_config=get_default('cloud_run_config'),
       node_version=get_default('node_version'),
       create_subnetwork=get_default('create_subnetwork'),
       disable_default_snat=get_default('disable_default_snat'),
@@ -198,6 +201,7 @@ def ParseCreateOptionsBase(args, is_autogke, get_default):
       enable_network_policy=get_default('enable_network_policy'),
       enable_private_nodes=get_default('enable_private_nodes'),
       enable_private_endpoint=get_default('enable_private_endpoint'),
+      enable_gke_oidc=getattr(args, 'enable_gke_oidc', None),
       image_type=get_default('image_type'),
       image=get_default('image'),
       image_project=get_default('image_project'),
@@ -291,10 +295,6 @@ def AddEnableAutoUpgradeWithDefault(parser):
   flags.AddEnableAutoUpgradeFlag(parser, default=True)
 
 
-def AddAutoprovisioningGA(parser):
-  flags.AddAutoprovisioningFlags(parser, hidden=False, for_create=True, ga=True)
-
-
 def AddAutoprovisioning(parser):
   flags.AddAutoprovisioningFlags(parser, hidden=False, for_create=True)
 
@@ -339,7 +339,7 @@ flags_to_add = {
         'additionalzones': _AddAdditionalZonesFlag,
         'addons': flags.AddAddonsFlags,
         'autorepair': AddAutoRepair,
-        'autoprovisioning': AddAutoprovisioningGA,
+        'autoprovisioning': AddAutoprovisioning,
         'autoupgrade': AddEnableAutoUpgradeWithDefault,
         'args': _Args,
         'basicauth': flags.AddBasicAuthFlags,
@@ -348,6 +348,7 @@ flags_to_add = {
         'cloudlogging': flags.AddEnableCloudLogging,
         'cloudmonitoring': flags.AddEnableCloudMonitoring,
         'cloudrunalpha': flags.AddEnableCloudRunAlphaFlag,
+        'cloudrunconfig': flags.AddCloudRunConfigFlag,
         'clusterautoscaling': flags.AddClusterAutoscalingFlags,
         'clusterversion': flags.AddClusterVersionFlag,
         'disabledefaultsnat': AddDisableDefaultSnatFlagForClusterCreate,
@@ -427,6 +428,8 @@ flags_to_add = {
             flags.AddEnableCloudMonitoring,
         'cloudrunalpha':
             flags.AddEnableCloudRunAlphaFlag,
+        'cloudrunconfig':
+            flags.AddCloudRunConfigFlag,
         'clusterautoscaling':
             flags.AddClusterAutoscalingFlags,
         'clusterversion':
@@ -462,6 +465,8 @@ flags_to_add = {
             AddKubernetesObjectsExportFlag,
         'gvnic':
             flags.AddEnableGvnicFlag,
+        'gkeoidc':
+            flags.AddGkeOidcFlag,
         'localssd':
             flags.AddLocalSSDFlag,
         'loggingmonitoring':
@@ -594,6 +599,8 @@ flags_to_add = {
             flags.AddDiskSizeFlag,
         'disktype':
             flags.AddDiskTypeFlag,
+        'gkeoidc':
+            flags.AddGkeOidcFlag,
         'gvnic':
             flags.AddEnableGvnicFlag,
         'ilbsubsetting':
@@ -810,11 +817,6 @@ class Create(base.CreateCommand):
           throw_if_unattended=True,
           cancel_on_no=True)
 
-    if options.enable_autorepair is not None:
-      log.status.Print(
-          messages.AutoUpdateUpgradeRepairMessage(options.enable_autorepair,
-                                                  'autorepair'))
-
     if options.accelerators is not None:
       log.status.Print(constants.KUBERNETES_GPU_LIMITATION_MSG)
 
@@ -914,8 +916,6 @@ class CreateAlpha(Create):
     ops = ParseCreateOptionsBase(args, self.autogke, get_default)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
-    flags.ValidateCloudRunConfigCreateArgs(
-        get_default('cloud_run_config'), get_default('addons'))
     flags.ValidateNotificationConfigFlag(args)
     ops.boot_disk_kms_key = get_default('boot_disk_kms_key')
     ops.autoscaling_profile = get_default('autoscaling_profile')
@@ -929,7 +929,6 @@ class CreateAlpha(Create):
     ops.enable_tpu_service_networking = \
         get_default('enable_tpu_service_networking')
     ops.istio_config = get_default('istio_config')
-    ops.cloud_run_config = get_default('cloud_run_config')
     ops.security_group = get_default('security_group')
     flags.ValidateIstioConfigCreateArgs(
         get_default('istio_config'), get_default('addons'))

@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.assured import endpoint_util
 from googlecloudsdk.api_lib.assured import workloads as apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.assured import flags
+import six
 
 _DETAILED_HELP = {
     'DESCRIPTION':
@@ -38,8 +39,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-# TODO(b/166763653): Should also release to Alpha
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe Assured Workloads environment."""
 
@@ -52,6 +52,7 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     """Run the describe command."""
     with endpoint_util.AssuredWorkloadsEndpointOverridesFromResource(
+        release_track=six.text_type(self.ReleaseTrack()),
         resource=args.resource):
-      client = apis.WorkloadsClient()
+      client = apis.WorkloadsClient(self.ReleaseTrack())
       return client.Describe(name=args.resource)

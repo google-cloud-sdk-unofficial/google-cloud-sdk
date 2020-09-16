@@ -269,6 +269,7 @@ class Update(base.UpdateCommand):
     flags.AddStartCredentialRotationFlag(group)
     flags.AddCompleteIpRotationFlag(group)
     flags.AddCompleteCredentialRotationFlag(group)
+    flags.AddCloudRunConfigFlag(parser)
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group)
@@ -288,7 +289,7 @@ class Update(base.UpdateCommand):
     flags.AddDisableDatabaseEncryptionFlag(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
     flags.AddVerticalPodAutoscalingFlag(group)
-    flags.AddAutoprovisioningFlags(group, ga=True)
+    flags.AddAutoprovisioningFlags(group)
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddMasterGlobalAccessFlag(group, is_update=True)
 
@@ -304,6 +305,9 @@ class Update(base.UpdateCommand):
     opts.enable_master_global_access = args.enable_master_global_access
     opts.enable_shielded_nodes = args.enable_shielded_nodes
     opts.release_channel = args.release_channel
+    flags.ValidateCloudRunConfigUpdateArgs(args.cloud_run_config,
+                                           args.disable_addons)
+    opts.cloud_run_config = args.cloud_run_config
     if args.disable_addons and api_adapter.NODELOCALDNS in args.disable_addons:
       # NodeLocalDNS is being enabled or disabled
       console_io.PromptContinue(
@@ -591,9 +595,11 @@ class UpdateBeta(Update):
     flags.AddVerticalPodAutoscalingFlag(group)
     flags.AddResourceUsageExportFlags(group, is_update=True)
     flags.AddIstioConfigFlag(parser)
+    flags.AddCloudRunConfigFlag(parser)
     flags.AddEnableIntraNodeVisibilityFlag(group)
     flags.AddWorkloadIdentityFlags(group, use_identity_provider=True)
     flags.AddWorkloadIdentityUpdateFlags(group)
+    flags.AddGkeOidcFlag(group)
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
     flags.AddReleaseChannelFlag(group, is_update=True, hidden=False)
@@ -611,6 +617,7 @@ class UpdateBeta(Update):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
     opts.enable_pod_security_policy = args.enable_pod_security_policy
     opts.istio_config = args.istio_config
+    opts.cloud_run_config = args.cloud_run_config
     opts.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     opts.enable_intra_node_visibility = args.enable_intra_node_visibility
     opts.clear_resource_usage_bigquery_dataset = \
@@ -618,6 +625,8 @@ class UpdateBeta(Update):
     opts.enable_network_egress_metering = args.enable_network_egress_metering
     opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
+    flags.ValidateCloudRunConfigUpdateArgs(args.cloud_run_config,
+                                           args.disable_addons)
     if args.disable_addons and api_adapter.NODELOCALDNS in args.disable_addons:
       # NodeLocalDNS is being enabled or disabled
       console_io.PromptContinue(
@@ -660,6 +669,7 @@ class UpdateBeta(Update):
     opts.private_ipv6_google_access_type = args.private_ipv6_google_access_type
     opts.kubernetes_objects_changes_target = args.kubernetes_objects_changes_target
     opts.kubernetes_objects_snapshots_target = args.kubernetes_objects_snapshots_target
+    opts.enable_gke_oidc = args.enable_gke_oidc
 
     return opts
 
@@ -707,6 +717,7 @@ class UpdateAlpha(Update):
     flags.AddEnableIntraNodeVisibilityFlag(group)
     flags.AddWorkloadIdentityFlags(group, use_identity_provider=True)
     flags.AddWorkloadIdentityUpdateFlags(group)
+    flags.AddGkeOidcFlag(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
@@ -778,5 +789,6 @@ class UpdateAlpha(Update):
     opts.private_ipv6_google_access_type = args.private_ipv6_google_access_type
     opts.kubernetes_objects_changes_target = args.kubernetes_objects_changes_target
     opts.kubernetes_objects_snapshots_target = args.kubernetes_objects_snapshots_target
+    opts.enable_gke_oidc = args.enable_gke_oidc
 
     return opts

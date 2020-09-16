@@ -23,7 +23,6 @@ import sys
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import exceptions
-from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import creds as c_creds
 from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.docker import credential_utils
@@ -59,9 +58,7 @@ class DockerHelper(base.Command):
       }
 
     elif args.method == DockerHelper.GET:
-      use_google_auth = (
-          not properties.VALUES.auth.disable_load_google_auth.GetBool())
-      cred = c_store.Load(use_google_auth=use_google_auth)
+      cred = c_store.Load(use_google_auth=True)
       c_store.RefreshIfExpireWithinWindow(cred, window=TOKEN_MIN_LIFETIME)
       url = sys.stdin.read().strip()
       if (url.replace('https://', '',
