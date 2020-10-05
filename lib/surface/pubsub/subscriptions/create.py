@@ -150,8 +150,7 @@ class CreateBeta(Create):
         'to create.',
         plural=True)
     resource_args.AddResourceArgs(parser, [topic, subscription])
-    flags.AddSubscriptionSettingsFlags(
-        parser, support_message_ordering=True, support_filtering=True)
+    flags.AddSubscriptionSettingsFlags(parser, support_filtering=True)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):

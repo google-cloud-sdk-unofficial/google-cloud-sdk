@@ -223,6 +223,12 @@ def AddAnalyzeServiceAccountImpersonationArgs(parser):
   parser.set_defaults(analyze_service_account_impersonation=False)
 
 
+@base.Deprecate(
+    is_removed=True,
+    warning=('This command is deprecated. '
+             'Please use `gcloud beta asset analyze-iam-policy` instead.'),
+    error=('This command has been removed. '
+           'Please use `gcloud beta asset analyze-iam-policy` instead.'))
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AnalyzeIamPolicy(base.Command):
   """Analyzes accessible IAM policies that match a request."""

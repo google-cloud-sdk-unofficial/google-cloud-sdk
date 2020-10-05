@@ -150,6 +150,7 @@ class SshAlpha(base.Command):
   @staticmethod
   def Args(parser):
     util.ParseCommonArgs(parser)
+    util.AddSshArgFlag(parser)
     parser.add_argument(
         '--command',
         help="""\
@@ -198,6 +199,7 @@ class SshAlpha(base.Command):
         extra_flags=args.ssh_flag,
         tty=not args.command,
         options={'StrictHostKeyChecking': 'no'},
+        remainder=args.ssh_args if args.ssh_args else None
     )
 
     if args.dry_run:

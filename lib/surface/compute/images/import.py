@@ -44,11 +44,6 @@ _WORKFLOWS_URL = ('https://github.com/GoogleCloudPlatform/compute-image-tools/'
 _OUTPUT_FILTER = ['[Daisy', '[import-', 'starting build', '  import', 'ERROR']
 
 
-def _IsLocalFile(file_name):
-  return not (file_name.startswith('gs://') or
-              file_name.startswith('https://'))
-
-
 def _AppendTranslateWorkflowArg(args, import_args):
   if args.os:
     daisy_utils.AppendArg(import_args, 'os', args.os)
@@ -217,14 +212,20 @@ class Import(base.CreateCommand):
     return self._RunImageImport(args, import_metadata, tags, _OUTPUT_FILTER)
 
   def _RunImageImport(self, args, import_args, tags, output_filter):
-    return daisy_utils.RunImageImport(args, import_args, tags, _OUTPUT_FILTER)
+    return daisy_utils.RunImageImport(
+        args,
+        import_args,
+        tags,
+        _OUTPUT_FILTER,
+        release_track=self.ReleaseTrack().id.lower()
+        if self.ReleaseTrack() else None)
 
   def _CreateImportStager(self, args):
     if args.source_image:
       return ImportFromImageStager(
           self.storage_client, args)
 
-    if _IsLocalFile(args.source_file):
+    if daisy_utils.IsLocalFile(args.source_file):
       return ImportFromLocalFileStager(
           self.storage_client, args)
 
@@ -287,11 +288,8 @@ class BaseImportStager(object):
     return import_args
 
   def GetAndCreateDaisyBucket(self):
-    bucket_location = self.GetBucketLocation()
-    bucket_name = daisy_utils.GetDaisyBucketName(bucket_location)
-    self.storage_client.CreateBucketIfNotExists(
-        bucket_name, location=bucket_location)
-    return bucket_name
+    return daisy_utils.CreateDaisyBucketInProject(self.GetBucketLocation(),
+                                                  self.storage_client)
 
   def GetBucketLocation(self):
     if self.args.storage_location:
@@ -342,14 +340,14 @@ class BaseImportFromFileStager(BaseImportStager):
   def _FileStage(self):
     """Prepare image file for importing."""
     # If the file is an OVA file, print a warning.
-    if self.args.source_file.endswith('.ova'):
+    if self.args.source_file.lower().endswith('.ova'):
       log.warning(
           'The specified input file may contain more than one virtual disk. '
           'Only the first vmdk disk will be imported. To import a .ova'
-          'completely, please try \'gcloud beta compute instances import\''
+          'completely, please try \'gcloud compute instances import\''
           'instead.')
-    elif (self.args.source_file.endswith('.tar.gz')
-          or self.args.source_file.endswith('.tgz')):
+    elif (self.args.source_file.lower().endswith('.tar.gz')
+          or self.args.source_file.lower().endswith('.tgz')):
       raise exceptions.BadFileException(
           '`gcloud compute images import` does not support compressed '
           'archives. Please extract your image and try again.\n If you got '
@@ -429,8 +427,14 @@ class ImportBeta(Import):
     daisy_utils.AddExtraCommonDaisyArgs(parser)
 
   def _RunImageImport(self, args, import_args, tags, output_filter):
-    return daisy_utils.RunImageImport(args, import_args, tags, _OUTPUT_FILTER,
-                                      args.docker_image_tag)
+    return daisy_utils.RunImageImport(
+        args,
+        import_args,
+        tags,
+        _OUTPUT_FILTER,
+        release_track=self.ReleaseTrack().id.lower()
+        if self.ReleaseTrack() else None,
+        docker_image_tag=args.docker_image_tag)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

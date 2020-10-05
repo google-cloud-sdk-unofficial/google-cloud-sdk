@@ -94,6 +94,8 @@ def _CommonArgs(parser,
   instances_flags.AddPrivateNetworkIpArgs(parser)
   instances_flags.AddMinNodeCpuArg(parser)
 
+  instance_templates_flags.AddServiceProxyConfigArgs(parser)
+
   sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
 
   if support_location_hint:
@@ -723,7 +725,6 @@ class CreateBeta(Create):
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)
     instances_flags.AddConfidentialComputeArgs(parser)
-    instance_templates_flags.AddServiceProxyConfigArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.
@@ -783,7 +784,6 @@ class CreateAlpha(Create):
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddConfidentialComputeArgs(parser)
-    instance_templates_flags.AddServiceProxyConfigArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)

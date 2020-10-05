@@ -26,30 +26,28 @@ from googlecloudsdk.command_lib.vmware import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          Create a vmware privatecloud.
+          Create a VMware Engine private cloud.
         """,
     'EXAMPLES':
         """
-      To create a privatecloud called example-privatecloud in project my-project and location us-central1:
+          To create a private cloud called ``my-privatecloud'' in project
+          ``my-project'' and location ``us-central1'', run:
 
-      $ {command} example-privatecloud
+            $ {command} my-privatecloud --project=my-project --location=us-central1
 
-    Or:
+          Or:
 
-      $ {command} example-privatecloud --project=my-project --location=us-central1
+            $ {command} my-privatecloud
 
-    Or:
-
-      $ {command} /projects/my-project/locations/us-central1/example-privatecloud
-
-    In the first example, the project and location are taken from gcloud properties core/project and vmware/location.
+          In the second example, the project and location are taken from gcloud
+          properties core/project and vmware/location.
     """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Create a Cloud VMware privatecloud."""
+  """Create a VMware Engine private cloud."""
 
   @staticmethod
   def Args(parser):

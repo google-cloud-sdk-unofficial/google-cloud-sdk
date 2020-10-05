@@ -123,7 +123,13 @@ class Export(base.CreateCommand):
     return self._RunImageExport(args, export_args, tags, _OUTPUT_FILTER)
 
   def _RunImageExport(self, args, export_args, tags, output_filter):
-    return daisy_utils.RunImageExport(args, export_args, tags, _OUTPUT_FILTER)
+    return daisy_utils.RunImageExport(
+        args,
+        export_args,
+        tags,
+        _OUTPUT_FILTER,
+        release_track=self.ReleaseTrack().id.lower()
+        if self.ReleaseTrack() else None)
 
   def _GetSourceImage(self, image, image_family, image_project):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -142,10 +148,8 @@ class Export(base.CreateCommand):
     storage_client = storage_api.StorageClient()
     bucket_location = storage_client.GetBucketLocationForFile(
         args.destination_uri)
-    bucket_name = daisy_utils.GetDaisyBucketName(bucket_location)
-    storage_client.CreateBucketIfNotExists(bucket_name,
-                                           location=bucket_location)
-    return bucket_name
+    return daisy_utils.CreateDaisyBucketInProject(bucket_location,
+                                                  storage_client)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -158,8 +162,14 @@ class ExportBeta(Export):
     daisy_utils.AddExtraCommonDaisyArgs(parser)
 
   def _RunImageExport(self, args, export_args, tags, output_filter):
-    return daisy_utils.RunImageExport(args, export_args, tags, _OUTPUT_FILTER,
-                                      args.docker_image_tag)
+    return daisy_utils.RunImageExport(
+        args,
+        export_args,
+        tags,
+        _OUTPUT_FILTER,
+        release_track=self.ReleaseTrack().id.lower()
+        if self.ReleaseTrack() else None,
+        docker_image_tag=args.docker_image_tag)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

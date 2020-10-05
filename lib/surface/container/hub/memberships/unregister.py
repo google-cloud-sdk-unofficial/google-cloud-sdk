@@ -100,8 +100,8 @@ class Unregister(base.DeleteCommand):
     )
     hub_util.AddUnRegisterCommonArgs(parser)
 
-    # Keep this hidden as it is not used for user-facing workflows and will
-    # be eliminated in beta.
+    # Keep this hidden as it is not used for user-facing workflows and is
+    # eliminated in beta.
     if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
       workload_identity = parser.add_group(
           help='Workload Identity', hidden=True)
@@ -160,7 +160,7 @@ class Unregister(base.DeleteCommand):
           .format(name, args.CLUSTER_NAME))
 
     # enable_workload_identity and manage_workload_identity_bucket are only
-    # properties if we are on the alpha track
+    # properties if we are on the alpha track.
     if (self.ReleaseTrack() is base.ReleaseTrack.ALPHA and
         args.manage_workload_identity_bucket):
       # The issuer URL from the cluster indicates which bucket to delete.

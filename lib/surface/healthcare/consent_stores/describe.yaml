@@ -1,4 +1,6 @@
-- help_text:
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
     brief:  Describe a Cloud Healthcare API consent store.
     description: Describe a Cloud Healthcare API consent store.
     examples: |
@@ -8,7 +10,10 @@
 
   request:
     collection: healthcare.projects.locations.datasets.consentStores
-    api_version: v1alpha2
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
 
   arguments:
     resource:

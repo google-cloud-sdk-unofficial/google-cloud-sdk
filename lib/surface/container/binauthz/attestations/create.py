@@ -114,6 +114,15 @@ class Create(base.CreateCommand):
           expressed as a 40 character hexadecimal string. See
           https://tools.ietf.org/html/rfc4880#section-12.2 for details."""))
 
+    parser.add_argument(
+        '--validate',
+        action='store_true',
+        default=False,
+        help=textwrap.dedent("""\
+          Whether to validate that the Attestation can be verified by the
+          provided Attestor.
+        """))
+
   def Run(self, args):
     project_ref = resources.REGISTRY.Parse(
         properties.VALUES.core.project.Get(required=True),
@@ -137,6 +146,17 @@ class Create(base.CreateCommand):
         'containeranalysis.projects.notes',
         client.GetNoteAttr(attestor).noteReference, {})
 
+    validation_enabled = 'validate' in args and args.validate
+    validation_callback = functools.partial(
+        validation.validate_attestation,
+        attestor_ref=attestor_ref,
+        # Call V1 API for validation when using the alpha track. (The beta track
+        # uses V1Beta1, which is mapped to the same service as V1.)
+        # TODO(b/159263189): Replace with just api_version after removing
+        # ValidationHelperV1Alpha2 service.
+        api_version=apis.V1
+        if self.ReleaseTrack() == base.ReleaseTrack.ALPHA else api_version)
+
     return containeranalysis.Client().CreateAttestationOccurrence(
         project_ref=project_ref,
         note_ref=note_ref,
@@ -144,6 +164,8 @@ class Create(base.CreateCommand):
         public_key_id=args.public_key_id,
         signature=signature,
         plaintext=payload,
+        validation_callback=(validation_callback
+                             if validation_enabled else None),
     )
 
 
@@ -195,6 +217,14 @@ class CreateWithPkixSupport(base.CreateCommand):
           formatting, you must explicitly provide the payload content via this
           flag.
           """))
+    parser.add_argument(
+        '--validate',
+        action='store_true',
+        default=False,
+        help=textwrap.dedent("""\
+          Whether to validate that the Attestation can be verified by the
+          provided Attestor.
+        """))
 
     flags.AddConcepts(
         parser,
@@ -229,16 +259,6 @@ class CreateWithPkixSupport(base.CreateCommand):
           expressed as a 40 character hexadecimal string. See
           https://tools.ietf.org/html/rfc4880#section-12.2 for details."""))
 
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      parser.add_argument(
-          '--validate',
-          action='store_true',
-          default=False,
-          help=textwrap.dedent("""\
-            Whether to validate that the Attestation can be verified by the
-            provided Attestor.
-          """))
-
   def Run(self, args):
     project_ref = resources.REGISTRY.Parse(
         properties.VALUES.core.project.Get(required=True),
@@ -265,7 +285,12 @@ class CreateWithPkixSupport(base.CreateCommand):
     validation_callback = functools.partial(
         validation.validate_attestation,
         attestor_ref=attestor_ref,
-        api_version=api_version)
+        # Call V1 API for validation when using the alpha track. (The beta track
+        # uses V1Beta1, which is mapped to the same service as V1.)
+        # TODO(b/159263189): Replace with just api_version after removing
+        # ValidationHelperV1Alpha2 service.
+        api_version=apis.V1
+        if self.ReleaseTrack() == base.ReleaseTrack.ALPHA else api_version)
 
     client = containeranalysis.Client(
         ca_apis.GetApiVersion(self.ReleaseTrack()))

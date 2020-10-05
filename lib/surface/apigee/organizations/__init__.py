@@ -23,3 +23,27 @@ from googlecloudsdk.calliope import base
 
 class Organizations(base.Group):
   """Manage Apigee organizations."""
+
+  detailed_help = {
+      "DESCRIPTION":
+          """\
+  {description}
+
+  `{command}` contains commands for managing Apigee organizations, the
+  highest-level grouping of Apigee objects. All API proxies, environments, and
+  so forth each belong to one organization.
+
+  Apigee organizations are distinct from Cloud Platform organizations, being
+  more similar to Cloud Platform projects in scope and purpose.
+          """,
+      "EXAMPLES":
+          """\
+  To list all accessible organizations and their associated Cloud Platform projects, run:
+
+      $ {command} list
+
+  To get a JSON array of all organizations whose Cloud Platform project names
+  contain the word ``sandbox'', run:
+
+      $ {command} list --format=json --filter="project:(sandbox)"
+  """}

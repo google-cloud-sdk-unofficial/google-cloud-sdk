@@ -58,12 +58,16 @@ class Create(base.CreateCommand):
     flags.AddCreatePushQueueFlags(parser)
 
   def Run(self, args):
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      queue_type = args.type
+    else:
+      queue_type = constants.PUSH_QUEUE
     api = GetApiAdapter(self.ReleaseTrack())
     queues_client = api.queues
     queue_ref = parsers.ParseQueue(args.queue, args.location)
     location_ref = parsers.ExtractLocationRefFromQueueRef(queue_ref)
     queue_config = parsers.ParseCreateOrUpdateQueueArgs(
-        args, constants.PUSH_QUEUE, api.messages,
+        args, queue_type, api.messages,
         release_track=self.ReleaseTrack())
     log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
@@ -80,7 +84,8 @@ class Create(base.CreateCommand):
           retry_config=queue_config.retryConfig,
           rate_limits=queue_config.rateLimits,
           app_engine_http_queue=queue_config.appEngineHttpQueue,
-          stackdriver_logging_config=queue_config.stackdriverLoggingConfig)
+          stackdriver_logging_config=queue_config.stackdriverLoggingConfig,
+          queue_type=queue_config.type)
     else:
       create_response = queues_client.Create(
           location_ref,

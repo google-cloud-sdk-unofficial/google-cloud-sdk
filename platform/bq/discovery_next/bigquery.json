@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20200821",
+ "revision": "20200923",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -2812,7 +2812,7 @@
     },
     "type": {
      "type": "string",
-     "description": "[Required] The only type supported is DAY, which will generate one partition per day."
+     "description": "[Required] The supported types are DAY, HOUR, MONTH, and YEAR, which will generate one partition per day, hour, month, and year, respectively. When the type is not specified, the default behavior is DAY."
     }
    }
   },

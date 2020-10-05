@@ -69,10 +69,11 @@ class Update(base.UpdateCommand):
           labels_cls, labels=old_attachment.labels).GetOrNone()
       if labels is not None:
         label_fingerprint = old_attachment.labelFingerprint
+    admin_enabled = attachment_flags.GetAdminEnabledFlag(args)
 
     return interconnect_attachment.PatchAlphaAndBeta(
         description=args.description,
-        admin_enabled=args.admin_enabled,
+        admin_enabled=admin_enabled,
         labels=labels,
         label_fingerprint=label_fingerprint,
         mtu=getattr(args, 'mtu', None))
@@ -104,9 +105,10 @@ class GaUpdate(Update):
 
     interconnect_attachment = client.InterconnectAttachment(
         attachment_ref, compute_client=holder.client)
+    admin_enabled = attachment_flags.GetAdminEnabledFlag(args)
 
     return interconnect_attachment.PatchGa(
-        description=args.description, admin_enabled=args.admin_enabled)
+        description=args.description, admin_enabled=admin_enabled)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

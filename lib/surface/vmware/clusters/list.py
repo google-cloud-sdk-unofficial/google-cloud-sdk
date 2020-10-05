@@ -25,20 +25,20 @@ from googlecloudsdk.command_lib.vmware import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          list VMware clusters in a privatecloud.
+          List clusters in a VMware Engine private cloud.
         """,
     'EXAMPLES':
         """
+          To list clusters in the ``my-privatecloud'' private cloud, run:
 
-      $ {command} --cluster-group=my-privatecloud
-
+            $ {command} --privatecloud=my-privatecloud
     """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List Cloud VMware clusters."""
+  """List clusters in a VMware Engine private cloud."""
 
   @staticmethod
   def Args(parser):

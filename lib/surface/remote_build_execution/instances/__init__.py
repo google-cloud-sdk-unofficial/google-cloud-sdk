@@ -25,5 +25,6 @@ from googlecloudsdk.calliope import base
 class Instances(base.Group):
   """Manage Remote Build Execution Instances.
 
-     Create, delete, list, and view instances for remote build execution.
+     Create, delete, list, and view instances for remote build execution. Also
+     manage per-instance feature policies.
   """

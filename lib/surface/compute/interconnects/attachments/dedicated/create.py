@@ -88,13 +88,15 @@ class Create(base.CreateCommand):
     if args.router is not None:
       router_ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
 
+    admin_enabled = attachment_flags.GetAdminEnabledFlag(args)
+
     return interconnect_attachment.CreateAlpha(
         description=args.description,
         interconnect=interconnect_ref,
         attachment_type='DEDICATED',
         router=router_ref,
         vlan_tag_802_1q=args.vlan,
-        admin_enabled=args.admin_enabled,
+        admin_enabled=admin_enabled,
         candidate_subnets=args.candidate_subnets,
         bandwidth=getattr(args, 'bandwidth', None),
         validate_only=getattr(args, 'dry_run', None),

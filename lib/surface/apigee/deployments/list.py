@@ -29,10 +29,11 @@ class List(base.ListCommand):
 
   detailed_help = {
       "DESCRIPTION":
-          """{description}
+          """\
+          {description}
 
-          {command} can filter listed deployments by environment, API proxy,
-          proxy revision, or a combination of these.
+          `{command}` lists deployments of API proxies, optionally filtered by
+          environment, proxy name, proxy revision, or a combination of these.
           """,
       "EXAMPLES":
           """
@@ -51,9 +52,9 @@ class List(base.ListCommand):
               $ {command} --api=my-proxy
 
           To list all deployments to the ``test'' environment of the active
-          Cloud Platform project, run:
+          Cloud Platform project, formatted as a JSON array, run:
 
-              $ {command} --environment=test
+              $ {command} --environment=test --format=json
 
           To list all deployments of ``my-proxy'' to the ``test'' environment in
           an Apigee organization called ``my-org'', run:
@@ -65,11 +66,17 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     help_text = {
-        "api": "The API proxy whose deployments should be listed. If not "
-               "provided, all proxies will be listed.",
-        "environment": "The environment whose deployments should be listed. "
-                       "If not provided, all environments will be listed.",
-        "organization": "The organization whose deployments should be listed."
+        "api": ("The API proxy whose deployments should be listed. If not "
+                "provided, all proxies will be listed. To get a list of "
+                "existing API proxies, run "
+                "`{{grandparent_command}} apis list`."),
+        "environment": ("The environment whose deployments should be listed. "
+                        "If not provided, all environments will be listed. "
+                        "To get a list of available environments, run "
+                        "`{{grandparent_command}} environments list`."),
+        "organization": ("The organization whose deployments should be listed."
+                         "If unspecified, the Cloud Platform project's "
+                         "associated organization will be used."),
     }
 
     # When Calliope parses a resource's resource arguments, it interprets them
@@ -101,15 +108,15 @@ class List(base.ListCommand):
     resource_args.AddSingleResourceArgument(
         parser,
         "organization.environment.api.revision",
-        "The API proxy revision and environment whose deployments should be "
-        "listed. Providing a `--revision` is only valid if `--api` is also "
-        "specified. If no `--revision` is provided, all deployed revisions "
-        "that match the other arguments will be included.",
+        "API proxy revision and environment whose deployments should be "
+        "listed. Providing a REVISION is only valid if API is also specified. "
+        "If no REVISION is provided, all deployed revisions that match the "
+        "other arguments will be included.",
         positional=False,
         required=True,
         fallthroughs=fallthroughs,
         help_texts=help_text)
-    parser.display_info.AddFormat("list")
+    parser.display_info.AddFormat("table(environment,apiProxy,revision)")
 
   def Run(self, args):
     """Run the list command."""

@@ -27,22 +27,25 @@ class List(base.ListCommand):
   """List Apigee deployment environments."""
 
   detailed_help = {
-      "EXAMPLES": """\
-  To list all Apigee environments for the active Cloud Platform project, run:
+      "EXAMPLES":
+          """\
+  To list all environments for the active Cloud Platform project, run:
 
       $ {command}
 
-  To list all Apigee environments in an Apigee organization called ``my-org'',
+  To get a JSON array of all environments in an organization called ``my-org'',
   run:
 
-      $ {command} --organization=my-org
+      $ {command} --organization=my-org --format=json
   """}
 
   @staticmethod
   def Args(parser):
     resource_args.AddSingleResourceArgument(
         parser, "organization",
-        "The Apigee organization whose environments should be listed.",
+        "Apigee organization whose environments should be listed. If "
+        "unspecified, the Cloud Platform project's associated organization "
+        "will be used.",
         positional=False, required=True,
         fallthroughs=[defaults.GCPProductOrganizationFallthrough()])
     parser.display_info.AddFormat("list")

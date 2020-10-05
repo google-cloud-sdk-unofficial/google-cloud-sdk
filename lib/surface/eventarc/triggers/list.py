@@ -37,7 +37,8 @@ _FORMAT = """ \
 table(
     name.scope("triggers"):label=NAME,
     destination.cloudRunService.service:label=DESTINATION_RUN_SERVICE,
-    destination.cloudRunService.path:label=DESTINATION_RUN_PATH
+    destination.cloudRunService.path:label=DESTINATION_RUN_PATH,
+    updateTime.recently_modified():label=RECENTLY_MODIFIED
 )
 """
 
@@ -51,9 +52,14 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     flags.AddLocationResourceArg(
-        parser, 'The location for which to list triggers.', required=True)
+        parser,
+        "The location for which to list triggers. This should be either "
+        "``global'' or one of the supported regions.",
+        required=True)
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(triggers.GetTriggerURI)
+    parser.display_info.AddTransforms(
+        {'recently_modified': triggers.RecentlyModified})
 
   def Run(self, args):
     """Run the list command."""

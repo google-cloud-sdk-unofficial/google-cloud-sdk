@@ -30,16 +30,6 @@ MESSAGE_FORMAT = """\
 table[box](
   message.data.decode(base64).decode(utf-8),
   message.messageId,
-  message.attributes.list(separator='\n'),
-  deliveryAttempt,
-  ackId.if(NOT auto_ack)
-)
-"""
-
-BETA_MESSAGE_FORMAT = """\
-table[box](
-  message.data.decode(base64).decode(utf-8),
-  message.messageId,
   message.orderingKey,
   message.attributes.list(separator='\n'),
   deliveryAttempt,
@@ -100,7 +90,7 @@ class PullBeta(Pull):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(BETA_MESSAGE_FORMAT)
+    parser.display_info.AddFormat(MESSAGE_FORMAT)
     resource_args.AddSubscriptionResourceArg(parser, 'to pull messages from.')
     flags.AddPullFlags(parser, add_deprecated=True, add_wait=True)
 

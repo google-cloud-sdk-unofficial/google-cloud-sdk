@@ -35,11 +35,11 @@ class CreateScheduled(base.CreateCommand):
           """\
             To create a scheduled trigger for a CSR repository:
 
-              $ {command} --repo-uri="https://source.developers.google.com/p/projectid/r/repo" --repo-type="CLOUD_SOURCE_REPOSITORIES" --revision="refs/heads/master" --build-config="cloudbuild.yaml" --schedule="0 9 * * *" --time-zone="America/New_York"
+              $ {command} --name="my-trigger" --repo-uri="https://source.developers.google.com/p/projectid/r/repo" --repo-type="CLOUD_SOURCE_REPOSITORIES" --revision="refs/heads/master" --build-config="cloudbuild.yaml" --schedule="0 9 * * *" --time-zone="America/New_York"
 
             To create a scheduled trigger for a GitHub repository:
 
-              $ {command} --repo-uri="https://github.com/owner/repo" --repo-type="GITHUB" --revision="refs/heads/master" --build-config="cloudbuild.yaml" --schedule="0 9 * * *" --time-zone="America/New_York"
+              $ {command} --name="my-trigger" --repo-uri="https://github.com/owner/repo" --repo-type="GITHUB" --revision="refs/heads/master" --build-config="cloudbuild.yaml" --schedule="0 9 * * *" --time-zone="America/New_York"
           """,
   }
 
@@ -104,6 +104,7 @@ as GMT).
 """)
     flag_config.add_argument(
         '--description', help='Build trigger description.')
+    flag_config.add_argument('--name', help='Build trigger name.')
 
     trigger_utils.AddBuildFileConfigArgs(flag_config)
 
@@ -140,6 +141,7 @@ as GMT).
           skip_camel_case=['substitutions'])
     else:
       trigger = messages.BuildTrigger(
+          name=args.name,
           description=args.description,
           cron=messages.CronConfig(
               schedule=args.schedule,

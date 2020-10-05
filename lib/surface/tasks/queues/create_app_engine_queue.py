@@ -62,7 +62,8 @@ class CreateAppEngine(base.CreateCommand):
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to create')
     flags.AddLocationFlag(parser)
-    flags.AddCreatePushQueueFlags(parser, release_track=base.ReleaseTrack.BETA)
+    flags.AddCreatePushQueueFlags(
+        parser, release_track=base.ReleaseTrack.BETA, app_engine_queue=True)
 
   def Run(self, args):
     api = GetApiAdapter(self.ReleaseTrack())
@@ -128,4 +129,5 @@ class AlphaCreateAppEngine(CreateAppEngine):
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to create')
     flags.AddLocationFlag(parser)
-    flags.AddCreatePushQueueFlags(parser, release_track=base.ReleaseTrack.ALPHA)
+    flags.AddCreatePushQueueFlags(
+        parser, release_track=base.ReleaseTrack.ALPHA, app_engine_queue=True)
