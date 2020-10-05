@@ -447,6 +447,8 @@ flags_to_add = {
             flags.AddDiskSizeFlag,
         'disktype':
             flags.AddDiskTypeFlag,
+        'gcfs':
+            flags.AddEnableGcfsFlag,
         'imageflags':
             flags.AddImageFlagsCreate,
         'intranodevisibility':
@@ -467,8 +469,8 @@ flags_to_add = {
             flags.AddEnableGvnicFlag,
         'gkeoidc':
             flags.AddGkeOidcFlag,
-        'localssd':
-            flags.AddLocalSSDFlag,
+        'localssds':
+            flags.AddLocalSSDsBetaFlags,
         'loggingmonitoring':
             flags.AddEnableLoggingMonitoringSystemOnlyFlag,
         'labels':
@@ -599,6 +601,8 @@ flags_to_add = {
             flags.AddDiskSizeFlag,
         'disktype':
             flags.AddDiskTypeFlag,
+        'gcfs':
+            flags.AddEnableGcfsFlag,
         'gkeoidc':
             flags.AddGkeOidcFlag,
         'gvnic':
@@ -625,8 +629,8 @@ flags_to_add = {
             flags.AddEnableLegacyAuthorizationFlag,
         'linuxsysctl':
             flags.AddLinuxSysctlFlags,
-        'localssdandlocalssdvol':
-            flags.AddLocalSSDAndLocalSSDVolumeConfigsFlag,
+        'localssds':
+            flags.AddLocalSSDsAlphaFlags,
         'loggingmonitoring':
             flags.AddEnableLoggingMonitoringSystemOnlyFlag,
         'machinetype':
@@ -900,6 +904,7 @@ class CreateBeta(Create):
         getattr(args, 'kubernetes_objects_changes_target', None)
     ops.kubernetes_objects_snapshots_target = \
         getattr(args, 'kubernetes_objects_snapshots_target', None)
+    ops.enable_gcfs = get_default('enable_gcfs')
     return ops
 
 
@@ -968,4 +973,5 @@ class CreateAlpha(Create):
         getattr(args, 'kubernetes_objects_changes_target', None)
     ops.kubernetes_objects_snapshots_target = \
         getattr(args, 'kubernetes_objects_snapshots_target', None)
+    ops.enable_gcfs = get_default('enable_gcfs')
     return ops

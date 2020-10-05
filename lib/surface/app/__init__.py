@@ -58,12 +58,7 @@ DETAILED_HELP = {
         To list all versions of all services of your existing deployments, run:
 
           $ {command} versions list
-
-        To generate all relevant config files for `~/my_app` (or emit an error
-        message if the directory contents are not recognized), run:
-
-          $ {command} gen-config ~/my_app
-        """
+       """
 }
 
 

@@ -51,8 +51,10 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Run the describe command."""
-    with endpoint_util.AssuredWorkloadsEndpointOverridesFromResource(
-        release_track=six.text_type(self.ReleaseTrack()),
-        resource=args.resource):
+    workload_resource = args.CONCEPTS.workload.Parse()
+    region = workload_resource.Parent().Name()
+    workload = workload_resource.RelativeName()
+    with endpoint_util.AssuredWorkloadsEndpointOverridesFromRegion(
+        release_track=six.text_type(self.ReleaseTrack()), region=region):
       client = apis.WorkloadsClient(self.ReleaseTrack())
-      return client.Describe(name=args.resource)
+      return client.Describe(name=workload)

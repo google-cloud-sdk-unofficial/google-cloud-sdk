@@ -19,8 +19,10 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.assured import endpoint_util
+from googlecloudsdk.api_lib.assured import message_util
 from googlecloudsdk.api_lib.assured import workloads as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.assured import flags
 import six
 
 _DETAILED_HELP = {
@@ -50,20 +52,15 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddUriFunc(apis.GetWorkloadURI)
-    base.Argument(
-        'parent',
-        help=(
-            'The parent organization of the Assured Workloads environment, in '
-            'the form: organizations/{ORG_ID}/locations/{LOCATION}'
-        )).AddToParser(parser)
+    flags.AddListWorkloadsFlags(parser)
 
   def Run(self, args):
     """Run the list command."""
-    with endpoint_util.AssuredWorkloadsEndpointOverridesFromResource(
-        release_track=six.text_type(self.ReleaseTrack()), resource=args.parent):
+    with endpoint_util.AssuredWorkloadsEndpointOverridesFromRegion(
+        release_track=six.text_type(self.ReleaseTrack()), region=args.location):
       client = apis.WorkloadsClient(self.ReleaseTrack())
       return client.List(
-          parent=args.parent,
+          parent=message_util.CreateAssuredParent(args.organization,
+                                                  args.location),
           limit=args.limit,
           page_size=args.page_size)

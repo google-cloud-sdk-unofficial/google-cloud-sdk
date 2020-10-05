@@ -40,5 +40,6 @@ required_install_packages_with_batch_prediction = required_install_packages + [
 ]
 
 required_install_packages_no_deps = required_install_packages + [
-    'google-cloud-logging >= 0.23.0, < 1.0',
+    'google-cloud-logging >= 0.23.0, <=1.15.0',
+    'google-api-python-client <= 1.9.0',
 ]

@@ -305,9 +305,12 @@ def _Run(args,
   # The server asyncrhonously sets allUsers invoker permissions some time after
   # we create the function. That means, to remove it, we need do so after the
   # server adds it. We can remove this mess after the default changes.
-  # TODO(b/139026575): Remove the "remove" path, only bother adding. Remove the
+  # TODO(b/130604453): Remove the "remove" path, only bother adding. Remove the
   # logic from the polling loop. Remove the ability to add logic like this to
   # the polling loop.
+  # Because of the DRS policy restrictions, private-by-default behavior is not
+  # guaranteed for all projects and we need this hack until IAM deny is
+  # implemented and all projects have private-by-default.
   def TryToSetInvokerPermission():
     """Try to make the invoker permission be what we said it should.
 

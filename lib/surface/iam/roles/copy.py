@@ -56,12 +56,12 @@ class Copy(base.Command):
   def Args(parser):
     parser.add_argument(
         '--source',
-        help='The source role name or id.'
-        'For curated roles, for example: roles/viewer.'
-        'For custom roles, for example: viewer.')
+        help='The source role ID. '
+        'For predefined roles, for example: roles/viewer. '
+        'For custom roles, for example: myCompanyAdmin.')
     parser.add_argument(
         '--destination',
-        help='The destination role id for the new custom '
+        help='The destination role ID for the new custom '
         'role. For example: viewer.')
     parser.add_argument(
         '--source-organization',

@@ -86,7 +86,7 @@ class ConfigureDNS(base.UpdateCommand):
     registration = client.Get(registration_ref)
     util.AssertRegistrationOperational(registration)
 
-    dns_settings, updated = dns_util.ParseDNSSettings(
+    dns_settings, update_mask = dns_util.ParseDNSSettings(
         args.name_servers,
         args.cloud_dns_zone,
         args.use_google_domains_dns,
@@ -96,20 +96,20 @@ class ConfigureDNS(base.UpdateCommand):
         dns_settings=registration.dnsSettings)
 
     if dns_settings is None:
-      dns_settings, updated = dns_util.PromptForNameServers(
+      dns_settings, update_mask = dns_util.PromptForNameServers(
           registration_ref.registrationsId,
           enable_dnssec=not args.disable_dnssec,
           dns_settings=registration.dnsSettings)
       if dns_settings is None:
         return None
 
-    if registration.dnsSettings.glueRecords and not updated.glue_records:
+    if registration.dnsSettings.glueRecords and not update_mask.glue_records:
       # It's ok to leave Glue records while changing name servers.
       log.status.Print('Glue records will not be cleared. If you want to clear '
                        'them, use --dns-settings-from-file flag.')
 
     ds_records_present = dns_util.DnssecEnabled(registration.dnsSettings)
-    name_servers_changed = updated.dns_provider and not dns_util.NameServersEquivalent(
+    name_servers_changed = update_mask.name_servers and not dns_util.NameServersEquivalent(
         registration.dnsSettings, dns_settings)
     if ds_records_present and name_servers_changed:
       log.warning('Name servers should not be changed if DS '
@@ -122,7 +122,7 @@ class ConfigureDNS(base.UpdateCommand):
     response = client.ConfigureDNS(
         registration_ref,
         dns_settings,
-        updated,
+        update_mask,
         validate_only=args.validate_only)
 
     if args.validate_only:

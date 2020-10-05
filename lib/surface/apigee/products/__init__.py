@@ -28,8 +28,46 @@ class Products(base.Group):
       "DESCRIPTION": """
           {description}
 
-          An API product is a collection of API resources combined with quota
-          settings and metadata, used to deliver customized and productized API
-          bundles to the developer community.
-          """
+          `{command}` manipulates API products. These are collections of
+          deployed API resources, combined with quota settings and metadata,
+          used to deliver customized and productized API bundles to the
+          developer community.
+          """,
+      "EXAMPLES": """
+          To list all API products in the active Cloud Platform project, run:
+
+              $ {command} list
+
+          To create an API product named ``my-apis'' by answering interactive
+          prompts about its included proxies and access policies, run:
+
+              $ {command} create my-apis
+
+          To create an API product named ``prod-apis'' that makes every API
+          proxy deployed to the ``prod'' environment publicly available, run:
+
+              $ {command} create prod-apis --environments=prod --all-proxies --public-access
+
+          To get a JSON object describing an existing API product, run:
+
+              $ {command} describe PRODUCT_NAME --organization=ORG_NAME --format=json
+
+          To add another API proxy to an existing API product, run:
+
+              $ {command} update PRODUCT_NAME --add-api=API_NAME
+
+          To edit the publicly visible name and description of an API product,
+          run:
+
+              $ {command} update PRODUCT_NAME --display-name="New Name" --description="A new description of this product."
+
+          To make an existing product publicly visible and automatically allow
+          developers access to it, run:
+
+              $ {command} update PRODUCT_NAME --public-access --automatic-approval
+
+          To delete an existing API product, run:
+
+              $ {command} delete PRODUCT_NAME
+          """,
   }

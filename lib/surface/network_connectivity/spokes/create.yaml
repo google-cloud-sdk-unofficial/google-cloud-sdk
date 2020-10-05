@@ -1,0 +1,52 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Create a new spoke.
+    description: Create a new spoke with the given name.
+    examples: |
+      Create a spoke with name ``my-spoke'' attach to hub ``https://www.googleapis.com/networkconnectivity/v1/projects/my-project/locations/global/hubs/my-hub'' in region ``us-central1''.
+
+        $ {command} my-spoke --hub="https://www.googleapis.com/networkconnectivity/v1/projects/my-project/locations/global/hubs/my-hub" --region=us-central1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:spoke
+      help_text: Name of the spoke to be created.
+    params:
+    - arg_name: hub
+      required: true
+      api_field: spoke.hub
+      help_text: Hub that spoke will attach to.
+    - arg_name: description
+      api_field: spoke.description
+      help_text: Description of the spoke to be created.
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: vpn-tunnel
+          api_field: spoke.linkedVpnTunnels
+          type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+          help_text: VPN tunnel that this spoke links to.
+          ALPHA:
+            processor: googlecloudsdk.command_lib.network_connectivity.util:ParseVpnTunnelList:api_version=v1alpha1
+        - arg_name: interconnect-attachment
+          api_field: spoke.linkedInterconnectAttachments
+          type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+          help_text: Interconnect attachment that this spoke links to.
+          ALPHA:
+            processor: googlecloudsdk.command_lib.network_connectivity.util:ParseInterconnectAttachmentList:api_version=v1alpha1
+        - arg_name: router-appliance-instance
+          api_field: spoke.linkedRouterApplianceInstances
+          type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+          help_text: Router appliance instance that this spoke links to.
+          ALPHA:
+            processor: googlecloudsdk.command_lib.network_connectivity.util:ParseRouterApplianceInstanceList:api_version=v1alpha1
+
+  async:
+    collection: networkconnectivity.projects.locations.operations
+
+  request: &request
+    api_version: v1alpha1
+    method: create
+    collection: networkconnectivity.projects.locations.spokes

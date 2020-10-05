@@ -158,12 +158,6 @@ class DeployBeta(base.SilentCommand):
   def Args(parser):
     """Get arguments for this command."""
     deploy_util.ArgsDeploy(parser)
-    parser.add_argument(
-        '--no-cache',
-        action='store_true',
-        default=False,
-        help='Skip caching mechanisms involved in the deployment process, in '
-        'particular do not use cached dependencies during the build step.')
 
   def Run(self, args):
     runtime_builder_strategy = deploy_util.GetRuntimeBuilderStrategy(
@@ -178,7 +172,6 @@ class DeployBeta(base.SilentCommand):
         parallel_build=True,
         flex_image_build_option=deploy_util.GetFlexImageBuildOption(
             default_strategy=deploy_util.FlexImageBuildOptions.ON_SERVER),
-        disable_build_cache=args.no_cache,
         dispatch_admin_api=True)
 
 
