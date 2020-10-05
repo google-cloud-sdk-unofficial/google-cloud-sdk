@@ -31,5 +31,17 @@ class Applications(base.Group):
 
           `{command}` manages applications that want to use APIs exposed via
           Apigee.
+          """,
+      "EXAMPLES":
           """
+          To get the names and UUIDs of all applications in the active Cloud
+          Platform project, run:
+
+              $ {command} list
+
+          To get a JSON representation of an application in the active Cloud
+          Platform project, including its API keys, run:
+
+              $ {command} describe APP_UUID --format=json
+          """,
   }

@@ -46,8 +46,8 @@ class List(base.ListCommand):
           name.basename(),
           name.scope().segment(-3):label=LOCATION,
           state,
-          ca_certificate_description.subject_description.not_before_time():label=NOT_BEFORE,
-          ca_certificate_description.subject_description.not_after_time():label=NOT_AFTER)
+          ca_certificate_descriptions[0].subject_description.not_before_time():label=NOT_BEFORE,
+          ca_certificate_descriptions[0].subject_description.not_after_time():label=NOT_AFTER)
         """)
     parser.display_info.AddTransforms({
         'not_before_time': text_utils.TransformNotBeforeTime,

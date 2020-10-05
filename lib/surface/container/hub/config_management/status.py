@@ -113,6 +113,7 @@ class Status(base.ListCommand):
   def Run(self, args):
     try:
       project_id = properties.VALUES.core.project.GetOrFail()
+      memberships = feature_base.ListMemberships(project_id)
       name = 'projects/{0}/locations/global/features/{1}'.format(
           project_id, self.FEATURE_NAME)
       response = feature_base.GetFeature(name)
@@ -125,14 +126,24 @@ class Status(base.ListCommand):
       raise exceptions.Error(
           '{} Feature for project [{}] is not enabled'.format(
               self.FEATURE_DISPLAY_NAME, project_id))
-    if response.featureState is None or response.featureState.detailsByMembership is None:
+    if not memberships:
       return None
-    membership_details = response.featureState.detailsByMembership
+    if response.featureState is None or response.featureState.detailsByMembership is None:
+      membership_details = []
+    else:
+      membership_details = response.featureState.detailsByMembership.additionalProperties
     acm_status = []
     acm_errors = []
-    for md in membership_details.additionalProperties:
-      name = os.path.basename(md.key)
+    fs_memberships = {
+        os.path.basename(membership_detail.key): membership_detail
+        for membership_detail in membership_details
+    }
+    for name in memberships:
       cluster = ConfigmanagementFeatureState(name)
+      if name not in fs_memberships:
+        acm_status.append(cluster)
+        continue
+      md = fs_memberships[name]
       fs = md.value.configmanagementFeatureState
       # (b/153587485) Show FeatureState.code if it's not OK
       # as it indicates an unreachable cluster or a dated syncState.code

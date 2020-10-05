@@ -51,17 +51,20 @@ class Delete(base.DeleteCommand):
     flags.AddDeleteWorkloadFlags(parser)
 
   def Run(self, args):
+    workload_resource = args.CONCEPTS.workload.Parse()
+    region = workload_resource.Parent().Name()
+    workload = workload_resource.RelativeName()
+
     if not console_io.PromptContinue(
-        message='You are about to delete Workload [{}]'.format(args.resource),
+        message='You are about to delete Workload [{}]'.format(workload),
         default=True):
       log.status.Print('Aborted by user.')
       return
 
-    with endpoint_util.AssuredWorkloadsEndpointOverridesFromResource(
-        release_track=six.text_type(self.ReleaseTrack()),
-        resource=args.resource):
+    with endpoint_util.AssuredWorkloadsEndpointOverridesFromRegion(
+        release_track=six.text_type(self.ReleaseTrack()), region=region):
       client = apis.WorkloadsClient(self.ReleaseTrack())
-      self.resource_name = args.resource
+      self.resource_name = workload
       return client.Delete(name=self.resource_name, etag=args.etag)
 
   def Epilog(self, resources_were_displayed):

@@ -25,6 +25,7 @@ from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.calliope.concepts import deps
+from googlecloudsdk.command_lib.privateca import create_utils
 from googlecloudsdk.command_lib.privateca import flags
 from googlecloudsdk.command_lib.privateca import key_generation
 from googlecloudsdk.command_lib.privateca import resource_args
@@ -34,11 +35,28 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
-KEY_OUTPUT_HELP = """The path where the generated private key file should be written (in PEM format).
+_KEY_OUTPUT_HELP = """The path where the generated private key file should be written (in PEM format).
 
 Note: possession of this key file could allow anybody to act as this certificate's
 subject. Please make sure that you store this key file in a secure location at all
 times, and ensure that only authorized users have access to it."""
+
+
+def _ReadCsr(csr_file):
+  try:
+    return files.ReadFileContents(csr_file)
+  except (files.Error, OSError, IOError):
+    raise exceptions.BadFileException(
+        "Could not read provided CSR file '{}'.".format(csr_file))
+
+
+def _WritePemChain(pem_cert, issuing_chain, cert_file):
+  try:
+    pem_chain = [pem_cert] + issuing_chain
+    files.WriteFileContents(cert_file, '\n'.join(pem_chain))
+  except (files.Error, OSError, IOError):
+    raise exceptions.BadFileException(
+        "Could not write certificate to '{}'.".format(cert_file))
 
 
 class Create(base.CreateCommand):
@@ -90,7 +108,7 @@ class Create(base.CreateCommand):
         default=False,
         required=True).AddToParser(key_generation_group)
     base.Argument(
-        '--key-output-file', help=KEY_OUTPUT_HELP,
+        '--key-output-file', help=_KEY_OUTPUT_HELP,
         required=True).AddToParser(key_generation_group)
 
     subject_group = key_generation_group.add_group(
@@ -101,20 +119,16 @@ class Create(base.CreateCommand):
     flags.AddInlineReusableConfigFlags(reusable_config_group, is_ca=False)
 
     cert_arg = 'CERTIFICATE'
-    id_fallthrough = deps.Fallthrough(
-        function=certificate_utils.GenerateCertId,
-        hint='certificate id will default to an automatically generated id',
-        active=False,
-        plural=False)
     concept_parsers.ConceptParser([
         presentation_specs.ResourcePresentationSpec(
             cert_arg,
-            resource_args.CreateCertificateResourceSpec(cert_arg,
-                                                        [id_fallthrough]),
-            'The name of the certificate to issue. If the name is omitted, a '
-            'random name will be generated according to the following format'
-            ': {YYYYMMDD}-{3 random alphanumeric characters}-{3 random alph'
-            'anumeric characters}.',
+            resource_args.CreateCertificateResourceSpec(
+                cert_arg, [Create._GenerateCertificateIdFallthrough()]),
+            'The name of the certificate to issue. If the certificate ID is '
+            'omitted, a random identifier will be generated according to the '
+            'following format: {YYYYMMDD}-{3 random alphanumeric characters}-'
+            '{3 random alphanumeric characters}. The certificate ID is not '
+            'required when the issuing CA is in the DevOps tier.',
             required=True)
     ]).AddToParser(parser)
 
@@ -139,30 +153,54 @@ class Create(base.CreateCommand):
             group=reusable_config_group)
     ]).AddToParser(reusable_config_group)
 
-  def _ReadCsr(self, request, csr_file):
-    try:
-      return files.ReadFileContents(csr_file)
-    except (files.Error, OSError, IOError):
-      raise exceptions.BadFileException(
-          "Could not read provided CSR file '{}'.".format(csr_file))
+  @classmethod
+  def _GenerateCertificateIdFallthrough(cls):
+    cls.id_fallthrough_was_used = False
+    def FallthroughFn():
+      cls.id_fallthrough_was_used = True
+      return certificate_utils.GenerateCertId()
+    return deps.Fallthrough(
+        function=FallthroughFn,
+        hint='certificate id will default to an automatically generated id',
+        active=False,
+        plural=False)
 
-  def _WritePemChain(self, pem_cert, issuing_chain, cert_file):
-    try:
-      pem_chain = [pem_cert] + issuing_chain
-      files.WriteFileContents(cert_file, '\n'.join(pem_chain))
-    except (files.Error, OSError, IOError):
-      raise exceptions.BadFileException(
-          "Could not write certificate to '{}'.".format(cert_file))
+  def _GetIssuingCa(self, ca_name):
+    return self.client.projects_locations_certificateAuthorities.Get(
+        self.messages
+        .PrivatecaProjectsLocationsCertificateAuthoritiesGetRequest(
+            name=ca_name))
+
+  @classmethod
+  def _ValidateArgsForDevOpsIssuer(cls, args):
+    """Validates the command-line args when the issuer is a DevOps CA."""
+    if not args.IsSpecified('cert_output_file'):
+      raise exceptions.RequiredArgumentException(
+          '--cert-output-file',
+          'Certificate must be written to a file since the issuing CA does '
+          'not support describing certificates after they are issued.')
+
+    unused_args = []
+    if not cls.id_fallthrough_was_used:
+      unused_args.append('certificate ID')
+    if args.IsSpecified('labels'):
+      unused_args.append('labels')
+
+    if unused_args:
+      names = ', '.join(unused_args)
+      verb = 'was' if len(unused_args) == 1 else 'were'
+      log.warning('{names} {verb} specified but will not be used since the '
+                  'issuing CA is in the DevOps tier, which does not expose '
+                  'certificate lifecycle.'.format(names=names, verb=verb))
 
   def _GenerateCertificateConfig(self, request, args, location):
-    messages = privateca_base.GetMessagesModule()
     private_key, public_key = key_generation.RSAKeyGen(2048)
     key_generation.ExportPrivateKey(args.key_output_file, private_key)
 
-    config = messages.CertificateConfig()
-    config.publicKey = messages.PublicKey()
+    config = self.messages.CertificateConfig()
+    config.publicKey = self.messages.PublicKey()
     config.publicKey.key = public_key
-    config.publicKey.type = messages.PublicKey.TypeValueValuesEnum.PEM_RSA_KEY
+    config.publicKey.type = self.messages.PublicKey.TypeValueValuesEnum.PEM_RSA_KEY
     config.reusableConfig = flags.ParseReusableConfig(
         args, location, is_ca=args.is_ca_cert)
     config.subjectConfig = flags.ParseSubjectFlags(args, is_ca=args.is_ca_cert)
@@ -170,28 +208,32 @@ class Create(base.CreateCommand):
     return config
 
   def Run(self, args):
-    client = privateca_base.GetClientInstance()
-    messages = privateca_base.GetMessagesModule()
+    self.client = privateca_base.GetClientInstance()
+    self.messages = privateca_base.GetMessagesModule()
 
     cert_ref = args.CONCEPTS.certificate.Parse()
-    if not cert_ref:
-      raise exceptions.InvalidArgumentException(
-          'CERTIFICATE', 'A certificate resource must be specified.')
+    issuing_ca = self._GetIssuingCa(cert_ref.Parent().RelativeName())
 
-    labels = labels_util.ParseCreateArgs(args, messages.Certificate.LabelsValue)
+    if issuing_ca.tier == self.messages.CertificateAuthority.TierValueValuesEnum.DEVOPS:
+      Create._ValidateArgsForDevOpsIssuer(args)
 
-    request = messages.PrivatecaProjectsLocationsCertificateAuthoritiesCertificatesCreateRequest(
+    labels = labels_util.ParseCreateArgs(args,
+                                         self.messages.Certificate.LabelsValue)
+
+    request = self.messages.PrivatecaProjectsLocationsCertificateAuthoritiesCertificatesCreateRequest(
     )
-    request.certificate = messages.Certificate()
+    request.certificate = self.messages.Certificate()
     request.certificateId = cert_ref.Name()
-    request.certificate.name = cert_ref.RelativeName()
     request.certificate.lifetime = flags.ParseValidityFlag(args)
     request.certificate.labels = labels
     request.parent = cert_ref.Parent().RelativeName()
     request.requestId = request_utils.GenerateRequestId()
 
+    # TODO(b/12345): only show this for Enterprise certs.
+    create_utils.PrintBetaResourceDeletionDisclaimer('certificates')
+
     if args.csr:
-      request.certificate.pemCsr = self._ReadCsr(request, args.csr)
+      request.certificate.pemCsr = _ReadCsr(args.csr)
     elif args.generate_key:
       request.certificate.config = self._GenerateCertificateConfig(
           request, args, cert_ref.locationsId)
@@ -203,12 +245,19 @@ class Create(base.CreateCommand):
           ('To create a certificate, please specify either a CSR or the '
            '--generate-key flag to create a new key.'))
 
-    certificate = client.projects_locations_certificateAuthorities_certificates.Create(
+    certificate = self.client.projects_locations_certificateAuthorities_certificates.Create(
         request)
 
-    if args.IsSpecified('cert_output_file'):
-      self._WritePemChain(certificate.pemCertificate,
-                          certificate.pemCertificateChain,
-                          args.cert_output_file)
+    status_message = 'Created Certificate'
+    # DevOps certs won't have a name.
+    if certificate.name:
+      status_message += ' [{}]'.format(certificate.name)
 
-    log.status.Print('Created Certificate [{}].'.format(certificate.name))
+    if args.IsSpecified('cert_output_file'):
+      status_message += ' and saved it to [{}]'.format(args.cert_output_file)
+      _WritePemChain(certificate.pemCertificate,
+                     certificate.pemCertificateChain,
+                     args.cert_output_file)
+
+    status_message += '.'
+    log.status.Print(status_message)

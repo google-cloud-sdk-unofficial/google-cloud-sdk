@@ -56,16 +56,18 @@ class Update(base.UpdateCommand):
 
   def Run(self, args):
     """Run the update command."""
-    with endpoint_util.AssuredWorkloadsEndpointOverridesFromResource(
-        release_track=six.text_type(self.ReleaseTrack()),
-        resource=args.resource):
+    workload_resource = args.CONCEPTS.workload.Parse()
+    region = workload_resource.Parent().Name()
+    workload_name = workload_resource.RelativeName()
+    with endpoint_util.AssuredWorkloadsEndpointOverridesFromRegion(
+        release_track=six.text_type(self.ReleaseTrack()), region=region):
       update_mask = message_util.CreateUpdateMask(args.display_name,
                                                   args.labels)
       workload = message_util.CreateBetaAssuredWorkload(
           display_name=args.display_name, labels=args.labels, etag=args.etag)
       client = apis.WorkloadsClient(self.ReleaseTrack())
       self.updated_resource = client.Update(
-          workload=workload, name=args.resource, update_mask=update_mask)
+          workload=workload, name=workload_name, update_mask=update_mask)
       return self.updated_resource
 
   def Epilog(self, resources_were_displayed):

@@ -138,6 +138,7 @@ class Create(base.CreateCommand):
             flag_name_overrides={'project': '--from-ca-project'},
             prefixes=True)
     ]).AddToParser(parser)
+    flags.AddTierFlag(parser)
     flags.AddSubjectFlags(parser, subject_required=False)
     flags.AddPublishCaCertFlag(parser, use_update_help_text=False)
     flags.AddPublishCrlFlag(parser, use_update_help_text=False)
@@ -207,14 +208,15 @@ class Create(base.CreateCommand):
     if issuer_ref:
       iam.CheckCreateCertificatePermissions(issuer_ref)
 
-    p4sa_email = p4sa.GetOrCreate(project_ref)
+    bucket_ref = None
     if args.IsSpecified('bucket'):
       bucket_ref = storage.ValidateBucketForCertificateAuthority(args.bucket)
-    else:
-      bucket_ref = storage.CreateBucketForCertificateAuthority(ca_ref)
-    p4sa.AddResourceRoleBindings(p4sa_email, kms_key_ref, bucket_ref)
-    new_ca.gcsBucket = bucket_ref.bucket
+      new_ca.gcsBucket = bucket_ref.bucket
 
+    p4sa_email = p4sa.GetOrCreate(project_ref)
+    p4sa.AddResourceRoleBindings(p4sa_email, kms_key_ref, bucket_ref)
+
+    create_utils.PrintBetaResourceDeletionDisclaimer('certificate authorities')
     operations.Await(
         self.client.projects_locations_certificateAuthorities.Create(
             self.messages

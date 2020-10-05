@@ -19,8 +19,10 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.assured import endpoint_util
+from googlecloudsdk.api_lib.assured import message_util
 from googlecloudsdk.api_lib.assured import operations as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.assured import flags
 import six
 
 _DETAILED_HELP = {
@@ -49,17 +51,15 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddUriFunc(apis.GetWorkloadURI)
-    base.Argument(
-        'parent',
-        help=(
-            'The parent organization of the operations, in the form: '
-            'organizations/{ORG_ID}/locations/{LOCATION}')).AddToParser(parser)
+    flags.AddListOperationsFlags(parser)
 
   def Run(self, args):
     """Run the list command."""
-    with endpoint_util.AssuredWorkloadsEndpointOverridesFromResource(
-        release_track=six.text_type(self.ReleaseTrack()), resource=args.parent):
+    with endpoint_util.AssuredWorkloadsEndpointOverridesFromRegion(
+        release_track=six.text_type(self.ReleaseTrack()), region=args.location):
       client = apis.OperationsClient(self.ReleaseTrack())
       return client.List(
-          parent=args.parent, limit=args.limit, page_size=args.page_size)
+          parent=message_util.CreateAssuredParent(args.organization,
+                                                  args.location),
+          limit=args.limit,
+          page_size=args.page_size)

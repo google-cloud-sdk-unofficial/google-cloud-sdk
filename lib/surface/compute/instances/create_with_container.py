@@ -85,6 +85,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_create_boot_disk = True
   _support_match_container_mount_disks = True
   _support_nvdimm = False
+  _support_enable_nested_virtualization = False
 
   @staticmethod
   def Args(parser):
@@ -257,6 +258,12 @@ class CreateWithContainer(base.CreateCommand):
                 compute_client.messages).GetEnumForChoice(
                     args.private_ipv6_google_access_type))
 
+      if (self._support_enable_nested_virtualization and
+          args.enable_nested_virtualization is not None):
+        instance.advancedMachineFeatures = (
+            instance_utils.CreateAdvancedMachineFeaturesMessage(
+                compute_client.messages, args.enable_nested_virtualization))
+
       request = compute_client.messages.ComputeInstancesInsertRequest(
           instance=instance,
           sourceInstanceTemplate=source_instance_template,
@@ -277,6 +284,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_create_boot_disk = True
   _support_match_container_mount_disks = True
   _support_nvdimm = False
+  _support_enable_nested_virtualization = False
 
   @staticmethod
   def Args(parser):
@@ -300,6 +308,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_create_boot_disk = True
   _support_match_container_mount_disks = True
   _support_nvdimm = True
+  _support_enable_nested_virtualization = True
 
   @staticmethod
   def Args(parser):
@@ -313,6 +322,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddPublicDnsArgs(parser, instance=True)
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
+    instances_flags.AddNestedVirtualizationArgs(parser)
 
   def _ValidateTrackSpecificArgs(self, args):
     instances_flags.ValidateLocalSsdFlags(args)

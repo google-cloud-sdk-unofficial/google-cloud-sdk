@@ -149,6 +149,7 @@ class CreateAlpha(base.Command):
   _deprecate_maintenance_policy = True
   _support_create_disk_snapshots = True
   _support_boot_snapshot_uri = True
+  _support_enable_nested_virtualization = True
 
   _log_async = False
 
@@ -173,6 +174,7 @@ class CreateAlpha(base.Command):
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddBulkCreateArgs(parser)
     instances_flags.AddBootDiskArgs(parser)
+    instances_flags.AddNestedVirtualizationArgs(parser)
 
   def Collection(self):
     return 'compute.instances'
@@ -281,6 +283,13 @@ class CreateAlpha(base.Command):
         location=location,
         scope=scope)
 
+    advanced_machine_features = None
+    if (self._support_enable_nested_virtualization and
+        args.enable_nested_virtualization is not None):
+      advanced_machine_features = (
+          instance_utils.CreateAdvancedMachineFeaturesMessage(
+              compute_client.messages, args.enable_nested_virtualization))
+
     parsed_resource_policies = []
     resource_policies = getattr(args, 'resource_policies', None)
     if resource_policies:
@@ -319,7 +328,8 @@ class CreateAlpha(base.Command):
         resourcePolicies=parsed_resource_policies,
         shieldedInstanceConfig=shielded_instance_config,
         displayDevice=display_device,
-        reservationAffinity=reservation_affinity)
+        reservationAffinity=reservation_affinity,
+        advancedMachineFeatures=advanced_machine_features)
 
     if self._support_confidential_compute and confidential_instance_config:
       instance.confidentialInstanceConfig = confidential_instance_config
@@ -390,6 +400,10 @@ class CreateAlpha(base.Command):
                                                       resource_parser, project,
                                                       location, scope)
 
+    self._errors = []
+    self._log_async = False
+    self._status_message = None
+
     if args.async_:
       self._log_async = True
       try:
@@ -408,13 +422,16 @@ class CreateAlpha(base.Command):
         no_followup=True)
 
     self._errors = errors_to_collect
-    self._status_message = response[0].statusMessage
+    if response:
+      self._status_message = response[0].statusMessage
 
     return
 
   def Epilog(self, resources_were_displayed):
     del resources_were_displayed
-    if self._log_async:
+    if self._errors:
+      log.error(self._errors[0][1])
+    elif self._log_async:
       log.status.Print('Bulk instance creation in progress: {}'.format(
           self._operation_selflink))
     else:

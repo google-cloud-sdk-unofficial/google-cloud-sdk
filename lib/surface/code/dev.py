@@ -33,6 +33,7 @@ from googlecloudsdk.command_lib.code import yaml_helper
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import yaml
+from googlecloudsdk.core.updater import update_manager
 from googlecloudsdk.core.util import files as file_utils
 import portpicker
 import six
@@ -122,13 +123,14 @@ class Dev(base.Command):
         'set, a random port is selected.')
 
   def Run(self, args):
+    _EnsureComponentsInstalled(args)
+
     settings = local.Settings.FromArgs(args)
     local_file_generator = local_files.LocalRuntimeFiles(settings)
 
     kubernetes_config = six.ensure_text(local_file_generator.KubernetesConfig())
 
-    self._EnsureDockerRunning()
-
+    _EnsureDockerRunning()
     with cross_platform_temp_file.NamedTempFile(
         kubernetes_config) as kubernetes_file:
       skaffold_config = six.ensure_text(
@@ -200,20 +202,34 @@ class Dev(base.Command):
     else:
       yield
 
-  @staticmethod
-  def _EnsureDockerRunning():
-    """Make sure docker is running."""
-    docker = file_utils.FindExecutableOnPath('docker')
-    if not docker:
-      raise RuntimeMissingDependencyError(
-          'Cannot locate docker on $PATH. Install docker from '
-          'https://docs.docker.com/get-docker/.')
-    try:
-      # docker info returns 0 if it can connect to the docker daemon and
-      # returns a non-zero error code if it cannot. run_subprocess
-      # checks raises an error if the process does not return 0.
-      run_subprocess.Run([docker, 'info'], timeout_sec=20, show_output=False)
-    except subprocess.CalledProcessError:
-      raise RuntimeMissingDependencyError(
-          'Unable to reach docker daemon. Make sure docker is running '
-          'and reachable.')
+
+def _EnsureDockerRunning():
+  """Make sure docker is running."""
+  docker = file_utils.FindExecutableOnPath('docker')
+  if not docker:
+    raise RuntimeMissingDependencyError(
+        'Cannot locate docker on $PATH. Install docker from '
+        'https://docs.docker.com/get-docker/.')
+  try:
+    # docker info returns 0 if it can connect to the docker daemon and
+    # returns a non-zero error code if it cannot. run_subprocess
+    # checks raises an error if the process does not return 0.
+    run_subprocess.Run([docker, 'info'], timeout_sec=20, show_output=_IsDebug())
+  except subprocess.CalledProcessError:
+    raise RuntimeMissingDependencyError(
+        'Unable to reach docker daemon. Make sure docker is running '
+        'and reachable.')
+
+
+def _EnsureComponentsInstalled(args):
+  """Make sure the components needed later are installed."""
+  components = ['skaffold']
+
+  if args.IsSpecified('kube_context'):
+    pass
+  elif args.IsSpecified('kind_cluster'):
+    components.append('kind')
+  else:
+    components.append('minikube')
+
+  update_manager.UpdateManager.EnsureInstalledAndRestart(components)

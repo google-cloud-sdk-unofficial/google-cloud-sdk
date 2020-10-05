@@ -243,7 +243,7 @@ class CreateBeta(Create):
   def Args(parser):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser)
-    flags.AddLocalSSDFlag(parser)
+    flags.AddLocalSSDsBetaFlags(parser)
     flags.AddBootDiskKmsKeyFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, for_create=True)
@@ -262,6 +262,7 @@ class CreateBeta(Create):
     flags.AddReservationAffinityFlags(parser, for_node_pool=True)
     flags.AddSystemConfigFlag(parser, hidden=False)
     flags.AddNodeGroupFlag(parser)
+    flags.AddEnableGcfsFlag(parser, for_node_pool=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -271,6 +272,7 @@ class CreateBeta(Create):
     ops.sandbox = args.sandbox
     ops.node_locations = args.node_locations
     ops.system_config_from_file = args.system_config_from_file
+    ops.enable_gcfs = args.enable_gcfs
     return ops
 
 
@@ -288,6 +290,7 @@ class CreateAlpha(Create):
     ops.linux_sysctls = args.linux_sysctls
     ops.node_locations = args.node_locations
     ops.system_config_from_file = args.system_config_from_file
+    ops.enable_gcfs = args.enable_gcfs
     return ops
 
   @staticmethod
@@ -295,7 +298,7 @@ class CreateAlpha(Create):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=False)
-    flags.AddLocalSSDAndLocalSSDVolumeConfigsFlag(parser, for_node_pool=True)
+    flags.AddLocalSSDsAlphaFlags(parser, for_node_pool=True)
     flags.AddBootDiskKmsKeyFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, for_create=True)
@@ -314,6 +317,7 @@ class CreateAlpha(Create):
     flags.AddNodePoolLocationsFlag(parser, for_create=True)
     flags.AddSystemConfigFlag(parser, hidden=False)
     flags.AddReservationAffinityFlags(parser, for_node_pool=True)
+    flags.AddEnableGcfsFlag(parser, for_node_pool=True)
 
 
 Create.detailed_help = DETAILED_HELP

@@ -31,3 +31,4 @@ nomos: unavailable
 pubsub-emulator: google-cloud-sdk-pubsub-emulator
 skaffold: google-cloud-sdk-skaffold
 kustomize: unavailable
+yaml-export: unavailable

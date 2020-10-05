@@ -30,5 +30,21 @@ class Developers(base.Group):
 
           `{command}` manages developers that want to use APIs exposed via
           Apigee in their applications.
-          """
+          """,
+      "EXAMPLES": """
+          To list the email addresses of all the developers in the active Cloud
+          Platform project, run:
+
+              $ {command} list
+
+          To get that list as a JSON array and only include developers with
+          ``example.com'' addresses, run:
+
+              $ {command} list --format=json --filter="email:(@example.com)"
+
+          To get details about a specific developer in the active Cloud Platform
+          project, run:
+
+              $ {command} describe DEVELOPER_EMAIL
+      """,
   }
