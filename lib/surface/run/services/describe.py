@@ -66,21 +66,20 @@ class Describe(base.Command):
         prefixes=False)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
+    resource_printer.RegisterFormatter(
+        service_printer.SERVICE_PRINTER_FORMAT,
+        service_printer.ServicePrinter, hidden=True)
+    parser.display_info.AddFormat(service_printer.SERVICE_PRINTER_FORMAT)
+    resource_printer.RegisterFormatter(
+        export_printer.EXPORT_PRINTER_FORMAT,
+        export_printer.ExportPrinter, hidden=True)
+
   @staticmethod
   def Args(parser):
     Describe.CommonArgs(parser)
 
   def Run(self, args):
     """Obtain details about a given service."""
-    # TODO(b/143898356) Begin code that should be in Args
-    resource_printer.RegisterFormatter(
-        service_printer.SERVICE_PRINTER_FORMAT,
-        service_printer.ServicePrinter)
-    args.GetDisplayInfo().AddFormat(service_printer.SERVICE_PRINTER_FORMAT)
-    resource_printer.RegisterFormatter(
-        export_printer.EXPORT_PRINTER_FORMAT,
-        export_printer.ExportPrinter)
-    # End code that should be in Args
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())
     service_ref = flags.GetService(args)

@@ -59,9 +59,10 @@ class Update(base.UpdateCommand):
 
   def Run(self, args):
     interconnect_attachment = self._get_attachment(args)
+    admin_enabled = attachment_flags.GetAdminEnabledFlag(args)
     return interconnect_attachment.PatchGa(
         description=args.description,
-        admin_enabled=args.admin_enabled,
+        admin_enabled=admin_enabled,
         bandwidth=getattr(args, 'bandwidth', None))
 
 
@@ -93,10 +94,11 @@ class UpdateBeta(Update):
           labels_cls, labels=old_attachment.labels).GetOrNone()
       if labels is not None:
         label_fingerprint = old_attachment.labelFingerprint
+    admin_enabled = attachment_flags.GetAdminEnabledFlag(args)
 
     return interconnect_attachment.PatchAlphaAndBeta(
         description=args.description,
-        admin_enabled=args.admin_enabled,
+        admin_enabled=admin_enabled,
         labels=labels,
         label_fingerprint=label_fingerprint,
         bandwidth=getattr(args, 'bandwidth', None),

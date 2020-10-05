@@ -1,4 +1,6 @@
-- help_text:
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
     brief:  Check the consents for a particular user's data.
     description: Check if each matching user data mapping in the given Cloud Healthcare API consent store is consented for a given use.
     examples: |
@@ -10,7 +12,10 @@
   request:
     collection: healthcare.projects.locations.datasets.consentStores
     method: evaluateUserConsents
-    api_version: v1alpha2
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
 
   arguments:
     resource:

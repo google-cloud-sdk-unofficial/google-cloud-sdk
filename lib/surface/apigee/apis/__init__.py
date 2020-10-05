@@ -23,3 +23,35 @@ from googlecloudsdk.calliope import base
 
 class Apis(base.Group):
   """Manage Apigee API proxies."""
+  detailed_help = {
+      "EXAMPLES": """
+          To list all the API proxies in the active Cloud Platform project, run:
+
+              $ {command} list
+
+          To get details about a specific API proxy in a specific Apigee
+          organization, run:
+
+              $ {command} describe PROXY_NAME --organization=ORG_NAME
+
+          To get a JSON object containing revision-level details about an API
+          proxy, run:
+
+              $ {command} describe PROXY_NAME --verbose --format=json
+
+          To deploy the most recent revision of an API proxy into the ``eval''
+          deployment environment, run:
+
+              $ {command} deploy --api=PROXY_NAME --environment=eval
+
+          To deploy the first revision of that API proxy into the ``release''
+          deployment environment, run:
+
+              $ {command} deploy 1 --api=PROXY_NAME --environment=release
+
+          To undeploy whatever revision of PROXY_NAME is currently deployed in
+          ENVIRONMENT, run:
+
+              $ {command} undeploy --api=PROXY_NAME --environment=ENVIRONMENT
+      """,
+  }

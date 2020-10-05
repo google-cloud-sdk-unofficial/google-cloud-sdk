@@ -28,20 +28,14 @@
           api_field: spoke.linkedVpnTunnels
           type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
           help_text: VPN tunnel that this spoke links to.
-          ALPHA:
-            processor: googlecloudsdk.command_lib.network_connectivity.util:ParseVpnTunnelList:api_version=v1alpha1
         - arg_name: interconnect-attachment
           api_field: spoke.linkedInterconnectAttachments
           type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
           help_text: Interconnect attachment that this spoke links to.
-          ALPHA:
-            processor: googlecloudsdk.command_lib.network_connectivity.util:ParseInterconnectAttachmentList:api_version=v1alpha1
         - arg_name: router-appliance-instance
           api_field: spoke.linkedRouterApplianceInstances
           type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
           help_text: Router appliance instance that this spoke links to.
-          ALPHA:
-            processor: googlecloudsdk.command_lib.network_connectivity.util:ParseRouterApplianceInstanceList:api_version=v1alpha1
 
   async:
     collection: networkconnectivity.projects.locations.operations

@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.run import flags as serverless_flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import progress_tracker
 
 
 _DEFAULT_BROKER_NAME = 'default'
@@ -54,8 +55,7 @@ class Create(base.Command):
   }
 
   @staticmethod
-  def CommonArgs(parser):
-    """Defines arguments common to all release tracks."""
+  def Args(parser):
     flags.AddBrokerArg(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
         '--namespace',
@@ -66,19 +66,11 @@ class Create(base.Command):
     concept_parsers.ConceptParser(
         [namespace_presentation]).AddToParser(parser)
 
-  @staticmethod
-  def Args(parser):
-    Create.CommonArgs(parser)
-
   def Run(self, args):
     """Executes when the user runs the create command."""
     if serverless_flags.GetPlatform() == serverless_flags.PLATFORM_MANAGED:
       raise exceptions.UnsupportedArgumentError(
           'This command is only available with Cloud Run for Anthos.')
-
-    if args.BROKER != _DEFAULT_BROKER_NAME:
-      raise exceptions.UnsupportedArgumentError(
-          'Only brokers named "default" may be created.')
 
     conn_context = connection_context.GetConnectionContext(
         args, serverless_flags.Product.EVENTS, self.ReleaseTrack())
@@ -86,7 +78,15 @@ class Create(base.Command):
     namespace_ref = args.CONCEPTS.namespace.Parse()
 
     with eventflow_operations.Connect(conn_context) as client:
-      client.UpdateNamespaceWithLabels(namespace_ref, _INJECTION_LABELS)
+      client.CreateBroker(namespace_ref.Name(), args.BROKER)
+
+      broker_full_name = 'namespaces/{}/brokers/{}'.format(
+          namespace_ref.Name(), args.BROKER)
+
+      with progress_tracker.StagedProgressTracker(
+          'Creating Broker...',
+          [progress_tracker.Stage('Creating Broker...')]) as tracker:
+        client.PollBroker(broker_full_name, tracker)
 
     log.status.Print('Created broker [{}] in namespace [{}].'.format(
         args.BROKER, namespace_ref.Name()))

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""'vmware cluster create' command."""
+"""'vmware clusters create' command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,31 +27,28 @@ from googlecloudsdk.core import properties
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          Create a Vmware cluster.
+          Create a cluster in a VMware Engine private cloud.
         """,
     'EXAMPLES':
         """
-      To create a cluster called my-cluster in example-privatecloud, location us-central1, with a specified zone (in which nodes are created):
+          To create a cluster called ``my-cluster'' in private cloud
+          ``my-privatecloud'', with three initial nodes created in zone
+          ``us-central1-a'', run:
 
-      $ {command} /projects/my-project/locations/us-central1/privateclouds/example-privatecloud/clusters/my-cluster -zone=us-central1-a --node-count=3
+            $ {command} my-cluster --privatecloud=my-privatecloud --location=us-central1 --project=my-project --zone=us-central1-a --node-count=3
 
-    Or:
+          Or:
 
-      $ {command} my-cluster --privatecloud=example-privatecloud --location=us-central1 --project=my-project -zone=us-central1-a --node-count=3
+            $ {command} my-cluster --privatecloud=my-privatecloud -zone=us-central1-a --node-count=3
 
-    Or:
-
-      $ {command} my-cluster --privatecloud=example-privatecloud -zone=us-central1-a --node-count=3
-
-
-    In the third example, the project and location are taken from gcloud properties core/project and vmware/location.
+          In the second example, the project and location are taken from gcloud properties core/project and vmware/location.
     """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Create a Cloud VMware cluster."""
+  """Create a cluster in a VMware Engine private cloud."""
 
   @staticmethod
   def Args(parser):

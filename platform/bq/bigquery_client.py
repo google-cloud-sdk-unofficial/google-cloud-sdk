@@ -1089,6 +1089,11 @@ class BigqueryClient(object):
         disable_ssl_certificate_validation=flags.FLAGS.disable_ssl_validation
     )
 
+    # This asks httplib2 to exclude 308s from the status codes
+    # it treats as redirects.
+    if hasattr(http, 'redirect_codes'):
+      http.redirect_codes = http.redirect_codes - {308}
+
 
     return http
 

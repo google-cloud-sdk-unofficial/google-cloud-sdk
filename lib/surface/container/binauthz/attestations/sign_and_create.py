@@ -101,15 +101,14 @@ class SignAndCreate(base.CreateCommand):
 
           This parameter is only necessary if the `--public-key-id-override`
           flag was provided when this KMS key was added to the Attestor."""))
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      parser.add_argument(
-          '--validate',
-          action='store_true',
-          default=False,
-          help=textwrap.dedent("""\
-            Whether to validate that the Attestation can be verified by the
-            provided Attestor.
-          """))
+    parser.add_argument(
+        '--validate',
+        action='store_true',
+        default=False,
+        help=textwrap.dedent("""\
+          Whether to validate that the Attestation can be verified by the
+          provided Attestor.
+        """))
 
   def Run(self, args):
     project_ref = resources.REGISTRY.Parse(
@@ -156,7 +155,12 @@ class SignAndCreate(base.CreateCommand):
     validation_callback = functools.partial(
         validation.validate_attestation,
         attestor_ref=attestor_ref,
-        api_version=api_version)
+        # Call V1 API for validation when using the alpha track. (The beta track
+        # uses V1Beta1, which is mapped to the same service as V1.)
+        # TODO(b/159263189): Replace with just api_version after removing
+        # ValidationHelperV1Alpha2 service.
+        api_version=apis.V1
+        if self.ReleaseTrack() == base.ReleaseTrack.ALPHA else api_version)
 
     client = containeranalysis.Client(
         ca_apis.GetApiVersion(self.ReleaseTrack()))

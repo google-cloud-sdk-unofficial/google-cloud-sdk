@@ -56,21 +56,20 @@ class Describe(base.DescribeCommand):
     concept_parsers.ConceptParser([
         revision_presentation]).AddToParser(parser)
 
+    resource_printer.RegisterFormatter(
+        revision_printer.REVISION_PRINTER_FORMAT,
+        revision_printer.RevisionPrinter, hidden=True)
+    parser.display_info.AddFormat(revision_printer.REVISION_PRINTER_FORMAT)
+    resource_printer.RegisterFormatter(
+        export_printer.EXPORT_PRINTER_FORMAT,
+        export_printer.ExportPrinter, hidden=True)
+
   @staticmethod
   def Args(parser):
     Describe.CommonArgs(parser)
 
   def Run(self, args):
     """Show details about a revision."""
-    # TODO(b/143898356) Begin code that should be in Args
-    resource_printer.RegisterFormatter(
-        revision_printer.REVISION_PRINTER_FORMAT,
-        revision_printer.RevisionPrinter)
-    args.GetDisplayInfo().AddFormat(revision_printer.REVISION_PRINTER_FORMAT)
-    resource_printer.RegisterFormatter(
-        export_printer.EXPORT_PRINTER_FORMAT,
-        export_printer.ExportPrinter)
-    # End code that should be in Args
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())
     revision_ref = args.CONCEPTS.revision.Parse()

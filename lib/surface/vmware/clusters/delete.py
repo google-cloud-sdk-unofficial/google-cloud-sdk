@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""'vmware cluster delete' command."""
+"""'vmware clusters delete' command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,30 +25,27 @@ from googlecloudsdk.command_lib.vmware import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          Delete a VMware cluster.
+          Delete a cluster in a VMware Engine private cloud.
         """,
     'EXAMPLES':
         """
-    To delete a cluster called my-cluster in example-privatecloud, location us-central1, run:
+          To delete a cluster called ``my-cluster'' in private cloud
+          ``my-privatecloud'' and location ``us-central1'', run:
 
-      $ {command} /projects/my-project/locations/us-central1/privateclouds/example-privatecloud/clusters/my-cluster
+            $ {command} my-cluster --privatecloud=my-privatecloud --location=us-central1 --project=my-project
 
-    Or:
+          Or:
 
-      $ {command} my-cluster --privatecloud=example-privatecloud --location=us-central1 --project=my-project
+            $ {command} my-cluster --privatecloud=my-privatecloud
 
-    Or:
-
-      $ {command} my-cluster --privatecloud=example-privatecloud
-
-    In the third example, the project and location are taken from gcloud properties core/project and vmware/location.
+          In the second example, the project and location are taken from gcloud properties core/project and vmware/location.
     """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
-  """Delete a Cloud VMware cluster."""
+  """Delete a cluster in a VMware Engine private cloud."""
 
   @staticmethod
   def Args(parser):

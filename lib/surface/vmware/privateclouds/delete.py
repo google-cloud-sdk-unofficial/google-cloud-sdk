@@ -25,30 +25,28 @@ from googlecloudsdk.command_lib.vmware import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          Delete a VMware privatecloud.
+          Delete a VMware Engine private cloud.
         """,
     'EXAMPLES':
         """
-    To delete a privatecloud called example-privatecloud in project my-project and location us-central1:
+    To delete a private cloud called ``my-privatecloud'' in project
+    ``my-project'' and location ``us-central1'', run:
 
-      $ {command} example-privatecloud
-
-    Or:
-
-      $ {command} example-privatecloud --project=my-project --location=us-central1
+      $ {command} my-privatecloud --project=my-project --location=us-central1
 
     Or:
 
-      $ {command} /projects/my-project/locations/us-central1/example-privatecloud
+      $ {command} my-privatecloud
 
-    In the first example, the project and location are taken from gcloud properties core/project and vmware/location.
+    In the first example, the project and location are taken from gcloud
+    properties core/project and vmware/location.
     """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
-  """Delete a Cloud VMware privatecloud."""
+  """Delete a VMware Engine private cloud."""
 
   @staticmethod
   def Args(parser):

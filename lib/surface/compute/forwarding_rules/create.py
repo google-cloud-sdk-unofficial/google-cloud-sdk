@@ -150,6 +150,13 @@ class CreateHelper(object):
           '[--ports] is required for global forwarding rules.')
 
     if is_psc_google_apis:
+      rule_name = forwarding_rule_ref.Name()
+      if len(rule_name) > 20 or rule_name[0].isdigit(
+      ) or not rule_name.isalnum():
+        raise exceptions.ToolException(
+            'A forwarding rule to Google APIs must have a name that is between '
+            ' 1-20 characters long, alphanumeric, starting with a letter.')
+
       if port_range:
         raise exceptions.ToolException(
             '[--ports] is not allowed for PSC-GoogleApis forwarding rules.')

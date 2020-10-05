@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""'notebooks cluster describe' command."""
+"""'vmware clusters describe' command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,30 +25,28 @@ from googlecloudsdk.command_lib.vmware import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          Describe a VMware cluster.
+          Describe a cluster in a VMware Engine private cloud.
         """,
     'EXAMPLES':
         """
-      To describe a cluster called example-cluster in project my-project and location us-central1:
+          To get a description of a cluster called ``my-cluster'' in the
+          ``my-privatecloud'' private cloud in the ``us-central1''
+          location, run:
 
-      $ {command} example-cluster
+            $ {command} my-cluster --privatecloud=my-privatecloud --location=us-central1 --project=my-project
 
-    Or:
+          Or:
 
-      $ {command} example-cluster --project=my-project --location=us-central1
+            $ {command} my-cluster --privatecloud=my-privatecloud
 
-    Or:
-
-      $ {command} /projects/my-project/locations/us-central1/example-cluster
-
-    In the first example, the project and location are taken from gcloud properties core/project and vmware/location.
+          In the second example, the project and location are taken from gcloud properties core/project and vmware/location.
     """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
-  """Describe a Cloud VMware cluster."""
+  """Describe a cluster in a VMware Engine private cloud."""
 
   @staticmethod
   def Args(parser):

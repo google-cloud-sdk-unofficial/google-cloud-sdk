@@ -61,20 +61,24 @@ class Update(base.UpdateCommand):
     flags.AddUpdatePushQueueFlags(parser)
 
   def Run(self, args):
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      queue_type = args.type
+    else:
+      queue_type = constants.PUSH_QUEUE
     parsers.CheckUpdateArgsSpecified(args,
-                                     constants.PUSH_QUEUE,
+                                     queue_type,
                                      release_track=self.ReleaseTrack())
     api = GetApiAdapter(self.ReleaseTrack())
     queues_client = api.queues
     queue_ref = parsers.ParseQueue(args.queue, args.location)
     queue_config = parsers.ParseCreateOrUpdateQueueArgs(
         args,
-        constants.PUSH_QUEUE,
+        queue_type,
         api.messages,
         is_update=True,
         release_track=self.ReleaseTrack())
     updated_fields = parsers.GetSpecifiedFieldsMask(
-        args, constants.PUSH_QUEUE, release_track=self.ReleaseTrack())
+        args, queue_type, release_track=self.ReleaseTrack())
     log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
       app_engine_routing_override = (
@@ -96,7 +100,8 @@ class Update(base.UpdateCommand):
           retry_config=queue_config.retryConfig,
           rate_limits=queue_config.rateLimits,
           app_engine_routing_override=app_engine_routing_override,
-          stackdriver_logging_config=queue_config.stackdriverLoggingConfig)
+          stackdriver_logging_config=queue_config.stackdriverLoggingConfig,
+          queue_type=queue_config.type)
     else:
       app_engine_routing_override = queue_config.appEngineRoutingOverride
       update_response = queues_client.Patch(

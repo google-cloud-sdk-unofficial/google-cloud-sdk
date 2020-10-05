@@ -64,7 +64,6 @@ def _ApplyBuildEnvVarsArgsToFunction(function, args):
                                               **build_env_var_flags)
   if old_build_env_vars != new_build_env_vars:
     build_env_vars_type_class = api_util.GetApiMessagesModule(
-        track=base.ReleaseTrack.ALPHA
     ).CloudFunction.BuildEnvironmentVariablesValue
     function.buildEnvironmentVariables = env_vars_api_util.DictToEnvVarsProperty(
         build_env_vars_type_class, new_build_env_vars)
@@ -416,6 +415,8 @@ class DeployBeta(base.Command):
     """Register flags for this command."""
     Deploy.Args(parser)
     flags.AddBuildWorkerPoolMutexGroup(parser)
+    # Add flags for specifying build environment variables
+    env_vars_util.AddBuildEnvVarsFlags(parser)
 
   def Run(self, args):
     return _Run(args, track=self.ReleaseTrack(), enable_build_worker_pool=True)

@@ -25,25 +25,27 @@ from googlecloudsdk.command_lib.vmware import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          List VMware privateclouds in a location.
+          List VMware Engine private clouds in a location.
         """,
     'EXAMPLES':
         """
-      to list privateclouds in the current vmware/location:
+          To list private clouds in the location ``us-central1'', run:
 
-      $ {command}
+            $ {command} --location=us-central1
 
-      to list privateclouds in a specified location:
+          Or:
 
-      $ {command} --location=us-central2
+            $ {command}
 
+          In the second example, the location is taken from gcloud properties
+          vmware/location.
     """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List Cloud VMware privateclouds."""
+  """List VMware Engine private clouds in a location."""
 
   @staticmethod
   def Args(parser):

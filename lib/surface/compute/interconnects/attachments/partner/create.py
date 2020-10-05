@@ -84,12 +84,14 @@ class Create(base.CreateCommand):
     if args.router is not None:
       router_ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
 
+    admin_enabled = attachment_flags.GetAdminEnabledFlag(args)
+
     attachment = interconnect_attachment.CreateAlpha(
         description=args.description,
         router=router_ref,
         attachment_type='PARTNER',
         edge_availability_domain=args.edge_availability_domain,
-        admin_enabled=args.admin_enabled,
+        admin_enabled=admin_enabled,
         validate_only=getattr(args, 'dry_run', None),
         mtu=getattr(args, 'mtu', None))
     self._pairing_key = attachment.pairingKey

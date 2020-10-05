@@ -28,31 +28,40 @@ class Describe(base.DescribeCommand):
   """Describe an Apigee API proxy deployment."""
 
   detailed_help = {
-      "DESCRIPTION": """\
-  Describe an Apigee API proxy deployment.
+      "DESCRIPTION":
+          """\
+  {description}
 
-  `{command}` retrieves the status of a specific Apigee API proxy's deployment
-  to a specific environment.
-  """,
-      "EXAMPLES": """\
+  `{command}` retrieves the status of a specific API proxy's deployment to a
+  specific environment.
+          """,
+      "EXAMPLES":
+          """\
   To get the status of a deployment in the active Cloud Platform project, which
   deploys ``my-proxy'' into the ``prod'' environment, run:
 
-    {command} --api=my-proxy --environment=prod
+      $ {command} --api=my-proxy --environment=prod
 
-  To get the status of a deployment in an Apigee organization called ``my-org'',
-  which deploys version 3 of the proxy ``my-proxy'' into the
-  ``test'' environment, run:
+  To get the status of that deployment as a JSON object, run:
 
-    {command} 3 --organization=my-org --environment=test --api=my-proxy
-  """}
+      $ {command} --api=my-proxy --environment=prod --format=json
+
+  To get the status of a deployment in an organization called ``my-org'', which
+  deploys version 3 of the proxy ``my-proxy'' into the ``test'' environment,
+  run:
+
+      $ {command} 3 --organization=my-org --environment=test --api=my-proxy
+          """
+  }
 
   @staticmethod
   def Args(parser):
     help_text = {
-        "api": "The deployed API proxy.",
-        "environment": "The environment in which the proxy was deployed.",
-        "organization": "The organization of the proxy and environment."
+        "api": "Deployed API proxy.",
+        "environment": "Environment in which the proxy was deployed.",
+        "organization": ("Apigee Organization of the proxy and environment. If "
+                         "unspecified, the Cloud Platform project's associated "
+                         "organization will be used."),
     }
     fallthroughs = [
         defaults.GCPProductOrganizationFallthrough(),
@@ -61,11 +70,22 @@ class Describe(base.DescribeCommand):
     resource_args.AddSingleResourceArgument(
         parser,
         "organization.environment.api.revision",
-        "The API proxy revision and environment of the deployment to be "
-        "described. `REVISION` defaults to ``auto'', which will describe "
-        "whichever revision is currently deployed. However, if more than one "
-        "revision of `API` is deployed in `ENVIRONMENT`, then an explicit "
-        "`REVISION` is required or the command will fail.",
+        """\
+API proxy revision and environment of the deployment to be described.
+
+
+To get a list of deployed proxies and their environments, run:
+
+    $ {parent_command} list
+
+REVISION can either be a positive revision number, or the special value
+``auto'', which will choose whichever revision of API is currently deployed in
+ENVIRONMENT, or return an error if more than one revision is deployed.
+
+
+If REVISION is unspecified, the default is ``auto''.
+
+""",
         fallthroughs=fallthroughs,
         help_texts=help_text)
 

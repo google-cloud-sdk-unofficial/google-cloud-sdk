@@ -113,6 +113,8 @@ class OsUpgrade(base.Command):
         args=args,
         output_filter=_OUTPUT_FILTER,
         instance_uri=instance_uri,
+        release_track=self.ReleaseTrack().id.lower()
+        if self.ReleaseTrack() else None
     )
 
 

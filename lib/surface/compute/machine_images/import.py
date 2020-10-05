@@ -99,7 +99,7 @@ class Import(base.CreateCommand):
     return daisy_utils.RunMachineImageOVFImportBuild(
         args=args,
         output_filter=_OUTPUT_FILTER,
-        compute_release_track=
+        release_track=
         self.ReleaseTrack().id.lower() if self.ReleaseTrack() else None,
     )
 

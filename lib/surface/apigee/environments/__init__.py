@@ -23,3 +23,16 @@ from googlecloudsdk.calliope import base
 
 class Environments(base.Group):
   """Manage Apigee environments."""
+
+  detailed_help = {
+      "EXAMPLES":
+          """\
+  To list all environments for the active Cloud Platform project, run:
+
+      $ {command} list
+
+  To get a JSON array of all environments in an Apigee organization called
+  ``my-org'', run:
+
+      $ {command} list --organization=my-org --format=json
+  """}

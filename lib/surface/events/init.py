@@ -259,8 +259,9 @@ def _InitializedMessage(release_track, cluster_name):
   command_prefix = 'gcloud '
   if release_track != base.ReleaseTrack.GA:
     command_prefix += release_track.prefix + ' '
-  ns_init_command = command_prefix + 'events namespaces init'
-  brokers_create_command = command_prefix + 'events brokers create'
+  ns_init_command = command_prefix + ('events namespaces init '
+                                      '--copy-default-secret')
+  brokers_create_command = command_prefix + 'events brokers create default'
   return ('Initialized cluster [{}] for Cloud Run eventing. '
           'Next, initialize the namespace(s) you plan to use and '
           'create a broker via `{}` and `{}`.'.format(

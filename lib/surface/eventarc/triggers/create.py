@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.eventarc import triggers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.eventarc import flags
+from googlecloudsdk.core import log
 
 _DETAILED_HELP = {
     'DESCRIPTION':
@@ -62,3 +63,9 @@ class Create(base.CreateCommand):
     if args.async_:
       return operation
     return client.WaitFor(operation)
+
+  def Epilog(self, resources_were_displayed):
+    if resources_were_displayed:
+      log.warning(
+          'It may take up to {} minutes for the trigger to start functioning.'
+          .format(triggers.MAX_READY_LATENCY_MINUTES))

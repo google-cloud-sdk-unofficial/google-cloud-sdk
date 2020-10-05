@@ -24,12 +24,12 @@ from googlecloudsdk.command_lib.apigee import resource_args
 
 
 class Delete(base.DescribeCommand):
-  """Deletes an Apigee API product."""
+  """Delete an Apigee API product."""
 
   detailed_help = {
       "EXAMPLES":
           """
-          To delete an API product called ``product-name'' in the active Cloud
+          To delete an API product called ``product-name'' from the active Cloud
           Platform project, run:
 
               $ {command} product-name
@@ -46,7 +46,13 @@ class Delete(base.DescribeCommand):
     resource_args.AddSingleResourceArgument(
         parser,
         "organization.product",
-        "The API product to be deleted.",
+        """\
+API product to be deleted. To get a list of available API products, run:
+
+
+    $ {parent_command} list
+
+""",
         fallthroughs=[defaults.GCPProductOrganizationFallthrough()])
 
   def Run(self, args):

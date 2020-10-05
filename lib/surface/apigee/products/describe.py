@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.apigee import resource_args
 
 
 class Describe(base.DescribeCommand):
-  """Describes an Apigee API product."""
+  """Describe an Apigee API product."""
 
   detailed_help = {
       "EXAMPLES":
@@ -34,7 +34,7 @@ class Describe(base.DescribeCommand):
 
               $ {command} product-name
 
-          To describe an API product called ``other-product'' from an Apigee
+          To describe an API product called ``other-product'' in an Apigee
           organization called ``org-name'', run:
 
               $ {command} other-product --organization=org-name
@@ -49,7 +49,10 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddSingleResourceArgument(
-        parser, "organization.product", "The API product to be described.",
+        parser, "organization.product",
+        "API product to be described. To get a list of available API products, "
+        "run:\n\n\n"
+        "    $ {parent_command} list\n\n",
         fallthroughs=[defaults.GCPProductOrganizationFallthrough()])
 
   def Run(self, args):

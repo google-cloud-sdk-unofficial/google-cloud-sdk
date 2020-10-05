@@ -88,6 +88,12 @@ class AdjustTraffic(base.Command):
     flags.AddUpdateTrafficFlags(parser, cls.ReleaseTrack())
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
+    resource_printer.RegisterFormatter(
+        traffic_printer.TRAFFIC_PRINTER_FORMAT,
+        traffic_printer.TrafficPrinter,
+        hidden=True)
+    parser.display_info.AddFormat(traffic_printer.TRAFFIC_PRINTER_FORMAT)
+
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
@@ -101,13 +107,6 @@ class AdjustTraffic(base.Command):
     Returns:
       List of traffic.TrafficTargetStatus instances reflecting the change.
     """
-    # TODO(b/143898356) Begin code that should be in Args
-    resource_printer.RegisterFormatter(
-        traffic_printer.TRAFFIC_PRINTER_FORMAT,
-        traffic_printer.TrafficPrinter)
-    args.GetDisplayInfo().AddFormat('traffic')
-    # End code that should be in Args
-
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())
     service_ref = flags.GetService(args)

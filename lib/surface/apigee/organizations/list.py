@@ -25,22 +25,27 @@ class List(base.ListCommand):
   """List Apigee organizations and their paired Cloud Platform projects."""
 
   detailed_help = {
-      "DESCRIPTION": """\
-  List Apigee organizations and their paired Cloud Platform projects.
+      "DESCRIPTION":
+          """\
+  {description}
 
-  `{command}` lists all Apigee organizations to which the user's `gcloud auth`
+  `{command}` lists all organizations to which the user's `gcloud auth`
   credentials have access, even if they don't match the active Cloud Platform
   project.
+
+  Apigee organizations are distinct from Cloud Platform organizations, and
+  usually have a one-to-one relationship with Cloud Platform projects.
   """,
-      "EXAMPLES": """\
-  To list all accessible organizations, run:
+      "EXAMPLES":
+          """\
+  To list all accessible organizations and their associated Cloud Platform projects, run:
 
-      $ gcloud apigee organizations list
+      $ {command}
 
-  To get that list as a JSON array of organizations and their associated Cloud
-  Platform projects, run:
+  To get a JSON array of all organizations whose Cloud Platform project names
+  contain the word ``sandbox'', run:
 
-      $ gcloud apigee organizations list --format=json
+      $ {command} --format=json --filter="project:(sandbox)"
   """}
 
   @staticmethod

@@ -47,7 +47,8 @@ class List(base.ListCommand):
     resource_args.AddSingleResourceArgument(
         parser,
         "organization",
-        "Apigee organization whose products should be listed.",
+        "Apigee organization whose products should be listed. If unspecified, "
+        "the Cloud Platform project's associated organization will be used.",
         positional=False,
         required=True,
         fallthroughs=[defaults.GCPProductOrganizationFallthrough()])

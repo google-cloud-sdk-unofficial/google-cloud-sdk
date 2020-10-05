@@ -25,30 +25,28 @@ from googlecloudsdk.command_lib.vmware import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          Describe a VMware privatecloud.
+          Describe a VMware Engine private cloud.
         """,
     'EXAMPLES':
         """
-      To describe a privatecloud called example-privatecloud in project my-project and location us-central1:
+          To get a description of a private cloud called ``my-privatecloud'' in
+          project ``my-project'' and location ``us-central1'', run:
 
-      $ {command} example-privatecloud
+          $ {command} example-privatecloud --project=my-project --location=us-central1
 
-    Or:
+        Or:
 
-      $ {command} example-privatecloud --project=my-project --location=us-central1
+          $ {command} example-privatecloud
 
-    Or:
-
-      $ {command} /projects/my-project/locations/us-central1/example-privatecloud
-
-    In the first example, the project and location are taken from gcloud properties core/project and vmware/location.
+        In the second example, the project and location are taken from gcloud
+        properties core/project and vmware/location.
     """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe a Cloud VMware privatecloud."""
+  """Describe a VMware Engine private cloud."""
 
   @staticmethod
   def Args(parser):

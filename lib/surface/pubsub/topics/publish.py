@@ -83,8 +83,7 @@ class PublishBeta(Publish):
   @classmethod
   def Args(cls, parser):
     resource_args.AddTopicResourceArg(parser, 'to publish messages to.')
-    flags.AddPublishMessageFlags(
-        parser, add_deprecated=True, support_message_ordering=True)
+    flags.AddPublishMessageFlags(parser, add_deprecated=True)
 
   def Run(self, args):
     message_body = flags.ParseMessageBody(args)

@@ -2114,7 +2114,7 @@
           "type": "string"
         },
         "type": {
-          "description": "Required. The field data type. Possible values include STRING, BYTES, INTEGER, INT64 (same as INTEGER), FLOAT, FLOAT64 (same as FLOAT), BOOLEAN, BOOL (same as BOOLEAN), TIMESTAMP, DATE, TIME, DATETIME, RECORD (where RECORD indicates that the field contains a nested schema) or STRUCT (same as RECORD).",
+          "description": "Required. The field data type. Possible values include STRING, BYTES, INTEGER, INT64 (same as INTEGER), FLOAT, FLOAT64 (same as FLOAT), BOOLEAN, BOOL (same as BOOLEAN), TIMESTAMP, DATE, TIME, DATETIME, GEOGRAPHY, NUMERIC, RECORD (where RECORD indicates that the field contains a nested schema) or STRUCT (same as RECORD).",
           "type": "string"
         },
         "mode": {
@@ -2403,7 +2403,7 @@
       "type": "object",
       "properties": {
         "type": {
-          "description": "Required. The supported types are DAY, which will generate one partition per day, and HOUR, which will generate one partition per hour.",
+          "description": "Required. The supported types are DAY, HOUR, MONTH, and YEAR, which will generate one partition per day, hour, month, and year, respectively.",
           "type": "string"
         },
         "expirationMs": {
@@ -2456,7 +2456,7 @@
       "type": "object",
       "properties": {
         "fields": {
-          "description": "One or more fields on which data should be clustered. Only top-level, non-repeated, simple-type fields are supported. The order of the fields will determine how clusters will be generated, so it is important.",
+          "description": "One or more fields on which data should be clustered. Only top-level, non-repeated, simple-type fields are supported. The ordering of the clustering fields should be prioritized from most to least important for filtering purposes. Additional information on limitations can be found here: https:\/\/cloud.google.com\/bigquery\/docs\/creating-clustered-tables#limitations",
           "type": "array",
           "items": {
             "type": "string"
@@ -2861,6 +2861,11 @@
           "description": "Output only. If this a child job of a script, specifies information about the context of this job within the script.",
           "readOnly": true,
           "$ref": "ScriptStatistics"
+        },
+        "transactionInfo": {
+          "description": "Output only. [Alpha] Information of the multi-statement transaction if this job is part of one.",
+          "readOnly": true,
+          "$ref": "TransactionInfo"
         }
       }
     },
@@ -3006,6 +3011,11 @@
           "readOnly": true,
           "$ref": "RoutineReference"
         },
+        "exportDataStatistics": {
+          "description": "Output only. Stats for EXPORT DATA statement.",
+          "readOnly": true,
+          "$ref": "ExportDataStatistics"
+        },
         "externalServiceCosts": {
           "description": "Output only. Job cost breakdown as bigquery internal cost and external service costs.",
           "readOnly": true,
@@ -3013,6 +3023,11 @@
           "items": {
             "$ref": "ExternalServiceCost"
           }
+        },
+        "biEngineStatistics": {
+          "description": "Output only. BI Engine specific Statistics. This will only be populated if TurboSql acceleration is enabled. See go\/turbosql-reporting for details.",
+          "readOnly": true,
+          "$ref": "BiEngineStatistics"
         }
       }
     },
@@ -3226,6 +3241,23 @@
         }
       }
     },
+    "ExportDataStatistics": {
+      "id": "ExportDataStatistics",
+      "description": "Statistics for the EXPORT DATA statement as part of Query Job. EXTRACT JOB statistics are populated in JobStatistics4.",
+      "type": "object",
+      "properties": {
+        "fileCount": {
+          "description": "Number of destination files generated in case of EXPORT DATA statement only.",
+          "type": "string",
+          "format": "int64"
+        },
+        "rowCount": {
+          "description": "[Alpha] Number of destination rows generated in case of EXPORT DATA statement only.",
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
     "ExternalServiceCost": {
       "id": "ExternalServiceCost",
       "description": "The external service cost is a portion of the total cost, these costs are not additive with total_bytes_billed. Moreover, this field only track external service costs that will show up as BigQuery costs (e.g. training BigQuery ML job with google cloud CAIP or Automl Tables services), not other costs which may be accrued by running the query (e.g. reading from Bigtable or Cloud Storage). The external service costs with different billing sku (e.g. CAIP job is charged based on VM usage) are converted to BigQuery billed_bytes and slot_ms with equivalent amount of US dollars. Services may not directly correlate to these metrics, but these are the equivalents for billing purposes. Output only.",
@@ -3249,6 +3281,72 @@
           "description": "External service cost in terms of bigquery slot milliseconds.",
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "BiEngineStatistics": {
+      "id": "BiEngineStatistics",
+      "description": "Statistics for a BI-Engine specific query. Populated as part of JobStatistics2",
+      "type": "object",
+      "properties": {
+        "accelerationMode": {
+          "description": "Output only. Specifies which mode of BI-Engine acceleration was performed (if any).",
+          "readOnly": true,
+          "type": "string",
+          "enumDescriptions": [
+            "BI-Engine AccelerationMode type not specified.",
+            "BI-Engine disabled the acceleration. bi_engine_acceleration_reasons specifies a more detailed reason.",
+            "Part of the query was accelerated using BI-Engine. See bi_engine_acceleration_reasons for why parts of the query were not accelerated.",
+            "All of the query was accelerated using BI-Engine."
+          ],
+          "enum": [
+            "ACCELERATION_MODE_UNSPECIFIED",
+            "DISABLED",
+            "PARTIAL",
+            "FULL"
+          ]
+        },
+        "accelerationReasons": {
+          "description": "In case of DISABLED or PARTIAL acceleration, these contain the explanatory reasons as to why BI-Engine could not accelerate. In case the full query was accelerated, this field is not populated.",
+          "type": "array",
+          "items": {
+            "$ref": "AccelerationReason"
+          }
+        }
+      }
+    },
+    "AccelerationReason": {
+      "id": "AccelerationReason",
+      "description": "Reason why BiEngine didn't accelerate the query (or sub-query).",
+      "type": "object",
+      "properties": {
+        "code": {
+          "description": "Output only. High-level BI-Engine reason for partial or disabled acceleration",
+          "readOnly": true,
+          "type": "string",
+          "enumDescriptions": [
+            "AccelerationReason not specified.",
+            "No reservation available for BI-Engine acceleration.",
+            "Not enough memory available for BI-Engine acceleration.",
+            "Data is not-cached and could not be accelerated by BI-Engine.",
+            "This particular SQL text is not supported for acceleration by BI-Engine.",
+            "Input too large for acceleration by BI-Engine.",
+            "Catch-all code for all other cases for partial or disabled acceleration."
+          ],
+          "enum": [
+            "CODE_UNSPECIFIED",
+            "NO_RESERVATION",
+            "INSUFFICIENT_RESERVATION",
+            "UNCACHED",
+            "UNSUPPORTED_SQL_TEXT",
+            "INPUT_TOO_LARGE",
+            "OTHER_REASON"
+          ]
+        },
+        "message": {
+          "description": "Output only. Free form human-readable reason for partial or disabled acceleration.",
+          "readOnly": true,
+          "type": "string"
         }
       }
     },
@@ -3375,6 +3473,18 @@
         },
         "text": {
           "description": "Output only. Text of the current statement\/expression.",
+          "readOnly": true,
+          "type": "string"
+        }
+      }
+    },
+    "TransactionInfo": {
+      "id": "TransactionInfo",
+      "description": "[Alpha] Information of a multi-statement transaction.",
+      "type": "object",
+      "properties": {
+        "transactionId": {
+          "description": "Output only. [Alpha] Id of the transaction.",
           "readOnly": true,
           "type": "string"
         }

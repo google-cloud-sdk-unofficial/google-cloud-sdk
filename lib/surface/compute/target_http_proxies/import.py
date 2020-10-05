@@ -66,19 +66,50 @@ def _GetSchemaPath(release_track, for_help=False):
       for_help=for_help)
 
 
+def _SendGetRequest(client, target_http_proxy_ref):
+  """Sends Target HTTP Proxy get request."""
+  if target_http_proxy_ref.Collection() == 'compute.regionTargetHttpProxies':
+    request = client.messages.ComputeRegionTargetHttpProxiesGetRequest(
+        **target_http_proxy_ref.AsDict())
+    collection = client.apitools_client.regionTargetHttpProxies
+    return client.MakeRequests([(collection, 'Get', request)])[0]
+
+  request = client.messages.ComputeTargetHttpProxiesGetRequest(
+      **target_http_proxy_ref.AsDict())
+  collection = client.apitools_client.targetHttpProxies
+  return client.MakeRequests([(collection, 'Get', request)])[0]
+
+
 def _SendInsertRequest(client, target_http_proxy_ref, target_http_proxy):
   """Sends Target HTTP Proxy insert request."""
   if target_http_proxy_ref.Collection() == 'compute.regionTargetHttpProxies':
-    return client.apitools_client.regionTargetHttpProxies.Insert(
-        client.messages.ComputeRegionTargetHttpProxiesInsertRequest(
-            project=target_http_proxy_ref.project,
-            region=target_http_proxy_ref.region,
-            targetHttpProxy=target_http_proxy))
+    request = client.messages.ComputeRegionTargetHttpProxiesInsertRequest(
+        project=target_http_proxy_ref.project,
+        targetHttpProxy=target_http_proxy,
+        region=target_http_proxy_ref.region)
+    collection = client.apitools_client.regionTargetHttpProxies
+    return client.MakeRequests([(collection, 'Insert', request)])[0]
 
-  return client.apitools_client.targetHttpProxies.Insert(
-      client.messages.ComputeTargetHttpProxiesInsertRequest(
-          project=target_http_proxy_ref.project,
-          targetHttpProxy=target_http_proxy))
+  request = client.messages.ComputeTargetHttpProxiesInsertRequest(
+      project=target_http_proxy_ref.project, targetHttpProxy=target_http_proxy)
+  collection = client.apitools_client.targetHttpProxies
+  return client.MakeRequests([(collection, 'Insert', request)])[0]
+
+
+def _SendPatchRequest(client, target_http_proxy_ref, target_http_proxy):
+  """Make target HTTP proxy patch request."""
+  # TODO(b/129339772) Fix inconsistent behavior for L7 resource updates.
+  if target_http_proxy_ref.Collection() == 'compute.regionTargetHttpProxies':
+    console_message = ('Target HTTP Proxy [{0}] cannot be updated'.format(
+        target_http_proxy_ref.Name()))
+    raise NotImplementedError(console_message)
+
+  request = client.messages.ComputeTargetHttpProxiesPatchRequest(
+      project=target_http_proxy_ref.project,
+      targetHttpProxy=target_http_proxy_ref.Name(),
+      targetHttpProxyResource=target_http_proxy)
+  collection = client.apitools_client.targetHttpProxies
+  return client.MakeRequests([(collection, 'Patch', request)])[0]
 
 
 def _Run(args, holder, target_http_proxy_arg, release_track):
@@ -103,16 +134,28 @@ def _Run(args, holder, target_http_proxy_arg, release_track):
 
   # Get existing target HTTP proxy.
   try:
-    target_http_proxies_utils.SendGetRequest(client, target_http_proxy_ref)
+    target_http_proxy_old = target_http_proxies_utils.SendGetRequest(
+        client, target_http_proxy_ref)
   except apitools_exceptions.HttpError as error:
     if error.status_code != 404:
       raise error
     # Target HTTP proxy does not exist, create a new one.
     return _SendInsertRequest(client, target_http_proxy_ref, target_http_proxy)
 
-  console_message = ('Target HTTP Proxy [{0}] cannot be updated'.format(
-      target_http_proxy_ref.Name()))
-  raise NotImplementedError(console_message)
+  if target_http_proxy_old == target_http_proxy:
+    return
+
+  console_io.PromptContinue(
+      message=('Target Http Proxy [{0}] will be overwritten.').format(
+          target_http_proxy_ref.Name()),
+      cancel_on_no=True)
+
+  # Populate id and fingerprint fields. These two fields are manually
+  # removed from the schema files.
+  target_http_proxy.id = target_http_proxy_old.id
+  target_http_proxy.fingerprint = target_http_proxy_old.fingerprint
+
+  return _SendPatchRequest(client, target_http_proxy_ref, target_http_proxy)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
