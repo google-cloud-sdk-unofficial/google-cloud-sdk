@@ -108,7 +108,7 @@ class Ls(base.Command):
       storage_urls = [storage_url.storage_url_from_string(path)
                       for path in args.path]
     else:
-      storage_urls = [storage_url.CloudUrl(cloud_api.DEFAULT_PROVIDER.value)]
+      storage_urls = [storage_url.CloudUrl(cloud_api.DEFAULT_PROVIDER)]
 
     tasks = [
         cloud_list_task.CloudListTask(

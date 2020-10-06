@@ -54,6 +54,9 @@ class GetServerConfig(base.Command):
         for its capabilities.
     """
     flags.AddZoneAndRegionFlags(parser)
+    base.FILTER_FLAG.AddToParser(parser)
+    base.LIMIT_FLAG.AddToParser(parser)
+    base.SORT_BY_FLAG.AddToParser(parser)
 
   def Run(self, args):
     adapter = self.context['api_adapter']

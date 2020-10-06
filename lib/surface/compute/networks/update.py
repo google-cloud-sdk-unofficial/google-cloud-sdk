@@ -98,6 +98,10 @@ class Update(base.UpdateCommand):
     network_resource = messages.Network()
     should_patch = False
     if getattr(args, 'mtu', None) is not None:
+      msg = ('This might cause connectivity issues when ' +
+             'there are running VMs attached.')
+      console_io.PromptContinue(message=msg, default=False, cancel_on_no=True)
+
       network_resource.mtu = args.mtu
       should_patch = True
 

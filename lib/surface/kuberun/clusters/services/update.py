@@ -37,19 +37,23 @@ _DETAILED_HELP = {
 class Update(kuberun_command.KubeRunStreamingCommand, base.UpdateCommand):
   """Updates a Knative service."""
 
-  @staticmethod
-  def Args(parser):
+  detailed_help = _DETAILED_HELP
+  flags = [
+      flags.ClusterConnectionFlags(),
+      flags.CommonServiceFlags(),
+      flags.NoTrafficFlag(),
+      flags.AsyncFlag()
+  ]
+
+  @classmethod
+  def Args(cls, parser):
+    super(Update, cls).Args(parser)
     parser.add_argument(
         'service',
         help='ID of the service or fully qualified identifier for the service.')
-    flags.AddCommonServiceFlags(parser)
-    flags.AddNoTrafficFlag(parser)
 
   def BuildKubeRunArgs(self, args):
-    exec_args = [args.service]
-    exec_args.extend(flags.ParsePassThroughBoolFlags(args))
-    exec_args.extend(flags.ParsePassThroughStringFlags(args))
-    return exec_args
+    return [args.service] + super(Update, self).BuildKubeRunArgs(args)
 
   def OperationResponseHandler(self, response, args):
     if response.failed:

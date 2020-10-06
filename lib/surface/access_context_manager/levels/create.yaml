@@ -63,7 +63,7 @@
                      - ipSubnetworks:
                        - 162.222.181.197/24
                        - 2001:db8::/48
-                     - members
+                     - members:
                        - user:user@example.com
                     ```
               repeated: false

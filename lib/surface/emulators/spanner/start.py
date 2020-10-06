@@ -63,6 +63,13 @@ class Start(base.Command):
         'has a native binary available in the sdk. Currently we only provide a '
         'native binary for Linux. For other systems, you must install docker '
         'for your platform before starting the emulator.')
+    parser.add_argument(
+        '--enable-fault-injection',
+        required=False,
+        type=arg_parsers.ArgBoolean(),
+        help='If true, the emulator will randomly inject faults into '
+        'transactions. This facilitates application abort-retry testing.',
+        default=False)
 
   def Run(self, args):
     if not args.host_port:

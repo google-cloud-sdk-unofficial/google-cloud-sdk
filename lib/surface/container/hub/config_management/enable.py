@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command to enable Config Management feature."""
+"""The command to enable Config Management Feature."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,13 +26,13 @@ from googlecloudsdk.core import properties
 
 
 class Enable(base.EnableCommand):
-  """Enable Config Management feature.
+  """Enable Config Management Feature.
 
-  This command enables Config Management feature in Hub.
+  This command enables Config Management Feature in Hub.
 
   ## Examples
 
-  Enable Config Management feature:
+  Enable Config Management Feature:
 
     $ {command}
   """

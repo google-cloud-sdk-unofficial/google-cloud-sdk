@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command to disable Config Management feature."""
+"""The command to disable Config Management Feature."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,13 +22,13 @@ from googlecloudsdk.command_lib.container.hub.features import base
 
 
 class Disable(base.DisableCommand):
-  """Disable Config Management feature.
+  """Disable Config Management Feature.
 
-  This command disables Config Management feature in Hub.
+  This command disables Config Management Feature in Hub.
 
   ## Examples
 
-  Disable Config Management feature:
+  Disable Config Management Feature:
 
     $ {command}
   """

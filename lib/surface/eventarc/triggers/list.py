@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.eventarc import triggers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.eventarc import flags
+from googlecloudsdk.command_lib.eventarc import types
 
 _DETAILED_HELP = {
     'DESCRIPTION':
@@ -36,6 +37,7 @@ _DETAILED_HELP = {
 _FORMAT = """ \
 table(
     name.scope("triggers"):label=NAME,
+    matchingCriteria.type():label=TYPE,
     destination.cloudRunService.service:label=DESTINATION_RUN_SERVICE,
     destination.cloudRunService.path:label=DESTINATION_RUN_PATH,
     updateTime.recently_modified():label=RECENTLY_MODIFIED
@@ -58,8 +60,10 @@ class List(base.ListCommand):
         required=True)
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(triggers.GetTriggerURI)
-    parser.display_info.AddTransforms(
-        {'recently_modified': triggers.RecentlyModified})
+    parser.display_info.AddTransforms({
+        'recently_modified': triggers.RecentlyModified,
+        'type': types.MatchingCriteriaToType
+    })
 
   def Run(self, args):
     """Run the list command."""

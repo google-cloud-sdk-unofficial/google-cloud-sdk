@@ -150,12 +150,7 @@ class Create(base.CreateCommand):
     validation_callback = functools.partial(
         validation.validate_attestation,
         attestor_ref=attestor_ref,
-        # Call V1 API for validation when using the alpha track. (The beta track
-        # uses V1Beta1, which is mapped to the same service as V1.)
-        # TODO(b/159263189): Replace with just api_version after removing
-        # ValidationHelperV1Alpha2 service.
-        api_version=apis.V1
-        if self.ReleaseTrack() == base.ReleaseTrack.ALPHA else api_version)
+        api_version=api_version)
 
     return containeranalysis.Client().CreateAttestationOccurrence(
         project_ref=project_ref,
@@ -285,12 +280,7 @@ class CreateWithPkixSupport(base.CreateCommand):
     validation_callback = functools.partial(
         validation.validate_attestation,
         attestor_ref=attestor_ref,
-        # Call V1 API for validation when using the alpha track. (The beta track
-        # uses V1Beta1, which is mapped to the same service as V1.)
-        # TODO(b/159263189): Replace with just api_version after removing
-        # ValidationHelperV1Alpha2 service.
-        api_version=apis.V1
-        if self.ReleaseTrack() == base.ReleaseTrack.ALPHA else api_version)
+        api_version=api_version)
 
     client = containeranalysis.Client(
         ca_apis.GetApiVersion(self.ReleaseTrack()))

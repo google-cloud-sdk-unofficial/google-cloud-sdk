@@ -60,23 +60,36 @@ class Login(base.BinaryBackedCommand):
   def Run(self, args):
     command_executor = anthoscli_backend.AnthosAuthWrapper()
     cluster = args.CLUSTER
-    config_file = args.login_config
+
+    # Get Default Path if flag not provided.
+    login_config = args.login_config or command_executor.default_config_path
+
+    # Get contents of config, parsing either URL or File.
+    login_config, config_contents, is_url = anthoscli_backend.GetFileOrURL(
+        login_config,
+        args.login_config_cert)
+
+    # Get Preferred Auth Method and handle prompting.
     force_update = args.set_preferred_auth
-    _, ldapuser, ldappass = anthoscli_backend.GetPreferredAuthForCluster(
-        cluster, config_file or command_executor.default_config_path,
-        force_update)
+    authmethod, ldapuser, ldappass = anthoscli_backend.GetPreferredAuthForCluster(
+        cluster=cluster, login_config=login_config,
+        config_contents=config_contents, force_update=force_update,
+        is_url=is_url)
+
+    # Log and execute binary command with flags.
     log.status.Print(messages.LOGIN_CONFIG_MESSAGE)
     response = command_executor(
         command='login',
         cluster=cluster,
         kube_config=args.kubeconfig,
         user=args.user,
-        login_config=config_file,
+        login_config=login_config,
         login_config_cert=args.login_config_cert,
         dry_run=args.dry_run,
         show_exec_error=args.show_exec_error,
         ldap_user=ldapuser,
         ldap_pass=ldappass,
+        preferred_auth=authmethod,
         env=anthoscli_backend.GetEnvArgsForCommand())
     return anthoscli_backend.LoginResponseHandler(
         response, list_clusters_only=(cluster is None))

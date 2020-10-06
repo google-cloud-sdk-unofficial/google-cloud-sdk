@@ -19,7 +19,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.kuberun import flags
 from googlecloudsdk.command_lib.kuberun import kuberun_command
 from googlecloudsdk.core import log
 
@@ -38,19 +37,12 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
   """Lists available Development Kits."""
 
   detailed_help = _DETAILED_HELP
+  flags = []
 
-  # TODO(b/169182315): remove this method
-  @staticmethod
-  def AddTemporaryArgs(parser):
-    flags.AddNamespaceFlag(parser)
-
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
+    super(List, cls).Args(parser)
     base.URI_FLAG.RemoveFromParser(parser)
-    List.AddTemporaryArgs(parser)
-
-  def BuildKubeRunArgs(self, args):
-    return []
 
   def Command(self):
     return ['devkits', 'list']

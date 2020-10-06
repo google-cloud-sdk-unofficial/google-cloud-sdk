@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: List Cloud Policy Tag Manager policy tags.
     description: List Cloud Policy Tag Manager policy tags.

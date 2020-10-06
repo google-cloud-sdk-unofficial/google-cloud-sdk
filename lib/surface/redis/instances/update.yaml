@@ -33,6 +33,13 @@
       type: long
       help_text: |
         The memory size of the instance in GiB.
+    - arg_name: enable-auth
+      api_field: instance.authEnabled
+      type: bool
+      action: store_true
+      release_tracks: [ALPHA, BETA]
+      help_text: |
+        Enables Redis AUTH for the instance.
     additional_arguments_hook: googlecloudsdk.command_lib.redis.util:AdditionalInstanceUpdateArguments
     labels:
       api_field: instance.labels
@@ -44,23 +51,25 @@
     ALPHA:
       api_version: v1alpha1
       modify_request_hooks:
-      - googlecloudsdk.command_lib.redis.instances_update_util:CheckFieldsSpecified
+      - googlecloudsdk.command_lib.redis.instances_update_util:CheckFieldsSpecifiedAlpha
       - googlecloudsdk.command_lib.redis.instances_update_util:AddDisplayName
       - googlecloudsdk.command_lib.redis.instances_update_util:AddSize
       - googlecloudsdk.command_lib.redis.instances_update_util:RemoveRedisConfigs
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdateRedisConfigs
+      - googlecloudsdk.command_lib.redis.instances_update_util:UpdateAuthEnabled
     BETA:
       api_version: v1beta1
       modify_request_hooks:
-      - googlecloudsdk.command_lib.redis.instances_update_util:CheckFieldsSpecified
+      - googlecloudsdk.command_lib.redis.instances_update_util:CheckFieldsSpecifiedBeta
       - googlecloudsdk.command_lib.redis.instances_update_util:AddDisplayName
       - googlecloudsdk.command_lib.redis.instances_update_util:AddSize
       - googlecloudsdk.command_lib.redis.instances_update_util:RemoveRedisConfigs
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdateRedisConfigs
+      - googlecloudsdk.command_lib.redis.instances_update_util:UpdateAuthEnabled
     GA:
       api_version: v1
       modify_request_hooks:
-      - googlecloudsdk.command_lib.redis.instances_update_util:CheckFieldsSpecified
+      - googlecloudsdk.command_lib.redis.instances_update_util:CheckFieldsSpecifiedGA
       - googlecloudsdk.command_lib.redis.instances_update_util:AddDisplayName
       - googlecloudsdk.command_lib.redis.instances_update_util:AddSize
       - googlecloudsdk.command_lib.redis.instances_update_util:RemoveRedisConfigs

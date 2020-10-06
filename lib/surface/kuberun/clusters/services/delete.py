@@ -37,20 +37,18 @@ _DETAILED_HELP = {
 class Delete(kuberun_command.KubeRunCommand, base.DeleteCommand):
   """Deletes a Knative service."""
 
-  @staticmethod
-  def Args(parser):
+  detailed_help = _DETAILED_HELP
+  flags = [
+      flags.NamespaceFlag(),
+      flags.ClusterConnectionFlags(),
+      flags.AsyncFlag()
+  ]
+
+  @classmethod
+  def Args(cls, parser):
+    super(Delete, cls).Args(parser)
     parser.add_argument('service',
                         help='The Knative service to delete.')
-    flags.AddNamespaceFlag(parser)
-    flags.AddAsyncFlag(parser)
-
-  def BuildKubeRunArgs(self, args):
-    exec_args = [args.service]
-
-    if args.IsSpecified('async'):
-      exec_args.append('--async')
-
-    return exec_args
 
   def OperationResponseHandler(self, response, args):
     if response.failed:
@@ -63,6 +61,9 @@ class Delete(kuberun_command.KubeRunCommand, base.DeleteCommand):
     log.status.Print('Service is successfully deleted.')
     return None
 
+  def BuildKubeRunArgs(self, args):
+    return [args.service] + super(Delete, self).BuildKubeRunArgs(args)
+
   def Run(self, args):
     """Delete a service."""
     console_io.PromptContinue(
@@ -70,9 +71,7 @@ class Delete(kuberun_command.KubeRunCommand, base.DeleteCommand):
             service=args.service),
         throw_if_unattended=True,
         cancel_on_no=True)
-    return super().Run(args)
+    return super(Delete, self).Run(args)
 
   def Command(self):
     return ['clusters', 'services', 'delete']
-
-Delete.detailed_help = _DETAILED_HELP

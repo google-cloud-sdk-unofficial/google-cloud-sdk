@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.eventarc import triggers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.eventarc import flags
+from googlecloudsdk.command_lib.eventarc import types
 from googlecloudsdk.core import log
 
 _DETAILED_HELP = {
@@ -62,7 +63,11 @@ class Create(base.CreateCommand):
                               args.destination_run_region)
     if args.async_:
       return operation
-    return client.WaitFor(operation)
+    trigger = client.WaitFor(operation)
+    if types.IsPubsubType(args.matching_criteria['type']):
+      log.status.Print('Created Pub/Sub topic [{}].'.format(
+          trigger.transport.pubsub.topic))
+    return trigger
 
   def Epilog(self, resources_were_displayed):
     if resources_were_displayed:

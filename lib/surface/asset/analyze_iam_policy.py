@@ -116,7 +116,7 @@ def AddOptionsGroup(parser, api_version=client_util.V1P4ALPHA1_API_VERSION):
   AddOutputGroupEdgesArgs(options_group)
   if api_version == client_util.V1P4ALPHA1_API_VERSION:
     AddOutputPartialResultBeforeTimeoutArgs(options_group)
-  elif api_version == client_util.V1P4BETA1_API_VERSION:
+  elif api_version == client_util.V1P4BETA1_API_VERSION or api_version == client_util.DEFAULT_API_VERSION:
     AddExecutionTimeout(options_group)
     AddShowAccessControlEntries(options_group)
     AddAnalyzeServiceAccountImpersonationArgs(options_group)
@@ -299,14 +299,24 @@ class AnalyzeIamPolicyBeta(base.Command):
       """
   }
 
-  @staticmethod
-  def Args(parser):
+  _API_VERSION = client_util.V1P4BETA1_API_VERSION
+
+  @classmethod
+  def Args(cls, parser):
     AddParentArgs(parser)
     AddResourceSelectorGroup(parser)
     AddIdentitySelectorGroup(parser)
     AddAccessSelectorGroup(parser)
-    AddOptionsGroup(parser, client_util.V1P4BETA1_API_VERSION)
+    AddOptionsGroup(parser, cls._API_VERSION)
 
   def Run(self, args):
     return client_util.MakeAnalyzeIamPolicyHttpRequests(
-        args, client_util.V1P4BETA1_API_VERSION)
+        args, self._API_VERSION)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Hidden
+class AnalyzeIamPolicyGA(AnalyzeIamPolicyBeta):
+  """Analyzes accessible IAM policies that match a request."""
+
+  _API_VERSION = client_util.DEFAULT_API_VERSION

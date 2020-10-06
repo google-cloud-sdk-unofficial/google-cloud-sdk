@@ -30,9 +30,9 @@ MEMBERSHIP_FLAG = '--membership'
 
 
 class Delete(base.UpdateCommand):
-  """Remove the ConfigManagement Feature Spec for the given membership.
+  """Remove the Config Management Feature Spec for the given membership.
 
-  This command removes the ConfigManagement Feature Spec for the given
+  This command removes the Config Management Feature Spec for the given
   membership. The existing ConfigManagement resources in the clusters will
   become unmanaged.
 

@@ -26,7 +26,8 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_projector
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA,
+                    base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List Compute Engine network peerings."""
 
@@ -38,7 +39,9 @@ class List(base.ListCommand):
             source_network.basename():label=NETWORK,
             network.map().scope(projects).segment(0):label=PEER_PROJECT,
             network.basename():label=PEER_NETWORK,
-            autoCreateRoutes,
+            peerMtu,
+            importCustomRoutes,
+            exportCustomRoutes,
             state,
             stateDetails
         )")
@@ -60,42 +63,20 @@ class List(base.ListCommand):
     request = messages.ComputeNetworksListRequest(
         project=project, filter=filter_expr)
 
-    for network in [network for network in list_pager.YieldFromList(
+    for network in list_pager.YieldFromList(
         client.networks,
         request,
         field='items',
         limit=args.limit,
-        batch_size=None) if network.peerings and (
-            args.network is None or
-            args.network == network.name)]:
-      # Network is synthesized for legacy reasons to maintain prior format.
-      # In general, synthesized output should not be done.
-      synthesized_network = resource_projector.MakeSerializable(network)
-      for peering in synthesized_network['peerings']:
-        peering['source_network'] = network.selfLink
-      yield synthesized_network
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class ListBeta(List):
-  """List Compute Engine network peerings."""
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat("""
-        table(peerings:format="table(
-            name,
-            source_network.basename():label=NETWORK,
-            network.map().scope(projects).segment(0):label=PEER_PROJECT,
-            network.basename():label=PEER_NETWORK,
-            importCustomRoutes,
-            exportCustomRoutes,
-            state,
-            stateDetails
-       )")
-    """)
-    parser.add_argument(
-        '--network', help='Only show peerings of a specific network.')
+        batch_size=None):
+      if network.peerings and (args.network is None
+                               or args.network == network.name):
+        # Network is synthesized for legacy reasons to maintain prior format.
+        # In general, synthesized output should not be done.
+        synthesized_network = resource_projector.MakeSerializable(network)
+        for peering in synthesized_network['peerings']:
+          peering['source_network'] = network.selfLink
+        yield synthesized_network
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('peerings')
