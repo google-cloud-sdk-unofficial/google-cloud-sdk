@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.run import resource_change_validators
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -127,6 +128,7 @@ class Update(base.Command):
 
     with serverless_operations.Connect(conn_context) as client:
       service = client.GetService(service_ref)
+      resource_change_validators.ValidateClearVpcConnector(service, args)
       has_latest = (
           service is None or
           traffic.LATEST_REVISION_KEY in service.spec_traffic)

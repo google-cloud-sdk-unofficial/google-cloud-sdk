@@ -26,7 +26,8 @@ from googlecloudsdk.command_lib.data_catalog.taxonomies import taxonomies
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Export(base.Command):
   """Export a list of taxonomies from a certain project."""
 

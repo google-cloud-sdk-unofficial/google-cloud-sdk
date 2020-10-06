@@ -52,18 +52,20 @@ _DETAILED_HELP = {
 class UpdateTraffic(kuberun_command.KubeRunCommandWithOutput):
   """Updates the traffic settings of a Knative service."""
 
-  @staticmethod
-  def _Flags(parser):
-    kuberun_command.KubeRunCommandWithOutput._Flags(parser)
+  detailed_help = _DETAILED_HELP
+  flags = [
+      flags.ClusterConnectionFlags(),
+      flags.NamespaceFlag(),
+      flags.TrafficFlags(),
+      flags.AsyncFlag()
+  ]
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
+    super(UpdateTraffic, cls).Args(parser)
     parser.add_argument(
         'service',
         help='Knative service for which to update the traffic settings.')
-    flags.AddNamespaceFlag(parser)
-    flags.AddTrafficFlags(parser)
-    flags.AddAsyncFlag(parser)
     resource_printer.RegisterFormatter(
         traffic_printer.TRAFFIC_PRINTER_FORMAT,
         traffic_printer.TrafficPrinter,
@@ -71,16 +73,7 @@ class UpdateTraffic(kuberun_command.KubeRunCommandWithOutput):
     parser.display_info.AddFormat(traffic_printer.TRAFFIC_PRINTER_FORMAT)
 
   def BuildKubeRunArgs(self, args):
-    exec_args = [args.service]
-
-    if args.IsSpecified('to_latest'):
-      exec_args.append('--to-latest')
-    elif args.IsSpecified('to_revisions'):
-      exec_args.extend(['--to-revisions', args.to_revisions])
-    if args.IsSpecified('async'):
-      exec_args.append('--async')
-
-    return exec_args
+    return [args.service] + super(UpdateTraffic, self).BuildKubeRunArgs(args)
 
   def Command(self):
     return ['clusters', 'services', 'update-traffic']
@@ -95,6 +88,3 @@ class UpdateTraffic(kuberun_command.KubeRunCommandWithOutput):
     else:
       raise exceptions.Error('Failed to update traffic for service [{}]'.format(
           args.service))
-
-
-UpdateTraffic.detailed_help = _DETAILED_HELP

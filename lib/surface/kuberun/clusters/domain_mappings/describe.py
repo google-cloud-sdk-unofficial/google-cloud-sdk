@@ -40,15 +40,18 @@ _DETAILED_HELP = {
 class Describe(kuberun_command.KubeRunCommandWithOutput, base.DescribeCommand):
   """Describes a domain mapping."""
 
-  @staticmethod
-  def Args(parser):
+  detailed_help = _DETAILED_HELP
+  flags = [flags.NamespaceFlag(), flags.ClusterConnectionFlags()]
+
+  @classmethod
+  def Args(cls, parser):
+    super(Describe, cls).Args(parser)
     parser.add_argument(
         'domain', help='The domain mapping to show details for.')
-    flags.AddNamespaceFlag(parser)
     parser.display_info.AddFormat('yaml')
 
   def BuildKubeRunArgs(self, args):
-    return [args.domain]
+    return [args.domain] + super(Describe, self).BuildKubeRunArgs(args)
 
   def Command(self):
     return ['clusters', 'domain-mappings', 'describe']
@@ -59,6 +62,3 @@ class Describe(kuberun_command.KubeRunCommandWithOutput, base.DescribeCommand):
     else:
       raise exceptions.Error('Cannot find domain mapping [{}]'.format(
           args.domain))
-
-
-Describe.detailed_help = _DETAILED_HELP

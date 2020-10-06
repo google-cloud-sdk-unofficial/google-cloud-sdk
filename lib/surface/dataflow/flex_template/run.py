@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataflow import apis
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataflow import dataflow_util
@@ -36,7 +37,7 @@ class Run(base.Command):
           """\
           To run a job from the flex template, run:
 
-            $ {command} my-job --template-file-gcs-location=gs://flex-template-path --region=europe-west1 --parameters=input="gs://input",output="gs://output-path",max_num_workers=5
+            $ {command} my-job --template-file-gcs-location=gs://flex-template-path --region=europe-west1 --parameters=input="gs://input",output="gs://output-path" --max_num_workers=5
           """,
   }
 
@@ -50,11 +51,11 @@ class Run(base.Command):
     parser.add_argument(
         'job_name',
         metavar='JOB_NAME',
-        help='The unique name to assign to the job.')
+        help='Unique name to assign to the job.')
 
     parser.add_argument(
         '--template-file-gcs-location',
-        help=('The Google Cloud Storage location of the flex template to run. '
+        help=('Google Cloud Storage location of the flex template to run. '
               "(Must be a URL beginning with 'gs://'.)"),
         type=arg_parsers.RegexpValidator(r'^gs://.*',
                                          'Must begin with \'gs://\''),
@@ -63,8 +64,82 @@ class Run(base.Command):
     parser.add_argument(
         '--region',
         metavar='REGION_ID',
-        help=('The region ID of the job\'s regional endpoint. ' +
+        help=('Region ID of the job\'s regional endpoint. ' +
               dataflow_util.DEFAULT_REGION_MESSAGE))
+
+    parser.add_argument(
+        '--staging-location',
+        help=('Google Cloud Storage location to stage temporary files. '
+              "(Must be a URL beginning with 'gs://'.)"),
+        type=arg_parsers.RegexpValidator(r'^gs://.*',
+                                         'Must begin with \'gs://\''))
+
+    parser.add_argument(
+        '--service-account-email',
+        type=arg_parsers.RegexpValidator(r'.*@.*\..*',
+                                         'must provide a valid email address'),
+        help='Service account to run the workers as.')
+
+    parser.add_argument(
+        '--max-workers', type=int, help='Maximum number of workers to run.')
+
+    parser.add_argument(
+        '--disable-public-ips',
+        action=actions.StoreBooleanProperty(
+            properties.VALUES.dataflow.disable_public_ips),
+        help='Cloud Dataflow workers must not use public IP addresses.')
+
+    parser.add_argument(
+        '--num-workers', type=int, help='Initial number of workers to use.')
+
+    parser.add_argument(
+        '--worker-machine-type',
+        help='Type of machine to use for workers. Defaults to '
+        'server-specified.')
+
+    parser.add_argument(
+        '--subnetwork',
+        help='Compute Engine subnetwork for launching instances '
+        'to run your pipeline.')
+
+    parser.add_argument(
+        '--network',
+        help='Compute Engine network for launching instances to '
+        'run your pipeline.')
+
+    parser.add_argument(
+        '--dataflow-kms-key',
+        help='Cloud KMS key to protect the job resources.')
+
+    region_group = parser.add_mutually_exclusive_group()
+    region_group.add_argument(
+        '--worker-region',
+        help='Region to run the workers in.')
+
+    region_group.add_argument(
+        '--worker-zone',
+        help='Zone to run the workers in.')
+
+    parser.add_argument(
+        '--enable-streaming-engine',
+        action=actions.StoreBooleanProperty(
+            properties.VALUES.dataflow.enable_streaming_engine),
+        help='Enabling Streaming Engine for the streaming job.')
+
+    parser.add_argument(
+        '--additional-experiments',
+        metavar='ADDITIONAL_EXPERIMENTS',
+        type=arg_parsers.ArgList(),
+        help=
+        ('Additional experiments to pass to the job.'))
+
+    parser.add_argument(
+        '--additional-user-labels',
+        metavar='ADDITIONAL_USER_LABELS',
+        type=arg_parsers.ArgDict(),
+        action=arg_parsers.UpdateAction,
+        help=
+        ('Additional user labels to pass to the job.'))
 
     parser.add_argument(
         '--parameters',
@@ -72,14 +147,7 @@ class Run(base.Command):
         type=arg_parsers.ArgDict(),
         action=arg_parsers.UpdateAction,
         help=
-        ('The parameters to pass to the job.'
-         'All pipeline options should be passed via parameters flag.\n'
-         'Use right casing format according to the sdk.\n'
-         'Example: --parameters=maxNumWorkers=5 for java sdk 1.X and '
-         '--parameters=max_num_workers=5 for python sdk.\n'
-         'For all the parameter options please refer\n'
-         'https://cloud.google.com/dataflow/docs/guides/specifying-exec-params'
-         '#setting-other-cloud-dataflow-pipeline-options'))
+        ('Parameters to pass to the job.'))
 
   def Run(self, args):
     """Runs the command.
@@ -95,6 +163,22 @@ class Run(base.Command):
         region_id=dataflow_util.GetRegion(args),
         job_name=args.job_name,
         gcs_location=args.template_file_gcs_location,
+        max_workers=args.max_workers,
+        num_workers=args.num_workers,
+        network=args.network,
+        subnetwork=args.subnetwork,
+        worker_machine_type=args.worker_machine_type,
+        kms_key_name=args.dataflow_kms_key,
+        staging_location=args.staging_location,
+        disable_public_ips=
+        properties.VALUES.dataflow.disable_public_ips.GetBool(),
+        service_account_email=args.service_account_email,
+        worker_region=args.worker_region,
+        worker_zone=args.worker_zone,
+        enable_streaming_engine=
+        properties.VALUES.dataflow.enable_streaming_engine.GetBool(),
+        additional_experiments=args.additional_experiments,
+        additional_user_labels=args.additional_user_labels,
         parameters=args.parameters)
     return apis.Templates.CreateJobFromFlexTemplate(arguments)
 

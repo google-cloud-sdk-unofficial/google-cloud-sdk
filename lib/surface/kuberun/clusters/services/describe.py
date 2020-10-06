@@ -42,15 +42,14 @@ _DETAILED_HELP = {
 class Describe(kuberun_command.KubeRunCommandWithOutput, base.DescribeCommand):
   """Describes a Knative service."""
 
-  @staticmethod
-  def _Flags(parser):
-    kuberun_command.KubeRunCommandWithOutput._Flags(parser)
+  detailed_help = _DETAILED_HELP
+  flags = [flags.NamespaceFlag(), flags.ClusterConnectionFlags()]
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
+    super(Describe, cls).Args(parser)
     parser.add_argument(
         'service', help='The Knative service to show details for.')
-    flags.AddNamespaceFlag(parser)
     resource_printer.RegisterFormatter(
         service_printer.SERVICE_PRINTER_FORMAT,
         service_printer.ServicePrinter,
@@ -58,7 +57,7 @@ class Describe(kuberun_command.KubeRunCommandWithOutput, base.DescribeCommand):
     parser.display_info.AddFormat(service_printer.SERVICE_PRINTER_FORMAT)
 
   def BuildKubeRunArgs(self, args):
-    return [args.service]
+    return [args.service] + super(Describe, self).BuildKubeRunArgs(args)
 
   def Command(self):
     return ['clusters', 'services', 'describe']
@@ -68,6 +67,3 @@ class Describe(kuberun_command.KubeRunCommandWithOutput, base.DescribeCommand):
       return service.Service(json.loads(out))
     else:
       raise exceptions.Error('Cannot find service [{}]'.format(args.service))
-
-
-Describe.detailed_help = _DETAILED_HELP

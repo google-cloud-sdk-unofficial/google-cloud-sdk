@@ -49,24 +49,14 @@ _DETAILED_HELP = {
 class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
   """Lists services in a Knative cluster."""
 
-  @staticmethod
-  def _Flags(parser):
-    kuberun_command.KubeRunCommandWithOutput._Flags(parser)
-    base.FILTER_FLAG.AddToParser(parser)
-    base.LIMIT_FLAG.AddToParser(parser)
-    base.PAGE_SIZE_FLAG.AddToParser(parser)
-    base.SORT_BY_FLAG.AddToParser(parser)
-    # TODO(b/162367325)
-    # base.URI_FLAG.AddToParser(parser)
-    List._SetFormat(parser)
+  detailed_help = _DETAILED_HELP
+  flags = [flags.NamespaceFlagGroup(), flags.ClusterConnectionFlags()]
 
-  @staticmethod
-  def _SetFormat(parser):
-    """Set display format for output.
-
-    Args:
-      parser: args parser to use to set the display format
-    """
+  @classmethod
+  def Args(cls, parser):
+    super(List, cls).Args(parser)
+    base.ListCommand._Flags(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
     columns = [
         pretty_print.READY_COLUMN,
         'name:label=SERVICE',
@@ -77,13 +67,6 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
     ]
     parser.display_info.AddFormat('table({})'.format(','.join(columns)))
 
-  @staticmethod
-  def Args(parser):
-    flags.AddNamespaceFlagsMutexGroup(parser)
-
-  def BuildKubeRunArgs(self, args):
-    return []
-
   def Command(self):
     return ['clusters', 'services', 'list']
 
@@ -93,6 +76,3 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
       return [service.Service(x) for x in json_object]
     else:
       raise exceptions.Error('Cannot list services')
-
-
-List.detailed_help = _DETAILED_HELP

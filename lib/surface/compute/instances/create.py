@@ -182,7 +182,7 @@ def _CommonArgs(parser,
 class Create(base.CreateCommand):
   """Create Compute Engine virtual machine instances."""
 
-  _support_regional = False
+  _support_regional = True
   _support_kms = True
   _support_nvdimm = False
   _support_public_dns = False
@@ -208,7 +208,8 @@ class Create(base.CreateCommand):
         parser,
         enable_kms=cls._support_kms,
         support_multi_writer=False,
-        support_replica_zones=cls._support_replica_zones)
+        support_replica_zones=cls._support_replica_zones,
+        enable_regional=cls._support_regional)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -613,7 +614,7 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
-    instances_flags.AddMaintenanceFreezeDuration(parser)
+    instances_flags.AddStableFleetArgs(parser)
     instances_flags.AddNestedVirtualizationArgs(parser)
 
 

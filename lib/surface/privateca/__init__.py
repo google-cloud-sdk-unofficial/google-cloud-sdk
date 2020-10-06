@@ -21,12 +21,11 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class PrivateCa(base.Group):
-  """Manage private PKI on Google cloud.
+  """Manage private Certificate Authorities on Google Cloud.
 
-  The gcloud privateca command group lets you create and manage certificate
+  The privateca command group lets you create and manage private certificate
   authorities and certificates.
   """
 

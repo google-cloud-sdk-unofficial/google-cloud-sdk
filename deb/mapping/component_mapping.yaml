@@ -18,6 +18,7 @@ cloud-datastore-emulator: google-cloud-sdk-datastore-emulator
 cloud-firestore-emulator: google-cloud-sdk-firestore-emulator
 cloud-spanner-emulator: google-cloud-sdk-spanner-emulator
 core: google-cloud-sdk
+pkg: unavailable
 datalab: google-cloud-sdk-datalab
 docker-credential-gcr: unavailable
 emulator-reverse-proxy: unavailable

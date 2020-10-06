@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command to update MultiClusterIngress Feature."""
+"""The command to update Config Management Feature."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,7 +32,7 @@ membership = None
 
 
 class Apply(base.UpdateCommand):
-  r"""Update Configmanagement Feature Spec.
+  r"""Update a Config Management Feature Spec.
 
   This command apply ConfigManagement CR with user-specified config yaml file.
 
@@ -88,13 +88,17 @@ class Apply(base.UpdateCommand):
     except yaml.Error as e:
       raise exceptions.Error(
           'Invalid config yaml file {}'.format(args.config), e)
+    _validate_meta(loaded_cm)
+
     client = core_apis.GetClientInstance('gkehub', 'v1alpha1')
     msg = client.MESSAGES_MODULE
-    git_config = msg.GitConfig()
-    _parse_config(loaded_cm, git_config)
+    config_sync = _parse_config_sync(loaded_cm, msg)
+    policy_controller = _parse_policy_controller(loaded_cm, msg)
     applied_config = msg.ConfigManagementFeatureSpec.MembershipConfigsValue.AdditionalProperty(
         key=membership,
-        value=msg.MembershipConfig(configSync=msg.ConfigSync(git=git_config)))
+        value=msg.MembershipConfig(
+            configSync=config_sync,
+            policyController=policy_controller))
     # UpdateFeature uses patch method to update membership_configs map,
     # there's no need to get the existing feature spec
     m_configs = msg.ConfigManagementFeatureSpec.MembershipConfigsValue(
@@ -105,18 +109,14 @@ class Apply(base.UpdateCommand):
             membershipConfigs=m_configs))
 
 
-def _parse_config(configmanagement, git_config):
-  """Load GitConfig with the parsed configmanagement yaml.
+def _validate_meta(configmanagement):
+  """Validate the parsed configmanagement yaml.
 
   Args:
     configmanagement: The dict loaded from yaml.
-    git_config: The GitConfig to hold configmanagement.spec.git being used in
-      feature spec
   """
   if not isinstance(configmanagement, dict):
     raise exceptions.Error('Invalid Configmanagement template.')
-  if('spec' not in configmanagement or 'git' not in configmanagement['spec']):
-    raise exceptions.Error('Missing .spec.git in Configmanagement template')
   if ('apiVersion' not in configmanagement or
       configmanagement['apiVersion'] != 'configmanagement.gke.io/v1'):
     raise exceptions.Error(
@@ -125,10 +125,29 @@ def _parse_config(configmanagement, git_config):
       configmanagement['kind'] != 'ConfigManagement'):
     raise exceptions.Error('Only support "kind: ConfigManagement"')
   for field in configmanagement['spec']:
-    if field != 'git':
+    if field not in ['git', 'policyController']:
       raise exceptions.Error(
           'Please remove illegal field .spec.{}'.format(field))
+
+
+def _parse_config_sync(configmanagement, msg):
+  """Load GitConfig with the parsed configmanagement yaml.
+
+  Args:
+    configmanagement: dict, The data loaded from the config-management.yaml
+      given by user.
+    msg: The empty message class for gkehub version v1alpha1
+  Returns:
+    config_sync: The ConfigSync configuration holds configmanagement.spec.git
+    being used in MembershipConfigs
+  Raises: Error, if required fields are missing from .spec.git
+  """
+
+  if('spec' not in configmanagement or 'git' not in configmanagement['spec']):
+    return None
   spec_git = configmanagement['spec']['git']
+  git_config = msg.GitConfig()
+  config_sync = msg.ConfigSync(git=git_config)
   # https://cloud.google.com/anthos-config-management/docs/how-to/installing#configuring-git-repo
   # Required field
   for field in ['syncRepo', 'secretType']:
@@ -141,3 +160,49 @@ def _parse_config(configmanagement, git_config):
       setattr(git_config, field, spec_git[field])
   if 'syncWait' in spec_git:
     git_config.syncWaitSecs = spec_git['syncWait']
+
+  return config_sync
+
+
+def _parse_policy_controller(configmanagement, msg):
+  """Load PolicyController with the parsed config-management.yaml.
+
+  Args:
+    configmanagement: dict, The data loaded from the config-management.yaml
+      given by user.
+    msg: The empty message class for gkehub version v1alpha1
+  Returns:
+    policy_controller: The Policy Controller configuration for
+    MembershipConfigs, filled in the data parsed from
+    configmanagement.spec.policyController
+  Raises: Error, if Policy Controller `enabled` set to false but also has
+    other fields present in the config
+  """
+
+  if ('spec' not in configmanagement or
+      'policyController' not in configmanagement['spec']):
+    return None
+
+  spec_policy_controller = configmanagement['spec']['policyController']
+  enabled = spec_policy_controller['enabled']
+  if not isinstance(enabled, bool):
+    raise exceptions.Error(
+        'policyController.enabled should be `true` or `false`')
+  if not enabled:
+    if len(spec_policy_controller.items()) > 1:
+      raise exceptions.Error('Policy Controller is disabled, '
+                             'remove the other config fields.')
+    return msg.PolicyController(enabled=False)
+
+  policy_controller = msg.PolicyController(enabled=True)
+  # When the policyController is set to be enabled, policy_controller will
+  # be filled with the valid fieleds set in spec_policy_controller, which
+  # were mapped from the config-management.yaml
+  for field in [
+      'templateLibraryInstalled', 'auditIntervalSeconds',
+      'referentialRulesEnabled', 'exemptableNamespaces'
+  ]:
+    if field in spec_policy_controller:
+      setattr(policy_controller, field, spec_policy_controller[field])
+
+  return policy_controller

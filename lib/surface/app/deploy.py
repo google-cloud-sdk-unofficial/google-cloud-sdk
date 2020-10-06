@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import hashlib
+import os
 
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import runtime_builders
@@ -158,21 +159,57 @@ class DeployBeta(base.SilentCommand):
   def Args(parser):
     """Get arguments for this command."""
     deploy_util.ArgsDeploy(parser)
+    parser.add_argument(
+        '--use-ct-apis',
+        action='store_true',
+        default=False,
+        hidden=True,
+        help=('Use Cloud Tasks APIs instead of admin-console-hr for only '
+              'queue.yaml uploads.'))
 
   def Run(self, args):
     runtime_builder_strategy = deploy_util.GetRuntimeBuilderStrategy(
         base.ReleaseTrack.BETA)
     api_client = appengine_api_client.GetApiClientForTrack(self.ReleaseTrack())
 
-    return deploy_util.RunDeploy(
-        args,
-        api_client,
-        use_beta_stager=True,
-        runtime_builder_strategy=runtime_builder_strategy,
-        parallel_build=True,
-        flex_image_build_option=deploy_util.GetFlexImageBuildOption(
-            default_strategy=deploy_util.FlexImageBuildOptions.ON_SERVER),
-        dispatch_admin_api=True)
+    # If the hidden flag `--use-ct-apis` is not set, then continue to use old
+    # implementation which uses admin-console-hr.
+    if not args.use_ct_apis:
+      return deploy_util.RunDeploy(
+          args,
+          api_client,
+          use_beta_stager=True,
+          runtime_builder_strategy=runtime_builder_strategy,
+          parallel_build=True,
+          flex_image_build_option=deploy_util.GetFlexImageBuildOption(
+              default_strategy=deploy_util.FlexImageBuildOptions.ON_SERVER),
+          dispatch_admin_api=True)
+
+    app_engine_legacy_deployables = []
+    cloud_tasks_api_deployables = []
+    for deployable in args.deployables:
+      if os.path.basename(deployable) in ('queue.yaml',):
+        cloud_tasks_api_deployables.append(deployable)
+      else:
+        app_engine_legacy_deployables.append(deployable)
+
+    resources = {'versions': [], 'configs': []}
+    if app_engine_legacy_deployables or not cloud_tasks_api_deployables:
+      args.deployables = app_engine_legacy_deployables
+      resources = deploy_util.RunDeploy(
+          args,
+          api_client,
+          use_beta_stager=True,
+          runtime_builder_strategy=runtime_builder_strategy,
+          parallel_build=True,
+          flex_image_build_option=deploy_util.GetFlexImageBuildOption(
+              default_strategy=deploy_util.FlexImageBuildOptions.ON_SERVER),
+          dispatch_admin_api=True)
+    if cloud_tasks_api_deployables:
+      args.deployables = cloud_tasks_api_deployables
+      deploy_util.RunDeployCloudTasks(args)
+      resources['configs'].append('queue')
+    return resources
 
 
 DeployGA.detailed_help = _DETAILED_HELP

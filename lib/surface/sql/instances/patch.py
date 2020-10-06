@@ -111,6 +111,8 @@ def _GetConfirmedClearedFields(args, patch_instance, original_instance):
     cleared_fields.append('settings.ipConfiguration.authorizedNetworks')
   if args.clear_database_flags:
     cleared_fields.append('settings.databaseFlags')
+  if args.remove_deny_maintenance_period:
+    cleared_fields.append('settings.denyMaintenancePeriods')
 
   log.status.write(
       'The following message will be used for the patch API method.\n')
@@ -199,6 +201,13 @@ def AddBaseArgs(parser):
       help='Removes the user-specified maintenance window.')
   flags.AddMaintenanceWindowDay(parser)
   flags.AddMaintenanceWindowHour(parser)
+  flags.AddDenyMaintenancePeriodStartDate(parser)
+  flags.AddDenyMaintenancePeriodEndDate(parser)
+  flags.AddDenyMaintenancePeriodTime(parser)
+  parser.add_argument(
+      '--remove-deny-maintenance-period',
+      action='store_true',
+      help='Removes the user-specified deny maintenance period.')
   flags.AddMemory(parser)
   parser.add_argument(
       '--pricing-plan',

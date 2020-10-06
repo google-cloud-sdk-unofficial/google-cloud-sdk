@@ -118,6 +118,14 @@
         will be used.
       type: long
       default: 1
+    - arg_name: enable-auth
+      api_field: instance.authEnabled
+      type: bool
+      action: store_true
+      processor: googlecloudsdk.command_lib.redis.util:WarnOnAuthEnabled
+      release_tracks: [ALPHA, BETA]
+      help_text: |
+        Enables Redis AUTH for the instance. If omitted AUTH is disabled.
     labels:
       api_field: instance.labels
 

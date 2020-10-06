@@ -107,9 +107,6 @@ class GetLogs(base.ListCommand):
       log_filter.append(
           'timestamp<="%s"' % logging_util.FormatTimestamp(args.end_time))
     log_filter = ' '.join(log_filter)
-    # TODO(b/36057251): Consider using paging for listing more than 1000 log
-    # entries. However, reversing the order of received latest N entries before
-    # a specified timestamp would be problematic with paging.
 
     entries = logging_common.FetchLogs(
         log_filter, order_by=order, limit=args.limit)

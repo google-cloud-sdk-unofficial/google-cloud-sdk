@@ -73,8 +73,7 @@ class Run(base.ListCommand):
           To run your tests against multiple iOS devices simultaneously, specify
           the *--device* flag more than once:
 
-            $ {command} --test=XCTEST_ZIP --device=model=iphone7
-            --device=model=ipadmini4,version=11.2 --device=model=iphonese
+            $ {command} --test=XCTEST_ZIP --device=model=iphone7 --device=model=ipadmini4,version=11.2 --device=model=iphonese
 
           To run your XCTest using a specific version of Xcode, say 9.4.1, run:
 
@@ -101,8 +100,8 @@ class Run(base.ListCommand):
     """Method called by Calliope to register flags for this command.
 
     Args:
-      parser: An argparse parser used to add arguments that follow this
-          command in the CLI. Positional arguments are allowed.
+      parser: An argparse parser used to add arguments that follow this command
+        in the CLI. Positional arguments are allowed.
     """
     arg_util.AddCommonTestRunArgs(parser)
     arg_util.AddIosTestArgs(parser)
@@ -148,6 +147,15 @@ class Run(base.ListCommand):
     additional_ipas = getattr(args, 'additional_ipas', None) or []
     for additional_ipa in additional_ipas:
       bucket_ops.UploadFileToGcs(additional_ipa, _IPA_MIME_TYPE)
+    other_files = getattr(args, 'other_files', {}) or {}
+    for device_path, file_to_upload in six.iteritems(other_files):
+      path = device_path
+      if ':' in path:
+        path = path[path.find(':') + 1:]
+      bucket_ops.UploadFileToGcs(
+          file_to_upload,
+          None,
+          destination_object=util.GetRelativeDevicePath(path))
     bucket_ops.LogGcsResultsUrl()
 
     tr_history_picker = history_picker.ToolResultsHistoryPicker(
@@ -158,8 +166,8 @@ class Run(base.ListCommand):
     matrix = matrix_creator.CreateMatrix(args, self.context, history_id,
                                          bucket_ops.gcs_results_root,
                                          six.text_type(self.ReleaseTrack()))
-    monitor = matrix_ops.MatrixMonitor(
-        matrix.testMatrixId, args.type, self.context)
+    monitor = matrix_ops.MatrixMonitor(matrix.testMatrixId, args.type,
+                                       self.context)
 
     with ctrl_c_handler.CancellableTestSection(monitor):
       supported_executions = monitor.HandleUnsupportedExecutions(matrix)
@@ -250,8 +258,7 @@ class RunBeta(Run):
           To run your tests against multiple iOS devices simultaneously, specify
           the *--device* flag more than once:
 
-            $ {command} --test=XCTEST_ZIP --device=model=iphone7
-            --device=model=ipadmini4,version=11.2 --device=model=iphonese
+            $ {command} --test=XCTEST_ZIP --device=model=iphone7 --device=model=ipadmini4,version=11.2 --device=model=iphonese
 
           To run your XCTest using a specific version of Xcode, say 9.4.1, run:
 
@@ -265,6 +272,11 @@ class RunBeta(Run):
           *--scenario-numbers* flag:
 
             $ {command} --type=game-loop --app=app.ipa --scenario-numbers=1,2,3
+
+          To run a test that pushes a local file onto the device before testing,
+          use the *--other-files* flag:
+
+            $ {command} --type=game-loop --app=app.ipa --scenario-numbers=1 --other-files=/private/var/mobile/Media/file.txt=/path/to/file.txt
 
           All test arguments for a given test may alternatively be stored in an
           argument group within a YAML-formatted argument file. The _ARG_FILE_

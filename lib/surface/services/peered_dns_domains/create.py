@@ -30,7 +30,7 @@ _OP_BASE_CMD = 'gcloud services vpc-peerings operations '
 _OP_WAIT_CMD = _OP_BASE_CMD + 'wait {0}'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.SilentCommand):
   """Create a peered DNS domain for a private service connection."""
 

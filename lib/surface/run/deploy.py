@@ -33,6 +33,7 @@ from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.run import resource_change_validators
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -189,6 +190,7 @@ class Deploy(base.Command):
     with serverless_operations.Connect(conn_context) as operations:
       service = operations.GetService(service_ref)
       allow_unauth = GetAllowUnauth(args, operations, service_ref, service)
+      resource_change_validators.ValidateClearVpcConnector(service, args)
 
       pretty_print.Info(
           messages_util.GetStartDeployMessage(conn_context, service_ref))

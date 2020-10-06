@@ -300,33 +300,24 @@ class Register(base.CreateCommand):
               DOCKER_CREDENTIAL_FILE_FLAG, e))
 
       gke_cluster_self_link = kube_client.processor.gke_cluster_self_link
-
       issuer_url = None
       # enable_workload_identity, public_issuer_url, and
       # manage_workload_identity_bucket are only properties if we are on the
       # alpha or beta track
       if (self.ReleaseTrack() is not base.ReleaseTrack.GA
           and args.enable_workload_identity):
-        if args.public_issuer_url:
-          issuer_url = args.public_issuer_url
-          # Use the user-provided public URL, and ignore the built-in endpoints.
-          try:
-            openid_config_json = kube_client.GetOpenIDConfiguration(
-                issuer_url=args.public_issuer_url)
-          except Exception as e:  # pylint: disable=broad-except
-            raise exceptions.Error(
-                'Please double check that --public-issuer-url was set '
-                'correctly: {}'.format(e))
-        else:
-          # Since the user didn't specify a public URL, try to use the cluster's
-          # built-in endpoints.
-          try:
-            openid_config_json = kube_client.GetOpenIDConfiguration()
-          except Exception as e:  # pylint: disable=broad-except
-            raise exceptions.Error(
-                'Please double check that it is possible to access the '
-                '/.well-known/openid-configuration endpoint on the cluster: '
-                '{}'.format(e))
+        # public_issuer_url can be None or given by user or gke_cluster_uri
+        # (incase of a gke cluster).
+        # args.public_issuer_url takes precedence over gke_cluster_uri.
+        public_issuer_url = args.public_issuer_url or kube_client.processor.gke_cluster_uri or None
+
+        try:
+          openid_config_json = kube_client.GetOpenIDConfiguration(
+              issuer_url=public_issuer_url)
+        except Exception as e:  # pylint: disable=broad-except
+          raise exceptions.Error(
+              'Error getting the OpenID Provider Configuration'
+              '{}'.format(e))
 
         # Extract the issuer URL from the discovery doc.
         issuer_url = json.loads(openid_config_json).get('issuer')
@@ -334,13 +325,12 @@ class Register(base.CreateCommand):
           raise exceptions.Error('Invalid OpenID Config: '
                                  'missing issuer: {}'.format(
                                      openid_config_json))
-        # If a public issuer URL was provided, ensure it matches what came back
-        # in the discovery doc.
-        elif args.public_issuer_url \
-            and args.public_issuer_url != issuer_url:
+        # Ensure public_issuer_url (only non-empty) matches what came back in
+        # the discovery doc.
+        if public_issuer_url and (public_issuer_url != issuer_url):
           raise exceptions.Error('--public-issuer-url {} did not match issuer '
                                  'returned in discovery doc: {}'.format(
-                                     args.public_issuer_url, issuer_url))
+                                     public_issuer_url, issuer_url))
 
         # Set up the GCS bucket that serves OpenID Provider Config and JWKS.
         if self.ReleaseTrack(

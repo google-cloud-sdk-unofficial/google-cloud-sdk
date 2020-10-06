@@ -48,19 +48,19 @@ _DETAILED_HELP = {
 class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
   """Lists domain mappings in a Knative cluster."""
 
-  @staticmethod
-  def Args(parser):
+  detailed_help = _DETAILED_HELP
+  flags = [flags.NamespaceFlagGroup(), flags.ClusterConnectionFlags()]
+
+  @classmethod
+  def Args(cls, parser):
+    super(List, cls).Args(parser)
     base.URI_FLAG.RemoveFromParser(parser)
-    flags.AddNamespaceFlagsMutexGroup(parser)
 
     parser.display_info.AddFormat("""table(
         {ready_column},
         name:label=DOMAIN,
         routeName:label=SERVICE)""".format(
             ready_column=pretty_print.READY_COLUMN))
-
-  def BuildKubeRunArgs(self, args):
-    return []
 
   def Command(self):
     return ['clusters', 'domain-mappings', 'list']
@@ -71,6 +71,3 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
       return [domainmapping.DomainMapping(x) for x in json_object]
     else:
       raise exceptions.Error('Cannot list domain mappings')
-
-
-List.detailed_help = _DETAILED_HELP

@@ -96,6 +96,9 @@ def AddBaseArgs(parser):
   flags.AddMaintenanceReleaseChannel(parser)
   flags.AddMaintenanceWindowDay(parser)
   flags.AddMaintenanceWindowHour(parser)
+  flags.AddDenyMaintenancePeriodStartDate(parser)
+  flags.AddDenyMaintenancePeriodEndDate(parser)
+  flags.AddDenyMaintenancePeriodTime(parser)
   parser.add_argument(
       '--master-instance-name',
       required=False,

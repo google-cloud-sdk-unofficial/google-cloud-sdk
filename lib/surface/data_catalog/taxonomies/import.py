@@ -27,7 +27,8 @@ from googlecloudsdk.command_lib.data_catalog.taxonomies import util
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Import(base.Command):
   """Export a file with serialized taxonomies to a certain project."""
 

@@ -19,13 +19,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.storage import copying
 from googlecloudsdk.command_lib.storage import name_expansion
-from googlecloudsdk.command_lib.storage import paths
-from googlecloudsdk.command_lib.storage import storage_parallel
 from googlecloudsdk.command_lib.storage.tasks import task_executor
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_task_iterator
-from googlecloudsdk.core import log
 
 
 class Cp(base.Command):
@@ -63,22 +59,8 @@ class Cp(base.Command):
     parser.add_argument('destination', help='The destination path.')
 
   def Run(self, args):
-    # TODO(b/160602071) Replace with new utils rather than legacy copy command.
-    # Right now, we're just making upload work with new utils.
-    sources = [paths.Path(p) for p in args.source]
-    dest = paths.Path(args.destination)
-
-    if all([not source.is_remote for source in sources]) and dest.is_remote:
-      source_expansion_iterator = name_expansion.NameExpansionIterator(
-          args.source)
-      task_iterator = copy_task_iterator.CopyTaskIterator(
-          source_expansion_iterator, args.destination)
-      task_executor.ExecuteTasks(task_iterator)
-      return
-
-    copier = copying.CopyTaskGenerator()
-    tasks = copier.GetCopyTasks(sources, dest, recursive=False)
-    storage_parallel.ExecuteTasks(
-        tasks, num_threads=1, progress_bar_label='Copying Files')
-    log.status.write('Copied [{}] file{}.\n'.format(
-        len(tasks), 's' if len(tasks) > 1 else ''))
+    source_expansion_iterator = name_expansion.NameExpansionIterator(
+        args.source)
+    task_iterator = copy_task_iterator.CopyTaskIterator(
+        source_expansion_iterator, args.destination)
+    task_executor.ExecuteTasks(task_iterator)
