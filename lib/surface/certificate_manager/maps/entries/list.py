@@ -66,7 +66,7 @@ class List(base.ListCommand):
 
   To list all certificate map entries in the certificate map, run:
 
-    $ {command} --map simple-map
+    $ {command} --map=simple-map
   """
 
   @staticmethod

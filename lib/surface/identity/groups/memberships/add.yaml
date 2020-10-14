@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: Create a new membership in an existing group.
@@ -20,23 +20,35 @@
       To create a new membership in a group:
 
         $ {command} --group-email="eng-discuss@foo.com"  \
-            --organization="5149234212"  \
             --member-email="user@foo.com"
 
   request:
     collection: cloudidentity.groups.memberships
     disable_resource_check: true
     method: create
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembership
-    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipParent
-    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetEntityKey
-    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipRoles
-    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetExpiryDetail
     ALPHA:
       api_version: v1alpha1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembership
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipParent
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetEntityKey
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipRoles
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetExpiryDetail
     BETA:
       api_version: v1beta1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembership
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipParent
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetEntityKey
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipRoles
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetExpiryDetail
+    GA:
+      api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembership
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipParent
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetEntityKey
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipRoles
 
   arguments:
     params:
@@ -53,12 +65,13 @@
         The email address of the group or user being added to a group.
 
     - arg_name: organization
+      release_tracks: [ALPHA, BETA]
       type: str
-      required: true
       help_text: |
-        The organization of the group the new membership is being added to.
+        The organization ID of the group the new membership is being added to.
 
     - arg_name: expiration
+      release_tracks: [ALPHA, BETA]
       type: str
       help_text: |
         Optional time of expiration for the membership. This is given as a duration from now, for
@@ -67,5 +80,5 @@
     - arg_name: roles
       type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
       help_text: |
-        A comma-separated list of roles for the membership within the Group. If not specified,
+        A comma-separated list of roles for a member within the Group. If not specified,
         MEMBER will be used as a default value.

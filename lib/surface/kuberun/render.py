@@ -30,7 +30,7 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Render(kuberun_command.KubeRunCommandWithOutput, base.ExportCommand):
+class Render(kuberun_command.KubeRunStreamingCommand, base.ExportCommand):
   """Render KubeRun application to generate the yaml resource configuration."""
   detailed_help = _DETAILED_HELP
   flags = []

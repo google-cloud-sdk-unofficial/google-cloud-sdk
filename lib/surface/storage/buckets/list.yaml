@@ -13,7 +13,7 @@
   arguments:
     resource:
       help_text: The project to list the buckets in.
-      spec: !REF googlecloudsdk.command_lib.storage.resources:project
+      spec: !REF googlecloudsdk.command_lib.storage.resources.resources:project
 
   output:
     format: |

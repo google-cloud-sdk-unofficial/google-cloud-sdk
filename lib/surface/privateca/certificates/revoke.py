@@ -90,17 +90,17 @@ class Revoke(base.SilentCommand):
   To revoke the 'frontend-server-tls' certificate due to key compromise:
 
     $ {command} \
-      --certificate frontend-server-tls \
-      --issuer server-tls-1 --issuer-location us-west1 \
-      --reason key_compromise
+      --certificate=frontend-server-tls \
+      --issuer=server-tls-1 --issuer-location=us-west1 \
+      --reason=key_compromise
 
   To revoke the a certificate with the serial number
   '7dc1d9186372de2e1f4824abb1c4c9e5e43cbb40' due to a newer one being issued:
 
     $ {command} \
-      --serial-number 7dc1d9186372de2e1f4824abb1c4c9e5e43cbb40 \
-      --issuer server-tls-1 --issuer-location us-west1 \
-      --reason superseded
+      --serial-number=7dc1d9186372de2e1f4824abb1c4c9e5e43cbb40 \
+      --issuer=server-tls-1 --issuer-location=us-west1 \
+      --reason=superseded
   """
 
   @staticmethod

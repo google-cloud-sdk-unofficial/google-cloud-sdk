@@ -33,7 +33,7 @@ table(
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SearchDomains(base.DescribeCommand):
   """Search for available domains.
 

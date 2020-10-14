@@ -28,6 +28,23 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.privateca import response_utils
 
 
+# Resource IDs of the currently available reusable configs.
+_KnownResourceIds = [
+    'leaf-client-tls',
+    'leaf-code-signing',
+    'leaf-mtls',
+    'leaf-server-tls',
+    'leaf-smime',
+    'root-unconstrained',
+    'subordinate-client-tls-pathlen-0',
+    'subordinate-code-signing-pathlen-0',
+    'subordinate-mtls-pathlen-0',
+    'subordinate-server-tls-pathlen-0',
+    'subordinate-smime-pathlen-0',
+    'subordinate-unconstrained-pathlen-0',
+]
+
+
 def _GetLocation(args):
   if args.IsSpecified('location'):
     return args.location
@@ -52,29 +69,45 @@ class List(base.ListCommand):
     parser.display_info.AddFormat("""
         table(
           name.scope("reusableConfigs"):label=NAME,
+          name.scope("locations").segment(0):label=LOCATION,
           description)
         """)
 
-  def Run(self, args):
-    """Runs the command."""
-
-    client = privateca_base.GetClientInstance()
-    messages = privateca_base.GetMessagesModule()
-
-    project = constants.PREDEFINED_REUSABLE_CONFIG_PROJECT
-    location = _GetLocation(args)
-    parent_resource = 'projects/{}/locations/{}'.format(project, location)
-
-    request = messages.PrivatecaProjectsLocationsReusableConfigsListRequest(
-        parent=parent_resource,
+  def ListLatestReusableConfigs(self, args, project, location):
+    """Makes one or more List requests for the latest reusable config resources."""
+    parent = 'projects/{}/locations/{}'.format(project, location)
+    request = self.messages.PrivatecaProjectsLocationsReusableConfigsListRequest(
+        parent=parent,
         orderBy=common_args.ParseSortByArg(args.sort_by),
-        pageSize=args.page_size,
         filter=args.filter)
 
     return list_pager.YieldFromList(
-        client.projects_locations_reusableConfigs,
+        self.client.projects_locations_reusableConfigs,
         request,
         field='reusableConfigs',
         limit=args.limit,
         batch_size_attribute='pageSize',
+        batch_size=args.page_size,
         get_field_func=response_utils.GetFieldAndLogUnreachable)
+
+  def ListKnownReusableConfigs(self, project, location):
+    """Make a series of Get requests for the known reusable config resources."""
+    parent = 'projects/{}/locations/{}'.format(project, location)
+
+    for resource_id in _KnownResourceIds:
+      resource_name = '{}/reusableConfigs/{}'.format(parent, resource_id)
+      yield self.client.projects_locations_reusableConfigs.Get(
+          self.messages.PrivatecaProjectsLocationsReusableConfigsGetRequest(
+              name=resource_name))
+
+  def Run(self, args):
+    """Runs the command."""
+    self.client = privateca_base.GetClientInstance()
+    self.messages = privateca_base.GetMessagesModule()
+
+    project = constants.PREDEFINED_REUSABLE_CONFIG_PROJECT
+    location = _GetLocation(args)
+
+    # TODO(b/170409946): Revert to ListLatestReusableConfigs after IAM issue.
+    return self.ListKnownReusableConfigs(project, location)
+

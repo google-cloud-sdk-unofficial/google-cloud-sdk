@@ -26,7 +26,10 @@ from googlecloudsdk.command_lib.vmware import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          Create a VMware Engine private cloud.
+          Create a VMware Engine private cloud. Private cloud creation is
+          considered finished when the private cloud is in READY state. Check
+          the progress of a private cloud using
+          `gcloud alpha vmware privateclouds list`.
         """,
     'EXAMPLES':
         """
@@ -56,30 +59,28 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--description',
         help="""\
-        Text describing the privatecloud
+        Text describing the private cloud
         """)
     parser.add_argument(
         '--vpc-network',
         required=True,
         help="""\
-        Name of the virtual network for this privatecloud
+        Name of the virtual network for this private cloud
         """)
     parser.add_argument(
         '--management-ip-range',
         required=True,
         help="""\
-        ip addresses range available to the
-        privatecloud for management access,
-        in address/mask format,
-        e.g. 10.0.1.0/29
+        IP address range available to the private cloud for management access,
+        in address/mask format. For example,
+        `--management-ip-range=10.0.1.0/29`.
         """)
     parser.add_argument(
         '--workload-ip-range',
         required=True,
         help="""\
-        ip addresses range available to the
-        privatecloud in address/mask format,
-        e.g. 10.0.1.0/29
+        IP address range available to the private cloud in address/mask
+        format. For example, `--workload-ip-range=10.0.1.0/29`.
         """)
     labels_util.AddCreateLabelsFlags(parser)
 

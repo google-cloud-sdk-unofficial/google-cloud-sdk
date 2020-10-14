@@ -18,7 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.command_lib.storage import storage_url
+import collections
+import json
 
 
 class Resource(object):
@@ -39,8 +40,10 @@ class Resource(object):
   For filesystem and prefix URLs, metadata_object is not populated.
 
   Attributes:
+    TYPE_STRING (str): String representing the resource's content type.
     storage_url (StorageUrl): A StorageUrl object representing the resource.
   """
+  TYPE_STRING = 'resource'
 
   def __init__(self, storage_url_object):
     """Initialize the Resource object.
@@ -68,20 +71,27 @@ class CloudResource(Resource):
   """For Resource classes with CloudUrl's.
 
   Attributes:
+    TYPE_STRING (str): String representing the resource's content type.
     scheme (storage_url.ProviderPrefix): Prefix indicating what cloud provider
         hosts the bucket.
+    storage_url (StorageUrl): A StorageUrl object representing the resource.
   """
+  TYPE_STRING = 'cloud_resource'
 
   @property
   def scheme(self):
     # TODO(b/168690302): Stop using string scheme in storage_url.py.
-    return storage_url.ProviderPrefix(self.storage_url.scheme)
+    return self.storage_url.scheme
+
+  def get_metadata_dump(self):
+    raise NotImplementedError('get_metadata_dump must be overridden.')
 
 
 class BucketResource(CloudResource):
   """Class representing a bucket.
 
   Attributes:
+    TYPE_STRING (str): String representing the resource's content type.
     storage_url (StorageUrl): A StorageUrl object representing the bucket.
     name (str): Name of bucket.
     scheme (storage_url.ProviderPrefix): Prefix indicating what cloud provider
@@ -90,6 +100,7 @@ class BucketResource(CloudResource):
     metadata (object | dict): Cloud-provider specific data type for holding
         bucket metadata.
   """
+  TYPE_STRING = 'cloud_bucket'
 
   def __init__(self, storage_url_object, etag=None, metadata=None):
     """Initializes resource. Args are a subset of attributes."""
@@ -111,11 +122,15 @@ class BucketResource(CloudResource):
   def is_container(self):
     return True
 
+  def get_metadata_dump(self):
+    super(BucketResource).get_metadata_dump()
 
-class ObjectResource(Resource):
+
+class ObjectResource(CloudResource):
   """Class representing a cloud object confirmed to exist.
 
   Attributes:
+    TYPE_STRING (str): String representing the resource's content type.
     storage_url (StorageUrl): A StorageUrl object representing the object.
     creation_time (datetime|None): Time the object was created.
     etag (str|None): HTTP version identifier.
@@ -128,6 +143,7 @@ class ObjectResource(Resource):
     name (str): Name of object.
     generation (str|None): Generation (or "version") of the underlying object.
   """
+  TYPE_STRING = 'cloud_object'
 
   def __init__(self, storage_url_object, creation_time=None, etag=None,
                metadata=None, metageneration=None, size=None):
@@ -162,14 +178,19 @@ class ObjectResource(Resource):
   def is_container(self):
     return False
 
+  def get_metadata_dump(self):
+    super(ObjectResource).get_metadata_dump()
+
 
 class PrefixResource(Resource):
   """Class representing a  cloud object.
 
   Attributes:
+    TYPE_STRING (str): String representing the resource's content type.
     storage_url (StorageUrl): A StorageUrl object representing the prefix.
     prefix (str): A string representing the prefix.
   """
+  TYPE_STRING = 'prefix'
 
   def __init__(self, storage_url_object, prefix):
     """Initialize the PrefixResource object.
@@ -185,9 +206,16 @@ class PrefixResource(Resource):
   def is_container(self):
     return True
 
+  def get_metadata_dump(self):
+    return json.dumps(collections.OrderedDict([
+        ('url', self.storage_url.versionless_url_string),
+        ('type', self.TYPE_STRING),
+    ]), indent=2)
+
 
 class FileObjectResource(Resource):
   """Wrapper for a filesystem file."""
+  TYPE_STRING = 'file_object'
 
   def is_container(self):
     return False
@@ -195,6 +223,7 @@ class FileObjectResource(Resource):
 
 class FileDirectoryResource(Resource):
   """Wrapper for a File system directory."""
+  TYPE_STRING = 'file_directory'
 
   def is_container(self):
     return True
@@ -202,3 +231,4 @@ class FileDirectoryResource(Resource):
 
 class UnknownResource(Resource):
   """Represents a resource that may or may not exist."""
+  TYPE_STRING = 'unknown'

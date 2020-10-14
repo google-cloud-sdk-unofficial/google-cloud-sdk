@@ -6,19 +6,19 @@
     examples: |
       Group assets under organization 123456 by their type (e.g. project, disk, compute instance, service etc):
 
-        $ {command} 123456 --group-by "security_center_properties.resource_type"
+        $ {command} 123456 --group-by="security_center_properties.resource_type"
 
       Group compute instances (assets) under organization 123456 by their respective projects:
 
-        $ {command} 123456 --filter "security_center_properties.resource_type=\"google.compute.Instance\"" --group-by "security_center_properties.resource_project"
+        $ {command} 123456 --filter="security_center_properties.resource_type=\"google.compute.Instance\"" --group-by="security_center_properties.resource_project"
 
       Group assets that were updated on or after 2019-01-01T01:00:00 GMT by their types.
 
-        $ {command} 123456 --filter "update_time >= 1546304400000" --group-by "security_center_properties.resource_type"
+        $ {command} 123456 --filter="update_time >= 1546304400000" --group-by="security_center_properties.resource_type"
 
       Group assets into following 3 state_changes (ADDED/DELETED/ACTIVE) based on the activity during past 24 hours:
 
-        $ {command} 123456 --compare-duration 86400s --group-by "state_change"
+        $ {command} 123456 --compare-duration=86400s --group-by="state_change"
 
   request:
     collection: securitycenter.organizations.assets

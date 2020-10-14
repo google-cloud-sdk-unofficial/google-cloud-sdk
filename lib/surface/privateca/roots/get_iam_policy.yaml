@@ -10,7 +10,7 @@
     examples: |
      To get the IAM policy for the CA 'prod-root' with the location 'us-west1', run:
 
-       $ {command} prod-root --location us-west1
+       $ {command} prod-root --location=us-west1
 
   request:
     collection: privateca.projects.locations.certificateAuthorities

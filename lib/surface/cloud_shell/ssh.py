@@ -174,7 +174,7 @@ class SshAlpha(base.Command):
         help="""\
         If provided, sends OAuth credentials to the current Cloud Shell session
         on behalf of the user. When this completes, the session will be
-        authorized to run various Google Cloud command line tools without
+        authorized to run various Google Cloud command-line tools without
         requiring the user to manually authenticate.
         """,
         action='store_true')
@@ -187,9 +187,9 @@ class SshAlpha(base.Command):
           '`--authorize-session` flag.')
     command_list = args.command.split(' ') if args.command else ['bash -l']
     project = properties.VALUES.core.project.Get()
-    connection_info = util.PrepareEnvironment(args)
+    connection_info = util.PrepareV1Environment(args)
     if args.authorize_session:
-      util.AuthorizeEnvironment()
+      util.AuthorizeV1Environment()
     command = ssh.SSHCommand(
         remote=ssh.Remote(host=connection_info.host, user=connection_info.user),
         port=six.text_type(connection_info.port),
@@ -220,4 +220,4 @@ class SshAlpha(base.Command):
       self.done.wait(
           (util.MIN_CREDS_EXPIRY - datetime.timedelta(minutes=2)).seconds)
       if not self.done.is_set():
-        util.AuthorizeEnvironment()
+        util.AuthorizeV1Environment()

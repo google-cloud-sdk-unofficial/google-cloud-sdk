@@ -38,7 +38,7 @@ _DETAILED_HELP = {
         (key = 'ExistingLabelKey1', value = 'ExistingLabelValue1') and
         (key = 'NewLabelKey2', value = 'NewLabelValue2'), run:
 
-          $ {command} organizations/123/locations/us-central1/workloads/456 --display-name=Test-Workload-2 --labels ExistingLabelKey1=ExistingLabelValue1,NewLabelKey2=NewLabelValue2 --etag=789
+          $ {command} organizations/123/locations/us-central1/workloads/456 --display-name=Test-Workload-2 --labels=ExistingLabelKey1=ExistingLabelValue1,NewLabelKey2=NewLabelValue2 --etag=789
         """,
     # TODO(b/166449888): add support for multiple resource input formats
 }

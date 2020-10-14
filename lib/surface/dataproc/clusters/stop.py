@@ -24,7 +24,6 @@ from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import log
-from googlecloudsdk.core.console import console_io
 
 
 @base.Hidden
@@ -61,12 +60,6 @@ class Stop(base.Command):
         projectId=cluster_ref.projectId,
         stopClusterRequest=stop_cluster_request)
 
-    console_io.PromptContinue(
-        message="Cluster '{0}' is stopping."
-        .format(cluster_ref.clusterName),
-        cancel_on_no=True,
-        cancel_string='Stopping cluster aborted by user.')
-
     operation = dataproc.client.projects_regions_clusters.Stop(request)
 
     if args.async_:
@@ -77,7 +70,8 @@ class Stop(base.Command):
     operation = util.WaitForOperation(
         dataproc,
         operation,
-        message='Waiting for cluster to stop.',
+        message="Waiting for cluster '{0}' to stop.".format(
+            cluster_ref.clusterName),
         timeout_s=args.timeout)
 
     return operation

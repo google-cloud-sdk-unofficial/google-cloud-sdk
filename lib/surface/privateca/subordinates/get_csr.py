@@ -37,7 +37,7 @@ class GetCsr(base.Command):
     To download the CSR for the 'server-tls-1' CA into a file called
     'server-tls-1.csr':
 
-      $ {command} server-tls-1 --location us > server-tls-1.csr
+      $ {command} server-tls-1 --location=us > server-tls-1.csr
   """
 
   @staticmethod

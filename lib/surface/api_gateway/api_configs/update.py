@@ -44,7 +44,7 @@ class Update(base.UpdateCommand):
           """\
           To update the display name of an API config, run:
 
-            $ {command} my-config --api my-api --display-name="New Display Name"
+            $ {command} my-config --api=my-api --display-name="New Display Name"
 
           NOTE: Only the display name and labels attributes are mutable on an API config.
           """,

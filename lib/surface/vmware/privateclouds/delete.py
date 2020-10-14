@@ -38,7 +38,7 @@ DETAILED_HELP = {
 
       $ {command} my-privatecloud
 
-    In the first example, the project and location are taken from gcloud
+    In the second example, the project and location are taken from gcloud
     properties core/project and vmware/location.
     """,
 }

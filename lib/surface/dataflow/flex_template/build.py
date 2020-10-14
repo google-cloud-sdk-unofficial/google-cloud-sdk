@@ -151,9 +151,9 @@ class Build(base.Command):
 
             $ {command} gs://template-file-gcs-path \
             --image-gcr-path=gcr://path-tos-tore-image \
-            --jar path/to/pipeline.jar --jar path/to/dependency.jar \
-            --env FLEX_TEMPLATE_JAVA_MAIN_CLASS=classpath \
-            --flex-template-base-image JAVA11 \
+            --jar=path/to/pipeline.jar --jar=path/to/dependency.jar \
+            --env=FLEX_TEMPLATE_JAVA_MAIN_CLASS=classpath \
+            --flex-template-base-image=JAVA11 \
             --metadata-file=/local/path/to/metadata.json --sdk-language=JAVA
           """,
   }

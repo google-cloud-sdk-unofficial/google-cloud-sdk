@@ -27,7 +27,11 @@ from googlecloudsdk.core import properties
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          Create a cluster in a VMware Engine private cloud.
+          Create a cluster in a VMware Engine private cloud. Successful creation
+          of a cluster results in a cluster in READY state. Check the progress
+          of a cluster using `gcloud alpha vmware clusters list`.
+
+          For more examples, refer to the EXAMPLES section below.
         """,
     'EXAMPLES':
         """

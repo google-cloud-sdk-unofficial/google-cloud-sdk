@@ -6,15 +6,15 @@
     examples: |
       Selectively update value of security mark (key1) with 'val1.1' on asset 5678 under organization 123456. Note that other security marks on the same asset will not change.
 
-        $ {command} 5678 --organization=123456 --security-marks "key1=val1.1" --update-mask "marks.key1"
+        $ {command} 5678 --organization=123456 --security-marks="key1=val1.1" --update-mask="marks.key1"
 
       Update value of security mark (key1) and delete other marks on asset 5678 under organization 123456:
 
-        $ {command} 5678 --organization=123456 --security-marks "key1=updatedVal"
+        $ {command} 5678 --organization=123456 --security-marks="key1=updatedVal"
 
       Delete all security marks on asset 5678 under organization 123456:
 
-        $ {command} 5678 --organization=123456 --security-marks ""
+        $ {command} 5678 --organization=123456 --security-marks=""
 
   request:
     collection: securitycenter.organizations.assets
@@ -38,13 +38,13 @@
       api_field: securityMarks
       help_text: |
         SecurityMarks resource to be passed as the request body. It's a key=value pair separated
-        by comma (,). For example: --security-marks "key1=val1,key2=val2".
+        by comma (,). For example: --security-marks="key1=val1,key2=val2".
       type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
       processor: googlecloudsdk.command_lib.scc.hooks:SecurityMarksHook
     - arg_name: update-mask
       api_field: updateMask
       help_text: |
         Use update-mask if you want to selectively update marks represented by --security-marks
-        flag. For example: --update-mask "marks.key1,marks.key2". If you want to override all the
+        flag. For example: --update-mask="marks.key1,marks.key2". If you want to override all the
         marks for the given asset either skip the update-mask flag or provide an empty value
         (--update-mask '') for it.

@@ -7,7 +7,7 @@
     examples: |
       Update description of the hub named ``my-hub'' with description 'the new description of my-hub'.
 
-        $ {command} my-hub --description "The new description of my-hub".
+        $ {command} my-hub --description="The new description of my-hub".
 
   arguments:
     resource:

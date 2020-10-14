@@ -37,7 +37,7 @@ class Delete(base.DeleteCommand):
 
   To delete the certificate map entry with name simple-entry, run:
 
-    $ {command} simple-entry --map simple-map
+    $ {command} simple-entry --map=simple-map
   """
 
   @staticmethod

@@ -23,7 +23,6 @@ from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import certificate_utils
 from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.command_lib.privateca import create_utils
 from googlecloudsdk.command_lib.privateca import flags
@@ -46,29 +45,26 @@ class Create(base.CreateCommand):
   To create a subordinate CA named 'server-tls-1' whose issuer is on Private CA:
 
     $ {command} server-tls-1 \
-      --subject "CN=Joonix TLS CA" \
-      --issuer prod-root --issuer-location us-west1 \
-      --kms-crypto-key-version \
-      "projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
+      --subject="CN=Joonix TLS CA" \
+      --issuer=prod-root --issuer-location=us-west1 \
+      --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
 
   To create a subordinate CA named 'server-tls-1' whose issuer is located
   elsewhere:
 
     $ {command} server-tls-1 \
-      --subject "CN=Joonix TLS CA" \
+      --subject="CN=Joonix TLS CA" \
       --create-csr \
-      --csr-output-file "./csr.pem" \
-      --kms-crypto-key-version \
-      "projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
+      --csr-output-file="./csr.pem" \
+      --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
 
   To create a subordinate CA named 'server-tls-1' chaining up to a root CA
   named 'prod-root'based on an existing CA:
 
     $ {command} server-tls-1 \
-      --issuer prod-root --issuer-location us-west1 \
-      --from-ca source-ca --from-ca-location us-central1 \
-      --kms-crypto-key-version \
-      "projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
+      --issuer=prod-root --issuer-location=us-west1 \
+      --from-ca=source-ca --from-ca-location=us-central1 \
+      --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
   """
 
   def __init__(self, *args, **kwargs):
@@ -131,8 +127,10 @@ class Create(base.CreateCommand):
         presentation_specs.ResourcePresentationSpec(
             '--from-ca',
             resource_args.CreateCertificateAuthorityResourceSpec(
-                'Certificate Authority source'),
-            'The name of the CA source for this CA.',
+                'source CA'),
+            'An existing CA from which to copy configuration values for the '
+            'new CA. You can still override any of those values by explicitly '
+            'providing the appropriate flags.',
             flag_name_overrides={'project': '--from-ca-project'},
             prefixes=True)
     ]).AddToParser(parser)
@@ -207,6 +205,8 @@ class Create(base.CreateCommand):
     iam.CheckCreateCertificateAuthorityPermissions(project_ref, kms_key_ref)
     if issuer_ref:
       iam.CheckCreateCertificatePermissions(issuer_ref)
+      # Pro-actively look for issuing CA issues to avoid downstream issues.
+      create_utils.ValidateIssuingCA(issuer_ref.RelativeName())
 
     bucket_ref = None
     if args.IsSpecified('bucket'):
@@ -247,9 +247,3 @@ class Create(base.CreateCommand):
           ca_ref.RelativeName()))
       return
 
-    # This should not happen because of the required arg group, but it protects
-    # us in case of future additions.
-    raise exceptions.OneOfArgumentsRequiredException(
-        ['--issuer', '--create-csr'],
-        ('To create a subordinate CA, please provide either an issuer or the '
-         '--create-csr flag to output a CSR to be signed by another issuer.'))

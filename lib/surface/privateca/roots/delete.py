@@ -53,16 +53,16 @@ class Delete(base.DeleteCommand):
 
     To schedule a root CA for deletion:
 
-      $ {command} prod-root --location 'us-west1'
+      $ {command} prod-root --location='us-west1'
 
     To schedule a root CA for deletion while skipping the confirmation
     input:
 
-      $ {command} prod-root --location 'us-west1' --quiet
+      $ {command} prod-root --location='us-west1' --quiet
 
     To un-do the scheduled deletion for a root CA:
 
-      $ {parent_command} restore prod-root --location 'us-west1'
+      $ {parent_command} restore prod-root --location='us-west1'
 
   """
 

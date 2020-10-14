@@ -2420,15 +2420,16 @@ class _Extract(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'destination_format',
-        None,
-        ['CSV', 'NEWLINE_DELIMITED_JSON', 'AVRO', 'ML_TF_SAVED_MODEL',
-         'ML_XGBOOST_BOOSTER'],
-        'The extracted file format. Format CSV, NEWLINE_DELIMITED_JSON and AVRO '
-        'are applicable for extracting tables. Formats ML_TF_SAVED_MODEL and '
-        'ML_XGBOOST_BOOSTER are applicable for extracting models. The default '
-        'value for tables is CSV. Tables with nested or repeated fields cannot '
-        'be exported as CSV. The default value for models is '
-        'ML_TF_SAVED_MODEL.',
+        None, [
+            'CSV', 'NEWLINE_DELIMITED_JSON', 'AVRO',
+            'ML_TF_SAVED_MODEL', 'ML_XGBOOST_BOOSTER'
+        ],
+        'The extracted file format. Format CSV, NEWLINE_DELIMITED_JSON, '
+        'PARQUET and AVRO are applicable for extracting tables. Formats '
+        'ML_TF_SAVED_MODEL and ML_XGBOOST_BOOSTER are applicable for '
+        'extracting models. The default value for tables is CSV. Tables with '
+        'nested or repeated fields cannot be exported as CSV. The default '
+        'value for models is ML_TF_SAVED_MODEL.',
         flag_values=fv)
     flags.DEFINE_enum(
         'compression',
@@ -6675,6 +6676,18 @@ def _StructTypeSplit(type_string):
     yield splits
 
 
+def _FormatRfc3339(datetime_obj):
+  """Formats a datetime.datetime object (UTC) in RFC3339.
+
+  https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#timestamp
+
+  Args:
+    datetime_obj: A datetime.datetime object representing a datetime in UTC.
+
+  Returns:
+    The string representation of the date in RFC3339.
+  """
+  return datetime_obj.isoformat('T') + 'Z'
 
 
 def _ParseParameterValue(type_dict, value_input):

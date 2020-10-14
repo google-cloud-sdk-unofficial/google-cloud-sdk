@@ -20,8 +20,13 @@
         $ {command} my-domain.com
 
   request: &request
-    api_version: v1
     collection: managedidentities.projects.locations.global.domains
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1
+    GA:
+      api_version: v1
 
   arguments:
     resource:

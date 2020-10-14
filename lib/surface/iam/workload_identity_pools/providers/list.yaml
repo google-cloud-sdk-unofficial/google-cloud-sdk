@@ -20,7 +20,7 @@
       The following command lists all WorkloadIdentityPoolProviders in the default project,
       including soft-deleted pools:
 
-        $ {command} --location global --show-deleted
+        $ {command} --location=global --show-deleted
 
   request:
     collection: iam.projects.locations.workloadIdentityPools.providers

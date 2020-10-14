@@ -67,20 +67,20 @@ class Create(base.CreateCommand):
   To create a certificate using a CSR:
 
       $ {command} frontend-server-tls \
-        --issuer server-tls-1 --issuer-location us \
-        --csr ./csr.pem \
-        --cert-out ./cert.pem \
-        --validity P30D
+        --issuer=server-tls-1 --issuer-location=us \
+        --csr=./csr.pem \
+        --cert-output-file=./cert.pem \
+        --validity=P30D
 
     To create a certificate using a client-generated key:
 
       $ {command} frontend-server-tls \
-        --issuer server-tls-1 --issuer-location us \
+        --issuer=server-tls-1 --issuer-location=us \
         --generate-key \
-        --key-output-file ./key \
-        --cert-output-file ./cert.pem \
-        --dns-san www.joonix.net \
-        --reusable-config server-tls
+        --key-output-file=./key \
+        --cert-output-file=./cert.pem \
+        --dns-san=www.joonix.net \
+        --reusable-config=server-tls
   """
 
   @staticmethod

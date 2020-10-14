@@ -24,6 +24,6 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Privateclouds(base.Group):
-  """Manage privateclouds in Cloud VMware."""
+  """Manage private clouds in Google Cloud VMware Engine."""
 
   pass

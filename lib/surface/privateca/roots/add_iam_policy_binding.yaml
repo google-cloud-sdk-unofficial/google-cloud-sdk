@@ -14,9 +14,9 @@
         user 'test-user@gmail.com' on the CA 'prod-root' with the location 'us-west1', run:
 
           $ {command} prod-root \
-            --location 'us-west1' \
-            --member 'user:test-user@gmail.com' \
-            --role 'roles/privateca.certificateManager'
+            --location='us-west1' \
+            --member='user:test-user@gmail.com' \
+            --role='roles/privateca.certificateManager'
 
   request:
     collection: privateca.projects.locations.certificateAuthorities

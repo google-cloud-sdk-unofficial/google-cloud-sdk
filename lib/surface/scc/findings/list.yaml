@@ -6,11 +6,11 @@
     examples: |
       List all ACTIVE findings under organization 123456 across all sources:
 
-        $ {command} 123456 --filter "state=\"ACTIVE\""
+        $ {command} 123456 --filter="state=\"ACTIVE\""
 
       List all ACTIVE findings under organization 123456 and source 5678:
 
-        $ {command} 123456 --source 5678 --filter "state=\"ACTIVE\""
+        $ {command} 123456 --source=5678 --filter="state=\"ACTIVE\""
 
       Only list category and resource_name of all ACTIVE findings under organization 123456 and source 5678:
 
@@ -18,19 +18,19 @@
 
       List all ACTIVE findings of XSS category/type, under organization 123456 and source 5678:
 
-        $ {command} 123456 --source 5678 --filter "state=\"ACTIVE\" AND category=\"XSS\""
+        $ {command} 123456 --source=5678 --filter="state=\"ACTIVE\" AND category=\"XSS\""
 
       List all findings attached to a particular resource under organization 123456:
 
-        $ {command} 123456 --filter "resource_name=\"//container.googleapis.com/projects/pid/zones/zone-id/clusters/cluster-id\""
+        $ {command} 123456 --filter="resource_name=\"//container.googleapis.com/projects/pid/zones/zone-id/clusters/cluster-id\""
 
       List all ACTIVE findings that took place on 2019-01-01T01:00:00 GMT time, under organization 123456:
 
-        $ {command} 123456 --filter "state=\"ACTIVE\" AND event_time > 1546304400000"
+        $ {command} 123456 --filter="state=\"ACTIVE\" AND event_time > 1546304400000"
 
       List all findings that were ACTIVE as of 2019-01-01T01:00:00 GMT time, under organization 123456:
 
-        $ {command} 123456 --filter "state=\"ACTIVE\"" --read-time "2019-01-01T01:00:00Z"
+        $ {command} 123456 --filter="state=\"ACTIVE\"" --read-time="2019-01-01T01:00:00Z"
 
   request:
     collection: securitycenter.organizations.sources.findings
@@ -82,5 +82,5 @@
         should follow SQL syntax: comma separated list of fields. For example:
         "name,resource_properties.a_property". The default sorting order is ascending.
         To specify descending order for a field, a suffix " desc" should be appended to
-        the field name. For example: --order-by "name desc,source_properties.a_property" will
+        the field name. For example: --order-by="name desc,source_properties.a_property" will
         order by name in descending order while source_properties.a_property in ascending order.

@@ -24,31 +24,31 @@
 
       List all assets under organization (123456) that were present as of 2019-01-01T01:00:00 GMT time.
 
-        $ {command} 123456 --read-time "2019-01-01T01:00:00Z"
+        $ {command} 123456 --read-time="2019-01-01T01:00:00Z"
 
       Only list category and resource_name for all assets under organization (123456):
 
-        $ {command} 123456 --field-mask "category,resource_name"
+        $ {command} 123456 --field-mask="category,resource_name"
 
       List all compute instances under organization (123456):
 
-        $ {command} 123456 --filter "security_center_properties.resource_type=\"google.compute.Instance\""
+        $ {command} 123456 --filter="security_center_properties.resource_type=\"google.compute.Instance\""
 
       List all firewall rules that have open HTTP Ports:
 
-        $ {command} 123456 --filter "security_center_properties.resource_type = \"google.compute.Firewall\" AND resource_properties.name =\"default-allow-http\""
+        $ {command} 123456 --filter="security_center_properties.resource_type = \"google.compute.Firewall\" AND resource_properties.name =\"default-allow-http\""
 
       List all assets that belong to either projects: 5678 OR 78910 (project's numeric identifier).
 
-        $ {command} 123456 --filter "security_center_properties.resource_parent = \"//cloudresourcemanager.googleapis.com/projects/5678\" OR security_center_properties.resource_parent = "\78910\""
+        $ {command} 123456 --filter="security_center_properties.resource_parent = \"//cloudresourcemanager.googleapis.com/projects/5678\" OR security_center_properties.resource_parent = "\78910\""
 
       List all projects that are owned by a user:someone@domain.com. Notice the usage of : which enforces partial matching.
 
-        $ {command} 123456 --filter "security_center_properties.resource_type = \"google.cloud.resourcemanager.Project\" AND security_center_properties.resource_owners : \"user:someone@domain.com\""
+        $ {command} 123456 --filter="security_center_properties.resource_type = \"google.cloud.resourcemanager.Project\" AND security_center_properties.resource_owners : \"user:someone@domain.com\""
 
       List assets and add a state_change property that indicates if the asset was added, removed, or remained present during the past 24 hours period:
 
-        $ {command} 123456 --compare-duration 86400s
+        $ {command} 123456 --compare-duration=86400s
 
   request:
     collection: securitycenter.organizations.assets

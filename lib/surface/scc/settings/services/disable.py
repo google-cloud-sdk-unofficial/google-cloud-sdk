@@ -15,6 +15,10 @@
 # limitations under the License.
 """`gcloud alpha scc settings services disable` command."""
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.scc.settings import flags
 from googlecloudsdk.command_lib.scc.settings import utils
@@ -33,7 +37,7 @@ class Disable(base.UpdateCommand):
           """\
         To disable WEB_SECURITY_SCANNER of organization id="12345", run:
 
-          $ {command} --organization=12345  --service WEB_SECURITY_SCANNER
+          $ {command} --organization=12345  --service=WEB_SECURITY_SCANNER
       """
   }
 

@@ -36,13 +36,13 @@ class Update(base.UpdateCommand):
     To update labels on a subordinate CA:
 
       $ {command} server-tls-1 \
-        --location us-west1 \
-        --update-labels foo=bar
+        --location=us-west1 \
+        --update-labels=foo=bar
 
     To disable publishing CRLs for a subordinate CA:
 
       $ {command} server-tls-1 \
-        --location us-west1 \
+        --location=us-west1 \
         --no-publish-crl
   """
 

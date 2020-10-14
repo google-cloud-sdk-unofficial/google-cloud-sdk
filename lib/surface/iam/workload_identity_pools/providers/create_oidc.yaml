@@ -29,7 +29,7 @@
             --display-name='My workload pool provider' \
             --description='My workload pool provider description' \
             --disabled \
-            --atribute-mapping='google.subject=assertion.sub' \
+            --attribute-mapping='google.subject=assertion.sub' \
             --attribute-condition='true' \
             --issuer-uri=https://test-idp.com \
             --allowed-audiences=https://test-audience-1.com,https://test-audience-2.com

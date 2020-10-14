@@ -35,8 +35,7 @@ class List(base.ListCommand):
   def Args(parser):
     base.Argument(
         '--location',
-        help='Location of the certificate authorities.'
-    ).AddToParser(parser)
+        help='Location of the certificate authorities.').AddToParser(parser)
     base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
     base.FILTER_FLAG.RemoveFromParser(parser)
 
@@ -60,14 +59,12 @@ class List(base.ListCommand):
     location = args.location if args.IsSpecified('location') else '-'
 
     parent_resource = 'projects/{}/locations/{}'.format(
-        properties.VALUES.core.project.GetOrFail(),
-        location)
+        properties.VALUES.core.project.GetOrFail(), location)
 
     request = messages.PrivatecaProjectsLocationsCertificateAuthoritiesListRequest(
         parent=parent_resource,
         filter='type:SUBORDINATE',
-        orderBy=common_args.ParseSortByArg(args.sort_by),
-        pageSize=args.page_size)
+        orderBy=common_args.ParseSortByArg(args.sort_by))
 
     return list_pager.YieldFromList(
         client.projects_locations_certificateAuthorities,
@@ -75,4 +72,5 @@ class List(base.ListCommand):
         field='certificateAuthorities',
         limit=args.limit,
         batch_size_attribute='pageSize',
+        batch_size=args.page_size,
         get_field_func=response_utils.GetFieldAndLogUnreachable)

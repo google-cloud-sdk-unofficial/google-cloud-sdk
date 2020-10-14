@@ -101,7 +101,7 @@ class ConfigmanagementFeatureState(object):
         'GatekeeperControllerManager':
             pc_deployment_state.gatekeeperControllerManagerState
     }
-    if fs.membershipConfig and fs.membershipConfig.version > '1.4.1':
+    if fs.membershipConfig and fs.membershipConfig.version and fs.membershipConfig.version > '1.4.1':
       expected_deploys['GatekeeperAudit'] = pc_deployment_state.gatekeeperAudit
     for deployment_name, deployment_state in expected_deploys.items():
       if not deployment_state:

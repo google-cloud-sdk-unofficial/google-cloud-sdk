@@ -37,7 +37,7 @@ class Run(base.Command):
           """\
           To run a job from the flex template, run:
 
-            $ {command} my-job --template-file-gcs-location=gs://flex-template-path --region=europe-west1 --parameters=input="gs://input",output="gs://output-path" --max_num_workers=5
+            $ {command} my-job --template-file-gcs-location=gs://flex-template-path --region=europe-west1 --parameters=input="gs://input",output="gs://output-path" --max-workers=5
           """,
   }
 

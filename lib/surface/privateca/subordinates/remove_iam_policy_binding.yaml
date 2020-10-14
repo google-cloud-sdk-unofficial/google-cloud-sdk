@@ -13,8 +13,8 @@
       user 'test-user@gmail.com' on the CA 'server-tls-1' with the location 'us-west1', run:
 
         $ {command} server-tls-1 \
-          --location 'us-west1' \
-          --member 'user:test-user@gmail.com' \
+          --location='us-west1' \
+          --member='user:test-user@gmail.com' \
           --role='roles/privateca.certificateManager'
 
   request:

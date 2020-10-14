@@ -37,7 +37,7 @@ class Create(base.CreateCommand):
 
   To create a certificate map entry with name simple-entry, run:
 
-    $ {command} simple-map --map simple-entry --certificates simple-cert
+    $ {command} simple-map --map=simple-entry --certificates=simple-cert
   """
 
   @staticmethod

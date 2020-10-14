@@ -11,7 +11,7 @@
 
     resource:
       help_text: The bucket you want to update.
-      spec: !REF googlecloudsdk.command_lib.storage.resources:bucket
+      spec: !REF googlecloudsdk.command_lib.storage.resources.resources:bucket
 
     params:
 

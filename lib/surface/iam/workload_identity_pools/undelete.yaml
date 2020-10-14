@@ -20,7 +20,7 @@
       The following command undeletes the WorkloadIdentityPool with the ID
       'my-workload-identity-pool':
 
-        $ {command} my-workload-identity-pool --location global
+        $ {command} my-workload-identity-pool --location=global
 
   request:
     collection: iam.projects.locations.workloadIdentityPools

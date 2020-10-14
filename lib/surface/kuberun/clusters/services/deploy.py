@@ -38,9 +38,9 @@ class Deploy(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
 
   detailed_help = _DETAILED_HELP
   flags = [
-      flags.AsyncFlag(),
       flags.ClusterConnectionFlags(),
-      flags.CommonServiceFlags(is_deploy=True)
+      flags.CommonServiceFlags(is_deploy=True),
+      flags.AsyncFlag(),
   ]
 
   @classmethod

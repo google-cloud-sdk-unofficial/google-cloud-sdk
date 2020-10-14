@@ -6,11 +6,11 @@
     examples: |
       Create an ACTIVE my-finding attached to example-project under organization 123456 and source 5678:
 
-        $ {command} my-finding --organization=123456 --source=5678 --state ACTIVE --resource-name '//cloudresourcemanager.googleapis.com/v1/projects/example-project'
+        $ {command} my-finding --organization=123456 --source=5678 --state=ACTIVE --resource-name='//cloudresourcemanager.googleapis.com/v1/projects/example-project'
 
       Create an ACTIVE my-finding with category: XSS_SCRIPTING under organization 123456 and source 5678:
 
-        $ {command} my-finding --organization=123456 --source=5678 --state ACTIVE --category 'XSS_SCRIPTING'
+        $ {command} my-finding --organization=123456 --source=5678 --state=ACTIVE --category='XSS_SCRIPTING'
 
   request:
     collection: securitycenter.organizations.sources.findings

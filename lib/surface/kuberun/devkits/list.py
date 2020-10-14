@@ -15,12 +15,13 @@
 """Command to list available Kuberun Development Kits."""
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
+
+from googlecloudsdk.api_lib.kuberun import devkit
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import kuberun_command
-from googlecloudsdk.core import log
 
 _DETAILED_HELP = {
     'EXAMPLES':
@@ -42,15 +43,17 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
   @classmethod
   def Args(cls, parser):
     super(List, cls).Args(parser)
+    base.ListCommand._Flags(parser)
     base.URI_FLAG.RemoveFromParser(parser)
+    columns = ['id', 'name', 'description', 'version']
+    parser.display_info.AddFormat('table({})'.format(','.join(columns)))
 
   def Command(self):
     return ['devkits', 'list']
 
   def FormatOutput(self, out, args):
-    # TODO(b/169186627): handle this as JSON
-    return out
-
-  # TODO(b/169186627): remove this workaround
-  def Display(self, args, output):
-    log.out.write(output)
+    if out:
+      json_list = json.loads(out)
+      return [devkit.DevKit.FromJSON(x) for x in json_list]
+    else:
+      return []

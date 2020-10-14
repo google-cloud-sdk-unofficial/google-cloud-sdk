@@ -91,7 +91,7 @@ class Update(base.Command):
           the policy's etag (retrieved by an earlier command) is
           ``f59741c8-bb5e-4ee6-bf6f-c4ebeb6b06e0'', run:
 
-          $ {command} ops-agents-labels-policy --clear-instances --group-labels="env=prod,product=myapp;env=staging,product=myapp" --etag f59741c8-bb5e-4ee6-bf6f-c4ebeb6b06e0
+          $ {command} ops-agents-labels-policy --clear-instances --group-labels="env=prod,product=myapp;env=staging,product=myapp" --etag=f59741c8-bb5e-4ee6-bf6f-c4ebeb6b06e0
           """,
   }
 

@@ -8,7 +8,7 @@
     examples: |
       List all security marks for my-finding under organization 123456 and source 5678:
 
-        $ {command} my-finding --organization=123456 --source 5678
+        $ {command} my-finding --organization=123456 --source=5678
 
   request:
     collection: securitycenter.organizations.sources.findings

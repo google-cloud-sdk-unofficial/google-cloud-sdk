@@ -6,15 +6,15 @@
     examples: |
       Update my-finding's state from ACTIVE to INACTIVE:
 
-        $ {command} my-finding --organization=123456 --source=5678 --state INACTIVE
+        $ {command} my-finding --organization=123456 --source=5678 --state=INACTIVE
 
       Override all source properties on my-finding:
 
-        $ {command} my-finding --organization=123456 --source=5678 --source-properties "propKey1=propVal1,propKey2=propVal2"
+        $ {command} my-finding --organization=123456 --source=5678 --source-properties="propKey1=propVal1,propKey2=propVal2"
 
       Selectively update a specific source property on my-finding:
 
-        $ {command} my-finding --organization=123456 --source=5678 --source-properties "propKey1=propVal1,propKey2=propVal2" --update-mask "source_properties.propKey1"
+        $ {command} my-finding --organization=123456 --source=5678 --source-properties="propKey1=propVal1,propKey2=propVal2" --update-mask="source_properties.propKey1"
 
   request:
     collection: securitycenter.organizations.sources.findings
@@ -40,7 +40,7 @@
         Optional: If left unspecified (default), an update-mask is automatically created using the
         flags specified in the command and only those values are updated.
         For example: --external-uri='<some-uri>' --event-time='<some-time>' would automatically
-        generate --update-mask 'external_uri,event_time'. Note that as a result, only external-uri
+        generate --update-mask='external_uri,event_time'. Note that as a result, only external-uri
         and event-time are updated for the given finding and everything else remains untouched. If
         you want to delete attributes/properties (that are not being changed in the update command)
         use an empty update-mask (''). That will delete all the mutable properties/attributes that
