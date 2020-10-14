@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.core import exceptions
@@ -29,14 +30,15 @@ from googlecloudsdk.core import exceptions
 class InterfaceNotFoundError(exceptions.Error):
   """Raised when an interface is not found."""
 
-  def __init__(self, name):
-    self.name = name
-    msg = 'interface `{0}` not found'.format(name)
+  def __init__(self, name_list):
+    error_msg = ('interface ' + ', '.join(
+        ['%s'] * len(name_list))) % tuple(name_list) + ' not found'
     super(InterfaceNotFoundError, self
-         ).__init__(msg)
+         ).__init__(error_msg)
 
 
-class RemoveBgpPeer(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class RemoveInterface(base.UpdateCommand):
   """Remove an interface from a Compute Engine router.
 
   *{command}* removes an interface from a Compute Engine router.
@@ -45,14 +47,30 @@ class RemoveBgpPeer(base.UpdateCommand):
   ROUTER_ARG = None
 
   @classmethod
-  def Args(cls, parser):
+  def _Args(cls, parser, support_remove_list=False):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
 
-    parser.add_argument(
-        '--interface-name',
-        required=True,
-        help='The name of the interface being removed.')
+    if support_remove_list:
+      interface_parser = parser.add_mutually_exclusive_group(required=True)
+      # TODO(b/170227243): deprecate --peer-name after --peer-names hit GA
+      interface_parser.add_argument(
+          '--interface-name',
+          help='The name of the interface being removed.')
+      interface_parser.add_argument(
+          '--interface-names',
+          type=arg_parsers.ArgList(),
+          metavar='INTERFACE_NAME',
+          help='The list of names for interfaces being removed.')
+    else:
+      parser.add_argument(
+          '--interface-name',
+          required=True,
+          help='The name of the interface being removed.')
+
+  @classmethod
+  def Args(cls, parser):
+    cls._Args(parser)
 
   def GetGetRequest(self, client, router_ref):
     return (client.apitools_client.routers,
@@ -71,26 +89,37 @@ class RemoveBgpPeer(base.UpdateCommand):
                 region=router_ref.region,
                 project=router_ref.project))
 
-  def Modify(self, args, existing, cleared_fields):
+  def Modify(self, args, existing, cleared_fields, support_remove_list=False):
     """Mutate the router and record any cleared_fields for Patch request."""
-    replacement = encoding.CopyProtoMessage(existing)
+
+    input_remove_list = []
+    if support_remove_list:
+      input_remove_list = args.interface_names if args.interface_names else []
+
+    input_remove_list = input_remove_list + ([args.interface_name]
+                                             if args.interface_name else [])
 
     # remove interface if exists
     interface = None
-    for i in replacement.interfaces:
-      if i.name == args.interface_name:
+    acutal_remove_list = []
+    replacement = encoding.CopyProtoMessage(existing)
+    existing_router = encoding.CopyProtoMessage(existing)
+
+    for i in existing_router.interfaces:
+      if i.name in input_remove_list:
         interface = i
         replacement.interfaces.remove(interface)
         if not replacement.interfaces:
           cleared_fields.append('interfaces')
-        break
+        acutal_remove_list.append(interface.name)
 
-    if interface is None:
-      raise InterfaceNotFoundError(args.interface_name)
+    not_found_interface = list(set(input_remove_list) - set(acutal_remove_list))
+    if not_found_interface:
+      raise InterfaceNotFoundError(not_found_interface)
 
     return replacement
 
-  def Run(self, args):
+  def _Run(self, args, support_remove_list=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
@@ -101,10 +130,33 @@ class RemoveBgpPeer(base.UpdateCommand):
 
     # Cleared list fields need to be explicitly identified for Patch API.
     cleared_fields = []
-    new_object = self.Modify(args, objects[0], cleared_fields)
+    new_object = self.Modify(
+        args,
+        objects[0],
+        cleared_fields,
+        support_remove_list=support_remove_list)
 
     with client.apitools_client.IncludeFields(cleared_fields):
       # There is only one response because one request is made above
       result = client.MakeRequests(
           [self.GetSetRequest(client, router_ref, new_object)])
       return result
+
+  def Run(self, args):
+    return self._Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RemoveInterfaceAlpha(RemoveInterface):
+  """Remove an interface from a Compute Engine router.
+
+  *{command}* removes an interface from a Compute Engine router.
+  """
+  ROUTER_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls._Args(parser, support_remove_list=True)
+
+  def Run(self, args):
+    return self._Run(args, support_remove_list=True)

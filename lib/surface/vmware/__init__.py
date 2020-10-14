@@ -24,6 +24,6 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Vmware(base.Group):
-  """Manage Cloud VMware resources."""
+  """Manage Google Cloud VMware Engine resources."""
 
   category = base.COMPUTE_CATEGORY

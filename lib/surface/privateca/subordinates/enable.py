@@ -38,7 +38,7 @@ class Enable(base.SilentCommand):
 
     To enable a subordinate CA:
 
-        $ {command} server-tls1 --location us-west1
+        $ {command} server-tls1 --location=us-west1
   """
 
   @staticmethod

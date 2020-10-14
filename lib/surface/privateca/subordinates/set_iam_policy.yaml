@@ -12,7 +12,7 @@
       The following command will read am IAM policy defined in a JSON file
       'policy.json' and set it for the CA 'server-tls-1' with the location 'us-west1':
 
-        $ {command} server-tls-1 policy.json --location us-west1
+        $ {command} server-tls-1 policy.json --location=us-west1
 
   request:
     collection: privateca.projects.locations.certificateAuthorities

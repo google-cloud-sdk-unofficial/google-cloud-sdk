@@ -39,7 +39,7 @@ class Restore(base.SilentCommand):
 
     To restore a subordinate CA:
 
-        $ {command} server-tls-1 --location us-west1
+        $ {command} server-tls-1 --location=us-west1
   """
 
   @staticmethod

@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.compute.routers import router_utils
 from googlecloudsdk.core import log
@@ -53,7 +54,8 @@ class AddBgpPeer(base.UpdateCommand):
            args,
            support_bfd=False,
            support_enable=False,
-           support_bfd_mode=False):
+           support_bfd_mode=False,
+           instance_ref=None):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     messages = holder.client.messages
     service = holder.client.apitools_client.routers
@@ -68,7 +70,8 @@ class AddBgpPeer(base.UpdateCommand):
         args,
         support_bfd=support_bfd,
         support_enable=support_enable,
-        support_bfd_mode=support_bfd_mode)
+        support_bfd_mode=support_bfd_mode,
+        instance_ref=instance_ref)
 
     if router_utils.HasReplaceAdvertisementFlags(args):
       mode, groups, ranges = router_utils.ParseAdvertisements(
@@ -150,22 +153,38 @@ class AddBgpPeerAlpha(AddBgpPeerBeta):
   """Add a BGP peer to a Compute Engine router."""
 
   ROUTER_ARG = None
+  INSTANCE_ARG = None
 
   @classmethod
   def Args(cls, parser):
+    cls.INSTANCE_ARG = instance_flags.InstanceArgumentForRouter()
+    cls.INSTANCE_ARG.AddArgument(parser)
     cls._Args(parser, support_bfd=True, support_enable=True)
 
   def Run(self, args):
     """See base.UpdateCommand."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+
+    instance_ref = None
+    if args.instance is not None:
+      instance_ref = self.INSTANCE_ARG.ResolveAsResource(
+          args,
+          holder.resources,
+          scope_lister=instance_flags.GetInstanceZoneScopeLister(holder.client))
     return self._Run(
-        args, support_bfd=True, support_enable=True, support_bfd_mode=True)
+        args,
+        support_bfd=True,
+        support_enable=True,
+        support_bfd_mode=True,
+        instance_ref=instance_ref)
 
 
 def _CreateBgpPeerMessage(messages,
                           args,
                           support_bfd=False,
                           support_enable=False,
-                          support_bfd_mode=False):
+                          support_bfd_mode=False,
+                          instance_ref=None):
   """Creates a BGP peer with base attributes based on flag arguments."""
   bfd = None
   if support_bfd:
@@ -179,7 +198,18 @@ def _CreateBgpPeerMessage(messages,
       enable = messages.RouterBgpPeer.EnableValueValuesEnum.TRUE
     else:
       enable = messages.RouterBgpPeer.EnableValueValuesEnum.FALSE
-  if support_bfd or support_enable:
+
+  if instance_ref is not None:
+    return messages.RouterBgpPeer(
+        name=args.peer_name,
+        interfaceName=args.interface,
+        peerIpAddress=args.peer_ip_address,
+        peerAsn=args.peer_asn,
+        advertisedRoutePriority=args.advertised_route_priority,
+        enable=enable,
+        routerApplianceInstance=instance_ref.SelfLink(),
+        bfd=bfd)
+  elif support_bfd or support_enable:
     return messages.RouterBgpPeer(
         name=args.peer_name,
         interfaceName=args.interface,

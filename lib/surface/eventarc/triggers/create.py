@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.eventarc import triggers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.eventarc import flags
@@ -63,11 +64,15 @@ class Create(base.CreateCommand):
                               args.destination_run_region)
     if args.async_:
       return operation
-    trigger = client.WaitFor(operation)
+    response = client.WaitFor(operation)
+    trigger_dict = encoding.MessageToPyValue(response)
     if types.IsPubsubType(args.matching_criteria['type']):
       log.status.Print('Created Pub/Sub topic [{}].'.format(
-          trigger.transport.pubsub.topic))
-    return trigger
+          trigger_dict['transport']['pubsub']['topic']))
+      log.status.Print(
+          'Publish to this topic to receive events in Cloud Run service [{}].'
+          .format(args.destination_run_service))
+    return response
 
   def Epilog(self, resources_were_displayed):
     if resources_were_displayed:

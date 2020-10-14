@@ -37,7 +37,7 @@ class DescribeExplicit(base.DescribeCommand):
           """\
         To describe WEB_SECURITY_SCANNER settings of project id="12345", run:
 
-          $ {command} --project=12345 --service WEB_SECURITY_SCANNER
+          $ {command} --project=12345 --service=WEB_SECURITY_SCANNER
       """
   }
 

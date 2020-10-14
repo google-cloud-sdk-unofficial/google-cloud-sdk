@@ -31,7 +31,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Register(base.CreateCommand):
   # pylint: disable=line-too-long
   """Register a new domain.

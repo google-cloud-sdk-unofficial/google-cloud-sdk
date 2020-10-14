@@ -8,15 +8,15 @@
       To get metadata for the subordinate CA 'server-tls-1' in location 'us-west1':
 
         $ {command} server-tls-1 \
-          --location us-west1
+          --location=us-west1
 
       To download the PEM-encoded CA certificate for the 'server-tls-1'
       CA in location 'us-west1' to a file
       called 'server-tls-1.crt':
 
         $ {command} server-tls-1 \
-          --location us-west1 \
-          --format "value(pem_cert)" > ./server-tls-1.crt
+          --location=us-west1 \
+          --format="value(pem_cert)" > ./server-tls-1.crt
 
   request:
     collection: privateca.projects.locations.certificateAuthorities

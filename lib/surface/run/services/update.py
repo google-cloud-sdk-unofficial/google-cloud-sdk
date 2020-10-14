@@ -161,6 +161,10 @@ class BetaUpdate(Update):
     Update.CommonArgs(parser)
     flags.AddDeployTagFlag(parser)
 
+    # Flags specific to managed CR
+    managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddEgressSettingsFlag(managed_group)
+
     # Flags only supported on GKE and Knative
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddMinInstancesFlag(cluster_group)

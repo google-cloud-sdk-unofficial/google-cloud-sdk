@@ -36,13 +36,13 @@ class Update(base.UpdateCommand):
     To update labels on a root CA:
 
       $ {command} prod-root \
-        --location us-west1 \
-        --update-labels foo=bar
+        --location=us-west1 \
+        --update-labels=foo=bar
 
     To disable publishing CRLs for a root CA:
 
       $ {command} prod-root \
-        --location us-west1 \
+        --location=us-west1 \
         --no-publish-crl
   """
 

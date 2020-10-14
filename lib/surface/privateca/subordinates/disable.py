@@ -38,7 +38,7 @@ class Disable(base.SilentCommand):
 
     To disable a subordinate CA:
 
-        $ {command} server-tls1 --location us-west1
+        $ {command} server-tls1 --location=us-west1
   """
 
   @staticmethod

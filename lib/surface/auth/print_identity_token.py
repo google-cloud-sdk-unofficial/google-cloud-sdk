@@ -45,6 +45,7 @@ def _Run(args):
           'Invalid account Type for `--audiences`. '
           'Requires valid service account.')
     target_audiences = ' '.join(args.audiences)
+    # TODO(b/170394261): Avoid changing constant values.
     config.CLOUDSDK_CLIENT_ID = target_audiences
 
   if args.IsSpecified('token_format') or args.IsSpecified('include_license'):

@@ -38,7 +38,7 @@ class Disable(base.SilentCommand):
 
     To disable a root CA:
 
-        $ {command} prod-root --location us-west1
+        $ {command} prod-root --location=us-west1
   """
 
   @staticmethod

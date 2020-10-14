@@ -385,7 +385,6 @@ def _RunCreate(compute_api,
                args,
                support_source_instance,
                support_kms=False,
-               support_confidential_compute=False,
                support_location_hint=False,
                support_post_key_revocation_action_type=False,
                support_enable_nested_virtualization=False):
@@ -399,8 +398,6 @@ def _RunCreate(compute_api,
         arguments specified in the .Args() method.
       support_source_instance: indicates whether source instance is supported.
       support_kms: Indicate whether KMS is integrated or not.
-      support_confidential_compute: Indicate whether confidential compute is
-        supported.
       support_location_hint: Indicate whether location hint is supported.
       support_post_key_revocation_action_type: Indicate whether
         post_key_revocation_action_type is supported.
@@ -460,10 +457,9 @@ def _RunCreate(compute_api,
   shieldedinstance_config_message = BuildShieldedInstanceConfigMessage(
       messages=client.messages, args=args)
 
-  if support_confidential_compute:
-    confidential_instance_config_message = (
-        BuildConfidentialInstanceConfigMessage(
-            messages=client.messages, args=args))
+  confidential_instance_config_message = (
+      BuildConfidentialInstanceConfigMessage(
+          messages=client.messages, args=args))
 
   node_affinities = sole_tenancy_util.GetSchedulingNodeAffinityListFromArgs(
       args, client.messages)
@@ -599,9 +595,8 @@ def _RunCreate(compute_api,
   instance_template.properties.reservationAffinity = instance_utils.GetReservationAffinity(
       args, client)
 
-  if support_confidential_compute:
-    instance_template.properties.confidentialInstanceConfig = (
-        confidential_instance_config_message)
+  instance_template.properties.confidentialInstanceConfig = (
+      confidential_instance_config_message)
 
   if support_post_key_revocation_action_type and args.IsSpecified(
       'post_key_revocation_action_type'):
@@ -666,6 +661,7 @@ class Create(base.CreateCommand):
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_GA_API_VERSION)
+    instances_flags.AddConfidentialComputeArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.
@@ -707,7 +703,6 @@ class CreateBeta(Create):
   _support_kms = True
   _support_resource_policy = True
   _support_location_hint = False
-  _support_confidential_compute = True
   _support_post_key_revocation_action_type = False
   _support_enable_nested_virtualization = False
 
@@ -742,7 +737,6 @@ class CreateBeta(Create):
         support_source_instance=self._support_source_instance,
         support_kms=self._support_kms,
         support_location_hint=self._support_location_hint,
-        support_confidential_compute=self._support_confidential_compute,
         support_post_key_revocation_action_type=self
         ._support_post_key_revocation_action_type,
         support_enable_nested_virtualization=self
@@ -766,7 +760,6 @@ class CreateAlpha(Create):
   _support_source_instance = True
   _support_kms = True
   _support_resource_policy = True
-  _support_confidential_compute = True
   _support_location_hint = True
   _support_post_key_revocation_action_type = True
   _support_enable_nested_virtualization = True
@@ -804,7 +797,6 @@ class CreateAlpha(Create):
         args=args,
         support_source_instance=self._support_source_instance,
         support_kms=self._support_kms,
-        support_confidential_compute=self._support_confidential_compute,
         support_location_hint=self._support_location_hint,
         support_post_key_revocation_action_type=self
         ._support_post_key_revocation_action_type,

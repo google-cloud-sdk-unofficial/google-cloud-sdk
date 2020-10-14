@@ -34,8 +34,7 @@ class Create(base.CreateCommand):
           textwrap.dedent("""\
         To create a Cloud Spanner instance, run:
 
-          $ {command} my-instance-id --config=regional-us-east1
-              --description=my-instance-display-name --nodes=3
+          $ {command} my-instance-id --config=regional-us-east1 --description=my-instance-display-name --nodes=3
         """),
   }
 

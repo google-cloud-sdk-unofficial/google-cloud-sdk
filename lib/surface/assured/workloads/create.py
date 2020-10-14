@@ -43,7 +43,7 @@ _DETAILED_HELP = {
         * with the label: key = 'LabelKey1', value = 'LabelValue1'
         * with the label: key = 'LabelKey2', value = 'LabelValue2'
 
-          $ {command} --organization=123 --location=us-central1 --display-name=Test-Workload --compliance-regime=FEDRAMP_MODERATE --billing-account=billingAccounts/456 --next-rotation-time=2020-12-30T10:15:00.00Z --rotation-period=172800s --labels LabelKey1=LabelValue1,LabelKey2=LabelValue2
+          $ {command} --organization=123 --location=us-central1 --display-name=Test-Workload --compliance-regime=FEDRAMP_MODERATE --billing-account=billingAccounts/456 --next-rotation-time=2020-12-30T10:15:00.00Z --rotation-period=172800s --labels=LabelKey1=LabelValue1,LabelKey2=LabelValue2
 
         """,
 }

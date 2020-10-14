@@ -242,6 +242,11 @@
         "defaultEncryptionConfiguration": {
           "description": "The default encryption key for all tables in the dataset. Once this property is set, all newly-created partitioned tables in the dataset will have encryption key set to this value, unless table creation request (or query) overrides the key.",
           "$ref": "EncryptionConfiguration"
+        },
+        "satisfiesPzs": {
+          "description": "Output only. Reserved for future use.",
+          "readOnly": true,
+          "type": "boolean"
         }
       }
     },
@@ -2280,7 +2285,7 @@
       "type": "object",
       "properties": {
         "mode": {
-          "description": "Optional. When set, what mode of hive partitioning to use when reading data. Two modes are supported. * AUTO: automatically infer partition key name(s) and type(s). * STRINGS: automatically infer partition key name(s). All types are strings. * CUSTOM: partition key schema is encoded in the source URI prefix. Not all storage formats support hive partitioning. Requesting hive partitioning on an unsupported format will lead to an error. Currently supported formats are: JSON, CSV, ORC, Avro and Parquet.",
+          "description": "Optional. When set, what mode of hive partitioning to use when reading data. The following modes are supported: * AUTO: automatically infer partition key name(s) and type(s). * STRINGS: automatically infer partition key name(s). All types are strings. * CUSTOM: partition key schema is encoded in the source URI prefix. Not all storage formats support hive partitioning. Requesting hive partitioning on an unsupported format will lead to an error. Currently supported formats are: JSON, CSV, ORC, Avro and Parquet.",
           "type": "string"
         },
         "sourceUriPrefix": {
@@ -2688,6 +2693,27 @@
         "destinationEncryptionConfiguration": {
           "description": "Custom encryption configuration (e.g., Cloud KMS keys).",
           "$ref": "EncryptionConfiguration"
+        },
+        "operationType": {
+          "description": "Optional. Supported operation types in table copy job.",
+          "type": "string",
+          "enumDescriptions": [
+            "Unspecified operation type.",
+            "The source and destination table have the same table type.",
+            "The source table type is TABLE and the destination table type is SNAPSHOT.",
+            "The source table type is SNAPSHOT and the destination table type is TABLE."
+          ],
+          "enum": [
+            "OPERATION_TYPE_UNSPECIFIED",
+            "COPY",
+            "SNAPSHOT",
+            "RESTORE"
+          ]
+        },
+        "destinationExpirationTime": {
+          "description": "Optional. The time when the destination table expires. Expired tables will be deleted and their storage reclaimed.",
+          "type": "string",
+          "format": "google-datetime"
         }
       }
     },
@@ -2862,6 +2888,11 @@
           "readOnly": true,
           "$ref": "ScriptStatistics"
         },
+        "rowLevelSecurityStatistics": {
+          "description": "Output only. [Preview] Statistics for row-level security. Present only for query and extract jobs.",
+          "readOnly": true,
+          "$ref": "RowLevelSecurityStatistics"
+        },
         "transactionInfo": {
           "description": "Output only. [Alpha] Information of the multi-statement transaction if this job is part of one.",
           "readOnly": true,
@@ -3005,6 +3036,17 @@
           "description": "Output only. The DDL target table. Present only for CREATE\/DROP TABLE\/VIEW and DROP ALL ROW ACCESS POLICIES queries.",
           "readOnly": true,
           "$ref": "TableReference"
+        },
+        "ddlTargetRowAccessPolicy": {
+          "description": "Output only. [Preview] The DDL target row access policy. Present only for CREATE\/DROP ROW ACCESS POLICY queries.",
+          "readOnly": true,
+          "$ref": "RowAccessPolicyReference"
+        },
+        "ddlAffectedRowAccessPolicyCount": {
+          "description": "Output only. [Preview] The number of row access policies affected by a DDL statement. Present only for DROP ALL ROW ACCESS POLICIES queries.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
         },
         "ddlTargetRoutine": {
           "description": "Output only. [Beta] The DDL target routine. Present only for CREATE\/DROP FUNCTION\/PROCEDURE queries.",
@@ -3238,6 +3280,29 @@
           "description": "Total number of active workers. This does not correspond directly to slot usage. This is the largest value observed since the last sample.",
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "RowAccessPolicyReference": {
+      "id": "RowAccessPolicyReference",
+      "description": "Id path of a row access policy.",
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "description": "Required. The ID of the project containing this row access policy.",
+          "type": "string"
+        },
+        "datasetId": {
+          "description": "Required. The ID of the dataset containing this row access policy.",
+          "type": "string"
+        },
+        "tableId": {
+          "description": "Required. The ID of the table containing this row access policy.",
+          "type": "string"
+        },
+        "policyId": {
+          "description": "Required. The ID of the row access policy. The ID must contain only letters (a-z, A-Z), numbers (0-9), or underscores (_). The maximum length is 256 characters.",
+          "type": "string"
         }
       }
     },
@@ -3475,6 +3540,17 @@
           "description": "Output only. Text of the current statement\/expression.",
           "readOnly": true,
           "type": "string"
+        }
+      }
+    },
+    "RowLevelSecurityStatistics": {
+      "id": "RowLevelSecurityStatistics",
+      "description": "[Preview] Statistics for row-level security.",
+      "type": "object",
+      "properties": {
+        "rowLevelSecurityApplied": {
+          "description": "Whether any accessed data was protected by row access policies.",
+          "type": "boolean"
         }
       }
     },
@@ -4066,6 +4142,56 @@
         }
       }
     },
+    "ListRowAccessPoliciesResponse": {
+      "id": "ListRowAccessPoliciesResponse",
+      "description": "Response message for the ListRowAccessPolicies method.",
+      "type": "object",
+      "properties": {
+        "rowAccessPolicies": {
+          "description": "Row access policies on the requested table.",
+          "type": "array",
+          "items": {
+            "$ref": "RowAccessPolicy"
+          }
+        },
+        "nextPageToken": {
+          "description": "A token to request the next page of results.",
+          "type": "string"
+        }
+      }
+    },
+    "RowAccessPolicy": {
+      "id": "RowAccessPolicy",
+      "description": "Represents access on a subset of rows on the specified table, defined by its filter predicate. Access to the subset of rows is controlled by its IAM policy.",
+      "type": "object",
+      "properties": {
+        "etag": {
+          "description": "Output only. A hash of this resource.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "rowAccessPolicyReference": {
+          "description": "Required. Reference describing the ID of this row access policy.",
+          "$ref": "RowAccessPolicyReference"
+        },
+        "filterPredicate": {
+          "description": "Required. A SQL boolean expression that represents the rows defined by this row access policy, similar to the boolean expression in a WHERE clause of a SELECT query on a table. References to other tables, routines, and temporary functions are not supported. Examples: region=\"EU\" date_field = CAST('2019-9-27' as DATE) nullable_field is not NULL numeric_field BETWEEN 1.0 AND 5.0",
+          "type": "string"
+        },
+        "creationTime": {
+          "description": "Output only. The time when this row access policy was created, in milliseconds since the epoch.",
+          "readOnly": true,
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "lastModifiedTime": {
+          "description": "Output only. The time when this row access policy was last modified, in milliseconds since the epoch.",
+          "readOnly": true,
+          "type": "string",
+          "format": "google-datetime"
+        }
+      }
+    },
     "Table": {
       "id": "Table",
       "type": "object",
@@ -4200,6 +4326,11 @@
         "encryptionConfiguration": {
           "description": "Custom encryption configuration (e.g., Cloud KMS keys).",
           "$ref": "EncryptionConfiguration"
+        },
+        "snapshotDefinition": {
+          "description": "Output only. Contains information regarding snapshot. This value is set via snapshot creation.",
+          "readOnly": true,
+          "$ref": "SnapshotDefinition"
         }
       }
     },
@@ -4270,6 +4401,22 @@
           "readOnly": true,
           "type": "string",
           "format": "uint64"
+        }
+      }
+    },
+    "SnapshotDefinition": {
+      "id": "SnapshotDefinition",
+      "description": "Information about base table and snapshot time of the snapshot.",
+      "type": "object",
+      "properties": {
+        "baseTableReference": {
+          "description": "Required. Reference describing the ID of the table that is snapshotted.",
+          "$ref": "TableReference"
+        },
+        "snapshotTime": {
+          "description": "Required. The time at which the base table was snapshot.",
+          "type": "string",
+          "format": "google-datetime"
         }
       }
     },
@@ -5808,6 +5955,65 @@
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
           "description": "Lists all routines in the specified dataset. Requires the READER dataset role."
+        }
+      }
+    },
+    "rowAccessPolicies": {
+      "methods": {
+        "list": {
+          "id": "bigquery.rowAccessPolicies.list",
+          "path": "bigquery/v2/projects/{+projectId}/datasets/{+datasetId}/tables/{+tableId}/rowAccessPolicies",
+          "flatPath": "bigquery/v2/projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies",
+          "httpMethod": "GET",
+          "parameters": {
+            "projectId": {
+              "description": "Required. Project ID of the row access policies to list.",
+              "location": "path",
+              "required": true,
+              "pattern": "^[^\/]+$",
+              "type": "string"
+            },
+            "datasetId": {
+              "description": "Required. Dataset ID of row access policies to list.",
+              "location": "path",
+              "required": true,
+              "pattern": "^[^\/]+$",
+              "type": "string"
+            },
+            "tableId": {
+              "description": "Required. Table ID of the table to list row access policies.",
+              "location": "path",
+              "required": true,
+              "pattern": "^[^\/]+$",
+              "type": "string"
+            },
+            "pageToken": {
+              "description": "Page token, returned by a previous call, to request the next page of results.",
+              "location": "query",
+              "type": "string"
+            },
+            "pageSize": {
+              "description": "The maximum number of results to return in a single response page. Leverage the page tokens to iterate through the entire collection.",
+              "location": "query",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "parameterOrder": [
+            "projectId",
+            "datasetId",
+            "tableId"
+          ],
+          "response": {
+            "$ref": "ListRowAccessPoliciesResponse"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/bigquery",
+            "https://www.googleapis.com/auth/bigquery.readonly",
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/cloud-platform.read-only"
+          ],
+          "description": "Lists all row access policies on the specified table."
         }
       }
     },

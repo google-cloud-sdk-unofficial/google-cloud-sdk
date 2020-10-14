@@ -37,12 +37,12 @@ _DETAILED_HELP = {
         """\
         To list all Certificates issued by a given Certificate Authority, run:
 
-          $ {command} --issuer my-ca --location us-west1
+          $ {command} --issuer=my-ca --location=us-west1
 
         To list all Certificates issued by all Certificate Authorities in a
         location, run:
 
-          $ {command} --location us-west1
+          $ {command} --location=us-west1
 
         You can omit the --location flag in both of the above examples if you've
         already set the privateca/location property. For example:
@@ -50,7 +50,7 @@ _DETAILED_HELP = {
           $ {top_command} config set privateca/location us-west1
 
           # The following is equivalent to the first example above.
-          $ {command} --issuer my-ca
+          $ {command} --issuer=my-ca
 
           # The following is equivalent to the second example above.
           $ {command}
@@ -112,7 +112,6 @@ class List(base.ListCommand):
     request = messages.PrivatecaProjectsLocationsCertificateAuthoritiesCertificatesListRequest(
         parent=parent.RelativeName(),
         orderBy=common_args.ParseSortByArg(args.sort_by),
-        pageSize=args.page_size,
         filter=server_filter)
 
     return list_pager.YieldFromList(
@@ -121,4 +120,5 @@ class List(base.ListCommand):
         field='certificates',
         limit=args.limit,
         batch_size_attribute='pageSize',
+        batch_size=args.page_size,
         get_field_func=response_utils.GetFieldAndLogUnreachable)

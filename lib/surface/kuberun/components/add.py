@@ -67,7 +67,9 @@ class Add(kuberun_command.KubeRunCommandWithOutput, base.CreateCommand):
 
   def FormatOutput(self, out, args):
     # TODO(b/169186627): handle this as JSON
-    return out
+    if not out:
+      return out
+    return out + '\n'
 
   # TODO(b/169186627): remove this workaround
   def Display(self, args, output):

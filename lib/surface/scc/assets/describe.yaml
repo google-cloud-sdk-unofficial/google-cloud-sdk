@@ -10,11 +10,11 @@
     examples: |
       Describe an asset under organization 123456, given its full resource name (https://cloud.google.com/apis/design/resource_names#full_resource_name) e.g. //storage.googleapis.com/my-bucket:
 
-        $ {command} 123456 --resource-name "//storage.googleapis.com/my-bucket"
+        $ {command} 123456 --resource-name="//storage.googleapis.com/my-bucket"
 
       Describe an asset under organization 123456, given its Cloud SCC asset id 5678
 
-        $ {command} 123456 --asset 5678
+        $ {command} 123456 --asset=5678
 
   request:
     collection: securitycenter.organizations.assets

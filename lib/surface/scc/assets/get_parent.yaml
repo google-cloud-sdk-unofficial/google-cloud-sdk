@@ -10,11 +10,11 @@
     examples: |
       Get parent's relative resource name given an asset's full resource name (https://cloud.google.com/apis/design/resource_names#full_resource_name) e.g. //storage.googleapis.com/my-bucket under organization 123456:
 
-        $ {command} 123456 --resource-name "//storage.googleapis.com/my-bucket"
+        $ {command} 123456 --resource-name="//storage.googleapis.com/my-bucket"
 
       Get parent's relative resource name given an asset's Cloud SCC id 5678 under organization 123456.
 
-        $ {command} 123456 --asset 5678
+        $ {command} 123456 --asset=5678
 
   request:
     collection: securitycenter.organizations.assets

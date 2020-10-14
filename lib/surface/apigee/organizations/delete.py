@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.apigee import resource_args
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DescribeCommand):
   """Delete an Apigee organization."""
 

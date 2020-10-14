@@ -57,6 +57,12 @@ class Describe(base.DescribeCommand):
   def Args(parser):
     parser.display_info.AddFormat("yaml")
     flags.GetImageRequiredArg().AddToParser(parser)
+    flags.GetShowAllMetadataFlag().AddToParser(parser)
+    flags.GetMetadataFilterFlag().AddToParser(parser)
+    flags.GetShowBuildDetailsFlag().AddToParser(parser)
+    flags.GetShowPackageVulnerabilityFlag().AddToParser(parser)
+    flags.GetShowImageBasisFlag().AddToParser(parser)
+    flags.GetShowDeploymentFlag().AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

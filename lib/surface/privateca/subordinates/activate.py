@@ -38,8 +38,8 @@ class Activate(base.SilentCommand):
   chain in 'chain.crt':
 
     $ {command} server-tls-1 \
-      --location us \
-      --pem-chain ./chain.crt
+      --location=us \
+      --pem-chain=./chain.crt
   """
 
   @staticmethod

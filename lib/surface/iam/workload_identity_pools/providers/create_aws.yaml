@@ -29,10 +29,9 @@
             --display-name='My workload pool provider' \
             --description='My workload pool provider description' \
             --disabled \
-            --atribute-mapping='google.subject=assertion.arn' \
+            --attribute-mapping='google.subject=assertion.arn' \
             --attribute-condition='true' \
-            --account-id=1234567890 \
-            --sts-uri='https://sts.amazonaws.com'
+            --account-id=1234567890
 
   request:
     collection: iam.projects.locations.workloadIdentityPools.providers

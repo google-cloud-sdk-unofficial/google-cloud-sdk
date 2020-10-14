@@ -19,8 +19,8 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.asset import client_util
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.asset import flags
 
 
 def AddOrganizationArgs(parser, required=True):
@@ -29,148 +29,6 @@ def AddOrganizationArgs(parser, required=True):
       metavar='ORGANIZATION_ID',
       required=required,
       help='The organization ID to perform the analysis.')
-
-
-def AddFolderArgs(parser):
-  parser.add_argument(
-      '--folder',
-      metavar='FOLDER_ID',
-      help='The folder ID to perform the analysis.')
-
-
-def AddProjectArgs(parser):
-  parser.add_argument(
-      '--project',
-      metavar='PROJECT_ID',
-      help='The project ID or number to perform the analysis.')
-
-
-def AddParentArgs(parser):
-  parent_group = parser.add_mutually_exclusive_group(required=True)
-  AddOrganizationArgs(parent_group, required=False)
-  AddFolderArgs(parent_group)
-  AddProjectArgs(parent_group)
-
-
-def AddResourceSelectorGroup(parser):
-  resource_selector_group = parser.add_group(
-      mutex=False,
-      required=False,
-      help='Specifies a resource for analysis. Leaving it empty means ANY.')
-  AddFullResourceNameArgs(resource_selector_group)
-
-
-def AddFullResourceNameArgs(parser):
-  parser.add_argument('--full-resource-name', help='The full resource name.')
-
-
-def AddIdentitySelectorGroup(parser):
-  identity_selector_group = parser.add_group(
-      mutex=False,
-      required=False,
-      help='Specifies an identity for analysis. Leaving it empty means ANY.')
-  AddIdentityArgs(identity_selector_group)
-
-
-def AddIdentityArgs(parser):
-  parser.add_argument(
-      '--identity',
-      help=('The identity appearing in the form of members in the IAM policy '
-            'binding.'))
-
-
-def AddAccessSelectorGroup(parser):
-  access_selector_group = parser.add_group(
-      mutex=False,
-      required=False,
-      help=('Specifies roles or permissions for analysis. Leaving it empty '
-            'means ANY.'))
-  AddRolesArgs(access_selector_group)
-  AddPermissionsArgs(access_selector_group)
-
-
-def AddRolesArgs(parser):
-  parser.add_argument(
-      '--roles',
-      metavar='ROLES',
-      type=arg_parsers.ArgList(),
-      help='The roles to appear in the result.')
-
-
-def AddPermissionsArgs(parser):
-  parser.add_argument(
-      '--permissions',
-      metavar='PERMISSIONS',
-      type=arg_parsers.ArgList(),
-      help='The permissions to appear in the result.')
-
-
-def AddOptionsGroup(parser, api_version=client_util.V1P4ALPHA1_API_VERSION):
-  """Adds a group of options."""
-  options_group = parser.add_group(
-      mutex=False, required=False, help='The analysis options.')
-  AddExpandGroupsArgs(options_group)
-  AddExpandRolesArgs(options_group)
-  AddExpandResourcesArgs(options_group)
-  AddOutputResourceEdgesArgs(options_group)
-  AddOutputGroupEdgesArgs(options_group)
-  if api_version == client_util.V1P4ALPHA1_API_VERSION:
-    AddOutputPartialResultBeforeTimeoutArgs(options_group)
-  elif api_version == client_util.V1P4BETA1_API_VERSION or api_version == client_util.DEFAULT_API_VERSION:
-    AddExecutionTimeout(options_group)
-    AddShowAccessControlEntries(options_group)
-    AddAnalyzeServiceAccountImpersonationArgs(options_group)
-
-
-def AddExpandGroupsArgs(parser):
-  parser.add_argument(
-      '--expand-groups',
-      action='store_true',
-      help=(
-          'If true, the identities section of the result will expand any '
-          'Google groups appearing in an IAM policy binding. Default is false.'
-      ))
-  parser.set_defaults(expand_groups=False)
-
-
-def AddExpandRolesArgs(parser):
-  parser.add_argument(
-      '--expand-roles',
-      action='store_true',
-      help=('If true, the access section of result will expand any roles '
-            'appearing in IAM policy bindings to include their permissions. '
-            'Default is false.'))
-  parser.set_defaults(expand_roles=False)
-
-
-def AddExpandResourcesArgs(parser):
-  parser.add_argument(
-      '--expand-resources',
-      action='store_true',
-      help=('If true, the resource section of the result will expand any '
-            'resource attached to an IAM policy to include resources lower in '
-            'the resource hierarchy. Default is false.'))
-  parser.set_defaults(expand_resources=False)
-
-
-def AddOutputResourceEdgesArgs(parser):
-  parser.add_argument(
-      '--output-resource-edges',
-      action='store_true',
-      help=('If true, the result will output resource edges, starting '
-            'from the policy attached resource, to any expanded resources. '
-            'Default is false.'))
-  parser.set_defaults(output_resource_edges=False)
-
-
-def AddOutputGroupEdgesArgs(parser):
-  parser.add_argument(
-      '--output-group-edges',
-      action='store_true',
-      help=('If true, the result will output group identity edges, starting '
-            "from the binding's group members, to any expanded identities. "
-            'Default is false.'))
-  parser.set_defaults(output_group_edges=False)
 
 
 def AddOutputPartialResultBeforeTimeoutArgs(parser):
@@ -182,45 +40,6 @@ def AddOutputPartialResultBeforeTimeoutArgs(parser):
           'a DEADLINE_EXCEEDED error when your request processing takes longer '
           'than the deadline. Default is false.'))
   parser.set_defaults(output_partial_result_before_timeout=False)
-
-
-def AddExecutionTimeout(parser):
-  parser.add_argument(
-      '--execution-timeout',
-      type=arg_parsers.Duration(),
-      help=(
-          'The amount of time the executable has to complete. See JSON '
-          'representation of '
-          '[Duration](https://developers.google.com/protocol-buffers/docs/proto3#json). '
-          'Deafult is empty. '))
-
-
-def AddShowAccessControlEntries(parser):
-  parser.add_argument(
-      '--show-response',
-      action='store_true',
-      help=(
-          'If true, the response will be showed as-is in the command output.'))
-  parser.set_defaults(show_response=False)
-
-
-def AddAnalyzeServiceAccountImpersonationArgs(parser):
-  """Adds analyze service account impersonation arg into options.
-
-  Args:
-    parser: the option group.
-  """
-
-  parser.add_argument(
-      '--analyze-service-account-impersonation',
-      action='store_true',
-      help=(
-          'If true, the response will include access analysis from identities '
-          'to resources via service account impersonation. This is a very '
-          'expensive operation, because many derived queries will be executed. '
-          'We highly recommend you use ExportIamPolicyAnalysis rpc instead. '
-          'Default is false.'))
-  parser.set_defaults(analyze_service_account_impersonation=False)
 
 
 @base.Deprecate(
@@ -259,10 +78,15 @@ class AnalyzeIamPolicy(base.Command):
   @staticmethod
   def Args(parser):
     AddOrganizationArgs(parser)
-    AddResourceSelectorGroup(parser)
-    AddIdentitySelectorGroup(parser)
-    AddAccessSelectorGroup(parser)
-    AddOptionsGroup(parser, client_util.V1P4ALPHA1_API_VERSION)
+    flags.AddAnalyzerSelectorsGroup(parser)
+    options_group = parser.add_group(
+        mutex=False, required=False, help='The analysis options.')
+    flags.AddAnalyzerExpandGroupsArgs(options_group)
+    flags.AddAnalyzerExpandRolesArgs(options_group)
+    flags.AddAnalyzerExpandResourcesArgs(options_group)
+    flags.AddAnalyzerOutputResourceEdgesArgs(options_group)
+    flags.AddAnalyzerOutputGroupEdgesArgs(options_group)
+    AddOutputPartialResultBeforeTimeoutArgs(options_group)
 
   def Run(self, args):
     return client_util.MakeAnalyzeIamPolicyHttpRequests(
@@ -271,11 +95,11 @@ class AnalyzeIamPolicy(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AnalyzeIamPolicyBeta(base.Command):
-  """Analyzes accessible IAM policies that match a request."""
+  """Analyzes IAM policies that match a request."""
 
   detailed_help = {
       'DESCRIPTION':
-          ' Analyzes accessible IAM policies that match a request.',
+          ' Analyzes IAM policies that match a request.',
       'EXAMPLES':
           """\
           To find out which users have been granted the
@@ -303,20 +127,17 @@ class AnalyzeIamPolicyBeta(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    AddParentArgs(parser)
-    AddResourceSelectorGroup(parser)
-    AddIdentitySelectorGroup(parser)
-    AddAccessSelectorGroup(parser)
-    AddOptionsGroup(parser, cls._API_VERSION)
+    flags.AddAnalyzerParentArgs(parser)
+    flags.AddAnalyzerSelectorsGroup(parser)
+    flags.AddAnalyzerOptionsGroup(parser, True)
 
   def Run(self, args):
-    return client_util.MakeAnalyzeIamPolicyHttpRequests(
-        args, self._API_VERSION)
+    return client_util.MakeAnalyzeIamPolicyHttpRequests(args, self._API_VERSION)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.Hidden
 class AnalyzeIamPolicyGA(AnalyzeIamPolicyBeta):
-  """Analyzes accessible IAM policies that match a request."""
+  """Analyzes IAM policies that match a request."""
 
   _API_VERSION = client_util.DEFAULT_API_VERSION

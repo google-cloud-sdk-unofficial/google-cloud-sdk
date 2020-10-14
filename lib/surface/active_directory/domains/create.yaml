@@ -1,4 +1,4 @@
-- release_tracks: [GA, BETA, ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: |
@@ -24,10 +24,15 @@
     collection: managedidentities.projects.locations.global.operations
 
   request: &request
-    api_version: v1
     collection: managedidentities.projects.locations.global.domains
     modify_request_hooks:
     - googlecloudsdk.command_lib.active_directory.util:AppendLocationsGlobalToParent
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1
+    GA:
+      api_version: v1
 
   arguments:
     resource:
@@ -45,7 +50,12 @@
         Google Compute Engine region in which to provision domain controllers.
       required: true
     - arg_name: admin-name
-      api_field: domain.admin
+      ALPHA:
+        api_field: domain.managedIdentitiesAdminName
+      BETA:
+        api_field: domain.admin
+      GA:
+        api_field: domain.admin
       help_text: |
         Name of the administrator that may be used to perform Active Directory
         operations. This is a delegated administrator account provisioned by our service.
@@ -68,3 +78,10 @@
         Classless Inter-Domain Routing range of internal addresses that
         are reserved for this domain.
       required: true
+    - arg_name: enable-audit-logs
+      type: bool
+      action: store_true
+      release_tracks: [ALPHA]
+      api_field: domain.auditLogsEnabled
+      help_text: |
+        Whether Active Directory data audit logs are enabled for the domain.

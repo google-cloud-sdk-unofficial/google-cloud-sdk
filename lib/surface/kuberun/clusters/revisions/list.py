@@ -15,7 +15,6 @@
 """Command to list Knative revisions in a Kubernetes cluster."""
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
 from __future__ import unicode_literals
 
 import json
@@ -60,10 +59,11 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
     columns = [
         pretty_print.READY_COLUMN,
         'name:label=REVISION',
-        'namespace:label=NAMESPACE',
-        'url',
-        'last_modifier:label="LAST DEPLOYED BY"',
-        'last_transition_time:label="LAST DEPLOYED AT"',
+        'active.yesno(yes="yes", no="")',
+        'service_name:label=SERVICE:sort=1',
+        'creation_timestamp.date("%Y-%m-%d %H:%M:%S %Z"):'
+        'label=DEPLOYED:sort=2:reverse',
+        'author:label="DEPLOYED BY"'
     ]
     parser.display_info.AddFormat('table({})'.format(','.join(columns)))
 

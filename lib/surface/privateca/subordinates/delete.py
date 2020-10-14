@@ -53,16 +53,16 @@ class Delete(base.DeleteCommand):
 
     To schedule a subordinate CA for deletion:
 
-      $ {command} server-tls-1 --location 'us-west1'
+      $ {command} server-tls-1 --location='us-west1'
 
     To schedule a subordinate CA for deletion while skipping the confirmation
     input:
 
-      $ {command} server-tls-1 --location 'us-west1' --quiet
+      $ {command} server-tls-1 --location='us-west1' --quiet
 
     To un-do the scheduled deletion for a subordinate CA:
 
-      $ {parent_command} restore server-tls-1 --location 'us-west1'
+      $ {parent_command} restore server-tls-1 --location='us-west1'
   """
 
   @staticmethod

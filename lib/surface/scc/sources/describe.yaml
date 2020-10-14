@@ -10,11 +10,11 @@
     examples: |
       Describe source with display name 'Security Scanner':
 
-        $ {command} 123456 --source-display-name "Security Scanner"
+        $ {command} 123456 --source-display-name="Security Scanner"
 
       Describe source with source id '5678':
 
-        $ {command} 123456 --source 5678
+        $ {command} 123456 --source=5678
 
   request:
     collection: securitycenter.organizations.sources

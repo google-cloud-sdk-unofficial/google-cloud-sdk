@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: Update a group.
@@ -102,8 +102,23 @@
         hidden: true
       type: str
       help_text: |
-        A commna-separated list of labels for group resource to be updated.
-        Example of labels "--labels cloudidentity.googleapis.com/groups.discussion_forum,cloudidentity.googleapis.com/groups.security"
+        One or more label entries that apply to the Group. Currently supported labels contain a key
+        with an empty value.
+
+        Google Groups are the default type of group and have a label with a key of
+        'cloudidentity.googleapis.com/groups.discussion_forum' and an empty value.
+
+        Existing Google Groups can have an additional label with a key of
+        'cloudidentity.googleapis.com/groups.security' and an empty value added to them.
+        *This is an immutable change and the security label cannot be removed once added.*
+
+        Dynamic groups have a label with a key of 'cloudidentity.googleapis.com/groups.dynamic'.
+
+        Identity-mapped groups for Cloud Search have a label with a key of 'system/groups/external'
+        and an empty value.
+
+        Examples: {"cloudidentity.googleapis.com/groups.discussion_forum": ""} or
+        {"system/groups/external": ""}.
 
   request:
     collection: cloudidentity.groups
@@ -121,6 +136,11 @@
       - googlecloudsdk.command_lib.identity.groups.hooks:SetResourceName
       - googlecloudsdk.command_lib.identity.groups.hooks:SetGroupUpdateMask
       - googlecloudsdk.command_lib.identity.groups.hooks:SetLabels
+    GA:
+      api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.identity.groups.hooks:SetResourceName
+      - googlecloudsdk.command_lib.identity.groups.hooks:SetGroupUpdateMask
 
   response:
     result_attribute: response

@@ -28,17 +28,39 @@
     collection: managedidentities.projects.locations.global.operations
 
   request: &request
-    api_version: v1
+    ALPHA:
+      api_version: v1alpha1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.active_directory.domains_update_util:CheckFieldsSpecified
+      - googlecloudsdk.command_lib.active_directory.domains_update_util:UpdatePatchRequest
+      - googlecloudsdk.command_lib.active_directory.domains_update_util:UpdateLabels
+      - googlecloudsdk.command_lib.active_directory.flags:UpdateAuditLogsEnabled
+      - googlecloudsdk.command_lib.active_directory.flags:AddRegionFlag
+      - googlecloudsdk.command_lib.active_directory.flags:RemoveRegionFlag
+      - googlecloudsdk.command_lib.active_directory.flags:AddAuthorizedNetworksFlag
+      - googlecloudsdk.command_lib.active_directory.flags:RemoveAuthorizedNetworksFlag
+    BETA:
+      api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.active_directory.domains_update_util:CheckFieldsSpecified
+      - googlecloudsdk.command_lib.active_directory.domains_update_util:UpdatePatchRequest
+      - googlecloudsdk.command_lib.active_directory.domains_update_util:UpdateLabels
+      - googlecloudsdk.command_lib.active_directory.flags:AddRegionFlag
+      - googlecloudsdk.command_lib.active_directory.flags:RemoveRegionFlag
+      - googlecloudsdk.command_lib.active_directory.flags:AddAuthorizedNetworksFlag
+      - googlecloudsdk.command_lib.active_directory.flags:RemoveAuthorizedNetworksFlag
+    GA:
+      api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.active_directory.domains_update_util:CheckFieldsSpecified
+      - googlecloudsdk.command_lib.active_directory.domains_update_util:UpdatePatchRequest
+      - googlecloudsdk.command_lib.active_directory.domains_update_util:UpdateLabels
+      - googlecloudsdk.command_lib.active_directory.flags:AddRegionFlag
+      - googlecloudsdk.command_lib.active_directory.flags:RemoveRegionFlag
+      - googlecloudsdk.command_lib.active_directory.flags:AddAuthorizedNetworksFlag
+      - googlecloudsdk.command_lib.active_directory.flags:RemoveAuthorizedNetworksFlag
     collection: managedidentities.projects.locations.global.domains
     method: patch
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.active_directory.domains_update_util:CheckFieldsSpecified
-    - googlecloudsdk.command_lib.active_directory.domains_update_util:UpdatePatchRequest
-    - googlecloudsdk.command_lib.active_directory.domains_update_util:UpdateLabels
-    - googlecloudsdk.command_lib.active_directory.flags:AddRegionFlag
-    - googlecloudsdk.command_lib.active_directory.flags:RemoveRegionFlag
-    - googlecloudsdk.command_lib.active_directory.flags:AddAuthorizedNetworksFlag
-    - googlecloudsdk.command_lib.active_directory.flags:RemoveAuthorizedNetworksFlag
 
   arguments:
     resource:
@@ -46,3 +68,10 @@
       help_text: |
         Name of the Managed Microsoft AD domain you want to update.
     additional_arguments_hook: googlecloudsdk.command_lib.active_directory.flags:AdditionalDomainUpdateArguments
+    params:
+    - arg_name: enable-audit-logs
+      type: bool
+      action: store_true
+      release_tracks: [ALPHA]
+      help_text: |
+        Whether Active Directory data audit logs are enabled for the domain.

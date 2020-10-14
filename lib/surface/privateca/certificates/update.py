@@ -34,8 +34,8 @@ class Update(base.UpdateCommand):
    To update labels on a certificate:
 
       $ {command} frontend-server-tls \
-        --issuer server-tls-1 --issuer-location us \
-        --update-labels in_use=true
+        --issuer=server-tls-1 --issuer-location=us \
+        --update-labels=in_use=true
   """
 
   NO_CHANGES_MESSAGE = (

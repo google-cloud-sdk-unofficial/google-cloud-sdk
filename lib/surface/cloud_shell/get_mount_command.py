@@ -25,7 +25,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import platforms
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class GetMountCommandBeta(base.Command):
   """Prints a command to mount the Cloud Shell home directory via sshfs."""
 
@@ -60,51 +60,6 @@ class GetMountCommandBeta(base.Command):
           'get-mount-command is not currently supported on Windows')
     else:
       connection_info = util.PrepareV1Environment(args)
-      log.Print('sshfs {user}@{host}: {mount_dir} -p {port} '
-                '-oIdentityFile={key_file} -oStrictHostKeyChecking=no'.format(
-                    user=connection_info.user,
-                    host=connection_info.host,
-                    mount_dir=args.mount_dir,
-                    port=connection_info.port,
-                    key_file=connection_info.key,
-                ))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class GetMountCommandAlpha(base.Command):
-  """Prints a command to mount the Cloud Shell home directory via sshfs."""
-
-  detailed_help = {
-      'DESCRIPTION':
-          """\
-        *{command}* starts your Cloud Shell if it is not already running, then
-        prints out a command that allows you to mount the Cloud Shell home
-        directory onto your local file system using *sshfs*. You must install
-        and run sshfs yourself.
-
-        After mounting the Cloud Shell home directory, any changes you make
-        under the mount point on your local file system will be reflected in
-        Cloud Shell and vice-versa.
-        """,
-  }
-
-  @staticmethod
-  def Args(parser):
-    util.ParseCommonArgs(parser)
-    parser.add_argument(
-        'mount_dir',
-        completer=FilesCompleter,
-        help="""\
-        Local directory onto which the Cloud Shell home directory should be
-        mounted.
-        """)
-
-  def Run(self, args):
-    if platforms.OperatingSystem.IsWindows():
-      raise util.UnsupportedPlatform(
-          'get-mount-command is not currently supported on Windows')
-    else:
-      connection_info = util.PrepareEnvironment(args)
       log.Print('sshfs {user}@{host}: {mount_dir} -p {port} '
                 '-oIdentityFile={key_file} -oStrictHostKeyChecking=no'.format(
                     user=connection_info.user,

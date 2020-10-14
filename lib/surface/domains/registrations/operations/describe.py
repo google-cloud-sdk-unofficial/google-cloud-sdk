@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.domains import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Show details about a Cloud Domains operation.
 

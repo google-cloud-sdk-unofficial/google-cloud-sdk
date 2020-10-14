@@ -29,9 +29,13 @@ from googlecloudsdk.core import exceptions
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To show all the data about a domain mapping, run
+        To show all the data about a domain mapping in the default namespace, run:
 
-            $ {command}
+            $ {command} DOMAIN
+
+        To show all the data about a domain mapping in namespace `mynamespace`, run:
+
+            $ {command} DOMAIN --namespace=mynamespace
         """,
 }
 

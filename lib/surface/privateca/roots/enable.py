@@ -37,7 +37,7 @@ class Enable(base.SilentCommand):
 
     To enable a root CA:
 
-        $ {command} prod-root --location us-west1
+        $ {command} prod-root --location=us-west1
   """
 
   @staticmethod

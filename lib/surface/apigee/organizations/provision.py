@@ -61,6 +61,7 @@ class LROPoller(waiter.OperationPoller):
     return None
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Provision(base.DescribeCommand):
   """Provision an Apigee SaaS organization."""
 

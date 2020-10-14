@@ -40,7 +40,7 @@ class Import(base.Command):
           To parse and import the taxonomies contained in '/tmp/taxonomies.json'
           to your project within location LOCATION:
 
-            $ {command} --taxonomies="/tmp/taxonomies.json" --location="LOCATION"
+            $ {command} "/tmp/taxonomies.json" --location="LOCATION"
       """,
   }
 

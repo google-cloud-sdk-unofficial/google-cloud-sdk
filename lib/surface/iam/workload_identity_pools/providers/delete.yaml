@@ -20,7 +20,7 @@
       The following command deletes the WorkloadIdentityPoolProvider with the ID
       'my-workload-identity-pool-provider':
 
-        $ {command} my-workload-identity-pool-provider --location global
+        $ {command} my-workload-identity-pool-provider --location=global
 
   request:
     collection: iam.projects.locations.workloadIdentityPools.providers

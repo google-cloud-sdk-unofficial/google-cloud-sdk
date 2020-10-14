@@ -1,0 +1,13 @@
+- help_text:
+    brief: Show details about a cloud access binding.
+    description: Show details about a cloud access binding which enforces the access level to a user group.
+
+  request:
+    collection: accesscontextmanager.organizations.gcpUserAccessBindings
+    api_version: v1
+
+  arguments:
+    resource:
+      help_text: The cloud access binding you want to show details about
+      spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:cloud-access-binding
+      is_positional: false
