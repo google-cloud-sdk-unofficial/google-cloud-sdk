@@ -54,7 +54,8 @@ class Update(base.UpdateCommand):
     flags.AddAsyncFlagToParser(parser)
 
   def Run(self, args):
-    client = registrations.RegistrationsClient()
+    api_version = registrations.GetApiVersionFromArgs(args)
+    client = registrations.RegistrationsClient(api_version)
     args.registration = util.NormalizeResourceName(args.registration)
     registration_ref = args.CONCEPTS.registration.Parse()
 
@@ -72,6 +73,6 @@ class Update(base.UpdateCommand):
           'how to change management, DNS or contact settings.')
     if labels_update:
       response = client.Patch(registration_ref, labels=labels_update)
-      response = util.WaitForOperation(response, args.async_)
+      response = util.WaitForOperation(api_version, response, args.async_)
       log.UpdatedResource(registration_ref.Name(), 'registration', args.async_)
       return response

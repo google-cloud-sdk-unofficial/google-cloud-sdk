@@ -9,7 +9,7 @@
         $ {command} --location=us-central1
 
   request:
-    collection: krmapihosting.projects.locations.anthosApiEndpoints
+    collection: krmapihosting.projects.locations.krmApiHosts
 
   arguments:
     resource:

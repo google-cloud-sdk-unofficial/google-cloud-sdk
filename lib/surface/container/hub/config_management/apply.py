@@ -116,7 +116,7 @@ def _validate_meta(configmanagement):
     configmanagement: The dict loaded from yaml.
   """
   if not isinstance(configmanagement, dict):
-    raise exceptions.Error('Invalid Configmanagement template.')
+    raise exceptions.Error('Invalid ConfigManagement template.')
   if ('apiVersion' not in configmanagement or
       configmanagement['apiVersion'] != 'configmanagement.gke.io/v1'):
     raise exceptions.Error(
@@ -124,10 +124,29 @@ def _validate_meta(configmanagement):
   if ('kind' not in configmanagement or
       configmanagement['kind'] != 'ConfigManagement'):
     raise exceptions.Error('Only support "kind: ConfigManagement"')
-  for field in configmanagement['spec']:
-    if field not in ['git', 'policyController']:
+  if 'spec' not in configmanagement:
+    raise exceptions.Error('Missing required field .spec')
+  spec = configmanagement['spec']
+  for field in spec:
+    if field not in ['git', 'policyController', 'sourceFormat']:
       raise exceptions.Error(
           'Please remove illegal field .spec.{}'.format(field))
+  if 'sourceFormat' in spec and configmanagement['spec'][
+      'sourceFormat'] not in ['hierarchy', 'unstructured']:
+    raise exceptions.Error('Please remove illegal value of .spec.sourceFormat')
+  if 'git' in spec:
+    for field in spec['git']:
+      if field not in [
+          'policyDir', 'proxy', 'secretType', 'syncBranch', 'syncRepo',
+          'syncRev', 'syncWait'
+      ]:
+        raise exceptions.Error(
+            'Please remove illegal field .spec.git.{}'.format(field))
+    if 'proxy' in spec['git']:
+      for field in spec['git']['proxy']:
+        if field not in ['httpsProxy']:
+          raise exceptions.Error(
+              'Please remove illegal field .spec.git.proxy.{}'.format(field))
 
 
 def _parse_config_sync(configmanagement, msg):
@@ -160,7 +179,11 @@ def _parse_config_sync(configmanagement, msg):
       setattr(git_config, field, spec_git[field])
   if 'syncWait' in spec_git:
     git_config.syncWaitSecs = spec_git['syncWait']
+  if 'proxy' in spec_git and 'httpsProxy' in spec_git['proxy']:
+    git_config.httpsProxy = spec_git['proxy']['httpsProxy']
 
+  if 'sourceFormat' in configmanagement['spec']:
+    config_sync.sourceFormat = configmanagement['spec']['sourceFormat']
   return config_sync
 
 
@@ -184,6 +207,11 @@ def _parse_policy_controller(configmanagement, msg):
     return None
 
   spec_policy_controller = configmanagement['spec']['policyController']
+  # Required field
+  if configmanagement['spec'][
+      'policyController'] is None or 'enabled' not in spec_policy_controller:
+    raise exceptions.Error(
+        'Missing required field .spec.policyController.enabled')
   enabled = spec_policy_controller['enabled']
   if not isinstance(enabled, bool):
     raise exceptions.Error(
@@ -196,13 +224,15 @@ def _parse_policy_controller(configmanagement, msg):
 
   policy_controller = msg.PolicyController(enabled=True)
   # When the policyController is set to be enabled, policy_controller will
-  # be filled with the valid fieleds set in spec_policy_controller, which
+  # be filled with the valid fields set in spec_policy_controller, which
   # were mapped from the config-management.yaml
-  for field in [
-      'templateLibraryInstalled', 'auditIntervalSeconds',
-      'referentialRulesEnabled', 'exemptableNamespaces'
-  ]:
-    if field in spec_policy_controller:
-      setattr(policy_controller, field, spec_policy_controller[field])
+  for field in spec_policy_controller:
+    if field not in [
+        'enabled', 'templateLibraryInstalled', 'auditIntervalSeconds',
+        'referentialRulesEnabled', 'exemptableNamespaces'
+    ]:
+      raise exceptions.Error(
+          'Please remove illegal field .spec.policyController.{}'.format(field))
+    setattr(policy_controller, field, spec_policy_controller[field])
 
   return policy_controller

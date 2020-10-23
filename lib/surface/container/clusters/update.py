@@ -715,8 +715,9 @@ class UpdateAlpha(Update):
     flags.AddIstioConfigFlag(parser)
     flags.AddCloudRunConfigFlag(parser)
     flags.AddEnableIntraNodeVisibilityFlag(group)
-    flags.AddWorkloadIdentityFlags(group, use_identity_provider=True)
-    flags.AddWorkloadIdentityUpdateFlags(group)
+    flags.AddWorkloadIdentityFlags(
+        group, use_identity_provider=True, use_workload_certificates=True)
+    flags.AddWorkloadIdentityUpdateFlags(group, use_workload_certificates=True)
     flags.AddGkeOidcFlag(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
     flags.AddDatabaseEncryptionFlag(group)
@@ -745,6 +746,8 @@ class UpdateAlpha(Update):
     opts.enable_intra_node_visibility = args.enable_intra_node_visibility
     opts.enable_network_egress_metering = args.enable_network_egress_metering
     opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
+    opts.workload_identity_certificate_authority = args.workload_identity_certificate_authority
+    opts.disable_workload_identity_certificates = args.disable_workload_identity_certificates
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     flags.ValidateCloudRunConfigUpdateArgs(args.cloud_run_config,
                                            args.disable_addons)

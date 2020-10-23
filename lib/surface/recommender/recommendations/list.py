@@ -79,9 +79,12 @@ class List(base.ListCommand):
     Returns:
       The list of recommendations for this project.
     """
-    recommender_service = api_utils.GetServiceFromArgs(args)
-    parent_ref = flags.GetParentFromFlags(args)
-    request = api_utils.GetListRequestFromArgs(args, parent_ref)
+    recommender_service = api_utils.GetServiceFromArgs(
+        args, is_insight_api=False)
+    parent_ref = flags.GetParentFromFlags(
+        args, is_list_api=True, is_insight_api=False)
+    request = api_utils.GetListRequestFromArgs(
+        args, parent_ref, is_insight_api=False)
     return list_pager.YieldFromList(
         recommender_service,
         request,

@@ -37,6 +37,12 @@
       processor: googlecloudsdk.command_lib.metastore.validators:ValidatePort
       help_text: |
         The TCP port on which the Metastore service will listen.
+    - arg_name: data-catalog-sync
+      api_field: service.metadataIntegration.dataCatalogConfig.disabled
+      help_text: |
+        A boolean flag to determine whether Dataproc Metastore metadata sync
+        to Data Catalog should be enabled.
+      processor: googlecloudsdk.command_lib.metastore.services.util:Negate
     - group:
         help_text: |
           Configuration properties specific to running Hive metastore

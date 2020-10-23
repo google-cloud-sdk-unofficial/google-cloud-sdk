@@ -52,7 +52,8 @@ class GetRegisterParameters(base.DescribeCommand):
 
   def Run(self, args):
     """Run the get register parameters command."""
-    client = registrations.RegistrationsClient()
+    api_version = registrations.GetApiVersionFromArgs(args)
+    client = registrations.RegistrationsClient(api_version)
 
     location_ref = args.CONCEPTS.location.Parse()
 

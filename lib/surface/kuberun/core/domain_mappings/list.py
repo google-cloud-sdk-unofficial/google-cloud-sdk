@@ -12,8 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Create a domain mapping for a Knative service."""
-
+"""Command to list domain mappings of a Knative cluster."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -24,50 +23,51 @@ from googlecloudsdk.api_lib.kuberun import domainmapping
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import flags
 from googlecloudsdk.command_lib.kuberun import kuberun_command
+from googlecloudsdk.command_lib.kuberun import pretty_print
 from googlecloudsdk.core import exceptions
 
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To map service `myservice` in the default namespace to domain `example.com`, run
+        To show all domain mappings in the default namespace, run
 
-            $ {command} --service=myservice --domain=example.com
+            $ {command}
+
+        To show all domain mappings in a namespace, run
+
+            $ {command} --namespace=my-namespace
+
+        To show all domain mappings from all namespaces, run
+
+            $ {command} --all-namespaces
         """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(kuberun_command.KubeRunCommandWithOutput):
-  """Creates a domain mapping."""
+class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
+  """Lists domain mappings in a Knative cluster."""
+
+  detailed_help = _DETAILED_HELP
+  flags = [flags.NamespaceFlagGroup(), flags.ClusterConnectionFlags()]
 
   @classmethod
   def Args(cls, parser):
-    super(Create, cls).Args(parser)
-    parser.add_argument(
-        '--service', help='The service to map to a domain.', required=True)
-    parser.add_argument(
-        '--domain',
-        help='The domain mapping to map the service to.',
-        required=True)
-    parser.display_info.AddFormat("""table(
-        name:label=NAME,
-        type:label="RECORD TYPE",
-        rrdata:label=CONTENTS)""")
+    super(List, cls).Args(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
 
-  def BuildKubeRunArgs(self, args):
-    return ['--service', args.service, '--domain', args.domain] + super(
-        Create, self).BuildKubeRunArgs(args)
+    parser.display_info.AddFormat("""table(
+        {ready_column},
+        name:label=DOMAIN,
+        routeName:label=SERVICE)""".format(
+            ready_column=pretty_print.READY_COLUMN))
 
   def Command(self):
-    return ['clusters', 'domain-mappings', 'create']
+    return ['core', 'domain-mappings', 'list']
 
   def FormatOutput(self, out, args):
     if out:
-      return domainmapping.DomainMapping(json.loads(out)).records
+      json_object = json.loads(out)
+      return [domainmapping.DomainMapping(x) for x in json_object]
     else:
-      raise exceptions.Error('Could not map domain [{}] to service [{}]'.format(
-          args.domain, args.service))
-
-
-Create.detailed_help = _DETAILED_HELP
-Create.flags = [flags.NamespaceFlag(), flags.ClusterConnectionFlags()]
+      raise exceptions.Error('Cannot list domain mappings')

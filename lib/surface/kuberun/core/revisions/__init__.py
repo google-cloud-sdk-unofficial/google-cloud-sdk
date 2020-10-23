@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The gcloud kuberun clusters group."""
+"""The gcloud kuberun core revisions group."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,19 +22,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Clusters(base.Group):
-  """Top level command to interact with Kubernetes applications on a cluster.
+class Revisions(base.Group):
+  """Create and manage Knative revisions on Kubernetes clusters.
 
-  This set of commands can be used create or change a Knative services,
-  triggers, etc. on a cluster.
-  .
+  This set of commands can be used deploy or update a Knative revision.
   """
-
-  detailed_help = {
-      'EXAMPLES':
-          """\
-          To list your Knative services, run:
-
-            $ {command} services list
-      """,
-  }

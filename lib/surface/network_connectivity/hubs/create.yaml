@@ -16,6 +16,17 @@
     - arg_name: description
       api_field: hub.description
       help_text: Description of the hub.
+    - arg_name: labels
+      api_field: hub.labels.additionalProperties
+      metavar: KEY=VALUE
+      help_text: |
+        List of label KEY=VALUE pairs to add.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
 
   async:
     collection: networkconnectivity.projects.locations.operations

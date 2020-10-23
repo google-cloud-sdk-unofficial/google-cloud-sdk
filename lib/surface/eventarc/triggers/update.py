@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.eventarc import triggers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.eventarc import flags
+from googlecloudsdk.command_lib.eventarc import types
 from googlecloudsdk.core import log
 
 _DETAILED_HELP = {
@@ -70,6 +71,11 @@ class Update(base.UpdateCommand):
         destination_run_path=(args.destination_run_path is not None) or
         args.clear_destination_run_path,
         destination_run_region=args.destination_run_region is not None)
+    old_trigger = client.Get(trigger_ref)
+    # The type can't be updated, so it's safe to use the old trigger's type.
+    # In the async case, this is the only way to get the type.
+    self._event_type = types.MatchingCriteriaMessageToType(
+        old_trigger.matchingCriteria)
     operation = client.Patch(trigger_ref, args.matching_criteria,
                              service_account_ref, args.destination_run_service,
                              args.destination_run_path,
@@ -79,7 +85,7 @@ class Update(base.UpdateCommand):
     return client.WaitFor(operation)
 
   def Epilog(self, resources_were_displayed):
-    if resources_were_displayed:
+    if resources_were_displayed and types.IsAuditLogType(self._event_type):
       log.warning(
           'It may take up to {} minutes for the update to take full effect.'
-          .format(triggers.MAX_READY_LATENCY_MINUTES))
+          .format(triggers.MAX_ACTIVE_DELAY_MINUTES))

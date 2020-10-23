@@ -48,22 +48,24 @@ class ConfigureManagement(base.UpdateCommand):
     flags.AddAsyncFlagToParser(parser)
 
   def Run(self, args):
-    client = registrations.RegistrationsClient()
+    api_version = registrations.GetApiVersionFromArgs(args)
+    client = registrations.RegistrationsClient(api_version)
     args.registration = util.NormalizeResourceName(args.registration)
     registration_ref = args.CONCEPTS.registration.Parse()
 
     registration = client.Get(registration_ref)
-    util.AssertRegistrationOperational(registration)
+    util.AssertRegistrationOperational(api_version, registration)
 
-    transfer_lock_state = util.ParseTransferLockState(args.transfer_lock_state)
+    transfer_lock_state = util.ParseTransferLockState(api_version,
+                                                      args.transfer_lock_state)
     if transfer_lock_state is None:
       transfer_lock_state = util.PromptForTransferLockState(
-          registration.managementSettings.transferLockState)
+          api_version, registration.managementSettings.transferLockState)
       if transfer_lock_state is None:
         return None
 
     response = client.ConfigureManagement(registration_ref, transfer_lock_state)
 
-    response = util.WaitForOperation(response, args.async_)
+    response = util.WaitForOperation(api_version, response, args.async_)
     log.UpdatedResource(registration_ref.Name(), 'registration', args.async_)
     return response

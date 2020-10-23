@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Deploy a Knative service."""
+"""Delete a Knative service."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,36 +22,33 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import flags
 from googlecloudsdk.command_lib.kuberun import kuberun_command
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 
 _DETAILED_HELP = {
     'EXAMPLES': """
-        To deploy a Knative service, run
+        To delete a Knative service, run:
 
-            $ {command} <service-name> --image=<image-url> [optional flags]
+            $ {command} <service-name>
         """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Deploy(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
-  """Deploy a Knative service."""
+class Delete(kuberun_command.KubeRunCommand, base.DeleteCommand):
+  """Deletes a Knative service."""
 
   detailed_help = _DETAILED_HELP
   flags = [
+      flags.NamespaceFlag(),
       flags.ClusterConnectionFlags(),
-      flags.CommonServiceFlags(is_deploy=True),
-      flags.AsyncFlag(),
+      flags.AsyncFlag()
   ]
 
   @classmethod
   def Args(cls, parser):
-    super(Deploy, cls).Args(parser)
-    parser.add_argument(
-        'service',
-        help='ID of the service or fully qualified identifier for the service.')
-
-  def BuildKubeRunArgs(self, args):
-    return [args.service] + super(Deploy, self).BuildKubeRunArgs(args)
+    super(Delete, cls).Args(parser)
+    parser.add_argument('service',
+                        help='The Knative service to delete.')
 
   def OperationResponseHandler(self, response, args):
     if response.failed:
@@ -61,7 +58,20 @@ class Deploy(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
     if response.stderr:
       log.status.Print(response.stderr)
 
-    return response.stdout
+    log.status.Print('Service is successfully deleted.')
+    return None
+
+  def BuildKubeRunArgs(self, args):
+    return [args.service] + super(Delete, self).BuildKubeRunArgs(args)
+
+  def Run(self, args):
+    """Delete a service."""
+    console_io.PromptContinue(
+        message='Service [{service}] will be deleted.'.format(
+            service=args.service),
+        throw_if_unattended=True,
+        cancel_on_no=True)
+    return super(Delete, self).Run(args)
 
   def Command(self):
-    return ['clusters', 'services', 'deploy']
+    return ['core', 'services', 'delete']

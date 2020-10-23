@@ -76,7 +76,7 @@ class UpdateTraffic(kuberun_command.KubeRunCommandWithOutput):
     return [args.service] + super(UpdateTraffic, self).BuildKubeRunArgs(args)
 
   def Command(self):
-    return ['clusters', 'services', 'update-traffic']
+    return ['core', 'services', 'update-traffic']
 
   def FormatOutput(self, out, args):
     if out:

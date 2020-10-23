@@ -915,6 +915,53 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "access-context-manager": {
           "commands": {
+            "cloud-bindings": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--group-key": "value",
+                    "--level": "value",
+                    "--organization": "value",
+                    "--policy": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--binding": "value",
+                    "--organization": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--binding": "value",
+                    "--organization": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--organization": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--binding": "value",
+                    "--level": "value",
+                    "--organization": "value",
+                    "--policy": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "levels": {
               "commands": {
                 "conditions": {
@@ -1392,6 +1439,15 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "value",
                     "--sort-by": "value",
                     "--uri": "bool"
+                  }
+                },
+                "stream-logs": {
+                  "commands": {},
+                  "flags": {
+                    "--allow-multiline-logs": "bool",
+                    "--polling-interval": "value",
+                    "--region": "dynamic",
+                    "--task-name": "value"
                   }
                 }
               },
@@ -6387,8 +6443,14 @@ STATIC_COMPLETION_CLI_TREE = {
                       "rhel-7-byol",
                       "rhel-8",
                       "rhel-8-byol",
+                      "sles-12",
                       "sles-12-byol",
+                      "sles-15",
                       "sles-15-byol",
+                      "sles-sap-12",
+                      "sles-sap-12-byol",
+                      "sles-sap-15",
+                      "sles-sap-15-byol",
                       "ubuntu-1404",
                       "ubuntu-1604",
                       "ubuntu-1804",
@@ -6942,6 +7004,11 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--region": "dynamic",
                         "--remove-stateful-disks": "value",
                         "--stateful-disk": "value",
+                        "--target-distribution-shape": [
+                          "ANY",
+                          "BALANCED",
+                          "EVEN"
+                        ],
                         "--zone": "dynamic"
                       }
                     },
@@ -7772,8 +7839,14 @@ STATIC_COMPLETION_CLI_TREE = {
                       "rhel-7-byol",
                       "rhel-8",
                       "rhel-8-byol",
+                      "sles-12",
                       "sles-12-byol",
+                      "sles-15",
                       "sles-15-byol",
+                      "sles-sap-12",
+                      "sles-sap-12-byol",
+                      "sles-sap-15",
+                      "sles-sap-15-byol",
                       "ubuntu-1404",
                       "ubuntu-1604",
                       "ubuntu-1804",
@@ -8202,8 +8275,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--labels": "value",
                     "--region": "dynamic",
                     "--source-disk": "dynamic",
-                    "--source-disk-region": "dynamic",
-                    "--source-disk-zone": "dynamic",
                     "--zone": "dynamic"
                   }
                 },
@@ -8507,8 +8578,14 @@ STATIC_COMPLETION_CLI_TREE = {
                       "rhel-7-byol",
                       "rhel-8",
                       "rhel-8-byol",
+                      "sles-12",
                       "sles-12-byol",
+                      "sles-15",
                       "sles-15-byol",
+                      "sles-sap-12",
+                      "sles-sap-12-byol",
+                      "sles-sap-15",
+                      "sles-sap-15-byol",
                       "ubuntu-1404",
                       "ubuntu-1604",
                       "ubuntu-1804",
@@ -9732,6 +9809,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--description": "value",
                     "--local-ssd": "value",
                     "--machine-type": "value",
+                    "--maintenance-freeze-duration": "value",
                     "--min-cpu-platform": "value",
                     "--require-specific-reservation": "bool",
                     "--vm-count": "value",
@@ -11475,6 +11553,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--preemptible": "bool",
                         "--preemptible-vm": "bool",
                         "--tf-version": "value",
+                        "--tpu-only": "bool",
                         "--use-dl-images": "bool",
                         "--vm-only": "bool",
                         "--zone": "dynamic"
@@ -18567,6 +18646,41 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
+            "settings": {
+              "commands": {
+                "get": {
+                  "commands": {},
+                  "flags": {
+                    "--folder": "value",
+                    "--organization": "value",
+                    "--resource-type": [
+                      "app-engine",
+                      "compute",
+                      "folder",
+                      "iap_web",
+                      "organization"
+                    ],
+                    "--service": "value"
+                  }
+                },
+                "set": {
+                  "commands": {},
+                  "flags": {
+                    "--folder": "value",
+                    "--organization": "value",
+                    "--resource-type": [
+                      "app-engine",
+                      "compute",
+                      "folder",
+                      "iap_web",
+                      "organization"
+                    ],
+                    "--service": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "web": {
               "commands": {
                 "add-iam-policy-binding": {
@@ -21723,7 +21837,8 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--async": "bool",
-                    "--description": "value"
+                    "--description": "value",
+                    "--labels": "value"
                   }
                 },
                 "delete": {
@@ -21748,7 +21863,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update": {
                   "commands": {},
                   "flags": {
-                    "--description": "value"
+                    "--description": "value",
+                    "--labels": "value"
                   }
                 }
               },
@@ -21763,8 +21879,9 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--description": "value",
                     "--hub": "value",
                     "--interconnect-attachment": "value",
+                    "--labels": "value",
                     "--region": "value",
-                    "--router-appliance-instance": "value",
+                    "--router-appliance": "value",
                     "--vpn-tunnel": "value"
                   }
                 },
@@ -22889,37 +23006,50 @@ STATIC_COMPLETION_CLI_TREE = {
                 "list": {
                   "commands": {},
                   "flags": {
+                    "--billing-account": "value",
                     "--filter": "value",
+                    "--folder": "value",
                     "--insight-type": "value",
                     "--limit": "value",
                     "--location": "value",
+                    "--organization": "value",
                     "--page-size": "value",
-                    "--sort-by": "value"
+                    "--sort-by": "value",
+                    "--uri": "bool"
                   }
                 },
                 "mark-accepted": {
                   "commands": {},
                   "flags": {
+                    "--billing-account": "value",
                     "--etag": "value",
+                    "--folder": "value",
                     "--insight-type": "value",
                     "--location": "value",
+                    "--organization": "value",
                     "--state-metadata": "value"
                   }
                 },
                 "mark-active": {
                   "commands": {},
                   "flags": {
+                    "--billing-account": "value",
                     "--etag": "value",
+                    "--folder": "value",
                     "--insight-type": "value",
-                    "--location": "value"
+                    "--location": "value",
+                    "--organization": "value"
                   }
                 },
                 "mark-dismissed": {
                   "commands": {},
                   "flags": {
+                    "--billing-account": "value",
                     "--etag": "value",
+                    "--folder": "value",
                     "--insight-type": "value",
                     "--location": "value",
+                    "--organization": "value",
                     "--recommendation-change-type": [
                       "dismiss",
                       "leave_unchanged"
@@ -22956,16 +23086,22 @@ STATIC_COMPLETION_CLI_TREE = {
                 "mark-active": {
                   "commands": {},
                   "flags": {
+                    "--billing-account": "value",
                     "--etag": "value",
+                    "--folder": "value",
                     "--location": "value",
+                    "--organization": "value",
                     "--recommender": "value"
                   }
                 },
                 "mark-claimed": {
                   "commands": {},
                   "flags": {
+                    "--billing-account": "value",
                     "--etag": "value",
+                    "--folder": "value",
                     "--location": "value",
+                    "--organization": "value",
                     "--recommender": "value",
                     "--state-metadata": "value"
                   }
@@ -22973,16 +23109,22 @@ STATIC_COMPLETION_CLI_TREE = {
                 "mark-dismissed": {
                   "commands": {},
                   "flags": {
+                    "--billing-account": "value",
                     "--etag": "value",
+                    "--folder": "value",
                     "--location": "value",
+                    "--organization": "value",
                     "--recommender": "value"
                   }
                 },
                 "mark-failed": {
                   "commands": {},
                   "flags": {
+                    "--billing-account": "value",
                     "--etag": "value",
+                    "--folder": "value",
                     "--location": "value",
+                    "--organization": "value",
                     "--recommender": "value",
                     "--state-metadata": "value"
                   }
@@ -22990,8 +23132,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "mark-succeeded": {
                   "commands": {},
                   "flags": {
+                    "--billing-account": "value",
                     "--etag": "value",
+                    "--folder": "value",
                     "--location": "value",
+                    "--organization": "value",
                     "--recommender": "value",
                     "--state-metadata": "value"
                   }
@@ -28259,6 +28404,15 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--sort-by": "value",
                     "--uri": "bool"
                   }
+                },
+                "stream-logs": {
+                  "commands": {},
+                  "flags": {
+                    "--allow-multiline-logs": "bool",
+                    "--polling-interval": "value",
+                    "--region": "dynamic",
+                    "--task-name": "value"
+                  }
                 }
               },
               "flags": {}
@@ -33006,8 +33160,14 @@ STATIC_COMPLETION_CLI_TREE = {
                       "rhel-7-byol",
                       "rhel-8",
                       "rhel-8-byol",
+                      "sles-12",
                       "sles-12-byol",
+                      "sles-15",
                       "sles-15-byol",
+                      "sles-sap-12",
+                      "sles-sap-12-byol",
+                      "sles-sap-15",
+                      "sles-sap-15-byol",
                       "ubuntu-1404",
                       "ubuntu-1604",
                       "ubuntu-1804",
@@ -34191,8 +34351,14 @@ STATIC_COMPLETION_CLI_TREE = {
                       "rhel-7-byol",
                       "rhel-8",
                       "rhel-8-byol",
+                      "sles-12",
                       "sles-12-byol",
+                      "sles-15",
                       "sles-15-byol",
+                      "sles-sap-12",
+                      "sles-sap-12-byol",
+                      "sles-sap-15",
+                      "sles-sap-15-byol",
                       "ubuntu-1404",
                       "ubuntu-1604",
                       "ubuntu-1804",
@@ -34775,8 +34941,14 @@ STATIC_COMPLETION_CLI_TREE = {
                       "rhel-7-byol",
                       "rhel-8",
                       "rhel-8-byol",
+                      "sles-12",
                       "sles-12-byol",
+                      "sles-15",
                       "sles-15-byol",
+                      "sles-sap-12",
+                      "sles-sap-12-byol",
+                      "sles-sap-15",
+                      "sles-sap-15-byol",
                       "ubuntu-1404",
                       "ubuntu-1604",
                       "ubuntu-1804",
@@ -53951,8 +54123,14 @@ STATIC_COMPLETION_CLI_TREE = {
                   "rhel-7-byol",
                   "rhel-8",
                   "rhel-8-byol",
+                  "sles-12",
                   "sles-12-byol",
+                  "sles-15",
                   "sles-15-byol",
+                  "sles-sap-12",
+                  "sles-sap-12-byol",
+                  "sles-sap-15",
+                  "sles-sap-15-byol",
                   "ubuntu-1404",
                   "ubuntu-1604",
                   "ubuntu-1804",
@@ -55087,8 +55265,14 @@ STATIC_COMPLETION_CLI_TREE = {
                   "rhel-7-byol",
                   "rhel-8",
                   "rhel-8-byol",
+                  "sles-12",
                   "sles-12-byol",
+                  "sles-15",
                   "sles-15-byol",
+                  "sles-sap-12",
+                  "sles-sap-12-byol",
+                  "sles-sap-15",
+                  "sles-sap-15-byol",
                   "ubuntu-1404",
                   "ubuntu-1604",
                   "ubuntu-1804",

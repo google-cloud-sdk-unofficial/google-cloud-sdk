@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google LLC. All Rights Reserved.
+# Copyright 2020 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The gcloud kuberun clusters services group."""
+"""The gcloud kuberun core group."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,8 +22,19 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Services(base.Group):
-  """Create and manage Knative services on Kubernetes clusters.
+class Core(base.Group):
+  """Top level command to interact with Kubernetes applications on a cluster.
 
-  This set of commands can be used deploy or update a Knative service.
+  This set of commands can be used create or change a Knative services,
+  triggers, etc. on a cluster.
+  .
   """
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To list your Knative services, run:
+
+            $ {command} services list
+      """,
+  }

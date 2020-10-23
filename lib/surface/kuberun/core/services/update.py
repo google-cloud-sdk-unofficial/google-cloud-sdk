@@ -66,4 +66,4 @@ class Update(kuberun_command.KubeRunStreamingCommand, base.UpdateCommand):
     return response.stdout
 
   def Command(self):
-    return ['clusters', 'services', 'update']
+    return ['core', 'services', 'update']

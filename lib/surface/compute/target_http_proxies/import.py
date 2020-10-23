@@ -99,7 +99,7 @@ def _Run(args, holder, target_http_proxy_arg, release_track):
         stream=data,
         schema_path=_GetSchemaPath(release_track))
   except yaml_validator.ValidationError as e:
-    raise exceptions.ToolException(e.message)
+    raise exceptions.ToolException(str(e))
 
   # Get existing target HTTP proxy.
   try:

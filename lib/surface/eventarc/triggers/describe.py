@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.eventarc import triggers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.eventarc import flags
+from googlecloudsdk.command_lib.eventarc import types
 from googlecloudsdk.core import log
 
 _DETAILED_HELP = {
@@ -51,11 +52,13 @@ class Describe(base.DescribeCommand):
     client = triggers.TriggersClient()
     trigger_ref = args.CONCEPTS.trigger.Parse()
     trigger = client.Get(trigger_ref)
-    self._recently_modified = triggers.RecentlyModified(trigger.updateTime)
+    event_type = types.MatchingCriteriaMessageToType(trigger.matchingCriteria)
+    self._active_time = triggers.TriggerActiveTime(event_type,
+                                                   trigger.updateTime)
     return trigger
 
   def Epilog(self, resources_were_displayed):
-    if resources_were_displayed and self._recently_modified:
+    if resources_were_displayed and self._active_time:
       log.warning(
-          'The trigger was recently modified and may take up to {} minutes to start functioning.'
-          .format(triggers.MAX_READY_LATENCY_MINUTES))
+          'The trigger was recently modified and will become active by {}.'
+          .format(self._active_time))

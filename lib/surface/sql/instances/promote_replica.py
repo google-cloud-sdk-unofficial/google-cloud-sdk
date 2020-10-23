@@ -18,7 +18,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import sys
+import textwrap
+
 from googlecloudsdk.api_lib.sql import api_util
+from googlecloudsdk.api_lib.sql import instances
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -69,11 +73,46 @@ class PromoteReplica(base.Command):
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='sql.instances')
 
-    console_io.PromptContinue(
-        message='Once the read replica has been promoted to a stand-alone '
-        'instance it cannot be converted back.',
-        default=True,
-        cancel_on_no=True)
+    instance_resource = sql_client.instances.Get(
+        sql_messages.SqlInstancesGetRequest(
+            project=instance_ref.project, instance=instance_ref.instance))
+
+    if instances.InstancesV1Beta4.IsMysqlDatabaseVersion(
+        instance_resource.databaseVersion):
+      database_type_fragment = 'mysql'
+    elif instances.InstancesV1Beta4.IsPostgresDatabaseVersion(
+        instance_resource.databaseVersion):
+      database_type_fragment = 'postgres'
+    else:
+      # TODO(b/144067325): currently the link below goes to extremely
+      # database-specific instructions to query the replication lag, so in case
+      # we (...somehow...) end up here for a db other than mysql or postgres,
+      # it's probably better to show nothing than to link to misleading info.
+      # Once the metrics are made uniform in b/144067325, then we could default
+      # to something here as we'd be giving the same instructions for all dbs
+      # anyway.
+      database_type_fragment = None
+    promote_replica_docs_link = None
+    if database_type_fragment:
+      promote_replica_docs_link = (
+          'Learn more:\n' +
+          'https://cloud.google.com/sql/docs/{}/replication/manage-replicas#promote-replica\n\n'
+          .format(database_type_fragment))
+
+    # Format the message ourselves here rather than supplying it as part of the
+    # 'message' to PromptContinue. Having the whole paragraph be automatically
+    # formatted by PromptContinue would leave it with a line break in the middle
+    # of the URL, rendering it unclickable.
+    sys.stderr.write(textwrap.TextWrapper().fill(
+        'Promoting a read replica stops replication and converts the instance '
+        'to a standalone primary instance with read and write capabilities. '
+        'This can\'t be undone. To avoid loss of data, before promoting the '
+        'replica, you should verify that the replica has applied all '
+        'transactions received from the primary.') + '\n\n')
+    if promote_replica_docs_link:
+      sys.stderr.write(promote_replica_docs_link)
+
+    console_io.PromptContinue(message='', default=True, cancel_on_no=True)
 
     result = sql_client.instances.PromoteReplica(
         sql_messages.SqlInstancesPromoteReplicaRequest(

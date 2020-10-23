@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The gcloud kuberun clusters revisions group."""
+"""The gcloud kuberun core domain-mappings group."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,8 +22,5 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Revisions(base.Group):
-  """Create and manage Knative revisions on Kubernetes clusters.
-
-  This set of commands can be used deploy or update a Knative revision.
-  """
+class DomainMappings(base.Group):
+  """Create and manage domain mappings for Knative services."""

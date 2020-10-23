@@ -97,7 +97,7 @@ class Import(base.UpdateCommand):
           stream=data,
           schema_path=self.GetSchemaPath())
     except yaml_validator.ValidationError as e:
-      raise exceptions.ToolException(e.message)
+      raise exceptions.ToolException(str(e))
 
     # Get existing target gRPC proxy.
     try:

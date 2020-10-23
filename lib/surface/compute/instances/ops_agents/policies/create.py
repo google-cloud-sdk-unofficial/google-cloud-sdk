@@ -64,6 +64,14 @@ class Create(base.Command):
           to specific major versions for staging and production, run:
 
           $ {command} ops-agents-prod-policy --agent-rules="type=logging,version=1.*.*;type=metrics,version=6.*.*" --description="A prod policy." --os-types=short-name=centos,version=7 --zones=us-central1-a --group-labels="env=prod,product=myapp;env=staging,product=myapp"
+
+          To create a policy named ``ops-agents-prod-policy'' that targets all
+          CentOS 7 VMs in zone ``us-central1-a'' with either
+          ``env=prod,product=myapp'' or ``env=staging,product=myapp'' labels
+          and makes sure the ops-agent version is pinned
+          to specific major versions for staging and production, run:
+
+          $ {command} ops-agents-prod-policy --agent-rules="type=ops-agent,version=1.*.*" --description="A prod policy." --os-types=short-name=centos,version=7 --zones=us-central1-a --group-labels="env=prod,product=myapp;env=staging,product=myapp"
           """,
   }
 

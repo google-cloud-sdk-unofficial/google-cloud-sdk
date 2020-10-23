@@ -62,11 +62,12 @@ class Create(base.CreateCommand):
                               service_account_ref, args.destination_run_service,
                               args.destination_run_path,
                               args.destination_run_region)
+    self._event_type = args.matching_criteria['type']
     if args.async_:
       return operation
     response = client.WaitFor(operation)
     trigger_dict = encoding.MessageToPyValue(response)
-    if types.IsPubsubType(args.matching_criteria['type']):
+    if types.IsPubsubType(self._event_type):
       log.status.Print('Created Pub/Sub topic [{}].'.format(
           trigger_dict['transport']['pubsub']['topic']))
       log.status.Print(
@@ -75,7 +76,7 @@ class Create(base.CreateCommand):
     return response
 
   def Epilog(self, resources_were_displayed):
-    if resources_were_displayed:
+    if resources_were_displayed and types.IsAuditLogType(self._event_type):
       log.warning(
-          'It may take up to {} minutes for the trigger to start functioning.'
-          .format(triggers.MAX_READY_LATENCY_MINUTES))
+          'It may take up to {} minutes for the new trigger to become active.'
+          .format(triggers.MAX_ACTIVE_DELAY_MINUTES))

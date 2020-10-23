@@ -13,6 +13,7 @@ import os
 import bootstrapping
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import config
+from googlecloudsdk.core import context_aware
 from googlecloudsdk.core import metrics
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import gce as c_gce
@@ -96,6 +97,15 @@ def main():
                       None if disable_ssl is None else not disable_ssl)
   _MaybeAddBotoOption(args, 'Boto', 'ca_certificates_file',
                       properties.VALUES.core.custom_ca_certs_file.Get())
+
+  # Sync device certificate settings for mTLS.
+  context_config = context_aware.Config()
+  _MaybeAddBotoOption(args, 'Credentials', 'use_client_certificate',
+                      context_config.use_client_certificate)
+  if context_config.use_client_certificate:
+    # Don't need to pass mTLS data if gsutil shouldn't be using it.
+    _MaybeAddBotoOption(args, 'Credentials', 'cert_provider_command',
+                        context_config.cert_provider_command)
 
   # Note that the original args to gsutil will be appended after the args we've
   # supplied here.

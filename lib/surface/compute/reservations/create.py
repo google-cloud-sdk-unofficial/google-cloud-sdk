@@ -94,7 +94,8 @@ class CreateAlpha(CreateBeta):
     resource_args.GetReservationResourceArg().AddArgument(
         parser, operation_type='create')
     flags.AddCreateFlags(
-        parser, support_location_hint=cls._support_location_hint)
+        parser, support_location_hint=cls._support_location_hint,
+        support_fleet=True)
 
   def Run(self, args):
     return _RunCreate(

@@ -159,7 +159,6 @@ class BetaUpdate(Update):
   @staticmethod
   def Args(parser):
     Update.CommonArgs(parser)
-    flags.AddDeployTagFlag(parser)
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
@@ -167,8 +166,11 @@ class BetaUpdate(Update):
 
     # Flags only supported on GKE and Knative
     cluster_group = flags.GetClusterArgGroup(parser)
-    flags.AddMinInstancesFlag(cluster_group)
     flags.AddEndpointVisibilityEnum(cluster_group)
+
+    # Flags not specific to any platform
+    flags.AddDeployTagFlag(parser)
+    flags.AddMinInstancesFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

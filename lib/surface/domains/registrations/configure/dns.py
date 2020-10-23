@@ -75,7 +75,8 @@ class ConfigureDNS(base.UpdateCommand):
     flags.AddAsyncFlagToParser(parser)
 
   def Run(self, args):
-    client = registrations.RegistrationsClient()
+    api_version = registrations.GetApiVersionFromArgs(args)
+    client = registrations.RegistrationsClient(api_version)
     args.registration = util.NormalizeResourceName(args.registration)
     registration_ref = args.CONCEPTS.registration.Parse()
     if args.disable_dnssec and args.dns_settings_from_file:
@@ -84,9 +85,10 @@ class ConfigureDNS(base.UpdateCommand):
           '--dns-settings-from-file | --disable-dnssec may be specified.')
 
     registration = client.Get(registration_ref)
-    util.AssertRegistrationOperational(registration)
+    util.AssertRegistrationOperational(api_version, registration)
 
     dns_settings, update_mask = dns_util.ParseDNSSettings(
+        api_version,
         args.name_servers,
         args.cloud_dns_zone,
         args.use_google_domains_dns,
@@ -97,6 +99,7 @@ class ConfigureDNS(base.UpdateCommand):
 
     if dns_settings is None:
       dns_settings, update_mask = dns_util.PromptForNameServers(
+          api_version,
           registration_ref.registrationsId,
           enable_dnssec=not args.disable_dnssec,
           dns_settings=registration.dnsSettings)
@@ -129,6 +132,6 @@ class ConfigureDNS(base.UpdateCommand):
       log.status.Print('The command will not have any effect because '
                        'validate-only flag is present.')
     else:
-      response = util.WaitForOperation(response, args.async_)
+      response = util.WaitForOperation(api_version, response, args.async_)
       log.UpdatedResource(registration_ref.Name(), 'registration', args.async_)
     return response

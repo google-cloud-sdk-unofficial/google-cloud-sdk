@@ -58,7 +58,7 @@ class Describe(kuberun_command.KubeRunCommandWithOutput, base.DescribeCommand):
     return [args.domain] + super(Describe, self).BuildKubeRunArgs(args)
 
   def Command(self):
-    return ['clusters', 'domain-mappings', 'describe']
+    return ['core', 'domain-mappings', 'describe']
 
   def FormatOutput(self, out, args):
     if out:

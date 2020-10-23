@@ -21,11 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts import util
-from googlecloudsdk.core import log
 
 DEFAULT_LIST_FORMAT = """\
-    multi[separator='\n'](
-      AR:format="table[title="ARTIFACT_REGISTRY"](
+    table[title="ARTIFACT_REGISTRY"](
          name.basename():label=REPOSITORY,
          format:label=FORMAT,
          description:label=DESCRIPTION,
@@ -33,12 +31,7 @@ DEFAULT_LIST_FORMAT = """\
          labels.list():label=LABELS,
          kmsKeyName.yesno(yes='Customer-managed key', no='Google-managed key'):label=ENCRYPTION,
          createTime.date(tz=LOCAL),
-         updateTime.date(tz=LOCAL))",
-
-      GCR:format="table[title="CONTAINER_REGISTRY"](
-         name.basename():label=HOSTNAME,
-         name.segment(3):label=LOCATION
-      )"
+         updateTime.date(tz=LOCAL)
     )"""
 
 
@@ -46,11 +39,7 @@ DEFAULT_LIST_FORMAT = """\
 class List(base.ListCommand):
   """List repositories in the specified project.
 
-  List all Artifact Registry and Container Registry repositories in the
-  specified project.
-
-  To perform actions on the Container Registry repositories, use `gcloud
-  container images`.
+  List all Artifact Registry repositories in the specified project.
 
   To specify the maximum number of repositories to list, use the --limit flag.
   """
@@ -82,10 +71,4 @@ class List(base.ListCommand):
     Returns:
       A list of Docker images.
     """
-    repos, buckets, project = util.ListRepositories(args)
-    gcr_repos = util.GetGCRRepos(buckets, project)
-    if gcr_repos:
-      log.status.Print(
-          "Note: To perform actions on the Container Registry repositories "
-          "listed below please use 'gcloud container images'.\n")
-    return {"AR": repos, "GCR": gcr_repos}
+    return util.ListRepositories(args)

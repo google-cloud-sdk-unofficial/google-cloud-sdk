@@ -89,7 +89,8 @@ class Register(base.CreateCommand):
     # TODO(b/166210862): Call Register with validate_only to check contacts.
 
   def Run(self, args):
-    client = registrations.RegistrationsClient()
+    api_version = registrations.GetApiVersionFromArgs(args)
+    client = registrations.RegistrationsClient(api_version)
 
     normalized = util.NormalizeResourceName(args.registration)
     if normalized != args.registration:
@@ -119,6 +120,7 @@ class Register(base.CreateCommand):
         args, client.messages.Registration.LabelsValue)
 
     dns_settings, _ = dns_util.ParseDNSSettings(
+        api_version,
         args.name_servers,
         args.cloud_dns_zone,
         args.use_google_domains_dns,
@@ -126,12 +128,14 @@ class Register(base.CreateCommand):
         registration_ref.registrationsId,
         enable_dnssec=not args.disable_dnssec)
 
-    contacts = contacts_util.ParseContactData(args.contact_data_from_file)
+    contacts = contacts_util.ParseContactData(api_version,
+                                              args.contact_data_from_file)
     if contacts:
       self._ValidateContacts(contacts)
 
-    contact_privacy = contacts_util.ParseContactPrivacy(args.contact_privacy)
-    yearly_price = util.ParseYearlyPrice(args.yearly_price)
+    contact_privacy = contacts_util.ParseContactPrivacy(api_version,
+                                                        args.contact_privacy)
+    yearly_price = util.ParseYearlyPrice(api_version, args.yearly_price)
     public_contacts_ack, hsts_ack = util.ParseRegisterNotices(args.notices)
 
     if yearly_price is None:
@@ -152,21 +156,23 @@ class Register(base.CreateCommand):
 
     if dns_settings is None:
       dns_settings, _ = dns_util.PromptForNameServers(
+          api_version,
           registration_ref.registrationsId,
           enable_dnssec=not args.disable_dnssec)
       if dns_settings is None:
         raise exceptions.Error('Providing DNS settings is required.')
 
     if contacts is None:
-      contacts = contacts_util.PromptForContacts()
+      contacts = contacts_util.PromptForContacts(api_version)
       self._ValidateContacts(contacts)
 
     if contact_privacy is None:
       choices = [
-          flags.CONTACT_PRIVACY_ENUM_MAPPER.GetChoiceForEnum(enum)
+          flags.ContactPrivacyEnumMapper(client.messages).GetChoiceForEnum(enum)
           for enum in register_params.supportedPrivacy
       ]
-      contact_privacy = contacts_util.PromptForContactPrivacy(choices)
+      contact_privacy = contacts_util.PromptForContactPrivacy(
+          api_version, choices)
       if contact_privacy is None:
         raise exceptions.Error('Providing Contact Privacy is required.')
     contacts.privacy = contact_privacy
@@ -193,7 +199,7 @@ class Register(base.CreateCommand):
       log.status.Print('The command will not have any effect because '
                        'validate-only flag is present.')
     else:
-      response = util.WaitForOperation(response, args.async_)
+      response = util.WaitForOperation(api_version, response, args.async_)
       log.CreatedResource(
           registration_ref.Name(),
           'registration',

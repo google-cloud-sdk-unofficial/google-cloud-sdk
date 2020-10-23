@@ -64,32 +64,37 @@ class ConfigureContacts(base.UpdateCommand):
                                       'configure contact settings of the')
     flags.AddAsyncFlagToParser(parser)
 
-  def CheckPendingContacts(self, registration_ref):
-    client = registrations.RegistrationsClient()
+  def CheckPendingContacts(self, client, registration_ref):
     registration = client.Get(registration_ref)
     return bool(registration.pendingContactSettings)
 
   def Run(self, args):
-    client = registrations.RegistrationsClient()
+    api_version = registrations.GetApiVersionFromArgs(args)
+    client = registrations.RegistrationsClient(api_version)
     args.registration = util.NormalizeResourceName(args.registration)
     registration_ref = args.CONCEPTS.registration.Parse()
 
     registration = client.Get(registration_ref)
-    util.AssertRegistrationOperational(registration)
+    util.AssertRegistrationOperational(api_version, registration)
 
-    contacts = contacts_util.ParseContactData(args.contact_data_from_file)
-    contact_privacy = contacts_util.ParseContactPrivacy(args.contact_privacy)
-    public_contacts_ack = contacts_util.ParsePublicContactsAck(args.notices)
+    contacts = contacts_util.ParseContactData(api_version,
+                                              args.contact_data_from_file)
+    contact_privacy = contacts_util.ParseContactPrivacy(api_version,
+                                                        args.contact_privacy)
+    public_contacts_ack = contacts_util.ParsePublicContactsAck(
+        api_version, args.notices)
 
     if contacts is None:
-      contacts = contacts_util.PromptForContacts(registration.contactSettings)
+      contacts = contacts_util.PromptForContacts(api_version,
+                                                 registration.contactSettings)
 
     if contact_privacy is None:
       choices = list(
-          map(flags.CONTACT_PRIVACY_ENUM_MAPPER.GetChoiceForEnum,
+          map(
+              flags.ContactPrivacyEnumMapper(client.messages).GetChoiceForEnum,
               registration.supportedPrivacy))
       contact_privacy = contacts_util.PromptForContactPrivacy(
-          choices, registration.contactSettings.privacy)
+          api_version, choices, registration.contactSettings.privacy)
 
     if contacts is None and contact_privacy is None:
       # Nothing to update.
@@ -98,7 +103,9 @@ class ConfigureContacts(base.UpdateCommand):
     new_privacy = contact_privacy or registration.contactSettings.privacy
     if not public_contacts_ack and new_privacy == client.messages.ContactSettings.PrivacyValueValuesEnum.PUBLIC_CONTACT_DATA:
       merged_contacts = contacts_util.MergeContacts(
-          prev_contacts=registration.contactSettings, new_contacts=contacts)
+          api_version,
+          prev_contacts=registration.contactSettings,
+          new_contacts=contacts)
       public_contacts_ack = contacts_util.PromptForPublicContactsAck(
           registration.domainName, merged_contacts)
 
@@ -113,9 +120,10 @@ class ConfigureContacts(base.UpdateCommand):
       log.status.Print('The command will not have any effect because '
                        'validate-only flag is present.')
     else:
-      response = util.WaitForOperation(response, args.async_)
+      response = util.WaitForOperation(api_version, response, args.async_)
       note = None
-      if not args.async_ and self.CheckPendingContacts(registration_ref):
+      if not args.async_ and self.CheckPendingContacts(client,
+                                                       registration_ref):
         note = ('Note:\nThe contact settings are currently pending.\nIn order '
                 'to finalize the update you need to confirm the change.\nAn '
                 'email with instructions has been sent to the registrant.')
