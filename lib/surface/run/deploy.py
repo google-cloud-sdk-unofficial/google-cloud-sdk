@@ -251,12 +251,20 @@ class BetaDeploy(Deploy):
 
   @staticmethod
   def Args(parser):
-    Deploy.Args(parser)
-    flags.AddDeployTagFlag(parser)
+    Deploy.CommonArgs(parser)
+    flags.AddImageArg(parser)
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddEgressSettingsFlag(managed_group)
+
+    # Flags only supported on GKE and Knative
+    cluster_group = flags.GetClusterArgGroup(parser)
+    flags.AddEndpointVisibilityEnum(cluster_group)
+
+    # Flags not specific to any platform
+    flags.AddMinInstancesFlag(parser)
+    flags.AddDeployTagFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

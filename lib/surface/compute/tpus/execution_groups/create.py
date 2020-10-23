@@ -40,6 +40,7 @@ class Create(base.CreateCommand):
     tpus_flags.AddPreemptibleFlag(parser)
     tpus_flags.AddTfVersionFlag(parser)
     tpus_flags.AddVmOnlyFlag(parser)
+    tpus_flags.AddTpuOnlyFlag(parser)
     tpus_flags.AddDeepLearningImagesFlag(parser)
     tpus_flags.AddDryRunFlag(parser)
     tpus_flags.GetAcceleratorTypeFlag().AddToParser(parser)
@@ -52,6 +53,10 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     responses = []
+    if args.dry_run:
+      self.DryRun(args)
+      return responses
+
     tpu = tpu_utils.TPUNode(self.ReleaseTrack())
     if not args.tf_version:
       try:
@@ -62,37 +67,20 @@ class Create(base.CreateCommand):
         return responses
 
     if not args.vm_only:
-      if args.dry_run:
-        log.status.Print(
-            'Creating TPU with Name:{}, Accelerator type:{}, TF version:{}, '
-            'Zone:{}, Network:{}'.format(
-                args.name,
-                args.accelerator_type,
-                args.tf_version,
-                args.zone,
-                args.network))
-      else:
-        try:
-          tpu_operation_ref = tpu.Create(args.name,
-                                         args.accelerator_type, args.tf_version,
-                                         args.zone, args.preemptible,
-                                         args.network)
-        except HttpConflictError:
-          log.err.Print('TPU Node with name:{} already exists, '
-                        'try a different name'.format(args.name))
-          return responses
+      try:
+        tpu_operation_ref = tpu.Create(args.name,
+                                       args.accelerator_type, args.tf_version,
+                                       args.zone, args.preemptible,
+                                       args.network)
+      except HttpConflictError:
+        log.err.Print('TPU Node with name:{} already exists, '
+                      'try a different name'.format(args.name))
+        return responses
 
-    if args.dry_run:
-      log.status.Print('Creating GCE VM with Name:{}, Zone:{}, Machine Type:{},'
-                       ' Disk Size(GB):{}, Preemptible:{}, Network:{}'.format(
-                           args.name, args.zone,
-                           args.machine_type, utils.BytesToGb(args.disk_size),
-                           args.preemptible_vm,
-                           args.network))
-    else:
+    if not args.tpu_only:
       instance = tpu_utils.Instance(self.ReleaseTrack())
       gce_image = args.gce_image
-      if not gce_image and not args.dry_run:
+      if not gce_image:
         gce_image = instance.ResolveImageFromTensorflowVersion(
             args.tf_version, 'ml-images', args.use_dl_images)
       try:
@@ -101,7 +89,7 @@ class Create(base.CreateCommand):
             utils.BytesToGb(args.disk_size), args.preemptible_vm, gce_image,
             args.network)
       except HttpConflictError:
-        err_msg = ('GCE VM with name:{} already exists, '
+        err_msg = ('VM with name:{} already exists, '
                    'try a different name.').format(args.name)
         if not args.vm_only:
           err_msg += (' TPU Node:{} creation is underway and will '
@@ -109,19 +97,33 @@ class Create(base.CreateCommand):
         log.err.Print(err_msg)
         return responses
 
-    if not args.vm_only and not args.dry_run:
+    if not args.vm_only:
       responses.append(
           tpu.WaitForOperation(tpu_operation_ref, 'Creating TPU node:{}'.format(
               args.name)))
-    if not args.dry_run:
+    if not args.tpu_only:
       instance_create_response = instance.WaitForOperation(
           instance_operation_ref, 'Creating GCE VM:{}'.format(args.name))
       responses.append(instance_create_response)
 
-    if args.dry_run:
-      log.status.Print('SSH to GCE VM:{}'.format(args.name))
-    else:
       ssh_helper = tpu_utils.SSH(self.ReleaseTrack())
       responses.append(ssh_helper.SSHToInstance(args, instance_create_response))
 
     return responses
+
+  def DryRun(self, args):
+    if not args.vm_only:
+      log.status.Print(
+          'Creating TPU with Name:{}, Accelerator type:{}, TF version:{}, '
+          'Zone:{}, Network:{}'.format(args.name, args.accelerator_type,
+                                       args.tf_version, args.zone,
+                                       args.network))
+
+    if not args.tpu_only:
+      log.status.Print('Creating VM with Name:{}, Zone:{}, Machine Type:{},'
+                       ' Disk Size(GB):{}, Preemptible:{}, Network:{}'.format(
+                           args.name, args.zone, args.machine_type,
+                           utils.BytesToGb(args.disk_size), args.preemptible_vm,
+                           args.network))
+
+      log.status.Print('SSH to VM:{}'.format(args.name))

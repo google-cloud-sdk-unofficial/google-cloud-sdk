@@ -40,9 +40,15 @@ table(
     matchingCriteria.type():label=TYPE,
     destination.cloudRunService.service:label=DESTINATION_RUN_SERVICE,
     destination.cloudRunService.path:label=DESTINATION_RUN_PATH,
-    updateTime.recently_modified():label=RECENTLY_MODIFIED
+    active_status():label=ACTIVE
 )
 """
+
+
+def _ActiveStatus(trigger):
+  event_type = types.MatchingCriteriaDictToType(trigger['matchingCriteria'])
+  active_time = triggers.TriggerActiveTime(event_type, trigger['updateTime'])
+  return 'By {}'.format(active_time) if active_time else 'Yes'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -61,8 +67,8 @@ class List(base.ListCommand):
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(triggers.GetTriggerURI)
     parser.display_info.AddTransforms({
-        'recently_modified': triggers.RecentlyModified,
-        'type': types.MatchingCriteriaToType
+        'active_status': _ActiveStatus,
+        'type': types.MatchingCriteriaDictToType
     })
 
   def Run(self, args):

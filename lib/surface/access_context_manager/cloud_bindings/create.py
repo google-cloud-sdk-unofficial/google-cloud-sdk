@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.util.hooks import types
 
 class CreateBinding(base.Command):
   """Create a new cloud access binding."""
-  _API_VERSION = 'v1'
+  _API_VERSION = 'v1alpha'
 
   @staticmethod
   def Args(parser):

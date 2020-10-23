@@ -7,7 +7,7 @@
 
         $ {command} NAME --location=LOCATION
   request:
-    collection: krmapihosting.projects.locations.anthosApiEndpoints
+    collection: krmapihosting.projects.locations.krmApiHosts
     method: delete
 
   async:

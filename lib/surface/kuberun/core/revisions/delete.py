@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Delete a Knative service."""
+"""Delete a Knative revision."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,16 +26,16 @@ from googlecloudsdk.core.console import console_io
 
 _DETAILED_HELP = {
     'EXAMPLES': """
-        To delete a Knative service, run:
+        To delete a Knative revision, run:
 
-            $ {command} <service-name>
+            $ {command} <revision-name>
         """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(kuberun_command.KubeRunCommand, base.DeleteCommand):
-  """Deletes a Knative service."""
+  """Deletes a Knative revision."""
 
   detailed_help = _DETAILED_HELP
   flags = [
@@ -47,8 +47,8 @@ class Delete(kuberun_command.KubeRunCommand, base.DeleteCommand):
   @classmethod
   def Args(cls, parser):
     super(Delete, cls).Args(parser)
-    parser.add_argument('service',
-                        help='The Knative service to delete.')
+    parser.add_argument('revision',
+                        help='The Knative revision to delete.')
 
   def OperationResponseHandler(self, response, args):
     if response.failed:
@@ -58,20 +58,20 @@ class Delete(kuberun_command.KubeRunCommand, base.DeleteCommand):
     if response.stderr:
       log.status.Print(response.stderr)
 
-    log.status.Print('Service is successfully deleted.')
+    log.status.Print('Revision is successfully deleted.')
     return None
 
   def BuildKubeRunArgs(self, args):
-    return [args.service] + super(Delete, self).BuildKubeRunArgs(args)
+    return [args.revision] + super(Delete, self).BuildKubeRunArgs(args)
 
   def Run(self, args):
-    """Delete a service."""
+    """Delete a revision."""
     console_io.PromptContinue(
-        message='Service [{service}] will be deleted.'.format(
-            service=args.service),
+        message='Revision [{revision}] will be deleted.'.format(
+            revision=args.revision),
         throw_if_unattended=True,
         cancel_on_no=True)
     return super(Delete, self).Run(args)
 
   def Command(self):
-    return ['clusters', 'services', 'delete']
+    return ['core', 'revisions', 'delete']

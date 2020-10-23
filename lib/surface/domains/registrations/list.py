@@ -33,7 +33,7 @@ table(
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List Cloud Domains registrations.
 
@@ -47,15 +47,38 @@ class List(base.ListCommand):
   """
 
   @staticmethod
-  def Args(parser):
+  def ArgsPerVersion(api_version, parser):
     resource_args.AddLocationResourceArg(parser, 'to list registrations for')
     parser.display_info.AddFormat(_FORMAT)
-    parser.display_info.AddUriFunc(util.RegistrationsUriFunc)
+    parser.display_info.AddUriFunc(util.RegistrationsUriFunc(api_version))
+
+  @staticmethod
+  def Args(parser):
+    List.ArgsPerVersion(registrations.BETA_API_VERSION, parser)
 
   def Run(self, args):
     """Run the list command."""
-    client = registrations.RegistrationsClient()
+    api_version = registrations.GetApiVersionFromArgs(args)
+    client = registrations.RegistrationsClient(api_version)
 
     location_ref = args.CONCEPTS.location.Parse()
 
     return client.List(location_ref, args.limit, args.page_size)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """List Cloud Domains registrations.
+
+  List Cloud Domains registrations in the project.
+
+  ## EXAMPLES
+
+  To list all registrations in the project, run:
+
+    $ {command}
+  """
+
+  @staticmethod
+  def Args(parser):
+    List.ArgsPerVersion(registrations.ALPHA_API_VERSION, parser)

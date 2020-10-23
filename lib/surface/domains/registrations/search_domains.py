@@ -67,7 +67,8 @@ class SearchDomains(base.DescribeCommand):
 
   def Run(self, args):
     """Run the search domains command."""
-    client = registrations.RegistrationsClient()
+    api_version = registrations.GetApiVersionFromArgs(args)
+    client = registrations.RegistrationsClient(api_version)
 
     location_ref = args.CONCEPTS.location.Parse()
 
@@ -79,6 +80,6 @@ class SearchDomains(base.DescribeCommand):
       except UnicodeError:
         pass  # Do not change the domain name.
     if not suggestions:
-      messages = registrations.GetMessagesModule()
-      suggestions.append(messages.RegisterParameters())
+
+      suggestions.append(client.messages.RegisterParameters())
     return suggestions

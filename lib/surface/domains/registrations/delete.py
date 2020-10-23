@@ -50,7 +50,8 @@ class Delete(base.DeleteCommand):
     flags.AddAsyncFlagToParser(parser)
 
   def Run(self, args):
-    client = registrations.RegistrationsClient()
+    api_version = registrations.GetApiVersionFromArgs(args)
+    client = registrations.RegistrationsClient(api_version)
     args.registration = util.NormalizeResourceName(args.registration)
     registration_ref = args.CONCEPTS.registration.Parse()
 
@@ -62,7 +63,7 @@ class Delete(base.DeleteCommand):
 
     response = client.Delete(registration_ref)
 
-    response = util.WaitForOperation(response, args.async_)
+    response = util.WaitForOperation(api_version, response, args.async_)
     log.DeletedResource(
         registration_ref.Name(), 'registration', is_async=args.async_)
     return response

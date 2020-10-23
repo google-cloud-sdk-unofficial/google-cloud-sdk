@@ -30,6 +30,7 @@ from googlecloudsdk.command_lib.code import local_files
 from googlecloudsdk.command_lib.code import run_subprocess
 from googlecloudsdk.command_lib.code import skaffold
 from googlecloudsdk.command_lib.code import yaml_helper
+from googlecloudsdk.core import config
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import yaml
@@ -223,6 +224,11 @@ def _EnsureDockerRunning():
 
 def _EnsureComponentsInstalled(args):
   """Make sure the components needed later are installed."""
+  if not config.Paths().sdk_root:
+    # Not currently in a packaged build. Currently in a unit test or a
+    # gcloud_lite build.
+    return
+
   components = ['skaffold']
 
   if args.IsSpecified('kube_context'):

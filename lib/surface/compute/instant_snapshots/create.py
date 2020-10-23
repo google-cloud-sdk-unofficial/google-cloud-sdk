@@ -54,7 +54,7 @@ class Create(base.Command):
 
   def _GetSourceDiskUri(self, args, compute_holder, default_scope):
     source_disk_ref = ips_flags.SOURCE_DISK_ARG.ResolveAsResource(
-        args, compute_holder.resources, default_scope=default_scope)
+        args, compute_holder.resources)
     if source_disk_ref:
       return source_disk_ref.SelfLink()
     return None

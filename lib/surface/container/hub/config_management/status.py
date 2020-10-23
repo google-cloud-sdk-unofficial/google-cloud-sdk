@@ -73,13 +73,12 @@ class ConfigmanagementFeatureState(object):
     """update config_sync state for the membership that has nomos installed.
 
     Args:
-      fs: ConfigmanagementFeatureState
+      fs: ConfigManagementFeatureState
     """
     if not (fs.configSyncState and fs.configSyncState.syncState):
       self.config_sync = 'SYNC_STATE_UNSPECIFIED'
     else:
       self.config_sync = fs.configSyncState.syncState.code
-      # (b/153566864) limit the last_synced_token to 7 or 8 characters.
       if fs.configSyncState.syncState.syncToken:
         self.last_synced_token = fs.configSyncState.syncState.syncToken[:7]
       self.last_synced = fs.configSyncState.syncState.lastSyncTime

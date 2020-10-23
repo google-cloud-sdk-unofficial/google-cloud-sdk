@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2020 Google LLC. All Rights Reserved.
+# Copyright 2019 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,62 +12,58 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to list domain mappings of a Knative cluster."""
+"""Describe a Knative revision."""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
 import json
 
-from googlecloudsdk.api_lib.kuberun import domainmapping
+from googlecloudsdk.api_lib.kuberun import revision
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import flags
 from googlecloudsdk.command_lib.kuberun import kuberun_command
-from googlecloudsdk.command_lib.kuberun import pretty_print
+from googlecloudsdk.command_lib.kuberun import revision_printer
 from googlecloudsdk.core import exceptions
+from googlecloudsdk.core.resource import resource_printer
 
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To show all domain mappings in the default namespace, run
+        To show all the data about a Knative revision, run
 
             $ {command}
-
-        To show all domain mappings in a namespace, run
-
-            $ {command} --namespace=my-namespace
-
-        To show all domain mappings from all namespaces, run
-
-            $ {command} --all-namespaces
         """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
-  """Lists domain mappings in a Knative cluster."""
+class Describe(kuberun_command.KubeRunCommandWithOutput, base.DescribeCommand):
+  """Describes a Knative revision."""
 
   detailed_help = _DETAILED_HELP
-  flags = [flags.NamespaceFlagGroup(), flags.ClusterConnectionFlags()]
+  flags = [flags.ClusterConnectionFlags(), flags.NamespaceFlag()]
 
   @classmethod
   def Args(cls, parser):
-    super(List, cls).Args(parser)
-    base.URI_FLAG.RemoveFromParser(parser)
+    super(Describe, cls).Args(parser)
+    parser.add_argument(
+        'revision', help='The Knative revision to show details for.')
+    resource_printer.RegisterFormatter(
+        revision_printer.REVISION_PRINTER_FORMAT,
+        revision_printer.RevisionPrinter,
+        hidden=True)
+    parser.display_info.AddFormat(revision_printer.REVISION_PRINTER_FORMAT)
 
-    parser.display_info.AddFormat("""table(
-        {ready_column},
-        name:label=DOMAIN,
-        routeName:label=SERVICE)""".format(
-            ready_column=pretty_print.READY_COLUMN))
+  def BuildKubeRunArgs(self, args):
+    return [args.revision] + super(Describe, self).BuildKubeRunArgs(args)
 
   def Command(self):
-    return ['clusters', 'domain-mappings', 'list']
+    return ['core', 'revisions', 'describe']
 
   def FormatOutput(self, out, args):
     if out:
-      json_object = json.loads(out)
-      return [domainmapping.DomainMapping(x) for x in json_object]
+      return revision.Revision(json.loads(out))
     else:
-      raise exceptions.Error('Cannot list domain mappings')
+      raise exceptions.Error('Cannot find revision [{}]'.format(args.revision))

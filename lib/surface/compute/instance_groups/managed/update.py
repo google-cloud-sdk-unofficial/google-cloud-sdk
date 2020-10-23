@@ -29,8 +29,7 @@ from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_heal
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class UpdateGA(base.UpdateCommand):
   r"""Update a Compute Engine managed instance group."""
 
@@ -162,8 +161,8 @@ class UpdateGA(base.UpdateCommand):
           region=igm_ref.region)
     return client.MakeRequests([(service, 'Patch', request)])
 
-  def _CreateInstanceGroupManagerPatch(self, args, igm_resource, client,
-                                       holder):
+  def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,
+                                       client, holder):
     """Create IGM resource patch."""
     patch_instance_group_manager = client.messages.InstanceGroupManager()
     auto_healing_policies = self._GetValidatedAutohealingPolicies(
@@ -199,7 +198,7 @@ class UpdateGA(base.UpdateCommand):
         igm_ref, client)
 
     patch_instance_group_manager = self._CreateInstanceGroupManagerPatch(
-        args, igm_resource, client, holder)
+        args, igm_ref, igm_resource, client, holder)
     return self._MakePatchRequest(client, igm_ref, patch_instance_group_manager)
 
 
@@ -228,3 +227,43 @@ UpdateGA.detailed_help = {
       instance status: if an instance is not `RUNNING`, the group recreates it.
       """
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateGA):
+  r"""Update a Compute Engine managed instance group."""
+
+  @classmethod
+  def Args(cls, parser):
+    UpdateGA.Args(parser)
+    instance_groups_flags.AddMigDistributionPolicyTargetShapeFlag(
+        parser, for_create=False)
+
+  def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,
+                                       client, holder):
+    patch_instance_group_manager = super(UpdateAlpha,
+                                         self)._CreateInstanceGroupManagerPatch(
+                                             args, igm_ref, igm_resource,
+                                             client, holder)
+    if args.IsSpecified('target_distribution_shape'):
+      self._PatchTargetDistributionShape(
+          patch_instance_group_manager,
+          args.GetValue('target_distribution_shape'), igm_ref, igm_resource,
+          client)
+    return patch_instance_group_manager
+
+  def _PatchTargetDistributionShape(self, patch_instance_group_manager,
+                                    target_distribution_shape, igm_ref,
+                                    igm_resource, client):
+    instance_groups_flags.ValidateMigDistributionPolicyTargetShapeFlag(
+        target_distribution_shape, igm_ref)
+    distribution_policy = igm_resource.distributionPolicy
+    if distribution_policy is None:
+      distribution_policy = client.messages.DistributionPolicy()
+    distribution_policy.targetShape = (
+        client.messages.DistributionPolicy.TargetShapeValueValuesEnum)(
+            target_distribution_shape)
+    patch_instance_group_manager.distributionPolicy = distribution_policy
+
+
+UpdateAlpha.detailed_help = UpdateGA.detailed_help

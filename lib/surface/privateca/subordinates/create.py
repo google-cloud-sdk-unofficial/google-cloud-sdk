@@ -138,13 +138,13 @@ class Create(base.CreateCommand):
     flags.AddSubjectFlags(parser, subject_required=False)
     flags.AddPublishCaCertFlag(parser, use_update_help_text=False)
     flags.AddPublishCrlFlag(parser, use_update_help_text=False)
-    flags.AddKeyAlgorithmFlag(key_spec_group)
+    flags.AddKeyAlgorithmFlag(key_spec_group, default='rsa-pkcs1-2048-sha256')
     flags.AddInlineReusableConfigFlags(reusable_config_group, is_ca=True)
     flags.AddValidityFlag(
         parser,
         resource_name='CA',
-        default_value='P10Y',
-        default_value_text='10 years')
+        default_value='P3Y',
+        default_value_text='3 years')
     flags.AddCertificateAuthorityIssuancePolicyFlag(parser)
     labels_util.AddCreateLabelsFlags(parser)
     flags.AddBucketFlag(parser)

@@ -16,7 +16,7 @@
 
   request:
     collection: accesscontextmanager.organizations.gcpUserAccessBindings
-    api_version: v1
+    api_version: v1alpha
 
   arguments:
     resource:

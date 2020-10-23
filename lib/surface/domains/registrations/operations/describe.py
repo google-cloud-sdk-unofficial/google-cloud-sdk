@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.domains import operations
+from googlecloudsdk.api_lib.domains import registrations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.domains import resource_args
 
@@ -41,6 +42,7 @@ class Describe(base.DescribeCommand):
     resource_args.AddOperationResourceArg(parser, 'to describe')
 
   def Run(self, args):
-    client = operations.Client.FromApiVersion('v1alpha2')
+    api_version = registrations.GetApiVersionFromArgs(args)
+    client = operations.Client.FromApiVersion(api_version)
     operation_ref = args.CONCEPTS.operation.Parse()
     return client.Get(operation_ref)

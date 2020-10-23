@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.accesscontextmanager import cloud_bindings
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateBinding(base.Command):
   """Update an existing cloud access binding."""
-  _API_VERSION = 'v1'
+  _API_VERSION = 'v1alpha'
 
   @staticmethod
   def Args(parser):

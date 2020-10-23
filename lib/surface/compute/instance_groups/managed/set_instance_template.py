@@ -27,14 +27,22 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 
 
 class SetInstanceTemplate(base.Command):
-  r"""Set instance template for managed instance group.
+  r"""Set the instance template for a managed instance group.
 
-    *{command}* updates the instance template for an existing managed instance
+    *{command}* sets the instance template for an existing managed instance
   group.
 
-  The new template won't apply to existing instances in the group unless they
-  are recreated using the recreate-instances command. But the new template does
-  apply to all new instances added to the managed instance group.
+  The new template applies to all new instances added to the managed instance
+  group.
+
+  To apply the new template to existing instances in the group, use one of the
+  following methods:
+
+  - Update instances using the `update-instances` command.
+  - Recreate instances using the `recreate-instances` command.
+  - Use the `rolling-action start-update` command.
+  - Use the API to set the group's `updatePolicy.type` to `PROACTIVE`.
+
   """
 
   @staticmethod

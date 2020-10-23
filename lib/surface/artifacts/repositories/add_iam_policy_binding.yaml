@@ -21,7 +21,7 @@
       policy role and member types.
 
   request: &request
-    api_version: v1beta1
+    api_version: v1beta2
     collection: artifactregistry.projects.locations.repositories
     modify_request_hooks:
     - googlecloudsdk.command_lib.artifacts.util:ValidateLocationHook

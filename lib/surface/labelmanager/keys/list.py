@@ -32,7 +32,7 @@ class List(base.ListCommand):
 
   To list all the LabelKeys under 'organizations/123', run:
 
-        $ {command} 'organizations/123'
+        $ {command} --label_parent='organizations/123'
   """
 
   @staticmethod

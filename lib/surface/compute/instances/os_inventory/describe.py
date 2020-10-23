@@ -55,6 +55,9 @@ class Describe(base.DescribeCommand):
 
     parser.display_info.AddFormat("""
           multi(
+            InstalledPackages.cos:format=
+              "table[box,title='Installed Packages (COS)']
+                (Name:sort=1,Version)",
             InstalledPackages.deb:format=
               "table[box,title='Installed Packages (DEB)']
                 (Name:sort=1,Arch,Version)",

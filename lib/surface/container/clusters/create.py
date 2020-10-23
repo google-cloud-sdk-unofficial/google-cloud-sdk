@@ -303,10 +303,6 @@ def AddTpuWithServiceNetworking(parser):
   flags.AddTpuFlags(parser, enable_tpu_service_networking=True)
 
 
-def AddWorkloadIdentityWithProvider(parser):
-  flags.AddWorkloadIdentityFlags(parser, use_identity_provider=True)
-
-
 def AddDisableDefaultSnatFlagForClusterCreate(parser):
   flags.AddDisableDefaultSnatFlag(parser, for_cluster_create=True)
 
@@ -539,8 +535,7 @@ flags_to_add = {
             AddTpuWithServiceNetworking,
         'verticalpodautoscaling':
             flags.AddVerticalPodAutoscalingFlag,
-        'workloadidentity':
-            AddWorkloadIdentityWithProvider,
+        'workloadidentity': (lambda p: flags.AddWorkloadIdentityFlags(p, True)),
         'workloadmetadata':
             (lambda p: flags.AddWorkloadMetadataFlag(p, use_mode=False)),
     },
@@ -704,7 +699,7 @@ flags_to_add = {
         'verticalpodautoscaling':
             flags.AddVerticalPodAutoscalingFlag,
         'workloadidentity':
-            AddWorkloadIdentityWithProvider,
+            (lambda p: flags.AddWorkloadIdentityFlags(p, True, True)),
         'workloadmetadata':
             (lambda p: flags.AddWorkloadMetadataFlag(p, use_mode=False)),
     },
@@ -974,4 +969,6 @@ class CreateAlpha(Create):
     ops.kubernetes_objects_snapshots_target = \
         getattr(args, 'kubernetes_objects_snapshots_target', None)
     ops.enable_gcfs = get_default('enable_gcfs')
+    ops.workload_identity_certificate_authority = get_default(
+        'workload_identity_certificate_authority')
     return ops

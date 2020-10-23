@@ -42,6 +42,7 @@ class Describe(base.DescribeCommand):
     resource_args.AddRegistrationResourceArg(parser, 'to describe')
 
   def Run(self, args):
-    client = registrations.RegistrationsClient()
+    api_version = registrations.GetApiVersionFromArgs(args)
+    client = registrations.RegistrationsClient(api_version)
     args.registration = util.NormalizeResourceName(args.registration)
     return client.Get(args.CONCEPTS.registration.Parse())

@@ -56,7 +56,8 @@ class Export(base.DeleteCommand):
     flags.AddAsyncFlagToParser(parser)
 
   def Run(self, args):
-    client = registrations.RegistrationsClient()
+    api_version = registrations.GetApiVersionFromArgs(args)
+    client = registrations.RegistrationsClient(api_version)
     args.registration = util.NormalizeResourceName(args.registration)
     registration_ref = args.CONCEPTS.registration.Parse()
 
@@ -68,7 +69,7 @@ class Export(base.DeleteCommand):
 
     response = client.Export(registration_ref)
 
-    response = util.WaitForOperation(response, args.async_)
+    response = util.WaitForOperation(api_version, response, args.async_)
     log.ExportResource(
         registration_ref.Name(),
         'registration',

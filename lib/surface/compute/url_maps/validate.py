@@ -156,7 +156,7 @@ class Validate(base.Command):
           stream=data,
           schema_path=_GetSchemaPath(self.ReleaseTrack()))
     except yaml_validator.ValidationError as e:
-      raise exceptions.ToolException(e.message)
+      raise exceptions.ToolException(str(e))
 
     # Send UrlMap.validate request
     if args.region is not None:

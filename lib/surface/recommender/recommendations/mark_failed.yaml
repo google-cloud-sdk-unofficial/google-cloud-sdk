@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA, GA]
+- release_tracks: [BETA, GA]
   help_text:
     brief: |
       Mark a recommendation's state as FAILED.
@@ -13,8 +13,6 @@
   request:
     collection: recommender.projects.locations.recommenders.recommendations
     method: markFailed
-    ALPHA:
-      api_version: v1alpha2
     BETA:
       api_version: v1beta1
     GA:
