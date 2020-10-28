@@ -8,7 +8,7 @@
       To list all metadata imports under service
       `my-service`, run:
 
-        $ {command} --service my-service
+        $ {command} --service=my-service
 
       To list all metadata imports under all services and
       all locations, run:

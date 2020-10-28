@@ -65,13 +65,6 @@
       help_text: |
         The Hive metastore schema version.
         If unspecified, the default version chosen by the server will be used.
-    - arg_name: data-catalog-sync
-      default: true
-      api_field: service.metadataIntegration.dataCatalogConfig.disabled
-      processor: googlecloudsdk.command_lib.metastore.services.util:Negate
-      help_text: |
-        A boolean flag to determine whether Dataproc Metastore metadata sync
-        to Data Catalog should be enabled, true if unspecified.
     - group:
         help_text: |
           Configuration properties specific to running Hive metastore

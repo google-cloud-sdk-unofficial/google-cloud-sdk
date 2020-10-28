@@ -43,7 +43,8 @@ def _DetailedHelp():
 
 
 def _AddArgs(parser, include_alpha_logging, include_l7_internal_load_balancing,
-             include_aggregate_purpose, api_version):
+             include_aggregate_purpose, include_private_service_connect,
+             api_version):
   """Add subnetwork create arguments to parser."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
 
@@ -150,6 +151,10 @@ def _AddArgs(parser, include_alpha_logging, include_l7_internal_load_balancing,
         'Reserved for Aggregate Ranges used for aggregating '
         'private subnetworks.')
 
+  if include_private_service_connect:
+    purpose_choices['PRIVATE_SERVICE_CONNECT'] = (
+        'Reserved for Private Service Connect Internal Load Balancing.')
+
   # Subnetwork purpose is introduced with L7ILB feature. Aggregate purpose
   # will have to be enabled for a given release track only after L7ILB feature
   # is enabled for that release track. Hence if include_aggregate_purpose
@@ -202,7 +207,8 @@ def GetPrivateIpv6GoogleAccessTypeFlagMapper(messages):
 
 def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
                       include_alpha_logging, include_l7_internal_load_balancing,
-                      include_aggregate_purpose):
+                      include_aggregate_purpose,
+                      include_private_service_connect):
   """Create the subnet resource."""
   subnetwork = messages.Subnetwork(
       name=subnet_ref.Name(),
@@ -281,6 +287,17 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
         subnetwork.enableFlowLogs = None
         subnetwork.logConfig = None
 
+  if include_private_service_connect:
+    if args.purpose:
+      subnetwork.purpose = messages.Subnetwork.PurposeValueValuesEnum(
+          args.purpose)
+      if (subnetwork.purpose ==
+          messages.Subnetwork.PurposeValueValuesEnum.PRIVATE_SERVICE_CONNECT):
+        # Clear unsupported fields in the subnet resource
+        subnetwork.privateIpGoogleAccess = None
+        subnetwork.enableFlowLogs = None
+        subnetwork.logConfig = None
+
   if args.private_ipv6_google_access_type is not None:
     subnetwork.privateIpv6GoogleAccess = (
         flags.GetPrivateIpv6GoogleAccessTypeFlagMapper(
@@ -290,7 +307,8 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
 
 
 def _Run(args, holder, include_alpha_logging,
-         include_l7_internal_load_balancing, include_aggregate_purpose):
+         include_l7_internal_load_balancing, include_aggregate_purpose,
+         include_private_service_connect):
   """Issues a list of requests necessary for adding a subnetwork."""
   client = holder.client
 
@@ -305,7 +323,8 @@ def _Run(args, holder, include_alpha_logging,
   subnetwork = _CreateSubnetwork(client.messages, subnet_ref, network_ref, args,
                                  include_alpha_logging,
                                  include_l7_internal_load_balancing,
-                                 include_aggregate_purpose)
+                                 include_aggregate_purpose,
+                                 include_private_service_connect)
   request = client.messages.ComputeSubnetworksInsertRequest(
       subnetwork=subnetwork,
       region=subnet_ref.region,
@@ -332,6 +351,7 @@ class Create(base.CreateCommand):
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
   _include_l7_internal_load_balancing = True
   _include_aggregate_purpose = False
+  _include_private_service_connect = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
 
   detailed_help = _DetailedHelp()
@@ -340,14 +360,16 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     _AddArgs(parser, cls._include_alpha_logging,
              cls._include_l7_internal_load_balancing,
-             cls._include_aggregate_purpose, cls._api_version)
+             cls._include_aggregate_purpose,
+             cls._include_private_service_connect, cls._api_version)
 
   def Run(self, args):
     """Issues a list of requests necessary for adding a subnetwork."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self._include_alpha_logging,
                 self._include_l7_internal_load_balancing,
-                self._include_aggregate_purpose)
+                self._include_aggregate_purpose,
+                self._include_private_service_connect)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -361,4 +383,5 @@ class CreateAlpha(CreateBeta):
 
   _include_alpha_logging = True
   _include_aggregate_purpose = True
+  _include_private_service_connect = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION

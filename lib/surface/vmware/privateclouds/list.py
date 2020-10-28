@@ -25,43 +25,43 @@ from googlecloudsdk.command_lib.vmware import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          List VMware Engine private clouds in a location.
+          List VMware Engine private clouds in a region.
         """,
     'EXAMPLES':
         """
-          To list private clouds in the location ``us-central1'', run:
+          To list private clouds in the region ``us-central1'', run:
 
-            $ {command} --location=us-central1
+            $ {command} --region=us-central1
 
           Or:
 
             $ {command}
 
-          In the second example, the location is taken from gcloud properties
-          vmware/location.
+          In the second example, the region is taken from gcloud properties
+          vmware/region.
     """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List VMware Engine private clouds in a location."""
+  """List VMware Engine private clouds in a region."""
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    flags.AddLocationArgToParser(parser)
+    flags.AddRegionArgToParser(parser)
     # The default format picks out the components of the relative name:
     # given projects/myproject/locations/us-central1/clusterGroups/my-test
     # it takes -1 (my-test), -3 (us-central1), and -5 (myproject).
     parser.display_info.AddFormat(
         'table(name.segment(-1):label=NAME,name.segment(-5):label=PROJECT,'
-        'name.segment(-3):label=LOCATION,createTime,status)')
+        'name.segment(-3):label=REGION,createTime,status)')
 
   def Run(self, args):
-    location = args.CONCEPTS.location.Parse()
+    region = args.CONCEPTS.region.Parse()
     client = PrivatecloudsClient()
-    return client.List(location, limit=args.limit)
+    return client.List(region, limit=args.limit)
 
 
 List.detailed_help = DETAILED_HELP

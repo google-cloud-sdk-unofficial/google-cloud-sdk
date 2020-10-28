@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import kuberun_command
-from googlecloudsdk.core import log
+
 _DETAILED_HELP = {
     'EXAMPLES':
         """
@@ -35,18 +35,5 @@ class Render(kuberun_command.KubeRunStreamingCommand, base.ExportCommand):
   detailed_help = _DETAILED_HELP
   flags = []
 
-  @classmethod
-  def Args(cls, parser):
-    super(Render, cls).Args(parser)
-    base.URI_FLAG.RemoveFromParser(parser)
-
   def Command(self):
     return ['render']
-
-  def FormatOutput(self, out, args):
-    if not out:
-      return out
-    return out + '\n'
-
-  def Display(self, args, output):
-    log.out.write(output)

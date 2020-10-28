@@ -63,7 +63,7 @@ class Update(base.UpdateCommand):
                 'new config membership can trigger load balancer updates which '
                 'could cause traffic interruption.')
 
-    console_io.PromptContinue(default=False, cancel_on_no=True)
+    console_io.PromptContinue(default=True, cancel_on_no=True)
 
     project = properties.VALUES.core.project.GetOrFail()
     if not args.config_membership:

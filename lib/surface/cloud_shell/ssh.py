@@ -28,8 +28,8 @@ from googlecloudsdk.core import properties
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class SshBeta(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class Ssh(base.Command):
   """Allows you to establish an interactive SSH session with Cloud Shell."""
 
   detailed_help = {

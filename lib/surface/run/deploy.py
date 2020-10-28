@@ -23,12 +23,10 @@ import enum
 import os.path
 import uuid
 
-from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.builds import flags as build_flags
-from googlecloudsdk.command_lib.builds import submit_util
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
@@ -156,15 +154,16 @@ class Deploy(base.Command):
   def Run(self, args):
     """Deploy a container to Cloud Run."""
     service_ref = flags.GetService(args)
-    messages = None
     build_type = None
-    build_config = None
     image = None
+    pack = None
+    source = None
     include_build = flags.FlagIsExplicitlySet(args, 'source')
     operation_message = 'Deploying container'
     # Build an image from source if source specified
     if include_build:
       # Create a tag for the image creation
+      source = args.source
       if not args.IsSpecified('image'):
         args.image = 'gcr.io/{projectID}/cloud-run-source-deploy/{service}:{tag}'.format(
             projectID=properties.VALUES.core.project.Get(required=True),
@@ -175,17 +174,11 @@ class Deploy(base.Command):
       if os.path.exists(docker_file):
         build_type = BuildType.DOCKERFILE
       else:
-        args.pack = [{'image': args.image}]
+        pack = [{'image': args.image}]
         build_type = BuildType.BUILDPACKS
+      image = None if pack else args.image
       operation_message = 'Building using {build_type} and deploying container'.format(
           build_type=build_type.value)
-      messages = cloudbuild_util.GetMessagesModule()
-      image = None if args.pack else args.image
-      build_config = submit_util.CreateBuildConfigAlpha(
-          image, args.no_cache, messages, args.substitutions, None,
-          args.IsSpecified('source'), False, args.source,
-          args.gcs_source_staging_dir, args.ignore_file, args.gcs_log_dir,
-          args.machine_type, args.disk_size, args.worker_pool, args.pack)
     elif not args.IsSpecified('image'):
       raise c_exceptions.RequiredArgumentException(
           '--image', 'Requires a container image to deploy (e.g. '
@@ -232,8 +225,9 @@ class Deploy(base.Command):
             asyn=args.async_,
             allow_unauthenticated=allow_unauth,
             prefetch=service,
-            build_config=build_config,
-            build_messages=messages)
+            build_image=image,
+            build_pack=pack,
+            build_source=source)
 
       if args.async_:
         pretty_print.Success('Service [{{bold}}{serv}{{reset}}] is deploying '

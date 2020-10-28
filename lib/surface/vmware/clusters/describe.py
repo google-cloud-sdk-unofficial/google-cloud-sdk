@@ -31,15 +31,15 @@ DETAILED_HELP = {
         """
           To get a description of a cluster called ``my-cluster'' in the
           ``my-privatecloud'' private cloud in the ``us-central1''
-          location, run:
+          region, run:
 
-            $ {command} my-cluster --privatecloud=my-privatecloud --location=us-central1 --project=my-project
+            $ {command} my-cluster --privatecloud=my-privatecloud --region=us-central1 --project=my-project
 
           Or:
 
             $ {command} my-cluster --privatecloud=my-privatecloud
 
-          In the second example, the project and location are taken from gcloud properties core/project and vmware/location.
+          In the second example, the project and region are taken from gcloud properties core/project and vmware/region.
     """,
 }
 

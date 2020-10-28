@@ -39,13 +39,13 @@ DETAILED_HELP = {
           ``my-privatecloud'', with three initial nodes created in zone
           ``us-central1-a'', run:
 
-            $ {command} my-cluster --privatecloud=my-privatecloud --location=us-central1 --project=my-project --zone=us-central1-a --node-count=3
+            $ {command} my-cluster --privatecloud=my-privatecloud --region=us-central1 --project=my-project --zone=us-central1-a --node-count=3
 
           Or:
 
             $ {command} my-cluster --privatecloud=my-privatecloud -zone=us-central1-a --node-count=3
 
-          In the second example, the project and location are taken from gcloud properties core/project and vmware/location.
+          In the second example, the project and region are taken from gcloud properties core/project and vmware/region.
     """,
 }
 

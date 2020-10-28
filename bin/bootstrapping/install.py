@@ -42,6 +42,9 @@ def ParseArgs():
   parser.add_argument('--usage-reporting',
                       default=None, type=Bool,
                       help='(true/false) Disable anonymous usage reporting.')
+  parser.add_argument('--screen-reader',
+                      default=None, type=Bool,
+                      help='(true/false) Disable screen reader mode.')
   parser.add_argument('--rc-path',
                       help=('Profile to update with PATH and completion. If'
                             ' given without --command-completion or'
@@ -189,6 +192,10 @@ the Google Cloud Platform.
 
 def main():
   pargs = ParseArgs()
+  if pargs.screen_reader is not None:
+    properties.PersistProperty(properties.VALUES.accessibility.screen_reader,
+                               pargs.screen_reader,
+                               scope=properties.Scope.INSTALLATION)
   update_manager.RestartIfUsingBundledPython(sdk_root=config.Paths().sdk_root,
                                              command=__file__)
   reinstall_components = encoding.GetEncodedValue(

@@ -21,10 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class AccessContextManager(base.Group):
   """Manage Access Context Manager cloud access bindings.
 
-  An access binding assigns an access level to a group, then the policy will be
-  forced when a user in the group access cloud console or API.
+  An access binding assigns an access level to a group, enforcing the policy
+  when a user in the group accesses the Cloud Console or API.
   """

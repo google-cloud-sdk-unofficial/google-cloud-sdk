@@ -19,22 +19,17 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import encoding
-
-from googlecloudsdk.api_lib.compute import base_classes as compute_base
 from googlecloudsdk.api_lib.data_fusion import datafusion as df
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute import scope as compute_scope
-from googlecloudsdk.command_lib.compute import scope_prompter
 from googlecloudsdk.command_lib.data_fusion import operation_poller
 from googlecloudsdk.command_lib.data_fusion import resource_args
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
-
-_EDITIONS = ['basic', 'enterprise']
+_EDITIONS = ['basic', 'enterprise', 'developer']
 
 
 class Create(base.Command):
@@ -62,14 +57,17 @@ class Create(base.Command):
     parser.add_argument(
         '--zone',
         help='Compute Engine zone in which the instance will '
-        'be created. For example: `--zone=us-central1-a`.',
-        required=True)
+        'be created. Only needed for DEVELOPER edition. For example: `--zone=us-central1-a`.')
     parser.add_argument(
         '--edition',
         choices=_EDITIONS,
         default='basic',
         help='Edition of the Data Fusion instance to create. '
         'For example: `--edition=enterprise`.')
+    parser.add_argument(
+        '--version',
+        help='The version of Cloud Data Fusion to use when creating the instance. '
+        'For example: `--version=6.2.2`.')
     parser.add_argument(
         '--options',
         type=arg_parsers.ArgDict(),
@@ -90,16 +88,12 @@ class Create(base.Command):
     instance_ref = args.CONCEPTS.instance.Parse()
 
     # Prompt for zone if it is not specified
+    version = args.version
+    if not version:
+      version = ''
     zone = args.zone
     if not zone:
-      holder = compute_base.ComputeApiHolder(self.ReleaseTrack())
-      _, zone = scope_prompter.PromptForScope(
-          resource_name='instance',
-          underspecified_names=[instance_ref.Name()],
-          scopes=[compute_scope.ScopeEnum.ZONE],
-          default_scope=None,
-          scope_lister=flags.GetDefaultScopeLister(holder.client))
-
+      zone = ''
     options = args.options
     if not options:
       options = {}
@@ -112,14 +106,13 @@ class Create(base.Command):
     enable_stackdriver_monitoring = args.enable_stackdriver_monitoring
     if not enable_stackdriver_monitoring:
       enable_stackdriver_monitoring = False
-    edition = args.edition.upper()
-    if edition == 'ENTERPRISE':
-      edition = datafusion.messages.Instance.TypeValueValuesEnum.ENTERPRISE
-    else:
-      edition = datafusion.messages.Instance.TypeValueValuesEnum.BASIC
+    edition_mapper = arg_utils.ChoiceEnumMapper(
+        'edition_enum', df.Datafusion().messages.Instance.TypeValueValuesEnum)
+    edition = edition_mapper.GetEnumForChoice(args.edition)
     instance = datafusion.messages.Instance(
         zone=zone,
         type=edition,
+        version=version,
         enableStackdriverLogging=enable_stackdriver_logging,
         enableStackdriverMonitoring=enable_stackdriver_monitoring,
         options=encoding.DictToAdditionalPropertyMessage(
