@@ -30,16 +30,16 @@ DETAILED_HELP = {
     'EXAMPLES':
         """
           To get a description of a private cloud called ``my-privatecloud'' in
-          project ``my-project'' and location ``us-central1'', run:
+          project ``my-project'' and region ``us-central1'', run:
 
-          $ {command} example-privatecloud --project=my-project --location=us-central1
+          $ {command} example-privatecloud --project=my-project --region=us-central1
 
         Or:
 
           $ {command} example-privatecloud
 
-        In the second example, the project and location are taken from gcloud
-        properties core/project and vmware/location.
+        In the second example, the project and region are taken from gcloud
+        properties core/project and vmware/region.
     """,
 }
 

@@ -39,8 +39,9 @@ def ToFileReference(path, remote):
     raise Exception('invalid path: ' + path)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class ScpBeta(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
+class Scp(base.Command):
   """Copies files between Cloud Shell and the local machine."""
 
   detailed_help = {
@@ -48,7 +49,9 @@ class ScpBeta(base.Command):
           """\
         *{command}* copies files between your Cloud Shell instance and your
         local machine using the scp command.
-
+        """,
+      'EXAMPLES':
+          """\
         To denote a file in Cloud Shell, prefix the file name with the string
         "cloudshell:" (e.g. _cloudshell:_~/_FILE_). To denote a local file,
         prefix the file name with the string "localhost:" (e.g.

@@ -23,10 +23,22 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.accesscontextmanager import cloud_bindings
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateBinding(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateBindingGA(base.Command):
   """Update an existing cloud access binding."""
-  _API_VERSION = 'v1alpha'
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To update an existing cloud access binding, run:
+
+            $ {command} --binding=my-binding-id --level=new-access-level
+          """,
+  }
+
+  _API_VERSION = 'v1'
 
   @staticmethod
   def Args(parser):
@@ -39,3 +51,9 @@ class UpdateBinding(base.Command):
     level_ref = args.CONCEPTS.level.Parse()
 
     return client.Patch(binding_ref, level_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateBindingALPHA(UpdateBindingGA):
+  """Update an existing cloud access binding."""
+  _API_VERSION = 'v1alpha'

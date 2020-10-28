@@ -42,6 +42,7 @@ def _AddSubmitTrainingArgs(parser):
   jobs_util.ScaleTierFlagMap().choice_arg.AddToParser(parser)
   flags.RUNTIME_VERSION.AddToParser(parser)
   flags.AddPythonVersionFlag(parser, 'during training')
+  flags.TRAINING_SERVICE_ACCOUNT.AddToParser(parser)
 
   sync_group = parser.add_mutually_exclusive_group()
   # TODO(b/36195821): Use the flag deprecation machinery when it supports the
@@ -113,6 +114,7 @@ class Train(base.Command):
         runtime_version=args.runtime_version,
         python_version=args.python_version,
         network=args.network if hasattr(args, 'network') else None,
+        service_account=args.service_account,
         labels=labels,
         stream_logs=stream_logs,
         user_args=args.user_args,

@@ -187,14 +187,20 @@ class DeployBeta(base.SilentCommand):
 
     app_engine_legacy_deployables = []
     cloud_tasks_api_deployables = []
+    cloud_scheduler_api_deployables = []
     for deployable in args.deployables:
-      if os.path.basename(deployable) in ('queue.yaml',):
+      if os.path.basename(deployable) == 'queue.yaml':
         cloud_tasks_api_deployables.append(deployable)
+      elif os.path.basename(deployable) == 'cron.yaml':
+        cloud_scheduler_api_deployables.append(deployable)
       else:
         app_engine_legacy_deployables.append(deployable)
 
     resources = {'versions': [], 'configs': []}
-    if app_engine_legacy_deployables or not cloud_tasks_api_deployables:
+    if (
+        app_engine_legacy_deployables or
+        not (cloud_tasks_api_deployables or cloud_scheduler_api_deployables)
+    ):
       args.deployables = app_engine_legacy_deployables
       resources = deploy_util.RunDeploy(
           args,
@@ -209,6 +215,10 @@ class DeployBeta(base.SilentCommand):
       args.deployables = cloud_tasks_api_deployables
       deploy_util.RunDeployCloudTasks(args)
       resources['configs'].append('queue')
+    if cloud_scheduler_api_deployables:
+      args.deployables = cloud_scheduler_api_deployables
+      deploy_util.RunDeployCloudScheduler(args)
+      resources['configs'].append('cron')
     return resources
 
 

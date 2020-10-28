@@ -34,19 +34,22 @@ class Delete(base.DeleteCommand):
   def Args(cls, parser):
     flags.AddZoneFlag(parser, resource_type='tpu', operation_type='delete')
     tpus_flags.AddTpuNameArg(parser)
+    tpus_flags.AddTpuOnlyFlagForDelete(parser)
 
   def Run(self, args):
     responses = []
     tpu_operation_ref = None
     instance_operation_ref = None
-    instance = tpu_utils.Instance(self.ReleaseTrack())
-    try:
-      instance_operation_ref = instance.Delete(args.execution_group_name,
-                                               args.zone)
-    except HttpNotFoundError:
-      log.status.Print(
-          'Instance:{} not found, possibly already deleted.'.format(
-              args.execution_group_name))
+
+    if not args.tpu_only:
+      instance = tpu_utils.Instance(self.ReleaseTrack())
+      try:
+        instance_operation_ref = instance.Delete(args.execution_group_name,
+                                                 args.zone)
+      except HttpNotFoundError:
+        log.status.Print(
+            'Instance:{} not found, possibly already deleted.'.format(
+                args.execution_group_name))
 
     tpu = tpu_utils.TPUNode(self.ReleaseTrack())
     try:

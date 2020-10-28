@@ -32,8 +32,7 @@ class SetClusterSelector(base.UpdateCommand):
       'EXAMPLES': """
 To set placement cluster selector labels on a workflow template, run:
 
-  $ {command} my_template --region=us-central1 \
---cluster-labels=environment:production
+  $ {command} my_template --region=us-central1 --cluster-labels=environment=production
 """
   }
 

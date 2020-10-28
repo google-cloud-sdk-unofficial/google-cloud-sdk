@@ -66,7 +66,21 @@ if not IS_WINDOWS:
 if six.PY3:
   long = int
 
-NO_CHANGES = 'Building synchronization state...\nStarting synchronization...\n'
+MACOS_WARNING = (
+    'If you experience problems with multiprocessing on MacOS, they might be '
+    'related to https://bugs.python.org/issue33725. You can disable '
+    'multiprocessing by editing your .boto config or by adding the following '
+    'flag to your command: `-o "GSUtil:parallel_process_count=1"`. Note that '
+    'multithreading is still available even if you disable multiprocessing.\n\n'
+)
+
+if IS_OSX:
+  NO_CHANGES = ('Building synchronization state...\n' + MACOS_WARNING +
+                'Starting synchronization...\n')
+else:
+  NO_CHANGES = (
+      'Building synchronization state...\nStarting synchronization...\n')
+
 if not UsingCrcmodExtension():
   NO_CHANGES = SLOW_CRCMOD_RSYNC_WARNING + '\n' + NO_CHANGES
 
@@ -2172,6 +2186,8 @@ class TestRsync(testcase.GsUtilIntegrationTestCase):
     _Check1()
 
   @unittest.skipUnless(UsingCrcmodExtension(), 'Test requires fast crcmod.')
+  @SkipForS3('The boto lib used for S3 does not handle objects'
+             ' starting with slashes if we use V4 signature.')
   def test_bucket_to_dir_minus_d_with_leftover_dir_placeholder(self):
     """Tests that we correctly handle leftover dir placeholders.
 

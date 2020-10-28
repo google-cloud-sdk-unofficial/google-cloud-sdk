@@ -40,7 +40,7 @@ class StreamLogs(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddCustomJobResourceArg(parser, 'to fetch stream log')
-    flags.AddStreamLogsCustomJobFlags(parser)
+    flags.AddStreamLogsFlags(parser)
     parser.display_info.AddFormat(log_util.LOG_FORMAT)
 
   def Run(self, args):

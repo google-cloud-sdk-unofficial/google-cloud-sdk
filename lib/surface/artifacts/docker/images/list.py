@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import containeranalysis_util as ca_util
 from googlecloudsdk.command_lib.artifacts import docker_util
 from googlecloudsdk.command_lib.artifacts import flags
+from googlecloudsdk.command_lib.artifacts import format_util
 
 
 DEFAULT_LIST_FORMAT = """\
@@ -32,12 +33,8 @@ DEFAULT_LIST_FORMAT = """\
       version:label=DIGEST,
       createTime.date(tz=LOCAL),
       updateTime.date(tz=LOCAL),
-      BUILD_DETAILS.buildDetails.provenance.sourceProvenance.context.cloudRepo.revisionId.notnull().list().slice(:8).join(''):optional:label=GIT_SHA,
-      vuln_counts.list():optional:label=VULNERABILITIES,
-      IMAGE_BASIS.derivedImage.sort(distance).map().extract(baseResourceUrl).slice(:1).map().list().list().split('//').slice(1:).list().split('@').slice(:1).list():optional:label=FROM,
-      BUILD_DETAILS.buildDetails.provenance.id.notnull().list():optional:label=BUILD,
-      DISCOVERY[0].discovered.analysisStatus:optional:label=VULNERABILITY_SCAN_STATUS
-    )"""
+      {}
+    )""".format(format_util.CONTAINER_ANALYSIS_METADATA_FORMAT)
 
 EXTENDED_LIST_FORMAT = """\
     table(
@@ -46,12 +43,8 @@ EXTENDED_LIST_FORMAT = """\
       tags,
       createTime.date(tz=LOCAL),
       updateTime.date(tz=LOCAL),
-      BUILD_DETAILS.buildDetails.provenance.sourceProvenance.context.cloudRepo.revisionId.notnull().list().slice(:8).join(''):optional:label=GIT_SHA,
-      vuln_counts.list():optional:label=VULNERABILITIES,
-      IMAGE_BASIS.derivedImage.sort(distance).map().extract(baseResourceUrl).slice(:1).map().list().list().split('//').slice(1:).list().split('@').slice(:1).list():optional:label=FROM,
-      BUILD_DETAILS.buildDetails.provenance.id.notnull().list():optional:label=BUILD,
-      DISCOVERY[0].discovered.analysisStatus:optional:label=VULNERABILITY_SCAN_STATUS
-    )"""
+      {}
+    )""".format(format_util.CONTAINER_ANALYSIS_METADATA_FORMAT)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -98,7 +91,6 @@ class List(base.ListCommand):
     flags.GetIncludeTagsFlag().AddToParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     flags.GetImagePathOptionalArg().AddToParser(parser)
-    flags.GetShowOccurrencesFlag().AddToParser(parser)
     flags.GetShowOccurrencesFromFlag().AddToParser(parser)
     flags.GetOccurrenceFilterFlag().AddToParser(parser)
 
@@ -123,19 +115,19 @@ class List(base.ListCommand):
 
     # Retrieve containeranalysis metadata for images.
     most_recent_images = []
-    if args.show_occurrences and args.show_occurrences_from:
+    if args.show_occurrences_from:
       images = heapq.nlargest(
           args.show_occurrences_from, images, key=lambda img: img['createTime'])
       most_recent_images = [
-          '{}@{}'.format(img['package'], img['version']) for img in images
+          'https://{}@{}'.format(img['package'], img['version'])
+          for img in images
       ]
 
-    if args.show_occurrences:
-      metadata = ca_util.GetContainerAnalysisMetadataForImages(
-          repo_or_image, args.occurrence_filter, most_recent_images)
+    metadata = ca_util.GetContainerAnalysisMetadataForImages(
+        repo_or_image, args.occurrence_filter, most_recent_images)
 
-      for image in images:
-        image_path = '{}@{}'.format(image['package'], image['version'])
-        img_metadata = metadata[image_path].ImagesListView()
-        image.update(img_metadata)
+    for image in images:
+      image_path = 'https://{}@{}'.format(image['package'], image['version'])
+      img_metadata = metadata[image_path].ImagesListView()
+      image.update(img_metadata)
     return images

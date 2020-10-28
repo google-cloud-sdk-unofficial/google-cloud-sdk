@@ -32,7 +32,7 @@ class TestIp(base.Command):
           '{description}',
       'EXAMPLES':
           """\
-          To test an IP address againt the firewall rule set, run:
+          To test an IP address against the firewall rule set, run:
 
               $ {command} 127.1.2.3
           """,

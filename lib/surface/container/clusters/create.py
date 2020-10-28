@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import string
+
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.compute import metadata_utils
@@ -138,7 +140,26 @@ def MaybeLogAuthWarning(args):
                   'treat that as `--no-enable-basic-auth`.')
 
 
-def ParseCreateOptionsBase(args, is_autogke, get_default):
+cloudNatTemplate = string.Template(
+    'Autopilot nodes are private. If you need connectivity to the '
+    'public internet, for example to pull public containers, you must configure'
+    ' Cloud NAT. To enable NAT for the network of this cluster, run the'
+    ' following commands: \n'
+    'gcloud compute routers create my-router --region $REGION --network default '
+    '--project=$PROJECT_ID \n'
+    'gcloud beta compute routers nats create nat --router=my-router '
+    '--region=$REGION --auto-allocate-nat-external-ips --nat-all-subnet-ip-ranges '
+    '--project=$PROJECT_ID'
+)
+
+
+def MaybeLogCloudNatHelpText(args, is_autogke, location, project_id):
+  if is_autogke and (hasattr(args, 'network') or hasattr('subnetwork')):
+    log.warning(cloudNatTemplate.substitute(REGION=location,
+                                            PROJECT_ID=project_id))
+
+
+def ParseCreateOptionsBase(args, is_autogke, get_default, location, project_id):
   """Parses the flags provided with the cluster creation command."""
   if hasattr(args, 'addons') and args.IsSpecified('addons') and \
       api_adapter.DASHBOARD in args.addons:
@@ -168,6 +189,9 @@ def ParseCreateOptionsBase(args, is_autogke, get_default):
 
   flags.ValidateCloudRunConfigCreateArgs(
       get_default('cloud_run_config'), get_default('addons'))
+
+  MaybeLogCloudNatHelpText(args, is_autogke, location, project_id)
+
   return api_adapter.CreateClusterOptions(
       accelerators=get_default('accelerator'),
       additional_zones=get_default('additional_zones'),
@@ -752,9 +776,10 @@ class Create(base.CreateCommand):
   def Args(parser):
     AddFlags(GA, parser, base_flag_defaults)
 
-  def ParseCreateOptions(self, args):
+  def ParseCreateOptions(self, args, location, project_id):
     get_default = lambda key: AttrValue(args, key, self.default_flag_values)
-    return ParseCreateOptionsBase(args, self.autogke, get_default)
+    return ParseCreateOptionsBase(args, self.autogke, get_default, location,
+                                  project_id)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -779,7 +804,7 @@ class Create(base.CreateCommand):
     location = location_get(args)
 
     cluster_ref = adapter.ParseCluster(args.name, location)
-    options = self.ParseCreateOptions(args)
+    options = self.ParseCreateOptions(args, location, cluster_ref.projectId)
 
     if options.private_cluster and not (
         options.enable_master_authorized_networks or
@@ -859,9 +884,10 @@ class CreateBeta(Create):
   def Args(parser):
     AddFlags(BETA, parser, base_flag_defaults)
 
-  def ParseCreateOptions(self, args):
+  def ParseCreateOptions(self, args, location, project_id):
     get_default = lambda key: AttrValue(args, key, self.default_flag_values)
-    ops = ParseCreateOptionsBase(args, self.autogke, get_default)
+    ops = ParseCreateOptionsBase(args, self.autogke, get_default, location,
+                                 project_id)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
     flags.ValidateNotificationConfigFlag(args)
@@ -911,9 +937,10 @@ class CreateAlpha(Create):
   def Args(parser):
     AddFlags(ALPHA, parser, base_flag_defaults)
 
-  def ParseCreateOptions(self, args):
+  def ParseCreateOptions(self, args, location, project_id):
     get_default = lambda key: AttrValue(args, key, self.default_flag_values)
-    ops = ParseCreateOptionsBase(args, self.autogke, get_default)
+    ops = ParseCreateOptionsBase(args, self.autogke, get_default, location,
+                                 project_id)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
     flags.ValidateNotificationConfigFlag(args)

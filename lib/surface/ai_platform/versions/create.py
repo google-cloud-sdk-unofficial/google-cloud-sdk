@@ -209,6 +209,7 @@ class CreateAlpha(CreateBeta):
   @staticmethod
   def Args(parser):
     CreateBeta.Args(parser)
+    flags.AddAutoScalingFlags(parser)
 
   def Run(self, args):
     with endpoint_util.MlEndpointOverrides(region=args.region):
@@ -245,4 +246,8 @@ class CreateAlpha(CreateBeta):
           ports=args.ports,
           predict_route=args.predict_route,
           health_route=args.health_route,
-          containers_hidden=False)
+          min_nodes=args.min_nodes,
+          max_nodes=args.max_nodes,
+          metrics=args.metric_targets,
+          containers_hidden=False,
+          autoscaling_hidden=False)

@@ -28,6 +28,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
+from googlecloudsdk.command_lib.compute.snapshots import flags as snap_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
@@ -90,15 +91,7 @@ def _CommonArgs(parser, snapshot_chain_enabled=False):
       and must not contain special symbols. All characters must be lowercase.
       """)
   if snapshot_chain_enabled:
-    parser.add_argument(
-        '--chain-name',
-        help=(
-            """Creates the new snapshot in the snapshot chain labeled with the specified name.
-            The chain name must be 1-63 characters long and comply with RFC1035.
-            Use this flag only if you are an advanced service owner who needs
-            to create separate snapshot chains, for example, for chargeback tracking.
-            When you describe your snapshot resource, this field is visible only
-            if it has a non-empty value."""))
+    snap_flags.AddChainArg(parser)
   flags.AddGuestFlushFlag(parser, 'snapshot')
   flags.AddStorageLocationFlag(parser, 'snapshot')
   csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)

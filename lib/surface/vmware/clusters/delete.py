@@ -30,15 +30,15 @@ DETAILED_HELP = {
     'EXAMPLES':
         """
           To delete a cluster called ``my-cluster'' in private cloud
-          ``my-privatecloud'' and location ``us-central1'', run:
+          ``my-privatecloud'' and region ``us-central1'', run:
 
-            $ {command} my-cluster --privatecloud=my-privatecloud --location=us-central1 --project=my-project
+            $ {command} my-cluster --privatecloud=my-privatecloud --region=us-central1 --project=my-project
 
           Or:
 
             $ {command} my-cluster --privatecloud=my-privatecloud
 
-          In the second example, the project and location are taken from gcloud properties core/project and vmware/location.
+          In the second example, the project and region are taken from gcloud properties core/project and vmware/region.
     """,
 }
 

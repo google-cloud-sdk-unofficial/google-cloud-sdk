@@ -32,4 +32,4 @@ nomos: unavailable
 pubsub-emulator: google-cloud-sdk-pubsub-emulator
 skaffold: google-cloud-sdk-skaffold
 kustomize: unavailable
-config-connector: unavailable
+config-connector: google-cloud-sdk-config-connector

@@ -52,18 +52,18 @@ class Collections(enum.Enum):
       ['project', 'operation'],
       True
   )
-  PROJECTS = (
-      'projects',
-      'projects/{project}',
-      {},
-      ['project'],
-      True
-  )
   SSLCERTS = (
       'sslCerts',
       'projects/{project}/instances/{instance}/sslCerts/{sha1Fingerprint}',
       {},
       ['project', 'instance', 'sha1Fingerprint'],
+      True
+  )
+  PROJECTS = (
+      'projects',
+      'projects/{project}',
+      {},
+      ['project'],
       True
   )
 

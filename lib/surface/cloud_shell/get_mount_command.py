@@ -25,8 +25,9 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import platforms
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class GetMountCommandBeta(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
+class GetMountCommand(base.Command):
   """Prints a command to mount the Cloud Shell home directory via sshfs."""
 
   detailed_help = {
@@ -40,6 +41,13 @@ class GetMountCommandBeta(base.Command):
         After mounting the Cloud Shell home directory, any changes you make
         under the mount point on your local file system will be reflected in
         Cloud Shell and vice-versa.
+        """,
+      'EXAMPLES':
+          """\
+        To print a command that mounts a remote directory onto your local file
+        system, run:
+
+            $ {command} REMOTE-DIR
         """,
   }
 

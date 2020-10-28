@@ -1,4 +1,4 @@
-"""Generated message classes for sql version v1beta4.
+"""Generated message classes for sqladmin version v1beta4.
 
 API for Cloud SQL database instance management
 """
@@ -10,7 +10,7 @@ from apitools.base.protorpclite import messages as _messages
 from apitools.base.py import encoding
 
 
-package = 'sql'
+package = 'sqladmin'
 
 
 class AclEntry(_messages.Message):
@@ -416,8 +416,15 @@ class DatabaseInstance(_messages.Message):
       replicas.
     replicaNames: The replicas of the instance.
     rootPassword: Initial root password. Use only on creation.
+    satisfiesPzs: The status indicating if instance satisfies physical zone
+      separation. Reserved for future use.
     scheduledMaintenance: The start time of any upcoming scheduled maintenance
       for this instance.
+    secondaryGceZone: The Compute Engine zone that the failover instance is
+      currently serving from for a regional instance. This value could be
+      different from the zone that was specified when the instance was created
+      if the instance has failed over to its secondary/failover zone. Reserved
+      for future use.
     selfLink: The URI of this resource.
     serverCaCert: SSL configuration.
     serviceAccountEmailAddress: The service account email address assigned to
@@ -609,13 +616,15 @@ class DatabaseInstance(_messages.Message):
   replicaConfiguration = _messages.MessageField('ReplicaConfiguration', 20)
   replicaNames = _messages.StringField(21, repeated=True)
   rootPassword = _messages.StringField(22)
-  scheduledMaintenance = _messages.MessageField('SqlScheduledMaintenance', 23)
-  selfLink = _messages.StringField(24)
-  serverCaCert = _messages.MessageField('SslCert', 25)
-  serviceAccountEmailAddress = _messages.StringField(26)
-  settings = _messages.MessageField('Settings', 27)
-  state = _messages.EnumField('StateValueValuesEnum', 28)
-  suspensionReason = _messages.EnumField('SuspensionReasonValueListEntryValuesEnum', 29, repeated=True)
+  satisfiesPzs = _messages.BooleanField(23)
+  scheduledMaintenance = _messages.MessageField('SqlScheduledMaintenance', 24)
+  secondaryGceZone = _messages.StringField(25)
+  selfLink = _messages.StringField(26)
+  serverCaCert = _messages.MessageField('SslCert', 27)
+  serviceAccountEmailAddress = _messages.StringField(28)
+  settings = _messages.MessageField('Settings', 29)
+  state = _messages.EnumField('StateValueValuesEnum', 30)
+  suspensionReason = _messages.EnumField('SuspensionReasonValueListEntryValuesEnum', 31, repeated=True)
 
 
 class DatabasesListResponse(_messages.Message):
@@ -1262,13 +1271,17 @@ class LocationPreference(_messages.Message):
     followGaeApplication: The App Engine application to follow, it must be in
       the same region as the Cloud SQL instance.
     kind: This is always *sql#locationPreference*.
+    secondaryZone: The preferred Compute Engine zone for the
+      secondary/failover (for example: us-central1-a, us-central1-b, etc.).
+      Reserved for future use.
     zone: The preferred Compute Engine zone (for example: us-central1-a, us-
       central1-b, etc.).
   """
 
   followGaeApplication = _messages.StringField(1)
   kind = _messages.StringField(2)
-  zone = _messages.StringField(3)
+  secondaryZone = _messages.StringField(3)
+  zone = _messages.StringField(4)
 
 
 class MaintenanceWindow(_messages.Message):
@@ -1698,8 +1711,8 @@ class Settings(_messages.Message):
       Valid values: *ALWAYS*: The instance is on, and remains so even in the
       absence of connection requests. *NEVER*: The instance is off; it is not
       activated, even if a connection request arrives.
-    activeDirectoryConfig: Active Directory configuration, for now relevant
-      only for SQL Server
+    activeDirectoryConfig: Active Directory configuration, relevant only for
+      Cloud SQL for SQL Server.
     authorizedGaeApplications: The App Engine app IDs that can access this
       instance. (Deprecated) Applied to First Generation instances only.
     availabilityType: Availability type. Potential values: *ZONAL*: The
@@ -1888,11 +1901,12 @@ class Settings(_messages.Message):
 
 
 class SqlActiveDirectoryConfig(_messages.Message):
-  r"""Active Directory configuration, for now relevant only for SQL Server
+  r"""Active Directory configuration, relevant only for Cloud SQL for SQL
+  Server.
 
   Fields:
-    domain: Domain name
-    kind: This will be always sql#activeDirectoryConfig.
+    domain: The name of the domain (e.g., mydomain.com).
+    kind: This is always sql#activeDirectoryConfig.
   """
 
   domain = _messages.StringField(1)

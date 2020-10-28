@@ -25,9 +25,22 @@ from googlecloudsdk.command_lib.accesscontextmanager import levels
 from googlecloudsdk.command_lib.util.hooks import types
 
 
-class CreateBinding(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateBindingGA(base.Command):
   """Create a new cloud access binding."""
-  _API_VERSION = 'v1alpha'
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To create a new cloud access binding, run:
+
+            $ {command} --group-key=my-group-key --level=my-access-level
+          """,
+  }
+
+  _API_VERSION = 'v1'
 
   @staticmethod
   def Args(parser):
@@ -45,3 +58,9 @@ class CreateBinding(base.Command):
     level_ref = args.CONCEPTS.level.Parse()
 
     return client.Create(org_ref, args.group_key, level_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateBindingAlpha(CreateBindingGA):
+  """Create a new cloud access binding."""
+  _API_VERSION = 'v1alpha'

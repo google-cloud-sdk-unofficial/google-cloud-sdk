@@ -5,6 +5,53 @@ STATIC_COMPLETION_CLI_TREE = {
   "commands": {
     "access-context-manager": {
       "commands": {
+        "cloud-bindings": {
+          "commands": {
+            "create": {
+              "commands": {},
+              "flags": {
+                "--group-key": "value",
+                "--level": "value",
+                "--organization": "value",
+                "--policy": "value"
+              }
+            },
+            "delete": {
+              "commands": {},
+              "flags": {
+                "--binding": "value",
+                "--organization": "value"
+              }
+            },
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--binding": "value",
+                "--organization": "value"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--organization": "value",
+                "--page-size": "value",
+                "--sort-by": "value"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--binding": "value",
+                "--level": "value",
+                "--organization": "value",
+                "--policy": "value"
+              }
+            }
+          },
+          "flags": {}
+        },
         "levels": {
           "commands": {
             "conditions": {
@@ -517,6 +564,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "premium-1",
                       "standard-1"
                     ],
+                    "--service-account": "value",
                     "--staging-bucket": "value",
                     "--stream-logs": "bool",
                     "--use-chief-in-tf-config": "value",
@@ -581,8 +629,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--member": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--role": "dynamic"
               }
@@ -602,8 +660,18 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ]
               }
             },
@@ -612,8 +680,18 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ]
               }
             },
@@ -625,8 +703,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--page-size": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--sort-by": "value"
               }
@@ -639,8 +727,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--page-size": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--sort-by": "value",
                 "--uri": "bool"
@@ -652,8 +750,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--member": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--role": "value"
               }
@@ -663,8 +771,18 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ]
               }
             },
@@ -675,8 +793,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--description": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--remove-labels": "value",
                 "--update-labels": "value"
@@ -692,8 +820,18 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ]
               }
             },
@@ -702,8 +840,18 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ]
               }
             },
@@ -715,8 +863,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--page-size": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--sort-by": "value",
                 "--uri": "bool"
@@ -727,8 +885,18 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ]
               }
             }
@@ -743,8 +911,18 @@ STATIC_COMPLETION_CLI_TREE = {
             "--model": "value",
             "--region": [
               "asia-east1",
+              "asia-northeast1",
+              "asia-southeast1",
+              "australia-southeast1",
+              "europe-west1",
+              "europe-west2",
+              "europe-west3",
               "europe-west4",
-              "us-central1"
+              "northamerica-northeast1",
+              "us-central1",
+              "us-east1",
+              "us-east4",
+              "us-west1"
             ],
             "--signature-name": "value",
             "--text-instances": "value"
@@ -771,8 +949,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--python-version": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--runtime-version": "value",
                 "--staging-bucket": "value"
@@ -784,8 +972,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--model": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ]
               }
             },
@@ -795,8 +993,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--model": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ]
               }
             },
@@ -809,8 +1017,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--page-size": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--sort-by": "value",
                 "--uri": "bool"
@@ -822,8 +1040,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--model": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ]
               }
             },
@@ -836,8 +1064,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--model": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--remove-labels": "value",
                 "--update-labels": "value"
@@ -1570,6 +1808,15 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--sort-by": "value",
                     "--uri": "bool"
                   }
+                },
+                "stream-logs": {
+                  "commands": {},
+                  "flags": {
+                    "--allow-multiline-logs": "bool",
+                    "--polling-interval": "value",
+                    "--region": "dynamic",
+                    "--task-name": "value"
+                  }
                 }
               },
               "flags": {}
@@ -1631,8 +1878,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--model": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--text-instances": "value"
               }
@@ -1727,6 +1984,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "premium-1",
                           "standard-1"
                         ],
+                        "--service-account": "value",
                         "--staging-bucket": "value",
                         "--stream-logs": "bool",
                         "--tpu-tf-version": "value",
@@ -1791,8 +2049,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -1819,8 +2087,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--member": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--role": "dynamic"
                   }
@@ -1841,8 +2119,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -1851,8 +2139,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -1864,8 +2162,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--sort-by": "value"
                   }
@@ -1878,8 +2186,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--sort-by": "value",
                     "--uri": "bool"
@@ -1894,8 +2212,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--member": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--role": "value"
                   }
@@ -1905,8 +2233,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -1917,8 +2255,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--description": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--remove-labels": "value",
                     "--update-labels": "value"
@@ -1934,8 +2282,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -1944,8 +2302,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -1957,8 +2325,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--sort-by": "value",
                     "--uri": "bool"
@@ -1969,8 +2347,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 }
@@ -1985,8 +2373,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--model": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--signature-name": "value",
                 "--text-instances": "value"
@@ -2018,6 +2416,9 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--image": "value",
                     "--labels": "value",
                     "--machine-type": "value",
+                    "--max-nodes": "value",
+                    "--metric-targets": "value",
+                    "--min-nodes": "value",
                     "--model": "value",
                     "--num-integral-steps": "value",
                     "--num-paths": "value",
@@ -2029,8 +2430,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--python-version": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--runtime-version": "value",
                     "--service-account": "value",
@@ -2043,8 +2454,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--model": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -2054,8 +2475,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--model": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -2068,8 +2499,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--sort-by": "value",
                     "--uri": "bool"
@@ -2081,8 +2522,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--model": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -2095,8 +2546,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--model": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--remove-labels": "value",
                     "--update-labels": "value"
@@ -2764,13 +3225,26 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--delete-tags": "bool"
                       }
                     },
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--metadata-filter": "value",
+                        "--show-all-metadata": "bool",
+                        "--show-build-details": "bool",
+                        "--show-deployment": "bool",
+                        "--show-image-basis": "bool",
+                        "--show-package-vulnerability": "bool"
+                      }
+                    },
                     "list": {
                       "commands": {},
                       "flags": {
                         "--filter": "value",
                         "--include-tags": "bool",
                         "--limit": "value",
+                        "--occurrence-filter": "value",
                         "--page-size": "value",
+                        "--show-occurrences-from": "value",
                         "--sort-by": "value"
                       }
                     }
@@ -4935,6 +5409,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-cdn": "bool",
                     "--gcs-bucket-name": "dynamic",
                     "--max-ttl": "value",
+                    "--negative-caching": "bool",
+                    "--negative-caching-policy": "value",
                     "--signed-url-cache-max-age": "value"
                   }
                 },
@@ -4978,10 +5454,13 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-cdn": "bool",
                     "--gcs-bucket-name": "dynamic",
                     "--max-ttl": "value",
+                    "--negative-caching": "bool",
+                    "--negative-caching-policy": "value",
                     "--no-client-ttl": "bool",
                     "--no-custom-response-headers": "bool",
                     "--no-default-ttl": "bool",
                     "--no-max-ttl": "bool",
+                    "--no-negative-caching-policies": "bool",
                     "--signed-url-cache-max-age": "value"
                   }
                 }
@@ -5066,6 +5545,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--logging-sample-rate": "value",
                     "--max-ttl": "value",
+                    "--negative-caching": "bool",
+                    "--negative-caching-policy": "value",
                     "--network": "value",
                     "--port-name": "value",
                     "--protocol": "value",
@@ -5212,12 +5693,15 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--iap": "value",
                     "--logging-sample-rate": "value",
                     "--max-ttl": "value",
+                    "--negative-caching": "bool",
+                    "--negative-caching-policy": "value",
                     "--no-client-ttl": "bool",
                     "--no-custom-request-headers": "bool",
                     "--no-custom-response-headers": "bool",
                     "--no-default-ttl": "bool",
                     "--no-health-checks": "bool",
                     "--no-max-ttl": "bool",
+                    "--no-negative-caching-policies": "bool",
                     "--port-name": "value",
                     "--protocol": "value",
                     "--region": "dynamic",
@@ -5532,6 +6016,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--source-instant-snapshot": "dynamic",
                     "--source-snapshot": "dynamic",
                     "--type": "dynamic",
+                    "--user-licenses": "value",
                     "--zone": "dynamic"
                   }
                 },
@@ -5641,9 +6126,11 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--clear-labels": "bool",
+                    "--clear-user-licenses": "bool",
                     "--region": "dynamic",
                     "--remove-labels": "value",
                     "--update-labels": "value",
+                    "--update-user-licenses": "value",
                     "--zone": "dynamic"
                   }
                 }
@@ -7546,6 +8033,19 @@ STATIC_COMPLETION_CLI_TREE = {
                   },
                   "flags": {}
                 },
+                "config": {
+                  "commands": {
+                    "export": {
+                      "commands": {},
+                      "flags": {
+                        "--all": "bool",
+                        "--path": "value",
+                        "--zone": "dynamic"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
                 "create": {
                   "commands": {},
                   "flags": {
@@ -8939,7 +9439,8 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--purpose": [
                           "AGGREGATE",
                           "INTERNAL_HTTPS_LOAD_BALANCER",
-                          "PRIVATE"
+                          "PRIVATE",
+                          "PRIVATE_SERVICE_CONNECT"
                         ],
                         "--range": "value",
                         "--region": "dynamic",
@@ -10576,6 +11077,22 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--labels": "value"
                   }
                 },
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--chain-name": "value",
+                    "--csek-key-file": "value",
+                    "--description": "value",
+                    "--guest-flush": "bool",
+                    "--labels": "value",
+                    "--source-disk": "dynamic",
+                    "--source-disk-key-file": "value",
+                    "--source-disk-region": "dynamic",
+                    "--source-disk-zone": "dynamic",
+                    "--storage-location": "value"
+                  }
+                },
                 "delete": {
                   "commands": {},
                   "flags": {}
@@ -11562,6 +12079,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "delete": {
                       "commands": {},
                       "flags": {
+                        "--tpu-only": "bool",
                         "--zone": "dynamic"
                       }
                     },
@@ -12362,6 +12880,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--private-cluster": "bool",
                     "--region": "value",
                     "--release-channel": [
+                      "None",
                       "rapid",
                       "regular",
                       "stable"
@@ -20372,6 +20891,167 @@ STATIC_COMPLETION_CLI_TREE = {
           },
           "flags": {}
         },
+        "metastore": {
+          "commands": {
+            "locations": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "operations": {
+              "commands": {
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "dynamic",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "wait": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "services": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--hive-metastore-configs": "value",
+                    "--hive-metastore-configs-from-file": "value",
+                    "--hive-metastore-version": "value",
+                    "--kerberos-principal": "value",
+                    "--keytab": "value",
+                    "--krb5-config": "value",
+                    "--labels": "value",
+                    "--location": "value",
+                    "--network": "value",
+                    "--port": "value",
+                    "--tier": [
+                      "enterprise"
+                    ]
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
+                  }
+                },
+                "imports": {
+                  "commands": {
+                    "create": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--database-dump": "value",
+                        "--database-type": [
+                          "mysql"
+                        ],
+                        "--description": "value",
+                        "--location": "value",
+                        "--service": "value"
+                      }
+                    },
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--location": "value",
+                        "--service": "value"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--location": "value",
+                        "--page-size": "value",
+                        "--service": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "dynamic",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--clear-hive-metastore-configs": "bool",
+                    "--clear-labels": "bool",
+                    "--kerberos_principal": "value",
+                    "--keytab": "value",
+                    "--krb5-config": "value",
+                    "--location": "value",
+                    "--port": "value",
+                    "--remove-hive-metastore-configs": "value",
+                    "--remove-labels": "value",
+                    "--update-hive-metastore-configs": "value",
+                    "--update-hive-metastore-configs-from-file": "value",
+                    "--update-labels": "value"
+                  }
+                }
+              },
+              "flags": {}
+            }
+          },
+          "flags": {}
+        },
         "ml": {
           "commands": {
             "language": {
@@ -21117,8 +21797,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--model": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--text-instances": "value"
               }
@@ -21213,6 +21903,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "premium-1",
                           "standard-1"
                         ],
+                        "--service-account": "value",
                         "--staging-bucket": "value",
                         "--stream-logs": "bool",
                         "--tpu-tf-version": "value",
@@ -21277,8 +21968,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -21305,8 +22006,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--member": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--role": "dynamic"
                   }
@@ -21327,8 +22038,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -21337,8 +22058,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -21350,8 +22081,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--sort-by": "value"
                   }
@@ -21364,8 +22105,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--sort-by": "value",
                     "--uri": "bool"
@@ -21380,8 +22131,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--member": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--role": "value"
                   }
@@ -21391,8 +22152,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -21403,8 +22174,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--description": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--remove-labels": "value",
                     "--update-labels": "value"
@@ -21420,8 +22201,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -21430,8 +22221,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -21443,8 +22244,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--sort-by": "value",
                     "--uri": "bool"
@@ -21455,8 +22266,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 }
@@ -21471,8 +22292,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--model": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--signature-name": "value",
                 "--text-instances": "value"
@@ -21504,6 +22335,9 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--image": "value",
                     "--labels": "value",
                     "--machine-type": "value",
+                    "--max-nodes": "value",
+                    "--metric-targets": "value",
+                    "--min-nodes": "value",
                     "--model": "value",
                     "--num-integral-steps": "value",
                     "--num-paths": "value",
@@ -21515,8 +22349,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--python-version": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--runtime-version": "value",
                     "--service-account": "value",
@@ -21529,8 +22373,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--model": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -21540,8 +22394,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--model": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -21554,8 +22418,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--sort-by": "value",
                     "--uri": "bool"
@@ -21567,8 +22441,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--model": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -21581,8 +22465,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--model": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--remove-labels": "value",
                     "--update-labels": "value"
@@ -26797,24 +27691,24 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--labels": "value",
-                    "--location": "dynamic",
                     "--node-count": "value",
                     "--privatecloud": "dynamic",
+                    "--region": "dynamic",
                     "--zone": "value"
                   }
                 },
                 "delete": {
                   "commands": {},
                   "flags": {
-                    "--location": "dynamic",
-                    "--privatecloud": "dynamic"
+                    "--privatecloud": "dynamic",
+                    "--region": "dynamic"
                   }
                 },
                 "describe": {
                   "commands": {},
                   "flags": {
-                    "--location": "dynamic",
-                    "--privatecloud": "dynamic"
+                    "--privatecloud": "dynamic",
+                    "--region": "dynamic"
                   }
                 },
                 "list": {
@@ -26822,9 +27716,9 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--filter": "value",
                     "--limit": "value",
-                    "--location": "dynamic",
                     "--page-size": "value",
                     "--privatecloud": "dynamic",
+                    "--region": "dynamic",
                     "--sort-by": "value",
                     "--uri": "bool"
                   }
@@ -26839,8 +27733,8 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--description": "value",
                     "--labels": "value",
-                    "--location": "dynamic",
                     "--management-ip-range": "value",
+                    "--region": "dynamic",
                     "--vpc-network": "value",
                     "--workload-ip-range": "value"
                   }
@@ -26848,13 +27742,13 @@ STATIC_COMPLETION_CLI_TREE = {
                 "delete": {
                   "commands": {},
                   "flags": {
-                    "--location": "dynamic"
+                    "--region": "dynamic"
                   }
                 },
                 "describe": {
                   "commands": {},
                   "flags": {
-                    "--location": "dynamic"
+                    "--region": "dynamic"
                   }
                 },
                 "list": {
@@ -26862,8 +27756,8 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--filter": "value",
                     "--limit": "value",
-                    "--location": "dynamic",
                     "--page-size": "value",
+                    "--region": "dynamic",
                     "--sort-by": "value",
                     "--uri": "bool"
                   }
@@ -28534,6 +29428,15 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--sort-by": "value",
                     "--uri": "bool"
                   }
+                },
+                "stream-logs": {
+                  "commands": {},
+                  "flags": {
+                    "--allow-multiline-logs": "bool",
+                    "--polling-interval": "value",
+                    "--region": "dynamic",
+                    "--task-name": "value"
+                  }
                 }
               },
               "flags": {}
@@ -28595,8 +29498,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--model": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--text-instances": "value"
               }
@@ -28686,6 +29599,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "premium-1",
                           "standard-1"
                         ],
+                        "--service-account": "value",
                         "--staging-bucket": "value",
                         "--stream-logs": "bool",
                         "--tpu-tf-version": "value",
@@ -28751,8 +29665,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--member": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--role": "dynamic"
                   }
@@ -28773,8 +29697,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -28783,8 +29717,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -28796,8 +29740,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--sort-by": "value"
                   }
@@ -28810,8 +29764,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--sort-by": "value",
                     "--uri": "bool"
@@ -28823,8 +29787,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--member": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--role": "value"
                   }
@@ -28834,8 +29808,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -28846,8 +29830,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--description": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--remove-labels": "value",
                     "--update-labels": "value"
@@ -28863,8 +29857,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -28873,8 +29877,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -28886,8 +29900,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--sort-by": "value",
                     "--uri": "bool"
@@ -28898,8 +29922,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 }
@@ -28914,8 +29948,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--model": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--signature-name": "value",
                 "--text-instances": "value"
@@ -28958,8 +30002,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--python-version": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--runtime-version": "value",
                     "--service-account": "value",
@@ -28972,8 +30026,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--model": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -28983,8 +30047,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--model": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -28997,8 +30071,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--sort-by": "value",
                     "--uri": "bool"
@@ -29010,8 +30094,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--model": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -29024,8 +30118,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--model": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--remove-labels": "value",
                     "--update-labels": "value"
@@ -30012,13 +31116,26 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--delete-tags": "bool"
                       }
                     },
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--metadata-filter": "value",
+                        "--show-all-metadata": "bool",
+                        "--show-build-details": "bool",
+                        "--show-deployment": "bool",
+                        "--show-image-basis": "bool",
+                        "--show-package-vulnerability": "bool"
+                      }
+                    },
                     "list": {
                       "commands": {},
                       "flags": {
                         "--filter": "value",
                         "--include-tags": "bool",
                         "--limit": "value",
+                        "--occurrence-filter": "value",
                         "--page-size": "value",
+                        "--show-occurrences-from": "value",
                         "--sort-by": "value"
                       }
                     }
@@ -31698,6 +32815,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-cdn": "bool",
                     "--gcs-bucket-name": "dynamic",
                     "--max-ttl": "value",
+                    "--negative-caching": "bool",
+                    "--negative-caching-policy": "value",
                     "--signed-url-cache-max-age": "value"
                   }
                 },
@@ -31741,10 +32860,13 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-cdn": "bool",
                     "--gcs-bucket-name": "dynamic",
                     "--max-ttl": "value",
+                    "--negative-caching": "bool",
+                    "--negative-caching-policy": "value",
                     "--no-client-ttl": "bool",
                     "--no-custom-response-headers": "bool",
                     "--no-default-ttl": "bool",
                     "--no-max-ttl": "bool",
+                    "--no-negative-caching-policies": "bool",
                     "--signed-url-cache-max-age": "value"
                   }
                 }
@@ -31829,6 +32951,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--logging-sample-rate": "value",
                     "--max-ttl": "value",
+                    "--negative-caching": "bool",
+                    "--negative-caching-policy": "value",
                     "--network": "value",
                     "--port-name": "value",
                     "--protocol": "value",
@@ -31962,12 +33086,15 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--iap": "value",
                     "--logging-sample-rate": "value",
                     "--max-ttl": "value",
+                    "--negative-caching": "bool",
+                    "--negative-caching-policy": "value",
                     "--no-client-ttl": "bool",
                     "--no-custom-request-headers": "bool",
                     "--no-custom-response-headers": "bool",
                     "--no-default-ttl": "bool",
                     "--no-health-checks": "bool",
                     "--no-max-ttl": "bool",
+                    "--no-negative-caching-policies": "bool",
                     "--port-name": "value",
                     "--protocol": "value",
                     "--region": "dynamic",
@@ -36757,6 +37884,22 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--labels": "value"
                   }
                 },
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--chain-name": "value",
+                    "--csek-key-file": "value",
+                    "--description": "value",
+                    "--guest-flush": "bool",
+                    "--labels": "value",
+                    "--source-disk": "dynamic",
+                    "--source-disk-key-file": "value",
+                    "--source-disk-region": "dynamic",
+                    "--source-disk-zone": "dynamic",
+                    "--storage-location": "value"
+                  }
+                },
                 "delete": {
                   "commands": {},
                   "flags": {}
@@ -38418,6 +39561,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--private-cluster": "bool",
                     "--region": "value",
                     "--release-channel": [
+                      "None",
                       "rapid",
                       "regular",
                       "stable"
@@ -39384,6 +40528,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--async": "bool",
                     "--edition": [
                       "basic",
+                      "developer",
                       "enterprise"
                     ],
                     "--enable_stackdriver_logging": "bool",
@@ -46584,8 +47729,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--model": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--text-instances": "value"
               }
@@ -46675,6 +47830,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "premium-1",
                           "standard-1"
                         ],
+                        "--service-account": "value",
                         "--staging-bucket": "value",
                         "--stream-logs": "bool",
                         "--tpu-tf-version": "value",
@@ -46740,8 +47896,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--member": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--role": "dynamic"
                   }
@@ -46762,8 +47928,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -46772,8 +47948,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -46785,8 +47971,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--sort-by": "value"
                   }
@@ -46799,8 +47995,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--sort-by": "value",
                     "--uri": "bool"
@@ -46812,8 +48018,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--member": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--role": "value"
                   }
@@ -46823,8 +48039,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -46835,8 +48061,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--description": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--remove-labels": "value",
                     "--update-labels": "value"
@@ -46852,8 +48088,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -46862,8 +48108,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -46875,8 +48131,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--sort-by": "value",
                     "--uri": "bool"
@@ -46887,8 +48153,18 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 }
@@ -46903,8 +48179,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--model": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--signature-name": "value",
                 "--text-instances": "value"
@@ -46947,8 +48233,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--python-version": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--runtime-version": "value",
                     "--service-account": "value",
@@ -46961,8 +48257,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--model": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -46972,8 +48278,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--model": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -46986,8 +48302,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--sort-by": "value",
                     "--uri": "bool"
@@ -46999,8 +48325,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--model": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ]
                   }
                 },
@@ -47013,8 +48349,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--model": "value",
                     "--region": [
                       "asia-east1",
+                      "asia-northeast1",
+                      "asia-southeast1",
+                      "australia-southeast1",
+                      "europe-west1",
+                      "europe-west2",
+                      "europe-west3",
                       "europe-west4",
-                      "us-central1"
+                      "northamerica-northeast1",
+                      "us-central1",
+                      "us-east1",
+                      "us-east4",
+                      "us-west1"
                     ],
                     "--remove-labels": "value",
                     "--update-labels": "value"
@@ -51890,6 +53236,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--workflow": "value"
                   }
                 },
+                "describe-last": {
+                  "commands": {},
+                  "flags": {}
+                },
                 "list": {
                   "commands": {},
                   "flags": {
@@ -51907,6 +53257,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--location": "value",
                     "--workflow": "value"
                   }
+                },
+                "wait-last": {
+                  "commands": {},
+                  "flags": {}
                 }
               },
               "flags": {}
@@ -51920,6 +53274,13 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--page-size": "value",
                 "--sort-by": "value",
                 "--uri": "bool"
+              }
+            },
+            "run": {
+              "commands": {},
+              "flags": {
+                "--data": "value",
+                "--location": "value"
               }
             }
           },
@@ -52346,6 +53707,39 @@ STATIC_COMPLETION_CLI_TREE = {
     },
     "cheat-sheet": {
       "commands": {},
+      "flags": {}
+    },
+    "cloud-shell": {
+      "commands": {
+        "get-mount-command": {
+          "commands": {},
+          "flags": {
+            "--force-key-file-overwrite": "bool",
+            "--ssh-key-file": "bool"
+          }
+        },
+        "scp": {
+          "commands": {},
+          "flags": {
+            "--dry-run": "bool",
+            "--force-key-file-overwrite": "bool",
+            "--recurse": "bool",
+            "--scp-flag": "value",
+            "--ssh-key-file": "bool"
+          }
+        },
+        "ssh": {
+          "commands": {},
+          "flags": {
+            "--authorize-session": "bool",
+            "--command": "value",
+            "--dry-run": "bool",
+            "--force-key-file-overwrite": "bool",
+            "--ssh-flag": "value",
+            "--ssh-key-file": "bool"
+          }
+        }
+      },
       "flags": {}
     },
     "components": {
@@ -58824,6 +60218,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--preemptible": "bool",
                 "--region": "value",
                 "--release-channel": [
+                  "None",
                   "rapid",
                   "regular",
                   "stable"
@@ -61850,6 +63245,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--results-history-name": "value",
                     "--sort-by": "value",
                     "--test": "value",
+                    "--test-special-entitlements": "bool",
                     "--timeout": "value",
                     "--type": [
                       "game-loop",
@@ -64820,6 +66216,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "premium-1",
                       "standard-1"
                     ],
+                    "--service-account": "value",
                     "--staging-bucket": "value",
                     "--stream-logs": "bool",
                     "--use-chief-in-tf-config": "value",
@@ -64884,8 +66281,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--member": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--role": "dynamic"
               }
@@ -64905,8 +66312,18 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ]
               }
             },
@@ -64915,8 +66332,18 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ]
               }
             },
@@ -64928,8 +66355,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--page-size": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--sort-by": "value"
               }
@@ -64942,8 +66379,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--page-size": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--sort-by": "value",
                 "--uri": "bool"
@@ -64955,8 +66402,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--member": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--role": "value"
               }
@@ -64966,8 +66423,18 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ]
               }
             },
@@ -64978,8 +66445,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--description": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--remove-labels": "value",
                 "--update-labels": "value"
@@ -64995,8 +66472,18 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ]
               }
             },
@@ -65005,8 +66492,18 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ]
               }
             },
@@ -65018,8 +66515,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--page-size": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--sort-by": "value",
                 "--uri": "bool"
@@ -65030,8 +66537,18 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ]
               }
             }
@@ -65046,8 +66563,18 @@ STATIC_COMPLETION_CLI_TREE = {
             "--model": "value",
             "--region": [
               "asia-east1",
+              "asia-northeast1",
+              "asia-southeast1",
+              "australia-southeast1",
+              "europe-west1",
+              "europe-west2",
+              "europe-west3",
               "europe-west4",
-              "us-central1"
+              "northamerica-northeast1",
+              "us-central1",
+              "us-east1",
+              "us-east4",
+              "us-west1"
             ],
             "--signature-name": "value",
             "--text-instances": "value"
@@ -65074,8 +66601,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--python-version": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--runtime-version": "value",
                 "--staging-bucket": "value"
@@ -65087,8 +66624,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--model": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ]
               }
             },
@@ -65098,8 +66645,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--model": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ]
               }
             },
@@ -65112,8 +66669,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--page-size": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--sort-by": "value",
                 "--uri": "bool"
@@ -65125,8 +66692,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--model": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ]
               }
             },
@@ -65139,8 +66716,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--model": "value",
                 "--region": [
                   "asia-east1",
+                  "asia-northeast1",
+                  "asia-southeast1",
+                  "australia-southeast1",
+                  "europe-west1",
+                  "europe-west2",
+                  "europe-west3",
                   "europe-west4",
-                  "us-central1"
+                  "northamerica-northeast1",
+                  "us-central1",
+                  "us-east1",
+                  "us-east4",
+                  "us-west1"
                 ],
                 "--remove-labels": "value",
                 "--update-labels": "value"
@@ -68019,6 +69606,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "POSTGRES_10",
                   "POSTGRES_11",
                   "POSTGRES_12",
+                  "POSTGRES_13",
                   "POSTGRES_9_6",
                   "SQLSERVER_2017_ENTERPRISE",
                   "SQLSERVER_2017_EXPRESS",
@@ -68108,6 +69696,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "POSTGRES_10",
                   "POSTGRES_11",
                   "POSTGRES_12",
+                  "POSTGRES_13",
                   "POSTGRES_9_6",
                   "SQLSERVER_2017_ENTERPRISE",
                   "SQLSERVER_2017_EXPRESS",

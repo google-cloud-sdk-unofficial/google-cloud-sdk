@@ -211,7 +211,7 @@ class List(base.ListCommand):
       raise c_exceptions.InvalidArgumentException(
           '--database or --backup',
           'Must specify either --database or --backup. To search backups for a '
-          'specifc database, use the --database flag with --type=BACKUP')
+          'specific database, use the --database flag with --type=BACKUP')
 
     # Checks that the user did not specify the backup flag with the type filter
     # set to a database operation type.
@@ -221,6 +221,18 @@ class List(base.ListCommand):
           'The backup flag cannot be used with the type flag set to a '
           'database operation type.'
       )
+
+    if args.type == 'INSTANCE':
+      if args.IsSpecified('database'):
+        raise c_exceptions.InvalidArgumentException(
+            '--database or --type',
+            'The `--database` flag cannot be used with `--type=INSTANCE`.'
+        )
+      if args.IsSpecified('backup'):
+        raise c_exceptions.InvalidArgumentException(
+            '--backup or --type',
+            'The `--backup` flag cannot be used with `--type=INSTANCE`.'
+        )
 
     if args.type == 'BACKUP':
       if args.database:

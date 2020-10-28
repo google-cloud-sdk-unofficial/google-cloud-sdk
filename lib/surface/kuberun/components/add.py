@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import flags
 from googlecloudsdk.command_lib.kuberun import kuberun_command
-from googlecloudsdk.core import log
 
 _DETAILED_HELP = {
     'EXAMPLES':
@@ -48,7 +47,7 @@ def _TypeFlag():
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Add(kuberun_command.KubeRunCommandWithOutput, base.CreateCommand):
+class Add(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
   """Create a new Component."""
 
   detailed_help = _DETAILED_HELP
@@ -64,13 +63,3 @@ class Add(kuberun_command.KubeRunCommandWithOutput, base.CreateCommand):
 
   def BuildKubeRunArgs(self, args):
     return [args.component] + super(Add, self).BuildKubeRunArgs(args)
-
-  def FormatOutput(self, out, args):
-    # TODO(b/169186627): handle this as JSON
-    if not out:
-      return out
-    return out + '\n'
-
-  # TODO(b/169186627): remove this workaround
-  def Display(self, args, output):
-    log.out.write(output)

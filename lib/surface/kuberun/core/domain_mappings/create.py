@@ -63,7 +63,10 @@ class Create(kuberun_command.KubeRunCommandWithOutput):
 
   def FormatOutput(self, out, args):
     if out:
-      return domainmapping.DomainMapping(json.loads(out)).records
+      mapping = domainmapping.DomainMapping(json.loads(out))
+      for r in mapping.records:
+        r.name = r.name or mapping.routeName
+      return mapping.records
     else:
       raise exceptions.Error('Could not map domain [{}] to service [{}]'.format(
           args.domain, args.service))
