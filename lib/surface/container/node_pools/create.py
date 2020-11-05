@@ -243,7 +243,7 @@ class CreateBeta(Create):
   def Args(parser):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser)
-    flags.AddLocalSSDsBetaFlags(parser)
+    flags.AddLocalSSDsBetaFlags(parser, for_node_pool=True)
     flags.AddBootDiskKmsKeyFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, for_create=True)
@@ -273,6 +273,7 @@ class CreateBeta(Create):
     ops.node_locations = args.node_locations
     ops.system_config_from_file = args.system_config_from_file
     ops.enable_gcfs = args.enable_gcfs
+    ops.ephemeral_storage = args.ephemeral_storage
     return ops
 
 
@@ -285,6 +286,7 @@ class CreateAlpha(Create):
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
     ops.local_ssd_volume_configs = args.local_ssd_volumes
+    ops.ephemeral_storage = args.ephemeral_storage
     ops.boot_disk_kms_key = args.boot_disk_kms_key
     ops.sandbox = args.sandbox
     ops.linux_sysctls = args.linux_sysctls

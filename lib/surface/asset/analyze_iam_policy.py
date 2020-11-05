@@ -136,7 +136,6 @@ class AnalyzeIamPolicyBeta(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class AnalyzeIamPolicyGA(AnalyzeIamPolicyBeta):
   """Analyzes IAM policies that match a request."""
 

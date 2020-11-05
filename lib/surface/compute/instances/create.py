@@ -457,6 +457,11 @@ class Create(base.CreateCommand):
     resource_parser = holder.resources
 
     instance_refs = instance_utils.GetInstanceRefs(args, compute_client, holder)
+    if len(instance_refs) > 1 and args.IsSpecified('address'):
+      raise exceptions.BadArgumentException(
+          '--address',
+          'Multiple instances were specified for creation. --address flag can '
+          'be used when creating a single instance.')
 
     requests = self._CreateRequests(args, instance_refs,
                                     instance_refs[0].project,

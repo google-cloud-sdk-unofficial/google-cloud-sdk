@@ -115,7 +115,6 @@ def _Run(args):
 
   # If the user has a config file, make sure that they're using a custom
   # runtime.
-  # TODO(b/36050339): If --config is given, should it still be modified?
   if config and args.custom and config.GetEffectiveRuntime() != 'custom':
     alter = console_io.PromptContinue(
         default=False,

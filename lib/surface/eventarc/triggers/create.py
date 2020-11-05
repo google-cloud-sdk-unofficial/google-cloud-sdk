@@ -47,7 +47,7 @@ class Create(base.CreateCommand):
   def Args(parser):
     flags.AddTriggerResourceArg(parser, 'The trigger to create.', required=True)
     flags.AddMatchingCriteriaArg(parser, required=True)
-    flags.AddServiceAccountResourceArg(parser)
+    flags.AddServiceAccountArg(parser)
     flags.AddDestinationRunServiceArg(parser, required=True)
     flags.AddDestinationRunPathArg(parser)
     flags.AddDestinationRunRegionArg(parser)
@@ -57,9 +57,9 @@ class Create(base.CreateCommand):
     """Run the create command."""
     client = triggers.TriggersClient()
     trigger_ref = args.CONCEPTS.trigger.Parse()
-    service_account_ref = args.CONCEPTS.service_account.Parse()
     operation = client.Create(trigger_ref, args.matching_criteria,
-                              service_account_ref, args.destination_run_service,
+                              args.service_account,
+                              args.destination_run_service,
                               args.destination_run_path,
                               args.destination_run_region)
     self._event_type = args.matching_criteria['type']

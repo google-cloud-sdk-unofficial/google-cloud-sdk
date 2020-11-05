@@ -40,7 +40,7 @@ class Startup(base.TopicCommand):
       * python3
 
   Python 3 is preferred over Python 2. Note that `gcloud` requires Python
-  version 2.7.x or 3.5 and up.
+  version 2.7.x or 3.5-3.8.
 
   Other Python tools shipped in the Cloud SDK do not support Python 3 and
   require Python 2.7.x, including:
@@ -59,12 +59,12 @@ class Startup(base.TopicCommand):
     # Use a python you have installed in a special location
     $ export CLOUDSDK_PYTHON=/usr/local/my-custom-python-install/python
 
-  gsutil now supports Python 3.5 and up in addition to Python 2.7.x. To use a
+  gsutil now supports Python 3.5-3.8 in addition to Python 2.7.x. To use a
   different interpreter for gsutil than for the other Python tools, you can set
   the desired interpreter by setting the CLOUDSDK_GSUTIL_PYTHON environment
   variable.
 
-  bq now supports Python 3.5 and up in addition to Python 2.7.x. To use a
+  bq now supports Python 3.5-3.8 in addition to Python 2.7.x. To use a
   different interpreter for bq than for the other Python tools, you can set the
   desired interpreter by setting the CLOUDSDK_BQ_PYTHON environment variable.
 

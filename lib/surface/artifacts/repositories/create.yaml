@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: |
@@ -31,6 +31,19 @@
       api_field: repository.format
       help_text: |
         Format of the repository.
+      choices:  # Enum is mapped to keep FORMAT_UNSPECIFIED invisible from users.
+      - arg_value: DOCKER
+        enum_value: DOCKER
+        help_text: Docker image format.
+      - arg_value: MAVEN
+        enum_value: MAVEN
+        help_text: Maven package format.
+      - arg_value: NPM
+        enum_value: NPM
+        help_text: NPM package format.
+      - arg_value: APT
+        enum_value: APT
+        help_text: APT package format.
     - arg_name: description
       api_field: repository.description
       help_text: |

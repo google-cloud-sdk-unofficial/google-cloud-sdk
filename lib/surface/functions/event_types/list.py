@@ -29,8 +29,7 @@ class List(base.Command):
   Function.
 
   * For an event type, `EVENT_TYPE_DEFAULT` marks whether the given event type
-    is the default for its provider (in which case the `--event-type` flag may
-    be omitted).
+    is the default (in which case the `--trigger-event` flag may be omitted).
   * For a resource, `RESOURCE_OPTIONAL` marks whether the resource has a
     corresponding default value (in which case the `--trigger-resource` flag
     may be omitted).

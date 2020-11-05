@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List the Cloud Spanner databases contained within the given instance."""
 
@@ -52,3 +53,25 @@ class List(base.ListCommand):
   def Run(self, args):
     """This is what gets called when the user runs this command."""
     return databases.List(args.CONCEPTS.instance.Parse())
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+
+  """
+  List the Cloud Spanner databases contained within the given instance with the
+  alpha fields.
+  """
+
+  @staticmethod
+  def Args(parser):
+    """See base class."""
+    resource_args.AddInstanceResourceArg(
+        parser, 'in which to list databases', positional=False)
+    parser.display_info.AddFormat("""
+          table(
+            name.basename(),
+            state,
+            encryptionConfig.kmsKeyName
+          )
+        """)

@@ -12,7 +12,6 @@
     collection: cloudiot.projects.locations.registries.devices
     static_fields:
       fieldMask: blocked,name,gatewayConfig
-    # TODO (b/124063772): Remove this mapping fix once apitools base fix is applied
     modify_request_hooks:
     - googlecloudsdk.command_lib.iot.util:RegistriesDevicesListRequestHook
 

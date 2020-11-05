@@ -17,9 +17,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import json
+from googlecloudsdk.api_lib.kuberun import component
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import kuberun_command
-from googlecloudsdk.core import log
 
 _DETAILED_HELP = {
     'EXAMPLES':
@@ -41,17 +42,15 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
   @classmethod
   def Args(cls, parser):
     super(List, cls).Args(parser)
+    base.ListCommand._Flags(parser)
     base.URI_FLAG.RemoveFromParser(parser)
+    columns = ['name', 'devkit', 'type', 'ce_input', 'vars']
+    parser.display_info.AddFormat('table({})'.format(','.join(columns)))
 
   def Command(self):
     return ['components', 'list']
 
   def FormatOutput(self, out, args):
-    # TODO(b/169186627): handle this as JSON
-    if not out:
-      return out
-    return out + '\n'
-
-  # TODO(b/169186627): remove this workaround
-  def Display(self, args, output):
-    log.out.write(output)
+    if out:
+      return [component.Component.FromJSON(data) for data in json.loads(out)]
+    return []

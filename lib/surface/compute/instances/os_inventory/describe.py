@@ -149,11 +149,11 @@ class Describe(base.DescribeCommand):
     except calliope_exceptions.ToolException as e:
       if ('The resource \'guestInventory/\' of type \'Guest Attribute\' was not'
           ' found.') in six.text_type(e):
-        problems = [{
-            '',
-            'OS inventory data was not found. Make sure the OS Config agent '
-            'is running on this instance.'
-        }]
+        problems = [
+            (404,
+             'OS inventory data was not found. Make sure the OS Config agent '
+             'is running on this instance.')
+        ]
         utils.RaiseException(
             problems,
             exceptions.OsInventoryNotFoundException,
