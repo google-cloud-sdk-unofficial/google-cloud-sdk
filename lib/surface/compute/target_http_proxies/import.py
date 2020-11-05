@@ -81,6 +81,21 @@ def _SendInsertRequest(client, target_http_proxy_ref, target_http_proxy):
           targetHttpProxy=target_http_proxy))
 
 
+def _SendPatchRequest(client, target_http_proxy_ref, target_http_proxy):
+  """Make target HTTP proxy patch request."""
+  # TODO(b/129339772) Fix inconsistent behavior for L7 resource updates.
+  if target_http_proxy_ref.Collection() == 'compute.regionTargetHttpProxies':
+    console_message = ('Target HTTP Proxy [{0}] cannot be updated'.format(
+        target_http_proxy_ref.Name()))
+    raise NotImplementedError(console_message)
+
+  return client.apitools_client.targetHttpProxies.Patch(
+      client.messages.ComputeTargetHttpProxiesPatchRequest(
+          project=target_http_proxy_ref.project,
+          targetHttpProxy=target_http_proxy_ref.Name(),
+          targetHttpProxyResource=target_http_proxy))
+
+
 def _Run(args, holder, target_http_proxy_arg, release_track):
   """Issues requests necessary to import target HTTP proxies."""
   client = holder.client
@@ -103,16 +118,45 @@ def _Run(args, holder, target_http_proxy_arg, release_track):
 
   # Get existing target HTTP proxy.
   try:
-    target_http_proxies_utils.SendGetRequest(client, target_http_proxy_ref)
+    target_http_proxy_old = target_http_proxies_utils.SendGetRequest(
+        client, target_http_proxy_ref)
   except apitools_exceptions.HttpError as error:
     if error.status_code != 404:
       raise error
     # Target HTTP proxy does not exist, create a new one.
     return _SendInsertRequest(client, target_http_proxy_ref, target_http_proxy)
 
-  console_message = ('Target HTTP Proxy [{0}] cannot be updated'.format(
-      target_http_proxy_ref.Name()))
-  raise NotImplementedError(console_message)
+  if target_http_proxy_old == target_http_proxy:
+    return
+
+  console_io.PromptContinue(
+      message=('Target Http Proxy [{0}] will be overwritten.').format(
+          target_http_proxy_ref.Name()),
+      cancel_on_no=True)
+
+  # Populate id and fingerprint fields. These two fields are manually
+  # removed from the schema files.
+  target_http_proxy.id = target_http_proxy_old.id
+  target_http_proxy.fingerprint = target_http_proxy_old.fingerprint
+
+  # Unspecified fields are assumed to be cleared.
+  cleared_fields = []
+  if target_http_proxy.description is None:
+    cleared_fields.append('description')
+
+  # The REST API will reject requests without the UrlMap. However, we want to
+  # avoid doing partial validations in the client and rely on server side
+  # behavior.
+  if target_http_proxy.urlMap is None:
+    cleared_fields.append('urlMap')
+  if release_track != base.ReleaseTrack.GA:
+    if target_http_proxy.proxyBind is None:
+      cleared_fields.append('proxyBind')
+
+  with client.apitools_client.IncludeFields(cleared_fields):
+    return _SendPatchRequest(client, target_http_proxy_ref, target_http_proxy)
+
+  return _SendPatchRequest(client, target_http_proxy_ref, target_http_proxy)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,

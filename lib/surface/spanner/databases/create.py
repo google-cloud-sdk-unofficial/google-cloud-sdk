@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a Cloud Spanner database."""
 
@@ -78,6 +79,35 @@ class Create(base.CreateCommand):
     instance_ref = database_ref.Parent()
     op = databases.Create(instance_ref, args.database,
                           flags.SplitDdlIntoStatements(args))
+    if args.async_:
+      return op
+    return database_operations.Await(op, 'Creating database')
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaCreate(Create):
+  """Create a Cloud Spanner database with ALPHA features."""
+  __doc__ = Create.__doc__
+
+  @staticmethod
+  def Args(parser):
+    Create.Args(parser)
+    resource_args.AddKmsKeyResourceArg(parser, 'to create')
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+    database_ref = args.CONCEPTS.database.Parse()
+    instance_ref = database_ref.Parent()
+    kms_key = resource_args.GetAndValidateKmsKeyName(args)
+    op = databases.Create(instance_ref, args.database,
+                          flags.SplitDdlIntoStatements(args), kms_key)
     if args.async_:
       return op
     return database_operations.Await(op, 'Creating database')

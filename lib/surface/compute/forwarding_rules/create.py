@@ -35,14 +35,15 @@ from six.moves import range  # pylint: disable=redefined-builtin
 
 def _Args(parser, support_global_access, support_l7_internal_load_balancing,
           support_target_grpc_proxy, support_psc_google_apis,
-          support_all_protocol):
+          support_all_protocol, support_target_service_attachment):
   """Add the flags to create a forwarding rule."""
 
   flags.AddUpdateArgs(
       parser,
       include_l7_internal_load_balancing=support_l7_internal_load_balancing,
       include_target_grpc_proxy=support_target_grpc_proxy,
-      include_psc_google_apis=support_psc_google_apis)
+      include_psc_google_apis=support_psc_google_apis,
+      include_target_service_attachment=support_target_service_attachment)
   flags.AddIPProtocols(parser, support_all_protocol)
   flags.AddDescription(parser)
   flags.AddPortsAndPortRange(parser)
@@ -82,23 +83,27 @@ class CreateHelper(object):
 
   def __init__(self, holder, support_global_access,
                support_l7_internal_load_balancing, support_target_grpc_proxy,
-               support_psc_google_apis, support_all_protocol):
+               support_psc_google_apis, support_all_protocol,
+               support_target_service_attachment):
     self._holder = holder
     self._support_global_access = support_global_access
     self._support_l7_internal_load_balancing = support_l7_internal_load_balancing
     self._support_target_grpc_proxy = support_target_grpc_proxy
     self._support_psc_google_apis = support_psc_google_apis
     self._support_all_protocol = support_all_protocol
+    self._support_target_service_attachment = support_target_service_attachment
 
   @classmethod
   def Args(cls, parser, support_global_access,
            support_l7_internal_load_balancing, support_target_grpc_proxy,
-           support_psc_google_apis, support_all_protocol):
+           support_psc_google_apis, support_all_protocol,
+           support_target_service_attachment):
     cls.FORWARDING_RULE_ARG = _Args(parser, support_global_access,
                                     support_l7_internal_load_balancing,
                                     support_target_grpc_proxy,
                                     support_psc_google_apis,
-                                    support_all_protocol)
+                                    support_all_protocol,
+                                    support_target_service_attachment)
 
   def ConstructProtocol(self, messages, args):
     if args.ip_protocol:
@@ -140,7 +145,8 @@ class CreateHelper(object):
 
     ports_all_specified, range_list = _ExtractPortsAndAll(args.ports)
     port_range = _ResolvePortRange(args.port_range, range_list)
-    load_balancing_scheme = _GetLoadBalancingScheme(args, client.messages)
+    load_balancing_scheme = _GetLoadBalancingScheme(args, client.messages,
+                                                    is_psc_google_apis)
 
     if ports_all_specified and not is_psc_google_apis:
       raise exceptions.ToolException(
@@ -160,14 +166,11 @@ class CreateHelper(object):
       if port_range:
         raise exceptions.ToolException(
             '[--ports] is not allowed for PSC-GoogleApis forwarding rules.')
-      if (load_balancing_scheme != client.messages
-          .ForwardingRule.LoadBalancingSchemeValueValuesEnum.EXTERNAL):
+      if load_balancing_scheme:
         raise exceptions.InvalidArgumentException(
             '--load-balancing-scheme',
             'The --load-balancing-scheme flag is not allowed for PSC-GoogleApis'
             ' forwarding rules.')
-      else:
-        load_balancing_scheme = None
 
       if args.target_google_apis_bundle in flags.PSC_GOOGLE_APIS_BUNDLES:
         target_as_str = args.target_google_apis_bundle
@@ -219,13 +222,26 @@ class CreateHelper(object):
   def _CreateRegionalRequests(self, client, resources, args,
                               forwarding_rule_ref):
     """Create a regionally scoped request."""
+    is_psc_ilb = False
+    if hasattr(args,
+               'target_service_attachment') and args.target_service_attachment:
+      if not self._support_target_service_attachment:
+        raise exceptions.InvalidArgumentException(
+            '--target-service-attachment',
+            'Private Service Connect for ILB (the target-service-attachment '
+            'option) is not supported in this API version.')
+      else:
+        is_psc_ilb = True
+
     target_ref, region_ref = utils.GetRegionalTarget(
         client,
         resources,
         args,
         forwarding_rule_ref,
         include_l7_internal_load_balancing=self
-        ._support_l7_internal_load_balancing)
+        ._support_l7_internal_load_balancing,
+        include_target_service_attachment=self
+        ._support_target_service_attachment)
     if not args.region and region_ref:
       args.region = region_ref
     protocol = self.ConstructProtocol(client.messages, args)
@@ -233,6 +249,13 @@ class CreateHelper(object):
     address = self._ResolveAddress(resources, args,
                                    compute_flags.compute_scope.ScopeEnum.REGION,
                                    forwarding_rule_ref)
+    load_balancing_scheme = _GetLoadBalancingScheme(args, client.messages,
+                                                    is_psc_ilb)
+    if is_psc_ilb and load_balancing_scheme:
+      raise exceptions.InvalidArgumentException(
+          '--load-balancing-scheme',
+          'The --load-balancing-scheme flag is not allowed for PSC-ILB '
+          'forwarding rules.')
 
     forwarding_rule = client.messages.ForwardingRule(
         description=args.description,
@@ -240,10 +263,16 @@ class CreateHelper(object):
         IPAddress=address,
         IPProtocol=protocol,
         networkTier=_ConstructNetworkTier(client.messages, args),
-        loadBalancingScheme=_GetLoadBalancingScheme(args, client.messages))
+        loadBalancingScheme=load_balancing_scheme)
 
     ports_all_specified, range_list = _ExtractPortsAndAll(args.ports)
-    if (target_ref.Collection() == 'compute.regionBackendServices') or (
+    if target_ref.Collection() == 'compute.serviceAttachments':
+      forwarding_rule.target = target_ref.SelfLink()
+      if args.network is not None:
+        forwarding_rule.network = flags.NetworkArg(
+            self._support_l7_internal_load_balancing).ResolveAsResource(
+                args, resources).SelfLink()
+    elif (target_ref.Collection() == 'compute.regionBackendServices') or (
         target_ref.Collection() == 'compute.targetInstances' and
         args.load_balancing_scheme == 'INTERNAL'):
       forwarding_rule.portRange = (
@@ -356,13 +385,15 @@ class Create(base.CreateCommand):
   _support_target_grpc_proxy = True
   _support_psc_google_apis = False
   _support_all_protocol = False
+  _support_target_service_attachment = False
 
   @classmethod
   def Args(cls, parser):
     CreateHelper.Args(parser, cls._support_global_access,
                       cls._support_l7_internal_load_balancing,
                       cls._support_target_grpc_proxy,
-                      cls._support_psc_google_apis, cls._support_all_protocol)
+                      cls._support_psc_google_apis, cls._support_all_protocol,
+                      cls._support_target_service_attachment)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -370,7 +401,8 @@ class Create(base.CreateCommand):
                         self._support_l7_internal_load_balancing,
                         self._support_target_grpc_proxy,
                         self._support_psc_google_apis,
-                        self._support_all_protocol).Run(args)
+                        self._support_all_protocol,
+                        self._support_target_service_attachment).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -381,6 +413,7 @@ class CreateBeta(Create):
   _support_target_grpc_proxy = True
   _support_psc_google_apis = False
   _support_all_protocol = False
+  _support_target_service_attachment = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -391,6 +424,7 @@ class CreateAlpha(CreateBeta):
   _support_target_grpc_proxy = True
   _support_psc_google_apis = True
   _support_all_protocol = True
+  _support_target_service_attachment = True
 
 
 Create.detailed_help = {
@@ -461,8 +495,11 @@ def _GetPortList(range_list):
   return sorted(ports)
 
 
-def _GetLoadBalancingScheme(args, messages):
+def _GetLoadBalancingScheme(args, messages, is_psc):
   """Get load balancing scheme."""
+  if not args.load_balancing_scheme:
+    # The default is EXTERNAL for non-PSC forwarding rules.
+    return None if is_psc else messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum.EXTERNAL
   if args.load_balancing_scheme == 'INTERNAL':
     return messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum.INTERNAL
   elif args.load_balancing_scheme == 'EXTERNAL':

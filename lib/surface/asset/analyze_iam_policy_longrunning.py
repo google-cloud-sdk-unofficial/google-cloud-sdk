@@ -111,7 +111,6 @@ def AddBigQueryWriteDispositionArgs(parser):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class AnalyzeIamPolicyLongrunning(base.Command):
   """Analyzes IAM policies that match a request asynchronously and writes the analysis results to Google Cloud Storage or BigQuery destination."""
 

@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.kuberun import flags
 from googlecloudsdk.command_lib.kuberun import kuberun_command
 
 _DETAILED_HELP = {
@@ -30,12 +31,19 @@ _DETAILED_HELP = {
 }
 
 
+def _EnvironmentFlag():
+  return flags.StringFlag(
+      '--environment',
+      help='Name of the environment to which KubeRun will deploy.',
+      required=True)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Deploy(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
   """Deploy KubeRun application."""
 
   detailed_help = _DETAILED_HELP
-  flags = []
+  flags = [_EnvironmentFlag()]
 
   def Command(self):
     return ['deploy']

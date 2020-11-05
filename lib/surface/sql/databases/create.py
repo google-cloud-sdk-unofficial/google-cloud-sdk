@@ -77,7 +77,7 @@ class AddDatabase(base.Command):
         charset=args.charset,
         collation=args.collation)
 
-    # TODO(b/36052521): Move this API call logic per b/35386183.
+    # TODO(b/35386183): Move this API call logic.
 
     result_operation = sql_client.databases.Insert(new_database)
 
@@ -98,7 +98,7 @@ class AddDatabase(base.Command):
         log.Print('Database creation failed. Check if a database named {0} '
                   'already exists.'.format(args.database))
         # Must fail with non-zero exit code on API request failure.
-        # TODO(b/36051979): Refactor when b/35156765 is resolved.
+        # TODO(b/35156765): Refactor.
         raise
       result = new_database
       result.kind = None

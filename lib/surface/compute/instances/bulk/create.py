@@ -29,7 +29,6 @@ from googlecloudsdk.command_lib.compute import scope as compute_scopes
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 from googlecloudsdk.command_lib.compute.resource_policies import flags as maintenance_flags
 from googlecloudsdk.command_lib.compute.resource_policies import util as maintenance_util
-from googlecloudsdk.command_lib.compute.sole_tenancy import flags as sole_tenancy_flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
@@ -102,7 +101,6 @@ def _CommonArgs(parser,
   instances_flags.AddBulkCreateNetworkingArgs(parser)
 
   instances_flags.AddImageArgs(parser, enable_snapshots=True)
-  instances_flags.AddDeletionProtectionFlag(parser)
   instances_flags.AddShieldedInstanceConfigArgs(parser)
   instances_flags.AddDisplayDeviceArg(parser)
 
@@ -165,7 +163,7 @@ class CreateAlpha(base.Command):
         snapshot_csek=cls._support_source_snapshot_csek,
         image_csek=cls._support_image_csek)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
-        instances_flags.MakeSourceInstanceTemplateArg())
+        instances_flags.MakeBulkSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddPublicDnsArgs(parser, instance=True)
@@ -213,7 +211,8 @@ class CreateAlpha(base.Command):
         support_min_node_cpu=self._support_min_node_cpu,
         support_location_hint=self._support_location_hint)
     tags = instance_utils.GetTags(args, compute_client)
-    labels = instance_utils.GetLabels(args, compute_client)
+    labels = instance_utils.GetLabels(
+        args, compute_client, instance_properties=True)
     metadata = instance_utils.GetMetadata(args, compute_client, skip_defaults)
 
     network_interfaces = create_utils.GetBulkNetworkInterfaces(
@@ -262,26 +261,17 @@ class CreateAlpha(base.Command):
           support_boot_snapshot_uri=self._support_boot_snapshot_uri,
           support_image_csek=self._support_image_csek,
           support_create_disk_snapshots=self._support_create_disk_snapshots,
-          support_persistent_attached_disks=False)
+          support_persistent_attached_disks=False,
+          use_disk_type_uri=False)
 
-    machine_type_uri = None
-    if instance_utils.CheckSpecifiedMachineTypeArgs(args, skip_defaults):
-      machine_type_uri = instance_utils.CreateMachineTypeUri(
-          args=args,
-          compute_client=compute_client,
-          resource_parser=resource_parser,
-          project=project,
-          location=location,
-          scope=scope)
+    machine_type = 'n1-standard-1'
+    if args.IsSpecified('machine_type'):
+      machine_type = args.machine_type
 
     can_ip_forward = instance_utils.GetCanIpForward(args, skip_defaults)
-    guest_accelerators = create_utils.GetAccelerators(
+    guest_accelerators = create_utils.GetAcceleratorsForInstanceProperties(
         args=args,
-        compute_client=compute_client,
-        resource_parser=resource_parser,
-        project=project,
-        location=location,
-        scope=scope)
+        compute_client=compute_client)
 
     advanced_machine_features = None
     if (self._support_enable_nested_virtualization and
@@ -310,20 +300,18 @@ class CreateAlpha(base.Command):
     reservation_affinity = instance_utils.GetReservationAffinity(
         args, compute_client)
 
-    instance = compute_client.messages.Instance(
+    instance_properties = compute_client.messages.InstanceProperties(
         canIpForward=can_ip_forward,
-        deletionProtection=args.deletion_protection,
         description=args.description,
         disks=disks,
         guestAccelerators=guest_accelerators,
         labels=labels,
-        machineType=machine_type_uri,
+        machineType=machine_type,
         metadata=metadata,
         minCpuPlatform=args.min_cpu_platform,
         networkInterfaces=network_interfaces,
         serviceAccounts=service_accounts,
         scheduling=scheduling,
-        name='unused',
         tags=tags,
         resourcePolicies=parsed_resource_policies,
         shieldedInstanceConfig=shielded_instance_config,
@@ -332,21 +320,21 @@ class CreateAlpha(base.Command):
         advancedMachineFeatures=advanced_machine_features)
 
     if self._support_confidential_compute and confidential_instance_config:
-      instance.confidentialInstanceConfig = confidential_instance_config
+      instance_properties.confidentialInstanceConfig = confidential_instance_config
 
     if self._support_erase_vss and \
       args.IsSpecified('erase_windows_vss_signature'):
-      instance.eraseWindowsVssSignature = args.erase_windows_vss_signature
+      instance_properties.eraseWindowsVssSignature = args.erase_windows_vss_signature
 
     if self._support_post_key_revocation_action_type and args.IsSpecified(
         'post_key_revocation_action_type'):
-      instance.postKeyRevocationActionType = arg_utils.ChoiceToEnum(
+      instance_properties.postKeyRevocationActionType = arg_utils.ChoiceToEnum(
           args.post_key_revocation_action_type, compute_client.messages.Instance
           .PostKeyRevocationActionTypeValueValuesEnum)
 
     bulk_instance_resource = compute_client.messages.BulkInsertInstanceResource(
         count=instance_count,
-        instance=instance,
+        instanceProperties=instance_properties,
         minCount=instance_min_count,
         predefinedNames=instance_names,
         sourceInstanceTemplate=source_instance_template)

@@ -60,6 +60,7 @@ class List(base.ListCommand):
                         type=iam_util.GetIamAccountFormatValidator(),
                         help='A textual name to display for the account.')
     parser.display_info.AddFormat(iam_util.SERVICE_ACCOUNT_KEY_FORMAT)
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     client, messages = util.GetClientAndMessages()

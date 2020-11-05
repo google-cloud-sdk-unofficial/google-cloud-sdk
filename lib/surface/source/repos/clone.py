@@ -94,7 +94,7 @@ class CloneGA(base.Command):
       The path to the new git repository.
     """
     # Ensure that we're logged in.
-    c_store.Load()
+    c_store.Load(use_google_auth=True)
 
     res = sourcerepo.ParseRepo(args.src)
     source_handler = sourcerepo.Source()

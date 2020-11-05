@@ -78,6 +78,7 @@ def _CommonArgs(parser):
   parser.display_info.AddCacheUpdater(None)
 
   flags.AddIgnoreFileFlag(parser)
+  flags.AddConfigFlags(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -123,7 +124,6 @@ class Submit(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
-    flags.AddConfigFlags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -147,7 +147,7 @@ class Submit(base.CreateCommand):
         args.tag, args.no_cache, messages, args.substitutions, args.config,
         args.IsSpecified('source'), args.no_source, args.source,
         args.gcs_source_staging_dir, args.ignore_file, args.gcs_log_dir,
-        args.machine_type, args.disk_size, args.worker_pool)
+        args.machine_type, args.disk_size, args.worker_pool, args.pack)
 
     build_region = submit_util.DetermineBuildRegion(build_config, build_region)
 

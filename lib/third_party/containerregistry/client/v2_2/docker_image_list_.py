@@ -21,6 +21,7 @@ from __future__ import print_function
 import abc
 import json
 
+
 from containerregistry.client import docker_creds
 from containerregistry.client import docker_name
 from containerregistry.client.v2_2 import docker_digest
@@ -193,6 +194,7 @@ class Delegate(DockerImageList):
       image: a DockerImageList on which __enter__ has already been called.
     """
     self._image = image
+    super(Delegate, self).__init__()
 
   def manifest(self):
     """Override."""
@@ -235,6 +237,7 @@ class FromRegistry(DockerImageList):
     self._original_transport = transport
     self._accepted_mimes = accepted_mimes
     self._response = {}
+    super(FromRegistry, self).__init__()
 
   def _content(self,
                suffix,
@@ -258,6 +261,28 @@ class FromRegistry(DockerImageList):
     if cache:
       self._response[suffix] = content
     return content
+
+  def _tags(self):
+    # See //cloud/containers/registry/proto/v2/tags.proto
+    # for the full response structure.
+    return json.loads(self._content('tags/list').decode('utf8'))
+
+  def tags(self):
+    return self._tags().get('tags', [])
+
+  def manifests(self):
+    payload = self._tags()
+    if 'manifest' not in payload:
+      # Only GCR supports this schema.
+      return {}
+    return payload['manifest']
+
+  def children(self):
+    payload = self._tags()
+    if 'child' not in payload:
+      # Only GCR supports this schema.
+      return []
+    return payload['child']
 
   def images(self):
     """Returns a list of tuples whose elements are (name, platform, image).
@@ -371,6 +396,7 @@ class FromList(DockerImageList):
 
   def __init__(self, images):
     self._images = images
+    super(FromList, self).__init__()
 
   def manifest(self):
     list_body = {

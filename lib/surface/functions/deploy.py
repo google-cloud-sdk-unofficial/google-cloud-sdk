@@ -395,6 +395,9 @@ class Deploy(base.Command):
     # Add args for specifying environment variables
     env_vars_util.AddUpdateEnvVarsFlags(parser)
 
+    # Add flags for specifying build environment variables
+    env_vars_util.AddBuildEnvVarsFlags(parser)
+
     # Add args for specifying ignore files to upload source
     flags.AddIgnoreFileFlag(parser)
 
@@ -415,8 +418,6 @@ class DeployBeta(base.Command):
     """Register flags for this command."""
     Deploy.Args(parser)
     flags.AddBuildWorkerPoolMutexGroup(parser)
-    # Add flags for specifying build environment variables
-    env_vars_util.AddBuildEnvVarsFlags(parser)
 
   def Run(self, args):
     return _Run(args, track=self.ReleaseTrack(), enable_build_worker_pool=True)
@@ -431,8 +432,6 @@ class DeployAlpha(base.Command):
     """Register flags for this command."""
     Deploy.Args(parser)
     flags.AddBuildWorkerPoolMutexGroup(parser)
-    # Add flags for specifying build environment variables
-    env_vars_util.AddBuildEnvVarsFlags(parser)
 
   def Run(self, args):
     return _Run(args, track=self.ReleaseTrack(), enable_build_worker_pool=True)

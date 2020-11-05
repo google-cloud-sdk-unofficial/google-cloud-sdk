@@ -24,7 +24,8 @@ from googlecloudsdk.command_lib.artifacts import settings_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Maven(base.Command):
   """Print a snippet to add a Maven repository to the pom.xml file."""
 

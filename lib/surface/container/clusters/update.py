@@ -575,6 +575,7 @@ class UpdateBeta(Update):
     flags.AddMonitoringServiceFlag(group_logging_monitoring)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
+    flags.AddEnableWorkloadMonitoringEapFlag(group)
     flags.AddEnableMasterSignalsFlags(group)
     flags.AddMasterAuthorizedNetworksFlags(
         parser, enable_group_for_update=group)
@@ -597,8 +598,9 @@ class UpdateBeta(Update):
     flags.AddIstioConfigFlag(parser)
     flags.AddCloudRunConfigFlag(parser)
     flags.AddEnableIntraNodeVisibilityFlag(group)
-    flags.AddWorkloadIdentityFlags(group, use_identity_provider=True)
-    flags.AddWorkloadIdentityUpdateFlags(group)
+    flags.AddWorkloadIdentityFlags(
+        group, use_identity_provider=True, use_workload_certificates=True)
+    flags.AddWorkloadIdentityUpdateFlags(group, use_workload_certificates=True)
     flags.AddGkeOidcFlag(group)
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
@@ -624,6 +626,8 @@ class UpdateBeta(Update):
         args.clear_resource_usage_bigquery_dataset
     opts.enable_network_egress_metering = args.enable_network_egress_metering
     opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
+    opts.workload_identity_certificate_authority = args.workload_identity_certificate_authority
+    opts.disable_workload_identity_certificates = args.disable_workload_identity_certificates
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     flags.ValidateCloudRunConfigUpdateArgs(args.cloud_run_config,
                                            args.disable_addons)
@@ -670,6 +674,7 @@ class UpdateBeta(Update):
     opts.kubernetes_objects_changes_target = args.kubernetes_objects_changes_target
     opts.kubernetes_objects_snapshots_target = args.kubernetes_objects_snapshots_target
     opts.enable_gke_oidc = args.enable_gke_oidc
+    opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
 
     return opts
 
@@ -692,6 +697,7 @@ class UpdateAlpha(Update):
     flags.AddMonitoringServiceFlag(group_logging_monitoring)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
+    flags.AddEnableWorkloadMonitoringEapFlag(group)
     flags.AddEnableMasterSignalsFlags(group)
     flags.AddMasterAuthorizedNetworksFlags(
         parser, enable_group_for_update=group)
@@ -793,5 +799,6 @@ class UpdateAlpha(Update):
     opts.kubernetes_objects_changes_target = args.kubernetes_objects_changes_target
     opts.kubernetes_objects_snapshots_target = args.kubernetes_objects_snapshots_target
     opts.enable_gke_oidc = args.enable_gke_oidc
+    opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
 
     return opts

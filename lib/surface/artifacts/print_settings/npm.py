@@ -24,7 +24,8 @@ from googlecloudsdk.command_lib.artifacts import settings_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Npm(base.Command):
   """Print credential settings to add to the .npmrc file.
 

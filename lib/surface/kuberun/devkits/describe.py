@@ -18,9 +18,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
+from googlecloudsdk.api_lib.kuberun import devkit
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.kuberun import devkit_printer
 from googlecloudsdk.command_lib.kuberun import kuberun_command
-from googlecloudsdk.core import log
+from googlecloudsdk.core.resource import resource_printer
 
 _DETAILED_HELP = {
     'EXAMPLES':
@@ -44,6 +47,10 @@ class Describe(kuberun_command.KubeRunCommandWithOutput, base.DescribeCommand):
     super(Describe, cls).Args(parser)
     parser.add_argument(
         'devkit', help='The Development Kit to show details for.')
+    resource_printer.RegisterFormatter(
+        devkit_printer.DEVKIT_PRINTER_FORMAT,
+        devkit_printer.DevKitPrinter, hidden=True)
+    parser.display_info.AddFormat(devkit_printer.DEVKIT_PRINTER_FORMAT)
 
   def Command(self):
     return ['devkits', 'describe']
@@ -52,11 +59,5 @@ class Describe(kuberun_command.KubeRunCommandWithOutput, base.DescribeCommand):
     return [args.devkit] + super(Describe, self).BuildKubeRunArgs(args)
 
   def FormatOutput(self, out, args):
-    # TODO(b/169186627): handle this as JSON
-    if not out:
-      return out
-    return out + '\n'
-
-  # TODO(b/169186627): remove this workaround
-  def Display(self, args, output):
-    log.out.write(output)
+    if out:
+      return devkit.DevKit.FromJSON(json.loads(out))

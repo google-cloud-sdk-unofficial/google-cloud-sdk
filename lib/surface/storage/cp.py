@@ -57,10 +57,15 @@ class Cp(base.Command):
   def Args(parser):
     parser.add_argument('source', nargs='+', help='The source path(s) to copy.')
     parser.add_argument('destination', help='The destination path.')
+    parser.add_argument(
+        '-R', '-r', '--recursive',
+        action='store_true',
+        help='Recursively copy the contents of any directories that match the'
+             ' source path expression.')
 
   def Run(self, args):
     source_expansion_iterator = name_expansion.NameExpansionIterator(
-        args.source)
+        args.source, recursion_requested=args.recursive)
     task_iterator = copy_task_iterator.CopyTaskIterator(
         source_expansion_iterator, args.destination)
     task_executor.ExecuteTasks(task_iterator)

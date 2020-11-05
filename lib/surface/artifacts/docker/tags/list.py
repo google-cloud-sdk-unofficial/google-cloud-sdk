@@ -30,7 +30,8 @@ TAG_LIST_FORMAT = """\
     )"""
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List all tags associated with a container image in Artifact Registry.
 

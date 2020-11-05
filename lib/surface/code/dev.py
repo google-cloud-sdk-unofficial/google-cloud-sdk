@@ -125,6 +125,8 @@ class Dev(base.Command):
 
   def Run(self, args):
     _EnsureComponentsInstalled(args)
+    if _IsDebug():
+      _PrintDependencyVersions(args)
 
     settings = local.Settings.FromArgs(args)
     local_file_generator = local_files.LocalRuntimeFiles(settings)
@@ -239,3 +241,18 @@ def _EnsureComponentsInstalled(args):
     components.append('minikube')
 
   update_manager.UpdateManager.EnsureInstalledAndRestart(components)
+
+
+def _PrintDependencyVersions(args):
+  """Print the version strings of the dependencies."""
+  dependency_versions = {'skaffold': skaffold.GetVersion()}
+
+  if args.IsSpecified('kube_context'):
+    pass
+  elif args.IsSpecified('kind_cluster'):
+    dependency_versions['kind'] = kubernetes.GetKindVersion()
+  else:
+    dependency_versions['minikube'] = kubernetes.GetMinikubeVersion()
+
+  for name, version in sorted(dependency_versions.items()):
+    print('%s: %s\n' % (name, version))

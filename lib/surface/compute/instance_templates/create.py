@@ -363,11 +363,21 @@ def AddServiceProxyArgsToMetadata(args):
 
     service_proxy_agent_recipe['name'] = 'install-gce-service-proxy-agent'
     service_proxy_agent_recipe['desired_state'] = 'INSTALLED'
-    service_proxy_agent_recipe['installSteps'] = [{
-        'scriptRun': {
-            'script': service_proxy_aux_data.startup_script
-        }
-    }]
+
+    if getattr(args, 'service_proxy_agent_location', False):
+      service_proxy_agent_recipe['installSteps'] = [{
+          'scriptRun': {
+              'script':
+                  service_proxy_aux_data.startup_script_with_location_template %
+                  args.service_proxy_agent_location
+          }
+      }]
+    else:
+      service_proxy_agent_recipe['installSteps'] = [{
+          'scriptRun': {
+              'script': service_proxy_aux_data.startup_script
+          }
+      }]
 
     gce_software_declaration['softwareRecipes'] = [service_proxy_agent_recipe]
 

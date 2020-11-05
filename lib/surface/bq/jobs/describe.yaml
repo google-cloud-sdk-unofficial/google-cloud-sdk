@@ -27,4 +27,3 @@
     resource:
       help_text: The BigQuery job to display details for.
       spec: !REF googlecloudsdk.command_lib.bq.resources:job
-      # TODO(b/120794192) Figure out location support requirements

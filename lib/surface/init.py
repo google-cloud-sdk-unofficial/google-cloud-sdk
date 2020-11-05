@@ -496,7 +496,6 @@ information about configuring Google Cloud Storage.
       if properties.VALUES.core.log_http.GetBool():
         args.append('--log-http')
 
-      # TODO(b/38338044): Remove usage of ExecuteCommandDoNotUse
       return resource_projector.MakeSerializable(
           self.ExecuteCommandDoNotUse(args))
 

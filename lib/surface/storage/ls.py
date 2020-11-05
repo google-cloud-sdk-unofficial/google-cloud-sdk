@@ -109,9 +109,15 @@ class Ls(base.Command):
         action='store_true',
         help='Include ETag in long listing (-l) output.')
     parser.add_argument(
-        '-L', '--full',
+        '-L',
+        '--full',
         action='store_true',
-        help='Lists all available metadata about items.')
+        help='Lists all available metadata about items in rows.')
+    parser.add_argument(
+        '-j',
+        '--json',
+        action='store_true',
+        help='Lists all available metadata about items as a JSON dump.')
     parser.add_argument(
         '-l', '--long',
         action='store_true',
@@ -137,6 +143,8 @@ class Ls(base.Command):
     display_detail = cloud_list_task.DisplayDetail.SHORT
     if args.full:
       display_detail = cloud_list_task.DisplayDetail.FULL
+    if args.json:
+      display_detail = cloud_list_task.DisplayDetail.JSON
     if args.long:
       display_detail = cloud_list_task.DisplayDetail.LONG
 
