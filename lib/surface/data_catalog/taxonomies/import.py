@@ -57,7 +57,7 @@ class Import(base.Command):
 
   def Run(self, args):
     """Run the import command."""
-    version_label = 'v1beta1'
+    version_label = flags.GetVersionLabel(self.ReleaseTrack())
     args.project_val = properties.VALUES.core.project.Get()
     args.taxonomies = util.ProcessTaxonomiesFromYAML(args.taxonomies,
                                                      version_label)

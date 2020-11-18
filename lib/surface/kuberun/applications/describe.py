@@ -47,11 +47,11 @@ class Describe(kuberun_command.KubeRunCommandWithOutput, base.DescribeCommand):
     return ['applications', 'describe']
 
   def FormatOutput(self, out, args):
-    # TODO(b/169186627): handle this as JSON
+    # TODO(b/170429098): handle this as JSON
     if not out:
       return out
     return out + '\n'
 
-  # TODO(b/169186627): remove this workaround
+  # TODO(b/170429098): remove this workaround
   def Display(self, args, output):
     log.out.write(output)

@@ -26,7 +26,7 @@ from googlecloudsdk.calliope import base
 class Deploy(base.Group):
   """Configure automated build and deployment with Google Cloud Build."""
 
-  category = base.MANAGEMENT_TOOLS_CATEGORY
+  category = base.CI_CD_CATEGORY
 
   @staticmethod
   def Args(parser):

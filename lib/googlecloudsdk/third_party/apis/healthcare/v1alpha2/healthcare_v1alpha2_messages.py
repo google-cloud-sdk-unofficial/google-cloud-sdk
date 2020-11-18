@@ -42,6 +42,26 @@ class AnalyzeEntitiesResponse(_messages.Message):
   relationships = _messages.MessageField('EntityMentionRelationship', 3, repeated=True)
 
 
+class AnnotationConfig(_messages.Message):
+  r"""Specifies how to store annotations during de-identification operations.
+
+  Fields:
+    annotationStoreName: The name of the annotation store, in the form `projec
+      ts/{project_id}/locations/{location_id}/datasets/{dataset_id}/annotation
+      Stores/{annotation_store_id}`. * The destination annotation store must
+      be in the same project and location as the source data. De-identifying
+      data across multiple projects or locations is not supported. * The
+      destination annotation store must exist when using DeidentifyDicomStore
+      or DeidentifyFhirStore. DeidentifyDataset automatically creates the
+      destination annotation store.
+    storeQuote: If set to true, sensitive text is included in
+      SensitiveTextAnnotation of Annotation.
+  """
+
+  annotationStoreName = _messages.StringField(1)
+  storeQuote = _messages.BooleanField(2)
+
+
 class AnnotationStore(_messages.Message):
   r"""An Annotation store that can store annotation resources such as labels
   and tags for text, image and audio.
@@ -774,6 +794,9 @@ class DeidentifyConfig(_messages.Message):
   media type or subtype. Configs are applied in a nested manner at runtime.
 
   Fields:
+    annotation: Configures how annotations (such as the location and infoTypes
+      of sensitive information) are created during de-identification. If
+      unspecified, no annotations are created.
     dicom: Configures de-id of application/DICOM content.
     fhir: Configures de-id of application/FHIR content.
     image: Configures the de-identification of image pixels in the
@@ -781,10 +804,11 @@ class DeidentifyConfig(_messages.Message):
     text: Configures the de-identification of text in `source_dataset`.
   """
 
-  dicom = _messages.MessageField('DicomConfig', 1)
-  fhir = _messages.MessageField('FhirConfig', 2)
-  image = _messages.MessageField('ImageConfig', 3)
-  text = _messages.MessageField('TextConfig', 4)
+  annotation = _messages.MessageField('AnnotationConfig', 1)
+  dicom = _messages.MessageField('DicomConfig', 2)
+  fhir = _messages.MessageField('FhirConfig', 3)
+  image = _messages.MessageField('ImageConfig', 4)
+  text = _messages.MessageField('TextConfig', 5)
 
 
 class DeidentifyDatasetRequest(_messages.Message):
@@ -1325,10 +1349,10 @@ class FhirStore(_messages.Message):
   r"""Represents a FHIR store.
 
   Enums:
-    VersionValueValuesEnum: The FHIR specification version that this FHIR
-      store supports natively. This field is immutable after store creation.
-      Requests are rejected if they contain FHIR resources of a different
-      version. Version is required for every FHIR store.
+    VersionValueValuesEnum: Immutable. The FHIR specification version that
+      this FHIR store supports natively. This field is immutable after store
+      creation. Requests are rejected if they contain FHIR resources of a
+      different version. Version is required for every FHIR store.
 
   Messages:
     LabelsValue: User-supplied key-value pairs used to organize FHIR stores.
@@ -1341,21 +1365,22 @@ class FhirStore(_messages.Message):
       with a given store.
 
   Fields:
-    disableReferentialIntegrity: Whether to disable referential integrity in
-      this FHIR store. This field is immutable after FHIR store creation. The
-      default value is false, meaning that the API enforces referential
-      integrity and fail the requests that result in inconsistent state in the
-      FHIR store. When this field is set to true, the API skips referential
-      integrity checks. Consequently, operations that rely on references, such
-      as GetPatientEverything, do not return all the results if broken
-      references exist.
-    disableResourceVersioning: Whether to disable resource versioning for this
-      FHIR store. This field can not be changed after the creation of FHIR
-      store. If set to false, which is the default behavior, all write
-      operations cause historical versions to be recorded automatically. The
-      historical versions can be fetched through the history APIs, but cannot
-      be updated. If set to true, no historical versions are kept. The server
-      sends errors for attempts to read the historical versions.
+    disableReferentialIntegrity: Immutable. Whether to disable referential
+      integrity in this FHIR store. This field is immutable after FHIR store
+      creation. The default value is false, meaning that the API enforces
+      referential integrity and fail the requests that result in inconsistent
+      state in the FHIR store. When this field is set to true, the API skips
+      referential integrity checks. Consequently, operations that rely on
+      references, such as GetPatientEverything, do not return all the results
+      if broken references exist.
+    disableResourceVersioning: Immutable. Whether to disable resource
+      versioning for this FHIR store. This field can not be changed after the
+      creation of FHIR store. If set to false, which is the default behavior,
+      all write operations cause historical versions to be recorded
+      automatically. The historical versions can be fetched through the
+      history APIs, but cannot be updated. If set to true, no historical
+      versions are kept. The server sends errors for attempts to read the
+      historical versions.
     enableUpdateCreate: Whether this FHIR store has the [updateCreate
       capability](https://www.hl7.org/fhir/capabilitystatement-
       definitions.html#CapabilityStatement.rest.resource.updateCreate). This
@@ -1389,17 +1414,17 @@ class FhirStore(_messages.Message):
       the server stops streaming to that location. Some lag (typically on the
       order of dozens of seconds) is expected before the results show up in
       the streaming destination.
-    version: The FHIR specification version that this FHIR store supports
-      natively. This field is immutable after store creation. Requests are
-      rejected if they contain FHIR resources of a different version. Version
-      is required for every FHIR store.
+    version: Immutable. The FHIR specification version that this FHIR store
+      supports natively. This field is immutable after store creation.
+      Requests are rejected if they contain FHIR resources of a different
+      version. Version is required for every FHIR store.
   """
 
   class VersionValueValuesEnum(_messages.Enum):
-    r"""The FHIR specification version that this FHIR store supports natively.
-    This field is immutable after store creation. Requests are rejected if
-    they contain FHIR resources of a different version. Version is required
-    for every FHIR store.
+    r"""Immutable. The FHIR specification version that this FHIR store
+    supports natively. This field is immutable after store creation. Requests
+    are rejected if they contain FHIR resources of a different version.
+    Version is required for every FHIR store.
 
     Values:
       VERSION_UNSPECIFIED: VERSION_UNSPECIFIED is treated as STU3 to

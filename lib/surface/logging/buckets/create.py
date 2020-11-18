@@ -44,6 +44,7 @@ class Create(base.CreateCommand):
         '--enable-analytics',
         type=bool,
         default=False,
+        hidden=True,
         help='Whether to opt the bucket into advanced log analytics. This '
         'field may only be set at bucket creation and cannot be changed later.')
     util.AddBucketLocationArg(

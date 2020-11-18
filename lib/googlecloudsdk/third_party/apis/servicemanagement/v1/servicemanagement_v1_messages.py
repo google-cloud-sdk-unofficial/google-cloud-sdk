@@ -181,9 +181,9 @@ class AuthProvider(_messages.Message):
       JWT. See [OpenID Discovery](https://openid.net/specs/openid-connect-
       discovery-1_0.html#ProviderMetadata). Optional if the key set document:
       - can be retrieved from [OpenID
-      Discovery](https://openid.net/specs/openid-connect-discovery-1_0.html of
-      the issuer. - can be inferred from the email domain of the issuer (e.g.
-      a Google service account). Example:
+      Discovery](https://openid.net/specs/openid-connect-discovery-1_0.html)
+      of the issuer. - can be inferred from the email domain of the issuer
+      (e.g. a Google service account). Example:
       https://www.googleapis.com/oauth2/v1/certs
     jwtLocations: Defines the locations to extract the JWT. JWT locations can
       be either from HTTP headers or URL query parameters. The rule is that

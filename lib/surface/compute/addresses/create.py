@@ -309,7 +309,14 @@ class CreateBeta(Create):
     $ {command} IP-RANGE-1 --global --prefix-length=16 --purpose=VPC_PEERING \
       --network=default
 
+  To reserve an address from network 'default' for PRIVATE_SERVICE_CONNECT, run:
+
+    $ {command} PSC-ADDRESS-1 --global --addresses=10.110.0.10 \
+      --purpose=PRIVATE_SERVICE_CONNECT --network=default
+
   """
+
+  _support_psc_google_apis = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -357,10 +364,9 @@ class CreateAlpha(Create):
     $ {command} IP-RANGE-1 --global --prefix-length=16 --purpose=VPC_PEERING \
       --network=default
 
-   To reserve an address from network 'default' for PRIVATE_SERVICE_CONNECT,
-   run:
+  To reserve an address from network 'default' for PRIVATE_SERVICE_CONNECT, run:
 
-    $ {command} IP-RESOURCE-URI --global --addresses=10.110.0.0 \
+    $ {command} PSC-ADDRESS-1 --global --addresses=10.110.0.10 \
       --purpose=PRIVATE_SERVICE_CONNECT --network=default
   """
 

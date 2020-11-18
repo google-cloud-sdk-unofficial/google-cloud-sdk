@@ -133,6 +133,7 @@ class Create(base.CreateCommand):
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
+    flags.ValidateFilterString(args)
     return _Run(args, enable_labels=True)
 
 
@@ -150,7 +151,7 @@ class CreateBeta(Create):
         'to create.',
         plural=True)
     resource_args.AddResourceArgs(parser, [topic, subscription])
-    flags.AddSubscriptionSettingsFlags(parser, support_filtering=True)
+    flags.AddSubscriptionSettingsFlags(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):

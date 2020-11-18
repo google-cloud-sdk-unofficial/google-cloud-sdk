@@ -65,6 +65,23 @@ class StringFlag(BinaryCommandFlag):
     return []
 
 
+class StringListFlag(BinaryCommandFlag):
+  """A flag that takes in a string list value passed directly through to the binary."""
+
+  def __init__(self, name, *args, **kwargs):
+    super(StringListFlag, self).__init__()
+    self.arg = base.Argument(name, *args, type=arg_parsers.ArgList(), **kwargs)
+
+  def AddToParser(self, parser):
+    return self.arg.AddToParser(parser)
+
+  def FormatFlags(self, args):
+    dest_name = _GetDestNameForFlag(self.arg.name)
+    if args.IsSpecified(dest_name):
+      return [self.arg.name, ','.join(getattr(args, dest_name))]
+    return []
+
+
 class BooleanFlag(BinaryCommandFlag):
   """Encapsulates a boolean flag that can be either --<flag> or --no-<flag>."""
 
@@ -235,13 +252,15 @@ class TrafficFlags(BinaryCommandFlag):
       return ['--to-revisions', args.to_revisions]
 
 
-def CommonServiceFlags(is_deploy=False):
-  return FlagGroup(NamespaceFlag(), ImageFlag(required=is_deploy), CPUFlag(),
+def CommonServiceFlags(is_create=False):
+  return FlagGroup(NamespaceFlag(), ImageFlag(required=is_create), CPUFlag(),
                    MemoryFlag(), PortFlag(), Http2Flag(), ConcurrencyFlag(),
-                   EntrypointFlags(), ScalingFlags(), LabelsFlags(),
-                   ConfigMapFlags(), SecretsFlags(), EnvVarsFlags(),
-                   ConnectivityFlag(), ServiceAccountFlag(),
-                   RevisionSuffixFlag(), TimeoutFlag())
+                   EntrypointFlags(), ScalingFlags(),
+                   LabelsFlags(set_flag_only=is_create),
+                   ConfigMapFlags(set_flag_only=is_create),
+                   SecretsFlags(set_flag_only=is_create),
+                   EnvVarsFlags(set_flag_only=is_create), ConnectivityFlag(),
+                   ServiceAccountFlag(), RevisionSuffixFlag(), TimeoutFlag())
 
 
 def ImageFlag(required=False):
@@ -285,15 +304,17 @@ def ConcurrencyFlag():
 
 def EntrypointFlags():
   """Encapsulate flags for customizing container command."""
-  args_flag = StringFlag(
+  args_flag = StringListFlag(
       '--args',
+      metavar='ARG',
       help='Comma-separated arguments passed to the command run by the '
       "container image. If not specified and no '--command' is provided, the "
       "container image's default Cmd is used. Otherwise, if not specified, no "
       'arguments are passed. To reset this field to its default, pass an empty '
       'string.')
-  command_flag = StringFlag(
+  command_flag = StringListFlag(
       '--command',
+      metavar='COMMAND',
       help='Entrypoint for the container image. If not specified, the '
       "container image's default Entrypoint is run. To reset this field to its "
       'default, pass an empty string.')
@@ -312,178 +333,128 @@ def ScalingFlags():
   return FlagGroup(min_instances_flag, max_instances_flag)
 
 
-class LabelsFlags(BinaryCommandFlag):
-  """Encapsulates flags to configure label of the service."""
+class ResourceListFlagGroup(BinaryCommandFlag):
+  """Encapsulates create/set/update/remove key-value flags."""
+
+  def __init__(
+      self,
+      name,
+      help=None,  # pylint: disable=redefined-builtin
+      help_name=None,
+      set_flag_only=False):
+    """Create a new resource list flag group.
+
+    Args:
+      name: the name to be used in the flag names (e.g. "config-maps")
+      help: supplementary help text that explains the key-value pairs
+      help_name: the resource name to use in help text if different from `name`
+      set_flag_only: whether to just add the set-{name} flag.
+    """
+    super(ResourceListFlagGroup, self).__init__()
+    self.set_flag_only = set_flag_only
+    self.help = help if not help else help + '\n\n'
+    help_name = name if help_name is None else help_name
+
+    pairs_help = 'List of key-value pairs to set as {}.'.format(help_name)
+    set_help = pairs_help
+    if set_flag_only:
+      if help:
+        set_help += '\n\n' + help
+    else:
+      set_help += ' All existing {} will be removed first.'.format(help_name)
+
+    self.clear_flag = BasicFlag(
+        '--clear-{}'.format(name),
+        help='If true, removes all {}.'.format(help_name))
+    self.set_flag = StringListFlag(
+        '--set-{}'.format(name), metavar='KEY=VALUE', help=set_help)
+    self.remove_flag = StringListFlag(
+        '--remove-{}'.format(name),
+        metavar='KEY',
+        help='List of {} to be removed.'.format(help_name))
+    update_aliases = []
+    if name == 'labels':
+      # Added for compatibility reasons with gcloud run services update
+      update_aliases.append('--labels')
+    self.update_flag = StringListFlag(
+        '--update-{}'.format(name),
+        *update_aliases,
+        metavar='KEY=VALUE',
+        help=pairs_help)
 
   def AddToParser(self, parser):
-    # TODO(b/166474467): revisit if no-opt flags should be kept for deploy
-    mutex_group = parser.add_mutually_exclusive_group()
-    mutex_group.add_argument(
-        '--clear-labels',
-        default=False,
-        action='store_true',
-        help='If true, removes all labels.')
-    mutex_group.add_argument(
-        '--set-labels',
-        help='List of label KEY=VALUE pairs to set. '
-        'All existing labels will be removed first.')
+    if self.set_flag_only:
+      self.set_flag.AddToParser(parser)
+      return
+
+    mutex_group = parser.add_mutually_exclusive_group(help=self.help)
+    self.clear_flag.AddToParser(mutex_group)
+    self.set_flag.AddToParser(mutex_group)
     update_group = mutex_group.add_group(
-        help='Only `--update-labels` and `--remove-labels` can be used together. '
-        'If both are specified, `--remove-labels` will be applied first.')
-    update_group.add_argument(
-        '--remove-labels',
-        help='List of label keys to remove. If a label does not exist it is '
-        'silently ignored.')
-    update_group.add_argument(
-        '--update-labels', '--labels',
-        help='List of label KEY=VALUE pairs to update. If a label exists its '
-        'value is modified, otherwise a new label is created.')
+        help='Only `{update}` and `{remove}` can be used together. '
+        'If both are specified, `{remove}` will be applied first.'.format(
+            update=self.update_flag.arg.name, remove=self.remove_flag.arg.name))
+    self.remove_flag.AddToParser(update_group)
+    self.update_flag.AddToParser(update_group)
 
   def FormatFlags(self, args):
-    command_flags = []
-    if args.IsSpecified('set_labels'):
-      command_flags.extend(['--set-labels', args.set_labels])
-    if args.IsSpecified('clear_labels'):
-      command_flags.append('--clear-labels')
-    if args.IsSpecified('remove_labels'):
-      command_flags.extend(['--remove-labels', args.remove_labels])
-    if args.IsSpecified('update_labels'):
-      command_flags.extend(['--update-labels', args.update_labels])
-    return command_flags
+    if self.set_flag_only:
+      return self.set_flag.FormatFlags(args)
+    return (self.clear_flag.FormatFlags(args) +
+            self.set_flag.FormatFlags(args) +
+            self.remove_flag.FormatFlags(args) +
+            self.update_flag.FormatFlags(args))
 
 
-class ConfigMapFlags(BinaryCommandFlag):
-  """Encapsulates flags to configure config maps mounting."""
-
-  def AddToParser(self, parser):
-    # TODO(b/166474467): revisit if no-opt flags should be kept for deploy
-    mutex_group = parser.add_mutually_exclusive_group(
-        help='Config map to mount or provide as environment variables. '
-        "Keys starting with a forward slash '/' are mount paths. All other keys "
-        'correspond to environment variables. The values associated with each of '
-        'these should be in the form CONFIG_MAP_NAME:KEY_IN_CONFIG_MAP; you may '
-        'omit the key within the config map to specify a mount of all keys '
-        'within the config map. For example: '
-        '`--update-config-maps=/my/path=myconfig,ENV=otherconfig:key.json` '
-        "will create a volume with config map 'myconfig' and mount that volume "
-        "at '/my/path'. Because no config map key was specified, all keys in "
-        "'myconfig' will be included. An environment variable named ENV will "
-        "also be created whose value is the value of 'key.json' in 'otherconfig'."
-    )
-    mutex_group.add_argument(
-        '--clear-config-maps',
-        default=False,
-        action='store_true',
-        help='If true, removes all config-maps.')
-    mutex_group.add_argument(
-        '--set-config-maps',
-        help='List of key-value pairs to set as config-maps. All existing '
-        'config-maps will be removed first.')
-    update_group = mutex_group.add_group(
-        help='Only --update-config-maps and --remove-config-maps can be used '
-        'together. If both are specified, --remove-config-maps will be applied '
-        'first.')
-    update_group.add_argument(
-        '--remove-config-maps', help='List of config-maps to be removed.')
-    update_group.add_argument(
-        '--update-config-maps',
-        help='List of key-value pairs to set as config-maps.')
-
-  def FormatFlags(self, args):
-    command_flags = []
-    if args.IsSpecified('clear_config_maps'):
-      command_flags.append('--clear-config-maps')
-    if args.IsSpecified('set_config_maps'):
-      command_flags.extend(['--set-config-maps', args.set_config_maps])
-    if args.IsSpecified('remove_config_maps'):
-      command_flags.extend(['--remove-config-maps', args.remove_config_maps])
-    if args.IsSpecified('update_config_maps'):
-      command_flags.extend(['--update-config-maps', args.update_config_maps])
-    return command_flags
+def LabelsFlags(set_flag_only=False):
+  return ResourceListFlagGroup(name='labels', set_flag_only=set_flag_only)
 
 
-class SecretsFlags(BinaryCommandFlag):
-  """Encapsulates flags to configure secrets mounting."""
-
-  def AddToParser(self, parser):
-    # TODO(b/166474467): revisit if no-opt flags should be kept for deploy
-    mutex_group = parser.add_mutually_exclusive_group(
-        help='Secrets to mount or provide as environment variables. Keys '
-        "starting with a forward slash '/' are mount paths. All other keys "
-        'correspond to environment variables. The values associated with each '
-        'of these should be in the form SECRET_NAME:KEY_IN_SECRET; you may omit '
-        'the key within the secret to specify a mount of all keys within the '
-        'secret. For example: '
-        '`--update-secrets=/my/path=mysecret,ENV=othersecret:key.json` will '
-        "create a volume with secret 'mysecret' and mount that volume at "
-        "'/my/path'. Because no secret key was specified, all keys in 'mysecret' "
-        'will be included. An environment variable named ENV will also be '
-        "created whose value is the value of 'key.json' in 'othersecret'.")
-    mutex_group.add_argument(
-        '--clear-secrets',
-        default=False,
-        action='store_true',
-        help='Remove all secrets.')
-    mutex_group.add_argument(
-        '--set-secrets',
-        help='List of key-value pairs to set as secrets. All '
-        'existing secrets will be removed first.')
-    update_group = mutex_group.add_group(
-        help='Only --update-secrets and --remove-secrets can be used together. '
-        'If both are specified, --remove-secrets will be applied first.')
-    update_group.add_argument(
-        '--remove-secrets', help='List of secrets to be removed.')
-    update_group.add_argument(
-        '--update-secrets', help='List of key-value pairs to set as secrets.')
-
-  def FormatFlags(self, args):
-    command_flags = []
-    if args.IsSpecified('clear_secrets'):
-      command_flags.append('--clear-secrets')
-    if args.IsSpecified('set_secrets'):
-      command_flags.extend(['--set-secrets', args.set_secrets])
-    if args.IsSpecified('remove_secrets'):
-      command_flags.extend(['--remove-secrets', args.remove_secrets])
-    if args.IsSpecified('update_secrets'):
-      command_flags.extend(['--update-secrets', args.update_secrets])
-    return command_flags
+def ConfigMapFlags(set_flag_only=False):
+  return ResourceListFlagGroup(
+      name='config-maps',
+      set_flag_only=set_flag_only,
+      help=(
+          'Specify config maps to mount or provide as environment variables. '
+          "Keys starting with a forward slash '/' are mount paths. "
+          'All other keys correspond to environment variables. '
+          'The values associated with each of these should be in the form '
+          'CONFIG_MAP_NAME:KEY_IN_CONFIG_MAP; you may omit the key within the '
+          'config map to specify a mount of all keys within the config map. '
+          'For example: '
+          '`--set-config-maps=/my/path=myconfig,ENV=otherconfig:key.json` will '
+          "create a volume with config map 'myconfig' and mount that volume at "
+          "'/my/path'. Because no config map key was specified, all keys in "
+          "'myconfig' will be included. "
+          'An environment variable named ENV will also be created whose value '
+          "is the value of 'key.json' in 'otherconfig'."))
 
 
-class EnvVarsFlags(BinaryCommandFlag):
-  """Encapsulates flags to configure environment variables."""
+def SecretsFlags(set_flag_only=False):
+  return ResourceListFlagGroup(
+      name='secrets',
+      set_flag_only=set_flag_only,
+      help=(
+          'Specify secrets to mount or provide as environment variables. '
+          "Keys starting with a forward slash '/' are mount paths. "
+          'All other keys correspond to environment variables. '
+          'The values associated with each of these should be in the form '
+          'SECRET_NAME:KEY_IN_SECRET; you may omit the key within the secret '
+          'to specify a mount of all keys within the secret. '
+          'For example: '
+          '`--set-secrets=/my/path=mysecret,ENV=othersecret:key.json` will '
+          "create a volume with secret 'mysecret' and mount that volume at "
+          "'/my/path'. Because no secret key was specified, all keys in "
+          "'mysecret' will be included. "
+          'An environment variable named ENV will also be created whose value '
+          "is the value of 'key.json' in 'othersecret'."))
 
-  def AddToParser(self, parser):
-    mutex_group = parser.add_mutually_exclusive_group()
-    mutex_group.add_argument(
-        '--clear-env-vars',
-        default=False,
-        action='store_true',
-        help='If true, removes all environment variables.')
-    mutex_group.add_argument(
-        '--set-env-vars',
-        help='List of key-value pairs to set as environment '
-        'variables. All existing environment variables will be removed first.')
-    update_group = mutex_group.add_group(
-        help='Only --update-env-vars and --remove-env-vars can be used together. '
-        'If both are specified, --remove-env-vars will be applied first.')
-    update_group.add_argument(
-        '--remove-env-vars',
-        help='List of environment variables to be removed.')
-    update_group.add_argument(
-        '--update-env-vars',
-        help='List of key-value pairs to set as environment variables.')
 
-  def FormatFlags(self, args):
-    command_flags = []
-    if args.IsSpecified('clear_env_vars'):
-      command_flags.append('--clear-env-vars')
-    if args.IsSpecified('set_env_vars'):
-      command_flags.extend(['--set-env-vars', args.set_env_vars])
-    if args.IsSpecified('remove_env_vars'):
-      command_flags.extend(['--remove-env-vars', args.remove_env_vars])
-    if args.IsSpecified('update_env_vars'):
-      command_flags.extend(['--update-env-vars', args.update_env_vars])
-    return command_flags
+def EnvVarsFlags(set_flag_only=False):
+  return ResourceListFlagGroup(
+      name='env-vars',
+      help_name='environment variables',
+      set_flag_only=set_flag_only)
 
 
 def ConnectivityFlag():

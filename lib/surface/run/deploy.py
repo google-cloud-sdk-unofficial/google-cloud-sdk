@@ -137,6 +137,7 @@ class Deploy(base.Command):
     flags.AddCpuFlag(parser)
     flags.AddNoTrafficFlag(parser)
     flags.AddServiceAccountFlag(parser)
+    flags.AddClientNameAndVersionFlags(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')

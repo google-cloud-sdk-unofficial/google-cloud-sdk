@@ -24,4 +24,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class WorkerPools(base.Group):
   """Manage worker pools for Google Cloud Build."""
-  category = base.MANAGEMENT_TOOLS_CATEGORY
+  category = base.CI_CD_CATEGORY

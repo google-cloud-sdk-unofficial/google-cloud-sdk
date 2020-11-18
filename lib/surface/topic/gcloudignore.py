@@ -37,6 +37,8 @@ class GcloudignoreHelp(base.TopicCommand):
   The following `gcloud` commands respect the `.gcloudignore` file:
 
   * `gcloud app deploy`
+    * Note: If you add `app.yaml` to the `.gcloudignore` file, this command will
+    fail.
   * `gcloud functions deploy`
   * `gcloud builds submit`
   * `gcloud composer environments storage {dags, data, plugins} import`

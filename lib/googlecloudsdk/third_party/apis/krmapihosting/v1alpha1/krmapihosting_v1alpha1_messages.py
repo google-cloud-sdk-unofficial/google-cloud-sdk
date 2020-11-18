@@ -320,8 +320,8 @@ class KrmApiHost(_messages.Message):
       repository.
     gitSecretType: The type of secret configured for access to the Git
       repository. One of ssh, cookiefile, token, gcenode, or none.
-    gkeResourceLink: Output only. AnthosApiEndpoint GCP self link used for
-      identifying the underlying endpoint (GKE cluster currently)
+    gkeResourceLink: Output only. KrmApiHost GCP self link used for
+      identifying the underlying endpoint (GKE cluster currently).
     labels: Labels are used for additional information for a KrmApiHost.
     manBlock: Master Authorized Network. Allows access to the k8s master from
       this block.

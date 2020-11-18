@@ -107,6 +107,11 @@ class SourceCustomResourceDefinition(k8s_object.KubernetesObject):
   # we'll set them ourselves, or because they're not meant to be set.
   _PRIVATE_PROPERTY_FIELDS = frozenset({'sink', 'ceOverrides'})
 
+  # The list of crds within the CustomResourceDefinitionList response
+  # lacks their apiVersions (intended behavior), so manually set it.
+  def setApiVersion(self, api_version):  # pylint: disable=invalid-name
+    self._m.apiVersion = api_version
+
   @property
   def source_kind(self):
     return self._m.spec.names.kind
@@ -126,6 +131,10 @@ class SourceCustomResourceDefinition(k8s_object.KubernetesObject):
       return self._m.spec.version
     except AttributeError:
       return _SOURCE_CUSTOM_RESOURCE_DEFINITION_VERSION
+
+  def getActiveSourceVersions(self):
+    """Returns list of active api versions for the source."""
+    return [version.name for version in self._m.spec.versions if version.served]
 
   @property
   def schema(self):
@@ -152,7 +161,15 @@ class SourceCustomResourceDefinition(k8s_object.KubernetesObject):
 
   @property
   def event_types(self):
-    """Returns List[EventType] from the registry annotation json string."""
+    """Returns List[EventType] from the registry annotation json string.
+
+    Where metadata.annotations."registry.knative.dev/eventTypes" holds an array
+    of {
+      type: string of the event type,
+      schema: string holding url to github proto defined,
+      description: string describing the event type.
+    }
+    """
     if _EVENT_TYPE_REGISTRY_KEY not in self.annotations:
       return []
     event_types = json.loads(self.annotations[_EVENT_TYPE_REGISTRY_KEY])

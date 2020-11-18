@@ -21,6 +21,8 @@ from __future__ import unicode_literals
 import collections
 import json
 
+from googlecloudsdk.command_lib.storage import errors
+
 
 class Resource(object):
   """Base class for a reference to one fully expanded iterator result.
@@ -134,6 +136,7 @@ class ObjectResource(CloudResource):
     storage_url (StorageUrl): A StorageUrl object representing the object.
     creation_time (datetime|None): Time the object was created.
     etag (str|None): HTTP version identifier.
+    md5_hash (bytes): Base64-encoded digest of md5 hash.
     metageneration (int|None): Generation object's metadata.
     metadata (object|dict|None): Cloud-specific metadata type.
     size (int|None): Size of object in bytes.
@@ -145,12 +148,19 @@ class ObjectResource(CloudResource):
   """
   TYPE_STRING = 'cloud_object'
 
-  def __init__(self, storage_url_object, creation_time=None, etag=None,
-               metadata=None, metageneration=None, size=None):
+  def __init__(self,
+               storage_url_object,
+               creation_time=None,
+               etag=None,
+               md5_hash=None,
+               metadata=None,
+               metageneration=None,
+               size=None):
     """Initializes resource. Args are a subset of attributes."""
     super(ObjectResource, self).__init__(storage_url_object)
     self.creation_time = creation_time
     self.etag = etag
+    self.md5_hash = md5_hash
     self.metageneration = metageneration
     self.metadata = metadata
     self.size = size
@@ -168,12 +178,9 @@ class ObjectResource(CloudResource):
     return self.storage_url.generation
 
   def __eq__(self, other):
-    return (
-        super(ObjectResource, self).__eq__(other) and
-        self.etag == other.etag and
-        self.generation == other.generation and
-        self.metadata == other.metadata
-    )
+    return (super(ObjectResource, self).__eq__(other) and
+            self.etag == other.etag and self.generation == other.generation and
+            self.md5_hash == other.md5_hash and self.metadata == other.metadata)
 
   def is_container(self):
     return False
@@ -214,8 +221,19 @@ class PrefixResource(Resource):
 
 
 class FileObjectResource(Resource):
-  """Wrapper for a filesystem file."""
+  """Wrapper for a filesystem file.
+
+  Attributes:
+    TYPE_STRING (str): String representing the resource's content type.
+    storage_url (StorageUrl): A StorageUrl object representing the resource.
+    md5_hash (bytes): Base64-encoded digest of md5 hash.
+  """
   TYPE_STRING = 'file_object'
+
+  def __init__(self, storage_url_object, md5_hash=None):
+    """Initializes resource. Args are a subset of attributes."""
+    super(FileObjectResource, self).__init__(storage_url_object)
+    self.md5_hash = md5_hash
 
   def is_container(self):
     return False
@@ -232,3 +250,7 @@ class FileDirectoryResource(Resource):
 class UnknownResource(Resource):
   """Represents a resource that may or may not exist."""
   TYPE_STRING = 'unknown'
+
+  def is_container(self):
+    raise errors.ValueCannotBeDeterminedError(
+        'Unknown whether or not UnknownResource is a container.')

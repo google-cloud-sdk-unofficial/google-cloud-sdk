@@ -19,11 +19,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import datetime
 from googlecloudsdk.api_lib.logging import common
 from googlecloudsdk.api_lib.logging import util
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.logs import read as read_logs_lib
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -33,47 +32,13 @@ class Read(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    base.LIMIT_FLAG.AddToParser(parser)
-    parser.add_argument(
-        'log_filter', help=('Filter expression that specifies the '
-                            'log entries to return. A detailed guide on '
-                            'basic and advanced filters can be found at: '
-                            'https://cloud.google.com/logging/docs/view/'
-                            'overview'),
-        nargs='?')
-    order_arg = base.ChoiceArgument(
-        '--order',
-        choices=('desc', 'asc'),
-        required=False,
-        default='desc',
-        help_str='Ordering of returned log entries based on timestamp field.'
-    )
-    order_arg.AddToParser(parser)
-    parser.add_argument(
-        '--freshness', required=False, type=arg_parsers.Duration(),
-        help=('Return entries that are not older than this value. '
-              'Works only with DESC ordering and filters without a timestamp. '
-              'See $ gcloud topic datetimes for information on '
-              'duration formats.'),
-        default='1d')
+    read_logs_lib.LogFilterPositionalArgs(parser)
+    read_logs_lib.LoggingReadArgs(parser)
     util.AddParentArgs(parser, 'Read log entries')
 
   def _Run(self, args, is_alpha=False):
-    # Take into account freshness only if all requirements are met.
-    if (args.freshness and args.order == 'desc' and
-        (not args.log_filter or 'timestamp' not in args.log_filter)):
-      # Argparser returns freshness in seconds.
-      freshness = datetime.timedelta(seconds=args.freshness)
-      # Cloud Logging uses timestamps in UTC timezone.
-      last_timestamp = datetime.datetime.utcnow() - freshness
-      # Construct timestamp filter.
-      log_filter = ('timestamp>="%s"' % util.FormatTimestamp(last_timestamp))
-      # Append any user supplied filters.
-      if args.log_filter:
-        log_filter += ' AND %s' % args.log_filter
-    else:
-      log_filter = args.log_filter
-
+    filter_clauses = read_logs_lib.MakeTimestampFilters(args)
+    filter_clauses += [args.log_filter] if args.log_filter else []
     parent = util.GetParentFromArgs(args)
     if is_alpha and args.IsSpecified('location'):
       parent = util.CreateResourceName(
@@ -81,10 +46,11 @@ class Read(base.Command):
               util.CreateResourceName(parent, 'locations', args.location),
               'buckets', args.bucket),
           'views', args.view)
-    return common.FetchLogs(log_filter,
-                            order_by=args.order,
-                            limit=args.limit,
-                            parent=parent)
+    return common.FetchLogs(
+        read_logs_lib.JoinFilters(filter_clauses, operator='AND') or None,
+        order_by=args.order,
+        limit=args.limit,
+        parent=parent)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

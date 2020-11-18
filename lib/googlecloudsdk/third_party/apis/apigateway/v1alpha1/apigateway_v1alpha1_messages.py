@@ -111,11 +111,8 @@ class ApigatewayApiApiController(_messages.Message):
 
 
 class ApigatewayApiConfig(_messages.Message):
-  r"""An API Configuration is an association of an API Controller Config and a
-  Gateway Config. For APIs with a Managed Service API Controller, this
-  resource is associated with one or more Service Configs and a Service
-  Rollout. Initially, this resource will extract the Gateway Config from the
-  API Controller Config.
+  r"""An API Configuration is a combination of settings for both the Managed
+  Service and Gateways serving this API Config.
 
   Enums:
     StateValueValuesEnum: Output only. State of the API Config.

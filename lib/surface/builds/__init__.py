@@ -25,7 +25,7 @@ from googlecloudsdk.calliope import base
 class Builds(base.Group):
   """Create and manage builds for Google Cloud Build."""
 
-  category = base.MANAGEMENT_TOOLS_CATEGORY
+  category = base.CI_CD_CATEGORY
 
   @staticmethod
   def Args(parser):

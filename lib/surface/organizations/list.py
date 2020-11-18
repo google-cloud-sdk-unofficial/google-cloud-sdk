@@ -20,10 +20,10 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudresourcemanager import organizations
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.organizations import orgs_base
+from googlecloudsdk.command_lib.organizations import org_utils
 
 
-class List(orgs_base.OrganizationCommand, base.ListCommand):
+class List(base.ListCommand):
   """List organizations accessible by the active account.
 
   Lists all organizations to which the user has access. Organizations are listed
@@ -39,7 +39,7 @@ class List(orgs_base.OrganizationCommand, base.ListCommand):
             name.segment():label=ID:align=right:sort=1,
             owner.directoryCustomerId:label=DIRECTORY_CUSTOMER_ID:align=right
           )""")
-    parser.display_info.AddUriFunc(orgs_base.OrganizationsUriFunc)
+    parser.display_info.AddUriFunc(org_utils.OrganizationsUriFunc)
 
   def Run(self, args):
     """Run the list command."""

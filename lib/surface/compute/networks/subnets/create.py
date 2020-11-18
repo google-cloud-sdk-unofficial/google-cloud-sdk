@@ -44,7 +44,7 @@ def _DetailedHelp():
 
 def _AddArgs(parser, include_alpha_logging, include_l7_internal_load_balancing,
              include_aggregate_purpose, include_private_service_connect,
-             api_version):
+             include_stack_type, include_ipv6_access_type, api_version):
   """Add subnetwork create arguments to parser."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
 
@@ -186,6 +186,34 @@ def _AddArgs(parser, include_alpha_logging, include_l7_internal_load_balancing,
   GetPrivateIpv6GoogleAccessTypeFlagMapper(messages).choice_arg.AddToParser(
       parser)
 
+  if include_stack_type:
+    parser.add_argument(
+        '--stack-type',
+        choices={
+            'IPV4_ONLY':
+                'New VMs in this subnet will only be assigned IPv4 addresses',
+            'IPV4_IPV6':
+                'New VMs in this subnet can have both IPv4 and IPv6 addresses'
+        },
+        type=arg_utils.ChoiceToEnumName,
+        help=('The stack type for this subnet to identify whether the IPv6 '
+              'feature is enabled or not. If not specified IPV4_ONLY will be '
+              'used.'))
+
+  if include_ipv6_access_type:
+    parser.add_argument(
+        '--ipv6-access-type',
+        choices={
+            'INTERNAL': 'VMs in this subnet can have internal IPv6.',
+            'EXTERNAL': 'VMs in this subnet can have external IPv6.'
+        },
+        type=arg_utils.ChoiceToEnumName,
+        help=('The access type of IPv6 address this subnet holds. It\'s '
+              'immutable and can only be specified during creation or the '
+              'time the subnet is updated into IPV4_IPV6 dual stack. If the '
+              'ipv6 access type is EXTERNAL then this subnet cannot enable '
+              'direct path.'))
+
   parser.display_info.AddCacheUpdater(network_flags.NetworksCompleter)
 
 
@@ -208,7 +236,8 @@ def GetPrivateIpv6GoogleAccessTypeFlagMapper(messages):
 def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
                       include_alpha_logging, include_l7_internal_load_balancing,
                       include_aggregate_purpose,
-                      include_private_service_connect):
+                      include_private_service_connect, include_stack_type,
+                      include_ipv6_access_type):
   """Create the subnet resource."""
   subnetwork = messages.Subnetwork(
       name=subnet_ref.Name(),
@@ -303,12 +332,22 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
         flags.GetPrivateIpv6GoogleAccessTypeFlagMapper(
             messages).GetEnumForChoice(args.private_ipv6_google_access_type))
 
+  if include_stack_type and args.stack_type:
+    subnetwork.stackType = messages.Subnetwork.StackTypeValueValuesEnum(
+        args.stack_type)
+
+  if include_ipv6_access_type and args.ipv6_access_type:
+    subnetwork.ipv6AccessType = (
+        messages.Subnetwork.Ipv6AccessTypeValueValuesEnum(
+            args.ipv6_access_type))
+
   return subnetwork
 
 
 def _Run(args, holder, include_alpha_logging,
          include_l7_internal_load_balancing, include_aggregate_purpose,
-         include_private_service_connect):
+         include_private_service_connect, include_stack_type,
+         include_ipv6_access_type):
   """Issues a list of requests necessary for adding a subnetwork."""
   client = holder.client
 
@@ -324,7 +363,8 @@ def _Run(args, holder, include_alpha_logging,
                                  include_alpha_logging,
                                  include_l7_internal_load_balancing,
                                  include_aggregate_purpose,
-                                 include_private_service_connect)
+                                 include_private_service_connect,
+                                 include_stack_type, include_ipv6_access_type)
   request = client.messages.ComputeSubnetworksInsertRequest(
       subnetwork=subnetwork,
       region=subnet_ref.region,
@@ -352,6 +392,8 @@ class Create(base.CreateCommand):
   _include_l7_internal_load_balancing = True
   _include_aggregate_purpose = False
   _include_private_service_connect = False
+  _include_stack_type = False
+  _include_ipv6_access_type = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
 
   detailed_help = _DetailedHelp()
@@ -361,7 +403,8 @@ class Create(base.CreateCommand):
     _AddArgs(parser, cls._include_alpha_logging,
              cls._include_l7_internal_load_balancing,
              cls._include_aggregate_purpose,
-             cls._include_private_service_connect, cls._api_version)
+             cls._include_private_service_connect, cls._include_stack_type,
+             cls._include_ipv6_access_type, cls._api_version)
 
   def Run(self, args):
     """Issues a list of requests necessary for adding a subnetwork."""
@@ -369,7 +412,8 @@ class Create(base.CreateCommand):
     return _Run(args, holder, self._include_alpha_logging,
                 self._include_l7_internal_load_balancing,
                 self._include_aggregate_purpose,
-                self._include_private_service_connect)
+                self._include_private_service_connect, self._include_stack_type,
+                self._include_ipv6_access_type)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -384,4 +428,6 @@ class CreateAlpha(CreateBeta):
   _include_alpha_logging = True
   _include_aggregate_purpose = True
   _include_private_service_connect = True
+  _include_stack_type = True
+  _include_ipv6_access_type = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION

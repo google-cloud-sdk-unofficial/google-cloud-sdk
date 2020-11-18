@@ -16,6 +16,8 @@
 
   request:
     collection: cloudresourcemanager.organizations
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.organizations.hooks:SetOrganization
 
   arguments:
     resource:

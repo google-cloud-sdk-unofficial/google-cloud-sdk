@@ -42,7 +42,10 @@
         - arg_name: organization
           type: str
           help_text: |
-            The organization the Group being created belongs to.
+            The organization the Group being created belongs to. This can be
+            specified either as an ID ("123456789") or as the associated domain
+            ("example.com").
+
         - arg_name: customer
           release_tracks: [GA]
           type: str

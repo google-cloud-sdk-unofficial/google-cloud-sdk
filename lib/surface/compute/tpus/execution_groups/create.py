@@ -101,6 +101,9 @@ class Create(base.CreateCommand):
       responses.append(
           tpu.WaitForOperation(tpu_operation_ref, 'Creating TPU node:{}'.format(
               args.name)))
+      tpu_node = tpu.Get(args.name, args.zone)
+      resource_manager = tpu_utils.ResourceManager()
+      resource_manager.AddTpuUserAgent(tpu_node.serviceAccount)
     if not args.tpu_only:
       instance_create_response = instance.WaitForOperation(
           instance_operation_ref, 'Creating GCE VM:{}'.format(args.name))
@@ -118,6 +121,8 @@ class Create(base.CreateCommand):
           'Zone:{}, Network:{}'.format(args.name, args.accelerator_type,
                                        args.tf_version, args.zone,
                                        args.network))
+      log.status.Print(
+          'Adding Storage and Logging access on TPU Service Account')
 
     if not args.tpu_only:
       log.status.Print('Creating VM with Name:{}, Zone:{}, Machine Type:{},'

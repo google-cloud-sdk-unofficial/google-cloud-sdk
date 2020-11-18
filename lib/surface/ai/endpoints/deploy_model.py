@@ -37,6 +37,9 @@ def _AddArgs(parser, version):
   flags.GetDisplayNameArg('deployed model').AddToParser(parser)
   flags.GetTrafficSplitArg().AddToParser(parser)
   flags.AddPredictionResourcesArgs(parser, version)
+  flags.GetEnableAccessLoggingArg().AddToParser(parser)
+  flags.GetEnableContainerLoggingArg().AddToParser(parser)
+  flags.GetServiceAccountArg().AddToParser(parser)
 
 
 def _Run(args, version):

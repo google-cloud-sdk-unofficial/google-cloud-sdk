@@ -54,6 +54,7 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
   @classmethod
   def Args(cls, parser):
     super(List, cls).Args(parser)
+    base.ListCommand._Flags(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
     parser.display_info.AddFormat("""table(

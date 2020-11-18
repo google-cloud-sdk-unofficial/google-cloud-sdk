@@ -19,15 +19,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.cloudresourcemanager import organizations
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.organizations import flags
-from googlecloudsdk.command_lib.organizations import orgs_base
+from googlecloudsdk.command_lib.organizations import org_utils
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class SetIamPolicy(orgs_base.OrganizationCommand):
+class SetIamPolicy(base.Command):
   """Set IAM policy for an organization.
 
   Given an organization ID and a file encoded in JSON or YAML that contains the
@@ -42,6 +40,12 @@ class SetIamPolicy(orgs_base.OrganizationCommand):
               '`123456789`:',
               '',
               '  $ {command} 123456789 policy.json',
+              '',
+              'The following command reads an IAM policy defined in a JSON',
+              'file `policy.json` and sets it for the organization associated',
+              'with the domain `example.com`:',
+              '',
+              '  $ {command} example.com policy.json',
           ]))
       }
 
@@ -52,27 +56,8 @@ class SetIamPolicy(orgs_base.OrganizationCommand):
         'policy_file', help='JSON or YAML file containing the IAM policy.')
 
   def Run(self, args):
-    messages = self.OrganizationsMessages()
-    policy = iam_util.ParsePolicyFile(args.policy_file, messages.Policy)
-    policy.version = iam_util.MAX_LIBRARY_IAM_SUPPORTED_VERSION
-
-    update_mask = iam_util.ConstructUpdateMaskFromPolicy(args.policy_file)
-
-    # To preserve the existing set-iam-policy behavior of always overwriting
-    # bindings and etag, add bindings and etag to update_mask.
-    if 'bindings' not in update_mask:
-      update_mask += ',bindings'
-    if 'etag' not in update_mask:
-      update_mask += ',etag'
-
-    set_iam_policy_request = messages.SetIamPolicyRequest(
-        policy=policy,
-        updateMask=update_mask)
-
-    policy_request = (
-        messages.CloudresourcemanagerOrganizationsSetIamPolicyRequest(
-            organizationsId=args.id,
-            setIamPolicyRequest=set_iam_policy_request))
-    result = self.OrganizationsClient().SetIamPolicy(policy_request)
-    iam_util.LogSetIamPolicy(args.id, 'organization')
-    return result
+    org_id = org_utils.GetOrganizationId(args.id)
+    if org_id:
+      return organizations.Client().SetIamPolicy(org_id, args.policy_file)
+    else:
+      raise org_utils.UnknownOrganizationError(args.id)

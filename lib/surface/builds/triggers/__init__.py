@@ -26,7 +26,7 @@ from googlecloudsdk.calliope import base
 class Triggers(base.Group):
   """Create and manage build triggers for Google Cloud Build."""
 
-  category = base.MANAGEMENT_TOOLS_CATEGORY
+  category = base.CI_CD_CATEGORY
 
   @staticmethod
   def Args(parser):

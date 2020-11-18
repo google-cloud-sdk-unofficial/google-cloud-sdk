@@ -24,8 +24,8 @@ from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import gapic_util
 from googlecloudsdk.core import log
-from googlecloudsdk.core.gapic_util import StoredCredentials
 
 from google.api_core import bidi
 
@@ -110,7 +110,8 @@ class Tail(base.Command):
         log.error('The buffer window must be set between 0s and 1m.')
       buffer_window_seconds = args.buffer_window
     transport = LoggingServiceV2GrpcTransport(
-        credentials=StoredCredentials(), address='logging.googleapis.com:443')
+        credentials=gapic_util.StoredCredentials(),
+        address='logging.googleapis.com:443')
 
     # By default and up to the INFO verbosity, all console output is included in
     # the log file. When tailing logs, coarse filters could cause very large
@@ -135,12 +136,20 @@ class Tail(base.Command):
 
 
 Tail.detailed_help = {
-    'DESCRIPTION':
-        ('{command} streams newly received log entries. Log entries matching '
-         '*log-filter* are returned in the order that they were received by '
-         'Cloud Logging. If the log entries come from multiple logs, then '
-         'entries from different logs might be intermingled in the results. To '
-         'help return log entries in order, use `--buffer-window`.'),
+    'DESCRIPTION': """
+         {command} streams newly received log entries. Log entries matching
+         *log-filter* are returned in the order that they were received by
+         Cloud Logging. If the log entries come from multiple logs, then
+         entries from different logs might be intermingled in the results. To
+         help return log entries in order, use `--buffer-window`.
+
+         Before you can use {command}, you must complete the installation
+         instructions at
+         [Live tailing log entries](https://cloud.google.com/logging/docs/reference/tools/gcloud-logging#live-tailing).
+
+         For the quotas and limits associated with {command},
+         see [Logging API quotas and limits](https://cloud.google.com/logging/quotas#api-limits).
+    """,
     'EXAMPLES':
         """\
         To stream log entries from Google Compute Engine instances, run:

@@ -200,6 +200,9 @@ class Instance(_messages.Message):
       DIRECT_PEERING.
     StateValueValuesEnum: Output only. The current state of this instance.
     TierValueValuesEnum: Required. The service tier of the instance.
+    TransitEncryptionModeValueValuesEnum: Optional. The In-transit encryption
+      mode of Redis instance. If not provided, in-transit encryption is
+      disabled for instance.
 
   Messages:
     LabelsValue: Resource labels to represent user provided metadata
@@ -215,6 +218,9 @@ class Instance(_messages.Message):
       protects the instance against zonal failures by provisioning it across
       two zones. If provided, it must be a different zone from the one
       provided in location_id.
+    authEnabled: Optional. Indicates whether OSS Redis AUTH is enabled for the
+      instance. If set to "true" AUTH is enabled on the instance. Default
+      value is "false" meaning AUTH is disabled.
     authorizedNetwork: Optional. The full name of the Google Compute Engine
       [network](https://cloud.google.com/vpc/docs/vpc) to which the instance
       is connected. If left unspecified, the `default` network will be used.
@@ -265,10 +271,15 @@ class Instance(_messages.Message):
       unused /29 block, for example, 10.0.0.0/29 or 192.168.0.0/29. Ranges
       must be unique and non-overlapping with existing subnets in an
       authorized network.
+    serverCaCerts: Output only. List of server CA certificates for the
+      instance.
     state: Output only. The current state of this instance.
     statusMessage: Output only. Additional information about the current
       status of this instance, if available.
     tier: Required. The service tier of the instance.
+    transitEncryptionMode: Optional. The In-transit encryption mode of Redis
+      instance. If not provided, in-transit encryption is disabled for
+      instance.
   """
 
   class ConnectModeValueValuesEnum(_messages.Enum):
@@ -329,6 +340,20 @@ class Instance(_messages.Message):
     BASIC = 1
     STANDARD_HA = 2
 
+  class TransitEncryptionModeValueValuesEnum(_messages.Enum):
+    r"""Optional. The In-transit encryption mode of Redis instance. If not
+    provided, in-transit encryption is disabled for instance.
+
+    Values:
+      TRANSIT_ENCRYPTION_MODE_UNSPECIFIED: Not set.
+      SERVER_AUTHENTICATION: Client to Server traffic encryption enabled with
+        server authentication.
+      DISABLED: In-transit encryption is disabled for instance.
+    """
+    TRANSIT_ENCRYPTION_MODE_UNSPECIFIED = 0
+    SERVER_AUTHENTICATION = 1
+    DISABLED = 2
+
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
     r"""Resource labels to represent user provided metadata
@@ -384,24 +409,37 @@ class Instance(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   alternativeLocationId = _messages.StringField(1)
-  authorizedNetwork = _messages.StringField(2)
-  connectMode = _messages.EnumField('ConnectModeValueValuesEnum', 3)
-  createTime = _messages.StringField(4)
-  currentLocationId = _messages.StringField(5)
-  displayName = _messages.StringField(6)
-  host = _messages.StringField(7)
-  labels = _messages.MessageField('LabelsValue', 8)
-  locationId = _messages.StringField(9)
-  memorySizeGb = _messages.IntegerField(10, variant=_messages.Variant.INT32)
-  name = _messages.StringField(11)
-  persistenceIamIdentity = _messages.StringField(12)
-  port = _messages.IntegerField(13, variant=_messages.Variant.INT32)
-  redisConfigs = _messages.MessageField('RedisConfigsValue', 14)
-  redisVersion = _messages.StringField(15)
-  reservedIpRange = _messages.StringField(16)
-  state = _messages.EnumField('StateValueValuesEnum', 17)
-  statusMessage = _messages.StringField(18)
-  tier = _messages.EnumField('TierValueValuesEnum', 19)
+  authEnabled = _messages.BooleanField(2)
+  authorizedNetwork = _messages.StringField(3)
+  connectMode = _messages.EnumField('ConnectModeValueValuesEnum', 4)
+  createTime = _messages.StringField(5)
+  currentLocationId = _messages.StringField(6)
+  displayName = _messages.StringField(7)
+  host = _messages.StringField(8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  locationId = _messages.StringField(10)
+  memorySizeGb = _messages.IntegerField(11, variant=_messages.Variant.INT32)
+  name = _messages.StringField(12)
+  persistenceIamIdentity = _messages.StringField(13)
+  port = _messages.IntegerField(14, variant=_messages.Variant.INT32)
+  redisConfigs = _messages.MessageField('RedisConfigsValue', 15)
+  redisVersion = _messages.StringField(16)
+  reservedIpRange = _messages.StringField(17)
+  serverCaCerts = _messages.MessageField('TlsCertificate', 18, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 19)
+  statusMessage = _messages.StringField(20)
+  tier = _messages.EnumField('TierValueValuesEnum', 21)
+  transitEncryptionMode = _messages.EnumField('TransitEncryptionModeValueValuesEnum', 22)
+
+
+class InstanceAuthString(_messages.Message):
+  r"""Instance AUTH string details.
+
+  Fields:
+    authString: AUTH string set on the instance.
+  """
+
+  authString = _messages.StringField(1)
 
 
 class ListInstancesResponse(_messages.Message):
@@ -741,6 +779,18 @@ class RedisProjectsLocationsInstancesFailoverRequest(_messages.Message):
   name = _messages.StringField(2, required=True)
 
 
+class RedisProjectsLocationsInstancesGetAuthStringRequest(_messages.Message):
+  r"""A RedisProjectsLocationsInstancesGetAuthStringRequest object.
+
+  Fields:
+    name: Required. Redis instance resource name using the form:
+      `projects/{project_id}/locations/{location_id}/instances/{instance_id}`
+      where `location_id` refers to a GCP region.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class RedisProjectsLocationsInstancesGetRequest(_messages.Message):
   r"""A RedisProjectsLocationsInstancesGetRequest object.
 
@@ -1002,6 +1052,28 @@ class Status(_messages.Message):
   code = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   details = _messages.MessageField('DetailsValueListEntry', 2, repeated=True)
   message = _messages.StringField(3)
+
+
+class TlsCertificate(_messages.Message):
+  r"""TlsCertificate Resource
+
+  Fields:
+    cert: PEM representation.
+    createTime: Output only. The time when the certificate was created in [RFC
+      3339](https://tools.ietf.org/html/rfc3339) format, for example
+      `2020-05-18T00:00:00.094Z`.
+    expireTime: Output only. The time when the certificate expires in [RFC
+      3339](https://tools.ietf.org/html/rfc3339) format, for example
+      `2020-05-18T00:00:00.094Z`.
+    serialNumber: Serial number, as extracted from the certificate.
+    sha1Fingerprint: Sha1 Fingerprint of the certificate.
+  """
+
+  cert = _messages.StringField(1)
+  createTime = _messages.StringField(2)
+  expireTime = _messages.StringField(3)
+  serialNumber = _messages.StringField(4)
+  sha1Fingerprint = _messages.StringField(5)
 
 
 class UpgradeInstanceRequest(_messages.Message):

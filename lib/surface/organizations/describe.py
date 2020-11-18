@@ -22,20 +22,22 @@ import textwrap
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.organizations import flags
-from googlecloudsdk.command_lib.organizations import orgs_base
+from googlecloudsdk.command_lib.organizations import org_utils
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class Describe(orgs_base.OrganizationCommand, base.DescribeCommand):
+class Describe(base.DescribeCommand):
   """Show metadata for an organization.
 
-  Shows metadata for an organization, given a valid organization ID.
+  Shows metadata for an organization, given a valid organization ID. If an
+  organization domain is supplied instead, this command will attempt to find
+  the organization by domain name.
 
   This command can fail for the following reasons:
       * The organization specified does not exist.
       * The active account does not have permission to access the given
         organization.
+      * The domain name supplied does not correspond to a unique organization
+        ID.
   """
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\
@@ -43,6 +45,11 @@ class Describe(orgs_base.OrganizationCommand, base.DescribeCommand):
           ID `3589215982`:
 
             $ {command} 3589215982
+
+          The following command prints metadata for an organization associated
+          with the domain ``example.com'':
+
+            $ {command} example.com
     """),
   }
 
@@ -51,9 +58,8 @@ class Describe(orgs_base.OrganizationCommand, base.DescribeCommand):
     flags.IdArg('you want to describe.').AddToParser(parser)
 
   def Run(self, args):
-    service = self.OrganizationsClient()
-    ref = self.GetOrganizationRef(args.id)
-    request = (service.client.MESSAGES_MODULE
-               .CloudresourcemanagerOrganizationsGetRequest(
-                   organizationsId=ref.organizationsId))
-    return service.Get(request)
+    org = org_utils.GetOrganization(args.id)
+    if org is not None:
+      return org
+    else:
+      raise org_utils.UnknownOrganizationError(args.id)

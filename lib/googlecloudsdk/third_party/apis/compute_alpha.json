@@ -4,7 +4,7 @@
  "id": "compute:alpha",
  "name": "compute",
  "version": "alpha",
- "revision": "20201023",
+ "revision": "20201106",
  "title": "Compute Engine API",
  "description": "Creates and runs virtual machines on Google Cloud Platform.",
  "ownerDomain": "google.com",
@@ -3717,7 +3717,7 @@
    "properties": {
     "bindingId": {
      "type": "string",
-     "description": "A client-specified ID for this binding. Expected to be globally unique to support the internal bindings-by-ID API."
+     "description": ""
     },
     "condition": {
      "$ref": "Expr",
@@ -10149,6 +10149,13 @@
       "type": "string"
      }
     },
+    "secureTags": {
+     "type": "array",
+     "description": "Secure tags to apply to this instance. These can be later modified by the update method. Maximum number of secure tags allowed is 300.",
+     "items": {
+      "type": "string"
+     }
+    },
     "selfLink": {
      "type": "string",
      "description": "[Output Only] Server-defined URL for this resource."
@@ -11256,6 +11263,22 @@
     "minimalAction": {
      "type": "string",
      "description": "Minimal action to be taken on an instance. You can specify either RESTART to restart existing instances or REPLACE to delete and create new instances from the target template. If you specify a RESTART, the Updater will attempt to perform that action only. However, if the Updater determines that the minimal action you specify is not enough to perform the update, it might perform a more disruptive action.",
+     "enum": [
+      "NONE",
+      "REFRESH",
+      "REPLACE",
+      "RESTART"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      "",
+      ""
+     ]
+    },
+    "mostDisruptiveAllowedAction": {
+     "type": "string",
+     "description": "Most disruptive action that is allowed to be taken on an instance. You can specify either NONE to forbid any actions, REFRESH to allow actions that do not need instance restart, RESTART to allow actions that can be applied without instance replacing or REPLACE to allow all possible actions. If the Updater determines that the minimal update action needed is more disruptive than most disruptive allowed action you specify it will not perform the update at all.",
      "enum": [
       "NONE",
       "REFRESH",
@@ -16539,7 +16562,7 @@
   "NetworkEndpointGroup": {
    "id": "NetworkEndpointGroup",
    "type": "object",
-   "description": "Represents a collection of network endpoints.\n\nA network endpoint group (NEG) defines how a set of endpoints should be reached, whether they are reachable, and where they are located. For more information about using NEGs, see  Setting up internet NEGs,  Setting up zonal NEGs, or  Setting up serverless NEGs. (== resource_for {$api_version}.networkEndpointGroups ==) (== resource_for {$api_version}.globalNetworkEndpointGroups ==) (== resource_for {$api_version}.regionNetworkEndpointGroups ==)",
+   "description": "Represents a collection of network endpoints.\n\nA network endpoint group (NEG) defines how a set of endpoints should be reached, whether they are reachable, and where they are located. For more information about using NEGs, see  Setting up external HTTP(S) Load Balancing with internet NEGs,  Setting up zonal NEGs, or  Setting up external HTTP(S) Load Balancing with serverless NEGs. (== resource_for {$api_version}.networkEndpointGroups ==) (== resource_for {$api_version}.globalNetworkEndpointGroups ==) (== resource_for {$api_version}.regionNetworkEndpointGroups ==)",
    "properties": {
     "annotations": {
      "type": "object",
@@ -17290,6 +17313,20 @@
      "items": {
       "$ref": "AccessConfig"
      }
+    },
+    "ipv6AccessType": {
+     "type": "string",
+     "description": "[Output Only] One of EXTERNAL, INTERNAL to indicate whether the IP can be accessed from the Internet. This field is always inherited from its subnetwork.\n\nValid only if stackType is IPV4_IPV6.",
+     "enum": [
+      "EXTERNAL",
+      "INTERNAL",
+      "UNSPECIFIED_IPV6_ACCESS_TYPE"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      ""
+     ]
     },
     "ipv6Address": {
      "type": "string",
@@ -18059,6 +18096,10 @@
    "properties": {
     "duration": {
      "type": "string",
+     "description": "[Output only] A predetermined duration for the window, automatically chosen to be the smallest possible in the given scenario."
+    },
+    "maintenanceDuration": {
+     "$ref": "Duration",
      "description": "[Output only] A predetermined duration for the window, automatically chosen to be the smallest possible in the given scenario."
     },
     "startTime": {
@@ -22046,6 +22087,7 @@
       "PREEMPTIBLE_NVIDIA_V100_GPUS",
       "PRIVATE_V6_ACCESS_SUBNETWORKS",
       "PSC_GOOGLE_APIS_FORWARDING_RULES_PER_NETWORK",
+      "PSC_ILB_CONSUMER_FORWARDING_RULES_PER_PRODUCER_NETWORK",
       "PUBLIC_ADVERTISED_PREFIXES",
       "PUBLIC_DELEGATED_PREFIXES",
       "REGIONAL_AUTOSCALERS",
@@ -22077,6 +22119,7 @@
       "XPN_SERVICE_PROJECTS"
      ],
      "enumDescriptions": [
+      "",
       "",
       "",
       "",
@@ -26487,11 +26530,11 @@
    "properties": {
     "lastStartTime": {
      "type": "string",
-     "description": "[Output Only] The last time the scaling schedule became active. Note: this is a timestamp when a schedule actually became active, not when it was planned to do so. The timestamp is an RFC3339 string in RFC3339 text format."
+     "description": "[Output Only] The last time the scaling schedule became active. Note: this is a timestamp when a schedule actually became active, not when it was planned to do so. The timestamp is in RFC3339 text format."
     },
     "nextStartTime": {
      "type": "string",
-     "description": "[Output Only] The next time the scaling schedule will become active. Note: this is a timestamp when a schedule is planned to run, but the actual time might be slightly different. The timestamp is an RFC3339 string in RFC3339 text format."
+     "description": "[Output Only] The next time the scaling schedule will become active. Note: this is a timestamp when a schedule is planned to run, but the actual time might be slightly different. The timestamp is in RFC3339 text format."
     },
     "state": {
      "type": "string",
@@ -26984,7 +27027,7 @@
     },
     "priority": {
      "type": "integer",
-     "description": "An integer indicating the priority of a rule in the list. The priority must be a positive value between 0 and 2147483647. Rules are evaluated from highest to lowest priority where 0 is the highest priority and 2147483647 is the lowest prority.",
+     "description": "An integer indicating the priority of a rule in the list. The priority must be a positive value between 0 and 2147483647. Rules are evaluated from highest to lowest priority where 0 is the highest priority and 2147483647 is the lowest priority.",
      "format": "int32"
     },
     "rateLimitOptions": {
@@ -27317,6 +27360,7 @@
    "properties": {
     "connectionPreference": {
      "type": "string",
+     "description": "The connection preference of service attachment. The value can be set to ACCEPT_AUTOMATIC. An ACCEPT_AUTOMATIC service attachment is one that always accepts the connection from consumer forwarding rules.",
      "enum": [
       "ACCEPT_AUTOMATIC",
       "CONNECTION_PREFERENCE_UNSPECIFIED"
@@ -27328,7 +27372,7 @@
     },
     "consumerForwardingRules": {
      "type": "array",
-     "description": "An array of forwarding rules for all the consumers connected to this service attachment.",
+     "description": "[Output Only] An array of forwarding rules for all the consumers connected to this service attachment.",
      "items": {
       "$ref": "ServiceAttachmentConsumerForwardingRule"
      }
@@ -61120,7 +61164,7 @@
      "id": "compute.securityPolicies.patch",
      "path": "projects/{project}/global/securityPolicies/{securityPolicy}",
      "httpMethod": "PATCH",
-     "description": "Patches the specified policy with the data included in the request.",
+     "description": "Patches the specified policy with the data included in the request. This cannot be used to be update the rules in the policy. Please use the per rule methods like addRule, patchRule, and removeRule instead.",
      "parameters": {
       "project": {
        "type": "string",
@@ -62920,7 +62964,7 @@
      "id": "compute.subnetworks.patch",
      "path": "projects/{project}/regions/{region}/subnetworks/{subnetwork}",
      "httpMethod": "PATCH",
-     "description": "Patches the specified subnetwork with the data included in the request. Only certain fields can up updated with a patch request as indicated in the field descriptions. You must specify the current fingerprint of the subnetwork resource being patched.",
+     "description": "Patches the specified subnetwork with the data included in the request. Only certain fields can be updated with a patch request as indicated in the field descriptions. You must specify the current fingerprint of the subnetwork resource being patched.",
      "parameters": {
       "drainTimeoutSeconds": {
        "type": "integer",

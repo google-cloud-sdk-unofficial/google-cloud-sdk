@@ -44,11 +44,40 @@ class RequestConfig(object):
   """Arguments object for parameters shared between cloud providers.
 
   Attributes:
+      md5_hash (str): MD5 digest to use for validation.
       predefined_acl_string (str): ACL to be set on the object.
   """
 
-  def __init__(self, predefined_acl_string=None):
+  def __init__(self, md5_hash=None, predefined_acl_string=None):
+    self.md5_hash = md5_hash
     self.predefined_acl_string = predefined_acl_string
+
+  def __eq__(self, other):
+    return (isinstance(self, type(other)) and
+            isinstance(other, RequestConfig) and
+            self.md5_hash == other.md5_hash and
+            self.predefined_acl_string == other.predefined_acl_string)
+
+
+# TODO(b/172849424) Refactor RequestConfigs as a whole to avoid this.
+def convert_to_provider_request_config(generic_request_config,
+                                       provider_request_config_type):
+  """Converts RequestConfig to provider-specific version (ex: GcsRequestConfig).
+
+  Args:
+    generic_request_config (RequestConfig|None): This object's properties will
+      be carried over to the specified provider type.
+    provider_request_config_type (RequestConfig): Uninitialized reference to the
+      class of a RequestConfig child type.
+
+  Returns:
+    RequestConfig child class with properties carried over from parent version.
+  """
+  if not generic_request_config:
+    return provider_request_config_type()
+  return provider_request_config_type(
+      md5_hash=generic_request_config.md5_hash,
+      predefined_acl_string=generic_request_config.predefined_acl_string)
 
 
 class CloudApi(object):
@@ -271,15 +300,12 @@ class CloudApi(object):
     raise NotImplementedError('copy_object must be overridden')
 
   def download_object(self,
-                      bucket_name,
-                      object_name,
+                      cloud_resource,
                       download_stream,
                       compressed_encoding=False,
                       decryption_wrapper=None,
                       digesters=None,
                       download_strategy=DownloadStrategy.ONE_SHOT,
-                      generation=None,
-                      object_size=None,
                       progress_callback=None,
                       serialization_data=None,
                       start_byte=0,
@@ -287,8 +313,8 @@ class CloudApi(object):
     """Gets object data.
 
     Args:
-      bucket_name (str): Bucket containing the object.
-      object_name (str): Object name.
+      cloud_resource (resource_reference.ObjectResource): Contains
+          metadata and information about object being downloaded.
       download_stream (stream): Stream to send the object data to.
       compressed_encoding (bool): If true, object is stored with a compressed
           encoding.
@@ -302,8 +328,6 @@ class CloudApi(object):
           successfully digested on-the-fly.
       download_strategy (DownloadStrategy): Cloud API download strategy to use
           for download.
-      generation (string): Generation of the object to retrieve.
-      object_size (int): Total size of the object being downloaded.
       progress_callback (function): Optional callback function for progress
           notifications. Receives calls with arguments
           (bytes_transferred, total_size).
@@ -327,16 +351,16 @@ class CloudApi(object):
     raise NotImplementedError('download_object must be overridden.')
 
   def upload_object(self,
-                    upload_stream,
-                    upload_resource,
+                    source_stream,
+                    destination_resource,
                     progress_callback=None,
                     request_config=None):
     """Uploads object data and metadata.
 
     Args:
-      upload_stream (stream): Seekable stream of object data.
-      upload_resource (resource_reference.FileObjectResource): Resource
-          containing the correct metadata to upload.
+      source_stream (stream): Seekable stream of object data.
+      destination_resource  (resource_reference.ObjectResource|UnknownResource):
+          Contains the correct metadata to upload.
       progress_callback (function): Callback function for progress
           notifications. Receives calls with arguments (bytes_transferred,
           total_size).

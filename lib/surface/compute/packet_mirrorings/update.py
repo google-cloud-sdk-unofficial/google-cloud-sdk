@@ -26,13 +26,14 @@ from googlecloudsdk.command_lib.compute.packet_mirrorings import flags
 from googlecloudsdk.command_lib.compute.packet_mirrorings import utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine packet mirroring policy."""
 
   PACKET_MIRRORING_ARG = None
 
-  enable_filter_direction = False
+  enable_filter_direction = True
 
   @classmethod
   def Args(cls, parser):
@@ -224,10 +225,3 @@ Update.detailed_help = {
           --region us-central1 --enable
     """,
 }
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
-  """Update a Google Compute Engine packet mirroring policy."""
-
-  enable_filter_direction = True

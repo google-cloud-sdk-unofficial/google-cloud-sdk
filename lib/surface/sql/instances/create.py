@@ -85,6 +85,9 @@ def AddBaseArgs(parser):
   flags.AddInstanceCollation(parser)
   flags.AddDatabaseFlags(parser)
   flags.AddEnableBinLog(parser, show_negated_in_help=False)
+  flags.AddRetainedBackupsCount(parser)
+  flags.AddRetainedTransactionLogDays(parser)
+
   parser.add_argument(
       '--failover-replica-name',
       required=False,
@@ -99,6 +102,10 @@ def AddBaseArgs(parser):
   flags.AddDenyMaintenancePeriodStartDate(parser)
   flags.AddDenyMaintenancePeriodEndDate(parser)
   flags.AddDenyMaintenancePeriodTime(parser)
+  flags.AddInsightsConfigQueryInsightsEnabled(parser)
+  flags.AddInsightsConfigQueryStringLength(parser)
+  flags.AddInsightsConfigRecordApplicationTags(parser)
+  flags.AddInsightsConfigRecordClientAddress(parser)
   parser.add_argument(
       '--master-instance-name',
       required=False,
