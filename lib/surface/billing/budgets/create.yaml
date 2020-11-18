@@ -74,8 +74,10 @@
       repeated: false
       api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.creditTypesTreatment
       help_text: |
-        Whether to include all credit types include when calculating the actual spend against
-        the budget. If this is not specified, then all credit types are used in the calculation.
+        Whether to include all credit types when calculating the actual spend against the budget. If
+        this is not specified, then all credit types are used in the calculation. If this is set to
+        include-specified-credits, then --filter-credit-types must be specified with a nonempty list
+        of credits.
     - arg_name: filter-services
       api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.services
       help_text: |
@@ -104,6 +106,12 @@
         Single label and value pair specifying that usage from only this set of labeled resources
         should be included in the budget. Currently, multiple entries or multiple values per entry
         are not allowed. If omitted, the report will include all labeled and unlabeled usage.
+    - arg_name: filter-credit-types
+      api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.creditTypes
+      help_text: |
+        Set of credit types, specifying that usage from only this set of credits should be included
+        in the budget. If a nonempty list is specified, then --credit-types-treatment must be
+        include-specified-credits.
     - arg_name: all-updates-rule-pubsub-topic
       api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.allUpdatesRule.pubsubTopic
       help_text: |

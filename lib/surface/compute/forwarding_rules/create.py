@@ -411,7 +411,7 @@ class CreateBeta(Create):
   _support_global_access = True
   _support_l7_internal_load_balancing = True
   _support_target_grpc_proxy = True
-  _support_psc_google_apis = False
+  _support_psc_google_apis = True
   _support_all_protocol = False
   _support_target_service_attachment = False
 

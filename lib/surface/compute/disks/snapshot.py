@@ -64,7 +64,7 @@ DETAILED_HELP = {
 }
 
 
-def _CommonArgs(parser, snapshot_chain_enabled=False):
+def _CommonArgs(parser):
   """Add parser arguments common to all tracks."""
   SnapshotDisks.disks_arg.AddArgument(parser)
 
@@ -90,8 +90,7 @@ def _CommonArgs(parser, snapshot_chain_enabled=False):
       alphanumeric characters or dashes. The name must not exceed 63 characters
       and must not contain special symbols. All characters must be lowercase.
       """)
-  if snapshot_chain_enabled:
-    snap_flags.AddChainArg(parser)
+  snap_flags.AddChainArg(parser)
   flags.AddGuestFlushFlag(parser, 'snapshot')
   flags.AddStorageLocationFlag(parser, 'snapshot')
   csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
@@ -102,7 +101,6 @@ def _CommonArgs(parser, snapshot_chain_enabled=False):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class SnapshotDisks(base.SilentCommand):
   """Create snapshots of Google Compute Engine persistent disks."""
-  snapshot_chain_enabled = False
 
   @classmethod
   def Args(cls, parser):
@@ -154,11 +152,10 @@ class SnapshotDisks(base.SilentCommand):
           csek_keys, disk_ref, client)
 
       snapshot_message = messages.Snapshot(
-          name=snapshot_ref.Name(), description=args.description,
-          sourceDiskEncryptionKey=disk_key_or_none)
-
-      if self.snapshot_chain_enabled:
-        snapshot_message.chainName = args.chain_name
+          name=snapshot_ref.Name(),
+          description=args.description,
+          sourceDiskEncryptionKey=disk_key_or_none,
+          chainName=args.chain_name)
 
       if (hasattr(args, 'storage_location') and
           args.IsSpecified('storage_location')):
@@ -219,25 +216,23 @@ class SnapshotDisks(base.SilentCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SnapshotDisksBeta(SnapshotDisks):
   """Create snapshots of Google Compute Engine persistent disks beta."""
-  snapshot_chain_enabled = True
 
   @classmethod
   def Args(cls, parser):
     SnapshotDisks.disks_arg = disks_flags.MakeDiskArg(plural=True)
     labels_util.AddCreateLabelsFlags(parser)
-    _CommonArgs(parser, snapshot_chain_enabled=cls.snapshot_chain_enabled)
+    _CommonArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SnapshotDisksAlpha(SnapshotDisksBeta):
   """Create snapshots of Google Compute Engine persistent disks alpha."""
-  snapshot_chain_enabled = True
 
   @classmethod
   def Args(cls, parser):
     SnapshotDisks.disks_arg = disks_flags.MakeDiskArg(plural=True)
     labels_util.AddCreateLabelsFlags(parser)
-    _CommonArgs(parser, snapshot_chain_enabled=cls.snapshot_chain_enabled)
+    _CommonArgs(parser)
 
   def Run(self, args):
     return self._Run(args)

@@ -111,6 +111,22 @@ class ConfigmanagementFeatureState(object):
         return
       self.policy_controller_state = deployment_state.name
 
+  def update_pending_state(self, feature_spec_mc, feature_state_mc):
+    """update config sync and policy controller with pending state for the membership that has nomos installed.
+
+    Args:
+      feature_spec_mc: MembershipConfig
+      feature_state_mc: MembershipConfig
+    """
+    if self.config_sync.__str__() in [
+        'SYNCED', 'NOT_CONFIGURED', 'NOT_INSTALLED', NA
+    ] and feature_spec_mc.configSync != feature_state_mc.configSync:
+      self.config_sync = 'PENDING'
+    if self.policy_controller_state.__str__() in [
+        'INSTALLED', 'GatekeeperAudit NOT_INSTALLED', NA
+    ] and feature_spec_mc.policyController != feature_state_mc.policyController:
+      self.policy_controller_state = 'PENDING'
+
 
 class Status(base.ListCommand):
   r"""Prints the status of all clusters with Config Management installed.
@@ -155,22 +171,16 @@ class Status(base.ListCommand):
               self.FEATURE_DISPLAY_NAME, project_id))
     if not memberships:
       return None
-    if response.featureState is None or response.featureState.detailsByMembership is None:
-      membership_details = []
-    else:
-      membership_details = response.featureState.detailsByMembership.additionalProperties
     acm_status = []
     acm_errors = []
-    fs_memberships = {
-        os.path.basename(membership_detail.key): membership_detail
-        for membership_detail in membership_details
-    }
+    feature_spec_memberships = parse_feature_spec_memberships(response)
+    feature_state_memberships = parse_feature_state_memberships(response)
     for name in memberships:
       cluster = ConfigmanagementFeatureState(name)
-      if name not in fs_memberships:
+      if name not in feature_state_memberships:
         acm_status.append(cluster)
         continue
-      md = fs_memberships[name]
+      md = feature_state_memberships[name]
       fs = md.value.configmanagementFeatureState
       # (b/153587485) Show FeatureState.code if it's not OK
       # as it indicates an unreachable cluster or a dated syncState.code
@@ -194,8 +204,33 @@ class Status(base.ListCommand):
               append_error(name, fs.configSyncState.syncState.errors,
                            acm_errors)
             cluster.update_policy_controller_state(fs)
+            if name in feature_spec_memberships:
+              cluster.update_pending_state(feature_spec_memberships[name],
+                                           fs.membershipConfig)
       acm_status.append(cluster)
     return {'acm_errors': acm_errors, 'acm_status': acm_status}
+
+
+def parse_feature_spec_memberships(response):
+  if response.configmanagementFeatureSpec is None or response.configmanagementFeatureSpec.membershipConfigs is None:
+    feature_spec_membership_details = []
+  else:
+    feature_spec_membership_details = response.configmanagementFeatureSpec.membershipConfigs.additionalProperties
+  return {
+      membership_detail.key: membership_detail.value
+      for membership_detail in feature_spec_membership_details
+  }
+
+
+def parse_feature_state_memberships(response):
+  if response.featureState is None or response.featureState.detailsByMembership is None:
+    feature_state_membership_details = []
+  else:
+    feature_state_membership_details = response.featureState.detailsByMembership.additionalProperties
+  return {
+      os.path.basename(membership_detail.key): membership_detail
+      for membership_detail in feature_state_membership_details
+  }
 
 
 def has_operator_state(fs):

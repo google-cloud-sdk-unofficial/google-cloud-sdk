@@ -23,10 +23,13 @@ else:
   import types
   del sys.modules['enum']
   with no_third_party_dir_on_path():
-    spec = importlib.util.find_spec('enum')
-    if sys.version_info < (3, 5,):
-      enum_module = types.ModuleType('enum')
+    if sys.version_info[0] == 3 and sys.version_info[1] == 9:
+      import enum
     else:
-      enum_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(enum_module)
-    sys.modules['enum'] = enum_module
+      spec = importlib.util.find_spec('enum')
+      if sys.version_info < (3, 5,):
+        enum_module = types.ModuleType('enum')
+      else:
+        enum_module = importlib.util.module_from_spec(spec)
+      spec.loader.exec_module(enum_module)
+      sys.modules['enum'] = enum_module

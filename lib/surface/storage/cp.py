@@ -58,14 +58,24 @@ class Cp(base.Command):
     parser.add_argument('source', nargs='+', help='The source path(s) to copy.')
     parser.add_argument('destination', help='The destination path.')
     parser.add_argument(
-        '-R', '-r', '--recursive',
+        '--content-md5',
+        type=str,
+        help=('Manually set a MD5 hash digest for the contents of an upload'
+              ' file. Cannot be used when uploading multiple files. The custom'
+              ' digest will be validated in the cloud.'))
+    parser.add_argument(
+        '-R',
+        '-r',
+        '--recursive',
         action='store_true',
         help='Recursively copy the contents of any directories that match the'
-             ' source path expression.')
+        ' source path expression.')
 
   def Run(self, args):
     source_expansion_iterator = name_expansion.NameExpansionIterator(
         args.source, recursion_requested=args.recursive)
     task_iterator = copy_task_iterator.CopyTaskIterator(
-        source_expansion_iterator, args.destination)
+        source_expansion_iterator,
+        args.destination,
+        custom_md5_digest=args.content_md5)
     task_executor.ExecuteTasks(task_iterator)

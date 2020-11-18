@@ -21,6 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class HL7v2StoreExports(base.Group):
   """Manage Cloud Healthcare API HL7v2 store exports."""

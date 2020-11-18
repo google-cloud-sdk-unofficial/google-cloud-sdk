@@ -15,7 +15,7 @@
 import re
 from os import path
 
-import yaml
+from ruamel import yaml
 
 from kubernetes import client
 
@@ -102,7 +102,7 @@ def create_from_dict(k8s_client,
     for yml_object in data["items"]:
       # Mitigate cases when server returns a xxxList object
       # See kubernetes-client/python#586
-      if kind is not "":
+      if kind != "":
         yml_object["apiVersion"] = data["apiVersion"]
         yml_object["kind"] = kind
       try:

@@ -88,6 +88,7 @@ class Update(base.Command):
     flags.AddNoTrafficFlag(parser)
     flags.AddServiceAccountFlag(parser)
     flags.AddImageArg(parser, required=False)
+    flags.AddClientNameAndVersionFlags(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
@@ -113,7 +114,8 @@ class Update(base.Command):
       googlecloudsdk.api_lib.run.Service, the updated service
     """
     changes = flags.GetConfigurationChanges(args)
-    if not changes:
+    if not changes or (len(changes) == 1 and isinstance(
+        changes[0], config_changes.SetClientNameAndVersionAnnotationChange)):
       raise exceptions.NoConfigurationChangeError(
           'No configuration change requested. '
           'Did you mean to include the flags `--update-env-vars`, '

@@ -21,6 +21,7 @@
   "servicePath": "",
   "baseUrl": "https://sqladmin.googleapis.com/",
   "batchPath": "batch",
+  "fullyEncodeReservedExpansion": true,
   "parameters": {
     "access_token": {
       "type": "string",
@@ -113,7 +114,7 @@
   "schemas": {
     "Operation": {
       "id": "Operation",
-      "description": "An Operation resource. For successful operations that return an Operation resource, only the fields relevant to the operation are populated in the resource.",
+      "description": "An Operation resource. For successful operations that return an Operation resource, only the fields relevant to the operation are populated in the resource. Next field: 18",
       "type": "object",
       "properties": {
         "kind": {
@@ -247,6 +248,10 @@
         "exportContext": {
           "description": "The context for export operation, if applicable.",
           "$ref": "ExportContext"
+        },
+        "backupContext": {
+          "description": "The context for backup operation, if applicable.",
+          "$ref": "BackupContext"
         },
         "name": {
           "description": "An identifier that uniquely identifies the operation. You can use this identifier to retrieve the Operations resource that has information about the operation.",
@@ -422,7 +427,7 @@
               "type": "object",
               "properties": {
                 "masterData": {
-                  "description": "Option to include SQL statement required to set up replication. If set to *1*, the dump file includes a CHANGE MASTER TO statement with the binary log coordinates. If set to *2*, the CHANGE MASTER TO statement is written as a SQL comment, and has no effect. All other values are ignored.",
+                  "description": "Option to include SQL statement required to set up replication. If set to *1*, the dump file includes a CHANGE MASTER TO statement with the binary log coordinates, and --set-gtid-purged is set to ON. If set to *2*, the CHANGE MASTER TO statement is written as a SQL comment and has no effect. If set to any value other than *1*, --set-gtid-purged is set to OFF.",
                   "type": "integer",
                   "format": "int32"
                 }
@@ -431,7 +436,7 @@
           }
         },
         "csvExportOptions": {
-          "description": "Options for exporting data as CSV.",
+          "description": "Options for exporting data as CSV. *MySQL* and *PostgreSQL* instances only.",
           "type": "object",
           "properties": {
             "selectQuery": {
@@ -441,7 +446,7 @@
           }
         },
         "fileType": {
-          "description": "The file type for the specified uri. *SQL*: The file contains SQL statements. *CSV*: The file contains CSV data.",
+          "description": "The file type for the specified uri. *SQL*: The file contains SQL statements. *CSV*: The file contains CSV data. *BAK*: The file contains backup data for a SQL Server instance.",
           "type": "string",
           "enumDescriptions": [
             "Unknown file type.",
@@ -459,6 +464,22 @@
         "offload": {
           "description": "Option for export offload.",
           "type": "boolean"
+        }
+      }
+    },
+    "BackupContext": {
+      "id": "BackupContext",
+      "description": "Backup context.",
+      "type": "object",
+      "properties": {
+        "backupId": {
+          "description": "The identifier of the backup.",
+          "type": "string",
+          "format": "int64"
+        },
+        "kind": {
+          "description": "This is always *sql#backupContext*.",
+          "type": "string"
         }
       }
     },
@@ -2162,7 +2183,8 @@
             "The primary instance database parameter setup doesn't allow EM sync.",
             "The gtid_mode is not supported, applicable for MySQL.",
             "SQL Server Agent is not running.",
-            "The table definition is not support due to missing primary key or replica identity, applicable for postgres."
+            "The table definition is not support due to missing primary key or replica identity, applicable for postgres.",
+            "The customer has a definer that will break EM setup."
           ],
           "enum": [
             "SQL_EXTERNAL_SYNC_SETTING_ERROR_TYPE_UNSPECIFIED",
@@ -2185,7 +2207,8 @@
             "INVALID_DB_PARAM",
             "UNSUPPORTED_GTID_MODE",
             "SQLSERVER_AGENT_NOT_RUNNING",
-            "UNSUPPORTED_TABLE_DEFINITION"
+            "UNSUPPORTED_TABLE_DEFINITION",
+            "UNSUPPORTED_DEFINER"
           ]
         },
         "detail": {
@@ -3852,7 +3875,7 @@
                   "type": "string"
                 },
                 "syncMode": {
-                  "description": "External sync mode",
+                  "description": "External sync mode.",
                   "location": "query",
                   "type": "string",
                   "enumDescriptions": [

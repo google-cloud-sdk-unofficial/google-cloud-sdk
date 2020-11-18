@@ -17,7 +17,7 @@
 import enum
 
 
-BASE_URL = 'https://anthosevents.googleapis.com/v1/'
+BASE_URL = 'https://anthosevents.googleapis.com/apis/eventing.knative.dev/v1/'
 DOCS_URL = ''
 
 
@@ -122,13 +122,76 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  NAMESPACES_CUSTOMRESOURCEDEFINITIONS = (
-      'namespaces.customresourcedefinitions',
+  CUSTOMRESOURCEDEFINITIONS = (
+      'customresourcedefinitions',
       '{+name}',
       {
           '':
-              'namespaces/{namespacesId}/customresourcedefinitions/'
-              '{customresourcedefinitionsId}',
+              'customresourcedefinitions/{customresourcedefinitionsId}',
+      },
+      ['name'],
+      True
+  )
+  NAMESPACES_BROKERS = (
+      'namespaces.brokers',
+      '{+name}',
+      {
+          '':
+              'namespaces/{namespacesId}/brokers/{brokersId}',
+      },
+      ['name'],
+      True
+  )
+  NAMESPACES_TRIGGERS = (
+      'namespaces.triggers',
+      '{+name}',
+      {
+          '':
+              'namespaces/{namespacesId}/triggers/{triggersId}',
+      },
+      ['name'],
+      True
+  )
+  NAMESPACES_CLOUDAUDITLOGSSOURCES = (
+      'namespaces.cloudauditlogssources',
+      '{+name}',
+      {
+          '':
+              'namespaces/{namespacesId}/cloudauditlogssources/'
+              '{cloudauditlogssourcesId}',
+      },
+      ['name'],
+      True
+  )
+  NAMESPACES_CLOUDPUBSUBSOURCES = (
+      'namespaces.cloudpubsubsources',
+      '{+name}',
+      {
+          '':
+              'namespaces/{namespacesId}/cloudpubsubsources/'
+              '{cloudpubsubsourcesId}',
+      },
+      ['name'],
+      True
+  )
+  NAMESPACES_CLOUDSCHEDULERSOURCES = (
+      'namespaces.cloudschedulersources',
+      '{+name}',
+      {
+          '':
+              'namespaces/{namespacesId}/cloudschedulersources/'
+              '{cloudschedulersourcesId}',
+      },
+      ['name'],
+      True
+  )
+  NAMESPACES_CLOUDSTORAGESOURCES = (
+      'namespaces.cloudstoragesources',
+      '{+name}',
+      {
+          '':
+              'namespaces/{namespacesId}/cloudstoragesources/'
+              '{cloudstoragesourcesId}',
       },
       ['name'],
       True

@@ -246,6 +246,32 @@ def AddBackupLocation(parser, allow_empty):
   parser.add_argument('--backup-location', required=False, help=help_text)
 
 
+# Currently, MAX_BACKUP_RETENTION_COUNT=365, and MIN_BACKUP_RETENTION_COUNT=1.
+def AddRetainedBackupsCount(parser):
+  help_text = (
+      'How many backups to keep. The valid range is between 1 and 365. The '
+      'default value is 7 if not specified. Applicable only if --no-backups is '
+      'not specified.')
+  parser.add_argument(
+      '--retained-backups-count',
+      type=arg_parsers.BoundedInt(1, 365, unlimited=False),
+      help=help_text)
+
+
+# Currently, MAX_TRANSACTION_LOG_RETENTION_DAYS=7, and
+# MIN_TRANSACTION_LOG_RETENTION_DAYS=1.
+def AddRetainedTransactionLogDays(parser):
+  help_text = (
+      'How many days of transaction logs to keep. The valid range is between '
+      '1 and 7. The default value is 7 if not specified. Only valid when '
+      'point in time recovery is enabled. Keeping more days of transaction '
+      'logs requires bigger storage size')
+  parser.add_argument(
+      '--retained-transaction-log-days',
+      type=arg_parsers.BoundedInt(1, 7, unlimited=False),
+      help=help_text)
+
+
 def AddDatabaseFlags(parser, update=False):
   """Adds the `--database-flags` flag."""
   help_ = ('Comma-separated list of database flags to set on the '
@@ -491,6 +517,49 @@ def AddDenyMaintenancePeriodTime(parser):
       '--deny-maintenance-period-time',
       help='''Time when the deny maintenance period starts or ends,
        that is ``05:00:00".''')
+
+
+def AddInsightsConfigQueryInsightsEnabled(parser, show_negated_in_help=False):
+  kwargs = _GetKwargsForBoolFlag(show_negated_in_help)
+  parser.add_argument(
+      '--insights-config-query-insights-enabled',
+      required=False,
+      help="""Enable query insights feature to provide query and query plan
+        analytics. To disable this feature, use
+        `--no-insights-config-query-insights-enabled` instead.""",
+      **kwargs)
+
+
+def AddInsightsConfigQueryStringLength(parser):
+  parser.add_argument(
+      '--insights-config-query-string-length',
+      required=False,
+      type=arg_parsers.BoundedInt(lower_bound=256, upper_bound=4500),
+      help="""Query string length in bytes to be stored by the query insights
+        feature. Default length is 1024 bytes. Allowed range: 256 to 4500
+        bytes.""")
+
+
+def AddInsightsConfigRecordApplicationTags(parser, show_negated_in_help=False):
+  kwargs = _GetKwargsForBoolFlag(show_negated_in_help)
+  parser.add_argument(
+      '--insights-config-record-application-tags',
+      required=False,
+      help="""Allow application tags to be recorded by the query insights
+        feature. To disable application tag recording, use
+        `--no-insights-record-application-tags` flag instead.""",
+      **kwargs)
+
+
+def AddInsightsConfigRecordClientAddress(parser, show_negated_in_help=False):
+  kwargs = _GetKwargsForBoolFlag(show_negated_in_help)
+  parser.add_argument(
+      '--insights-config-record-client-address',
+      required=False,
+      help="""Allow the client address to be recorded by the query insights
+        feature. To disable client address recording, use
+        `--no-insights-config-record-client-address` instead.""",
+      **kwargs)
 
 
 def AddMemory(parser):

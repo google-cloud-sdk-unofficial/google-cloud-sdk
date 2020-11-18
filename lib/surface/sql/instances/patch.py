@@ -53,10 +53,14 @@ def _PrintAndConfirmWarningMessage(args, database_version):
   # TODO(b/162789572): `in` check is only required until GA.
   active_directory_changed = ('active_directory_domain' in args and
                               args.active_directory_domain is not None)
+  insights_query_length_changed = (
+      'insights_config_query_string_length' in args and
+      args.insights_config_query_string_length is not None)
   if any([
       args.tier,
       args.enable_database_replication is not None,
       active_directory_changed,
+      insights_query_length_changed,
   ]):
     continue_msg = ('WARNING: This patch modifies a value that requires '
                     'your instance to be restarted. Submitting this patch '
@@ -154,6 +158,8 @@ def AddBaseArgs(parser):
   backups_enabled_group = backups_group.add_group()
   flags.AddBackupStartTime(backups_enabled_group)
   flags.AddBackupLocation(backups_enabled_group, allow_empty=True)
+  flags.AddRetainedBackupsCount(backups_enabled_group)
+  flags.AddRetainedTransactionLogDays(backups_enabled_group)
 
   backups_group.add_argument(
       '--no-backup',
@@ -208,6 +214,10 @@ def AddBaseArgs(parser):
       '--remove-deny-maintenance-period',
       action='store_true',
       help='Removes the user-specified deny maintenance period.')
+  flags.AddInsightsConfigQueryInsightsEnabled(parser)
+  flags.AddInsightsConfigQueryStringLength(parser)
+  flags.AddInsightsConfigRecordApplicationTags(parser)
+  flags.AddInsightsConfigRecordClientAddress(parser)
   flags.AddMemory(parser)
   parser.add_argument(
       '--pricing-plan',

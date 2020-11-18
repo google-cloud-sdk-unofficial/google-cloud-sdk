@@ -1,8 +1,8 @@
-try:
-    from gcloud_crcmod.crcmod import *
-    import gcloud_crcmod.predefined
-except ImportError:
-    # Make this backward compatible
-    from crcmod import *
-    import predefined
-__doc__ = crcmod.__doc__
+import sys
+
+if sys.version_info < (3,):
+  from gcloud_crcmod.python2.crcmod import *
+  from gcloud_crcmod.python2 import predefined
+else:
+  from gcloud_crcmod.python3.crcmod import *
+  from gcloud_crcmod.python3 import predefined

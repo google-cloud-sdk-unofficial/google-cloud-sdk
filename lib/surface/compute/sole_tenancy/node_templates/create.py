@@ -48,10 +48,7 @@ def _Run(args, track, enable_disk=False, enable_accelerator=False):
   node_template = util.CreateNodeTemplate(
       node_template_ref,
       args,
-      project=node_template_ref.project,
-      region=node_template_ref.region,
       messages=messages,
-      resource_parser=holder.resources,
       enable_disk=enable_disk,
       enable_accelerator=enable_accelerator)
   request = messages.ComputeNodeTemplatesInsertRequest(

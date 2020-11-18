@@ -403,6 +403,20 @@
           "description": "Output only. The deployed url for the function.",
           "readOnly": true,
           "type": "string"
+        },
+        "securityLevel": {
+          "description": "The security level for the function.",
+          "type": "string",
+          "enumDescriptions": [
+            "Unspecified.",
+            "Requests for a URL that match this handler that do not use HTTPS are automatically redirected to the HTTPS URL with the same path. Query parameters are reserved for the redirect.",
+            "Both HTTP and HTTPS requests with URLs that match the handler succeed without redirects. The application can examine the request to determine which protocol was used and respond accordingly."
+          ],
+          "enum": [
+            "SECURITY_LEVEL_UNSPECIFIED",
+            "SECURE_ALWAYS",
+            "SECURE_OPTIONAL"
+          ]
         }
       }
     },

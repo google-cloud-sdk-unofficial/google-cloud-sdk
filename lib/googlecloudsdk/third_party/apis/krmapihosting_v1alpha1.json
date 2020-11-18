@@ -396,7 +396,7 @@
           "type": "string"
         },
         "gkeResourceLink": {
-          "description": "Output only. AnthosApiEndpoint GCP self link used for identifying the underlying endpoint (GKE cluster currently)",
+          "description": "Output only. KrmApiHost GCP self link used for identifying the underlying endpoint (GKE cluster currently).",
           "readOnly": true,
           "type": "string"
         }

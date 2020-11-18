@@ -74,6 +74,7 @@ class Replace(base.Command):
 
     # Flags not specific to any platform
     flags.AddAsyncFlag(parser)
+    flags.AddClientNameAndVersionFlags(parser)
     parser.add_argument(
         'FILE',
         action='store',

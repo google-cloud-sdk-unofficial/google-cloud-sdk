@@ -31,13 +31,20 @@ class IngressSettingError(exceptions.Error):
   pass
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Update(base.Command):
   """Update service-level settings.
 
-  At present, this command is only used to update ingress traffic settings
-  for an app.
+  Update ingress traffic settings for an app.
   """
+
+  detailed_help = {
+      'EXAMPLES': """To update ingress traffic settings for """
+                  """the default service, run:
+
+              $ {command} default --ingress=internal-only
+                  """,
+  }
 
   @staticmethod
   def Args(parser):

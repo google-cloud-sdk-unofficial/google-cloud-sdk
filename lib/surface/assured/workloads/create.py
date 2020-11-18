@@ -42,8 +42,9 @@ _DETAILED_HELP = {
         * key rotation interval set for every 48 hours
         * with the label: key = 'LabelKey1', value = 'LabelValue1'
         * with the label: key = 'LabelKey2', value = 'LabelValue2'
+        * provisioned resources parent 'folders/789'
 
-          $ {command} --organization=123 --location=us-central1 --display-name=Test-Workload --compliance-regime=FEDRAMP_MODERATE --billing-account=billingAccounts/456 --next-rotation-time=2020-12-30T10:15:00.00Z --rotation-period=172800s --labels=LabelKey1=LabelValue1,LabelKey2=LabelValue2
+          $ {command} --organization=123 --location=us-central1 --display-name=Test-Workload --compliance-regime=FEDRAMP_MODERATE --billing-account=billingAccounts/456 --next-rotation-time=2020-12-30T10:15:00.00Z --rotation-period=172800s --labels=LabelKey1=LabelValue1,LabelKey2=LabelValue2 --provisioned-resources-parent=folders/789
 
         """,
 }
@@ -71,7 +72,8 @@ class Create(base.CreateCommand):
           billing_account=args.billing_account,
           next_rotation_time=args.next_rotation_time,
           rotation_period=args.rotation_period,
-          labels=args.labels)
+          labels=args.labels,
+          provisioned_resources_parent=args.provisioned_resources_parent)
       client = apis.WorkloadsClient(release_track=self.ReleaseTrack())
       self.created_resource = client.Create(
           external_id=args.external_identifier,

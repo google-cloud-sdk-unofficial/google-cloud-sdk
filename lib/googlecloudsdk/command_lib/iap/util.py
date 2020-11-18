@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.iap import util as iap_api
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exc
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.iap import exceptions as iap_exc
@@ -38,12 +39,13 @@ SETTING_RESOURCE_TYPE_ENUM = (APP_ENGINE_RESOURCE_TYPE, WEB_RESOURCE_TYPE,
                               FOLDER_RESOURCE_TYPE)
 
 
-def AddIapIamResourceArgs(parser):
+def AddIapIamResourceArgs(parser, use_region_arg=False):
   """Adds flags for an IAP IAM resource.
 
   Args:
     parser: An argparse.ArgumentParser-like object. It is mocked out in order to
       capture some information, but behaves like an ArgumentParser.
+    use_region_arg: Whether or not to show and accept the region argument.
   """
   group = parser.add_group()
   group.add_argument(
@@ -53,6 +55,11 @@ def AddIapIamResourceArgs(parser):
   group.add_argument(
       '--service',
       help='Service name.')
+  if use_region_arg:
+    group.add_argument(
+        '--region',
+        help='Region name. Should only be specified with `--resource-type=backend-services`.'
+    )
   group.add_argument(
       '--version',
       help='Service version. Should only be specified with '
@@ -77,12 +84,13 @@ def AddIapResourceArgs(parser):
       help='Service name. Required with `--resource-type=backend-services`.')
 
 
-def AddIapSettingArg(parser):
+def AddIapSettingArg(parser, use_region_arg=False):
   """Adds flags for an IAP settings resource.
 
   Args:
     parser: An argparse.ArgumentParser-like object. It is mocked out in order to
       capture some information, but behaves like an ArgumentParser.
+    use_region_arg: Whether or not to show and accept the region argument.
   """
   group = parser.add_group()
   group.add_argument('--organization', help='Organization ID.')
@@ -94,11 +102,17 @@ def AddIapSettingArg(parser):
       help='Resource type of the IAP resource.')
   group.add_argument(
       '--service',
-      help='Service name. Required when resource type is ``app-engine'', optional when resource type is ``compute''.'
+      help="Service name. Optional when ``resource-type'' is ``compute'' or ``app-engine''."
   )
+  if use_region_arg:
+    group.add_argument(
+        '--region',
+        help="Region name. Not applicable for ``app-engine''. Optional when ``resource-type'' is ``compute''."
+    )
   group.add_argument(
       '--version',
-      help='Version name. Optional when resource type is ``app-engine''.')
+      help="Version name. Not applicable for ``compute''. Optional when ``resource-type'' is ``app-engine''."
+  )
 
 
 def AddOauthClientArgs(parser):
@@ -221,6 +235,10 @@ def ParseIapIamResource(release_track, args):
       raise calliope_exc.InvalidArgumentException(
           '--service',
           '`--service` cannot be specified without `--resource-type`.')
+    if release_track == base.ReleaseTrack.ALPHA and args.region:
+      raise calliope_exc.InvalidArgumentException(
+          '--region',
+          '`--region` cannot be specified without `--resource-type`.')
     if args.version:
       raise calliope_exc.InvalidArgumentException(
           '--version',
@@ -229,6 +247,10 @@ def ParseIapIamResource(release_track, args):
         release_track,
         project)
   elif args.resource_type == APP_ENGINE_RESOURCE_TYPE:
+    if release_track == base.ReleaseTrack.ALPHA and args.region:
+      raise calliope_exc.InvalidArgumentException(
+          '--region', '`--region` cannot be specified for '
+          '`--resource-type=app-engine`.')
     if args.service and args.version:
       return iap_api.AppEngineServiceVersion(
           release_track,
@@ -250,17 +272,17 @@ def ParseIapIamResource(release_track, args):
   elif args.resource_type == BACKEND_SERVICES_RESOURCE_TYPE:
     if args.version:
       raise calliope_exc.InvalidArgumentException(
-          '--version',
-          '`--version` cannot be specified for '
+          '--version', '`--version` cannot be specified for '
           '`--resource-type=backend-services`.')
-    if args.service:
-      return iap_api.BackendService(
-          release_track,
-          project,
-          args.service)
-    return iap_api.BackendServices(
-        release_track,
-        project)
+    if release_track == base.ReleaseTrack.ALPHA and args.region:
+      if args.service:
+        return iap_api.BackendService(release_track, project, args.region,
+                                      args.service)
+      else:
+        return iap_api.BackendServices(release_track, project, args.region)
+    elif args.service:
+      return iap_api.BackendService(release_track, project, None, args.service)
+    return iap_api.BackendServices(release_track, project, None)
 
   # This shouldn't be reachable, based on the IAP IAM resource parsing logic.
   raise iap_exc.InvalidIapIamResourceError('Could not parse IAP IAM resource.')
@@ -300,10 +322,7 @@ def ParseIapResource(release_track, args):
             '--service',
             '`--service` must be specified for '
             '`--resource-type=backend-services`.')
-      return iap_api.BackendService(
-          release_track,
-          project,
-          args.service)
+      return iap_api.BackendService(release_track, project, None, args.service)
 
   raise iap_exc.InvalidIapIamResourceError('Could not parse IAP resource.')
 
@@ -369,14 +388,14 @@ def ParseIapSettingsResource(release_track, args):
                 'projects/{0}/iap_web/appengine-{1}/services/{2}'.format(
                     args.project, args.project, args.service))
       elif args.resource_type == COMPUTE_RESOURCE_TYPE:
-        if args.service:
-          return iap_api.IapSettingsResource(
-              release_track, 'projects/{0}/iap_web/compute/services/{1}'.format(
-                  args.project, args.service))
+        path = ['projects', args.project, 'iap_web']
+        if release_track == base.ReleaseTrack.ALPHA and args.region:
+          path.append('compute-{}'.format(args.region))
         else:
-          return iap_api.IapSettingsResource(
-              release_track,
-              'projects/{0}/iap_web/compute'.format(args.project))
+          path.append('compute')
+        if args.service:
+          path.extend(['services', args.service])
+        return iap_api.IapSettingsResource(release_track, '/'.join(path))
       else:
         raise iap_exc.InvalidIapIamResourceError(
             'Unsupported IAP settings resource type.')

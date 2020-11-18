@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iap import util as iap_util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Get(base.Command):
   """Get the setting for an IAP resource."""
   detailed_help = {
@@ -91,3 +92,19 @@ class Get(base.Command):
     iap_setting_ref = iap_util.ParseIapSettingsResource(self.ReleaseTrack(),
                                                         args)
     return iap_setting_ref.GetIapSetting()
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class GetALPHA(Get):
+  """Get the setting for an IAP resource."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser-like object. It is mocked out in order
+        to capture some information, but behaves like an ArgumentParser.
+    """
+    iap_util.AddIapSettingArg(parser, use_region_arg=True)
+    base.URI_FLAG.RemoveFromParser(parser)

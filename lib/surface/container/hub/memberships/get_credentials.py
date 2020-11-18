@@ -31,7 +31,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 KUBECONTEXT_FORMAT = 'connectgateway_{project}_{membership}'
-SERVER_FORMAT = 'https://{env}.googleapis.com/{version}/projects/{project_number}/memberships/{membership}'
+SERVER_FORMAT = 'https://{service_name}/{version}/projects/{project_number}/memberships/{membership}'
 REQUIRED_PERMISSIONS = [
     'gkehub.memberships.get',
     'gkehub.gateway.get',
@@ -99,7 +99,7 @@ class GetCredentials(base.Command):
             project_id,
         'server':
             SERVER_FORMAT.format(
-                env=self.get_url_prefix(),
+                service_name=self.get_service_name(),
                 version=self.GetVersion(),
                 project_number=project_number,
                 membership=membership),
@@ -123,7 +123,7 @@ class GetCredentials(base.Command):
     kubeconfig.SaveToFile()
     return kubeconfig
 
-  def get_url_prefix(self):
+  def get_service_name(self):
     # This function checks environment endpoint overidden configuration for
     # gkehub. The overridden value will be like this:
     # https://autopush-gkehub.sandbox.googleapis.com/.
@@ -138,11 +138,11 @@ class GetCredentials(base.Command):
     hub_endpoint_override = endpoint_overrides.get('gkehub', '')
     if not hub_endpoint_override:
       # hub_endpoint_override will be empty string for Prod.
-      return 'connectgateway'
+      return 'connectgateway.googleapis.com'
     elif 'autopush-gkehub' in hub_endpoint_override:
-      return 'autopush-connectgateway.sandbox'
+      return 'autopush-connectgateway.sandbox.googleapis.com'
     elif 'staging-gkehub' in hub_endpoint_override:
-      return 'staging-connectgateway.sandbox'
+      return 'staging-connectgateway.sandbox.googleapis.com'
     else:
       raise Exception('Unknown api_endpoint_overrides for gkehub.')
 

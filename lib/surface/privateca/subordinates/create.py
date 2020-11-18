@@ -181,16 +181,15 @@ class Create(base.CreateCommand):
     return self.client.projects_locations_certificateAuthorities_certificates.Create(
         cert_request)
 
-  def _ActivateCertificateAuthority(self, ca_ref, certificate):
-    """Activates the given CA using the given certificate."""
+  def _ActivateCertificateAuthority(self, ca_ref, pem_cert, issuer_ref):
+    """Activates the given CA using the given certificate and issuer."""
     activate_request = self.messages.PrivatecaProjectsLocationsCertificateAuthoritiesActivateRequest(
         name=ca_ref.RelativeName(),
         activateCertificateAuthorityRequest=self.messages
         .ActivateCertificateAuthorityRequest(
-            pemCaCertificate=certificate.pemCertificate,
+            pemCaCertificate=pem_cert,
             subordinateConfig=self.messages.SubordinateConfig(
-                pemIssuerChain=self.messages.SubordinateConfigChain(
-                    pemCertificates=certificate.pemCertificateChain))))
+                certificateAuthority=issuer_ref.RelativeName())))
     operation = self.client.projects_locations_certificateAuthorities.Activate(
         activate_request)
     return operations.Await(operation, 'Activating CA.')
@@ -242,7 +241,8 @@ class Create(base.CreateCommand):
 
     if issuer_ref:
       ca_certificate = self._SignCsr(issuer_ref, csr, new_ca.lifetime)
-      self._ActivateCertificateAuthority(ca_ref, ca_certificate)
+      self._ActivateCertificateAuthority(ca_ref, ca_certificate.pemCertificate,
+                                         issuer_ref)
       log.status.Print('Created Certificate Authority [{}].'.format(
           ca_ref.RelativeName()))
       return

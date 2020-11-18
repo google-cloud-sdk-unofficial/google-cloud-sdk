@@ -24,4 +24,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class EnterpriseConfigs(base.Group):
   """Manage Enterprise configurations for Google Cloud Build."""
-  category = base.MANAGEMENT_TOOLS_CATEGORY
+  category = base.CI_CD_CATEGORY

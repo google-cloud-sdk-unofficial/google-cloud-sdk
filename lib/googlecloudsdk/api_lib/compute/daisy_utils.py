@@ -500,10 +500,10 @@ def CreateDaisyBucketInProject(bucket_location, storage_client):
       project.
   """
   bucket_name = GetDaisyBucketName(bucket_location)
-  storage_client.CreateBucketIfNotExists(
-      bucket_name, location=bucket_location)
-
-  if not _BucketIsInProject(storage_client, bucket_name):
+  try:
+    storage_client.CreateBucketIfNotExists(
+        bucket_name, location=bucket_location)
+  except storage_api.BucketInWrongProjectError:
     # A bucket already exists under the same name but in a different project.
     # Concatenate a random 8 character suffix to the bucket name and try a
     # couple more times.
@@ -513,9 +513,12 @@ def CreateDaisyBucketInProject(bucket_location, storage_client):
       random_suffix = bucket_random_suffix_override or ''.join(
           random.choice(letters) for i in range(8))
       randomized_bucket_name = '{0}-{1}'.format(bucket_name, random_suffix)
-      storage_client.CreateBucketIfNotExists(
-          randomized_bucket_name, location=bucket_location)
-      if _BucketIsInProject(storage_client, randomized_bucket_name):
+      try:
+        storage_client.CreateBucketIfNotExists(
+            randomized_bucket_name, location=bucket_location)
+      except storage_api.BucketInWrongProjectError:
+        pass
+      else:
         bucket_in_project_created_or_found = True
         bucket_name = randomized_bucket_name
         break
@@ -526,24 +529,6 @@ def CreateDaisyBucketInProject(bucket_location, storage_client):
           'Unable to create a temporary bucket `{0}` needed for the operation to proceed as it exists in another project.'
           .format(bucket_name))
   return bucket_name
-
-
-def _BucketIsInProject(storage_client, bucket_name):
-  """Returns true if the provided bucket is in the user's project, else False.
-
-  Args:
-    storage_client: Client used to make calls to Google Storage.
-    bucket_name: Bucket name to check.
-
-  Returns:
-    True or False.
-  """
-  project = properties.VALUES.core.project.Get(required=True)
-  bucket_list_req = storage_client.messages.StorageBucketsListRequest(
-      project=project, prefix=bucket_name)
-  bucket_list = storage_client.client.buckets.List(bucket_list_req)
-  return any(
-      bucket.id == bucket_name for bucket in bucket_list.items)
 
 
 def GetSubnetRegion():
@@ -888,7 +873,7 @@ def RunOVFImportBuild(args, compute_client, instance_name, source_uri,
                       description, labels, machine_type, network, network_tier,
                       subnet, private_network_ip, no_restart_on_failure, os,
                       tags, zone, project, output_filter,
-                      release_track, hostname):
+                      release_track, hostname, no_address):
   """Run a OVF into VM instance import build on Google Cloud Build.
 
   Args:
@@ -923,6 +908,8 @@ def RunOVFImportBuild(args, compute_client, instance_name, source_uri,
     release_track: release track of the command used. One of - "alpha", "beta"
       or "ga"
     hostname: hostname of the instance to be imported
+    no_address: Specifies that no external IP address will be assigned to the
+      instances.
 
   Returns:
     A build object that either streams the output or is displayed as a
@@ -967,6 +954,7 @@ def RunOVFImportBuild(args, compute_client, instance_name, source_uri,
     AppendArg(ovf_importer_args, 'release-track', release_track)
   AppendArg(ovf_importer_args, 'hostname', hostname)
   AppendArg(ovf_importer_args, 'client-version', config.CLOUD_SDK_VERSION)
+  AppendBoolArg(ovf_importer_args, 'no-external-ip', no_address)
 
   build_tags = ['gce-daisy', 'gce-ovf-import']
 

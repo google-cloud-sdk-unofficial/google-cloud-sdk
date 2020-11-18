@@ -5,6 +5,130 @@ Copyright 2014-2020 Google Inc. All rights reserved.
 Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
 
 
+## 319.0.0 (2020-11-17)
+
+
+Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
+
+
+## 319.0.0 (2020-11-17)
+
+### Breaking Changes
+
+*   **(Secret Manager)** Modified `gcloud secrets` commands to send action taken (e.g. `Created secret [my-secret].`) to stderr instead of stdout.
+
+
+### Assured Workloads
+
+*   Add `--provisioned-resources-parent` flag to `gcloud assured workloads
+    create` command.
+
+### Cloud Asset Inventory
+
+* Added new content type `os-inventory` to `gcloud asset export` and `gcloud asset get-history`.
+
+### Cloud Healthcare
+
+*   Promoted `gcloud healthcare hl7v2-stores export` to beta.
+
+### Cloud Pub/Sub
+
+* Promoted `--message-filter` flag of `gcloud pubsub subscriptions create` to
+  GA. This feature allows users to specify a filter expression on a Cloud
+  Pub/Sub subscription which will automatically drop messages.
+
+### Cloud Resource Manager
+
+* Updated the following commands to accept a domain name (e.g. "example.com")
+  for organization in addition to the ID (e.g. 1234567890):
+  * `gcloud organizations describe`
+  * `gcloud organizations get-iam-policy`
+  * `gcloud organizations set-iam-policy`
+
+### Cloud SQL
+
+* Added following flags to `gcloud sql instances <create|patch>`:
+   * `--retained-backups-count`
+   * `--retained-transaction-log-days`
+
+### Cloud Storage
+
+* Updated gsutil component to 4.55.
+
+### Compute Engine
+
+* Promoted `--filter-direction` flag in `gcloud compute packet-mirrorings create/update` commands to beta and GA.
+
+### Config Connector
+
+* Updated Google Cloud Config Connector to version 1.30.0.
+  See Config Connector Overview for more details [https://cloud.google.com/config-connector/docs/overview](https://cloud.google.com/config-connector/docs/overview).
+
+### Identity Groups
+
+* Updated `--organization` flag for `gcloud identity groups create` and
+  `gcloud identity groups search` to accept domain names (e.g. example.com) in
+  addition to organization IDs (e.g. 1234567890).
+
+### Kubernetes Engine
+
+*   Added `pd-balanced` disk type to `--disk-type` of `gcloud container` command group.
+
+
+Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
+
+
+## 318.0.0 (2020-11-10)
+
+### AI
+
+* Updated `--min-replica-count` in `gcloud beta ai endpoints deploy-model` to be
+  a non-required flag.
+* Added `--enable-access-logging`, `--enable-container-logging`, and
+  `--service-account` flags to `gcloud beta ai endpoints deploy-model`.
+
+### App Engine
+
+* Updated the Java SDK to version 1.9.83.
+  Please visit the following release notes for details:
+  <https://cloud.google.com/appengine/docs/java/release-notes>.
+* Promoted `gcloud app services update` to GA.
+
+### App Engine Flexible Environment
+
+* Promoted `gcloud app services update` to GA.
+
+### Artifact Registry
+
+* Added `--show-occurrences` flag to `gcloud artifacts docker images list` command that enables showing metadata from Container Analysis API.
+
+### Cloud SQL
+
+* Added following flags of `gcloud sql instances create` and
+  `gcloud sql instances update` to GA:
+   * `--insights-config-query-insights-enabled`
+   * `--insights-config-query-string-length`
+   * `--insights-config-record-application-tags`
+   * `--insights-config-record-client-address`
+
+### Compute Engine
+
+* Added `--chain-name` to flag `gcloud compute disks snapshot`.
+* Added `PRIVATE_SERVICE_CONNECT` as a global address purpose to `gcloud beta compute forwarding-rules create`.
+* Added `--target-google-apis-bundle` to `gcloud beta compute forwarding-rules create`.
+* Added `--no-address` flag to `gcloud beta compute instances import`.
+
+### Kpt
+
+* Updated kpt from v0.35.0 to v0.36.1.
+* Updated import of cli-utils from v0.21.0 to v0.20.6.
+* Updated import of kyaml from v0.9.2 to v0.9.3.
+* Updated import of cmd/config from v0.8.3 to v0.8.4.
+
+
+Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
+
+
 ## 317.0.0 (2020-11-03)
 
 ### Breaking Changes
@@ -3887,7 +4011,7 @@ Subscribe to these release notes at [https://groups.google.com/forum/#!forum/goo
 * Made `--os` flag optional in `gcloud <alpha|beta> compute instances import`.
 * Updated `gcloud compute ssh` to add support for reading SSH host keys from
   instance guest attributes. For more information, see
-  <https://cloud.google.com/compute/docs/instances/connecting-to-instance#store-host-key>.
+  <https://cloud.google.com/solutions/connecting-securely#storing_host_keys_by_enabling_guest_attributes>.
 
 ### Kubernetes Engine
 

@@ -29,17 +29,17 @@ class AccessibilityHelp(base.TopicCommand):
   changes are implemented:
 
   * For progress trackers, instead of unicode spinners, the phrase 'working'
-    will be displayed on stderr, every second while gcloud is working.
-  * For progress bars, progress will be displayed as a percentage, outputted to
+    is displayed on stderr, every second while gcloud is working.
+  * For progress bars, progress is displayed as a percentage, outputted to
     stderr.
-  * Boxed tables will be drawn with ascii characters instead of unicode
-    characters. Boxed tables are the default outputs of many list commands.
+  * For boxed tables, instead of the queried resources being displayed in tables
+    drawn in Unicode, results are rendered as a flattened list of items.
     Also consider using the --format flag to define your own format.
 
   To turn this on, run:
 
     $ gcloud config set accessibility/screen_reader true
 
-  Accessibiliy support is still in early stages. Please report any issues that
+  Accessibility support is still in early stages. Please report any issues that
   you would like fixed using `gcloud feedback`.
   """

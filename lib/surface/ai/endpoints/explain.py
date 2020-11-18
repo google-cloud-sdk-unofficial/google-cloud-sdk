@@ -45,7 +45,7 @@ def _Run(args, version):
     if not args.IsSpecified('format'):
       # default format is based on the response.
       args.format = endpoints_util.GetDefaultFormat(
-          results.explanations, key_name='explanations')
+          results, key_name='explanations')
     return results
 
 

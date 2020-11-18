@@ -62,7 +62,7 @@
       help_text: |
         Network connection mode used by instances.
     - arg_name: transit-encryption-mode
-      release_tracks: [ALPHA]
+      release_tracks: [ALPHA, BETA]
       hidden: true
       api_field: instance.transitEncryptionMode
       help_text: |

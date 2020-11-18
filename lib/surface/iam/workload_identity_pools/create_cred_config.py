@@ -23,18 +23,12 @@ import textwrap
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.iam.workload_identity_pools import cred_config
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
 OAUTH_URL = 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource='
 RESOURCE_TYPE = 'credential configuration file'
-
-
-class CredConfigError(Exception):
-
-  def __init__(self, message):
-    super(CredConfigError, self).__init__()
-    self.message = message
 
 
 class CreateCredConfig(base.CreateCommand):
@@ -71,22 +65,33 @@ class CreateCredConfig(base.CreateCommand):
   def Args(parser):
     parser.add_argument(
         'audience', help='The workload identity pool provider resource name.')
+
+    credential_types = parser.add_group(
+        mutex=True, required=True, help='Credential types.')
+    credential_types.add_argument(
+        '--credential-source-file',
+        help='Location of the credential source file.')
+    credential_types.add_argument(
+        '--credential-source-url',
+        help='URL to obtain the credential from.')
+    credential_types.add_argument('--aws', help='Use AWS.', action='store_true')
+    credential_types.add_argument(
+        '--azure', help='Use Azure.', action='store_true')
+
     parser.add_argument(
         '--service-account',
         help='The email of the service account to impersonate.')
-    parser.add_argument(
-        '--credential-source-file',
-        help='Location of the credential source file.')
-    parser.add_argument(
-        '--credential-source-url',
-        help='URL to obtain the credential from.')
     parser.add_argument(
         '--credential-source-headers',
         type=arg_parsers.ArgDict(),
         metavar='key=value',
         help='Headers to use when querying the credential-source-url.')
-    parser.add_argument('--aws', help='Use AWS.', action='store_true')
-    parser.add_argument('--azure', help='Use Azure.', action='store_true')
+    parser.add_argument(
+        '--credential-source-type',
+        help='The format of the credential source (JSON or text).')
+    parser.add_argument(
+        '--credential-source-field-name',
+        help='The subject token field name (key) in a JSON credential source.')
     parser.add_argument(
         '--app-id-uri',
         help='The custom Application ID URI for the Azure access token.')
@@ -100,19 +105,18 @@ class CreateCredConfig(base.CreateCommand):
 
   def Run(self, args):
     try:
-      source_count = _get_credential_source_count(args)
-      if source_count == 0:
-        raise CredConfigError('A credential source needs to be specified')
-      if source_count > 1:
-        raise CredConfigError(
-            'Only one single credential source can be specified')
+      generator = cred_config.get_generator(args)
 
       output = {
           'type': 'external_account',
           'audience': '//iam.googleapis.com/' + args.audience,
-          'subject_token_type': _get_token_type(args),
-          'token_url': 'https://sts.googleapis.com/v1beta/token',
-          'credential_source': _get_credential_source(args),
+          'subject_token_type':
+              generator.get_token_type(args.subject_token_type),
+          'token_url':
+              'https://sts.googleapis.com/v1beta/token',
+          'credential_source':
+              generator.get_source(args.credential_source_type,
+                                   args.credential_source_field_name),
       }
 
       if args.service_account:
@@ -122,65 +126,5 @@ class CreateCredConfig(base.CreateCommand):
 
       files.WriteFileContents(args.output_file, json.dumps(output))
       log.CreatedResource(args.output_file, RESOURCE_TYPE)
-    except CredConfigError as cce:
+    except cred_config.GeneratorError as cce:
       log.CreatedResource(args.output_file, RESOURCE_TYPE, failed=cce.message)
-
-
-def _get_token_type(args):
-  """Determines the token type based on the credential source used."""
-  if args.aws:
-    return 'urn:ietf:params:aws:token-type:aws4_request'
-  if args.azure:
-    return 'urn:ietf:params:oauth:token-type:jwt'
-  return args.subject_token_type or 'urn:ietf:params:oauth:token-type:jwt'
-
-
-def _get_credential_source_count(args):
-  """Determines the number of credential sources used."""
-  sources = 0
-  if args.credential_source_file:
-    sources += 1
-  if args.credential_source_url:
-    sources += 1
-  if args.aws:
-    sources += 1
-  if args.azure:
-    sources += 1
-
-  return sources
-
-
-def _get_credential_source(args):
-  """Gets all details of the chosen credential source."""
-  if args.credential_source_file:
-    return {'file': args.credential_source_file}
-
-  if args.credential_source_url:
-    credential_source = {'url': args.credential_source_url}
-    if args.credential_source_headers:
-      credential_source['headers'] = args.credential_source_headers
-    return credential_source
-
-  if args.aws:
-    return {
-        'environment_id':
-            'aws1',
-        'region_url':
-            'http://169.254.169.254/latest/meta-data/placement/availability-zone',
-        'url':
-            'http://169.254.169.254/latest/meta-data/iam/security-credentials',
-        'regional_cred_verification_url':
-            'https://sts.{region}.amazonaws.com?Action=GetCallerIdentity&Version=2011-06-15'
-    }
-
-  if args.azure:
-    return {
-        'url':
-            OAUTH_URL + (args.app_id_uri or
-                         'https://iam.googleapis.com/' + args.audience),
-        'headers': {
-            'Metadata': 'True'
-        }
-    }
-
-  return {}

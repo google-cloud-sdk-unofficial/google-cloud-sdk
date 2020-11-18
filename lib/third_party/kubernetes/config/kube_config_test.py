@@ -23,7 +23,7 @@ import tempfile
 import unittest
 
 import mock
-import yaml
+from ruamel import yaml
 from six import PY3, next
 
 from kubernetes.client import Configuration

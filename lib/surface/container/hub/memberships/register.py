@@ -274,15 +274,15 @@ class Register(base.CreateCommand):
               Set to true for clusters where no publicly-routable OIDC discovery
               endpoint for the Kubernetes service account token issuer exists.
 
-              When set to true, gcloud will read the private issuer URL and
-              JSON Web Key Set (JWKS) (public keys) for validating service
-              account tokens from the cluster's API server and upload both when
-              creating the Membership. GCP will then use the JWKS, instead of a
-              public OIDC endpoint, to validate service account tokens issued by
-              this cluster. Note the JWKS establishes the uniqueness of issuers
-              in this configuration, but issuer claims in tokens are still
-              compared to the issuer URL associated with the Membership when
-              validating tokens.
+              When set to true, the gcloud command-line tool will read the
+              private issuer URL and JSON Web Key Set (JWKS) (public keys) for
+              validating service account tokens from the cluster's API server
+              and upload both when creating the Membership. GCP will then use
+              the JWKS, instead of a public OIDC endpoint, to validate service
+              account tokens issued by this cluster. Note the JWKS establishes
+              the uniqueness of issuers in this configuration, but issuer claims
+              in tokens are still compared to the issuer URL associated with the
+              Membership when validating tokens.
 
               Note the cluster's OIDC discovery endpoints
               (https://[KUBE-API-ADDRESS]/.well-known/openid-configuration and
@@ -325,6 +325,7 @@ class Register(base.CreateCommand):
 
       gke_cluster_self_link = kube_client.processor.gke_cluster_self_link
       issuer_url = None
+      private_keyset_json = None
       # enable_workload_identity, public_issuer_url, and
       # manage_workload_identity_bucket are only properties if we are on the
       # alpha or beta track
@@ -356,13 +357,17 @@ class Register(base.CreateCommand):
                                  'returned in discovery doc: {}'.format(
                                      public_issuer_url, issuer_url))
 
-        # Set up the GCS bucket that serves OpenID Provider Config and JWKS.
-        if self.ReleaseTrack(
-        ) is base.ReleaseTrack.ALPHA and args.manage_workload_identity_bucket:
-          openid_keyset_json = kube_client.GetOpenIDKeyset()
-          api_util.CreateWorkloadIdentityBucket(project, issuer_url,
-                                                openid_config_json,
-                                                openid_keyset_json)
+        # Request the JWKS from the cluster if we need it (either for setting
+        # up the GCS bucket or getting public keys for private issuers). In
+        # the private issuer case, we set private_keyset_json, which is used
+        # later to upload the JWKS in the Hub Membership.
+        if self.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+          if args.manage_workload_identity_bucket:
+            api_util.CreateWorkloadIdentityBucket(project, issuer_url,
+                                                  openid_config_json,
+                                                  kube_client.GetOpenIDKeyset())
+          elif args.has_private_issuer:
+            private_keyset_json = kube_client.GetOpenIDKeyset()
 
       # Attempt to create a membership.
       already_exists = False
@@ -388,7 +393,7 @@ class Register(base.CreateCommand):
                                           args.CLUSTER_NAME,
                                           gke_cluster_self_link, uuid,
                                           self.ReleaseTrack(),
-                                          issuer_url)
+                                          issuer_url, private_keyset_json)
         except apitools_exceptions.HttpConflictError as e:
           # If the error is not due to the object already existing, re-raise.
           error = core_api_exceptions.HttpErrorPayload(e)
@@ -420,20 +425,39 @@ class Register(base.CreateCommand):
       # In case of an existing membership, check with the user to upgrade the
       # Connect-Agent.
       if already_exists:
-        # Update Membership if issuer is updated by the user from an empty value
-        # to a non-empty value or vice versa. UpdateMembership API will error
-        # out if the user tries to modify the issuer URL.
+        # Update Membership when required. Scenarios that require updates:
+        # 1. membership.authority is set, but there is now no issuer URL.
+        #    This means the user is disabling Workload Identity.
+        # 2. membership.authority is not set, but there is now an
+        #    issuer URL. This means the user is enabling Workload Identity.
+        # 3. membership.authority is set, but the issuer URL is different
+        #    from that set in membership.authority.issuer. This is technically
+        #    an error, but we defer to validation in the API.
+        # 4. membership.authority.oidcJwks is set, but the private keyset
+        #    we got from the cluster differs from the keyset in the membership.
+        #    This means the user is updating the public keys, and we should
+        #    update to the latest keyset in the membership.
         if self.ReleaseTrack() is not base.ReleaseTrack.GA and (
+            # scenario 1, disabling WI
             (obj.authority and not issuer_url) or
+            # scenario 2, enabling WI
             (issuer_url and not obj.authority) or
-            (obj.authority and (obj.authority.issuer != issuer_url))):
+            (obj.authority and
+             # scenario 3, issuer changed
+             ((obj.authority.issuer != issuer_url) or
+              # scenario 4, JWKS changed
+              (private_keyset_json and obj.authority.oidcJwks and
+               (obj.authority.oidcJwks.decode('utf-8') !=
+                private_keyset_json))))):
           console_io.PromptContinue(
               message=hub_util.GenerateWIUpdateMsgString(
                   obj, issuer_url, resource_name, args.CLUSTER_NAME),
               cancel_on_no=True)
           try:
             api_util.UpdateMembership(resource_name, obj, 'authority',
-                                      self.ReleaseTrack(), issuer_url)
+                                      self.ReleaseTrack(),
+                                      issuer_url=issuer_url,
+                                      oidc_jwks=private_keyset_json)
             log.status.Print(
                 'Updated the membership [{}] for the cluster [{}]'.format(
                     resource_name, args.CLUSTER_NAME))

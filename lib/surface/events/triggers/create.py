@@ -72,6 +72,7 @@ class Create(base.Command):
     flags.AddSourceFlag(source_group)
     flags.AddParametersFlags(source_group)
     flags.AddSecretsFlag(source_group)
+    flags.AddResourcesFlag(source_group)
     trigger_presentation = presentation_specs.ResourcePresentationSpec(
         'trigger',
         resource_args.GetTriggerResourceSpec(),
@@ -105,9 +106,14 @@ class Create(base.Command):
         source_crds = client.ListSourceCustomResourceDefinitions()
         event_type = util.EventTypeFromTypeString(
             source_crds, args.type, args.source)
-        source_obj = source.Source.New(client.client, namespace_ref.Name(),
-                                       event_type.crd.source_kind,
-                                       event_type.crd.source_api_category)
+        if client.IsCluster():
+          source_client = client.ClientFromCrd(event_type.crd)
+        else:
+          source_client = client.client
+
+        source_obj = source.Source.New(
+            source_client, namespace_ref.Name(),
+            event_type.crd.source_kind, event_type.crd.source_api_category)
         source_obj.name = _SOURCE_NAME_PATTERN.format(
             trigger=trigger_ref.Name())
         parameters = flags.GetAndValidateParameters(args, event_type)

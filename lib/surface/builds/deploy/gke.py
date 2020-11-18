@@ -249,13 +249,13 @@ class DeployGKE(base.Command):
       gcs_staging_dir_bucket = gcs_staging_dir_ref.bucket
 
     gcs_client = storage_api.StorageClient()
-    gcs_client.CreateBucketIfNotExists(gcs_staging_dir_bucket)
-
-    # If we are using a default bucket check that it is owned by user project
-    # (b/33046325)
-    if (args.gcs_staging_dir is None
-        and not staging_bucket_util.BucketIsInProject(
-            gcs_client, gcs_staging_dir_bucket)):
+    try:
+      gcs_client.CreateBucketIfNotExists(
+          gcs_staging_dir_bucket,
+          check_ownership=args.gcs_staging_dir is None)
+    except storage_api.BucketInWrongProjectError:
+      # If we're using the default bucket but it already exists in a different
+      # project, then it could belong to a malicious attacker (b/33046325).
       raise c_exceptions.RequiredArgumentException(
           '--gcs-staging-dir',
           'A bucket with name {} already exists and is owned by '

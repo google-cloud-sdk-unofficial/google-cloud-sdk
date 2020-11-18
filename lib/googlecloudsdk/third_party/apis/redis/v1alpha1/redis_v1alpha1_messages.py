@@ -215,9 +215,7 @@ class Instance(_messages.Message):
       unused /29 block, for example, 10.0.0.0/29 or 192.168.0.0/29. Ranges
       must be unique and non-overlapping with existing subnets in a network.
     serverCaCerts: Output only. List of server CA certificates for the
-      instance. The visibility of this data will be controlled by a
-      GetInstanceRequest.view field once CCFE support partial view of
-      GetInstance. https://google.aip.dev/157.
+      instance.
     state: Output only. The current state of this instance.
     statusMessage: Output only. Additional information about the current
       status of this instance, if available.
@@ -291,8 +289,8 @@ class Instance(_messages.Message):
 
     Values:
       TRANSIT_ENCRYPTION_MODE_UNSPECIFIED: Not set.
-      SERVER_AUTHENTICATION: In-transit encryption enabled with server
-        authentication
+      SERVER_AUTHENTICATION: Client to Server traffic encryption enabled with
+        server authentication.
       DISABLED: In-transit encryption is disabled for instance.
     """
     TRANSIT_ENCRYPTION_MODE_UNSPECIFIED = 0

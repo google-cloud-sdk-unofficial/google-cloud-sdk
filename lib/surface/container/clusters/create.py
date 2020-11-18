@@ -702,6 +702,11 @@ class Create(base.CreateCommand):
             'Your Pod address range (`--cluster-ipv4-cidr`) can accommodate at most %d node(s). '
             % max_node_number)
 
+    if not options.image_type:
+      log.warning(
+          'Starting with version 1.19, newly created clusters and node-pools will have COS_CONTAINERD as the default node image when no image type is specified.'
+      )
+
     if options.enable_kubernetes_alpha:
       console_io.PromptContinue(
           message=constants.KUBERNETES_ALPHA_PROMPT,

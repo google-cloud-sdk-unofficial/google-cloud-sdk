@@ -61,6 +61,6 @@ class Export(base.Command):
 
   def Run(self, args):
     """Run the export command."""
-    version_label = 'v1beta1'
+    version_label = flags.GetVersionLabel(self.ReleaseTrack())
     args.project_val = properties.VALUES.core.project.Get()
     return taxonomies.Export(args, version_label)

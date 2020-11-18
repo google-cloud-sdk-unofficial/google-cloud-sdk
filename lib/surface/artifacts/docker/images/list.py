@@ -92,6 +92,7 @@ class List(base.ListCommand):
     flags.GetIncludeTagsFlag().AddToParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     flags.GetImagePathOptionalArg().AddToParser(parser)
+    flags.GetShowOccurrencesFlag().AddToParser(parser)
     flags.GetShowOccurrencesFromFlag().AddToParser(parser)
     flags.GetOccurrenceFilterFlag().AddToParser(parser)
 
@@ -116,19 +117,21 @@ class List(base.ListCommand):
 
     # Retrieve containeranalysis metadata for images.
     most_recent_images = []
-    if args.show_occurrences_from:
-      images = heapq.nlargest(
-          args.show_occurrences_from, images, key=lambda img: img['createTime'])
-      most_recent_images = [
-          'https://{}@{}'.format(img['package'], img['version'])
-          for img in images
-      ]
+    if args.show_occurrences:
+      if args.show_occurrences_from:
+        images = heapq.nlargest(
+            args.show_occurrences_from,
+            images,
+            key=lambda img: img['createTime'])
+        most_recent_images = [
+            'https://{}@{}'.format(img['package'], img['version'])
+            for img in images
+        ]
+      metadata = ca_util.GetContainerAnalysisMetadataForImages(
+          repo_or_image, args.occurrence_filter, most_recent_images)
 
-    metadata = ca_util.GetContainerAnalysisMetadataForImages(
-        repo_or_image, args.occurrence_filter, most_recent_images)
-
-    for image in images:
-      image_path = 'https://{}@{}'.format(image['package'], image['version'])
-      img_metadata = metadata[image_path].ImagesListView()
-      image.update(img_metadata)
+      for image in images:
+        image_path = 'https://{}@{}'.format(image['package'], image['version'])
+        img_metadata = metadata[image_path].ImagesListView()
+        image.update(img_metadata)
     return images

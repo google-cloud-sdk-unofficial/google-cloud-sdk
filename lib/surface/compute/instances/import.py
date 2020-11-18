@@ -169,7 +169,8 @@ class Import(base.CreateCommand):
         output_filter=_OUTPUT_FILTER,
         release_track=
         self.ReleaseTrack().id.lower() if self.ReleaseTrack() else None,
-        hostname=getattr(args, 'hostname', None)
+        hostname=getattr(args, 'hostname', None),
+        no_address=getattr(args, 'no_address', False),
     )
 
 
@@ -182,6 +183,7 @@ class ImportBeta(Import):
   @classmethod
   def Args(cls, parser):
     super(ImportBeta, cls).Args(parser)
+    instances_flags.AddNoAddressArg(parser)
 
 
 Import.detailed_help = {

@@ -22,14 +22,17 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudresourcemanager import organizations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.organizations import flags
-from googlecloudsdk.command_lib.organizations import orgs_base
+from googlecloudsdk.command_lib.organizations import org_utils
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class GetIamPolicy(orgs_base.OrganizationCommand, base.ListCommand):
+class GetIamPolicy(base.ListCommand):
   """Get IAM policy for an organization.
 
   Gets the IAM policy for an organization, given an organization ID.
+
+  If a domain is supplied instead of an organization ID, this command will
+  attempt to look up the organization ID associated with that domain.
   """
 
   detailed_help = {
@@ -38,6 +41,11 @@ class GetIamPolicy(orgs_base.OrganizationCommand, base.ListCommand):
           the ID `123456789`:
 
             $ {command} 123456789
+
+          The following command prints the IAM policy for the organzation
+          associated with the domain ``example.com'':
+
+            $ {command} example.com
           """
   }
 
@@ -47,4 +55,8 @@ class GetIamPolicy(orgs_base.OrganizationCommand, base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
-    return organizations.Client().GetIamPolicy(args.id)
+    org_id = org_utils.GetOrganizationId(args.id)
+    if org_id:
+      return organizations.Client().GetIamPolicy(org_id)
+    else:
+      raise org_utils.UnknownOrganizationError(args.id)
