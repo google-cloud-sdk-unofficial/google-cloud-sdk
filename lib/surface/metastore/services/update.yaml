@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: |
       Update a Dataproc Metastore service.
@@ -14,12 +14,13 @@
       To update a Dataproc Metastore service with the name `my-metastore-service` to
       have the port number 8080, and add the two labels, `env` and `foo`, run:
 
-          $ {command} my-metastore-service --port=8080 \
-              --update-labels=env=test,foo=bar
+          $ {command} my-metastore-service --port=8080 --update-labels=env=test,foo=bar
 
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection: metastore.projects.locations.services
     modify_request_hooks:
     - googlecloudsdk.command_lib.metastore.services.util:SetServiceRequestUpdateHiveMetastoreConfigs
@@ -37,6 +38,21 @@
       processor: googlecloudsdk.command_lib.metastore.validators:ValidatePort
       help_text: |
         The TCP port on which the Metastore service will listen.
+    - arg_name: tier
+      api_field: service.tier
+      help_text: |
+        The tier of the service.
+      choices:
+      - arg_value: enterprise
+        enum_value: ENTERPRISE
+        help_text:  |
+          The enterprise tier provides multi-zone high availability, and sufficient
+          scalability for enterprise-level Dataproc Metastore workloads.
+      - arg_value: developer
+        enum_value: DEVELOPER
+        help_text:  |
+          The developer tier provides limited scalability and no fault tolerance.
+          Good for low-cost proof-of-concept.
     - group:
         help_text: |
           Configuration properties specific to running Hive metastore
@@ -48,7 +64,9 @@
           help_text: |
             Path to a XML file containing a mapping of Hive metastore configuration key-value
             pairs to apply to the Hive metastore.
-            Example:
+
+            For example:
+
               hive-site.xml
                   <configuration>
                     <property>
@@ -108,6 +126,38 @@
             with a Kerberos Key Distribution Center. This is a Secret Manager secret version,
             and can be fully-qualified URL, or relative name in the form
             `projects/{project_id}/secrets/{secret_id}/versions/{version_id}`.
+    - group:
+        help_text: |
+          The one hour maintenance window that specifies when Dataproc
+          Metastore may perform system maintenance operation to the service, in
+          UTC time.
+        params:
+        - arg_name: maintenance-window-day
+          api_field: service.maintenanceWindow.dayOfWeek
+          required: true
+          choices:
+          - arg_value: mon
+            enum_value: MONDAY
+          - arg_value: tue
+            enum_value: TUESDAY
+          - arg_value: wed
+            enum_value: WEDNESDAY
+          - arg_value: thu
+            enum_value: THURSDAY
+          - arg_value: fri
+            enum_value: FRIDAY
+          - arg_value: sat
+            enum_value: SATURDAY
+          - arg_value: sun
+            enum_value: SUNDAY
+          help_text: |
+            The day of week when the window starts, e.g., `sun`.
+        - arg_name: maintenance-window-hour
+          api_field: service.maintenanceWindow.hourOfDay
+          required: true
+          processor: googlecloudsdk.command_lib.metastore.validators:ValidateHourOfDay
+          help_text: |
+            The hour of day (0-23) when the window starts.
     labels:
       api_field: service.labels
 

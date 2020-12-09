@@ -203,8 +203,11 @@ class Create(base.CreateCommand):
   _support_boot_snapshot_uri = True
   _enable_pd_interface = False
   _support_enable_nested_virtualization = False
+  _support_threads_per_core = False
   _support_replica_zones = False
   _support_network_interface_nic_type = False
+  _support_stack_type = False
+  _support_ipv6_network_tier = False
 
   @classmethod
   def Args(cls, parser):
@@ -271,7 +274,9 @@ class Create(base.CreateCommand):
         location=zone,
         scope=compute_scopes.ScopeEnum.ZONE,
         skip_defaults=skip_defaults,
-        support_public_dns=self._support_public_dns)
+        support_public_dns=self._support_public_dns,
+        support_stack_type=self._support_stack_type,
+        support_ipv6_network_tier=self._support_ipv6_network_tier)
 
     confidential_vm = (
         args.IsSpecified('confidential_compute') and args.confidential_compute)
@@ -368,12 +373,14 @@ class Create(base.CreateCommand):
                 compute_client.messages).GetEnumForChoice(
                     args.private_ipv6_google_access_type))
 
-      if (self._support_enable_nested_virtualization and
-          args.enable_nested_virtualization is not None):
+      if ((self._support_enable_nested_virtualization and
+           args.enable_nested_virtualization is not None) or
+          (self._support_threads_per_core and
+           args.threads_per_core is not None)):
         instance.advancedMachineFeatures = (
             instance_utils.CreateAdvancedMachineFeaturesMessage(
-                compute_client.messages,
-                args.enable_nested_virtualization))
+                compute_client.messages, args.enable_nested_virtualization,
+                args.threads_per_core))
 
       resource_policies = getattr(args, 'resource_policies', None)
       if resource_policies:
@@ -592,8 +599,11 @@ class CreateAlpha(CreateBeta):
   _support_boot_snapshot_uri = True
   _enable_pd_interface = True
   _support_enable_nested_virtualization = True
+  _support_threads_per_core = True
   _support_replica_zones = True
   _support_network_interface_nic_type = True
+  _support_stack_type = True
+  _support_ipv6_network_tier = True
 
   @classmethod
   def Args(cls, parser):
@@ -626,6 +636,9 @@ class CreateAlpha(CreateBeta):
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddStableFleetArgs(parser)
     instances_flags.AddNestedVirtualizationArgs(parser)
+    instances_flags.AddThreadsPerCoreArgs(parser)
+    instances_flags.AddStackTypeArgs(parser)
+    instances_flags.AddIpv6NetworkTierArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

@@ -28,3 +28,8 @@ class Asset(base.Group):
   """Manage the Cloud Asset Inventory."""
 
   category = base.SECURITY_CATEGORY
+
+  def Filter(self, context, args):
+    """Runs before any commands in this group."""
+    del context, args
+    base.OptInRequests()  # For b/168048261 migration.

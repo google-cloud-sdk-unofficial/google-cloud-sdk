@@ -25,7 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.logs import read as read_logs_lib
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Read(base.Command):
   """Read log entries."""
 
@@ -36,11 +36,11 @@ class Read(base.Command):
     read_logs_lib.LoggingReadArgs(parser)
     util.AddParentArgs(parser, 'Read log entries')
 
-  def _Run(self, args, is_alpha=False):
+  def _Run(self, args, is_alpha_or_beta=False):
     filter_clauses = read_logs_lib.MakeTimestampFilters(args)
     filter_clauses += [args.log_filter] if args.log_filter else []
     parent = util.GetParentFromArgs(args)
-    if is_alpha and args.IsSpecified('location'):
+    if is_alpha_or_beta and args.IsSpecified('location'):
       parent = util.CreateResourceName(
           util.CreateResourceName(
               util.CreateResourceName(parent, 'locations', args.location),
@@ -100,8 +100,8 @@ Read.detailed_help = {
 
 
 # pylint: disable=missing-docstring
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ReadAlpha(Read):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ReadAlphaBeta(Read):
   __doc__ = Read.__doc__
 
   @staticmethod
@@ -124,4 +124,4 @@ class ReadAlpha(Read):
         '`--location` and `--bucket` must also be specified.')
 
   def Run(self, args):
-    return self._Run(args, is_alpha=True)
+    return self._Run(args, is_alpha_or_beta=True)

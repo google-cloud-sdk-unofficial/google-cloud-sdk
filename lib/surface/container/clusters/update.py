@@ -292,6 +292,7 @@ class Update(base.UpdateCommand):
     flags.AddAutoprovisioningFlags(group)
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddMasterGlobalAccessFlag(group, is_update=True)
+    flags.AddPrivateIpv6GoogleAccessTypeFlag('v1', group, hidden=False)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -611,7 +612,7 @@ class UpdateBeta(Update):
     flags.AddEnableGvnicFlag(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
     flags.AddNotificationConfigFlag(group)
-    flags.AddPrivateIpv6GoogleAccessTypeFlag('v1beta1', group, hidden=True)
+    flags.AddPrivateIpv6GoogleAccessTypeFlag('v1beta1', group, hidden=False)
     flags.AddKubernetesObjectsExportConfig(group)
 
   def ParseUpdateOptions(self, args, locations):
@@ -670,7 +671,6 @@ class UpdateBeta(Update):
     opts.enable_gvnic = args.enable_gvnic
     opts.disable_default_snat = args.disable_default_snat
     opts.notification_config = args.notification_config
-    opts.private_ipv6_google_access_type = args.private_ipv6_google_access_type
     opts.kubernetes_objects_changes_target = args.kubernetes_objects_changes_target
     opts.kubernetes_objects_snapshots_target = args.kubernetes_objects_snapshots_target
     opts.enable_gke_oidc = args.enable_gke_oidc
@@ -735,7 +735,7 @@ class UpdateAlpha(Update):
     flags.AddMasterGlobalAccessFlag(group, is_update=True)
     flags.AddEnableGvnicFlag(group)
     flags.AddNotificationConfigFlag(group)
-    flags.AddPrivateIpv6GoogleAccessTypeFlag('v1alpha1', group, hidden=True)
+    flags.AddPrivateIpv6GoogleAccessTypeFlag('v1alpha1', group, hidden=False)
     flags.AddKubernetesObjectsExportConfig(group)
 
   def ParseUpdateOptions(self, args, locations):
@@ -795,7 +795,6 @@ class UpdateAlpha(Update):
     opts.enable_master_global_access = args.enable_master_global_access
     opts.enable_gvnic = args.enable_gvnic
     opts.notification_config = args.notification_config
-    opts.private_ipv6_google_access_type = args.private_ipv6_google_access_type
     opts.kubernetes_objects_changes_target = args.kubernetes_objects_changes_target
     opts.kubernetes_objects_snapshots_target = args.kubernetes_objects_snapshots_target
     opts.enable_gke_oidc = args.enable_gke_oidc

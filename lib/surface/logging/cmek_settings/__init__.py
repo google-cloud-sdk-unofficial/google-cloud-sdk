@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Stackdriver logging cmek-settings group."""
+"""Cloud Logging cmek-settings group."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,6 +23,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CmekSettings(base.Group):
-  """Manages the customer-managed encryption key (CMEK) settings for the Stackdriver Logs Router."""
+  """Manages the customer-managed encryption key (CMEK) settings for the Cloud Logging Logs Router."""

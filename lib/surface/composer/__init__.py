@@ -63,5 +63,6 @@ class Composer(base.Group):
     # group also disables user project quota; removing this line will break
     # 'composer environments run.'
     base.DisableUserProjectQuota()
+    base.OptInRequests()
 
     return context

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: |
       Create a Dataproc Metastore service.
@@ -24,6 +24,8 @@
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection: metastore.projects.locations.services
 
   arguments:
@@ -57,13 +59,21 @@
       - arg_value: enterprise
         enum_value: ENTERPRISE
         help_text:  |
-          The enterprise tier combines a powerful metastore
-          serving layer with a highly scalable data storage layer.
+          The enterprise tier provides multi-zone high availability, and sufficient
+          scalability for enterprise-level Dataproc Metastore workloads.
+      - arg_value: developer
+        enum_value: DEVELOPER
+        help_text:  |
+          The developer tier provides limited scalability and no fault tolerance.
+          Good for low-cost proof-of-concept.
       fallback: googlecloudsdk.core.properties:VALUES.metastore.tier.Get
     - arg_name: hive-metastore-version
       api_field: service.hiveMetastoreConfig.version
       help_text: |
-        The Hive metastore schema version.
+        The Hive metastore schema version. The supported versions of a location are listed via:
+
+          {top_command} metastore locations describe
+
         If unspecified, the default version chosen by the server will be used.
     - group:
         help_text: |
@@ -90,7 +100,9 @@
           help_text: |
             Path to a XML file containing a mapping of Hive metastore configuration key-value
             pairs to apply to the Hive metastore.
-            Example:
+
+            For example:
+
               hive-site.xml
                   <configuration>
                     <property>
@@ -128,6 +140,38 @@
             and can be fully-qualified URL, or relative name in the form
             `projects/{project_id}/secrets/{secret_id}/versions/{version_id}`.
           required: true
+    - group:
+        help_text: |
+          The one hour maintenance window that specifies when Dataproc
+          Metastore may perform system maintenance operation to the service, in
+          UTC time.
+        params:
+        - arg_name: maintenance-window-day
+          api_field: service.maintenanceWindow.dayOfWeek
+          required: true
+          choices:
+          - arg_value: mon
+            enum_value: MONDAY
+          - arg_value: tue
+            enum_value: TUESDAY
+          - arg_value: wed
+            enum_value: WEDNESDAY
+          - arg_value: thu
+            enum_value: THURSDAY
+          - arg_value: fri
+            enum_value: FRIDAY
+          - arg_value: sat
+            enum_value: SATURDAY
+          - arg_value: sun
+            enum_value: SUNDAY
+          help_text: |
+            The day of week when the window starts, e.g., `sun`.
+        - arg_name: maintenance-window-hour
+          api_field: service.maintenanceWindow.hourOfDay
+          required: true
+          processor: googlecloudsdk.command_lib.metastore.validators:ValidateHourOfDay
+          help_text: |
+            The hour of day (0-23) when the window starts.
     labels:
       api_field: service.labels
 

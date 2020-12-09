@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20201005",
+ "revision": "20201201",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -369,6 +369,10 @@
        "role": {
         "type": "string",
         "description": "[Required] An IAM role ID that should be granted to the user, group, or domain specified in this access entry. The following legacy mappings will be applied: OWNER  roles/bigquery.dataOwner WRITER  roles/bigquery.dataEditor READER  roles/bigquery.dataViewer This field will accept any of the above formats, but will return only the legacy format. For example, if you set this field to \"roles/bigquery.dataOwner\", it will be returned back as \"OWNER\"."
+       },
+       "routine": {
+        "$ref": "RoutineReference",
+        "description": "[Pick one] A routine from a different dataset to grant access to. Queries executed against that routine will have read access to views/tables/routines in this dataset. Only UDF is supported for now. The role field is not required when this field is set. If that routine is updated by any user, access to the routine needs to be granted again via an update operation."
        },
        "specialGroup": {
         "type": "string",
@@ -793,7 +797,7 @@
     },
     "hivePartitioningOptions": {
      "$ref": "HivePartitioningOptions",
-     "description": "[Optional, Trusted Tester] Options to configure hive partitioning support."
+     "description": "[Optional] Options to configure hive partitioning support."
     },
     "ignoreUnknownValues": {
      "type": "boolean",
@@ -1132,11 +1136,15 @@
     },
     "hivePartitioningOptions": {
      "$ref": "HivePartitioningOptions",
-     "description": "[Optional, Trusted Tester] Options to configure hive partitioning support."
+     "description": "[Optional] Options to configure hive partitioning support."
     },
     "ignoreUnknownValues": {
      "type": "boolean",
      "description": "[Optional] Indicates if BigQuery should allow extra values that are not represented in the table schema. If true, the extra values are ignored. If false, records with extra columns are treated as bad records, and if there are too many bad records, an invalid error is returned in the job result. The default value is false. The sourceFormat property determines what BigQuery treats as an extra value: CSV: Trailing columns JSON: Named values that don't match any column names"
+    },
+    "jsonExtension": {
+     "type": "string",
+     "description": "[Optional] If sourceFormat is set to newline-delimited JSON, indicates whether it should be processed as a JSON variant such as GeoJSON. For a sourceFormat other than JSON, omit this field. If the sourceFormat is newline-delimited JSON: - for newline-delimited GeoJSON: set to GEOJSON."
     },
     "maxBadRecords": {
      "type": "integer",
@@ -3020,6 +3028,13 @@
     "dataSplitResult": {
      "description": "Data split result of the training run. Only set when the input data is actually split.",
      "$ref": "DataSplitResult"
+    },
+    "globalExplanations": {
+     "description": "Global explanations for important features of the model. For multi-class models, there is one entry for each label class. For other models, there is only one entry in the list.",
+     "type": "array",
+     "items": {
+      "$ref": "GlobalExplanation"
+     }
     }
    }
   },
@@ -4205,6 +4220,40 @@
     }
    }
   },
+  "GlobalExplanation": {
+   "id": "GlobalExplanation",
+   "description": "Global explanations containing the top most important features after training.",
+   "type": "object",
+   "properties": {
+    "explanations": {
+     "description": "A list of the top global explanations. Sorted by absolute value of attribution in descending order.",
+     "type": "array",
+     "items": {
+      "$ref": "Explanation"
+     }
+    },
+    "classLabel": {
+     "description": "Class label for this set of global explanations. Will be empty/null for binary logistic and linear regression models. Sorted alphabetically in descending order.",
+     "type": "string"
+    }
+   }
+  },
+  "Explanation": {
+   "id": "Explanation",
+   "description": "Explanation for a single feature.",
+   "type": "object",
+   "properties": {
+    "featureName": {
+     "description": "Full name of the feature. For non-numerical features, will be formatted like .. Overall size of feature name will always be truncated to first 120 characters.",
+     "type": "string"
+    },
+    "attribution": {
+     "description": "Attribution of feature.",
+     "type": "number",
+     "format": "double"
+    }
+   }
+  },
   "StandardSqlField": {
    "id": "StandardSqlField",
    "description": "A field or a column.",
@@ -4457,6 +4506,56 @@
     "nextPageToken": {
      "description": "A token to request the next page of results.",
      "type": "string"
+    }
+   }
+  },
+  "ListRowAccessPoliciesResponse": {
+   "id": "ListRowAccessPoliciesResponse",
+   "description": "Response message for the ListRowAccessPolicies method.",
+   "type": "object",
+   "properties": {
+    "rowAccessPolicies": {
+     "description": "Row access policies on the requested table.",
+     "type": "array",
+     "items": {
+      "$ref": "RowAccessPolicy"
+     }
+    },
+    "nextPageToken": {
+     "description": "A token to request the next page of results.",
+     "type": "string"
+    }
+   }
+  },
+  "RowAccessPolicy": {
+   "id": "RowAccessPolicy",
+   "description": "Represents access on a subset of rows on the specified table, defined by its filter predicate. Access to the subset of rows is controlled by its IAM policy.",
+   "type": "object",
+   "properties": {
+    "etag": {
+     "description": "Output only. A hash of this resource.",
+     "readOnly": true,
+     "type": "string"
+    },
+    "rowAccessPolicyReference": {
+     "description": "Required. Reference describing the ID of this row access policy.",
+     "$ref": "RowAccessPolicyReference"
+    },
+    "filterPredicate": {
+     "description": "Required. A SQL boolean expression that represents the rows defined by this row access policy, similar to the boolean expression in a WHERE clause of a SELECT query on a table. References to other tables, routines, and temporary functions are not supported. Examples: region=\"EU\" date_field = CAST('2019-9-27' as DATE) nullable_field is not NULL numeric_field BETWEEN 1.0 AND 5.0",
+     "type": "string"
+    },
+    "creationTime": {
+     "description": "Output only. The time when this row access policy was created, in milliseconds since the epoch.",
+     "readOnly": true,
+     "type": "string",
+     "format": "google-datetime"
+    },
+    "lastModifiedTime": {
+     "description": "Output only. The time when this row access policy was last modified, in milliseconds since the epoch.",
+     "readOnly": true,
+     "type": "string",
+     "format": "google-datetime"
     }
    }
   },
@@ -6090,6 +6189,157 @@
      "description": "Lists all routines in the specified dataset. Requires the READER dataset role."
     }
    }
+  },
+  "rowAccessPolicies": {
+   "methods": {
+    "list": {
+     "id": "bigquery.rowAccessPolicies.list",
+     "path": "projects/{+projectId}/datasets/{+datasetId}/tables/{+tableId}/rowAccessPolicies",
+     "flatPath": "projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies",
+     "httpMethod": "GET",
+     "parameters": {
+      "projectId": {
+       "description": "Required. Project ID of the row access policies to list.",
+       "location": "path",
+       "required": true,
+       "pattern": "^[^/]+$",
+       "type": "string"
+      },
+      "datasetId": {
+       "description": "Required. Dataset ID of row access policies to list.",
+       "location": "path",
+       "required": true,
+       "pattern": "^[^/]+$",
+       "type": "string"
+      },
+      "tableId": {
+       "description": "Required. Table ID of the table to list row access policies.",
+       "location": "path",
+       "required": true,
+       "pattern": "^[^/]+$",
+       "type": "string"
+      },
+      "pageToken": {
+       "description": "Page token, returned by a previous call, to request the next page of results.",
+       "location": "query",
+       "type": "string"
+      },
+      "pageSize": {
+       "description": "The maximum number of results to return in a single response page. Leverage the page tokens to iterate through the entire collection.",
+       "location": "query",
+       "type": "integer",
+       "format": "int32"
+      }
+     },
+     "parameterOrder": [
+      "projectId",
+      "datasetId",
+      "tableId"
+     ],
+     "response": {
+      "$ref": "ListRowAccessPoliciesResponse"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/bigquery",
+      "https://www.googleapis.com/auth/bigquery.readonly",
+      "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud-platform.read-only"
+     ],
+     "description": "Lists all row access policies on the specified table."
+    },
+    "setIamPolicy": {
+     "id": "bigquery.rowAccessPolicies.setIamPolicy",
+     "path": "{+resource}:setIamPolicy",
+     "flatPath": "projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies/{rowAccessPoliciesId}:setIamPolicy",
+     "httpMethod": "POST",
+     "parameters": {
+      "resource": {
+       "description": "REQUIRED: The resource for which the policy is being specified. See the operation documentation for the appropriate value for this field.",
+       "location": "path",
+       "required": true,
+       "pattern": "^projects/[^/]+/datasets/[^/]+/tables/[^/]+/rowAccessPolicies/[^/]+$",
+       "type": "string"
+      }
+     },
+     "parameterOrder": [
+      "resource"
+     ],
+     "request": {
+      "$ref": "SetIamPolicyRequest"
+     },
+     "response": {
+      "$ref": "Policy"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/bigquery",
+      "https://www.googleapis.com/auth/cloud-platform"
+     ],
+     "description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors."
+    },
+    "getIamPolicy": {
+     "id": "bigquery.rowAccessPolicies.getIamPolicy",
+     "path": "{+resource}:getIamPolicy",
+     "flatPath": "projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies/{rowAccessPoliciesId}:getIamPolicy",
+     "httpMethod": "POST",
+     "parameters": {
+      "resource": {
+       "description": "REQUIRED: The resource for which the policy is being requested. See the operation documentation for the appropriate value for this field.",
+       "location": "path",
+       "required": true,
+       "pattern": "^projects/[^/]+/datasets/[^/]+/tables/[^/]+/rowAccessPolicies/[^/]+$",
+       "type": "string"
+      }
+     },
+     "parameterOrder": [
+      "resource"
+     ],
+     "request": {
+      "$ref": "GetIamPolicyRequest"
+     },
+     "response": {
+      "$ref": "Policy"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/bigquery",
+      "https://www.googleapis.com/auth/bigquery.readonly",
+      "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud-platform.read-only"
+     ],
+     "description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set."
+    },
+    "testIamPermissions": {
+     "id": "bigquery.rowAccessPolicies.testIamPermissions",
+     "path": "{+resource}:testIamPermissions",
+     "flatPath": "projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies/{rowAccessPoliciesId}:testIamPermissions",
+     "httpMethod": "POST",
+     "parameters": {
+      "resource": {
+       "description": "REQUIRED: The resource for which the policy detail is being requested. See the operation documentation for the appropriate value for this field.",
+       "location": "path",
+       "required": true,
+       "pattern": "^projects/[^/]+/datasets/[^/]+/tables/[^/]+/rowAccessPolicies/[^/]+$",
+       "type": "string"
+      }
+     },
+     "parameterOrder": [
+      "resource"
+     ],
+     "request": {
+      "$ref": "TestIamPermissionsRequest"
+     },
+     "response": {
+      "$ref": "TestIamPermissionsResponse"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/bigquery",
+      "https://www.googleapis.com/auth/bigquery.readonly",
+      "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud-platform.read-only"
+     ],
+     "description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning."
+    }
+   }
   }
- }
+ },
+ "mtlsRootUrl": "https://bigquery.mtls.googleapis.com/"
 }

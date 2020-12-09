@@ -67,6 +67,7 @@ def _Args(parser,
   instances_flags.AddImageArgs(parser)
   instances_flags.AddMinCpuPlatformArgs(parser, release_track)
   instances_flags.AddNetworkTierArgs(parser, instance=True)
+  instances_flags.AddConfidentialComputeArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
   instances_flags.AddPrivateNetworkIpArgs(parser)
 
@@ -136,6 +137,8 @@ class CreateWithContainer(base.CreateCommand):
           messages=client.messages,
           network_interface_arg=args.network_interface,
           region=args.region)
+    stack_type = getattr(args, 'stack_type', None)
+    ipv6_network_tier = getattr(args, 'ipv6_network_tier', None)
     return [
         instance_template_utils.CreateNetworkInterfaceMessage(
             resources=holder.resources,
@@ -148,7 +151,9 @@ class CreateWithContainer(base.CreateCommand):
             address=(instance_template_utils.EPHEMERAL_ADDRESS
                      if not args.no_address and not args.address else
                      args.address),
-            network_tier=getattr(args, 'network_tier', None))
+            network_tier=getattr(args, 'network_tier', None),
+            stack_type=stack_type,
+            ipv6_network_tier=ipv6_network_tier)
     ]
 
   def _GetScheduling(self, args, client):
@@ -248,11 +253,15 @@ class CreateWithContainer(base.CreateCommand):
         instance_template_ref,
         image_uri,
         match_container_mount_disks=True)
+    confidential_instance_config = (
+        create_utils.BuildConfidentialInstanceConfigMessage(
+            messages=client.messages, args=args))
 
     properties = client.messages.InstanceProperties(
         machineType=machine_type,
         disks=disks,
         canIpForward=args.can_ip_forward,
+        confidentialInstanceConfig=confidential_instance_config,
         labels=labels,
         metadata=metadata,
         minCpuPlatform=args.min_cpu_platform,
@@ -384,6 +393,9 @@ class CreateWithContainerBeta(CreateWithContainer):
         instance_template_ref,
         image_uri,
         match_container_mount_disks=True)
+    confidential_instance_config = (
+        create_utils.BuildConfidentialInstanceConfigMessage(
+            messages=client.messages, args=args))
     guest_accelerators = (
         instance_template_utils.CreateAcceleratorConfigMessages(
             client.messages, getattr(args, 'accelerator', None)))
@@ -392,6 +404,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         machineType=machine_type,
         disks=disks,
         canIpForward=args.can_ip_forward,
+        confidentialInstanceConfig=confidential_instance_config,
         labels=labels,
         metadata=metadata,
         minCpuPlatform=args.min_cpu_platform,
@@ -433,6 +446,8 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
+    instances_flags.AddStackTypeArgs(parser)
+    instances_flags.AddIpv6NetworkTierArgs(parser)
 
   def Run(self, args):
     """Issues an InstanceTemplates.Insert request.
@@ -477,6 +492,9 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         instance_template_ref,
         image_uri,
         match_container_mount_disks=True)
+    confidential_instance_config = (
+        create_utils.BuildConfidentialInstanceConfigMessage(
+            messages=client.messages, args=args))
     guest_accelerators = (
         instance_template_utils.CreateAcceleratorConfigMessages(
             client.messages, getattr(args, 'accelerator', None)))
@@ -485,6 +503,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         machineType=machine_type,
         disks=disks,
         canIpForward=args.can_ip_forward,
+        confidentialInstanceConfig=confidential_instance_config,
         labels=labels,
         metadata=metadata,
         minCpuPlatform=args.min_cpu_platform,

@@ -35,7 +35,9 @@
     api_version: v1
     collection: datacatalog.projects.locations.entryGroups.entries
     modify_request_hooks:
+    - googlecloudsdk.command_lib.data_catalog.entries.v1_util:DetectType
     - googlecloudsdk.command_lib.data_catalog.entries.v1_util:ParseFilesetRequirements
+    - googlecloudsdk.command_lib.data_catalog.entries.v1_util:ParsePhysicalSchema
 
   arguments:
     resource:
@@ -67,6 +69,20 @@
             - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:linked_resource
             - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:source_system_create_time
             - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:source_system_update_time
+        - group:
+            help_text: |
+              Create a Kafka Cluster entry.
+            params:
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:kafka_cluster_bootstrap_servers_required
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:kafka_cluster_properties_gcs_uri
+        - group:
+            params:
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:kafka_cluster_required
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:kafka_topic_required
+            - group:
+                params:
+                - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:physical_schema_type
+                - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:physical_schema_file
     - group:
         mutex: true
         help_text: |

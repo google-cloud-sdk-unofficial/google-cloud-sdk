@@ -73,8 +73,9 @@ class Run(base.Command):
         help=('The Airflow CLI subcommand to run. Available subcommands '
               'include: {} (see https://airflow.apache.org/cli.html for more '
               'info). Note that delete_dag is available from Airflow 1.10.1, '
-              'and list_dag_runs, next_execution are available from Airflow '
-              '1.10.2.').format(', '.join(command_util.SUBCOMMAND_WHITELIST)))
+              'and list_dag_runs, next_execution, sync_perm are available from '
+              'Airflow 1.10.2.').format(', '.join(
+                  command_util.SUBCOMMAND_WHITELIST)))
     parser.add_argument(
         'cmd_args',
         metavar='CMD_ARGS',

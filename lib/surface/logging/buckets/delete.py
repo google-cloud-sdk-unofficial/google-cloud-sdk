@@ -25,9 +25,14 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Delete a bucket.
+
+  ## EXAMPLES
+
+  To delete bucket 'my-bucket' in location 'global', run:
+
+    $ {command} my-bucket --location=global
   """
 
   @staticmethod

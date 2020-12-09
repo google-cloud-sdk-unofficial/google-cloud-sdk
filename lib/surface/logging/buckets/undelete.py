@@ -23,9 +23,14 @@ from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Delete(base.RestoreCommand):
+class Undelete(base.RestoreCommand):
   """Undelete a bucket.
+
+  ## EXAMPLES
+
+  To undelete bucket 'my-bucket' in location 'global', run:
+
+    $ {command} my-bucket --location=global
   """
 
   @staticmethod

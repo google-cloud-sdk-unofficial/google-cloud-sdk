@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Stackdriver logging sinks group."""
+"""Cloud Logging sinks group."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,4 +23,4 @@ from googlecloudsdk.calliope import base
 
 
 class Sinks(base.Group):
-  """Manages sinks used to export logs."""
+  """Manages sinks used to route logs to storage or export destinations."""

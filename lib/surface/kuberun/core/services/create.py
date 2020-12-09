@@ -18,6 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import json
+
+from googlecloudsdk.api_lib.kuberun import service
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import flags
 from googlecloudsdk.command_lib.kuberun import kuberun_command
@@ -33,7 +36,8 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
+class Create(kuberun_command.KubeRunStreamingCommandWithResult,
+             base.CreateCommand):
   """Creates a new Knative service."""
 
   detailed_help = _DETAILED_HELP
@@ -55,3 +59,6 @@ class Create(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
 
   def Command(self):
     return ['core', 'services', 'create']
+
+  def FormatOutput(self, out, args):
+    return service.Service(json.loads(out))

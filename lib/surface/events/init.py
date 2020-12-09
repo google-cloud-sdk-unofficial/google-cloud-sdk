@@ -84,11 +84,10 @@ _BROKER_SERVICE_ACCOUNT_CONFIG = ServiceAccountConfig(
     default_service_account=iam_util.EVENTS_BROKER_SERVICE_ACCOUNT,
     recommended_roles=[
         'roles/pubsub.editor',
-    ],
-    additional_wi_roles=[
         'roles/monitoring.metricWriter',
         'roles/cloudtrace.agent',
     ],
+    additional_wi_roles=[],
     secret_name='google-broker-key',
 )
 
@@ -99,11 +98,10 @@ _SOURCES_SERVICE_ACCOUNT_CONFIG = ServiceAccountConfig(
     default_service_account=iam_util.EVENTS_SOURCES_SERVICE_ACCOUNT,
     recommended_roles=[
         'roles/pubsub.editor',
-    ],
-    additional_wi_roles=[
         'roles/monitoring.metricWriter',
         'roles/cloudtrace.agent',
     ],
+    additional_wi_roles=[],
     secret_name='google-cloud-sources-key',
 )
 

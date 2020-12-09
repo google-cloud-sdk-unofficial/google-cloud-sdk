@@ -26,13 +26,12 @@ from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.resource_manager import completers
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.Command):
   # pylint: disable=line-too-long
-  """Updates the CMEK settings for the Stackdriver Logs Router.
+  """Updates the CMEK settings for the Cloud Logging Logs Router.
 
   Use this command to update the *--kms-key-name* associated with the
-  Stackdriver Logs Router.
+  Cloud Logging Logs Router.
 
   The Cloud KMS key must already exist and Cloud Logging must have
   permission to access it.
@@ -66,9 +65,9 @@ class Update(base.Command):
 
     kms_resource_args.AddKmsKeyResourceArg(
         group,
-        resource='logs being processed by the Stackdriver Logs Router',
+        resource='logs being processed by the Cloud Logging Logs Router',
         permission_info=('The Cloud KMS CryptoKey Encrypter/Decryper role must '
-                         'be assigned to the Stackdriver Logs Router service '
+                         'be assigned to the Cloud Logging Logs Router service '
                          'account'),
         name='--kms-key-name')
 

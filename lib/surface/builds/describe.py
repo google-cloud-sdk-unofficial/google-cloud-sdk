@@ -52,14 +52,18 @@ class Describe(base.DescribeCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    build_region = args.region
+    build_region = args.region or cloudbuild_util.DEFAULT_REGION
 
-    client = cloudbuild_util.GetClientInstance(region=build_region)
+    client = cloudbuild_util.GetClientInstance()
 
     build_ref = resources.REGISTRY.Parse(
         args.build,
-        params={'projectId': properties.VALUES.core.project.GetOrFail},
-        collection='cloudbuild.projects.builds')
-    return client.projects_builds.Get(
-        client.MESSAGES_MODULE.CloudbuildProjectsBuildsGetRequest(
-            projectId=build_ref.projectId, id=build_ref.id))
+        params={
+            'projectsId': properties.VALUES.core.project.GetOrFail,
+            'locationsId': build_region,
+            'buildsId': args.build,
+        },
+        collection='cloudbuild.projects.locations.builds')
+    return client.projects_locations_builds.Get(
+        client.MESSAGES_MODULE.CloudbuildProjectsLocationsBuildsGetRequest(
+            name=build_ref.RelativeName()))

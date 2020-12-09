@@ -217,7 +217,7 @@
                 "$ref": "TableReference"
               },
               "routine": {
-                "description": "[Pick one] A routine from a different dataset to grant access to. Queries executed against that routine will have read access to views\/tables\/routines in this dataset. The role field is not required when this field is set. If that routine is updated by any user, access to the routine needs to be granted again via an update operation.",
+                "description": "[Pick one] A routine from a different dataset to grant access to. Queries executed against that routine will have read access to views\/tables\/routines in this dataset. Only UDF is supported for now. The role field is not required when this field is set. If that routine is updated by any user, access to the routine needs to be granted again via an update operation.",
                 "$ref": "RoutineReference"
               }
             }
@@ -230,7 +230,7 @@
           "format": "int64"
         },
         "lastModifiedTime": {
-          "description": "Output only. The date when this dataset or any of its tables was last modified, in milliseconds since the epoch.",
+          "description": "Output only. The date when this dataset was last modified, in milliseconds since the epoch.",
           "readOnly": true,
           "type": "string",
           "format": "int64"
@@ -530,6 +530,13 @@
         "dataSplitResult": {
           "description": "Data split result of the training run. Only set when the input data is actually split.",
           "$ref": "DataSplitResult"
+        },
+        "globalExplanations": {
+          "description": "Global explanations for important features of the model. For multi-class models, there is one entry for each label class. For other models, there is only one entry in the list.",
+          "type": "array",
+          "items": {
+            "$ref": "GlobalExplanation"
+          }
         }
       }
     },
@@ -1715,6 +1722,40 @@
         }
       }
     },
+    "GlobalExplanation": {
+      "id": "GlobalExplanation",
+      "description": "Global explanations containing the top most important features after training.",
+      "type": "object",
+      "properties": {
+        "explanations": {
+          "description": "A list of the top global explanations. Sorted by absolute value of attribution in descending order.",
+          "type": "array",
+          "items": {
+            "$ref": "Explanation"
+          }
+        },
+        "classLabel": {
+          "description": "Class label for this set of global explanations. Will be empty\/null for binary logistic and linear regression models. Sorted alphabetically in descending order.",
+          "type": "string"
+        }
+      }
+    },
+    "Explanation": {
+      "id": "Explanation",
+      "description": "Explanation for a single feature.",
+      "type": "object",
+      "properties": {
+        "featureName": {
+          "description": "Full name of the feature. For non-numerical features, will be formatted like .. Overall size of feature name will always be truncated to first 120 characters.",
+          "type": "string"
+        },
+        "attribution": {
+          "description": "Attribution of feature.",
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
     "StandardSqlField": {
       "id": "StandardSqlField",
       "description": "A field or a column.",
@@ -1904,7 +1945,7 @@
           "type": "boolean"
         },
         "jobTimeoutMs": {
-          "description": "[Optional] Job timeout in milliseconds. If this time limit is exceeded, BigQuery may attempt to terminate the job.",
+          "description": "[Optional] Job timeout in milliseconds. If this time limit is exceeded, BigQuery might attempt to stop the job.",
           "type": "string",
           "format": "int64"
         },
@@ -2092,6 +2133,25 @@
         "connectionId": {
           "description": "Optional This field is in testing and should not yet be used.",
           "type": "string"
+        },
+        "decimalTargetTypes": {
+          "description": "Defines the list of possible SQL data types to which the source decimal values are converted. This list and the precision and the scale parameters of the decimal field determine the target type. In the order of NUMERIC, BIGNUMERIC, and STRING, a type is picked if it is in the specified list and if it supports the precision and the scale. STRING supports all precision and scale values. If none of the listed types supports the precision and the scale, the type supporting the widest range in the specified list is picked, and if a value exceeds the supported range when reading the data, an error will be thrown. For example: suppose decimal_target_type = [\"NUMERIC\", \"BIGNUMERIC\"]. Then if (precision,scale) is: * (38,9) -> NUMERIC; * (38,9) -> BIGNUMERIC (NUMERIC cannot hold 38 integer digits); * (38,10) -> BIGNUMERIC (NUMERIC cannot hold 10 fractional digits); * (76,38) -> BIGNUMERIC; * (77,38) -> BIGNUMERIC (error if value exeeds supported range). This field cannot contain duplicate types. The order of the types in this field is ignored. For example, [\"BIGNUMERIC\", \"NUMERIC\"] is the same as [\"NUMERIC\", \"BIGNUMERIC\"] and NUMERIC always takes precedence over BIGNUMERIC. Defaults to [\"NUMERIC\", \"STRING\"] for ORC and [\"NUMERIC\"] for the other file formats.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enumDescriptions": [
+              "The default value when the provided type is not matching any type in the enum.",
+              "Depending on the order, decimal values could be converted to NUMERIC type.",
+              "Depending on the order, decimal values could be converted to BIGNUMERIC type.",
+              "Depending on the order, decimal values could be converted to STRING type."
+            ],
+            "enum": [
+              "DECIMAL_TARGET_TYPE_UNSPECIFIED",
+              "NUMERIC",
+              "BIGNUMERIC",
+              "STRING"
+            ]
+          }
         }
       }
     },
@@ -2154,7 +2214,6 @@
     },
     "CsvOptions": {
       "id": "CsvOptions",
-      "description": "Options for external data sources.",
       "type": "object",
       "properties": {
         "fieldDelimiter": {
@@ -2440,16 +2499,19 @@
           "type": "object",
           "properties": {
             "start": {
-              "description": "Required. [Experimental] The start of range partitioning, inclusive.",
-              "type": "string"
+              "description": "[Experimental] The start of range partitioning, inclusive.",
+              "type": "string",
+              "format": "int64"
             },
             "end": {
-              "description": "Required. [Experimental] The end of range partitioning, exclusive.",
-              "type": "string"
+              "description": "[Experimental] The end of range partitioning, exclusive.",
+              "type": "string",
+              "format": "int64"
             },
             "interval": {
-              "description": "Required. [Experimental] The width of each interval.",
-              "type": "string"
+              "description": "[Experimental] The width of each interval.",
+              "type": "string",
+              "format": "int64"
             }
           }
         }
@@ -2638,6 +2700,29 @@
         "hivePartitioningOptions": {
           "description": "[Optional] When set, configures hive partitioning support. Not all storage formats support hive partitioning -- requesting hive partitioning on an unsupported format will lead to an error, as will providing an invalid specification.",
           "$ref": "HivePartitioningOptions"
+        },
+        "decimalTargetTypes": {
+          "description": "Defines the list of possible SQL data types to which the source decimal values are converted. This list and the precision and the scale parameters of the decimal field determine the target type. In the order of NUMERIC, BIGNUMERIC, and STRING, a type is picked if it is in the specified list and if it supports the precision and the scale. STRING supports all precision and scale values. If none of the listed types supports the precision and the scale, the type supporting the widest range in the specified list is picked, and if a value exceeds the supported range when reading the data, an error will be thrown. For example: suppose decimal_target_type = [\"NUMERIC\", \"BIGNUMERIC\"]. Then if (precision,scale) is: * (38,9) -> NUMERIC; * (38,9) -> BIGNUMERIC (NUMERIC cannot hold 38 integer digits); * (38,10) -> BIGNUMERIC (NUMERIC cannot hold 10 fractional digits); * (76,38) -> BIGNUMERIC; * (77,38) -> BIGNUMERIC (error if value exeeds supported range). This field cannot contain duplicate types. The order of the types in this field is ignored. For example, [\"BIGNUMERIC\", \"NUMERIC\"] is the same as [\"NUMERIC\", \"BIGNUMERIC\"] and NUMERIC always takes precedence over BIGNUMERIC. Defaults to [\"NUMERIC\", \"STRING\"] for ORC and [\"NUMERIC\"] for the other file formats.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enumDescriptions": [
+              "The default value when the provided type is not matching any type in the enum.",
+              "Depending on the order, decimal values could be converted to NUMERIC type.",
+              "Depending on the order, decimal values could be converted to BIGNUMERIC type.",
+              "Depending on the order, decimal values could be converted to STRING type."
+            ],
+            "enum": [
+              "DECIMAL_TARGET_TYPE_UNSPECIFIED",
+              "NUMERIC",
+              "BIGNUMERIC",
+              "STRING"
+            ]
+          }
+        },
+        "thriftOptions": {
+          "description": "Optional. Experimental The load options for Apache Thrift serialized data. It defines the source of IDL bundle that should be used to be parsed as the schema and deserilization options to parse Thrift data.",
+          "$ref": "ThriftOptions"
         }
       }
     },
@@ -2659,6 +2744,58 @@
           "additionalProperties": {
             "type": "string"
           }
+        }
+      }
+    },
+    "ThriftOptions": {
+      "id": "ThriftOptions",
+      "description": "Options for configuring loading Thrift serialized data.",
+      "type": "object",
+      "properties": {
+        "schemaIdlRootDir": {
+          "description": "Required. The root directory of the IDL file bundle defining the schema. All IDL files that are used to parse the schema should be in this directory. This directory should be different from the source_uris.",
+          "type": "string"
+        },
+        "schemaIdlUri": {
+          "description": "Required. The Thrift IDL file in the `schema_idl_root_dir` that should be used as the root file to parse the schema. All included idl files in the `schema_idl_uri` should also be in the `schema_idl_root_dir` or its sub-directory.",
+          "type": "string"
+        },
+        "schemaStruct": {
+          "description": "Required. The root struct specified in `schema_idl_uri` that should be used to parse the schema.",
+          "type": "string"
+        },
+        "deserializationOption": {
+          "description": "Optional. `deserialization_option` sets how the serialized Thrift should be deserialized. The following options are supported: * THRIFT_BINARY_PROTOCOL_OPTION: using TBinaryProtocol to deserialize the data.",
+          "type": "string",
+          "enumDescriptions": [
+            "Default value. This value is unused.",
+            "Use `TBinaryProtocol` to deserialize the data.."
+          ],
+          "enum": [
+            "DESERIALIZATION_OPTION_UNSPECIFIED",
+            "THRIFT_BINARY_PROTOCOL_OPTION"
+          ]
+        },
+        "framingOption": {
+          "description": "Optional. Framing in Thrift means 4 bytes slipped in front of the serialized record or data block to inidicate the size of the followed record or data block. The following options are support: * NOT_FRAMED: Serialized Thrift records or data blocks are not framed, there are no 4-byte record size in front of the record. * FRAMED_WITH_BIG_ENDIAN: Serialized Thrift records or data blocks are framed with the 4-byte record size in big endian. * FRAMED_WITH_LITTLE_ENDIAN: Serialized Thrift records or data blocks are framed with the 4-byte record size in little endian. One option to frame Thrift record at serialization time is using `TFramedTransport`, which writes the 4-byte record or data block size in big endian. By default `framing_option` is set to \"NOT_FRAMED\".",
+          "type": "string",
+          "enumDescriptions": [
+            "Default value. This value is unused.",
+            "Records or data blocks are not framed.",
+            "Records or data blocks are framed with a 4-byte record size in big endian.",
+            "Records or data blocks are framed with a 4-byte record size in little endian."
+          ],
+          "enum": [
+            "FRAMING_OPTION_UNSPECIFIED",
+            "NOT_FRAMED",
+            "FRAMED_WITH_BIG_ENDIAN",
+            "FRAMED_WITH_LITTLE_ENDIAN"
+          ]
+        },
+        "boundaryBytes": {
+          "description": "Optional. Sequence of bytes used to separate two serialized Thrift data blocks. When it's used with `framing_option`, the `boundary_bytes` are expected to be in front of the framed block.",
+          "type": "string",
+          "format": "byte"
         }
       }
     },
@@ -2920,7 +3057,7 @@
           "format": "int64"
         },
         "timeline": {
-          "description": "Output only. [Beta] Describes a timeline of job execution.",
+          "description": "Output only. Describes a timeline of job execution.",
           "readOnly": true,
           "type": "array",
           "items": {
@@ -3067,7 +3204,7 @@
           }
         },
         "biEngineStatistics": {
-          "description": "Output only. BI Engine specific Statistics. This will only be populated if TurboSql acceleration is enabled. See go\/turbosql-reporting for details.",
+          "description": "Output only. BI Engine specific Statistics.",
           "readOnly": true,
           "$ref": "BiEngineStatistics"
         }
@@ -3351,18 +3488,18 @@
     },
     "BiEngineStatistics": {
       "id": "BiEngineStatistics",
-      "description": "Statistics for a BI-Engine specific query. Populated as part of JobStatistics2",
+      "description": "Statistics for a BI Engine specific query. Populated as part of JobStatistics2",
       "type": "object",
       "properties": {
-        "accelerationMode": {
-          "description": "Output only. Specifies which mode of BI-Engine acceleration was performed (if any).",
+        "biEngineMode": {
+          "description": "Output only. Specifies which mode of BI Engine acceleration was performed (if any).",
           "readOnly": true,
           "type": "string",
           "enumDescriptions": [
-            "BI-Engine AccelerationMode type not specified.",
-            "BI-Engine disabled the acceleration. bi_engine_acceleration_reasons specifies a more detailed reason.",
-            "Part of the query was accelerated using BI-Engine. See bi_engine_acceleration_reasons for why parts of the query were not accelerated.",
-            "All of the query was accelerated using BI-Engine."
+            "BiEngineMode type not specified.",
+            "BI Engine disabled the acceleration. bi_engine_reasons specifies a more detailed reason.",
+            "Part of the query was accelerated using BI Engine. See bi_engine_reasons for why parts of the query were not accelerated.",
+            "All of the query was accelerated using BI Engine."
           ],
           "enum": [
             "ACCELERATION_MODE_UNSPECIFIED",
@@ -3371,31 +3508,31 @@
             "FULL"
           ]
         },
-        "accelerationReasons": {
-          "description": "In case of DISABLED or PARTIAL acceleration, these contain the explanatory reasons as to why BI-Engine could not accelerate. In case the full query was accelerated, this field is not populated.",
+        "biEngineReasons": {
+          "description": "In case of DISABLED or PARTIAL bi_engine_mode, these contain the explanatory reasons as to why BI Engine could not accelerate. In case the full query was accelerated, this field is not populated.",
           "type": "array",
           "items": {
-            "$ref": "AccelerationReason"
+            "$ref": "BiEngineReason"
           }
         }
       }
     },
-    "AccelerationReason": {
-      "id": "AccelerationReason",
-      "description": "Reason why BiEngine didn't accelerate the query (or sub-query).",
+    "BiEngineReason": {
+      "id": "BiEngineReason",
+      "description": "Reason why BI Engine didn't accelerate the query (or sub-query).",
       "type": "object",
       "properties": {
         "code": {
-          "description": "Output only. High-level BI-Engine reason for partial or disabled acceleration",
+          "description": "Output only. High-level BI Engine reason for partial or disabled acceleration",
           "readOnly": true,
           "type": "string",
           "enumDescriptions": [
-            "AccelerationReason not specified.",
-            "No reservation available for BI-Engine acceleration.",
-            "Not enough memory available for BI-Engine acceleration.",
-            "Data is not-cached and could not be accelerated by BI-Engine.",
-            "This particular SQL text is not supported for acceleration by BI-Engine.",
-            "Input too large for acceleration by BI-Engine.",
+            "BiEngineReason not specified.",
+            "No reservation available for BI Engine acceleration.",
+            "Not enough memory available for BI Engine acceleration.",
+            "Data is not-cached and could not be accelerated by BI Engine.",
+            "This particular SQL text is not supported for acceleration by BI Engine.",
+            "Input too large for acceleration by BI Engine.",
             "Catch-all code for all other cases for partial or disabled acceleration."
           ],
           "enum": [
@@ -3449,6 +3586,14 @@
           "readOnly": true,
           "type": "string",
           "format": "int64"
+        },
+        "timeline": {
+          "description": "Output only. Describes a timeline of job execution.",
+          "readOnly": true,
+          "type": "array",
+          "items": {
+            "$ref": "QueryTimelineSample"
+          }
         }
       }
     },
@@ -3471,6 +3616,14 @@
           "readOnly": true,
           "type": "string",
           "format": "int64"
+        },
+        "timeline": {
+          "description": "Output only. Describes a timeline of job execution.",
+          "readOnly": true,
+          "type": "array",
+          "items": {
+            "$ref": "QueryTimelineSample"
+          }
         }
       }
     },
@@ -3936,9 +4089,8 @@
                 "type": "string"
               },
               "numericId": {
-                "description": "The numeric ID of this project.",
                 "type": "string",
-                "format": "int64"
+                "format": "uint64"
               },
               "projectReference": {
                 "description": "A unique reference to this project.",
@@ -4549,6 +4701,10 @@
               }
             }
           }
+        },
+        "traceId": {
+          "description": "Unique request trace id. Used for debugging purposes only. It is case-sensitive, limited to up to 36 ASCII characters. A UUID is recommended.",
+          "type": "string"
         }
       }
     },
@@ -4575,35 +4731,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "TableDataList": {
-      "id": "TableDataList",
-      "type": "object",
-      "properties": {
-        "kind": {
-          "description": "Will be set to \"bigquery#tableDataList\".",
-          "type": "string"
-        },
-        "etag": {
-          "description": "Etag to the response.",
-          "type": "string"
-        },
-        "totalRows": {
-          "description": "Total rows of the entire table. In order to show default value \"0\", we have to present it as string.",
-          "type": "string"
-        },
-        "pageToken": {
-          "description": "A token indicates from where we should start the next read.",
-          "type": "string"
-        },
-        "rows": {
-          "description": "Repeated rows as result. The REST-based representation of this data leverages a series of JSON f,v objects for indicating fields and values.",
-          "type": "array",
-          "items": {
-            "$ref": "TableRow"
           }
         }
       }
@@ -4843,6 +4970,37 @@
     "JsonValue": {
       "id": "JsonValue",
       "type": "any"
+    },
+    "TableDataList": {
+      "id": "TableDataList",
+      "type": "object",
+      "properties": {
+        "pageToken": {
+          "description": "A token used for paging results. Providing this token instead of the startIndex parameter can help you retrieve stable results when an underlying table is changing.",
+          "type": "string"
+        },
+        "kind": {
+          "description": "The resource type of the response.",
+          "default": "bigquery#tableDataList",
+          "type": "string"
+        },
+        "rows": {
+          "description": "Rows of results.",
+          "type": "array",
+          "items": {
+            "$ref": "TableRow"
+          }
+        },
+        "totalRows": {
+          "description": "Total rows of the entire table. In order to show default value 0 we have to present it as string.",
+          "type": "string",
+          "format": "int64"
+        },
+        "etag": {
+          "description": "A hash of this page of results.",
+          "type": "string"
+        }
+      }
     }
   },
   "resources": {
@@ -6014,6 +6172,97 @@
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
           "description": "Lists all row access policies on the specified table."
+        },
+        "setIamPolicy": {
+          "id": "bigquery.rowAccessPolicies.setIamPolicy",
+          "path": "bigquery/v2/{+resource}:setIamPolicy",
+          "flatPath": "bigquery/v2/projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies/{rowAccessPoliciesId}:setIamPolicy",
+          "httpMethod": "POST",
+          "parameters": {
+            "resource": {
+              "description": "REQUIRED: The resource for which the policy is being specified. See the operation documentation for the appropriate value for this field.",
+              "location": "path",
+              "required": true,
+              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+\/tables\/[^\/]+\/rowAccessPolicies\/[^\/]+$",
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "resource"
+          ],
+          "request": {
+            "$ref": "SetIamPolicyRequest"
+          },
+          "response": {
+            "$ref": "Policy"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/bigquery",
+            "https://www.googleapis.com/auth/cloud-platform"
+          ],
+          "description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors."
+        },
+        "getIamPolicy": {
+          "id": "bigquery.rowAccessPolicies.getIamPolicy",
+          "path": "bigquery/v2/{+resource}:getIamPolicy",
+          "flatPath": "bigquery/v2/projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies/{rowAccessPoliciesId}:getIamPolicy",
+          "httpMethod": "POST",
+          "parameters": {
+            "resource": {
+              "description": "REQUIRED: The resource for which the policy is being requested. See the operation documentation for the appropriate value for this field.",
+              "location": "path",
+              "required": true,
+              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+\/tables\/[^\/]+\/rowAccessPolicies\/[^\/]+$",
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "resource"
+          ],
+          "request": {
+            "$ref": "GetIamPolicyRequest"
+          },
+          "response": {
+            "$ref": "Policy"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/bigquery",
+            "https://www.googleapis.com/auth/bigquery.readonly",
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/cloud-platform.read-only"
+          ],
+          "description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set."
+        },
+        "testIamPermissions": {
+          "id": "bigquery.rowAccessPolicies.testIamPermissions",
+          "path": "bigquery/v2/{+resource}:testIamPermissions",
+          "flatPath": "bigquery/v2/projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies/{rowAccessPoliciesId}:testIamPermissions",
+          "httpMethod": "POST",
+          "parameters": {
+            "resource": {
+              "description": "REQUIRED: The resource for which the policy detail is being requested. See the operation documentation for the appropriate value for this field.",
+              "location": "path",
+              "required": true,
+              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+\/tables\/[^\/]+\/rowAccessPolicies\/[^\/]+$",
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "resource"
+          ],
+          "request": {
+            "$ref": "TestIamPermissionsRequest"
+          },
+          "response": {
+            "$ref": "TestIamPermissionsResponse"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/bigquery",
+            "https://www.googleapis.com/auth/bigquery.readonly",
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/cloud-platform.read-only"
+          ],
+          "description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning."
         }
       }
     },

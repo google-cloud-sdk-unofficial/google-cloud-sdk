@@ -24,18 +24,20 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.ml_engine import endpoint_util
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
+from googlecloudsdk.command_lib.ml_engine import region_util
 
 
 def _AddSetIamPolicyArgs(parser):
   flags.GetModelResourceArg(
       positional=True, required=True,
       verb='to set IAM policy for').AddToParser(parser)
-  flags.GetRegionArg().AddToParser(parser)
+  flags.GetRegionArg(include_global=True).AddToParser(parser)
   iam_util.AddArgForPolicyFile(parser)
 
 
 def _Run(args):
-  with endpoint_util.MlEndpointOverrides(region=args.region):
+  region = region_util.GetRegion(args)
+  with endpoint_util.MlEndpointOverrides(region=region):
     return models_util.SetIamPolicy(models.ModelsClient(), args.model,
                                     args.policy_file)
 

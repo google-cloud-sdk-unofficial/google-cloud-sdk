@@ -11,19 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
-    brief: Update a WorkloadIdentityPool.
-    description: Update a WorkloadIdentityPool.
+    brief: Update a workload identity pool.
+    description: Update a workload identity pool.
     examples: |
-      The following command updates the WorkloadIdentityPool with the ID
-      'my-workload-identity-pool':
+      The following command updates the workload identity pool with the ID
+      ``my-workload-identity-pool'':
 
         $ {command} my-workload-identity-pool \
-            --location='global'
-            --display-name='My workload pool' \
-            --description='My workload pool description' \
+            --location="global"
+            --display-name="My workload pool" \
+            --description="My workload pool description" \
             --disabled
 
   request:
@@ -36,7 +36,7 @@
 
   arguments:
     resource:
-      help_text: The WorkloadIdentityPool to update.
+      help_text: The workload identity pool to update.
       spec: !REF googlecloudsdk.command_lib.iam.resources:positional_workload_identity_pool
 
     params:

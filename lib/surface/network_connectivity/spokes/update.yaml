@@ -28,6 +28,23 @@
           spec:
           - api_field: key
           - api_field: value
+    - arg_name: router-appliance
+      api_field: spoke.linkedRouterApplianceInstances
+      type:
+        arg_dict:
+          flatten: false
+          spec:
+          - api_field: virtualMachine
+            arg_name: instance
+            type: str
+          - api_field: ipAddress
+            arg_name: ip
+            type: str
+      help_text: |
+        Replace the set of router appliance instances linked to this spoke. Pass this flag multiple times to use multiple instances.
+        For example, use `--router-appliance=instance=new_instance,ip=10.10.10.1` for a single router-appliance instance,
+        or `--router-appliance=instance=new_instance_1,ip=10.10.10.11 --router-appliance=instance=new_instance_2,ip=10.10.10.12 ...`
+        for multiple instances.
 
   async:
     collection: networkconnectivity.projects.locations.operations

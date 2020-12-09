@@ -25,10 +25,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import completers
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   # pylint: disable=line-too-long
-  """Displays the CMEK settings for the Stackdriver Logs Router.
+  """Displays the CMEK settings for the Cloud Logging Logs Router.
 
   If *kmsKeyName* is present in the output, then CMEK is enabled for your
   organization.  You can also find the Logs Router service account using this

@@ -59,11 +59,13 @@ class Create(base.CreateCommand):
         with.
 
     Returns:
-      Nothing.
+      response with service identity email and uniqueId.
     """
     project = properties.VALUES.core.project.Get(required=True)
-    email, _ = serviceusage.GenerateServiceIdentity(project, args.service)
+    response = serviceusage.GenerateServiceIdentity(project, args.service)
+    email = response['email']
     if not email:
       raise exceptions.Error('Service identity not created successfully')
     else:
       log.status.Print('Service identity created: {0}'.format(email))
+    return response

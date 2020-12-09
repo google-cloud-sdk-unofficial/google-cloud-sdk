@@ -115,3 +115,10 @@
         Must be higher than the value specified by `--min-throughput`; the set value, if applicable,
         or the default minimum throughput value.
       default: 300
+    - arg_name: machine-type
+      api_field: connector.machineType
+      release_tracks: [ALPHA]
+      required: false
+      help_text: |
+        Machine type of VMs underlying the VPC Access connector. Value must be a valid Machine
+        type. If left unspecified, the e2-micro machine type will be used.

@@ -69,8 +69,11 @@ def _CommonArgs(parser):
       '--image-gcr-path',
       help=('The Google Container Registry location to store the flex '
             'template image to be built.'),
-      type=arg_parsers.RegexpValidator(r'^gcr.io/.*',
-                                       'Must begin with \'gcr.io/\''),
+      type=arg_parsers.RegexpValidator(
+          r'^(.*\.){0,1}gcr.io/.*',
+          ('Must begin with \'[multi-region.]gcr.io/\'. Please check '
+           'https://cloud.google.com/container-registry/docs/overview '
+           'for available multi-regions')),
       required=True)
 
   image_building_args.add_argument(

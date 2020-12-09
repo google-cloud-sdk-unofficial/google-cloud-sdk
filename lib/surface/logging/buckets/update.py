@@ -55,26 +55,32 @@ class Update(base.UpdateCommand):
         '--description',
         help='A new description for the bucket.')
     util.AddBucketLocationArg(parser, True, 'Location of the bucket.')
+    parser.add_argument(
+        '--locked', action='store_true',
+        help=('Lock the bucket and prevent it from being modified or deleted '
+              '(unless it is empty).'))
 
   def _Run(self, args, is_alpha=False):
     bucket_data = {}
     update_mask = []
-    parameter_names = ['--retention-days', '--description']
+    parameter_names = ['--retention-days', '--description', '--locked']
     if args.IsSpecified('retention_days'):
       bucket_data['retentionDays'] = args.retention_days
       update_mask.append('retention_days')
     if args.IsSpecified('description'):
       bucket_data['description'] = args.description
       update_mask.append('description')
-    if is_alpha:
-      parameter_names.extend(['--locked'])
-      if args.IsSpecified('locked'):
-        bucket_data['locked'] = args.locked
-        update_mask.append('locked')
-        if args.locked:
-          console_io.PromptContinue(
-              'WARNING: Locking a bucket cannot be undone.',
-              default=False, cancel_on_no=True)
+    if args.IsSpecified('locked'):
+      bucket_data['locked'] = args.locked
+      update_mask.append('locked')
+      if args.locked:
+        console_io.PromptContinue(
+            'WARNING: Locking a bucket cannot be undone.',
+            default=False, cancel_on_no=True)
+
+    if is_alpha and args.enable_loglink is not None:
+      bucket_data['logLink'] = {'enabled': args.enable_loglink}
+      update_mask.append('log_link.enabled')
 
     if not update_mask:
       raise calliope_exceptions.MinimumArgumentException(
@@ -116,9 +122,14 @@ class UpdateAlpha(Update):
   def Args(parser):
     Update.Args(parser)
     parser.add_argument(
-        '--locked', action='store_true',
-        help=('Lock the bucket and prevent it from being modified or deleted '
-              '(unless it is empty).'))
+        '--enable-loglink',
+        action='store_true',
+        default=None,
+        help="""Enables a linked dataset in BigQuery corresponding to
+        this log bucket. The linked dataset contains authorized views
+        which give a ready-only access to logs in BigQuery. This option can
+        only be enabled in a log bucket with advanced log analytics enabled.
+        Use --no-enable-loglink to disable the linked dataset.""")
 
   def Run(self, args):
     return self._Run(args, is_alpha=True)

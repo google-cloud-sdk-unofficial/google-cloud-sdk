@@ -54,6 +54,7 @@ def _RunCreate(compute_api, args):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine reservation."""
+  _support_share_setting = False
   _support_location_hint = False
 
   @classmethod
@@ -61,7 +62,9 @@ class Create(base.CreateCommand):
     resource_args.GetReservationResourceArg().AddArgument(
         parser, operation_type='create')
     flags.AddCreateFlags(
-        parser, support_location_hint=cls._support_location_hint)
+        parser,
+        support_share_setting=cls._support_share_setting,
+        support_location_hint=cls._support_location_hint)
 
   def Run(self, args):
     return _RunCreate(base_classes.ComputeApiHolder(base.ReleaseTrack.GA), args)
@@ -70,6 +73,7 @@ class Create(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a Compute Engine reservation."""
+  _support_share_setting = False
   _support_location_hint = False
 
   @classmethod
@@ -77,7 +81,9 @@ class CreateBeta(Create):
     resource_args.GetReservationResourceArg().AddArgument(
         parser, operation_type='create')
     flags.AddCreateFlags(
-        parser, support_location_hint=cls._support_location_hint)
+        parser,
+        support_share_setting=cls._support_share_setting,
+        support_location_hint=cls._support_location_hint)
 
   def Run(self, args):
     return _RunCreate(
@@ -87,6 +93,7 @@ class CreateBeta(Create):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Create a Compute Engine reservation."""
+  _support_share_setting = True
   _support_location_hint = True
 
   @classmethod
@@ -94,7 +101,9 @@ class CreateAlpha(CreateBeta):
     resource_args.GetReservationResourceArg().AddArgument(
         parser, operation_type='create')
     flags.AddCreateFlags(
-        parser, support_location_hint=cls._support_location_hint,
+        parser,
+        support_share_setting=cls._support_share_setting,
+        support_location_hint=cls._support_location_hint,
         support_fleet=True)
 
   def Run(self, args):

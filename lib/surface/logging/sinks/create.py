@@ -26,7 +26,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   # pylint: disable=line-too-long
   """Creates a sink.
@@ -86,7 +86,7 @@ class Create(base.CreateCommand):
             parent=parent, logSink=messages.LogSink(**sink_data),
             uniqueWriterIdentity=True))
 
-  def _Run(self, args, is_alpha=False):
+  def _Run(self, args, is_alpha_or_beta=False):
     if not args.log_filter:
       # Attempt to create a sink with an empty filter.
       console_io.PromptContinue(
@@ -105,15 +105,7 @@ class Create(base.CreateCommand):
         'includeChildren': args.include_children
     }
 
-    dlp_options = {}
-    if is_alpha:
-      if args.IsSpecified('dlp_inspect_template'):
-        dlp_options['inspectTemplateName'] = args.dlp_inspect_template
-      if args.IsSpecified('dlp_deidentify_template'):
-        dlp_options['deidentifyTemplateName'] = args.dlp_deidentify_template
-      if dlp_options:
-        sink_data['dlpOptions'] = dlp_options
-
+    if is_alpha_or_beta:
       if args.IsSpecified('use_partitioned_tables'):
         bigquery_options = {}
         bigquery_options['usePartitionedTables'] = args.use_partitioned_tables
@@ -133,7 +125,6 @@ class Create(base.CreateCommand):
     log.CreatedResource(sink_ref)
     self._epilog_result_destination = result.destination
     self._epilog_writer_identity = result.writerIdentity
-    self._epilog_is_dlp_sink = bool(dlp_options)
     return result
 
   def Run(self, args):
@@ -150,12 +141,11 @@ class Create(base.CreateCommand):
 
   def Epilog(self, unused_resources_were_displayed):
     util.PrintPermissionInstructions(self._epilog_result_destination,
-                                     self._epilog_writer_identity,
-                                     self._epilog_is_dlp_sink)
+                                     self._epilog_writer_identity)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateAlphaBeta(Create):
   # pylint: disable=line-too-long
   """Creates a sink.
 
@@ -195,21 +185,6 @@ class CreateAlpha(Create):
   @staticmethod
   def Args(parser):
     Create.Args(parser)
-    dlp_group = parser.add_argument_group(
-        help='Settings for Cloud DLP enabled sinks.')
-    dlp_group.add_argument(
-        '--dlp-inspect-template',
-        required=True,
-        help=('Relative path to a Cloud DLP inspection template resource. For '
-              'example "projects/my-project/inspectTemplates/my-template" or '
-              '"organizations/my-org/inspectTemplates/my-template".'))
-    dlp_group.add_argument(
-        '--dlp-deidentify-template',
-        required=True,
-        help=('Relative path to a Cloud DLP de-identification template '
-              'resource. For example '
-              '"projects/my-project/deidentifyTemplates/my-template" or '
-              '"organizations/my-org/deidentifyTemplates/my-template".'))
 
     bigquery_group = parser.add_argument_group(
         help='Settings for sink exporting data to BigQuery.')
@@ -255,4 +230,4 @@ class CreateAlpha(Create):
         help=('Sink will be disabled. Disabled sinks do not export logs.'))
 
   def Run(self, args):
-    return self._Run(args, is_alpha=True)
+    return self._Run(args, is_alpha_or_beta=True)

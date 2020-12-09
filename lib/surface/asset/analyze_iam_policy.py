@@ -89,8 +89,9 @@ class AnalyzeIamPolicy(base.Command):
     AddOutputPartialResultBeforeTimeoutArgs(options_group)
 
   def Run(self, args):
-    return client_util.MakeAnalyzeIamPolicyHttpRequests(
-        args, client_util.V1P4ALPHA1_API_VERSION)
+    client = client_util.AnalyzeIamPolicyClient(
+        client_util.V1P4ALPHA1_API_VERSION)
+    return client.Analyze(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -132,7 +133,8 @@ class AnalyzeIamPolicyBeta(base.Command):
     flags.AddAnalyzerOptionsGroup(parser, True)
 
   def Run(self, args):
-    return client_util.MakeAnalyzeIamPolicyHttpRequests(args, self._API_VERSION)
+    client = client_util.AnalyzeIamPolicyClient(self._API_VERSION)
+    return client.Analyze(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

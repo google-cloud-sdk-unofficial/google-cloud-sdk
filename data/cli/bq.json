@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.0.62",
+  "CLI_VERSION": "2.0.64",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -196,7 +196,7 @@
       "release": "GA",
       "sections": {
         "DESCRIPTION": "List the objects contained in the named collection.\n\nList the objects in the named project or dataset. A\ntrailing : or . can be used to signify a project or\ndataset.\n* With -j, show the jobs in the named project.\n* With -p, show all projects.\n",
-        "EXAMPLES": "bq ls\nbq ls -j proj\nbq ls -p -n 1000\nbq ls mydataset\nbq ls -a\nbq ls -m mydataset\nbq ls --routines mydataset (requires whitelisting)\nbq ls --filter labels.color:red\nbq ls --filter 'labels.color:red labels.size:*'\nbq ls --transfer_config --transfer_location='us'\n--filter='dataSourceIds:play,adwords'\nbq ls --transfer_run\n--filter='states:SUCCESSED,PENDING'\n--run_attempt='LATEST'\nprojects/p/locations/l/transferConfigs/c\nbq ls --transfer_log\n--message_type='messageTypes:INFO,ERROR'\nprojects/p/locations/l/transferConfigs/c/runs/r\nbq ls --capacity_commitment --project_id=proj\n--location='us'\nbq ls --reservation --project_id=proj --location='us'\nbq ls --reservation_assignment --project_id=proj\n--location='us'\nbq ls --reservation_assignment --project_id=proj\n--location='us'\n<reservation_id>\nbq ls --connection --project_id=proj --location=us\n"
+        "EXAMPLES": "bq ls\nbq ls -j proj\nbq ls -p -n 1000\nbq ls mydataset\nbq ls -a\nbq ls -m mydataset\nbq ls --routines mydataset (requires whitelisting)\nbq ls --row_access_policies mytable (requires\nwhitelisting)\nbq ls --filter labels.color:red\nbq ls --filter 'labels.color:red labels.size:*'\nbq ls --transfer_config --transfer_location='us'\n--filter='dataSourceIds:play,adwords'\nbq ls --transfer_run\n--filter='states:SUCCESSED,PENDING'\n--run_attempt='LATEST'\nprojects/p/locations/l/transferConfigs/c\nbq ls --transfer_log\n--message_type='messageTypes:INFO,ERROR'\nprojects/p/locations/l/transferConfigs/c/runs/r\nbq ls --capacity_commitment --project_id=proj\n--location='us'\nbq ls --reservation --project_id=proj --location='us'\nbq ls --reservation_assignment --project_id=proj\n--location='us'\nbq ls --reservation_assignment --project_id=proj\n--location='us'\n<reservation_id>\nbq ls --connection --project_id=proj --location=us\n"
       }
     },
     "mk": {
@@ -249,7 +249,7 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "DESCRIPTION": "Copies source tables into partitioned tables.\n\nUsage: bq partition <source_table_prefix>\n<destination_partitioned_table>\n\nCopies tables of the format\n<source_table_prefix><YYYYmmdd> to a destination\npartitioned table, with the date suffix of the source\ntables becoming the partition date of the destination\ntable partitions.\n\nIf the destination table does not exist, one will be\ncreated with a schema and that matches the last table\nthat matches the supplied prefix.\n",
+        "DESCRIPTION": "Copies source tables into partitioned tables.\n\nUsage: bq partition <source_table_prefix>\n<destination_partitioned_table>\n\nCopies tables of the format\n<source_table_prefix><time_unit_suffix> to a\ndestination partitioned table, with the\n<time_unit_suffix> of the source tables becoming the\npartition ID of the destination table partitions. The\nsuffix is <YYYYmmdd> by default, <YYYY> if the\ntime_partitioning_type flag is set to YEAR, <YYYYmm>\nif set to MONTH, and <YYYYmmddHH> if set to HOUR.\n\nIf the destination table does not exist, one will be\ncreated with a schema and that matches the last table\nthat matches the supplied prefix.\n",
         "EXAMPLES": "bq partition dataset1.sharded_\ndataset2.partitioned_table\n"
       }
     },

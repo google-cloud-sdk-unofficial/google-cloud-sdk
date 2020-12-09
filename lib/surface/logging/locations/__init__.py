@@ -22,10 +22,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Locations(base.Group):
   """Query Cloud Logging locations.
 
-  Commands for querying Cloud Logging locations. Cloud Logging buckets
+  Commands for querying Cloud Logging locations. Cloud Logging Logs Buckets
   may be created in these locations.
   """

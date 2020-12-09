@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: |
       Show metadata for a Dataproc Metastore location.
@@ -20,4 +20,6 @@
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection: metastore.projects.locations

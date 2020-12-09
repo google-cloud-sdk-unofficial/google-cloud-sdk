@@ -54,6 +54,7 @@ class Import(base.CreateCommand):
     instances_flags.AddPrivateNetworkIpArgs(parser)
     instances_flags.AddDeletionProtectionFlag(parser)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
+    instances_flags.AddNoAddressArg(parser)
     labels_util.AddCreateLabelsFlags(parser)
     daisy_utils.AddCommonDaisyArgs(parser)
     daisy_utils.AddExtraCommonDaisyArgs(parser)
@@ -183,7 +184,6 @@ class ImportBeta(Import):
   @classmethod
   def Args(cls, parser):
     super(ImportBeta, cls).Args(parser)
-    instances_flags.AddNoAddressArg(parser)
 
 
 Import.detailed_help = {

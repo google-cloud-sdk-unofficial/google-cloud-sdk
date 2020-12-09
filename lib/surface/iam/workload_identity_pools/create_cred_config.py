@@ -35,7 +35,7 @@ class CreateCredConfig(base.CreateCommand):
   """Create a configuration file for generated credentials.
 
   This command creates a configuration file to allow access to authenticated
-  Cloud Platform actions from a variety of external accounts.
+  Google Cloud actions from a variety of external accounts.
   """
 
   detailed_help = {
@@ -45,15 +45,15 @@ class CreateCredConfig(base.CreateCommand):
 
             $ {command} projects/$PROJECT_NUMBER/locations/$REGION/workloadIdentityPools/$WORKLOAD_POOL_ID/providers/$PROVIDER_ID --service-account=$EMAIL --credential-source-file=$PATH_TO_OIDC_ID_TOKEN --output-file=credentials.json
 
-          To create a url-sourced credential configuration for your project, run:
+          To create a URL-sourced credential configuration for your project, run:
 
             $ {command} projects/$PROJECT_NUMBER/locations/$REGION/workloadIdentityPools/$WORKLOAD_POOL_ID/providers/$PROVIDER_ID --service-account=$EMAIL --credential-source-url=$URL_FOR_OIDC_TOKEN --credential-source-headers=Key=Value --output-file=credentials.json
 
-          To create an aws-based credential configuration for your project, run:
+          To create an AWS-based credential configuration for your project, run:
 
             $ {command} projects/$PROJECT_NUMBER/locations/$REGION/workloadIdentityPools/$WORKLOAD_POOL_ID/providers/$PROVIDER_ID --service-account=$EMAIL --aws --output-file=credentials.json
 
-          To create an azure-based credential configuration for your project, run:
+          To create an Azure-based credential configuration for your project, run:
 
             $ {command} projects/$PROJECT_NUMBER/locations/$REGION/workloadIdentityPools/$WORKLOAD_POOL_ID/providers/$PROVIDER_ID --service-account=$EMAIL --azure --app-id-uri=$URI_FOR_AZURE_APP_ID --output-file=credentials.json
 

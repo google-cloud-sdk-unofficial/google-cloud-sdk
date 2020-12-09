@@ -38,7 +38,7 @@ REQUIRED_PERMISSIONS = [
 ]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetCredentials(base.Command):
   """Fetch credentials for a Hub-registered cluster to be used in Connect Gateway.
 
@@ -53,6 +53,12 @@ class GetCredentials(base.Command):
 
   Upon success, this command will switch current context to the target cluster,
   when working with multiple clusters.
+
+  ## EXAMPLES
+
+    Get gateway kubeconfig for a registered cluster:
+
+      $ {command} my-cluster
   """
 
   @classmethod
@@ -66,15 +72,25 @@ class GetCredentials(base.Command):
 
   def Run(self, args):
     util.CheckKubectlInstalled()
-    log.status.Print('Starting to build Gateway kubeconfig...')
     # Parse Args: get project_id from flag or default
     project_id = arg_utils.GetFromNamespace(
         args, '--project', use_defaults=True)
+    if project_id is None:
+      msg = """\
+The required property [project] is not currently set.
+You may set it for your current workspace by running: \n
+      $ gcloud config set project VALUE"""
+      raise Exception(msg)
+    log.status.Print('Starting to build Gateway kubeconfig...')
     log.status.Print('Current project_id: ' + project_id)
 
     self.RunIamCheck(project_id)
     self.ReadClusterMembership(project_id, args.MEMBERSHIP)
     self.GenerateKubeconfig(project_id, args.MEMBERSHIP)
+    msg = 'A new kubeconfig entry \"' + KUBECONTEXT_FORMAT.format(
+        project=project_id, membership=args.MEMBERSHIP
+    ) + '\" has been generated and set as the current context.'
+    log.status.Print(msg)
 
   # Run IAM check, make sure caller has permission to use Gateway API.
   def RunIamCheck(self, project_id):

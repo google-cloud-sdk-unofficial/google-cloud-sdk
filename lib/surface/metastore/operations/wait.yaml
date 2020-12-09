@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Poll a long-running Dataproc Metastore operation until it completes.
     description: |
@@ -13,6 +13,8 @@
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection: metastore.projects.locations.operations
 
   arguments:

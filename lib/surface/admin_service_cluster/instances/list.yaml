@@ -8,12 +8,16 @@
 
         $ {command} --location=us-central1
 
+      To list all Admin Service Cluster instances in all regions, run:
+
+        $ {command}
+
   request:
     collection: krmapihosting.projects.locations.krmApiHosts
 
   arguments:
     resource:
-      help_text: List of Admin Service Cluster instances for a specified region.
+      help_text: List of Admin Service Cluster instances.
       spec: !REF googlecloudsdk.command_lib.admin_service_cluster.resources:instance-list
 
   output:

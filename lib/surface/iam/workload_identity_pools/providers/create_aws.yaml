@@ -11,26 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   command_type: CREATE
 
   help_text:
-    brief: Create a new AWS WorkloadIdentityPoolProvider.
-    description: Create a new AWS WorkloadIdentityPoolProvider.
+    brief: Create a new AWS workload identity pool provider.
+    description: Create a new AWS workload identity pool provider.
     examples: |
-      The following command creates a disabled AWS WorkloadIdentityPoolProvider in the default
-      project with the ID 'my-workload-identity-pool'. Explicit values for all required and optional
+      The following command creates a disabled AWS workload identity pool provider in the default
+      project with the ID ``my-workload-identity-pool''. Explicit values for all required and optional
       parameters are provided.
 
         $ {command} my-workload-identity-pool-provider \
-            --location='global' \
-            --workload-identity-pool='my-workload-identity-pool' \
-            --display-name='My workload pool provider' \
-            --description='My workload pool provider description' \
+            --location="global" \
+            --workload-identity-pool="my-workload-identity-pool" \
+            --display-name="My workload pool provider" \
+            --description="My workload pool provider description" \
             --disabled \
-            --attribute-mapping='google.subject=assertion.arn' \
-            --attribute-condition='true' \
+            --attribute-mapping="google.subject=assertion.arn" \
+            --attribute-condition="true" \
             --account-id=1234567890
 
   request:
@@ -43,7 +43,7 @@
   arguments:
     resource:
       help_text: |-
-        The WorkloadIdentityPoolProvider to create.
+        The workload identity pool provider to create.
       spec: !REF googlecloudsdk.command_lib.iam.resources:workload_identity_pool_provider
 
     params:

@@ -19,6 +19,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.dns import resource_record_sets as rrsets_util
 from googlecloudsdk.api_lib.dns import transaction_util as trans_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
@@ -63,7 +64,7 @@ class Add(base.Command):
         '--type', required=True,
         help='DNS record type of the record-set to add.')
     parser.add_argument(
-        'data', nargs='+',
+        'rrdatas', nargs='+',
         help='DNS data (Address/CNAME/MX info, etc.) of the record-set to add. '
              'This is RDATA; the format of this information varies depending '
              'on the type and class of the resource record.')
@@ -82,7 +83,7 @@ class Add(base.Command):
           trans_file, api_version=api_version)
 
     change.additions.append(
-        trans_util.CreateRecordSetFromArgs(args, api_version=api_version))
+        rrsets_util.CreateRecordSetFromArgs(args, api_version=api_version))
 
     with trans_util.TransactionFile(args.transaction_file, 'w') as trans_file:
       trans_util.WriteToYamlFile(trans_file, change)

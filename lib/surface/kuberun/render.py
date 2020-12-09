@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to list available Kuberun resources."""
+"""Command to render Kuberun resources to yaml."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -30,6 +30,13 @@ _DETAILED_HELP = {
 }
 
 
+def _OutFlag():
+  return flags.StringFlag(
+      '--out',
+      help='Output directory for rendered resource yaml.',
+      required=True)
+
+
 def _EnvironmentFlag():
   return flags.StringFlag(
       '--environment',
@@ -41,7 +48,7 @@ def _EnvironmentFlag():
 class Render(kuberun_command.KubeRunStreamingCommand, base.ExportCommand):
   """Render KubeRun application to generate the yaml resource configuration."""
   detailed_help = _DETAILED_HELP
-  flags = [_EnvironmentFlag()]
+  flags = [_OutFlag(), _EnvironmentFlag()]
 
   def Command(self):
     return ['render']

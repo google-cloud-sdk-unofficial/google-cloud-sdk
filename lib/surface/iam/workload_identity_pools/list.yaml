@@ -11,16 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
-    brief: List WorkloadIdentityPools.
-    description: List WorkloadIdentityPools.
+    brief: List workload identity pools.
+    description: List workload identity pools.
     examples: |
-      The following command lists all WorkloadIdentityPools in the default project, including
+      The following command lists all workload identity pools in the default project, including
       soft-deleted pools:
 
-        $ {command} --location=global --show-deleted
+        $ {command} --location="global" --show-deleted
 
   request:
     collection: iam.projects.locations.workloadIdentityPools
@@ -31,7 +31,7 @@
 
   arguments:
     resource:
-      help_text: The location you want to list WorkloadIdentityPools for.
+      help_text: The location you want to list workload identity pools for.
       spec: !REF googlecloudsdk.command_lib.iam.resources:location
 
     params:

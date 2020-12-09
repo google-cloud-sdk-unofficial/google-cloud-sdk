@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.ml_engine import models
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.ml_engine import constants
 from googlecloudsdk.command_lib.ml_engine import endpoint_util
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
@@ -29,8 +30,6 @@ from googlecloudsdk.core import log
 
 _REGION_FLAG_HELPTEXT = """\
 Google Cloud region of the regional endpoint to use for this command.
-If unspecified, the command uses the global endpoint of the AI Platform Training
-and Prediction API.
 
 If you specify this flag, do not specify `--regions`.
 
@@ -47,6 +46,7 @@ def _AddCreateArgs(parser,
   region_group = parser.add_mutually_exclusive_group()
   region_group.add_argument(
       '--region',
+      choices=constants.SUPPORTED_REGIONS_WITH_GLOBAL,
       help=_REGION_FLAG_HELPTEXT)
   region_group.add_argument(
       '--regions',
@@ -56,7 +56,7 @@ def _AddCreateArgs(parser,
 The Google Cloud region where the model will be deployed (currently only a
 single region is supported).
 
-Defaults to 'us-central1'.
+Defaults to 'us-central1' while using the global endpoint.
 """)
   parser.add_argument(
       '--enable-logging',
@@ -83,7 +83,8 @@ class Create(base.CreateCommand):
     _AddCreateArgs(parser)
 
   def _Run(self, args, support_console_logging=False):
-    with endpoint_util.MlEndpointOverrides(region=args.region):
+    region, model_regions = models_util.GetModelRegion(args)
+    with endpoint_util.MlEndpointOverrides(region=region):
       models_client = models.ModelsClient()
       labels = models_util.ParseCreateLabels(models_client, args)
       enable_console_logging = (
@@ -91,7 +92,7 @@ class Create(base.CreateCommand):
       model = models_util.Create(
           models_client,
           args.model,
-          args,
+          model_regions,
           enable_logging=args.enable_logging,
           enable_console_logging=enable_console_logging,
           labels=labels,

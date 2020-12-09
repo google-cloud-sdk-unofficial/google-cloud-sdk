@@ -19,10 +19,13 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.spanner import database_sessions
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.spanner import resource_args
 from googlecloudsdk.command_lib.spanner import sql
+from googlecloudsdk.command_lib.spanner.sql import QueryHasDml
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
@@ -33,8 +36,7 @@ DETAILED_HELP = {
       To execute a SQL SELECT statement against example-database under
       example-instance, run:
 
-        $ {command} example-database --instance=example-instance
-        --sql='SELECT * FROM MyTable WHERE MyKey = 1'
+        $ {command} example-database --instance=example-instance --sql='SELECT * FROM MyTable WHERE MyKey = 1'
     """,
 }
 
@@ -98,6 +100,19 @@ def AddBaseArgs(parser):
       help='Maximum time to wait for the SQL query to complete. See $ gcloud '
            'topic datetimes for information on duration formats.')
 
+  timestamp_bound_group = parser.add_argument_group(
+      mutex=True,
+      help='Read-only query timestamp bound. The default is --strong. See '
+           'https://cloud.google.com/spanner/docs/timestamp-bounds.')
+  timestamp_bound_group.add_argument(
+      '--strong',
+      action='store_true',
+      help='Perform a strong query.')
+  timestamp_bound_group.add_argument(
+      '--read-timestamp',
+      metavar='TIMESTAMP',
+      help='Perform a query at the given timestamp.')
+
 
 def AddBetaArgs(parser):
   """Parses provided arguments to add arguments for Beta.
@@ -133,13 +148,56 @@ class Query(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
+    read_only_options = self.ParseReadOnlyOptions(args)
     session = CreateSession(args)
     try:
-      return database_sessions.ExecuteSql(session, args.sql, args.query_mode,
-                                          args.enable_partitioned_dml,
-                                          args.timeout)
+      return database_sessions.ExecuteSql(
+          args.sql,
+          args.query_mode,
+          session,
+          read_only_options,
+          args.enable_partitioned_dml,
+          args.timeout)
     finally:
       database_sessions.Delete(session)
+
+  def ParseReadOnlyOptions(self, args):
+    """Parses the options for a read-only request from command line arguments.
+
+    Args:
+      args: Command line arguments.
+
+    Returns:
+      A ReadOnly message if the query is read-only (not DML), otherwise None.
+    """
+    if QueryHasDml(args.sql):
+      if args.IsSpecified('strong'):
+        raise c_exceptions.InvalidArgumentException(
+            '--strong',
+            'A timestamp bound cannot be specified for a DML statement.'
+        )
+      if args.IsSpecified('read_timestamp'):
+        raise c_exceptions.InvalidArgumentException(
+            '--read-timestamp',
+            'A timestamp bound cannot be specified for a DML statement.'
+        )
+      return None
+    else:
+      msgs = apis.GetMessagesModule('spanner', 'v1')
+      if args.IsSpecified('read_timestamp'):
+        return msgs.ReadOnly(readTimestamp=args.read_timestamp)
+      elif args.IsSpecified('strong'):
+        if not args.strong:
+          raise c_exceptions.InvalidArgumentException(
+              '--strong',
+              '`--strong` cannot be set to false. '
+              'Instead specify a different type of timestamp bound.'
+          )
+        else:
+          return msgs.ReadOnly(strong=True)
+      else:
+        # The default timestamp bound is strong.
+        return msgs.ReadOnly(strong=True)
 
   def Display(self, args, result):
     """Displays the server response to a query.

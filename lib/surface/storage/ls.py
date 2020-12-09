@@ -153,4 +153,4 @@ class Ls(base.Command):
       tasks.append(cloud_list_task.CloudListTask(
           url, all_versions=args.all_versions, display_detail=display_detail,
           include_etag=args.etag, recursion_flag=args.recursive))
-    task_executor.ExecuteTasks(tasks)
+    task_executor.ExecuteTasks(tasks, is_parallel=False)

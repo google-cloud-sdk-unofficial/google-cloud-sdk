@@ -27,6 +27,8 @@ gsutil: google-cloud-sdk
 kind: google-cloud-sdk-kind
 kpt: google-cloud-sdk-kpt
 kubectl: kubectl
+kubectl-oidc: google-cloud-sdk-kubectl-oidc
+kuberun: google-cloud-sdk
 minikube: google-cloud-sdk-minikube
 nomos: unavailable
 pubsub-emulator: google-cloud-sdk-pubsub-emulator

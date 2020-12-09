@@ -122,7 +122,7 @@ class Create(base.CreateCommand):
         project_id = candidate
     if not project_id:
       raise exceptions.RequiredArgumentException(
-          'PROJECT_ID', 'an id must be provided for the new project')
+          'PROJECT_ID', 'an id or a name must be provided for the new project')
     project_ref = command_lib_util.ParseProject(project_id)
     labels = labels_util.ParseCreateArgs(
         args, projects_util.GetMessages().Project.LabelsValue)

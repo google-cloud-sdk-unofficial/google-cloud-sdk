@@ -24,17 +24,19 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.ml_engine import endpoint_util
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
+from googlecloudsdk.command_lib.ml_engine import region_util
 
 
 def _AddIamPolicyBindingFlags(parser, add_condition=False):
   flags.GetModelName().AddToParser(parser)
-  flags.GetRegionArg().AddToParser(parser)
+  flags.GetRegionArg(include_global=True).AddToParser(parser)
   iam_util.AddArgsForAddIamPolicyBinding(
       parser, flags.MlEngineIamRolesCompleter, add_condition=add_condition)
 
 
 def _Run(args):
-  with endpoint_util.MlEndpointOverrides(region=args.region):
+  region = region_util.GetRegion(args)
+  with endpoint_util.MlEndpointOverrides(region=region):
     return models_util.AddIamPolicyBinding(models.ModelsClient(), args.model,
                                            args.member, args.role)
 
@@ -85,7 +87,8 @@ class AddIamPolicyBindingAlpha(base.Command):
     _AddIamPolicyBindingFlags(parser, add_condition=True)
 
   def Run(self, args):
-    with endpoint_util.MlEndpointOverrides(region=args.region):
+    region = region_util.GetRegion(args)
+    with endpoint_util.MlEndpointOverrides(region=region):
       condition = iam_util.ValidateAndExtractCondition(args)
       iam_util.ValidateMutexConditionAndPrimitiveRoles(condition, args.role)
       return models_util.AddIamPolicyBindingWithCondition(

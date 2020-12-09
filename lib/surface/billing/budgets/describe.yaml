@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: Describe a budget.
     description: Describe a budget.
@@ -18,5 +18,10 @@
         Billing budget to describe.
 
   request:
-    api_version: v1beta1
     collection: billingbudgets.billingAccounts.budgets
+    ALPHA:
+      api_version: v1beta1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1

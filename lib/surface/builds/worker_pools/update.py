@@ -68,7 +68,7 @@ class UpdateBeta(base.UpdateCommand):
     wp_region = args.region
 
     release_track = self.ReleaseTrack()
-    client = cloudbuild_util.GetClientInstance(release_track, region=wp_region)
+    client = cloudbuild_util.GetClientInstance(release_track)
     messages = cloudbuild_util.GetMessagesModule(release_track)
 
     parent = properties.VALUES.core.project.Get(required=True)
@@ -90,6 +90,8 @@ class UpdateBeta(base.UpdateCommand):
       if args.worker_disk_size is not None:
         worker_config.diskSizeGb = compute_utils.BytesToGb(
             args.worker_disk_size)
+      if args.no_external_ip:
+        worker_config.noExternalIp = True
       wp.workerConfig = worker_config
 
     # Get the workerpool ref

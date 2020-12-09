@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_heal
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateGA(base.UpdateCommand):
   r"""Update a Compute Engine managed instance group."""
 
@@ -229,19 +229,18 @@ UpdateGA.detailed_help = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateGA):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateAlphaAndBeta(UpdateGA):
   r"""Update a Compute Engine managed instance group."""
 
   @classmethod
   def Args(cls, parser):
     UpdateGA.Args(parser)
-    instance_groups_flags.AddMigDistributionPolicyTargetShapeFlag(
-        parser, for_create=False)
+    instance_groups_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
 
   def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,
                                        client, holder):
-    patch_instance_group_manager = super(UpdateAlpha,
+    patch_instance_group_manager = super(UpdateAlphaAndBeta,
                                          self)._CreateInstanceGroupManagerPatch(
                                              args, igm_ref, igm_resource,
                                              client, holder)
@@ -266,4 +265,4 @@ class UpdateAlpha(UpdateGA):
     patch_instance_group_manager.distributionPolicy = distribution_policy
 
 
-UpdateAlpha.detailed_help = UpdateGA.detailed_help
+UpdateAlphaAndBeta.detailed_help = UpdateGA.detailed_help

@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.components import util
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util.prompt_helper import OptInPrompter
@@ -109,6 +110,7 @@ class Update(base.SilentCommand):
             args.component_ids, allow_no_backup=args.allow_no_backup)
         return
 
+    log.status.Print('Beginning update. This process may take several minutes.')
     update_manager.Update(
         args.component_ids, allow_no_backup=args.allow_no_backup,
         version=args.version)

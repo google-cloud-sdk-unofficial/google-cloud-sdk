@@ -30,11 +30,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update a NAT on a Compute Engine router."""
-
-  with_endpoint_independent_mapping = False
 
   @classmethod
   def Args(cls, parser):
@@ -48,8 +45,7 @@ class Update(base.UpdateCommand):
     nats_flags.AddNatNameArg(parser, operation_type='create')
     nats_flags.AddCommonNatArgs(
         parser,
-        for_create=False,
-        with_endpoint_independent_mapping=cls.with_endpoint_independent_mapping)
+        for_create=False)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -63,12 +59,7 @@ class Update(base.UpdateCommand):
 
     # Retrieve specified NAT and update base fields.
     existing_nat = nats_utils.FindNatOrRaise(replacement, args.name)
-    nat = nats_utils.UpdateNatMessage(
-        existing_nat,
-        args,
-        holder,
-        with_endpoint_independent_mapping=self.with_endpoint_independent_mapping
-    )
+    nat = nats_utils.UpdateNatMessage(existing_nat, args, holder)
 
     cleared_fields = []
     if args.clear_min_ports_per_vm:
@@ -121,14 +112,6 @@ class Update(base.UpdateCommand):
         operation_poller,
         operation_ref, 'Updating nat [{0}] in router [{1}]'.format(
             nat.name, router_ref.Name()))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
-  """Update a NAT on a Compute Engine router."""
-
-  with_endpoint_independent_mapping = True
-
 
 Update.detailed_help = {
     'DESCRIPTION':

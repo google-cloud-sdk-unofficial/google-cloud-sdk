@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.ml_engine import endpoint_util
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
+from googlecloudsdk.command_lib.ml_engine import region_util
 
 
 def _GetRemoveIamPolicyBindingArgs(parser, add_condition=False):
@@ -31,8 +32,16 @@ def _GetRemoveIamPolicyBindingArgs(parser, add_condition=False):
   flags.GetModelResourceArg(
       required=True,
       verb='for which to remove IAM policy binding from').AddToParser(parser)
-  flags.GetRegionArg().AddToParser(parser)
+  flags.GetRegionArg(include_global=True).AddToParser(parser)
   base.URI_FLAG.RemoveFromParser(parser)
+
+
+def _Run(args):
+  region = region_util.GetRegion(args)
+  with endpoint_util.MlEndpointOverrides(region=region):
+    client = models.ModelsClient()
+    return models_util.RemoveIamPolicyBinding(client, args.model, args.member,
+                                              args.role)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -69,10 +78,7 @@ class RemoveIamPolicyBinding(base.Command):
     Returns:
       The specified function with its description and configured filter.
     """
-    with endpoint_util.MlEndpointOverrides(region=args.region):
-      client = models.ModelsClient()
-      return models_util.RemoveIamPolicyBinding(client, args.model, args.member,
-                                                args.role)
+    return _Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -109,10 +115,7 @@ class RemoveIamPolicyBindingBeta(base.Command):
     Returns:
       The specified function with its description and configured filter.
     """
-    with endpoint_util.MlEndpointOverrides(region=args.region):
-      client = models.ModelsClient()
-      return models_util.RemoveIamPolicyBinding(client, args.model, args.member,
-                                                args.role)
+    return _Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -149,7 +152,8 @@ class RemoveIamPolicyBindingAlpha(base.Command):
     Returns:
       The specified function with its description and configured filter.
     """
-    with endpoint_util.MlEndpointOverrides(region=args.region):
+    region = region_util.GetRegion(args)
+    with endpoint_util.MlEndpointOverrides(region=region):
       condition = iam_util.ValidateAndExtractCondition(args)
       iam_util.ValidateMutexConditionAndPrimitiveRoles(condition, args.role)
       return models_util.RemoveIamPolicyBindingWithCondition(

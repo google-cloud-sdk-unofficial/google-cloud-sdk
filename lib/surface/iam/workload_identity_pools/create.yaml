@@ -11,20 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
-    brief: Create a new WorkloadIdentityPool.
-    description: Create a new WorkloadIdentityPool.
+    brief: Create a new workload identity pool.
+    description: Create a new workload identity pool.
     examples: |
-      The following command creates a disabled WorkloadIdentityPool in the default project with the
-      ID 'my-workload-identity-pool'. Explicit values for all required and optional parameters are
+      The following command creates a disabled workload identity pool in the default project with the
+      ID ``my-workload-identity-pool''. Explicit values for all required and optional parameters are
       provided.
 
         $ {command} my-workload-identity-pool \
-            --location='global' \
-            --display-name='My workload pool' \
-            --description='My workload pool description' \
+            --location="global" \
+            --display-name="My workload pool" \
+            --description="My workload pool description" \
             --disabled
 
   request:
@@ -37,7 +37,7 @@
   arguments:
     resource:
       help_text: |-
-        The WorkloadIdentityPool to create.
+        The workload identity pool to create.
       spec: !REF googlecloudsdk.command_lib.iam.resources:positional_workload_identity_pool
 
     params:

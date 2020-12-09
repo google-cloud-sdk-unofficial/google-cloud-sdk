@@ -78,4 +78,4 @@ class Cp(base.Command):
         source_expansion_iterator,
         args.destination,
         custom_md5_digest=args.content_md5)
-    task_executor.ExecuteTasks(task_iterator)
+    task_executor.ExecuteTasks(task_iterator, is_parallel=True)

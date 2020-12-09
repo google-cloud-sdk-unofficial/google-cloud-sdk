@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: |
       Import metadata into a service.
@@ -16,6 +16,8 @@
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection: metastore.projects.locations.services.metadataImports
 
   arguments:
@@ -30,7 +32,6 @@
       help_text: |
         The description of this metadata import.
     - arg_name: database-type
-      required: true
       api_field: metadataImport.databaseDump.databaseType
       help_text: |
         The type of the database.
@@ -39,6 +40,7 @@
         enum_value: MYSQL
         help_text:  |
           MySQL Database
+      default: mysql
     - arg_name: database-dump
       required: true
       api_field: metadataImport.databaseDump.gcsUri

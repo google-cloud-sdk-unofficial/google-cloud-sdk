@@ -101,6 +101,8 @@ TransferLogReference = bigquery_client.ApiClientHelper.TransferLogReference
 NextPageTokenReference = bigquery_client.ApiClientHelper.NextPageTokenReference
 ModelReference = bigquery_client.ApiClientHelper.ModelReference
 RoutineReference = bigquery_client.ApiClientHelper.RoutineReference
+RowAccessPolicyReference = (
+    bigquery_client.ApiClientHelper.RowAccessPolicyReference)
 EncryptionServiceAccount = (
     bigquery_client.ApiClientHelper.EncryptionServiceAccount)
 BigqueryClient = bigquery_client.BigqueryClient
@@ -1323,15 +1325,15 @@ class _Load(BigqueryCmd):
         'source_format',
         None, [
             'CSV', 'NEWLINE_DELIMITED_JSON', 'DATASTORE_BACKUP', 'AVRO',
-            'PARQUET', 'ORC'
-        ],
-        'Format of source data. Options include:'
+            'PARQUET', 'ORC', 'THRIFT'
+        ], 'Format of source data. Options include:'
         '\n CSV'
         '\n NEWLINE_DELIMITED_JSON'
         '\n DATASTORE_BACKUP'
         '\n AVRO'
         '\n PARQUET'
-        '\n ORC',
+        '\n ORC'
+        '\n THRIFT',
         flag_values=fv)
     flags.DEFINE_list(
         'projection_fields', [],
@@ -1366,7 +1368,8 @@ class _Load(BigqueryCmd):
         'time_partitioning_type',
         None,
         'Enables time based partitioning on the table and set the type. The '
-        'only type accepted is DAY, which will generate one partition per day.',
+        'default value is DAY, which will generate one partition per day. '
+        'Other supported values are HOUR, MONTH, and YEAR.',
         flag_values=fv)
     flags.DEFINE_integer(
         'time_partitioning_expiration',
@@ -1428,6 +1431,70 @@ class _Load(BigqueryCmd):
         None, '(experimental) Prefix after which hive partition '
         'encoding begins.  For URIs like gs://bucket/path/key1=value/file, '
         'the value should be gs://bucket/path.',
+        flag_values=fv)
+    flags.DEFINE_multi_enum(
+        'decimal_target_types',
+        None, ['NUMERIC', 'BIGNUMERIC', 'STRING'],
+        '(experimental) Specifies the list of possible BigQuery data types to '
+        'which the source decimal values are converted. This list and the '
+        'precision and the scale parameters of the decimal field determine the '
+        'target type in the following preference order, and '
+        'one or more of the following options could be specified: '
+        '\n NUMERIC: decimal values could be converted to NUMERIC type, '
+        'depending on the precision and scale of the decimal schema.'
+        '\n BIGNUMERIC: decimal values could be converted to BIGNUMERIC type, '
+        'depending on the precision and scale of the decimal schema.'
+        '\n STRING: decimal values could be converted to STRING type, '
+        'depending on the precision and scale of the decimal schema.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'thrift_schema_idl_root_dir',
+        None,
+        'If "source_format" is set to "THRIFT", indicates the root directory '
+        'of the Thrift IDL bundle containing all Thrift files that should be '
+        'used to parse the schema of the serialized Thrift records.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'thrift_schema_idl_uri',
+        None,
+        'If "source_format" is set to "THRIFT", indicates the file uri that '
+        'contains the Thrift IDL struct to be parsed as schema. This file will '
+        'be used as the entry point to parse the schema and all its included '
+        'Thrift IDL files should be in "thrift_schema_idl_root_dir".',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'thrift_schema_struct',
+        None,
+        'If "source_format" is set to "THRIFT", indicates the root Thrift '
+        'struct that should be used as the schema. This struct should be '
+        'defined in the "thrift_schema_idl_uri" file.',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'thrift_deserialization',
+        None, ['T_BINARY_PROTOCOL'],
+        'If "source_format" is set to "THRIFT", configures how serialized '
+        'Thrift record should be deserialized (using TProtocol). '
+        'Options include: '
+        '\n T_BINARY_PROTOCOL',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'thrift_framing',
+        None,
+        ['NOT_FRAMED', 'FRAMED_WITH_BIG_ENDIAN', 'FRAMED_WITH_LITTLE_ENDIAN'],
+        'If "source_format" is set to "THRIFT", configures how Thrift records '
+        'or data blocks are framed (e.g. using TFramedTransport). '
+        'Options includes: '
+        '\n NOT_FRAMED, '
+        '\n FRAMED_WITH_BIG_ENDIAN, '
+        '\n FRAMED_WITH_LITTLE_ENDIAN',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'boundary_bytes_base64',
+        None,
+        'If "source_format" is set to "THRIFT", indicates the sequence of '
+        'boundary bytes (encoded in base64) that are added in front of the '
+        'serialized Thrift records, or data blocks, or the frame when used '
+        'with `thrift_framing`.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -1528,6 +1595,28 @@ class _Load(BigqueryCmd):
         hive_partitioning_options[
             'sourceUriPrefix'] = self.hive_partitioning_source_uri_prefix
       opts['hive_partitioning_options'] = hive_partitioning_options
+    opts['decimal_target_types'] = self.decimal_target_types
+    if opts['source_format'] == 'THRIFT':
+      thrift_options = {}
+      if self.thrift_schema_idl_root_dir is not None:
+        thrift_options['schema_idl_root_dir'] = self.thrift_schema_idl_root_dir
+      if self.thrift_schema_idl_uri is not None:
+        thrift_options['schema_idl_uri'] = self.thrift_schema_idl_uri
+      if self.thrift_schema_struct is not None:
+        thrift_options['schema_struct'] = self.thrift_schema_struct
+      # Default to 'THRIFT_BINARY_PROTOCOL_OPTION'.
+      thrift_options['deserialization_option'] = 'THRIFT_BINARY_PROTOCOL_OPTION'
+      if self.thrift_deserialization is not None:
+        if self.thrift_deserialization == 'T_BINARY_PROTOCOL':
+          thrift_options[
+              'deserialization_option'] = 'THRIFT_BINARY_PROTOCOL_OPTION'
+      # Default to 'NOT_FRAMED'.
+      thrift_options['framing_option'] = 'NOT_FRAMED'
+      if self.thrift_framing is not None:
+        thrift_options['framing_option'] = self.thrift_framing
+      if self.boundary_bytes_base64 is not None:
+        thrift_options['boundary_bytes'] = self.boundary_bytes_base64
+      opts['thrift_options'] = thrift_options
     job = client.Load(table_reference, source, schema=schema, **opts)
     if FLAGS.sync:
       _PrintJobMessages(client.FormatJobInfo(job))
@@ -1544,7 +1633,8 @@ def _CreateExternalTableDefinition(
     ignore_unknown_values=False,
     hive_partitioning_mode=None,
     hive_partitioning_source_uri_prefix=None,
-    require_hive_partition_filter=None
+    require_hive_partition_filter=None,
+    use_avro_logical_types=False
 ):
   """Create an external table definition with the given URIs and the schema.
 
@@ -1631,6 +1721,12 @@ def _CreateExternalTableDefinition(
                 "skipLeadingRows": 0
             }
         """)
+    elif external_table_def['sourceFormat'] == 'AVRO' and use_avro_logical_types:
+      external_table_def['avroOptions'] = yaml.safe_load("""
+          {
+              "useAvroLogicalTypes": true
+          }
+      """)
     if ignore_unknown_values:
       external_table_def['ignoreUnknownValues'] = True
     if hive_partitioning_mode is not None:
@@ -1717,6 +1813,13 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         None,
         '[Experimental] Specifies a connection for accessing an external table',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'use_avro_logical_types',
+        True,
+        'If sourceFormat is set to "AVRO", indicates whether to enable '
+        'interpreting logical types into their corresponding types '
+        '(ie. TIMESTAMP), instead of only using their raw types (ie. INTEGER).',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, source_uris, schema=None):
@@ -1768,7 +1871,8 @@ class _MakeExternalTableDefinition(BigqueryCmd):
             hive_partitioning_mode=self.hive_partitioning_mode,
             hive_partitioning_source_uri_prefix=self
             .hive_partitioning_source_uri_prefix,
-            require_hive_partition_filter=self.require_hive_partition_filter
+            require_hive_partition_filter=self.require_hive_partition_filter,
+            use_avro_logical_types=self.use_avro_logical_types
         ),
         sys.stdout,
         sort_keys=True,
@@ -1926,7 +2030,8 @@ class _Query(BigqueryCmd):
         'time_partitioning_type',
         None,
         'Enables time based partitioning on the table and set the type. The '
-        'only type accepted is DAY, which will generate one partition per day.',
+        'default value is DAY, which will generate one partition per day. '
+        'Other supported values are HOUR, MONTH, and YEAR.',
         flag_values=fv)
     flags.DEFINE_integer(
         'time_partitioning_expiration',
@@ -2118,15 +2223,7 @@ class _Query(BigqueryCmd):
       if self.use_legacy_sql is None or self.use_legacy_sql:
         raise app.UsageError(
             'Scheduled queries do not support legacy SQL. Please use standard '
-            'SQL and set the --use_legacy_sql flag to false.'
-        )
-      destination_table = ''
-      target_dataset = self.target_dataset
-      if self.destination_table:
-        target_dataset = client.GetTableReference(
-            self.destination_table).GetDatasetReference().datasetId
-        destination_table = client.GetTableReference(
-            self.destination_table).tableId
+            'SQL and set the --use_legacy_sql flag to false.')
       credentials = transfer_client.projects().dataSources().checkValidCreds(
           name=scheduled_queries_reference, body={}).execute()
       auth_info = {}
@@ -2135,16 +2232,23 @@ class _Query(BigqueryCmd):
                                               transfer_client)
       schedule_args = bigquery_client.TransferScheduleArgs(
           schedule=self.schedule)
-      write_disposition = ('WRITE_APPEND' if self.append_table else
-                           'WRITE_TRUNCATE' if self.replace else '')
-      partitioning_field = (
-          self.time_partitioning_field if self.time_partitioning_field else '')
       params = {
           'query': query,
-          'destination_table_name_template': destination_table,
-          'write_disposition': write_disposition,
-          'partitioning_field': partitioning_field,
       }
+      target_dataset = self.target_dataset
+      if self.destination_table:
+        target_dataset = client.GetTableReference(
+            self.destination_table).GetDatasetReference().datasetId
+        destination_table = client.GetTableReference(
+            self.destination_table).tableId
+        params['destination_table_name_template'] = destination_table
+      if self.append_table:
+        params['write_disposition'] = 'WRITE_APPEND'
+      if self.replace:
+        params['write_disposition'] = 'WRITE_TRUNCATE'
+      if self.time_partitioning_field:
+        params['partitioning_field'] = self.time_partitioning_field
+
       transfer_name = client.CreateTransferConfig(
           reference=reference,
           data_source='scheduled_query',
@@ -2329,7 +2433,8 @@ class _Query(BigqueryCmd):
     _PrintJobMessages(printable_job_info)
 
 
-def _GetExternalDataConfig(file_path_or_simple_spec):
+def _GetExternalDataConfig(file_path_or_simple_spec,
+                           use_avro_logical_types=False):
   """Returns a ExternalDataConfiguration from the file or specification string.
 
   Determines if the input string is a file path or a string,
@@ -2402,7 +2507,12 @@ def _GetExternalDataConfig(file_path_or_simple_spec):
     # When using short notation for external table definition
     # autodetect is always performed.
     return _CreateExternalTableDefinition(
-        source_format, uri, schema, True, connection_id)
+        source_format,
+        uri,
+        schema,
+        True,
+        connection_id,
+        use_avro_logical_types=use_avro_logical_types)
 
 
 class _Extract(BigqueryCmd):
@@ -2421,12 +2531,12 @@ class _Extract(BigqueryCmd):
     flags.DEFINE_enum(
         'destination_format',
         None, [
-            'CSV', 'NEWLINE_DELIMITED_JSON', 'AVRO',
+            'CSV', 'NEWLINE_DELIMITED_JSON', 'AVRO', 'PARQUET',
             'ML_TF_SAVED_MODEL', 'ML_XGBOOST_BOOSTER'
         ],
         'The extracted file format. Format CSV, NEWLINE_DELIMITED_JSON, '
-        'PARQUET and AVRO are applicable for extracting tables. Formats '
-        'ML_TF_SAVED_MODEL and ML_XGBOOST_BOOSTER are applicable for '
+        'PARQUET (experimental) and AVRO are applicable for extracting tables. '
+        'Formats ML_TF_SAVED_MODEL and ML_XGBOOST_BOOSTER are applicable for '
         'extracting models. The default value for tables is CSV. Tables with '
         'nested or repeated fields cannot be exported as CSV. The default '
         'value for models is ML_TF_SAVED_MODEL.',
@@ -2522,7 +2632,8 @@ class _Partition(BigqueryCmd):  # pylint: disable=missing-docstring
         'time_partitioning_type',
         'DAY',
         'Enables time based partitioning on the table and set the type. The '
-        'only type accepted is DAY, which will generate one partition per day.',
+        'default value is DAY, which will generate one partition per day. '
+        'Other supported values are HOUR, MONTH, and YEAR.',
         flag_values=fv)
     flags.DEFINE_integer(
         'time_partitioning_expiration',
@@ -2540,9 +2651,11 @@ class _Partition(BigqueryCmd):  # pylint: disable=missing-docstring
     Usage:
     bq partition <source_table_prefix> <destination_partitioned_table>
 
-    Copies tables of the format <source_table_prefix><YYYYmmdd> to a destination
-    partitioned table, with the date suffix of the source tables
-    becoming the partition date of the destination table partitions.
+    Copies tables of the format <source_table_prefix><time_unit_suffix> to a
+    destination partitioned table, with the <time_unit_suffix> of the source
+    tables becoming the partition ID of the destination table partitions. The
+    suffix is <YYYYmmdd> by default, <YYYY> if the time_partitioning_type flag
+    is set to YEAR, <YYYYmm> if set to MONTH, and <YYYYmmddHH> if set to HOUR.
 
     If the destination table does not exist, one will be created with
     a schema and that matches the last table that matches the supplied
@@ -2578,16 +2691,24 @@ class _Partition(BigqueryCmd):  # pylint: disable=missing-docstring
     results = map(client.FormatTableInfo,
                   client.ListTables(source_dataset, max_results=1000 * 1000))
 
-    dates = []
+    partition_ids = []
     representative_table = None
+
+    time_format = '%Y%m%d'  # default to format for DAY
+    if self.time_partitioning_type == 'HOUR':
+      time_format = '%Y%m%d%H'
+    elif self.time_partitioning_type == 'MONTH':
+      time_format = '%Y%m'
+    elif self.time_partitioning_type == 'YEAR':
+      time_format = '%Y'
+
     for result in results:
       table_id = six.ensure_str(result['tableId'])
       if table_id.startswith(source_id_prefix):
         suffix = table_id[source_id_len:]
         try:
-          table_date = datetime.datetime.strptime(suffix, '%Y%m%d')
-
-          dates.append(table_date.strftime('%Y%m%d'))
+          partition_id = datetime.datetime.strptime(suffix, time_format)
+          partition_ids.append(partition_id.strftime(time_format))
           representative_table = result
         except ValueError:
           pass
@@ -2597,7 +2718,7 @@ class _Partition(BigqueryCmd):  # pylint: disable=missing-docstring
       return
 
     print('Copying %d source partitions to %s' %
-          (len(dates), destination_table))
+          (len(partition_ids), destination_table))
 
     # Check to see if we need to create the destination table.
     if not client.TableExists(destination_table):
@@ -2620,10 +2741,10 @@ class _Partition(BigqueryCmd):  # pylint: disable=missing-docstring
           time_partitioning=time_partitioning)
       print('%s successfully created.' % (destination_table,))
 
-    for date_str in dates:
-      destination_table_id = '%s$%s' % (destination_table.tableId, date_str)
-      source_table_id = '%s%s' % (source_id_prefix, date_str)
-      current_job_id = '%s%s' % (job_id_prefix, date_str)
+    for partition_id in partition_ids:
+      destination_table_id = '%s$%s' % (destination_table.tableId, partition_id)
+      source_table_id = '%s%s' % (source_id_prefix, partition_id)
+      current_job_id = '%s%s' % (job_id_prefix, partition_id)
 
       source_table = source_dataset.GetTableReference(source_table_id)
       destination_partition = destination_dataset.GetTableReference(
@@ -2705,6 +2826,11 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         'models', False, 'Show all models.', short_name='m', flag_values=fv)
     flags.DEFINE_boolean(
         'routines', False, 'Show all routines.', flag_values=fv)
+    flags.DEFINE_boolean(
+        'row_access_policies',
+        False,
+        'Show all row access policies.',
+        flag_values=fv)
     flags.DEFINE_string(
         'transfer_location',
         None,
@@ -2818,6 +2944,7 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       bq ls -a
       bq ls -m mydataset
       bq ls --routines mydataset (requires whitelisting)
+      bq ls --row_access_policies mytable (requires whitelisting)
       bq ls --filter labels.color:red
       bq ls --filter 'labels.color:red labels.size:*'
       bq ls --transfer_config --transfer_location='us'
@@ -2856,17 +2983,24 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         # We want to let through the case of no identifier, which
         # will fall through to the second case below.
         reference = None
-    # If we got a TableReference, we might be able to make sense
-    # of it as a DatasetReference, as in 'ls foo' with dataset_id
-    # set.
-    if isinstance(reference, TableReference):
-      try:
-        reference = client.GetDatasetReference(identifier)
-      except bigquery_client.BigqueryError:
-        pass
-    _Typecheck(reference, (type(None), ProjectReference, DatasetReference),
-               ('Invalid identifier "%s" for ls, cannot call list on object '
-                'of type %s') % (identifier, type(reference).__name__))
+
+    if self.row_access_policies:
+      _Typecheck(reference, TableReference,
+                 ('Invalid identifier "%s" for ls, cannot list row access '
+                  'policies on object of type %s') %
+                 (identifier, type(reference).__name__))
+    else:
+      # If we got a TableReference, we might be able to make sense
+      # of it as a DatasetReference, as in 'ls foo' with dataset_id
+      # set.
+      if isinstance(reference, TableReference):
+        try:
+          reference = client.GetDatasetReference(identifier)
+        except bigquery_client.BigqueryError:
+          pass
+      _Typecheck(reference, (type(None), ProjectReference, DatasetReference),
+                 ('Invalid identifier "%s" for ls, cannot call list on object '
+                  'of type %s') % (identifier, type(reference).__name__))
 
     if self.d and isinstance(reference, DatasetReference):
       reference = reference.GetProjectReference()
@@ -3072,6 +3206,16 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         print('No connections found.')
       if 'nextPageToken' in list_connections_results:
         _PrintPageToken(list_connections_results)
+    elif self.row_access_policies:
+      object_type = RowAccessPolicyReference
+      response = client.ListRowAccessPolicies(reference, self.max_results,
+                                              self.page_token)
+      if 'rowAccessPolicies' in response:
+        results = response['rowAccessPolicies']
+      else:
+        print('No row access policies found.')
+      if 'nextPageToken' in response:
+        _PrintPageToken(response)
     elif self.p or reference is None:
       object_type = ProjectReference
       results = client.ListProjects(
@@ -3415,8 +3559,9 @@ def _ParseTimePartitioning(partitioning_type=None,
   """Parses time partitioning from the arguments.
 
   Args:
-    partitioning_type: type for the time partitioning. The default value is DAY
-      when other arguments are specified, which generates one partition per day.
+    partitioning_type: type for the time partitioning. Supported types are HOUR,
+      DAY, MONTH, and YEAR. The default value is DAY when other arguments are
+      specified, which generates one partition per day.
     partitioning_expiration: number of seconds to keep the storage for a
       partition. A negative value clears this setting.
     partitioning_field: if not set, the table is partitioned based on the
@@ -3762,7 +3907,8 @@ class _Make(BigqueryCmd):
         'time_partitioning_type',
         None,
         'Enables time based partitioning on the table and set the type. The '
-        'only type accepted is DAY, which will generate one partition per day.',
+        'default value is DAY, which will generate one partition per day. '
+        'Other supported values are HOUR, MONTH, and YEAR.',
         flag_values=fv)
     flags.DEFINE_integer(
         'time_partitioning_expiration',
@@ -3938,6 +4084,11 @@ class _Make(BigqueryCmd):
         None,
         '[Experimental] IAM role id.',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'federated_aws',
+        None,
+        '[Experimental] Federated identity.',
+        flag_values=fv)
     flags.DEFINE_string(
         'tenant_id',
         None,
@@ -3948,6 +4099,13 @@ class _Make(BigqueryCmd):
         None,
         'Defines default KMS key name for all newly objects created in the '
         'dataset. Table/Model creation request can override this default.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'use_avro_logical_types',
+        True,
+        'If sourceFormat is set to "AVRO", indicates whether to enable '
+        'interpreting logical types into their corresponding types '
+        '(ie. TIMESTAMP), instead of only using their raw types (ie. INTEGER).',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -4125,8 +4283,12 @@ class _Make(BigqueryCmd):
       if not self.connection_type:
         raise app.UsageError('Need to specify --connection_type.')
       if self.connection_type == 'AWS' and self.iam_role_id:
-        self.properties = bigquery_client.MakeIamRoleIdPropertiesJson(
-            self.iam_role_id)
+        if self.federated_aws:
+          self.properties = bigquery_client.MakeAccessRolePropertiesJson(
+              self.iam_role_id)
+        else:
+          self.properties = bigquery_client.MakeIamRoleIdPropertiesJson(
+              self.iam_role_id)
       if self.connection_type == 'Azure' and self.tenant_id:
         self.properties = bigquery_client.MakeTenantIdPropertiesJson(
             self.tenant_id)
@@ -4146,7 +4308,8 @@ class _Make(BigqueryCmd):
             path=created_connection['name'])
         print('Connection %s successfully created' % reference)
         bigquery_client.MaybePrintManualInstructionsForConnection(
-            created_connection)
+            created_connection,
+            flag_format=FLAGS.format)
     elif self.d or not identifier:
       reference = client.GetDatasetReference(identifier)
     else:
@@ -4226,7 +4389,7 @@ class _Make(BigqueryCmd):
       external_data_config = None
       if self.external_table_definition is not None:
         external_data_config = _GetExternalDataConfig(
-            self.external_table_definition)
+            self.external_table_definition, self.use_avro_logical_types)
       view_udf_resources = None
       if self.view_udf_resource:
         view_udf_resources = _ParseUdfResources(self.view_udf_resource)
@@ -4542,7 +4705,8 @@ class _Update(BigqueryCmd):
         'time_partitioning_type',
         None,
         'Enables time based partitioning on the table and set the type. The '
-        'only type accepted is DAY, which will generate one partition per day.',
+        'default value is DAY, which will generate one partition per day. '
+        'Other supported values are HOUR, MONTH, and YEAR.',
         flag_values=fv)
     flags.DEFINE_integer(
         'time_partitioning_expiration',
@@ -4608,6 +4772,11 @@ class _Update(BigqueryCmd):
         'iam_role_id',
         None,
         '[Experimental] IAM role id.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'federated_aws',
+        None,
+        '[Experimental] Federated identity.',
         flag_values=fv)
     flags.DEFINE_string(
         'range_partitioning',
@@ -4761,8 +4930,12 @@ class _Update(BigqueryCmd):
       reference = client.GetConnectionReference(
           identifier=identifier, default_location=FLAGS.location)
       if self.connection_type == 'AWS' and self.iam_role_id:
-        self.properties = bigquery_client.MakeIamRoleIdPropertiesJson(
-            self.iam_role_id)
+        if self.federated_aws:
+          self.properties = bigquery_client.MakeAccessRolePropertiesJson(
+              self.iam_role_id)
+        else:
+          self.properties = bigquery_client.MakeIamRoleIdPropertiesJson(
+              self.iam_role_id)
       if self.connection_type == 'Azure' and self.tenant_id:
         self.properties = bigquery_client.MakeTenantIdPropertiesJson(
             self.tenant_id)
@@ -4852,7 +5025,10 @@ class _Update(BigqueryCmd):
         # external_data_config schema.
         # Note: binary formats and text formats with autodetect enabled may not
         # have a schema set.
-        if 'schema' in external_data_config:
+        # Hive partitioning requires that the schema be set on the external data
+        # config.
+        if ('schema' in external_data_config) and (
+            'hivePartitioningOptions' not in external_data_config):
           if schema is None:
             schema = external_data_config['schema']['fields']
           # Regardless delete schema from the external data config.

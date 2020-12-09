@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.ml_engine import versions_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml_engine import endpoint_util
 from googlecloudsdk.command_lib.ml_engine import flags
+from googlecloudsdk.command_lib.ml_engine import region_util
 from googlecloudsdk.command_lib.ml_engine import versions_util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
@@ -32,7 +33,7 @@ def _AddUpdateArgs(parser):
   """Get arguments for the `ai-platform versions update` command."""
   flags.AddVersionResourceArg(parser, 'to update')
   flags.GetDescriptionFlag('version').AddToParser(parser)
-  flags.GetRegionArg().AddToParser(parser)
+  flags.GetRegionArg(include_global=True).AddToParser(parser)
   labels_util.AddUpdateLabelsFlags(parser)
   base.Argument(
       '--config',
@@ -69,7 +70,8 @@ def _AddUpdateArgs(parser):
 
 
 def _Run(args):
-  with endpoint_util.MlEndpointOverrides(region=args.region):
+  region = region_util.GetRegion(args)
+  with endpoint_util.MlEndpointOverrides(region=region):
     versions_client = versions_api.VersionsClient()
     operations_client = operations.OperationsClient()
     version_ref = args.CONCEPTS.version.Parse()

@@ -22,10 +22,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Views(base.Group):
-  """Manage Cloud Logging views.
+  """Manage Cloud Logging Logs Views.
 
-  Commands for managing Cloud Logging views. A view represents a subset of
-  the logs in a Cloud logging bucket.
+  Commands for managing Cloud Logging Logs Views. A Logs View represents a
+  subset of the logs in a Cloud Logging Logs Bucket.
   """

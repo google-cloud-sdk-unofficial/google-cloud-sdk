@@ -129,7 +129,7 @@ class Create(base.CreateCommand):
   """Create a HTTP2 health check."""
 
   _include_l7_internal_load_balancing = True
-  _include_log_config = False
+  _include_log_config = True
   detailed_help = _DetailedHelp()
 
   @classmethod
@@ -146,7 +146,7 @@ class Create(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
 
-  _include_log_config = True
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
