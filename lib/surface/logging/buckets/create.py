@@ -23,9 +23,25 @@ from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Creates a bucket.
+
+  After creating a bucket, use a log sink to route logs into the bucket.
+
+  ## EXAMPLES
+
+  To create a bucket 'my-bucket' in location 'global', run:
+
+    $ {command} my-bucket --location=global --description="my custom bucket"
+
+  To create a bucket with extended retention, run:
+
+    $ {command} my-bucket --location=global --retention-days=365
+
+  To create a bucket in cloud region 'us-central1', run:
+
+    $ {command} my-bucket --location=us-central1
   """
 
   @staticmethod
@@ -40,17 +56,28 @@ class Create(base.CreateCommand):
         '--retention-days', type=int,
         help='The period logs will be retained, after which logs will '
         'automatically be deleted. The default is 30 days.')
-    parser.add_argument(
-        '--enable-analytics',
-        type=bool,
-        default=False,
-        hidden=True,
-        help='Whether to opt the bucket into advanced log analytics. This '
-        'field may only be set at bucket creation and cannot be changed later.')
     util.AddBucketLocationArg(
         parser, True,
         'Location in which to create the bucket. Once the bucket is created, '
         'the location cannot be changed.')
+
+  def _Run(self, args, is_alpha=False):
+    bucket_data = {}
+    if args.IsSpecified('retention_days'):
+      bucket_data['retentionDays'] = args.retention_days
+    if args.IsSpecified('description'):
+      bucket_data['description'] = args.description
+
+    if is_alpha and args.IsSpecified('enable_analytics'):
+      bucket_data['analyticsEnabled'] = args.enable_analytics
+
+    return util.GetClient().projects_locations_buckets.Create(
+        util.GetMessages().LoggingProjectsLocationsBucketsCreateRequest(
+            bucketId=args.BUCKET_ID,
+            parent=util.CreateResourceName(
+                util.GetProjectResource(args.project).RelativeName(),
+                'locations', args.location),
+            logBucket=util.GetMessages().LogBucket(**bucket_data)))
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -62,19 +89,23 @@ class Create(base.CreateCommand):
     Returns:
       The created bucket.
     """
-    bucket_data = {}
-    if args.IsSpecified('retention_days'):
-      bucket_data['retentionDays'] = args.retention_days
-    if args.IsSpecified('description'):
-      bucket_data['description'] = args.description
-    if args.IsSpecified('enable_analytics'):
-      bucket_data['analyticsEnabled'] = args.enable_analytics
+    return self._Run(args)
 
-    return util.GetClient().projects_locations_buckets.Create(
-        util.GetMessages().LoggingProjectsLocationsBucketsCreateRequest(
-            bucketId=args.BUCKET_ID,
-            parent=util.CreateResourceName(
-                util.GetProjectResource(args.project).RelativeName(),
-                'locations',
-                args.location),
-            logBucket=util.GetMessages().LogBucket(**bucket_data)))
+
+# pylint: disable=missing-docstring
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  __doc__ = Create.__doc__
+
+  @staticmethod
+  def Args(parser):
+    Create.Args(parser)
+    parser.add_argument(
+        '--enable-analytics',
+        action='store_true',
+        default=None,
+        help='Whether to opt the bucket into advanced log analytics. This '
+        'field may only be set at bucket creation and cannot be changed later.')
+
+  def Run(self, args):
+    return self._Run(args, is_alpha=True)

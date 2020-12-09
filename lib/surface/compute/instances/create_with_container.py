@@ -64,6 +64,7 @@ def _Args(parser,
   instances_flags.AddKonletArgs(parser)
   instances_flags.AddPublicPtrArgs(parser, instance=True)
   instances_flags.AddImageArgs(parser)
+  instances_flags.AddConfidentialComputeArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
 
   parser.add_argument(
@@ -86,6 +87,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_match_container_mount_disks = True
   _support_nvdimm = False
   _support_enable_nested_virtualization = False
+  _support_threads_per_core = False
 
   @staticmethod
   def Args(parser):
@@ -192,6 +194,8 @@ class CreateWithContainer(base.CreateCommand):
     can_ip_forward = instance_utils.GetCanIpForward(args, skip_defaults)
     tags = containers_utils.CreateTagsMessage(compute_client.messages,
                                               args.tags)
+    confidential_vm = (
+        args.IsSpecified('confidential_compute') and args.confidential_compute)
 
     requests = []
     for instance_ref in instance_refs:
@@ -228,7 +232,8 @@ class CreateWithContainer(base.CreateCommand):
             resource_parser=resource_parser,
             project=instance_ref.project,
             location=instance_ref.zone,
-            scope=compute_scopes.ScopeEnum.ZONE)
+            scope=compute_scopes.ScopeEnum.ZONE,
+            confidential_vm=confidential_vm)
 
       guest_accelerators = create_utils.GetAccelerators(
           args=args,
@@ -258,11 +263,20 @@ class CreateWithContainer(base.CreateCommand):
                 compute_client.messages).GetEnumForChoice(
                     args.private_ipv6_google_access_type))
 
-      if (self._support_enable_nested_virtualization and
-          args.enable_nested_virtualization is not None):
+      confidential_instance_config = (
+          create_utils.BuildConfidentialInstanceConfigMessage(
+              messages=compute_client.messages, args=args))
+      if confidential_instance_config:
+        instance.confidentialInstanceConfig = confidential_instance_config
+
+      if ((self._support_enable_nested_virtualization and
+           args.enable_nested_virtualization is not None) or
+          (self._support_threads_per_core and
+           args.threads_per_core is not None)):
         instance.advancedMachineFeatures = (
             instance_utils.CreateAdvancedMachineFeaturesMessage(
-                compute_client.messages, args.enable_nested_virtualization))
+                compute_client.messages, args.enable_nested_virtualization,
+                args.threads_per_core))
 
       request = compute_client.messages.ComputeInstancesInsertRequest(
           instance=instance,
@@ -285,6 +299,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_match_container_mount_disks = True
   _support_nvdimm = False
   _support_enable_nested_virtualization = False
+  _support_threads_per_core = False
 
   @staticmethod
   def Args(parser):
@@ -309,6 +324,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_match_container_mount_disks = True
   _support_nvdimm = True
   _support_enable_nested_virtualization = True
+  _support_threads_per_core = True
 
   @staticmethod
   def Args(parser):
@@ -323,6 +339,9 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddNestedVirtualizationArgs(parser)
+    instances_flags.AddThreadsPerCoreArgs(parser)
+    instances_flags.AddStackTypeArgs(parser)
+    instances_flags.AddIpv6NetworkTierArgs(parser)
 
   def _ValidateTrackSpecificArgs(self, args):
     instances_flags.ValidateLocalSsdFlags(args)

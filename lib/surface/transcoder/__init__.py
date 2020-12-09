@@ -23,7 +23,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Transcoder(base.Group):
   """Manage Cloud Transcoder jobs and job templates."""
   category = base.SOLUTIONS_CATEGORY

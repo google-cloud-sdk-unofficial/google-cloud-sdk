@@ -45,6 +45,7 @@ class Create(base.CreateCommand):
   def Args(parser):
     resource_args.AddTemplateResourceArg(parser)
     flags.AddCreateTemplateFlags(parser)
+    parser.display_info.AddFormat('json')
 
   def Run(self, args):
     """Create a job template."""

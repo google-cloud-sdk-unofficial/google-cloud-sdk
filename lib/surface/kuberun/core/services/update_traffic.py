@@ -49,7 +49,7 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateTraffic(kuberun_command.KubeRunCommandWithOutput):
+class UpdateTraffic(kuberun_command.KubeRunStreamingCommandWithResult):
   """Updates the traffic settings of a Knative service."""
 
   detailed_help = _DETAILED_HELP

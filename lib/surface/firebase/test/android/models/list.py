@@ -57,7 +57,7 @@ class List(base.ListCommand):
           id:label=MODEL_ID,
           manufacturer:label=MAKE,
           name:label=MODEL_NAME,
-          form.color(blue=VIRTUAL,yellow=PHYSICAL):label=FORM,
+          form.color(blue=VIRTUAL,yellow=PHYSICAL,green=EMULATOR):label=FORM,
           format("{0:4} x {1}", screenY, screenX):label=RESOLUTION,
           supportedVersionIds.list(undefined="none"):label=OS_VERSION_IDS,
           tags.join(sep=", ").color(green=default,red=deprecated,yellow=preview)

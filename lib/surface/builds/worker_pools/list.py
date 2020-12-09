@@ -66,7 +66,7 @@ class ListBeta(base.ListCommand):
     wp_region = args.region
 
     release_track = self.ReleaseTrack()
-    client = cloudbuild_util.GetClientInstance(release_track, region=wp_region)
+    client = cloudbuild_util.GetClientInstance(release_track)
     messages = cloudbuild_util.GetMessagesModule(release_track)
 
     parent = properties.VALUES.core.project.Get(required=True)

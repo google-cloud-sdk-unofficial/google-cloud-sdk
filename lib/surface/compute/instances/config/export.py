@@ -44,6 +44,7 @@ class Export(base.DeclarativeCommand):
         resource_group, operation_type='export')
     declarative_flags.AddAllFlag(mutex_group, collection='project')
     declarative_flags.AddPathFlag(parser)
+    declarative_flags.AddFormatFlag(parser)
 
   def GetAllInstances(self, args, holder):
     request = holder.client.messages.ComputeInstancesAggregatedListRequest(
@@ -54,14 +55,13 @@ class Export(base.DeclarativeCommand):
     resource_uris = [instance.selfLink for instance in instances]
 
     client = kcc_client.KccClient()
-    kcc_documents = client.GetAll(
+    client.ExportAll(
+        args=args,
         resource_uris=resource_uris,
-        use_progress_tracker=args.IsSpecified('path'))
-    client.SerializeAll(
-        resources=kcc_documents, path=args.path, scope_field='zone')
+        resource_type='compute.googleapis.com/Instance')
 
   def Run(self, args):
-    declarative_flags.ValidateAllPathArgs(args)
+    #   declarative_flags.ValidateAllPathArgs(args)
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     if args.IsSpecified('all'):
       self.GetAllInstances(args, holder)
@@ -69,8 +69,5 @@ class Export(base.DeclarativeCommand):
 
     instance_ref = self._GetInstanceRef(holder, args)
     client = kcc_client.KccClient()
-    resource = client.Get(
-        resource_uri=instance_ref.SelfLink(),
-        use_progress_tracker=args.IsSpecified('path'))
-    client.Serialize(path=args.path, resource=resource)
+    client.Export(args, resource_uri=instance_ref.SelfLink())
     return

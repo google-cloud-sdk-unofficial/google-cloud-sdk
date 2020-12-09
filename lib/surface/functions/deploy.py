@@ -26,10 +26,10 @@ from googlecloudsdk.api_lib.functions import util as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.functions import flags
-from googlecloudsdk.command_lib.functions.deploy import env_vars_util
-from googlecloudsdk.command_lib.functions.deploy import labels_util
-from googlecloudsdk.command_lib.functions.deploy import source_util
-from googlecloudsdk.command_lib.functions.deploy import trigger_util
+from googlecloudsdk.command_lib.functions.v1.deploy import env_vars_util
+from googlecloudsdk.command_lib.functions.v1.deploy import labels_util
+from googlecloudsdk.command_lib.functions.v1.deploy import source_util
+from googlecloudsdk.command_lib.functions.v1.deploy import trigger_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util as args_labels_util
 from googlecloudsdk.command_lib.util.args import map_util

@@ -53,6 +53,7 @@ class Create(base.CreateCommand):
   def Args(parser):
     resource_args.AddLocationResourceArg(parser)
     flags.AddCreateJobFlags(parser)
+    parser.display_info.AddFormat('json')
 
   def Run(self, args):
     """Create a job."""

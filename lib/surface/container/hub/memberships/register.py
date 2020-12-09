@@ -34,6 +34,7 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
+import six
 
 SERVICE_ACCOUNT_KEY_FILE_FLAG = '--service-account-key-file'
 DOCKER_CREDENTIAL_FILE_FLAG = '--docker-credential-file'
@@ -337,8 +338,9 @@ class Register(base.CreateCommand):
         public_issuer_url = args.public_issuer_url or kube_client.processor.gke_cluster_uri or None
 
         try:
-          openid_config_json = kube_client.GetOpenIDConfiguration(
-              issuer_url=public_issuer_url)
+          openid_config_json = six.ensure_str(
+              kube_client.GetOpenIDConfiguration(issuer_url=public_issuer_url),
+              encoding='utf-8')
         except Exception as e:  # pylint: disable=broad-except
           raise exceptions.Error(
               'Error getting the OpenID Provider Configuration: '

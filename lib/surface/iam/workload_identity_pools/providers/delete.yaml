@@ -11,16 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
-    brief: Delete a WorkloadIdentityPoolProvider.
-    description: Delete a WorkloadIdentityPoolProvider.
+    brief: Delete a workload identity pool provider.
+    description: Delete a workload identity pool provider.
     examples: |
-      The following command deletes the WorkloadIdentityPoolProvider with the ID
-      'my-workload-identity-pool-provider':
+      The following command deletes the workload identity pool provider with the ID
+      ``my-workload-identity-pool-provider'':
 
-        $ {command} my-workload-identity-pool-provider --location=global
+        $ {command} my-workload-identity-pool-provider \
+           --workload-identity-pool="my-workload-identity-pool" \
+           --location="global"
 
   request:
     collection: iam.projects.locations.workloadIdentityPools.providers
@@ -31,5 +33,5 @@
 
   arguments:
     resource:
-      help_text: The WorkloadIdentityPoolProvider to delete.
+      help_text: The workload identity pool provider to delete.
       spec: !REF googlecloudsdk.command_lib.iam.resources:workload_identity_pool_provider

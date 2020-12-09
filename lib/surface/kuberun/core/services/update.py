@@ -18,6 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import json
+
+from googlecloudsdk.api_lib.kuberun import service
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import flags
 from googlecloudsdk.command_lib.kuberun import kuberun_command
@@ -33,13 +36,15 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Update(kuberun_command.KubeRunStreamingCommand, base.UpdateCommand):
+class Update(kuberun_command.KubeRunStreamingCommandWithResult,
+             base.UpdateCommand):
   """Updates a Knative service."""
 
   detailed_help = _DETAILED_HELP
   flags = [
       flags.ClusterConnectionFlags(),
       flags.CommonServiceFlags(),
+      flags.CreateIfMissingFlag(),
       flags.NoTrafficFlag(),
       flags.AsyncFlag()
   ]
@@ -56,3 +61,7 @@ class Update(kuberun_command.KubeRunStreamingCommand, base.UpdateCommand):
 
   def Command(self):
     return ['core', 'services', 'update']
+
+  def FormatOutput(self, out, args):
+    return service.Service(json.loads(out))
+

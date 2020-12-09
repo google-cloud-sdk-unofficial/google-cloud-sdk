@@ -25,7 +25,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import flags
 from googlecloudsdk.command_lib.kuberun import kuberun_command
 from googlecloudsdk.command_lib.kuberun import service_printer
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core.resource import resource_printer
 
 _DETAILED_HELP = {
@@ -63,7 +62,4 @@ class Describe(kuberun_command.KubeRunCommandWithOutput, base.DescribeCommand):
     return ['core', 'services', 'describe']
 
   def FormatOutput(self, out, args):
-    if out:
-      return service.Service(json.loads(out))
-    else:
-      raise exceptions.Error('Cannot find service [{}]'.format(args.service))
+    return service.Service(json.loads(out))

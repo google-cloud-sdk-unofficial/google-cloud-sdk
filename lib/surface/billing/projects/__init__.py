@@ -21,5 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Projects(base.Group):
   """Manage the billing account configuration of your projects."""

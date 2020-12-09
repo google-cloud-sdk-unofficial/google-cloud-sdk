@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: List budgets.
     description: List budgets for the account.
@@ -7,8 +7,13 @@
 
         $ {command} --billing-account=123
   request:
-    api_version: v1beta1
     collection: billingbudgets.billingAccounts.budgets
+    ALPHA:
+      api_version: v1beta1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
   arguments:
     resource:
       help_text: List billing budgets associated with parent account.

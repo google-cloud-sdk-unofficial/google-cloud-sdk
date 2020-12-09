@@ -98,17 +98,17 @@ def DetailedHelp():
         operation in a project.
         """,
       'EXAMPLES': """
-        To get details about a global operation, run:
+        To get details about a global operation (e.g. operation-111-222-333-444), run:
 
-          $ {command} OPERATION --global
+          $ {command} operation-111-222-333-444 --global
 
         To get details about a regional operation, run:
 
-          $ {command} OPERATION --region=us-central1
+          $ {command} operation-111-222-333-444 --region=us-central1
 
         To get details about a zonal operation, run:
 
-          $ {command} OPERATION --zone=us-central1-a
+          $ {command} operation-111-222-333-444 --zone=us-central1-a
         """,
   }
   return detailed_help

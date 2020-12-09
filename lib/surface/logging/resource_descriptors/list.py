@@ -62,7 +62,7 @@ class List(base.ListCommand):
 
 List.detailed_help = {
     'DESCRIPTION': ("""
-        Lists all available resource descriptors that are used by Stackdriver
+        Lists all available resource descriptors that are used by Cloud
         Logging. Each log entry must be associated with a valid resource
         descriptor.
     """),

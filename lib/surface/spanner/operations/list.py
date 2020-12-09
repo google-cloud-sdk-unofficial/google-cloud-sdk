@@ -29,8 +29,11 @@ from googlecloudsdk.command_lib.spanner import flags
 
 
 def _TransformOperationDone(resource):
-  """Shows value for done in table."""
-  return 'done' in resource
+  """Combines done and throttled fields into a single column."""
+  done_cell = '{0}'.format(resource.get('done', False))
+  if resource.get('metadata', {}).get('throttled', False):
+    done_cell += ' (throttled)'
+  return done_cell
 
 
 def _TransformDatabaseId(resource):

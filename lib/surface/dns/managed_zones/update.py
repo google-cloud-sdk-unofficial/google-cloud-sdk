@@ -58,6 +58,12 @@ def _Update(zones_client,
       args, zones_client.messages.ManagedZone.LabelsValue,
       lambda: zones_client.Get(zone_ref).labels)
 
+  update_results = []
+
+  if labels_update.GetOrNone():
+    update_results.append(
+        zones_client.UpdateLabels(zone_ref, labels_update.GetOrNone()))
+
   kwargs = {}
   if private_visibility_config:
     kwargs['private_visibility_config'] = private_visibility_config
@@ -67,13 +73,17 @@ def _Update(zones_client,
     kwargs['peering_config'] = peering_config
   if reverse_lookup_config:
     kwargs['reverse_lookup_config'] = reverse_lookup_config
-  return zones_client.Patch(
-      zone_ref,
-      args.async_,
-      dnssec_config=dnssec_config,
-      description=args.description,
-      labels=labels_update.GetOrNone(),
-      **kwargs)
+
+  if dnssec_config or args.description or kwargs:
+    update_results.append(zones_client.Patch(
+        zone_ref,
+        args.async_,
+        dnssec_config=dnssec_config,
+        description=args.description,
+        labels=None,
+        **kwargs))
+
+  return update_results
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

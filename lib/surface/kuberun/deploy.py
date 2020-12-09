@@ -32,10 +32,10 @@ _DETAILED_HELP = {
 
 
 def _EnvironmentFlag():
-  return flags.StringFlag(
+  return flags.EnvironmentFlags(
       '--environment',
       help='Name of the environment to which KubeRun will deploy.',
-      required=True)
+      required=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

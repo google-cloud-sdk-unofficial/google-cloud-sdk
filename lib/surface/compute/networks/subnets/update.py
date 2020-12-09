@@ -32,6 +32,8 @@ class Update(base.UpdateCommand):
   _include_alpha_logging = False
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
   _include_l7_internal_load_balancing = True
+  _include_stack_type = False
+  _include_ipv6_access_type = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
 
   @classmethod
@@ -46,6 +48,8 @@ class Update(base.UpdateCommand):
 
     flags.AddUpdateArgs(parser, cls._include_alpha_logging,
                         cls._include_l7_internal_load_balancing,
+                        cls._include_stack_type,
+                        cls._include_ipv6_access_type,
                         cls._api_version)
 
   def Run(self, args):
@@ -77,6 +81,9 @@ class Update(base.UpdateCommand):
 
     private_ipv6_google_access_type = args.private_ipv6_google_access_type
 
+    stack_type = getattr(args, 'stack_type', None)
+    ipv6_access_type = getattr(args, 'ipv6_access_type', None)
+
     return subnets_utils.MakeSubnetworkUpdateRequest(
         client,
         subnet_ref,
@@ -92,6 +99,8 @@ class Update(base.UpdateCommand):
         set_role_active=set_role_active,
         drain_timeout_seconds=drain_timeout_seconds,
         private_ipv6_google_access_type=private_ipv6_google_access_type,
+        stack_type=stack_type,
+        ipv6_access_type=ipv6_access_type,
     )
 
 
@@ -107,4 +116,6 @@ class UpdateAlpha(UpdateBeta):
   """Updates properties of an existing Compute Engine subnetwork."""
 
   _include_alpha_logging = True
+  _include_stack_type = True
+  _include_ipv6_access_type = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION

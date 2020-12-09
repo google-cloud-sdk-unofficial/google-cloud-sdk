@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Stackdriver logging metrics group."""
+"""Cloud Logging metrics group."""
 
 from __future__ import absolute_import
 from __future__ import division

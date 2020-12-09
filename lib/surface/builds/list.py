@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.cloudbuild import filter_rewrite
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.builds import flags
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 class List(base.ListCommand):
@@ -58,6 +59,24 @@ class List(base.ListCommand):
         action='store_true')
     base.LIMIT_FLAG.SetDefault(parser, 50)
     base.PAGE_SIZE_FLAG.SetDefault(parser, 20)
+
+    # Default help for base.FILTER_FLAG is inaccurate because GCB does some
+    # server-side filtering.
+    base.FILTER_FLAG.RemoveFromParser(parser)
+    base.Argument(
+        '--filter',
+        metavar='EXPRESSION',
+        require_coverage_in_tests=False,
+        category=base.LIST_COMMAND_FLAGS,
+        help="""\
+        Apply a Boolean filter _EXPRESSION_ to each resource item to be listed.
+        If the expression evaluates `True`, then that item is listed. For more
+        details and examples of filter expressions, run $ gcloud topic filters.
+        With the exception of regex matching, this flag interacts with other
+        flags that are applied in this order: *--flatten*, *--sort-by*,
+        *--filter*, *--limit*. Any regex operations specified by *--filter* are
+        applied client-side, after *--limit*.""").AddToParser(parser)
+
     parser.display_info.AddFormat("""
         table(
             id,
@@ -79,19 +98,25 @@ class List(base.ListCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    build_region = args.region
+    build_region = args.region or cloudbuild_util.DEFAULT_REGION
 
-    client = cloudbuild_util.GetClientInstance(region=build_region)
+    client = cloudbuild_util.GetClientInstance()
     messages = cloudbuild_util.GetMessagesModule()
+
+    project_id = properties.VALUES.core.project.GetOrFail()
+    parent_resource = resources.REGISTRY.Create(
+        collection='cloudbuild.projects.locations',
+        projectsId=project_id,
+        locationsId=build_region)
 
     args.filter, server_filter = filter_rewrite.Backend(args.ongoing).Rewrite(
         args.filter)
 
     return list_pager.YieldFromList(
-        client.projects_builds,
-        messages.CloudbuildProjectsBuildsListRequest(
+        client.projects_locations_builds,
+        messages.CloudbuildProjectsLocationsBuildsListRequest(
+            parent=parent_resource.RelativeName(),
             pageSize=args.page_size,
-            projectId=properties.VALUES.core.project.GetOrFail(),
             filter=server_filter),
         field='builds',
         batch_size=args.page_size,

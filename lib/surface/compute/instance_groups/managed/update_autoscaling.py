@@ -118,10 +118,14 @@ class UpdateAutoscalingBeta(UpdateAutoscaling):
   """Update autoscaling parameters of a managed instance group."""
 
   predictive = False
+  scheduled = True
+  min_max = True
 
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
+    mig_utils.AddMinMaxControl(parser, max_required=False)
+    mig_utils.AddScheduledAutoscaling(parser, patch_args=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

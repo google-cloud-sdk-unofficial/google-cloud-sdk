@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2018 Google LLC. All Rights Reserved.
+# Copyright 2020 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,9 +35,9 @@ from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.util import gcloudignore
-from googlecloudsdk.core import http as http_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import transports
 from googlecloudsdk.core.util import archive
 from googlecloudsdk.core.util import files as file_utils
 import six
@@ -136,7 +136,7 @@ def _UploadFileToGcs(source, function_ref, stage_bucket):
   return dest_object.ToUrl()
 
 
-#TODO(b/168727141) Remove RunGsutilCommand
+# TODO(b/168727141) Remove RunGsutilCommand
 def _UploadFileToGcsGsutil(source, dest_object):
   """Upload local source files to GCS staging bucket. Returns upload success."""
   ret_code = storage_util.RunGsutilCommand('cp', [source, dest_object.ToUrl()])
@@ -212,7 +212,7 @@ def _UploadFileToGeneratedUrl(source, messages, service, function_ref):
   finally:
     upload.stream.close()
   response = http_wrapper.MakeRequest(
-      http_utils.Http(),
+      transports.GetApitoolsTransport(),
       upload_request,
       retry_func=lambda ra: _UploadFileToGeneratedUrlRetryFunc(  # pylint: disable=g-long-lambda
           upload.retry_func, ra),

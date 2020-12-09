@@ -56,3 +56,4 @@ class CloudShell(base.Group):
     # Additionally, Cloud Shell is a free product with per user quota, so
     # enabling the API on gcloud will not cost gcloud money.
     base.DisableUserProjectQuota()
+    base.OptInRequests()

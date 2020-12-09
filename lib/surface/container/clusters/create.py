@@ -148,6 +148,31 @@ def MaybeLogAuthWarning(args):
                   'treat that as `--no-enable-basic-auth`.')
 
 
+def _IsSpecified(args, name):
+  """Returns true if an arg is defined and specified, false otherwise."""
+  return hasattr(args, name) and args.IsSpecified(name)
+
+
+def MaybeLogReleaseChannelDefaultWarning(args):
+  """Logs a release channel default change message for applicable commands."""
+  if (
+      not _IsSpecified(args, 'cluster_version') and
+      not _IsSpecified(args, 'release_channel') and
+      (
+          hasattr(args, 'enable_autoupgrade') and
+          cmd_util.GetAutoUpgrade(args)
+      ) and
+      (
+          hasattr(args, 'enable_autorepair') and
+          cmd_util.GetAutoRepair(args)
+      )
+  ):
+    log.warning('Starting in January 2021, clusters will use the Regular '
+                'release channel by default when `--cluster-version`, '
+                '`--release-channel`, `--no-enable-autoupgrade`, and '
+                '`--no-enable-autorepair` flags are not specified.')
+
+
 cloudNatTemplate = string.Template(
     'Autopilot nodes are private. If you need connectivity to the '
     'public internet, for example to pull public containers, you must configure'
@@ -181,6 +206,7 @@ def ParseCreateOptionsBase(args, is_autogke, get_default, location, project_id):
   flags.LogBasicAuthDeprecationWarning(args)
   flags.MungeBasicAuthFlags(args)
   MaybeLogAuthWarning(args)
+  MaybeLogReleaseChannelDefaultWarning(args)
 
   enable_ip_alias = get_default('enable_ip_alias')
   if hasattr(args, 'enable_ip_alias'):
@@ -266,6 +292,7 @@ def ParseCreateOptionsBase(args, is_autogke, get_default, location, project_id):
       services_ipv4_cidr=get_default('services_ipv4_cidr'),
       services_secondary_range_name=get_default('services_secondary_range_name'),
       subnetwork=get_default('subnetwork'),
+      private_ipv6_google_access_type=get_default('private_ipv6_google_access_type'),
       tags=get_default('tags'),
       user=get_default('username'),
       metadata=metadata,
@@ -345,7 +372,7 @@ def AddMasterSignalsFlag(parser):
 
 
 def AddPrivateIPv6Flag(api, parser):
-  flags.AddPrivateIpv6GoogleAccessTypeFlag(api, parser, hidden=True)
+  flags.AddPrivateIpv6GoogleAccessTypeFlag(api, parser)
 
 
 def AddKubernetesObjectsExportFlag(parser):
@@ -411,6 +438,7 @@ flags_to_add = {
         'num_nodes': flags.AddNumNodes,
         'preemptible': flags.AddPreemptibleFlag,
         'privatecluster': flags.AddPrivateClusterFlags,
+        'privateipv6type': (lambda p: AddPrivateIPv6Flag('v1', p)),
         'releasechannel': flags.AddReleaseChannelFlag,
         'reservationaffinity': flags.AddReservationAffinityFlags,
         'resourceusageexport': flags.AddResourceUsageExportFlags,
@@ -790,8 +818,6 @@ class CreateBeta(Create):
     ops.enable_master_metrics = get_default('enable_master_metrics')
     ops.master_logs = get_default('master_logs')
     ops.notification_config = get_default('notification_config')
-    ops.private_ipv6_google_access_type = \
-        get_default('private_ipv6_google_access_type')
     ops.enable_confidential_nodes = get_default('enable_confidential_nodes')
     ops.kubernetes_objects_changes_target = \
         getattr(args, 'kubernetes_objects_changes_target', None)
@@ -863,8 +889,6 @@ class CreateAlpha(Create):
     ops.enable_master_metrics = get_default('enable_master_metrics')
     ops.master_logs = get_default('master_logs')
     ops.notification_config = get_default('notification_config')
-    ops.private_ipv6_google_access_type = \
-        get_default('private_ipv6_google_access_type')
     ops.enable_confidential_nodes = get_default('enable_confidential_nodes')
     ops.cluster_dns = get_default('cluster_dns')
     ops.cluster_dns_scope = get_default('cluster_dns_scope')

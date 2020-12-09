@@ -38,6 +38,7 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddTemplateResourceArg(parser)
+    parser.display_info.AddFormat('json')
 
   def Run(self, args):
     """Describe a job template."""

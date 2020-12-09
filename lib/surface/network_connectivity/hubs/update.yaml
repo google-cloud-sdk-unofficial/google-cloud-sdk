@@ -30,6 +30,9 @@
           - api_field: key
           - api_field: value
 
+  async:
+    collection: networkconnectivity.projects.locations.operations
+
   request:
     api_version: v1alpha1
     collection: networkconnectivity.projects.locations.global.hubs

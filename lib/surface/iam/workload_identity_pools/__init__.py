@@ -23,6 +23,15 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class WorkloadPools(base.Group):
+  """Manage IAM workload identity pools.
+
+  Commands for managing IAM workload identity pools.
+  """
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class WorkloadPoolsGa(base.Group):
   """Manage IAM WorkloadIdentityPools.
 
   Commands for managing IAM WorkloadIdentityPools.

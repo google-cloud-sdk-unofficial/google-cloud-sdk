@@ -24,9 +24,15 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Create a view.
+  # pylint: disable=line-too-long
+  """Create a view on a logs bucket.
+
+  ## EXAMPLES
+
+  To create a view that matches all Google Compute Engine logs in a bucket, run:
+
+    $ {command} my-view --bucket=my-bucket --location=global --log-filter='resource.type="gce_instance"'
   """
 
   @staticmethod

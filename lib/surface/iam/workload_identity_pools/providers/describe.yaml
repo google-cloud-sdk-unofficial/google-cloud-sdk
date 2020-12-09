@@ -11,16 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
-    brief: Describe a WorkloadIdentityPoolProvider.
-    description: Describe a WorkloadIdentityPoolProvider.
+    brief: Describe a workload identity pool provider.
+    description: Describe a workload identity pool provider.
     examples: |
-      The following command describes the WorkloadIdentityPoolProvider with the ID
-      'my-workload-identity-pool-provider':
+      The following command describes the workload identity pool provider with the ID
+      ``my-workload-identity-pool-provider'':
 
-        $ {command} my-workload-identity-pool-provider --location=global
+        $ {command} my-workload-identity-pool-provider  \
+           --workload-identity-pool="my-workload-identity-pool" \
+           --location="global"
 
   request:
     collection: iam.projects.locations.workloadIdentityPools.providers
@@ -31,5 +33,5 @@
 
   arguments:
     resource:
-      help_text: The WorkloadIdentityPoolProvider to describe.
+      help_text: The workload identity pool provider to describe.
       spec: !REF googlecloudsdk.command_lib.iam.resources:workload_identity_pool_provider

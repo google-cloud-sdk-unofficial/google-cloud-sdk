@@ -47,7 +47,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete one or more completed Dataproc Metastore operations."""
 

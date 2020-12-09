@@ -29,7 +29,8 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine virtual machine network interface.
 
@@ -42,8 +43,6 @@ class Update(base.UpdateCommand):
   as the interface's alias IP.
   """
 
-  support_network_migration = False
-
   @classmethod
   def Args(cls, parser):
     instances_flags.INSTANCE_ARG.AddArgument(parser)
@@ -52,28 +51,27 @@ class Update(base.UpdateCommand):
         default='nic0',
         help='The name of the network interface to update.')
     alias_network_migration_help = ''
-    if cls.support_network_migration:
-      parser.add_argument(
-          '--network',
-          type=str,
-          help='Specifies the network this network interface belongs to.')
-      parser.add_argument(
-          '--subnetwork',
-          type=str,
-          help='Specifies the subnetwork this network interface belongs to.')
-      parser.add_argument(
-          '--private-network-ip',
-          dest='private_network_ip',
-          type=str,
-          help="""\
-          Assign the given IP address to the interface. Can be specified only
-          together with --network and/or --subnetwork to choose the IP address
-          in the new subnetwork. If unspecified, then the previous IP address
-          will be allocated in the new subnetwork. If the previous IP address is
-          not available in the new subnetwork, then another available IP address
-          will be allocated automatically from the new subnetwork CIDR range.
-          """)
-      alias_network_migration_help = """
+    parser.add_argument(
+        '--network',
+        type=str,
+        help='Specifies the network this network interface belongs to.')
+    parser.add_argument(
+        '--subnetwork',
+        type=str,
+        help='Specifies the subnetwork this network interface belongs to.')
+    parser.add_argument(
+        '--private-network-ip',
+        dest='private_network_ip',
+        type=str,
+        help="""\
+        Assign the given IP address to the interface. Can be specified only
+        together with --network and/or --subnetwork to choose the IP address
+        in the new subnetwork. If unspecified, then the previous IP address
+        will be allocated in the new subnetwork. If the previous IP address is
+        not available in the new subnetwork, then another available IP address
+        will be allocated automatically from the new subnetwork CIDR range.
+        """)
+    alias_network_migration_help = """
 
         Can be specified together with --network and/or --subnetwork to choose
         IP alias ranges in the new subnetwork. If unspecified, then the previous
@@ -165,19 +163,3 @@ class Update(base.UpdateCommand):
         operation_poller, operation_ref,
         'Updating network interface [{0}] of instance [{1}]'.format(
             args.network_interface, instance_ref.Name()))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateAlpha(Update):
-  r"""Update a Compute Engine virtual machine network interface.
-
-  *{command}* updates network interfaces of a Compute Engine
-  virtual machine. For example:
-
-    $ {command} example-instance --zone us-central1-a --aliases r1:172.16.0.1/32
-
-  sets 172.16.0.1/32 from range r1 of the default interface's subnetwork
-  as the interface's alias IP.
-  """
-
-  support_network_migration = True

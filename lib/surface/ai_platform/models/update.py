@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml_engine import endpoint_util
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
+from googlecloudsdk.command_lib.ml_engine import region_util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
@@ -31,13 +32,14 @@ from googlecloudsdk.core import log
 def _AddUpdateArgs(parser):
   """Get arguments for the `ai-platform models update` command."""
   flags.GetModelName().AddToParser(parser)
-  flags.GetRegionArg().AddToParser(parser)
+  flags.GetRegionArg(include_global=True).AddToParser(parser)
   flags.GetDescriptionFlag('model').AddToParser(parser)
   labels_util.AddUpdateLabelsFlags(parser)
 
 
 def _Run(args):
-  with endpoint_util.MlEndpointOverrides(region=args.region):
+  region = region_util.GetRegion(args)
+  with endpoint_util.MlEndpointOverrides(region=region):
     models_client = models.ModelsClient()
     operations_client = operations.OperationsClient()
     models_util.Update(models_client, operations_client, args)

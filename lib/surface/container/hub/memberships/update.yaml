@@ -34,6 +34,21 @@
       hidden: true
       arg_name: external-id
       help_text:  Update external-id of the membership resource.
+    - api_field: membership.infrastructureType
+      release_tracks: [ALPHA, BETA]
+      hidden: true
+      arg_name: infra-type
+      choices:
+      - arg_value: on-prem
+        enum_value: ON_PREM
+        help_text: |
+          Specifies a cluster is running on an on-prem environment.
+      - arg_value: multi-cloud
+        enum_value: MULTI_CLOUD
+        help_text: |
+          Specified a cluster is running on public cloud infrastructure.
+      help_text: |
+        Specifies the infrastructure type that the cluster is running on.
     labels:
       api_field: membership.labels
 

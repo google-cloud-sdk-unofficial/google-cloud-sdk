@@ -221,6 +221,13 @@ class Create(base.CreateCommand):
       if options.accelerators is not None:
         log.status.Print(constants.KUBERNETES_GPU_LIMITATION_MSG)
 
+      if not options.image_type:
+        log.warning(
+            'Starting with version 1.19, newly created node-pools '
+            'will have COS_CONTAINERD as the default node image '
+            'when no image type is specified.'
+        )
+
       operation_ref = adapter.CreateNodePool(pool_ref, options)
 
       adapter.WaitForOperation(

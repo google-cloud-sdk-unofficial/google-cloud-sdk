@@ -305,7 +305,7 @@ def parameterize(string, separator="-"):
     separator: (str) A delimiter to separate each word by.
 
   Returns:
-    A string with special characters swapped with the provided separator.
+    A string with speical characters swapped with the provided separator.
   """
   string = transliterate(string)
   # Turn unwanted chars into the separator

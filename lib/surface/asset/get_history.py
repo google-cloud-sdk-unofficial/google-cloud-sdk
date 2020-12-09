@@ -59,4 +59,5 @@ class GetHistory(base.Command):
     flags.AddEndTimeArgs(parser)
 
   def Run(self, args):
-    return client_util.MakeGetAssetsHistoryHttpRequests(args)
+    client = client_util.GetHistoryClient()
+    return client.GetHistory(args)

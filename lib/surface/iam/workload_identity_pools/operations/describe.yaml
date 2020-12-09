@@ -11,17 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
-    brief: Describe a WorkloadIdentityPool operation.
-    description: Describe a WorkloadIdentityPool operation.
+    brief: Describe a workload identity pool operation.
+    description: Describe a workload identity pool operation.
     examples: |
-      The following command describes the long running WorkloadIdentityPoolProvider operation with
-      the ID 'my-operation':
+      The following command describes the long running workload identity poolProvider operation with
+      the ID ``my-operation'':
 
-        $ {command} my-operation
-            --workload-identity-pool="my-workload-identity-pool"
+        $ {command} my-operation \
+            --workload-identity-pool="my-workload-identity-pool" \
             --location="global"
 
   request:
@@ -33,5 +33,5 @@
 
   arguments:
     resource:
-      help_text: The WorkloadIdentityPool long running operation to describe.
+      help_text: The workload identity pool long running operation to describe.
       spec: !REF googlecloudsdk.command_lib.iam.resources:workload_identity_pool_operation

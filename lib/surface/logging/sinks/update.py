@@ -27,13 +27,14 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Updates a sink.
 
-  Changes the *[destination]* or *--log-filter* associated with a sink.
+  Changes the *[DESTINATION]* or *--log-filter* associated with a sink.
   The new destination must already exist and Cloud Logging must have
   permission to write to it.
+
   Log entries are exported to the new destination immediately.
 
   ## EXAMPLES
@@ -79,7 +80,7 @@ class Update(base.UpdateCommand):
             uniqueWriterIdentity=True,
             updateMask=','.join(update_mask)))
 
-  def _Run(self, args, is_alpha=False):
+  def _Run(self, args, is_alpha_or_beta=False):
     sink_ref = util.GetSinkReference(args.sink_name, args)
     sink = self.GetSink(util.GetParentFromArgs(args), sink_ref)
 
@@ -93,19 +94,9 @@ class Update(base.UpdateCommand):
       update_mask.append('filter')
 
     parameter_names = ['[destination]', '--log-filter']
-    dlp_options = {}
-    if is_alpha:
+    if is_alpha_or_beta:
       parameter_names.extend(
-          ['--dlp-inspect-template', '--dlp-deidentify-template',
-           '--use-partitioned-tables', '--clear-exclusions'])
-      if args.IsSpecified('dlp_inspect_template'):
-        dlp_options['inspectTemplateName'] = args.dlp_inspect_template
-        update_mask.append('dlp_options.inspect_template_name')
-      if args.IsSpecified('dlp_deidentify_template'):
-        dlp_options['deidentifyTemplateName'] = args.dlp_deidentify_template
-        update_mask.append('dlp_options.deidentify_template_name')
-      if dlp_options:
-        sink_data['dlpOptions'] = dlp_options
+          ['--use-partitioned-tables', '--clear-exclusions'])
 
       if args.IsSpecified('use_partitioned_tables'):
         bigquery_options = {}
@@ -190,7 +181,6 @@ class Update(base.UpdateCommand):
     if args.IsSpecified('destination'):
       self._epilog_result_destination = result.destination
       self._epilog_writer_identity = result.writerIdentity
-      self._epilog_is_dlp_sink = bool(dlp_options)
     return result
 
   def Run(self, args):
@@ -208,32 +198,82 @@ class Update(base.UpdateCommand):
   def Epilog(self, unused_resources_were_displayed):
     if hasattr(self, '_epilog_result_destination'):
       util.PrintPermissionInstructions(self._epilog_result_destination,
-                                       self._epilog_writer_identity,
-                                       self._epilog_is_dlp_sink)
+                                       self._epilog_writer_identity)
 
 
 # pylint: disable=missing-docstring
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
-  __doc__ = Update.__doc__
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateAlphaBeta(Update):
+  r"""Updates a sink.
+
+  Use this command to change a sink's *[DESTINATION]*, *--log-filter*, or
+  *--description*. Disable a sink by specifying *--disabled*, enable a disabled
+  sink by specifying *--no-disabled*. Add, update, or remove, or clear
+  exclusions from the sink using *--add-exclusion=*, *--update-exclusion=*,
+  *--remove-exclusions=*, or *--clear-exclusions*.
+
+  When changing the *[DESTINATION]* of a sink, the new destination must already
+  exist and Cloud Logging must be granted permission to write to it using the
+  service account identified by the sink's `writerIdentity` field.
+
+  ## EXAMPLES
+
+  To only update a sink filter, run:
+
+    $ {command} my-sink --log-filter='severity>=ERROR'
+
+  Detailed information about filters can be found at:
+  [](https://cloud.google.com/logging/docs/view/advanced_filters)
+
+  To disable a sink, run:
+
+    $ {command} my-sink --disabled
+
+  To enable a disabled sink, run:
+
+    $ {command} my-sink --no-disabled
+
+  To add an exclusion to a sink, run:
+
+    $ {command} my-sink --add-exclusion=\
+      'name=my-exclusion,description=My description,filter=logName:foo'
+
+  To add a disabled exclusion to a sink, include the `disabled` key and set it
+  to any value. For example:
+
+    $ {command} my-sink --add-exclusion=\
+      'name=my-exclusion,filter=logName:foo,disabled=True'
+
+  To update the description on an exclusion for a sink, run:
+
+    $ {command} my-sink --add-exclusion=\
+      'name=my-exclusion,description=New description'
+
+  Note: Do not include keys for any fields that you do not intend to update.
+
+  To enable a disabled exclusion for the sink, include the `disabled` key and
+  do not set it to any value. For example:
+
+    $ {command} my-sink --update-exclusion=\
+      'name=my-exclusion,disabled='
+
+  To delete an exclusion from a sink, run:
+
+    $ {command} my-sink --remove-exclusions=my-exclusion1
+
+  To delete multiple exclusions from a sink, run:
+
+    $ {command} my-sink --remove-exclusions=my-exclusion1,my-exclusion2
+
+  To clear all exclusions from a sink, run:
+
+    $ {command} my-sink --clear-exclusions
+
+  """
 
   @staticmethod
   def Args(parser):
     Update.Args(parser)
-    dlp_group = parser.add_argument_group(
-        help=('Settings for Cloud DLP enabled sinks. If any of these arguments '
-              'are omitted they are unchanged.'))
-    dlp_group.add_argument(
-        '--dlp-inspect-template',
-        help=('Relative path to a Cloud DLP inspection template resource. For '
-              'example "projects/my-project/inspectTemplates/my-template" or '
-              '"organizations/my-org/inspectTemplates/my-template".'))
-    dlp_group.add_argument(
-        '--dlp-deidentify-template',
-        help=('Relative path to a Cloud DLP de-identification template '
-              'resource. For example '
-              '"projects/my-project/deidentifyTemplates/my-template" or '
-              '"organizations/my-org/deidentifyTemplates/my-template".'))
 
     bigquery_group = parser.add_argument_group(
         help='Settings for sink exporting data to BigQuery.')
@@ -248,7 +288,7 @@ class UpdateAlpha(Update):
 
     parser.add_argument(
         '--clear-exclusions', action='store_true',
-        help=('Remove all logging exclusions.'))
+        help=('Remove all logging exclusions from the sink.'))
     parser.add_argument(
         '--remove-exclusions',
         type=arg_parsers.ArgList(),
@@ -259,48 +299,53 @@ class UpdateAlpha(Update):
         type=arg_parsers.ArgDict(
             spec={
                 'name': str,
-                'description': str,
                 'filter': str,
+                'description': str,
                 'disabled': bool
             },
             required_keys=['name', 'filter']
         ),
-        help=('Add an exclusion filter for a log entry that is not to be '
-              'exported. This flag can be repeated.\n\n'
+        help=('Add an exclusion filter for log entries that are not to be '
+              'routed to the sink\' destination. This flag can be repeated.\n\n'
               'The ``name\'\' and ``filter\'\' attributes are required. The '
               'following keys are accepted:\n\n'
-              '*name*::: An identifier, such as ``load-balancer-exclusion\'\'. '
+              '*name*::: Required. An identifier, such as '
+              '``load-balancer-exclusion\'\'. '
               'Identifiers are limited to 100 characters and can include only '
               'letters, digits, underscores, hyphens, and periods.\n\n'
-              '*description*::: A description of this exclusion.\n\n'
-              '*filter*::: An advanced log filter that matches the log entries '
-              'to be excluded.\n\n'
-              '*disabled*::: If this exclusion should be disabled and not '
-              'exclude the log entries.'))
+              '*description*::: Optional. A description of this exclusion.\n\n'
+              '*filter*::: Required. Entries that match this advanced log '
+              'filter will be excluded. Filter cannot be empty.\n\n'
+              '*disabled*::: Optional. By default, an exclusion is not '
+              'disabled. To disable an exclusion, include this key and specify '
+              'any value.\n\n'))
 
     parser.add_argument(
         '--update-exclusion', action='append',
         type=arg_parsers.ArgDict(
             spec={
                 'name': str,
-                'description': str,
                 'filter': str,
+                'description': str,
                 'disabled': bool
             },
             required_keys=['name']
         ),
         help=('Update an exclusion filter for a log entry that is not to be '
               'exported. This flag can be repeated.\n\n'
-              'The ``name\'\' and ``filter\'\' attributes are required. '
+              'The ``name\'\' attribute is required. The '
               'following keys are accepted:\n\n'
-              'name*::: An identifier, such as ``load-balancer-exclusion\'\'. '
+              '*name*::: Required. An identifier, such as '
+              '``load-balancer-exclusion\'\'. '
               'Identifiers are limited to 100 characters and can include only '
               'letters, digits, underscores, hyphens, and periods.\n\n'
-              '*description*::: A description of this exclusion.\n\n'
-              '*filter*::: An advanced log filter that matches the log entries '
-              'to be excluded.\n\n'
-              '*disabled*::: If this exclusion should be disabled and not '
-              'exclude the log entries.'))
+              '*description*::: Optional. A description of this exclusion.\n\n'
+              '*filter*::: Optional. Entries that match this advanced log '
+              'filter will be excluded. Filter cannot be empty.\n\n'
+              '*disabled*::: Optional. To disable an exclusion, include this '
+              'key and specify any value. To enable a disabled exclusion, '
+              'include this key, but do not specify any value. Do not include '
+              'this key unless you want to change its value.\n\n'))
 
     parser.add_argument(
         '--description',
@@ -308,7 +353,9 @@ class UpdateAlpha(Update):
 
     parser.add_argument(
         '--disabled', action='store_true',
-        help=('Disable the sink. Disabled sinks do not export logs.'))
+        help=('Disable the sink. Disabled sinks do not route logs to the sink '
+              'destination. Specify --no-disabled to enable a disabled sink. '
+              'If this flag is not specified, the value will not be updated.'))
 
   def Run(self, args):
-    return self._Run(args, is_alpha=True)
+    return self._Run(args, is_alpha_or_beta=True)

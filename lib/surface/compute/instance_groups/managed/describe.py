@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags
 
 
 class Describe(base.DescribeCommand):
-  """Display detailed information about a manged instance group."""
+  """Display detailed information about a managed instance group."""
 
   @staticmethod
   def Args(parser):

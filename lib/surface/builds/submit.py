@@ -150,6 +150,7 @@ class Submit(base.CreateCommand):
         args.machine_type, args.disk_size, args.worker_pool, args.pack)
 
     build_region = submit_util.DetermineBuildRegion(build_config, build_region)
+    build_region = build_region or cloudbuild_util.DEFAULT_REGION
 
     # Start the build.
     build, _ = submit_util.Build(
@@ -214,6 +215,7 @@ class SubmitAlpha(SubmitBeta):
         arg_cluster_location=args.cluster_location)
 
     build_region = submit_util.DetermineBuildRegion(build_config, build_region)
+    build_region = build_region or cloudbuild_util.DEFAULT_REGION
 
     # Start the build.
     build, _ = submit_util.Build(

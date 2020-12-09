@@ -31,7 +31,8 @@ class Cancel(base.Command):
   """Cancel an ongoing build."""
 
   detailed_help = {
-      'DESCRIPTION': 'Cancel an ongoing build.',
+      'DESCRIPTION':
+          'Cancel an ongoing build.',
       'EXAMPLES': ("""
             To cancel a build `123-456-789`:
 
@@ -63,20 +64,27 @@ class Cancel(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
-    build_region = args.region
+    build_region = args.region or cloudbuild_util.DEFAULT_REGION
 
-    client = cloudbuild_util.GetClientInstance(region=build_region)
+    client = cloudbuild_util.GetClientInstance()
     messages = cloudbuild_util.GetMessagesModule()
 
     cancelled = []
     for build in args.builds:
       build_ref = resources.REGISTRY.Parse(
           build,
-          params={'projectId': properties.VALUES.core.project.GetOrFail},
-          collection='cloudbuild.projects.builds')
-      cancelled_build = client.projects_builds.Cancel(
-          messages.CloudbuildProjectsBuildsCancelRequest(
-              projectId=build_ref.projectId, id=build_ref.id))
+          params={
+              'projectsId': properties.VALUES.core.project.GetOrFail,
+              'locationsId': build_region,
+              'buildsId': build,
+          },
+          collection='cloudbuild.projects.locations.builds')
+      cancelled_build = client.projects_locations_builds.Cancel(
+          messages.CancelBuildRequest(
+              name=build_ref.RelativeName(),
+              projectId=build_ref.projectsId,
+              id=build_ref.buildsId,
+          ))
       log.status.write('Cancelled [{r}].\n'.format(r=six.text_type(build_ref)))
       cancelled.append(cancelled_build)
     return cancelled

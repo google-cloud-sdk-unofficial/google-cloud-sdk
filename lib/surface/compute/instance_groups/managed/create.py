@@ -104,7 +104,7 @@ def ValidateAndFixUpdatePolicyAgainstStateful(update_policy, group_ref,
         'Use --instance-redistribution-type=NONE')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGA(base.CreateCommand):
   """Create Compute Engine managed instance groups."""
 
@@ -221,7 +221,7 @@ class CreateGA(base.CreateCommand):
       self, base_name_arg, group_ref):
     if base_name_arg:
       return base_name_arg
-    return group_ref.Name()[0:_MAX_LEN_FOR_DEDUCED_BASE_INSTANCE_NAME]
+    return None
 
   def _CreateInstanceGroupManager(
       self, args, group_ref, template_ref, client, holder):
@@ -321,8 +321,8 @@ in the ``us-central1-a'' zone.
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateGA):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateBetaAndAlpha(CreateGA):
   """Create Compute Engine managed instance groups."""
 
   @classmethod
@@ -335,8 +335,9 @@ class CreateAlpha(CreateGA):
                                 resources,
                                 messages,
                                 target_distribution_shape=None):
-    distribution_policy = super(CreateAlpha, self)._CreateDistributionPolicy(
-        zones, resources, messages) or messages.DistributionPolicy()
+    distribution_policy = super(
+        CreateBetaAndAlpha, self)._CreateDistributionPolicy(
+            zones, resources, messages) or messages.DistributionPolicy()
     if target_distribution_shape:
       distribution_policy.targetShape = (
           messages.DistributionPolicy.TargetShapeValueValuesEnum)(
@@ -346,7 +347,7 @@ class CreateAlpha(CreateGA):
   def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
                                   holder):
     instance_group_manager = (
-        super(CreateAlpha,
+        super(CreateBetaAndAlpha,
               self)._CreateInstanceGroupManager(args, group_ref, template_ref,
                                                 client, holder))
 
@@ -363,4 +364,4 @@ class CreateAlpha(CreateGA):
     return instance_group_manager
 
 
-CreateAlpha.detailed_help = CreateGA.detailed_help
+CreateBetaAndAlpha.detailed_help = CreateGA.detailed_help

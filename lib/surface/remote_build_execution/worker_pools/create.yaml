@@ -66,6 +66,11 @@
         following command:
 
         $ gcloud compute machine-types list
+    - api_field: workerPool.workerConfig.soleTenantNodeType
+      arg_name: sole-tenant-node-type
+      required: false
+      help_text: |
+        Type of sole-tenant node to be used for sole-tenancy.
     - api_field: workerPool.workerConfig.minCpuPlatform
       arg_name: min-cpu-platform
       required: false

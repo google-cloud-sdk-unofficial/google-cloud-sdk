@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
 
+from googlecloudsdk.api_lib.dns import resource_record_sets as rrsets_util
 from googlecloudsdk.api_lib.dns import transaction_util as trans_util
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
@@ -60,7 +61,7 @@ class Remove(base.Command):
         '--type', required=True,
         help='Type of the record-set to be removed.')
     parser.add_argument(
-        'data', nargs='+',
+        'rrdatas', nargs='+',
         help='DNS name of the record-set to be removed.')
 
   def Run(self, args):
@@ -78,7 +79,7 @@ class Remove(base.Command):
 
     dns = util.GetApiClient(api_version)
 
-    record_to_remove = trans_util.CreateRecordSetFromArgs(
+    record_to_remove = rrsets_util.CreateRecordSetFromArgs(
         args, api_version=api_version)
 
     # Ensure the record to be removed exists

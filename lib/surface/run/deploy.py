@@ -247,7 +247,6 @@ class BetaDeploy(Deploy):
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
-    flags.AddImageArg(parser)
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
@@ -260,6 +259,10 @@ class BetaDeploy(Deploy):
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)
     flags.AddDeployTagFlag(parser)
+
+    # Flags specific to deploy from source
+    flags.AddSourceFlag(parser)
+    flags.AddConfigFlags(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -283,10 +286,9 @@ class AlphaDeploy(Deploy):
     flags.AddDeployTagFlag(parser)
     flags.AddIngressFlag(parser)
 
-    # Flags inherited from gcloud builds submit
-    flags.AddConfigFlags(parser)
+    # Flags specific to deploy from source
     flags.AddSourceFlag(parser)
-    flags.AddBuildTimeoutFlag(parser)
+    flags.AddConfigFlags(parser)
     # TODO(b/165145546): Remove advanced build flags for 'gcloud run deploy'
     build_flags.AddGcsSourceStagingDirFlag(parser, True)
     build_flags.AddGcsLogDirFlag(parser, True)

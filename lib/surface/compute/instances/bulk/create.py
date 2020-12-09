@@ -148,6 +148,7 @@ class CreateAlpha(base.Command):
   _support_create_disk_snapshots = True
   _support_boot_snapshot_uri = True
   _support_enable_nested_virtualization = True
+  _support_threads_per_core = True
 
   _log_async = False
 
@@ -173,6 +174,7 @@ class CreateAlpha(base.Command):
     instances_flags.AddBulkCreateArgs(parser)
     instances_flags.AddBootDiskArgs(parser)
     instances_flags.AddNestedVirtualizationArgs(parser)
+    instances_flags.AddThreadsPerCoreArgs(parser)
 
   def Collection(self):
     return 'compute.instances'
@@ -184,6 +186,23 @@ class CreateAlpha(base.Command):
     ref = self.SOURCE_INSTANCE_TEMPLATE.ResolveAsResource(args, resources)
     return ref.SelfLink()
 
+  def GetLocationPolicy(self, args, messages):
+    if not args.IsSpecified('location_policy'):
+      return None
+    locations = []
+    for zone, policy in args.location_policy.items():
+      zone_policy = arg_utils.ChoiceToEnum(
+          policy, messages.LocationPolicyLocation.PreferenceValueValuesEnum)
+      locations.append(
+          messages.LocationPolicy.LocationsValue.AdditionalProperty(
+              key='zones/{}'.format(zone),
+              value=messages.LocationPolicyLocation(preference=zone_policy)))
+
+    location_policy = messages.LocationPolicy(
+        locations=messages.LocationPolicy.LocationsValue(
+            additionalProperties=locations))
+    return location_policy
+
   def _CreateRequests(self, args, holder, compute_client, resource_parser,
                       project, location, scope):
     # gcloud creates default values for some fields in Instance resource
@@ -192,8 +211,11 @@ class CreateAlpha(base.Command):
     # Instance Template and gcloud flags are used to override them - by default
     # fields should not be initialized.
 
-    instance_names = args.predefined_names
+    name_pattern = args.name_pattern
+    instance_names = args.predefined_names or []
     instance_count = args.count or len(instance_names)
+
+    location_policy = self.GetLocationPolicy(args, compute_client.messages)
 
     instance_min_count = instance_count
     if args.IsSpecified('min_count'):
@@ -270,15 +292,18 @@ class CreateAlpha(base.Command):
 
     can_ip_forward = instance_utils.GetCanIpForward(args, skip_defaults)
     guest_accelerators = create_utils.GetAcceleratorsForInstanceProperties(
-        args=args,
-        compute_client=compute_client)
+        args=args, compute_client=compute_client)
 
+    # If either nested or threads_per_core are given, make an
+    # AdvancedMachineFeatures message.
     advanced_machine_features = None
-    if (self._support_enable_nested_virtualization and
-        args.enable_nested_virtualization is not None):
+    if ((self._support_enable_nested_virtualization and
+         args.enable_nested_virtualization is not None) or
+        (self._support_threads_per_core and args.threads_per_core is not None)):
       advanced_machine_features = (
           instance_utils.CreateAdvancedMachineFeaturesMessage(
-              compute_client.messages, args.enable_nested_virtualization))
+              compute_client.messages, args.enable_nested_virtualization,
+              args.threads_per_core))
 
     parsed_resource_policies = []
     resource_policies = getattr(args, 'resource_policies', None)
@@ -337,7 +362,9 @@ class CreateAlpha(base.Command):
         instanceProperties=instance_properties,
         minCount=instance_min_count,
         predefinedNames=instance_names,
-        sourceInstanceTemplate=source_instance_template)
+        sourceInstanceTemplate=source_instance_template,
+        namePattern=name_pattern,
+        locationPolicy=location_policy)
 
     if scope == compute_scopes.ScopeEnum.ZONE:
       instance_service = compute_client.apitools_client.instances
@@ -355,6 +382,8 @@ class CreateAlpha(base.Command):
     return instance_service, request_message
 
   def Run(self, args):
+    instances_flags.ValidateBulkCreateArgs(args)
+    instances_flags.ValidateLocationPolicyArgs(args)
     instances_flags.ValidateBulkDiskFlags(
         args,
         enable_snapshots=True,

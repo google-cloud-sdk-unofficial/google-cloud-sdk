@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml_engine import endpoint_util
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
+from googlecloudsdk.command_lib.ml_engine import region_util
 from googlecloudsdk.core import resources
 
 
@@ -44,11 +45,12 @@ def _GetUri(model):
 def _AddListArgs(parser):
   parser.display_info.AddFormat(_DEFAULT_FORMAT)
   parser.display_info.AddUriFunc(_GetUri)
-  flags.GetRegionArg().AddToParser(parser)
+  flags.GetRegionArg(include_global=True).AddToParser(parser)
 
 
 def _Run(args):
-  with endpoint_util.MlEndpointOverrides(region=args.region):
+  region = region_util.GetRegion(args)
+  with endpoint_util.MlEndpointOverrides(region=region):
     return models_util.List(models.ModelsClient())
 
 

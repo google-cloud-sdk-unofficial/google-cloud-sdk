@@ -49,7 +49,6 @@ import six.moves.http_client
 import bq_flags
 
 
-
 # A unique non-None default, for use in kwargs that need to
 # distinguish default from None.
 _DEFAULT = object()
@@ -93,6 +92,19 @@ def MakeIamRoleIdPropertiesJson(iam_role_id):
   return '{"crossAccountRole": {"iamRoleId": "%s"}}' % iam_role_id
 
 
+def MakeAccessRolePropertiesJson(iam_role_id):
+  """Returns propeties for a connection with IAM role id.
+
+  Args:
+    iam_role_id: IAM role id.
+
+  Returns:
+    JSON string with properties to create a connection with IAM role id.
+  """
+
+  return '{"accessRole": {"iamRoleId": "%s"}}' % iam_role_id
+
+
 def MakeTenantIdPropertiesJson(tenant_id):
   """Returns propeties for a connection with tenant id.
 
@@ -107,7 +119,27 @@ def MakeTenantIdPropertiesJson(tenant_id):
   return '{"customerTenantId": "%s"}' % tenant_id
 
 
-def MaybePrintManualInstructionsForConnection(connection):
+def _PrintFormattedJsonObject(obj, obj_format='json'):
+  """Prints obj in a JSON format according to the format argument.
+
+  Args:
+    obj: The object to print.
+    obj_format: The format to use: 'json' or 'prettyjson'.
+  """
+  json_formats = ['json', 'prettyjson']
+
+  if obj_format == 'json':
+    print(json.dumps(obj, separators=(',', ':')))
+  elif obj_format == 'prettyjson':
+    print(json.dumps(obj, sort_keys=True, indent=2))
+  else:
+    raise ValueError(
+        'Invalid json format for printing: \'%s\', expected one of: %s' %
+        (obj_format, json_formats))
+
+
+def MaybePrintManualInstructionsForConnection(connection,
+                                              flag_format=None):
   """Prints follow-up instructions for created or updated connections."""
 
   if not connection:
@@ -115,20 +147,48 @@ def MaybePrintManualInstructionsForConnection(connection):
 
   if connection.get('aws') and connection['aws'].get(
       'crossAccountRole'):
-    print(('Please add the following identity to your AWS IAM Role \'%s\'\n'
-           'IAM user: \'%s\'\n'
-           'External Id: \'%s\'\n') %
-          (connection['aws']['crossAccountRole'].get('iamRoleId'),
-           connection['aws']['crossAccountRole'].get('iamUserId'),
-           connection['aws']['crossAccountRole'].get('externalId')))
+    obj = {
+        'iamRoleId': connection['aws']['crossAccountRole'].get('iamRoleId'),
+        'iamUserId': connection['aws']['crossAccountRole'].get('iamUserId'),
+        'externalId': connection['aws']['crossAccountRole'].get('externalId')
+    }
+    if flag_format in ['prettyjson', 'json']:
+      _PrintFormattedJsonObject(obj, obj_format=flag_format)
+    else:
+      print(('Please add the following identity to your AWS IAM Role \'%s\'\n'
+             'IAM user: \'%s\'\n'
+             'External Id: \'%s\'\n') %
+            (connection['aws']['crossAccountRole'].get('iamRoleId'),
+             connection['aws']['crossAccountRole'].get('iamUserId'),
+             connection['aws']['crossAccountRole'].get('externalId')))
+
+  if connection.get('aws') and connection['aws'].get('accessRole'):
+    obj = {
+        'iamRoleId': connection['aws']['accessRole'].get('iamRoleId'),
+        'identity': connection['aws']['accessRole'].get('identity')
+    }
+    if flag_format in ['prettyjson', 'json']:
+      _PrintFormattedJsonObject(obj, obj_format=flag_format)
+    else:
+      print(('Please add the following identity to your AWS IAM Role \'%s\'\n'
+             'Identity: \'%s\'\n') %
+            (connection['aws']['accessRole'].get('iamRoleId'),
+             connection['aws']['accessRole'].get('identity')))
 
   if connection.get('azure'):
-    print(('Please create a Service Principal in your directory '
-           'for appId: \'%s\',\n'
-           'and perform role assignment to app: \'%s\' to allow BigQuery '
-           'to access your Azure data. \n') %
-          (connection['azure'].get('clientId'),
-           connection['azure'].get('application')))
+    obj = {
+        'clientId': connection['azure'].get('clientId'),
+        'application': connection['azure'].get('application')
+    }
+    if flag_format in ['prettyjson', 'json']:
+      _PrintFormattedJsonObject(obj, obj_format=flag_format)
+    else:
+      print(('Please create a Service Principal in your directory '
+             'for appId: \'%s\',\n'
+             'and perform role assignment to app: \'%s\' to allow BigQuery '
+             'to access your Azure data. \n') %
+            (connection['azure'].get('clientId'),
+             connection['azure'].get('application')))
 
 
 
@@ -1029,6 +1089,7 @@ class BigqueryClient(object):
       setattr(self, key, value)
     self._apiclient = None
     self._routines_apiclient = None
+    self._row_access_policies_apiclient = None
     self._op_transfer_client = None
     self._op_reservation_client = None
     self._op_bi_reservation_client = None
@@ -1172,12 +1233,15 @@ class BigqueryClient(object):
           # Don't retry in this case.
           raise BigqueryCommunicationError(
               'Invalid API name or version: %s' % (str(e),))
+
+    discovery_document_to_build_client = discovery_document
     try:
       built_client = discovery.build_from_document(
-          discovery_document,
+          discovery_document_to_build_client,
           http=http,
           model=bigquery_model,
-          requestBuilder=bigquery_http)
+          requestBuilder=bigquery_http,
+          )
       return built_client
     except Exception:
       logging.error('Error building from discovery document: %s',
@@ -1205,7 +1269,8 @@ class BigqueryClient(object):
           models_discovery_document,
           http=http,
           model=bigquery_model,
-          requestBuilder=bigquery_http)
+          requestBuilder=bigquery_http,
+          )
     except Exception:
       logging.error('Error building from models document: %s',
                     models_discovery_document)
@@ -1232,7 +1297,8 @@ class BigqueryClient(object):
           iam_policy_discovery_document,
           http=http,
           model=bigquery_model,
-          requestBuilder=bigquery_http)
+          requestBuilder=bigquery_http,
+          )
     except Exception:
       logging.error('Error building from iam policy document: %s',
                     iam_policy_discovery_document)
@@ -1257,6 +1323,12 @@ class BigqueryClient(object):
     if self._routines_apiclient is None:
       self._routines_apiclient = self.BuildDiscoveryNextApiClient()
     return self._routines_apiclient
+
+  def GetRowAccessPoliciesApiClient(self):
+    """Return the apiclient attached to self."""
+    if self._row_access_policies_apiclient is None:
+      self._row_access_policies_apiclient = self.BuildDiscoveryNextApiClient()
+    return self._row_access_policies_apiclient
 
   def GetIAMPolicyApiClient(self):
     """Return the apiclient attached to self."""
@@ -1315,13 +1387,21 @@ class BigqueryClient(object):
       discovery_url=discovery_url)
     return self._op_connection_service_client
 
+
   #################################
   ## Utility methods
   #################################
-
   @staticmethod
   def FormatTime(secs):
     return time.strftime('%d %b %H:%M:%S', time.localtime(secs))
+
+  @staticmethod
+  def FormatTimeFromProtoTimestampJsonString(json_string):
+    """Converts google.protobuf.Timestamp formatted string to BQ format."""
+    parsed_datetime = datetime.datetime.strptime(json_string,
+                                                 '%Y-%m-%dT%H:%M:%S.%fZ')
+    seconds = (parsed_datetime - datetime.datetime(1970, 1, 1)).total_seconds()
+    return BigqueryClient.FormatTime(seconds)
 
   @staticmethod
   def FormatAcl(acl):
@@ -2381,6 +2461,9 @@ class BigqueryClient(object):
         if aws_properties.get('crossAccountRole') and \
             aws_properties['crossAccountRole'].get('iamRoleId'):
           update_mask.append('aws.crossAccountRole.iamRoleId')
+        if aws_properties.get('accessRole') and \
+            aws_properties['accessRole'].get('iamRoleId'):
+          update_mask.append('aws.accessRole.iamRoleId')
       else:
         connection['aws'] = {}
 
@@ -2585,6 +2668,10 @@ class BigqueryClient(object):
         formatter.AddColumns(
             ('Id', 'Routine Type', 'Language', 'Signature', 'Definition',
              'Creation Time', 'Last Modified Time'))
+    elif reference_type == ApiClientHelper.RowAccessPolicyReference:
+      if print_format == 'list':
+        formatter.AddColumns(
+            ('Id', 'Filter Predicate', 'Creation Time', 'Last Modified Time'))
     elif reference_type == ApiClientHelper.TableReference:
       if print_format == 'list':
         formatter.AddColumns(('tableId', 'Type',))
@@ -2801,6 +2888,8 @@ class BigqueryClient(object):
       return BigqueryClient.FormatModelInfo(object_info)
     elif object_type == ApiClientHelper.RoutineReference:
       return BigqueryClient.FormatRoutineInfo(object_info)
+    elif object_type == ApiClientHelper.RowAccessPolicyReference:
+      return BigqueryClient.FormatRowAccessPolicyInfo(object_info)
     elif object_type == ApiClientHelper.TransferConfigReference:
       return BigqueryClient.FormatTransferConfigInfo(object_info)
     elif object_type == ApiClientHelper.TransferRunReference:
@@ -3014,6 +3103,30 @@ class BigqueryClient(object):
     if 'lastModifiedTime' in routine_info:
       result['Last Modified Time'] = BigqueryClient.FormatTime(
           int(routine_info['lastModifiedTime']) / 1000)
+    return result
+
+  @staticmethod
+  def FormatRowAccessPolicyInfo(row_access_policy_info):
+    """Prepare a row access policy for printing.
+
+    Arguments:
+      row_access_policy_info: Row access policy dict to format.
+
+    Returns:
+      A dictionary of row access policy properties.
+    """
+    result = {}
+    result['Id'] = row_access_policy_info['rowAccessPolicyReference'][
+        'policyId']
+    result['Filter Predicate'] = row_access_policy_info['filterPredicate']
+    if 'creationTime' in row_access_policy_info:
+      result['Creation '
+             'Time'] = BigqueryClient.FormatTimeFromProtoTimestampJsonString(
+                 row_access_policy_info['creationTime'])
+    if 'lastModifiedTime' in row_access_policy_info:
+      result['Last Modified '
+             'Time'] = BigqueryClient.FormatTimeFromProtoTimestampJsonString(
+                 row_access_policy_info['lastModifiedTime'])
     return result
 
   @staticmethod
@@ -3761,6 +3874,26 @@ class BigqueryClient(object):
         maxResults=max_results,
         pageToken=page_token,
         filter=filter_expression).execute()
+
+  def ListRowAccessPolicies(self, table_reference, page_size, page_token):
+    """Lists row access policies for the given table reference.
+
+    Arguments:
+      table_reference: Reference to the table.
+      page_size: Number of results to return.
+      page_token: Token to retrieve the next page of results.
+
+    Returns:
+      A dict that contains entries:
+        'rowAccessPolicies': a list of row access policies.
+        'nextPageToken': nextPageToken for the next page, if present.
+    """
+    return self.GetRowAccessPoliciesApiClient().rowAccessPolicies().list(
+        projectId=table_reference.projectId,
+        datasetId=table_reference.datasetId,
+        tableId=table_reference.tableId,
+        pageSize=page_size,
+        pageToken=page_token).execute()
 
   def GetDatasetIAMPolicy(self, reference):
     """Gets IAM policy for the given dataset resource.
@@ -5445,9 +5578,13 @@ class BigqueryClient(object):
               location=location,
               **kwds)
           if dry_run:
-            execution = dict(statistics=dict(query=dict(
-                totalBytesProcessed=result['totalBytesProcessed'],
-                cacheHit=['cacheHit'])))
+            execution = dict(
+                statistics=dict(
+                    query=dict(
+                        totalBytesProcessed=result['totalBytesProcessed'],
+                        cacheHit=result['cacheHit'])))
+            if 'schema' in result:
+              execution['statistics']['query']['schema'] = result['schema']
             return ([], [], execution)
           job_reference = ApiClientHelper.JobReference.Create(
               **result['jobReference'])
@@ -5640,6 +5777,8 @@ class BigqueryClient(object):
       use_avro_logical_types=None,
       range_partitioning=None,
       hive_partitioning_options=None,
+      decimal_target_types=None,
+      thrift_options=None,
       **kwds):
     """Load the given data into BigQuery.
 
@@ -5698,6 +5837,23 @@ class BigqueryClient(object):
           No other values are accepted.
           'sourceUriPrefix' is the shared prefix after which partition encoding
           is expected to begin across all uris.
+      decimal_target_types: (experimental) Defines the list of possible SQL
+          data types to which the source decimal values are converted. This
+          list and the precision and the scale parameters of the decimal field
+          determine the target type. In the order of NUMERIC, BIGNUMERIC, and
+          STRING, a type is picked if it is in the specified list and if it
+          supports the precision and the scale. STRING supports all precision
+          and scale values. If none of the listed types supports the precision
+          and the scale, the type supporting the widest range in the specified
+          list is picked, and if a value exceeds the supported range when
+          reading the data, an error will be returned. This field cannot contain
+          duplicate types. The order of the types in this field is ignored. For
+          example, ["BIGNUMERIC", "NUMERIC"] is the same as
+          ["NUMERIC", "BIGNUMERIC"] and NUMERIC always takes precedence over
+          BIGNUMERIC. Defaults to ["NUMERIC", "STRING"] for ORC and ["NUMERIC"]
+          for the other file formats.
+      thrift_options: (experimental) Options for configuring Apache Thrift
+          load, which is required if `source_format` is 'THRIFT'.
       **kwds: Passed on to self.ExecuteJob.
 
     Returns:
@@ -5715,6 +5871,7 @@ class BigqueryClient(object):
       load_config['schema'] = {'fields': BigqueryClient.ReadSchema(schema)}
     if use_avro_logical_types is not None:
       load_config['useAvroLogicalTypes'] = use_avro_logical_types
+    load_config['decimalTargetTypes'] = decimal_target_types
     if destination_encryption_configuration:
       load_config['destinationEncryptionConfiguration'] = (
           destination_encryption_configuration)
@@ -5738,7 +5895,8 @@ class BigqueryClient(object):
         clustering=clustering,
         autodetect=autodetect,
         range_partitioning=range_partitioning,
-        hive_partitioning_options=hive_partitioning_options)
+        hive_partitioning_options=hive_partitioning_options,
+        thrift_options=thrift_options)
     return self.ExecuteJob(configuration={'load': load_config},
                            upload_file=upload_file, **kwds)
 
@@ -6163,6 +6321,12 @@ class ApiClientHelper(object):
     _required_fields = frozenset(('projectId', 'datasetId', 'routineId'))
     _format_str = '%(projectId)s:%(datasetId)s.%(routineId)s'
     typename = 'routine'
+
+  class RowAccessPolicyReference(Reference):
+    _required_fields = frozenset(
+        ('projectId', 'datasetId', 'tableId', 'policyId'))
+    _format_str = '%(projectId)s:%(datasetId)s.%(tableId)s.%(policyId)s'
+    typename = 'row access policy'
 
   class TransferConfigReference(Reference):
     _required_fields = frozenset(('transferConfigName',))

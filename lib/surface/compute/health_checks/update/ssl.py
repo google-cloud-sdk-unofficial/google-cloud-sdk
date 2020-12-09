@@ -211,7 +211,7 @@ class Update(base.UpdateCommand):
   """Update a SSL health check."""
 
   _include_l7_internal_load_balancing = True
-  _include_log_config = False
+  _include_log_config = True
   detailed_help = _DetailedHelp()
 
   @classmethod
@@ -228,7 +228,7 @@ class Update(base.UpdateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
 
-  _include_log_config = True
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

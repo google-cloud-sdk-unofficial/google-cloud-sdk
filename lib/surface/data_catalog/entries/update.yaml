@@ -32,6 +32,7 @@
     - googlecloudsdk.command_lib.data_catalog.entries.v1_util:LookupAndParseEntry
     - googlecloudsdk.command_lib.data_catalog.entries.v1_util:CorrectUpdateMask
     - googlecloudsdk.command_lib.data_catalog.entries.v1_util:MergeGcsFilePatterns
+    - googlecloudsdk.command_lib.data_catalog.entries.v1_util:ParsePhysicalSchema
 
   arguments:
     params:
@@ -87,6 +88,18 @@
             - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:user_specified_type
             - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:user_specified_system
             - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:linked_resource
+        - group:
+            params:
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:kafka_cluster_bootstrap_servers
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:kafka_cluster_properties_gcs_uri
+        - group:
+            params:
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:kafka_cluster
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:kafka_topic
+            - group:
+                params:
+                - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:physical_schema_type
+                - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:physical_schema_file
 
 
     additional_arguments_hook: |-

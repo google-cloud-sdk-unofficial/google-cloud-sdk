@@ -397,7 +397,8 @@ def _RunCreate(compute_api,
                support_kms=False,
                support_location_hint=False,
                support_post_key_revocation_action_type=False,
-               support_enable_nested_virtualization=False):
+               support_enable_nested_virtualization=False,
+               support_threads_per_core=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -413,6 +414,8 @@ def _RunCreate(compute_api,
         post_key_revocation_action_type is supported.
       support_enable_nested_virtualization: Indicate whether enabling and
         disabling nested virtualization is supported.
+      support_threads_per_core: Indicates whether changing the number of threads
+        per core is supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -448,6 +451,8 @@ def _RunCreate(compute_api,
             region=args.region)
   else:
     network_tier = getattr(args, 'network_tier', None)
+    stack_type = getattr(args, 'stack_type', None)
+    ipv6_network_tier = getattr(args, 'ipv6_network_tier', None)
     network_interfaces = [
         instance_template_utils.CreateNetworkInterfaceMessage(
             resources=compute_api.resources,
@@ -460,7 +465,9 @@ def _RunCreate(compute_api,
             address=(instance_template_utils.EPHEMERAL_ADDRESS
                      if not args.no_address and not args.address else
                      args.address),
-            network_tier=network_tier)
+            network_tier=network_tier,
+            stack_type=stack_type,
+            ipv6_network_tier=ipv6_network_tier)
     ]
 
   # Compute the shieldedInstanceConfig message.
@@ -620,11 +627,15 @@ def _RunCreate(compute_api,
             client.messages).GetEnumForChoice(
                 args.private_ipv6_google_access_type))
 
-  if (support_enable_nested_virtualization and
-      args.enable_nested_virtualization is not None):
+  # If either enable-nested-virtualization or threads-per-core are specified,
+  # make an AdvancedMachineFeatures message.
+  if ((support_enable_nested_virtualization and
+       args.enable_nested_virtualization is not None) or
+      (support_threads_per_core and args.threads_per_core is not None)):
     instance_template.properties.advancedMachineFeatures = (
         instance_utils.CreateAdvancedMachineFeaturesMessage(
-            client.messages, args.enable_nested_virtualization))
+            client.messages, args.enable_nested_virtualization,
+            args.threads_per_core))
 
   request = client.messages.ComputeInstanceTemplatesInsertRequest(
       instanceTemplate=instance_template, project=instance_template_ref.project)
@@ -658,6 +669,7 @@ class Create(base.CreateCommand):
   _support_location_hint = False
   _support_post_key_revocation_action_type = False
   _support_enable_nested_virtualization = False
+  _support_threads_per_core = False
 
   @classmethod
   def Args(cls, parser):
@@ -692,7 +704,8 @@ class Create(base.CreateCommand):
         support_post_key_revocation_action_type=self
         ._support_post_key_revocation_action_type,
         support_enable_nested_virtualization=self
-        ._support_enable_nested_virtualization)
+        ._support_enable_nested_virtualization,
+        support_threads_per_core=self._support_threads_per_core)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -715,6 +728,7 @@ class CreateBeta(Create):
   _support_location_hint = False
   _support_post_key_revocation_action_type = False
   _support_enable_nested_virtualization = False
+  _support_threads_per_core = False
 
   @classmethod
   def Args(cls, parser):
@@ -750,7 +764,8 @@ class CreateBeta(Create):
         support_post_key_revocation_action_type=self
         ._support_post_key_revocation_action_type,
         support_enable_nested_virtualization=self
-        ._support_enable_nested_virtualization)
+        ._support_enable_nested_virtualization,
+        support_threads_per_core=self._support_threads_per_core)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -773,6 +788,7 @@ class CreateAlpha(Create):
   _support_location_hint = True
   _support_post_key_revocation_action_type = True
   _support_enable_nested_virtualization = True
+  _support_threads_per_core = True
 
   @classmethod
   def Args(cls, parser):
@@ -791,6 +807,9 @@ class CreateAlpha(Create):
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddNestedVirtualizationArgs(parser)
+    instances_flags.AddThreadsPerCoreArgs(parser)
+    instances_flags.AddStackTypeArgs(parser)
+    instances_flags.AddIpv6NetworkTierArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.
@@ -811,7 +830,8 @@ class CreateAlpha(Create):
         support_post_key_revocation_action_type=self
         ._support_post_key_revocation_action_type,
         support_enable_nested_virtualization=self
-        ._support_enable_nested_virtualization)
+        ._support_enable_nested_virtualization,
+        support_threads_per_core=self._support_threads_per_core)
 
 
 DETAILED_HELP = {

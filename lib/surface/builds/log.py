@@ -61,17 +61,18 @@ class Log(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
-    build_region = args.region
+    build_region = args.region or cloudbuild_util.DEFAULT_REGION
 
-    client = cloudbuild_util.GetClientInstance(region=build_region)
+    client = cloudbuild_util.GetClientInstance()
     messages = cloudbuild_util.GetMessagesModule()
 
     build_ref = resources.REGISTRY.Parse(
         args.build,
         params={
-            'projectId': properties.VALUES.core.project.GetOrFail,
+            'projectsId': properties.VALUES.core.project.GetOrFail,
+            'locationsId': build_region,
         },
-        collection='cloudbuild.projects.builds')
+        collection='cloudbuild.projects.locations.builds')
 
     logger = cb_logs.CloudBuildClient(client, messages)
     if args.stream:

@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
 help_text:
   brief: Get the IAM policy for the service.
   description: |
@@ -18,6 +18,8 @@ request:
   collection: metastore.projects.locations.services
   ALPHA:
     api_version: v1alpha
+  BETA:
+    api_version: v1beta
 
 iam:
   enable_condition: false

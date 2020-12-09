@@ -364,9 +364,18 @@ class CreateBeta(Create):
 
     flags.WEB_SERVER_MACHINE_TYPE.AddToParser(parser)
 
+    permission_info = '{} must hold permission {}'.format(
+        "The 'Cloud Composer Service Agent' service account",
+        "'Cloud KMS CryptoKey Encrypter/Decrypter'")
+    kms_resource_args.AddKmsKeyResourceArg(
+        parser, 'environment', permission_info=permission_info)
+
   def Run(self, args):
     if self._support_web_server_access_control:
       self.ParseWebServerAccessControlConfigOptions(args)
+    self.kms_key = None
+    if args.kms_key:
+      self.kms_key = flags.GetAndValidateKmsEncryptionKey(args)
     return super(CreateBeta, self).Run(args)
 
   def ParseWebServerAccessControlConfigOptions(self, args):
@@ -408,6 +417,7 @@ class CreateBeta(Create):
         services_secondary_range_name=args.services_secondary_range_name,
         cluster_ipv4_cidr_block=args.cluster_ipv4_cidr,
         services_ipv4_cidr_block=args.services_ipv4_cidr,
+        kms_key=self.kms_key,
         private_environment=args.enable_private_environment,
         private_endpoint=args.enable_private_endpoint,
         master_ipv4_cidr=args.master_ipv4_cidr,
@@ -446,20 +456,6 @@ class CreateAlpha(CreateBeta):
         help="""The type of executor by which task instances are run on Airflow;
         currently supported executor types are CELERY and KUBERNETES.
         Defaults to CELERY. Cannot be updated.""")
-
-    # Workaround to add hidden resource flag, as per b/130564349.
-    group_parser = parser.add_argument_group(hidden=True)
-    permission_info = '{} must hold permission {}'.format(
-        "The 'Cloud Composer Service Agent' service account",
-        "'Cloud KMS CryptoKey Encrypter/Decrypter'")
-    kms_resource_args.AddKmsKeyResourceArg(
-        group_parser, 'environment', permission_info=permission_info)
-
-  def Run(self, args):
-    self.kms_key = None
-    if args.kms_key:
-      self.kms_key = flags.GetAndValidateKmsEncryptionKey(args)
-    return super(CreateAlpha, self).Run(args)
 
   def GetOperationMessage(self, args):
     """See base class."""

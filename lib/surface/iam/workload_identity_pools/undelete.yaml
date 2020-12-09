@@ -11,16 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
-    brief: Undelete a WorkloadIdentityPool.
-    description: Undelete a WorkloadIdentityPool.
+    brief: Undelete a workload identity pool.
+    description: Undelete a workload identity pool.
     examples: |
-      The following command undeletes the WorkloadIdentityPool with the ID
-      'my-workload-identity-pool':
+      The following command undeletes the workload identity pool with the ID
+      ``my-workload-identity-pool'':
 
-        $ {command} my-workload-identity-pool --location=global
+        $ {command} my-workload-identity-pool --location="global"
 
   request:
     collection: iam.projects.locations.workloadIdentityPools
@@ -32,5 +32,5 @@
 
   arguments:
     resource:
-      help_text: The WorkloadIdentityPool to undelete.
+      help_text: The workload identity pool to undelete.
       spec: !REF googlecloudsdk.command_lib.iam.resources:positional_workload_identity_pool

@@ -63,7 +63,6 @@
         Network connection mode used by instances.
     - arg_name: transit-encryption-mode
       release_tracks: [ALPHA, BETA]
-      hidden: true
       api_field: instance.transitEncryptionMode
       help_text: |
         Transit encryption mode used by the instance.
@@ -123,7 +122,6 @@
       type: bool
       action: store_true
       processor: googlecloudsdk.command_lib.redis.util:WarnOnAuthEnabled
-      release_tracks: [ALPHA, BETA]
       help_text: |
         Enables Redis AUTH for the instance. If omitted AUTH is disabled.
     labels:

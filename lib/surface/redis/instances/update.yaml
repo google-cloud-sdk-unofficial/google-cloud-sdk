@@ -37,7 +37,6 @@
       api_field: instance.authEnabled
       type: bool
       action: store_true
-      release_tracks: [ALPHA, BETA]
       help_text: |
         Enables Redis AUTH for the instance.
     additional_arguments_hook: googlecloudsdk.command_lib.redis.util:AdditionalInstanceUpdateArguments
@@ -74,6 +73,7 @@
       - googlecloudsdk.command_lib.redis.instances_update_util:AddSize
       - googlecloudsdk.command_lib.redis.instances_update_util:RemoveRedisConfigs
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdateRedisConfigs
+      - googlecloudsdk.command_lib.redis.instances_update_util:UpdateAuthEnabled
     collection: redis.projects.locations.instances
 
 

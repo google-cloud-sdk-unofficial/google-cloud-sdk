@@ -21,9 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class WorkloadPoolProviders(base.Group):
-  """Manage IAM WorkloadIdentityPoolProviders.
+  """Manage IAM workload identity pool providers.
 
-  Commands for managing IAM WorkloadIdentityPoolProviders.
+  Commands for managing IAM workload identity pool providers.
   """

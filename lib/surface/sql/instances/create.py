@@ -113,20 +113,6 @@ def AddBaseArgs(parser):
             'replication setup. The newly created instance will be a read '
             'replica of the specified master instance.'))
   flags.AddMemory(parser)
-  # TODO(b/31989340): add remote completion
-  # TODO(b/73362371): Make specifying a location required.
-  location_group = parser.add_mutually_exclusive_group()
-  location_group.add_argument(
-      '--region',
-      required=False,
-      default='us-central',
-      help=('Regional location (e.g. asia-east1, us-east1). See the full '
-            'list of regions at '
-            'https://cloud.google.com/sql/docs/instance-locations.'))
-  flags.AddZone(
-      location_group,
-      help_text=('Preferred Compute Engine zone (e.g. us-central1-a, '
-                 'us-central1-b, etc.).'))
   parser.add_argument(
       '--replica-type',
       choices=['READ', 'FAILOVER'],
@@ -174,12 +160,13 @@ def AddAlphaArgs(parser):
   flags.AddActiveDirectoryDomain(parser)
 
 
-def RunBaseCreateCommand(args, release_track):
+def RunBaseCreateCommand(args, release_track, enable_secondary_zone):
   """Creates a new Cloud SQL instance.
 
   Args:
     args: argparse.Namespace, The arguments that this command was invoked with.
     release_track: base.ReleaseTrack, the release track that this was run under.
+    enable_secondary_zone: Python Boolean, if enable_secondary_zone is enabled.
 
   Returns:
     A dict object representing the operations resource describing the create
@@ -198,6 +185,7 @@ def RunBaseCreateCommand(args, release_track):
   sql_messages = client.sql_messages
 
   validate.ValidateInstanceName(args.instance)
+  validate.ValidateInstanceLocation(args, enable_secondary_zone)
   instance_ref = client.resource_parser.Parse(
       args.instance,
       params={'project': properties.VALUES.core.project.GetOrFail},
@@ -337,14 +325,17 @@ class Create(base.Command):
   """Creates a new Cloud SQL instance."""
 
   detailed_help = DETAILED_HELP
+  _enable_secondary_zone = False
 
   def Run(self, args):
-    return RunBaseCreateCommand(args, self.ReleaseTrack())
+    return RunBaseCreateCommand(args, self.ReleaseTrack(),
+                                self._enable_secondary_zone)
 
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
+    flags.AddLocationGroup(parser, Create._enable_secondary_zone)
     flags.AddDatabaseVersion(parser)
 
 
@@ -353,14 +344,17 @@ class CreateBeta(base.Command):
   """Creates a new Cloud SQL instance."""
 
   detailed_help = DETAILED_HELP
+  _enable_secondary_zone = False
 
   def Run(self, args):
-    return RunBaseCreateCommand(args, self.ReleaseTrack())
+    return RunBaseCreateCommand(args, self.ReleaseTrack(),
+                                self._enable_secondary_zone)
 
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
+    flags.AddLocationGroup(parser, CreateBeta._enable_secondary_zone)
     AddBetaArgs(parser)
     flags.AddDatabaseVersion(parser, restrict_choices=False)
 
@@ -370,14 +364,17 @@ class CreateAlpha(base.Command):
   """Creates a new Cloud SQL instance."""
 
   detailed_help = DETAILED_HELP
+  _enable_secondary_zone = True
 
   def Run(self, args):
-    return RunBaseCreateCommand(args, self.ReleaseTrack())
+    return RunBaseCreateCommand(args, self.ReleaseTrack(),
+                                self._enable_secondary_zone)
 
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
+    flags.AddLocationGroup(parser, CreateAlpha._enable_secondary_zone)
     AddBetaArgs(parser)
     AddAlphaArgs(parser)
     flags.AddDatabaseVersion(parser, restrict_choices=False)

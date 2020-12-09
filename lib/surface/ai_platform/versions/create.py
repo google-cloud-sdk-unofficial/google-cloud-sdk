@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.ml_engine import versions_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml_engine import endpoint_util
 from googlecloudsdk.command_lib.ml_engine import flags
+from googlecloudsdk.command_lib.ml_engine import region_util
 from googlecloudsdk.command_lib.ml_engine import versions_util
 from googlecloudsdk.command_lib.util.args import labels_util
 
@@ -41,7 +42,7 @@ def _AddCreateArgs(parser):
   """Add common arguments for `versions create` command."""
   flags.GetModelName(positional=False, required=True).AddToParser(parser)
   flags.GetDescriptionFlag('version').AddToParser(parser)
-  flags.GetRegionArg().AddToParser(parser)
+  flags.GetRegionArg(include_global=True).AddToParser(parser)
   flags.VERSION_NAME.AddToParser(parser)
   base.Argument(
       '--origin',
@@ -117,7 +118,8 @@ class CreateGA(base.CreateCommand):
     _AddCreateArgs(parser)
 
   def Run(self, args):
-    with endpoint_util.MlEndpointOverrides(region=args.region):
+    region = region_util.GetRegion(args)
+    with endpoint_util.MlEndpointOverrides(region=region):
       client = versions_api.VersionsClient()
       labels = versions_util.ParseCreateLabels(client, args)
       framework = flags.FRAMEWORK_MAPPER.GetEnumForChoice(args.framework)
@@ -157,9 +159,11 @@ class CreateBeta(CreateGA):
     flags.AddUserCodeArgs(parser)
     flags.AddExplainabilityFlags(parser)
     flags.AddContainerFlags(parser)
+    flags.AddAutoScalingFlags(parser)
 
   def Run(self, args):
-    with endpoint_util.MlEndpointOverrides(region=args.region):
+    region = region_util.GetRegion(args)
+    with endpoint_util.MlEndpointOverrides(region=region):
       client = versions_api.VersionsClient()
       labels = versions_util.ParseCreateLabels(client, args)
       framework = flags.FRAMEWORK_MAPPER.GetEnumForChoice(args.framework)
@@ -193,7 +197,11 @@ class CreateBeta(CreateGA):
           ports=args.ports,
           predict_route=args.predict_route,
           health_route=args.health_route,
-          containers_hidden=False)
+          min_nodes=args.min_nodes,
+          max_nodes=args.max_nodes,
+          metrics=args.metric_targets,
+          containers_hidden=False,
+          autoscaling_hidden=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -209,10 +217,10 @@ class CreateAlpha(CreateBeta):
   @staticmethod
   def Args(parser):
     CreateBeta.Args(parser)
-    flags.AddAutoScalingFlags(parser)
 
   def Run(self, args):
-    with endpoint_util.MlEndpointOverrides(region=args.region):
+    region = region_util.GetRegion(args)
+    with endpoint_util.MlEndpointOverrides(region=region):
       client = versions_api.VersionsClient()
       labels = versions_util.ParseCreateLabels(client, args)
       framework = flags.FRAMEWORK_MAPPER.GetEnumForChoice(args.framework)

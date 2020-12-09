@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.routers import flags as routers_flags
 from googlecloudsdk.command_lib.compute.routers.nats import flags as nats_flags
 
 
-class AlphaList(base.DescribeCommand):
+class List(base.DescribeCommand):
   """Lists the NATs on a Compute Engine router."""
 
   @classmethod
@@ -50,7 +50,7 @@ class AlphaList(base.DescribeCommand):
     return router.nats
 
 
-AlphaList.detailed_help = {
+List.detailed_help = {
     'DESCRIPTION':
         textwrap.dedent("""\
         *{command}* is used to list the NATs on a Compute Engine router.

@@ -47,5 +47,7 @@
            name.segment(3):label=REGION,
            network,
            ipCidrRange,
+           subnet.name:label=SUBNET,
+           subnet.projectId:label=SUBNET_PROJECT,
            status
          )
