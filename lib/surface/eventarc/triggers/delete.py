@@ -34,7 +34,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete an Eventarc trigger."""
 
@@ -47,7 +47,7 @@ class Delete(base.DeleteCommand):
 
   def Run(self, args):
     """Run the delete command."""
-    client = triggers.TriggersClient()
+    client = triggers.CreateTriggersClient(self.ReleaseTrack())
     trigger_ref = args.CONCEPTS.trigger.Parse()
     operation = client.Delete(trigger_ref)
     if args.async_:

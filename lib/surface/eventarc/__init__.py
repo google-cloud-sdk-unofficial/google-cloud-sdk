@@ -21,8 +21,16 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Eventarc(base.Group):
+  """Manage Eventarc resources."""
+
+  category = base.SERVERLESS_CATEGORY
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class EventarcBeta(base.Group):
   """Manage Eventarc resources."""
 
   category = base.SERVERLESS_CATEGORY

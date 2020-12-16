@@ -60,6 +60,7 @@ class Update(base.Command):
     flags.AddCloudSQLFlags(managed_group)
     flags.AddRevisionSuffixArg(managed_group)
     flags.AddVpcConnectorArg(managed_group)
+    flags.AddEgressSettingsFlag(managed_group)
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -162,10 +163,6 @@ class BetaUpdate(Update):
   def Args(parser):
     Update.CommonArgs(parser)
 
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddEgressSettingsFlag(managed_group)
-
     # Flags only supported on GKE and Knative
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddEndpointVisibilityEnum(cluster_group)
@@ -173,6 +170,7 @@ class BetaUpdate(Update):
     # Flags not specific to any platform
     flags.AddDeployTagFlag(parser)
     flags.AddMinInstancesFlag(parser)
+    flags.AddIngressFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -182,10 +180,6 @@ class AlphaUpdate(Update):
   @staticmethod
   def Args(parser):
     Update.CommonArgs(parser)
-
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddEgressSettingsFlag(managed_group)
 
     # Flags only supported on GKE and Knative
     cluster_group = flags.GetClusterArgGroup(parser)

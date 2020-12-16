@@ -14,16 +14,19 @@
       api_version: v1beta1
       modify_request_hooks:
       - googlecloudsdk.command_lib.billingbudgets.hooks:CreateAllUpdatesRule
+      - googlecloudsdk.command_lib.billingbudgets.hooks:ValidateCreditTreatment
       - googlecloudsdk.command_lib.billingbudgets.hooks:CreateParseLabels
     BETA:
       api_version: v1beta1
       modify_request_hooks:
       - googlecloudsdk.command_lib.billingbudgets.hooks:CreateAllUpdatesRule
+      - googlecloudsdk.command_lib.billingbudgets.hooks:ValidateCreditTreatment
       - googlecloudsdk.command_lib.billingbudgets.hooks:CreateParseLabels
     GA:
       api_version: v1
       modify_request_hooks:
       - googlecloudsdk.command_lib.billingbudgets.hooks:CreateNotificationsRule
+      - googlecloudsdk.command_lib.billingbudgets.hooks:ValidateCreditTreatment
       - googlecloudsdk.command_lib.billingbudgets.hooks:CreateParseLabels
   arguments:
     resource:

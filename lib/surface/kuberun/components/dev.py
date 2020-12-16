@@ -32,19 +32,12 @@ _DETAILED_HELP = {
 }
 
 
-def _EnvironmentFlag():
-  return flags.StringFlag(
-      '--environment',
-      help='Name of the environment to which KubeRun will deploy.',
-      required=True)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Dev(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
   """Deploy a Component in development mode."""
 
   detailed_help = _DETAILED_HELP
-  flags = [_EnvironmentFlag()]
+  flags = [flags.EnvironmentFlag()]
 
   @classmethod
   def Args(cls, parser):

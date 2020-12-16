@@ -29,6 +29,7 @@ from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -109,9 +110,13 @@ class List(commands.List):
         self.SetCompleteApiEndpoint(conn_context.endpoint)
         if not is_managed:
           location_msg = ' in [{}]'.format(conn_context.cluster_location)
-          log.status.Print('For cluster [{cluster}]{zone}:'.format(
+          project_msg = ' in project [{}]'.format(conn_context.cluster_project)
+          is_multi_tenant = conn_context.cluster_project != properties.VALUES.core.project.Get(
+              required=False)
+          log.status.Print('For cluster [{cluster}]{zone}{project}:'.format(
               cluster=conn_context.cluster_name,
-              zone=location_msg if conn_context.cluster_location else ''))
+              zone=location_msg if conn_context.cluster_location else '',
+              project=project_msg if is_multi_tenant else ''))
         return commands.SortByName(client.ListServices(namespace_ref))
 
 

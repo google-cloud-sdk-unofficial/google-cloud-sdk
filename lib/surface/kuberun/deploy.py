@@ -31,19 +31,12 @@ _DETAILED_HELP = {
 }
 
 
-def _EnvironmentFlag():
-  return flags.EnvironmentFlags(
-      '--environment',
-      help='Name of the environment to which KubeRun will deploy.',
-      required=False)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Deploy(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
   """Deploy KubeRun application."""
 
   detailed_help = _DETAILED_HELP
-  flags = [_EnvironmentFlag()]
+  flags = [flags.EnvironmentFlag()]
 
   def Command(self):
     return ['deploy']

@@ -36,9 +36,8 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SetDagTimeout(base.CreateCommand):
-  """Set DAG timeout on workflow template."""
+  """Set DAG timeout on a workflow template."""
 
   detailed_help = DETAILED_HELP
 
@@ -46,7 +45,7 @@ class SetDagTimeout(base.CreateCommand):
   def Args(cls, parser):
     dataproc = dp.Dataproc(cls.ReleaseTrack())
     workflow_templates.AddDagTimeoutFlag(parser, True)
-    flags.AddTemplateResourceArg(parser, 'set DAG timeout on',
+    flags.AddTemplateResourceArg(parser, 'set the DAG timeout on',
                                  dataproc.api_version)
 
   def Run(self, args):

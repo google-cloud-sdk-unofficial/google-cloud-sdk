@@ -33,10 +33,11 @@ class UpdatePerimetersGA(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    UpdatePerimetersGA.ArgsVersioned(parser, version='v1', track='GA')
+    UpdatePerimetersGA.ArgsVersioned(
+        parser, version='v1', track=base.ReleaseTrack.GA)
 
   @staticmethod
-  def ArgsVersioned(parser, version='v1', track='GA'):
+  def ArgsVersioned(parser, version='v1', track=base.ReleaseTrack.GA):
     perimeters.AddResourceArg(parser, 'to update')
     perimeters.AddPerimeterUpdateArgs(parser, version=version, track=track)
 
@@ -63,9 +64,9 @@ class UpdatePerimetersGA(base.UpdateCommand):
             args, result, self._API_VERSION),
         enable_vpc_accessible_services=args.enable_vpc_accessible_services,
         ingress_policies=perimeters.ParseUpdateDirectionalPoliciesArgs(
-            args, self._API_VERSION, 'ingress-policies'),
+            args, self._release_track, 'ingress-policies'),
         egress_policies=perimeters.ParseUpdateDirectionalPoliciesArgs(
-            args, self._API_VERSION, 'egress-policies'))
+            args, self._release_track, 'egress-policies'))
 
   def Patch(self, client, args, result, perimeter_ref, description, title,
             perimeter_type, resources, restricted_services, levels,
@@ -93,7 +94,8 @@ class UpdatePerimetersBeta(UpdatePerimetersGA):
 
   @staticmethod
   def Args(parser):
-    UpdatePerimetersGA.ArgsVersioned(parser, version='v1', track='BETA')
+    UpdatePerimetersGA.ArgsVersioned(
+        parser, version='v1', track=base.ReleaseTrack.BETA)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -104,4 +106,26 @@ class UpdatePerimetersAlpha(UpdatePerimetersBeta):
 
   @staticmethod
   def Args(parser):
-    UpdatePerimetersGA.ArgsVersioned(parser, version='v1alpha', track='ALPHA')
+    UpdatePerimetersGA.ArgsVersioned(
+        parser, version='v1alpha', track=base.ReleaseTrack.ALPHA)
+
+
+detailed_help = {
+    'brief':
+        'Update the enforced configuration for an existing Service Perimeter.',
+    'DESCRIPTION':
+        ('This command updates the enforced configuration (`status`) of a '
+         'Service Perimeter.'),
+    'EXAMPLES':
+        ('To update the enforced configuration for a Service Perimeter:\n\n'
+         '  $ {command} my-perimeter '
+         '--add-resources="projects/123,projects/456" '
+         '--remove-restricted-services="storage.googleapis.com" '
+         '--add-access-levels="accessPolicies/123/accessLevels/a_level" '
+         '--enable-vpc-accessible-services '
+         '--clear-vpc-allowed-services')
+}
+
+UpdatePerimetersGA.detailed_help = detailed_help
+UpdatePerimetersBeta.detailed_help = detailed_help
+UpdatePerimetersAlpha.detailed_help = detailed_help

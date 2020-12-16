@@ -20,13 +20,26 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.service_attachments import flags
 
 
+def _AddRegionsArg(parser):
+  lister.AddBaseListerArgs(parser)
+  parser.add_argument(
+      '--regions',
+      metavar='REGION',
+      required=True,
+      help='If provided, only resources from the given regions are queried.',
+      type=arg_parsers.ArgList(min_length=1),
+      default=[])
+
+
 def _Args(parser):
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-  lister.AddRegionsArg(parser)
+  # TODO(b/173798204) Replace _AddRegionsArg() with lister.AddRegionsArg().
+  _AddRegionsArg(parser)
   parser.display_info.AddCacheUpdater(flags.ServiceAttachmentsCompleter)
 
 

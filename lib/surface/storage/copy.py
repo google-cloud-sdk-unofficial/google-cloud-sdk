@@ -26,6 +26,8 @@ from googlecloudsdk.command_lib.storage import storage_parallel
 from googlecloudsdk.core import log
 
 
+@base.Deprecate(is_removed=False, warning='This command is deprecated. '
+                'Use `gcloud alpha storage cp` instead.')
 class Copy(base.Command):
   """Upload, download, and copy Cloud Storage objects."""
 

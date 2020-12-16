@@ -36,16 +36,16 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update an Eventarc trigger."""
 
   detailed_help = _DETAILED_HELP
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.AddTriggerResourceArg(parser, 'The trigger to update.', required=True)
-    flags.AddMatchingCriteriaArg(parser)
+    flags.AddEventFiltersArg(parser, cls.ReleaseTrack())
     flags.AddDestinationRunServiceArg(parser)
     flags.AddDestinationRunRegionArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
@@ -60,10 +60,11 @@ class Update(base.UpdateCommand):
 
   def Run(self, args):
     """Run the update command."""
-    client = triggers.TriggersClient()
+    client = triggers.CreateTriggersClient(self.ReleaseTrack())
     trigger_ref = args.CONCEPTS.trigger.Parse()
-    update_mask = triggers.BuildUpdateMask(
-        matching_criteria=args.IsSpecified('matching_criteria'),
+    event_filters = flags.GetEventFiltersArg(args, self.ReleaseTrack())
+    update_mask = client.BuildUpdateMask(
+        event_filters=event_filters is not None,
         service_account=args.IsSpecified('service_account') or
         args.clear_service_account,
         destination_run_service=args.IsSpecified('destination_run_service'),
@@ -73,10 +74,9 @@ class Update(base.UpdateCommand):
     old_trigger = client.Get(trigger_ref)
     # The type can't be updated, so it's safe to use the old trigger's type.
     # In the async case, this is the only way to get the type.
-    self._event_type = types.MatchingCriteriaMessageToType(
-        old_trigger.matchingCriteria)
-    operation = client.Patch(trigger_ref, args.matching_criteria,
-                             args.service_account, args.destination_run_service,
+    self._event_type = client.GetEventType(old_trigger)
+    operation = client.Patch(trigger_ref, event_filters, args.service_account,
+                             args.destination_run_service,
                              args.destination_run_path,
                              args.destination_run_region, update_mask)
     if args.async_:

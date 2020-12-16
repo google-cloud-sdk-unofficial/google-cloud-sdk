@@ -22,9 +22,9 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class KubeRun(base.Group):
-  """Top level command to interact with Kubernetes Applications.
+  """Top level command to interact with KubeRun.
 
   This set of commands can be used create or change Knative services, events
   or manage local projects.
@@ -36,6 +36,6 @@ class KubeRun(base.Group):
           """\
           To list your Knative services, run:
 
-            $ {command} clusters services list
+            $ {command} core services list
       """,
   }

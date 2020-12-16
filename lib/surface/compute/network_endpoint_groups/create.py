@@ -196,6 +196,8 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a Compute Engine network endpoint group."""
 
+  support_vm_ip_neg = True
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
@@ -203,4 +205,3 @@ class CreateAlpha(CreateBeta):
 
   support_l4ilb_neg = True
   support_neg_type = True
-  support_vm_ip_neg = True

@@ -19,18 +19,21 @@
       modify_request_hooks:
       - googlecloudsdk.command_lib.billingbudgets.hooks:UpdateAllUpdatesRule
       - googlecloudsdk.command_lib.billingbudgets.hooks:UpdateThresholdRules
+      - googlecloudsdk.command_lib.billingbudgets.hooks:ValidateCreditTreatment
       - googlecloudsdk.command_lib.billingbudgets.hooks:UpdateParseLabels
     BETA:
       api_version: v1beta1
       modify_request_hooks:
       - googlecloudsdk.command_lib.billingbudgets.hooks:UpdateAllUpdatesRule
       - googlecloudsdk.command_lib.billingbudgets.hooks:UpdateThresholdRules
+      - googlecloudsdk.command_lib.billingbudgets.hooks:ValidateCreditTreatment
       - googlecloudsdk.command_lib.billingbudgets.hooks:UpdateParseLabels
     GA:
       api_version: v1
       modify_request_hooks:
       - googlecloudsdk.command_lib.billingbudgets.hooks:UpdateNotificationsRule
       - googlecloudsdk.command_lib.billingbudgets.hooks:UpdateThresholdRules
+      - googlecloudsdk.command_lib.billingbudgets.hooks:ValidateCreditTreatment
       - googlecloudsdk.command_lib.billingbudgets.hooks:UpdateParseLabels
   arguments:
     resource:

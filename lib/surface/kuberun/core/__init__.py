@@ -21,9 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Core(base.Group):
-  """Top level command to interact with Kubernetes applications on a cluster.
+  """Top level command to interact with KubeRun entities on a cluster.
 
   This set of commands can be used create or change a Knative services,
   triggers, etc. on a cluster.

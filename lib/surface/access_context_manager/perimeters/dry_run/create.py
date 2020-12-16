@@ -28,12 +28,17 @@ from googlecloudsdk.command_lib.accesscontextmanager import policies
 from googlecloudsdk.command_lib.util.args import repeated
 
 
-def _AddCommonArgsForDryRunCreate(parser, prefix='', version='v1'):
+def _AddCommonArgsForDryRunCreate(parser,
+                                  prefix='',
+                                  version='v1',
+                                  track=base.ReleaseTrack.GA):
   """Adds arguments common to the two dry-run create modes.
 
   Args:
     parser: The argparse parser to add the arguments to.
     prefix: Optional prefix, e.g. 'perimeter-' to use for the argument names.
+    version: Api version. e.g. v1alpha, v1beta, v1.
+    track: cloudsdk's track, defined in calliope. e.g. ALPHA, BETA, GA.
   """
   parser.add_argument(
       '--{}resources'.format(prefix),
@@ -72,7 +77,7 @@ def _AddCommonArgsForDryRunCreate(parser, prefix='', version='v1'):
               Perimeter. In order to include all restricted services, use
               reference "RESTRICTED-SERVICES". Requires vpc-accessible-services
               be enabled.""")
-  if version == 'v1alpha':
+  if track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
     parser.add_argument(
         '--{}ingress-policies'.format(prefix),
         metavar='YAML_FILE',
@@ -81,8 +86,10 @@ def _AddCommonArgsForDryRunCreate(parser, prefix='', version='v1'):
         help="""Path to a file containing a list of Ingress Policies.
                 This file contains a list of YAML-compliant objects representing
                 Ingress Policies described in the API reference.
-                For more information, see:
-                https://cloud.google.com/access-context-manager/docs/reference/rest/v1alpha/accessPolicies.servicePerimeters"""
+                For more information about the alpha version, see:
+                https://cloud.google.com/access-context-manager/docs/reference/rest/v1alpha/accessPolicies.servicePerimeters
+                For more information about non-alpha versions, see:
+                https://cloud.google.com/access-context-manager/docs/reference/rest/v1/accessPolicies.servicePerimeters"""
     )
     parser.add_argument(
         '--{}egress-policies'.format(prefix),
@@ -92,8 +99,10 @@ def _AddCommonArgsForDryRunCreate(parser, prefix='', version='v1'):
         help="""Path to a file containing a list of Egress Policies.
                 This file contains a list of YAML-compliant objects representing
                 Egress Policies described in the API reference.
-                For more information, see:
-                https://cloud.google.com/access-context-manager/docs/reference/rest/v1alpha/accessPolicies.servicePerimeters"""
+                For more information about the alpha version, see:
+                https://cloud.google.com/access-context-manager/docs/reference/rest/v1alpha/accessPolicies.servicePerimeters
+                For more information about non-alpha versions, see:
+                https://cloud.google.com/access-context-manager/docs/reference/rest/v1/accessPolicies.servicePerimeters"""
     )
 
 
@@ -114,25 +123,26 @@ def _ParseArgWithShortName(args, short_name):
   return None
 
 
-def _ParseDirectionalPolicies(args, version='v1'):
-  if version == 'v1alpha':
+def _ParseDirectionalPolicies(args, track=base.ReleaseTrack.GA):
+  if track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
     ingress_policies = _ParseArgWithShortName(args, 'ingress_policies')
     egress_policies = _ParseArgWithShortName(args, 'egress_policies')
     return ingress_policies, egress_policies
   return None, None
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreatePerimeterDryRun(base.UpdateCommand):
   """Creates a dry-run spec for a new or existing Service Perimeter."""
   _API_VERSION = 'v1'
 
   @staticmethod
   def Args(parser):
-    CreatePerimeterDryRun.ArgsVersioned(parser, version='v1')
+    CreatePerimeterDryRun.ArgsVersioned(
+        parser, version='v1', track=base.ReleaseTrack.GA)
 
   @staticmethod
-  def ArgsVersioned(parser, version='v1'):
+  def ArgsVersioned(parser, version='v1', track=base.ReleaseTrack.GA):
     parser.add_argument(
         '--async',
         action='store_true',
@@ -143,11 +153,12 @@ class CreatePerimeterDryRun(base.UpdateCommand):
     existing_perimeter_group = top_level_group.add_argument_group(
         'Arguments for creating dry-run spec for an **existing** Service '
         'Perimeter.')
-    _AddCommonArgsForDryRunCreate(existing_perimeter_group, version=version)
+    _AddCommonArgsForDryRunCreate(
+        existing_perimeter_group, version=version, track=track)
     new_perimeter_group = top_level_group.add_argument_group(
         'Arguments for creating a dry-run spec for a new Service Perimeter.')
     _AddCommonArgsForDryRunCreate(
-        new_perimeter_group, prefix='perimeter-', version=version)
+        new_perimeter_group, prefix='perimeter-', version=version, track=track)
     new_perimeter_group.add_argument(
         '--perimeter-title',
         required=True,
@@ -189,7 +200,7 @@ class CreatePerimeterDryRun(base.UpdateCommand):
     restricted_services = _ParseArgWithShortName(args, 'restricted_services')
     vpc_allowed_services = _ParseArgWithShortName(args, 'vpc_allowed_services')
     ingress_policies, egress_policies = _ParseDirectionalPolicies(
-        args, self._API_VERSION)
+        args, self._release_track)
     if (args.enable_vpc_accessible_services is None and
         args.perimeter_enable_vpc_accessible_services is None):
       enable_vpc_accessible_services = None
@@ -228,6 +239,17 @@ class CreatePerimeterDryRun(base.UpdateCommand):
         egress_policies=egress_policies)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreatePerimeterDryRunBeta(CreatePerimeterDryRun):
+  """Creates a dry-run spec for a new or existing Service Perimeter."""
+  _API_VERSION = 'v1'
+
+  @staticmethod
+  def Args(parser):
+    CreatePerimeterDryRun.ArgsVersioned(
+        parser, version='v1', track=base.ReleaseTrack.BETA)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreatePerimeterDryRunAlpha(CreatePerimeterDryRun):
   """Creates a dry-run spec for a new or existing Service Perimeter."""
@@ -235,7 +257,8 @@ class CreatePerimeterDryRunAlpha(CreatePerimeterDryRun):
 
   @staticmethod
   def Args(parser):
-    CreatePerimeterDryRun.ArgsVersioned(parser, version='v1alpha')
+    CreatePerimeterDryRun.ArgsVersioned(
+        parser, version='v1alpha', track=base.ReleaseTrack.ALPHA)
 
 
 detailed_help = {
@@ -270,4 +293,5 @@ detailed_help = {
 }
 
 CreatePerimeterDryRunAlpha.detailed_help = detailed_help
+CreatePerimeterDryRunBeta.detailed_help = detailed_help
 CreatePerimeterDryRun.detailed_help = detailed_help

@@ -179,6 +179,10 @@ information on how to structure KEYs and VALUEs, run
       be stored.""")
   flags.AddIpAliasEnvironmentFlags(parser)
   flags.AddPrivateIpEnvironmentFlags(parser)
+  web_server_group = parser.add_mutually_exclusive_group()
+  flags.WEB_SERVER_ALLOW_IP.AddToParser(web_server_group)
+  flags.WEB_SERVER_ALLOW_ALL.AddToParser(web_server_group)
+  flags.WEB_SERVER_DENY_ALL.AddToParser(web_server_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -192,7 +196,6 @@ class Create(base.Command):
   """
 
   detailed_help = DETAILED_HELP
-  _support_web_server_access_control = False
 
   @staticmethod
   def Args(parser):
@@ -202,6 +205,7 @@ class Create(base.Command):
     self.ParseIpAliasConfigOptions(args)
     self.ParsePrivateEnvironmentConfigOptions(args)
     self.ParsePrivateEnvironmentWebServerCloudSqlRanges(args)
+    self.ParseWebServerAccessControlConfigOptions(args)
 
     flags.ValidateDiskSize('--disk-size', args.disk_size)
     self.env_ref = args.CONCEPTS.environment.Parse()
@@ -310,6 +314,22 @@ class Create(base.Command):
               prerequisite='enable-private-environment',
               opt='cloud-sql-ipv4-cidr'))
 
+  def ParseWebServerAccessControlConfigOptions(self, args):
+    if (args.enable_private_environment and not args.web_server_allow_ip and
+        not args.web_server_allow_all and not args.web_server_deny_all):
+      raise command_util.InvalidUserInputError(
+          'Cannot specify --enable-private-environment without one of: ' +
+          '--web-server-allow-ip, --web-server-allow-all ' +
+          'or --web-server-deny-all')
+
+    # Default to allow all if no flag is specified.
+    self.web_server_access_control = (
+        environments_api_util.BuildWebServerAllowedIps(
+            args.web_server_allow_ip, args.web_server_allow_all or
+            not args.web_server_allow_ip, args.web_server_deny_all))
+    flags.ValidateIpRanges(
+        [acl['ip_range'] for acl in self.web_server_access_control])
+
   def GetOperationMessage(self, args):
     """Constructs Create message."""
     return environments_api_util.Create(
@@ -338,6 +358,7 @@ class Create(base.Command):
         master_ipv4_cidr=args.master_ipv4_cidr,
         web_server_ipv4_cidr=args.web_server_ipv4_cidr,
         cloud_sql_ipv4_cidr=args.cloud_sql_ipv4_cidr,
+        web_server_access_control=self.web_server_access_control,
         release_track=self.ReleaseTrack())
 
 
@@ -351,17 +372,10 @@ class CreateBeta(Create):
     {top_command} composer operations describe
   """
 
-  _support_web_server_access_control = True
-
   @staticmethod
   def Args(parser):
     Create.Args(parser)
-    web_server_group = parser.add_mutually_exclusive_group()
-    flags.WEB_SERVER_ALLOW_IP.AddToParser(web_server_group)
-    flags.WEB_SERVER_ALLOW_ALL.AddToParser(web_server_group)
-    flags.WEB_SERVER_DENY_ALL.AddToParser(web_server_group)
     flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(parser)
-
     flags.WEB_SERVER_MACHINE_TYPE.AddToParser(parser)
 
     permission_info = '{} must hold permission {}'.format(
@@ -371,28 +385,10 @@ class CreateBeta(Create):
         parser, 'environment', permission_info=permission_info)
 
   def Run(self, args):
-    if self._support_web_server_access_control:
-      self.ParseWebServerAccessControlConfigOptions(args)
     self.kms_key = None
     if args.kms_key:
       self.kms_key = flags.GetAndValidateKmsEncryptionKey(args)
     return super(CreateBeta, self).Run(args)
-
-  def ParseWebServerAccessControlConfigOptions(self, args):
-    if (args.enable_private_environment and not args.web_server_allow_ip and
-        not args.web_server_allow_all and not args.web_server_deny_all):
-      raise command_util.InvalidUserInputError(
-          'Cannot specify --enable-private-environment without one of: ' +
-          '--web-server-allow-ip, --web-server-allow-all ' +
-          'or --web-server-deny-all')
-
-    # Default to allow all if no flag is specified.
-    self.web_server_access_control = (
-        environments_api_util.BuildWebServerAllowedIps(
-            args.web_server_allow_ip, args.web_server_allow_all or
-            not args.web_server_allow_ip, args.web_server_deny_all))
-    flags.ValidateIpRanges(
-        [acl['ip_range'] for acl in self.web_server_access_control])
 
   def GetOperationMessage(self, args):
     """See base class."""
@@ -438,8 +434,6 @@ class CreateAlpha(CreateBeta):
 
     {top_command} composer operations describe
   """
-
-  _support_web_server_access_control = True
 
   @staticmethod
   def Args(parser):

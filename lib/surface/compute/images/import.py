@@ -284,6 +284,9 @@ class BaseImportStager(object):
     if 'sysprep_windows' in self.args:
       daisy_utils.AppendBoolArg(import_args, 'sysprep_windows',
                                 self.args.sysprep_windows)
+    if 'no_address' in self.args:
+      daisy_utils.AppendBoolArg(import_args, 'no_external_ip',
+                                self.args.no_address)
 
     return import_args
 
@@ -425,6 +428,11 @@ class ImportBeta(Import):
   def Args(cls, parser):
     super(ImportBeta, cls).Args(parser)
     daisy_utils.AddExtraCommonDaisyArgs(parser)
+    daisy_utils.AddNoAddressArg(
+        parser,
+        'image import',
+        'https://cloud.google.com/compute/docs/import/importing-virtual-disks#no-external-ip'
+    )
 
   def _RunImageImport(self, args, import_args, tags, output_filter):
     return daisy_utils.RunImageImport(

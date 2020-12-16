@@ -38,7 +38,7 @@ To remove two endpoints from a network endpoint group:
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine network endpoint group."""
 
@@ -82,9 +82,16 @@ class Update(base.UpdateCommand):
         neg_ref, add_endpoints=add_endpoints, remove_endpoints=remove_endpoints)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaUpdate(Update):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaUpdate(Update):
   """Update a Compute Engine network endpoint group."""
 
-  support_l4ilb_neg = True
+  support_vm_ip_neg = False
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaUpdate(BetaUpdate):
+  """Update a Compute Engine network endpoint group."""
+
   support_vm_ip_neg = True
+  support_l4ilb_neg = True

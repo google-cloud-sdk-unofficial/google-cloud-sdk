@@ -75,6 +75,12 @@ class Import(base.CreateCommand):
         + flags.ZONE_PROPERTY_EXPLANATION)
     daisy_utils.AddGuestEnvironmentArg(parser, 'machine image')
     parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
+    daisy_utils.AddNoAddressArg(
+        parser,
+        'machine image import',
+        docs_url='https://cloud.google.com/nat/docs/gce-example#create-nat '
+        + 'and https://cloud.google.com/vpc/docs/private-access-options#pga'
+    )
 
   def _ValidateArgs(self, args, compute_client):
     instances_flags.ValidateNicFlags(args)

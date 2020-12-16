@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command to list Cloud Storage objects."""
+"""Command to list Cloud Storage resources."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,12 +28,12 @@ from googlecloudsdk.command_lib.storage.tasks.ls import cloud_list_task
 
 
 class Ls(base.Command):
-  """List the objects in Cloud Storage buckets."""
+  """List Cloud Storage buckets and objects."""
 
   # pylint:disable=g-backslash-continuation
   detailed_help = {
       'DESCRIPTION': """\
-      *{command}* lets you list the objects in your Cloud Storage buckets.
+      *{command}* lets you list your Cloud Storage buckets and objects.
       Forward slashes in object names are logically treated as directories for
       the purposes of listing contents. See below for example of how to use
       wildcards to get the listing behavior you want.

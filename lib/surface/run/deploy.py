@@ -109,6 +109,7 @@ class Deploy(base.Command):
     flags.AddCloudSQLFlags(managed_group)
     flags.AddRevisionSuffixArg(managed_group)
     flags.AddVpcConnectorArg(managed_group)
+    flags.AddEgressSettingsFlag(managed_group)
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -248,10 +249,6 @@ class BetaDeploy(Deploy):
   def Args(parser):
     Deploy.CommonArgs(parser)
 
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddEgressSettingsFlag(managed_group)
-
     # Flags only supported on GKE and Knative
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddEndpointVisibilityEnum(cluster_group)
@@ -259,6 +256,7 @@ class BetaDeploy(Deploy):
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)
     flags.AddDeployTagFlag(parser)
+    flags.AddIngressFlag(parser)
 
     # Flags specific to deploy from source
     flags.AddSourceFlag(parser)
@@ -272,10 +270,6 @@ class AlphaDeploy(Deploy):
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
-
-    # Flags specific to VPCAccess
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddEgressSettingsFlag(managed_group)
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)

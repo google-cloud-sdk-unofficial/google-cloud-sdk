@@ -35,7 +35,7 @@
         Arguments and flags that specify the VPC Access connector you want to create.
     params:
     - group:
-        release_tracks: [ALPHA]
+        release_tracks: [ALPHA, BETA]
         mutex: true
         params:
         - group:
@@ -43,7 +43,7 @@
               The Serverless VPC Access API can internally manage the creation
               of a subnet to house the VPC connector within.  To create this
               subnet, the network ID (--network) and an IP CIDR range (--range)
-              for the subnetwork must be provided.
+              for the subnet must be provided.
             params:
             - arg_name: network
               api_field: connector.network
@@ -62,13 +62,13 @@
                 non-overlapping with existing ranges in the network.
         - group:
             help_text: |
-              You can specify a subnet to place the connector within rather than
+              You can specify a subnet in which to place the connector rather than
               using an internally managed subnet.  If you wish to use this
               connector to attach your Serverless application to a Shared VPC,
-              first share a subnet to the project you are deploying your connector.
-              Then, you may supply the name of the subnet (--subnet) and the
-              project ID (--subnet-project) the subnetwork is hosted from to connect
-              to this VPC.
+              first share a subnet to the project to which you are deploying your connector.
+              Then, supply the name of the subnet (--subnet) and the
+              project ID (--subnet-project) from which the subnet is hosted from to
+              connect to this VPC.
             params:
             - arg_name: subnet
               api_field: connector.subnet.name
@@ -83,7 +83,7 @@
               help_text: |
                 Project ID of the provided subnet. The default is the project of the connector.
     - arg_name: network
-      release_tracks: [BETA, GA]
+      release_tracks: [GA]
       api_field: connector.network
       required: false
       help_text: |
@@ -92,7 +92,7 @@
         used.
       default: default
     - arg_name: range
-      release_tracks: [BETA, GA]
+      release_tracks: [GA]
       api_field: connector.ipCidrRange
       required: false
       help_text: |

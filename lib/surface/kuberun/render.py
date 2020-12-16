@@ -37,18 +37,11 @@ def _OutFlag():
       required=True)
 
 
-def _EnvironmentFlag():
-  return flags.StringFlag(
-      '--environment',
-      help='Name of the environment to which KubeRun will deploy.',
-      required=True)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Render(kuberun_command.KubeRunStreamingCommand, base.ExportCommand):
   """Render KubeRun application to generate the yaml resource configuration."""
   detailed_help = _DETAILED_HELP
-  flags = [_OutFlag(), _EnvironmentFlag()]
+  flags = [_OutFlag(), flags.EnvironmentFlag()]
 
   def Command(self):
     return ['render']

@@ -35,22 +35,23 @@ def AddBaseArgs(parser):
   flags.AddUsername(parser)
   flags.AddHost(parser)
   flags.AddPassword(parser)
+  flags.AddType(parser)
 
 
 def AddBetaArgs(parser):
-  flags.AddType(parser)
+  del parser  # Unused.
+  pass
 
 
 def AddAlphaArgs(parser):
   AddBetaArgs(parser)
 
 
-def RunBaseCreateCommand(args, release_track):
+def RunBaseCreateCommand(args):
   """Creates a user in a given instance.
 
   Args:
     args: argparse.Namespace, The arguments that this command was invoked with.
-    release_track: base.ReleaseTrack, the release track that this was run under.
 
   Returns:
     SQL user resource iterator.
@@ -65,24 +66,15 @@ def RunBaseCreateCommand(args, release_track):
       collection='sql.instances')
   operation_ref = None
 
-  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-    user_type = users.ParseUserType(sql_messages, args)
-    new_user = sql_messages.User(
-        kind='sql#user',
-        project=instance_ref.project,
-        instance=args.instance,
-        name=args.username,
-        host=args.host,
-        password=args.password,
-        type=user_type)
-  else:
-    new_user = sql_messages.User(
-        kind='sql#user',
-        project=instance_ref.project,
-        instance=args.instance,
-        name=args.username,
-        host=args.host,
-        password=args.password)
+  user_type = users.ParseUserType(sql_messages, args)
+  new_user = sql_messages.User(
+      kind='sql#user',
+      project=instance_ref.project,
+      instance=args.instance,
+      name=args.username,
+      host=args.host,
+      password=args.password,
+      type=user_type)
 
   result_operation = sql_client.users.Insert(new_user)
   operation_ref = client.resource_parser.Create(
@@ -108,8 +100,8 @@ def RunBaseCreateCommand(args, release_track):
 class Create(base.CreateCommand):
   """Creates a user in a given instance.
 
-  Creates a user in a given instance with specified username, host, and
-  password.
+  Creates a user in a given instance with specified username, host,
+  type, and password.
   """
 
   @staticmethod
@@ -119,7 +111,7 @@ class Create(base.CreateCommand):
     parser.display_info.AddCacheUpdater(flags.UserCompleter)
 
   def Run(self, args):
-    return RunBaseCreateCommand(args, self.ReleaseTrack())
+    return RunBaseCreateCommand(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

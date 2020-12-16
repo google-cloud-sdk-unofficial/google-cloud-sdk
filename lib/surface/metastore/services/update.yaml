@@ -105,7 +105,7 @@
           Information used to configure the Hive metastore service as a service principal
           in a Kerberos realm.
         params:
-        - arg_name: kerberos_principal
+        - arg_name: kerberos-principal
           api_field: service.hiveMetastoreConfig.kerberosConfig.principal
           processor: googlecloudsdk.command_lib.metastore.validators:ValidateKerberosPrincipal
           help_text: |

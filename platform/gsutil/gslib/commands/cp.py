@@ -332,7 +332,7 @@ _RESUMABLE_TRANSFERS_TEXT = """
   specify any special command line options to make this happen. If your upload
   is interrupted, you can restart the upload by running the same ``cp`` command that
   you used to start the upload. You can adjust the minimum size for performing
-  resumable uploads by changing the <code>resumable_threshold</code> parameter in
+  resumable uploads by changing the ``resumable_threshold`` parameter in
   the boto configuration file.
 
   Until the upload has completed successfully, it is not visible at the destination
@@ -409,6 +409,7 @@ _SLICED_OBJECT_DOWNLOADS_TEXT = """
 
 _PARALLEL_COMPOSITE_UPLOADS_TEXT = """
 <B>PARALLEL COMPOSITE UPLOADS</B>
+
   gsutil can automatically use
   `object composition <https://cloud.google.com/storage/docs/composite-objects>`_
   to perform uploads in parallel for large, local files being uploaded to
@@ -652,13 +653,13 @@ _OPTIONS_TEXT = """
                  does the following:
 
                  - The ``cp`` command uploads the files ``cattypes.html`` and
-                    ``tabby.jpeg`` to the bucket ``gs://mycats``.
+                   ``tabby.jpeg`` to the bucket ``gs://mycats``.
                  - Based on the file extensions, gsutil sets the ``Content-Type``
-                    of ``cattypes.html`` to ``text/html`` and ``tabby.jpeg`` to
-                    ``image/jpeg``.
+                   of ``cattypes.html`` to ``text/html`` and ``tabby.jpeg`` to
+                   ``image/jpeg``.
                  - The ``-z`` option compresses the data in the file ``cattypes.html``.
                  - The ``-z`` option also sets the ``Content-Encoding`` for
-                    ``cattypes.html`` to ``gzip``.
+                   ``cattypes.html`` to ``gzip``.
                  - The ``-a`` option sets the ACL for both files to public-read.
                  - If a user tries to view ``cattypes.html`` in a browser, the
                    browser uncompresses the data based on the

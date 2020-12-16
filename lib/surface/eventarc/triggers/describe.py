@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.eventarc import triggers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.eventarc import flags
-from googlecloudsdk.command_lib.eventarc import types
 from googlecloudsdk.core import log
 
 _DETAILED_HELP = {
@@ -36,7 +35,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe an Eventarc trigger."""
 
@@ -49,10 +48,10 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Run the describe command."""
-    client = triggers.TriggersClient()
+    client = triggers.CreateTriggersClient(self.ReleaseTrack())
     trigger_ref = args.CONCEPTS.trigger.Parse()
     trigger = client.Get(trigger_ref)
-    event_type = types.MatchingCriteriaMessageToType(trigger.matchingCriteria)
+    event_type = client.GetEventType(trigger)
     self._active_time = triggers.TriggerActiveTime(event_type,
                                                    trigger.updateTime)
     return trigger

@@ -49,7 +49,6 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    # TODO(b/36050942): deprecate --only-managed and --only-unmanaged flags.
     managed_args_group = parser.add_mutually_exclusive_group()
     managed_args_group.add_argument(
         '--only-managed',

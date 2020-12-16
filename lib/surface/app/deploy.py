@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import hashlib
-import os
 
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import runtime_builders
@@ -171,55 +170,16 @@ class DeployBeta(base.SilentCommand):
     runtime_builder_strategy = deploy_util.GetRuntimeBuilderStrategy(
         base.ReleaseTrack.BETA)
     api_client = appengine_api_client.GetApiClientForTrack(self.ReleaseTrack())
-
-    # If the hidden flag `--use-ct-apis` is not set, then continue to use old
-    # implementation which uses admin-console-hr.
-    if not args.use_ct_apis:
-      return deploy_util.RunDeploy(
-          args,
-          api_client,
-          use_beta_stager=True,
-          runtime_builder_strategy=runtime_builder_strategy,
-          parallel_build=True,
-          flex_image_build_option=deploy_util.GetFlexImageBuildOption(
-              default_strategy=deploy_util.FlexImageBuildOptions.ON_SERVER),
-          dispatch_admin_api=True)
-
-    app_engine_legacy_deployables = []
-    cloud_tasks_api_deployables = []
-    cloud_scheduler_api_deployables = []
-    for deployable in args.deployables:
-      if os.path.basename(deployable) == 'queue.yaml':
-        cloud_tasks_api_deployables.append(deployable)
-      elif os.path.basename(deployable) == 'cron.yaml':
-        cloud_scheduler_api_deployables.append(deployable)
-      else:
-        app_engine_legacy_deployables.append(deployable)
-
-    resources = {'versions': [], 'configs': []}
-    if (
-        app_engine_legacy_deployables or
-        not (cloud_tasks_api_deployables or cloud_scheduler_api_deployables)
-    ):
-      args.deployables = app_engine_legacy_deployables
-      resources = deploy_util.RunDeploy(
-          args,
-          api_client,
-          use_beta_stager=True,
-          runtime_builder_strategy=runtime_builder_strategy,
-          parallel_build=True,
-          flex_image_build_option=deploy_util.GetFlexImageBuildOption(
-              default_strategy=deploy_util.FlexImageBuildOptions.ON_SERVER),
-          dispatch_admin_api=True)
-    if cloud_tasks_api_deployables:
-      args.deployables = cloud_tasks_api_deployables
-      deploy_util.RunDeployCloudTasks(args)
-      resources['configs'].append('queue')
-    if cloud_scheduler_api_deployables:
-      args.deployables = cloud_scheduler_api_deployables
-      deploy_util.RunDeployCloudScheduler(args)
-      resources['configs'].append('cron')
-    return resources
+    return deploy_util.RunDeploy(
+        args,
+        api_client,
+        use_beta_stager=True,
+        runtime_builder_strategy=runtime_builder_strategy,
+        parallel_build=True,
+        flex_image_build_option=deploy_util.GetFlexImageBuildOption(
+            default_strategy=deploy_util.FlexImageBuildOptions.ON_SERVER),
+        dispatch_admin_api=True,
+        use_ct_apis=True)
 
 
 DeployGA.detailed_help = _DETAILED_HELP

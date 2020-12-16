@@ -40,19 +40,20 @@ def _IsFieldSpecified(field_name, args):
   return any(args.IsSpecified(arg) for arg in list_args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdatePerimeterDryRun(base.UpdateCommand):
   """Updates the dry-run mode configuration for a Service Perimeter."""
   _API_VERSION = 'v1'
 
   @staticmethod
   def Args(parser):
-    UpdatePerimeterDryRun.ArgsVersioned(parser, version='v1')
+    UpdatePerimeterDryRun.ArgsVersioned(
+        parser, version='v1', track=base.ReleaseTrack.GA)
 
   @staticmethod
-  def ArgsVersioned(parser, version='v1'):
+  def ArgsVersioned(parser, version='v1', track=base.ReleaseTrack.GA):
     perimeters.AddResourceArg(parser, 'to update')
-    perimeters.AddUpdateDirectionalPoliciesGroupArgs(parser, version)
+    perimeters.AddUpdateDirectionalPoliciesGroupArgs(parser, version, track)
     repeated.AddPrimitiveArgs(
         parser,
         'Service Perimeter',
@@ -140,9 +141,20 @@ class UpdatePerimeterDryRun(base.UpdateCommand):
         vpc_allowed_services=updated_vpc_services,
         enable_vpc_accessible_services=updated_vpc_enabled,
         ingress_policies=perimeters.ParseUpdateDirectionalPoliciesArgs(
-            args, self._API_VERSION, 'ingress-policies'),
+            args, self._release_track, 'ingress-policies'),
         egress_policies=perimeters.ParseUpdateDirectionalPoliciesArgs(
-            args, self._API_VERSION, 'egress-policies'))
+            args, self._release_track, 'egress-policies'))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdatePerimeterDryRunBeta(UpdatePerimeterDryRun):
+  """Updates the dry-run mode configuration for a Service Perimeter."""
+  _API_VERSION = 'v1'
+
+  @staticmethod
+  def Args(parser):
+    UpdatePerimeterDryRun.ArgsVersioned(
+        parser, version='v1', track=base.ReleaseTrack.BETA)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -152,7 +164,8 @@ class UpdatePerimeterDryRunAlpha(UpdatePerimeterDryRun):
 
   @staticmethod
   def Args(parser):
-    UpdatePerimeterDryRun.ArgsVersioned(parser, version='v1alpha')
+    UpdatePerimeterDryRun.ArgsVersioned(
+        parser, version='v1alpha', track=base.ReleaseTrack.ALPHA)
 
 
 detailed_help = {
@@ -180,4 +193,5 @@ detailed_help = {
 }
 
 UpdatePerimeterDryRunAlpha.detailed_help = detailed_help
+UpdatePerimeterDryRunBeta.detailed_help = detailed_help
 UpdatePerimeterDryRun.detailed_help = detailed_help

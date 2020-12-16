@@ -32,9 +32,11 @@ def _CommonArgs(parser, api_version):
   flags.MakeNodeTemplateArg().AddArgument(parser)
   flags.AddCreateArgsToParser(parser)
   flags.GetServerBindingMapperFlag(messages).choice_arg.AddToParser(parser)
+  flags.AddAcceleratorArgs(parser)
+  flags.AddDiskArgToParser(parser)
 
 
-def _Run(args, track, enable_disk=False, enable_accelerator=False):
+def _Run(args, track):
   """Creates a node template."""
   holder = base_classes.ComputeApiHolder(track)
   client = holder.client
@@ -48,9 +50,7 @@ def _Run(args, track, enable_disk=False, enable_accelerator=False):
   node_template = util.CreateNodeTemplate(
       node_template_ref,
       args,
-      messages=messages,
-      enable_disk=enable_disk,
-      enable_accelerator=enable_accelerator)
+      messages=messages)
   request = messages.ComputeNodeTemplatesInsertRequest(
       nodeTemplate=node_template,
       project=node_template_ref.project,
@@ -74,8 +74,6 @@ class Create(base.CreateCommand):
            $ {command} my-node-template --node-type=n1-node-96-624
        """
   }
-  enable_disk = False
-  enable_accelerator = False
 
   @staticmethod
   def Args(parser):
@@ -85,35 +83,24 @@ class Create(base.CreateCommand):
   def Run(self, args):
     return _Run(
         args,
-        self.ReleaseTrack(),
-        enable_disk=self.enable_disk,
-        enable_accelerator=self.enable_accelerator)
+        self.ReleaseTrack())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a Compute Engine node template."""
 
-  enable_disk = True
-  enable_accelerator = True
-
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, 'beta')
     flags.AddCpuOvercommitTypeFlag(parser)
-    flags.AddDiskArgToParser(parser)
-    flags.AddAcceleratorArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Create a Compute Engine node template."""
 
-  enable_disk = True
-
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, 'alpha')
     flags.AddCpuOvercommitTypeFlag(parser)
-    flags.AddDiskArgToParser(parser)
-    flags.AddAcceleratorArgs(parser)
