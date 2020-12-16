@@ -2,7 +2,13 @@
 
   help_text:
     brief: Create a new service perimeter.
-    description: Create a new service perimeter in a given access policy.
+    description: |
+      Create a new service perimeter in a given access policy.
+
+      ## EXAMPLES
+
+        To create a new basic Service Perimeter:
+        $ {command} --title=my_perimeter_title --resources=projects/12345 --restricted-service="storage.googleapis.com" --policy=9876543
 
   request:
     api_version: v1
@@ -89,7 +95,7 @@
           unrestricted service lists, as well as access level lists,
           must be empty.
     - api_field: servicePerimeter.status.ingressPolicies
-      release_tracks: [ALPHA]
+      release_tracks: [ALPHA, BETA]
       metavar: YAML_FILE
       arg_name: ingress-policies
       help_text: |
@@ -100,10 +106,15 @@
 
         For more information about the alpha version, see:
         https://cloud.google.com/access-context-manager/docs/reference/rest/v1alpha/accessPolicies.servicePerimeters
+        For more information about non-alpha versions, see:
+        https://cloud.google.com/access-context-manager/docs/reference/rest/v1/accessPolicies.servicePerimeters
       repeated: false
-      processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseIngressPolicies:api_version=v1alpha
+      ALPHA:
+        processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseIngressPolicies:api_version=v1alpha
+      BETA:
+        processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseIngressPolicies:api_version=v1
     - api_field: servicePerimeter.status.egressPolicies
-      release_tracks: [ALPHA]
+      release_tracks: [ALPHA, BETA]
       metavar: YAML_FILE
       arg_name: egress-policies
       help_text: |
@@ -114,8 +125,13 @@
 
         For more information about the alpha version, see:
         https://cloud.google.com/access-context-manager/docs/reference/rest/v1alpha/accessPolicies.servicePerimeters
+        For more information about non-alpha versions, see:
+        https://cloud.google.com/access-context-manager/docs/reference/rest/v1/accessPolicies.servicePerimeters
       repeated: false
-      processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseEgressPolicies:api_version=v1alpha
+      ALPHA:
+        processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseEgressPolicies:api_version=v1alpha
+      BETA:
+        processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseEgressPolicies:api_version=v1
     - group:
         params:
         - api_field: servicePerimeter.status.vpcAccessibleServices.allowedServices

@@ -34,16 +34,15 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveDagTimeout(base.CreateCommand):
-  """Remove DAG timeout from workflow template."""
+  """Remove DAG timeout from a workflow template."""
 
   detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):
     dataproc = dp.Dataproc(cls.ReleaseTrack())
-    flags.AddTemplateResourceArg(parser, 'remove DAG timeout from',
+    flags.AddTemplateResourceArg(parser, 'remove the DAG timeout from',
                                  dataproc.api_version)
 
   def Run(self, args):

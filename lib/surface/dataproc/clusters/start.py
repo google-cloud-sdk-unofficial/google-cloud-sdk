@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Start(base.Command):
   """Start a cluster."""

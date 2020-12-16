@@ -57,11 +57,15 @@ class Update(base.Command):
     flags.AddAirflowConfigUpdateFlagsToGroup(Update.update_type_group)
     flags.AddLabelsUpdateFlagsToGroup(Update.update_type_group)
 
+    web_server_group = Update.update_type_group.add_mutually_exclusive_group()
+    flags.UPDATE_WEB_SERVER_ALLOW_IP.AddToParser(web_server_group)
+    flags.WEB_SERVER_ALLOW_ALL.AddToParser(web_server_group)
+    flags.WEB_SERVER_DENY_ALL.AddToParser(web_server_group)
+
   def _ConstructPatch(self,
                       env_ref,
                       args,
                       support_environment_upgrades=False,
-                      support_web_server_access_control=False,
                       support_cloud_sql_machine_type=False,
                       support_web_server_machine_type=False):
 
@@ -87,11 +91,10 @@ class Update(base.Command):
 
     if support_environment_upgrades:
       params['update_image_version'] = args.image_version
-    if support_web_server_access_control:
-      params['update_web_server_access_control'] = (
-          environments_api_util.BuildWebServerAllowedIps(
-              args.update_web_server_allow_ip, args.web_server_allow_all,
-              args.web_server_deny_all))
+    params['update_web_server_access_control'] = (
+        environments_api_util.BuildWebServerAllowedIps(
+            args.update_web_server_allow_ip, args.web_server_allow_all,
+            args.web_server_deny_all))
     if support_cloud_sql_machine_type:
       params['cloud_sql_machine_type'] = args.cloud_sql_machine_type
     if support_web_server_machine_type:
@@ -123,7 +126,6 @@ class UpdateBeta(Update):
     UpdateBeta.support_environment_upgrades = True
     flags.AddEnvUpgradeFlagsToGroup(Update.update_type_group)
 
-    UpdateBeta.support_web_server_access_control = False
     flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(Update.update_type_group)
     flags.WEB_SERVER_MACHINE_TYPE.AddToParser(Update.update_type_group)
 
@@ -131,11 +133,6 @@ class UpdateBeta(Update):
   def Args(parser):
     """Arguments available only in beta, not in alpha."""
     UpdateBeta.AlphaAndBetaArgs(parser)
-    UpdateBeta.support_web_server_access_control = True
-    web_server_group = Update.update_type_group.add_mutually_exclusive_group()
-    flags.UPDATE_WEB_SERVER_ALLOW_IP.AddToParser(web_server_group)
-    flags.WEB_SERVER_ALLOW_ALL.AddToParser(web_server_group)
-    flags.WEB_SERVER_DENY_ALL.AddToParser(web_server_group)
 
   def Run(self, args):
     env_ref = args.CONCEPTS.environment.Parse()
@@ -161,8 +158,7 @@ class UpdateBeta(Update):
           [acl['ip_range'] for acl in args.update_web_server_allow_ip])
 
     field_mask, patch = self._ConstructPatch(
-        env_ref, args, UpdateBeta.support_environment_upgrades,
-        UpdateBeta.support_web_server_access_control, True, True)
+        env_ref, args, UpdateBeta.support_environment_upgrades, True, True)
 
     return patch_util.Patch(
         env_ref,

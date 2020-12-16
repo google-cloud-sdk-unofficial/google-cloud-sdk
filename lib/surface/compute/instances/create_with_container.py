@@ -61,6 +61,8 @@ def _Args(parser,
   instances_flags.AddCustomMachineTypeArgs(parser)
   instances_flags.AddNetworkArgs(parser)
   instances_flags.AddPrivateNetworkIpArgs(parser)
+  instances_flags.AddShieldedInstanceConfigArgs(
+      parser=parser, for_container=True)
   instances_flags.AddKonletArgs(parser)
   instances_flags.AddPublicPtrArgs(parser, instance=True)
   instances_flags.AddImageArgs(parser)
@@ -277,6 +279,11 @@ class CreateWithContainer(base.CreateCommand):
             instance_utils.CreateAdvancedMachineFeaturesMessage(
                 compute_client.messages, args.enable_nested_virtualization,
                 args.threads_per_core))
+
+      shielded_instance_config = create_utils.BuildShieldedInstanceConfigMessage(
+          messages=compute_client.messages, args=args)
+      if shielded_instance_config:
+        instance.shieldedInstanceConfig = shielded_instance_config
 
       request = compute_client.messages.ComputeInstancesInsertRequest(
           instance=instance,

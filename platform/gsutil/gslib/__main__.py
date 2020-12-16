@@ -84,6 +84,7 @@ import httplib2
 import oauth2client
 from google_reauth import reauth_creds
 from google_reauth import errors as reauth_errors
+from gslib import context_config
 from gslib import wildcard_iterator
 from gslib.cloud_api import AccessDeniedException
 from gslib.cloud_api import ArgumentException
@@ -413,6 +414,10 @@ def main():
       command_name = 'help'
     else:
       command_name = args[0]
+      if command_name != 'test':
+        # Don't initialize mTLS authentication because
+        # tests that need it will do this initialization themselves.
+        context_config.create_context_config(logging.getLogger())
 
     _CheckAndWarnForProxyDifferences()
 

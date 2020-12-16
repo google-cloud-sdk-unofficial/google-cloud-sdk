@@ -101,6 +101,10 @@ class Projections(base.TopicCommand):
   with a minimum width of either the default or of _MIN-WIDTH_ if specified. The
   default is 10 characters.
 
+  *width*=_COLUMN-WIDTH_::
+  An integer denoting the width for the column. The default fits the table to
+  the terminal width or 80 if the output is not a terminal.
+
   ## EXAMPLES
 
   List a table of instance *zone* (sorted in descending order) and
@@ -120,10 +124,11 @@ class Projections(base.TopicCommand):
     $ gcloud info --format="value(config.account)"
 
   List the *name*, *id*, and *description* of an imaginary *foo* resource,
-  wrapping the *id* column with the default minimum width and the *description*
-  column with a minimum width of 20 characters:
+  fixing the *name* column width to 16 characters, wrapping the *id* column with
+  the default minimum width and the *description* column with a minimum width of
+  20 characters:
 
-    $ gcloud example foo list --format="table(name, id:wrap, description:wrap=20)"
+    $ gcloud example foo list --format="table(name:width=16, id:wrap, description:wrap=20)"
   """
 
   detailed_help = {

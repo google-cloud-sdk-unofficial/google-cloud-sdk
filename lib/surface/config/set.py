@@ -85,9 +85,16 @@ class Set(base.Command):
 
   To unset properties, use `gcloud config unset`.
 
-  Note, Cloud SDK comes with a `default` configuration. To create multiple
+  Cloud SDK comes with a `default` configuration. To create multiple
   configurations, use `gcloud config configurations create`, and
   `gcloud config configurations activate` to switch between them.
+
+  Note: If you are using Cloud Shell, your gcloud command-line tool preferences
+  are stored in a temporary `tmp` folder, set for your current tab only, and do
+  not persist across sessions. For details on how to make these configurations
+  persist, refer to the Cloud Shell
+  guide on setting gcloud command-line tool preferences:
+  https://cloud.google.com/shell/docs/configuring-cloud-shell#gcloud_command-line_tool_preferences.
 
   ## AVAILABLE PROPERTIES
 

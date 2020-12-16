@@ -78,13 +78,33 @@ def _IsDebug():
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Dev(base.Command):
-  """Run a Cloud Run service in a local development environment.
+  r"""Run a Cloud Run service in a local development environment.
 
-  By default, this command runs the user's containers on minikube on the local
-  machine. To run on another kubernetes cluster, use the --kube-context flag.
+  This command takes Cloud Run source, builds it, and runs it on the local
+  machine. This command also watches the relevant source files and updates the
+  container when they change.
 
-  When using minikube, if the minikube cluster is not running, this command
-  will start a new minikube cluster with that name.
+
+  If building images using a Dockerfile:
+
+    $ {command} --dockerfile=<path_to_dockerfile>
+
+  If the Dockerfile is named `Dockerfile` and is located in the current
+  directory, the `--dockerfile` flag may be omitted:
+
+    $ {command}
+
+  If building images with a CNCF buildpack builder:
+
+    $ {command} --builder=<builder>
+
+  To access Google Cloud Platform services with the current user's credentials,
+  login to obtain the application default credentials and invoke this command
+  with the `--application-default-credential` flag.
+
+    $ gcloud auth application-default login
+    $ {command} --dockerfile=<path_to_dockerfile> \
+      --application-default-credential
   """
 
   @classmethod

@@ -1,2 +1,4 @@
 # anthoscli binary
 /bin/anthoscli
+# kuberun binary
+/bin/kuberun

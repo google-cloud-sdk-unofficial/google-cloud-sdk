@@ -17,48 +17,13 @@
 import enum
 
 
-BASE_URL = 'https://cloudasset.googleapis.com/v1beta1/'
-DOCS_URL = 'https://cloud.google.com/asset-inventory/docs/quickstart'
+BASE_URL = 'https://servicedirectory.googleapis.com/v1/'
+DOCS_URL = 'https://cloud.google.com/service-directory'
 
 
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
-  FOLDERS = (
-      'folders',
-      'folders/{foldersId}',
-      {},
-      ['foldersId'],
-      True
-  )
-  FOLDERS_OPERATIONS = (
-      'folders.operations',
-      '{+name}',
-      {
-          '':
-              'folders/{foldersId}/operations/{operationsId}/{operationsId1}',
-      },
-      ['name'],
-      True
-  )
-  ORGANIZATIONS = (
-      'organizations',
-      'organizations/{organizationsId}',
-      {},
-      ['organizationsId'],
-      True
-  )
-  ORGANIZATIONS_OPERATIONS = (
-      'organizations.operations',
-      '{+name}',
-      {
-          '':
-              'organizations/{organizationsId}/operations/{operationsId}/'
-              '{operationsId1}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS = (
       'projects',
       'projects/{projectsId}',
@@ -66,13 +31,45 @@ class Collections(enum.Enum):
       ['projectsId'],
       True
   )
-  PROJECTS_OPERATIONS = (
-      'projects.operations',
+  PROJECTS_LOCATIONS = (
+      'projects.locations',
       '{+name}',
       {
           '':
-              'projects/{projectsId}/operations/{operationsId}/'
-              '{operationsId1}',
+              'projects/{projectsId}/locations/{locationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_NAMESPACES = (
+      'projects.locations.namespaces',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/namespaces/'
+              '{namespacesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_NAMESPACES_SERVICES = (
+      'projects.locations.namespaces.services',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/namespaces/'
+              '{namespacesId}/services/{servicesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_NAMESPACES_SERVICES_ENDPOINTS = (
+      'projects.locations.namespaces.services.endpoints',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/namespaces/'
+              '{namespacesId}/services/{servicesId}/endpoints/{endpointsId}',
       },
       ['name'],
       True

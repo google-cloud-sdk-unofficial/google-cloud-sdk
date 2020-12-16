@@ -51,7 +51,8 @@ class ListGrantableRoles(base.Command):
 
           List grantable roles for a resource identified via URI:
 
-            $ {command} https://www.googleapis.com/compute/v1/projects/example-project/zones/us-central1-f/instances/example-instance
+            $ {command} \\
+            https://www.googleapis.com/compute/v1/projects/example-project/zones/us-central1-f/instances/example-instance
       """),
   }
 

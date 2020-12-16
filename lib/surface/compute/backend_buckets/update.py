@@ -38,7 +38,8 @@ class Update(base.UpdateCommand):
   """
 
   BACKEND_BUCKET_ARG = None
-  _support_flexible_cache_step_one = False
+  _support_flexible_cache_step_one = True
+  _support_negative_cache = False
 
   @classmethod
   def Args(cls, parser):
@@ -52,6 +53,9 @@ class Update(base.UpdateCommand):
       cdn_flags.AddFlexibleCacheStepOne(
           parser, 'backend bucket', update_command=True)
 
+    if cls._support_negative_cache:
+      cdn_flags.AddNegativeCache(parser, 'backend bucket', update_command=True)
+
   def AnyArgsSpecified(self, args):
     """Returns true if any args for updating backend bucket were specified."""
     return (args.IsSpecified('description') or
@@ -60,15 +64,17 @@ class Update(base.UpdateCommand):
 
   def AnyFlexibleCacheArgsSpecified(self, args):
     """Returns true if any Flexible Cache args for updating backend bucket were specified."""
-    return self._support_flexible_cache_step_one and any(
+    return ((self._support_flexible_cache_step_one and any(
         (args.IsSpecified('cache_mode'), args.IsSpecified('client_ttl'),
          args.IsSpecified('no_client_ttl'), args.IsSpecified('default_ttl'),
          args.IsSpecified('no_default_ttl'), args.IsSpecified('max_ttl'),
-         args.IsSpecified('no_max_ttl'), args.IsSpecified('negative_caching'),
-         args.IsSpecified('negative_caching_policy'),
-         args.IsSpecified('no_negative_caching_policies'),
+         args.IsSpecified('no_max_ttl'),
          args.IsSpecified('custom_response_header'),
-         args.IsSpecified('no_custom_response_headers')))
+         args.IsSpecified('no_custom_response_headers')))) or
+            (self._support_negative_cache and any(
+                (args.IsSpecified('negative_caching'),
+                 args.IsSpecified('negative_caching_policy'),
+                 args.IsSpecified('no_negative_caching_policies')))))
 
   def GetGetRequest(self, client, backend_bucket_ref):
     """Returns a request to retrieve the backend bucket."""
@@ -111,7 +117,8 @@ class Update(base.UpdateCommand):
         replacement,
         is_update=True,
         cleared_fields=cleared_fields,
-        support_flexible_cache_step_one=self._support_flexible_cache_step_one)
+        support_flexible_cache_step_one=self._support_flexible_cache_step_one,
+        support_negative_cache=self._support_negative_cache)
 
     if self._support_flexible_cache_step_one:
       if args.custom_response_header is not None:
@@ -170,3 +177,4 @@ class UpdateAlphaBeta(Update):
   *{command}* is used to update backend buckets.
   """
   _support_flexible_cache_step_one = True
+  _support_negative_cache = True

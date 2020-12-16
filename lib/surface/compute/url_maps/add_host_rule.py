@@ -35,7 +35,7 @@ def _DetailedHelp():
       'brief':
           'Add a rule to a URL map to map hosts to a path matcher.',
       'DESCRIPTION': """
-*{command}* is used to add a mapping of hosts to a patch
+*{command}* is used to add a mapping of hosts to a path
 matcher in a URL map. The mapping will match the host
 component of HTTP requests to path matchers which in turn map
 the request to a backend service. Before adding a host rule,
@@ -78,8 +78,8 @@ def _Args(parser):
       '--path-matcher-name',
       required=True,
       help="""\
-      The name of the patch matcher to use if a request matches this
-      host rule. The patch matcher must already exist in the URL map
+      The name of the path matcher to use if a request matches this
+      host rule. The path matcher must already exist in the URL map
       (see `gcloud compute url-maps add-path-matcher`).
       """)
 

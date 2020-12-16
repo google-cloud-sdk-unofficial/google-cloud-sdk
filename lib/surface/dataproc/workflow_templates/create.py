@@ -36,45 +36,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a workflow template."""
-
-  detailed_help = DETAILED_HELP
-
-  @classmethod
-  def Args(cls, parser):
-    dataproc = dp.Dataproc(cls.ReleaseTrack())
-    labels_util.AddCreateLabelsFlags(parser)
-    flags.AddTemplateResourceArg(parser, 'create', dataproc.api_version)
-
-  def Run(self, args):
-    dataproc = dp.Dataproc(self.ReleaseTrack())
-    messages = dataproc.messages
-
-    template_ref = args.CONCEPTS.template.Parse()
-    # TODO(b/109837200) make the dataproc discovery doc parameters consistent
-    # Parent() fails for the collection because of projectId/projectsId and
-    # regionId/regionsId inconsistencies.
-    # parent = template_ref.Parent().RelativePath()
-    parent = '/'.join(template_ref.RelativeName().split('/')[0:4])
-
-    workflow_template = messages.WorkflowTemplate(
-        id=template_ref.Name(),
-        name=template_ref.RelativeName(),
-        labels=labels_util.ParseCreateArgs(
-            args, messages.WorkflowTemplate.LabelsValue))
-
-    request = messages.DataprocProjectsRegionsWorkflowTemplatesCreateRequest(
-        parent=parent, workflowTemplate=workflow_template)
-
-    template = dataproc.client.projects_regions_workflowTemplates.Create(
-        request)
-    return template
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateBeta(Create):
   """Create a workflow template."""
 
   detailed_help = DETAILED_HELP
@@ -91,6 +53,10 @@ class CreateBeta(Create):
     messages = dataproc.messages
 
     template_ref = args.CONCEPTS.template.Parse()
+    # TODO(b/109837200) make the dataproc discovery doc parameters consistent
+    # Parent() fails for the collection because of projectId/projectsId and
+    # regionId/regionsId inconsistencies.
+    # parent = template_ref.Parent().RelativePath()
     parent = '/'.join(template_ref.RelativeName().split('/')[0:4])
 
     workflow_template = messages.WorkflowTemplate(

@@ -44,16 +44,18 @@ class Cp(base.Command):
 
         $ *{command}* gs://my-bucket/*.txt .
 
+      You can also transfer objects between cloud storage providers:
+
+        $ *{command}* gs://my-bucket/*.txt s3://my-bucket
+
       If you want to copy an entire directory tree you need to use the -r
       option. For example, to upload the directory tree "dir":
 
         $ *{command}* -r dir gs://my-bucket
       """,
-      # TODO(b/160602071) Expand examples as features are added.
   }
 
   @staticmethod
-  # TODO(b/160602071) Add arguments as features are added.
   def Args(parser):
     parser.add_argument('source', nargs='+', help='The source path(s) to copy.')
     parser.add_argument('destination', help='The destination path.')

@@ -28,17 +28,6 @@
       help_text: The region of the connectors to list.
       spec: !REF googlecloudsdk.command_lib.compute.networks.vpc_access.resources:region
 
-  output:
-    format: |
-      table(
-         name.basename():label=CONNECTOR_ID:sort=1,
-         name.segment(3):label=REGION,
-         network,
-         ipCidrRange,
-         minThroughput,
-         maxThroughput,
-         state
-       )
   ALPHA:
     output:
       format: |
@@ -50,4 +39,30 @@
            subnet.name:label=SUBNET,
            subnet.projectId:label=SUBNET_PROJECT,
            status
+         )
+  BETA:
+    output:
+      format: |
+        table(
+           name.basename():label=CONNECTOR_ID:sort=1,
+           name.segment(3):label=REGION,
+           network,
+           ipCidrRange,
+           subnet.name:label=SUBNET,
+           subnet.projectId:label=SUBNET_PROJECT,
+           minThroughput,
+           maxThroughput,
+           state
+         )
+  GA:
+    output:
+      format: |
+        table(
+           name.basename():label=CONNECTOR_ID:sort=1,
+           name.segment(3):label=REGION,
+           network,
+           ipCidrRange,
+           minThroughput,
+           maxThroughput,
+           state
          )

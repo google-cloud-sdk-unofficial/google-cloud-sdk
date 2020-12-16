@@ -85,6 +85,7 @@ class Create(base.Command):
     cls.CommonArgs(parser)
 
   def Run(self, args):
+    flags.ValidateSourceOrTypeFlagSet(args)
     conn_context = connection_context.GetConnectionContext(
         args, serverless_flags.Product.EVENTS, self.ReleaseTrack())
 
@@ -99,49 +100,50 @@ class Create(base.Command):
 
         namespace_ref = trigger_ref.Parent()
       if args.custom_type:
+        event_type_obj = None
         event_type = args.type
         source_obj = None
         tracker_stages = stages.TriggerStages()
       else:
         source_crds = client.ListSourceCustomResourceDefinitions()
-        event_type = util.EventTypeFromTypeString(
-            source_crds, args.type, args.source)
+        event_type_obj = util.EventTypeFromTypeString(source_crds, args.type,
+                                                      args.source)
+        event_type = event_type_obj.type
         if client.IsCluster():
-          source_client = client.ClientFromCrd(event_type.crd)
+          source_client = client.ClientFromCrd(event_type_obj.crd)
         else:
           source_client = client.client
 
-        source_obj = source.Source.New(
-            source_client, namespace_ref.Name(),
-            event_type.crd.source_kind, event_type.crd.source_api_category)
+        source_obj = source.Source.New(source_client, namespace_ref.Name(),
+                                       event_type_obj.crd.source_kind,
+                                       event_type_obj.crd.source_api_category)
         source_obj.name = _SOURCE_NAME_PATTERN.format(
             trigger=trigger_ref.Name())
-        parameters = flags.GetAndValidateParameters(args, event_type)
+        parameters = flags.GetAndValidateParameters(args, event_type_obj)
         tracker_stages = stages.TriggerAndSourceStages()
-
       trigger_obj = client.GetTrigger(trigger_ref)
-      if trigger_obj is not None:
+      if trigger_obj:
         if args.custom_type:
           # If custom type, no need to check idempotency since there's only
           # a trigger to worry about.
           raise exceptions.TriggerCreationError(
               'Trigger [{}] already exists.'.format(trigger_obj.name))
-        else:
-          # If trigger already exists, validate it has the attributes we're
-          # trying to set right now to see if this is a case of idempotency.
-          try:
-            util.ValidateTrigger(trigger_obj, source_obj, event_type)
-          except AssertionError:
-            raise exceptions.TriggerCreationError(
-                'Trigger [{}] already exists with attributes not '
-                'matching this event type.'.format(trigger_obj.name))
-          # If the trigger has the right attributes, check if there's already
-          # a source that matches the attributes as well.
-          source_ref = util.GetSourceRef(source_obj.name, source_obj.namespace,
-                                         event_type.crd, client.IsCluster())
-          if client.GetSource(source_ref, event_type.crd) is not None:
-            raise exceptions.TriggerCreationError(
-                'Trigger [{}] already exists.'.format(trigger_obj.name))
+
+        # If trigger already exists, validate it has the attributes we're
+        # trying to set right now to see if this is a case of idempotency.
+        try:
+          util.ValidateTrigger(trigger_obj, source_obj, event_type_obj)
+        except AssertionError:
+          raise exceptions.TriggerCreationError(
+              'Trigger [{}] already exists with attributes not '
+              'matching this event type.'.format(trigger_obj.name))
+        # If the trigger has the right attributes, check if there's already
+        # a source that matches the attributes as well.
+        source_ref = util.GetSourceRef(source_obj.name, source_obj.namespace,
+                                       event_type_obj.crd, client.IsCluster())
+        if client.GetSource(source_ref, event_type_obj.crd) is not None:
+          raise exceptions.TriggerCreationError(
+              'Trigger [{}] already exists.'.format(trigger_obj.name))
 
       # Create the trigger and source
       with progress_tracker.StagedProgressTracker(
@@ -149,14 +151,13 @@ class Create(base.Command):
           tracker_stages,
           failure_message='Trigger creation failed') as tracker:
         if trigger_obj is None:
-          trigger_obj = client.CreateTrigger(
-              trigger_ref, source_obj,
-              event_type if args.custom_type else event_type.type,
-              args.trigger_filters, args.target_service, args.broker)
+          trigger_obj = client.CreateTrigger(trigger_ref, source_obj,
+                                             event_type, args.trigger_filters,
+                                             args.target_service, args.broker)
         if not args.custom_type:
-          client.CreateSource(source_obj, event_type.crd, trigger_obj,
+          client.CreateSource(source_obj, event_type_obj.crd, trigger_obj,
                               namespace_ref, args.broker, parameters)
-          client.PollSource(source_obj, event_type, tracker)
+          client.PollSource(source_obj, event_type_obj, tracker)
         client.PollTrigger(trigger_ref, tracker)
 
 

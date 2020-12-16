@@ -32,21 +32,32 @@ _DETAILED_HELP = {
         """ \
         To create a new trigger ``my-trigger'' for events of type ``google.cloud.pubsub.topic.v1.messagePublished'' with destination Cloud Run service ``my-service'', run:
 
+          $ {command} my-trigger --event-filters="type=google.cloud.pubsub.topic.v1.messagePublished" --destination-run-service=my-service
+        """,
+}
+
+_DETAILED_HELP_BETA = {
+    'DESCRIPTION':
+        '{description}',
+    'EXAMPLES':
+        """ \
+        To create a new trigger ``my-trigger'' for events of type ``google.cloud.pubsub.topic.v1.messagePublished'' with destination Cloud Run service ``my-service'', run:
+
           $ {command} my-trigger --matching-criteria="type=google.cloud.pubsub.topic.v1.messagePublished" --destination-run-service=my-service
         """,
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create an Eventarc trigger."""
 
   detailed_help = _DETAILED_HELP
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.AddTriggerResourceArg(parser, 'The trigger to create.', required=True)
-    flags.AddMatchingCriteriaArg(parser, required=True)
+    flags.AddEventFiltersArg(parser, cls.ReleaseTrack(), required=True)
     flags.AddServiceAccountArg(parser)
     flags.AddDestinationRunServiceArg(parser, required=True)
     flags.AddDestinationRunPathArg(parser)
@@ -55,14 +66,14 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     """Run the create command."""
-    client = triggers.TriggersClient()
+    client = triggers.CreateTriggersClient(self.ReleaseTrack())
     trigger_ref = args.CONCEPTS.trigger.Parse()
-    operation = client.Create(trigger_ref, args.matching_criteria,
-                              args.service_account,
+    event_filters = flags.GetEventFiltersArg(args, self.ReleaseTrack())
+    operation = client.Create(trigger_ref, event_filters, args.service_account,
                               args.destination_run_service,
                               args.destination_run_path,
                               args.destination_run_region)
-    self._event_type = args.matching_criteria['type']
+    self._event_type = event_filters['type']
     if args.async_:
       return operation
     response = client.WaitFor(operation)
@@ -80,3 +91,10 @@ class Create(base.CreateCommand):
       log.warning(
           'It may take up to {} minutes for the new trigger to become active.'
           .format(triggers.MAX_ACTIVE_DELAY_MINUTES))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create an Eventarc trigger."""
+
+  detailed_help = _DETAILED_HELP_BETA

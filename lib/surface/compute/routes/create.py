@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import ipaddress
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
@@ -237,13 +239,22 @@ class Create(base.CreateCommand):
     next_hop_ilb_uri = None
 
     if args.next_hop_ilb:
-      next_hop_ilb_uri = self.ILB_ARG.ResolveAsResource(
-          args,
-          holder.resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(client)).SelfLink()
+      try:
+        ipaddress.ip_address(args.next_hop_ilb)
+        if args.next_hop_ilb_region:
+          raise exceptions.InvalidArgumentException(
+              '--next-hop-ilb-region', 'This should not be specified if '
+              'an IP address is used for [--next-hop-ilb].')
+        next_hop_ilb_uri = args.next_hop_ilb
+      except ValueError:
+        next_hop_ilb_uri = self.ILB_ARG.ResolveAsResource(
+            args,
+            holder.resources,
+            scope_lister=compute_flags.GetDefaultScopeLister(
+                client)).SelfLink()
     elif args.next_hop_ilb_region:
-      raise exceptions.ToolException(
-          '[--next-hop-ilb-region] can only be specified in '
+      raise exceptions.InvalidArgumentException(
+          '--next-hop-ilb-region', 'This can only be specified in '
           'conjunction with [--next-hop-ilb].')
 
     request = client.messages.ComputeRoutesInsertRequest(

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The backups command group for bigtable."""
+"""The backups command group for spanner."""
 
 from __future__ import absolute_import
 from __future__ import division

@@ -37,6 +37,16 @@ _DETAILED_HELP = {
 _FORMAT = """ \
 table(
     name.scope("triggers"):label=NAME,
+    eventFilters.type():label=TYPE,
+    destination.cloudRun.service:label=DESTINATION_RUN_SERVICE,
+    destination.cloudRun.path:label=DESTINATION_RUN_PATH,
+    active_status():label=ACTIVE
+)
+"""
+
+_FORMAT_BETA = """ \
+table(
+    name.scope("triggers"):label=NAME,
     matchingCriteria.type():label=TYPE,
     destination.cloudRunService.service:label=DESTINATION_RUN_SERVICE,
     destination.cloudRunService.path:label=DESTINATION_RUN_PATH,
@@ -46,12 +56,13 @@ table(
 
 
 def _ActiveStatus(trigger):
-  event_type = types.MatchingCriteriaDictToType(trigger['matchingCriteria'])
+  event_filters = trigger.get('eventFilters', trigger.get('matchingCriteria'))
+  event_type = types.EventFiltersDictToType(event_filters)
   active_time = triggers.TriggerActiveTime(event_type, trigger['updateTime'])
   return 'By {}'.format(active_time) if active_time else 'Yes'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Eventarc triggers."""
 
@@ -68,11 +79,21 @@ class List(base.ListCommand):
     parser.display_info.AddUriFunc(triggers.GetTriggerURI)
     parser.display_info.AddTransforms({
         'active_status': _ActiveStatus,
-        'type': types.MatchingCriteriaDictToType
+        'type': types.EventFiltersDictToType
     })
 
   def Run(self, args):
     """Run the list command."""
-    client = triggers.TriggersClient()
+    client = triggers.CreateTriggersClient(self.ReleaseTrack())
     location_ref = args.CONCEPTS.location.Parse()
     return client.List(location_ref, args.limit, args.page_size)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """List Eventarc triggers."""
+
+  @staticmethod
+  def Args(parser):
+    List.Args(parser)
+    parser.display_info.AddFormat(_FORMAT_BETA)

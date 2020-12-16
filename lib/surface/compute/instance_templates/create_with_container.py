@@ -68,6 +68,7 @@ def _Args(parser,
   instances_flags.AddMinCpuPlatformArgs(parser, release_track)
   instances_flags.AddNetworkTierArgs(parser, instance=True)
   instances_flags.AddConfidentialComputeArgs(parser)
+  instances_flags.AddShieldedInstanceConfigArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
   instances_flags.AddPrivateNetworkIpArgs(parser)
 
@@ -277,6 +278,11 @@ class CreateWithContainer(base.CreateCommand):
               client.messages).GetEnumForChoice(
                   args.private_ipv6_google_access_type))
 
+    shielded_instance_config_message = create_utils.BuildShieldedInstanceConfigMessage(
+        messages=client.messages, args=args)
+    if shielded_instance_config_message:
+      properties.shieldedInstanceConfig = shielded_instance_config_message
+
     request = client.messages.ComputeInstanceTemplatesInsertRequest(
         instanceTemplate=client.messages.InstanceTemplate(
             properties=properties,
@@ -420,6 +426,11 @@ class CreateWithContainerBeta(CreateWithContainer):
               client.messages).GetEnumForChoice(
                   args.private_ipv6_google_access_type))
 
+    shielded_instance_config_message = create_utils.BuildShieldedInstanceConfigMessage(
+        messages=client.messages, args=args)
+    if shielded_instance_config_message:
+      properties.shieldedInstanceConfig = shielded_instance_config_message
+
     request = client.messages.ComputeInstanceTemplatesInsertRequest(
         instanceTemplate=client.messages.InstanceTemplate(
             properties=properties,
@@ -518,6 +529,11 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
           instances_flags.GetPrivateIpv6GoogleAccessTypeFlagMapperForTemplate(
               client.messages).GetEnumForChoice(
                   args.private_ipv6_google_access_type))
+
+    shielded_instance_config_message = create_utils.BuildShieldedInstanceConfigMessage(
+        messages=client.messages, args=args)
+    if shielded_instance_config_message:
+      properties.shieldedInstanceConfig = shielded_instance_config_message
 
     request = client.messages.ComputeInstanceTemplatesInsertRequest(
         instanceTemplate=client.messages.InstanceTemplate(

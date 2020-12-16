@@ -166,6 +166,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                 api_adapter.CLOUDRUN: _ParseAddonDisabled,
                 api_adapter.NODELOCALDNS: _ParseAddonDisabled,
                 api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
+                api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
             }),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
@@ -176,7 +177,8 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {network_policy}=ENABLED|DISABLED
 {cloudrun}=ENABLED|DISABLED
 {configconnector}=ENABLED|DISABLED
-{nodelocaldns}=ENABLED|DISABLED""".format(
+{nodelocaldns}=ENABLED|DISABLED
+{gcepdcsidriver}=ENABLED|DISABLED""".format(
     hpa=api_adapter.HPA,
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD,
@@ -184,6 +186,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     cloudrun=api_adapter.CLOUDRUN,
     configconnector=api_adapter.CONFIGCONNECTOR,
     nodelocaldns=api_adapter.NODELOCALDNS,
+    gcepdcsidriver=api_adapter.GCEPDCSIDRIVER,
     ))
 
   mutex_group.add_argument(
@@ -614,6 +617,7 @@ class UpdateBeta(Update):
     flags.AddNotificationConfigFlag(group)
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1beta1', group, hidden=False)
     flags.AddKubernetesObjectsExportConfig(group)
+    flags.AddDisableAutopilotFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     flags.ValidateNotificationConfigFlag(args)
@@ -641,16 +645,6 @@ class UpdateBeta(Update):
           'operations on the cluster (including delete) until it has run '
           'to completion.',
           cancel_on_no=True)
-    if args.disable_addons and api_adapter.GCEPDCSIDRIVER in args.disable_addons:
-      pdcsi_disabled = args.disable_addons[api_adapter.GCEPDCSIDRIVER]
-      if pdcsi_disabled:
-        # Persistent Disk CSI Driver is being disabled
-        console_io.PromptContinue(
-            message='If the Compute Engine Persistent Disk CSI Driver is '
-            'disabled, then any pods currently using PersistentVolumes owned '
-            'by the driver will fail to terminate. Any new pods that try to '
-            'use those PersistentVolumes will also fail to start.',
-            cancel_on_no=True)
 
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     opts.enable_logging_monitoring_system_only = args.enable_logging_monitoring_system_only
@@ -675,6 +669,7 @@ class UpdateBeta(Update):
     opts.kubernetes_objects_snapshots_target = args.kubernetes_objects_snapshots_target
     opts.enable_gke_oidc = args.enable_gke_oidc
     opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
+    opts.disable_autopilot = args.disable_autopilot
 
     return opts
 
@@ -737,6 +732,7 @@ class UpdateAlpha(Update):
     flags.AddNotificationConfigFlag(group)
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1alpha1', group, hidden=False)
     flags.AddKubernetesObjectsExportConfig(group)
+    flags.AddDisableAutopilotFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     flags.ValidateNotificationConfigFlag(args)
@@ -766,16 +762,6 @@ class UpdateAlpha(Update):
           'operations on the cluster (including delete) until it has run '
           'to completion.',
           cancel_on_no=True)
-    if args.disable_addons and api_adapter.GCEPDCSIDRIVER in args.disable_addons:
-      pdcsi_disabled = args.disable_addons[api_adapter.GCEPDCSIDRIVER]
-      if pdcsi_disabled:
-        # GCE Persistent Disk CSI Driver is being disabled
-        console_io.PromptContinue(
-            message='If the GCE Persistent Disk CSI Driver is disabled, then any '
-            'pods currently using PersistentVolumes owned by the driver '
-            'will fail to terminate. Any new pods that try to use those '
-            'PersistentVolumes will also fail to start.',
-            cancel_on_no=True)
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     opts.enable_logging_monitoring_system_only = args.enable_logging_monitoring_system_only
     opts.no_master_logs = args.no_master_logs
@@ -799,5 +785,6 @@ class UpdateAlpha(Update):
     opts.kubernetes_objects_snapshots_target = args.kubernetes_objects_snapshots_target
     opts.enable_gke_oidc = args.enable_gke_oidc
     opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
+    opts.disable_autopilot = args.disable_autopilot
 
     return opts
