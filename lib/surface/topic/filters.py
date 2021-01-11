@@ -173,8 +173,11 @@ class Filters(base.TopicCommand):
           https://docs.python.org/3/library/re.html#re-syntax which follows the
           PCRE dialect.
 
-          """)
-          .format(description=resource_topics.ResourceDescription('filter')),
+          To obtain the values that _key_ can be in the resource, use
+          `--format=json` in your command.
+
+          """).format(
+              description=resource_topics.ResourceDescription('filter')),
       'EXAMPLES':
           textwrap.dedent("""\
           List all Google Compute Engine instance resources:
@@ -209,6 +212,11 @@ class Filters(base.TopicCommand):
           but not *my-other-tag* or have tag *alternative-tag*:
 
             $ gcloud compute instances list --filter="(tags.items=my-tag AND -tags.items=my-other-tag) OR tags.items=alternative-tag"
+
+          List Compute Engine instance resources which contain the key *fingerprint*
+          in the *metadata* object:
+
+            $ gcloud compute instances list --limit=1 --filter="metadata.list(show="keys"):fingerprint"
 
           List Compute Engine instance resources with label *my-label* with any
           value:

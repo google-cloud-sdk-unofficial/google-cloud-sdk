@@ -35,11 +35,9 @@ auto_flags = [
 # Change default flag values in create-auto
 flag_overrides = {
     'num_nodes': 1,
-    'enable_private_nodes': True,
     'enable_ip_alias': True,
     'enable_master_authorized_networks': False,
     'privatecluster': {
-        'enable_private_nodes': None,
         'private_cluster': None,
     },
 }

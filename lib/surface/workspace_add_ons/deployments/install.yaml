@@ -11,6 +11,8 @@
     collection: gsuiteaddons.projects.deployments
     api_version: v1
     method: install
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.workspace_add_ons.util:HandleEscapingInNamePath
   arguments:
     resource:
       help_text: Google Workspace Add-ons deployment to install

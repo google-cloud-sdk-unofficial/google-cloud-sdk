@@ -19,7 +19,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import getpass
 import json
 
 from googlecloudsdk.api_lib.auth import service_account as auth_service_account
@@ -131,7 +130,7 @@ class ActivateServiceAccount(base.SilentCommand):
         except files.Error as e:
           raise c_exc.UnknownArgumentException('--password-file', e)
       elif args.prompt_for_password:
-        password = getpass.getpass('Password: ')
+        password = console_io.PromptPassword('Password: ')
 
       cred = auth_service_account.CredentialsFromP12Key(
           file_content, account, password=password)

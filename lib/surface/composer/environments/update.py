@@ -43,6 +43,8 @@ class Update(base.Command):
   """Update properties of a Cloud Composer environment."""
 
   detailed_help = DETAILED_HELP
+  _support_autoscaling = False
+  _support_maintenance_window = False
 
   @staticmethod
   def Args(parser):
@@ -99,6 +101,16 @@ class Update(base.Command):
       params['cloud_sql_machine_type'] = args.cloud_sql_machine_type
     if support_web_server_machine_type:
       params['web_server_machine_type'] = args.web_server_machine_type
+    if self._support_autoscaling:
+      params['autoscaling_maximum_cpu'] = args.autoscaling_maximum_cpu
+      params['autoscaling_minimum_cpu'] = args.autoscaling_minimum_cpu
+      params['autoscaling_maximum_memory'] = args.autoscaling_maximum_memory
+      params['autoscaling_minimum_memory'] = args.autoscaling_minimum_memory
+    if self._support_maintenance_window:
+      params['maintenance_window_start'] = args.maintenance_window_start
+      params['maintenance_window_end'] = args.maintenance_window_end
+      params[
+          'maintenance_window_recurrence'] = args.maintenance_window_recurrence
 
     return patch_util.ConstructPatch(**params)
 
@@ -117,6 +129,9 @@ class Update(base.Command):
 class UpdateBeta(Update):
   """Update properties of a Cloud Composer environment."""
 
+  _support_autoscaling = False
+  _support_maintenance_window = True
+
   @staticmethod
   def AlphaAndBetaArgs(parser):
     """Arguments available only in both alpha and beta."""
@@ -128,6 +143,7 @@ class UpdateBeta(Update):
 
     flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(Update.update_type_group)
     flags.WEB_SERVER_MACHINE_TYPE.AddToParser(Update.update_type_group)
+    flags.AddMaintenanceWindowFlagsGroup(Update.update_type_group)
 
   @staticmethod
   def Args(parser):
@@ -172,6 +188,9 @@ class UpdateBeta(Update):
 class UpdateAlpha(UpdateBeta):
   """Update properties of a Cloud Composer environment."""
 
+  _support_autoscaling = True
+
   @staticmethod
   def Args(parser):
     UpdateBeta.AlphaAndBetaArgs(parser)
+    flags.AddAutoscalingUpdateFlagsToGroup(Update.update_type_group)

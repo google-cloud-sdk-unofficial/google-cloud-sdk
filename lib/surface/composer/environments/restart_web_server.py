@@ -37,7 +37,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RestartWebServer(base.Command):
   """Restart web server for a Cloud Composer environment."""
 

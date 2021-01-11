@@ -82,6 +82,9 @@ class Update(base.UpdateCommand):
     flags.AddSurgeUpgradeFlag(surge_upgrade_group, for_node_pool=True)
     flags.AddMaxUnavailableUpgradeFlag(surge_upgrade_group, for_node_pool=True)
 
+    # TODO(b/170998504): Unhide prior to GA release.
+    flags.AddSystemConfigFlag(group, hidden=True)
+
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
     return api_adapter.UpdateNodePoolOptions(
@@ -95,7 +98,8 @@ class Update(base.UpdateCommand):
         workload_metadata_from_node=args.workload_metadata_from_node,
         enable_autoprovisioning=args.enable_autoprovisioning,
         max_surge_upgrade=args.max_surge_upgrade,
-        max_unavailable_upgrade=args.max_unavailable_upgrade)
+        max_unavailable_upgrade=args.max_unavailable_upgrade,
+        system_config_from_file=args.system_config_from_file)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

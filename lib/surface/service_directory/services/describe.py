@@ -23,8 +23,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.service_directory import resource_args
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Describe a service."""
+  """Describes a service."""
 
   detailed_help = {
       'EXAMPLES':
@@ -40,7 +41,18 @@ class Describe(base.DescribeCommand):
     resource_args.AddServiceResourceArg(parser, 'to describe.')
 
   def Run(self, args):
-    client = services.ServicesClient()
+    client = services.ServicesClient(self.GetReleaseTrack())
     service_ref = args.CONCEPTS.service.Parse()
 
     return client.Describe(service_ref)
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.GA
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+  """Describes a service."""
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.BETA

@@ -22,13 +22,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import getpass
 import textwrap
 
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.command_lib.sql import import_util
+from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
@@ -81,7 +81,7 @@ class Bak(base.Command):
   def Run(self, args):
     """Runs the command to import into the Cloud SQL instance."""
     if args.prompt_for_pvk_password:
-      args.pvk_password = getpass.getpass('Private Key Password: ')
+      args.pvk_password = console_io.PromptPassword('Private Key Password: ')
 
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     return import_util.RunBakImportCommand(args, client)

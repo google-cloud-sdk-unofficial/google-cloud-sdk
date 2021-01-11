@@ -22,7 +22,7 @@
   request:
     collection: run.projects.locations.services
     modify_request_hooks:
-    - googlecloudsdk.command_lib.run.flags:ValidatePlatformIsManaged
+    - googlecloudsdk.command_lib.run.platforms:ValidatePlatformIsManaged
 
   arguments:
     resource:

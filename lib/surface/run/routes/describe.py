@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -68,9 +69,8 @@ class Describe(base.Command):
     with serverless_operations.Connect(conn_context) as client:
       conf = client.GetRoute(route_ref)
     if not conf:
-      raise flags.ArgumentError(
-          'Cannot find route [{}]'.format(
-              route_ref.routesId))
+      raise exceptions.ArgumentError('Cannot find route [{}]'.format(
+          route_ref.routesId))
     return conf
 
 

@@ -100,6 +100,9 @@ def AddQueryArgument(parser):
           results.
         * ```resource:organizations/123456``` to find IAM policy
           bindings that are set on ``organizations/123456''.
+        * ```resource=//cloudresourcemanager.googleapis.com/projects/myproject```
+          to find IAM policy bindings that are set on the project named
+          ``myproject''.
         * ```Important``` to find IAM policy bindings that contain
           ``Important'' as a word in any of the searchable fields (except for
           the included permissions).

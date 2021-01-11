@@ -53,7 +53,7 @@ DETAILED_HELP = {
 }
 
 
-def _CommonArgs(parser):
+def _CommonArgs(parser, support_max_pods_per_node):
   """Common arguments that apply to all ReleaseTracks."""
   resource_args.AddEnvironmentResourceArg(parser, 'to create')
   base.ASYNC_FLAG.AddToParser(parser)
@@ -177,7 +177,7 @@ information on how to structure KEYs and VALUEs, run
       portion, the patch version can be omitted and the current
       version will be selected. The version numbers that are used will
       be stored.""")
-  flags.AddIpAliasEnvironmentFlags(parser)
+  flags.AddIpAliasEnvironmentFlags(parser, support_max_pods_per_node)
   flags.AddPrivateIpEnvironmentFlags(parser)
   web_server_group = parser.add_mutually_exclusive_group()
   flags.WEB_SERVER_ALLOW_IP.AddToParser(web_server_group)
@@ -196,10 +196,11 @@ class Create(base.Command):
   """
 
   detailed_help = DETAILED_HELP
+  _support_max_pods_per_node = False
 
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser)
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(parser, cls._support_max_pods_per_node)
 
   def Run(self, args):
     self.ParseIpAliasConfigOptions(args)
@@ -281,6 +282,11 @@ class Create(base.Command):
           PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-ip-alias',
               opt='services-secondary-range-name'))
+    if self._support_max_pods_per_node and args.max_pods_per_node \
+        and not args.enable_ip_alias:
+      raise command_util.InvalidUserInputError(
+          PREREQUISITE_OPTION_ERROR_MSG.format(
+              prerequisite='enable-ip-alias', opt='max-pods-per-node'))
 
   def ParsePrivateEnvironmentConfigOptions(self, args):
     """Parses the options for Private Environment configuration."""
@@ -372,9 +378,11 @@ class CreateBeta(Create):
     {top_command} composer operations describe
   """
 
-  @staticmethod
-  def Args(parser):
-    Create.Args(parser)
+  _support_max_pods_per_node = True
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateBeta, cls).Args(parser)
     flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(parser)
     flags.WEB_SERVER_MACHINE_TYPE.AddToParser(parser)
 
@@ -383,6 +391,8 @@ class CreateBeta(Create):
         "'Cloud KMS CryptoKey Encrypter/Decrypter'")
     kms_resource_args.AddKmsKeyResourceArg(
         parser, 'environment', permission_info=permission_info)
+
+    flags.AddMaintenanceWindowFlagsGroup(parser)
 
   def Run(self, args):
     self.kms_key = None
@@ -413,6 +423,7 @@ class CreateBeta(Create):
         services_secondary_range_name=args.services_secondary_range_name,
         cluster_ipv4_cidr_block=args.cluster_ipv4_cidr,
         services_ipv4_cidr_block=args.services_ipv4_cidr,
+        max_pods_per_node=args.max_pods_per_node,
         kms_key=self.kms_key,
         private_environment=args.enable_private_environment,
         private_endpoint=args.enable_private_endpoint,
@@ -422,6 +433,9 @@ class CreateBeta(Create):
         web_server_access_control=self.web_server_access_control,
         cloud_sql_machine_type=args.cloud_sql_machine_type,
         web_server_machine_type=args.web_server_machine_type,
+        maintenance_window_start=args.maintenance_window_start,
+        maintenance_window_end=args.maintenance_window_end,
+        maintenance_window_recurrence=args.maintenance_window_recurrence,
         release_track=self.ReleaseTrack())
 
 
@@ -435,9 +449,9 @@ class CreateAlpha(CreateBeta):
     {top_command} composer operations describe
   """
 
-  @staticmethod
-  def Args(parser):
-    CreateBeta.Args(parser)
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlpha, cls).Args(parser)
 
     # Adding alpha arguments
     parser.add_argument(
@@ -450,6 +464,13 @@ class CreateAlpha(CreateBeta):
         help="""The type of executor by which task instances are run on Airflow;
         currently supported executor types are CELERY and KUBERNETES.
         Defaults to CELERY. Cannot be updated.""")
+
+    autoscaling_group_parser = parser.add_argument_group(hidden=True)
+    flags.ENABLE_AUTOSCALING.AddToParser(autoscaling_group_parser)
+    flags.AUTOSCALING_MAXIMUM_MEMORY.AddToParser(autoscaling_group_parser)
+    flags.AUTOSCALING_MINIMUM_MEMORY.AddToParser(autoscaling_group_parser)
+    flags.AUTOSCALING_MAXIMUM_CPU.AddToParser(autoscaling_group_parser)
+    flags.AUTOSCALING_MINIMUM_CPU.AddToParser(autoscaling_group_parser)
 
   def GetOperationMessage(self, args):
     """See base class."""
@@ -475,6 +496,7 @@ class CreateAlpha(CreateBeta):
         services_secondary_range_name=args.services_secondary_range_name,
         cluster_ipv4_cidr_block=args.cluster_ipv4_cidr,
         services_ipv4_cidr_block=args.services_ipv4_cidr,
+        max_pods_per_node=args.max_pods_per_node,
         kms_key=self.kms_key,
         private_environment=args.enable_private_environment,
         private_endpoint=args.enable_private_endpoint,
@@ -484,4 +506,12 @@ class CreateAlpha(CreateBeta):
         web_server_access_control=self.web_server_access_control,
         cloud_sql_machine_type=args.cloud_sql_machine_type,
         web_server_machine_type=args.web_server_machine_type,
+        enable_autoscaling=args.enable_autoscaling,
+        autoscaling_maximum_cpu=args.autoscaling_maximum_cpu,
+        autoscaling_minimum_cpu=args.autoscaling_minimum_cpu,
+        autoscaling_maximum_memory=args.autoscaling_maximum_memory,
+        autoscaling_minimum_memory=args.autoscaling_minimum_memory,
+        maintenance_window_start=args.maintenance_window_start,
+        maintenance_window_end=args.maintenance_window_end,
+        maintenance_window_recurrence=args.maintenance_window_recurrence,
         release_track=self.ReleaseTrack())

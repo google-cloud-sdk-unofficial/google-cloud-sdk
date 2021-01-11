@@ -96,6 +96,7 @@ class Import(base.CreateCommand):
   """Import an image into Compute Engine."""
 
   _OS_CHOICES = os_choices.OS_CHOICES_IMAGE_IMPORT_GA
+  _OS_FLAG_REQUIRED = True
 
   def __init__(self, *args, **kwargs):
     self.storage_client = storage_api.StorageClient()
@@ -119,7 +120,8 @@ class Import(base.CreateCommand):
     )
     flags.SOURCE_IMAGE_ARG.AddArgument(source, operation_type='import')
 
-    workflow = parser.add_mutually_exclusive_group(required=True)
+    workflow = parser.add_mutually_exclusive_group(
+        required=cls._OS_FLAG_REQUIRED)
     workflow.add_argument(
         '--os',
         choices=sorted(cls._OS_CHOICES),
@@ -192,6 +194,12 @@ class Import(base.CreateCommand):
         action='store_true',
         hidden=True,
         help='Whether to generalize the image using Windows Sysprep.')
+
+    daisy_utils.AddNoAddressArg(
+        parser,
+        'image import',
+        'https://cloud.google.com/compute/docs/import/importing-virtual-disks#no-external-ip'
+    )
 
   def Run(self, args):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -423,16 +431,12 @@ class ImportBeta(Import):
   """Import an image into Compute Engine for beta releases."""
 
   _OS_CHOICES = os_choices.OS_CHOICES_IMAGE_IMPORT_BETA
+  _OS_FLAG_REQUIRED = False
 
   @classmethod
   def Args(cls, parser):
     super(ImportBeta, cls).Args(parser)
     daisy_utils.AddExtraCommonDaisyArgs(parser)
-    daisy_utils.AddNoAddressArg(
-        parser,
-        'image import',
-        'https://cloud.google.com/compute/docs/import/importing-virtual-disks#no-external-ip'
-    )
 
   def _RunImageImport(self, args, import_args, tags, output_filter):
     return daisy_utils.RunImageImport(
@@ -466,6 +470,42 @@ Import.detailed_help = {
         depending on the input arguments specified.
 
         This command uses the `--os` flag to choose the appropriate translation.
+        You can omit the translation step using the `--data-disk` flag.
+
+        If you exported your disk from Compute Engine then you don't
+        need to re-import it. Instead, use `{parent_command} create`
+        to create more images from the disk.
+
+        Files stored on Cloud Storage and images in Compute Engine incur
+        charges. See [](https://cloud.google.com/compute/docs/images/importing-virtual-disks#resource_cleanup).
+        """,
+
+    'EXAMPLES': """
+        To import a centos-7 VMDK file, run:
+
+          $ {command} myimage-name --os=centos-7 --source-file=mysourcefile
+
+        To import a data disk without operating system, run:
+
+          $ {command} myimage-name --data-disk --source-file=mysourcefile
+        """,
+}
+
+ImportBeta.detailed_help = {
+    'brief': 'Import an image into Compute Engine',
+    'DESCRIPTION': """
+        *{command}* imports Virtual Disk images, such as VMWare VMDK files
+        and VHD files, into Compute Engine.
+
+        Importing images involves four steps:
+        *  Upload the virtual disk file to Cloud Storage.
+        *  Import the image to Compute Engine.
+        *  Detect the OS and bootloader contained on the disk.
+        *  Translate the image to make a bootable image.
+        This command performs all four of these steps as required,
+        depending on the input arguments specified.
+
+        To override the detected OS, specify the `--os` flag.
         You can omit the translation step using the `--data-disk` flag.
 
         If you exported your disk from Compute Engine then you don't

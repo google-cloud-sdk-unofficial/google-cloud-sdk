@@ -26,8 +26,9 @@ from googlecloudsdk.command_lib.service_directory import resource_args
 _RESOURCE_TYPE = 'service'
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveIamPolicyBinding(base.Command):
-  """Remove IAM policy binding from a service."""
+  """Removes IAM policy binding from a service."""
 
   detailed_help = {
       'EXAMPLES':
@@ -47,10 +48,21 @@ class RemoveIamPolicyBinding(base.Command):
     iam_util.AddArgsForRemoveIamPolicyBinding(parser)
 
   def Run(self, args):
-    client = services.ServicesClient()
+    client = services.ServicesClient(self.GetReleaseTrack())
     service_ref = args.CONCEPTS.service.Parse()
 
     result = client.RemoveIamPolicyBinding(service_ref, args.member, args.role)
     iam_util.LogSetIamPolicy(service_ref.Name(), _RESOURCE_TYPE)
 
     return result
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.GA
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class RemoveIamPolicyBindingBeta(RemoveIamPolicyBinding):
+  """Removes IAM policy binding from a service."""
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.BETA

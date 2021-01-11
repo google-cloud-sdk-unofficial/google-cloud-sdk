@@ -618,6 +618,7 @@ class UpdateBeta(Update):
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1beta1', group, hidden=False)
     flags.AddKubernetesObjectsExportConfig(group)
     flags.AddDisableAutopilotFlag(group, hidden=True)
+    flags.AddILBSubsettingFlags(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     flags.ValidateNotificationConfigFlag(args)
@@ -670,6 +671,7 @@ class UpdateBeta(Update):
     opts.enable_gke_oidc = args.enable_gke_oidc
     opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
     opts.disable_autopilot = args.disable_autopilot
+    opts.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting
 
     return opts
 
@@ -733,6 +735,7 @@ class UpdateAlpha(Update):
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1alpha1', group, hidden=False)
     flags.AddKubernetesObjectsExportConfig(group)
     flags.AddDisableAutopilotFlag(group, hidden=True)
+    flags.AddILBSubsettingFlags(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     flags.ValidateNotificationConfigFlag(args)
@@ -786,5 +789,6 @@ class UpdateAlpha(Update):
     opts.enable_gke_oidc = args.enable_gke_oidc
     opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
     opts.disable_autopilot = args.disable_autopilot
+    opts.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting
 
     return opts

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import copy
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.org_policies import exceptions
 from googlecloudsdk.command_lib.org_policies import interfaces
 
 
@@ -51,6 +52,11 @@ class DisableInherit(interfaces.OrgPolicyGetAndUpdateCommand):
     Returns:
       The updated policy.
     """
+    if not policy.spec.rules:
+      raise exceptions.OperationNotSupportedError(
+          'Cannot disable inherit on an empty policy. To create a policy use allow/deny, enable/disable_enforce or set_policy.'
+      )
+
     new_policy = copy.deepcopy(policy)
     new_policy.spec.inheritFromParent = False
 

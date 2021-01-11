@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.events import exceptions
-from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.kuberun import flags
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
@@ -43,17 +43,4 @@ class EventTypes(base.Group):
 
   @staticmethod
   def Args(parser):
-    # Add --platform
-    flags.AddPlatformArg(parser)
-
-    platform_helpers_group = parser.add_mutually_exclusive_group(
-        help='Arguments to locate resources, depending on the platform used.')
-
-    # Add --cluster and --cluster-location (plus properties)
-    gke_group = flags.GetGkeArgGroup(platform_helpers_group)
-    concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
-                                  ]).AddToParser(gke_group)
-
-    # Add --kubeconfig and --context
-    kubernetes_group = flags.GetKubernetesArgGroup(platform_helpers_group)
-    flags.AddKubeconfigFlags(kubernetes_group)
+    flags.ClusterConnectionFlags().AddToParser(parser)

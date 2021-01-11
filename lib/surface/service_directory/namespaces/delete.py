@@ -26,8 +26,9 @@ from googlecloudsdk.core import log
 _RESOURCE_TYPE = 'namespace'
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
-  """Delete a namespace."""
+  """Deletes a namespace."""
 
   detailed_help = {
       'EXAMPLES':
@@ -43,10 +44,21 @@ class Delete(base.DeleteCommand):
     resource_args.AddNamespaceResourceArg(parser, 'to delete.')
 
   def Run(self, args):
-    client = namespaces.NamespacesClient()
+    client = namespaces.NamespacesClient(self.GetReleaseTrack())
     namespace_ref = args.CONCEPTS.namespace.Parse()
 
     result = client.Delete(namespace_ref)
     log.DeletedResource(namespace_ref.namespacesId, _RESOURCE_TYPE)
 
     return result
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.GA
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DeleteBeta(Delete):
+  """Deletes a namespace."""
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.BETA

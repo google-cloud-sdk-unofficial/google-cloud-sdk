@@ -24,6 +24,7 @@
     modify_request_hooks:
     - googlecloudsdk.command_lib.artifacts.util:ValidateLocationHook
     - googlecloudsdk.command_lib.artifacts.util:SlashEscapePackageName
+    - googlecloudsdk.command_lib.artifacts.util:AppendSortingToRequest
 
   response:
     modify_response_hooks:

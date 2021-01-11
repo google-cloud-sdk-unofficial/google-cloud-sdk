@@ -21,8 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.events import eventflow_operations
 from googlecloudsdk.command_lib.events import flags
-from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import flags as serverless_flags
+from googlecloudsdk.command_lib.kuberun import connection_context
 
 
 @base.Hidden
@@ -57,8 +56,7 @@ class List(base.ListCommand):
     List.CommonArgs(parser)
 
   def Run(self, args):
-    conn_context = connection_context.GetConnectionContext(
-        args, serverless_flags.Product.EVENTS, self.ReleaseTrack())
+    conn_context = connection_context.EventsConnectionContext(args)
 
     with eventflow_operations.Connect(conn_context) as client:
       source_crds = client.ListSourceCustomResourceDefinitions()

@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.events import flags
 from googlecloudsdk.command_lib.events import resource_args
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags as serverless_flags
+from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
@@ -68,7 +69,7 @@ class Create(base.Command):
 
   def Run(self, args):
     """Executes when the user runs the create command."""
-    if serverless_flags.GetPlatform() == serverless_flags.PLATFORM_MANAGED:
+    if platforms.GetPlatform() == platforms.PLATFORM_MANAGED:
       raise exceptions.UnsupportedArgumentError(
           'This command is only available with Cloud Run for Anthos.')
 

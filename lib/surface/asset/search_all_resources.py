@@ -82,6 +82,8 @@ def AddQueryArgument(parser):
 
         * ```name:Important``` to find Cloud resources whose name contains
           ``Important'' as a word.
+        * ```name=Important``` to find the Cloud resource whose name is exactly
+          ``Important''.
         * ```displayName:Impor*``` to find Cloud resources whose display
            name contains ``Impor'' as a prefix.
         * ```description:*por*``` to find Cloud resources whose description
@@ -117,7 +119,12 @@ def AddAssetTypesArgument(parser):
         A list of asset types to search. If not specified or empty, it will
         search all the [searchable asset types](https://cloud.google.com/asset-inventory/docs/supported-asset-types#searchable_asset_types).
         Example: ``cloudresourcemanager.googleapis.com/Project,compute.googleapis.com/Instance''
-        to search project and VM instance resources.
+        to search project and VM instance resources. Regular expressions are
+        also supported. For example: ``compute.googleapis.com.*'' snapshots
+        resources whose asset type starts with ``compute.googleapis.com''. See
+        [RE2](https://github.com/google/re2/wiki/Syntax) for all supported
+        regular expression syntax. If the regular expression does not match any
+        supported asset type, an ``INVALID_ARGUMENT'' error will be returned.
         """))
 
 

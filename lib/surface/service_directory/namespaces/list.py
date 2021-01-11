@@ -24,8 +24,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.service_directory import resource_args
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List namespaces."""
+  """Lists namespaces."""
 
   detailed_help = {
       'EXAMPLES':
@@ -43,8 +44,19 @@ class List(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
-    client = namespaces.NamespacesClient()
+    client = namespaces.NamespacesClient(self.GetReleaseTrack())
     location_ref = args.CONCEPTS.location.Parse()
     order_by = common_args.ParseSortByArg(args.sort_by)
 
     return client.List(location_ref, args.filter, order_by, args.page_size)
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.GA
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """Lists namespaces."""
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.BETA

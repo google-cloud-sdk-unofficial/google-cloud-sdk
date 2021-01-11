@@ -548,7 +548,7 @@ class Create(base.Command):
       disk.licenses = self.ParseLicenses(args)
 
       if support_provisioned_iops and args.IsSpecified('provisioned_iops'):
-        if type_uri.endswith('/pd-extreme'):
+        if type_uri and type_uri.endswith('/pd-extreme'):
           disk.provisionedIops = args.provisioned_iops
         else:
           raise exceptions.InvalidArgumentException(

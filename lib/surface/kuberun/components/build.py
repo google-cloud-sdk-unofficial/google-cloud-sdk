@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.kuberun import kuberun_command
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To build a Component named ``COMPONENT'', run:
+        To build a Component named ``COMPONENT'' in development mode, run:
 
             $ {command} COMPONENT
         """,
@@ -33,7 +33,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Build(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
-  """Build a Component."""
+  """Build a Component in development mode."""
 
   detailed_help = _DETAILED_HELP
   flags = []

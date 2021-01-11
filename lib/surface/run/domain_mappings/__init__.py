@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import platforms
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -45,15 +46,24 @@ class DomainMappings(base.Group):
       """,
   }
 
+  @staticmethod
+  def Args(parser):
+    """Adds --platform and the various related args."""
+    flags.AddPlatformAndLocationFlags(parser, anthos_only=True)
+
+  def Filter(self, context, args):
+    """Runs before command.Run and validates platform with passed args."""
+    # Ensures a platform is set on the run/platform property and
+    # all other passed args are valid for this platform and release track.
+    flags.GetAndValidatePlatform(args, self.ReleaseTrack(), flags.Product.RUN)
+    self._CheckPlatform()
+    return context
+
   def _CheckPlatform(self):
-    if flags.GetPlatform() == flags.PLATFORM_MANAGED:
+    if platforms.GetPlatform() == platforms.PLATFORM_MANAGED:
       raise exceptions.PlatformError(
           'This command group is in beta for fully managed Cloud Run; '
           'use `gcloud beta run domain-mappings`.')
-
-  def Filter(self, context, args):
-    self._CheckPlatform()
-    return context
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -74,6 +84,11 @@ class DomainMappingsBeta(base.Group):
             $ {command} list
       """,
   }
+
+  @staticmethod
+  def Args(parser):
+    """Adds --platform and the various related args."""
+    flags.AddPlatformAndLocationFlags(parser)
 
   def _CheckPlatform(self):
     pass

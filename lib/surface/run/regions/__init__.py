@@ -21,17 +21,29 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import platforms
 
 
 class Regions(base.Group):
   """View available Cloud Run (fully managed) regions."""
 
+  @staticmethod
+  def Args(parser):
+    """Adds --platform and the various related args."""
+    flags.AddPlatformArg(parser, managed_only=True)
+
+  def Filter(self, context, args):
+    """Runs before command.Run and validates platform with passed args."""
+    # Ensures the run/platform property is either unset or set to `managed` and
+    # all other passed args are valid for this platform and release track.
+    flags.GetAndValidatePlatform(
+        args, self.ReleaseTrack(), flags.Product.RUN, allow_empty=True)
+    self._CheckPlatform()
+    return context
+
   def _CheckPlatform(self):
-    if flags.GetPlatform() != flags.PLATFORM_MANAGED:
+    platform = platforms.GetPlatform(prompt_if_unset=False)
+    if platform is not None and platform != platforms.PLATFORM_MANAGED:
       raise exceptions.PlatformError(
           'This command group only supports listing regions for '
           'Cloud Run (fully managed).')
-
-  def Filter(self, context, args):
-    self._CheckPlatform()
-    return context

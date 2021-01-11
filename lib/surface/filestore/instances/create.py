@@ -51,47 +51,6 @@ class Create(base.CreateCommand):
         client.messages, self._API_VERSION).GetEnumForChoice(args.tier)
     labels = labels_util.ParseCreateArgs(args,
                                          client.messages.Instance.LabelsValue)
-    instance = client.ParseFilestoreConfig(
-        tier=tier,
-        description=args.description,
-        file_share=args.file_share,
-        network=args.network,
-        labels=labels,
-        zone=instance_ref.locationsId)
-    try:
-      client.ValidateFileShares(instance)
-    except filestore_client.InvalidCapacityError as e:
-      raise exceptions.InvalidArgumentException('--file-share',
-                                                six.text_type(e))
-    result = client.CreateInstance(instance_ref, args.async_, instance)
-    if args.async_:
-      command = properties.VALUES.metrics.command_name.Get().split('.')
-      if command:
-        command[-1] = 'list'
-      log.status.Print(
-          'Check the status of the new instance by listing all instances:\n  '
-          '$ {} '.format(' '.join(command)))
-    return result
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-  """Create a Cloud Filestore instance."""
-
-  _API_VERSION = filestore_client.BETA_API_VERSION
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser, CreateBeta._API_VERSION)
-
-  def Run(self, args):
-    """Create a Cloud Filestore instance in the current project."""
-    instance_ref = args.CONCEPTS.instance.Parse()
-    client = filestore_client.FilestoreClient(self._API_VERSION)
-    tier = instances_flags.GetTierArg(
-        client.messages, self._API_VERSION).GetEnumForChoice(args.tier)
-    labels = labels_util.ParseCreateArgs(args,
-                                         client.messages.Instance.LabelsValue)
     try:
       nfs_export_options = client.MakeNFSExportOptionsMsg(
           messages=client.messages,
@@ -118,6 +77,17 @@ class CreateBeta(Create):
     return result
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a Cloud Filestore instance."""
+
+  _API_VERSION = filestore_client.BETA_API_VERSION
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser, CreateBeta._API_VERSION)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Create a Cloud Filestore instance."""
@@ -130,22 +100,6 @@ class CreateAlpha(CreateBeta):
 
 
 Create.detailed_help = {
-    'DESCRIPTION':
-        'Create a Cloud Filestore instance.',
-    'EXAMPLES':
-        """\
-The following command creates a Cloud Filestore instance named NAME with a
-single volume.
-
-  $ {command} NAME \
-  --description=DESCRIPTION --tier=TIER \
-  --file-share=name=VOLUME_NAME,capacity=CAPACITY \
-  --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE
-"""
-}
-
-
-CreateBeta.detailed_help = {
     'DESCRIPTION':
         'Create a Cloud Filestore instance.',
     'EXAMPLES':
@@ -163,25 +117,24 @@ CreateBeta.detailed_help = {
   {
   "--file-share":
   {
-    "capacity": "102400",
+    "capacity": "61440",
     "name": "my_vol",
     "nfs-export-options": [
       {
         "access-mode": "READ_WRITE",
         "ip-ranges": [
-          "10.0.0.0/29",
-          "10.2.0.0/29"
+          "10.0.0.0/8",
         ],
-        "squash-mode": "ROOT_SQUASH",
-        "anon_uid": 1003,
-        "anon_gid": 1003
+        "squash-mode": "NO_ROOT_SQUASH",
       },
        {
         "access-mode": "READ_ONLY",
         "ip-ranges": [
           "192.168.0.0/24"
         ],
-        "squash-mode": "NO_ROOT_SQUASH"
+        "squash-mode": "ROOT_SQUASH"
+        "anon_uid": 1003,
+        "anon_gid": 1003
       }
     ],
   }

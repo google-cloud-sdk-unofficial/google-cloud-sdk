@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -92,7 +93,7 @@ class List(commands.List):
 
   def Run(self, args):
     """List available services."""
-    is_managed = flags.GetPlatform() == flags.PLATFORM_MANAGED
+    is_managed = platforms.GetPlatform() == platforms.PLATFORM_MANAGED
     if is_managed and not args.IsSpecified('region'):
       self._SetFormat(args, show_region=True)
       client = global_methods.GetServerlessClientInstance()

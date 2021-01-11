@@ -174,7 +174,7 @@ def MaybeLogReleaseChannelDefaultWarning(args):
 
 
 cloudNatTemplate = string.Template(
-    'Autopilot nodes are private. If you need connectivity to the '
+    'This cluster has private nodes. If you need connectivity to the '
     'public internet, for example to pull public containers, you must configure'
     ' Cloud NAT. To enable NAT for the network of this cluster, run the'
     ' following commands: \n'
@@ -187,7 +187,8 @@ cloudNatTemplate = string.Template(
 
 
 def MaybeLogCloudNatHelpText(args, is_autogke, location, project_id):
-  if is_autogke and (hasattr(args, 'network') or hasattr('subnetwork')):
+  if is_autogke and (getattr(args, 'enable_private_nodes', False) and
+                     (hasattr(args, 'network') or hasattr('subnetwork'))):
     log.warning(cloudNatTemplate.substitute(REGION=location,
                                             PROJECT_ID=project_id))
 
@@ -292,6 +293,7 @@ def ParseCreateOptionsBase(args, is_autogke, get_default, location, project_id):
       services_ipv4_cidr=get_default('services_ipv4_cidr'),
       services_secondary_range_name=get_default('services_secondary_range_name'),
       subnetwork=get_default('subnetwork'),
+      system_config_from_file=get_default('system_config_from_file'),
       private_ipv6_google_access_type=get_default('private_ipv6_google_access_type'),
       tags=get_default('tags'),
       user=get_default('username'),
@@ -445,6 +447,8 @@ flags_to_add = {
         'shieldedinstance': flags.AddShieldedInstanceFlags,
         'shieldednodes': flags.AddEnableShieldedNodesFlags,
         'surgeupgrade': flags.AddSurgeUpgradeFlag,
+        # TODO(b/170998504): Unhide prior to GA release.
+        'systemconfig': lambda p: flags.AddSystemConfigFlag(p, hidden=True),
         'stackdriver': flags.AddEnableStackdriverKubernetesFlag,
         'tags': flags.AddTagsCreate,
         'tpu': flags.AddTpuFlags,
@@ -490,6 +494,7 @@ flags_to_add = {
         'kubernetesobjectsexport': AddKubernetesObjectsExportFlag,
         'gvnic': flags.AddEnableGvnicFlag,
         'gkeoidc': flags.AddGkeOidcFlag,
+        'ilbsubsetting': flags.AddILBSubsettingFlags,
         'localssds': flags.AddLocalSSDsBetaFlags,
         'loggingmonitoring': flags.AddEnableLoggingMonitoringSystemOnlyFlag,
         'labels': flags.AddLabelsFlag,
@@ -814,6 +819,7 @@ class CreateBeta(Create):
     ops.system_config_from_file = get_default('system_config_from_file')
     ops.datapath_provider = get_default('datapath_provider')
     ops.dataplane_v2 = get_default('enable_dataplane_v2')
+    ops.enable_l4_ilb_subsetting = get_default('enable_l4_ilb_subsetting')
     ops.disable_default_snat = get_default('disable_default_snat')
     ops.enable_master_metrics = get_default('enable_master_metrics')
     ops.master_logs = get_default('master_logs')

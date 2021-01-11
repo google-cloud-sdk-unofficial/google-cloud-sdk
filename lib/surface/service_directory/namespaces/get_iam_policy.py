@@ -25,8 +25,9 @@ from googlecloudsdk.command_lib.service_directory import resource_args
 _RESOURCE_TYPE = 'namespace'
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetIamPolicy(base.ListCommand):
-  """Get IAM policy for a namespace."""
+  """Gets IAM policy for a namespace."""
 
   detailed_help = {
       'EXAMPLES':
@@ -45,7 +46,18 @@ class GetIamPolicy(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
-    client = namespaces.NamespacesClient()
+    client = namespaces.NamespacesClient(self.GetReleaseTrack())
     namespace_ref = args.CONCEPTS.namespace.Parse()
 
     return client.GetIamPolicy(namespace_ref)
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.GA
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class GetIamPolicyBeta(GetIamPolicy):
+  """Gets IAM policy for a namespace."""
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.BETA

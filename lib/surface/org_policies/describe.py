@@ -47,12 +47,6 @@ class Describe(base.DescribeCommand):
         '--effective',
         action='store_true',
         help='Describe the effective policy.')
-    parser.add_argument(
-        '--show-label-name',
-        action='store_true',
-        help=('Return label based conditions with the display name instead of '
-              'ID.')
-    )
 
   def Run(self, args):
     """Gets the (effective) organization policy.
@@ -83,7 +77,5 @@ class Describe(base.DescribeCommand):
     get_request = org_policy_messages.OrgpolicyPoliciesGetRequest(
         name=policy_name)
     policy = policy_service.Get(get_request)
-    if args.show_label_name:
-      utils.UpdateLabelNamesInCondition(policy)
 
     return policy

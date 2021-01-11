@@ -23,8 +23,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.service_directory import resource_args
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Describe a namespace."""
+  """Describes a namespace."""
 
   detailed_help = {
       'EXAMPLES':
@@ -40,7 +41,18 @@ class Describe(base.DescribeCommand):
     resource_args.AddNamespaceResourceArg(parser, 'to describe.')
 
   def Run(self, args):
-    client = namespaces.NamespacesClient()
+    client = namespaces.NamespacesClient(self.GetReleaseTrack())
     namespace_ref = args.CONCEPTS.namespace.Parse()
 
     return client.Describe(namespace_ref)
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.GA
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+  """Describes a namespace."""
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.BETA

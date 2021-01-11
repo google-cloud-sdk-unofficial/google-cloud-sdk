@@ -56,6 +56,7 @@ class Update(base.UpdateCommand):
     attachment_flags.AddDescription(parser)
     attachment_flags.AddAdminEnabled(parser, update=True)
     attachment_flags.AddBandwidth(parser, required=False)
+    attachment_flags.AddMtu(parser)
 
   def Run(self, args):
     interconnect_attachment = self._get_attachment(args)
@@ -63,7 +64,8 @@ class Update(base.UpdateCommand):
     return interconnect_attachment.PatchGa(
         description=args.description,
         admin_enabled=admin_enabled,
-        bandwidth=getattr(args, 'bandwidth', None))
+        bandwidth=getattr(args, 'bandwidth', None),
+        mtu=getattr(args, 'mtu', None))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -117,4 +119,3 @@ class UpdateAlpha(UpdateBeta):
   @classmethod
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
-    attachment_flags.AddMtu(parser)

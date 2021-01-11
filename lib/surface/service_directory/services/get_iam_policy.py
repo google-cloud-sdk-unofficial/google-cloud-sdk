@@ -25,8 +25,9 @@ from googlecloudsdk.command_lib.service_directory import resource_args
 _RESOURCE_TYPE = 'service'
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetIamPolicy(base.ListCommand):
-  """Get IAM policy for a service."""
+  """Gets IAM policy for a service."""
 
   detailed_help = {
       'EXAMPLES':
@@ -45,7 +46,18 @@ class GetIamPolicy(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
-    client = services.ServicesClient()
+    client = services.ServicesClient(self.GetReleaseTrack())
     service_ref = args.CONCEPTS.service.Parse()
 
     return client.GetIamPolicy(service_ref)
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.GA
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class GetIamPolicyBeta(GetIamPolicy):
+  """Gets IAM policy for a service."""
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.BETA

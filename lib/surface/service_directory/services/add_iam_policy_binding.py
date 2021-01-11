@@ -26,8 +26,9 @@ from googlecloudsdk.command_lib.service_directory import resource_args
 _RESOURCE_TYPE = 'service'
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddIamPolicyBinding(base.Command):
-  """Add IAM policy binding to a service."""
+  """Adds IAM policy binding to a service."""
 
   detailed_help = {
       'EXAMPLES':
@@ -45,10 +46,21 @@ class AddIamPolicyBinding(base.Command):
     iam_util.AddArgsForAddIamPolicyBinding(parser)
 
   def Run(self, args):
-    client = services.ServicesClient()
+    client = services.ServicesClient(self.GetReleaseTrack())
     service_ref = args.CONCEPTS.service.Parse()
 
     result = client.AddIamPolicyBinding(service_ref, args.member, args.role)
     iam_util.LogSetIamPolicy(service_ref.Name(), _RESOURCE_TYPE)
 
     return result
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.GA
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class AddIamPolicyBindingBeta(AddIamPolicyBinding):
+  """Adds IAM policy binding to a service."""
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.BETA

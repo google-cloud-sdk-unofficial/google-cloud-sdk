@@ -56,6 +56,7 @@ class Create(base.CreateCommand):
         pdp_ref,
         parent_prefix=args.public_advertised_prefix,
         ip_cidr_range=args.range,
-        description=args.description)
+        description=args.description,
+        enable_live_migration=args.enable_live_migration)
     log.CreatedResource(pdp_ref.Name(), 'public delegated prefix')
     return result

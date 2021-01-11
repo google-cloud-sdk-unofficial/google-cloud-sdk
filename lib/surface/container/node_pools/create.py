@@ -152,8 +152,8 @@ def ParseCreateNodePoolOptionsBase(args):
       sandbox=args.sandbox,
       max_surge_upgrade=args.max_surge_upgrade,
       max_unavailable_upgrade=args.max_unavailable_upgrade,
-      node_group=args.node_group
-      )
+      node_group=args.node_group,
+      system_config_from_file=args.system_config_from_file)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -181,6 +181,8 @@ class Create(base.CreateCommand):
     flags.AddSurgeUpgradeFlag(parser, for_node_pool=True)
     flags.AddMaxUnavailableUpgradeFlag(
         parser, for_node_pool=True, is_create=True)
+    # TODO(b/170998504): Unhide prior to GA release.
+    flags.AddSystemConfigFlag(parser, hidden=True)
     flags.AddNodeGroupFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):

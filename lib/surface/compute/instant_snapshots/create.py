@@ -37,6 +37,8 @@ def _CommonArgs(parser):
   Create.IPS_ARG = ips_flags.MakeInstantSnapshotArg()
   Create.IPS_ARG.AddArgument(parser, operation_type='create')
   labels_util.AddCreateLabelsFlags(parser)
+  parser.display_info.AddFormat(
+      'table(name, location(), location_scope(), status)')
   _SourceArgs(parser)
 
 

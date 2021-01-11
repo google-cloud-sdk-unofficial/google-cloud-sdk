@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -118,7 +119,7 @@ class AdjustTraffic(base.Command):
     changes.append(
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()))
 
-    is_managed = flags.GetPlatform() == flags.PLATFORM_MANAGED
+    is_managed = platforms.GetPlatform() == platforms.PLATFORM_MANAGED
     with serverless_operations.Connect(conn_context) as client:
       deployment_stages = stages.UpdateTrafficStages()
       try:

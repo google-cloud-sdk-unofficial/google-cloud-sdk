@@ -24,8 +24,9 @@ from googlecloudsdk.command_lib.service_directory import flags
 from googlecloudsdk.command_lib.service_directory import resource_args
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Resolve(base.Command):
-  """Resolve a service."""
+  """Resolves a service."""
   detailed_help = {
       'EXAMPLES':
           """\
@@ -42,7 +43,18 @@ class Resolve(base.Command):
     flags.AddEndpointFilterFlag(parser)
 
   def Run(self, args):
-    client = services.ServicesClient()
+    client = services.ServicesClient(self.GetReleaseTrack())
     service_ref = args.CONCEPTS.service.Parse()
 
     return client.Resolve(service_ref, args.max_endpoints, args.endpoint_filter)
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.GA
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ResolveBeta(Resolve):
+  """Resolves a service."""
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.BETA

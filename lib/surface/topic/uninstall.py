@@ -55,4 +55,9 @@ class Uninstall(base.TopicCommand):
         remove the sections '[GoogleCompute]' and '[GSUtil]'. In addition,
         review the sections '[OAuth2]' and '[Credentials]' for settings that
         are no longer needed.
+
+      * Some systems may have `Cache` directories such as `~/Library/Caches/` on
+        Mac OS X. Find and delete these directories for your system:
+
+        $ find ~/Library/Caches/ -type d -name "google-cloud-sdk" | xargs rm -r
   """

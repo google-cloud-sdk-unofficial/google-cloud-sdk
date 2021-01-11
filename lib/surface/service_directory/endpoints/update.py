@@ -26,11 +26,43 @@ from googlecloudsdk.command_lib.service_directory import util
 from googlecloudsdk.core import log
 
 _RESOURCE_TYPE = 'endpoint'
-_ENDPOINT_METADATA_LIMIT = 512
+_ENDPOINT_LIMIT = 512
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  """Update an endpoint."""
+  """Updates an endpoint."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To update a Service Directory endpoint, run:
+
+            $ {command} my-endpoint --service=my-service --namespace=my-namespace --location=us-east1 --address=1.2.3.4 --port=5 --annotations=a=b,c=d
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    resource_args.AddEndpointResourceArg(parser, 'to update.')
+    flags.AddAddressFlag(parser)
+    flags.AddPortFlag(parser)
+    flags.AddAnnotationsFlag(parser, _RESOURCE_TYPE, _ENDPOINT_LIMIT)
+
+  def Run(self, args):
+    client = endpoints.EndpointsClient()
+    endpoint_ref = args.CONCEPTS.endpoint.Parse()
+    annotations = util.ParseAnnotationsArg(args.annotations, _RESOURCE_TYPE)
+
+    result = client.Update(endpoint_ref, args.address, args.port, annotations)
+    log.UpdatedResource(endpoint_ref.endpointsId, _RESOURCE_TYPE)
+
+    return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateBeta(base.UpdateCommand):
+  """Updates an endpoint."""
 
   detailed_help = {
       'EXAMPLES':
@@ -46,10 +78,10 @@ class Update(base.UpdateCommand):
     resource_args.AddEndpointResourceArg(parser, 'to update.')
     flags.AddAddressFlag(parser)
     flags.AddPortFlag(parser)
-    flags.AddMetadataFlag(parser, _RESOURCE_TYPE, _ENDPOINT_METADATA_LIMIT)
+    flags.AddMetadataFlag(parser, _RESOURCE_TYPE, _ENDPOINT_LIMIT)
 
   def Run(self, args):
-    client = endpoints.EndpointsClient()
+    client = endpoints.EndpointsClientBeta()
     endpoint_ref = args.CONCEPTS.endpoint.Parse()
     metadata = util.ParseMetadataArg(args.metadata, _RESOURCE_TYPE)
 

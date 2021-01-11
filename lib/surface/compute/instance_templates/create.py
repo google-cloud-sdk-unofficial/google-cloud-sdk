@@ -60,7 +60,7 @@ def _CommonArgs(parser,
                 support_kms=False,
                 support_resource_policy=False,
                 support_location_hint=False,
-                support_multi_writer=True):
+                support_multi_writer=False):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
@@ -398,7 +398,8 @@ def _RunCreate(compute_api,
                support_location_hint=False,
                support_post_key_revocation_action_type=False,
                support_enable_nested_virtualization=False,
-               support_threads_per_core=False):
+               support_threads_per_core=False,
+               support_multi_writer=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -416,6 +417,7 @@ def _RunCreate(compute_api,
         disabling nested virtualization is supported.
       support_threads_per_core: Indicates whether changing the number of threads
         per core is supported.
+      support_multi_writer: Indicates whether a disk can have multiple writers.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -546,7 +548,8 @@ def _RunCreate(compute_api,
           compute_api.resources,
           instance_template_ref.project,
           getattr(args, 'create_disk', []),
-          support_kms=support_kms))
+          support_kms=support_kms,
+          support_multi_writer=support_multi_writer))
 
   if create_boot_disk:
     boot_disk_list = [
@@ -670,6 +673,7 @@ class Create(base.CreateCommand):
   _support_post_key_revocation_action_type = False
   _support_enable_nested_virtualization = False
   _support_threads_per_core = False
+  _support_multi_writer = False
 
   @classmethod
   def Args(cls, parser):
@@ -679,7 +683,7 @@ class Create(base.CreateCommand):
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
         support_location_hint=cls._support_location_hint,
-        support_multi_writer=False)
+        support_multi_writer=cls._support_multi_writer)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_GA_API_VERSION)
@@ -705,7 +709,8 @@ class Create(base.CreateCommand):
         ._support_post_key_revocation_action_type,
         support_enable_nested_virtualization=self
         ._support_enable_nested_virtualization,
-        support_threads_per_core=self._support_threads_per_core)
+        support_threads_per_core=self._support_threads_per_core,
+        support_multi_writer=self._support_multi_writer)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -729,6 +734,7 @@ class CreateBeta(Create):
   _support_post_key_revocation_action_type = False
   _support_enable_nested_virtualization = False
   _support_threads_per_core = False
+  _support_multi_writer = True
 
   @classmethod
   def Args(cls, parser):
@@ -739,7 +745,8 @@ class CreateBeta(Create):
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
         support_resource_policy=cls._support_resource_policy,
-        support_location_hint=cls._support_location_hint)
+        support_location_hint=cls._support_location_hint,
+        support_multi_writer=cls._support_multi_writer)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)
@@ -765,7 +772,8 @@ class CreateBeta(Create):
         ._support_post_key_revocation_action_type,
         support_enable_nested_virtualization=self
         ._support_enable_nested_virtualization,
-        support_threads_per_core=self._support_threads_per_core)
+        support_threads_per_core=self._support_threads_per_core,
+        support_multi_writer=self._support_multi_writer)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -789,6 +797,7 @@ class CreateAlpha(Create):
   _support_post_key_revocation_action_type = True
   _support_enable_nested_virtualization = True
   _support_threads_per_core = True
+  _support_multi_writer = True
 
   @classmethod
   def Args(cls, parser):
@@ -799,7 +808,8 @@ class CreateAlpha(Create):
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
         support_resource_policy=cls._support_resource_policy,
-        support_location_hint=cls._support_location_hint)
+        support_location_hint=cls._support_location_hint,
+        support_multi_writer=cls._support_multi_writer)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddConfidentialComputeArgs(parser)
@@ -831,7 +841,8 @@ class CreateAlpha(Create):
         ._support_post_key_revocation_action_type,
         support_enable_nested_virtualization=self
         ._support_enable_nested_virtualization,
-        support_threads_per_core=self._support_threads_per_core)
+        support_threads_per_core=self._support_threads_per_core,
+        support_multi_writer=self._support_multi_writer)
 
 
 DETAILED_HELP = {

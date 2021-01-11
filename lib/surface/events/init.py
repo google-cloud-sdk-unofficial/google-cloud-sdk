@@ -31,6 +31,7 @@ from googlecloudsdk.command_lib.events import stages
 from googlecloudsdk.command_lib.iam import iam_util as core_iam_util
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags as serverless_flags
+from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -137,7 +138,7 @@ class Init(base.Command):
 
   def Run(self, args):
     """Executes when the user runs the delete command."""
-    if serverless_flags.GetPlatform() == serverless_flags.PLATFORM_MANAGED:
+    if platforms.GetPlatform() == platforms.PLATFORM_MANAGED:
       raise exceptions.UnsupportedArgumentError(
           'This command is only available with Cloud Run for Anthos.')
     project = properties.VALUES.core.project.Get(required=True)
