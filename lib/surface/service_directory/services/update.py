@@ -26,11 +26,41 @@ from googlecloudsdk.command_lib.service_directory import util
 from googlecloudsdk.core import log
 
 _RESOURCE_TYPE = 'service'
-_SERVICE_METADATA_LIMIT = 2000
+_SERVICE_LIMIT = 2000
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  """Update a service."""
+  """Updates a service."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To update a Service Directory service, run:
+
+            $ {command} my-service --namespace=my-namespace --location=us-east1 --annotations=a=b,c=d
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    resource_args.AddServiceResourceArg(parser, 'to update.')
+    flags.AddAnnotationsFlag(parser, _RESOURCE_TYPE, _SERVICE_LIMIT)
+
+  def Run(self, args):
+    client = services.ServicesClient()
+    service_ref = args.CONCEPTS.service.Parse()
+    annotations = util.ParseAnnotationsArg(args.annotations, _RESOURCE_TYPE)
+
+    result = client.Update(service_ref, annotations)
+    log.UpdatedResource(service_ref.servicesId, _RESOURCE_TYPE)
+
+    return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateBeta(base.UpdateCommand):
+  """Updates a service."""
 
   detailed_help = {
       'EXAMPLES':
@@ -44,10 +74,10 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddServiceResourceArg(parser, 'to update.')
-    flags.AddMetadataFlag(parser, _RESOURCE_TYPE, _SERVICE_METADATA_LIMIT)
+    flags.AddMetadataFlag(parser, _RESOURCE_TYPE, _SERVICE_LIMIT)
 
   def Run(self, args):
-    client = services.ServicesClient()
+    client = services.ServicesClientBeta()
     service_ref = args.CONCEPTS.service.Parse()
     metadata = util.ParseMetadataArg(args.metadata, _RESOURCE_TYPE)
 

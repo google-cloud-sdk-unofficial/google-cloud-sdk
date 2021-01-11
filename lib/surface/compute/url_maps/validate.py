@@ -66,7 +66,7 @@ def _GetSchemaPath(release_track, for_help=False):
 def _AddSourceFlag(parser, schema_path=None):
   help_text = """Path to the file that contains the URL map config
           for validation. The file must not contain any output-only fields.
-          A schema describing the export/import format can be found in: {}.
+          For a schema describing the export/import format, see: {}.
       """.format(schema_path)
   parser.add_argument(
       '--source', help=textwrap.dedent(help_text), required=True)

@@ -45,7 +45,7 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
     super(List, cls).Args(parser)
     base.ListCommand._Flags(parser)
     base.URI_FLAG.RemoveFromParser(parser)
-    columns = ['name', 'namespace', 'target_configs']
+    columns = ['name', 'namespace', 'target_configs', 'source']
     parser.display_info.AddFormat('table({})'.format(','.join(columns)))
 
   def Command(self):

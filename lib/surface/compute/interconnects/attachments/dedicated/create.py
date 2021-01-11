@@ -61,6 +61,7 @@ class Create(base.CreateCommand):
     attachment_flags.AddVlan(parser)
     attachment_flags.AddCandidateSubnets(parser)
     attachment_flags.AddBandwidth(parser, required=False)
+    attachment_flags.AddMtu(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -122,4 +123,3 @@ class CreateAlpha(Create):
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
     attachment_flags.AddDryRun(parser)
-    attachment_flags.AddMtu(parser)

@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-
 from googlecloudsdk.api_lib.run import service
 from googlecloudsdk.api_lib.util import messages as messages_util
 from googlecloudsdk.calliope import arg_parsers
@@ -30,6 +29,7 @@ from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import messages_util as run_messages_util
+from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -110,7 +110,7 @@ class Replace(base.Command):
           raise exceptions.ConfigurationError(
               'Namespace specified in file does not match passed flag.')
         namespace = new_service.metadata.namespace
-        if flags.GetPlatform() == flags.PLATFORM_MANAGED:
+        if platforms.GetPlatform() == platforms.PLATFORM_MANAGED:
           project = properties.VALUES.core.project.Get()
           project_number = projects_util.GetProjectNumber(project)
           if namespace != project and namespace != str(project_number):

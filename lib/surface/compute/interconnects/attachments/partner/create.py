@@ -62,6 +62,7 @@ class Create(base.CreateCommand):
     attachment_flags.AddAdminEnabled(parser, default_behavior=False)
     attachment_flags.AddEdgeAvailabilityDomain(parser)
     attachment_flags.AddDescription(parser)
+    attachment_flags.AddMtu(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -114,4 +115,3 @@ class CreateAlpha(Create):
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
     attachment_flags.AddDryRun(parser)
-    attachment_flags.AddMtu(parser)

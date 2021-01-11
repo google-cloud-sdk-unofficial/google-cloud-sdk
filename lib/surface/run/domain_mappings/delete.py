@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -70,9 +71,9 @@ class Delete(base.Command):
         args,
         flags.Product.RUN,
         self.ReleaseTrack(),
-        version_override=('v1alpha1'
-                          if flags.GetPlatform() != flags.PLATFORM_MANAGED else
-                          None))
+        version_override=('v1alpha1' if
+                          platforms.GetPlatform() != platforms.PLATFORM_MANAGED
+                          else None))
     domain_mapping_ref = args.CONCEPTS.domain.Parse()
     with serverless_operations.Connect(conn_context) as client:
       client.DeleteDomainMapping(domain_mapping_ref)

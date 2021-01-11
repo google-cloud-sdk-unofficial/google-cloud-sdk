@@ -43,8 +43,8 @@ class CreateBeta(base.CreateCommand):
 
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.GetZoneArg().AddToParser(parser)
     flags.GetResourceRecordSetsNameArg().AddToParser(parser)
     flags.GetResourceRecordSetsTypeArg(True).AddToParser(parser)

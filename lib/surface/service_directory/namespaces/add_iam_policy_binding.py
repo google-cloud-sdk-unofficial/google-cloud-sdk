@@ -26,8 +26,9 @@ from googlecloudsdk.command_lib.service_directory import resource_args
 _RESOURCE_TYPE = 'namespace'
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddIamPolicyBinding(base.Command):
-  """Add IAM policy binding to a namespace."""
+  """Adds IAM policy binding to a namespace."""
 
   detailed_help = {
       'EXAMPLES':
@@ -46,10 +47,21 @@ class AddIamPolicyBinding(base.Command):
     iam_util.AddArgsForAddIamPolicyBinding(parser)
 
   def Run(self, args):
-    client = namespaces.NamespacesClient()
+    client = namespaces.NamespacesClient(self.GetReleaseTrack())
     namespace_ref = args.CONCEPTS.namespace.Parse()
 
     result = client.AddIamPolicyBinding(namespace_ref, args.member, args.role)
     iam_util.LogSetIamPolicy(namespace_ref.Name(), _RESOURCE_TYPE)
 
     return result
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.GA
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class AddIamPolicyBindingBeta(AddIamPolicyBinding):
+  """Adds IAM policy binding to a namespace."""
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.BETA

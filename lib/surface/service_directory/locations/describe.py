@@ -23,8 +23,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.service_directory import resource_args
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Describe a location."""
+  """Describes a location."""
 
   detailed_help = {
       'EXAMPLES':
@@ -40,7 +41,18 @@ class Describe(base.DescribeCommand):
     resource_args.AddLocationResourceArg(parser, 'to describe.')
 
   def Run(self, args):
-    client = locations.LocationsClient()
+    client = locations.LocationsClient(self.GetReleaseTrack())
     location_ref = args.CONCEPTS.location.Parse()
 
     return client.Describe(location_ref)
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.GA
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+  """Describes a location."""
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.BETA

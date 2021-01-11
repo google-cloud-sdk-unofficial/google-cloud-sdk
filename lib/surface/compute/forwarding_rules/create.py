@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import ipaddress
+import re
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
@@ -35,7 +36,8 @@ from six.moves import range  # pylint: disable=redefined-builtin
 
 def _Args(parser, support_global_access, support_l7_internal_load_balancing,
           support_psc_google_apis, support_all_protocol,
-          support_target_service_attachment, support_tcp_in_td):
+          support_target_service_attachment, support_tcp_in_td,
+          support_sd_registration):
   """Add the flags to create a forwarding rule."""
 
   flags.AddUpdateArgs(
@@ -54,6 +56,9 @@ def _Args(parser, support_global_access, support_l7_internal_load_balancing,
     flags.AddAllowGlobalAccess(parser)
 
   flags.AddIsMirroringCollector(parser)
+
+  if support_sd_registration:
+    flags.AddServiceDirectoryRegistration(parser)
 
   parser.add_argument(
       '--service-label',
@@ -84,7 +89,7 @@ class CreateHelper(object):
   def __init__(self, holder, support_global_access,
                support_l7_internal_load_balancing, support_psc_google_apis,
                support_all_protocol, support_target_service_attachment,
-               support_tcp_in_td):
+               support_tcp_in_td, support_sd_registration):
     self._holder = holder
     self._support_global_access = support_global_access
     self._support_l7_internal_load_balancing = support_l7_internal_load_balancing
@@ -92,18 +97,19 @@ class CreateHelper(object):
     self._support_all_protocol = support_all_protocol
     self._support_target_service_attachment = support_target_service_attachment
     self._support_tcp_in_td = support_tcp_in_td
+    self._support_sd_registration = support_sd_registration
 
   @classmethod
   def Args(cls, parser, support_global_access,
            support_l7_internal_load_balancing, support_psc_google_apis,
            support_all_protocol, support_target_service_attachment,
-           support_tcp_in_td):
+           support_tcp_in_td, support_sd_registration):
     cls.FORWARDING_RULE_ARG = _Args(parser, support_global_access,
                                     support_l7_internal_load_balancing,
                                     support_psc_google_apis,
                                     support_all_protocol,
                                     support_target_service_attachment,
-                                    support_tcp_in_td)
+                                    support_tcp_in_td, support_sd_registration)
 
   def ConstructProtocol(self, messages, args):
     if args.ip_protocol:
@@ -131,6 +137,12 @@ class CreateHelper(object):
 
   def _CreateGlobalRequests(self, client, resources, args, forwarding_rule_ref):
     """Create a globally scoped request."""
+
+    if hasattr(args, 'service_directory_registration'
+              ) and args.service_directory_registration:
+      raise exceptions.ToolException(
+          '[--service-directory-registration] can not be specified for global forwarding rules.'
+      )
 
     is_psc_google_apis = False
     if hasattr(args,
@@ -344,6 +356,30 @@ class CreateHelper(object):
     if hasattr(args, 'is_mirroring_collector'):
       forwarding_rule.isMirroringCollector = args.is_mirroring_collector
 
+    if hasattr(args, 'service_directory_registration'
+              ) and args.service_directory_registration:
+      # Parse projects/../locations/../namespaces/../services/..
+      match = re.match(
+          r'^projects/([^/]+)/locations/([^/]+)/namespaces/([^/]+)/services/([^/]+)$',
+          args.service_directory_registration)
+      if not match:
+        raise exceptions.InvalidArgumentException(
+            '--service-directory-registration',
+            'Must be of the form projects/PROJECT/locations/REGION/namespace/NAMESPACE/services/SERVICE'
+        )
+      project = match.group(1)
+      region = match.group(2)
+
+      if project != forwarding_rule_ref.project or region != forwarding_rule_ref.region:
+        raise exceptions.InvalidArgumentException(
+            '--service-directory-registration',
+            'Service Directory registration must be in the same project and region as the forwarding rule.'
+        )
+
+      sd_registration = client.messages.ForwardingRuleServiceDirectoryRegistration(
+          namespace=match.group(3), service=match.group(4))
+      forwarding_rule.serviceDirectoryRegistrations.append(sd_registration)
+
     request = client.messages.ComputeForwardingRulesInsertRequest(
         forwardingRule=forwarding_rule,
         project=forwarding_rule_ref.project,
@@ -386,6 +422,7 @@ class Create(base.CreateCommand):
   _support_all_protocol = False
   _support_target_service_attachment = False
   _support_tcp_in_td = False
+  _support_sd_registration = False
 
   @classmethod
   def Args(cls, parser):
@@ -393,16 +430,15 @@ class Create(base.CreateCommand):
                       cls._support_l7_internal_load_balancing,
                       cls._support_psc_google_apis, cls._support_all_protocol,
                       cls._support_target_service_attachment,
-                      cls._support_tcp_in_td)
+                      cls._support_tcp_in_td, cls._support_sd_registration)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return CreateHelper(holder, self._support_global_access,
-                        self._support_l7_internal_load_balancing,
-                        self._support_psc_google_apis,
-                        self._support_all_protocol,
-                        self._support_target_service_attachment,
-                        self._support_tcp_in_td).Run(args)
+    return CreateHelper(
+        holder, self._support_global_access,
+        self._support_l7_internal_load_balancing, self._support_psc_google_apis,
+        self._support_all_protocol, self._support_target_service_attachment,
+        self._support_tcp_in_td, self._support_sd_registration).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -414,6 +450,7 @@ class CreateBeta(Create):
   _support_all_protocol = False
   _support_target_service_attachment = False
   _support_tcp_in_td = True
+  _support_sd_registration = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -425,6 +462,7 @@ class CreateAlpha(CreateBeta):
   _support_all_protocol = True
   _support_target_service_attachment = True
   _support_tcp_in_td = True
+  _support_sd_registration = True
 
 
 Create.detailed_help = {

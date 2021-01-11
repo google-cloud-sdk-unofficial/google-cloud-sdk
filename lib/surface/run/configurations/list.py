@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -100,7 +101,7 @@ class List(commands.List):
 
   def Run(self, args):
     """List available configurations."""
-    is_managed = flags.GetPlatform() == flags.PLATFORM_MANAGED
+    is_managed = platforms.GetPlatform() == platforms.PLATFORM_MANAGED
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())
     self._SetFormat(

@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import flags
 
 
 @base.Hidden
@@ -26,10 +27,22 @@ class Configurations(base.Group):
   """View and manage your Cloud Run configurations."""
 
   detailed_help = {
-      'EXAMPLES': """\
+      'EXAMPLES': """
           To describe the configuration managed by the service foo:
 
             $ {command} describe foo
 
       """,
   }
+
+  @staticmethod
+  def Args(parser):
+    """Adds --platform and the various related args."""
+    flags.AddPlatformAndLocationFlags(parser)
+
+  def Filter(self, context, args):
+    """Runs before command.Run and validates platform with passed args."""
+    # Ensures a platform is set on the run/platform property and
+    # all other passed args are valid for this platform and release track.
+    flags.GetAndValidatePlatform(args, self.ReleaseTrack(), flags.Product.RUN)
+    return context

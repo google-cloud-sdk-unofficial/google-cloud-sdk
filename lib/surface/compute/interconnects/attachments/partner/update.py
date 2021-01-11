@@ -47,6 +47,7 @@ class Update(base.UpdateCommand):
     cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(parser, operation_type='patch')
     attachment_flags.AddDescription(parser)
     attachment_flags.AddAdminEnabled(parser, update=True)
+    attachment_flags.AddMtu(parser)
     labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
@@ -95,6 +96,7 @@ class GaUpdate(Update):
     cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(parser, operation_type='patch')
     attachment_flags.AddDescription(parser)
     attachment_flags.AddAdminEnabled(parser, update=True)
+    attachment_flags.AddMtu(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -108,7 +110,8 @@ class GaUpdate(Update):
     admin_enabled = attachment_flags.GetAdminEnabledFlag(args)
 
     return interconnect_attachment.PatchGa(
-        description=args.description, admin_enabled=admin_enabled)
+        description=args.description, admin_enabled=admin_enabled,
+        mtu=getattr(args, 'mtu', None))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -123,4 +126,3 @@ class UpdateAlpha(Update):
   @classmethod
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
-    attachment_flags.AddMtu(parser)

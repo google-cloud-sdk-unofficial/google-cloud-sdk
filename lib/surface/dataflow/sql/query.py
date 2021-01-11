@@ -19,6 +19,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import collections
+
 from googlecloudsdk.api_lib.dataflow import apis
 from googlecloudsdk.api_lib.dataflow import sql_query_parameters
 from googlecloudsdk.calliope import base
@@ -71,12 +73,17 @@ class Query(base.Command):
     sql_util.ArgsForSqlQuery(parser)
 
   def Run(self, args):
+    use_flex_engine = (args.sql_launcher_template_engine == 'flex')
     region = dataflow_util.GetRegion(args)
     if args.sql_launcher_template:
       gcs_location = args.sql_launcher_template
     else:
-      gcs_location = 'gs://dataflow-sql-templates-{}/latest/sql_launcher_template'.format(
-          region)
+      if use_flex_engine:
+        suffix = 'sql_launcher_flex_template'
+      else:
+        suffix = 'sql_launcher_template'
+      gcs_location = 'gs://dataflow-sql-templates-{}/latest/{}'.format(
+          region, suffix)
     if args.parameters_file:
       query_parameters = sql_query_parameters.ParseParametersFile(
           args.parameters_file)
@@ -85,12 +92,12 @@ class Query(base.Command):
           args.parameter)
     else:
       query_parameters = '[]'
-    template_parameters = {
-        'dryRun': 'true' if args.dry_run else 'false',
-        'outputs': sql_util.ExtractOutputs(args),
-        'queryParameters': query_parameters,
-        'queryString': args.query,
-    }
+    template_parameters = collections.OrderedDict([
+        ('dryRun', 'true' if args.dry_run else 'false'),
+        ('outputs', sql_util.ExtractOutputs(args)),
+        ('queryParameters', query_parameters),
+        ('queryString', args.query),
+    ])
     arguments = apis.TemplateArguments(
         project_id=properties.VALUES.core.project.GetOrFail(),
         region_id=region,
@@ -109,4 +116,6 @@ class Query(base.Command):
         worker_machine_type=args.worker_machine_type,
         worker_region=args.worker_region,
         worker_zone=args.worker_zone)
+    if use_flex_engine:
+      return apis.Templates.CreateJobFromFlexTemplate(arguments)
     return apis.Templates.LaunchDynamicTemplate(arguments)

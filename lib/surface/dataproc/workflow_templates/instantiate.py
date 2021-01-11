@@ -47,7 +47,7 @@ class Instantiate(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     dataproc = dp.Dataproc(cls.ReleaseTrack())
-    flags.AddTimeoutFlag(parser, default='35m')
+    flags.AddTimeoutFlag(parser, default='24h')
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddParametersFlag(parser)
     flags.AddTemplateResourceArg(parser, 'run', dataproc.api_version)

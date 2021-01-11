@@ -28,8 +28,9 @@ from googlecloudsdk.core import log
 _RESOURCE_TYPE = 'namespace'
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a namespace."""
+  """Creates a namespace."""
 
   detailed_help = {
       'EXAMPLES':
@@ -52,11 +53,22 @@ class Create(base.CreateCommand):
     flags.AddLabelsFlag(parser, _RESOURCE_TYPE)
 
   def Run(self, args):
-    client = namespaces.NamespacesClient()
+    client = namespaces.NamespacesClient(self.GetReleaseTrack())
     namespace_ref = args.CONCEPTS.namespace.Parse()
-    labels = util.ParseLabelsArg(args.labels)
+    labels = util.ParseLabelsArg(args.labels, self.GetReleaseTrack())
 
     result = client.Create(namespace_ref, labels)
     log.CreatedResource(namespace_ref.namespacesId, _RESOURCE_TYPE)
 
     return result
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.GA
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Creates a namespace."""
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.BETA

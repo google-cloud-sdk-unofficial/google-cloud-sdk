@@ -189,7 +189,7 @@ class Run(base.ListCommand):
     # Fetch the per-dimension test outcomes list, and also the "rolled-up"
     # matrix outcome from the Tool Results service.
     summary_fetcher = results_summary.ToolResultsSummaryFetcher(
-        project, tr_client, tr_messages, tr_ids)
+        project, tr_client, tr_messages, tr_ids, matrix.testMatrixId)
     self.exit_code = exit_code.ExitCodeFromRollupOutcome(
         summary_fetcher.FetchMatrixRollupOutcome(),
         tr_messages.Outcome.SummaryValueValuesEnum)

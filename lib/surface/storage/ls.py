@@ -119,9 +119,11 @@ class Ls(base.Command):
         action='store_true',
         help='Lists all available metadata about items as a JSON dump.')
     parser.add_argument(
-        '-l', '--long',
+        '-l',
+        '--long',
         action='store_true',
-        help='Lists extended metadata about items.')
+        help=('For objects only. Lists size in bytes, creation time, and URL.'
+              ' Note: Creation time not available for S3.'))
     parser.add_argument(
         '-R', '-r', '--recursive',
         action='store_true',

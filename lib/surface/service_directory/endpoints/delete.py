@@ -26,8 +26,9 @@ from googlecloudsdk.core import log
 _RESOURCE_TYPE = 'endpoint'
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
-  """Delete an endpoint."""
+  """Deletes an endpoint."""
 
   detailed_help = {
       'EXAMPLES':
@@ -43,10 +44,21 @@ class Delete(base.DeleteCommand):
     resource_args.AddEndpointResourceArg(parser, 'to delete.')
 
   def Run(self, args):
-    client = endpoints.EndpointsClient()
+    client = endpoints.EndpointsClient(self.GetReleaseTrack())
     endpoint_ref = args.CONCEPTS.endpoint.Parse()
 
     result = client.Delete(endpoint_ref)
     log.DeletedResource(endpoint_ref.endpointsId, _RESOURCE_TYPE)
 
     return result
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.GA
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DeleteBeta(Delete):
+  """Deletes an endpoint."""
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.BETA

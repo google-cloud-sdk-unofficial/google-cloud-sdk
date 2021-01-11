@@ -123,7 +123,8 @@ def _GetProject(args):
 def _Run(args,
          track=None,
          enable_runtime=True,
-         enable_build_worker_pool=False):
+         enable_build_worker_pool=False,
+         enable_security_level=False):
   """Run a function deployment with the given args."""
   # Check for labels that start with `deployment`, which is not allowed.
   labels_util.CheckNoDeploymentLabels('--remove-labels', args.remove_labels)
@@ -149,6 +150,8 @@ def _Run(args,
   is_new_function = function is None
   had_vpc_connector = bool(
       function.vpcConnector) if not is_new_function else False
+  had_http_trigger = bool(
+      function.httpsTrigger) if not is_new_function else False
   if is_new_function:
     trigger_util.CheckTriggerSpecified(args)
     function = messages.CloudFunction()
@@ -247,6 +250,20 @@ def _Run(args,
       function.eventTrigger.failurePolicy = None
   elif function.eventTrigger:
     function.eventTrigger.failurePolicy = None
+  if enable_security_level:
+    if args.IsSpecified('security_level'):
+      will_have_http_trigger = had_http_trigger or args.trigger_http
+      if not will_have_http_trigger:
+        raise exceptions.RequiredArgumentException(
+            'trigger-http',
+            'Flag `--trigger-http` is required for setting `security-level`.')
+      security_level_enum = arg_utils.ChoiceEnumMapper(
+          arg_name='security_level',
+          message_enum=function.httpsTrigger.SecurityLevelValueValuesEnum,
+          custom_mappings=flags.SECURITY_LEVEL_MAPPING).GetEnumForChoice(
+              args.security_level)
+      function.httpsTrigger.securityLevel = security_level_enum
+      updated_fields.append('httpsTrigger.securityLevel')
 
   # Populate source properties of function based on source args.
   # Only Add source to function if its explicitly provided, a new function,
@@ -432,9 +449,14 @@ class DeployAlpha(base.Command):
     """Register flags for this command."""
     Deploy.Args(parser)
     flags.AddBuildWorkerPoolMutexGroup(parser)
+    flags.AddSecurityLevelFlag(parser)
 
   def Run(self, args):
-    return _Run(args, track=self.ReleaseTrack(), enable_build_worker_pool=True)
+    return _Run(
+        args,
+        track=self.ReleaseTrack(),
+        enable_build_worker_pool=True,
+        enable_security_level=True)
 
 
 DETAILED_HELP = {

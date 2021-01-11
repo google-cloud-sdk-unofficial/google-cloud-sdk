@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -80,9 +81,9 @@ class List(commands.List):
         args,
         flags.Product.RUN,
         self.ReleaseTrack(),
-        version_override=('v1alpha1'
-                          if flags.GetPlatform() != flags.PLATFORM_MANAGED else
-                          None))
+        version_override=('v1alpha1' if
+                          platforms.GetPlatform() != platforms.PLATFORM_MANAGED
+                          else None))
     namespace_ref = args.CONCEPTS.namespace.Parse()
     with serverless_operations.Connect(conn_context) as client:
       self.SetCompleteApiEndpoint(conn_context.endpoint)

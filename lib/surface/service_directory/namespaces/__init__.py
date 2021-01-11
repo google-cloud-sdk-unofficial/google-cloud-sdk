@@ -22,4 +22,4 @@ from googlecloudsdk.calliope import base
 
 
 class Services(base.Group):
-  """Manage Service Directory services."""
+  """Manage Service Directory namespaces."""

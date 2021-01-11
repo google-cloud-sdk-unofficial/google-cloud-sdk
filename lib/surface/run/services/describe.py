@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import export_printer
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
@@ -86,6 +87,6 @@ class Describe(base.Command):
     with serverless_operations.Connect(conn_context) as client:
       serv = client.GetService(service_ref)
     if not serv:
-      raise flags.ArgumentError(
-          'Cannot find service [{}]'.format(service_ref.servicesId))
+      raise exceptions.ArgumentError('Cannot find service [{}]'.format(
+          service_ref.servicesId))
     return serv

@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import flags
 
 
 class Services(base.Group):
@@ -31,9 +32,21 @@ class Services(base.Group):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
+      'EXAMPLES': """
           To list your deployed services, run:
 
             $ {command} list
       """,
   }
+
+  @staticmethod
+  def Args(parser):
+    """Adds --platform and the various related args."""
+    flags.AddPlatformAndLocationFlags(parser)
+
+  def Filter(self, context, args):
+    """Runs before command.Run and validates platform with passed args."""
+    # Ensures a platform is set on the run/platform property and
+    # all other passed args are valid for this platform and release track.
+    flags.GetAndValidatePlatform(args, self.ReleaseTrack(), flags.Product.RUN)
+    return context

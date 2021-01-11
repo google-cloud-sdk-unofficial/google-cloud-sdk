@@ -21,13 +21,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import getpass
-
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
@@ -72,7 +71,7 @@ class SetPassword(base.CreateCommand):
     sql_messages = client.sql_messages
 
     if args.prompt_for_password:
-      args.password = getpass.getpass('Instance Password: ')
+      args.password = console_io.PromptPassword('Instance Password: ')
 
     instance_ref = client.resource_parser.Parse(
         args.instance,

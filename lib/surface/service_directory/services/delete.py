@@ -26,8 +26,9 @@ from googlecloudsdk.core import log
 _RESOURCE_TYPE = 'service'
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
-  """Delete a service."""
+  """Deletes a service."""
 
   detailed_help = {
       'EXAMPLES':
@@ -43,10 +44,21 @@ class Delete(base.DeleteCommand):
     resource_args.AddServiceResourceArg(parser, 'to delete.')
 
   def Run(self, args):
-    client = services.ServicesClient()
+    client = services.ServicesClient(self.GetReleaseTrack())
     service_ref = args.CONCEPTS.service.Parse()
 
     result = client.Delete(service_ref)
     log.DeletedResource(service_ref.servicesId, _RESOURCE_TYPE)
 
     return result
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.GA
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DeleteBeta(Delete):
+  """Deletes a service."""
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.BETA

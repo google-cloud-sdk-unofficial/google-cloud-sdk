@@ -51,7 +51,9 @@ host rule. This command can create a new host rule through the
 to point to the newly added path matcher using `--existing-host`.
 In the latter case, if a path matcher is orphaned as a result
 of the operation, this command will fail unless
-`--delete-orphaned-path-matcher` is provided.
+`--delete-orphaned-path-matcher` is provided. Path matcher
+constraints can be found
+[here](https://cloud.google.com/load-balancing/docs/url-map-concepts#pm-constraints).
 """,
       'EXAMPLES': """
 To create a rule for mapping the path ```/search/*``` to the

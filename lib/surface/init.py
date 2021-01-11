@@ -91,7 +91,7 @@ class Init(base.Command):
         hidden=True,
         help='THIS ARGUMENT NEEDS HELP TEXT.')
     parser.add_argument(
-        '--console-only',
+        '--console-only', '--no-launch-browser',
         action='store_true',
         help=('Prevent the command from launching a browser for '
               'authorization.'))

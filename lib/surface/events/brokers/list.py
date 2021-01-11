@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.events import resource_args
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags as serverless_flags
+from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
@@ -51,7 +52,7 @@ class List(commands.List):
     parser.display_info.AddUriFunc(cls._GetResourceUri)
 
   def Run(self, args):
-    if serverless_flags.GetPlatform() == serverless_flags.PLATFORM_MANAGED:
+    if platforms.GetPlatform() == platforms.PLATFORM_MANAGED:
       raise exceptions.UnsupportedArgumentError(
           'This command is only available with Cloud Run for Anthos.')
     conn_context = connection_context.GetConnectionContext(

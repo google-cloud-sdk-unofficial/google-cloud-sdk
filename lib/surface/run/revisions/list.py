@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -85,7 +86,7 @@ class List(commands.List):
     namespace_ref = args.CONCEPTS.namespace.Parse()
     with serverless_operations.Connect(conn_context) as client:
       self.SetCompleteApiEndpoint(conn_context.endpoint)
-      if flags.GetPlatform() != flags.PLATFORM_MANAGED:
+      if platforms.GetPlatform() != platforms.PLATFORM_MANAGED:
         location_msg = ' in [{}]'.format(conn_context.cluster_location)
         log.status.Print('For cluster [{cluster}]{zone}:'.format(
             cluster=conn_context.cluster_name,

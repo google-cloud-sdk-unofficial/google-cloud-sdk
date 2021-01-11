@@ -26,11 +26,49 @@ from googlecloudsdk.command_lib.service_directory import util
 from googlecloudsdk.core import log
 
 _RESOURCE_TYPE = 'endpoint'
-_ENDPOINT_METADATA_LIMIT = 512
+_ENDPOINT_LIMIT = 512
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create an endpoint."""
+  """Creates an endpoint."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To create a Service Directory endpoint, run:
+
+            $ {command} my-endpoint --service=my-service --namespace=my-namespace --location=us-east1 --address=1.2.3.4 --port=5 --annotations=a=b,c=d
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    resource_args.AddEndpointResourceArg(
+        parser,
+        """to create. The endpoint id must be 1-63 characters long and match
+        the regular expression `[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?` which means
+        the first character must be a lowercase letter, and all following
+        characters must be a dash, lowercase letter, or digit, except the last
+        character, which cannot be a dash.""")
+    flags.AddAddressFlag(parser)
+    flags.AddPortFlag(parser)
+    flags.AddAnnotationsFlag(parser, _RESOURCE_TYPE, _ENDPOINT_LIMIT)
+
+  def Run(self, args):
+    client = endpoints.EndpointsClient()
+    endpoint_ref = args.CONCEPTS.endpoint.Parse()
+    annotations = util.ParseAnnotationsArg(args.annotations, _RESOURCE_TYPE)
+
+    result = client.Create(endpoint_ref, args.address, args.port, annotations)
+    log.CreatedResource(endpoint_ref.endpointsId, _RESOURCE_TYPE)
+
+    return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateBeta(base.CreateCommand):
+  """Creates an endpoint."""
 
   detailed_help = {
       'EXAMPLES':
@@ -52,10 +90,10 @@ class Create(base.CreateCommand):
         character, which cannot be a dash.""")
     flags.AddAddressFlag(parser)
     flags.AddPortFlag(parser)
-    flags.AddMetadataFlag(parser, _RESOURCE_TYPE, _ENDPOINT_METADATA_LIMIT)
+    flags.AddMetadataFlag(parser, _RESOURCE_TYPE, _ENDPOINT_LIMIT)
 
   def Run(self, args):
-    client = endpoints.EndpointsClient()
+    client = endpoints.EndpointsClientBeta()
     endpoint_ref = args.CONCEPTS.endpoint.Parse()
     metadata = util.ParseMetadataArg(args.metadata, _RESOURCE_TYPE)
 

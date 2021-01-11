@@ -23,8 +23,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.service_directory import resource_args
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.Command):
-  """List locations."""
+  """Lists locations."""
 
   detailed_help = {
       'EXAMPLES':
@@ -40,7 +41,18 @@ class List(base.Command):
     resource_args.AddProjectResourceArg(parser, 'to list', positional=False)
 
   def Run(self, args):
-    client = locations.LocationsClient()
+    client = locations.LocationsClient(self.GetReleaseTrack())
     project_ref = args.CONCEPTS.project.Parse()
 
     return client.List(project_ref)
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.GA
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """Lists locations."""
+
+  def GetReleaseTrack(self):
+    return base.ReleaseTrack.BETA

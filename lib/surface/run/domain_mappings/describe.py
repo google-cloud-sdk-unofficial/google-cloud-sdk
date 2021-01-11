@@ -20,7 +20,9 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -70,14 +72,14 @@ class Describe(base.Command):
         args,
         flags.Product.RUN,
         self.ReleaseTrack(),
-        version_override=('v1alpha1'
-                          if flags.GetPlatform() != flags.PLATFORM_MANAGED else
-                          None))
+        version_override=('v1alpha1' if
+                          platforms.GetPlatform() != platforms.PLATFORM_MANAGED
+                          else None))
     domain_mapping_ref = args.CONCEPTS.domain.Parse()
     with serverless_operations.Connect(conn_context) as client:
       domain_mapping = client.GetDomainMapping(domain_mapping_ref)
       if not domain_mapping:
-        raise flags.ArgumentError(
+        raise exceptions.ArgumentError(
             'Cannot find domain mapping for domain name [{}]'.format(
                 domain_mapping_ref.domainmappingsId))
       return domain_mapping

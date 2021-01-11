@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import exceptions
-from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import platforms
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -27,7 +27,7 @@ class Logs(base.Group):
   """Read logs for Cloud Run (fully managed) services."""
 
   def _CheckPlatform(self):
-    if flags.GetPlatform() != flags.PLATFORM_MANAGED:
+    if platforms.GetPlatform() != platforms.PLATFORM_MANAGED:
       raise exceptions.PlatformError(
           'This command group only supports reading logs for '
           'Cloud Run (fully managed).')

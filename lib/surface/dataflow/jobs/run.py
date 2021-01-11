@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataflow import apis
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataflow import dataflow_util
@@ -61,6 +62,12 @@ def _CommonArgs(parser):
       action=arg_parsers.UpdateAction,
       help='The parameters to pass to the job.')
 
+  parser.add_argument(
+      '--enable-streaming-engine',
+      action=actions.StoreBooleanProperty(
+          properties.VALUES.dataflow.enable_streaming_engine),
+      help='Enabling Streaming Engine for the streaming job.')
+
   # TODO(b/139889563): Mark as required when default region is removed
   parser.add_argument(
       '--region',
@@ -96,7 +103,9 @@ def _CommonRun(args):
       parameters=args.parameters,
       service_account_email=args.service_account_email,
       worker_region=args.worker_region,
-      worker_zone=args.worker_zone)
+      worker_zone=args.worker_zone,
+      enable_streaming_engine=properties.VALUES.dataflow.enable_streaming_engine
+      .GetBool())
   return apis.Templates.Create(arguments)
 
 

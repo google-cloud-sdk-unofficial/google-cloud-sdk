@@ -45,6 +45,7 @@ class Create(base.CreateCommand):
     flags.MakeNodeGroupArg().AddArgument(parser)
     flags.AddCreateArgsToParser(parser)
     flags.AddAutoscalingPolicyArgToParser(parser, required_mode=True)
+    flags.AddMaintenanceWindowArgToParser(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -77,9 +78,7 @@ class Create(base.CreateCommand):
       autoscaling_policy = util.BuildAutoscaling(args, messages)
       node_group.autoscalingPolicy = autoscaling_policy
 
-    if hasattr(
-        args,
-        'maintenance_window_start_time') and args.maintenance_window_start_time:
+    if args.maintenance_window_start_time:
       node_group.maintenanceWindow = messages.NodeGroupMaintenanceWindow(
           startTime=args.maintenance_window_start_time)
 
@@ -105,6 +104,7 @@ class CreateBeta(Create):
     flags.MakeNodeGroupArg().AddArgument(parser)
     flags.AddCreateArgsToParser(parser)
     flags.AddAutoscalingPolicyArgToParser(parser, required_mode=True)
+    flags.AddMaintenanceWindowArgToParser(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

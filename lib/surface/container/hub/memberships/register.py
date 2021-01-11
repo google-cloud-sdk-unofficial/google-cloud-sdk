@@ -222,75 +222,78 @@ class Register(base.CreateCommand):
          """),
     )
 
-    if cls.ReleaseTrack() is not base.ReleaseTrack.GA:
-      # Optional groups with required arguments are "modal,"
-      # meaning that if any of the required arguments is specified,
-      # all are required.
-      workload_identity = credentials.add_group(help='Workload Identity')
-      workload_identity.add_argument(
-          '--enable-workload-identity',
-          required=True,
+    # Optional groups with required arguments are "modal,"
+    # meaning that if any of the required arguments is specified,
+    # all are required.
+    workload_identity = credentials.add_group(
+        hidden=cls.ReleaseTrack() is base.ReleaseTrack.GA,
+        help='Workload Identity')
+    workload_identity.add_argument(
+        '--enable-workload-identity',
+        required=True,
+        action='store_true',
+        hidden=cls.ReleaseTrack() is base.ReleaseTrack.GA,
+        help=textwrap.dedent("""\
+          Enable Workload Identity when registering the cluster with Hub.
+          Requires gcloud alpha or beta.
+          --service_account_key_file flag should not be set if this is set.
+          """),
+    )
+    workload_identity_mutex = workload_identity.add_group(mutex=True)
+    workload_identity_mutex.add_argument(
+        '--public-issuer-url',
+        type=str,
+        hidden=cls.ReleaseTrack() is base.ReleaseTrack.GA,
+        help=textwrap.dedent("""\
+          Skip auto-discovery and register the cluster with this issuer URL.
+          Use this option when the OpenID Provider Configuration and associated
+          JSON Web Key Set for validating the cluster's service account JWTs
+          are served at a public endpoint different from the cluster API server.
+          Requires gcloud alpha or beta and --enable-workload-identity.
+          """),
+    )
+    # Keep this hidden as it is not used for user-facing workflows and is
+    # eliminated in beta.
+    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+      workload_identity_mutex.add_argument(
+          '--manage-workload-identity-bucket',
+          hidden=True,
           action='store_true',
           help=textwrap.dedent("""\
-            Enable Workload Identity when registering the cluster with Hub.
-            Requires gcloud alpha or beta.
-            --service_account_key_file flag should not be set if this is set.
+            Create the GCS bucket for serving OIDC discovery information when
+            registering the cluster with Hub. The cluster must already be
+            configured with an issuer URL of the format:
+            https://storage.googleapis.com/gke-issuer-{UUID}. The cluster must
+            also serve the built-in OIDC discovery endpoints by enabling and
+            correctly configuring the ServiceAccountIssuerDiscovery feature.
+            Requires gcloud alpha and --enable-workload-identity.
+            Mutually exclusive with --public-issuer-url.
             """),
       )
-      workload_identity_mutex = workload_identity.add_group(mutex=True)
       workload_identity_mutex.add_argument(
-          '--public-issuer-url',
-          type=str,
+          '--has-private-issuer',
+          hidden=True,
+          action='store_true',
           help=textwrap.dedent("""\
-            Skip auto-discovery and register the cluster with this issuer URL.
-            Use this option when the OpenID Provider Configuration and associated
-            JSON Web Key Set for validating the cluster's service account JWTs
-            are served at a public endpoint different from the cluster API server.
-            Requires gcloud alpha or beta and --enable-workload-identity.
+            Set to true for clusters where no publicly-routable OIDC discovery
+            endpoint for the Kubernetes service account token issuer exists.
+
+            When set to true, the gcloud command-line tool will read the
+            private issuer URL and JSON Web Key Set (JWKS) (public keys) for
+            validating service account tokens from the cluster's API server
+            and upload both when creating the Membership. GCP will then use
+            the JWKS, instead of a public OIDC endpoint, to validate service
+            account tokens issued by this cluster. Note the JWKS establishes
+            the uniqueness of issuers in this configuration, but issuer claims
+            in tokens are still compared to the issuer URL associated with the
+            Membership when validating tokens.
+
+            Note the cluster's OIDC discovery endpoints
+            (https://[KUBE-API-ADDRESS]/.well-known/openid-configuration and
+            https://[KUBE-API-ADDRESS]/openid/v1/jwks) must still be
+            network-accessible to the gcloud client running this command.
             """),
       )
-      # Keep this hidden as it is not used for user-facing workflows and is
-      # eliminated in beta.
-      if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
-        workload_identity_mutex.add_argument(
-            '--manage-workload-identity-bucket',
-            hidden=True,
-            action='store_true',
-            help=textwrap.dedent("""\
-              Create the GCS bucket for serving OIDC discovery information when
-              registering the cluster with Hub. The cluster must already be
-              configured with an issuer URL of the format:
-              https://storage.googleapis.com/gke-issuer-{UUID}. The cluster must
-              also serve the built-in OIDC discovery endpoints by enabling and
-              correctly configuring the ServiceAccountIssuerDiscovery feature.
-              Requires gcloud alpha and --enable-workload-identity.
-              Mutually exclusive with --public-issuer-url.
-              """),
-        )
-        workload_identity_mutex.add_argument(
-            '--has-private-issuer',
-            hidden=True,
-            action='store_true',
-            help=textwrap.dedent("""\
-              Set to true for clusters where no publicly-routable OIDC discovery
-              endpoint for the Kubernetes service account token issuer exists.
-
-              When set to true, the gcloud command-line tool will read the
-              private issuer URL and JSON Web Key Set (JWKS) (public keys) for
-              validating service account tokens from the cluster's API server
-              and upload both when creating the Membership. GCP will then use
-              the JWKS, instead of a public OIDC endpoint, to validate service
-              account tokens issued by this cluster. Note the JWKS establishes
-              the uniqueness of issuers in this configuration, but issuer claims
-              in tokens are still compared to the issuer URL associated with the
-              Membership when validating tokens.
-
-              Note the cluster's OIDC discovery endpoints
-              (https://[KUBE-API-ADDRESS]/.well-known/openid-configuration and
-              https://[KUBE-API-ADDRESS]/openid/v1/jwks) must still be
-              network-accessible to the gcloud client running this command.
-              """),
-        )
 
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
@@ -327,11 +330,7 @@ class Register(base.CreateCommand):
       gke_cluster_self_link = kube_client.processor.gke_cluster_self_link
       issuer_url = None
       private_keyset_json = None
-      # enable_workload_identity, public_issuer_url, and
-      # manage_workload_identity_bucket are only properties if we are on the
-      # alpha or beta track
-      if (self.ReleaseTrack() is not base.ReleaseTrack.GA
-          and args.enable_workload_identity):
+      if args.enable_workload_identity:
         # public_issuer_url can be None or given by user or gke_cluster_uri
         # (incase of a gke cluster).
         # args.public_issuer_url takes precedence over gke_cluster_uri.
@@ -439,8 +438,7 @@ class Register(base.CreateCommand):
         #    we got from the cluster differs from the keyset in the membership.
         #    This means the user is updating the public keys, and we should
         #    update to the latest keyset in the membership.
-        if self.ReleaseTrack() is not base.ReleaseTrack.GA and (
-            # scenario 1, disabling WI
+        if (  # scenario 1, disabling WI
             (obj.authority and not issuer_url) or
             # scenario 2, enabling WI
             (issuer_url and not obj.authority) or
