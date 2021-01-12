@@ -46,3 +46,8 @@ class Serverless(base.Group):
   """Manage your Cloud Run resources."""
   category = base.COMPUTE_CATEGORY
   detailed_help = DETAILED_HELP
+
+  def Filter(self, context, args):
+    """Runs before any commands in this group."""
+    del context, args
+    base.OptOutRequests()  # TODO(b/168098776): Remove to migrate to requests.

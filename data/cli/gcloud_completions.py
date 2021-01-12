@@ -5207,7 +5207,6 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--env-vars": "value",
                 "--env-vars-file": "value",
                 "--image": "value",
-                "--kind-cluster": "value",
                 "--kube-context": "value",
                 "--local-port": "value",
                 "--memory": "value",
@@ -8325,6 +8324,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "PREMIUM",
                       "STANDARD"
                     ],
+                    "--ipv6-public-ptr-domain": "value",
                     "--labels": "value",
                     "--local-nvdimm": "value",
                     "--local-ssd": "value",
@@ -8969,8 +8969,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update-access-config": {
                   "commands": {},
                   "flags": {
+                    "--ipv6-public-ptr-domain": "value",
                     "--network-interface": "value",
                     "--network-tier": "value",
+                    "--no-ipv6-public-ptr": "bool",
                     "--no-public-dns": "bool",
                     "--no-public-ptr": "bool",
                     "--no-public-ptr-domain": "bool",
@@ -10614,8 +10616,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--min-cpu-platform": "value",
                     "--require-specific-reservation": "bool",
                     "--share-setting": [
-                      "organization"
+                      "folders",
+                      "organization",
+                      "projects"
                     ],
+                    "--share-with": "value",
                     "--vm-count": "value",
                     "--zone": "dynamic"
                   }
@@ -11008,6 +11013,14 @@ STATIC_COMPLETION_CLI_TREE = {
                           }
                         },
                         "delete": {
+                          "commands": {},
+                          "flags": {
+                            "--nat": "value",
+                            "--region": "dynamic",
+                            "--router": "dynamic"
+                          }
+                        },
+                        "describe": {
                           "commands": {},
                           "flags": {
                             "--nat": "value",
@@ -13546,6 +13559,29 @@ STATIC_COMPLETION_CLI_TREE = {
                 },
                 "identity-service": {
                   "commands": {
+                    "apply": {
+                      "commands": {},
+                      "flags": {
+                        "--config": "value",
+                        "--membership": "value"
+                      }
+                    },
+                    "delete": {
+                      "commands": {},
+                      "flags": {
+                        "--membership": "value"
+                      }
+                    },
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    },
                     "disable": {
                       "commands": {},
                       "flags": {
@@ -14951,6 +14987,9 @@ STATIC_COMPLETION_CLI_TREE = {
                       "preemptible"
                     ],
                     "--service-account": "value",
+                    "--shielded-integrity-monitoring": "bool",
+                    "--shielded-secure-boot": "bool",
+                    "--shielded-vtpm": "bool",
                     "--single-node": "bool",
                     "--subnet": "value",
                     "--tags": "value",
@@ -15647,6 +15686,9 @@ STATIC_COMPLETION_CLI_TREE = {
                       "preemptible"
                     ],
                     "--service-account": "value",
+                    "--shielded-integrity-monitoring": "bool",
+                    "--shielded-secure-boot": "bool",
+                    "--shielded-vtpm": "bool",
                     "--single-node": "bool",
                     "--subnet": "value",
                     "--tags": "value",
@@ -17199,6 +17241,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--async": "bool",
+                    "--description": "value",
                     "--file-share": "value",
                     "--instance": "value",
                     "--instance-zone": "value",
@@ -19837,6 +19880,13 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--roles": "value"
                       }
                     },
+                    "check-transitive-membership": {
+                      "commands": {},
+                      "flags": {
+                        "--group-email": "value",
+                        "--member-email": "value"
+                      }
+                    },
                     "delete": {
                       "commands": {},
                       "flags": {
@@ -19848,6 +19898,14 @@ STATIC_COMPLETION_CLI_TREE = {
                       "commands": {},
                       "flags": {
                         "--group-email": "value",
+                        "--member-email": "value"
+                      }
+                    },
+                    "get-membership-graph": {
+                      "commands": {},
+                      "flags": {
+                        "--group-email": "value",
+                        "--labels": "value",
                         "--member-email": "value"
                       }
                     },
@@ -19874,6 +19932,23 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--member-email": "value",
                         "--remove-roles": "value",
                         "--update-roles-params": "value"
+                      }
+                    },
+                    "search-transitive-groups": {
+                      "commands": {},
+                      "flags": {
+                        "--labels": "value",
+                        "--member-email": "value",
+                        "--page-size": "value",
+                        "--page-token": "value"
+                      }
+                    },
+                    "search-transitive-memberships": {
+                      "commands": {},
+                      "flags": {
+                        "--group-email": "value",
+                        "--page-size": "value",
+                        "--page-token": "value"
                       }
                     }
                   },
@@ -30406,6 +30481,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--admin-name": "value",
                     "--async": "bool",
                     "--authorized-networks": "value",
+                    "--enable-audit-logs": "bool",
                     "--labels": "value",
                     "--region": "value",
                     "--reserved-ip-range": "value"
@@ -30502,6 +30578,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--add-region": "value",
                     "--async": "bool",
                     "--clear-labels": "bool",
+                    "--enable-audit-logs": "bool",
                     "--remove-authorized-networks": "value",
                     "--remove-labels": "value",
                     "--remove-region": "value",
@@ -32908,6 +32985,23 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--end-time": "value",
                 "--organization": "value",
                 "--start-time": "value"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--asset-types": "value",
+                "--content-type": [
+                  "iam-policy",
+                  "resource"
+                ],
+                "--filter": "value",
+                "--folder": "value",
+                "--limit": "value",
+                "--organization": "value",
+                "--page-size": "value",
+                "--snapshot-time": "value",
+                "--sort-by": "value"
               }
             },
             "operations": {
@@ -42512,6 +42606,9 @@ STATIC_COMPLETION_CLI_TREE = {
                       "preemptible"
                     ],
                     "--service-account": "value",
+                    "--shielded-integrity-monitoring": "bool",
+                    "--shielded-secure-boot": "bool",
+                    "--shielded-vtpm": "bool",
                     "--single-node": "bool",
                     "--subnet": "value",
                     "--tags": "value",
@@ -43208,6 +43305,9 @@ STATIC_COMPLETION_CLI_TREE = {
                       "preemptible"
                     ],
                     "--service-account": "value",
+                    "--shielded-integrity-monitoring": "bool",
+                    "--shielded-secure-boot": "bool",
+                    "--shielded-vtpm": "bool",
                     "--single-node": "bool",
                     "--subnet": "value",
                     "--tags": "value",
@@ -44548,7 +44648,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--destination-run-service": "value",
                     "--location": "value",
                     "--matching-criteria": "value",
-                    "--service-account": "value"
+                    "--service-account": "value",
+                    "--transport-topic": "value"
                   }
                 },
                 "delete": {
@@ -44919,6 +45020,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--async": "bool",
+                    "--description": "value",
                     "--file-share": "value",
                     "--instance": "value",
                     "--instance-zone": "value",
@@ -47321,6 +47423,13 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--roles": "value"
                       }
                     },
+                    "check-transitive-membership": {
+                      "commands": {},
+                      "flags": {
+                        "--group-email": "value",
+                        "--member-email": "value"
+                      }
+                    },
                     "delete": {
                       "commands": {},
                       "flags": {
@@ -47332,6 +47441,14 @@ STATIC_COMPLETION_CLI_TREE = {
                       "commands": {},
                       "flags": {
                         "--group-email": "value",
+                        "--member-email": "value"
+                      }
+                    },
+                    "get-membership-graph": {
+                      "commands": {},
+                      "flags": {
+                        "--group-email": "value",
+                        "--labels": "value",
                         "--member-email": "value"
                       }
                     },
@@ -47358,6 +47475,23 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--member-email": "value",
                         "--remove-roles": "value",
                         "--update-roles-params": "value"
+                      }
+                    },
+                    "search-transitive-groups": {
+                      "commands": {},
+                      "flags": {
+                        "--labels": "value",
+                        "--member-email": "value",
+                        "--page-size": "value",
+                        "--page-token": "value"
+                      }
+                    },
+                    "search-transitive-memberships": {
+                      "commands": {},
+                      "flags": {
+                        "--group-email": "value",
+                        "--page-size": "value",
+                        "--page-token": "value"
                       }
                     }
                   },
@@ -63842,6 +63976,9 @@ STATIC_COMPLETION_CLI_TREE = {
                   "preemptible"
                 ],
                 "--service-account": "value",
+                "--shielded-integrity-monitoring": "bool",
+                "--shielded-secure-boot": "bool",
+                "--shielded-vtpm": "bool",
                 "--single-node": "bool",
                 "--subnet": "value",
                 "--tags": "value",
@@ -64508,6 +64645,9 @@ STATIC_COMPLETION_CLI_TREE = {
                   "preemptible"
                 ],
                 "--service-account": "value",
+                "--shielded-integrity-monitoring": "bool",
+                "--shielded-secure-boot": "bool",
+                "--shielded-vtpm": "bool",
                 "--single-node": "bool",
                 "--subnet": "value",
                 "--tags": "value",
@@ -67187,6 +67327,13 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--roles": "value"
                   }
                 },
+                "check-transitive-membership": {
+                  "commands": {},
+                  "flags": {
+                    "--group-email": "value",
+                    "--member-email": "value"
+                  }
+                },
                 "delete": {
                   "commands": {},
                   "flags": {
@@ -67198,6 +67345,14 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--group-email": "value",
+                    "--member-email": "value"
+                  }
+                },
+                "get-membership-graph": {
+                  "commands": {},
+                  "flags": {
+                    "--group-email": "value",
+                    "--labels": "value",
                     "--member-email": "value"
                   }
                 },
@@ -67223,6 +67378,23 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--group-email": "value",
                     "--member-email": "value",
                     "--remove-roles": "value"
+                  }
+                },
+                "search-transitive-groups": {
+                  "commands": {},
+                  "flags": {
+                    "--labels": "value",
+                    "--member-email": "value",
+                    "--page-size": "value",
+                    "--page-token": "value"
+                  }
+                },
+                "search-transitive-memberships": {
+                  "commands": {},
+                  "flags": {
+                    "--group-email": "value",
+                    "--page-size": "value",
+                    "--page-token": "value"
                   }
                 }
               },

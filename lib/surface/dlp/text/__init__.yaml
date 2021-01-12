@@ -15,7 +15,7 @@ text_args:
   redact_info_type:
     _REF_: googlecloudsdk.surface.dlp.__init__:info_type
     api_field: googlePrivacyDlpV2DeidentifyContentRequest.inspectConfig.infoTypes
-
+    required: true
   redact_content_arg:
     group:
       mutex: true

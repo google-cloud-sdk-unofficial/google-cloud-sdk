@@ -54,4 +54,3 @@ class Projects(base.Group):
     # Don't ever take this off. Use gcloud quota for projects operations so
     # you can create a project before you have a project.
     base.DisableUserProjectQuota()
-    base.OptInRequests()

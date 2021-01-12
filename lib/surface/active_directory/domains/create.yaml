@@ -30,7 +30,7 @@
     ALPHA:
       api_version: v1alpha1
     BETA:
-      api_version: v1
+      api_version: v1beta1
     GA:
       api_version: v1
 
@@ -81,7 +81,7 @@
     - arg_name: enable-audit-logs
       type: bool
       action: store_true
-      release_tracks: [ALPHA]
+      release_tracks: [ALPHA, BETA]
       api_field: domain.auditLogsEnabled
       help_text: |
-        Whether Active Directory data audit logs are enabled for the domain.
+        If specified, Active Directory data audit logs are enabled for the domain.

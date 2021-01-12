@@ -66,7 +66,6 @@ class Update(base.Command):
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddSecretsFlags(cluster_group)
     flags.AddConfigMapsFlags(cluster_group)
-    flags.AddHttp2Flag(cluster_group)
 
     # Flags not specific to any platform
     service_presentation = presentation_specs.ResourcePresentationSpec(
@@ -102,6 +101,7 @@ class Update(base.Command):
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddMinInstancesFlag(cluster_group)
     flags.AddEndpointVisibilityEnum(cluster_group)
+    flags.AddHttp2Flag(cluster_group)
 
   def Run(self, args):
     """Update the service resource.
@@ -171,6 +171,7 @@ class BetaUpdate(Update):
     flags.AddDeployTagFlag(parser)
     flags.AddMinInstancesFlag(parser)
     flags.AddIngressFlag(parser)
+    flags.AddHttp2Flag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -189,6 +190,7 @@ class AlphaUpdate(Update):
     flags.AddMinInstancesFlag(parser)
     flags.AddDeployTagFlag(parser)
     flags.AddIngressFlag(parser)
+    flags.AddHttp2Flag(parser)
 
 
 AlphaUpdate.__doc__ = Update.__doc__

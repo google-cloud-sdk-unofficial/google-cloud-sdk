@@ -33,7 +33,7 @@
       arg_name: display-name
       help_text: Display name of the tag template field.
     - arg_name: enum-values
-      type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+      type: arg_list
       help_text: |
         Comma-separated list of enum values. The list of enum values passed with this flag replaces the existing one in tag template enum field. That means:
         - the enum values passed to the flag and not present in tag template enum field get created
@@ -79,7 +79,7 @@
       arg_name: display-name
       help_text: Display name of the tag template field.
     - arg_name: enum-values
-      type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+      type: arg_list
       help_text: |
         Comma-separated list of enum values. The list of enum values passed with this flag replaces the existing one in tag template enum field. That means:
         - the enum values passed to the flag and not present in tag template enum field get created

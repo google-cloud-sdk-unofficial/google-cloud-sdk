@@ -116,7 +116,6 @@ class Deploy(base.Command):
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddSecretsFlags(cluster_group)
     flags.AddConfigMapsFlags(cluster_group)
-    flags.AddHttp2Flag(cluster_group)
 
     # Flags not specific to any platform
     service_presentation = presentation_specs.ResourcePresentationSpec(
@@ -154,6 +153,7 @@ class Deploy(base.Command):
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddMinInstancesFlag(cluster_group)
     flags.AddEndpointVisibilityEnum(cluster_group)
+    flags.AddHttp2Flag(cluster_group)
 
   def Run(self, args):
     """Deploy a container to Cloud Run."""
@@ -260,6 +260,7 @@ class BetaDeploy(Deploy):
     flags.AddMinInstancesFlag(parser)
     flags.AddDeployTagFlag(parser)
     flags.AddIngressFlag(parser)
+    flags.AddHttp2Flag(parser)
 
     # Flags specific to deploy from source
     flags.AddSourceFlag(parser)
@@ -282,6 +283,7 @@ class AlphaDeploy(Deploy):
     flags.AddMinInstancesFlag(parser)
     flags.AddDeployTagFlag(parser)
     flags.AddIngressFlag(parser)
+    flags.AddHttp2Flag(parser)
 
     # Flags specific to deploy from source
     flags.AddSourceFlag(parser)

@@ -110,7 +110,7 @@ class Create(base.Command):
                                                       args.source)
         event_type = event_type_obj.type
         if client.IsCluster():
-          source_client = client.ClientFromCrd(event_type_obj.crd)
+          source_client = client.ClientFromSourceCrd(event_type_obj.crd)
         else:
           source_client = client.client
 

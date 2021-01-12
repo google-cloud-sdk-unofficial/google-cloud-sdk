@@ -183,7 +183,7 @@
           spec:
           - api_field: key
           - api_field: value
-            type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+            type: arg_list
       help_text: |
         Single label and value pair specifying that usage from only this set of labeled resources
         should be included in the budget. Currently, multiple entries or multiple values per entry

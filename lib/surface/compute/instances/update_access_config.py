@@ -39,7 +39,8 @@ DETAILED_HELP = {
 }
 
 
-def _Args(parser, support_public_dns, support_network_tier):
+def _Args(parser, support_public_dns, support_network_tier,
+          support_ipv6_ptr_domain):
   """Register parser args common to all tracks."""
 
   flags.INSTANCE_ARG.AddArgument(parser)
@@ -49,6 +50,8 @@ def _Args(parser, support_public_dns, support_network_tier):
     flags.AddPublicDnsArgs(parser, instance=False)
   if support_network_tier:
     flags.AddNetworkTierArgs(parser, instance=False, for_update=True)
+  if support_ipv6_ptr_domain:
+    flags.AddIpv6PublicPtrArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -57,13 +60,15 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
 
   _support_public_dns = False
   _support_network_tier = False
+  _support_ipv6_public_ptr_domain = False
 
   @classmethod
   def Args(cls, parser):
     _Args(
         parser,
         support_public_dns=cls._support_public_dns,
-        support_network_tier=cls._support_network_tier)
+        support_network_tier=cls._support_network_tier,
+        support_ipv6_ptr_domain=cls._support_ipv6_public_ptr_domain)
 
   def CreateReference(self, client, resources, args):
     return flags.INSTANCE_ARG.ResolveAsResource(
@@ -79,7 +84,12 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
   def GetSetRequest(self, client, args, instance_ref, replacement):
     for network_interface in replacement.networkInterfaces:
       if network_interface.name == args.network_interface:
-        access_config_replacement = network_interface.accessConfigs[0]
+        if (self._support_ipv6_public_ptr_domain and
+            network_interface.ipv6AccessConfigs is not None and
+            network_interface.ipv6AccessConfigs):
+          access_config_replacement = network_interface.ipv6AccessConfigs[0]
+        else:
+          access_config_replacement = network_interface.accessConfigs[0]
 
     return (client.apitools_client.instances,
             'UpdateAccessConfig',
@@ -104,6 +114,13 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
     elif args.no_public_ptr is True:
       set_ptr = False
 
+    set_ipv6_ptr = None
+    if self._support_ipv6_public_ptr_domain:
+      if args.ipv6_public_ptr_domain:
+        set_ipv6_ptr = True
+      elif args.no_ipv6_public_ptr:
+        set_ipv6_ptr = False
+
     modified = encoding.CopyProtoMessage(original)
     for interface in modified.networkInterfaces:
       if interface.name == args.network_interface:
@@ -111,7 +128,8 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
           if set_public_dns is not None:
             interface.accessConfigs[0].setPublicDns = set_public_dns
             # publicDnsName is output only.
-          interface.accessConfigs[0].publicDnsName = None
+          if set_ipv6_ptr is None:
+            interface.accessConfigs[0].publicDnsName = None
 
         if set_ptr is not None:
           interface.accessConfigs[0].setPublicPtr = set_ptr
@@ -119,6 +137,13 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
           if args.public_ptr_domain is not None:
             interface.accessConfigs[
                 0].publicPtrDomainName = args.public_ptr_domain
+
+        if set_ipv6_ptr is not None:
+          interface.ipv6AccessConfigs[0].setPublicPtr = set_ipv6_ptr
+          interface.ipv6AccessConfigs[0].publicPtrDomainName = ''
+          if args.ipv6_public_ptr_domain is not None:
+            interface.ipv6AccessConfigs[
+                0].publicPtrDomainName = args.ipv6_public_ptr_domain
 
         if self._support_network_tier:
           if args.network_tier is not None:
@@ -135,6 +160,8 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
 
   def Run(self, args):
     flags.ValidatePublicPtrFlags(args)
+    if self._support_ipv6_public_ptr_domain:
+      flags.ValidateIpv6PublicPtrFlags(args)
     if self._support_public_dns:
       flags.ValidatePublicDnsFlags(args)
     if self._support_network_tier:
@@ -168,6 +195,7 @@ class UpdateAccessConfigInstancesBeta(UpdateAccessConfigInstances):
 
   _support_public_dns = False
   _support_network_tier = False
+  _support_ipv6_public_ptr_domain = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -176,5 +204,7 @@ class UpdateAccessConfigInstancesAlpha(UpdateAccessConfigInstances):
 
   _support_public_dns = True
   _support_network_tier = True
+  _support_ipv6_public_ptr_domain = True
+
 
 UpdateAccessConfigInstances.detailed_help = DETAILED_HELP

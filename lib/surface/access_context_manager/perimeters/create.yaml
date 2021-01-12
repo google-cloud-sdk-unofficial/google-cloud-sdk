@@ -67,7 +67,7 @@
       metavar: LEVEL
       # Added in AddAccessLevels hook because a type wouldn't have access to
       # the policy of the service perimeter
-      type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+      type: arg_list
       help_text: |
         Comma-separated list of IDs for access levels (in the same policy)
         that an intra-perimeter request must satisfy to be allowed.

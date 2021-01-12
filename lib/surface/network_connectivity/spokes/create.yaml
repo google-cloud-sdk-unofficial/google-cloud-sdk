@@ -37,11 +37,11 @@
         params:
         - arg_name: vpn-tunnel
           api_field: spoke.linkedVpnTunnels
-          type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+          type: arg_list
           help_text: VPN tunnel that this spoke links to.
         - arg_name: interconnect-attachment
           api_field: spoke.linkedInterconnectAttachments
-          type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+          type: arg_list
           help_text: Interconnect attachment that this spoke links to.
         - arg_name: router-appliance
           api_field: spoke.linkedRouterApplianceInstances

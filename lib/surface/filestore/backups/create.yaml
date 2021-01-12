@@ -8,12 +8,11 @@
         * A backup with the same name already exists.
         * The active account does not have permission to create backups.
     examples: |
-      To create a backup with the name 'my-backup' in a particular region like 'us-central1'
-      from an instance called 'my-instance' in 'us-central1-c' and the source file share called
-      'my-fs', run:
+      To create a backup with the name 'my-backup' and description 'My backup description' in a
+      particular region like 'us-central1' from an instance called 'my-instance' in 'us-central1-c'
+      and the source file share called 'my-fs', run:
 
-        $ {command} my-backup --instance=my-instance --file-share=my-fs
-            --instance-zone=us-central1-c --region=us-central1
+        $ {command} my-backup --instance=my-instance --file-share=my-fs --instance-zone=us-central1-c --region=us-central1 --description="My backup description"
 
   arguments:
     params:
@@ -35,6 +34,11 @@
       required: true
       help_text: |
         Region (e.g. us-central1) for the backup.
+    - api_field: backup.description
+      arg_name: description
+      required: false
+      help_text: |
+        Description for the backup. Limit: 2048 characters.
     - api_field: backup.sourceFileShare
       arg_name: file-share
       required: true

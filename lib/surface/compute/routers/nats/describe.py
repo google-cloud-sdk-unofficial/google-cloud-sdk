@@ -27,9 +27,8 @@ from googlecloudsdk.command_lib.compute.routers.nats import flags as nats_flags
 from googlecloudsdk.command_lib.compute.routers.nats import nats_utils
 
 
-class AlphaDescribe(base.DescribeCommand):
-  """Describe a NAT in a Compute Engine router.
-  """
+class Describe(base.DescribeCommand):
+  """Describe a NAT in a Compute Engine router."""
 
   ROUTER_ARG = None
 
@@ -55,7 +54,7 @@ class AlphaDescribe(base.DescribeCommand):
     return nats_utils.FindNatOrRaise(router, args.name)
 
 
-AlphaDescribe.detailed_help = {
+Describe.detailed_help = {
     'DESCRIPTION':
         textwrap.dedent("""
         *{command}* is used to describe a NAT in a Compute Engine router.

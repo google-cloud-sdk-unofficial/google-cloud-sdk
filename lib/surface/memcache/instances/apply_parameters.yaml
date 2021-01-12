@@ -30,7 +30,7 @@
         params:
         - arg_name: node-ids
           api_field: applyParametersRequest.nodeIds
-          type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+          type: arg_list
           help_text: |
             Nodes on which to apply the parameter update.
         - arg_name: apply-all

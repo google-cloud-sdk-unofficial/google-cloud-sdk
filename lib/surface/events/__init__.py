@@ -72,6 +72,7 @@ class EventsBeta(base.Group):
 
   def Filter(self, context, args):
     """Runs before command.Run and validates platform with passed args."""
+    base.OptOutRequests()  # TODO(b/168098776): Remove to migrate to requests.
     # Ensures a platform is set on the run/platform property and
     # all other passed args are valid for this platform and release track.
     flags.GetAndValidatePlatform(args, self.ReleaseTrack(),
@@ -131,6 +132,7 @@ class EventsAlpha(base.Group):
 
   def Filter(self, context, args):
     """Runs before command.Run and validates platform with passed args."""
+    base.OptOutRequests()  # TODO(b/168098776): Remove to migrate to requests.
     # Ensures a platform is set on the run/platform property and
     # all other passed args are valid for this platform and release track.
     flags.GetAndValidatePlatform(args, self.ReleaseTrack(),

@@ -71,7 +71,7 @@
                 Currently supported MembershipRole: 'MEMBER', 'OWNER', 'MANAGER'.
             - arg_name: remove-roles
               api_field: modifyMembershipRolesRequest.removeRoles
-              type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+              type: arg_list
               help_text: |
                 Membership role names to be removed.
                 Currently supported MembershipRole: 'OWNER', 'MANAGER'.

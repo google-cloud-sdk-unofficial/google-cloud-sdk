@@ -42,7 +42,7 @@
         is connected. If unspecified, the default network will be used.
     - arg_name: zones
       api_field: instance.zones
-      type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+      type: arg_list
       help_text: |
         List of zones for the memcache nodes. The nodes will be divided
         equally across the given zones up to --node-count value. If not

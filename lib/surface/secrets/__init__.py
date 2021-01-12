@@ -48,4 +48,3 @@ class CloudSecrets(base.Group):
     # This is technically the default, but some gcloud commands like IAM have
     # user project override off by default, so we enable it here explicitly.
     base.EnableUserProjectQuota()
-    base.OptInRequests()
