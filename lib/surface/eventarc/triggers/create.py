@@ -62,19 +62,20 @@ class Create(base.CreateCommand):
     flags.AddDestinationRunServiceArg(parser, required=True)
     flags.AddDestinationRunPathArg(parser)
     flags.AddDestinationRunRegionArg(parser)
-    flags.AddTransportTopicArg(parser, cls.ReleaseTrack())
+    flags.AddTransportTopicResourceArg(parser, cls.ReleaseTrack())
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
     """Run the create command."""
     client = triggers.CreateTriggersClient(self.ReleaseTrack())
     trigger_ref = args.CONCEPTS.trigger.Parse()
+    transport_topic_ref = args.CONCEPTS.transport_topic.Parse()
     event_filters = flags.GetEventFiltersArg(args, self.ReleaseTrack())
     operation = client.Create(trigger_ref, event_filters, args.service_account,
                               args.destination_run_service,
                               args.destination_run_path,
                               args.destination_run_region,
-                              args.transport_topic)
+                              transport_topic_ref)
     self._event_type = event_filters['type']
     if args.async_:
       return operation

@@ -28,6 +28,10 @@ _DETAILED_HELP = {
         To create a new Component, run:
 
             $ {command} COMPONENT --type TYPE --devkit DEVKIT
+
+        To create a new Component in a user-defined directory, run:
+
+            $ {command} COMPONENT --type TYPE --devkit DEVKIT --directory DIR
         """,
 }
 
@@ -46,12 +50,19 @@ def _TypeFlag():
       required=True)
 
 
+def _DirectoryFlag():
+  return flags.StringFlag(
+      '--directory',
+      help='Base directory path relative to current working directory where Component will be created.  This path must be within the application git repository.',
+      required=False)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Add(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
   """Create a new Component."""
 
   detailed_help = _DETAILED_HELP
-  flags = [_DevKitFlag(), _TypeFlag()]
+  flags = [_DevKitFlag(), _TypeFlag(), _DirectoryFlag()]
 
   @classmethod
   def Args(cls, parser):

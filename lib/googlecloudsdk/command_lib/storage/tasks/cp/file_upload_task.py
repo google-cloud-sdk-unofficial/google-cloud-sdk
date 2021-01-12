@@ -25,10 +25,8 @@ from __future__ import unicode_literals
 
 import os
 
-from googlecloudsdk.api_lib.storage import api_factory
-from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.command_lib.storage.tasks import task
-from googlecloudsdk.core.util import files
+from googlecloudsdk.command_lib.storage.tasks.cp import file_part_upload_task
 
 
 class FileUploadTask(task.Task):
@@ -52,18 +50,11 @@ class FileUploadTask(task.Task):
         self._destination_resource.storage_url.url_string)
 
   def execute(self, callback=None):
-    destination_url = self._destination_resource.storage_url
-    provider = destination_url.scheme
-
     source_filename = self._source_resource.storage_url.object_name
     size = os.path.getsize(source_filename)
 
-    with files.BinaryFileReader(source_filename) as upload_stream:
-      # TODO(b/162069479): Support all of upload_object's parameters.
-      api_factory.get_api(provider).upload_object(
-          upload_stream,
-          self._destination_resource,
-          request_config=cloud_api.RequestConfig(
-              md5_hash=self._source_resource.md5_hash,
-              size=size))
-
+    # TODO(b/175901291): Split up files for composite uploads.
+    file_part_upload_task.FilePartUploadTask(
+        self._source_resource,
+        self._destination_resource,
+        0, size).execute()

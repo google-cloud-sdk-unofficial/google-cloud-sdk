@@ -51,5 +51,4 @@ class MlEngine(base.Group):
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()
-    base.OptInRequests()
     resources.REGISTRY.RegisterApiByName('ml', 'v1')

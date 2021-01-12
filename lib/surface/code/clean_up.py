@@ -40,8 +40,5 @@ class CleanUp(base.Command):
     group.add_argument('--kind-cluster', help='Kind cluster.')
 
   def Run(self, args):
-    if args.IsSpecified('kind_cluster'):
-      kubernetes.DeleteKindClusterIfExists(args.kind_cluster)
-    else:
-      kubernetes.DeleteMinikube(args.minikube_profile or
-                                kubernetes.DEFAULT_CLUSTER_NAME)
+    kubernetes.DeleteMinikube(args.minikube_profile or
+                              kubernetes.DEFAULT_CLUSTER_NAME)

@@ -35,6 +35,7 @@
     # Need to override shared arg definitions
     - _REF_: googlecloudsdk.command_lib.dlp.flags:info_type
       api_field: googlePrivacyDlpV2DeidentifyContentRequest.inspectConfig.infoTypes
+      required: true
     - _REF_: googlecloudsdk.command_lib.dlp.flags:min_likelihood
       api_field: googlePrivacyDlpV2DeidentifyContentRequest.inspectConfig.minLikelihood
     - group:

@@ -78,7 +78,7 @@
         example '30d', '6m', '3y' for 30 days, 6 months, or 3 years respectively.
 
     - arg_name: roles
-      type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+      type: arg_list
       help_text: |
         A comma-separated list of roles for a member within the Group. If not specified,
         MEMBER will be used as a default value.

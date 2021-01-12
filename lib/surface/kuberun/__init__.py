@@ -39,3 +39,8 @@ class KubeRun(base.Group):
             $ {command} core services list
       """,
   }
+
+  def Filter(self, context, args):
+    """Runs before any commands in this group."""
+    del context, args
+    base.OptOutRequests()  # TODO(b/168098776): Remove to migrate to requests.

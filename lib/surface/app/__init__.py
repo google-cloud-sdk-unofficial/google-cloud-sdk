@@ -66,11 +66,13 @@ DETAILED_HELP = {
                     base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class AppengineGA(base.Group):
+  """Manage your App Engine deployments."""
 
   category = base.COMPUTE_CATEGORY
 
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()
+    base.OptOutRequests()  # TODO(b/168048260): Remove to migrate to requests.
 
 AppengineGA.detailed_help = DETAILED_HELP

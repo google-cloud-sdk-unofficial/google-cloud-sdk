@@ -209,6 +209,7 @@ class Create(base.CreateCommand):
   _support_network_interface_nic_type = True
   _support_stack_type = False
   _support_ipv6_network_tier = False
+  _support_ipv6_public_ptr_domain = False
 
   @classmethod
   def Args(cls, parser):
@@ -279,7 +280,8 @@ class Create(base.CreateCommand):
         skip_defaults=skip_defaults,
         support_public_dns=self._support_public_dns,
         support_stack_type=self._support_stack_type,
-        support_ipv6_network_tier=self._support_ipv6_network_tier)
+        support_ipv6_network_tier=self._support_ipv6_network_tier,
+        support_ipv6_public_ptr_domain=self._support_ipv6_public_ptr_domain)
 
     confidential_vm = (
         args.IsSpecified('confidential_compute') and args.confidential_compute)
@@ -613,6 +615,7 @@ class CreateAlpha(CreateBeta):
   _support_network_interface_nic_type = True
   _support_stack_type = True
   _support_ipv6_network_tier = True
+  _support_ipv6_public_ptr_domain = True
 
   @classmethod
   def Args(cls, parser):
@@ -638,6 +641,7 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddSourceMachineImageEncryptionKey(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddPublicDnsArgs(parser, instance=True)
+    instances_flags.AddIpv6PublicPtrDomainArg(parser)
     instances_flags.AddLocalSsdArgsWithSize(parser)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddConfidentialComputeArgs(parser)

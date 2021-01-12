@@ -20,7 +20,7 @@
     ALPHA:
       api_version: v1alpha1
     BETA:
-      api_version: v1
+      api_version: v1beta1
     GA:
       api_version: v1
 
@@ -52,6 +52,7 @@
             locations:label=REGIONS,
             labels:label=LABELS,
             admin:label=ADMIN_NAME,
+            auditLogsEnabled:label=AUDIT_LOGS_ENABLED,
             createTime.date():sort=1
           )
     GA:

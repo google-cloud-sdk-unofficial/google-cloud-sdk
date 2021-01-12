@@ -117,14 +117,12 @@ class Dev(base.Command):
 
     group.add_argument('--minikube-profile', help='Minikube profile.')
 
-    group.add_argument('--kind-cluster', help='Kind cluster.')
-
     parser.add_argument(
         '--stop-cluster',
         default=True,
         action='store_true',
-        help='If running on minikube or kind, stop the minkube profile or '
-        'kind cluster at the end of the session.')
+        help='If running on minikube, stop the minkube profile at the end of '
+        'the session.')
 
     parser.add_argument(
         '--minikube-vm-driver',
@@ -184,13 +182,6 @@ class Dev(base.Command):
     def External():
       return kubernetes.ExternalClusterContext(args.kube_context)
 
-    def Kind():
-      if args.IsSpecified('kind_cluster'):
-        cluster_name = args.kind_cluster
-      else:
-        cluster_name = kubernetes.DEFAULT_CLUSTER_NAME
-      return kubernetes.KindClusterContext(cluster_name, args.stop_cluster)
-
     def Minikube():
       if args.IsSpecified('minikube_profile'):
         cluster_name = args.minikube_profile
@@ -202,8 +193,6 @@ class Dev(base.Command):
 
     if args.IsSpecified('kube_context'):
       return External()
-    elif args.IsSpecified('kind_cluster'):
-      return Kind()
     else:
       return Minikube()
 
@@ -255,8 +244,6 @@ def _EnsureComponentsInstalled(args):
 
   if args.IsSpecified('kube_context'):
     pass
-  elif args.IsSpecified('kind_cluster'):
-    components.append('kind')
   else:
     components.append('minikube')
 
@@ -269,8 +256,6 @@ def _PrintDependencyVersions(args):
 
   if args.IsSpecified('kube_context'):
     pass
-  elif args.IsSpecified('kind_cluster'):
-    dependency_versions['kind'] = kubernetes.GetKindVersion()
   else:
     dependency_versions['minikube'] = kubernetes.GetMinikubeVersion()
 
