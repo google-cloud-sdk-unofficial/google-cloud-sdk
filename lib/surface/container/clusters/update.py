@@ -634,6 +634,7 @@ class UpdateBeta(Update):
     flags.AddKubernetesObjectsExportConfig(group)
     flags.AddDisableAutopilotFlag(group, hidden=True)
     flags.AddILBSubsettingFlags(group, hidden=True)
+    flags.AddClusterDNSFlags(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     flags.ValidateNotificationConfigFlag(args)
@@ -687,7 +688,17 @@ class UpdateBeta(Update):
     opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
     opts.disable_autopilot = args.disable_autopilot
     opts.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting
-
+    opts.cluster_dns = args.cluster_dns
+    opts.cluster_dns_scope = args.cluster_dns_scope
+    opts.cluster_dns_domain = args.cluster_dns_domain
+    if opts.cluster_dns and opts.cluster_dns.lower() == 'clouddns':
+      console_io.PromptContinue(
+          message='Enabling CloudDNS is a one-way operation. Once enabled, '
+          'this configuration cannot be disabled. '
+          'All the node-pools in the cluster need to be re-created by the user '
+          'to start using CloudDNS for DNS lookups. It is highly recommended to'
+          ' complete this step shortly after enabling CloudDNS.',
+          cancel_on_no=True)
     return opts
 
 
@@ -751,6 +762,7 @@ class UpdateAlpha(Update):
     flags.AddKubernetesObjectsExportConfig(group)
     flags.AddDisableAutopilotFlag(group, hidden=True)
     flags.AddILBSubsettingFlags(group, hidden=True)
+    flags.AddClusterDNSFlags(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     flags.ValidateNotificationConfigFlag(args)
@@ -805,5 +817,16 @@ class UpdateAlpha(Update):
     opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
     opts.disable_autopilot = args.disable_autopilot
     opts.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting
+    opts.cluster_dns = args.cluster_dns
+    opts.cluster_dns_scope = args.cluster_dns_scope
+    opts.cluster_dns_domain = args.cluster_dns_domain
+    if opts.cluster_dns and opts.cluster_dns.lower() == 'clouddns':
+      console_io.PromptContinue(
+          message='Enabling CloudDNS is a one-way operation. Once enabled, '
+          'this configuration cannot be disabled.'
+          'All the node-pools in the cluster need to be re-created by the user '
+          'to start using CloudDNS for DNS lookups. It is highly recommended to'
+          ' complete this step shortly after enabling CloudDNS.',
+          cancel_on_no=True)
 
     return opts

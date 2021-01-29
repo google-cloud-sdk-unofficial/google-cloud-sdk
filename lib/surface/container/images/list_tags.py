@@ -23,6 +23,7 @@ import sys
 
 from containerregistry.client.v2_2 import docker_image
 from googlecloudsdk.api_lib.container.images import util
+from googlecloudsdk.api_lib.containeranalysis import filter_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container import flags
@@ -31,8 +32,8 @@ from googlecloudsdk.core import http
 
 # Add to this as we add columns.
 _DEFAULT_KINDS = [
-    'BUILD_DETAILS',
-    'IMAGE_BASIS',
+    'BUILD',
+    'IMAGE',
     'DISCOVERY',
 ]
 # How many images for which to report vulnerabilities, by default. These are
@@ -47,10 +48,10 @@ _TAGS_FORMAT = """
         digest.slice(7:19).join(''),
         tags.list(),
         timestamp.date():optional,
-        BUILD_DETAILS.buildDetails.provenance.sourceProvenance.context.cloudRepo.revisionId.notnull().list().slice(:8).join(''):optional:label=GIT_SHA,
+        BUILD.build.provenance.sourceProvenance.context.cloudRepo.revisionId.notnull().list().slice(:8).join(''):optional:label=GIT_SHA,
         vuln_counts.list():optional:label=VULNERABILITIES,
-        IMAGE_BASIS.derivedImage.sort(distance).map().extract(baseResourceUrl).slice(:1).map().list().list().split('//').slice(1:).list().split('@').slice(:1).list():optional:label=FROM,
-        BUILD_DETAILS.buildDetails.provenance.id.notnull().list():optional:label=BUILD,
+        IMAGE.image.sort(distance).map().extract(baseResourceUrl).slice(:1).map().list().list().split('//').slice(1:).list().split('@').slice(:1).list():optional:label=FROM,
+        BUILD.build.provenance.id.notnull().list():optional:label=BUILD,
         DISCOVERY[0].discovered.analysisStatus:optional:label=VULNERABILITY_SCAN_STATUS
     )
 """
@@ -191,18 +192,20 @@ class ListTagsALPHAandBETA(ListTagsGA, base.ListCommand):
         # Only consider the top _DEFAULT_SHOW_OCCURRENCES_FROM images
         # to reduce computation time.
         most_recent_resource_urls = None
+        occ_filter = filter_util.ContainerAnalysisFilter()
+        occ_filter.WithCustomFilter(args.occurrence_filter)
+        occ_filter.WithResourcePrefix(repository)
         if args.show_occurrences_from:
           # This block is skipped when the user provided
           # --show-occurrences-from=unlimited on the CLI.
           most_recent_resource_urls = [
               'https://%s@%s' % (args.image_name, k) for k in heapq.nlargest(
                   args.show_occurrences_from,
-                  manifests,
-                  key=lambda k: manifests[k]['timeCreatedMs'])
+                  manifests, key=lambda k: manifests[k]['timeCreatedMs'])
           ]
+          occ_filter.WithResources(most_recent_resource_urls)
         return util.TransformManifests(
             manifests,
             repository,
             show_occurrences=args.show_occurrences,
-            occurrence_filter=args.occurrence_filter,
-            resource_urls=most_recent_resource_urls)
+            occurrence_filter=occ_filter)

@@ -25,12 +25,15 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.networks.subnets import flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List subnetworks."""
 
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+  _default_list_format = flags.DEFAULT_LIST_FORMAT
+
+  @classmethod
+  def Args(cls, parser):
+    parser.display_info.AddFormat(cls._default_list_format)
     lister.AddRegionsArg(parser)
     parser.display_info.AddCacheUpdater(flags.SubnetworksCompleter)
 
@@ -54,6 +57,12 @@ class List(base.ListCommand):
         network_ref = holder.resources.Parse(resource['network'])
         if network_ref.Name() == args.network:
           yield resource
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+
+  _default_list_format = flags.DEFAULT_LIST_FORMAT_WITH_IPV6_FIELD
 
 
 List.detailed_help = base_classes.GetRegionalListerHelp('subnetworks')

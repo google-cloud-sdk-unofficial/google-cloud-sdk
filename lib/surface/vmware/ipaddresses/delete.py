@@ -56,10 +56,11 @@ class Delete(base.DeleteCommand):
     resource = args.CONCEPTS.name.Parse()
     client = IPAddressesClient()
     operation = client.Delete(resource)
+    resource_path = client.GetResourcePath(
+        resource, resource_path=resource, encoded_cluster_groups_id=True)
     return client.WaitForOperation(
-        operation,
-        'waiting for external ip address [{}] to be deleted'.format(resource),
-        is_delete=True)
+        operation, 'waiting for external ip address [{}] to be deleted'.format(
+            resource_path), is_delete=True)
 
 
 Delete.detailed_help = DETAILED_HELP

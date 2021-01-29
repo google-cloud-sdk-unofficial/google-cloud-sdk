@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import collections
 
 from googlecloudsdk.api_lib.events import iam_util
+from googlecloudsdk.api_lib.kuberun.core import events_constants
 from googlecloudsdk.api_lib.services import services_util
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
@@ -29,6 +30,7 @@ from googlecloudsdk.command_lib.events import exceptions
 from googlecloudsdk.command_lib.events import flags
 from googlecloudsdk.command_lib.events import stages
 from googlecloudsdk.command_lib.iam import iam_util as core_iam_util
+from googlecloudsdk.command_lib.kuberun.core.events import init_shared
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags as serverless_flags
 from googlecloudsdk.command_lib.run import platforms
@@ -146,24 +148,59 @@ class Init(base.Command):
         args, serverless_flags.Product.EVENTS, self.ReleaseTrack())
 
     with eventflow_operations.Connect(conn_context) as client:
-      cloud_run_obj = client.GetCloudRun()
-      if cloud_run_obj is None:
-        pass
-      elif cloud_run_obj.eventing_enabled:
-        log.status.Print('Eventing already enabled.')
+      operator_obj = None
+      operator_type = None
+
+      crd_list = client.ListCustomResourceDefinition()
+      namespaces_list = client.ListNamespaces()
+
+      # Attempt to determine whether KubeRun or CloudRun operator is installed
+      # by presence of the corresponding operator resource.
+      if client.GetKubeRun() is not None and self.ReleaseTrack(
+      ) == base.ReleaseTrack.ALPHA:
+        # KubeRun operator installed.
+        operator_obj = client.GetKubeRun()
+        operator_type = events_constants.Operator.KUBERUN
+      elif 'cloud-run-system' in namespaces_list:
+        # CloudRun operator installed.
+        operator_obj = client.GetCloudRun()
+        operator_type = events_constants.Operator.CLOUDRUN
       else:
+        # Neither operator installed.
+        operator_type = events_constants.Operator.NONE
+        _PromptIfCanPrompt(
+            'Unable to find the CloudRun resource to install Eventing. This means that Eventing will not be installed. Would you like to continue anyway?'
+        )
+        if 'knative-eventing' in namespaces_list:
+          # Neither operator installed, but OSS knative eventing found.
+          log.status.Print('OSS eventing already installed.')
+          pass
+        else:
+          # Neither operator installed, nor is OSS knative eventing installed.
+          raise exceptions.EventingInstallError('Eventing not installed.')
+
+      if operator_obj is not None:
+
         tracker_stages = stages.EventingStages()
 
-        # Enable eventing
+        # Enable eventing or wait for operator to finish installing eventing.
         with progress_tracker.StagedProgressTracker(
-            'Enabling eventing...',
+            'Waiting on eventing installation...'
+            if operator_obj.eventing_enabled else 'Enabling eventing...',
             tracker_stages,
             failure_message='Failed to enable eventing') as tracker:
-          response = client.UpdateCloudRunWithEventingEnabled()
+
+          if not operator_obj.eventing_enabled:
+            init_shared.UpdateOpResourceWithEventingEnabled(
+                client, operator_type)
 
           # Wait for Operator to enable eventing
-          client.PollCloudRunResource(tracker)
-          log.status.Print('Enabled eventing successfully.')
+          init_shared.PollOperatorResource(client, operator_type, tracker)
+
+          if operator_obj.eventing_enabled:
+            log.status.Print('Eventing already enabled.')
+          else:
+            log.status.Print('Enabled eventing successfully.')
 
       if client.IsClusterInitialized():
         console_io.PromptContinue(

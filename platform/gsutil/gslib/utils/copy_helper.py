@@ -741,11 +741,10 @@ def ConstructDstUrl(src_url,
 
 
 def _CreateDigestsFromDigesters(digesters):
-  b64enc = base64.encodestring if six.PY2 else base64.encodebytes
   digests = {}
   if digesters:
     for alg in digesters:
-      digests[alg] = b64enc(
+      digests[alg] = base64.b64encode(
           digesters[alg].digest()).rstrip(b'\n').decode('ascii')
   return digests
 
@@ -2338,8 +2337,9 @@ def _GetDownloadFile(dst_url, src_obj_metadata, logger):
 
   # Downloads open the temporary download file in r+b mode, which requires it
   # to already exist, so we create it here if it doesn't exist already.
-  fp = open(download_file_name, 'ab')
-  fp.close()
+  if not os.path.exists(download_file_name):
+    fp = open(download_file_name, 'w')
+    fp.close()
   return download_file_name, need_to_unzip
 
 
@@ -2696,7 +2696,7 @@ def _DoSlicedDownload(src_url,
                                       num_components)
 
   # Resize the download file so each child process can seek to its start byte.
-  with open(download_file_name, 'ab') as fp:
+  with open(download_file_name, 'r+b') as fp:
     fp.truncate(src_obj_metadata.size)
   # Assign a start FileMessage to each component
   for (i, component) in enumerate(components_to_download):

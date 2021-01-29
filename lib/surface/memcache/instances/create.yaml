@@ -1,9 +1,8 @@
-- release_tracks: [ALPHA, BETA]
-  help_text:
+- help_text:
     brief: |
       Create a Memorystore Memcached instance.
     description: |
-      Create a new Memorystore Memcached instance with the given name.
+      Create a new Memorystore Memcached instance.
 
       This command can fail for the following reasons:
         * An instance with the same name already exists.
@@ -124,7 +123,7 @@
   async:
     collection: memcache.projects.locations.operations
 
-  request: &request
+  request:
     collection: memcache.projects.locations.instances
 
   output:

@@ -475,6 +475,7 @@ flags_to_add = {
         'cloudrunalpha': flags.AddEnableCloudRunAlphaFlag,
         'cloudrunconfig': flags.AddCloudRunConfigFlag,
         'clusterautoscaling': flags.AddClusterAutoscalingFlags,
+        'clusterdns': flags.AddClusterDNSFlags,
         'clusterversion': flags.AddClusterVersionFlag,
         'confidentialnodes': flags.AddEnableConfidentialNodesFlag,
         'databaseencryption': flags.AddDatabaseEncryptionFlag,
@@ -821,6 +822,9 @@ class CreateBeta(Create):
     ops.dataplane_v2 = get_default('enable_dataplane_v2')
     ops.enable_l4_ilb_subsetting = get_default('enable_l4_ilb_subsetting')
     ops.disable_default_snat = get_default('disable_default_snat')
+    ops.cluster_dns = get_default('cluster_dns')
+    ops.cluster_dns_scope = get_default('cluster_dns_scope')
+    ops.cluster_dns_domain = get_default('cluster_dns_domain')
     ops.enable_master_metrics = get_default('enable_master_metrics')
     ops.master_logs = get_default('master_logs')
     ops.notification_config = get_default('notification_config')

@@ -72,26 +72,13 @@ class Update(base.UpdateCommand):
         with_rules=self.with_rules,
         with_tcp_time_wait_timeout=self.with_tcp_time_wait_timeout)
 
-    cleared_fields = []
-    if args.clear_min_ports_per_vm:
-      cleared_fields.append('minPortsPerVm')
-    if args.clear_udp_idle_timeout:
-      cleared_fields.append('udpIdleTimeoutSec')
-    if args.clear_icmp_idle_timeout:
-      cleared_fields.append('icmpIdleTimeoutSec')
-    if args.clear_tcp_transitory_idle_timeout:
-      cleared_fields.append('tcpTransitoryIdleTimeoutSec')
-    if args.clear_tcp_established_idle_timeout:
-      cleared_fields.append('tcpEstablishedIdleTimeoutSec')
-
-    with holder.client.apitools_client.IncludeFields(cleared_fields):
-      request_type = messages.ComputeRoutersPatchRequest
-      result = service.Patch(
-          request_type(
-              project=router_ref.project,
-              region=router_ref.region,
-              router=router_ref.Name(),
-              routerResource=replacement))
+    request_type = messages.ComputeRoutersPatchRequest
+    result = service.Patch(
+        request_type(
+            project=router_ref.project,
+            region=router_ref.region,
+            router=router_ref.Name(),
+            routerResource=replacement))
 
     operation_ref = resources.REGISTRY.Parse(
         result.name,

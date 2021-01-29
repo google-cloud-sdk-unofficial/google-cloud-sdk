@@ -61,21 +61,26 @@ class Run(base.Command):
     airflow trigger_dag some_dag --run_id=foo
   """
 
-  @staticmethod
-  def Args(parser):
+  SUBCOMMAND_WHITELIST = command_util.SUBCOMMAND_WHITELIST
+
+  @classmethod
+  def Args(cls, parser):
     resource_args.AddEnvironmentResourceArg(
         parser, 'in which to run an Airflow command')
 
     parser.add_argument(
         'subcommand',
         metavar='SUBCOMMAND',
-        choices=command_util.SUBCOMMAND_WHITELIST,
-        help=('The Airflow CLI subcommand to run. Available subcommands '
-              'include: {} (see https://airflow.apache.org/cli.html for more '
-              'info). Note that delete_dag is available from Airflow 1.10.1, '
-              'and list_dag_runs, next_execution, sync_perm are available from '
-              'Airflow 1.10.2.').format(', '.join(
-                  command_util.SUBCOMMAND_WHITELIST)))
+        choices=list(cls.SUBCOMMAND_WHITELIST.keys()),
+        help=(
+            'The Airflow CLI subcommand to run. Available subcommands '
+            'include (listed with Airflow versions that support): {} '
+            '(see https://airflow.apache.org/cli.html for more info).').format(
+                ', '.join(
+                    sorted([
+                        '{} [{}, {})'.format(cmd, r[0] or '**', r[1] or '**')
+                        for cmd, r in cls.SUBCOMMAND_WHITELIST.items()
+                    ]))))
     parser.add_argument(
         'cmd_args',
         metavar='CMD_ARGS',
@@ -114,6 +119,14 @@ class Run(base.Command):
           default=False, cancel_on_no=True)
     return response
 
+  def CheckSubCommandAirflowSupport(self, args, airflow_version):
+    from_version, to_version = self.SUBCOMMAND_WHITELIST[args.subcommand]
+    if not image_versions_command_util.IsVersionInRange(
+        airflow_version, from_version, to_version):
+      raise command_util.Error(
+          'This subcommand {} is not supported for Composer environments with '
+          'Airflow version {}.'.format(args.subcommand, airflow_version),)
+
   def ConvertKubectlError(self, error, env_obj):
     del env_obj  # Unused argument.
     return error
@@ -146,6 +159,9 @@ class Run(base.Command):
       try:
         image_version = env_obj.config.softwareConfig.imageVersion
         airflow_version = self._ExtractAirflowVersion(image_version)
+
+        self.CheckSubCommandAirflowSupport(args, airflow_version)
+
         kubectl_ns = command_util.FetchKubectlNamespace(image_version)
         pod = command_util.GetGkePod(
             pod_substr=WORKER_POD_SUBSTR, kubectl_namespace=kubectl_ns)
@@ -190,6 +206,8 @@ class RunBeta(Run):
 
     airflow trigger_dag some_dag --run_id=foo
   """
+
+  SUBCOMMAND_WHITELIST = command_util.SUBCOMMAND_WHITELIST_BETA
 
   def ConvertKubectlError(self, error, env_obj):
     is_private = (

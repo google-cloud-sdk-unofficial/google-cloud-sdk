@@ -29,8 +29,6 @@ class Call(base.Command):
 
   @staticmethod
   def Args(parser):
-    # TODO(b/38000796): Add a placeholder arg for the dynamic args that get
-    # added.
     flags.API_VERSION_FLAG.AddToParser(parser)
     flags.COLLECTION_FLAG.AddToParser(parser)
     flags.RAW_FLAG.AddToParser(parser)

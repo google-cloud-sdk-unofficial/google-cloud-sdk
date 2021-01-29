@@ -14,7 +14,7 @@
       help_text: |
         The project name.
 
-  request: &request
+  request:
     collection: memcache.projects.locations
 
   response:

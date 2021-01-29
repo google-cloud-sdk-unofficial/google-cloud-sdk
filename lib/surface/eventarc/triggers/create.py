@@ -62,7 +62,7 @@ class Create(base.CreateCommand):
     flags.AddDestinationRunServiceArg(parser, required=True)
     flags.AddDestinationRunPathArg(parser)
     flags.AddDestinationRunRegionArg(parser)
-    flags.AddTransportTopicResourceArg(parser, cls.ReleaseTrack())
+    flags.AddTransportTopicResourceArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

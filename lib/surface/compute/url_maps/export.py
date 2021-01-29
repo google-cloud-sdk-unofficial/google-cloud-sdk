@@ -23,7 +23,6 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
-from googlecloudsdk.command_lib.compute import traffic_control_codec_utils as codecs
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
 from googlecloudsdk.command_lib.export import util as export_util
@@ -75,7 +74,6 @@ def _Run(args, holder, url_map_arg, release_track):
 
   url_map = url_maps_utils.SendGetRequest(client, url_map_ref)
 
-  codecs.RegisterL7TrafficControlCodecs(_GetApiVersion(release_track))
   if args.destination:
     with files.FileWriter(args.destination) as stream:
       export_util.Export(

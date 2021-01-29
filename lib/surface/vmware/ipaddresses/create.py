@@ -68,9 +68,11 @@ class Create(base.CreateCommand):
         args.internal_ip,
         args.labels,
     )
+    resource_path = client.GetResourcePath(
+        resource, resource_path=resource, encoded_cluster_groups_id=True)
     return client.WaitForOperation(
-        operation,
-        'waiting for external ip address [{}] to be linked'.format(resource))
+        operation, 'waiting for external ip address [{}] to be linked'.format(
+            resource_path))
 
 
 Create.detailed_help = DETAILED_HELP

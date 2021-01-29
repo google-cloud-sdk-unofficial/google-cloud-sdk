@@ -1,9 +1,9 @@
 - release_tracks: [BETA]
   hidden: true
   help_text:
-    brief: Gets an On-Demand Scanning operation.
+    brief: Get an On-Demand Scanning operation.
     description: |
-      Gets an On-Demand Scanning operation.
+      Get an On-Demand Scanning operation.
     examples: |
       The following command gets an On-Demand Scanning operation.
 

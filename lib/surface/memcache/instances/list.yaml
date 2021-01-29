@@ -20,7 +20,7 @@
       help_text: |
         Region of the instances to display.
 
-  request: &request
+  request:
     collection: memcache.projects.locations.instances
 
   response:

@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 
 import json
 
-from googlecloudsdk.api_lib.kuberun import environment
+from googlecloudsdk.api_lib.kuberun import mapobject
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import kuberun_command
 
@@ -45,15 +45,45 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
     super(List, cls).Args(parser)
     base.ListCommand._Flags(parser)
     base.URI_FLAG.RemoveFromParser(parser)
-    columns = ['name', 'namespace', 'target_configs', 'source']
+    columns = [
+        'name',
+        ('spec.firstof(cluster, kubeconfig).extract(namespace).flatten():'
+         'label=NAMESPACE'),
+        'aliases.target_config.list()',
+        'source']
     parser.display_info.AddFormat('table({})'.format(','.join(columns)))
 
   def Command(self):
     return ['environments', 'list']
 
   def FormatOutput(self, out, args):
-    if out:
-      json_list = json.loads(out)
-      return [environment.Environment.FromJSON(x) for x in json_list]
-    else:
+    if not out:
       return []
+    return [_AddAliases(item) for item in json.loads(out)]
+
+
+def _AddAliases(data):
+  """Adds aliases to the data which are used in the list output.
+
+  This adds a single alias key, which is "target_config". The target_config
+  is the spec filtered down to two keys, cluster and kubeconfig, which represent
+  the cluster configuration for the environment. Additionally, the namespace
+  has been removed from this config in the alias because the namespace is
+  displayed in it's own column.
+
+  Args:
+    data: The deserialized json data for a single environment
+
+  Returns:
+    A DictWithAliases which includes aliases.target_config.
+  """
+  spec = data.get('spec', {})
+  target_config = {}
+  if 'cluster' in spec:
+    target_config['cluster'] = spec['cluster'].copy()
+    target_config['cluster'].pop('namespace', '')
+  elif 'kubeconfig' in spec:
+    target_config['kubeconfig'] = spec['kubeconfig'].copy()
+    target_config['kubeconfig'].pop('namespace', '')
+  return mapobject.DictWithAliases(data,
+                                   aliases={'target_config': target_config})

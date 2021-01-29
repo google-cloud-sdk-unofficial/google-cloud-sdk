@@ -18,5 +18,5 @@
       help_text: |
         Arguments and flags that specify the Memorystore Memcached operation to delete.
 
-  request: &request
+  request:
     collection: memcache.projects.locations.operations

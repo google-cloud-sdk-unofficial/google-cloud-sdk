@@ -22,4 +22,4 @@ from googlecloudsdk.calliope import base
 
 
 class Asset(base.Group):
-  """Manage Cloud SCC assets."""
+  """Manage Cloud SCC (Security Command Center) assets."""

@@ -20,7 +20,7 @@
       help_text: |
         Region of the operations to display.
 
-  request: &request
+  request:
     collection: memcache.projects.locations.operations
 
   response:

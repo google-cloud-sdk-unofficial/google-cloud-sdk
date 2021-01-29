@@ -19,5 +19,5 @@
       help_text: |
         Arguments and flags that specify the Memcached instance to describe.
 
-  request: &request
+  request:
     collection: memcache.projects.locations.instances

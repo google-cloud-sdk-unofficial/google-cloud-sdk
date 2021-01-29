@@ -91,7 +91,8 @@ class AlphaCreate(Create):
   @staticmethod
   def Args(parser):
     Create.Args(parser)
-    resource_args.AddKmsKeyResourceArg(parser, 'to create')
+    resource_args.AddKmsKeyResourceArg(parser,
+                                       'to create the Cloud Spanner database')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

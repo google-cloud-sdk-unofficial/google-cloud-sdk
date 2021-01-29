@@ -26,6 +26,7 @@
     confirmation_prompt: |
       You are about to delete instance [{__name__}] in [{locationsId}].
       Any associated data will be lost.
+    default_continue: false
 
-  request: &request
+  request:
     collection: memcache.projects.locations.instances

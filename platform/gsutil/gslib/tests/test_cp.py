@@ -60,6 +60,7 @@ from gslib.tests.testcase.base import NotParallelizable
 from gslib.tests.testcase.integration_testcase import SkipForGS
 from gslib.tests.testcase.integration_testcase import SkipForS3
 from gslib.tests.testcase.integration_testcase import SkipForXML
+from gslib.tests.testcase.integration_testcase import SkipForJSON
 from gslib.tests.util import BuildErrorRegex
 from gslib.tests.util import GenerationFromURI as urigen
 from gslib.tests.util import HaltingCopyCallbackHandler
@@ -1040,6 +1041,46 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     stderr = self.RunGsUtil(['-D', 'ls', '-L', dst_uri], return_stderr=True)
     self.assertRegex(stderr,
                      r'\'x-goog-request-reason\': \'b/this_is_env_reason\'')
+
+  @SequentialAndParallelTransfer
+  @SkipForXML('XML APIs use a different debug log format.')
+  def test_request_reason_header_persists_multiple_requests_json(self):
+    """Test that x-goog-request-header works when cp sends multiple requests."""
+    os.environ['CLOUDSDK_CORE_REQUEST_REASON'] = 'b/this_is_env_reason'
+    bucket_uri = self.CreateBucket()
+    dst_uri = suri(bucket_uri, 'foo')
+    fpath = self._get_test_file('test.gif')
+
+    boto_config_for_test = ('GSUtil', 'resumable_threshold', '0')
+    with SetBotoConfigForTest([boto_config_for_test]):
+      stderr = self.RunGsUtil(['-D', 'cp', fpath, dst_uri], return_stderr=True)
+
+    # PUT follows GET request. Both need the request-reason header.
+    reason_regex = (r'Making http GET[\s\S]*'
+                    r'x-goog-request-reason\': \'b/this_is_env_reason[\s\S]*'
+                    r'send: (b\')?PUT[\s\S]*x-goog-request-reason:'
+                    r' b/this_is_env_reason')
+    self.assertRegex(stderr, reason_regex)
+
+  @SequentialAndParallelTransfer
+  @SkipForJSON('JSON API uses a different debug log format.')
+  def test_request_reason_header_persists_multiple_requests_xml(self):
+    """Test that x-goog-request-header works when cp sends multiple requests."""
+    os.environ['CLOUDSDK_CORE_REQUEST_REASON'] = 'b/this_is_env_reason'
+    bucket_uri = self.CreateBucket()
+    dst_uri = suri(bucket_uri, 'foo')
+    fpath = self._get_test_file('test.gif')
+
+    boto_config_for_test = ('GSUtil', 'resumable_threshold', '0')
+    with SetBotoConfigForTest([boto_config_for_test]):
+      stderr = self.RunGsUtil(['-D', 'cp', fpath, dst_uri], return_stderr=True)
+
+    reason_regex = (
+        r'Final headers: \{[\s\S]*\''
+        r'x-goog-request-reason\': \'b/this_is_env_reason\'[\s\S]*}')
+
+    # Pattern should match twice since two requests should have a reason header.
+    self.assertRegex(stderr, reason_regex + r'[\s\S]*' + reason_regex)
 
   @SequentialAndParallelTransfer
   def test_versioning(self):

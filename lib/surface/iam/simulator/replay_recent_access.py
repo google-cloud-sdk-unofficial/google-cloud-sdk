@@ -18,21 +18,28 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import list_pager
+from apitools.base.py import encoding_helper
+
 from googlecloudsdk.api_lib.iam import assist
 from googlecloudsdk.api_lib.iam.simulator import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.core import properties
 
 _DETAILED_HELP = {
-    'brief': """Determine affected recent access attempts before IAM policy
+    'brief':
+        """Determine affected recent access attempts before IAM policy
                 change deployment.""",
-    'DESCRIPTION': """\
-      Replay the most recent 5,000 access logs from the past 60 days using the
+    'DESCRIPTION':
+        """\
+      Replay the most recent 5,000 access logs from the past 90 days using the
       simulated policy. For each log entry, the replay determines if setting the
       provided policy on the given resource would result in a change in the access
       state, e.g. a previously granted access becoming denied. Any differences found
       are returned.""",
-    'EXAMPLES': """\
+    'EXAMPLES':
+        """\
       To simulate a permission change of a member on a resource, run:
 
         $ {command} projects/project-id path/to/policy_file.json
@@ -42,10 +49,9 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ReplayRecentAccesses(base.Command):
-  """Determine affected recent access attempts before IAM policy change deployment.
-  """
+  """Determine affected recent access attempts before IAM policy change deployment."""
 
   detailed_help = _DETAILED_HELP
 
@@ -73,22 +79,43 @@ class ReplayRecentAccesses(base.Command):
 
   def Run(self, args):
     client, messages = assist.GetClientAndMessages()
+
+    # Create replay and get long operation id.
     policy = iam_util.ParsePolicyFile(args.policy_file,
                                       messages.GoogleIamV1Policy)
     policy.version = iam_util.MAX_LIBRARY_IAM_SUPPORTED_VERSION
-    additional_property = messages.GoogleIamAssistV1alpha3ReplayConfig.PolicyOverlayValue.AdditionalProperty(
+    additional_property = messages.GoogleCloudPolicysimulatorV1beta1ReplayConfig.PolicyOverlayValue.AdditionalProperty(
         key=args.resource, value=policy)
-    overlay = messages.GoogleIamAssistV1alpha3ReplayConfig.PolicyOverlayValue(
+    create_replay_parent = 'projects/{0}/locations/global'.format(
+        properties.VALUES.core.project.Get(required=True))
+    overlay = messages.GoogleCloudPolicysimulatorV1beta1ReplayConfig.PolicyOverlayValue(
         additionalProperties=[additional_property])
-    config = messages.GoogleIamAssistV1alpha3ReplayConfig(
+    config = messages.GoogleCloudPolicysimulatorV1beta1ReplayConfig(
         policyOverlay=overlay)
-    request = messages.GoogleIamAssistV1alpha3Replay(
-        config=config)
-    response = client.ReplaysService.Create(
-        client.ReplaysService(client), request)
+    replay = messages.GoogleCloudPolicysimulatorV1beta1Replay(config=config)
+    create_replay_request = messages.PolicysimulatorProjectsLocationsReplaysCreateRequest(
+        googleCloudPolicysimulatorV1beta1Replay=replay,
+        parent=create_replay_parent)
+    create_replay_response = client.ProjectsLocationsReplaysService.Create(
+        client.ProjectsLocationsReplaysService(client), create_replay_request)
 
-    operations_client = operations.Client.FromApiVersion('v1alpha3')
-    operation_response = operations_client.WaitForOperation(
-        response,
-        'Waiting for replay [{}] to complete'.format(response.name))
-    return operation_response
+    # Poll long operation and get replay name.
+    operations_client = operations.Client.FromApiVersion('v1beta1')
+    operation_response_raw = operations_client.WaitForOperation(
+        create_replay_response, 'Waiting for operation [{}] to complete'.format(
+            create_replay_response.name))
+    operation_response = encoding_helper.JsonToMessage(
+        messages.GoogleCloudPolicysimulatorV1beta1Replay,
+        encoding_helper.MessageToJson(operation_response_raw))
+
+    # List results of the replay.
+    list_replay_result_request = messages.PolicysimulatorProjectsLocationsReplaysResultsListRequest(
+        parent=operation_response.name)
+    replay_result_service = client.ProjectsLocationsReplaysResultsService(
+        client)
+    return list_pager.YieldFromList(
+        replay_result_service,
+        list_replay_result_request,
+        batch_size=1000,
+        field='replayResults',
+        batch_size_attribute='pageSize')

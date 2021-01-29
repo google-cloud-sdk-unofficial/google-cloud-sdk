@@ -31,7 +31,7 @@ from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_comma
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Create(base.Command):
   """Create a Google Cloud's operations suite agents (Ops Agents) policy.
 

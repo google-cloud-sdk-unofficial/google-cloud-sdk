@@ -282,10 +282,7 @@ class GcsJsonApi(CloudApi):
       additional_http_headers['Host'] = gs_json_host_header
 
     self._AddPerfTraceTokenToHeaders(additional_http_headers)
-
-    request_reason = os.environ.get(REQUEST_REASON_ENV_VAR)
-    if request_reason:
-      additional_http_headers[REQUEST_REASON_HEADER_KEY] = request_reason
+    self._AddReasonToHeaders(additional_http_headers)
 
     log_request = (debug >= 3)
     log_response = (debug >= 3)
@@ -329,6 +326,11 @@ class GcsJsonApi(CloudApi):
   def _AddPerfTraceTokenToHeaders(self, headers):
     if self.perf_trace_token:
       headers['cookie'] = self.perf_trace_token
+
+  def _AddReasonToHeaders(self, headers):
+    request_reason = os.environ.get(REQUEST_REASON_ENV_VAR)
+    if request_reason:
+      headers[REQUEST_REASON_HEADER_KEY] = request_reason
 
   def _GetNewDownloadHttp(self):
     return GetNewHttp(http_class=HttpWithDownloadStream)
@@ -448,8 +450,8 @@ class GcsJsonApi(CloudApi):
     except TRANSLATABLE_APITOOLS_EXCEPTIONS as e:
       self._TranslateExceptionAndRaise(e, bucket_name=bucket_name)
 
-  def SignUrl(self, method, duration, path, logger, region, signed_headers,
-              string_to_sign_debug):
+  def SignUrl(self, method, duration, path, generation, logger, region,
+              signed_headers, string_to_sign_debug):
     """See CloudApi class for function doc strings."""
     service_account_id = self.GetServiceAccountId()
     string_to_sign, canonical_query_string = CreatePayload(
@@ -457,6 +459,7 @@ class GcsJsonApi(CloudApi):
         method=method,
         duration=duration,
         path=path,
+        generation=generation,
         logger=logger,
         region=region,
         signed_headers=signed_headers,
@@ -1344,6 +1347,7 @@ class GcsJsonApi(CloudApi):
                                   compressed_encoding=compressed_encoding)
 
     self._AddPerfTraceTokenToHeaders(additional_headers)
+    self._AddReasonToHeaders(additional_headers)
     additional_headers.update(
         self._EncryptionHeadersFromTuple(decryption_tuple))
 
@@ -1483,6 +1487,7 @@ class GcsJsonApi(CloudApi):
         'user-agent': self.api_client.user_agent,
     }
     self._AddPerfTraceTokenToHeaders(additional_headers)
+    self._AddReasonToHeaders(additional_headers)
 
     try:
       content_type = None
@@ -1534,6 +1539,8 @@ class GcsJsonApi(CloudApi):
             'user-agent': self.api_client.user_agent,
         }
         additional_headers.update(encryption_headers)
+        self._AddPerfTraceTokenToHeaders(additional_headers)
+        self._AddReasonToHeaders(additional_headers)
 
         return self._PerformResumableUpload(
             upload_stream, self.authorized_upload_http, content_type, size,
@@ -2403,8 +2410,12 @@ class GcsJsonApi(CloudApi):
         if 'The bucket you tried to delete was not empty.' in str(e):
           return NotEmptyException('BucketNotEmpty (%s)' % bucket_name,
                                    status=e.status_code)
-        return ServiceException('Bucket %s already exists.' % bucket_name,
-                                status=e.status_code)
+        return ServiceException(
+            'A Cloud Storage bucket named \'%s\' already exists. Try another '
+            'name. Bucket names must be globally unique across all Google Cloud '
+            'projects, including those outside of your '
+            'organization.' % bucket_name,
+            status=e.status_code)
       elif e.status_code == 412:
         return PreconditionException(message, status=e.status_code)
       return ServiceException(message, status=e.status_code)

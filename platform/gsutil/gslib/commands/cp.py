@@ -328,12 +328,13 @@ _RETRY_HANDLING_TEXT = """
 _RESUMABLE_TRANSFERS_TEXT = """
 <B>RESUMABLE TRANSFERS</B>
   gsutil automatically performs a resumable upload whenever you use the ``cp``
-  command to upload an object that is larger than 8 MiB. You do not need to
-  specify any special command line options to make this happen. If your upload
-  is interrupted, you can restart the upload by running the same ``cp`` command that
-  you used to start the upload. You can adjust the minimum size for performing
-  resumable uploads by changing the ``resumable_threshold`` parameter in
-  the boto configuration file.
+  command to upload an object that is larger than 8 MiB. If your upload is
+  interrupted, you can restart the upload by running the same ``cp`` command that
+  you used to start the upload. If your upload includes multiple files, you should
+  use the ``-n`` flag when restarting the upload in order to prevent re-uploading
+  files that have already completed successfully. You can adjust the minimum size
+  for performing resumable uploads by changing the ``resumable_threshold``
+  parameter in the boto configuration file.
 
   Until the upload has completed successfully, it is not visible at the destination
   object and does not supersede any existing object the upload is intended to
@@ -640,14 +641,15 @@ _OPTIONS_TEXT = """
                  When you specify the ``-z`` option, the data from your files is
                  compressed before it is uploaded, but your actual files are
                  left uncompressed on the local disk. The uploaded objects
-                 retain the ``Content-Type`` and name of the original files, but are
-                 given a ``Content-Encoding`` header with the value ``gzip`` to
+                 retain the ``Content-Type`` and name of the original files, but
+                 have their ``Content-Encoding`` metadata set to ``gzip`` to
                  indicate that the object data stored are compressed on the
-                 Cloud Storage servers.
+                 Cloud Storage servers and have their ``Cache-Control`` metadata
+                 set to ``no-transform``.
 
                  For example, the following command:
 
-                   gsutil cp -z html -a public-read \\
+                   gsutil cp -z html \\
                      cattypes.html tabby.jpeg gs://mycats
 
                  does the following:
@@ -659,12 +661,8 @@ _OPTIONS_TEXT = """
                    ``image/jpeg``.
                  - The ``-z`` option compresses the data in the file ``cattypes.html``.
                  - The ``-z`` option also sets the ``Content-Encoding`` for
-                   ``cattypes.html`` to ``gzip``.
-                 - The ``-a`` option sets the ACL for both files to public-read.
-                 - If a user tries to view ``cattypes.html`` in a browser, the
-                   browser uncompresses the data based on the
-                   ``Content-Encoding`` header and renders it as HTML based on
-                   the ``Content-Type`` header.
+                   ``cattypes.html`` to ``gzip`` and the ``Cache-Control`` for
+                   ``cattypes.html`` to ``no-transform``.
 
                  Because the ``-z/-Z`` options compress data prior to upload, they
                  are not subject to the same compression buffer bottleneck that
