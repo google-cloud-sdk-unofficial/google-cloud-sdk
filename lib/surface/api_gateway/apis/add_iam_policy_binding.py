@@ -25,7 +25,8 @@ from googlecloudsdk.command_lib.api_gateway import resource_args
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class AddIamPolicyBinding(base.Command):
   """Add IAM policy binding to a gateway."""
 

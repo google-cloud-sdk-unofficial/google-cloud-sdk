@@ -22,7 +22,8 @@ from googlecloudsdk.api_lib.workflows import workflows
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class WaitLast(base.DescribeCommand):
   """Wait for the last cached workflow execution to complete."""
 

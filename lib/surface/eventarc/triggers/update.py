@@ -81,7 +81,7 @@ class Update(base.UpdateCommand):
                              args.destination_run_region, update_mask)
     if args.async_:
       return operation
-    return client.WaitFor(operation)
+    return client.WaitFor(operation, 'Updating', trigger_ref)
 
   def Epilog(self, resources_were_displayed):
     if resources_were_displayed and types.IsAuditLogType(self._event_type):

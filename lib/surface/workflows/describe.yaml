@@ -1,9 +1,13 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: |
       Show metadata for a workflow
     description: |
       Display all metadata associated with a workflow of given name.
+    examples: |
+      To describe the workflow 'my-workflow', run:
+
+          $ {command} my-workflow
 
   arguments:
     resource:
@@ -16,4 +20,6 @@
       api_version: v1alpha1
     BETA:
       api_version: v1beta
+    GA:
+      api_version: v1
     collection: workflows.projects.locations.workflows

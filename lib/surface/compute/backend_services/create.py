@@ -86,7 +86,8 @@ class CreateHelper(object):
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
            support_logging, support_multinic, support_client_only,
            support_grpc_protocol, support_all_protocol, support_subsetting,
-           support_flexible_cache_step_one, support_negative_cache):
+           support_flexible_cache_step_one, support_flexible_cache_step_two,
+           support_negative_cache):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -141,18 +142,22 @@ class CreateHelper(object):
 
     if support_flexible_cache_step_one:
       cdn_flags.AddFlexibleCacheStepOne(parser, 'backend service')
+    if support_flexible_cache_step_two:
+      cdn_flags.AddFlexibleCacheStepTwo(parser, 'backend service')
     if support_negative_cache:
       cdn_flags.AddNegativeCache(parser, 'backend service')
 
   def __init__(self, support_l7_internal_load_balancer, support_failover,
                support_logging, support_multinic, support_subsetting,
-               support_flexible_cache_step_one, support_negative_cache):
+               support_flexible_cache_step_one, support_flexible_cache_step_two,
+               support_negative_cache):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
     self._support_multinic = support_multinic
     self._support_subsetting = support_subsetting
     self._support_flexible_cache_step_one = support_flexible_cache_step_one
+    self._support_flexible_cache_step_two = support_flexible_cache_step_two
     self._support_negative_cache = support_negative_cache
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
@@ -187,6 +192,7 @@ class CreateHelper(object):
         is_update=False,
         apply_signed_url_cache_max_age=True,
         support_flexible_cache_step_one=self._support_flexible_cache_step_one,
+        support_flexible_cache_step_two=self._support_flexible_cache_step_two,
         support_negative_cache=self._support_negative_cache)
 
     if args.session_affinity is not None:
@@ -354,6 +360,7 @@ class CreateGA(base.CreateCommand):
   _support_all_protocol = False
   _support_subsetting = False
   _support_flexible_cache_step_one = True
+  _support_flexible_cache_step_two = False
   _support_negative_cache = False
 
   @classmethod
@@ -370,6 +377,7 @@ class CreateGA(base.CreateCommand):
         support_all_protocol=cls._support_all_protocol,
         support_subsetting=cls._support_subsetting,
         support_flexible_cache_step_one=cls._support_flexible_cache_step_one,
+        support_flexible_cache_step_two=cls._support_flexible_cache_step_two,
         support_negative_cache=cls._support_negative_cache)
 
   def Run(self, args):
@@ -383,6 +391,7 @@ class CreateGA(base.CreateCommand):
         support_logging=self._support_logging,
         support_multinic=self._support_multinic,
         support_flexible_cache_step_one=self._support_flexible_cache_step_one,
+        support_flexible_cache_step_two=self._support_flexible_cache_step_two,
         support_negative_cache=self._support_negative_cache,
         support_subsetting=self._support_subsetting).Run(args, holder)
 
@@ -408,6 +417,7 @@ class CreateBeta(CreateGA):
   _support_multinic = True
   _support_client_only = False
   _support_flexible_cache_step_one = True
+  _support_flexible_cache_step_two = True
   _support_negative_cache = True
   _support_grpc_protocol = True
   _support_all_protocol = False
@@ -437,4 +447,5 @@ class CreateAlpha(CreateBeta):
   _support_all_protocol = True
   _support_subsetting = True
   _support_flexible_cache_step_one = True
+  _support_flexible_cache_step_two = True
   _support_negative_cache = True

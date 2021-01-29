@@ -52,4 +52,4 @@ class Delete(base.DeleteCommand):
     operation = client.Delete(trigger_ref)
     if args.async_:
       return operation
-    return client.WaitFor(operation)
+    return client.WaitFor(operation, 'Deleting', trigger_ref)

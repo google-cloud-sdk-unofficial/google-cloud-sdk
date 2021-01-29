@@ -26,8 +26,3 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Storage(base.Group):
   """Manage Cloud Storage buckets and objects."""
-
-  def Filter(self, context, args):
-    """Runs before any commands in this group."""
-    del context, args
-    base.OptOutRequests()

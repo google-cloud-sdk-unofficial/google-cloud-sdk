@@ -19,56 +19,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import exceptions as apitools_exceptions
-
-from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
-from googlecloudsdk.api_lib.util import exceptions as api_lib_util_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.command_lib.config import completers
+from googlecloudsdk.command_lib.config import config_validators
 from googlecloudsdk.command_lib.config import flags
-from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core.credentials import store as c_store
-
-
-def _WarnIfSettingProjectWithNoAccess(scope, project):
-  """Warn if setting 'core/project' config to inaccessible project."""
-
-  # Only display a warning if the following conditions are true:
-  #
-  # * The current scope is USER (not occurring in the context of installation).
-  # * The 'core/account' value is set (a user has authed).
-  #
-  # If the above conditions are met, check that the project being set exists
-  # and is accessible to the current user, otherwise show a warning.
-  if (scope == properties.Scope.USER and
-      properties.VALUES.core.account.Get()):
-    project_ref = command_lib_util.ParseProject(project)
-    base.DisableUserProjectQuota()
-    try:
-      projects_api.Get(project_ref, disable_api_enablement_check=True)
-    except (apitools_exceptions.HttpError,
-            c_store.NoCredentialsForAccountException,
-            api_lib_util_exceptions.HttpException):
-      log.warning(
-          'You do not appear to have access to project [{}] or'
-          ' it does not exist.'.format(project))
-    finally:
-      base.EnableUserProjectQuota()
-
-
-def _WarnIfActivateUseClientCertificate(prop):
-  """Warns if setting context_aware/use_client_certificate to True."""
-  if not prop.GetBool():
-    return
-  mtls_not_supported_msg = (
-      'Some services may not support client certificate authorization in '
-      'this version of gcloud. When a command sends requests to such services, '
-      'the requests will be executed without using a client certificate.\n\n'
-      'Please run $ gcloud topic client-certificate for more information.')
-  log.warning(mtls_not_supported_msg)
 
 
 class Set(base.Command):
@@ -163,6 +120,12 @@ class Set(base.Command):
     log.status.Print('Updated {0}property [{1}].'.format(scope_msg, prop))
 
     if prop == properties.VALUES.core.project:
-      _WarnIfSettingProjectWithNoAccess(scope, prop.Get())
+      config_validators.WarnIfSettingProjectWithNoAccess(scope, prop.Get())
     if prop == properties.VALUES.context_aware.use_client_certificate:
-      _WarnIfActivateUseClientCertificate(prop)
+      config_validators.WarnIfActivateUseClientCertificate(prop)
+    if prop == properties.VALUES.compute.zone:
+      config_validators.WarnIfSettingNonExistentRegionZone(prop.Get(),
+                                                           zonal=True)
+    if prop == properties.VALUES.compute.region:
+      config_validators.WarnIfSettingNonExistentRegionZone(prop.Get(),
+                                                           zonal=False)

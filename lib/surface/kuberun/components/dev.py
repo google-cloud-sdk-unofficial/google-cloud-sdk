@@ -28,8 +28,19 @@ _DETAILED_HELP = {
         To deploy a Component named ``COMPONENT'' in development mode, run:
 
             $ {command} COMPONENT
+
+        To delete a Component named ``COMPONENT'' in development mode, run:
+
+            $ {command} COMPONENT --delete
         """,
 }
+
+
+def _DeleteFlag():
+  return flags.BasicFlag(
+      '--delete',
+      help='Delete the deployed Component from the active Environment. This can only be used to delete Components deployed in development mode. This does not modify or remove any configuration or references to the component.',
+      required=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -37,7 +48,7 @@ class Dev(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
   """Deploy a Component in development mode."""
 
   detailed_help = _DETAILED_HELP
-  flags = [flags.EnvironmentFlag()]
+  flags = [flags.EnvironmentFlag(), _DeleteFlag()]
 
   @classmethod
   def Args(cls, parser):

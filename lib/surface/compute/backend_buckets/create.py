@@ -37,6 +37,7 @@ class Create(base.CreateCommand):
 
   BACKEND_BUCKET_ARG = None
   _support_flexible_cache_step_one = True
+  _support_flexible_cache_step_two = False
   _support_negative_cache = False
 
   @classmethod
@@ -53,6 +54,9 @@ class Create(base.CreateCommand):
       cdn_flags.AddFlexibleCacheStepOne(parser, 'backend bucket')
     if cls._support_negative_cache:
       cdn_flags.AddNegativeCache(parser, 'backend bucket')
+
+    if cls._support_flexible_cache_step_two:
+      cdn_flags.AddFlexibleCacheStepTwo(parser, 'backend bucket')
 
   def CreateBackendBucket(self, args):
     """Creates and returns the backend bucket."""
@@ -75,6 +79,7 @@ class Create(base.CreateCommand):
         args,
         backend_bucket,
         support_flexible_cache_step_one=self._support_flexible_cache_step_one,
+        support_flexible_cache_step_two=self._support_flexible_cache_step_two,
         support_negative_cache=self._support_negative_cache)
 
     if self._support_flexible_cache_step_one:
@@ -112,3 +117,4 @@ class CreateAlphaBeta(Create):
   """
   _support_flexible_cache_step_one = True
   _support_negative_cache = True
+  _support_flexible_cache_step_two = True

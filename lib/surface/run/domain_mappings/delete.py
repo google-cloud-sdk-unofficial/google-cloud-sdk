@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import deletion
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.run import pretty_print
@@ -57,8 +58,9 @@ class Delete(base.Command):
         'Domain name is the ID of DomainMapping resource.',
         required=True,
         prefixes=False)
-    concept_parsers.ConceptParser([
-        domain_mapping_presentation]).AddToParser(parser)
+    concept_parsers.ConceptParser([domain_mapping_presentation
+                                  ]).AddToParser(parser)
+    flags.AddAsyncFlag(parser, default_async_for_cluster=True)
 
   @staticmethod
   def Args(parser):
@@ -76,7 +78,8 @@ class Delete(base.Command):
                           else None))
     domain_mapping_ref = args.CONCEPTS.domain.Parse()
     with serverless_operations.Connect(conn_context) as client:
-      client.DeleteDomainMapping(domain_mapping_ref)
+      deletion.Delete(domain_mapping_ref, client.GetDomainMapping,
+                      client.DeleteDomainMapping, args.async_)
       msg = """Mappings to [{domain}] now have been deleted.""".format(
           domain=domain_mapping_ref.domainmappingsId)
       pretty_print.Success(msg)
@@ -87,7 +90,8 @@ class BetaDelete(Delete):
   """Delete domain mappings."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
+      'DESCRIPTION':
+          '{description}',
       'EXAMPLES':
           """\
           To delete a Cloud Run domain mapping, run:

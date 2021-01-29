@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.secrets import log as secrets_log
 from googlecloudsdk.command_lib.secrets import util as secrets_util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -58,13 +59,15 @@ class Create(base.CreateCommand):
   Create a new secret named 'my-secret' in 'us-central1' and 'us-east1' with
   the value "s3cr3t":
 
-    $ printf "s3cr3t" | {command} my-secret --data-file=- --replication-policy=user-managed --locations=us-central1,us-east1
+    $ printf "s3cr3t" | {command} my-secret --data-file=-
+    --replication-policy=user-managed --locations=us-central1,us-east1
 
   Create a new secret named 'my-secret' in 'us-central1' and 'us-east1' with
   the value "s3cr3t" in PowerShell (Note: PowerShell will add a newline to the
   resulting secret):
 
-    $ Write-Output "s3cr3t" | {command} my-secret --data-file=- --replication-policy=user-managed --locations=us-central1,us-east1
+    $ Write-Output "s3cr3t" | {command} my-secret --data-file=-
+    --replication-policy=user-managed --locations=us-central1,us-east1
   """
   # pylint: enable=line-too-long
 
@@ -217,13 +220,25 @@ class CreateBeta(Create):
   Create a new secret named 'my-secret' in 'us-central1' and 'us-east1' with
   the value "s3cr3t":
 
-    $ printf "s3cr3t" | {command} my-secret --data-file=- --replication-policy=user-managed --locations=us-central1,us-east1
+    $ printf "s3cr3t" | {command} my-secret --data-file=-
+    --replication-policy=user-managed --locations=us-central1,us-east1
 
   Create a new secret named 'my-secret' in 'us-central1' and 'us-east1' with
   the value "s3cr3t" in PowerShell (Note: PowerShell will add a newline to the
   resulting secret):
 
-    $ Write-Output "s3cr3t" | {command} my-secret --data-file=- --replication-policy=user-managed --locations=us-central1,us-east1
+    $ Write-Output "s3cr3t" | {command} my-secret --data-file=-
+    --replication-policy=user-managed --locations=us-central1,us-east1
+
+  Create an expiring secret with an automatic replication policy using a ttl:
+
+    $ {command} my-secret --ttl="600s"
+
+  Create an expiring secret with an automatic replication policy using an
+  expire-time:
+
+    $ {command} my-secret --expire-time="2030-01-01T08:15:30-05:00"
+
   """
   # pylint: enable=line-too-long
 
@@ -294,6 +309,14 @@ class CreateBeta(Create):
       'secrets. To create a user managed secret with customer managed '
       'encryption keys, please use --replication-policy-file.')
 
+  CONFIRM_EXPIRE_TIME_MESSAGE = (
+      'This secret and all of its versions will be automatically deleted at '
+      'the requested expire-time of [{expire_time}].')
+
+  CONFIRM_TTL_MESSAGE = (
+      'This secret and all of its versions will be automatically deleted '
+      'after the requested ttl of [{ttl}] has elapsed.')
+
   @staticmethod
   def Args(parser):
     secrets_args.AddSecret(
@@ -301,6 +324,7 @@ class CreateBeta(Create):
     secrets_args.AddDataFile(parser)
     secrets_args.AddCreateReplicationPolicyGroup(parser)
     labels_util.AddCreateLabelsFlags(parser)
+    secrets_args.AddCreateExpirationGroup(parser)
 
   def Run(self, args):
     messages = secrets_api.GetMessages()
@@ -370,12 +394,26 @@ class CreateBeta(Create):
     # flag being omitted. See b/138796299 for info.
     if args.data_file == '':  # pylint: disable=g-explicit-bool-comparison
       raise exceptions.BadFileException(self.EMPTY_DATA_FILE_MESSAGE)
+
+    if args.expire_time:
+      msg = self.CONFIRM_EXPIRE_TIME_MESSAGE.format(
+          expire_time=args.expire_time)
+      console_io.PromptContinue(
+          msg, throw_if_unattended=True, cancel_on_no=True)
+
+    if args.ttl:
+      msg = self.CONFIRM_TTL_MESSAGE.format(ttl=args.ttl)
+      console_io.PromptContinue(
+          msg, throw_if_unattended=True, cancel_on_no=True)
+
     # Create the secret
     response = secrets_api.Secrets().Create(
         secret_ref,
         labels=labels,
         locations=locations,
         policy=replication_policy,
+        expire_time=args.expire_time,
+        ttl=args.ttl,
         keys=kms_keys)
 
     if data:

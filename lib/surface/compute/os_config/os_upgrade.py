@@ -105,6 +105,7 @@ class OsUpgrade(base.Command):
         ref.project, ref.zone, ref.Name())
 
     _PromptForUpgrade(ref, args)
+    args.zone = ref.zone
 
     log.warning('Upgrading OS. This usually takes around 40 minutes but may '
                 'take up to 90 minutes.')

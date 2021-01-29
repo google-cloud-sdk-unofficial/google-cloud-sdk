@@ -34,12 +34,12 @@ DETAILED_HELP = {
       """,
     'EXAMPLES':
         """\
-      To search all the Cloud resources whose full resource names contain the
-      ``xyz'' substring, within ``organizations/123456'', ensure the caller has
-      been granted the ``cloudasset.assets.searchAllResources'' permission on
-      the organization and run:
+      To search all Cloud resources whose full resource name contains
+      ``xyz'' as a prefix of any word, within ``organizations/123456'', ensure
+      the caller has been granted the ``cloudasset.assets.searchAllResources''
+      permission on the organization and run:
 
-        $ {command} --scope='organizations/123456' --query='name:*xyz*'
+        $ {command} --scope='organizations/123456' --query='name:xyz*'
       """
 }
 
@@ -84,12 +84,10 @@ def AddQueryArgument(parser):
           ``Important'' as a word.
         * ```name=Important``` to find the Cloud resource whose name is exactly
           ``Important''.
-        * ```displayName:Impor*``` to find Cloud resources whose display
-           name contains ``Impor'' as a prefix.
-        * ```description:*por*``` to find Cloud resources whose description
-          contains ``por'' as a substring.
-        * ```location:us-west*``` to find Cloud resources whose location is
-          prefixed with ``us-west''.
+        * ```displayName:Impor*``` to find Cloud resources whose display name
+          contains ``Impor'' as a prefix of any word.
+        * ```location:us-west*``` to find Cloud resources whose location
+          contains both ``us'' and ``west'' as prefixes.
         * ```labels:prod``` to find Cloud resources whose labels contain
           ``prod'' as a key or value.
         * ```labels.env:prod``` to find Cloud resources that have a label
@@ -99,9 +97,7 @@ def AddQueryArgument(parser):
         * ```Important``` to find Cloud resources that contain ``Important''
           as a word in any of the searchable fields.
         * ```Impor*``` to find Cloud resources that contain ``Impor'' as a
-          prefix in any of the searchable fields.
-        * ```*por*``` to find Cloud resources that contain ``por'' as a
-          substring in any of the searchable fields.
+          prefix of any word in any of the searchable fields.
         * ```Important location:(us-west1 OR global)``` to find
           Cloud resources that contain ``Important'' as a word in any of the
           searchable fields and are also located in the ``us-west1'' region or

@@ -25,9 +25,28 @@ from googlecloudsdk.command_lib.api_gateway import resource_args
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Wait(base.Command):
   """Wait for a Cloud API Gateway operation to complete."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To wait for a Cloud API Gateway operation named ``NAME'' in the ``us-central1''
+          region, run:
+
+            $ {command} NAME --location=us-central1
+
+          To wait for a Cloud API Gateway operation with a resource name of ``RESOURCE'',
+          run:
+
+            $ {command} RESOURCE
+
+          """
+  }
 
   @staticmethod
   def Args(parser):

@@ -88,6 +88,10 @@ class Export(base.CreateCommand):
               'custom subnet mode, then this field should be specified.'),
     )
 
+    daisy_utils.AddComputeServiceAccountArg(
+        parser, 'image export',
+        daisy_utils.EXPORT_ROLES_FOR_COMPUTE_SERVICE_ACCOUNT)
+
     daisy_utils.AddCommonDaisyArgs(parser)
 
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
@@ -162,31 +166,6 @@ class ExportBeta(Export):
   def Args(cls, parser):
     super(ExportBeta, cls).Args(parser)
     daisy_utils.AddExtraCommonDaisyArgs(parser)
-    parser.add_argument(
-        '--compute-service-account',
-        help="""\
-        A temporary virtual machine instance is created in your project during
-        {operation}.  {operation_uppercase} tooling on this temporary instance
-        must be authenticated.
-
-        A Compute Engine service account is an identity attached to an instance.
-        Its access tokens can be accessed through the instance metadata server
-        and can be used to authenticate {operation} tooling on the instance.
-
-        To set this option,  specify the email address corresponding to the
-        required Compute Engine service account.
-
-        At minimum, the specified Compute Engine service account needs to have
-        the following roles assigned:
-
-        * roles/compute.admin
-        * roles/storage.objectAdmin
-
-        If not provided, the {operation} on the temporary instance uses the
-        project's default Compute Engine service account.
-        """.format(operation='image export',
-                   operation_uppercase='Image export'),
-    )
 
   def _RunImageExport(self, args, export_args, tags, output_filter):
     return daisy_utils.RunImageExport(

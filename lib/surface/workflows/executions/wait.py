@@ -23,9 +23,23 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.workflows import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Wait(base.DescribeCommand):
   """Wait for an execution to complete."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To wait for an execution with ID 'my-workflow-execution-ID' from a
+          workflow named 'my-workflow' to finish, run:
+
+            $ {command} my-workflow-execution-ID --workflow=my-workflow
+
+          """,
+  }
 
   @staticmethod
   def Args(parser):

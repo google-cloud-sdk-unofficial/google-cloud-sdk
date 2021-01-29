@@ -268,15 +268,16 @@ def _AddWinGroupArguments(parser):
       '--windows-excludes',
       metavar='WINDOWS_EXCLUDES',
       type=arg_parsers.ArgList(),
-      help="""Optional list of KBs to exclude from the update operation.""",
+      help="""Optional list of Knowledge Base (KB) IDs to exclude from the
+      update operation.""",
   )
   win_group.add_argument(
       '--windows-exclusive-patches',
       metavar='WINDOWS_EXCLUSIVE_PATCHES',
       type=arg_parsers.ArgList(),
       help="""\
-      An exclusive list of KBs to be updated. These are the only patches that
-      will be updated.""",
+      An exclusive list of Knowledge Base (KB) IDs to be updated. These are the
+      only patches that will be updated.""",
   )
 
 
@@ -962,7 +963,7 @@ class Execute(base.Command):
       To update only `KB4339284` on Windows instances with the prefix `windows-` in
       the instance name, run:
 
-            $ {command} --instance-filter-name-prefixes="windows-" --windows-exclusive-patches=KB4339284
+            $ {command} --instance-filter-name-prefixes="windows-" --windows-exclusive-patches=4339284
 
       To patch all instances in the current project and specify scripts to run
       pre-patch and post-patch, run:
@@ -1062,7 +1063,7 @@ class ExecuteAlpha(ExecuteBeta):
     To update only `KB4339284` on Windows instances with the prefix `windows-` in
     the instance name, run:
 
-          $ {command} --instance-filter-name-prefixes="windows-" --windows-exclusive-patches=KB4339284
+          $ {command} --instance-filter-name-prefixes="windows-" --windows-exclusive-patches=4339284
 
     To patch all instances in the current project and specify scripts to run
     pre-patch and post-patch, run:

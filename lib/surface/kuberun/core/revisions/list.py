@@ -49,7 +49,11 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
   """Lists revisions in a Knative cluster."""
 
   detailed_help = _DETAILED_HELP
-  flags = [flags.NamespaceFlagGroup(), flags.ClusterConnectionFlags()]
+  flags = [
+      flags.NamespaceFlagGroup(),
+      flags.ClusterConnectionFlags(),
+      flags.ServiceFlag()
+  ]
 
   @classmethod
   def Args(cls, parser):

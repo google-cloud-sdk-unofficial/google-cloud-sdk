@@ -52,6 +52,10 @@ def _AddUpdateArgs(parser):
                 nodes: 10  # The number of nodes to allocate for this model.
               autoScaling:
                 minNodes: 0  # The minimum number of nodes to allocate for this model.
+                maxNodes: 1  # The maxinum number of nodes to allocate for this model.
+              requestLoggingconfig:
+                bigqueryTableName: someTable  # Fully qualified BigQuery table name.
+                samplingPercentage: 0.5  # Percentage of requests to be logged.
 
           The name of the version must always be specified via the required
           VERSION argument.
@@ -98,6 +102,7 @@ class UpdateBeta(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     _AddUpdateArgs(parser)
+    flags.AddRequestLoggingConfigFlags(parser)
 
   def Run(self, args):
     return _Run(args)

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import flags
 from googlecloudsdk.command_lib.kuberun import kuberun_command
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -52,8 +53,7 @@ class Delete(kuberun_command.KubeRunCommand, base.DeleteCommand):
 
   def OperationResponseHandler(self, response, args):
     if response.failed:
-      log.error(response.stderr)
-      return None
+      raise exceptions.Error(response.stderr)
 
     if response.stderr:
       log.status.Print(response.stderr)

@@ -79,7 +79,7 @@ class Create(base.CreateCommand):
     self._event_type = event_filters['type']
     if args.async_:
       return operation
-    response = client.WaitFor(operation)
+    response = client.WaitFor(operation, 'Creating', trigger_ref)
     trigger_dict = encoding.MessageToPyValue(response)
     if types.IsPubsubType(self._event_type):
       topic = trigger_dict['transport']['pubsub']['topic']

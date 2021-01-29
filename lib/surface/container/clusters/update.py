@@ -61,9 +61,22 @@ def _ParseAddonDisabled(val):
 
 
 def _AddCommonArgs(parser):
+  """Register common flags for this command.
+
+  Args:
+    parser: An argparse.ArgumentParser-like object. It is mocked out in order to
+      capture some information, but behaves like an ArgumentParser.
+  """
   parser.add_argument(
       'name', metavar='NAME', help='The name of the cluster to update.')
   parser.add_argument('--node-pool', help='Node pool to be updated.')
+  # Timeout in seconds for the operation, default 3600 seconds (60 minutes)
+  parser.add_argument(
+      '--timeout',
+      type=int,
+      default=3600,
+      hidden=True,
+      help='Timeout (seconds) for waiting on the operation to complete.')
   flags.AddAsyncFlag(parser)
 
 
@@ -537,7 +550,9 @@ to completion."""
 
     if not args.async_:
       adapter.WaitForOperation(
-          op_ref, 'Updating {0}'.format(cluster_ref.clusterId), timeout_s=3600)
+          op_ref,
+          'Updating {0}'.format(cluster_ref.clusterId),
+          timeout_s=args.timeout)
 
       log.UpdatedResource(cluster_ref)
       cluster_url = util.GenerateClusterUrl(cluster_ref)
