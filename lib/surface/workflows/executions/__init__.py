@@ -21,8 +21,23 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Executions(base.Group):
+  """Manage your Cloud Workflow execution resources."""
+
+  category = base.TOOLS_CATEGORY
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ExecutionsBeta(base.Group):
+  """Manage your Cloud Workflow execution resources."""
+
+  category = base.TOOLS_CATEGORY
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ExecutionsAlpha(base.Group):
   """Manage your Cloud Workflow execution resources."""
 
   category = base.TOOLS_CATEGORY

@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import deletion
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -34,10 +35,12 @@ class Delete(base.Command):
   """Delete a revision."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           {description}
           """,
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           To delete a revision:
 
               $ {command} <revision-name>
@@ -53,6 +56,7 @@ class Delete(base.Command):
         required=True,
         prefixes=False)
     concept_parsers.ConceptParser([revision_presentation]).AddToParser(parser)
+    flags.AddAsyncFlag(parser, default_async_for_cluster=True)
 
   @staticmethod
   def Args(parser):
@@ -71,7 +75,8 @@ class Delete(base.Command):
         cancel_on_no=True)
 
     with serverless_operations.Connect(conn_context) as client:
-      client.DeleteRevision(revision_ref)
+      deletion.Delete(revision_ref, client.GetRevision, client.DeleteRevision,
+                      args.async_)
     log.DeletedResource(revision_ref.revisionsId, 'revision')
 
 
@@ -82,5 +87,6 @@ class AlphaDelete(Delete):
   @staticmethod
   def Args(parser):
     Delete.CommonArgs(parser)
+
 
 AlphaDelete.__doc__ = Delete.__doc__

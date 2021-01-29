@@ -43,6 +43,7 @@ def _AddArgsCommon(parser, messages):
   flags.GetDnsPeeringArgs().AddToParser(parser)
   flags.GetPrivateForwardingTargetsArg().AddToParser(parser)
   flags.GetReverseLookupArg().AddToParser(parser)
+  flags.GetServiceDirectoryArg().AddToParser(parser)
 
 
 def _MakeDnssecConfig(args, messages):
@@ -159,6 +160,13 @@ class Create(base.CreateCommand):
         'managed_reverse_lookup') and args.managed_reverse_lookup:
       reverse_lookup_config = messages.ManagedZoneReverseLookupConfig()
 
+    service_directory_config = None
+    if args.IsSpecified(
+        'service_directory_namespace') and args.service_directory_namespace:
+      service_directory_config = messages.ManagedZoneServiceDirectoryConfig(
+          namespace=messages.ManagedZoneServiceDirectoryConfigNamespace(
+              namespaceUrl=args.service_directory_namespace))
+
     zone = messages.ManagedZone(
         name=zone_ref.managedZone,
         dnsName=util.AppendTrailingDot(args.dns_name),
@@ -169,7 +177,8 @@ class Create(base.CreateCommand):
         forwardingConfig=forwarding_config,
         privateVisibilityConfig=visibility_config,
         peeringConfig=peering_config,
-        reverseLookupConfig=reverse_lookup_config)
+        reverseLookupConfig=reverse_lookup_config,
+        serviceDirectoryConfig=service_directory_config)
 
     result = dns.managedZones.Create(
         messages.DnsManagedZonesCreateRequest(managedZone=zone,
@@ -202,7 +211,6 @@ class CreateBeta(base.CreateCommand):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
     _AddArgsCommon(parser, messages)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
-    flags.GetServiceDirectoryArg().AddToParser(parser)
 
   def Run(self, args):
     # We explicitly want to allow --networks='' as a valid option and we need
@@ -328,4 +336,3 @@ class CreateAlpha(CreateBeta):
     messages = apis.GetMessagesModule('dns', 'v1alpha2')
     _AddArgsCommon(parser, messages)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
-    flags.GetServiceDirectoryArg().AddToParser(parser)

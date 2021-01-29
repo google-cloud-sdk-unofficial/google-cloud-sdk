@@ -40,7 +40,8 @@ from googlecloudsdk.core.util import http_encoding
 MAX_SERVICE_CONFIG_ID_LENGTH = 50
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Add a new config to an API."""
 

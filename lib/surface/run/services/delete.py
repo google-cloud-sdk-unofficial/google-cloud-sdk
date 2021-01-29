@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import deletion
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -34,10 +35,12 @@ class Delete(base.Command):
   """Delete a service."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           {description}
           """,
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           To delete a service:
 
               $ {command} <service-name>
@@ -53,6 +56,7 @@ class Delete(base.Command):
         required=True,
         prefixes=False)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
+    flags.AddAsyncFlag(parser, default_async_for_cluster=True)
 
   @staticmethod
   def Args(parser):
@@ -62,7 +66,8 @@ class Delete(base.Command):
     """Delete a service."""
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())
-    service_ref = flags.GetService(args)
+    service_ref = args.CONCEPTS.service.Parse()
+    flags.ValidateResource(service_ref)
     console_io.PromptContinue(
         message='Service [{service}] will be deleted.'.format(
             service=service_ref.servicesId),
@@ -70,7 +75,8 @@ class Delete(base.Command):
         cancel_on_no=True)
 
     with serverless_operations.Connect(conn_context) as client:
-      client.DeleteService(service_ref)
+      deletion.Delete(service_ref, client.GetService, client.DeleteService,
+                      args.async_)
     log.DeletedResource(service_ref.servicesId, 'service')
 
 
@@ -81,5 +87,6 @@ class AlphaDelete(Delete):
   @staticmethod
   def Args(parser):
     Delete.CommonArgs(parser)
+
 
 AlphaDelete.__doc__ = Delete.__doc__

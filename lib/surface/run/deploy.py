@@ -158,7 +158,8 @@ class Deploy(base.Command):
   def Run(self, args):
     """Deploy a container to Cloud Run."""
     flags.GetAndValidatePlatform(args, self.ReleaseTrack(), flags.Product.RUN)
-    service_ref = flags.GetService(args)
+    service_ref = args.CONCEPTS.service.Parse()
+    flags.ValidateResource(service_ref)
     build_type = None
     image = None
     pack = None
@@ -274,6 +275,10 @@ class AlphaDeploy(Deploy):
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
+
+    # Flags specific to managed CR
+    managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddSandboxArg(managed_group)
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)

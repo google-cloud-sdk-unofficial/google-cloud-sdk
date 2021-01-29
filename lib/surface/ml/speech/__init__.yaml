@@ -66,25 +66,6 @@ args_v1p1beta1_alpha_track:  # available only in 'gcloud alpha'
   help_text: |
     Adds punctuation to recognition result hypotheses.
 - group:
-    help_text: Audio channel settings.
-    params:
-    - arg_name: separate-channel-recognition
-      api_field: config.enableSeparateRecognitionPerChannel
-      required: true
-      help_text: |
-        Recognition result will contain a `channel_tag` field to state which channel that
-        result belongs to. If this is not true, only the first channel will be recognized.
-    - arg_name: audio-channel-count
-      api_field: config.audioChannelCount
-      required: true
-      type: int
-      help_text: |
-        The number of channels in the input audio data.  Set this for
-        separate-channel-recognition. Valid values are:
-        1)LINEAR16 and FLAC are `1`-`8`
-        2)OGG_OPUS are `1`-`254`
-        3) MULAW, AMR, AMR_WB and SPEEX_WITH_HEADER_BYTE is only `1`.
-- group:
     help_text: Description of audio data to be recognized.
     params:
     - arg_name: interaction-type
@@ -181,6 +162,26 @@ args_v1p1beta1_alpha_track:  # available only in 'gcloud alpha'
         Description of the content, e.g. "Recordings of federal supreme court hearings from 2012".
 
 args:
+- group:
+    help_text: Audio channel settings.
+    params:
+    - arg_name: separate-channel-recognition
+      api_field: config.enableSeparateRecognitionPerChannel
+      required: true
+      default: false
+      help_text: |
+        Recognition result will contain a `channel_tag` field to state which channel that
+        result belongs to. If this is not true, only the first channel will be recognized.
+    - arg_name: audio-channel-count
+      api_field: config.audioChannelCount
+      required: true
+      type: int
+      help_text: |
+        The number of channels in the input audio data.  Set this for
+        separate-channel-recognition. Valid values are:
+        1)LINEAR16 and FLAC are `1`-`8`
+        2)OGG_OPUS are `1`-`254`
+        3) MULAW, AMR, AMR_WB and SPEEX_WITH_HEADER_BYTE is only `1`.
 - group:
     mutex: true
     required: true

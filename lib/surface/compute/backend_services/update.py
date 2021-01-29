@@ -69,7 +69,8 @@ class UpdateHelper(object):
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
            support_logging, support_client_only, support_grpc_protocol,
            support_subsetting, support_all_protocol,
-           support_flexible_cache_step_one, support_negative_cache):
+           support_flexible_cache_step_one, support_flexible_cache_step_two,
+           support_negative_cache):
     """Add all arguments for updating a backend service."""
 
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
@@ -124,6 +125,9 @@ class UpdateHelper(object):
     if support_flexible_cache_step_one:
       cdn_flags.AddFlexibleCacheStepOne(
           parser, 'backend service', update_command=True)
+    if support_flexible_cache_step_two:
+      cdn_flags.AddFlexibleCacheStepTwo(
+          parser, 'backend service', update_command=True)
     if support_negative_cache:
       cdn_flags.AddNegativeCache(parser, 'backend service', update_command=True)
 
@@ -133,12 +137,14 @@ class UpdateHelper(object):
                support_logging,
                support_subsetting,
                support_flexible_cache_step_one=False,
+               support_flexible_cache_step_two=False,
                support_negative_cache=False):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
     self._support_subsetting = support_subsetting
     self._support_flexible_cache_step_one = support_flexible_cache_step_one
+    self._support_flexible_cache_step_two = support_flexible_cache_step_two
     self._support_negative_cache = support_negative_cache
 
   def Modify(self, client, resources, args, existing):
@@ -207,6 +213,7 @@ class UpdateHelper(object):
         apply_signed_url_cache_max_age=True,
         cleared_fields=cleared_fields,
         support_flexible_cache_step_one=self._support_flexible_cache_step_one,
+        support_flexible_cache_step_two=self._support_flexible_cache_step_two,
         support_negative_cache=self._support_negative_cache)
 
     if self._support_flexible_cache_step_one:
@@ -288,7 +295,15 @@ class UpdateHelper(object):
         args.IsSpecified('custom_response_header')
         if self._support_flexible_cache_step_one else False,
         args.IsSpecified('no_custom_response_headers')
-        if self._support_flexible_cache_step_one else False
+        if self._support_flexible_cache_step_one else False,
+        args.IsSpecified('serve_while_stale')
+        if self._support_flexible_cache_step_two else False,
+        args.IsSpecified('no_serve_while_stale')
+        if self._support_flexible_cache_step_two else False,
+        args.IsSpecified('bypass_cache_on_request_headers')
+        if self._support_flexible_cache_step_two else False,
+        args.IsSpecified('no_bypass_cache_on_request_headers')
+        if self._support_flexible_cache_step_two else False
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 
@@ -428,6 +443,7 @@ class UpdateGA(base.UpdateCommand):
   _support_grpc_protocol = True
   _support_subsetting = False
   _support_flexible_cache_step_one = True
+  _support_flexible_cache_step_two = False
   _support_negative_cache = False
 
   @classmethod
@@ -443,6 +459,7 @@ class UpdateGA(base.UpdateCommand):
         support_subsetting=cls._support_subsetting,
         support_all_protocol=cls._support_all_protocol,
         support_flexible_cache_step_one=cls._support_flexible_cache_step_one,
+        support_flexible_cache_step_two=cls._support_flexible_cache_step_two,
         support_negative_cache=cls._support_negative_cache)
 
   def Run(self, args):
@@ -452,6 +469,7 @@ class UpdateGA(base.UpdateCommand):
                         self._support_failover, self._support_logging,
                         self._support_subsetting,
                         self._support_flexible_cache_step_one,
+                        self._support_flexible_cache_step_two,
                         self._support_negative_cache).Run(args, holder)
 
 
@@ -467,6 +485,7 @@ class UpdateBeta(UpdateGA):
   _support_grpc_protocol = True
   _support_subsetting = False
   _support_flexible_cache_step_one = True
+  _support_flexible_cache_step_two = True
   _support_negative_cache = True
 
 
@@ -482,4 +501,5 @@ class UpdateAlpha(UpdateGA):
   _support_grpc_protocol = True
   _support_subsetting = True
   _support_flexible_cache_step_one = True
+  _support_flexible_cache_step_two = True
   _support_negative_cache = True

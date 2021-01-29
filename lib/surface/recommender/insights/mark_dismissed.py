@@ -37,8 +37,8 @@ class MarkDismissed(base.Command):
   r"""Mark an insight's state as DISMISSED.
 
      Mark an insight's state as DISMISSED. Can be applied to insights in ACTIVE
-     state. we currently support project, billing_account, folder and
-     organization.
+     state. The following are currently supported: project, billing_account,
+     folder, and organization.
   """
 
   detailed_help = DETAILED_HELP

@@ -295,7 +295,9 @@ class BaseImportStager(object):
     if 'no_address' in self.args:
       daisy_utils.AppendBoolArg(import_args, 'no_external_ip',
                                 self.args.no_address)
-
+    if 'compute_service_account' in self.args:
+      daisy_utils.AppendArg(import_args, 'compute_service_account',
+                            self.args.compute_service_account)
     return import_args
 
   def GetAndCreateDaisyBucket(self):
@@ -437,6 +439,9 @@ class ImportBeta(Import):
   def Args(cls, parser):
     super(ImportBeta, cls).Args(parser)
     daisy_utils.AddExtraCommonDaisyArgs(parser)
+    daisy_utils.AddComputeServiceAccountArg(
+        parser, 'image import',
+        daisy_utils.IMPORT_ROLES_FOR_COMPUTE_SERVICE_ACCOUNT)
 
   def _RunImageImport(self, args, import_args, tags, output_filter):
     return daisy_utils.RunImageImport(

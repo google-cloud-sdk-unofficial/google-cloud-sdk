@@ -30,8 +30,12 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Add a NAT to a Compute Engine router."""
+
+  with_rules = False
+  with_tcp_time_wait_timeout = False
 
   @classmethod
   def Args(cls, parser):
@@ -45,7 +49,9 @@ class Create(base.CreateCommand):
     nats_flags.AddNatNameArg(parser, operation_type='create')
     nats_flags.AddCommonNatArgs(
         parser,
-        for_create=True)
+        for_create=True,
+        with_rules=cls.with_rules,
+        with_tcp_time_wait_timeout=cls.with_tcp_time_wait_timeout)
 
   def Run(self, args):
     """See base.CreateCommand."""
@@ -59,7 +65,11 @@ class Create(base.CreateCommand):
     request_type = messages.ComputeRoutersGetRequest
     replacement = service.Get(request_type(**router_ref.AsDict()))
 
-    nat = nats_utils.CreateNatMessage(args, holder)
+    nat = nats_utils.CreateNatMessage(
+        args,
+        holder,
+        with_rules=self.with_rules,
+        with_tcp_time_wait_timeout=self.with_tcp_time_wait_timeout)
 
     replacement.nats.append(nat)
 
@@ -100,6 +110,14 @@ class Create(base.CreateCommand):
         operation_poller,
         operation_ref, 'Creating NAT [{0}] in router [{1}]'.format(
             nat.name, router_ref.Name()))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Add a NAT to a Compute Engine router."""
+
+  with_rules = True
+  with_tcp_time_wait_timeout = True
 
 
 Create.detailed_help = {

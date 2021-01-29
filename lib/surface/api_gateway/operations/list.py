@@ -24,7 +24,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.api_gateway import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List API Gateway operations."""
 
@@ -33,14 +34,15 @@ class List(base.ListCommand):
           '{description}',
       'EXAMPLES':
           """\
-          To list all operations, run:
+          To list all Cloud API Gateway operations, run:
 
             $ {command}
 
-          To list all operations within the 'us-central1' location:
+          To list all Cloud API Gateway operations in the ``us-central1'' region, run:
 
             $ {command} --location=us-central1
-          """,
+
+          """
   }
 
   @staticmethod

@@ -92,12 +92,19 @@ def AddQueryArgument(parser):
           specify user ``amy@gmail.com''.
         * ```policy:roles/compute.admin``` to find IAM policy bindings
           that specify the Compute Admin role.
+        * ```policy:comp*``` to find IAM policy bindings
+          that contain ``comp'' as a prefix of any word in the binding.
         * ```policy.role.permissions:storage.buckets.update``` to find Cloud
           IAM policy bindings that specify a role containing the
           ``storage.buckets.update'' permission. Note that if callers don't have
           ``iam.roles.get'' access to a role's included permissions, policy
           bindings that specify this role will be dropped from the search
           results.
+        * ```policy.role.permissions:upd*``` to find IAM policy bindings that
+          specify a role containing ``upd'' as a prefix of any word in the role
+          permission. Note that if callers don't have ``iam.roles.get'' access
+          to a role's included permissions, policy bindings that specify this
+          role will be dropped from the search results.
         * ```resource:organizations/123456``` to find IAM policy
           bindings that are set on ``organizations/123456''.
         * ```resource=//cloudresourcemanager.googleapis.com/projects/myproject```
@@ -106,9 +113,9 @@ def AddQueryArgument(parser):
         * ```Important``` to find IAM policy bindings that contain
           ``Important'' as a word in any of the searchable fields (except for
           the included permissions).
-        * ```*por*``` to find IAM policy bindings that contain ``por'' as a
-          substring in any of the searchable fields (except for the included
-          permissions).
+        * ```impor*``` to find IAM policy bindings that contain ``impor'' as a
+          prefix of any word in any of the searchable fields (except for the
+          included permissions).
         * ```resource:(instance1 OR instance2) policy:amy```
           to find IAM policy bindings that are set on resources
           ``instance1'' or ``instance2'' and also specify user ``amy''.

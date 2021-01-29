@@ -27,7 +27,8 @@ from googlecloudsdk.command_lib.api_gateway import resource_args
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete an API Gateway."""
 

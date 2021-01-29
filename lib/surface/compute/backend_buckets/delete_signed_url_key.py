@@ -47,8 +47,8 @@ class DeleteSignedUrlKey(base.UpdateCommand):
   Generally, a signed URL can be used by anyone who has it. However, it
   is usually only intended to be used by the client that was directly
   given the URL. To mitigate this, they expire at a time chosen by the
-  issuer. To minimize the risk of a signed URL being shared, we recommend
-  that you set it to expire as soon as possible.
+  issuer. To minimize the risk of a signed URL being shared, it is recommended
+  that the signed URL be set to expire as soon as possible.
 
   A 128-bit secret key is used for signing the URLs.
   """

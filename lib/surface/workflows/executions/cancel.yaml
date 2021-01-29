@@ -1,9 +1,14 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: |
       Cancel a workflow execution
     description: |
       Cancel a workflow execution.
+    examples: |
+      To cancel an execution with ID 'my-workflow-execution-ID' from a
+      workflow named 'my-workflow', run:
+
+          $ {command} my-workflow-execution-ID --workflow=my-workflow
 
   arguments:
     resource:
@@ -20,5 +25,7 @@
       api_version: v1alpha1
     BETA:
       api_version: v1beta
+    GA:
+      api_version: v1
     method: cancel
     collection: workflowexecutions.projects.locations.workflows.executions

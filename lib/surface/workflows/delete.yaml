@@ -1,9 +1,17 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: |
       Delete a workflow
     description: |
       Delete a workflow and all of its executions.
+    examples: |
+      To delete the workflow 'my-workflow', run:
+
+          $ {command} my-workflow
+
+      You may also skip waiting for the operation to finish:
+
+          $ {command} my-workflow --async
 
   arguments:
     resource:
@@ -24,4 +32,6 @@
       api_version: v1alpha1
     BETA:
       api_version: v1beta
+    GA:
+      api_version: v1
     collection: workflows.projects.locations.workflows

@@ -26,9 +26,28 @@ from googlecloudsdk.command_lib.api_gateway import resource_args
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Cancel(base.Command):
   """Cancel a Cloud API Gateway operation."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To cancel a Cloud API Gateway operation named ``NAME'' in the ``us-central1''
+          region, run:
+
+            $ {command} NAME --location=us-central1
+
+          To cancel a Cloud API Gateway operation with a resource name of ``RESOURCE'',
+          run:
+
+            $ {command} RESOURCE
+
+          """
+  }
 
   @staticmethod
   def Args(parser):
@@ -49,4 +68,3 @@ class Cancel(base.Command):
     operations_util.PrintOperationResultWithWaitEpilogue(
         operation_ref,
         'Operation cancellation requested')
-

@@ -1,9 +1,13 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: |
       List workflow executions
     description: |
       List workflow executions for a given workflow.
+    examples: |
+      To list executions of a workflow named 'my-workflow', run:
+
+          $ {command} my-workflow
 
   arguments:
     resource:
@@ -17,6 +21,8 @@
       api_version: v1alpha1
     BETA:
       api_version: v1beta
+    GA:
+      api_version: v1
     collection: workflowexecutions.projects.locations.workflows.executions
 
   response:

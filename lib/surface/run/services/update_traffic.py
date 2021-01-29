@@ -110,7 +110,8 @@ class AdjustTraffic(base.Command):
     """
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())
-    service_ref = flags.GetService(args)
+    service_ref = args.CONCEPTS.service.Parse()
+    flags.ValidateResource(service_ref)
 
     changes = flags.GetConfigurationChanges(args)
     if not changes:

@@ -26,9 +26,30 @@ from googlecloudsdk.command_lib.workflows import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Deploy(base.CacheCommand):
   """Create or update a workflow."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To deploy a workflow with source code myWorkflow.yaml on Workflows:
+
+            $ {command} my-workflow --source=myWorkflow.yaml
+
+          You may also skip waiting for the operation to finish:
+
+            $ {command} my-workflow --source=myWorkflow.yaml --async
+
+          To specify a service account as the workflow identity:
+
+            $ {command} my-workflow --source=myWorkflow.yaml \
+              --service-account=my-service-account@my-project-id.iam.gserviceaccount.com
+          """,
+  }
 
   @staticmethod
   def Args(parser):

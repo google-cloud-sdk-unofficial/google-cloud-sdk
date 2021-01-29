@@ -127,7 +127,8 @@ class Update(base.Command):
 
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())
-    service_ref = flags.GetService(args)
+    service_ref = args.CONCEPTS.service.Parse()
+    flags.ValidateResource(service_ref)
 
     with serverless_operations.Connect(conn_context) as client:
       service = client.GetService(service_ref)
@@ -181,6 +182,10 @@ class AlphaUpdate(Update):
   @staticmethod
   def Args(parser):
     Update.CommonArgs(parser)
+
+    # Flags specific to managed CR
+    managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddSandboxArg(managed_group)
 
     # Flags only supported on GKE and Knative
     cluster_group = flags.GetClusterArgGroup(parser)

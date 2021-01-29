@@ -27,7 +27,8 @@ from googlecloudsdk.core import resources
 EXECUTION_COLLECTION = 'workflowexecutions.projects.locations.workflows.executions'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Run(base.DescribeCommand):
   """Execute a workflow and wait for the execution to complete."""
 

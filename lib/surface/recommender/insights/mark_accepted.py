@@ -38,8 +38,8 @@ class MarkAccepted(base.Command):
   r"""Mark an insight's state as ACCEPTED.
 
      Mark an insight's state as ACCEPTED. Can be applied to insights in ACTIVE
-     or ACCEPTED state. we currently support project, billing_account, folder
-     and organization.
+     or ACCEPTED state. The following are currently supported: project,
+     billing_account, folder, and organization.
   """
 
   detailed_help = DETAILED_HELP

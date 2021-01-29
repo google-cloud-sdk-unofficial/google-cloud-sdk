@@ -83,7 +83,8 @@ class Describe(base.Command):
     """Obtain details about a given service."""
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())
-    service_ref = flags.GetService(args)
+    service_ref = args.CONCEPTS.service.Parse()
+    flags.ValidateResource(service_ref)
     with serverless_operations.Connect(conn_context) as client:
       serv = client.GetService(service_ref)
     if not serv:

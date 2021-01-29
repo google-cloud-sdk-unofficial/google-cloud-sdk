@@ -39,6 +39,7 @@ class Update(base.UpdateCommand):
 
   BACKEND_BUCKET_ARG = None
   _support_flexible_cache_step_one = True
+  _support_flexible_cache_step_two = False
   _support_negative_cache = False
 
   @classmethod
@@ -55,6 +56,10 @@ class Update(base.UpdateCommand):
 
     if cls._support_negative_cache:
       cdn_flags.AddNegativeCache(parser, 'backend bucket', update_command=True)
+
+    if cls._support_flexible_cache_step_two:
+      cdn_flags.AddFlexibleCacheStepTwo(
+          parser, 'backend bucket', update_command=True)
 
   def AnyArgsSpecified(self, args):
     """Returns true if any args for updating backend bucket were specified."""
@@ -74,7 +79,12 @@ class Update(base.UpdateCommand):
             (self._support_negative_cache and any(
                 (args.IsSpecified('negative_caching'),
                  args.IsSpecified('negative_caching_policy'),
-                 args.IsSpecified('no_negative_caching_policies')))))
+                 args.IsSpecified('no_negative_caching_policies')))) or
+            (self._support_flexible_cache_step_two and any(
+                (args.IsSpecified('serve_while_stale'),
+                 args.IsSpecified('no_serve_while_stale'),
+                 args.IsSpecified('bypass_cache_on_request_headers'),
+                 args.IsSpecified('no_bypass_cache_on_request_headers')))))
 
   def GetGetRequest(self, client, backend_bucket_ref):
     """Returns a request to retrieve the backend bucket."""
@@ -118,6 +128,7 @@ class Update(base.UpdateCommand):
         is_update=True,
         cleared_fields=cleared_fields,
         support_flexible_cache_step_one=self._support_flexible_cache_step_one,
+        support_flexible_cache_step_two=self._support_flexible_cache_step_two,
         support_negative_cache=self._support_negative_cache)
 
     if self._support_flexible_cache_step_one:
@@ -177,4 +188,5 @@ class UpdateAlphaBeta(Update):
   *{command}* is used to update backend buckets.
   """
   _support_flexible_cache_step_one = True
+  _support_flexible_cache_step_two = True
   _support_negative_cache = True

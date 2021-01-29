@@ -29,7 +29,7 @@ class DLP(base.Group):
   The DLP API lets you understand and manage sensitive data. It provides
   fast, scalable classification and optional redaction for sensitive data
   elements like credit card numbers, names, Social Security numbers, passport
-  numbers, US and selected international driver's license numbers, and phone
+  numbers, U.S. and selected international driver's license numbers, and phone
   numbers. The API classifies this data using more than 50 predefined detectors
   to identify patterns, formats, and checksums, and even understands contextual
   clues. The API supports text and images; just send data to the API or
