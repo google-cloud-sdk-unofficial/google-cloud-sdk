@@ -201,6 +201,10 @@ class Import(base.CreateCommand):
         'https://cloud.google.com/compute/docs/import/importing-virtual-disks#no-external-ip'
     )
 
+    daisy_utils.AddComputeServiceAccountArg(
+        parser, 'image import',
+        daisy_utils.IMPORT_ROLES_FOR_COMPUTE_SERVICE_ACCOUNT)
+
   def Run(self, args):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
@@ -439,9 +443,6 @@ class ImportBeta(Import):
   def Args(cls, parser):
     super(ImportBeta, cls).Args(parser)
     daisy_utils.AddExtraCommonDaisyArgs(parser)
-    daisy_utils.AddComputeServiceAccountArg(
-        parser, 'image import',
-        daisy_utils.IMPORT_ROLES_FOR_COMPUTE_SERVICE_ACCOUNT)
 
   def _RunImageImport(self, args, import_args, tags, output_filter):
     return daisy_utils.RunImageImport(

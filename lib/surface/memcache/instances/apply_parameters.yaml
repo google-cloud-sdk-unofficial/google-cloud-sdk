@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA, BETA]
-  help_text:
+- help_text:
     brief: |
       Apply parameter update to nodes in a Memorystore Memcached instance.
     description: |
@@ -41,6 +40,11 @@
   async:
     collection: memcache.projects.locations.operations
 
-  request: &request
+  input:
+    confirmation_prompt: |
+      WARNING: Applying parameters will cause a full cache flush to the selected nodes in instance [{__name__}] in [{locationsId}].
+    default_continue: false
+
+  request:
     collection: memcache.projects.locations.instances
     method: applyParameters

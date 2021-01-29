@@ -84,6 +84,7 @@ RE2 and described at https://github.com/google/re2/wiki/Syntax.
     )
 
     trigger_utils.AddBuildConfigArgs(flag_config)
+    trigger_utils.AddRepoEventArgs(flag_config)
 
   def ParseTriggerFromFlags(self, args):
     """Parses command line arguments into a build trigger.
@@ -122,6 +123,7 @@ RE2 and described at https://github.com/google/re2/wiki/Syntax.
     default_image = 'gcr.io/%s/github.com/%s/%s:$COMMIT_SHA' % (
         project, args.repo_owner, args.repo_name)
     trigger_utils.ParseBuildConfigArgs(trigger, args, messages, default_image)
+    trigger_utils.ParseRepoEventArgs(trigger, args)
 
     return trigger
 

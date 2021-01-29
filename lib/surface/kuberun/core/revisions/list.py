@@ -52,7 +52,7 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
   flags = [
       flags.NamespaceFlagGroup(),
       flags.ClusterConnectionFlags(),
-      flags.ServiceFlag()
+      flags.RevisionListServiceFlag()
   ]
 
   @classmethod

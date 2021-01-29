@@ -27,11 +27,14 @@ from googlecloudsdk.command_lib.compute.networks import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
   """Get the effective firewalls of a Compute Engine network.
 
-  *{command}* Get the effective firewalls applied on the network. For example:
+  *{command}* is used to get the effective firewalls applied to the network.
+
+  ## EXAMPLES
+
+  To get the effective firewalls for a network, run:
 
     $ {command} example-network
 
@@ -62,11 +65,27 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
     res = responses[0]
     org_firewall = []
     network_firewall = []
+    org_firewall_policy = []
+    all_firewall_policy = []
+
     if hasattr(res, 'firewalls'):
       network_firewall = firewalls_utils.SortNetworkFirewallRules(
           client, res.firewalls)
 
-    if hasattr(res, 'organizationFirewalls'):
+    if hasattr(res, 'firewallPolicys') and res.firewallPolicys:
+      for fp in res.firewallPolicys:
+        firewall_policy_rule = firewalls_utils.SortFirewallPolicyRules(
+            client, fp.rules)
+        if (fp.type == client.messages
+            .NetworksGetEffectiveFirewallsResponseEffectiveFirewallPolicy
+            .TypeValueValuesEnum.HIERARCHY):
+          fp_response = (
+              client.messages
+              .NetworksGetEffectiveFirewallsResponseEffectiveFirewallPolicy(
+                  name=fp.name, rules=firewall_policy_rule))
+          org_firewall_policy.append(fp_response)
+          all_firewall_policy.append(fp_response)
+    elif hasattr(res, 'organizationFirewalls'):
       for sp in res.organizationFirewalls:
         org_firewall_rule = firewalls_utils.SortOrgFirewallRules(
             client, sp.rules)
@@ -74,11 +93,17 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
             client.messages
             .NetworksGetEffectiveFirewallsResponseOrganizationFirewallPolicy(
                 id=sp.id, rules=org_firewall_rule))
+
     if args.IsSpecified('format') and args.format == 'json':
       return client.messages.NetworksGetEffectiveFirewallsResponse(
-          organizationFirewalls=org_firewall, firewalls=network_firewall)
+          organizationFirewalls=org_firewall,
+          firewalls=network_firewall,
+          firewallPolicys=all_firewall_policy)
 
     result = []
+    for fp in org_firewall_policy:
+      result.extend(
+          firewalls_utils.ConvertFirewallPolicyRulesToEffectiveFwRules(fp))
     for sp in org_firewall:
       result.extend(
           firewalls_utils.ConvertOrgSecurityPolicyRulesToEffectiveFwRules(sp))
@@ -106,7 +131,7 @@ GetEffectiveFirewalls.detailed_help = {
 
       $ {command} example-network --format="table(
         type,
-        security_policy_id,
+        firewall_policy_name,
         priority,
         action,
         direction,

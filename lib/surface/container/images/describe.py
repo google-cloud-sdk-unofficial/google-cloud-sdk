@@ -20,15 +20,16 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.images import container_data_util
 from googlecloudsdk.api_lib.container.images import util
+from googlecloudsdk.api_lib.containeranalysis import filter_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container import flags
 
 # Add to this as we add more container analysis data.
 _DEFAULT_KINDS = [
-    'BUILD_DETAILS',
-    'PACKAGE_VULNERABILITY',
-    'IMAGE_BASIS',
-    'DEPLOYABLE',
+    'BUILD',
+    'VULNERABILITY',
+    'IMAGE',
+    'DEPLOYMENT',
     'DISCOVERY',
 ]
 
@@ -159,37 +160,27 @@ class DescribeAlphaAndBeta(Describe):
 
     filter_kinds = []
     if args.show_build_details:
-      filter_kinds.append('BUILD_DETAILS')
+      filter_kinds.append('BUILD')
     if args.show_package_vulnerability:
-      filter_kinds.append('PACKAGE_VULNERABILITY')
+      filter_kinds.append('VULNERABILITY')
       filter_kinds.append('DISCOVERY')
     if args.show_image_basis:
-      filter_kinds.append('IMAGE_BASIS')
+      filter_kinds.append('IMAGE')
     if args.show_deployment:
-      filter_kinds.append('DEPLOYABLE')
+      filter_kinds.append('DEPLOYMENT')
 
     if args.show_all_metadata:
       filter_kinds = _DEFAULT_KINDS
 
     if filter_kinds or args.metadata_filter:
-      if filter_kinds:
-        filter_from_flags = ' OR '.join(
-            ['kind = "{kind}"'.format(kind=fk) for fk in filter_kinds])
-
-        if not args.metadata_filter:
-          occ_filter = filter_from_flags
-        else:
-          occ_filter = '({occf}) AND ({flagf})'.format(
-              occf=args.metadata_filter, flagf=filter_from_flags)
-      else:
-        occ_filter = args.metadata_filter
+      f = filter_util.ContainerAnalysisFilter()
+      f.WithKinds(filter_kinds)
+      f.WithCustomFilter(args.metadata_filter)
+      f.WithResources(['https://{}'.format(args.image_name)])
 
       with util.WrapExpectedDockerlessErrors(args.image_name):
         img_name = util.GetDigestFromName(args.image_name)
-        data = util.TransformContainerAnalysisData(
-            img_name,
-            occ_filter,
-            deployments=(args.show_deployment or args.show_all_metadata))
+        data = util.TransformContainerAnalysisData(img_name, f)
         # Clear out fields that weren't asked for and have no data.
         if (not data.build_details_summary.build_details and
             not args.show_build_details and not args.show_all_metadata):

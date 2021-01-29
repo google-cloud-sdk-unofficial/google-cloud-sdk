@@ -59,8 +59,30 @@
             using the format: 'projects/{project_id}/locations/global/memberships/{membership_id}' or
             {membership_id}. If project is not specified, the project of the Game Server Cluster resource
             is used to generate the full name of the GKE Hub membership.
+    - group:
+        release_tracks: [BETA]
+        required: true
+        mutex: true
+        params:
+        - arg_name: gke-cluster
+          api_field: gameServerCluster.connectionInfo.gkeClusterReference.cluster
+          help_text: |
+            Full or partial name of a cluster in Google Kubernetes Engine (GKE) where the game server
+            cluster is installed, using the format: 'projects/*/locations/*/clusters/*'.
+            Note, the location of the GKE cluster can be either a region or a zone.
+            Example: 'projects/my-project/locations/us-central1/clusters/test'. If project and location
+            are not specified, the project and location of the Game Server Cluster resource are used to
+            generate the full name of the GKE cluster.
+        - arg_name: hub-membership
+          hidden: true
+          api_field: gameServerCluster.connectionInfo.gkeHubClusterReference.membership
+          help_text: |
+            Full or partial name of a GKE Hub membership where the game server cluster is registered,
+            using the format: 'projects/{project_id}/locations/global/memberships/{membership_id}' or
+            {membership_id}. If project is not specified, the project of the Game Server Cluster resource
+            is used to generate the full name of the GKE Hub membership.
     - arg_name: gke-cluster
-      release_tracks: [BETA, GA]
+      release_tracks: [GA]
       api_field: gameServerCluster.connectionInfo.gkeClusterReference.cluster
       required: true
       help_text: |
@@ -92,6 +114,15 @@
     - arg_name: allocation-priority
       release_tracks: [ALPHA]
       api_field: gameServerCluster.allocationPriority
+      help_text: |
+        Allocation priority assigned to the game server cluster. Game server clusters receive new
+        game server allocations based on the relative allocation priorities set for each cluster
+        within a realm where multicluster allocation is configured. Ordering is based on the
+        priority; 'p1' has the highest priority and 'priority-unspecified' has the lowest priority.
+    - arg_name: allocation-priority
+      release_tracks: [BETA]
+      api_field: gameServerCluster.allocationPriority
+      hidden: true
       help_text: |
         Allocation priority assigned to the game server cluster. Game server clusters receive new
         game server allocations based on the relative allocation priorities set for each cluster

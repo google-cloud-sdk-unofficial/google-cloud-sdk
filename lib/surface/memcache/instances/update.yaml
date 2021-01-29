@@ -27,8 +27,6 @@
         $ {command} my-memcache-instance --display-name="Foo Cache Service" \
             --labels="env=test,service=foo"
 
-
-  release_tracks: [ALPHA, BETA]
   arguments:
     resource:
       spec: !REF googlecloudsdk.command_lib.memcache.resources:instance
@@ -106,7 +104,7 @@
   async:
     collection: memcache.projects.locations.operations
 
-  request: &request
+  request:
     collection: memcache.projects.locations.instances
     method: patch
     # --parameters flag uses the method `updateParameters`, all other flags use method `patch`

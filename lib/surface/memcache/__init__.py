@@ -21,8 +21,16 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Memcache(base.Group):
+  """Manage Cloud Memorystore Memcached resources."""
+
+  category = base.STORAGE_CATEGORY
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class MemcacheGa(base.Group):
   """Manage Cloud Memorystore Memcached resources."""
 
   category = base.STORAGE_CATEGORY

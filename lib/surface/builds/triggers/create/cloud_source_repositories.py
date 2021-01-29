@@ -63,6 +63,7 @@ class CreateCSR(base.CreateCommand):
     trigger_utils.AddTagPattern(ref_config)
 
     trigger_utils.AddBuildConfigArgs(flag_config)
+    trigger_utils.AddRepoEventArgs(flag_config)
 
   def ParseTriggerFromFlags(self, args):
     """Parses command line arguments into a build trigger.
@@ -95,6 +96,7 @@ class CreateCSR(base.CreateCommand):
     project = properties.VALUES.core.project.Get(required=True)
     default_image = 'gcr.io/%s/%s:$COMMIT_SHA' % (project, repo)
     trigger_utils.ParseBuildConfigArgs(trigger, args, messages, default_image)
+    trigger_utils.ParseRepoEventArgs(trigger, args)
 
     return trigger
 

@@ -20,5 +20,5 @@
       help_text: |
         Arguments and flags that specify the Memorystore Memcached region to describe.
 
-  request: &request
+  request:
     collection: memcache.projects.locations

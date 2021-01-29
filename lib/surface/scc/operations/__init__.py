@@ -22,4 +22,4 @@ from googlecloudsdk.calliope import base
 
 
 class Operations(base.Group):
-  """Manage Cloud SCC operations."""
+  """Manage Cloud SCC (Security Command Center) operations."""

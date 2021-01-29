@@ -19,6 +19,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import re
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import walker_util
 from googlecloudsdk.command_lib.meta import help_util
@@ -115,13 +117,14 @@ class GenerateHelpDocs(base.Command):
 
     def Generate(kind, generator, directory, encoding='utf-8', hidden=False):
       """Runs generator and optionally updates help docs in directory."""
+      restrict_dir = [re.sub(r'_', r'-', p) for p in args.restrict]
       console_attr.ResetConsoleAttr(encoding)
       if not args.update:
         generator(self._cli_power_users_only, directory).Walk(
-            hidden, args.restrict)
+            hidden, restrict_dir)
       elif help_util.HelpUpdater(
           self._cli_power_users_only, directory, generator,
-          test=args.test, hidden=hidden).Update(args.restrict):
+          test=args.test, hidden=hidden).Update(restrict_dir):
         out_of_date.add(kind)
 
     # Handle deprecated flags -- probably burned in a bunch of eng scripts.

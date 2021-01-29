@@ -22,4 +22,4 @@ from googlecloudsdk.calliope import base
 
 
 class Finding(base.Group):
-  """Manage Cloud SCC findings."""
+  """Manage Cloud SCC (Security Command Center) findings."""

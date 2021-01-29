@@ -86,13 +86,16 @@ class AlphaRestore(Restore):
   def Args(parser):
     Restore.Args(parser)
     resource_args.AddRestoreDbEncryptionTypeArg(parser)
+    resource_args.AddKmsKeyResourceArg(parser,
+                                       'to restore the Cloud Spanner database')
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""
     backup_ref = args.CONCEPTS.source.Parse()
     database_ref = args.CONCEPTS.destination.Parse()
     encryption_type = resource_args.GetRestoreDbEncryptionType(args)
-    op = databases.Restore(database_ref, backup_ref, encryption_type)
+    kms_key = resource_args.GetAndValidateKmsKeyName(args)
+    op = databases.Restore(database_ref, backup_ref, encryption_type, kms_key)
 
     if args.async_:
       return log.status.Print(

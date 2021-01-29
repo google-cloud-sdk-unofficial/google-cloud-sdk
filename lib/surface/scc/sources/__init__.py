@@ -22,4 +22,4 @@ from googlecloudsdk.calliope import base
 
 
 class Sources(base.Group):
-  """Manage Cloud SCC finding sources."""
+  """Manage Cloud SCC (Security Command Center) finding sources."""

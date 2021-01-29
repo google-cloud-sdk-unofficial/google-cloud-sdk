@@ -192,10 +192,6 @@ def AddBaseArgs(parser):
       help=('First Generation instances only. The App Engine app '
             'this instance should follow. It must be in the same region as '
             'the instance. WARNING: Instance may be restarted.'))
-  flags.AddZone(
-      parser,
-      help_text=('Preferred Compute Engine zone (e.g. us-central1-a, '
-                 'us-central1-b, etc.). WARNING: Instance may be restarted.'))
   parser.add_argument(
       'instance',
       completer=flags.InstanceCompleter,
@@ -250,12 +246,13 @@ def AddAlphaArgs(parser):
   flags.AddActiveDirectoryDomain(parser)
 
 
-def RunBasePatchCommand(args, release_track):
+def RunBasePatchCommand(args, release_track, enable_secondary_zone):
   """Updates settings of a Cloud SQL instance using the patch api method.
 
   Args:
     args: argparse.Namespace, The arguments that this command was invoked with.
     release_track: base.ReleaseTrack, the release track that this was run under.
+    enable_secondary_zone: boolean, if enable_secondary_zone is enabled.
 
   Returns:
     A dict object representing the operations resource describing the patch
@@ -271,6 +268,7 @@ def RunBasePatchCommand(args, release_track):
   sql_messages = client.sql_messages
 
   validate.ValidateInstanceName(args.instance)
+  validate.ValidateInstanceLocation(args, enable_secondary_zone)
   instance_ref = client.resource_parser.Parse(
       args.instance,
       params={'project': properties.VALUES.core.project.GetOrFail},
@@ -347,12 +345,16 @@ class Patch(base.UpdateCommand):
   """Updates the settings of a Cloud SQL instance."""
 
   def Run(self, args):
-    return RunBasePatchCommand(args, self.ReleaseTrack())
+    return RunBasePatchCommand(args, self.ReleaseTrack(), False)
 
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
+    flags.AddZone(
+        parser,
+        help_text=('Preferred Compute Engine zone (e.g. us-central1-a, '
+                   'us-central1-b, etc.). WARNING: Instance may be restarted.'))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -360,12 +362,16 @@ class PatchBeta(base.UpdateCommand):
   """Updates the settings of a Cloud SQL instance."""
 
   def Run(self, args):
-    return RunBasePatchCommand(args, self.ReleaseTrack())
+    return RunBasePatchCommand(args, self.ReleaseTrack(), False)
 
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
+    flags.AddZone(
+        parser,
+        help_text=('Preferred Compute Engine zone (e.g. us-central1-a, '
+                   'us-central1-b, etc.). WARNING: Instance may be restarted.'))
     AddBetaArgs(parser)
 
 
@@ -374,11 +380,16 @@ class PatchAlpha(base.UpdateCommand):
   """Updates the settings of a Cloud SQL instance."""
 
   def Run(self, args):
-    return RunBasePatchCommand(args, self.ReleaseTrack())
+    return RunBasePatchCommand(args, self.ReleaseTrack(), True)
 
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
+    flags.AddZone(
+        parser,
+        help_text=('Preferred Compute Engine zone (e.g. us-central1-a, '
+                   'us-central1-b, etc.). WARNING: Instance may be restarted.'),
+        enable_secondary_zone=True)
     AddBetaArgs(parser)
     AddAlphaArgs(parser)

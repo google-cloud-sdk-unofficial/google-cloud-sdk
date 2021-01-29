@@ -21,6 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class OpsagentsPolicies(base.Group):
   """Manage Operation Suite (Ops) agents policies that install, update, and uninstall agents for Compute Engine VM instances."""

@@ -22,7 +22,6 @@ import sys
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
-from googlecloudsdk.command_lib.compute import traffic_control_codec_utils as codecs
 from googlecloudsdk.command_lib.compute.backend_services import backend_services_utils
 from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.command_lib.export import util as export_util
@@ -91,7 +90,6 @@ class Export(base.Command):
     backend_service = backend_services_utils.SendGetRequest(
         client, backend_service_ref)
 
-    codecs.RegisterL7TrafficControlCodecs(self.GetApiVersion())
     if args.destination:
       with files.FileWriter(args.destination) as stream:
         export_util.Export(message=backend_service,

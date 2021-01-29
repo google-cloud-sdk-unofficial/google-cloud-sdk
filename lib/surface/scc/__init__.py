@@ -27,7 +27,7 @@ from googlecloudsdk.calliope import base
 class Scc(base.Group):
   """Manage Cloud SCC resources.
 
-  Commands for managing Google Cloud SCC resources.
+  Commands for managing Google Cloud SCC (Security Command Center) resources.
   """
   category = base.SECURITY_CATEGORY
 
