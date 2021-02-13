@@ -35,6 +35,23 @@
       required: true
       help_text: |
         BigQuery table where evaluation results are written.
-
+    - arg_name: write-disposition
+      api_field: evaluateAnnotationStoreRequest.bigqueryDestination.writeDisposition
+      help_text: |
+        Determines whether existing table in the destination dataset are overwritten or appended to.
+      type: str
+      choices:
+      - arg_value: write-empty
+        enum_value: WRITE_EMPTY
+        help_text: |
+          Only export data if the destination table is empty.
+      - arg_value: write-truncate
+        enum_value: WRITE_TRUNCATE
+        help_text: |
+          Erase all existing data in a table before writing the instances.
+      - arg_value: write-append
+        enum_value: WRITE_APPEND
+        help_text: |
+          Append data to the existing table.
   async:
     collection: healthcare.projects.locations.datasets.operations

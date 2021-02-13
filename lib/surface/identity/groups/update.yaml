@@ -97,12 +97,12 @@
             group.
 
     - arg_name: labels
-      release_tracks: [BETA]
+      release_tracks: [BETA, GA]
       ALPHA:
         hidden: true
       type: str
       help_text: |
-        One or more label entries that apply to the Group. Currently supported labels contain a key
+        One or more label entries that apply to the group. Currently supported labels contain a key
         with an empty value.
 
         Google Groups are the default type of group and have a label with a key of
@@ -141,6 +141,7 @@
       modify_request_hooks:
       - googlecloudsdk.command_lib.identity.groups.hooks:SetResourceName
       - googlecloudsdk.command_lib.identity.groups.hooks:SetGroupUpdateMask
+      - googlecloudsdk.command_lib.identity.groups.hooks:SetLabels
 
   response:
     result_attribute: response

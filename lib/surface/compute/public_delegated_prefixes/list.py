@@ -31,14 +31,13 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    # TODO(b/131250985): add status once enum is visible
-    # TODO(b/131250985): add delegated sub-prefixes list
     parser.display_info.AddFormat("""\
       table(
         name,
         selfLink.scope().segment(-3).yesno(no="global"):label=LOCATION,
         parentPrefix.basename():label=PARENT_PREFIX,
-        ipCidrRange:label=RANGE
+        ipCidrRange:label=RANGE,
+        status
       )""")
 
   def Run(self, args):

@@ -262,7 +262,7 @@ class CreateBeta(base.CreateCommand):
           networks=network_configs)
 
     if args.forwarding_targets or args.private_forwarding_targets:
-      forwarding_config = command_util.ParseManagedZoneForwardingConfigWithForwardingPath(
+      forwarding_config = command_util.BetaParseManagedZoneForwardingConfigWithForwardingPath(
           messages=messages,
           server_list=args.forwarding_targets,
           private_server_list=args.private_forwarding_targets)

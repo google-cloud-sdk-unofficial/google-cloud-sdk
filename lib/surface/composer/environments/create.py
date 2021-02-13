@@ -466,11 +466,10 @@ class CreateAlpha(CreateBeta):
         Defaults to CELERY. Cannot be updated.""")
 
     autoscaling_group_parser = parser.add_argument_group(hidden=True)
-    flags.ENABLE_AUTOSCALING.AddToParser(autoscaling_group_parser)
-    flags.AUTOSCALING_MAXIMUM_MEMORY.AddToParser(autoscaling_group_parser)
-    flags.AUTOSCALING_MINIMUM_MEMORY.AddToParser(autoscaling_group_parser)
-    flags.AUTOSCALING_MAXIMUM_CPU.AddToParser(autoscaling_group_parser)
-    flags.AUTOSCALING_MINIMUM_CPU.AddToParser(autoscaling_group_parser)
+    flags.SCHEDULER_CPU.AddToParser(autoscaling_group_parser)
+    flags.WORKER_CPU.AddToParser(autoscaling_group_parser)
+    flags.MIN_WORKERS.AddToParser(autoscaling_group_parser)
+    flags.MAX_WORKERS.AddToParser(autoscaling_group_parser)
 
   def GetOperationMessage(self, args):
     """See base class."""
@@ -506,11 +505,10 @@ class CreateAlpha(CreateBeta):
         web_server_access_control=self.web_server_access_control,
         cloud_sql_machine_type=args.cloud_sql_machine_type,
         web_server_machine_type=args.web_server_machine_type,
-        enable_autoscaling=args.enable_autoscaling,
-        autoscaling_maximum_cpu=args.autoscaling_maximum_cpu,
-        autoscaling_minimum_cpu=args.autoscaling_minimum_cpu,
-        autoscaling_maximum_memory=args.autoscaling_maximum_memory,
-        autoscaling_minimum_memory=args.autoscaling_minimum_memory,
+        scheduler_cpu=args.scheduler_cpu,
+        worker_cpu=args.worker_cpu,
+        min_workers=args.min_workers,
+        max_workers=args.max_workers,
         maintenance_window_start=args.maintenance_window_start,
         maintenance_window_end=args.maintenance_window_end,
         maintenance_window_recurrence=args.maintenance_window_recurrence,

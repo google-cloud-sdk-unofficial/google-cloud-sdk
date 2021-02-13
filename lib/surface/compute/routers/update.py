@@ -42,6 +42,7 @@ class Update(base.UpdateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     if support_keepalive_interval:
       flags.AddKeepaliveIntervalArg(parser)
+    flags.AddAsnArg(parser)
     flags.AddUpdateCustomAdvertisementArgs(parser, 'router')
 
   @classmethod
@@ -60,10 +61,14 @@ class Update(base.UpdateCommand):
 
     request_type = messages.ComputeRoutersGetRequest
     replacement = service.Get(request_type(**router_ref.AsDict()))
+    replacement.bgp = replacement.bgp or messages.RouterBgp()
     existing_mode = replacement.bgp.advertiseMode
 
     if support_keepalive_interval and args.keepalive_interval is not None:
       setattr(replacement.bgp, 'keepaliveInterval', args.keepalive_interval)
+
+    if args.asn is not None:
+      setattr(replacement.bgp, 'asn', args.asn)
 
     if router_utils.HasReplaceAdvertisementFlags(args):
       mode, groups, ranges = router_utils.ParseAdvertisements(

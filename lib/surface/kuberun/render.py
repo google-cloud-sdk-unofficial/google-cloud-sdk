@@ -38,10 +38,15 @@ def _OutFlag():
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Render(kuberun_command.KubeRunStreamingCommand, base.ExportCommand):
+class Render(kuberun_command.KubeRunCommand, base.ExportCommand):
   """Render KubeRun application to generate the yaml resource configuration."""
   detailed_help = _DETAILED_HELP
   flags = [_OutFlag(), flags.EnvironmentFlag()]
 
   def Command(self):
     return ['render']
+
+  @property
+  def should_stream_stdout(self):
+    # TODO(b/170872460): Delete once this command stops streaming stdout.
+    return True

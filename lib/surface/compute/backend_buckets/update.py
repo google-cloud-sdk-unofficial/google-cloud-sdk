@@ -27,7 +27,10 @@ from googlecloudsdk.command_lib.compute import cdn_flags_utils as cdn_flags
 from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_buckets import backend_buckets_utils
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
+from googlecloudsdk.command_lib.compute.security_policies import (
+    flags as security_policy_flags)
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources as resources_exceptions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -38,9 +41,11 @@ class Update(base.UpdateCommand):
   """
 
   BACKEND_BUCKET_ARG = None
+  EDGE_SECURITY_POLICY_ARG = None
   _support_flexible_cache_step_one = True
   _support_flexible_cache_step_two = False
   _support_negative_cache = False
+  _support_edge_policies = False
 
   @classmethod
   def Args(cls, parser):
@@ -61,11 +66,19 @@ class Update(base.UpdateCommand):
       cdn_flags.AddFlexibleCacheStepTwo(
           parser, 'backend bucket', update_command=True)
 
+    if cls._support_edge_policies:
+      cls.EDGE_SECURITY_POLICY_ARG = (
+          security_policy_flags.EdgeSecurityPolicyArgumentForTargetResource(
+              resource='backend bucket'))
+      cls.EDGE_SECURITY_POLICY_ARG.AddArgument(parser)
+
   def AnyArgsSpecified(self, args):
     """Returns true if any args for updating backend bucket were specified."""
     return (args.IsSpecified('description') or
             args.IsSpecified('gcs_bucket_name') or
-            args.IsSpecified('enable_cdn'))
+            args.IsSpecified('enable_cdn') or
+            (self._support_edge_policies and
+             args.IsSpecified('edge_security_policy')))
 
   def AnyFlexibleCacheArgsSpecified(self, args):
     """Returns true if any Flexible Cache args for updating backend bucket were specified."""
@@ -88,22 +101,28 @@ class Update(base.UpdateCommand):
 
   def GetGetRequest(self, client, backend_bucket_ref):
     """Returns a request to retrieve the backend bucket."""
-    return (
-        client.apitools_client.backendBuckets,
-        'Get',
-        client.messages.ComputeBackendBucketsGetRequest(
-            project=backend_bucket_ref.project,
-            backendBucket=backend_bucket_ref.Name()))
+    return (client.apitools_client.backendBuckets, 'Get',
+            client.messages.ComputeBackendBucketsGetRequest(
+                project=backend_bucket_ref.project,
+                backendBucket=backend_bucket_ref.Name()))
 
   def GetSetRequest(self, client, backend_bucket_ref, replacement):
     """Returns a request to update the backend bucket."""
-    return (
-        client.apitools_client.backendBuckets,
-        'Patch',
-        client.messages.ComputeBackendBucketsPatchRequest(
-            project=backend_bucket_ref.project,
-            backendBucket=backend_bucket_ref.Name(),
-            backendBucketResource=replacement))
+    return (client.apitools_client.backendBuckets, 'Patch',
+            client.messages.ComputeBackendBucketsPatchRequest(
+                project=backend_bucket_ref.project,
+                backendBucket=backend_bucket_ref.Name(),
+                backendBucketResource=replacement))
+
+  def GetSetEdgeSecurityPolicyRequest(self, client, backend_bucket_ref,
+                                      security_policy_ref):
+    """Returns a request to set the edge policy for the backend bucket."""
+    return (client.apitools_client.backendBuckets, 'SetEdgeSecurityPolicy',
+            client.messages.ComputeBackendBucketsSetEdgeSecurityPolicyRequest(
+                project=backend_bucket_ref.project,
+                backendBucket=backend_bucket_ref.Name(),
+                securityPolicyReference=client.messages.SecurityPolicyReference(
+                    securityPolicy=security_policy_ref)))
 
   def Modify(self, args, existing):
     """Modifies and returns the updated backend bucket."""
@@ -163,14 +182,35 @@ class Update(base.UpdateCommand):
     # Modify() returns None, then there is no work to be done, so we
     # print the resource and return.
     if objects[0] == new_object:
-      log.status.Print(
-          'No change requested; skipping update for [{0}].'.format(
-              objects[0].name))
-      return objects
+      # Only skip update if edge_security_policy is not set.
+      if getattr(args, 'edge_security_policy', None) is None:
+        log.status.Print(
+            'No change requested; skipping update for [{0}].'.format(
+                objects[0].name))
+        return objects
+      backend_bucket_result = []
+    else:
+      with client.apitools_client.IncludeFields(cleared_fields):
+        backend_bucket_result = client.MakeRequests(
+            [self.GetSetRequest(client, backend_bucket_ref, new_object)])
 
-    with client.apitools_client.IncludeFields(cleared_fields):
-      return client.MakeRequests(
-          [self.GetSetRequest(client, backend_bucket_ref, new_object)])
+    # Empty string is a valid value.
+    if (self._support_edge_policies and
+        getattr(args, 'edge_security_policy', None) is not None):
+      try:
+        security_policy_ref = self.EDGE_SECURITY_POLICY_ARG.ResolveAsResource(
+            args, holder.resources).SelfLink()
+      # If security policy is an empty string we should clear the current policy
+      except resources_exceptions.InvalidResourceException:
+        security_policy_ref = None
+      edge_security_policy_request = self.GetSetEdgeSecurityPolicyRequest(
+          client, backend_bucket_ref, security_policy_ref)
+      edge_security_policy_result = client.MakeRequests(
+          [edge_security_policy_request])
+    else:
+      edge_security_policy_result = []
+
+    return backend_bucket_result + edge_security_policy_result
 
   def Run(self, args):
     """Issues the request necessary for updating a backend bucket."""
@@ -181,8 +221,8 @@ class Update(base.UpdateCommand):
     return self.MakeRequests(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class UpdateAlphaBeta(Update):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
   """Update a backend bucket.
 
   *{command}* is used to update backend buckets.
@@ -190,3 +230,16 @@ class UpdateAlphaBeta(Update):
   _support_flexible_cache_step_one = True
   _support_flexible_cache_step_two = True
   _support_negative_cache = True
+  _support_edge_policies = False
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Update a backend bucket.
+
+  *{command}* is used to update backend buckets.
+  """
+  _support_flexible_cache_step_one = True
+  _support_flexible_cache_step_two = True
+  _support_negative_cache = True
+  _support_edge_policies = True

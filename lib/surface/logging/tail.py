@@ -20,23 +20,49 @@ from __future__ import unicode_literals
 
 import logging
 
+from google.api_core import bidi
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import gapic_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core.util import platforms
 
-from google.api_core import bidi
+_TAILING_INSTALL_LINK = 'https://cloud.google.com/logging/docs/reference/tools/gcloud-logging#install_live_tailing'
+
+
+def _GrpcSetupHelpMessage():
+  """Returns platform-specific guidance on setup for the tail command."""
+
+  current_os = platforms.OperatingSystem.Current()
+
+  if current_os == platforms.OperatingSystem.WINDOWS:
+    # This should never happen. gRPC is bundled with the Cloud SDK distribution
+    # for Windows, and should therefore never be inaccessible.
+    return ('The installation of the Cloud SDK is corrupted, and gRPC is '
+            'inaccessible.')
+
+  if current_os in (platforms.OperatingSystem.LINUX,
+                    platforms.OperatingSystem.MACOSX):
+    return (
+        'Please ensure that the gRPC module is installed and the environment '
+        'is correctly configured. Run:\n  sudo pip3 install grpcio\nand set:\n'
+        '  export CLOUDSDK_PYTHON_SITEPACKAGES=1\nFor more information, see {}'
+    ).format(_TAILING_INSTALL_LINK)
+
+  # By default, direct users to the docs.
+  return (
+      'Please ensure that the gRPC module is installed and the environment is '
+      'configured to allow gcloud to use the installation. For help, see {}'
+  ).format(_TAILING_INSTALL_LINK)
 
 
 class NoGRPCInstalledError(exceptions.ToolException):
   """Unable to import grpc-based modules."""
 
   def __init__(self):
-    super(NoGRPCInstalledError, self).__init__(
-        'Please ensure the grpc module is installed.  Run:\n'
-        'pip install grpcio')
+    super(NoGRPCInstalledError, self).__init__(_GrpcSetupHelpMessage())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

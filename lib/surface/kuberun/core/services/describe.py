@@ -32,13 +32,13 @@ _DETAILED_HELP = {
         """
         To show all the data about a KubeRun service, run:
 
-            $ {command}
+            $ {command} SERVICE
         """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(kuberun_command.KubeRunCommandWithOutput, base.DescribeCommand):
+class Describe(kuberun_command.KubeRunCommand, base.DescribeCommand):
   """Describes a KubeRun service."""
 
   detailed_help = _DETAILED_HELP

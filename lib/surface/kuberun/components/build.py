@@ -32,7 +32,7 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Build(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
+class Build(kuberun_command.KubeRunCommand, base.CreateCommand):
   """Build a Component in development mode."""
 
   detailed_help = _DETAILED_HELP
@@ -48,3 +48,8 @@ class Build(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
 
   def BuildKubeRunArgs(self, args):
     return [args.component]
+
+  @property
+  def should_stream_stdout(self):
+    # TODO(b/170872460): Delete once this command stops streaming stdout.
+    return True

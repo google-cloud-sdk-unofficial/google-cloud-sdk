@@ -106,6 +106,7 @@ as GMT).
         '--description', help='Build trigger description.')
     flag_config.add_argument('--name', help='Build trigger name.')
 
+    trigger_utils.AddSubstitutions(flag_config)
     trigger_utils.AddBuildFileConfigArgs(flag_config)
 
   def Run(self, args):

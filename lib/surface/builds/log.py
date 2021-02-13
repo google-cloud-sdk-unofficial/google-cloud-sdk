@@ -22,10 +22,12 @@ from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import logs as cb_logs
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.builds import flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Log(base.Command):
   """Stream the logs for a build."""
   detailed_help = {
@@ -40,6 +42,8 @@ class Log(base.Command):
                 $ {command} `098-765-432`
             """),
   }
+
+  _support_gcl = False
 
   @staticmethod
   def Args(parser):
@@ -74,10 +78,30 @@ class Log(base.Command):
         },
         collection='cloudbuild.projects.locations.builds')
 
-    logger = cb_logs.CloudBuildClient(client, messages)
+    logger = cb_logs.CloudBuildClient(client, messages, self._support_gcl)
     if args.stream:
+      if not self._support_gcl:
+        log.status.Print(
+            '\nOpt in: to tail live logs from Cloud Logging use the alpha or beta'
+            ' versions\n$ gcloud alpha builds log --stream\n$ gcloud beta builds'
+            ' log --stream\n')
       logger.Stream(build_ref)
       return
 
     # Just print out what's available now.
     logger.PrintLog(build_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class LogBeta(Log):
+  """Stream the logs for a build."""
+
+  _support_gcl = True
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class LogAlpha(LogBeta):
+  """Stream the logs for a build."""
+
+  _support_gcl = True
+

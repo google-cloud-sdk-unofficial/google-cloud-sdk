@@ -30,14 +30,13 @@ _DETAILED_HELP = {
         """
         To update one or more env vars:
 
-            $ {command} --update-env-vars=KEY1=VALUE1,KEY2=VALUE2
+            $ {command} SERVICE --update-env-vars=KEY1=VALUE1,KEY2=VALUE2
         """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Update(kuberun_command.KubeRunStreamingCommandWithResult,
-             base.UpdateCommand):
+class Update(kuberun_command.KubeRunCommand, base.UpdateCommand):
   """Updates a KubeRun service."""
 
   detailed_help = _DETAILED_HELP
@@ -64,4 +63,3 @@ class Update(kuberun_command.KubeRunStreamingCommandWithResult,
 
   def FormatOutput(self, out, args):
     return service.Service(json.loads(out))
-

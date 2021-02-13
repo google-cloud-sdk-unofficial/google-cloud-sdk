@@ -354,6 +354,9 @@ def AddServiceProxyArgsToMetadata(args):
     else:
       proxy_spec['network'] = ''
 
+    if getattr(args, 'service_proxy_xds_version', False):
+      proxy_spec['xds-version'] = args.service_proxy_xds_version
+
     # add --service-proxy-labels flag data to metadata.
     if getattr(args, 'service_proxy_labels', False):
       service_proxy_config['labels'] = args.service_proxy_labels

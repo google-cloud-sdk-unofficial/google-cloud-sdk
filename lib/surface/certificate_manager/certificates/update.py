@@ -50,6 +50,9 @@ class Update(base.UpdateCommand):
     flags.AddSelfManagedCertificateDataFlagsToParser(parser, is_required=False)
     flags.AddAsyncFlagToParser(parser)
 
+  # Note: the surface is split across YAML and Python as the declarative YAML
+  # approach improperly handles one-of fields in updates
+  # per go/gcloud-creating-commands#when-to-use
   def Run(self, args):
     client = certificates.CertificateClient()
     cert_ref = args.CONCEPTS.certificate.Parse()

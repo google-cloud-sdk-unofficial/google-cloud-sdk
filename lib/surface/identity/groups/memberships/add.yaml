@@ -28,27 +28,16 @@
     method: create
     ALPHA:
       api_version: v1alpha1
-      modify_request_hooks:
-      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembership
-      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipParent
-      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetEntityKey
-      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipRoles
-      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetExpiryDetail
     BETA:
       api_version: v1beta1
-      modify_request_hooks:
-      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembership
-      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipParent
-      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetEntityKey
-      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipRoles
-      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetExpiryDetail
     GA:
       api_version: v1
-      modify_request_hooks:
-      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembership
-      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipParent
-      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetEntityKey
-      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipRoles
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembership
+    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipParent
+    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetEntityKey
+    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipRoles
+    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetExpiryDetail
 
   arguments:
     params:
@@ -71,7 +60,6 @@
         The organization ID of the group the new membership is being added to.
 
     - arg_name: expiration
-      release_tracks: [ALPHA, BETA]
       type: str
       help_text: |
         Optional time of expiration for the membership. This is given as a duration from now, for

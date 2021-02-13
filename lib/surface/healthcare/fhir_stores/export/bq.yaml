@@ -71,6 +71,25 @@
         is 2, the CodeSystem table will have a column called concept.concept but not
         concept.concept.concept. If not specified or set to 0, the server will use the
         default value 2.
+    - arg_name: write-disposition
+      api_field: exportResourcesRequest.bigqueryDestination.writeDisposition
+      help_text: |
+        Determines whether existing tables in the destination dataset are overwritten or appended
+        to.
+      type: str
+      choices:
+      - arg_value: write-empty
+        enum_value: WRITE_EMPTY
+        help_text: |
+          Only export data if the destination tables are empty.
+      - arg_value: write-truncate
+        enum_value: WRITE_TRUNCATE
+        help_text: |
+          Erase all existing data in the tables before writing the instances.
+      - arg_value: write-append
+        enum_value: WRITE_APPEND
+        help_text: |
+          Append data to the existing tables.
 
   async:
     collection: healthcare.projects.locations.datasets.operations

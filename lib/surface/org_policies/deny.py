@@ -22,8 +22,6 @@ import collections
 import copy
 import itertools
 
-from googlecloudsdk.api_lib.orgpolicy import service
-from googlecloudsdk.api_lib.orgpolicy import utils as org_policy_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.org_policies import arguments
 from googlecloudsdk.command_lib.org_policies import exceptions
@@ -150,7 +148,7 @@ class Deny(interfaces.OrgPolicyGetAndUpdateCommand):
       return new_policy
 
     if not new_policy.spec.rules:
-      rule_to_update, new_policy = org_policy_utils.CreateRuleOnPolicy(
+      rule_to_update, new_policy = utils.CreateRuleOnPolicy(
           new_policy, self.ReleaseTrack())
     else:
       for rule in new_policy.spec.rules:
@@ -163,7 +161,7 @@ class Deny(interfaces.OrgPolicyGetAndUpdateCommand):
       rule_to_update.denyAll = None
 
     if rule_to_update.values is None:
-      rule_to_update.values = self.org_policy_messages.GoogleCloudOrgpolicyV2alpha1PolicySpecPolicyRuleStringValues(
+      rule_to_update.values = self.org_policy_api.BuildPolicySpecPolicyRuleStringValues(
       )
     rule_to_update.values.deniedValues += list(missing_values)
 
@@ -179,8 +177,7 @@ class Deny(interfaces.OrgPolicyGetAndUpdateCommand):
     Returns:
       The updated policy.
     """
-    messages = service.OrgPolicyMessages(self.ReleaseTrack())
-    new_rule = messages.GoogleCloudOrgpolicyV2alpha1PolicySpecPolicyRule()
+    new_rule = self.org_policy_api.BuildPolicySpecPolicyRule()
     new_rule.denyAll = True
 
     new_policy = copy.deepcopy(policy)

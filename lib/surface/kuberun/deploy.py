@@ -32,7 +32,7 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Deploy(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
+class Deploy(kuberun_command.KubeRunCommand, base.CreateCommand):
   """Deploy KubeRun application."""
 
   detailed_help = _DETAILED_HELP
@@ -40,3 +40,8 @@ class Deploy(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
 
   def Command(self):
     return ['deploy']
+
+  @property
+  def should_stream_stdout(self):
+    # TODO(b/170872460): Delete once this command stops streaming stdout.
+    return True

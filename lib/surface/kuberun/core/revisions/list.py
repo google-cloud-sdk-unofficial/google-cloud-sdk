@@ -53,7 +53,7 @@ _ALIAS_KEY_ACTIVE = 'active'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
+class List(kuberun_command.KubeRunCommand, base.ListCommand):
   """Lists revisions in a KubeRun cluster."""
 
   detailed_help = _DETAILED_HELP
@@ -68,9 +68,9 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
     super(List, cls).Args(parser)
     base.ListCommand._Flags(parser)
     base.URI_FLAG.RemoveFromParser(parser)
-    pretty_print.AddPrettyPrintTransform(parser)
+    pretty_print.AddReadyColumnTransform(parser)
     columns = [
-        pretty_print.READY_COLUMN_DICT,
+        pretty_print.GetReadyColumn(),
         'metadata.name:label=REVISION',
         'aliases.%s.yesno(yes="yes", no="")' % _ALIAS_KEY_ACTIVE,
         'metadata.labels["%s"]:label=SERVICE:sort=1' % revision.SERVICE_LABEL,
@@ -86,33 +86,30 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
 
   def FormatOutput(self, out, args):
     if out:
-      return _AddAliases(json.loads(out))
+      return [_AddAliases(x) for x in json.loads(out)]
     else:
       raise exceptions.Error('Cannot list revisions')
 
 
-def _AddAliases(revision_list):
+def _AddAliases(rev):
   """Add aliases to embedded fields displayed in the output.
 
   Adds aliases to embedded fields that would require a more complex expression
   to be shown in the output table.
 
   Args:
-   revision_list: list of revisions unmarshalled from json
+   rev: revision unmarshalled from json
 
   Returns:
-   list of dictionaries with aliases representing the services from the input
+   dictionary with aliases representing the service from the input
   """
-  res = []
-  for revision_dict in revision_list:
-    d = structuredout.DictWithAliases(**revision_dict)
-    ready_cond = k8s_object_printer.ReadyCondition(revision_dict)
-    if ready_cond is not None:
-      d.AddAlias(
-          pretty_print.READY_COLUMN_ALIAS_KEY,
-          ready_cond.get(kubernetes_consts.FIELD_STATUS,
-                         kubernetes_consts.VAL_UNKNOWN))
-      d.AddAlias(_ALIAS_KEY_ACTIVE,
-                 revision_printer.Active(revision_dict))
-    res.append(d)
-  return res
+  d = structuredout.DictWithAliases(**rev)
+  ready_cond = k8s_object_printer.ReadyConditionFromDict(rev)
+  if ready_cond is not None:
+    d.AddAlias(
+        pretty_print.READY_COLUMN_ALIAS_KEY,
+        ready_cond.get(kubernetes_consts.FIELD_STATUS,
+                       kubernetes_consts.VAL_UNKNOWN))
+    d.AddAlias(_ALIAS_KEY_ACTIVE,
+               revision_printer.Active(rev))
+  return d

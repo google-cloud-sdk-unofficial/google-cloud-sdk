@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.security_policies import flags
 from googlecloudsdk.command_lib.compute.security_policies import security_policies_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine security policy.
 
@@ -50,6 +50,103 @@ class Update(base.UpdateCommand):
         help=('An optional, textual description for the security policy.'))
 
     parser.add_argument(
+        '--enable-layer7-ddos-defense',
+        action='store_true',
+        default=None,
+        help=('Whether to enable Cloud Armor Layer 7 DDoS Defense Adaptive '
+              'Protection.'))
+
+    parser.add_argument(
+        '--layer7-ddos-defense-rule-visibility',
+        choices=['STANDARD', 'PREMIUM'],
+        type=lambda x: x.upper(),
+        metavar='VISIBILITY_TYPE',
+        help=('The visibility type indicates whether the rules are opaque or '
+              'transparent.'))
+
+  def _ValidateArgs(self, args):
+    """Validates that at least one field to update is specified.
+
+    Args:
+      args: The arguments given to the update-backend command.
+    """
+
+    if not (args.IsSpecified('description') or
+            args.IsSpecified('enable_layer7_ddos_defense') or
+            args.IsSpecified('layer7_ddos_defense_rule_visibility')):
+      parameter_names = [
+          '--description', '--enable-layer7-ddos-defense',
+          '--layer7-ddos-defense-rule-visibility'
+      ]
+      raise exceptions.MinimumArgumentException(
+          parameter_names, 'Please specify at least one property to update')
+
+  def Run(self, args):
+    self._ValidateArgs(args)
+
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)
+    security_policy = client.SecurityPolicy(
+        ref=ref, compute_client=holder.client)
+    existing_security_policy = security_policy.Describe()[0]
+    description = existing_security_policy.description
+    adaptive_protection_config = (
+        existing_security_policy.adaptiveProtectionConfig)
+    if args.description is not None:
+      description = args.description
+    if (args.IsSpecified('enable_layer7_ddos_defense') or
+        args.IsSpecified('layer7_ddos_defense_rule_visibility')):
+      adaptive_protection_config = (
+          security_policies_utils.CreateAdaptiveProtectionConfig(
+              holder.client, args, adaptive_protection_config))
+
+    updated_security_policy = holder.client.messages.SecurityPolicy(
+        description=description,
+        adaptiveProtectionConfig=adaptive_protection_config,
+        fingerprint=existing_security_policy.fingerprint)
+
+    return security_policy.Patch(security_policy=updated_security_policy)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a Compute Engine security policy.
+
+  *{command}* is used to update security policies.
+
+  ## EXAMPLES
+
+  To update the description run this:
+
+    $ {command} SECURITY_POLICY --description='new description'
+  """
+
+  SECURITY_POLICY_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.SECURITY_POLICY_ARG = flags.SecurityPolicyArgument()
+    cls.SECURITY_POLICY_ARG.AddArgument(parser, operation_type='update')
+    parser.add_argument(
+        '--description',
+        help=('An optional, textual description for the security policy.'))
+
+    parser.add_argument(
+        '--enable-layer7-ddos-defense',
+        action='store_true',
+        default=None,
+        help=('Whether to enable Cloud Armor Layer 7 DDoS Defense Adaptive '
+              'Protection.'))
+
+    parser.add_argument(
+        '--layer7-ddos-defense-rule-visibility',
+        choices=['STANDARD', 'PREMIUM'],
+        type=lambda x: x.upper(),
+        metavar='VISIBILITY_TYPE',
+        help=('The visibility type indicates whether the rules are opaque or '
+              'transparent.'))
+
+    parser.add_argument(
         '--enable-ml',
         action='store_true',
         default=None,
@@ -62,8 +159,13 @@ class Update(base.UpdateCommand):
       args: The arguments given to the update-backend command.
     """
 
-    if not (args.IsSpecified('description') or args.IsSpecified('enable_ml')):
-      parameter_names = ['--description', '--enable_ml']
+    if not (args.IsSpecified('description') or args.IsSpecified('enable_ml') or
+            args.IsSpecified('enable_layer7_ddos_defense') or
+            args.IsSpecified('layer7_ddos_defense_rule_visibility')):
+      parameter_names = [
+          '--description', '--enable-ml', '--enable-layer7-ddos-defense',
+          '--layer7-ddos-defense-rule-visibility'
+      ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update')
 
@@ -71,21 +173,29 @@ class Update(base.UpdateCommand):
     self._ValidateArgs(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
-        args, holder.resources)
+    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)
     security_policy = client.SecurityPolicy(
         ref=ref, compute_client=holder.client)
     existing_security_policy = security_policy.Describe()[0]
     description = existing_security_policy.description
     cloud_armor_config = existing_security_policy.cloudArmorConfig
+    adaptive_protection_config = (
+        existing_security_policy.adaptiveProtectionConfig)
     if args.description is not None:
       description = args.description
     if args.enable_ml is not None:
       cloud_armor_config = security_policies_utils.CreateCloudArmorConfig(
           holder.client, args)
+    if (args.IsSpecified('enable_layer7_ddos_defense') or
+        args.IsSpecified('layer7_ddos_defense_rule_visibility')):
+      adaptive_protection_config = (
+          security_policies_utils.CreateAdaptiveProtectionConfig(
+              holder.client, args, adaptive_protection_config))
+
     updated_security_policy = holder.client.messages.SecurityPolicy(
         description=description,
         cloudArmorConfig=cloud_armor_config,
+        adaptiveProtectionConfig=adaptive_protection_config,
         fingerprint=existing_security_policy.fingerprint)
 
     return security_policy.Patch(security_policy=updated_security_policy)

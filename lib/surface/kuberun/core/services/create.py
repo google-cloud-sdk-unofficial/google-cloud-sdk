@@ -30,14 +30,13 @@ _DETAILED_HELP = {
         """
         To create a new KubeRun service, run:
 
-            $ {command} <service-name> --image=<image-url> [optional flags]
+            $ {command} SERVICE --image=IMAGE [optional flags]
         """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(kuberun_command.KubeRunStreamingCommandWithResult,
-             base.CreateCommand):
+class Create(kuberun_command.KubeRunCommand, base.CreateCommand):
   """Creates a new KubeRun service."""
 
   detailed_help = _DETAILED_HELP

@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import hp_tuning_jobs_util
+from googlecloudsdk.command_lib.ai import validation
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
 
@@ -50,7 +51,8 @@ class Create(base.CreateCommand):
           display_name=args.display_name,
           max_trial_count=args.max_trial_count,
           parallel_trial_count=args.parallel_trial_count,
-          algorithm=algorithm)
+          algorithm=algorithm,
+          kms_key_name=validation.GetAndValidateKmsKey(args))
       log.status.Print(
           constants.HPTUNING_JOB_CREATION_DISPLAY_MESSAGE.format(
               id=hp_tuning_jobs_util.ParseJobName(response.name),

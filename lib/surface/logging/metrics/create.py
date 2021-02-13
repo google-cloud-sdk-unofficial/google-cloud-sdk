@@ -25,63 +25,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class CreateGA(base.CreateCommand):
-  """Creates a logs-based metric."""
-
-  detailed_help = {
-      'DESCRIPTION': """\
-          Creates a logs-based metric to count the number of log entries that
-          match a filter expression.
-          When creating a metric, the filter expression must not be empty.
-      """,
-      'EXAMPLES': """\
-          To create a metric that counts the number of log entries with a
-          severity level higher than WARNING, run:
-
-            $ {command} high_severity_count --description="Number of high severity log entries" --log-filter="severity > WARNING"
-
-          Detailed information about filters can be found at:
-          [](https://cloud.google.com/logging/docs/view/advanced_filters)
-      """,
-  }
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    parser.add_argument('metric_name', help='The name of the new metric.')
-    parser.add_argument(
-        '--description', required=True,
-        help='The metric\'s description.')
-    parser.add_argument(
-        '--log-filter', required=True,
-        help='The metric\'s filter expression. '
-             'The filter must be for a V2 LogEntry.')
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The created metric.
-    """
-    messages = util.GetMessages()
-    new_metric = messages.LogMetric(name=args.metric_name,
-                                    description=args.description,
-                                    filter=args.log_filter)
-
-    result = util.GetClient().projects_metrics.Create(
-        messages.LoggingProjectsMetricsCreateRequest(
-            parent=util.GetCurrentProjectParent(), logMetric=new_metric))
-    log.CreatedResource(args.metric_name)
-    return result
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CreateBeta(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
+class Create(base.CreateCommand):
   """Creates a logs-based metric."""
 
   detailed_help = {

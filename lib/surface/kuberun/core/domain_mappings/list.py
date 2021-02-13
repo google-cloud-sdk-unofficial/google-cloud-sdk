@@ -47,7 +47,7 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
+class List(kuberun_command.KubeRunCommand, base.ListCommand):
   """Lists domain mappings in a KubeRun cluster."""
 
   detailed_help = _DETAILED_HELP
@@ -58,12 +58,12 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
     super(List, cls).Args(parser)
     base.ListCommand._Flags(parser)
     base.URI_FLAG.RemoveFromParser(parser)
-    pretty_print.AddPrettyPrintTransform(parser)
+    pretty_print.AddReadyColumnTransform(parser)
     parser.display_info.AddFormat("""table(
         {ready_column},
         metadata.name:label=DOMAIN,
         spec.routeName:label=SERVICE)""".format(
-            ready_column=pretty_print.READY_COLUMN_DICT))
+            ready_column=pretty_print.GetReadyColumn()))
 
   def Command(self):
     return ['core', 'domain-mappings', 'list']
@@ -88,7 +88,7 @@ def _AddAliases(mapping):
    dictionary with aliases representing the domain mapping from the input
   """
   d = structuredout.DictWithAliases(**mapping)
-  ready_cond = k8s_object_printer.ReadyCondition(mapping)
+  ready_cond = k8s_object_printer.ReadyConditionFromDict(mapping)
   if ready_cond is not None:
     d.AddAlias(
         pretty_print.READY_COLUMN_ALIAS_KEY,

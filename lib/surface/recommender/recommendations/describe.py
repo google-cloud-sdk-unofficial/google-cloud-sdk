@@ -23,7 +23,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.recommender import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Describe(base.Command):
   r"""Describe a recommendation for a Cloud project.
 
@@ -68,10 +69,12 @@ class Describe(base.Command):
     Returns:
       The result recommendations to describe
     """
-    recommender_service = api_utils.GetServiceFromArgs(
-        args, is_insight_api=False)
-    parent_ref = flags.GetParentFromFlags(
-        args, is_list_api=False, is_insight_api=False)
-    request = api_utils.GetDescribeRequestFromArgs(
-        args, parent_ref, is_insight_api=False)
+    api_version = api_utils.GetApiVersion(self.ReleaseTrack())
+    is_insight_api = False
+    is_list_api = False
+    recommender_service = api_utils.GetServiceFromArgs(args, is_insight_api,
+                                                       api_version)
+    parent_ref = flags.GetParentFromFlags(args, is_list_api, is_insight_api)
+    request = api_utils.GetDescribeRequestFromArgs(args, parent_ref,
+                                                   is_insight_api, api_version)
     return recommender_service.Get(request)

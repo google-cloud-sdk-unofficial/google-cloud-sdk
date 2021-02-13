@@ -55,7 +55,6 @@ class Wait(base.Command):
     """
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
-    sql_messages = client.sql_messages
 
     for op in args.operation:
       operation_ref = client.resource_parser.Parse(
@@ -63,11 +62,8 @@ class Wait(base.Command):
           collection='sql.operations',
           params={'project': properties.VALUES.core.project.GetOrFail})
 
-      operations.OperationsV1Beta4.WaitForOperation(
+      yield operations.OperationsV1Beta4.WaitForOperation(
           sql_client,
           operation_ref,
           'Waiting for [{operation}]'.format(operation=operation_ref),
           max_wait_seconds=args.timeout)
-      yield sql_client.operations.Get(
-          sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project, operation=operation_ref.operation))

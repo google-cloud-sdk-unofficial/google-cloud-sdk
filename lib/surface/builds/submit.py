@@ -121,6 +121,8 @@ class Submit(base.CreateCommand):
       """)
   }
 
+  _support_gcl = False
+
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
@@ -154,7 +156,11 @@ class Submit(base.CreateCommand):
 
     # Start the build.
     build, _ = submit_util.Build(
-        messages, args.async_, build_config, build_region=build_region)
+        messages,
+        args.async_,
+        build_config,
+        build_region=build_region,
+        support_gcl=self._support_gcl)
     return build
 
 
@@ -169,6 +175,8 @@ class SubmitBeta(Submit):
   You can also run a build locally using the
   separate component: `gcloud components install cloud-build-local`.
   """
+
+  _support_gcl = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -219,5 +227,9 @@ class SubmitAlpha(SubmitBeta):
 
     # Start the build.
     build, _ = submit_util.Build(
-        messages, args.async_, build_config, build_region=build_region)
+        messages,
+        args.async_,
+        build_config,
+        build_region=build_region,
+        support_gcl=True)
     return build

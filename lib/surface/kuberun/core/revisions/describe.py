@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 import json
 
-from googlecloudsdk.api_lib.kuberun import revision
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import flags
 from googlecloudsdk.command_lib.kuberun import kuberun_command
@@ -33,13 +32,13 @@ _DETAILED_HELP = {
         """
         To show all the data about a KubeRun revision, run
 
-            $ {command}
+            $ {command} REVISION
         """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(kuberun_command.KubeRunCommandWithOutput, base.DescribeCommand):
+class Describe(kuberun_command.KubeRunCommand, base.DescribeCommand):
   """Describes a KubeRun revision."""
 
   detailed_help = _DETAILED_HELP
@@ -64,6 +63,6 @@ class Describe(kuberun_command.KubeRunCommandWithOutput, base.DescribeCommand):
 
   def FormatOutput(self, out, args):
     if out:
-      return revision.Revision(json.loads(out))
+      return json.loads(out)
     else:
       raise exceptions.Error('Cannot find revision [{}]'.format(args.revision))

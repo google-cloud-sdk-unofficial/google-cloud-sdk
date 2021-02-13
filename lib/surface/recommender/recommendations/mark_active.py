@@ -73,10 +73,13 @@ class MarkActive(base.Command):
     Returns:
       The result recommendations after being marked as active
     """
-    recommender_service = api_utils.GetServiceFromArgs(
-        args, is_insight_api=False)
-    parent_ref = flags.GetParentFromFlags(
-        args, is_list_api=False, is_insight_api=False)
-    request = api_utils.GetMarkActiveRequestFromArgs(
-        args, parent_ref, is_insight_api=False)
+    api_version = api_utils.GetApiVersion(self.ReleaseTrack())
+    is_insight_api = False
+    is_list_api = False
+    recommender_service = api_utils.GetServiceFromArgs(args, is_insight_api,
+                                                       api_version)
+    parent_ref = flags.GetParentFromFlags(args, is_list_api, is_insight_api)
+    request = api_utils.GetMarkActiveRequestFromArgs(args, parent_ref,
+                                                     is_insight_api,
+                                                     api_version)
     return recommender_service.MarkActive(request)

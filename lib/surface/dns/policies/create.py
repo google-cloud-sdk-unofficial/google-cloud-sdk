@@ -83,9 +83,8 @@ class CreateGA(base.UpdateCommand):
     if args.IsSpecified('networks'):
       if args.networks == ['']:
         args.networks = []
-      policy.networks = command_util.ParseNetworks(args.networks,
-                                                   policy_ref.project,
-                                                   api_version)
+      policy.networks = command_util.ParsePolicyNetworks(
+          args.networks, policy_ref.project, api_version)
     else:
       raise exceptions.RequiredArgumentException('--networks', ("""
            A list of networks must be
@@ -171,9 +170,8 @@ class CreateBeta(CreateGA):
     if args.IsSpecified('networks'):
       if args.networks == ['']:
         args.networks = []
-      policy.networks = command_util.ParseNetworks(args.networks,
-                                                   policy_ref.project,
-                                                   api_version)
+      policy.networks = command_util.ParsePolicyNetworks(
+          args.networks, policy_ref.project, api_version)
     else:
       raise exceptions.RequiredArgumentException('--networks', ("""
            A list of networks must be
@@ -188,7 +186,7 @@ class CreateBeta(CreateGA):
         args.alternative_name_servers = []
       if args.private_alternative_name_servers == ['']:
         args.private_alternative_name_servers = []
-      policy.alternativeNameServerConfig = command_util.ParseAltNameServers(
+      policy.alternativeNameServerConfig = command_util.BetaParseAltNameServers(
           version=api_version,
           server_list=args.alternative_name_servers,
           private_server_list=args.private_alternative_name_servers)

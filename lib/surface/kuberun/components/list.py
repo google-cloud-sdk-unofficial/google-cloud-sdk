@@ -32,7 +32,7 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
+class List(kuberun_command.KubeRunCommand, base.ListCommand):
   """Lists all components in the application."""
 
   detailed_help = _DETAILED_HELP

@@ -84,9 +84,8 @@ class UpdateGA(base.UpdateCommand):
     if args.IsSpecified('networks'):
       if args.networks == ['']:
         args.networks = []
-      to_update.networks = command_util.ParseNetworks(args.networks,
-                                                      policy_ref.project,
-                                                      api_version)
+      to_update.networks = command_util.ParsePolicyNetworks(
+          args.networks, policy_ref.project, api_version)
 
     if args.IsSpecified('alternative_name_servers') or args.IsSpecified(
         'private_alternative_name_servers'):
@@ -160,9 +159,8 @@ class UpdateBeta(UpdateGA):
     if args.IsSpecified('networks'):
       if args.networks == ['']:
         args.networks = []
-      to_update.networks = command_util.ParseNetworks(args.networks,
-                                                      policy_ref.project,
-                                                      api_version)
+      to_update.networks = command_util.ParsePolicyNetworks(
+          args.networks, policy_ref.project, api_version)
 
     if args.IsSpecified('alternative_name_servers') or args.IsSpecified(
         'private_alternative_name_servers'):

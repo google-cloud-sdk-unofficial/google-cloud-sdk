@@ -22,19 +22,17 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import flags
 from googlecloudsdk.command_lib.kuberun import kuberun_command
 from googlecloudsdk.command_lib.kuberun import pretty_print
-from googlecloudsdk.core import exceptions
-from googlecloudsdk.core import log
 
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To delete a domain mapping in the default namespace, run
+        To delete a domain mapping in the default namespace, run:
 
-            $ {command} www.example.com
+            $ {command} DOMAIN
 
-        To delete a domain mapping in a non-default namespace, run
+        To delete a domain mapping in a non-default namespace, run:
 
-            $ {command} www.example.com --namespace=my-namespace
+            $ {command} DOMAIN --namespace=NAMESPACE
         """,
 }
 
@@ -59,12 +57,7 @@ class Delete(kuberun_command.KubeRunCommand, base.DeleteCommand):
     return ['core', 'domain-mappings', 'delete']
 
   def OperationResponseHandler(self, response, args):
-    if response.failed:
-      raise exceptions.Error(response.stderr)
-
-    if response.stderr:
-      log.status.Print(response.stderr)
-
+    super(Delete, self).OperationResponseHandler(response, args)
     msg = """Mappings to [{domain}] now have been deleted.""".format(
         domain=args.domain)
     pretty_print.Success(msg)

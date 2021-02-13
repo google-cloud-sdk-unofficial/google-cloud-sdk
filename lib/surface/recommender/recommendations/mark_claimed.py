@@ -24,7 +24,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.recommender import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class MarkClaimed(base.Command):
   r"""Mark a recommendation's state as CLAIMED.
 
@@ -84,9 +85,12 @@ class MarkClaimed(base.Command):
     Returns:
       The recommendations after being marked as claimed.
     """
-    recommender_service = api_utils.GetServiceFromArgs(
-        args, is_insight_api=False)
-    parent_ref = flags.GetParentFromFlags(
-        args, is_list_api=False, is_insight_api=False)
-    request = api_utils.GetMarkClaimedRequestFromArgs(args, parent_ref)
+    api_version = api_utils.GetApiVersion(self.ReleaseTrack())
+    is_insight_api = False
+    is_list_api = False
+    recommender_service = api_utils.GetServiceFromArgs(args, is_insight_api,
+                                                       api_version)
+    parent_ref = flags.GetParentFromFlags(args, is_list_api, is_insight_api)
+    request = api_utils.GetMarkClaimedRequestFromArgs(args, parent_ref,
+                                                      api_version)
     return recommender_service.MarkClaimed(request)

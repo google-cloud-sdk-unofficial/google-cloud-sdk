@@ -64,19 +64,10 @@ class Describe(base.DescribeCommand):
     Returns:
        The retrieved policy.
     """
-    policy_service = org_policy_service.PolicyService(self.ReleaseTrack())
-    org_policy_messages = org_policy_service.OrgPolicyMessages(
-        self.ReleaseTrack())
-
+    org_policy_api = org_policy_service.OrgPolicyApi(self.ReleaseTrack())
     policy_name = utils.GetPolicyNameFromArgs(args)
 
     if args.effective:
-      get_request = org_policy_messages.OrgpolicyPoliciesGetEffectivePolicyRequest(
-          name=policy_name)
-      return policy_service.GetEffectivePolicy(get_request)
+      return org_policy_api.GetEffectivePolicy(policy_name)
 
-    get_request = org_policy_messages.OrgpolicyPoliciesGetRequest(
-        name=policy_name)
-    policy = policy_service.Get(get_request)
-
-    return policy
+    return org_policy_api.GetPolicy(policy_name)

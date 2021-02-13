@@ -28,15 +28,15 @@ from googlecloudsdk.core import exceptions
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To map service `myservice` in the default namespace to domain `example.com`, run
+        To map a service in the default namespace to a domain, run:
 
-            $ {command} --service=myservice --domain=example.com
+            $ {command} --service=SERVICE --domain=DOMAIN
         """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(kuberun_command.KubeRunCommandWithOutput):
+class Create(kuberun_command.KubeRunCommand):
   """Creates a domain mapping."""
 
   @classmethod

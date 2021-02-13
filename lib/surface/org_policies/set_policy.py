@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from apitools.base.py import exceptions as api_exceptions
 from argcomplete import completers
 from googlecloudsdk.api_lib.orgpolicy import service as org_policy_service
-from googlecloudsdk.api_lib.orgpolicy import utils as org_policy_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.org_policies import exceptions
 from googlecloudsdk.command_lib.org_policies import utils
@@ -67,35 +66,23 @@ class SetPolicy(base.Command):
     Returns:
       The created or updated policy.
     """
-    policy_service = org_policy_service.PolicyService(self.ReleaseTrack())
-    org_policy_messages = org_policy_service.OrgPolicyMessages(
-        self.ReleaseTrack())
-
+    org_policy_api = org_policy_service.OrgPolicyApi(self.ReleaseTrack())
     input_policy = utils.GetMessageFromFile(args.policy_file,
                                             self.ReleaseTrack())
-
     if not input_policy.name:
       raise exceptions.InvalidInputError(
           'Name field not present in the organization policy.')
 
-    get_request = org_policy_messages.OrgpolicyPoliciesGetRequest(
-        name=input_policy.name)
     try:
-      policy = policy_service.Get(get_request)
+      policy = org_policy_api.GetPolicy(input_policy.name)
     except api_exceptions.HttpNotFoundError:
-      create_request = org_policy_utils.CreatePolicyCreateRequest(
-          self.ReleaseTrack(), new_policy=input_policy)
-      create_response = policy_service.Create(create_request)
+      create_response = org_policy_api.CreatePolicy(input_policy)
       log.CreatedResource(input_policy.name, 'policy')
       return create_response
 
     if policy == input_policy:
       return policy
 
-    update_request = org_policy_utils.CreatePolicyPatchRequest(
-        self.ReleaseTrack(),
-        policy_name=input_policy.name,
-        updated_policy=input_policy)
-    update_response = policy_service.Patch(update_request)
+    update_response = org_policy_api.UpdatePolicy(input_policy)
     log.UpdatedResource(input_policy.name, 'policy')
     return update_response

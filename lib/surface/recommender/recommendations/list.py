@@ -32,7 +32,8 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class List(base.ListCommand):
   r"""List operations for a recommendation.
 
@@ -79,12 +80,14 @@ class List(base.ListCommand):
     Returns:
       The list of recommendations for this project.
     """
-    recommender_service = api_utils.GetServiceFromArgs(
-        args, is_insight_api=False)
-    parent_ref = flags.GetParentFromFlags(
-        args, is_list_api=True, is_insight_api=False)
-    request = api_utils.GetListRequestFromArgs(
-        args, parent_ref, is_insight_api=False)
+    api_version = api_utils.GetApiVersion(self.ReleaseTrack())
+    is_insight_api = False
+    is_list_api = True
+    recommender_service = api_utils.GetServiceFromArgs(args, is_insight_api,
+                                                       api_version)
+    parent_ref = flags.GetParentFromFlags(args, is_list_api, is_insight_api)
+    request = api_utils.GetListRequestFromArgs(args, parent_ref, is_insight_api,
+                                               api_version)
     return list_pager.YieldFromList(
         recommender_service,
         request,

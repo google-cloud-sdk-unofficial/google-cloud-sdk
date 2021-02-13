@@ -62,19 +62,11 @@ class List(base.ListCommand):
         'table(constraint, listPolicy, booleanPolicy, etag)')
 
   def Run(self, args):
-    policy_service = org_policy_service.PolicyService(self.ReleaseTrack())
-    constraint_service = org_policy_service.ConstraintService(
-        self.ReleaseTrack())
-    org_policy_messages = org_policy_service.OrgPolicyMessages(
-        self.ReleaseTrack())
+    org_policy_api = org_policy_service.OrgPolicyApi(self.ReleaseTrack())
+    parent = utils.GetResourceFromArgs(args)
     output = []
 
-    parent = utils.GetResourceFromArgs(args)
-
-    list_policies_request = org_policy_messages.OrgpolicyPoliciesListRequest(
-        parent=parent)
-    list_policies_response = policy_service.List(list_policies_request)
-    policies = list_policies_response.policies
+    policies = org_policy_api.ListPolicies(parent).policies
     for policy in policies:
       spec = policy.spec
       list_policy_set = HasListPolicy(spec)
@@ -86,11 +78,7 @@ class List(base.ListCommand):
           'etag': spec.etag
       })
     if args.show_unset:
-      list_constraints_request = org_policy_messages.OrgpolicyConstraintsListRequest(
-          parent=parent)
-      list_constraints_response = constraint_service.List(
-          list_constraints_request)
-      constraints = list_constraints_response.constraints
+      constraints = org_policy_api.ListConstraints(parent).constraints
 
       existing_policy_names = {row['constraint'] for row in output}
       for constraint in constraints:

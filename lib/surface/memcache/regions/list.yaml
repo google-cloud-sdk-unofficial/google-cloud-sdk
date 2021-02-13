@@ -1,4 +1,5 @@
-- help_text:
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
     brief: |
       List Memorystore Memcached regions.
     description: |
@@ -15,6 +16,12 @@
         The project name.
 
   request:
+    ALPHA:
+      api_version: v1beta2
+    BETA:
+      api_version: v1beta2
+    GA:
+      api_version: v1
     collection: memcache.projects.locations
 
   response:

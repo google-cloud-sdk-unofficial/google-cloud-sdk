@@ -161,6 +161,8 @@ class SetAutoscalingBeta(SetAutoscaling):
         patch_args=False)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
+    managed_instance_groups_utils.AddPredictiveAutoscaling(parser,
+                                                           standard=False)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -179,7 +181,8 @@ class SetAutoscalingBeta(SetAutoscaling):
         igm_ref, client)
 
     autoscaler_resource, is_new = self.CreateAutoscalerResource(
-        client, holder.resources, igm_ref, args, scheduled=True)
+        client, holder.resources, igm_ref, args, predictive=True,
+        scheduled=True)
 
     managed_instance_groups_utils.ValidateGeneratedAutoscalerIsValid(
         args, autoscaler_resource)
@@ -210,11 +213,12 @@ class SetAutoscalingAlpha(SetAutoscaling):
     managed_instance_groups_utils.AddAutoscalerArgs(
         parser=parser,
         autoscaling_file_enabled=True,
-        predictive=True,
         scheduled=True,
         patch_args=False)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
+    managed_instance_groups_utils.AddPredictiveAutoscaling(parser,
+                                                           standard=True)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

@@ -32,7 +32,7 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Init(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
+class Init(kuberun_command.KubeRunCommand, base.CreateCommand):
   """Initialize a new Application."""
 
   detailed_help = _DETAILED_HELP
@@ -48,3 +48,8 @@ class Init(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
 
   def BuildKubeRunArgs(self, args):
     return [args.application] + super(Init, self).BuildKubeRunArgs(args)
+
+  @property
+  def should_stream_stdout(self):
+    # TODO(b/170872460): Delete once this command stops streaming stdout.
+    return True

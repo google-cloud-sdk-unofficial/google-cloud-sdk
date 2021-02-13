@@ -57,14 +57,9 @@ class Delete(base.Command):
     Returns:
        If the policy is deleted, then messages.GoogleProtobufEmpty.
     """
-    policy_service = org_policy_service.PolicyService(self.ReleaseTrack())
-    org_policy_messages = org_policy_service.OrgPolicyMessages(
-        self.ReleaseTrack())
-
+    org_policy_api = org_policy_service.OrgPolicyApi(self.ReleaseTrack())
     policy_name = utils.GetPolicyNameFromArgs(args)
 
-    delete_request = org_policy_messages.OrgpolicyPoliciesDeleteRequest(
-        name=policy_name)
-    delete_response = policy_service.Delete(delete_request)
+    delete_response = org_policy_api.DeletePolicy(policy_name)
     log.DeletedResource(policy_name, 'policy')
     return delete_response

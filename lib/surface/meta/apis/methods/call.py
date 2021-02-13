@@ -24,6 +24,15 @@ from googlecloudsdk.command_lib.meta.apis import flags
 from googlecloudsdk.core import properties
 
 
+ENFORCE_COLLECTION_FLAG = base.Argument(
+    '--enforce-collection',
+    action='store_true',
+    default=True,
+    help='Fail unless resource belongs to specified collection. '
+         'This is applicable only if method being called is GET or DELETE '
+         'and resource identifier is URL.')
+
+
 class Call(base.Command):
   """Calls an API method with specific parameters."""
 
@@ -31,6 +40,7 @@ class Call(base.Command):
   def Args(parser):
     flags.API_VERSION_FLAG.AddToParser(parser)
     flags.COLLECTION_FLAG.AddToParser(parser)
+    ENFORCE_COLLECTION_FLAG.AddToParser(parser)
     flags.RAW_FLAG.AddToParser(parser)
     parser.AddDynamicPositional(
         'method',

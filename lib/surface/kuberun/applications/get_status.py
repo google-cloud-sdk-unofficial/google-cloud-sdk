@@ -35,7 +35,7 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class GetStatus(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
+class GetStatus(kuberun_command.KubeRunCommand, base.ListCommand):
   """Get status of the application."""
 
   detailed_help = _DETAILED_HELP

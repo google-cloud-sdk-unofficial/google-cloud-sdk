@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import flags
 from googlecloudsdk.command_lib.kuberun import kuberun_command
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -29,7 +28,7 @@ _DETAILED_HELP = {
     'EXAMPLES': """
         To delete a KubeRun revision, run:
 
-            $ {command} <revision-name>
+            $ {command} REVISION
         """,
 }
 
@@ -52,13 +51,8 @@ class Delete(kuberun_command.KubeRunCommand, base.DeleteCommand):
                         help='The KubeRun revision to delete.')
 
   def OperationResponseHandler(self, response, args):
-    if response.failed:
-      raise exceptions.Error(response.stderr)
-
-    if response.stderr:
-      log.status.Print(response.stderr)
-
-    log.status.Print('Revision is successfully deleted.')
+    super(Delete, self).OperationResponseHandler(response, args)
+    log.DeletedResource(args.revision, 'revision')
     return None
 
   def BuildKubeRunArgs(self, args):

@@ -109,7 +109,7 @@ class Deploy(base.Command):
     flags.AddAllowUnauthenticatedFlag(managed_group)
     flags.AddCloudSQLFlags(managed_group)
     flags.AddRevisionSuffixArg(managed_group)
-    flags.AddVpcConnectorArg(managed_group)
+    flags.AddVpcConnectorArgs(managed_group)
     flags.AddEgressSettingsFlag(managed_group)
 
     # Flags specific to connecting to a cluster

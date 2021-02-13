@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import custom_jobs_util
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
+from googlecloudsdk.command_lib.ai import validation
 from googlecloudsdk.core import log
 
 
@@ -45,7 +46,8 @@ class Create(base.CreateCommand):
         version=constants.BETA_VERSION, region=region):
       response = client.CustomJobsClient(version=constants.BETA_VERSION).Create(
           region_ref.RelativeName(), args.worker_pool_spec, args.config,
-          args.display_name, args.python_package_uris, args.args, args.command)
+          args.display_name, args.python_package_uris, args.args, args.command,
+          validation.GetAndValidateKmsKey(args))
       log.status.Print(
           constants.CUSTOM_JOB_CREATION_DISPLAY_MESSAGE.format(
               id=custom_jobs_util.ParseJobName(response.name),

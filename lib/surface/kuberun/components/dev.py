@@ -44,7 +44,7 @@ def _DeleteFlag():
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Dev(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
+class Dev(kuberun_command.KubeRunCommand, base.CreateCommand):
   """Deploy a Component in development mode."""
 
   detailed_help = _DETAILED_HELP
@@ -60,3 +60,8 @@ class Dev(kuberun_command.KubeRunStreamingCommand, base.CreateCommand):
 
   def BuildKubeRunArgs(self, args):
     return [args.component] + super(Dev, self).BuildKubeRunArgs(args)
+
+  @property
+  def should_stream_stdout(self):
+    # TODO(b/170872460): Delete once this command stops streaming stdout.
+    return True

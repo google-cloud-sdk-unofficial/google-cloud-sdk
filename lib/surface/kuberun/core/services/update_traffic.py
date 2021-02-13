@@ -33,22 +33,22 @@ _DETAILED_HELP = {
         """
         To send all traffic to the latest revision, run:
 
-            $ {command} --to-latest
+            $ {command} SERVICE --to-latest
 
         To split the traffic between revisions, run:
 
-            $ {command} --to-revisions=rev1=30,rev2=70
+            $ {command} SERVICE --to-revisions=rev1=30,rev2=70
 
         To change the traffic allocated for one revision and let the other
-        revisions's traffic auto-resized:
+        revisions's traffic auto-resized, run:
 
-            $ {command} --to-revisions=rev1=30
+            $ {command} SERVICE --to-revisions=rev1=30
         """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateTraffic(kuberun_command.KubeRunStreamingCommandWithResult):
+class UpdateTraffic(kuberun_command.KubeRunCommand):
   """Updates the traffic settings of a KubeRun service."""
 
   detailed_help = _DETAILED_HELP

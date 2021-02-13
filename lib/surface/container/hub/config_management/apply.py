@@ -18,7 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import os
 import textwrap
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.command_lib.container.hub.features import base
 from googlecloudsdk.core import exceptions
@@ -46,6 +48,7 @@ class Apply(base.UpdateCommand):
 
   FEATURE_NAME = 'configmanagement'
   FEATURE_DISPLAY_NAME = 'Config Management'
+  LATEST_VERSION = '1.5.2'
 
   @classmethod
   def Args(cls, parser):
@@ -97,6 +100,7 @@ class Apply(base.UpdateCommand):
     applied_config = msg.ConfigManagementFeatureSpec.MembershipConfigsValue.AdditionalProperty(
         key=membership,
         value=msg.MembershipConfig(
+            version=self._get_backfill_version(membership),
             configSync=config_sync,
             policyController=policy_controller))
     # UpdateFeature uses patch method to update membership_configs map,
@@ -107,6 +111,62 @@ class Apply(base.UpdateCommand):
         'configmanagement_feature_spec.membership_configs',
         configmanagementFeatureSpec=msg.ConfigManagementFeatureSpec(
             membershipConfigs=m_configs))
+
+  def _get_backfill_version(self, mem):
+    """Determines what the version field in FeatureSpec should be set to.
+
+    Args:
+      mem: The membership name whose Spec will be backfilled.
+
+    Returns:
+      version: A string denoting the version field in MembershipConfig
+    Raises: Error, if retrieving FeatureSpec of FeatureState fails
+    """
+    try:
+      project_id = properties.VALUES.core.project.GetOrFail()
+      name = 'projects/{0}/locations/global/features/{1}'.format(
+          project_id, self.FEATURE_NAME)
+      response = base.GetFeature(name)
+    except apitools_exceptions.HttpUnauthorizedError as e:
+      raise exceptions.Error(
+          'You are not authorized to see the status of {} '
+          'Feature from project [{}]. Underlying error: {}'.format(
+              self.FEATURE_DISPLAY_NAME, project_id, e))
+    except apitools_exceptions.HttpNotFoundError as e:
+      raise exceptions.Error(
+          '{} Feature for project [{}] is not enabled'.format(
+              self.FEATURE_DISPLAY_NAME, project_id))
+
+    # First check FeatureSpec to see if an existing version is set
+    mem_config = _parse_membership(response, mem)
+    if mem_config and mem_config.version:
+      return mem_config.version
+
+    # Next, check FeatureState
+    if response.featureState and response.featureState.detailsByMembership:
+      membership_details = response.featureState.detailsByMembership.additionalProperties
+      for m in membership_details:
+        if os.path.basename(m.key) == mem:
+          fs = m.value.configmanagementFeatureState
+          if fs and fs.membershipConfig and fs.membershipConfig.version:
+            # If the version on the cluster is later than the latest supported
+            # version in the Hub API, we do not want to write this version to
+            # spec. If we did, this would result in an error updating spec,
+            # rendering this gcloud command unusable.
+            return fs.membershipConfig.version \
+              if fs.membershipConfig.version <= self.LATEST_VERSION else ''
+
+    # If Spec/State did not contain version, return default (latest version)
+    return self.LATEST_VERSION
+
+
+def _parse_membership(response, mem):
+  if response.configmanagementFeatureSpec is None or response.configmanagementFeatureSpec.membershipConfigs is None:
+    return None
+
+  for details in response.configmanagementFeatureSpec.membershipConfigs.additionalProperties:
+    if details.key == mem:
+      return details.value
 
 
 def _validate_meta(configmanagement):

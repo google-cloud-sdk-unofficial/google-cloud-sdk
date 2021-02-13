@@ -57,7 +57,6 @@
         mutex: true
         params:
         - arg_name: update-roles-params
-          release_tracks: [ALPHA, BETA]
           type: str
           help_text: |
             Resource representing the parameters to update membership roles.

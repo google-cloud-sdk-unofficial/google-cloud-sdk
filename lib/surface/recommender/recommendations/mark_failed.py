@@ -33,7 +33,8 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class MarkFailed(base.Command):
   r"""Mark a recommendation's state as FAILED.
 
@@ -83,9 +84,12 @@ class MarkFailed(base.Command):
     Returns:
       The recommendations after being marked as failed.
     """
-    recommender_service = api_utils.GetServiceFromArgs(
-        args, is_insight_api=False)
-    parent_ref = flags.GetParentFromFlags(
-        args, is_list_api=False, is_insight_api=False)
-    request = api_utils.GetMarkFailedRequestFromArgs(args, parent_ref)
+    api_version = api_utils.GetApiVersion(self.ReleaseTrack())
+    is_insight_api = False
+    is_list_api = False
+    recommender_service = api_utils.GetServiceFromArgs(args, is_insight_api,
+                                                       api_version)
+    parent_ref = flags.GetParentFromFlags(args, is_list_api, is_insight_api)
+    request = api_utils.GetMarkFailedRequestFromArgs(args, parent_ref,
+                                                     api_version)
     return recommender_service.MarkFailed(request)

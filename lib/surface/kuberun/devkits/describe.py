@@ -30,13 +30,13 @@ _DETAILED_HELP = {
         """
         To show all the data about a Development Kit, run:
 
-            $ {command}
+            $ {command} DEVKIT
         """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(kuberun_command.KubeRunCommandWithOutput, base.DescribeCommand):
+class Describe(kuberun_command.KubeRunCommand, base.DescribeCommand):
   """Describe a Development Kit."""
 
   detailed_help = _DETAILED_HELP

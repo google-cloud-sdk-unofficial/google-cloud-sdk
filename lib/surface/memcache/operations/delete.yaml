@@ -1,4 +1,5 @@
-- help_text:
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
     brief: |
       Delete a Memorystore Memcached operation.
     description: |
@@ -19,4 +20,10 @@
         Arguments and flags that specify the Memorystore Memcached operation to delete.
 
   request:
+    ALPHA:
+      api_version: v1beta2
+    BETA:
+      api_version: v1beta2
+    GA:
+      api_version: v1
     collection: memcache.projects.locations.operations

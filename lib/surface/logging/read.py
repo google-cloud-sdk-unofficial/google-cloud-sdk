@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """'logging read' command."""
 
 from __future__ import absolute_import
@@ -25,7 +24,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.logs import read as read_logs_lib
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Read(base.Command):
   """Read log entries."""
 
@@ -34,18 +34,36 @@ class Read(base.Command):
     """Register flags for this command."""
     read_logs_lib.LogFilterPositionalArgs(parser)
     read_logs_lib.LoggingReadArgs(parser)
+    view_group = parser.add_argument_group(
+        help='These arguments are used in conjunction with the parent to '
+        'construct a view resource.')
+    view_group.add_argument(
+        '--location',
+        required=True,
+        metavar='LOCATION',
+        help='Location of the bucket. If this argument is provided then '
+        '`--bucket` and `--view` must also be specified.')
+    view_group.add_argument(
+        '--bucket',
+        required=True,
+        help='Id of the bucket. If this argument is provided then '
+        '`--location` and `--view` must also be specified.')
+    view_group.add_argument(
+        '--view',
+        required=True,
+        help='Id of the view. If this argument is provided then '
+        '`--location` and `--bucket` must also be specified.')
     util.AddParentArgs(parser, 'Read log entries')
 
-  def _Run(self, args, is_alpha_or_beta=False):
+  def _Run(self, args):
     filter_clauses = read_logs_lib.MakeTimestampFilters(args)
     filter_clauses += [args.log_filter] if args.log_filter else []
     parent = util.GetParentFromArgs(args)
-    if is_alpha_or_beta and args.IsSpecified('location'):
+    if args.IsSpecified('location'):
       parent = util.CreateResourceName(
           util.CreateResourceName(
               util.CreateResourceName(parent, 'locations', args.location),
-              'buckets', args.bucket),
-          'views', args.view)
+              'buckets', args.bucket), 'views', args.view)
     return common.FetchLogs(
         read_logs_lib.JoinFilters(filter_clauses, operator='AND') or None,
         order_by=args.order,
@@ -58,19 +76,23 @@ class Read(base.Command):
     Args:
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
+
     Returns:
       The list of log entries.
     """
     return self._Run(args)
 
+
 Read.detailed_help = {
-    'DESCRIPTION': """\
+    'DESCRIPTION':
+        """\
         {command} reads log entries.  Log entries matching *log-filter* are
         returned in order of decreasing timestamps, most-recent entries first.
         If the log entries come from multiple logs, then entries from different
         logs might be intermingled in the results.
     """,
-    'EXAMPLES': """\
+    'EXAMPLES':
+        """\
         To read log entries from Google Compute Engine instances, run:
 
           $ {command} "resource.type=gce_instance"
@@ -93,35 +115,23 @@ Read.detailed_help = {
 
           $ {command} "resource.type=global" --folder=[FOLDER_ID] --limit=1
 
+        To read a log entry from a bucket run:
+
+          $ {command} --bucket=<bucket-id> --limit=1
+
+        To read a log entry from the global _Required logs bucket using the bucket's _Default logs view:
+
+          $ {command} "" --bucket=_Required --location=global --view=_Default --limit=1
+
+        To read a log entry from a logs bucket using the bucket's _AllLogs logs view:
+
+          $ {command} "" --bucket=[BUCKET_ID] --location=[LOCATION] --view=_AllLogs --limit=1
+
+        To read a log entry from a logs bucket using a cutsom logs view that you have created for the bucket:
+
+          $ {command} "" --bucket=[BUCKET_ID] --location=[LOCATION] --view=[VIEW_ID] --limit=1
+
         Detailed information about filters can be found at:
         [](https://cloud.google.com/logging/docs/view/advanced_filters)
     """,
 }
-
-
-# pylint: disable=missing-docstring
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class ReadAlphaBeta(Read):
-  __doc__ = Read.__doc__
-
-  @staticmethod
-  def Args(parser):
-    Read.Args(parser)
-    view_group = parser.add_argument_group(
-        help='These arguments are used in conjunction with the parent to '
-        'construct a view resource.')
-    view_group.add_argument(
-        '--location', required=True, metavar='LOCATION',
-        help='Location of the bucket. If this argument is provided then '
-        '`--bucket` and `--view` must also be specified.')
-    view_group.add_argument(
-        '--bucket', required=True,
-        help='Id of the bucket. If this argument is provided then '
-        '`--location` and `--view` must also be specified.')
-    view_group.add_argument(
-        '--view', required=True,
-        help='Id of the view. If this argument is provided then '
-        '`--location` and `--bucket` must also be specified.')
-
-  def Run(self, args):
-    return self._Run(args, is_alpha_or_beta=True)

@@ -29,19 +29,21 @@ from googlecloudsdk.core import exceptions
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To show all the data about a domain mapping in the default namespace, run:
+        To show all the data about a domain mapping in the default namespace,
+        run:
 
             $ {command} DOMAIN
 
-        To show all the data about a domain mapping in namespace `mynamespace`, run:
+        To show all the data about a domain mapping in namespace ``NAMESPACE'',
+        run:
 
-            $ {command} DOMAIN --namespace=mynamespace
+            $ {command} DOMAIN --namespace=NAMESPACE
         """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(kuberun_command.KubeRunCommandWithOutput, base.DescribeCommand):
+class Describe(kuberun_command.KubeRunCommand, base.DescribeCommand):
   """Describes a domain mapping."""
 
   detailed_help = _DETAILED_HELP

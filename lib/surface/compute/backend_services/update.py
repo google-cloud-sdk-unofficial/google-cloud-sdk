@@ -64,13 +64,14 @@ class UpdateHelper(object):
   HTTP_HEALTH_CHECK_ARG = None
   HTTPS_HEALTH_CHECK_ARG = None
   SECURITY_POLICY_ARG = None
+  EDGE_SECURITY_POLICY_ARG = None
 
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
            support_logging, support_client_only, support_grpc_protocol,
            support_subsetting, support_all_protocol,
            support_flexible_cache_step_one, support_flexible_cache_step_two,
-           support_negative_cache):
+           support_negative_cache, support_edge_policies):
     """Add all arguments for updating a backend service."""
 
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
@@ -90,6 +91,11 @@ class UpdateHelper(object):
         security_policy_flags.SecurityPolicyArgumentForTargetResource(
             resource='backend service'))
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
+    if support_edge_policies:
+      cls.EDGE_SECURITY_POLICY_ARG = (
+          security_policy_flags.EdgeSecurityPolicyArgumentForTargetResource(
+              resource='backend service'))
+      cls.EDGE_SECURITY_POLICY_ARG.AddArgument(parser)
     flags.AddTimeout(parser, default=None)
     flags.AddPortName(parser)
     flags.AddProtocol(
@@ -138,7 +144,8 @@ class UpdateHelper(object):
                support_subsetting,
                support_flexible_cache_step_one=False,
                support_flexible_cache_step_two=False,
-               support_negative_cache=False):
+               support_negative_cache=False,
+               support_edge_policies=False):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
@@ -146,6 +153,7 @@ class UpdateHelper(object):
     self._support_flexible_cache_step_one = support_flexible_cache_step_one
     self._support_flexible_cache_step_two = support_flexible_cache_step_two
     self._support_negative_cache = support_negative_cache
+    self._support_edge_policies = support_edge_policies
 
   def Modify(self, client, resources, args, existing):
     """Modify Backend Service."""
@@ -257,6 +265,8 @@ class UpdateHelper(object):
         args.IsSpecified('port_name'),
         args.IsSpecified('protocol'),
         args.IsSpecified('security_policy'),
+        args.IsSpecified('edge_security_policy')
+        if self._support_edge_policies else False,
         args.IsSpecified('session_affinity'),
         args.IsSpecified('timeout'),
         args.IsSpecified('connection_drain_on_failover')
@@ -343,6 +353,13 @@ class UpdateHelper(object):
     return backend_service.MakeSetSecurityPolicyRequestTuple(
         security_policy=security_policy_ref)
 
+  def _GetSetEdgeSecurityPolicyRequest(self, client, backend_service_ref,
+                                       security_policy_ref):
+    backend_service = backend_service_client.BackendService(
+        backend_service_ref, compute_client=client)
+    return backend_service.MakeSetEdgeSecurityPolicyRequestTuple(
+        security_policy=security_policy_ref)
+
   def GetGetRequest(self, client, backend_service_ref):
     """Create Backend Services get request."""
     if backend_service_ref.Collection() == 'compute.regionBackendServices':
@@ -397,8 +414,10 @@ class UpdateHelper(object):
     # Modify() returns None, then there is no work to be done, so we
     # print the resource and return.
     if objects[0] == new_object:
-      # Only skip push if security_policy is not set.
-      if getattr(args, 'security_policy', None) is None:
+      # Only skip update if security_policy and edge_security_policy are not
+      # set.
+      if (getattr(args, 'security_policy', None) is None and
+          getattr(args, 'edge_security_policy', None) is None):
         log.status.Print(
             'No change requested; skipping update for [{0}].'.format(
                 objects[0].name))
@@ -425,7 +444,24 @@ class UpdateHelper(object):
     else:
       security_policy_result = []
 
-    return backend_service_result + security_policy_result
+    # Empty string is a valid value.
+    if (self._support_edge_policies and
+        getattr(args, 'edge_security_policy', None) is not None):
+      try:
+        security_policy_ref = self.EDGE_SECURITY_POLICY_ARG.ResolveAsResource(
+            args, holder.resources).SelfLink()
+      # If security policy is an empty string we should clear the current policy
+      except resources_exceptions.InvalidResourceException:
+        security_policy_ref = None
+      edge_security_policy_request = self._GetSetEdgeSecurityPolicyRequest(
+          client, backend_service_ref, security_policy_ref)
+      edge_security_policy_result = client.MakeRequests(
+          [edge_security_policy_request])
+    else:
+      edge_security_policy_result = []
+
+    return (backend_service_result + security_policy_result +
+            edge_security_policy_result)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -445,6 +481,7 @@ class UpdateGA(base.UpdateCommand):
   _support_flexible_cache_step_one = True
   _support_flexible_cache_step_two = False
   _support_negative_cache = False
+  _support_edge_policies = False
 
   @classmethod
   def Args(cls, parser):
@@ -460,7 +497,8 @@ class UpdateGA(base.UpdateCommand):
         support_all_protocol=cls._support_all_protocol,
         support_flexible_cache_step_one=cls._support_flexible_cache_step_one,
         support_flexible_cache_step_two=cls._support_flexible_cache_step_two,
-        support_negative_cache=cls._support_negative_cache)
+        support_negative_cache=cls._support_negative_cache,
+        support_edge_policies=cls._support_edge_policies)
 
   def Run(self, args):
     """Issues requests necessary to update the Backend Services."""
@@ -470,7 +508,8 @@ class UpdateGA(base.UpdateCommand):
                         self._support_subsetting,
                         self._support_flexible_cache_step_one,
                         self._support_flexible_cache_step_two,
-                        self._support_negative_cache).Run(args, holder)
+                        self._support_negative_cache,
+                        self._support_edge_policies).Run(args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -487,10 +526,11 @@ class UpdateBeta(UpdateGA):
   _support_flexible_cache_step_one = True
   _support_flexible_cache_step_two = True
   _support_negative_cache = True
+  _support_edge_policies = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateGA):
+class UpdateAlpha(UpdateBeta):
   """Update a backend service.
 
   *{command}* is used to update backend services.
@@ -503,3 +543,4 @@ class UpdateAlpha(UpdateGA):
   _support_flexible_cache_step_one = True
   _support_flexible_cache_step_two = True
   _support_negative_cache = True
+  _support_edge_policies = True

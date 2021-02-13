@@ -102,10 +102,10 @@ class Update(base.Command):
     if support_web_server_machine_type:
       params['web_server_machine_type'] = args.web_server_machine_type
     if self._support_autoscaling:
-      params['autoscaling_maximum_cpu'] = args.autoscaling_maximum_cpu
-      params['autoscaling_minimum_cpu'] = args.autoscaling_minimum_cpu
-      params['autoscaling_maximum_memory'] = args.autoscaling_maximum_memory
-      params['autoscaling_minimum_memory'] = args.autoscaling_minimum_memory
+      params['scheduler_cpu'] = args.scheduler_cpu
+      params['worker_cpu'] = args.worker_cpu
+      params['min_workers'] = args.min_workers
+      params['max_workers'] = args.max_workers
     if self._support_maintenance_window:
       params['maintenance_window_start'] = args.maintenance_window_start
       params['maintenance_window_end'] = args.maintenance_window_end
