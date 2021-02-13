@@ -43,7 +43,7 @@ def _Run(args):
     models_client = models.ModelsClient()
     operations_client = operations.OperationsClient()
     models_util.Update(models_client, operations_client, args)
-    log.UpdatedResource(args.model, kind='ml engine model')
+    log.UpdatedResource(args.model, kind='ai platform model')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)

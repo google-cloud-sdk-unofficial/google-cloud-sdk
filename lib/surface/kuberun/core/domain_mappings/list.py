@@ -12,16 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to list domain mappings of a Knative cluster."""
+"""Command to list domain mappings of a KubeRun cluster."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
 import json
 
-from googlecloudsdk.api_lib.kuberun import domainmapping
+from googlecloudsdk.api_lib.kuberun import structuredout
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import flags
+from googlecloudsdk.command_lib.kuberun import k8s_object_printer
+from googlecloudsdk.command_lib.kuberun import kubernetes_consts
 from googlecloudsdk.command_lib.kuberun import kuberun_command
 from googlecloudsdk.command_lib.kuberun import pretty_print
 from googlecloudsdk.core import exceptions
@@ -29,15 +31,15 @@ from googlecloudsdk.core import exceptions
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To show all domain mappings in the default namespace, run
+        To show all domain mappings in the default namespace, run:
 
             $ {command}
 
-        To show all domain mappings in a namespace, run
+        To show all domain mappings in a specific namespace, run:
 
             $ {command} --namespace=my-namespace
 
-        To show all domain mappings from all namespaces, run
+        To show all domain mappings from all namespaces, run:
 
             $ {command} --all-namespaces
         """,
@@ -46,7 +48,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
-  """Lists domain mappings in a Knative cluster."""
+  """Lists domain mappings in a KubeRun cluster."""
 
   detailed_help = _DETAILED_HELP
   flags = [flags.NamespaceFlagGroup(), flags.ClusterConnectionFlags()]
@@ -56,19 +58,40 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
     super(List, cls).Args(parser)
     base.ListCommand._Flags(parser)
     base.URI_FLAG.RemoveFromParser(parser)
-
+    pretty_print.AddPrettyPrintTransform(parser)
     parser.display_info.AddFormat("""table(
         {ready_column},
-        name:label=DOMAIN,
-        routeName:label=SERVICE)""".format(
-            ready_column=pretty_print.READY_COLUMN))
+        metadata.name:label=DOMAIN,
+        spec.routeName:label=SERVICE)""".format(
+            ready_column=pretty_print.READY_COLUMN_DICT))
 
   def Command(self):
     return ['core', 'domain-mappings', 'list']
 
   def FormatOutput(self, out, args):
     if out:
-      json_object = json.loads(out)
-      return [domainmapping.DomainMapping(x) for x in json_object]
+      return [_AddAliases(x) for x in json.loads(out)]
     else:
       raise exceptions.Error('Cannot list domain mappings')
+
+
+def _AddAliases(mapping):
+  """Add aliases to embedded fields displayed in the output.
+
+  Adds aliases to embedded fields that would require a more complex expression
+  to be shown in the output table.
+
+  Args:
+   mapping: a domain mapping unmarshalled from json
+
+  Returns:
+   dictionary with aliases representing the domain mapping from the input
+  """
+  d = structuredout.DictWithAliases(**mapping)
+  ready_cond = k8s_object_printer.ReadyCondition(mapping)
+  if ready_cond is not None:
+    d.AddAlias(
+        pretty_print.READY_COLUMN_ALIAS_KEY,
+        ready_cond.get(kubernetes_consts.FIELD_STATUS,
+                       kubernetes_consts.VAL_UNKNOWN))
+  return d

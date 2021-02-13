@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Creates a new Knative service."""
+"""Creates a new KubeRun service."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.kuberun import kuberun_command
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To create a new Knative service, run
+        To create a new KubeRun service, run:
 
             $ {command} <service-name> --image=<image-url> [optional flags]
         """,
@@ -38,7 +38,7 @@ _DETAILED_HELP = {
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(kuberun_command.KubeRunStreamingCommandWithResult,
              base.CreateCommand):
-  """Creates a new Knative service."""
+  """Creates a new KubeRun service."""
 
   detailed_help = _DETAILED_HELP
   flags = [

@@ -37,7 +37,7 @@ def HasBooleanPolicy(spec):
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   r"""List the policies set on a resource.
 
@@ -62,9 +62,11 @@ class List(base.ListCommand):
         'table(constraint, listPolicy, booleanPolicy, etag)')
 
   def Run(self, args):
-    policy_service = org_policy_service.PolicyService()
-    constraint_service = org_policy_service.ConstraintService()
-    org_policy_messages = org_policy_service.OrgPolicyMessages()
+    policy_service = org_policy_service.PolicyService(self.ReleaseTrack())
+    constraint_service = org_policy_service.ConstraintService(
+        self.ReleaseTrack())
+    org_policy_messages = org_policy_service.OrgPolicyMessages(
+        self.ReleaseTrack())
     output = []
 
     parent = utils.GetResourceFromArgs(args)

@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Services(base.Group):
-  """Create and manage Knative services on Kubernetes clusters.
+  """Create and manage KubeRun services on Google Kubernetes Engine clusters.
 
-  This set of commands can be used deploy or update a Knative service.
+  This set of commands can be used to deploy or update a KubeRun service.
   """

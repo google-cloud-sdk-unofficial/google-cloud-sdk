@@ -1,4 +1,6 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
+  GA:
+    hidden: true
 
   help_text:
     brief: Show details about a Database Migration Service connection profile.
@@ -10,6 +12,10 @@
 
   request:
     collection: datamigration.projects.locations.connectionProfiles
+    GA:
+      api_version: v1
+    ALPHA:
+      api_version: v1alpha2
 
   arguments:
     resource:

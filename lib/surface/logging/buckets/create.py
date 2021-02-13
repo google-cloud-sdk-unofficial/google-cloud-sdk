@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.logging import util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
 
@@ -71,6 +72,9 @@ class Create(base.CreateCommand):
     if is_alpha and args.IsSpecified('enable_analytics'):
       bucket_data['analyticsEnabled'] = args.enable_analytics
 
+    if is_alpha and args.IsSpecified('restricted_fields'):
+      bucket_data['restrictedFields'] = args.restricted_fields
+
     return util.GetClient().projects_locations_buckets.Create(
         util.GetMessages().LoggingProjectsLocationsBucketsCreateRequest(
             bucketId=args.BUCKET_ID,
@@ -106,6 +110,15 @@ class CreateAlpha(Create):
         default=None,
         help='Whether to opt the bucket into advanced log analytics. This '
         'field may only be set at bucket creation and cannot be changed later.')
+    parser.add_argument(
+        '--restricted-fields',
+        help='Comma separated list of field paths that require permission '
+        'checks in this bucket. The following fields and their children are '
+        'eligible: textPayload, jsonPayload, protoPayload, httpRequest, labels,'
+        ' sourceLocation.',
+        type=arg_parsers.ArgList(),
+        metavar='RESTRICTED_FIELD',
+    )
 
   def Run(self, args):
     return self._Run(args, is_alpha=True)

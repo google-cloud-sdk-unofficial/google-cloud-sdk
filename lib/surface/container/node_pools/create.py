@@ -55,6 +55,12 @@ DETAILED_HELP = {
         """,
 }
 
+WARN_WINDOWS_SAC_SUPPORT_LIFECYCLE = (
+    'Windows SAC node pools must be upgraded regularly to remain operational. '
+    'Please refer to https://cloud.google.com/kubernetes-engine/docs/how-to/'
+    'creating-a-cluster-windows#choose_your_windows_server_node_image for more '
+    'information.')
+
 
 def _Args(parser):
   """Register flags for this command.
@@ -229,6 +235,8 @@ class Create(base.CreateCommand):
             'will have COS_CONTAINERD as the default node image '
             'when no image type is specified.'
         )
+      elif options.image_type.upper() == 'WINDOWS_SAC':
+        log.warning(WARN_WINDOWS_SAC_SUPPORT_LIFECYCLE)
 
       operation_ref = adapter.CreateNodePool(pool_ref, options)
 

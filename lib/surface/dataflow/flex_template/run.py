@@ -148,6 +148,25 @@ class Run(base.Command):
         action=arg_parsers.UpdateAction,
         help=
         ('Parameters to pass to the job.'))
+    streaming_update_args = parser.add_argument_group()
+    streaming_update_args.add_argument(
+        '--transform-name-mappings',
+        metavar='TRANSFORM_NAME_MAPPINGS',
+        type=arg_parsers.ArgDict(),
+        action=arg_parsers.UpdateAction,
+        help=
+        ('Transform name mappings for the streaming update job.'))
+
+    streaming_update_args.add_argument(
+        '--update',
+        help=('Set this to true for streaming update jobs.'),
+        action=arg_parsers.StoreTrueFalseAction,
+        required=True)
+
+    parser.add_argument(
+        '--flexrs-goal',
+        help=('FlexRS goal for the flex template job.'),
+        choices=['COST_OPTIMIZED', 'SPEED_OPTIMIZED'])
 
   def Run(self, args):
     """Runs the command.
@@ -179,6 +198,9 @@ class Run(base.Command):
         properties.VALUES.dataflow.enable_streaming_engine.GetBool(),
         additional_experiments=args.additional_experiments,
         additional_user_labels=args.additional_user_labels,
+        streaming_update=args.update,
+        transform_name_mappings=args.transform_name_mappings,
+        flexrs_goal=args.flexrs_goal,
         parameters=args.parameters)
     return apis.Templates.CreateJobFromFlexTemplate(arguments)
 

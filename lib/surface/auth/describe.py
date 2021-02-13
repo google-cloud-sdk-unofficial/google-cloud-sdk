@@ -22,16 +22,9 @@ from __future__ import unicode_literals
 import json
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import exceptions
+from googlecloudsdk.command_lib.auth import exceptions
+from googlecloudsdk.core.credentials import creds
 from googlecloudsdk.core.credentials import store
-
-
-class Error(exceptions.Error):
-  """Errors raised by this module."""
-
-
-class CredentialsNotFould(Error):
-  """Raised when credentials could not be located."""
 
 
 @base.Hidden
@@ -55,10 +48,13 @@ class Describe(base.DescribeCommand):
         help='Name of the account to describe')
 
   def Run(self, args):
-    credential = store.Load(args.account_name)
+    credential = store.Load(args.account_name, use_google_auth=True)
     if not credential:
-      raise CredentialsNotFould(
+      raise exceptions.CredentialsNotFound(
           'The credentials for account [{0}] do not exist.'
           .format(args.account_name))
 
+    if creds.IsGoogleAuthCredentials(credential):
+      json_cred = creds.SerializeCredsGoogleAuth(credential)
+      return json.loads(json_cred)
     return json.loads(credential.to_json())

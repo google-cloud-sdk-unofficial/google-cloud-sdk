@@ -68,6 +68,14 @@ def _CommonArgs(parser):
           properties.VALUES.dataflow.enable_streaming_engine),
       help='Enabling Streaming Engine for the streaming job.')
 
+  parser.add_argument(
+      '--additional-experiments',
+      metavar='ADDITIONAL_EXPERIMENTS',
+      type=arg_parsers.ArgList(),
+      action=arg_parsers.UpdateAction,
+      help=('Additional experiments to pass to the job. These experiments are '
+            'appended to any experiments already set by the template.'))
+
   # TODO(b/139889563): Mark as required when default region is removed
   parser.add_argument(
       '--region',
@@ -105,7 +113,8 @@ def _CommonRun(args):
       worker_region=args.worker_region,
       worker_zone=args.worker_zone,
       enable_streaming_engine=properties.VALUES.dataflow.enable_streaming_engine
-      .GetBool())
+      .GetBool(),
+      additional_experiments=args.additional_experiments)
   return apis.Templates.Create(arguments)
 
 

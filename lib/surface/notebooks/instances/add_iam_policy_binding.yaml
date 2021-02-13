@@ -1,10 +1,10 @@
-release_tracks: [BETA, ALPHA]
+release_tracks: [ALPHA, BETA, GA]
 help_text:
   brief: Add IAM policy binding for an instance.
   description: |
     Adds a policy binding to the IAM policy of an instance, given an instance ID and the binding.
   examples: |
-    To add an IAM policy binding for the role of 'roles/notebooks.admin' for the user 'test-user@gmail.com'
+    To add an IAM policy binding for the role of ``roles/notebooks.admin'' for the user 'test-user@gmail.com'
     on the instance 'instance-id', run:
 
       $ {command} --member='user:test-user@gmail.com' --role='roles/notebooks.admin' example-instance --location=us-central1-a
@@ -13,7 +13,7 @@ help_text:
     policy role and member types.
 request:
   collection: notebooks.projects.locations.instances
-  api_version: v1beta1
+  api_version: v1
 
 arguments:
   resource:

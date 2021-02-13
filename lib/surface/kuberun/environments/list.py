@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 
 import json
 
-from googlecloudsdk.api_lib.kuberun import mapobject
+from googlecloudsdk.api_lib.kuberun import structuredout
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import kuberun_command
 
@@ -85,5 +85,5 @@ def _AddAliases(data):
   elif 'kubeconfig' in spec:
     target_config['kubeconfig'] = spec['kubeconfig'].copy()
     target_config['kubeconfig'].pop('namespace', '')
-  return mapobject.DictWithAliases(data,
-                                   aliases={'target_config': target_config})
+  return structuredout.DictWithAliases(
+      data, aliases={'target_config': target_config})

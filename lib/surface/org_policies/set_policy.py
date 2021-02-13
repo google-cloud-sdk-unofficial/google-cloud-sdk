@@ -24,12 +24,12 @@ from googlecloudsdk.api_lib.orgpolicy import service as org_policy_service
 from googlecloudsdk.api_lib.orgpolicy import utils as org_policy_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.org_policies import exceptions
-from googlecloudsdk.command_lib.org_policies import utils as utils
+from googlecloudsdk.command_lib.org_policies import utils
 from googlecloudsdk.core import log
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class SetPolicy(base.Command):
   r"""Set an organization policy from a JSON or YAML file.
 
@@ -67,12 +67,12 @@ class SetPolicy(base.Command):
     Returns:
       The created or updated policy.
     """
-    policy_service = org_policy_service.PolicyService()
-    org_policy_messages = org_policy_service.OrgPolicyMessages()
+    policy_service = org_policy_service.PolicyService(self.ReleaseTrack())
+    org_policy_messages = org_policy_service.OrgPolicyMessages(
+        self.ReleaseTrack())
 
-    input_policy = utils.GetMessageFromFile(
-        args.policy_file,
-        org_policy_messages.GoogleCloudOrgpolicyV2alpha1Policy)
+    input_policy = utils.GetMessageFromFile(args.policy_file,
+                                            self.ReleaseTrack())
 
     if not input_policy.name:
       raise exceptions.InvalidInputError(
@@ -83,14 +83,8 @@ class SetPolicy(base.Command):
     try:
       policy = policy_service.Get(get_request)
     except api_exceptions.HttpNotFoundError:
-      constraint = org_policy_utils.GetConstraintFromPolicyName(
-          input_policy.name)
-      parent = org_policy_utils.GetResourceFromPolicyName(input_policy.name)
-
-      create_request = org_policy_messages.OrgpolicyPoliciesCreateRequest(
-          constraint=constraint,
-          parent=parent,
-          googleCloudOrgpolicyV2alpha1Policy=input_policy)
+      create_request = org_policy_utils.CreatePolicyCreateRequest(
+          self.ReleaseTrack(), new_policy=input_policy)
       create_response = policy_service.Create(create_request)
       log.CreatedResource(input_policy.name, 'policy')
       return create_response
@@ -98,10 +92,10 @@ class SetPolicy(base.Command):
     if policy == input_policy:
       return policy
 
-    update_request = org_policy_messages.OrgpolicyPoliciesPatchRequest(
-        name=input_policy.name,
-        forceUnconditionalWrite=False,
-        googleCloudOrgpolicyV2alpha1Policy=input_policy)
+    update_request = org_policy_utils.CreatePolicyPatchRequest(
+        self.ReleaseTrack(),
+        policy_name=input_policy.name,
+        updated_policy=input_policy)
     update_response = policy_service.Patch(update_request)
     log.UpdatedResource(input_policy.name, 'policy')
     return update_response

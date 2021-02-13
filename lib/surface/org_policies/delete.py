@@ -26,7 +26,7 @@ from googlecloudsdk.core import log
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Delete(base.Command):
   r"""Delete an organization policy.
 
@@ -57,8 +57,9 @@ class Delete(base.Command):
     Returns:
        If the policy is deleted, then messages.GoogleProtobufEmpty.
     """
-    policy_service = org_policy_service.PolicyService()
-    org_policy_messages = org_policy_service.OrgPolicyMessages()
+    policy_service = org_policy_service.PolicyService(self.ReleaseTrack())
+    org_policy_messages = org_policy_service.OrgPolicyMessages(
+        self.ReleaseTrack())
 
     policy_name = utils.GetPolicyNameFromArgs(args)
 

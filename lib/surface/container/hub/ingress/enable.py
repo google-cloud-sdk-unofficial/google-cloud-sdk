@@ -48,6 +48,7 @@ class Enable(base.EnableCommand):
 
   FEATURE_NAME = 'multiclusteringress'
   FEATURE_DISPLAY_NAME = 'Ingress'
+  FEATURE_API = 'multiclusteringress.googleapis.com'
 
   @classmethod
   def Args(cls, parser):

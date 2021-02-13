@@ -40,8 +40,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Update(base.Command):
+class _Update(object):
   """Update a Database Migration Service connection profile."""
 
   detailed_help = DETAILED_HELP
@@ -63,9 +62,7 @@ class Update(base.Command):
     cp_flags.AddHostFlag(parser)
     cp_flags.AddPortFlag(parser)
     cp_flags.AddCaCertificateFlag(parser)
-    cp_flags.AddCertificateFlag(parser)
     cp_flags.AddPrivateKeyFlag(parser)
-    cp_flags.AddCloudSQLInstanceFlag(parser)
     flags.AddLabelsUpdateFlags(parser)
 
   def Run(self, args):
@@ -84,14 +81,15 @@ class Update(base.Command):
     if args.prompt_for_password:
       args.password = console_io.PromptPassword('Please Enter Password: ')
 
-    cp_client = connection_profiles.ConnectionProfilesClient()
+    cp_client = connection_profiles.ConnectionProfilesClient(
+        self.ReleaseTrack())
     result_operation = cp_client.Update(
         connection_profile_ref.RelativeName(),
         args)
 
-    client = api_util.GetClientInstance()
-    messages = api_util.GetMessagesModule()
-    resource_parser = api_util.GetResourceParser()
+    client = api_util.GetClientInstance(self.ReleaseTrack())
+    messages = api_util.GetMessagesModule(self.ReleaseTrack())
+    resource_parser = api_util.GetResourceParser(self.ReleaseTrack())
 
     operation_ref = resource_parser.Create(
         'datamigration.projects.locations.operations',
@@ -102,3 +100,27 @@ class Update(base.Command):
     return client.projects_locations_operations.Get(
         messages.DatamigrationProjectsLocationsOperationsGetRequest(
             name=operation_ref.operationsId))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(_Update, base.Command):
+  """Update a Database Migration Service connection profile."""
+
+  @staticmethod
+  def Args(parser):
+    _Update.Args(parser)
+    cp_flags.AddCertificateFlag(parser)
+    cp_flags.AddInstanceFlag(parser)
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateGA(_Update, base.Command):
+  """Update a Database Migration Service connection profile."""
+
+  @staticmethod
+  def Args(parser):
+    _Update.Args(parser)
+    cp_flags.AddClientCertificateFlag(parser)
+    cp_flags.AddCloudSQLInstanceFlag(parser)
+

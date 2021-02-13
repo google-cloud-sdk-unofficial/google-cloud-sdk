@@ -86,19 +86,21 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     mutex_group.add_argument(
         '--update-addons',
         type=arg_parsers.ArgDict(
-            spec={
-                api_adapter.INGRESS: _ParseAddonDisabled,
-                api_adapter.HPA: _ParseAddonDisabled,
-                api_adapter.DASHBOARD: _ParseAddonDisabled,
-                api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
-                api_adapter.ISTIO: _ParseAddonDisabled,
-                api_adapter.CLOUDRUN: _ParseAddonDisabled,
-                api_adapter.APPLICATIONMANAGER: _ParseAddonDisabled,
-                api_adapter.CLOUDBUILD: _ParseAddonDisabled,
-                api_adapter.NODELOCALDNS: _ParseAddonDisabled,
-                api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
-                api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
-            }),
+            spec=dict(
+                {
+                    api_adapter.INGRESS: _ParseAddonDisabled,
+                    api_adapter.HPA: _ParseAddonDisabled,
+                    api_adapter.DASHBOARD: _ParseAddonDisabled,
+                    api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
+                    api_adapter.ISTIO: _ParseAddonDisabled,
+                    api_adapter.APPLICATIONMANAGER: _ParseAddonDisabled,
+                    api_adapter.CLOUDBUILD: _ParseAddonDisabled,
+                    api_adapter.NODELOCALDNS: _ParseAddonDisabled,
+                    api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
+                    api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
+                },
+                **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS
+                  }),),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
         help="""Cluster addons to enable or disable. Options are
@@ -119,7 +121,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     network_policy=api_adapter.NETWORK_POLICY,
     istio=api_adapter.ISTIO,
     application_manager=api_adapter.APPLICATIONMANAGER,
-    cloudrun=api_adapter.CLOUDRUN,
+    cloudrun=api_adapter.CLOUDRUN_ADDONS[0],
     cloudbuild=api_adapter.CLOUDBUILD,
     configconnector=api_adapter.CONFIGCONNECTOR,
     nodelocaldns=api_adapter.NODELOCALDNS,
@@ -130,18 +132,20 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     mutex_group.add_argument(
         '--update-addons',
         type=arg_parsers.ArgDict(
-            spec={
-                api_adapter.INGRESS: _ParseAddonDisabled,
-                api_adapter.HPA: _ParseAddonDisabled,
-                api_adapter.DASHBOARD: _ParseAddonDisabled,
-                api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
-                api_adapter.ISTIO: _ParseAddonDisabled,
-                api_adapter.CLOUDRUN: _ParseAddonDisabled,
-                api_adapter.APPLICATIONMANAGER: _ParseAddonDisabled,
-                api_adapter.NODELOCALDNS: _ParseAddonDisabled,
-                api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
-                api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
-            }),
+            spec=dict(
+                {
+                    api_adapter.INGRESS: _ParseAddonDisabled,
+                    api_adapter.HPA: _ParseAddonDisabled,
+                    api_adapter.DASHBOARD: _ParseAddonDisabled,
+                    api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
+                    api_adapter.ISTIO: _ParseAddonDisabled,
+                    api_adapter.APPLICATIONMANAGER: _ParseAddonDisabled,
+                    api_adapter.NODELOCALDNS: _ParseAddonDisabled,
+                    api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
+                    api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
+                },
+                **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS
+                  }),),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
         help="""Cluster addons to enable or disable. Options are
@@ -161,7 +165,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     network_policy=api_adapter.NETWORK_POLICY,
     istio=api_adapter.ISTIO,
     application_manager=api_adapter.APPLICATIONMANAGER,
-    cloudrun=api_adapter.CLOUDRUN,
+    cloudrun=api_adapter.CLOUDRUN_ADDONS[0],
     configconnector=api_adapter.CONFIGCONNECTOR,
     nodelocaldns=api_adapter.NODELOCALDNS,
     gcepdcsidriver=api_adapter.GCEPDCSIDRIVER,
@@ -171,16 +175,18 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     mutex_group.add_argument(
         '--update-addons',
         type=arg_parsers.ArgDict(
-            spec={
-                api_adapter.INGRESS: _ParseAddonDisabled,
-                api_adapter.HPA: _ParseAddonDisabled,
-                api_adapter.DASHBOARD: _ParseAddonDisabled,
-                api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
-                api_adapter.CLOUDRUN: _ParseAddonDisabled,
-                api_adapter.NODELOCALDNS: _ParseAddonDisabled,
-                api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
-                api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
-            }),
+            spec=dict(
+                {
+                    api_adapter.INGRESS: _ParseAddonDisabled,
+                    api_adapter.HPA: _ParseAddonDisabled,
+                    api_adapter.DASHBOARD: _ParseAddonDisabled,
+                    api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
+                    api_adapter.NODELOCALDNS: _ParseAddonDisabled,
+                    api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
+                    api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
+                },
+                **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS
+                  }),),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
         help="""Cluster addons to enable or disable. Options are
@@ -196,7 +202,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD,
     network_policy=api_adapter.NETWORK_POLICY,
-    cloudrun=api_adapter.CLOUDRUN,
+    cloudrun=api_adapter.CLOUDRUN_ADDONS[0],
     configconnector=api_adapter.CONFIGCONNECTOR,
     nodelocaldns=api_adapter.NODELOCALDNS,
     gcepdcsidriver=api_adapter.GCEPDCSIDRIVER,
@@ -311,6 +317,7 @@ class Update(base.UpdateCommand):
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1', group, hidden=False)
 
   def ParseUpdateOptions(self, args, locations):
+    get_default = lambda key: getattr(args, key)
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
     opts.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     opts.clear_resource_usage_bigquery_dataset = \
@@ -322,9 +329,10 @@ class Update(base.UpdateCommand):
     opts.enable_master_global_access = args.enable_master_global_access
     opts.enable_shielded_nodes = args.enable_shielded_nodes
     opts.release_channel = args.release_channel
-    flags.ValidateCloudRunConfigUpdateArgs(args.cloud_run_config,
+    opts.cloud_run_config = flags.GetLegacyCloudRunFlag('{}_config', args,
+                                                        get_default)
+    flags.ValidateCloudRunConfigUpdateArgs(opts.cloud_run_config,
                                            args.disable_addons)
-    opts.cloud_run_config = args.cloud_run_config
     if args.disable_addons and api_adapter.NODELOCALDNS in args.disable_addons:
       # NodeLocalDNS is being enabled or disabled
       console_io.PromptContinue(
@@ -540,6 +548,31 @@ to completion."""
             args.remove_maintenance_exclusion)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'add_cross_connect_subnetworks', None) is not None:
+      try:
+        op_ref = adapter.ModifyCrossConnectSubnetworks(
+            cluster_ref,
+            cluster.privateClusterConfig.crossConnectConfig,
+            add_subnetworks=args.add_cross_connect_subnetworks)
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'remove_cross_connect_subnetworks', None) is not None:
+      try:
+        op_ref = adapter.ModifyCrossConnectSubnetworks(
+            cluster_ref,
+            cluster.privateClusterConfig.crossConnectConfig,
+            remove_subnetworks=args.remove_cross_connect_subnetworks)
+
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'clear_cross_connect_subnetworks', None) is not None:
+      try:
+        op_ref = adapter.ModifyCrossConnectSubnetworks(
+            cluster_ref,
+            cluster.privateClusterConfig.crossConnectConfig,
+            clear_all_subnetworks=True)
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     else:
       if args.enable_legacy_authorization is not None:
         op_ref = adapter.SetLegacyAuthorization(
@@ -573,7 +606,10 @@ to completion."""
         getattr(args, 'maintenance_window_end', False) or
         getattr(args, 'clear_maintenance_window', False) or
         getattr(args, 'add_maintenance_exclusion_end', False) or
-        getattr(args, 'remove_maintenance_exclusion', False))
+        getattr(args, 'remove_maintenance_exclusion', False) or
+        getattr(args, 'add_cross_connect_subnetworks', False) or
+        getattr(args, 'remove_cross_connect_subnetworks', False) or
+        getattr(args, 'clear_cross_connect_subnetworks', False))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -635,13 +671,16 @@ class UpdateBeta(Update):
     flags.AddDisableAutopilotFlag(group, hidden=True)
     flags.AddILBSubsettingFlags(group, hidden=True)
     flags.AddClusterDNSFlags(group, hidden=True)
+    flags.AddCrossConnectSubnetworksMutationFlags(group)
 
   def ParseUpdateOptions(self, args, locations):
+    get_default = lambda key: getattr(args, key)
     flags.ValidateNotificationConfigFlag(args)
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
     opts.enable_pod_security_policy = args.enable_pod_security_policy
     opts.istio_config = args.istio_config
-    opts.cloud_run_config = args.cloud_run_config
+    opts.cloud_run_config = flags.GetLegacyCloudRunFlag('{}_config', args,
+                                                        get_default)
     opts.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     opts.enable_intra_node_visibility = args.enable_intra_node_visibility
     opts.clear_resource_usage_bigquery_dataset = \
@@ -651,7 +690,7 @@ class UpdateBeta(Update):
     opts.workload_identity_certificate_authority = args.workload_identity_certificate_authority
     opts.disable_workload_identity_certificates = args.disable_workload_identity_certificates
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
-    flags.ValidateCloudRunConfigUpdateArgs(args.cloud_run_config,
+    flags.ValidateCloudRunConfigUpdateArgs(opts.cloud_run_config,
                                            args.disable_addons)
     if args.disable_addons and api_adapter.NODELOCALDNS in args.disable_addons:
       # NodeLocalDNS is being enabled or disabled
@@ -763,8 +802,10 @@ class UpdateAlpha(Update):
     flags.AddDisableAutopilotFlag(group, hidden=True)
     flags.AddILBSubsettingFlags(group, hidden=True)
     flags.AddClusterDNSFlags(group, hidden=True)
+    flags.AddCrossConnectSubnetworksMutationFlags(group)
 
   def ParseUpdateOptions(self, args, locations):
+    get_default = lambda key: getattr(args, key)
     flags.ValidateNotificationConfigFlag(args)
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
     opts.autoscaling_profile = args.autoscaling_profile
@@ -774,14 +815,15 @@ class UpdateAlpha(Update):
         args.clear_resource_usage_bigquery_dataset
     opts.security_profile = args.security_profile
     opts.istio_config = args.istio_config
-    opts.cloud_run_config = args.cloud_run_config
+    opts.cloud_run_config = flags.GetLegacyCloudRunFlag('{}_config', args,
+                                                        get_default)
     opts.enable_intra_node_visibility = args.enable_intra_node_visibility
     opts.enable_network_egress_metering = args.enable_network_egress_metering
     opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     opts.workload_identity_certificate_authority = args.workload_identity_certificate_authority
     opts.disable_workload_identity_certificates = args.disable_workload_identity_certificates
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
-    flags.ValidateCloudRunConfigUpdateArgs(args.cloud_run_config,
+    flags.ValidateCloudRunConfigUpdateArgs(opts.cloud_run_config,
                                            args.disable_addons)
     if args.disable_addons and api_adapter.NODELOCALDNS in args.disable_addons:
       # NodeLocalDNS is being enabled or disabled

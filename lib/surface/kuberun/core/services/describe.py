@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Describe a Knative service."""
+"""Describe a KubeRun service."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -30,7 +30,7 @@ from googlecloudsdk.core.resource import resource_printer
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To show all the data about a Knative service, run
+        To show all the data about a KubeRun service, run:
 
             $ {command}
         """,
@@ -39,7 +39,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(kuberun_command.KubeRunCommandWithOutput, base.DescribeCommand):
-  """Describes a Knative service."""
+  """Describes a KubeRun service."""
 
   detailed_help = _DETAILED_HELP
   flags = [flags.NamespaceFlag(), flags.ClusterConnectionFlags()]
@@ -48,7 +48,7 @@ class Describe(kuberun_command.KubeRunCommandWithOutput, base.DescribeCommand):
   def Args(cls, parser):
     super(Describe, cls).Args(parser)
     parser.add_argument(
-        'service', help='The Knative service to show details for.')
+        'service', help='The KubeRun service for which to show details.')
     resource_printer.RegisterFormatter(
         service_printer.SERVICE_PRINTER_FORMAT,
         service_printer.ServicePrinter,

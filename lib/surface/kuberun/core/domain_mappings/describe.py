@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Describe a domain mapping of a Knative service."""
+"""Describe a domain mapping of a KubeRun service."""
 
 from __future__ import absolute_import
 from __future__ import division

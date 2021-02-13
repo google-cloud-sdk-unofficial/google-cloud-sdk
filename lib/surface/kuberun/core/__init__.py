@@ -24,17 +24,16 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Core(base.Group):
-  """Top level command to interact with KubeRun entities on a cluster.
+  """Top level command to interact with KubeRun resources on Google Kubernetes Engine clusters.
 
-  This set of commands can be used create or change a Knative services,
-  triggers, etc. on a cluster.
-  .
+  Use this set of commands to create and manage KubeRun resources
+  like services, revisions, events, and triggers.
   """
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To list your Knative services, run:
+          To list your KubeRun services, run:
 
             $ {command} services list
       """,

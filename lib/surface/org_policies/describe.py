@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.org_policies import utils
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   r"""Describe an organization policy.
 
@@ -64,8 +64,9 @@ class Describe(base.DescribeCommand):
     Returns:
        The retrieved policy.
     """
-    policy_service = org_policy_service.PolicyService()
-    org_policy_messages = org_policy_service.OrgPolicyMessages()
+    policy_service = org_policy_service.PolicyService(self.ReleaseTrack())
+    org_policy_messages = org_policy_service.OrgPolicyMessages(
+        self.ReleaseTrack())
 
     policy_name = utils.GetPolicyNameFromArgs(args)
 

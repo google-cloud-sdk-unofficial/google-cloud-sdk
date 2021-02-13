@@ -114,7 +114,8 @@ class Allow(interfaces.OrgPolicyGetAndUpdateCommand):
       return self._AllowAllValues(policy)
 
     if args.remove:
-      return utils.RemoveAllowedValuesFromPolicy(policy, args)
+      return utils.RemoveAllowedValuesFromPolicy(policy, args,
+                                                 self.ReleaseTrack())
 
     return self._AddValues(policy, args)
 
@@ -141,7 +142,8 @@ class Allow(interfaces.OrgPolicyGetAndUpdateCommand):
       The updated policy.
     """
     new_policy = copy.deepcopy(policy)
-    new_policy = utils.RemoveDeniedValuesFromPolicy(new_policy, args)
+    new_policy = utils.RemoveDeniedValuesFromPolicy(new_policy, args,
+                                                    self.ReleaseTrack())
 
     missing_values = self._GetMissingAllowedValuesFromRules(
         new_policy.spec.rules, args.value)
@@ -150,7 +152,7 @@ class Allow(interfaces.OrgPolicyGetAndUpdateCommand):
 
     if not new_policy.spec.rules:
       rule_to_update, new_policy = org_policy_utils.CreateRuleOnPolicy(
-          new_policy)
+          new_policy, self.ReleaseTrack())
     else:
       for rule in new_policy.spec.rules:
         if rule.allowAll:
@@ -181,7 +183,7 @@ class Allow(interfaces.OrgPolicyGetAndUpdateCommand):
     Returns:
       The updated policy.
     """
-    messages = service.OrgPolicyMessages()
+    messages = service.OrgPolicyMessages(self.ReleaseTrack())
     new_rule = messages.GoogleCloudOrgpolicyV2alpha1PolicySpecPolicyRule()
     new_rule.allowAll = True
 

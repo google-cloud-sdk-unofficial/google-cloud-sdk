@@ -23,4 +23,4 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DomainMappings(base.Group):
-  """Create and manage domain mappings for Knative services."""
+  """Create and manage domain mappings for KubeRun services."""

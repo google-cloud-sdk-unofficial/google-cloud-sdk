@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Deploy a Knative service."""
+"""Deploy a KubeRun service."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -38,7 +38,7 @@ _DETAILED_HELP = {
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(kuberun_command.KubeRunStreamingCommandWithResult,
              base.UpdateCommand):
-  """Updates a Knative service."""
+  """Updates a KubeRun service."""
 
   detailed_help = _DETAILED_HELP
   flags = [

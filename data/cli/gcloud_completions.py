@@ -11521,11 +11521,14 @@ STATIC_COMPLETION_CLI_TREE = {
                           "allow",
                           "deny-403",
                           "deny-404",
-                          "deny-502"
+                          "deny-502",
+                          "redirect",
+                          "redirect-to-recaptcha"
                         ],
                         "--description": "value",
                         "--expression": "value",
                         "--preview": "bool",
+                        "--redirect-target": "value",
                         "--security-policy": "dynamic",
                         "--src-ip-ranges": "value"
                       }
@@ -11549,11 +11552,14 @@ STATIC_COMPLETION_CLI_TREE = {
                           "allow",
                           "deny-403",
                           "deny-404",
-                          "deny-502"
+                          "deny-502",
+                          "redirect",
+                          "redirect-to-recaptcha"
                         ],
                         "--description": "value",
                         "--expression": "value",
                         "--preview": "bool",
+                        "--redirect-target": "value",
                         "--security-policy": "dynamic",
                         "--src-ip-ranges": "value"
                       }
@@ -17461,6 +17467,18 @@ STATIC_COMPLETION_CLI_TREE = {
           },
           "flags": {}
         },
+        "essential-contacts": {
+          "commands": {
+            "delete": {
+              "commands": {},
+              "flags": {
+                "--folder": "value",
+                "--organization": "value"
+              }
+            }
+          },
+          "flags": {}
+        },
         "filestore": {
           "commands": {
             "backups": {
@@ -21261,6 +21279,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--description": "value",
                     "--enable-analytics": "bool",
                     "--location": "value",
+                    "--restricted-fields": "value",
                     "--retention-days": "value"
                   }
                 },
@@ -21312,6 +21331,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-loglink": "bool",
                     "--location": "value",
                     "--locked": "bool",
+                    "--restricted-fields": "value",
                     "--retention-days": "value"
                   }
                 }
@@ -33017,6 +33037,12 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--show-package-vulnerability": "bool"
                       }
                     },
+                    "get-operation": {
+                      "commands": {},
+                      "flags": {
+                        "--location": "value"
+                      }
+                    },
                     "list": {
                       "commands": {},
                       "flags": {
@@ -33028,6 +33054,26 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--show-occurrences": "bool",
                         "--show-occurrences-from": "value",
                         "--sort-by": "value"
+                      }
+                    },
+                    "list-vulnerabilities": {
+                      "commands": {},
+                      "flags": {
+                        "--limit": "value",
+                        "--location": "value",
+                        "--page-size": "value"
+                      }
+                    },
+                    "scan": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--location": [
+                          "asia",
+                          "europe",
+                          "us"
+                        ],
+                        "--remote": "bool"
                       }
                     }
                   },
@@ -37211,6 +37257,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--custom-vm-type": "value",
                     "--description": "value",
                     "--disk": "value",
+                    "--enable-nested-virtualization": "bool",
                     "--image": "value",
                     "--image-family": "value",
                     "--image-project": "value",
@@ -37478,6 +37525,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--description": "value",
                     "--disk": "value",
                     "--enable-display-device": "bool",
+                    "--enable-nested-virtualization": "bool",
                     "--erase-windows-vss-signature": "bool",
                     "--hostname": "value",
                     "--image": "value",
@@ -37571,6 +37619,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--custom-vm-type": "value",
                     "--description": "value",
                     "--disk": "value",
+                    "--enable-nested-virtualization": "bool",
                     "--image": "value",
                     "--image-family": "value",
                     "--image-project": "value",
@@ -38840,7 +38889,10 @@ STATIC_COMPLETION_CLI_TREE = {
                           "commands": {},
                           "flags": {
                             "--async": "bool",
+                            "--machine-type": "value",
+                            "--max-instances": "value",
                             "--max-throughput": "value",
+                            "--min-instances": "value",
                             "--min-throughput": "value",
                             "--network": "value",
                             "--range": "value",
@@ -40079,7 +40131,8 @@ STATIC_COMPLETION_CLI_TREE = {
                           "allow",
                           "deny-403",
                           "deny-404",
-                          "deny-502"
+                          "deny-502",
+                          "redirect-to-recaptcha"
                         ],
                         "--description": "value",
                         "--expression": "value",
@@ -40107,7 +40160,8 @@ STATIC_COMPLETION_CLI_TREE = {
                           "allow",
                           "deny-403",
                           "deny-404",
-                          "deny-502"
+                          "deny-502",
+                          "redirect-to-recaptcha"
                         ],
                         "--description": "value",
                         "--expression": "value",
@@ -42995,6 +43049,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--dataflow-kms-key": "value",
                     "--disable-public-ips": "bool",
                     "--enable-streaming-engine": "bool",
+                    "--flexrs-goal": [
+                      "COST_OPTIMIZED",
+                      "SPEED_OPTIMIZED"
+                    ],
                     "--max-workers": "value",
                     "--network": "value",
                     "--num-workers": "value",
@@ -43004,6 +43062,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--staging-location": "value",
                     "--subnetwork": "value",
                     "--template-file-gcs-location": "value",
+                    "--transform-name-mappings": "value",
+                    "--update": "bool",
                     "--worker-machine-type": "value",
                     "--worker-region": "value",
                     "--worker-zone": "value"
@@ -43060,6 +43120,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "run": {
                   "commands": {},
                   "flags": {
+                    "--additional-experiments": "value",
                     "--dataflow-kms-key": "value",
                     "--disable-public-ips": "bool",
                     "--enable-streaming-engine": "bool",
@@ -59569,6 +59630,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--custom-vm-type": "value",
                 "--description": "value",
                 "--disk": "value",
+                "--enable-nested-virtualization": "bool",
                 "--image": "value",
                 "--image-family": "value",
                 "--image-project": "value",
@@ -59834,6 +59896,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--description": "value",
                 "--disk": "value",
                 "--enable-display-device": "bool",
+                "--enable-nested-virtualization": "bool",
                 "--hostname": "value",
                 "--image": "value",
                 "--image-family": "value",
@@ -59924,6 +59987,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--custom-vm-type": "value",
                 "--description": "value",
                 "--disk": "value",
+                "--enable-nested-virtualization": "bool",
                 "--image": "value",
                 "--image-family": "value",
                 "--image-project": "value",
@@ -61948,7 +62012,8 @@ STATIC_COMPLETION_CLI_TREE = {
                       "allow",
                       "deny-403",
                       "deny-404",
-                      "deny-502"
+                      "deny-502",
+                      "redirect-to-recaptcha"
                     ],
                     "--description": "value",
                     "--expression": "value",
@@ -61976,7 +62041,8 @@ STATIC_COMPLETION_CLI_TREE = {
                       "allow",
                       "deny-403",
                       "deny-404",
-                      "deny-502"
+                      "deny-502",
+                      "redirect-to-recaptcha"
                     ],
                     "--description": "value",
                     "--expression": "value",
@@ -63919,11 +63985,13 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--context": "value",
+                    "--enable-workload-identity": "bool",
                     "--gke-cluster": "value",
                     "--gke-uri": "value",
                     "--kubeconfig": "value",
                     "--manifest-output-file": "value",
                     "--proxy": "value",
+                    "--public-issuer-url": "value",
                     "--service-account-key-file": "value"
                   }
                 },
@@ -64664,6 +64732,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--dataflow-kms-key": "value",
                 "--disable-public-ips": "bool",
                 "--enable-streaming-engine": "bool",
+                "--flexrs-goal": [
+                  "COST_OPTIMIZED",
+                  "SPEED_OPTIMIZED"
+                ],
                 "--max-workers": "value",
                 "--network": "value",
                 "--num-workers": "value",
@@ -64673,6 +64745,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--staging-location": "value",
                 "--subnetwork": "value",
                 "--template-file-gcs-location": "value",
+                "--transform-name-mappings": "value",
+                "--update": "bool",
                 "--worker-machine-type": "value",
                 "--worker-region": "value",
                 "--worker-zone": "value"
@@ -64723,6 +64797,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "run": {
               "commands": {},
               "flags": {
+                "--additional-experiments": "value",
                 "--dataflow-kms-key": "value",
                 "--disable-public-ips": "bool",
                 "--enable-streaming-engine": "bool",
@@ -70572,6 +70647,248 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--limit": "value",
                 "--page-size": "value",
                 "--sort-by": "value"
+              }
+            }
+          },
+          "flags": {}
+        }
+      },
+      "flags": {}
+    },
+    "notebooks": {
+      "commands": {
+        "environments": {
+          "commands": {
+            "create": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--container-repository": "value",
+                "--container-tag": "value",
+                "--description": "value",
+                "--display-name": "value",
+                "--location": "dynamic",
+                "--post-startup-script": "value",
+                "--vm-image-family": "value",
+                "--vm-image-name": "value",
+                "--vm-image-project": "value"
+              }
+            },
+            "delete": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--location": "dynamic"
+              }
+            },
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--location": "dynamic"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--location": "dynamic",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "instances": {
+          "commands": {
+            "add-iam-policy-binding": {
+              "commands": {},
+              "flags": {
+                "--location": "dynamic",
+                "--member": "value",
+                "--role": "dynamic"
+              }
+            },
+            "create": {
+              "commands": {},
+              "flags": {
+                "--accelerator-core-count": "value",
+                "--accelerator-type": [
+                  "NVIDIA_TESLA_K80",
+                  "NVIDIA_TESLA_P100",
+                  "NVIDIA_TESLA_P100_VWS",
+                  "NVIDIA_TESLA_P4",
+                  "NVIDIA_TESLA_P4_VWS",
+                  "NVIDIA_TESLA_T4",
+                  "NVIDIA_TESLA_T4_VWS",
+                  "NVIDIA_TESLA_V100",
+                  "TPU_V2",
+                  "TPU_V3"
+                ],
+                "--async": "bool",
+                "--boot-disk-size": "value",
+                "--boot-disk-type": [
+                  "PD_BALANCED",
+                  "PD_SSD",
+                  "PD_STANDARD"
+                ],
+                "--container-repository": "value",
+                "--container-tag": "value",
+                "--custom-gpu-driver-path": "value",
+                "--disk-encryption": [
+                  "CMEK",
+                  "GMEK"
+                ],
+                "--environment": "dynamic",
+                "--environment-location": "dynamic",
+                "--install-gpu-driver": "bool",
+                "--instance-owners": "value",
+                "--kms-key": "dynamic",
+                "--kms-keyring": "dynamic",
+                "--kms-location": "dynamic",
+                "--kms-project": "dynamic",
+                "--labels": "value",
+                "--location": "dynamic",
+                "--machine-type": "value",
+                "--metadata": "value",
+                "--network": "dynamic",
+                "--no-proxy-access": "bool",
+                "--no-public-ip": "bool",
+                "--post-startup-script": "value",
+                "--service-account": "value",
+                "--subnet": "dynamic",
+                "--subnet-region": "dynamic",
+                "--vm-image-family": "value",
+                "--vm-image-name": "value",
+                "--vm-image-project": "value"
+              }
+            },
+            "delete": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--location": "dynamic"
+              }
+            },
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--location": "dynamic"
+              }
+            },
+            "get-iam-policy": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--location": "dynamic",
+                "--page-size": "value",
+                "--sort-by": "value"
+              }
+            },
+            "is-upgradeable": {
+              "commands": {},
+              "flags": {
+                "--location": "dynamic"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--location": "dynamic",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
+              }
+            },
+            "register": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--location": "dynamic"
+              }
+            },
+            "remove-iam-policy-binding": {
+              "commands": {},
+              "flags": {
+                "--location": "dynamic",
+                "--member": "value",
+                "--role": "dynamic"
+              }
+            },
+            "reset": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--location": "dynamic"
+              }
+            },
+            "set-iam-policy": {
+              "commands": {},
+              "flags": {
+                "--location": "dynamic"
+              }
+            },
+            "start": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--location": "dynamic"
+              }
+            },
+            "stop": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--location": "dynamic"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--accelerator-core-count": "value",
+                "--accelerator-type": [
+                  "NVIDIA_TESLA_K80",
+                  "NVIDIA_TESLA_P100",
+                  "NVIDIA_TESLA_P100_VWS",
+                  "NVIDIA_TESLA_P4",
+                  "NVIDIA_TESLA_P4_VWS",
+                  "NVIDIA_TESLA_T4",
+                  "NVIDIA_TESLA_T4_VWS",
+                  "NVIDIA_TESLA_V100",
+                  "TPU_V2",
+                  "TPU_V3"
+                ],
+                "--async": "bool",
+                "--labels": "value",
+                "--location": "dynamic",
+                "--machine-type": "value"
+              }
+            },
+            "upgrade": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--location": "dynamic"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "locations": {
+          "commands": {
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
               }
             }
           },

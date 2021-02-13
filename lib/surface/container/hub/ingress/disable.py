@@ -35,6 +35,7 @@ class Disable(base.DisableCommand):
 
   FEATURE_NAME = 'multiclusteringress'
   FEATURE_DISPLAY_NAME = 'Ingress'
+  FEATURE_API = 'multiclusteringress.googleapis.com'
 
   def Run(self, args):
     self.RunCommand(args)

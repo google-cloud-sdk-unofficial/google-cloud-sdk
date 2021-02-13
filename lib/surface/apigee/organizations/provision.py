@@ -17,48 +17,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import json
-
 from googlecloudsdk.api_lib import apigee
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.apigee import errors
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-
-
-class LROPoller(waiter.OperationPoller):
-  """Polls on completion of an Apigee long running operation."""
-
-  def __init__(self, organization):
-    super(LROPoller, self).__init__()
-    self.organization = organization
-
-  def IsDone(self, operation):
-    finished = False
-    try:
-      finished = (operation["metadata"]["state"] == "FINISHED")
-    except KeyError as err:
-      raise waiter.OperationError("Malformed operation; %s\n%r" %
-                                  (err, operation))
-    if finished and "error" in operation:
-      raise errors.RequestError(
-          "operation", {"name": operation["name"]},
-          "await",
-          body=json.dumps(operation))
-    return finished
-
-  def Poll(self, operation_uuid):
-    return apigee.OperationsClient.Describe({
-        "organizationsId": self.organization,
-        "operationsId": operation_uuid
-    })
-
-  def GetResult(self, operation):
-    if "response" in operation:
-      return operation["response"]
-    return None
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -164,7 +128,7 @@ class Provision(base.DescribeCommand):
     log.info("Started provisioning operation %s", operation["name"])
 
     return waiter.WaitFor(
-        LROPoller(operation["organization"]),
+        apigee.LROPoller(operation["organization"]),
         operation["uuid"],
         "Provisioning organization",
         max_wait_ms=60 * 60 * 1000)

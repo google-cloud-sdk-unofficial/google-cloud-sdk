@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.events import eventflow_operations
 from googlecloudsdk.command_lib.events import exceptions
 from googlecloudsdk.command_lib.events import flags
 from googlecloudsdk.command_lib.events import resource_args
+from googlecloudsdk.command_lib.kuberun.core.events import init_shared
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags as serverless_flags
 from googlecloudsdk.command_lib.run import platforms
@@ -75,7 +76,9 @@ class Init(base.Command):
     namespace_ref = args.CONCEPTS.namespace.Parse()
 
     with eventflow_operations.Connect(conn_context) as client:
-      client.CreateOrReplaceSourcesSecret(namespace_ref)
+      cluster_eventing_type = init_shared.determine_cluster_eventing_type(
+          client)
+      client.CreateOrReplaceSourcesSecret(namespace_ref, cluster_eventing_type)
 
     log.status.Print('Initialized namespace [{}] for Cloud Run eventing with '
                      'secret {}'.format(namespace_ref.Name(),

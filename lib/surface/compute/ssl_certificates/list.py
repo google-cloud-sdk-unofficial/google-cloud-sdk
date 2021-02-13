@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for listing SSL certificates."""
+"""Command for listing SSL certificate resources."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -53,7 +53,7 @@ class List(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(List):
-  """List Google Compute Engine SSL certificates."""
+  """List Google Compute Engine SSL certificate resources."""
 
   _return_partial_success = True
 

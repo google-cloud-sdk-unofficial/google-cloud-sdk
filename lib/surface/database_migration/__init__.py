@@ -30,3 +30,12 @@ class DatabaseMigration(base.Group):
   """
 
   category = base.DATABASES_CATEGORY
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DatabaseMigrationGA(DatabaseMigration):
+  """Manage Database Migration Service resources.
+
+  Commands for managing Database Migration Service resources.
+  """

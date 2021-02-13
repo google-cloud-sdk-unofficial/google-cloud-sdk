@@ -47,9 +47,20 @@ auto_flag_defaults = dict(list(create.base_flag_defaults.items()) + \
 
 
 @base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(create.Create):
+  autopilot = True
+  default_flag_values = auto_flag_defaults
+
+  @staticmethod
+  def Args(parser):
+    create.AddFlags(create.GA, parser, auto_flag_defaults, auto_flags)
+
+
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(create.CreateBeta):
-  autogke = True
+  autopilot = True
   default_flag_values = auto_flag_defaults
 
   @staticmethod
@@ -60,7 +71,7 @@ class CreateBeta(create.CreateBeta):
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(create.CreateAlpha):
-  autogke = True
+  autopilot = True
   default_flag_values = auto_flag_defaults
 
   @staticmethod

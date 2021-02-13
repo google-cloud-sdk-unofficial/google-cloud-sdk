@@ -73,15 +73,15 @@ class Query(base.Command):
     sql_util.ArgsForSqlQuery(parser)
 
   def Run(self, args):
-    use_flex_engine = (args.sql_launcher_template_engine == 'flex')
+    use_dynamic_engine = (args.sql_launcher_template_engine == 'dynamic')
     region = dataflow_util.GetRegion(args)
     if args.sql_launcher_template:
       gcs_location = args.sql_launcher_template
     else:
-      if use_flex_engine:
-        suffix = 'sql_launcher_flex_template'
-      else:
+      if use_dynamic_engine:
         suffix = 'sql_launcher_template'
+      else:
+        suffix = 'sql_launcher_flex_template'
       gcs_location = 'gs://dataflow-sql-templates-{}/latest/{}'.format(
           region, suffix)
     if args.parameters_file:
@@ -116,6 +116,6 @@ class Query(base.Command):
         worker_machine_type=args.worker_machine_type,
         worker_region=args.worker_region,
         worker_zone=args.worker_zone)
-    if use_flex_engine:
-      return apis.Templates.CreateJobFromFlexTemplate(arguments)
-    return apis.Templates.LaunchDynamicTemplate(arguments)
+    if use_dynamic_engine:
+      return apis.Templates.LaunchDynamicTemplate(arguments)
+    return apis.Templates.CreateJobFromFlexTemplate(arguments)

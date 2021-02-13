@@ -35,6 +35,7 @@ class Enable(base.EnableCommand):
 
   FEATURE_NAME = 'multiclusterservicediscovery'
   FEATURE_DISPLAY_NAME = 'Multi Cluster Services'
+  FEATURE_API = 'multiclusterservicediscovery.googleapis.com'
 
   def Run(self, args):
     self.RunCommand(

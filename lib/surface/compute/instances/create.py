@@ -149,6 +149,7 @@ def _CommonArgs(parser,
   instances_flags.AddShieldedInstanceConfigArgs(parser)
   instances_flags.AddDisplayDeviceArg(parser)
   instances_flags.AddMinNodeCpuArg(parser)
+  instances_flags.AddNestedVirtualizationArgs(parser)
 
   instances_flags.AddReservationAffinityGroup(
       parser,
@@ -202,7 +203,6 @@ class Create(base.CreateCommand):
   _support_create_disk_snapshots = True
   _support_boot_snapshot_uri = True
   _enable_pd_interface = False
-  _support_enable_nested_virtualization = False
   _support_threads_per_core = False
   _support_replica_zones = False
   _support_multi_writer = False
@@ -379,14 +379,15 @@ class Create(base.CreateCommand):
                 compute_client.messages).GetEnumForChoice(
                     args.private_ipv6_google_access_type))
 
-      if ((self._support_enable_nested_virtualization and
-           args.enable_nested_virtualization is not None) or
-          (self._support_threads_per_core and
-           args.threads_per_core is not None)):
+      has_threads_per_core = (
+          self._support_threads_per_core and args.threads_per_core is not None)
+      if (args.enable_nested_virtualization is not None or
+          has_threads_per_core):
+        threads_per_core = args.threads_per_core if has_threads_per_core else None
         instance.advancedMachineFeatures = (
             instance_utils.CreateAdvancedMachineFeaturesMessage(
                 compute_client.messages, args.enable_nested_virtualization,
-                args.threads_per_core))
+                threads_per_core))
 
       resource_policies = getattr(args, 'resource_policies', None)
       if resource_policies:
@@ -608,7 +609,6 @@ class CreateAlpha(CreateBeta):
   _support_create_disk_snapshots = True
   _support_boot_snapshot_uri = True
   _enable_pd_interface = True
-  _support_enable_nested_virtualization = True
   _support_threads_per_core = True
   _support_replica_zones = True
   _support_multi_writer = True
@@ -649,7 +649,6 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddStableFleetArgs(parser)
-    instances_flags.AddNestedVirtualizationArgs(parser)
     instances_flags.AddThreadsPerCoreArgs(parser)
     instances_flags.AddStackTypeArgs(parser)
     instances_flags.AddIpv6NetworkTierArgs(parser)

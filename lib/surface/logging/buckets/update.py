@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.logging import util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core.console import console_io
@@ -82,6 +83,10 @@ class Update(base.UpdateCommand):
       bucket_data['logLink'] = {'enabled': args.enable_loglink}
       update_mask.append('log_link.enabled')
 
+    if is_alpha and args.IsSpecified('restricted_fields'):
+      bucket_data['restrictedFields'] = args.restricted_fields
+      update_mask.append('restricted_fields')
+
     if not update_mask:
       raise calliope_exceptions.MinimumArgumentException(
           parameter_names,
@@ -130,6 +135,11 @@ class UpdateAlpha(Update):
         which give a ready-only access to logs in BigQuery. This option can
         only be enabled in a log bucket with advanced log analytics enabled.
         Use --no-enable-loglink to disable the linked dataset.""")
+    parser.add_argument(
+        '--restricted-fields',
+        help='A new set of restricted fields for the bucket',
+        type=arg_parsers.ArgList(),
+        metavar='RESTRICTED_FIELD')
 
   def Run(self, args):
     return self._Run(args, is_alpha=True)

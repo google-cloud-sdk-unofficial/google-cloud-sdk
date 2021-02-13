@@ -12,16 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to list Knative services in a Kubernetes cluster."""
+"""Command to list KubeRun services in a Kubernetes cluster."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
 import json
 
-from googlecloudsdk.api_lib.kuberun import service
+from googlecloudsdk.api_lib.kuberun import structuredout
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import flags
+from googlecloudsdk.command_lib.kuberun import k8s_object_printer
+from googlecloudsdk.command_lib.kuberun import kubernetes_consts
 from googlecloudsdk.command_lib.kuberun import kuberun_command
 from googlecloudsdk.command_lib.kuberun import pretty_print
 from googlecloudsdk.core import exceptions
@@ -29,24 +31,27 @@ from googlecloudsdk.core import exceptions
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To show all Knative services in the default namespace, run
+        To show all KubeRun services in the default namespace, run:
 
             $ {command}
 
-        To show all Knative services in a namespace, run
+        To show all KubeRun services in a specific namespace, run:
 
             $ {command} --namespace=my-namespace
 
-        To show all Knative services from all namespaces, run
+        To show all KubeRun services from all namespaces, run:
 
             $ {command} --all-namespaces
         """,
 }
 
 
+_ALIAS_KEY_LAST_DEPLOYED_AT = 'lastDeployedAt'
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
-  """Lists services in a Knative cluster."""
+  """Lists services in a KubeRun cluster."""
 
   detailed_help = _DETAILED_HELP
   flags = [
@@ -60,13 +65,17 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
     super(List, cls).Args(parser)
     base.ListCommand._Flags(parser)
     base.URI_FLAG.RemoveFromParser(parser)
+    pretty_print.AddPrettyPrintTransform(parser)
     columns = [
-        pretty_print.READY_COLUMN,
-        'name:label=SERVICE',
-        'namespace:label=NAMESPACE',
-        'url',
-        'last_modifier:label="LAST DEPLOYED BY"',
-        'last_transition_time:label="LAST DEPLOYED AT"',
+        pretty_print.READY_COLUMN_DICT,
+        'metadata.name:label=SERVICE',
+        'metadata.namespace:label=NAMESPACE',
+        'status.url:label=URL',
+        ('metadata.annotations["%s"]'
+         ':label="LAST DEPLOYED BY":alias=LAST_DEPLOYED_BY' %
+         kubernetes_consts.ANN_LAST_MODIFIER),
+        ('aliases.%s:label="LAST DEPLOYED AT"'
+         ':alias=LAST_DEPLOYED_AT' % _ALIAS_KEY_LAST_DEPLOYED_AT),
     ]
     parser.display_info.AddFormat('table({})'.format(','.join(columns)))
 
@@ -75,7 +84,33 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
 
   def FormatOutput(self, out, args):
     if out:
-      json_object = json.loads(out)
-      return [service.Service(x) for x in json_object]
+      return _AddAliases(json.loads(out))
     else:
       raise exceptions.Error('Cannot list services')
+
+
+def _AddAliases(service_list):
+  """Add aliases to embedded fields displayed in the output.
+
+  Adds aliases to embedded fields that would require a more complex expression
+  to be shown in the output table.
+
+  Args:
+   service_list: list of services unmarshalled from json
+
+  Returns:
+   list of dictionaries with aliases representing the services from the input
+  """
+  res = []
+  for service_dict in service_list:
+    ready_cond = k8s_object_printer.ReadyCondition(service_dict)
+    d = structuredout.DictWithAliases(service_dict)
+    if ready_cond is not None:
+      d.AddAlias(
+          pretty_print.READY_COLUMN_ALIAS_KEY,
+          ready_cond.get(kubernetes_consts.FIELD_STATUS,
+                         kubernetes_consts.VAL_UNKNOWN))
+      d.AddAlias(_ALIAS_KEY_LAST_DEPLOYED_AT,
+                 ready_cond.get(kubernetes_consts.FIELD_LAST_TRANSITION_TIME))
+    res.append(d)
+  return res

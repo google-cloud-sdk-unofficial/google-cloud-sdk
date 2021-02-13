@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Update traffic settings of a Knative service."""
+"""Update traffic settings of a KubeRun service."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 import json
 
-from googlecloudsdk.api_lib.kuberun import service
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import flags
 from googlecloudsdk.command_lib.kuberun import kuberun_command
@@ -50,7 +49,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateTraffic(kuberun_command.KubeRunStreamingCommandWithResult):
-  """Updates the traffic settings of a Knative service."""
+  """Updates the traffic settings of a KubeRun service."""
 
   detailed_help = _DETAILED_HELP
   flags = [
@@ -65,7 +64,7 @@ class UpdateTraffic(kuberun_command.KubeRunStreamingCommandWithResult):
     super(UpdateTraffic, cls).Args(parser)
     parser.add_argument(
         'service',
-        help='Knative service for which to update the traffic settings.')
+        help='KubeRun service for which to update the traffic settings.')
     resource_printer.RegisterFormatter(
         traffic_printer.TRAFFIC_PRINTER_FORMAT,
         traffic_printer.TrafficPrinter,
@@ -80,11 +79,12 @@ class UpdateTraffic(kuberun_command.KubeRunStreamingCommandWithResult):
 
   def FormatOutput(self, out, args):
     if out:
-      svc = service.Service(json.loads(out))
-      return traffic_pair.GetTrafficTargetPairs(svc.spec_traffic,
-                                                svc.status_traffic,
-                                                svc.latest_ready_revision,
-                                                svc.url)
+      svc = json.loads(out)
+      return traffic_pair.GetTrafficTargetPairsDict(
+          svc['spec']['traffic'],
+          svc.get('status', {}).get('traffic', []),
+          svc.get('status', {}).get('latestReadyRevisionName'),
+          svc.get('status', {}).get('url'))
     else:
       raise exceptions.Error('Failed to update traffic for service [{}]'.format(
           args.service))

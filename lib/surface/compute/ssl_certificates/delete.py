@@ -32,9 +32,9 @@ from googlecloudsdk.command_lib.compute.ssl_certificates import ssl_certificates
 class Delete(base.DeleteCommand):
   """Delete Compute Engine SSL certificates.
 
-  *{command}* deletes one or more Compute Engine SSL certificates.
-  SSL certificates can only be deleted when no other resources (e.g.,
-  target HTTPS proxies) refer to them.
+  *{command}* deletes one or more Compute Engine SSL certificate resources.
+  SSL certificate resources can only be deleted when no other resources (for
+  example, target HTTPS proxies) refer to them.
   """
 
   SSL_CERTIFICATE_ARG = None
@@ -79,17 +79,18 @@ Delete.detailed_help = {
         'Delete Compute Engine SSL certificates',
     'DESCRIPTION':
         """\
-        *{command}* deletes one or more Compute Engine SSL certificates.
-        SSL certificates can only be deleted when no other resources (for
-        example, target HTTPS proxies) refer to them.
+        *{command}* deletes one or more Compute Engine SSL certificate
+        resources. SSL certificates can only be deleted when no other resources
+        (for example, target HTTPS proxies) refer to them.
         """,
     'EXAMPLES':
         """\
-        To delete a certificate 'my-cert', run:
+        To delete a certificate resource 'my-cert', run:
 
             $ {command} my-cert
 
-        To delete certificates 'my-cert1', 'my-cert2' and 'my-cert3', run:
+        To delete certificate resources 'my-cert1', 'my-cert2' and 'my-cert3',
+        run:
 
             $ {command} my-cert1 my-cert2 my-cert3
         """,

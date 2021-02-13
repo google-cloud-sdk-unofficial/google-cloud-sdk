@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for describing SSL certificates."""
+"""Command for describing SSL certificate resources."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -33,7 +33,7 @@ class Describe(base.DescribeCommand):
   """Describe a Compute Engine SSL certificate.
 
     *{command}* displays all data (except private keys) associated with
-    Compute Engine SSL certificate in a project.
+    Compute Engine SSL certificate resources in a project.
   """
 
   SSL_CERTIFICATE_ARG = None
@@ -73,7 +73,7 @@ Describe.detailed_help = {
     'DESCRIPTION':
         """\
         *{command}* displays all data (except private keys) associated with
-        Compute Engine SSL certificate in a project.
+        Compute Engine SSL certificate resources in a project.
         """,
     'EXAMPLES':
         """\

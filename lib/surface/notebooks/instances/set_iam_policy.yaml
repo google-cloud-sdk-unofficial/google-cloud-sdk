@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: Set the IAM policy for an Instance.
@@ -22,7 +22,7 @@
 
   request:
     collection: notebooks.projects.locations.instances
-    api_version: v1beta1
+    api_version: v1
 
   arguments:
     resource:

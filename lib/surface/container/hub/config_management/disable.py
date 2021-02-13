@@ -35,6 +35,7 @@ class Disable(base.DisableCommand):
 
   FEATURE_NAME = 'configmanagement'
   FEATURE_DISPLAY_NAME = 'Config Management'
+  FEATURE_API = 'anthosconfigmanagement.googleapis.com'
 
   def Run(self, args):
     self.RunCommand(args)

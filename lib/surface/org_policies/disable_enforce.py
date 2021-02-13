@@ -57,7 +57,7 @@ class DisableEnforce(interfaces.OrgPolicyGetAndUpdateCommand):
     Returns:
       The updated policy.
     """
-    messages = service.OrgPolicyMessages()
+    messages = service.OrgPolicyMessages(self.ReleaseTrack())
     new_rule = messages.GoogleCloudOrgpolicyV2alpha1PolicySpecPolicyRule()
     new_rule.enforce = False
 

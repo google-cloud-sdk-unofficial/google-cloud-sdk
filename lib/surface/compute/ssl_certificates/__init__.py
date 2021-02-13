@@ -22,13 +22,16 @@ from googlecloudsdk.calliope import base
 
 
 class SslCertificates(base.Group):
-  """List, create, and delete Compute Engine SSL certificates.
+  """List, create, and delete Compute Engine SSL certificate resources.
 
-  List, create, and delete Compute Engine SSL certificates that you can use to
-  encrypt traffic between clients and a load balancer. The relevant load
-  balancer types are SSL Proxy, external HTTPS, and internal HTTPS. You refer
-  to the SSL certificate resource in the target SSL proxy or the target HTTPS
-  proxy. For more information, see:
+  List, create, and delete Compute Engine SSL certificate resources that you can
+  use to encrypt traffic between clients and a load balancer. An SSL
+  certificate resource contains both a private key and the SSL certificate
+  itself. You refer to the SSL certificate resource in the target SSL proxy or
+  the target HTTPS proxy.
+
+  The relevant load balancer types are SSL Proxy, external HTTPS, and internal
+  HTTPS. For more information, see:
   [SSL certificates
   documentation](https://cloud.google.com/load-balancing/docs/ssl-certificates)
   """

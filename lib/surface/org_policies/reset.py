@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.org_policies import interfaces
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Reset(interfaces.OrgPolicyGetAndUpdateCommand):
   r"""Reset the policy to the default for the constraint.
 

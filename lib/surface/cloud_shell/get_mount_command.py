@@ -67,7 +67,7 @@ class GetMountCommand(base.Command):
       raise util.UnsupportedPlatform(
           'get-mount-command is not currently supported on Windows')
     else:
-      connection_info = util.PrepareV1Environment(args)
+      connection_info = util.PrepareEnvironment(args)
       log.Print('sshfs {user}@{host}: {mount_dir} -p {port} '
                 '-oIdentityFile={key_file} -oStrictHostKeyChecking=no'.format(
                     user=connection_info.user,

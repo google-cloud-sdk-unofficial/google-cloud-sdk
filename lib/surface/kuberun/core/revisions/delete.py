@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Delete a Knative revision."""
+"""Delete a KubeRun revision."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,7 +27,7 @@ from googlecloudsdk.core.console import console_io
 
 _DETAILED_HELP = {
     'EXAMPLES': """
-        To delete a Knative revision, run:
+        To delete a KubeRun revision, run:
 
             $ {command} <revision-name>
         """,
@@ -36,7 +36,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(kuberun_command.KubeRunCommand, base.DeleteCommand):
-  """Deletes a Knative revision."""
+  """Deletes a KubeRun revision."""
 
   detailed_help = _DETAILED_HELP
   flags = [
@@ -49,7 +49,7 @@ class Delete(kuberun_command.KubeRunCommand, base.DeleteCommand):
   def Args(cls, parser):
     super(Delete, cls).Args(parser)
     parser.add_argument('revision',
-                        help='The Knative revision to delete.')
+                        help='The KubeRun revision to delete.')
 
   def OperationResponseHandler(self, response, args):
     if response.failed:

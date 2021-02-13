@@ -105,7 +105,7 @@ cloudshell:~/REMOTE-DIR
         action='append')
 
   def Run(self, args):
-    connection_info = util.PrepareV1Environment(args)
+    connection_info = util.PrepareEnvironment(args)
     remote = ssh.Remote(host=connection_info.host, user=connection_info.user)
     command = ssh.SCPCommand(
         sources=[ToFileReference(src, remote) for src in args.sources],

@@ -226,13 +226,11 @@ class Register(base.CreateCommand):
     # meaning that if any of the required arguments is specified,
     # all are required.
     workload_identity = credentials.add_group(
-        hidden=cls.ReleaseTrack() is base.ReleaseTrack.GA,
         help='Workload Identity')
     workload_identity.add_argument(
         '--enable-workload-identity',
         required=True,
         action='store_true',
-        hidden=cls.ReleaseTrack() is base.ReleaseTrack.GA,
         help=textwrap.dedent("""\
           Enable Workload Identity when registering the cluster with Hub.
           Requires gcloud alpha or beta.
@@ -243,7 +241,6 @@ class Register(base.CreateCommand):
     workload_identity_mutex.add_argument(
         '--public-issuer-url',
         type=str,
-        hidden=cls.ReleaseTrack() is base.ReleaseTrack.GA,
         help=textwrap.dedent("""\
           Skip auto-discovery and register the cluster with this issuer URL.
           Use this option when the OpenID Provider Configuration and associated

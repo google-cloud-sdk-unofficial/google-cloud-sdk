@@ -26,15 +26,15 @@ from googlecloudsdk.calliope import base
 class KubeRun(base.Group):
   """Top level command to interact with KubeRun.
 
-  This set of commands can be used create or change Knative services, events
-  or manage local projects.
+  Use this set of commands to create and manage KubeRun resources
+  and some related project settings.
   """
   category = base.COMPUTE_CATEGORY
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To list your Knative services, run:
+          To list your KubeRun services, run:
 
             $ {command} core services list
       """,

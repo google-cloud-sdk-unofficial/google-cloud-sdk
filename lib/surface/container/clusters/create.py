@@ -186,14 +186,15 @@ cloudNatTemplate = string.Template(
 )
 
 
-def MaybeLogCloudNatHelpText(args, is_autogke, location, project_id):
-  if is_autogke and (getattr(args, 'enable_private_nodes', False) and
-                     (hasattr(args, 'network') or hasattr('subnetwork'))):
+def MaybeLogCloudNatHelpText(args, is_autopilot, location, project_id):
+  if is_autopilot and (getattr(args, 'enable_private_nodes', False) and
+                       (hasattr(args, 'network') or hasattr('subnetwork'))):
     log.warning(cloudNatTemplate.substitute(REGION=location,
                                             PROJECT_ID=project_id))
 
 
-def ParseCreateOptionsBase(args, is_autogke, get_default, location, project_id):
+def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
+                           project_id):
   """Parses the flags provided with the cluster creation command."""
   if hasattr(args, 'addons') and args.IsSpecified('addons') and \
       api_adapter.DASHBOARD in args.addons:
@@ -222,10 +223,11 @@ def ParseCreateOptionsBase(args, is_autogke, get_default, location, project_id):
   metadata = metadata_utils.ConstructMetadataDict(
       get_default('metadata'), get_default('metadata_from_file'))
 
-  flags.ValidateCloudRunConfigCreateArgs(
-      get_default('cloud_run_config'), get_default('addons'))
+  cloud_run_config = flags.GetLegacyCloudRunFlag('{}_config', args, get_default)
+  flags.ValidateCloudRunConfigCreateArgs(cloud_run_config,
+                                         get_default('addons'))
 
-  MaybeLogCloudNatHelpText(args, is_autogke, location, project_id)
+  MaybeLogCloudNatHelpText(args, is_autopilot, location, project_id)
 
   return api_adapter.CreateClusterOptions(
       accelerators=get_default('accelerator'),
@@ -235,7 +237,7 @@ def ParseCreateOptionsBase(args, is_autogke, get_default, location, project_id):
       cluster_ipv4_cidr=get_default('cluster_ipv4_cidr'),
       cluster_secondary_range_name=get_default('cluster_secondary_range_name'),
       cluster_version=get_default('cluster_version'),
-      cloud_run_config=get_default('cloud_run_config'),
+      cloud_run_config=cloud_run_config,
       node_version=get_default('node_version'),
       create_subnetwork=get_default('create_subnetwork'),
       disable_default_snat=get_default('disable_default_snat'),
@@ -253,7 +255,7 @@ def ParseCreateOptionsBase(args, is_autogke, get_default, location, project_id):
       enable_ip_alias=enable_ip_alias,
       enable_intra_node_visibility=get_default('enable_intra_node_visibility'),
       enable_kubernetes_alpha=get_default('enable_kubernetes_alpha'),
-      enable_cloud_run_alpha=args.enable_cloud_run_alpha if (hasattr(args, 'enable_cloud_run_alpha') and args.IsSpecified('enable_cloud_run_alpha')) else None,
+      enable_cloud_run_alpha=flags.GetLegacyCloudRunFlag('enable_{}_alpha', args, get_default),
       enable_legacy_authorization=get_default('enable_legacy_authorization'),
       enable_master_authorized_networks=\
         get_default('enable_master_authorized_networks'),
@@ -335,7 +337,7 @@ def ParseCreateOptionsBase(args, is_autogke, get_default, location, project_id):
       enable_shielded_nodes=get_default('enable_shielded_nodes'),
       max_surge_upgrade=get_default('max_surge_upgrade'),
       max_unavailable_upgrade=get_default('max_unavailable_upgrade'),
-      auto_gke=is_autogke)
+      autopilot=is_autopilot)
 
 
 GA = 'ga'
@@ -538,6 +540,9 @@ flags_to_add = {
         'workloadmetadata':
             (lambda p: flags.AddWorkloadMetadataFlag(p, use_mode=False)),
         'workloadmonitoringeap': flags.AddEnableWorkloadMonitoringEapFlag,
+        'privateEndpointSubnetwork': flags.AddPrivateEndpointSubnetworkFlag,
+        'crossConnectNetworks':
+            flags.AddCrossConnectSubnetworksFlag,
     },
     ALPHA: {
         'accelerator': flags.AddAcceleratorArgs,
@@ -627,6 +632,9 @@ flags_to_add = {
         'workloadmetadata':
             (lambda p: flags.AddWorkloadMetadataFlag(p, use_mode=False)),
         'workloadmonitoringeap': flags.AddEnableWorkloadMonitoringEapFlag,
+        'privateEndpointSubnetwork': flags.AddPrivateEndpointSubnetworkFlag,
+        'crossConnectNetworks':
+            flags.AddCrossConnectSubnetworksFlag,
     },
 }
 
@@ -670,7 +678,7 @@ class Create(base.CreateCommand):
           """,
   }
 
-  autogke = False
+  autopilot = False
   default_flag_values = base_flag_defaults
 
   @staticmethod
@@ -679,7 +687,7 @@ class Create(base.CreateCommand):
 
   def ParseCreateOptions(self, args, location, project_id):
     get_default = lambda key: AttrValue(args, key, self.default_flag_values)
-    return ParseCreateOptionsBase(args, self.autogke, get_default, location,
+    return ParseCreateOptionsBase(args, self.autopilot, get_default, location,
                                   project_id)
 
   def Run(self, args):
@@ -792,7 +800,7 @@ class CreateBeta(Create):
 
   def ParseCreateOptions(self, args, location, project_id):
     get_default = lambda key: AttrValue(args, key, self.default_flag_values)
-    ops = ParseCreateOptionsBase(args, self.autogke, get_default, location,
+    ops = ParseCreateOptionsBase(args, self.autopilot, get_default, location,
                                  project_id)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
@@ -839,6 +847,10 @@ class CreateBeta(Create):
     ops.ephemeral_storage = get_default('ephemeral_storage')
     ops.enable_workload_monitoring_eap = \
       get_default('enable_workload_monitoring_eap')
+    ops.private_endpoint_subnetwork = \
+        get_default('private_endpoint_subnetwork')
+    ops.cross_connect_subnetworks = \
+        get_default('cross_connect_subnetworks')
     return ops
 
 
@@ -852,7 +864,7 @@ class CreateAlpha(Create):
 
   def ParseCreateOptions(self, args, location, project_id):
     get_default = lambda key: AttrValue(args, key, self.default_flag_values)
-    ops = ParseCreateOptionsBase(args, self.autogke, get_default, location,
+    ops = ParseCreateOptionsBase(args, self.autopilot, get_default, location,
                                  project_id)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
@@ -912,4 +924,8 @@ class CreateAlpha(Create):
         'workload_identity_certificate_authority')
     ops.enable_workload_monitoring_eap = \
       get_default('enable_workload_monitoring_eap')
+    ops.private_endpoint_subnetwork = \
+        get_default('private_endpoint_subnetwork')
+    ops.cross_connect_subnetworks = \
+        get_default('cross_connect_subnetworks')
     return ops

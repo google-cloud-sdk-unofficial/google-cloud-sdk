@@ -1,5 +1,4 @@
 - release_tracks: [BETA]
-  hidden: true
   help_text:
     brief: Get an On-Demand Scanning operation.
     description: |

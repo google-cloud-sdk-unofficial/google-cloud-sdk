@@ -117,14 +117,14 @@ def _Run(args, holder, ssl_certificate_ref):
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Create a Compute Engine SSL certificate.
+  """Create a Compute Engine SSL certificate resource.
 
-  *{command}* is used to create SSL certificates which can be used to configure
-  a target HTTPS proxy. An SSL certificate consists of a certificate and
-  private key. The private key is encrypted before it is stored.
+  *{command}* is used to create SSL certificate resources. An SSL certificate
+  resource consists of the certificate itself and a private key. The private key
+  is encrypted before it is stored.
 
-  You can create either a managed or a self-managed SslCertificate. A managed
-  SslCertificate will be provisioned and renewed for you, when you specify
+  You can create either a managed or a self-managed SslCertificate resource. A
+  managed SslCertificate is provisioned and renewed for you, when you specify
   the `--domains` flag. A self-managed certificate is created by passing the
   certificate obtained from Certificate Authority through `--certificate` and
   `--private-key` flags.
@@ -154,20 +154,21 @@ Create.detailed_help = {
         'Create a Compute Engine SSL certificate',
     'DESCRIPTION':
         """\
-        *{command}* creates SSL certificates, which you can use in a target
-        HTTPS or target SSL proxy. An SSL certificate resource consists of a
-        certificate and private key. The private key is encrypted before it is
-        stored.
+        *{command}* creates SSL certificate resources, which you can use in a
+        target HTTPS or target SSL proxy. An SSL certificate resource consists
+        of a certificate and private key. The private key is encrypted before it
+        is stored.
 
-        You can create either a managed or a self-managed SslCertificate. A managed
-        SslCertificate will be provisioned and renewed for you, when you specify
-        the `--domains` flag. A self-managed certificate is created by passing the
-        certificate obtained from Certificate Authority through `--certificate` and
-        `--private-key` flags.
+        You can create either a managed or a self-managed SslCertificate
+        resource. A managed SslCertificate is provisioned and renewed for you. A
+        self-managed certificate is created by passing the
+        certificate obtained from Certificate Authority through `--certificate`
+        and `--private-key` flags.
         """,
     'EXAMPLES':
         """\
-        To create a certificate 'my-cert' from a certificate placed under path
+        To create a self-managed certificate resource 'my-cert' from a
+        certificate placed under path
         'foo/cert' and a private key placed under path 'foo/pk', run:
 
             $ {command} my-cert --certificate=foo/cert --private-key=foo/pk

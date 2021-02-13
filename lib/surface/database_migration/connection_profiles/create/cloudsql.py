@@ -42,7 +42,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class MySQL(base.Command):
+class CloudSQL(base.Command):
   """Create a Database Migration Service connection profile for Cloud SQL."""
 
   detailed_help = DETAILED_HELP
@@ -90,16 +90,17 @@ class MySQL(base.Command):
     connection_profile_ref = args.CONCEPTS.connection_profile.Parse()
     parent_ref = connection_profile_ref.Parent().RelativeName()
 
-    cp_client = connection_profiles.ConnectionProfilesClient()
+    cp_client = connection_profiles.ConnectionProfilesClient(
+        self.ReleaseTrack())
     result_operation = cp_client.Create(
         parent_ref,
         connection_profile_ref.connectionProfilesId,
         'CLOUDSQL',
         args)
 
-    client = api_util.GetClientInstance()
-    messages = api_util.GetMessagesModule()
-    resource_parser = api_util.GetResourceParser()
+    client = api_util.GetClientInstance(self.ReleaseTrack())
+    messages = api_util.GetMessagesModule(self.ReleaseTrack())
+    resource_parser = api_util.GetResourceParser(self.ReleaseTrack())
 
     operation_ref = resource_parser.Create(
         'datamigration.projects.locations.operations',
@@ -110,3 +111,9 @@ class MySQL(base.Command):
     return client.projects_locations_operations.Get(
         messages.DatamigrationProjectsLocationsOperationsGetRequest(
             name=operation_ref.operationsId))
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CloudSQLGA(CloudSQL):
+  """Create a Database Migration Service connection profile for Cloud SQL."""

@@ -34,6 +34,7 @@ DETAILED_HELP = {
 }
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """Lists the defined buckets."""
 
@@ -66,6 +67,20 @@ class List(base.ListCommand):
             parent=util.GetBucketLocationFromArgs(args)))
     for bucket in result.buckets:
       yield bucket
+
+
+# pylint: disable=missing-docstring
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  __doc__ = List.__doc__
+
+  @staticmethod
+  def Args(parser):
+    List.Args(parser)
+    parser.display_info.AddFormat(
+        'table(name.segment(-3):label=LOCATION, '
+        'name.segment(-1):label=BUCKET_ID, retentionDays, restrictedFields, '
+        'lifecycle_state, locked, create_time, update_time)')
 
 
 List.detailed_help = DETAILED_HELP

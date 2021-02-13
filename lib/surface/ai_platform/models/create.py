@@ -97,7 +97,7 @@ class Create(base.CreateCommand):
           enable_console_logging=enable_console_logging,
           labels=labels,
           description=args.description)
-      log.CreatedResource(model.name, kind='ml engine model')
+      log.CreatedResource(model.name, kind='ai platform model')
 
   def Run(self, args):
     self._Run(args)

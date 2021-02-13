@@ -89,9 +89,9 @@ class Ssh(base.Command):
                 '`--authorize-session` flag.')
     command_list = args.command.split(' ') if args.command else ['bash -l']
     project = properties.VALUES.core.project.Get()
-    connection_info = util.PrepareV1Environment(args)
+    connection_info = util.PrepareEnvironment(args)
     if args.authorize_session:
-      util.AuthorizeV1Environment()
+      util.AuthorizeEnvironment()
     command = ssh.SSHCommand(
         remote=ssh.Remote(host=connection_info.host, user=connection_info.user),
         port=six.text_type(connection_info.port),
@@ -121,7 +121,7 @@ class Ssh(base.Command):
       self.done.wait(
           (util.MIN_CREDS_EXPIRY - datetime.timedelta(minutes=2)).seconds)
       if not self.done.is_set():
-        util.AuthorizeV1Environment()
+        util.AuthorizeEnvironment()
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -187,9 +187,9 @@ class SshAlpha(base.Command):
           '`--authorize-session` flag.')
     command_list = args.command.split(' ') if args.command else ['bash -l']
     project = properties.VALUES.core.project.Get()
-    connection_info = util.PrepareV1Environment(args)
+    connection_info = util.PrepareEnvironment(args)
     if args.authorize_session:
-      util.AuthorizeV1Environment()
+      util.AuthorizeEnvironment()
     command = ssh.SSHCommand(
         remote=ssh.Remote(host=connection_info.host, user=connection_info.user),
         port=six.text_type(connection_info.port),
@@ -220,4 +220,4 @@ class SshAlpha(base.Command):
       self.done.wait(
           (util.MIN_CREDS_EXPIRY - datetime.timedelta(minutes=2)).seconds)
       if not self.done.is_set():
-        util.AuthorizeV1Environment()
+        util.AuthorizeEnvironment()

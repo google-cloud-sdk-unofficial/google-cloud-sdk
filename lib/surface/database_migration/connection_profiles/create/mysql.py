@@ -44,8 +44,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class MySQL(base.Command):
+class _MySQL(object):
   """Create a Database Migration Service connection profile for MySQL."""
 
   detailed_help = DETAILED_HELP
@@ -66,8 +65,6 @@ class MySQL(base.Command):
     cp_flags.AddPasswordFlagGroup(parser, required=True)
     cp_flags.AddHostFlag(parser, required=True)
     cp_flags.AddPortFlag(parser, required=True)
-    cp_flags.AddSslConfigGroup(parser)
-    cp_flags.AddCloudSQLInstanceFlag(parser)
     cp_flags.AddProviderFlag(parser)
     flags.AddLabelsCreateFlags(parser)
 
@@ -88,16 +85,17 @@ class MySQL(base.Command):
     if args.prompt_for_password:
       args.password = console_io.PromptPassword('Please Enter Password: ')
 
-    cp_client = connection_profiles.ConnectionProfilesClient()
+    cp_client = connection_profiles.ConnectionProfilesClient(
+        self.ReleaseTrack())
     result_operation = cp_client.Create(
         parent_ref,
         connection_profile_ref.connectionProfilesId,
         'MYSQL',
         args)
 
-    client = api_util.GetClientInstance()
-    messages = api_util.GetMessagesModule()
-    resource_parser = api_util.GetResourceParser()
+    client = api_util.GetClientInstance(self.ReleaseTrack())
+    messages = api_util.GetMessagesModule(self.ReleaseTrack())
+    resource_parser = api_util.GetResourceParser(self.ReleaseTrack())
 
     operation_ref = resource_parser.Create(
         'datamigration.projects.locations.operations',
@@ -108,3 +106,26 @@ class MySQL(base.Command):
     return client.projects_locations_operations.Get(
         messages.DatamigrationProjectsLocationsOperationsGetRequest(
             name=operation_ref.operationsId))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class MySQLAlpha(_MySQL, base.Command):
+  """Create a Database Migration Service connection profile for MySQL."""
+
+  @staticmethod
+  def Args(parser):
+    _MySQL.Args(parser)
+    cp_flags.AddSslConfigGroup(parser, base.ReleaseTrack.ALPHA)
+    cp_flags.AddInstanceFlag(parser)
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class MySQLGA(_MySQL, base.Command):
+  """Create a Database Migration Service connection profile for MySQL."""
+
+  @staticmethod
+  def Args(parser):
+    _MySQL.Args(parser)
+    cp_flags.AddSslConfigGroup(parser, base.ReleaseTrack.GA)
+    cp_flags.AddCloudSQLInstanceFlag(parser)

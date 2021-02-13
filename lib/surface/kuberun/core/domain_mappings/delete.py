@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*- #
 # Copyright 2020 Google LLC. All Rights Reserved.
 #
@@ -13,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Deletes a domain mapping of a Knative service."""
+"""Deletes a domain mapping of a KubeRun service."""
 
 from __future__ import absolute_import
 from __future__ import division

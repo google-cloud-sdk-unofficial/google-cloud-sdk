@@ -80,7 +80,7 @@ class MySQL(base.Command):
     source_ref = args.CONCEPTS.source.Parse()
     destination_ref = args.CONCEPTS.destination.Parse()
 
-    cp_client = migration_jobs.MigrationJobsClient()
+    cp_client = migration_jobs.MigrationJobsClient(self.ReleaseTrack())
     result_operation = cp_client.Create(
         parent_ref,
         migration_job_ref.migrationJobsId,
@@ -88,9 +88,9 @@ class MySQL(base.Command):
         destination_ref,
         args)
 
-    client = api_util.GetClientInstance()
-    messages = api_util.GetMessagesModule()
-    resource_parser = api_util.GetResourceParser()
+    client = api_util.GetClientInstance(self.ReleaseTrack())
+    messages = api_util.GetMessagesModule(self.ReleaseTrack())
+    resource_parser = api_util.GetResourceParser(self.ReleaseTrack())
 
     operation_ref = resource_parser.Create(
         'datamigration.projects.locations.operations',

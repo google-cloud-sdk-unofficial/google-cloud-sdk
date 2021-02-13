@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Create a domain mapping for a Knative service."""
+"""Create a domain mapping for a KubeRun service."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 import json
 
-from googlecloudsdk.api_lib.kuberun import domainmapping
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import flags
 from googlecloudsdk.command_lib.kuberun import kuberun_command
@@ -63,10 +62,13 @@ class Create(kuberun_command.KubeRunCommandWithOutput):
 
   def FormatOutput(self, out, args):
     if out:
-      mapping = domainmapping.DomainMapping(json.loads(out))
-      records = mapping.records
+      mapping = json.loads(out)
+      status = mapping.get('status', {})
+      records = status.get('resourceRecords', [{}])
+      spec = mapping.get('spec', {})
+      default_name = spec.get('routeName')
       for r in records:
-        r.name = r.name or mapping.routeName
+        r['name'] = r.get('name') or default_name
       return records
     else:
       raise exceptions.Error('Could not map domain [{}] to service [{}]'.format(

@@ -93,6 +93,7 @@ def _CommonArgs(parser,
   instances_flags.AddNetworkTierArgs(parser, instance=True)
   instances_flags.AddPrivateNetworkIpArgs(parser)
   instances_flags.AddMinNodeCpuArg(parser)
+  instances_flags.AddNestedVirtualizationArgs(parser)
 
   instance_templates_flags.AddServiceProxyConfigArgs(parser)
 
@@ -397,7 +398,6 @@ def _RunCreate(compute_api,
                support_kms=False,
                support_location_hint=False,
                support_post_key_revocation_action_type=False,
-               support_enable_nested_virtualization=False,
                support_threads_per_core=False,
                support_multi_writer=False):
   """Common routine for creating instance template.
@@ -413,8 +413,6 @@ def _RunCreate(compute_api,
       support_location_hint: Indicate whether location hint is supported.
       support_post_key_revocation_action_type: Indicate whether
         post_key_revocation_action_type is supported.
-      support_enable_nested_virtualization: Indicate whether enabling and
-        disabling nested virtualization is supported.
       support_threads_per_core: Indicates whether changing the number of threads
         per core is supported.
       support_multi_writer: Indicates whether a disk can have multiple writers.
@@ -632,13 +630,14 @@ def _RunCreate(compute_api,
 
   # If either enable-nested-virtualization or threads-per-core are specified,
   # make an AdvancedMachineFeatures message.
-  if ((support_enable_nested_virtualization and
-       args.enable_nested_virtualization is not None) or
-      (support_threads_per_core and args.threads_per_core is not None)):
+  has_threads_per_core = (
+      support_threads_per_core and args.threads_per_core is not None)
+  if (args.enable_nested_virtualization is not None or has_threads_per_core):
+    threads_per_core = args.threads_per_core if has_threads_per_core else None
     instance_template.properties.advancedMachineFeatures = (
         instance_utils.CreateAdvancedMachineFeaturesMessage(
             client.messages, args.enable_nested_virtualization,
-            args.threads_per_core))
+            threads_per_core))
 
   request = client.messages.ComputeInstanceTemplatesInsertRequest(
       instanceTemplate=instance_template, project=instance_template_ref.project)
@@ -671,7 +670,6 @@ class Create(base.CreateCommand):
   _support_kms = True
   _support_location_hint = False
   _support_post_key_revocation_action_type = False
-  _support_enable_nested_virtualization = False
   _support_threads_per_core = False
   _support_multi_writer = False
 
@@ -707,8 +705,6 @@ class Create(base.CreateCommand):
         support_location_hint=self._support_location_hint,
         support_post_key_revocation_action_type=self
         ._support_post_key_revocation_action_type,
-        support_enable_nested_virtualization=self
-        ._support_enable_nested_virtualization,
         support_threads_per_core=self._support_threads_per_core,
         support_multi_writer=self._support_multi_writer)
 
@@ -732,7 +728,6 @@ class CreateBeta(Create):
   _support_resource_policy = True
   _support_location_hint = False
   _support_post_key_revocation_action_type = False
-  _support_enable_nested_virtualization = False
   _support_threads_per_core = False
   _support_multi_writer = True
 
@@ -770,8 +765,6 @@ class CreateBeta(Create):
         support_location_hint=self._support_location_hint,
         support_post_key_revocation_action_type=self
         ._support_post_key_revocation_action_type,
-        support_enable_nested_virtualization=self
-        ._support_enable_nested_virtualization,
         support_threads_per_core=self._support_threads_per_core,
         support_multi_writer=self._support_multi_writer)
 
@@ -795,7 +788,6 @@ class CreateAlpha(Create):
   _support_resource_policy = True
   _support_location_hint = True
   _support_post_key_revocation_action_type = True
-  _support_enable_nested_virtualization = True
   _support_threads_per_core = True
   _support_multi_writer = True
 
@@ -816,7 +808,6 @@ class CreateAlpha(Create):
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
-    instances_flags.AddNestedVirtualizationArgs(parser)
     instances_flags.AddThreadsPerCoreArgs(parser)
     instances_flags.AddStackTypeArgs(parser)
     instances_flags.AddIpv6NetworkTierArgs(parser)
@@ -839,8 +830,6 @@ class CreateAlpha(Create):
         support_location_hint=self._support_location_hint,
         support_post_key_revocation_action_type=self
         ._support_post_key_revocation_action_type,
-        support_enable_nested_virtualization=self
-        ._support_enable_nested_virtualization,
         support_threads_per_core=self._support_threads_per_core,
         support_multi_writer=self._support_multi_writer)
 

@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Revisions(base.Group):
-  """Create and manage Knative revisions on Kubernetes clusters.
+  """Create and manage KubeRun revisions on Google Kubernetes Engine clusters.
 
-  This set of commands can be used deploy or update a Knative revision.
+  This set of commands can be used deploy or update a KubeRun revision.
   """

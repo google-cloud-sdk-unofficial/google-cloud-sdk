@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to list Knative revisions in a Kubernetes cluster."""
+"""Command to list KubeRun revisions in a Kubernetes cluster."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -20,33 +20,41 @@ from __future__ import unicode_literals
 import json
 
 from googlecloudsdk.api_lib.kuberun import revision
+from googlecloudsdk.api_lib.kuberun import structuredout
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import flags
+from googlecloudsdk.command_lib.kuberun import k8s_object_printer
+from googlecloudsdk.command_lib.kuberun import kubernetes_consts
 from googlecloudsdk.command_lib.kuberun import kuberun_command
 from googlecloudsdk.command_lib.kuberun import pretty_print
+from googlecloudsdk.command_lib.kuberun import revision_printer
 from googlecloudsdk.core import exceptions
 
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To show all Knative revisions in the default namespace, run
+        To show all KubeRun revisions in the default namespace, run:
 
             $ {command}
 
-        To show all Knative revisions in a namespace, run
+        To show all KubeRun revisions in a specific namespace, run:
 
             $ {command} --namespace=my-namespace
 
-        To show all Knative revisions from all namespaces, run
+        To show all KubeRun revisions from all namespaces, run:
 
             $ {command} --all-namespaces
         """,
 }
 
 
+# lower-case to conform with convention for keys in the alias dictionary
+_ALIAS_KEY_ACTIVE = 'active'
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
-  """Lists revisions in a Knative cluster."""
+  """Lists revisions in a KubeRun cluster."""
 
   detailed_help = _DETAILED_HELP
   flags = [
@@ -60,14 +68,16 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
     super(List, cls).Args(parser)
     base.ListCommand._Flags(parser)
     base.URI_FLAG.RemoveFromParser(parser)
+    pretty_print.AddPrettyPrintTransform(parser)
     columns = [
-        pretty_print.READY_COLUMN,
-        'name:label=REVISION',
-        'active.yesno(yes="yes", no="")',
-        'service_name:label=SERVICE:sort=1',
-        'creation_timestamp.date("%Y-%m-%d %H:%M:%S %Z"):'
-        'label=DEPLOYED:sort=2:reverse',
-        'author:label="DEPLOYED BY"'
+        pretty_print.READY_COLUMN_DICT,
+        'metadata.name:label=REVISION',
+        'aliases.%s.yesno(yes="yes", no="")' % _ALIAS_KEY_ACTIVE,
+        'metadata.labels["%s"]:label=SERVICE:sort=1' % revision.SERVICE_LABEL,
+        ('metadata.creationTimestamp.date("%Y-%m-%d %H:%M:%S %Z"):'
+         'label=DEPLOYED:sort=2:reverse'),
+        ('metadata.annotations["%s"]:label="DEPLOYED BY"' %
+         revision.AUTHOR_ANNOTATION)
     ]
     parser.display_info.AddFormat('table({})'.format(','.join(columns)))
 
@@ -76,7 +86,33 @@ class List(kuberun_command.KubeRunCommandWithOutput, base.ListCommand):
 
   def FormatOutput(self, out, args):
     if out:
-      json_object = json.loads(out)
-      return [revision.Revision(x) for x in json_object]
+      return _AddAliases(json.loads(out))
     else:
       raise exceptions.Error('Cannot list revisions')
+
+
+def _AddAliases(revision_list):
+  """Add aliases to embedded fields displayed in the output.
+
+  Adds aliases to embedded fields that would require a more complex expression
+  to be shown in the output table.
+
+  Args:
+   revision_list: list of revisions unmarshalled from json
+
+  Returns:
+   list of dictionaries with aliases representing the services from the input
+  """
+  res = []
+  for revision_dict in revision_list:
+    d = structuredout.DictWithAliases(**revision_dict)
+    ready_cond = k8s_object_printer.ReadyCondition(revision_dict)
+    if ready_cond is not None:
+      d.AddAlias(
+          pretty_print.READY_COLUMN_ALIAS_KEY,
+          ready_cond.get(kubernetes_consts.FIELD_STATUS,
+                         kubernetes_consts.VAL_UNKNOWN))
+      d.AddAlias(_ALIAS_KEY_ACTIVE,
+                 revision_printer.Active(revision_dict))
+    res.append(d)
+  return res

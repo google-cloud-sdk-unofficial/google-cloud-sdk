@@ -113,7 +113,7 @@ class CreateCredConfig(base.CreateCommand):
           'subject_token_type':
               generator.get_token_type(args.subject_token_type),
           'token_url':
-              'https://sts.googleapis.com/v1beta/token',
+              'https://sts.googleapis.com/v1/token',
           'credential_source':
               generator.get_source(args.credential_source_type,
                                    args.credential_source_field_name),
@@ -124,7 +124,7 @@ class CreateCredConfig(base.CreateCommand):
             'https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/',
             args.service_account, ':generateAccessToken'))
 
-      files.WriteFileContents(args.output_file, json.dumps(output))
+      files.WriteFileContents(args.output_file, json.dumps(output, indent=2))
       log.CreatedResource(args.output_file, RESOURCE_TYPE)
     except cred_config.GeneratorError as cce:
       log.CreatedResource(args.output_file, RESOURCE_TYPE, failed=cce.message)

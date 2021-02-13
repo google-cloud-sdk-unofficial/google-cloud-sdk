@@ -100,13 +100,13 @@
         connector. For example, 10.132.0.0/28. Range must be unique and
         non-overlapping with existing ranges in the network.
     - group:
-        release_tracks: [ALPHA]
+        release_tracks: [ALPHA, BETA]
         mutex: true
         params:
         - group:
             help_text: |
               Scaling settings of a VPC Access Connector can be specified in terms of
-              throughput. This way of specifying scaling settings is deprecated.
+              throughput.
             params:
             - arg_name: min-throughput
               api_field: connector.minThroughput
@@ -128,7 +128,6 @@
             help_text: |
               Scaling settings of a VPC Access Connector can be specified in terms of number
               of Google Compute Engine VM instances underlying the connector autoscaling group.
-              This way of specifying scaling settings is fully supported.
             params:
             - arg_name: min-instances
               api_field: connector.minInstances
@@ -146,14 +145,14 @@
                 `--min-instances`.
     - arg_name: machine-type
       api_field: connector.machineType
-      release_tracks: [ALPHA]
+      release_tracks: [ALPHA, BETA]
       required: false
       help_text: |
-        Machine type of VMs underlying the VPC Access connector. Value must be a valid Machine
-        type. If left unspecified, the e2-micro machine type will be used.
+        Machine type of VMs underlying the VPC Access connector.
+        If left unspecified, the e2-micro machine type will be used.
     - arg_name: min-throughput
       api_field: connector.minThroughput
-      release_tracks: [BETA, GA]
+      release_tracks: [GA]
       required: false
       help_text: |
         Minimum throughput in Mbps. Value must be a multiple of 100 from 200 through 900.
@@ -162,7 +161,7 @@
       default: 200
     - arg_name: max-throughput
       api_field: connector.maxThroughput
-      release_tracks: [BETA, GA]
+      release_tracks: [GA]
       required: false
       help_text: |
         Maximum throughput in Mbps. Value must be a multiple of 100 from 300 through 1000.

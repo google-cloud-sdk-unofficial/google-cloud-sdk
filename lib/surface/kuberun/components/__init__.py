@@ -33,6 +33,6 @@ class Components(base.Group):
           """\
           To create a new Component, run:
 
-            $ {command} add COMPONENT --type TYPE --devkit DEVKIT
+            $ {command} create COMPONENT --type TYPE --devkit DEVKIT
       """,
   }
