@@ -37,10 +37,10 @@ class GetIamPolicy(base.ListCommand):
   """
 
   detailed_help = {
-      'EXAMPLES': textwrap.dedent("""\
+      'EXAMPLES': textwrap.dedent("""
           To print the IAM policy for a given service account, run:
 
-            $ {command} my-iam-account@somedomain.com
+            $ {command} my-iam-account@my-project.iam.gserviceaccount.com
           """),
       'DESCRIPTION': '\n\n'.join([
           '{description}',

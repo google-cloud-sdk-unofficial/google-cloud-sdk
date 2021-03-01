@@ -74,3 +74,9 @@ class Start(base.Command):
         timeout_s=args.timeout)
 
     return operation
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class StartGA(Start):
+  """Start a cluster."""

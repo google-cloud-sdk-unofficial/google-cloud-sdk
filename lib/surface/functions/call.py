@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 import json
 
-from googlecloudsdk.api_lib.functions import util
+from googlecloudsdk.api_lib.functions.v1 import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.functions import flags

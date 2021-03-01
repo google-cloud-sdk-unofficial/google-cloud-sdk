@@ -30,7 +30,7 @@ class Describe(base.DescribeCommand):
   """Show metadata for a service account from a project."""
 
   detailed_help = {
-      'DESCRIPTION': textwrap.dedent("""\
+      'DESCRIPTION': textwrap.dedent("""
           This command shows metadata for a service account.
 
           This call can fail for the following reasons:
@@ -38,10 +38,10 @@ class Describe(base.DescribeCommand):
               * The active user does not have permission to access the given
                 service account.
           """),
-      'EXAMPLES': textwrap.dedent("""\
+      'EXAMPLES': textwrap.dedent("""
           To print metadata for a service account from your project, run:
 
-            $ {command} my-iam-account@somedomain.com
+            $ {command} my-iam-account@my-project.iam.gserviceaccount.com
           """),
   }
 

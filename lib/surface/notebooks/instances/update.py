@@ -56,31 +56,37 @@ class Update(base.Command):
     flags.AddUpdateInstanceFlags(parser)
 
   def Run(self, args):
-    instance_service = util.GetClient().projects_locations_instances
+    release_track = self.ReleaseTrack()
+    client = util.GetClient(release_track)
+    messages = util.GetMessages(release_track)
+    instance_service = client.projects_locations_instances
     if args.IsSpecified('accelerator_type') or args.IsSpecified(
         'accelerator_core_count'):
       operation = instance_service.SetAccelerator(
-          instance_util.CreateSetAcceleratorRequest(args))
+          instance_util.CreateSetAcceleratorRequest(args, messages))
       instance_util.HandleLRO(
           operation,
           args,
           instance_service,
+          release_track,
           operation_type=instance_util.OperationType.UPDATE)
     if args.IsSpecified('labels'):
       operation = instance_service.SetLabels(
-          instance_util.CreateSetLabelsRequest(args))
+          instance_util.CreateSetLabelsRequest(args, messages))
       instance_util.HandleLRO(
           operation,
           args,
           instance_service,
+          release_track,
           operation_type=instance_util.OperationType.UPDATE)
     if args.IsSpecified('machine_type'):
       operation = instance_service.SetMachineType(
-          instance_util.CreateSetMachineTypeRequest(args))
+          instance_util.CreateSetMachineTypeRequest(args, messages))
       instance_util.HandleLRO(
           operation,
           args,
           instance_service,
+          release_track,
           operation_type=instance_util.OperationType.UPDATE)
 
 

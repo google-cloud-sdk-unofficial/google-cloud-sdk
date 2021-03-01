@@ -19,6 +19,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
@@ -31,14 +33,17 @@ class GetPublicKey(base.Command):
   """Get the public key for a service account key pair.
 
   Get the public key for a service account key pair in pem or raw format.
-
-  ## EXAMPLES
-
-  To get the public key for some key ID for some service account
-  (to validate a blob or JWT signature, for example), run:
-
-    $ {command} keyid --output-file key-file --iam-account my-iam-account@ab.com
   """
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""
+          To get the public key for some key ID for some service account
+          (to validate a blob or JWT signature, for example), run:
+
+            $ {command} keyid --output-file=key-file --iam-account=my-iam-account@my-project.iam.gserviceaccount.com
+          """),
+  }
 
   @staticmethod
   def Args(parser):

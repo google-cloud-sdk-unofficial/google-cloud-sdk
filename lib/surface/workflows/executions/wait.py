@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.workflows import workflows
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.workflows import flags
+from googlecloudsdk.command_lib.workflows import hooks
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
@@ -47,6 +48,7 @@ class Wait(base.DescribeCommand):
 
   def Run(self, args):
     """Starts the wait on the completion of the execution."""
+    hooks.print_default_location_warning(None, args, None)
     api_version = workflows.ReleaseTrackToApiVersion(self.ReleaseTrack())
     execution_ref = flags.ParseExecution(args)
     client = workflows.WorkflowExecutionClient(api_version)

@@ -27,13 +27,13 @@ from googlecloudsdk.command_lib.compute.backend_services import (
 from googlecloudsdk.command_lib.compute.target_tcp_proxies import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a target TCP proxy."""
 
   BACKEND_SERVICE_ARG = None
   TARGET_TCP_PROXY_ARG = None
-  _support_tcp_in_td = False
 
   @classmethod
   def Args(cls, parser):
@@ -45,8 +45,7 @@ class Create(base.CreateCommand):
     cls.TARGET_TCP_PROXY_ARG = flags.TargetTcpProxyArgument()
     cls.TARGET_TCP_PROXY_ARG.AddArgument(parser, operation_type='create')
 
-    if cls._support_tcp_in_td:
-      flags.AddProxyBind(parser)
+    flags.AddProxyBind(parser)
 
     parser.add_argument(
         '--description',
@@ -78,7 +77,7 @@ class Create(base.CreateCommand):
         proxyHeader=proxy_header,
         service=backend_service_ref.SelfLink())
 
-    if self._support_tcp_in_td and args.proxy_bind is not None:
+    if args.proxy_bind is not None:
       target_tcp_proxy.proxyBind = args.proxy_bind
 
     request = messages.ComputeTargetTcpProxiesInsertRequest(
@@ -103,9 +102,3 @@ Create.detailed_help = {
         actual requests.
         """,
 }
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateAlphaBeta(Create):
-  """Create a target TCP proxy."""
-  _support_tcp_in_td = True

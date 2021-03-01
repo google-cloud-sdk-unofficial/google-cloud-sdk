@@ -28,3 +28,11 @@ class MigrationJobs(base.Group):
 
   Commands for managing Database Migration Service migration jobs.
   """
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class MigrationJobsGA(MigrationJobs):
+  """Manage Database Migration Service migration jobs.
+
+  Commands for managing Database Migration Service migration jobs.
+  """

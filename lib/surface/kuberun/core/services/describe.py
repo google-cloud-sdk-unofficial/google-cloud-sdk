@@ -66,5 +66,5 @@ class Describe(kuberun_command.KubeRunCommand, base.DescribeCommand):
   def Command(self):
     return ['core', 'services', 'describe']
 
-  def FormatOutput(self, out, args):
+  def SuccessResult(self, out, args):
     return json.loads(out)

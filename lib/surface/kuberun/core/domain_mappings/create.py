@@ -64,7 +64,7 @@ class Create(kuberun_command.KubeRunCommand):
   def Command(self):
     return ['core', 'domain-mappings', 'create']
 
-  def FormatOutput(self, out, args):
+  def SuccessResult(self, out, args):
     if out:
       mapping = json.loads(out)
       status = mapping.get('status', {})

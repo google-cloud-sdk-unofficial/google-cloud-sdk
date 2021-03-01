@@ -62,10 +62,16 @@
       help_text: |
         Network connection mode used by instances.
     - arg_name: transit-encryption-mode
-      release_tracks: [ALPHA, BETA]
       api_field: instance.transitEncryptionMode
       help_text: |
         Transit encryption mode used by the instance.
+      choices:  # Enum is mapped to keep TRANSIT-ENCRYPTION-MODE-UNSPECIFIED invisible from users.
+      - arg_value: DISABLED
+        enum_value: DISABLED
+        help_text: Transit encryption is disabled for the instance.
+      - arg_value: SERVER-AUTHENTICATION
+        enum_value: SERVER-AUTHENTICATION
+        help_text: Client to Server traffic encryption enabled with server authentication.
     - arg_name: display-name
       api_field: instance.displayName
       help_text: |

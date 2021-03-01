@@ -40,7 +40,7 @@ class SignJwt(base.Command):
           textwrap.dedent("""
           To create a sign JWT with a system-managed service account key, run:
 
-            $ {command} --iam-account=my-account@example.com input.json output.jwt
+            $ {command} --iam-account=my-iam-account@my-project.iam.gserviceaccount.com input.json output.jwt
           """),
       'SEE ALSO':
           textwrap.dedent("""

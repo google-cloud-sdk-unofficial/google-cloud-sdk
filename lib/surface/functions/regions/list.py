@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 from apitools.base.py import exceptions as api_exceptions
 from apitools.base.py import list_pager
 
-from googlecloudsdk.api_lib.functions import util
+from googlecloudsdk.api_lib.functions.v1 import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as base_exceptions
 from googlecloudsdk.command_lib.functions import flags

@@ -56,9 +56,7 @@ class Delete(kuberun_command.KubeRunCommand, base.DeleteCommand):
   def Command(self):
     return ['core', 'domain-mappings', 'delete']
 
-  def OperationResponseHandler(self, response, args):
-    super(Delete, self).OperationResponseHandler(response, args)
+  def SuccessResult(self, out, args):
     msg = """Mappings to [{domain}] now have been deleted.""".format(
         domain=args.domain)
     pretty_print.Success(msg)
-    return None

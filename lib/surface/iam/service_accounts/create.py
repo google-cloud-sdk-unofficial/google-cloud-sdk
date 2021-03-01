@@ -40,10 +40,10 @@ class Create(base.CreateCommand):
 
   detailed_help = {
       'EXAMPLES':
-          textwrap.dedent("""\
+          textwrap.dedent("""
           To create a service account for your project, run:
 
-            $ {command} some-account-name --display-name "My Service Account"
+            $ {command} some-account-name --display-name="My Service Account"
 
           To work with this service account in subsequent IAM commands, use the
           email resulting from this call as the IAM_ACCOUNT argument.

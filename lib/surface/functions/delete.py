@@ -19,9 +19,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.functions import exceptions
-from googlecloudsdk.api_lib.functions import operations
-from googlecloudsdk.api_lib.functions import util
+from googlecloudsdk.api_lib.functions.v1 import exceptions
+from googlecloudsdk.api_lib.functions.v1 import operations
+from googlecloudsdk.api_lib.functions.v1 import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.core import log

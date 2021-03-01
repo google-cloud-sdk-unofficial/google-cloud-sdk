@@ -41,7 +41,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class MySQL(base.Command):
+class Update(base.Command):
   """Update a Database Migration Service migration job."""
 
   detailed_help = DETAILED_HELP
@@ -98,3 +98,9 @@ class MySQL(base.Command):
     return client.projects_locations_operations.Get(
         messages.DatamigrationProjectsLocationsOperationsGetRequest(
             name=operation_ref.operationsId))
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateGA(Update):
+  """Update a Database Migration Service migration job."""

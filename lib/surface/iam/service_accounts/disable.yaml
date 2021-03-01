@@ -9,7 +9,7 @@
     examples: |
       To disable a service account from your project, run:
 
-        $ {command} my-iam-account@somedomain.com
+        $ {command} my-iam-account@my-project.iam.gserviceaccount.com
 
   request:
     collection: iam.projects.serviceAccounts

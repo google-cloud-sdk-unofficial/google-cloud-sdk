@@ -194,7 +194,7 @@ class ListTagsALPHAandBETA(ListTagsGA, base.ListCommand):
         most_recent_resource_urls = None
         occ_filter = filter_util.ContainerAnalysisFilter()
         occ_filter.WithCustomFilter(args.occurrence_filter)
-        occ_filter.WithResourcePrefix(repository)
+        occ_filter.WithResourcePrefix('https://{}'.format(repository))
         if args.show_occurrences_from:
           # This block is skipped when the user provided
           # --show-occurrences-from=unlimited on the CLI.

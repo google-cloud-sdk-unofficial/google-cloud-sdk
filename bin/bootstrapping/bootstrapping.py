@@ -81,8 +81,12 @@ def ExecutePythonTool(tool_dir, exec_name, *args):
   # environment variable, so as to allow users to run gsutil using Python 3
   # without forcing the rest of the Cloud SDK to use Python 3 (as it would
   # likely break at the time this comment was written).
+  extra_popen_kwargs = {}
   if exec_name == 'gsutil':
     gsutil_py = encoding.GetEncodedValue(os.environ, 'CLOUDSDK_GSUTIL_PYTHON')
+    # Since PY3, Python closes open FDs in child processes, since we need them
+    # open for completions to work we set the close_fds kwarg to Popen.
+    extra_popen_kwargs['close_fds'] = False
     if gsutil_py:
       py_path = gsutil_py
 
@@ -112,7 +116,8 @@ def ExecutePythonTool(tool_dir, exec_name, *args):
 
   _ExecuteTool(
       execution_utils.ArgsForPythonTool(
-          _FullPath(tool_dir, exec_name), *args, python=py_path))
+          _FullPath(tool_dir, exec_name), *args, python=py_path),
+      **extra_popen_kwargs)
 
 
 def ExecuteJarTool(java_bin, jar_dir, jar_name, classname, flags=None, *args):
@@ -196,13 +201,15 @@ def _GetToolEnv():
   return env
 
 
-def _ExecuteTool(args):
+def _ExecuteTool(args, **extra_popen_kwargs):
   """Executes a new tool with the given args, plus the args from the cmdline.
 
   Args:
     args: [str], The args of the command to execute.
+    **extra_popen_kwargs: [dict], kwargs to be unpacked in Popen call for tool.
   """
-  execution_utils.Exec(args + sys.argv[1:], env=_GetToolEnv())
+  execution_utils.Exec(
+      args + sys.argv[1:], env=_GetToolEnv(), **extra_popen_kwargs)
 
 
 def GetDefaultInstalledComponents():

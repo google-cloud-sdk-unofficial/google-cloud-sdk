@@ -52,7 +52,9 @@ class Create(base.CreateCommand):
           max_trial_count=args.max_trial_count,
           parallel_trial_count=args.parallel_trial_count,
           algorithm=algorithm,
-          kms_key_name=validation.GetAndValidateKmsKey(args))
+          kms_key_name=validation.GetAndValidateKmsKey(args),
+          network=args.network,
+          service_account=args.service_account)
       log.status.Print(
           constants.HPTUNING_JOB_CREATION_DISPLAY_MESSAGE.format(
               id=hp_tuning_jobs_util.ParseJobName(response.name),

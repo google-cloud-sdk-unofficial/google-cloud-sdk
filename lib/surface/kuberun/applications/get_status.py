@@ -51,7 +51,7 @@ class GetStatus(kuberun_command.KubeRunCommand, base.ListCommand):
   def Command(self):
     return ['applications', 'get-status']
 
-  def FormatOutput(self, out, args):
+  def SuccessResult(self, out, args):
     if out:
       results = json.loads(out)
       for entry in results:

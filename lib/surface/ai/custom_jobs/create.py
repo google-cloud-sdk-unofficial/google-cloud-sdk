@@ -47,7 +47,8 @@ class Create(base.CreateCommand):
       response = client.CustomJobsClient(version=constants.BETA_VERSION).Create(
           region_ref.RelativeName(), args.worker_pool_spec, args.config,
           args.display_name, args.python_package_uris, args.args, args.command,
-          validation.GetAndValidateKmsKey(args))
+          validation.GetAndValidateKmsKey(args), args.network,
+          args.service_account)
       log.status.Print(
           constants.CUSTOM_JOB_CREATION_DISPLAY_MESSAGE.format(
               id=custom_jobs_util.ParseJobName(response.name),

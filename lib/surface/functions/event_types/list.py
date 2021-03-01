@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.functions import triggers
+from googlecloudsdk.api_lib.functions.v1 import triggers
 from googlecloudsdk.calliope import base
 
 

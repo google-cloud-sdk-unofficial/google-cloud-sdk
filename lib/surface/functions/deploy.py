@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import utils
-from googlecloudsdk.api_lib.functions import env_vars as env_vars_api_util
-from googlecloudsdk.api_lib.functions import util as api_util
+from googlecloudsdk.api_lib.functions.v1 import env_vars as env_vars_api_util
+from googlecloudsdk.api_lib.functions.v1 import util as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.functions import flags
@@ -116,8 +116,8 @@ def _CreateStackdriverURLforBuildLogs(build_id, project_id):
           (project_id, urllib.parse.quote(query_param, safe='')))  # pylint: disable=redundant-keyword-arg
 
 
-def _GetProject(args):
-  return args.project or properties.VALUES.core.project.Get(required=True)
+def _GetProject():
+  return properties.VALUES.core.project.Get(required=True)
 
 
 def _Run(args,
@@ -292,7 +292,7 @@ def _Run(args,
   if is_new_function:
     if (function.httpsTrigger and not ensure_all_users_invoke and
         not deny_all_users_invoke and
-        api_util.CanAddFunctionIamPolicyBinding(_GetProject(args))):
+        api_util.CanAddFunctionIamPolicyBinding(_GetProject())):
       ensure_all_users_invoke = console_io.PromptContinue(
           prompt_string=(
               'Allow unauthenticated invocations of new function [{}]?'.format(
@@ -363,9 +363,9 @@ def _Run(args,
           messages.OperationMetadataV1, encoding.MessageToPyValue(op.metadata))
       if metadata.buildId:
         sd_info_template = '\nFor Cloud Build Stackdriver Logs, visit: %s'
-        log.status.Print(sd_info_template %
-                         _CreateStackdriverURLforBuildLogs(metadata.buildId,
-                                                           _GetProject(args)))
+        log.status.Print(
+            sd_info_template %
+            _CreateStackdriverURLforBuildLogs(metadata.buildId, _GetProject()))
         log_stackdriver_url[0] = False
 
   if op:

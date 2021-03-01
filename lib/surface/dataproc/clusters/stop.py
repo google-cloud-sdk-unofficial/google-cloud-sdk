@@ -74,3 +74,9 @@ class Stop(base.Command):
         timeout_s=args.timeout)
 
     return operation
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class StopGA(Stop):
+  """Stop a cluster."""

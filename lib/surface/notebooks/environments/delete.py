@@ -50,11 +50,18 @@ class Delete(base.DeleteCommand):
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""
-    environment_service = util.GetClient().projects_locations_environments
+    release_track = self.ReleaseTrack()
+    client = util.GetClient(release_track)
+    messages = util.GetMessages(release_track)
+    environment_service = client.projects_locations_environments
     operation = environment_service.Delete(
-        env_util.CreateEnvironmentDeleteRequest(args))
+        env_util.CreateEnvironmentDeleteRequest(args, messages))
     return env_util.HandleLRO(
-        operation, args, environment_service, is_delete=True)
+        operation,
+        args,
+        environment_service,
+        release_track,
+        is_delete=True)
 
 
 Delete.detailed_help = DETAILED_HELP

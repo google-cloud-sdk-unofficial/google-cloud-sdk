@@ -49,9 +49,12 @@ class Describe(base.DescribeCommand):
     flags.AddDescribeEnvironmentFlags(parser)
 
   def Run(self, args):
-    environment_service = util.GetClient().projects_locations_environments
+    release_track = self.ReleaseTrack()
+    client = util.GetClient(release_track)
+    messages = util.GetMessages(release_track)
+    environment_service = client.projects_locations_environments
     result = environment_service.Get(
-        env_util.CreateEnvironmentDescribeRequest(args))
+        env_util.CreateEnvironmentDescribeRequest(args, messages))
     return result
 
 

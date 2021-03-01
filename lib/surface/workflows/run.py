@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.workflows import cache
 from googlecloudsdk.api_lib.workflows import workflows
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.workflows import flags
+from googlecloudsdk.command_lib.workflows import hooks
 from googlecloudsdk.core import resources
 
 EXECUTION_COLLECTION = 'workflowexecutions.projects.locations.workflows.executions'
@@ -50,6 +51,7 @@ class Run(base.DescribeCommand):
 
   def Run(self, args):
     """Execute a workflow and wait for the completion of the execution."""
+    hooks.print_default_location_warning(None, args, None)
     api_version = workflows.ReleaseTrackToApiVersion(self.ReleaseTrack())
     workflow_ref = flags.ParseWorkflow(args)
     client = workflows.WorkflowExecutionClient(api_version)

@@ -120,6 +120,14 @@
         Examples: {"cloudidentity.googleapis.com/groups.discussion_forum": ""} or
         {"system/groups/external": ""}.
 
+    - arg_name: dynamic-user-query
+      type: str
+      help_text: |
+        Query that determines the memberships of the dynamic group.
+
+        Example of a query:
+        `--dynamic-user-query="user.organizations.exists(org,org.title=='SWE')"`
+
   request:
     collection: cloudidentity.groups
     disable_resource_check: true
@@ -130,18 +138,21 @@
       - googlecloudsdk.command_lib.identity.groups.hooks:SetResourceName
       - googlecloudsdk.command_lib.identity.groups.hooks:SetGroupUpdateMask
       - googlecloudsdk.command_lib.identity.groups.hooks:UpdatePosixGroups
+      - googlecloudsdk.command_lib.identity.groups.hooks:SetDynamicUserQuery
     BETA:
       api_version: v1beta1
       modify_request_hooks:
       - googlecloudsdk.command_lib.identity.groups.hooks:SetResourceName
       - googlecloudsdk.command_lib.identity.groups.hooks:SetGroupUpdateMask
       - googlecloudsdk.command_lib.identity.groups.hooks:SetLabels
+      - googlecloudsdk.command_lib.identity.groups.hooks:SetDynamicUserQuery
     GA:
       api_version: v1
       modify_request_hooks:
       - googlecloudsdk.command_lib.identity.groups.hooks:SetResourceName
       - googlecloudsdk.command_lib.identity.groups.hooks:SetGroupUpdateMask
       - googlecloudsdk.command_lib.identity.groups.hooks:SetLabels
+      - googlecloudsdk.command_lib.identity.groups.hooks:SetDynamicUserQuery
 
   response:
     result_attribute: response

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import name_expansion
 from googlecloudsdk.command_lib.storage.tasks import task_executor
+from googlecloudsdk.command_lib.storage.tasks import task_status
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_task_iterator
 
 
@@ -79,5 +80,9 @@ class Cp(base.Command):
     task_iterator = copy_task_iterator.CopyTaskIterator(
         source_expansion_iterator,
         args.destination,
-        custom_md5_digest=args.content_md5)
-    task_executor.ExecuteTasks(task_iterator, is_parallel=True)
+        custom_md5_digest=args.content_md5,
+    )
+    task_executor.ExecuteTasks(
+        task_iterator,
+        is_parallel=True,
+        progress_type=task_status.ProgressType.FILES_AND_BYTES)

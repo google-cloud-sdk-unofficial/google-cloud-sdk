@@ -12,19 +12,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Displays log entries produced by Google Cloud Functions."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.functions import util
+import datetime
+from apitools.base.py.exceptions import HttpForbiddenError
+from apitools.base.py.exceptions import HttpNotFoundError
+from googlecloudsdk.api_lib.functions.v1 import util
 from googlecloudsdk.api_lib.logging import common as logging_common
 from googlecloudsdk.api_lib.logging import util as logging_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 import six
 
@@ -41,28 +44,34 @@ class GetLogs(base.ListCommand):
     )
     base.LIMIT_FLAG.RemoveFromParser(parser)
     parser.add_argument(
-        'name', nargs='?',
+        'name',
+        nargs='?',
         help=('Name of the function which logs are to be displayed. If no name '
               'is specified, logs from all functions are displayed.'))
     parser.add_argument(
         '--execution-id',
         help=('Execution ID for which logs are to be displayed.'))
     parser.add_argument(
-        '--start-time', required=False, type=arg_parsers.Datetime.Parse,
-        help=('Return only log entries which timestamps are not earlier than '
-              'the specified time. If *--start-time* is specified, the command '
-              'returns *--limit* earliest log entries which appeared after '
-              '*--start-time*. See $ gcloud topic datetimes for information '
-              'on time formats.'))
+        '--start-time',
+        required=False,
+        type=arg_parsers.Datetime.Parse,
+        help=('Return only log entries in which timestamps are not earlier '
+              'than the specified time. If *--start-time* is not specified, a '
+              'default start time of 1 week ago is assumed. See $ gcloud '
+              'topic datetimes for information on time formats.'))
     parser.add_argument(
-        '--end-time', required=False, type=arg_parsers.Datetime.Parse,
+        '--end-time',
+        required=False,
+        type=arg_parsers.Datetime.Parse,
         help=('Return only log entries which timestamps are not later than '
               'the specified time. If *--end-time* is specified but '
               '*--start-time* is not, the command returns *--limit* latest '
               'log entries which appeared before --end-time. See '
-              '$ gcloud topic datetimes for information on time formats.'))
+              '*$ gcloud topic datetimes* for information on time formats.'))
     parser.add_argument(
-        '--limit', required=False, type=arg_parsers.BoundedInt(1, 1000),
+        '--limit',
+        required=False,
+        type=arg_parsers.BoundedInt(1, 1000),
         default=20,
         help=('Number of log entries to be fetched; must not be greater than '
               '1000.'))
@@ -87,9 +96,10 @@ class GetLogs(base.ListCommand):
 
   def _Run(self, args):
     region = properties.VALUES.functions.region.Get()
-    log_filter = ['resource.type="cloud_function"',
-                  'resource.labels.region="%s"' % region,
-                  'logName:"cloud-functions"']
+    log_filter = [
+        'resource.type="cloud_function"',
+        'resource.labels.region="%s"' % region, 'logName:"cloud-functions"'
+    ]
 
     if args.name:
       log_filter.append('resource.labels.function_name="%s"' % args.name)
@@ -97,28 +107,45 @@ class GetLogs(base.ListCommand):
       log_filter.append('labels.execution_id="%s"' % args.execution_id)
     if args.min_log_level:
       log_filter.append('severity>=%s' % args.min_log_level.upper())
-    if args.start_time:
-      order = 'ASC'
-      log_filter.append(
-          'timestamp>="%s"' % logging_util.FormatTimestamp(args.start_time))
-    else:
-      order = 'DESC'
+
+    log_filter.append('timestamp>="%s"' % logging_util.FormatTimestamp(
+        args.start_time or
+        datetime.datetime.utcnow() - datetime.timedelta(days=7)))
+
     if args.end_time:
-      log_filter.append(
-          'timestamp<="%s"' % logging_util.FormatTimestamp(args.end_time))
+      log_filter.append('timestamp<="%s"' %
+                        logging_util.FormatTimestamp(args.end_time))
+
     log_filter = ' '.join(log_filter)
 
-    entries = logging_common.FetchLogs(
-        log_filter, order_by=order, limit=args.limit)
+    entries = list(
+        logging_common.FetchLogs(log_filter, order_by='ASC', limit=args.limit))
 
-    if order == 'DESC':
-      entries = reversed(list(entries))  # Force generator expansion with list.
+    if args.name and not entries:
+      # Check if the function even exists in the given region.
+      try:
+        client = util.GetApiClientInstance()
+        messages = client.MESSAGES_MODULE
+        client.projects_locations_functions.Get(
+            messages.CloudfunctionsProjectsLocationsFunctionsGetRequest(
+                name='projects/%s/locations/%s/functions/%s' %
+                (properties.VALUES.core.project.Get(required=True), region,
+                 args.name)))
+      except (HttpForbiddenError, HttpNotFoundError):
+        # The function doesn't exist in the given region.
+        log.warning(
+            'There is no function named `%s` in region `%s`. Perhaps you '
+            'meant to specify `--region` or update the `functions/region` '
+            'configuration property?' % (args.name, region))
 
     for entry in entries:
       message = entry.textPayload
       if entry.jsonPayload:
-        props = [prop.value for prop in entry.jsonPayload.additionalProperties
-                 if prop.key == 'message']
+        props = [
+            prop.value
+            for prop in entry.jsonPayload.additionalProperties
+            if prop.key == 'message'
+        ]
         if len(props) == 1 and hasattr(props[0], 'string_value'):
           message = props[0].string_value
       row = {'log': message}

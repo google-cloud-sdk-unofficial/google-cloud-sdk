@@ -60,10 +60,14 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""
-    environment_service = util.GetClient().projects_locations_environments
+    release_track = self.ReleaseTrack()
+    client = util.GetClient(release_track)
+    messages = util.GetMessages(release_track)
+    environment_service = client.projects_locations_environments
     operation = environment_service.Create(
-        env_util.CreateEnvironmentCreateRequest(args))
-    return env_util.HandleLRO(operation, args, environment_service)
+        env_util.CreateEnvironmentCreateRequest(args, messages))
+    return env_util.HandleLRO(operation, args, environment_service,
+                              release_track)
 
 
 Create.detailed_help = DETAILED_HELP

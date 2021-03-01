@@ -55,10 +55,8 @@ class Delete(kuberun_command.KubeRunCommand, base.DeleteCommand):
     parser.add_argument('service',
                         help='The KubeRun service to delete.')
 
-  def OperationResponseHandler(self, response, args):
-    super(Delete, self).OperationResponseHandler(response, args)
+  def SuccessResult(self, out, args):
     log.DeletedResource(args.service, 'service')
-    return None
 
   def BuildKubeRunArgs(self, args):
     return [args.service] + super(Delete, self).BuildKubeRunArgs(args)

@@ -1,4 +1,6 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
+  GA:
+    hidden: true
 
   help_text:
     brief: Generate a SSH script for a Database Migration Service migration job.
@@ -14,6 +16,10 @@
 
   request:
     collection: datamigration.projects.locations.migrationJobs
+    GA:
+      api_version: v1
+    ALPHA:
+      api_version: v1alpha2
     method: generateSshScript
 
   arguments:
@@ -46,11 +52,16 @@
               arg_name: vm-zone-create
               help_text: |
                 Google Cloud Platform zone to create the VM in.
-            - api_field: generateSshScriptRequest.vmCreationConfig.vpc
-              arg_name: vpc
+            - api_field: generateSshScriptRequest.vmCreationConfig.subnet
               required: true
-              help_text: |
-                VPC name the VM needs to be created in.
+              ALPHA:
+                arg_name: vpc
+                help_text: |
+                  VPC name the VM needs to be created in.
+              GA:
+                arg_name: subnet
+                help_text: |
+                  Subnet name the VM needs to be created in.
         - api_field: generateSshScriptRequest.vmSelectionConfig.vmZone
           arg_name: vm-zone
           help_text: |

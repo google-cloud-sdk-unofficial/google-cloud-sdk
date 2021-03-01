@@ -51,7 +51,7 @@ class List(kuberun_command.KubeRunCommand, base.ListCommand):
   def Command(self):
     return ['devkits', 'list']
 
-  def FormatOutput(self, out, args):
+  def SuccessResult(self, out, args):
     if out:
       json_list = json.loads(out)
       return [devkit.DevKit.FromJSON(x) for x in json_list]

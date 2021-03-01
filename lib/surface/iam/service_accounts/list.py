@@ -19,6 +19,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.iam import exceptions
@@ -30,6 +32,15 @@ from googlecloudsdk.core import properties
 
 class List(base.ListCommand):
   """List all of a project's service accounts."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""
+          To list all service accounts in the current project, run:
+
+            $ {command}
+      """),
+  }
 
   @staticmethod
   def Args(parser):

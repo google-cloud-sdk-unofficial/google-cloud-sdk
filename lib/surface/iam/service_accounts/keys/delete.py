@@ -35,9 +35,9 @@ class Delete(base.Command):
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""
           To delete a key with ID `b4f1037aeef9ab37deee9` for the service
-          account `my-iam-account@example.com`, run:
+          account `my-iam-account@my-project.iam.gserviceaccount.com`, run:
 
-            $ {command} b4f1037aeef9ab37deee9 --iam-account=my-iam-account@example.com
+            $ {command} b4f1037aeef9ab37deee9 --iam-account=my-iam-account@my-project.iam.gserviceaccount.com
       """),
   }
 

@@ -48,9 +48,12 @@ class IsUpgradeable(base.DescribeCommand):
     flags.AddIsUpgradeableInstanceFlags(parser)
 
   def Run(self, args):
-    instance_service = util.GetClient().projects_locations_instances
+    release_track = self.ReleaseTrack()
+    client = util.GetClient(release_track)
+    messages = util.GetMessages(release_track)
+    instance_service = client.projects_locations_instances
     result = instance_service.IsUpgradeable(
-        instance_util.CreateInstanceIsUpgradeableRequest(args))
+        instance_util.CreateInstanceIsUpgradeableRequest(args, messages))
     return result
 
 

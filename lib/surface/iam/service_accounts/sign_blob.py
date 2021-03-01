@@ -40,7 +40,7 @@ class SignBlob(base.Command):
           To sign a blob file with a system-managed service account key,
           run:
 
-            $ {command} --iam-account=my-account@example.com input.bin output.bin
+            $ {command} --iam-account=my-iam-account@my-project.iam.gserviceaccount.com input.bin output.bin
           """),
       'SEE ALSO': textwrap.dedent("""
         For more information on how this command ties into the wider cloud

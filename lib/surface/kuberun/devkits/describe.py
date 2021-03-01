@@ -58,6 +58,6 @@ class Describe(kuberun_command.KubeRunCommand, base.DescribeCommand):
   def BuildKubeRunArgs(self, args):
     return [args.devkit] + super(Describe, self).BuildKubeRunArgs(args)
 
-  def FormatOutput(self, out, args):
+  def SuccessResult(self, out, args):
     if out:
       return devkit.DevKit.FromJSON(json.loads(out))

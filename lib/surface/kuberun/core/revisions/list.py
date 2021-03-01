@@ -84,7 +84,7 @@ class List(kuberun_command.KubeRunCommand, base.ListCommand):
   def Command(self):
     return ['core', 'revisions', 'list']
 
-  def FormatOutput(self, out, args):
+  def SuccessResult(self, out, args):
     if out:
       return [_AddAliases(x) for x in json.loads(out)]
     else:

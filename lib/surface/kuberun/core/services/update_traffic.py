@@ -85,14 +85,10 @@ class UpdateTraffic(kuberun_command.KubeRunCommand):
   def Command(self):
     return ['core', 'services', 'update-traffic']
 
-  def FormatOutput(self, out, args):
+  def SuccessResult(self, out, args):
     if out:
       svc = json.loads(out)
-      return traffic_pair.GetTrafficTargetPairsDict(
-          svc['spec']['traffic'],
-          svc.get('status', {}).get('traffic', []),
-          svc.get('status', {}).get('latestReadyRevisionName'),
-          svc.get('status', {}).get('url'))
+      return traffic_pair.GetTrafficTargetPairsDict(svc)
     else:
       raise exceptions.Error('Failed to update traffic for service [{}]'.format(
           args.service))

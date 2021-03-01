@@ -34,6 +34,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.disks import create
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.command_lib.compute.kms import resource_args as kms_resource_args
@@ -115,7 +116,7 @@ def _SourceArgs(parser, source_instant_snapshot_enabled=False):
   disks_flags.SOURCE_SNAPSHOT_ARG.AddArgument(source_group)
   if source_instant_snapshot_enabled:
     disks_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(source_group)
-  disks_flags.SOURCE_DISK_ARG.AddArgument(source_group)
+  disks_flags.SOURCE_DISK_ARG.AddArgument(parser, mutex_group=source_group)
 
 
 def _CommonArgs(parser,
@@ -349,12 +350,25 @@ class Create(base.Command):
         return instant_snapshot_ref.SelfLink()
     return None
 
-  def GetSourceDiskUri(self, args, compute_holder):
+  def GetSourceDiskUri(self, args, disk_ref, compute_holder):
+    source_disk_ref = None
     if args.source_disk:
-      disk_ref = disks_flags.SOURCE_DISK_ARG.ResolveAsResource(
-          args, compute_holder.resources)
-      if disk_ref:
-        return disk_ref.SelfLink()
+      if args.source_disk_zone:
+        source_disk_ref = disks_flags.SOURCE_DISK_ARG.ResolveAsResource(
+            args, compute_holder.resources)
+      else:
+        if disk_ref.Collection() == 'compute.disks':
+          source_disk_ref = disks_flags.SOURCE_DISK_ARG.ResolveAsResource(
+              args,
+              compute_holder.resources,
+              default_scope=compute_scope.ScopeEnum.ZONE)
+        elif disk_ref.Collection() == 'compute.regionDisks':
+          source_disk_ref = disks_flags.SOURCE_DISK_ARG.ResolveAsResource(
+              args,
+              compute_holder.resources,
+              default_scope=compute_scope.ScopeEnum.REGION)
+      if source_disk_ref:
+        return source_disk_ref.SelfLink()
     return None
 
   def GetLabels(self, args, client):
@@ -515,7 +529,7 @@ class Create(base.Command):
           type=type_uri,
           physicalBlockSizeBytes=physical_block_size_bytes,
           **kwargs)
-      disk.sourceDisk = self.GetSourceDiskUri(args, compute_holder)
+      disk.sourceDisk = self.GetSourceDiskUri(args, disk_ref, compute_holder)
       if self.source_instant_snapshot_enabled:
         disk.sourceInstantSnapshot = self.GetSourceInstantSnapshotUri(
             args, compute_holder)

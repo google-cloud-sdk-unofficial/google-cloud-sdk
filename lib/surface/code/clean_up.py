@@ -22,22 +22,34 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.code import kubernetes
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CleanUp(base.Command):
-  """Delete the local development environment.
+  """Delete the local development environment."""
 
-  Use this command to clean up a development environment. This command many also
-  be used remove any artifacts of developments environments that did not
-  succesfully start up.
-  """
+  detailed_help = {
+      'DESCRIPTION':
+          """\
+          Delete the local development environment.
+
+          Use this command to clean up a development environment. This command
+          many also be used remove any artifacts of developments environments
+          that did not successfully start up.
+          """,
+      'EXAMPLES':
+          """\
+          $ {command}
+
+          To clean up a specific profile:
+
+          $ {command} --minikube-profile=<profile name>
+          """
+  }
 
   @classmethod
   def Args(cls, parser):
     group = parser.add_mutually_exclusive_group(required=False)
 
     group.add_argument('--minikube-profile', help='Minikube profile.')
-
-    group.add_argument('--kind-cluster', help='Kind cluster.')
 
   def Run(self, args):
     kubernetes.DeleteMinikube(args.minikube_profile or

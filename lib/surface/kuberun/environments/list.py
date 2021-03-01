@@ -56,7 +56,7 @@ class List(kuberun_command.KubeRunCommand, base.ListCommand):
   def Command(self):
     return ['environments', 'list']
 
-  def FormatOutput(self, out, args):
+  def SuccessResult(self, out, args):
     if not out:
       return []
     return [_AddAliases(item) for item in json.loads(out)]
@@ -79,11 +79,16 @@ def _AddAliases(data):
   """
   spec = data.get('spec', {})
   target_config = {}
+
   if 'cluster' in spec:
-    target_config['cluster'] = spec['cluster'].copy()
-    target_config['cluster'].pop('namespace', '')
+    target_config['cluster'] = _RemoveNamespaceAndSerialize(spec['cluster'])
   elif 'kubeconfig' in spec:
-    target_config['kubeconfig'] = spec['kubeconfig'].copy()
-    target_config['kubeconfig'].pop('namespace', '')
-  return structuredout.DictWithAliases(
-      data, aliases={'target_config': target_config})
+    target_config['kubeconfig'] = _RemoveNamespaceAndSerialize(
+        spec['kubeconfig'])
+  return structuredout.DictWithAliases(data,
+                                       aliases={'target_config': target_config})
+
+
+def _RemoveNamespaceAndSerialize(data):
+  return json.dumps(
+      {k: v for k, v in data.items() if k != 'namespace'}, sort_keys=True)

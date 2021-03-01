@@ -36,16 +36,14 @@ from six.moves import range  # pylint: disable=redefined-builtin
 
 def _Args(parser, support_global_access, support_l7_internal_load_balancing,
           support_psc_google_apis, support_all_protocol,
-          support_target_service_attachment, support_tcp_in_td,
-          support_sd_registration):
+          support_target_service_attachment, support_sd_registration):
   """Add the flags to create a forwarding rule."""
 
   flags.AddUpdateArgs(
       parser,
       include_l7_internal_load_balancing=support_l7_internal_load_balancing,
       include_psc_google_apis=support_psc_google_apis,
-      include_target_service_attachment=support_target_service_attachment,
-      support_tcp_in_td=support_tcp_in_td)
+      include_target_service_attachment=support_target_service_attachment)
   flags.AddIPProtocols(parser, support_all_protocol)
   flags.AddDescription(parser)
   flags.AddPortsAndPortRange(parser)
@@ -89,27 +87,26 @@ class CreateHelper(object):
   def __init__(self, holder, support_global_access,
                support_l7_internal_load_balancing, support_psc_google_apis,
                support_all_protocol, support_target_service_attachment,
-               support_tcp_in_td, support_sd_registration):
+               support_sd_registration):
     self._holder = holder
     self._support_global_access = support_global_access
     self._support_l7_internal_load_balancing = support_l7_internal_load_balancing
     self._support_psc_google_apis = support_psc_google_apis
     self._support_all_protocol = support_all_protocol
     self._support_target_service_attachment = support_target_service_attachment
-    self._support_tcp_in_td = support_tcp_in_td
     self._support_sd_registration = support_sd_registration
 
   @classmethod
   def Args(cls, parser, support_global_access,
            support_l7_internal_load_balancing, support_psc_google_apis,
            support_all_protocol, support_target_service_attachment,
-           support_tcp_in_td, support_sd_registration):
+           support_sd_registration):
     cls.FORWARDING_RULE_ARG = _Args(parser, support_global_access,
                                     support_l7_internal_load_balancing,
                                     support_psc_google_apis,
                                     support_all_protocol,
                                     support_target_service_attachment,
-                                    support_tcp_in_td, support_sd_registration)
+                                    support_sd_registration)
 
   def ConstructProtocol(self, messages, args):
     if args.ip_protocol:
@@ -193,8 +190,7 @@ class CreateHelper(object):
             'The valid values for target-google-apis-bundle are: ' +
             bundles_list)
     else:
-      target_ref = utils.GetGlobalTarget(resources, args,
-                                         self._support_tcp_in_td)
+      target_ref = utils.GetGlobalTarget(resources, args)
       target_as_str = target_ref.SelfLink()
     protocol = self.ConstructProtocol(client.messages, args)
 
@@ -421,7 +417,6 @@ class Create(base.CreateCommand):
   _support_psc_google_apis = False
   _support_all_protocol = False
   _support_target_service_attachment = False
-  _support_tcp_in_td = False
   _support_sd_registration = False
 
   @classmethod
@@ -430,15 +425,16 @@ class Create(base.CreateCommand):
                       cls._support_l7_internal_load_balancing,
                       cls._support_psc_google_apis, cls._support_all_protocol,
                       cls._support_target_service_attachment,
-                      cls._support_tcp_in_td, cls._support_sd_registration)
+                      cls._support_sd_registration)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return CreateHelper(
-        holder, self._support_global_access,
-        self._support_l7_internal_load_balancing, self._support_psc_google_apis,
-        self._support_all_protocol, self._support_target_service_attachment,
-        self._support_tcp_in_td, self._support_sd_registration).Run(args)
+    return CreateHelper(holder, self._support_global_access,
+                        self._support_l7_internal_load_balancing,
+                        self._support_psc_google_apis,
+                        self._support_all_protocol,
+                        self._support_target_service_attachment,
+                        self._support_sd_registration).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -449,7 +445,6 @@ class CreateBeta(Create):
   _support_psc_google_apis = True
   _support_all_protocol = False
   _support_target_service_attachment = False
-  _support_tcp_in_td = True
   _support_sd_registration = True
 
 
@@ -461,7 +456,6 @@ class CreateAlpha(CreateBeta):
   _support_psc_google_apis = True
   _support_all_protocol = True
   _support_target_service_attachment = True
-  _support_tcp_in_td = True
   _support_sd_registration = True
 
 

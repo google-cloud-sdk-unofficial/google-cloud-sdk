@@ -3,6 +3,10 @@
   help_text:
     brief: Update an IAM service account.
     description: Update an IAM service account.
+    examples: |
+      To update the description and display name for a service account, run:
+
+        $ {command} my-iam-account@my-project.iam.gserviceaccount.com --description="Updated description." --display-name="Updated Name"
 
   arguments:
     resource:

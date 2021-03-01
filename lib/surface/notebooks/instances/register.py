@@ -48,13 +48,17 @@ class Register(base.Command):
     flags.AddRegisterInstanceFlags(parser)
 
   def Run(self, args):
-    instance_service = util.GetClient().projects_locations_instances
+    release_track = self.ReleaseTrack()
+    client = util.GetClient(release_track)
+    messages = util.GetMessages(release_track)
+    instance_service = client.projects_locations_instances
     operation = instance_service.Register(
-        instance_util.CreateInstanceRegisterRequest(args))
+        instance_util.CreateInstanceRegisterRequest(args, messages))
     return instance_util.HandleLRO(
         operation,
         args,
         instance_service,
+        release_track,
         operation_type=instance_util.OperationType.UPDATE)
 
 

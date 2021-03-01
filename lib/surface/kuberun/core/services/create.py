@@ -63,5 +63,5 @@ class Create(kuberun_command.KubeRunCommand, base.CreateCommand):
   def Command(self):
     return ['core', 'services', 'create']
 
-  def FormatOutput(self, out, args):
+  def SuccessResult(self, out, args):
     return json.loads(out)

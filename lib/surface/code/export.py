@@ -26,7 +26,7 @@ import six
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Export(base.Command):
   """Writes skaffold and kubernetes files for local development.
 
@@ -42,7 +42,20 @@ class Export(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    flags.CommonFlags(parser)
+    common = flags.CommonFlags()
+    common.AddBetaFlags()
+
+    common.AddServiceName()
+    common.AddImage()
+    common.AddMemory()
+    common.AddCpu()
+
+    common.BuildersGroup().AddBuilder()
+
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      common.AddAlphaFlags()
+
+    common.ConfigureParser(parser)
 
     skaffold_output_group = parser.add_mutually_exclusive_group(required=False)
     skaffold_output_group.add_argument(

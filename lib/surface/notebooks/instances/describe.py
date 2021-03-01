@@ -48,9 +48,12 @@ class Describe(base.DescribeCommand):
     flags.AddDescribeInstanceFlags(parser)
 
   def Run(self, args):
-    instance_service = util.GetClient().projects_locations_instances
+    release_track = self.ReleaseTrack()
+    client = util.GetClient(release_track)
+    messages = util.GetMessages(release_track)
+    instance_service = client.projects_locations_instances
     result = instance_service.Get(
-        instance_util.CreateInstanceDescribeRequest(args))
+        instance_util.CreateInstanceDescribeRequest(args, messages))
     return result
 
 

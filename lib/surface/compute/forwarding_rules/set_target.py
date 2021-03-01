@@ -30,20 +30,17 @@ class SetTargetHelper(object):
 
   FORWARDING_RULE_ARG = None
 
-  def __init__(self, holder, include_l7_internal_load_balancing,
-               support_tcp_in_td):
+  def __init__(self, holder, include_l7_internal_load_balancing):
     self._holder = holder
     self._include_l7_internal_load_balancing = include_l7_internal_load_balancing
-    self._support_tcp_in_td = support_tcp_in_td
 
   @classmethod
-  def Args(cls, parser, include_l7_internal_load_balancing, support_tcp_in_td):
+  def Args(cls, parser, include_l7_internal_load_balancing):
     """Adds flags to set the target of a forwarding rule."""
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
     flags.AddUpdateArgs(
         parser,
-        include_l7_internal_load_balancing=include_l7_internal_load_balancing,
-        support_tcp_in_td=support_tcp_in_td)
+        include_l7_internal_load_balancing=include_l7_internal_load_balancing)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
   def Run(self, args):
@@ -66,7 +63,7 @@ class SetTargetHelper(object):
 
   def CreateGlobalRequests(self, client, resources, forwarding_rule_ref, args):
     """Create a globally scoped request."""
-    target_ref = utils.GetGlobalTarget(resources, args, self._support_tcp_in_td)
+    target_ref = utils.GetGlobalTarget(resources, args)
 
     request = client.messages.ComputeGlobalForwardingRulesSetTargetRequest(
         forwardingRule=forwarding_rule_ref.Name(),
@@ -104,7 +101,6 @@ class Set(base.UpdateCommand):
   FORWARDING_RULE_ARG = None
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
   _include_l7_internal_load_balancing = True
-  _support_tcp_in_td = False
 
   detailed_help = {
       'DESCRIPTION': ("""
@@ -121,24 +117,21 @@ class Set(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    SetTargetHelper.Args(parser, cls._include_l7_internal_load_balancing,
-                         cls._support_tcp_in_td)
+    SetTargetHelper.Args(parser, cls._include_l7_internal_load_balancing)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return SetTargetHelper(holder, self._include_l7_internal_load_balancing,
-                           self._support_tcp_in_td).Run(args)
+    return SetTargetHelper(holder,
+                           self._include_l7_internal_load_balancing).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SetBeta(Set):
   """Modify a forwarding rule to direct network traffic to a new target."""
   _include_l7_internal_load_balancing = True
-  _support_tcp_in_td = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetAlpha(SetBeta):
   """Modify a forwarding rule to direct network traffic to a new target."""
   _include_l7_internal_load_balancing = True
-  _support_tcp_in_td = True

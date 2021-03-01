@@ -186,6 +186,12 @@ information on how to structure KEYs and VALUEs, run
   flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(parser)
   flags.WEB_SERVER_MACHINE_TYPE.AddToParser(parser)
 
+  permission_info = '{} must hold permission {}'.format(
+      "The 'Cloud Composer Service Agent' service account",
+      "'Cloud KMS CryptoKey Encrypter/Decrypter'")
+  kms_resource_args.AddKmsKeyResourceArg(
+      parser, 'environment', permission_info=permission_info)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
@@ -234,6 +240,10 @@ class Create(base.Command):
       self.subnetwork = parsers.ParseSubnetwork(
           args.subnetwork,
           fallback_region=self.env_ref.Parent().Name()).RelativeName()
+
+    self.kms_key = None
+    if args.kms_key:
+      self.kms_key = flags.GetAndValidateKmsEncryptionKey(args)
 
     self.image_version = None
     if args.airflow_version:
@@ -361,6 +371,7 @@ class Create(base.Command):
         services_secondary_range_name=args.services_secondary_range_name,
         cluster_ipv4_cidr_block=args.cluster_ipv4_cidr,
         services_ipv4_cidr_block=args.services_ipv4_cidr,
+        kms_key=self.kms_key,
         private_environment=args.enable_private_environment,
         private_endpoint=args.enable_private_endpoint,
         master_ipv4_cidr=args.master_ipv4_cidr,
@@ -388,19 +399,7 @@ class CreateBeta(Create):
   def Args(cls, parser):
     super(CreateBeta, cls).Args(parser)
 
-    permission_info = '{} must hold permission {}'.format(
-        "The 'Cloud Composer Service Agent' service account",
-        "'Cloud KMS CryptoKey Encrypter/Decrypter'")
-    kms_resource_args.AddKmsKeyResourceArg(
-        parser, 'environment', permission_info=permission_info)
-
     flags.AddMaintenanceWindowFlagsGroup(parser)
-
-  def Run(self, args):
-    self.kms_key = None
-    if args.kms_key:
-      self.kms_key = flags.GetAndValidateKmsEncryptionKey(args)
-    return super(CreateBeta, self).Run(args)
 
   def GetOperationMessage(self, args):
     """See base class."""

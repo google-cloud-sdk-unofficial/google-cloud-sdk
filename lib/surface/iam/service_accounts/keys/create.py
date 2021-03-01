@@ -31,16 +31,16 @@ class Create(base.Command):
   """Create a private key for a service account."""
 
   detailed_help = {
-      'NOTES': textwrap.dedent("""\
+      'NOTES': textwrap.dedent("""
           The option --key-file-type=p12 is available here only for legacy
           reasons; all new use cases are encouraged to use the default 'json'
           format.
           """),
-      'EXAMPLES': textwrap.dedent("""\
+      'EXAMPLES': textwrap.dedent("""
           To create a new private key for a service account, and save a copy
           of it locally, run:
 
-            $ {command} --iam-account my-iam-account@somedomain.com key.json
+            $ {command} key.json --iam-account=my-iam-account@my-project.iam.gserviceaccount.com
           """),
   }
 

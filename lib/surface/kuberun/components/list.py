@@ -49,5 +49,5 @@ class List(kuberun_command.KubeRunCommand, base.ListCommand):
   def Command(self):
     return ['components', 'list']
 
-  def FormatOutput(self, out, args):
+  def SuccessResult(self, out, args):
     return json.loads(out) if out else []

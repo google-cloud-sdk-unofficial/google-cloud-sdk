@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import abc
+import enum
 import os.path
 import string
 import uuid
@@ -41,7 +42,30 @@ import six
 
 _WORKFLOWS_URL = ('https://github.com/GoogleCloudPlatform/compute-image-tools/'
                   'tree/master/daisy_workflows/image_import')
-_OUTPUT_FILTER = ['[Daisy', '[import-', 'starting build', '  import', 'ERROR']
+_OUTPUT_FILTER = [
+    '[Daisy', '[import-', '[onestep-', 'starting build', '  import', 'ERROR'
+]
+
+
+class CloudProvider(enum.Enum):
+  UNKNOWN = 0
+  AWS = 1
+
+
+def _HasAwsArgs(args):
+  return (args.aws_access_key_id or args.aws_secret_access_key or
+          args.aws_session_token or args.aws_region or args.aws_ami_id or
+          args.aws_ami_export_location or args.aws_source_ami_file_path)
+
+
+def _HasExternalCloudProvider(args):
+  return _GetExternalCloudProvider(args) != CloudProvider.UNKNOWN
+
+
+def _GetExternalCloudProvider(args):
+  if _HasAwsArgs(args):
+    return CloudProvider.AWS
+  return CloudProvider.UNKNOWN
 
 
 def _AppendTranslateWorkflowArg(args, import_args):
@@ -49,6 +73,27 @@ def _AppendTranslateWorkflowArg(args, import_args):
     daisy_utils.AppendArg(import_args, 'os', args.os)
   daisy_utils.AppendArg(import_args, 'custom_translate_workflow',
                         args.custom_workflow)
+
+
+def _AppendAwsArgs(args, import_args):
+  """Appends args related to AWS image import."""
+
+  daisy_utils.AppendArg(import_args, 'aws_access_key_id',
+                        args.aws_access_key_id)
+  daisy_utils.AppendArg(import_args, 'aws_secret_access_key',
+                        args.aws_secret_access_key)
+  daisy_utils.AppendArg(import_args, 'aws_session_token',
+                        args.aws_session_token)
+  daisy_utils.AppendArg(import_args, 'aws_region', args.aws_region)
+
+  if args.aws_ami_id:
+    daisy_utils.AppendArg(import_args, 'aws_ami_id', args.aws_ami_id)
+  if args.aws_ami_export_location:
+    daisy_utils.AppendArg(import_args, 'aws_ami_export_location',
+                          args.aws_ami_export_location)
+  if args.aws_source_ami_file_path:
+    daisy_utils.AppendArg(import_args, 'aws_source_ami_file_path',
+                          args.aws_source_ami_file_path)
 
 
 def _CheckImageName(image_name):
@@ -110,14 +155,34 @@ class Import(base.CreateCommand):
         parser, 'image', 'import',
         explanation='The zone in which to do the work of importing the image.')
 
-    source = parser.add_mutually_exclusive_group(required=True)
-    source.add_argument(
-        '--source-file',
-        help=("""A local file, or the Cloud Storage URI of the virtual
+    if cls.ReleaseTrack() == base.ReleaseTrack.GA:
+      source = parser.add_mutually_exclusive_group(required=True)
+      source.add_argument(
+          '--source-file',
+          help=("""A local file, or the Cloud Storage URI of the virtual
               disk file to import. For example: ``gs://my-bucket/my-image.vmdk''
               or ``./my-local-image.vmdk''"""),
-    )
-    flags.SOURCE_IMAGE_ARG.AddArgument(source, operation_type='import')
+      )
+      flags.SOURCE_IMAGE_ARG.AddArgument(source, operation_type='import')
+    else:
+      source = parser.add_mutually_exclusive_group(required=True)
+
+      import_from_local_or_gcs = source.add_mutually_exclusive_group(
+          help='Image import from local file, Cloud Storage or Compute Engine image.'
+      )
+      import_from_local_or_gcs.add_argument(
+          '--source-file',
+          help=("""A local file, or the Cloud Storage URI of the virtual
+                disk file to import. For example: ``gs://my-bucket/my-image.vmdk''
+                or ``./my-local-image.vmdk''"""),
+      )
+      flags.SOURCE_IMAGE_ARG.AddArgument(
+          import_from_local_or_gcs, operation_type='import')
+
+      import_from_aws = source.add_group(
+          help='Image import from AWS.'
+      )
+      daisy_utils.AddAWSImageImportSourceArgs(import_from_aws)
 
     workflow = parser.add_mutually_exclusive_group()
     workflow.add_argument(
@@ -231,6 +296,10 @@ class Import(base.CreateCommand):
         if self.ReleaseTrack() else None)
 
   def _CreateImportStager(self, args):
+    if self.ReleaseTrack(
+    ) != base.ReleaseTrack.GA and _HasExternalCloudProvider(args):
+      return ImportFromExternalCloudProviderStager(self.storage_client, args)
+
     if args.source_image:
       return ImportFromImageStager(
           self.storage_client, args)
@@ -311,6 +380,20 @@ class BaseImportStager(object):
       return self.args.storage_location
 
     return None
+
+
+class ImportFromExternalCloudProviderStager(BaseImportStager):
+  """Image import stager from an external cloud provider."""
+
+  def Stage(self):
+    import_args = []
+
+    _AppendAwsArgs(self.args, import_args)
+    _AppendTranslateWorkflowArg(self.args, import_args)
+
+    import_args.extend(
+        super(ImportFromExternalCloudProviderStager, self).Stage())
+    return import_args
 
 
 class ImportFromImageStager(BaseImportStager):
@@ -442,6 +525,15 @@ class ImportBeta(Import):
     daisy_utils.AddExtraCommonDaisyArgs(parser)
 
   def _RunImageImport(self, args, import_args, tags, output_filter):
+    if _HasExternalCloudProvider(args):
+      return daisy_utils.RunOnestepImageImport(
+          args,
+          import_args,
+          tags,
+          _OUTPUT_FILTER,
+          release_track=self.ReleaseTrack().id.lower()
+          if self.ReleaseTrack() else None,
+          docker_image_tag=args.docker_image_tag)
     return daisy_utils.RunImageImport(
         args,
         import_args,

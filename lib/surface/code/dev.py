@@ -76,40 +76,48 @@ def _IsDebug():
   return properties.VALUES.core.verbosity.Get() == 'debug'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Dev(base.Command):
-  r"""Run a Cloud Run service in a local development environment.
+  r"""Run a Cloud Run service in a local development environment."""
+  detailed_help = {
+      'DESCRIPTION':
+          """\
+          Run a Cloud Run service in a local development environment.
 
-  This command takes Cloud Run source, builds it, and runs it on the local
-  machine. This command also watches the relevant source files and updates the
-  container when they change.
+          This command takes Cloud Run source, builds it, and runs it on the
+          local machine. This command also watches the relevant source files and
+          updates the container when they change.
+          """,
+      'EXAMPLES':
+          """\
+          If building images using a Dockerfile:
 
+            $ {command} --dockerfile=<path_to_dockerfile>
 
-  If building images using a Dockerfile:
+          If the Dockerfile is named `Dockerfile` and is located in the current
+          directory, the `--dockerfile` flag may be omitted:
 
-    $ {command} --dockerfile=<path_to_dockerfile>
+            $ {command}
 
-  If the Dockerfile is named `Dockerfile` and is located in the current
-  directory, the `--dockerfile` flag may be omitted:
+          To access Google Cloud Platform services with the current user's
+          credentials, login to obtain the application default credentials and
+          invoke this command with the `--application-default-credential` flag.
 
-    $ {command}
-
-  If building images with a CNCF buildpack builder:
-
-    $ {command} --builder=<builder>
-
-  To access Google Cloud Platform services with the current user's credentials,
-  login to obtain the application default credentials and invoke this command
-  with the `--application-default-credential` flag.
-
-    $ gcloud auth application-default login
-    $ {command} --dockerfile=<path_to_dockerfile> \
-      --application-default-credential
-  """
+            $ gcloud auth application-default login
+            $ {command} --dockerfile=<path_to_dockerfile> \
+            --application-default-credential
+          """
+  }
 
   @classmethod
   def Args(cls, parser):
-    flags.CommonFlags(parser)
+    common = flags.CommonFlags()
+    common.AddBetaFlags()
+
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      common.AddAlphaFlags()
+
+    common.ConfigureParser(parser)
 
     group = parser.add_mutually_exclusive_group(required=False)
 
@@ -124,14 +132,15 @@ class Dev(base.Command):
         help='If running on minikube, stop the minkube profile at the end of '
         'the session.')
 
-    parser.add_argument(
-        '--minikube-vm-driver',
-        default='docker',
-        help='If running on minikube, use this vm driver.')
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      parser.add_argument(
+          '--minikube-vm-driver',
+          default='docker',
+          help='If running on minikube, use this vm driver.')
 
-    parser.add_argument(
-        '--namespace',
-        help='Kubernetes namespace for development kubernetes objects.')
+      parser.add_argument(
+          '--namespace',
+          help='Kubernetes namespace for development kubernetes objects.')
 
     # For testing only
     parser.add_argument(
@@ -160,11 +169,11 @@ class Dev(base.Command):
           args.skaffold_events_port or portpicker.pick_unused_port())
       with cross_platform_temp_file.NamedTempFile(skaffold_config) as skaffold_file, \
            self._GetKubernetesEngine(args) as kube_context, \
-           self._WithKubeNamespace(args.namespace, kube_context.context_name), \
+           self._WithKubeNamespace(getattr(args, 'namespace', None), kube_context.context_name), \
            _SetImagePush(skaffold_file, kube_context.shared_docker) as patched_skaffold_file, \
            skaffold.Skaffold(patched_skaffold_file.name, kube_context.context_name,
-                             args.namespace, kube_context.env_vars, _IsDebug(),
-                             skaffold_event_port) as running_process, \
+                             getattr(args, 'namespace', None), kube_context.env_vars,
+                             _IsDebug(), skaffold_event_port) as running_process, \
            skaffold.PrintUrlThreadContext(settings.service_name, skaffold_event_port):
         running_process.wait()
 
@@ -189,7 +198,8 @@ class Dev(base.Command):
         cluster_name = kubernetes.DEFAULT_CLUSTER_NAME
 
       return kubernetes.Minikube(cluster_name, args.stop_cluster,
-                                 args.minikube_vm_driver, _IsDebug())
+                                 getattr(args, 'minikube_vm_driver', 'docker'),
+                                 _IsDebug())
 
     if args.IsSpecified('kube_context'):
       return External()

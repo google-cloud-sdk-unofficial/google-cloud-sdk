@@ -56,13 +56,16 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""
+    release_track = self.ReleaseTrack()
+    client = util.GetClient(release_track)
+    messages = util.GetMessages(release_track)
     if (not args.IsSpecified('location')) and (
         not properties.VALUES.notebooks.location.IsExplicitlySet()):
       raise parser_errors.RequiredError(argument='--location')
-    instance_service = util.GetClient().projects_locations_instances
+    instance_service = client.projects_locations_instances
     return list_pager.YieldFromList(
         instance_service,
-        instance_util.CreateInstanceListRequest(args),
+        instance_util.CreateInstanceListRequest(args, messages),
         field='instances',
         limit=args.limit,
         batch_size_attribute='pageSize')

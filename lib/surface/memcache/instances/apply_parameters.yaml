@@ -44,7 +44,6 @@
   input:
     confirmation_prompt: |
       WARNING: Applying parameters will cause a full cache flush to the selected nodes in instance [{__name__}] in [{locationsId}].
-    default_continue: false
 
   request:
     ALPHA:

@@ -32,11 +32,11 @@ class List(base.ListCommand):
   """List the keys for a service account."""
 
   detailed_help = {
-      'EXAMPLES': textwrap.dedent("""\
+      'EXAMPLES': textwrap.dedent("""
           To list all user-managed keys created before noon on July 19th, 2015
           (to perform key rotation, for example), run:
 
-            $ {command} --iam-account my-iam-account@somedomain.com --managed-by user --created-before 2015-07-19T12:00:00Z
+            $ {command} --iam-account=my-iam-account@my-project.iam.gserviceaccount.com --managed-by=user --created-before=2015-07-19T12:00:00Z
           """),
   }
 

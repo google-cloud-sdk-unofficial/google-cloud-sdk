@@ -38,7 +38,7 @@ class SetIamPolicy(base.Command):
   """
 
   detailed_help = iam_util.GetDetailedHelpForSetIamPolicy(
-      'service account', 'my-iam-account@somedomain.com')
+      'service account', 'my-iam-account@my-project.iam.gserviceaccount.com')
   detailed_help['DESCRIPTION'] += '\n\n' + (
       iam_util.GetHintForServiceAccountResource(
           'set the iam policy of'))

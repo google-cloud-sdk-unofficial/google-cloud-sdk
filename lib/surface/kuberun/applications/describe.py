@@ -47,7 +47,7 @@ class Describe(kuberun_command.KubeRunCommand, base.DescribeCommand):
   def Command(self):
     return ['applications', 'describe']
 
-  def FormatOutput(self, out, args):
+  def SuccessResult(self, out, args):
     # TODO(b/170429098): handle this as JSON
     if not out:
       return out

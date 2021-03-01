@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.code import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Code(base.Group):
   """Create and manage a local development environment for Cloud Run.
 

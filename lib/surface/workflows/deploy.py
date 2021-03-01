@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.workflows import workflows
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.workflows import flags
+from googlecloudsdk.command_lib.workflows import hooks
 from googlecloudsdk.core import log
 
 
@@ -62,6 +63,7 @@ class Deploy(base.CacheCommand):
 
   def Run(self, args):
     """Deploy a workflow."""
+    hooks.print_default_location_warning(None, args, None)
     api_version = workflows.ReleaseTrackToApiVersion(self.ReleaseTrack())
     client = workflows.WorkflowsClient(api_version)
     workflow_ref = flags.ParseWorkflow(args)

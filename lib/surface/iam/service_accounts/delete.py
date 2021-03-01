@@ -32,10 +32,10 @@ class Delete(base.DeleteCommand):
   """Delete a service account from a project."""
 
   detailed_help = {
-      'EXAMPLES': textwrap.dedent("""\
+      'EXAMPLES': textwrap.dedent("""
           To delete an service account from your project, run:
 
-            $ {command} my-iam-account@somedomain.com
+            $ {command} my-iam-account@my-project.iam.gserviceaccount.com
           """),
   }
 

@@ -267,6 +267,7 @@ class Register(base.CreateCommand):
             Mutually exclusive with --public-issuer-url.
             """),
       )
+    if cls.ReleaseTrack() is not base.ReleaseTrack.GA:
       workload_identity_mutex.add_argument(
           '--has-private-issuer',
           hidden=True,
@@ -356,15 +357,20 @@ class Register(base.CreateCommand):
                                      public_issuer_url, issuer_url))
 
         # Request the JWKS from the cluster if we need it (either for setting
-        # up the GCS bucket or getting public keys for private issuers). In
-        # the private issuer case, we set private_keyset_json, which is used
-        # later to upload the JWKS in the Hub Membership.
+        # up the GCS bucket or getting public keys for private issuers).
         if self.ReleaseTrack() is base.ReleaseTrack.ALPHA:
           if args.manage_workload_identity_bucket:
             api_util.CreateWorkloadIdentityBucket(project, issuer_url,
                                                   openid_config_json,
                                                   kube_client.GetOpenIDKeyset())
-          elif args.has_private_issuer:
+        # In the private issuer case(which is supported on ALPHA & BETA),
+        # we set private_keyset_json, which is used later to upload the JWKS
+        # in the Hub Membership. For ALPHA only one of
+        # manage_workload_identity_bucket and has_private_issuer will be set,
+        # since they are mutually exclusive, marked as mutex flags in
+        # surface spec.
+        if self.ReleaseTrack() is not base.ReleaseTrack.GA:
+          if args.has_private_issuer:
             private_keyset_json = kube_client.GetOpenIDKeyset()
 
       # Attempt to create a membership.

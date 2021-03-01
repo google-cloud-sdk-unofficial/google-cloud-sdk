@@ -55,10 +55,8 @@ class Delete(kuberun_command.KubeRunCommand, base.DeleteCommand):
     parser.add_argument('revision',
                         help='The KubeRun revision to delete.')
 
-  def OperationResponseHandler(self, response, args):
-    super(Delete, self).OperationResponseHandler(response, args)
+  def SuccessResult(self, out, args):
     log.DeletedResource(args.revision, 'revision')
-    return None
 
   def BuildKubeRunArgs(self, args):
     return [args.revision] + super(Delete, self).BuildKubeRunArgs(args)

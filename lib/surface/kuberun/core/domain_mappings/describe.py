@@ -62,7 +62,7 @@ class Describe(kuberun_command.KubeRunCommand, base.DescribeCommand):
   def Command(self):
     return ['core', 'domain-mappings', 'describe']
 
-  def FormatOutput(self, out, args):
+  def SuccessResult(self, out, args):
     if out:
       return domainmapping.DomainMapping(json.loads(out))
     else:

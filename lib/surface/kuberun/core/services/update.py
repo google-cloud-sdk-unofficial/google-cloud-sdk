@@ -66,5 +66,5 @@ class Update(kuberun_command.KubeRunCommand, base.UpdateCommand):
   def Command(self):
     return ['core', 'services', 'update']
 
-  def FormatOutput(self, out, args):
+  def SuccessResult(self, out, args):
     return json.loads(out)

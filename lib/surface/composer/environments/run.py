@@ -68,6 +68,7 @@ class Run(base.Command):
     resource_args.AddEnvironmentResourceArg(
         parser, 'in which to run an Airflow command')
 
+    doc_url = 'https://airflow.apache.org/docs/apache-airflow/stable/cli-and-env-variables-ref.html'
     parser.add_argument(
         'subcommand',
         metavar='SUBCOMMAND',
@@ -75,12 +76,12 @@ class Run(base.Command):
         help=(
             'The Airflow CLI subcommand to run. Available subcommands '
             'include (listed with Airflow versions that support): {} '
-            '(see https://airflow.apache.org/cli.html for more info).').format(
+            '(see {} for more info).').format(
                 ', '.join(
                     sorted([
                         '{} [{}, {})'.format(cmd, r[0] or '**', r[1] or '**')
                         for cmd, r in cls.SUBCOMMAND_ALLOWLIST.items()
-                    ]))))
+                    ])), doc_url))
     parser.add_argument(
         'cmd_args',
         metavar='CMD_ARGS',

@@ -13,19 +13,19 @@ help_text:
 
   examples: |
     To remove an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
-    on a service account with identifier 'my-iam-account@somedomain.com', run:
+    on a service account with identifier 'my-iam-account@my-project.iam.gserviceaccount.com', run:
 
-      $ {command} my-iam-account@somedomain.com --member='user:test-user@gmail.com' --role='roles/editor'
+      $ {command} my-iam-account@my-project.iam.gserviceaccount.com --member='user:test-user@gmail.com' --role='roles/editor'
 
     To remove an IAM policy binding for the role of 'roles/editor' from all
-    authenticated users on service account 'my-iam-account@somedomain.com', run:
+    authenticated users on service account 'my-iam-account@my-project.iam.gserviceaccount.com', run:
 
-      $ {command} my-iam-account@somedomain.com --member='allAuthenticatedUsers' --role='roles/editor'
+      $ {command} my-iam-account@my-project.iam.gserviceaccount.com --member='allAuthenticatedUsers' --role='roles/editor'
 
     To remove an IAM policy binding which expires at the end of the year 2018 for the role of
-    'roles/iam.serviceAccountAdmin' and the user 'test-user@gmail.com' on a service account with identifier 'my-iam-account@somedomain.com', run:
+    'roles/iam.serviceAccountAdmin' and the user 'test-user@gmail.com' on a service account with identifier 'my-iam-account@my-project.iam.gserviceaccount.com', run:
 
-      $ {command} my-iam-account@somedomain.com --member='user:test-user@gmail.com' --role='roles/iam.serviceAccountAdmin' --condition='expression=request.time < timestamp("2019-01-01T00:00:00Z"),title=expires_end_of_2018,description=Expires at midnight on 2018-12-31'
+      $ {command} my-iam-account@my-project.iam.gserviceaccount.com --member='user:test-user@gmail.com' --role='roles/iam.serviceAccountAdmin' --condition='expression=request.time < timestamp("2019-01-01T00:00:00Z"),title=expires_end_of_2018,description=Expires at midnight on 2018-12-31'
 
     See https://cloud.google.com/iam/docs/managing-policies for details of
     policy role and member types.

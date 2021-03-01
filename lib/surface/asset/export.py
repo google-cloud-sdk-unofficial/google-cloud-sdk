@@ -29,8 +29,9 @@ OPERATION_DESCRIBE_COMMAND = 'gcloud asset operations describe'
 
 
 # pylint: disable=line-too-long
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Export(base.Command):
-  """Export the cloud assets to Google Cloud Storage."""
+  """Export the cloud assets to Google Cloud Storage/BigQuery."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -59,8 +60,8 @@ class Export(base.Command):
   }
   # pylint: enable=line-too-long
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.AddParentArgs(parser, 'The project which is the root asset.',
                         'The ID of the organization which is the root asset.',
                         'The ID of the folder which is the root asset.')
@@ -72,9 +73,29 @@ class Export(base.Command):
   def Run(self, args):
     parent = asset_utils.GetParentNameForExport(args.organization, args.project,
                                                 args.folder)
-    client = client_util.AssetExportClient(parent)
+    if args.content_type == 'relationship':
+      client = client_util.AssetExportClient(
+          parent, api_version=client_util.V1P7BETA1_API_VERSION)
+    else:
+      client = client_util.AssetExportClient(parent)
     operation = client.Export(args)
 
     log.ExportResource(parent, is_async=True, kind='root asset')
     log.status.Print('Use [{} {}] to check the status of the operation.'.format(
         OPERATION_DESCRIBE_COMMAND, operation.name))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ExportNonGA(Export):
+  """Export the cloud assets to Google Cloud Storage or BigQuery."""
+
+  @classmethod
+  def Args(cls, parser):
+    flags.AddParentArgs(parser, 'The project which is the root asset.',
+                        'The ID of the organization which is the root asset.',
+                        'The ID of the folder which is the root asset.')
+    flags.AddSnapshotTimeArgs(parser)
+    flags.AddAssetTypesArgs(parser)
+    flags.AddContentTypeArgs(parser, required=False, track=cls.ReleaseTrack())
+    flags.AddDestinationArgs(parser)
+    flags.AddRelationshipTypesArgs(parser)

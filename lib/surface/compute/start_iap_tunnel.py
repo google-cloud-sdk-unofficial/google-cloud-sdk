@@ -31,6 +31,7 @@ from googlecloudsdk.core import log
 
 
 class StartIapTunnel(base.Command):
+  # pylint: disable=line-too-long
   """Starts an IAP TCP forwarding tunnel.
 
   Starts a tunnel to Cloud Identity-Aware Proxy for TCP forwarding through which
@@ -38,8 +39,7 @@ class StartIapTunnel(base.Command):
   Engine instance.
 
   To learn more, see the
-  [IAP for TCP forwarding documentation](
-  https://cloud.google.com/iap/docs/tcp-forwarding-overview).
+  [IAP for TCP forwarding documentation](https://cloud.google.com/iap/docs/tcp-forwarding-overview).
 
   ## EXAMPLES
 

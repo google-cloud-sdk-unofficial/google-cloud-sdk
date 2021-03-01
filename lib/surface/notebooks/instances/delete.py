@@ -49,14 +49,17 @@ class Delete(base.DeleteCommand):
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""
-
-    instance_service = util.GetClient().projects_locations_instances
+    release_track = self.ReleaseTrack()
+    client = util.GetClient(release_track)
+    messages = util.GetMessages(release_track)
+    instance_service = client.projects_locations_instances
     operation = instance_service.Delete(
-        instance_util.CreateInstanceDeleteRequest(args))
+        instance_util.CreateInstanceDeleteRequest(args, messages))
     return instance_util.HandleLRO(
         operation,
         args,
         instance_service,
+        release_track,
         operation_type=instance_util.OperationType.DELETE)
 
 

@@ -34,6 +34,8 @@ DETAILED_HELP = {
 }
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """Request for listing locations."""
 
@@ -45,10 +47,13 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""
-    location_service = util.GetClient().projects_locations
+    release_track = self.ReleaseTrack()
+    client = util.GetClient(release_track)
+    messages = util.GetMessages(release_track)
+    location_service = client.projects_locations
     return list_pager.YieldFromList(
         location_service,
-        loc_util.CreateLocationListRequest(args),
+        loc_util.CreateLocationListRequest(args, messages),
         field='locations',
         limit=args.limit,
         batch_size_attribute='pageSize')
