@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import traffic_pair
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import display
@@ -117,6 +118,10 @@ class AdjustTraffic(base.Command):
     if not changes:
       raise exceptions.NoConfigurationChangeError(
           'No traffic configuration change requested.')
+    changes.insert(
+        0,
+        config_changes.DeleteAnnotationChange(
+            k8s_object.BINAUTHZ_BREAKGLASS_ANNOTATION))
     changes.append(
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()))
 
@@ -157,11 +162,27 @@ class AdjustTraffic(base.Command):
       return resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BetaAdjustTraffic(AdjustTraffic):
   """Adjust the traffic assignments for a Cloud Run service."""
 
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
+    flags.AddTrafficTagsFlags(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaAdjustTraffic(AdjustTraffic):
+  """Adjust the traffic assignments for a Cloud Run service."""
+
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
+
+    # Flags specific to managed CR
+    managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddBinAuthzBreakglassFlag(managed_group)
+
+    # Flags not specific to any platform
     flags.AddTrafficTagsFlags(parser)

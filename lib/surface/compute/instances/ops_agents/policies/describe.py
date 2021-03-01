@@ -38,8 +38,29 @@ class Describe(base.DescribeCommand):
   Compute Engine instances based on user specified instance filters. This policy
   installs, specifies versioning, enables autoupgrade, and removes Ops Agents.
 
-  The command returns the content of one policy. If no policies are found, it
-  returns a ``NOT_FOUND'' error.
+  The command returns the content of one policy. For instance:
+
+    agent_rules:
+    - enable_autoupgrade: true
+      package_state: installed
+      type: ops-agent
+      version: latest
+    assignment:
+      group_labels:
+      - app: myapp
+        env: prod
+      os_types:
+      - short_name: ubuntu
+        version: '18.04'
+      zones:
+      - us-central1-a
+    create_time: '2021-02-02T02:10:25.344Z'
+    description: A test policy to install agents
+    etag: <ETAG>
+    id: projects/<PROJECT_NUMBER>/guestPolicies/ops-agents-test-policy
+    update_time: '2021-02-02T02:10:25.344Z'
+
+  If no policies are found, it returns a ``NOT_FOUND'' error.
   """
 
   detailed_help = {

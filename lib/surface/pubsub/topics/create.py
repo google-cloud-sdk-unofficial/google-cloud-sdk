@@ -26,6 +26,7 @@ from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
+from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -61,7 +62,7 @@ def _GetTopicPresentationSpec():
       'to create.', positional=True, plural=True)
 
 
-def _Run(args, legacy_output=False):
+def _Run(args, legacy_output=False, schema=None, message_encoding=None):
   """Creates one or more topics."""
   client = topics.TopicsClient()
 
@@ -90,8 +91,9 @@ def _Run(args, legacy_output=False):
           topic_ref,
           labels=labels,
           kms_key=kms_key,
-          message_storage_policy_allowed_regions=message_storage_policy_allowed_regions
-      )
+          message_storage_policy_allowed_regions=message_storage_policy_allowed_regions,
+          schema=schema,
+          message_encoding=message_encoding)
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
       log.CreatedResource(topic_ref.RelativeName(), kind='topic',
@@ -141,9 +143,35 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Creates one or more Cloud Pub/Sub topics."""
 
+  @staticmethod
+  def Args(parser):
+    resource_args.AddResourceArgs(
+        parser, [_GetKmsKeyPresentationSpec(),
+                 _GetTopicPresentationSpec()])
+    flags.AddSchemaSettingsFlags(parser)
+    labels_util.AddCreateLabelsFlags(parser)
+
+    parser.add_argument(
+        '--message-storage-policy-allowed-regions',
+        metavar='REGION',
+        type=arg_parsers.ArgList(),
+        help='A list of one or more Cloud regions where messages are allowed to'
+        ' be stored at rest.')
+
   def Run(self, args):
+    schema = getattr(args, 'schema', None)
+    if schema:
+      schema = args.CONCEPTS.schema.Parse().RelativeName()
+    message_encoding_list = getattr(args, 'message_encoding', None)
+    message_encoding = None
+    if message_encoding_list:
+      message_encoding = message_encoding_list[0]
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
-    return _Run(args, legacy_output=legacy_output)
+    return _Run(
+        args,
+        legacy_output=legacy_output,
+        schema=schema,
+        message_encoding=message_encoding)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

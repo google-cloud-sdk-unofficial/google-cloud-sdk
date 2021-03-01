@@ -61,7 +61,7 @@ class Run(base.Command):
     airflow trigger_dag some_dag --run_id=foo
   """
 
-  SUBCOMMAND_WHITELIST = command_util.SUBCOMMAND_WHITELIST
+  SUBCOMMAND_ALLOWLIST = command_util.SUBCOMMAND_ALLOWLIST
 
   @classmethod
   def Args(cls, parser):
@@ -71,7 +71,7 @@ class Run(base.Command):
     parser.add_argument(
         'subcommand',
         metavar='SUBCOMMAND',
-        choices=list(cls.SUBCOMMAND_WHITELIST.keys()),
+        choices=list(cls.SUBCOMMAND_ALLOWLIST.keys()),
         help=(
             'The Airflow CLI subcommand to run. Available subcommands '
             'include (listed with Airflow versions that support): {} '
@@ -79,7 +79,7 @@ class Run(base.Command):
                 ', '.join(
                     sorted([
                         '{} [{}, {})'.format(cmd, r[0] or '**', r[1] or '**')
-                        for cmd, r in cls.SUBCOMMAND_WHITELIST.items()
+                        for cmd, r in cls.SUBCOMMAND_ALLOWLIST.items()
                     ]))))
     parser.add_argument(
         'cmd_args',
@@ -120,7 +120,7 @@ class Run(base.Command):
     return response
 
   def CheckSubCommandAirflowSupport(self, args, airflow_version):
-    from_version, to_version = self.SUBCOMMAND_WHITELIST[args.subcommand]
+    from_version, to_version = self.SUBCOMMAND_ALLOWLIST[args.subcommand]
     if not image_versions_command_util.IsVersionInRange(
         airflow_version, from_version, to_version):
       raise command_util.Error(
@@ -207,7 +207,7 @@ class RunBeta(Run):
     airflow trigger_dag some_dag --run_id=foo
   """
 
-  SUBCOMMAND_WHITELIST = command_util.SUBCOMMAND_WHITELIST_BETA
+  SUBCOMMAND_ALLOWLIST = command_util.SUBCOMMAND_ALLOWLIST_BETA
 
   def ConvertKubectlError(self, error, env_obj):
     is_private = (

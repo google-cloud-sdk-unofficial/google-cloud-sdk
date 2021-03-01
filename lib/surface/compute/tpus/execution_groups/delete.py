@@ -26,9 +26,22 @@ from googlecloudsdk.command_lib.compute.tpus.execution_groups import util as tpu
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
-  """Delete TPU Node + VM created by execution group."""
+  r"""Delete TPU Node + VM created by execution group.
+
+  ## EXAMPLES
+
+  To delete both, the TPU and the VM, run:
+
+    $ {command} test-execution-group --zone=test-zone --project=test-project
+
+  To delete the TPU only, run:
+
+    $ {command} test-execution-group --zone=test-zone --project=test-project \
+    --tpu-only
+  """
 
   @classmethod
   def Args(cls, parser):
@@ -40,6 +53,8 @@ class Delete(base.DeleteCommand):
     responses = []
     tpu_operation_ref = None
     instance_operation_ref = None
+
+    tpu_utils.DefaultArgs.ValidateZone(args)
 
     if not args.tpu_only:
       instance = tpu_utils.Instance(self.ReleaseTrack())

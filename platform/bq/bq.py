@@ -335,7 +335,7 @@ class CachedCredentialLoader(CredentialLoader):
       return None
 
     try:
-      return self._storage.get()
+      creds = self._storage.get()
     except ImportError as e:
       # This is a workaround for switching between oauth2client versions.
       is_v2_storage = (str(e).startswith('No module named oauth2client.'))
@@ -350,6 +350,16 @@ class CachedCredentialLoader(CredentialLoader):
       return None
     except BaseException as e:  # pylint: disable=broad-except
       self._RaiseCredentialsCorrupt(e)
+
+    if not creds:
+      return None  # Nothing cached.
+
+    scopes = _GetClientScopeFromFlags()
+    if not creds.has_scopes(scopes):
+      # Our cached credentials do not cover the required scopes.
+      return None
+
+    return creds
 
   def _RaiseCredentialsCorrupt(self, e):
     BigqueryCmd.ProcessError(
@@ -460,7 +470,7 @@ class ApplicationDefaultCredentialFileLoader(CachedCredentialLoader):
 def _GetClientScopeFromFlags():
   """Returns auth scopes based on user supplied flags."""
   client_scope = [_BIGQUERY_SCOPE, _CLOUD_PLATFORM_SCOPE]
-  if FLAGS.enable_gdrive is None or FLAGS.enable_gdrive:
+  if FLAGS.enable_gdrive:
     client_scope.append(_GDRIVE_SCOPE)
   client_scope.append(_REAUTH_SCOPE)
   return client_scope
@@ -485,7 +495,7 @@ def _GetCredentialsFromFlags():
     if FLAGS.service_account_private_key_file:
       loader = ServiceAccountPrivateKeyFileLoader(
           credential_cache_file=FLAGS.service_account_credential_file,
-          read_cache_first=not FLAGS.enable_gdrive,
+          read_cache_first=True,
           service_account=FLAGS.service_account,
           file_path=FLAGS.service_account_private_key_file,
           password=FLAGS.service_account_private_key_password)
@@ -498,7 +508,7 @@ def _GetCredentialsFromFlags():
                            '--application_default_credential_file is used.')
     loader = ApplicationDefaultCredentialFileLoader(
         credential_cache_file=FLAGS.credential_file,
-        read_cache_first=not FLAGS.enable_gdrive,
+        read_cache_first=True,
         credential_file=FLAGS.application_default_credential_file)
   else:
     raise app.UsageError(
@@ -1496,6 +1506,13 @@ class _Load(BigqueryCmd):
         'serialized Thrift records, or data blocks, or the frame when used '
         'with `thrift_framing`.',
         flag_values=fv)
+    flags.DEFINE_enum(
+        'json_extension',
+        None, ['GEOJSON'], '(experimental) Allowed values: '
+        'GEOJSON: only allowed when source_format is specified as '
+        'NEWLINE_DELIMITED_JSON. When specified, the input is loaded as '
+        'newline-delimited GeoJSON.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, destination_table, source, schema=None):
@@ -1595,6 +1612,8 @@ class _Load(BigqueryCmd):
         hive_partitioning_options[
             'sourceUriPrefix'] = self.hive_partitioning_source_uri_prefix
       opts['hive_partitioning_options'] = hive_partitioning_options
+    if self.json_extension is not None:
+      opts['json_extension'] = self.json_extension
     opts['decimal_target_types'] = self.decimal_target_types
     if opts['source_format'] == 'THRIFT':
       thrift_options = {}
@@ -3285,17 +3304,17 @@ class _Delete(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_boolean(
         'reservation',
-        None,
+        False,
         'Deletes the reservation described by this identifier.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'capacity_commitment',
-        None,
+        False,
         'Deletes the capacity commitment described by this identifier.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'reservation_assignment',
-        None,
+        False,
         'Delete a reservation assignment.',
         flag_values=fv)
     flags.DEFINE_boolean(
@@ -3310,7 +3329,7 @@ class _Delete(BigqueryCmd):
         'Remove routine with this routine ID.',
         flag_values=fv)
     flags.DEFINE_boolean(
-        'connection', None, 'Delete a connection.',
+        'connection', False, 'Delete a connection.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 

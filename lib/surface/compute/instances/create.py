@@ -210,6 +210,7 @@ class Create(base.CreateCommand):
   _support_stack_type = False
   _support_ipv6_network_tier = False
   _support_ipv6_public_ptr_domain = False
+  _support_network_performance_configs = False
 
   @classmethod
   def Args(cls, parser):
@@ -417,6 +418,11 @@ class Create(base.CreateCommand):
             args.post_key_revocation_action_type, compute_client.messages
             .Instance.PostKeyRevocationActionTypeValueValuesEnum)
 
+      if self._support_network_performance_configs and \
+          args.IsSpecified('network_performance_configs'):
+        instance.networkPerformanceConfig = \
+            instance_utils.GetNetworkPerformanceConfig(args, compute_client)
+
       request = compute_client.messages.ComputeInstancesInsertRequest(
           instance=instance,
           project=instance_ref.project,
@@ -465,6 +471,9 @@ class Create(base.CreateCommand):
     instances_flags.ValidateAcceleratorArgs(args)
     instances_flags.ValidateNetworkTierArgs(args)
     instances_flags.ValidateReservationAffinityGroup(args)
+
+    if self._support_network_performance_configs:
+      instances_flags.ValidateNetworkPerformanceConfigsArgs(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     compute_client = holder.client
@@ -616,6 +625,7 @@ class CreateAlpha(CreateBeta):
   _support_stack_type = True
   _support_ipv6_network_tier = True
   _support_ipv6_public_ptr_domain = True
+  _support_network_performance_configs = True
 
   @classmethod
   def Args(cls, parser):
@@ -652,6 +662,7 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddThreadsPerCoreArgs(parser)
     instances_flags.AddStackTypeArgs(parser)
     instances_flags.AddIpv6NetworkTierArgs(parser)
+    instances_flags.AddNetworkPerformanceConfigsArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

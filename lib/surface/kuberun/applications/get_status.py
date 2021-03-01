@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.kuberun import status_printer
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To get the status of the application in environment ENV, run:
+        To get the status of the application in environment ``ENV'', run:
 
             $ {command} --environment ENV
         """,

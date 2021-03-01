@@ -64,12 +64,10 @@ class Update(base.Command):
     flags.WEB_SERVER_ALLOW_ALL.AddToParser(web_server_group)
     flags.WEB_SERVER_DENY_ALL.AddToParser(web_server_group)
 
-  def _ConstructPatch(self,
-                      env_ref,
-                      args,
-                      support_environment_upgrades=False,
-                      support_cloud_sql_machine_type=False,
-                      support_web_server_machine_type=False):
+    flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(Update.update_type_group)
+    flags.WEB_SERVER_MACHINE_TYPE.AddToParser(Update.update_type_group)
+
+  def _ConstructPatch(self, env_ref, args, support_environment_upgrades=False):
 
     params = dict(
         env_ref=env_ref,
@@ -97,10 +95,9 @@ class Update(base.Command):
         environments_api_util.BuildWebServerAllowedIps(
             args.update_web_server_allow_ip, args.web_server_allow_all,
             args.web_server_deny_all))
-    if support_cloud_sql_machine_type:
-      params['cloud_sql_machine_type'] = args.cloud_sql_machine_type
-    if support_web_server_machine_type:
-      params['web_server_machine_type'] = args.web_server_machine_type
+
+    params['cloud_sql_machine_type'] = args.cloud_sql_machine_type
+    params['web_server_machine_type'] = args.web_server_machine_type
     if self._support_autoscaling:
       params['scheduler_cpu'] = args.scheduler_cpu
       params['worker_cpu'] = args.worker_cpu
@@ -141,8 +138,6 @@ class UpdateBeta(Update):
     UpdateBeta.support_environment_upgrades = True
     flags.AddEnvUpgradeFlagsToGroup(Update.update_type_group)
 
-    flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(Update.update_type_group)
-    flags.WEB_SERVER_MACHINE_TYPE.AddToParser(Update.update_type_group)
     flags.AddMaintenanceWindowFlagsGroup(Update.update_type_group)
 
   @staticmethod
@@ -174,7 +169,7 @@ class UpdateBeta(Update):
           [acl['ip_range'] for acl in args.update_web_server_allow_ip])
 
     field_mask, patch = self._ConstructPatch(
-        env_ref, args, UpdateBeta.support_environment_upgrades, True, True)
+        env_ref, args, UpdateBeta.support_environment_upgrades)
 
     return patch_util.Patch(
         env_ref,

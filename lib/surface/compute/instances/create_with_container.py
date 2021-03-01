@@ -90,6 +90,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_match_container_mount_disks = True
   _support_nvdimm = False
   _support_threads_per_core = False
+  _support_network_performance_configs = False
 
   @staticmethod
   def Args(parser):
@@ -286,6 +287,11 @@ class CreateWithContainer(base.CreateCommand):
       if shielded_instance_config:
         instance.shieldedInstanceConfig = shielded_instance_config
 
+      if self._support_network_performance_configs and \
+          args.IsSpecified('network_performance_configs'):
+        instance.networkPerformanceConfig = \
+            instance_utils.GetNetworkPerformanceConfig(args, compute_client)
+
       request = compute_client.messages.ComputeInstancesInsertRequest(
           instance=instance,
           sourceInstanceTemplate=source_instance_template,
@@ -331,6 +337,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_match_container_mount_disks = True
   _support_nvdimm = True
   _support_threads_per_core = True
+  _support_network_performance_configs = True
 
   @staticmethod
   def Args(parser):
@@ -348,11 +355,13 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddThreadsPerCoreArgs(parser)
     instances_flags.AddStackTypeArgs(parser)
     instances_flags.AddIpv6NetworkTierArgs(parser)
+    instances_flags.AddNetworkPerformanceConfigsArgs(parser)
 
   def _ValidateTrackSpecificArgs(self, args):
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidatePublicDnsFlags(args)
     instances_flags.ValidatePublicPtrFlags(args)
+    instances_flags.ValidateNetworkPerformanceConfigsArgs(args)
 
   def _GetNetworkInterfaces(self, args, client, holder, project, location,
                             scope, skip_defaults):

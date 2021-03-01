@@ -97,7 +97,12 @@ class Replace(base.Command):
                 args.FILE, client.messages_module.Service),
             client.messages_module)
       except messages_util.ScalarTypeMismatchError as e:
-        exceptions.MaybeRaiseCustomFieldMismatch(e)
+        exceptions.MaybeRaiseCustomFieldMismatch(
+            e,
+            help_text='Please make sure that the YAML file matches the Knative '
+                      'service definition spec in https://kubernetes.io/docs/'
+                      'reference/kubernetes-api/services-resources/service-v1/'
+                      '#Service.')
 
       # If managed, namespace must match project (or will default to project if
       # not specified).

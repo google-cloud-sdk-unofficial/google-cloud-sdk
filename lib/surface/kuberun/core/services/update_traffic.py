@@ -31,16 +31,24 @@ from googlecloudsdk.core.resource import resource_printer
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To send all traffic to the latest revision, run:
+        To send all traffic to the latest revision of a service ``SERVICE'' in
+        the default namespace, run:
 
             $ {command} SERVICE --to-latest
 
-        To split the traffic between revisions, run:
+        To send all traffic to the latest revision of a service ``SERVICE'' in
+        a specific namespace ``NAMESPACE'', run:
+
+            $ {command} SERVICE --to-latest --namespace=NAMESPACE
+
+        To split the traffic across specific revisions of a service ``SERVICE''
+        in the default namespace, run:
 
             $ {command} SERVICE --to-revisions=rev1=30,rev2=70
 
-        To change the traffic allocated for one revision and let the other
-        revisions's traffic auto-resized, run:
+        To allocate a specific amount of traffic to one revision of a service
+        ``SERVICE'' and allow allow other traffic to auto-resize across other
+        revisions, run:
 
             $ {command} SERVICE --to-revisions=rev1=30
         """,

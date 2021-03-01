@@ -82,9 +82,9 @@ class Log(base.Command):
     if args.stream:
       if not self._support_gcl:
         log.status.Print(
-            '\nOpt in: to tail live logs from Cloud Logging use the alpha or beta'
-            ' versions\n$ gcloud alpha builds log --stream\n$ gcloud beta builds'
-            ' log --stream\n')
+            '\ngcloud builds log --stream only displays logs from Cloud'
+            ' Storage. To view logs from Cloud Logging, run:\ngcloud beta'
+            ' builds log --stream\n')
       logger.Stream(build_ref)
       return
 

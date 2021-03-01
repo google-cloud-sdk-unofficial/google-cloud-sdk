@@ -315,9 +315,11 @@ class Update(base.UpdateCommand):
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddMasterGlobalAccessFlag(group, is_update=True)
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1', group, hidden=False)
+    flags.AddNotificationConfigFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
+    flags.ValidateNotificationConfigFlag(args)
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
     opts.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     opts.clear_resource_usage_bigquery_dataset = \
@@ -343,6 +345,7 @@ class Update(base.UpdateCommand):
           'to completion.',
           cancel_on_no=True)
     opts.disable_default_snat = args.disable_default_snat
+    opts.notification_config = args.notification_config
     return opts
 
   def Run(self, args):

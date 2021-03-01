@@ -25,6 +25,8 @@ import sys
 import time
 import traceback
 
+from future.utils import raise_with_traceback
+
 from google.cloud.ml.util import _exceptions
 
 
@@ -64,7 +66,7 @@ class FuzzedExponentialIntervals(object):
 
   def __iter__(self):
     current_delay_secs = min(self._max_delay_secs, self._initial_delay_secs)
-    for _ in xrange(self._num_retries):
+    for _ in range(self._num_retries):
       fuzz_multiplier = 1 - self._fuzz + random.random() * self._fuzz
       yield current_delay_secs * fuzz_multiplier
       current_delay_secs = min(self._max_delay_secs,
@@ -154,10 +156,10 @@ def with_exponential_backoff(num_retries=10,
           exn_traceback = sys.exc_info()[2]
           try:
             try:
-              sleep_interval = retry_intervals.next()
+              sleep_interval = next(retry_intervals)
             except StopIteration:
               # Re-raise the original exception since we finished the retries.
-              raise (exn, None, exn_traceback)
+              raise_with_traceback(exn, exn_traceback)
 
             logger(
                 'Retry with exponential backoff: waiting for %s seconds before '

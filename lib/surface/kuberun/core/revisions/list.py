@@ -37,9 +37,9 @@ _DETAILED_HELP = {
 
             $ {command}
 
-        To show all KubeRun revisions in a specific namespace, run:
+        To show all KubeRun revisions in a specific namespace ``NAMESPACE'', run:
 
-            $ {command} --namespace=my-namespace
+            $ {command} --namespace=NAMESPACE
 
         To show all KubeRun revisions from all namespaces, run:
 

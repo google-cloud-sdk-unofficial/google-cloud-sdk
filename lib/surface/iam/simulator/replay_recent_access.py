@@ -18,13 +18,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import list_pager
 from apitools.base.py import encoding_helper
-
+from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.iam import assist
 from googlecloudsdk.api_lib.iam.simulator import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 _DETAILED_HELP = {
@@ -107,6 +107,8 @@ class ReplayRecentAccesses(base.Command):
     operation_response = encoding_helper.JsonToMessage(
         messages.GoogleCloudPolicysimulatorV1beta1Replay,
         encoding_helper.MessageToJson(operation_response_raw))
+    if not operation_response.resultsSummary or not operation_response.resultsSummary.differenceCount:
+      log.err.Print('No access changes found in the replay.\n')
 
     # List results of the replay.
     list_replay_result_request = messages.PolicysimulatorProjectsLocationsReplaysResultsListRequest(

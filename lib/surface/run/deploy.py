@@ -23,6 +23,7 @@ import enum
 import os.path
 import uuid
 
+from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
@@ -193,6 +194,10 @@ class Deploy(base.Command):
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())
     changes = flags.GetConfigurationChanges(args)
+    changes.insert(
+        0,
+        config_changes.DeleteAnnotationChange(
+            k8s_object.BINAUTHZ_BREAKGLASS_ANNOTATION))
     changes.append(
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()))
 
@@ -279,6 +284,8 @@ class AlphaDeploy(Deploy):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddSandboxArg(managed_group)
+    flags.AddBinAuthzPolicyFlags(managed_group)
+    flags.AddBinAuthzBreakglassFlag(managed_group)
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)

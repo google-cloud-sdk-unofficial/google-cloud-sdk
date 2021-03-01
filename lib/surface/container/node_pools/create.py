@@ -187,8 +187,7 @@ class Create(base.CreateCommand):
     flags.AddSurgeUpgradeFlag(parser, for_node_pool=True)
     flags.AddMaxUnavailableUpgradeFlag(
         parser, for_node_pool=True, is_create=True)
-    # TODO(b/170998504): Unhide prior to GA release.
-    flags.AddSystemConfigFlag(parser, hidden=True)
+    flags.AddSystemConfigFlag(parser, hidden=False)
     flags.AddNodeGroupFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):

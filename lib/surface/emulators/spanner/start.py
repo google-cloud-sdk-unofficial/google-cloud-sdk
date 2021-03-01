@@ -23,7 +23,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.emulators import spanner_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Start(base.Command):
   """Start a local Cloud Spanner emulator.
 
@@ -31,7 +32,8 @@ class Start(base.Command):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           To start a local Cloud Spanner emulator, run:
 
             $ {command}

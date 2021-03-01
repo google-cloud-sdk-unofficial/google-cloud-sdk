@@ -86,7 +86,7 @@ class Resize(base.Command):
     return client.MakeRequests([(service, 'Resize', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ResizeBeta(Resize):
   """Set managed instance group size."""
 
@@ -129,6 +129,61 @@ class ResizeBeta(Resize):
     return client.MakeRequests([(service, method, request)])
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ResizeAlpha(ResizeBeta):
+  """Set managed instance group size."""
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    igm_ref = self.CreateGroupReference(client, holder.resources, args)
+    if igm_ref.Collection() == 'compute.instanceGroupManagers':
+      service = client.apitools_client.instanceGroupManagers
+      method = 'ResizeAdvanced'
+      request = (
+          client.messages.ComputeInstanceGroupManagersResizeAdvancedRequest(
+              instanceGroupManager=igm_ref.Name(),
+              instanceGroupManagersResizeAdvancedRequest=(
+                  client.messages.InstanceGroupManagersResizeAdvancedRequest(
+                      targetSize=args.size,
+                      noCreationRetries=not args.creation_retries,
+                  )),
+              project=igm_ref.project,
+              zone=igm_ref.zone))
+    else:
+      if args.creation_retries:
+        # TODO(b/178852691): Redirect whole alpha traffic to ResizeAdvanced,
+        # even if the "no-creation-retries" flag is not set. This would be the
+        # intended shape of this code, and this is would be also consistent with
+        # zonal version. Instead of doing it immediately, this TODO is added to
+        # get the desired gradual launch behavior.
+        service = client.apitools_client.regionInstanceGroupManagers
+        method = 'Resize'
+        request = client.messages.ComputeRegionInstanceGroupManagersResizeRequest(
+            instanceGroupManager=igm_ref.Name(),
+            size=args.size,
+            project=igm_ref.project,
+            region=igm_ref.region)
+      else:
+        service = client.apitools_client.regionInstanceGroupManagers
+        method = 'ResizeAdvanced'
+        request = (
+            client.messages
+            .ComputeRegionInstanceGroupManagersResizeAdvancedRequest(
+                instanceGroupManager=igm_ref.Name(),
+                regionInstanceGroupManagersResizeAdvancedRequest=(
+                    client.messages
+                    .RegionInstanceGroupManagersResizeAdvancedRequest(
+                        targetSize=args.size,
+                        noCreationRetries=not args.creation_retries,
+                    )),
+                project=igm_ref.project,
+                region=igm_ref.region))
+
+    return client.MakeRequests([(service, method, request)])
+
+
 Resize.detailed_help = {
     'brief': 'Set managed instance group size.',
     'DESCRIPTION': """
@@ -145,3 +200,4 @@ instance template until the group reaches the desired size.
 """,
 }
 ResizeBeta.detailed_help = Resize.detailed_help
+ResizeAlpha.detailed_help = Resize.detailed_help

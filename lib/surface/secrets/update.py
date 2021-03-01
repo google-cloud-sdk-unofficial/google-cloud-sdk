@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import log as secrets_log
+from googlecloudsdk.command_lib.secrets import util as secrets_util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core.console import console_io
 
@@ -137,6 +138,7 @@ class UpdateBeta(Update):
         parser, purpose='to update', positional=True, required=True)
     labels_util.AddUpdateLabelsFlags(parser)
     secrets_args.AddUpdateExpirationGroup(parser)
+    secrets_args.AddUpdateTopicsGroup(parser)
 
   def _RunUpdate(self, original, args):
     messages = secrets_api.GetMessages()
@@ -155,11 +157,16 @@ class UpdateBeta(Update):
     if args.IsSpecified('expire_time') or args.IsSpecified('remove_expiration'):
       update_mask.append('expire_time')
 
+    if args.IsSpecified('add_topics') or args.IsSpecified(
+        'remove_topics') or args.IsSpecified('clear_topics'):
+      update_mask.append('topics')
+
     # Validations
     if not update_mask:
       raise exceptions.MinimumArgumentException([
           '--clear-labels', '--remove-labels', '--update-labels', '--ttl',
-          '--expire-time', '--remove-expiration'
+          '--expire-time', '--remove-expiration', '--clear-topics',
+          '--remove-topics', '--add-topics'
       ], self.NO_CHANGES_MESSAGE.format(secret=secret_ref.Name()))
 
     labels_update = labels_diff.Apply(messages.Secret.LabelsValue,
@@ -167,6 +174,11 @@ class UpdateBeta(Update):
     labels = original.labels
     if labels_update.needs_update:
       labels = labels_update.labels
+
+    if 'topics' in update_mask:
+      topics = secrets_util.ApplyTopicsUpdate(args, original.topics)
+    else:
+      topics = []
 
     if args.expire_time:
       msg = self.CONFIRM_EXPIRE_TIME_MESSAGE.format(
@@ -184,7 +196,8 @@ class UpdateBeta(Update):
         labels=labels,
         update_mask=update_mask,
         expire_time=args.expire_time,
-        ttl=args.ttl)
+        ttl=args.ttl,
+        topics=topics)
     secrets_log.Secrets().Updated(secret_ref)
 
     return secret

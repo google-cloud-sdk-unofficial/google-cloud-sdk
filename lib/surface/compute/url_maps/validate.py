@@ -32,12 +32,12 @@ from googlecloudsdk.core.console import console_io
 def _DetailedHelp():
   return {
       'brief':
-          'Validates URL map configs from your project.',
+          'Validate a URL map.',
       'DESCRIPTION':
           """\
         Runs static validation for the UrlMap.
         In particular, the tests of the provided UrlMap will be run.
-        Calling this method does NOT create the UrlMap.
+        Calling this method does NOT create or update the UrlMap.
         """,
       'EXAMPLES':
           """\
@@ -64,20 +64,13 @@ def _GetSchemaPath(release_track, for_help=False):
 
 
 def _AddSourceFlag(parser, schema_path=None):
-  help_text = """Path to the file that contains the URL map config
-          for validation. The file must not contain any output-only fields.
-          For a schema describing the export/import format, see: {}.
+  help_text = """Path to a YAML file containing configuration export data.
+        The YAML file must not contain any output-only fields. Alternatively,
+        you may omit this flag to read from standard input. For a schema
+        describing the export/import format, see: {}.
       """.format(schema_path)
   parser.add_argument(
-      '--source', help=textwrap.dedent(help_text), required=True)
-
-
-def _AddFileFormatFlag(parser):
-  help_text = """The format of the file containing the URL map config.
-          Currently supports yaml which is also the default.
-          FILE_FORMAT must be: yaml."""
-  parser.add_argument(
-      '--file_format', help=textwrap.dedent(help_text), required=False)
+      '--source', help=textwrap.dedent(help_text), required=False)
 
 
 def _AddGlobalFlag(parser):
@@ -122,7 +115,8 @@ def _SendRegionalRequest(client, project, region, url_map):
       _MakeRegionalRequest(client, project, region, url_map))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Validate(base.Command):
   """Validates URL map configs from your project."""
 
@@ -131,7 +125,6 @@ class Validate(base.Command):
   @classmethod
   def Args(cls, parser):
     _AddSourceFlag(parser, _GetSchemaPath(cls.ReleaseTrack(), for_help=True))
-    _AddFileFormatFlag(parser)
     _AddScopeFlags(parser)
 
   def Run(self, args):
@@ -149,7 +142,7 @@ class Validate(base.Command):
     client = holder.client
 
     # Import UrlMap to be verified
-    data = console_io.ReadFromFileOrStdin(args.source, binary=False)
+    data = console_io.ReadFromFileOrStdin(args.source or '-', binary=False)
     try:
       url_map = export_util.Import(
           message_type=client.messages.UrlMap,

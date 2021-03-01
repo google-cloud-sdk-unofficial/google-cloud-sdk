@@ -52,7 +52,12 @@ class Patch(base.Command):
     """
 
     flags.AddCharset(parser)
-    flags.AddCollation(parser)
+    custom_help = (
+        'Cloud SQL database collation setting, which specifies '
+        'the set of rules for comparing characters in a character set. Each'
+        ' database version may support a different set of collations. This flag'
+        ' can\'t be used with PostgreSQL instances.')
+    flags.AddCollation(parser, custom_help)
     flags.AddDatabaseName(parser)
     flags.AddInstance(parser)
     parser.add_argument(

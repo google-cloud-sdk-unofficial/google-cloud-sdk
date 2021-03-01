@@ -25,10 +25,15 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 _DETAILED_HELP = {
-    'EXAMPLES': """
-        To delete a KubeRun revision, run:
+    'EXAMPLES':
+        """
+        To delete a KubeRun revision in the default namespace, run:
 
             $ {command} REVISION
+
+        To delete a KubeRun revision in a specific namespace ``NAMESPACE'', run:
+
+            $ {command} REVISION --namespace=NAMESPACE
         """,
 }
 

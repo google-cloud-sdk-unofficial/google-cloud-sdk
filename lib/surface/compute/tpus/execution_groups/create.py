@@ -29,9 +29,35 @@ from googlecloudsdk.command_lib.compute.tpus.execution_groups import util as tpu
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Create Google Compute TPUs along with VMs."""
+  r"""Create Google Compute TPUs along with VMs.
+
+  ## EXAMPLES
+
+  To create both TPU and VM, run:
+
+    $ {command} --name=test-execution-group --zone=test-zone
+    --project=test-project --accelerator-type=v2-8 --tf-version=2.4.1
+
+  To create both TPU and VM with additional flags, run:
+
+    $ {command} --name=test-execution-group --zone=test-zone \
+    --project=test-project --accelerator-type=v2-8 --tf-version=2.4.1 \
+    --network=default --preemptible-vm --disk-size=100 \
+    --machine-type=n1-standard-2 --use-dl-images
+
+  To create a VM only before creating the TPU, run:
+
+    $ {command} --name=test-execution-group-tpu-only --zone=test-zone \
+    --project=test-project --accelerator-type=v2-8 --tf-version=2.4.1 --tpu-only
+
+  To create the TPU only after the VM has been created, run:
+
+    $ {command} --name=test-execution-group-tpu-only --zone=test-zone \
+    --project=test-project --accelerator-type=v2-8 --tf-version=2.4.1 --vm-only
+  """
 
   @classmethod
   def Args(cls, parser):
@@ -52,7 +78,11 @@ class Create(base.CreateCommand):
     tpus_flags.AddNetworkArgs(parser)
 
   def Run(self, args):
+    tpu_utils.DefaultArgs.ValidateName(args)
+    tpu_utils.DefaultArgs.ValidateZone(args)
+
     responses = []
+
     if args.dry_run:
       self.DryRun(args)
       return responses

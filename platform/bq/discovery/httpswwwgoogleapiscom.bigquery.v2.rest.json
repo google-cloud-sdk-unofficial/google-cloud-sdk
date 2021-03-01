@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20201201",
+ "revision": "20210208",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -354,6 +354,10 @@
      "items": {
       "type": "object",
       "properties": {
+       "dataset": {
+        "$ref": "DatasetAccessEntry",
+        "description": "[Pick one] A grant authorizing all resources of a particular type in a particular dataset access to this dataset. Only views are supported for now. The role field is not required when this field is set. If that dataset is deleted and re-created, its access needs to be granted again via an update operation."
+       },
        "domain": {
         "type": "string",
         "description": "[Pick one] A domain to grant access to. Any users signed in with the domain specified will be granted the specified access. Example: \"example.com\". Maps to IAM policy member \"domain:DOMAIN\"."
@@ -455,6 +459,28 @@
     "selfLink": {
      "type": "string",
      "description": "[Output-only] A URL that can be used to access the resource again. You can use this URL in Get or Update requests to the resource."
+    }
+   }
+  },
+  "DatasetAccessEntry": {
+   "id": "DatasetAccessEntry",
+   "type": "object",
+   "properties": {
+    "dataset": {
+     "$ref": "DatasetReference",
+     "description": "[Required] The dataset this entry applies to."
+    },
+    "target_types": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "properties": {
+       "targetType": {
+        "type": "string",
+        "description": "[Required] Which resources in the dataset this entry applies to. Currently, only views are supported, but additional target types may be added in the future. Possible values: VIEWS: This entry applies to all views in the dataset."
+       }
+      }
+     }
     }
    }
   },
@@ -1109,7 +1135,7 @@
     },
     "decimalTargetTypes": {
      "type": "array",
-     "description": "[Trusted Tester] Defines the list of possible SQL data types to which the source decimal values are converted. This list and the precision and the scale parameters of the decimal field determine the target type. In the order of NUMERIC, BIGNUMERIC, and STRING, a type is picked if it is in the specified list and if it supports the precision and the scale. STRING supports all precision and scale values. If none of the listed types supports the precision and the scale, the type supporting the widest range in the specified list is picked, and if a value exceeds the supported range when reading the data, an error will be thrown. For example: suppose decimal_target_type = [\"NUMERIC\", \"BIGNUMERIC\"]. Then if (precision,scale) is: * (38,9) -> NUMERIC; * (39,9) -> BIGNUMERIC (NUMERIC cannot hold 30 integer digits); * (38,10) -> BIGNUMERIC (NUMERIC cannot hold 10 fractional digits); * (76,38) -> BIGNUMERIC; * (77,38) -> BIGNUMERIC (error if value exeeds supported range). For duplicated types in this field, only one will be considered and the rest will be ignored. The order of the types in this field is ignored. For example, [\"BIGNUMERIC\", \"NUMERIC\"] is the same as [\"NUMERIC\", \"BIGNUMERIC\"] and NUMERIC always takes precedence over BIGNUMERIC.",
+     "description": "Defines the list of possible SQL data types to which the source decimal values are converted. This list and the precision and the scale parameters of the decimal field determine the target type. In the order of NUMERIC, BIGNUMERIC ([Preview](/products/#product-launch-stages)), and STRING, a type is picked if it is in the specified list and if it supports the precision and the scale. STRING supports all precision and scale values. If none of the listed types supports the precision and the scale, the type supporting the widest range in the specified list is picked, and if a value exceeds the supported range when reading the data, an error will be thrown. Example: Suppose the value of this field is [\"NUMERIC\", \"BIGNUMERIC\"]. If (precision,scale) is: * (38,9) -> NUMERIC; * (39,9) -> BIGNUMERIC (NUMERIC cannot hold 30 integer digits); * (38,10) -> BIGNUMERIC (NUMERIC cannot hold 10 fractional digits); * (76,38) -> BIGNUMERIC; * (77,38) -> BIGNUMERIC (error if value exeeds supported range). This field cannot contain duplicate types. The order of the types in this field is ignored. For example, [\"BIGNUMERIC\", \"NUMERIC\"] is the same as [\"NUMERIC\", \"BIGNUMERIC\"] and NUMERIC always takes precedence over BIGNUMERIC. Defaults to [\"NUMERIC\", \"STRING\"] for ORC and [\"NUMERIC\"] for the other file formats.",
      "items": {
       "type": "string"
      }
@@ -2661,7 +2687,7 @@
     },
     "type": {
      "type": "string",
-     "description": "[Required] The field data type. Possible values include STRING, BYTES, INTEGER, INT64 (same as INTEGER), FLOAT, FLOAT64 (same as FLOAT), BOOLEAN, BOOL (same as BOOLEAN), TIMESTAMP, DATE, TIME, DATETIME, RECORD (where RECORD indicates that the field contains a nested schema) or STRUCT (same as RECORD)."
+     "description": "[Required] The field data type. Possible values include STRING, BYTES, INTEGER, INT64 (same as INTEGER), FLOAT, FLOAT64 (same as FLOAT), NUMERIC, BIGNUMERIC, BOOLEAN, BOOL (same as BOOLEAN), TIMESTAMP, DATE, TIME, DATETIME, RECORD (where RECORD indicates that the field contains a nested schema) or STRUCT (same as RECORD)."
     }
    }
   },
@@ -2949,12 +2975,12 @@
       "Logistic regression based classification model.",
       "K-means clustering model.",
       "Matrix factorization model.",
-      "[Beta] DNN classifier model.",
-      "[Beta] An imported TensorFlow model.",
-      "[Beta] DNN regressor model.",
-      "[Beta] Boosted tree regressor model.",
-      "[Beta] Boosted tree classifier model.",
-      "[Beta] ARIMA model.",
+      "DNN classifier model.",
+      "An imported TensorFlow model.",
+      "DNN regressor model.",
+      "Boosted tree regressor model.",
+      "Boosted tree classifier model.",
+      "ARIMA model.",
       "[Beta] AutoML Tables regression model.",
       "[Beta] AutoML Tables classification model."
      ],
@@ -3040,6 +3066,7 @@
   },
   "TrainingOptions": {
    "id": "TrainingOptions",
+   "description": "Options used in model training.",
    "type": "object",
    "properties": {
     "maxIterations": {
@@ -3180,7 +3207,7 @@
      "format": "int64"
     },
     "modelUri": {
-     "description": "[Beta] Google Cloud Storage URI from which the model was imported. Only applicable for imported models.",
+     "description": "Google Cloud Storage URI from which the model was imported. Only applicable for imported models.",
      "type": "string"
     },
     "optimizationStrategy": {
@@ -3258,7 +3285,7 @@
      "description": "The method used to initialize the centroids for kmeans algorithm.",
      "type": "string",
      "enumDescriptions": [
-      "",
+      "Unspecified initialization method.",
       "Initializes the centroids randomly.",
       "Initializes the centroids using data specified in kmeans_initialization_column.",
       "Initializes with kmeans++."
@@ -3301,7 +3328,8 @@
       "Monthly data.",
       "Weekly data.",
       "Daily data.",
-      "Hourly data."
+      "Hourly data.",
+      "Per-minute data."
      ],
      "enum": [
       "DATA_FREQUENCY_UNSPECIFIED",
@@ -3311,7 +3339,8 @@
       "MONTHLY",
       "WEEKLY",
       "DAILY",
-      "HOURLY"
+      "HOURLY",
+      "PER_MINUTE"
      ]
     },
     "includeDrift": {
@@ -3545,6 +3574,13 @@
     },
     "arimaResult": {
      "$ref": "ArimaResult"
+    },
+    "principalComponentInfos": {
+     "description": "The information of the principal components.",
+     "type": "array",
+     "items": {
+      "$ref": "PrincipalComponentInfo"
+     }
     }
    }
   },
@@ -3711,6 +3747,33 @@
     }
    }
   },
+  "PrincipalComponentInfo": {
+   "id": "PrincipalComponentInfo",
+   "description": "Principal component infos, used only for eigen decomposition based models, e.g., PCA. Ordered by explained_variance in the descending order.",
+   "type": "object",
+   "properties": {
+    "principalComponentId": {
+     "description": "Id of the principal component.",
+     "type": "string",
+     "format": "int64"
+    },
+    "explainedVariance": {
+     "description": "Explained variance by this principal component, which is simply the eigenvalue.",
+     "type": "number",
+     "format": "double"
+    },
+    "explainedVarianceRatio": {
+     "description": "Explained_variance over the total explained variance.",
+     "type": "number",
+     "format": "double"
+    },
+    "cumulativeExplainedVarianceRatio": {
+     "description": "The explained_variance is pre-ordered in the descending order to compute the cumulative explained variance ratio.",
+     "type": "number",
+     "format": "double"
+    }
+   }
+  },
   "EvaluationMetrics": {
    "id": "EvaluationMetrics",
    "description": "Evaluation metrics of a model. These are either computed on all training data or just the eval data based on whether eval data was used during training. These are not present for imported models.",
@@ -3739,6 +3802,10 @@
     "arimaForecastingMetrics": {
      "description": "Populated for ARIMA models.",
      "$ref": "ArimaForecastingMetrics"
+    },
+    "dimensionalityReductionMetrics": {
+     "description": "Evaluation metrics when the model is a dimensionality reduction model, which currently includes PCA.",
+     "$ref": "DimensionalityReductionMetrics"
     }
    }
   },
@@ -3768,7 +3835,7 @@
      "format": "double"
     },
     "rSquared": {
-     "description": "R^2 score.",
+     "description": "R^2 score. This corresponds to r2_score in ML.EVALUATE.",
      "type": "number",
      "format": "double"
     }
@@ -3981,7 +4048,7 @@
      "format": "double"
     },
     "clusters": {
-     "description": "[Beta] Information for all clusters.",
+     "description": "Information for all clusters.",
      "type": "array",
      "items": {
       "$ref": "Cluster"
@@ -4202,6 +4269,18 @@
        "YEARLY"
       ]
      }
+    }
+   }
+  },
+  "DimensionalityReductionMetrics": {
+   "id": "DimensionalityReductionMetrics",
+   "description": "Model evaluation metrics for dimensionality reduction models.",
+   "type": "object",
+   "properties": {
+    "totalExplainedVarianceRatio": {
+     "description": "Total percentage of variance explained by the selected principal components.",
+     "type": "number",
+     "format": "double"
     }
    }
   },
@@ -5693,9 +5772,9 @@
      "parameters": {
       "resource": {
        "description": "REQUIRED: The resource for which the policy is being specified. See the operation documentation for the appropriate value for this field.",
+       "pattern": "^projects/[^/]+/datasets/[^/]+/tables/[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^projects/[^/]+/datasets/[^/]+/tables/[^/]+$",
        "type": "string"
       }
      },
@@ -5722,9 +5801,9 @@
      "parameters": {
       "resource": {
        "description": "REQUIRED: The resource for which the policy is being requested. See the operation documentation for the appropriate value for this field.",
+       "pattern": "^projects/[^/]+/datasets/[^/]+/tables/[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^projects/[^/]+/datasets/[^/]+/tables/[^/]+$",
        "type": "string"
       }
      },
@@ -5753,9 +5832,9 @@
      "parameters": {
       "resource": {
        "description": "REQUIRED: The resource for which the policy detail is being requested. See the operation documentation for the appropriate value for this field.",
+       "pattern": "^projects/[^/]+/datasets/[^/]+/tables/[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^projects/[^/]+/datasets/[^/]+/tables/[^/]+$",
        "type": "string"
       }
      },
@@ -5788,23 +5867,23 @@
      "parameters": {
       "projectId": {
        "description": "Required. Project ID of the requested model.",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "datasetId": {
        "description": "Required. Dataset ID of the requested model.",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "modelId": {
        "description": "Required. Model ID of the requested model.",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       }
      },
@@ -5832,16 +5911,16 @@
      "parameters": {
       "projectId": {
        "description": "Required. Project ID of the models to list.",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "datasetId": {
        "description": "Required. Dataset ID of the models to list.",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "maxResults": {
@@ -5879,23 +5958,23 @@
      "parameters": {
       "projectId": {
        "description": "Required. Project ID of the model to patch.",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "datasetId": {
        "description": "Required. Dataset ID of the model to patch.",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "modelId": {
        "description": "Required. Model ID of the model to patch.",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       }
      },
@@ -5924,23 +6003,23 @@
      "parameters": {
       "projectId": {
        "description": "Required. Project ID of the model to delete.",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "datasetId": {
        "description": "Required. Dataset ID of the model to delete.",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "modelId": {
        "description": "Required. Model ID of the model to delete.",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       }
      },
@@ -5967,23 +6046,23 @@
      "parameters": {
       "projectId": {
        "description": "Required. Project ID of the requested routine",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "datasetId": {
        "description": "Required. Dataset ID of the requested routine",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "routineId": {
        "description": "Required. Routine ID of the requested routine",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "readMask": {
@@ -6017,16 +6096,16 @@
      "parameters": {
       "projectId": {
        "description": "Required. Project ID of the new routine",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "datasetId": {
        "description": "Required. Dataset ID of the new routine",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       }
      },
@@ -6054,23 +6133,23 @@
      "parameters": {
       "projectId": {
        "description": "Required. Project ID of the routine to update",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "datasetId": {
        "description": "Required. Dataset ID of the routine to update",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "routineId": {
        "description": "Required. Routine ID of the routine to update",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       }
      },
@@ -6099,23 +6178,23 @@
      "parameters": {
       "projectId": {
        "description": "Required. Project ID of the routine to delete",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "datasetId": {
        "description": "Required. Dataset ID of the routine to delete",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "routineId": {
        "description": "Required. Routine ID of the routine to delete",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       }
      },
@@ -6138,16 +6217,16 @@
      "parameters": {
       "projectId": {
        "description": "Required. Project ID of the routines to list",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "datasetId": {
        "description": "Required. Dataset ID of the routines to list",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "maxResults": {
@@ -6200,23 +6279,23 @@
      "parameters": {
       "projectId": {
        "description": "Required. Project ID of the row access policies to list.",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "datasetId": {
        "description": "Required. Dataset ID of row access policies to list.",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "tableId": {
        "description": "Required. Table ID of the table to list row access policies.",
+       "pattern": "^[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^[^/]+$",
        "type": "string"
       },
       "pageToken": {
@@ -6255,9 +6334,9 @@
      "parameters": {
       "resource": {
        "description": "REQUIRED: The resource for which the policy is being specified. See the operation documentation for the appropriate value for this field.",
+       "pattern": "^projects/[^/]+/datasets/[^/]+/tables/[^/]+/rowAccessPolicies/[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^projects/[^/]+/datasets/[^/]+/tables/[^/]+/rowAccessPolicies/[^/]+$",
        "type": "string"
       }
      },
@@ -6284,9 +6363,9 @@
      "parameters": {
       "resource": {
        "description": "REQUIRED: The resource for which the policy is being requested. See the operation documentation for the appropriate value for this field.",
+       "pattern": "^projects/[^/]+/datasets/[^/]+/tables/[^/]+/rowAccessPolicies/[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^projects/[^/]+/datasets/[^/]+/tables/[^/]+/rowAccessPolicies/[^/]+$",
        "type": "string"
       }
      },
@@ -6315,9 +6394,9 @@
      "parameters": {
       "resource": {
        "description": "REQUIRED: The resource for which the policy detail is being requested. See the operation documentation for the appropriate value for this field.",
+       "pattern": "^projects/[^/]+/datasets/[^/]+/tables/[^/]+/rowAccessPolicies/[^/]+$",
        "location": "path",
        "required": true,
-       "pattern": "^projects/[^/]+/datasets/[^/]+/tables/[^/]+/rowAccessPolicies/[^/]+$",
        "type": "string"
       }
      },

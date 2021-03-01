@@ -24,9 +24,14 @@ from googlecloudsdk.command_lib.kuberun import kuberun_command
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To deploy KubeRun application, run:
+        To deploy KubeRun application to the Environment set in gcloud config,
+        run:
 
             $ {command}
+
+        To deploy KubeRun application to Environment ``ENV'', run:
+
+            $ {command} --environment=ENV
         """,
 }
 
@@ -40,8 +45,3 @@ class Deploy(kuberun_command.KubeRunCommand, base.CreateCommand):
 
   def Command(self):
     return ['deploy']
-
-  @property
-  def should_stream_stdout(self):
-    # TODO(b/170872460): Delete once this command stops streaming stdout.
-    return True

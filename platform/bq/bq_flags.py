@@ -123,7 +123,7 @@ flags.DEFINE_boolean('jobs_query_use_results_from_response', True,
 flags.DEFINE_boolean('jobs_query_use_request_id', False,
                      'If true, sends request_id in jobs.query request.')
 flags.DEFINE_boolean(
-    'enable_gdrive', None,
+    'enable_gdrive', True,
     'When set to true, requests new OAuth token with GDrive scope. '
     'When set to false, requests new OAuth token without GDrive scope.')
 

@@ -32,12 +32,12 @@ _DETAILED_HELP = {
         To show all the data about a domain mapping in the default namespace,
         run:
 
-            $ {command} DOMAIN
+            $ {command} DOMAIN_MAPPING
 
-        To show all the data about a domain mapping in namespace ``NAMESPACE'',
-        run:
+        To show all the data about a domain mapping in a specific namespace
+        ``NAMESPACE'', run:
 
-            $ {command} DOMAIN --namespace=NAMESPACE
+            $ {command} DOMAIN_MAPPING --namespace=NAMESPACE
         """,
 }
 

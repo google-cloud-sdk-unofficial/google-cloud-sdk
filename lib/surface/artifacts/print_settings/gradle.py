@@ -52,7 +52,7 @@ class Gradle(base.Command):
   @staticmethod
   def Args(parser):
     flags.GetRepoFlag().AddToParser(parser)
-    flags.GetJsonKeyFlag().AddToParser(parser)
+    flags.GetJsonKeyFlag("gradle").AddToParser(parser)
     parser.display_info.AddFormat("value(gradle)")
 
   def Run(self, args):

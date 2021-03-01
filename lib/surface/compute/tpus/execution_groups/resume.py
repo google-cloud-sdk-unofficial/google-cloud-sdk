@@ -28,9 +28,18 @@ from googlecloudsdk.command_lib.compute.tpus.execution_groups import util as tpu
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Resume(base.Command):
-  """Creates Google Compute TPU and resumes the VM."""
+  r"""Creates Google Compute TPU and resumes the VM.
+
+  ## EXAMPLES
+
+  To resume a suspended TPU VM combination, run:
+
+    $ {command} test-execution-group --zone=test-zone --project=test-project \
+    --accelerator-type=v2-8 --tf-version=2.4.1
+
+  """
 
   @classmethod
   def Args(cls, parser):
@@ -43,6 +52,8 @@ class Resume(base.Command):
     tpus_flags.AddNetworkArgsForResume(parser)
 
   def Run(self, args):
+    tpu_utils.DefaultArgs.ValidateZone(args)
+
     responses = []
     tpu = tpu_utils.TPUNode(self.ReleaseTrack())
     tpu_operation_ref = None

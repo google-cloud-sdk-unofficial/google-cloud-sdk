@@ -117,13 +117,13 @@ if __name__ == '__main__':
     version = bootstrapping.ReadFileContents('platform/gsutil', 'VERSION')
     bootstrapping.CommandStart('gsutil', version=version)
 
-    blacklist = {
+    blocked_commands = {
         'update': 'To update, run: gcloud components update',
     }
 
     argv = bootstrapping.GetDecodedArgv()
-    bootstrapping.CheckForBlacklistedCommand(argv, blacklist, warn=True,
-                                             die=True)
+    bootstrapping.WarnAndExitOnBlockedCommand(argv, blocked_commands)
+
     # Don't call bootstrapping.PreRunChecks because anonymous access is
     # supported for some endpoints. gsutil will output the appropriate
     # error message upon receiving an authentication error.

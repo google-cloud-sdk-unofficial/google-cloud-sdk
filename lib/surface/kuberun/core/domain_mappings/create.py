@@ -28,9 +28,13 @@ from googlecloudsdk.core import exceptions
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To map a service in the default namespace to a domain, run:
+        To map a domain to a service in the default namespace, run:
 
             $ {command} --service=SERVICE --domain=DOMAIN
+
+        To map a domain to a service in a specific namespace ``NAMESPACE'', run:
+
+            $ {command} --service=SERVICE --domain=DOMAIN --namespace=NAMESPACE
         """,
 }
 

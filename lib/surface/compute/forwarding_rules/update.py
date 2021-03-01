@@ -49,7 +49,7 @@ class UpdateGA(base.UpdateCommand):
 
   _support_global_access = True
   _support_network_tier = False
-  _support_labels = False
+  _support_labels = True
 
   @classmethod
   def Args(cls, parser):
@@ -225,6 +225,21 @@ UpdateGA.detailed_help = {
         To update the forwarding rule to allow global access, run:
 
           $ {command} example-fr --allow-global-access --region=us-central1
+
+        To add/update labels ``k0'' and ``k1'' and remove labels with key ``k3'',
+        run:
+
+          $ {command} example-fr --region=us-central1 \
+          --update-labels=k0=value1,k1=value2 --remove-labels=k3
+
+        Labels can be used to identify the forwarding rule and to filter them as
+        in
+
+          $ {parent_command} list --filter='labels.k1:value2'
+
+        To list existing labels, run:
+
+          $ {parent_command} describe example-fr --format="default(labels)"
         """
 }
 

@@ -45,8 +45,8 @@ class List(base_classes.MultiScopeLister):
     protocol_dict = self.messages.HealthCheck.TypeValueValuesEnum.to_dict()
     return protocol_dict.get(args.protocol.upper())
 
-  def _ProtocolWhitelist(self):
-    # Returns a list of whitelisted protocols.
+  def _ProtocolAllowlist(self):
+    # Returns a list of allowlisted protocols.
     return [
         self.messages.HealthCheck.TypeValueValuesEnum.GRPC.number,
         self.messages.HealthCheck.TypeValueValuesEnum.HTTP.number,
@@ -62,7 +62,7 @@ class List(base_classes.MultiScopeLister):
     columns = ['name:label=NAME', 'type:label=PROTOCOL']
 
     # Add protocol-specific columns. Note that we only need to worry about
-    # protocols that were whitelisted in our GetResources method below.
+    # protocols that were allowlisted in our GetResources method below.
     if args.protocol is not None:
       protocol_value = self._ConvertProtocolArgToValue(args)
       if (protocol_value ==
@@ -153,7 +153,7 @@ class List(base_classes.MultiScopeLister):
     protocol_value = None
     if args.protocol is not None:
       protocol_value = self._ConvertProtocolArgToValue(args)
-      if protocol_value not in self._ProtocolWhitelist():
+      if protocol_value not in self._ProtocolAllowlist():
         # TODO(b/111311137): Replace with InvalidArgumentException.
         raise exceptions.ToolException('Invalid health check protocol ' +
                                        args.protocol + '.')
@@ -168,10 +168,10 @@ class List(base_classes.MultiScopeLister):
 class ListAlpha(List):
   """List health checks in Alpha."""
 
-  def _ProtocolWhitelist(self):
-    # Returns a list of whitelisted protocols.
-    whitelist = super(ListAlpha, self)._ProtocolWhitelist()
-    return whitelist
+  def _ProtocolAllowlist(self):
+    # Returns a list of Allowlisted protocols.
+    allowlist = super(ListAlpha, self)._ProtocolAllowlist()
+    return allowlist
 
   def _Format(self, args):
     columns = super(ListAlpha, self)._GetValidColumns(args)

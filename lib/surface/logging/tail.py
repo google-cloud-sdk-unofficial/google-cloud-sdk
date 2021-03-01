@@ -65,7 +65,7 @@ class NoGRPCInstalledError(exceptions.ToolException):
     super(NoGRPCInstalledError, self).__init__(_GrpcSetupHelpMessage())
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Tail(base.Command):
   """Tail log entries."""
 
@@ -78,7 +78,7 @@ class Tail(base.Command):
             'Filter expression that specifies the log entries to return. A '
             'detailed guide on the Logging query language can be found at: '
             'https://cloud.google.com/logging/docs/view/logging-query-language.'
-            'overview'),
+        ),
         nargs='?')
     parser.add_argument(
         '--buffer-window',
@@ -162,12 +162,13 @@ class Tail(base.Command):
 
 
 Tail.detailed_help = {
-    'DESCRIPTION': """
+    'DESCRIPTION':
+        """
          {command} streams newly received log entries. Log entries matching
-         *log-filter* are returned in the order that they were received by
-         Cloud Logging. If the log entries come from multiple logs, then
-         entries from different logs might be intermingled in the results. To
-         help return log entries in order, use `--buffer-window`.
+         `log-filter` are returned in the order that Cloud Logging received
+         them. If the log entries come from multiple logs, then entries from
+         different logs might be mixed in the results. To help return log
+         entries in order, use `--buffer-window`.
 
          Before you can use {command}, you must complete the installation
          instructions at
@@ -195,15 +196,15 @@ Tail.detailed_help = {
 
           $ {command} "resource.type=gce_instance" --buffer-window=0s
 
-        To stream up to 10 log entries in your project's syslog log from Compute
-        Engine instances containing payloads that include the word `SyncAddress`
-        and format the output in `JSON` format, run:
+        To stream log entries in your project's syslog log from Compute Engine
+        instances containing payloads that include the word `SyncAddress` and
+        format the output in `JSON` format, run:
 
-          $ {command} "resource.type=gce_instance AND log_id(syslog) AND textPayload:SyncAddress" --limit=10 --format=json
+          $ {command} "resource.type=gce_instance AND log_id(syslog) AND textPayload:SyncAddress" --format=json
 
-        To stream a log entry from a folder, run:
+        To stream log entries from a folder, run:
 
-          $ {command} "resource.type=global" --folder=[FOLDER_ID] --limit=1
+          $ {command} "resource.type=global" --folder=[FOLDER_ID]
 
         Detailed information about filters can be found at:
         https://cloud.google.com/logging/docs/view/logging-query-language

@@ -133,7 +133,7 @@ CreateInstanceGA.detailed_help = {
 
 
 class NonExistentDiskGetter(object):
-  """Dummy class returning None."""
+  """Placeholder class returning None."""
 
   def __init__(self):
     self.instance_exists = False

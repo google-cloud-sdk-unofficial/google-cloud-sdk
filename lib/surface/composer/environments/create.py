@@ -183,6 +183,8 @@ information on how to structure KEYs and VALUEs, run
   flags.WEB_SERVER_ALLOW_IP.AddToParser(web_server_group)
   flags.WEB_SERVER_ALLOW_ALL.AddToParser(web_server_group)
   flags.WEB_SERVER_DENY_ALL.AddToParser(web_server_group)
+  flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(parser)
+  flags.WEB_SERVER_MACHINE_TYPE.AddToParser(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -365,6 +367,8 @@ class Create(base.Command):
         web_server_ipv4_cidr=args.web_server_ipv4_cidr,
         cloud_sql_ipv4_cidr=args.cloud_sql_ipv4_cidr,
         web_server_access_control=self.web_server_access_control,
+        cloud_sql_machine_type=args.cloud_sql_machine_type,
+        web_server_machine_type=args.web_server_machine_type,
         release_track=self.ReleaseTrack())
 
 
@@ -383,8 +387,6 @@ class CreateBeta(Create):
   @classmethod
   def Args(cls, parser):
     super(CreateBeta, cls).Args(parser)
-    flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(parser)
-    flags.WEB_SERVER_MACHINE_TYPE.AddToParser(parser)
 
     permission_info = '{} must hold permission {}'.format(
         "The 'Cloud Composer Service Agent' service account",

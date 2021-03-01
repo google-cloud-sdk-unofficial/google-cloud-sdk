@@ -23,12 +23,14 @@ from googlecloudsdk.command_lib.emulators import spanner_util
 from googlecloudsdk.command_lib.emulators import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class EnvInit(base.Command):
   """Print the commands required to export Spanner emulator's env variables."""
 
   detailed_help = {
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           To print the env variables exports for a Spanner emulator, run:
 
             $ {command}

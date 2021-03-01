@@ -43,7 +43,8 @@ def _RequireDockerInstalled():
             platform=platforms.OperatingSystem.Current().name))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Spanner(base.Group):
   """Manage your local Spanner emulator.
 

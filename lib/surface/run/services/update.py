@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import config_changes
@@ -122,6 +123,10 @@ class Update(base.Command):
           'Did you mean to include the flags `--update-env-vars`, '
           '`--memory`, `--concurrency`, `--timeout`, `--connectivity`, '
           '`--image`?')
+    changes.insert(
+        0,
+        config_changes.DeleteAnnotationChange(
+            k8s_object.BINAUTHZ_BREAKGLASS_ANNOTATION))
     changes.append(
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()))
 
@@ -186,6 +191,8 @@ class AlphaUpdate(Update):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddSandboxArg(managed_group)
+    flags.AddBinAuthzPolicyFlags(managed_group)
+    flags.AddBinAuthzBreakglassFlag(managed_group)
 
     # Flags only supported on GKE and Knative
     cluster_group = flags.GetClusterArgGroup(parser)

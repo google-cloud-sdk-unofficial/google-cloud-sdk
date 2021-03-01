@@ -30,9 +30,14 @@ from googlecloudsdk.core.resource import resource_printer
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To show all the data about a KubeRun revision, run
+        To show all the data about a KubeRun revision in the default namespace, run:
 
             $ {command} REVISION
+
+        To show all the data about a KubeRun revision in a specific namespace
+        ``NAMESPACE'', run:
+
+            $ {command} REVISION --namespace=NAMESPACE
         """,
 }
 

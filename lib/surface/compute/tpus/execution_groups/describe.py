@@ -25,9 +25,18 @@ from googlecloudsdk.command_lib.compute.tpus import flags as tpus_flags
 from googlecloudsdk.command_lib.compute.tpus.execution_groups import util as tpu_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe Google Compute TPU + VM combination."""
+  r"""Describe Google Compute TPU + VM combination.
+
+  ## EXAMPLES
+
+  To describe the TPU and VM combination, run:
+
+    $ {command} test-execution-group --zone=test-zone --project=test-project
+
+  """
 
   @classmethod
   def Args(cls, parser):
@@ -36,6 +45,8 @@ class Describe(base.DescribeCommand):
     parser.display_info.AddFormat('table(Field, Value)')
 
   def Run(self, args):
+    tpu_utils.DefaultArgs.ValidateZone(args)
+
     responses = []
     instance_helper = tpu_utils.Instance(self.ReleaseTrack())
     try:

@@ -80,7 +80,7 @@ VERSION_INFO = 'version_info'
 
 
 def MakeIamRoleIdPropertiesJson(iam_role_id):
-  """Returns propeties for a connection with IAM role id.
+  """Returns properties for a connection with IAM role id.
 
   Args:
     iam_role_id: IAM role id.
@@ -93,7 +93,7 @@ def MakeIamRoleIdPropertiesJson(iam_role_id):
 
 
 def MakeAccessRolePropertiesJson(iam_role_id):
-  """Returns propeties for a connection with IAM role id.
+  """Returns properties for a connection with IAM role id.
 
   Args:
     iam_role_id: IAM role id.
@@ -106,7 +106,7 @@ def MakeAccessRolePropertiesJson(iam_role_id):
 
 
 def MakeTenantIdPropertiesJson(tenant_id):
-  """Returns propeties for a connection with tenant id.
+  """Returns properties for a connection with tenant id.
 
   Args:
     tenant_id: tenant id.
@@ -1150,11 +1150,6 @@ class BigqueryClient(object):
         disable_ssl_certificate_validation=flags.FLAGS.disable_ssl_validation
     )
 
-    # This asks httplib2 to exclude 308s from the status codes
-    # it treats as redirects.
-    if hasattr(http, 'redirect_codes'):
-      http.redirect_codes = http.redirect_codes - {308}
-
 
     return http
 
@@ -1410,10 +1405,17 @@ class BigqueryClient(object):
     for entry in acl:
       entry = entry.copy()
       view = entry.pop('view', None)
+      dataset = entry.pop('dataset', None)
       if view:
         acl_entries['VIEW'].append('%s:%s.%s' % (view.get('projectId'),
                                                  view.get('datasetId'),
                                                  view.get('tableId')))
+      elif dataset:
+        dataset_reference = dataset.get('dataset')
+        for target in dataset.get('targetTypes'):
+          acl_entries['All ' + target + ' in DATASET'].append(
+              '%s:%s' % (dataset_reference.get('projectId'),
+                         dataset_reference.get('datasetId')))
       else:
         role = entry.pop('role', None)
         if not role or len(list(entry.values())) != 1:
@@ -4101,6 +4103,13 @@ class BigqueryClient(object):
     except BigqueryNotFoundError:
       return False
 
+  def JobExists(self, reference):
+    _Typecheck(reference, ApiClientHelper.JobReference, method='JobExists')
+    try:
+      return self.apiclient.jobs().get(**dict(reference)).execute()
+    except BigqueryNotFoundError:
+      return False
+
   def ModelExists(self, reference):
     _Typecheck(reference, ApiClientHelper.ModelReference, method='ModelExists')
     try:
@@ -5778,6 +5787,7 @@ class BigqueryClient(object):
       range_partitioning=None,
       hive_partitioning_options=None,
       decimal_target_types=None,
+      json_extension=None,
       thrift_options=None,
       **kwds):
     """Load the given data into BigQuery.
@@ -5852,6 +5862,9 @@ class BigqueryClient(object):
           ["NUMERIC", "BIGNUMERIC"] and NUMERIC always takes precedence over
           BIGNUMERIC. Defaults to ["NUMERIC", "STRING"] for ORC and ["NUMERIC"]
           for the other file formats.
+      json_extension: (experimental) Specify alternative parsing for JSON source
+          format. To load newline-delimited JSON, specify 'GEOJSON'.
+          Only applicable if `source_format` is 'NEWLINE_DELIMITED_JSON'.
       thrift_options: (experimental) Options for configuring Apache Thrift
           load, which is required if `source_format` is 'THRIFT'.
       **kwds: Passed on to self.ExecuteJob.
@@ -5871,6 +5884,8 @@ class BigqueryClient(object):
       load_config['schema'] = {'fields': BigqueryClient.ReadSchema(schema)}
     if use_avro_logical_types is not None:
       load_config['useAvroLogicalTypes'] = use_avro_logical_types
+    if json_extension is not None:
+      load_config['jsonExtension'] = json_extension
     load_config['decimalTargetTypes'] = decimal_target_types
     if destination_encryption_configuration:
       load_config['destinationEncryptionConfiguration'] = (

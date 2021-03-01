@@ -213,7 +213,15 @@ def check_time(time_seconds):
 
 def git_line(*items):
     """Formats items into a space separated line."""
-    return b' '.join(items) + b'\n'
+    series = []
+    for item in items:
+        if isinstance(item, bytes):
+            series.append(item)
+        elif isinstance(item, str):
+            series.append(item.encode())
+        else:
+            raise NotImplementedError
+    return b' '.join(series) + b'\n'
 
 
 class FixedSha(object):
@@ -281,7 +289,10 @@ class ShaFile(object):
         compobj = zlib.compressobj()
         yield compobj.compress(self._header())
         for chunk in self.as_raw_chunks():
-            yield compobj.compress(chunk)
+            if isinstance(chunk, str):
+                yield compobj.compress(chunk.encode())
+            else:
+                yield compobj.compress(chunk)
         yield compobj.flush()
 
     def as_legacy_object(self):
@@ -490,6 +501,8 @@ class ShaFile(object):
             new_sha = sha1()
             new_sha.update(self._header())
             for chunk in self.as_raw_chunks():
+                if isinstance(chunk, str):
+                    chunk = chunk.encode()
                 new_sha.update(chunk)
             self._sha = new_sha
         return self._sha

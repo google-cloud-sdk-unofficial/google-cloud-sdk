@@ -31,15 +31,15 @@ from googlecloudsdk.core import exceptions
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To show all domain mappings in the default namespace, run:
+        To list the domain mappings in the default namespace, run:
 
             $ {command}
 
-        To show all domain mappings in a specific namespace, run:
+        To list the domain mappings in a specific namespace ``NAMESPACE'', run:
 
-            $ {command} --namespace=my-namespace
+            $ {command} --namespace=NAMESPACE
 
-        To show all domain mappings from all namespaces, run:
+        To list the domain mappings from all namespaces, run:
 
             $ {command} --all-namespaces
         """,

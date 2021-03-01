@@ -88,54 +88,8 @@ class DeleteBeta(base.DeleteCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(base.DeleteCommand):
+class DeleteAlpha(DeleteBeta):
   """Delete a worker pool from Google Cloud Build.
 
   Delete a worker pool from Google Cloud Build.
   """
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command.
-
-    Args:
-      parser: An argparse.ArgumentParser-like object. It is mocked out in order
-        to capture some information, but behaves like an ArgumentParser.
-    """
-    parser.add_argument('WORKER_POOL', help='The WorkerPool to delete.')
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-
-    release_track = self.ReleaseTrack()
-    client = cloudbuild_util.GetClientInstance(release_track)
-    messages = cloudbuild_util.GetMessagesModule(release_track)
-
-    parent = properties.VALUES.core.project.Get(required=True)
-
-    wp_name = args.WORKER_POOL
-
-    # Get the workerpool ref
-    wp_resource = resources.REGISTRY.Parse(
-        None,
-        collection='cloudbuild.projects.workerPools',
-        api_version=cloudbuild_util.RELEASE_TRACK_TO_API_VERSION[release_track],
-        params={
-            'projectsId': parent,
-            'workerPoolsId': wp_name,
-        })
-
-    # Send the Delete request
-    client.projects_workerPools.Delete(
-        messages.CloudbuildProjectsWorkerPoolsDeleteRequest(
-            name=wp_resource.RelativeName()))
-
-    log.DeletedResource(wp_resource)

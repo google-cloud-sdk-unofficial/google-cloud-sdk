@@ -34,6 +34,7 @@
       table(
         name.basename(): label=BACKUP,
         database.basename(): label=SOURCE_DATABASE,
+        versionTime: label=VERSION_TIME,
         createTime: label=CREATION_TIME,
         expireTime: label=EXPIRATION_TIME,
         state: label=STATE,
@@ -47,6 +48,7 @@
         table(
           name.basename(): label=BACKUP,
           database.basename(): label=SOURCE_DATABASE,
+          versionTime: label=VERSION_TIME,
           createTime: label=CREATION_TIME,
           expireTime: label=EXPIRATION_TIME,
           state: label=STATE,

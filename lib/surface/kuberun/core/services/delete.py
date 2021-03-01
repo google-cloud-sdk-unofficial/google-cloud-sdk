@@ -25,10 +25,15 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 _DETAILED_HELP = {
-    'EXAMPLES': """
-        To delete a KubeRun service, run:
+    'EXAMPLES':
+        """
+        To delete a KubeRun service in the default namespace, run:
 
             $ {command} SERVICE
+
+        To delete a KubeRun service in a specific namespace ``NAMESPACE'', run:
+
+            $ {command} SERVICE --namespace=NAMESPACE
         """,
 }
 

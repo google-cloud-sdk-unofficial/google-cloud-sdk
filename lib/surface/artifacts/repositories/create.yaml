@@ -44,6 +44,9 @@
       - arg_value: APT
         enum_value: APT
         help_text: APT package format.
+      - arg_value: YUM
+        enum_value: YUM
+        help_text: YUM package format.
     - arg_name: description
       api_field: repository.description
       help_text: |

@@ -79,6 +79,7 @@ class Create(base.CreateCommand):
 
     flags.AddDescription(parser)
     flags.AddConnectionPreference(parser)
+    flags.AddEnableProxyProtocol(parser)
 
   def Run(self, args):
     """Issue a service attachment INSERT request."""
@@ -100,12 +101,15 @@ class Create(base.CreateCommand):
     ]
     connection_preference = service_attachments_utils.GetConnectionPreference(
         args, client.messages)
+    enable_proxy_protocol = service_attachments_utils.GetEnableProxyProtocol(
+        args)
 
     service_attachment = client.messages.ServiceAttachment(
         description=args.description,
         name=service_attachment_ref.Name(),
         natSubnets=nat_subnetworks,
         connectionPreference=connection_preference,
+        enableProxyProtocol=enable_proxy_protocol,
         producerForwardingRule=producer_forwarding_rule_ref.SelfLink())
 
     request = client.messages.ComputeServiceAttachmentsInsertRequest(

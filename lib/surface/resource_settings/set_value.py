@@ -78,19 +78,26 @@ class SetValue(base.Command):
 
     input_setting = utils.GetMessageFromFile(
         args.value_file,
-        settings_message.GoogleCloudResourcesettingsV1alpha1SettingValue)
+        settings_message.GoogleCloudResourcesettingsV1SettingValue)
 
     if not input_setting.name:
       raise exceptions.InvalidInputError(
           'Name field not present in the resource setting.')
 
+    # Syntax: [organizations|folders|projects]/{resource_id}/
+    #          settings/{setting_name}/value
     setting_name = '{}/value'.format(utils.GetSettingsPathFromArgs(args))
     get_request = api_utils.GetGetValueRequestFromArgs(args, setting_name)
 
     try:
       setting_value = settings_service.GetValue(get_request)
     except api_exceptions.HttpNotFoundError:
-      create_request = api_utils.GetCreateRequestFromArgs(args, input_setting)
+      parent_resource = utils.GetParentResourceFromArgs(args)
+      setting_id = utils.GetSettingNameFromArgs(args)
+      create_request = api_utils.GetCreateRequestFromArgs(args,
+                                                          parent_resource,
+                                                          setting_id,
+                                                          input_setting)
 
       create_response = value_service.Create(create_request)
       return create_response

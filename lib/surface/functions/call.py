@@ -43,6 +43,9 @@ class Call(base.Command):
   Note that this method has a limited quota which cannot be increased. It is
   intended for testing and debugging and should not be used in production.
 
+  Calls to HTTP-triggered functions are sent as HTTP POST requests. To use other
+  HTTP methods, use a dedicated HTTP request tool such as cURL or wget.
+
   """
 
   @staticmethod

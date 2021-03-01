@@ -127,7 +127,7 @@ The IP address range for the pods in this cluster in CIDR notation (e.g.
 10.0.0.0/8; however, starting with version 1.7.0 can be any RFC 1918 IP range.
 
 If you omit this option, a range is chosen automatically.  The automatically
-chosen range is randomly selected from 1.0.0.0/8 and will not include IP
+chosen range is randomly selected from 10.0.0.0/8 and will not include IP
 address ranges allocated to VMs, existing routes, or ranges allocated to other
 clusters. The automatically chosen range might conflict with reserved IP
 addresses, dynamic routes, or routes within VPCs that peer with this cluster.
@@ -228,6 +228,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
                                          get_default('addons'))
 
   MaybeLogCloudNatHelpText(args, is_autopilot, location, project_id)
+
+  flags.ValidateNotificationConfigFlag(args)
 
   return api_adapter.CreateClusterOptions(
       accelerators=get_default('accelerator'),
@@ -439,6 +441,7 @@ flags_to_add = {
         'nodelocations': flags.AddNodeLocationsFlag,
         'nodetaints': flags.AddNodeTaintsFlag,
         'nodeversion': flags.AddNodeVersionFlag,
+        'notificationconfig': flags.AddNotificationConfigFlag,
         'num_nodes': flags.AddNumNodes,
         'preemptible': flags.AddPreemptibleFlag,
         'privatecluster': flags.AddPrivateClusterFlags,
@@ -449,8 +452,7 @@ flags_to_add = {
         'shieldedinstance': flags.AddShieldedInstanceFlags,
         'shieldednodes': flags.AddEnableShieldedNodesFlags,
         'surgeupgrade': flags.AddSurgeUpgradeFlag,
-        # TODO(b/170998504): Unhide prior to GA release.
-        'systemconfig': lambda p: flags.AddSystemConfigFlag(p, hidden=True),
+        'systemconfig': lambda p: flags.AddSystemConfigFlag(p, hidden=False),
         'stackdriver': flags.AddEnableStackdriverKubernetesFlag,
         'tags': flags.AddTagsCreate,
         'tpu': flags.AddTpuFlags,
@@ -541,8 +543,7 @@ flags_to_add = {
             (lambda p: flags.AddWorkloadMetadataFlag(p, use_mode=False)),
         'workloadmonitoringeap': flags.AddEnableWorkloadMonitoringEapFlag,
         'privateEndpointSubnetwork': flags.AddPrivateEndpointSubnetworkFlag,
-        'crossConnectNetworks':
-            flags.AddCrossConnectSubnetworksFlag,
+        'crossConnectNetworks': flags.AddCrossConnectSubnetworksFlag,
     },
     ALPHA: {
         'accelerator': flags.AddAcceleratorArgs,
@@ -633,8 +634,7 @@ flags_to_add = {
             (lambda p: flags.AddWorkloadMetadataFlag(p, use_mode=False)),
         'workloadmonitoringeap': flags.AddEnableWorkloadMonitoringEapFlag,
         'privateEndpointSubnetwork': flags.AddPrivateEndpointSubnetworkFlag,
-        'crossConnectNetworks':
-            flags.AddCrossConnectSubnetworksFlag,
+        'crossConnectNetworks': flags.AddCrossConnectSubnetworksFlag,
     },
 }
 
@@ -804,7 +804,6 @@ class CreateBeta(Create):
                                  project_id)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
-    flags.ValidateNotificationConfigFlag(args)
     ops.boot_disk_kms_key = get_default('boot_disk_kms_key')
     ops.min_cpu_platform = get_default('min_cpu_platform')
     ops.enable_pod_security_policy = get_default('enable_pod_security_policy')
@@ -868,7 +867,6 @@ class CreateAlpha(Create):
                                  project_id)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
-    flags.ValidateNotificationConfigFlag(args)
     ops.boot_disk_kms_key = get_default('boot_disk_kms_key')
     ops.autoscaling_profile = get_default('autoscaling_profile')
     ops.local_ssd_volume_configs = get_default('local_ssd_volumes')

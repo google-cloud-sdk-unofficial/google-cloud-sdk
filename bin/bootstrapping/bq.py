@@ -28,12 +28,12 @@ def main():
   """Launches bq."""
   version = bootstrapping.ReadFileContents('platform/bq', 'VERSION')
   bootstrapping.CommandStart('bq', version=version)
-  blacklist = {
+  blocked_commands = {
       'init': 'To authenticate, run gcloud auth.',
   }
   argv = bootstrapping.GetDecodedArgv()
-  bootstrapping.CheckForBlacklistedCommand(argv, blacklist,
-                                           warn=True, die=True)
+  bootstrapping.WarnAndExitOnBlockedCommand(argv, blocked_commands)
+
   cmd_args = [arg for arg in argv[1:] if not arg.startswith('-')]
   args = []
   if cmd_args and cmd_args[0] not in ('version', 'help'):

@@ -46,7 +46,9 @@ class List(base.ListCommand):
     parser.display_info.AddFormat("""
           table(
             name.basename(),
-            state
+            state,
+            version_retention_period,
+            earliest_version_time
           )
         """)
 
@@ -72,6 +74,8 @@ class ListAlpha(List):
           table(
             name.basename(),
             state,
+            version_retention_period,
+            earliest_version_time,
             encryptionConfig.kmsKeyName
           )
         """)

@@ -25,13 +25,25 @@ from googlecloudsdk.command_lib.kuberun import kuberun_command
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To deploy a Component named ``COMPONENT'' in development mode, run:
+        To deploy a Component named ``COMPONENT'' in development mode to the
+        Environment set in gcloud config, run:
 
             $ {command} COMPONENT
 
-        To delete a Component named ``COMPONENT'' in development mode, run:
+        To deploy a Component named ``COMPONENT'' in development mode to
+        Environment ``ENV'', run:
+
+            $ {command} COMPONENT --environment=ENV
+
+        To delete a Component named ``COMPONENT'' in development mode from the
+        Environment set in gcloud config, run:
 
             $ {command} COMPONENT --delete
+
+        To delete a Component named ``COMPONENT'' in development mode from
+        Environment ``ENV'', run:
+
+            $ {command} COMPONENT --delete --environment=ENV
         """,
 }
 
@@ -60,8 +72,3 @@ class Dev(kuberun_command.KubeRunCommand, base.CreateCommand):
 
   def BuildKubeRunArgs(self, args):
     return [args.component] + super(Dev, self).BuildKubeRunArgs(args)
-
-  @property
-  def should_stream_stdout(self):
-    # TODO(b/170872460): Delete once this command stops streaming stdout.
-    return True

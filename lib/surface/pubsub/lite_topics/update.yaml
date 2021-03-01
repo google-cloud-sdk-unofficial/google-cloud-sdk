@@ -14,6 +14,7 @@ request:
   method: patch
   modify_request_hooks:
   - googlecloudsdk.command_lib.pubsub.lite_util:UpdateAdminRequest
+  - googlecloudsdk.command_lib.pubsub.lite_util:ConfirmPartitionsUpdate
 
 arguments:
   resource:
@@ -28,3 +29,5 @@ arguments:
       - _REF_: googlecloudsdk.command_lib.pubsub.flags:per-partition-subscribe-mib
       - _REF_: googlecloudsdk.command_lib.pubsub.flags:per-partition-bytes
       - _REF_: googlecloudsdk.command_lib.pubsub.flags:message-retention-period
+      - _REF_: googlecloudsdk.command_lib.pubsub.flags:partitions
+        release_tracks: [ALPHA, BETA]

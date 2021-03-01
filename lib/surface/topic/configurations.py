@@ -39,6 +39,11 @@ class TestingArgFiles(base.TopicCommand):
   active user or service account. Configurations allow you to define
   and enable these and other settings together as a group.
 
+  Configuration data is typically stored in $HOME/.config/gcloud,
+  you can override this location by setting the environment variable
+  CLOUDSDK_CONFIG. This can be useful if $HOME points to a read only
+  filesystem or you are running commands inside docker.
+
   Configurations are especially useful if you:
     - Work with multiple projects. You can create a separate
       configuration for each project.

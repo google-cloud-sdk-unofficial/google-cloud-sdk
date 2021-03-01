@@ -380,7 +380,7 @@ class Connect(base.Command):
 
   def Run(self, args):
     """Connects to a Cloud SQL instance."""
-    return RunConnectCommand(args)
+    return RunConnectCommand(args, supports_database=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)

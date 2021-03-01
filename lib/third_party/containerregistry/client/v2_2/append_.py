@@ -80,8 +80,9 @@ class Layer(docker_image.DockerImage):
     config_file = metadata.Override(config_file, overrides)
 
     self._config_file = json.dumps(config_file, sort_keys=True)
-    manifest['config']['digest'] = docker_digest.SHA256(
-        self._config_file.encode('utf8'))
+    utf8_encoded_config = self._config_file.encode('utf8')
+    manifest['config']['digest'] = docker_digest.SHA256(utf8_encoded_config)
+    manifest['config']['size'] = len(utf8_encoded_config)
     self._manifest = json.dumps(manifest, sort_keys=True)
 
   def manifest(self):

@@ -36,13 +36,13 @@ class SignBlob(base.Command):
   """
 
   detailed_help = {
-      'EXAMPLES': textwrap.dedent("""\
+      'EXAMPLES': textwrap.dedent("""
           To sign a blob file with a system-managed service account key,
           run:
 
-            $ {command} --iam-account my-account@somedomain.com input.bin output.bin
+            $ {command} --iam-account=my-account@example.com input.bin output.bin
           """),
-      'SEE ALSO': textwrap.dedent("""\
+      'SEE ALSO': textwrap.dedent("""
         For more information on how this command ties into the wider cloud
         infrastructure, please see
         [](https://cloud.google.com/appengine/docs/java/appidentity/)

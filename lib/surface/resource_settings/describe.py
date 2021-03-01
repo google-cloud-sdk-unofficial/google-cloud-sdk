@@ -65,12 +65,13 @@ class Describe(base.DescribeCommand):
     """
 
     settings_service = api_utils.GetServiceFromArgs(args)
+    value_service = api_utils.GetValueServiceFromArgs(args)
     setting_name = '{}/value'.format(utils.GetSettingsPathFromArgs(args))
 
     if args.effective:
       get_request = api_utils.GetLookupEffectiveValueRequestFromArgs(
           args, setting_name)
-      return settings_service.LookupEffectiveValue(get_request)
+      return value_service.LookupEffectiveValue(get_request)
 
     get_request = api_utils.GetGetValueRequestFromArgs(args, setting_name)
     setting_value = settings_service.GetValue(get_request)

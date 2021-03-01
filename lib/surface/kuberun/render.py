@@ -24,8 +24,14 @@ from googlecloudsdk.command_lib.kuberun import kuberun_command
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To render a KubeRun application, run:
+        To render a KubeRun application to the environment set in gcloud config,
+        run:
+
             $ {command}
+
+        To render a KubeRun application to environment ``ENV'', run:
+
+            $ {command} --environment=ENV
         """,
 }
 
@@ -45,8 +51,3 @@ class Render(kuberun_command.KubeRunCommand, base.ExportCommand):
 
   def Command(self):
     return ['render']
-
-  @property
-  def should_stream_stdout(self):
-    # TODO(b/170872460): Delete once this command stops streaming stdout.
-    return True

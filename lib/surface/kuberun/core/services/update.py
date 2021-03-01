@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 import json
 
-from googlecloudsdk.api_lib.kuberun import service
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import flags
 from googlecloudsdk.command_lib.kuberun import kuberun_command
@@ -28,9 +27,15 @@ from googlecloudsdk.command_lib.kuberun import kuberun_command
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To update one or more env vars:
+        To update one or more env vars on a service in the default namespace,
+        run:
 
             $ {command} SERVICE --update-env-vars=KEY1=VALUE1,KEY2=VALUE2
+
+        To update one or more env vars on a service in a specific namespace
+        ``NAMESPACE'', run:
+
+            $ {command} SERVICE --namespace=NAMESPACE --update-env-vars=KEY1=VALUE1,KEY2=VALUE2
         """,
 }
 
@@ -62,4 +67,4 @@ class Update(kuberun_command.KubeRunCommand, base.UpdateCommand):
     return ['core', 'services', 'update']
 
   def FormatOutput(self, out, args):
-    return service.Service(json.loads(out))
+    return json.loads(out)

@@ -125,9 +125,9 @@ def exponential_sleep_generator(initial, maximum, multiplier=_DEFAULT_DELAY_MULT
         https://cloud.google.com/storage/docs/exponential-backoff
 
     Args:
-        initial (float): The minimum amout of time to delay. This must
+        initial (float): The minimum amount of time to delay. This must
             be greater than 0.
-        maximum (float): The maximum amout of time to delay.
+        maximum (float): The maximum amount of time to delay.
         multiplier (float): The multiplier applied to the delay.
 
     Yields:
@@ -230,9 +230,9 @@ class Retry(object):
     Args:
         predicate (Callable[Exception]): A callable that should return ``True``
             if the given exception is retryable.
-        initial (float): The minimum a,out of time to delay in seconds. This
+        initial (float): The minimum amount of time to delay in seconds. This
             must be greater than 0.
-        maximum (float): The maximum amout of time to delay in seconds.
+        maximum (float): The maximum amount of time to delay in seconds.
         multiplier (float): The multiplier applied to the delay.
         deadline (float): How long to keep retrying in seconds. The last sleep
             period is shortened as necessary, so that the last retry runs at
@@ -288,6 +288,10 @@ class Retry(object):
 
         return retry_wrapped_func
 
+    @property
+    def deadline(self):
+        return self._deadline
+
     def with_deadline(self, deadline):
         """Return a copy of this retry with the given deadline.
 
@@ -329,9 +333,9 @@ class Retry(object):
         """Return a copy of this retry with the given delay options.
 
         Args:
-            initial (float): The minimum amout of time to delay. This must
+            initial (float): The minimum amount of time to delay. This must
                 be greater than 0.
-            maximum (float): The maximum amout of time to delay.
+            maximum (float): The maximum amount of time to delay.
             multiplier (float): The multiplier applied to the delay.
 
         Returns:

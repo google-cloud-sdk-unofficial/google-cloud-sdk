@@ -31,15 +31,15 @@ from googlecloudsdk.core import exceptions
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To show all KubeRun services in the default namespace, run:
+        To list the KubeRun services in the default namespace, run:
 
             $ {command}
 
-        To show all KubeRun services in a specific namespace, run:
+        To list the KubeRun services in a specific namespace ``NAMESPACE'', run:
 
-            $ {command} --namespace=my-namespace
+            $ {command} --namespace=NAMESPACE
 
-        To show all KubeRun services from all namespaces, run:
+        To list the KubeRun services from all namespaces, run:
 
             $ {command} --all-namespaces
         """,

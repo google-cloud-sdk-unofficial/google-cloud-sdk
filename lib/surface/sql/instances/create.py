@@ -102,10 +102,11 @@ def AddBaseArgs(parser):
   flags.AddDenyMaintenancePeriodStartDate(parser)
   flags.AddDenyMaintenancePeriodEndDate(parser)
   flags.AddDenyMaintenancePeriodTime(parser)
-  flags.AddInsightsConfigQueryInsightsEnabled(parser)
+  flags.AddInsightsConfigQueryInsightsEnabled(parser, show_negated_in_help=True)
   flags.AddInsightsConfigQueryStringLength(parser)
-  flags.AddInsightsConfigRecordApplicationTags(parser)
-  flags.AddInsightsConfigRecordClientAddress(parser)
+  flags.AddInsightsConfigRecordApplicationTags(
+      parser, show_negated_in_help=True)
+  flags.AddInsightsConfigRecordClientAddress(parser, show_negated_in_help=True)
   parser.add_argument(
       '--master-instance-name',
       required=False,
@@ -160,13 +161,12 @@ def AddAlphaArgs(parser):
   flags.AddActiveDirectoryDomain(parser)
 
 
-def RunBaseCreateCommand(args, release_track, enable_secondary_zone):
+def RunBaseCreateCommand(args, release_track):
   """Creates a new Cloud SQL instance.
 
   Args:
     args: argparse.Namespace, The arguments that this command was invoked with.
     release_track: base.ReleaseTrack, the release track that this was run under.
-    enable_secondary_zone: Python Boolean, if enable_secondary_zone is enabled.
 
   Returns:
     A dict object representing the operations resource describing the create
@@ -185,7 +185,7 @@ def RunBaseCreateCommand(args, release_track, enable_secondary_zone):
   sql_messages = client.sql_messages
 
   validate.ValidateInstanceName(args.instance)
-  validate.ValidateInstanceLocation(args, enable_secondary_zone)
+  validate.ValidateInstanceLocation(args)
   instance_ref = client.resource_parser.Parse(
       args.instance,
       params={'project': properties.VALUES.core.project.GetOrFail},
@@ -325,17 +325,15 @@ class Create(base.Command):
   """Creates a new Cloud SQL instance."""
 
   detailed_help = DETAILED_HELP
-  _enable_secondary_zone = False
 
   def Run(self, args):
-    return RunBaseCreateCommand(args, self.ReleaseTrack(),
-                                self._enable_secondary_zone)
+    return RunBaseCreateCommand(args, self.ReleaseTrack())
 
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
-    flags.AddLocationGroup(parser, Create._enable_secondary_zone)
+    flags.AddLocationGroup(parser)
     flags.AddDatabaseVersion(parser)
 
 
@@ -344,17 +342,15 @@ class CreateBeta(base.Command):
   """Creates a new Cloud SQL instance."""
 
   detailed_help = DETAILED_HELP
-  _enable_secondary_zone = False
 
   def Run(self, args):
-    return RunBaseCreateCommand(args, self.ReleaseTrack(),
-                                self._enable_secondary_zone)
+    return RunBaseCreateCommand(args, self.ReleaseTrack())
 
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
-    flags.AddLocationGroup(parser, CreateBeta._enable_secondary_zone)
+    flags.AddLocationGroup(parser)
     AddBetaArgs(parser)
     flags.AddDatabaseVersion(parser, restrict_choices=False)
 
@@ -364,17 +360,15 @@ class CreateAlpha(base.Command):
   """Creates a new Cloud SQL instance."""
 
   detailed_help = DETAILED_HELP
-  _enable_secondary_zone = True
 
   def Run(self, args):
-    return RunBaseCreateCommand(args, self.ReleaseTrack(),
-                                self._enable_secondary_zone)
+    return RunBaseCreateCommand(args, self.ReleaseTrack())
 
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
-    flags.AddLocationGroup(parser, CreateAlpha._enable_secondary_zone)
+    flags.AddLocationGroup(parser)
     AddBetaArgs(parser)
     AddAlphaArgs(parser)
     flags.AddDatabaseVersion(parser, restrict_choices=False)

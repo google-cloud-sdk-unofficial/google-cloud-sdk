@@ -83,10 +83,10 @@ def _run_next_challenge(msg, http_request, access_token):
                 challenge['challengeType'], None)
         if not c:
             raise errors.ReauthFailError(
-                'Unsupported challenge type {0}. Supported types: {0}'
-                .format(
-                    challenge['challengeType'],
-                    ','.join(list(challenges.AVAILABLE_CHALLENGES.keys()))))
+                'Unsupported challenge type {0}. Supported types: {1}'
+                .format(challenge['challengeType'],
+                        ','.join(list(challenges.AVAILABLE_CHALLENGES.keys())))
+            )
         if not c.is_locally_eligible:
             raise errors.ReauthFailError(
                 'Challenge {0} is not locally eligible'

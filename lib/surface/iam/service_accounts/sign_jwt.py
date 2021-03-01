@@ -19,6 +19,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
@@ -31,18 +33,22 @@ class SignJwt(base.Command):
   """Sign a JWT with a managed service account key.
 
   This command signs a JWT using a system-managed service account key.
-
-  ## EXAMPLES:
-  To create a sign JWT with a system-managed service account key,
-  run:
-
-    $ {command} --iam-account my-account@somedomain.com input.json output.jwt
-
-  ## SEE ALSO:
-  For more information on how this command ties into the wider cloud
-  infrastructure, please see
-  [](https://cloud.google.com/appengine/docs/java/appidentity/).
   """
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""
+          To create a sign JWT with a system-managed service account key, run:
+
+            $ {command} --iam-account=my-account@example.com input.json output.jwt
+          """),
+      'SEE ALSO':
+          textwrap.dedent("""
+          For more information on how this command ties into the wider cloud
+          infrastructure, please see
+          [](https://cloud.google.com/appengine/docs/java/appidentity/).
+        """),
+  }
 
   @staticmethod
   def Args(parser):

@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -82,8 +83,7 @@ class Update(base.UpdateCommand):
     flags.AddSurgeUpgradeFlag(surge_upgrade_group, for_node_pool=True)
     flags.AddMaxUnavailableUpgradeFlag(surge_upgrade_group, for_node_pool=True)
 
-    # TODO(b/170998504): Unhide prior to GA release.
-    flags.AddSystemConfigFlag(group, hidden=True)
+    flags.AddSystemConfigFlag(group, hidden=False)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -119,6 +119,33 @@ class Update(base.UpdateCommand):
     location = location_get(args)
     pool_ref = adapter.ParseNodePool(args.name, location)
     options = self.ParseUpdateNodePoolOptions(args)
+
+    if options.node_labels is not None:
+      console_io.PromptContinue(
+          message=(
+              'The previous user-specified labels on this node pool will be '
+              'replaced by \'{labels}\'').format(
+                  labels=args.GetValue('node_labels')),
+          throw_if_unattended=True,
+          cancel_on_no=True)
+
+    if options.node_taints is not None:
+      console_io.PromptContinue(
+          message=(
+              'The previous user-specified taints on this node pool will be '
+              'replaced by \'{taints}\'').format(
+                  taints=args.GetValue('node_taints')),
+          throw_if_unattended=True,
+          cancel_on_no=True)
+
+    if options.tags is not None:
+      console_io.PromptContinue(
+          message=(
+              'The previous user-specified tags on this node pool will be '
+              'replaced by \'{tags}\'').format(
+                  tags=args.GetValue('tags')),
+          throw_if_unattended=True,
+          cancel_on_no=True)
 
     try:
       operation_ref = adapter.UpdateNodePool(pool_ref, options)
@@ -161,6 +188,13 @@ class UpdateBeta(Update):
 
     flags.AddSystemConfigFlag(group, hidden=False)
 
+    # TODO(b/178746997): Unhide prior to Beta release.
+    flags.AddNodeLabelsFlag(
+        group, for_node_pool=True, for_update=True, hidden=True)
+    flags.AddNodeTaintsFlag(
+        group, for_node_pool=True, for_update=True, hidden=True)
+    flags.AddTagsNodePoolUpdate(group, hidden=True)
+
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
     ops = api_adapter.UpdateNodePoolOptions(
@@ -175,7 +209,10 @@ class UpdateBeta(Update):
         node_locations=args.node_locations,
         max_surge_upgrade=args.max_surge_upgrade,
         max_unavailable_upgrade=args.max_unavailable_upgrade,
-        system_config_from_file=args.system_config_from_file)
+        system_config_from_file=args.system_config_from_file,
+        node_labels=args.node_labels,
+        node_taints=args.node_taints,
+        tags=args.tags)
     return ops
 
 
@@ -205,6 +242,13 @@ class UpdateAlpha(Update):
 
     flags.AddSystemConfigFlag(group, hidden=False)
 
+    # TODO(b/178746997): Unhide prior to Beta release.
+    flags.AddNodeLabelsFlag(
+        group, for_node_pool=True, for_update=True, hidden=True)
+    flags.AddNodeTaintsFlag(
+        group, for_node_pool=True, for_update=True, hidden=True)
+    flags.AddTagsNodePoolUpdate(group, hidden=True)
+
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
     ops = api_adapter.UpdateNodePoolOptions(
@@ -219,7 +263,10 @@ class UpdateAlpha(Update):
         node_locations=args.node_locations,
         max_surge_upgrade=args.max_surge_upgrade,
         max_unavailable_upgrade=args.max_unavailable_upgrade,
-        system_config_from_file=args.system_config_from_file)
+        system_config_from_file=args.system_config_from_file,
+        node_labels=args.node_labels,
+        node_taints=args.node_taints,
+        tags=args.tags)
     return ops
 
 

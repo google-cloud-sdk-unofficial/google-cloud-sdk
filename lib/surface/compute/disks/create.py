@@ -131,7 +131,6 @@ def _CommonArgs(parser,
       '--description',
       help='An optional, textual description for the disks being created.')
 
-  # TODO(b/158105562) Add help text for pd-extreme before GA.
   parser.add_argument(
       '--size',
       type=arg_parsers.BinarySize(
@@ -145,13 +144,14 @@ def _CommonArgs(parser,
         disks. Disk size must be a multiple of 1 GB. Limit your boot disk size
         to 2TB to account for MBR partition table limitations. If disk size is
         not specified, the default size of {}GB for pd-standard disks, {}GB for
-        pd-balanced disks, and {}GB for pd-ssd disks will be used. For details
-        about disk size limits, refer to:
+        pd-balanced disks, {}GB for pd-ssd disks, and {}GB for pd-extreme will
+        be used. For details about disk size limits, refer to:
         https://cloud.google.com/compute/docs/disks
         """.format(
             constants.DEFAULT_DISK_SIZE_GB_MAP[constants.DISK_TYPE_PD_STANDARD],
             constants.DEFAULT_DISK_SIZE_GB_MAP[constants.DISK_TYPE_PD_BALANCED],
-            constants.DEFAULT_DISK_SIZE_GB_MAP[constants.DISK_TYPE_PD_SSD]))
+            constants.DEFAULT_DISK_SIZE_GB_MAP[constants.DISK_TYPE_PD_SSD],
+            constants.DEFAULT_DISK_SIZE_GB_MAP[constants.DISK_TYPE_PD_EXTREME]))
 
   parser.add_argument(
       '--type',
@@ -184,16 +184,7 @@ def _CommonArgs(parser,
   _SourceArgs(parser, source_instant_snapshot_enabled)
 
   if support_provisioned_iops:
-    parser.add_argument(
-        '--provisioned-iops',
-        type=arg_parsers.BoundedInt(constants.MIN_PROVISIONED_IOPS,
-                                    constants.MAX_PROVISIONED_IOPS),
-        help=('Provisioned IOPS of pd-extreme disk to create. If specified, '
-              'the value must be in the range between {min} and {max}. If not '
-              'specified, the default value is {default}.').format(
-                  min=constants.MIN_PROVISIONED_IOPS,
-                  max=constants.MAX_PROVISIONED_IOPS,
-                  default=constants.DEFAULT_PROVISIONED_IOPS))
+    disks_flags.AddProvisionedIopsFlag(parser, arg_parsers, constants)
 
   if support_user_licenses:
     parser.add_argument(
@@ -605,7 +596,8 @@ class CreateBeta(Create):
         parser,
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
-        support_pd_interface=True)
+        support_pd_interface=True,
+        support_provisioned_iops=True)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
@@ -619,7 +611,8 @@ class CreateBeta(Create):
         supports_physical_block=True,
         support_vss_erase=True,
         support_multiwriter_disk=True,
-        support_pd_interface=True)
+        support_pd_interface=True,
+        support_provisioned_iops=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

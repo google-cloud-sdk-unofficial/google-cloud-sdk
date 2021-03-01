@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 import json
 
-from googlecloudsdk.api_lib.kuberun import service
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kuberun import flags
 from googlecloudsdk.command_lib.kuberun import kuberun_command
@@ -28,9 +27,14 @@ from googlecloudsdk.command_lib.kuberun import kuberun_command
 _DETAILED_HELP = {
     'EXAMPLES':
         """
-        To create a new KubeRun service, run:
+        To create a new KubeRun service in the default namespace, run:
 
-            $ {command} SERVICE --image=IMAGE [optional flags]
+            $ {command} SERVICE --image=IMAGE
+
+        To create a new KubeRun service in a specific namespace ``NAMESPACE'',
+        run:
+
+            $ {command} SERVICE --image=IMAGE --namespace=NAMESPACE
         """,
 }
 
@@ -60,4 +64,4 @@ class Create(kuberun_command.KubeRunCommand, base.CreateCommand):
     return ['core', 'services', 'create']
 
   def FormatOutput(self, out, args):
-    return service.Service(json.loads(out))
+    return json.loads(out)

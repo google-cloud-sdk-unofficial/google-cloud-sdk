@@ -37,6 +37,7 @@
     - arg_name: schema-type
       release_tracks: [ALPHA, BETA]
       api_field: exportResourcesRequest.bigqueryDestination.schemaConfig.schemaType
+      required: true
       help_text: |
         Specifies the output schema type. If unspecified, the default
         is `LOSSLESS`.
@@ -54,6 +55,7 @@
     - arg_name: schema-type
       release_tracks: [GA]
       api_field: exportResourcesRequest.bigqueryDestination.schemaConfig.schemaType
+      required: true
       help_text: |
         Specifies the output schema type.
       type: str

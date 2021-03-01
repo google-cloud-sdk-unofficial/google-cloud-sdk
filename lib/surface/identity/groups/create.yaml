@@ -74,7 +74,7 @@
         related Groups. Maximum length is 4,096 characters.
 
     - arg_name: dynamic-user-query
-      release_tracks: [ALPHA, BETA]
+      release_tracks: [ALPHA, BETA, GA]
       type: str
       help_text: |
         Query that determines the memberships of the dynamic group.
@@ -137,6 +137,7 @@
       - googlecloudsdk.command_lib.identity.groups.hooks:SetParent
       - googlecloudsdk.command_lib.identity.groups.hooks:SetEntityKey
       - googlecloudsdk.command_lib.identity.groups.hooks:SetLabels
+      - googlecloudsdk.command_lib.identity.groups.hooks:SetDynamicUserQuery
 
   response:
     result_attribute: response

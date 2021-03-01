@@ -210,10 +210,11 @@ def AddBaseArgs(parser):
       '--remove-deny-maintenance-period',
       action='store_true',
       help='Removes the user-specified deny maintenance period.')
-  flags.AddInsightsConfigQueryInsightsEnabled(parser)
+  flags.AddInsightsConfigQueryInsightsEnabled(parser, show_negated_in_help=True)
   flags.AddInsightsConfigQueryStringLength(parser)
-  flags.AddInsightsConfigRecordApplicationTags(parser)
-  flags.AddInsightsConfigRecordClientAddress(parser)
+  flags.AddInsightsConfigRecordApplicationTags(
+      parser, show_negated_in_help=True)
+  flags.AddInsightsConfigRecordClientAddress(parser, show_negated_in_help=True)
   flags.AddMemory(parser)
   parser.add_argument(
       '--pricing-plan',
@@ -246,13 +247,12 @@ def AddAlphaArgs(parser):
   flags.AddActiveDirectoryDomain(parser)
 
 
-def RunBasePatchCommand(args, release_track, enable_secondary_zone):
+def RunBasePatchCommand(args, release_track):
   """Updates settings of a Cloud SQL instance using the patch api method.
 
   Args:
     args: argparse.Namespace, The arguments that this command was invoked with.
     release_track: base.ReleaseTrack, the release track that this was run under.
-    enable_secondary_zone: boolean, if enable_secondary_zone is enabled.
 
   Returns:
     A dict object representing the operations resource describing the patch
@@ -268,7 +268,7 @@ def RunBasePatchCommand(args, release_track, enable_secondary_zone):
   sql_messages = client.sql_messages
 
   validate.ValidateInstanceName(args.instance)
-  validate.ValidateInstanceLocation(args, enable_secondary_zone)
+  validate.ValidateInstanceLocation(args)
   instance_ref = client.resource_parser.Parse(
       args.instance,
       params={'project': properties.VALUES.core.project.GetOrFail},
@@ -345,7 +345,7 @@ class Patch(base.UpdateCommand):
   """Updates the settings of a Cloud SQL instance."""
 
   def Run(self, args):
-    return RunBasePatchCommand(args, self.ReleaseTrack(), False)
+    return RunBasePatchCommand(args, self.ReleaseTrack())
 
   @staticmethod
   def Args(parser):
@@ -362,7 +362,7 @@ class PatchBeta(base.UpdateCommand):
   """Updates the settings of a Cloud SQL instance."""
 
   def Run(self, args):
-    return RunBasePatchCommand(args, self.ReleaseTrack(), False)
+    return RunBasePatchCommand(args, self.ReleaseTrack())
 
   @staticmethod
   def Args(parser):
@@ -380,7 +380,7 @@ class PatchAlpha(base.UpdateCommand):
   """Updates the settings of a Cloud SQL instance."""
 
   def Run(self, args):
-    return RunBasePatchCommand(args, self.ReleaseTrack(), True)
+    return RunBasePatchCommand(args, self.ReleaseTrack())
 
   @staticmethod
   def Args(parser):
@@ -389,7 +389,6 @@ class PatchAlpha(base.UpdateCommand):
     flags.AddZone(
         parser,
         help_text=('Preferred Compute Engine zone (e.g. us-central1-a, '
-                   'us-central1-b, etc.). WARNING: Instance may be restarted.'),
-        enable_secondary_zone=True)
+                   'us-central1-b, etc.). WARNING: Instance may be restarted.'))
     AddBetaArgs(parser)
     AddAlphaArgs(parser)

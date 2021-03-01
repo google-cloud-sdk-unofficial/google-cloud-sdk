@@ -26,9 +26,17 @@ from googlecloudsdk.command_lib.compute.tpus.execution_groups import util as tpu
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Suspend(base.Command):
-  """Deletes Google Compute TPU and suspends the VM."""
+  r"""Deletes Google Compute TPU and suspends the VM.
+
+  ## EXAMPLES
+
+  To delete the TPU and suspend the VM, run:
+
+    $ {command} test-execution-group --zone=test-zone --project=test-project
+
+  """
 
   @classmethod
   def Args(cls, parser):
@@ -36,6 +44,8 @@ class Suspend(base.Command):
     tpus_flags.AddTpuNameArg(parser)
 
   def Run(self, args):
+    tpu_utils.DefaultArgs.ValidateZone(args)
+
     responses = []
     instance = tpu_utils.Instance(self.ReleaseTrack())
     instance_operation_ref = None

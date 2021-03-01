@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import metadata_utils
@@ -214,6 +215,10 @@ class CreateAlpha(base.Command):
     name_pattern = args.name_pattern
     instance_names = args.predefined_names or []
     instance_count = args.count or len(instance_names)
+    per_instance_props = encoding.DictToAdditionalPropertyMessage(
+        {el: {} for el in instance_names},
+        compute_client.messages.BulkInsertInstanceResource.
+        PerInstancePropertiesValue)
 
     location_policy = self.GetLocationPolicy(args, compute_client.messages)
 
@@ -361,7 +366,7 @@ class CreateAlpha(base.Command):
         count=instance_count,
         instanceProperties=instance_properties,
         minCount=instance_min_count,
-        predefinedNames=instance_names,
+        perInstanceProperties=per_instance_props,
         sourceInstanceTemplate=source_instance_template,
         namePattern=name_pattern,
         locationPolicy=location_policy)

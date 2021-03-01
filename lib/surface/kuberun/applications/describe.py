@@ -25,7 +25,8 @@ from googlecloudsdk.core import log
 _DETAILED_HELP = ({
     'EXAMPLES':
         """
-        To show all the data about KubeRun application, run
+        To show all the data about the KubeRun application associated with the
+        current working directory, run:
 
             $ {command}
         """,

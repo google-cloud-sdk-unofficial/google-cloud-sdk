@@ -73,8 +73,8 @@ class List(base.ListCommand):
       boolean_policy_set = HasBooleanPolicy(spec)
       output.append({
           'constraint': policy.name.split('/')[-1],
-          'listPolicy': 'SET' if list_policy_set else '',
-          'booleanPolicy': 'SET' if boolean_policy_set else '',
+          'listPolicy': 'SET' if list_policy_set else '-',
+          'booleanPolicy': 'SET' if boolean_policy_set else '-',
           'etag': spec.etag
       })
     if args.show_unset:
@@ -84,6 +84,10 @@ class List(base.ListCommand):
       for constraint in constraints:
         constraint_name = constraint.name.split('/')[-1]
         if constraint_name not in existing_policy_names:
-          output.append({'constraint': constraint_name})
+          output.append({
+              'constraint': constraint_name,
+              'listPolicy': '-',
+              'booleanPolicy': '-'
+          })
 
     return output

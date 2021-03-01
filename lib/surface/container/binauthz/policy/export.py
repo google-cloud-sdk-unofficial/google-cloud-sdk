@@ -22,6 +22,9 @@ from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import policies
 from googlecloudsdk.api_lib.container.binauthz import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core.exceptions import Error
+
+OLD_SYSTEM_POLICY_PROJECT_NAME = 'binauthz-global-policy'
 
 
 class Export(base.Command):
@@ -40,4 +43,13 @@ class Export(base.Command):
 
   def Run(self, args):
     api_version = apis.GetApiVersion(self.ReleaseTrack())
-    return policies.Client(api_version).Get(util.GetPolicyRef())
+    ref = util.GetPolicyRef()
+    if ref.Name() == OLD_SYSTEM_POLICY_PROJECT_NAME:
+      raise Error(
+          'The Binary Authorization system policy is no longer accessible via '
+          'the binauthz-global-policy project. Use the following command to '
+          'display the system policy:\n'
+          '    $ gcloud alpha container binauthz policy export-system-policy\n'
+          'For details, see https://cloud.google.com/binary-authorization/docs/'
+          'key-concepts#google-maintained_system_images.')
+    return policies.Client(api_version).Get(ref)

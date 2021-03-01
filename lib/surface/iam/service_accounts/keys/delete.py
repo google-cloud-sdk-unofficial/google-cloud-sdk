@@ -19,6 +19,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
@@ -29,6 +31,15 @@ from googlecloudsdk.core.console import console_io
 
 class Delete(base.Command):
   """Delete a user-managed key from a service account."""
+
+  detailed_help = {
+      'EXAMPLES': textwrap.dedent("""
+          To delete a key with ID `b4f1037aeef9ab37deee9` for the service
+          account `my-iam-account@example.com`, run:
+
+            $ {command} b4f1037aeef9ab37deee9 --iam-account=my-iam-account@example.com
+      """),
+  }
 
   @staticmethod
   def Args(parser):

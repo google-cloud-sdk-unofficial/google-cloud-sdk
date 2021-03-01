@@ -23,9 +23,17 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.tpus.execution_groups import util as tpu_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List TPU Node+VM groups created by execution group."""
+  r"""List TPU Node+VM groups created by execution group.
+
+  ## EXAMPLES
+
+  To list all active execution groups, run:
+
+    $ {command} --zone=test-zone --project=test-project
+  """
 
   @classmethod
   def Args(cls, parser):
@@ -33,6 +41,8 @@ class List(base.ListCommand):
     parser.display_info.AddFormat('table(name, status)')
 
   def Run(self, args):
+    tpu_utils.DefaultArgs.ValidateZone(args)
+
     responses = []
     instances = {}
     nodes = {}

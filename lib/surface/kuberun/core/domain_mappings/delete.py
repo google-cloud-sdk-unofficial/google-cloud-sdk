@@ -28,11 +28,11 @@ _DETAILED_HELP = {
         """
         To delete a domain mapping in the default namespace, run:
 
-            $ {command} DOMAIN
+            $ {command} DOMAIN_MAPPING
 
-        To delete a domain mapping in a non-default namespace, run:
+        To delete a domain mapping in a specific namespace ``NAMESPACE'', run:
 
-            $ {command} DOMAIN --namespace=NAMESPACE
+            $ {command} DOMAIN_MAPPING --namespace=NAMESPACE
         """,
 }
 

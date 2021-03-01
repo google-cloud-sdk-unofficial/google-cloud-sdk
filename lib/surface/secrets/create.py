@@ -325,6 +325,7 @@ class CreateBeta(Create):
     secrets_args.AddCreateReplicationPolicyGroup(parser)
     labels_util.AddCreateLabelsFlags(parser)
     secrets_args.AddCreateExpirationGroup(parser)
+    secrets_args.AddTopics(parser)
 
   def Run(self, args):
     messages = secrets_api.GetMessages()
@@ -414,7 +415,8 @@ class CreateBeta(Create):
         policy=replication_policy,
         expire_time=args.expire_time,
         ttl=args.ttl,
-        keys=kms_keys)
+        keys=kms_keys,
+        topics=args.topics)
 
     if data:
       version = secrets_api.Secrets().AddVersion(secret_ref, data)

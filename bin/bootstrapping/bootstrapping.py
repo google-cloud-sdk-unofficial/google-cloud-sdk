@@ -227,49 +227,37 @@ def GetDefaultInstalledComponents():
   return []
 
 
-def CheckForBlacklistedCommand(args, blacklist, warn=True, die=False):
-  """Blacklist certain subcommands, and warn the user.
+def WarnAndExitOnBlockedCommand(args, blocked_commands):
+  """Block certain subcommands, warn the user, and exit.
 
   Args:
     args: the command line arguments, including the 0th argument which is
       the program name.
-    blacklist: a map of blacklisted commands to the messages that should be
+    blocked_commands: a map of blocked commands to the messages that should be
       printed when they're run.
-    warn: if true, print a warning message.
-    die: if true, exit.
-
-  Returns:
-    True if a command in the blacklist is being indicated by args.
-
   """
   bad_arg = None
   for arg in args[1:]:
     # Flags are skipped and --flag=value are skipped. It is possible for
-    # '--flag value' to result in a false positive if value happens to be in
-    # the blacklist.
+    # '--flag value' to result in a false positive if value happens to be a
+    # blocked command.
     if arg and arg[0] == '-':
       continue
-    if arg in blacklist:
+    if arg in blocked_commands:
       bad_arg = arg
       break
 
-  blacklisted = bad_arg is not None
+  blocked = bad_arg is not None
 
-  if blacklisted:
-    if warn:
-      sys.stderr.write('It looks like you are trying to run "%s %s".\n'
-                       % (args[0], bad_arg))
-      sys.stderr.write('The "%s" command is no longer needed with the '
-                       'Cloud SDK.\n' % bad_arg)
-      sys.stderr.write(blacklist[bad_arg] + '\n')
-      answer = input('Really run this command? (y/N) ')
-      if answer in ['y', 'Y']:
-        return False
-
-    if die:
+  if blocked:
+    sys.stderr.write('It looks like you are trying to run "%s %s".\n'
+                     % (args[0], bad_arg))
+    sys.stderr.write('The "%s" command is no longer needed with the '
+                     'Cloud SDK.\n' % bad_arg)
+    sys.stderr.write(blocked_commands[bad_arg] + '\n')
+    answer = input('Really run this command? (y/N) ')
+    if answer not in ['y', 'Y']:
       sys.exit(1)
-
-  return blacklisted
 
 
 def CheckUpdates(command_path):

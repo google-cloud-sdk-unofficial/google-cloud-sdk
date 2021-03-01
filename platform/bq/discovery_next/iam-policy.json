@@ -20,6 +20,7 @@
   "servicePath": "",
   "baseUrl": "https://bigquery.googleapis.com/",
   "batchPath": "batch",
+  "fullyEncodeReservedExpansion": true,
   "parameters": {
     "access_token": {
       "type": "string",
@@ -432,12 +433,12 @@
             "Logistic regression based classification model.",
             "K-means clustering model.",
             "Matrix factorization model.",
-            "[Beta] DNN classifier model.",
-            "[Beta] An imported TensorFlow model.",
-            "[Beta] DNN regressor model.",
-            "[Beta] Boosted tree regressor model.",
-            "[Beta] Boosted tree classifier model.",
-            "[Beta] ARIMA model.",
+            "DNN classifier model.",
+            "An imported TensorFlow model.",
+            "DNN regressor model.",
+            "Boosted tree regressor model.",
+            "Boosted tree classifier model.",
+            "ARIMA model.",
             "[Beta] AutoML Tables regression model.",
             "[Beta] AutoML Tables classification model."
           ],
@@ -542,6 +543,7 @@
     },
     "TrainingOptions": {
       "id": "TrainingOptions",
+      "description": "Options used in model training.",
       "type": "object",
       "properties": {
         "maxIterations": {
@@ -682,7 +684,7 @@
           "format": "int64"
         },
         "modelUri": {
-          "description": "[Beta] Google Cloud Storage URI from which the model was imported. Only applicable for imported models.",
+          "description": "Google Cloud Storage URI from which the model was imported. Only applicable for imported models.",
           "type": "string"
         },
         "optimizationStrategy": {
@@ -760,7 +762,7 @@
           "description": "The method used to initialize the centroids for kmeans algorithm.",
           "type": "string",
           "enumDescriptions": [
-            "",
+            "Unspecified initialization method.",
             "Initializes the centroids randomly.",
             "Initializes the centroids using data specified in kmeans_initialization_column.",
             "Initializes with kmeans++."
@@ -803,7 +805,8 @@
             "Monthly data.",
             "Weekly data.",
             "Daily data.",
-            "Hourly data."
+            "Hourly data.",
+            "Per-minute data."
           ],
           "enum": [
             "DATA_FREQUENCY_UNSPECIFIED",
@@ -813,7 +816,8 @@
             "MONTHLY",
             "WEEKLY",
             "DAILY",
-            "HOURLY"
+            "HOURLY",
+            "PER_MINUTE"
           ]
         },
         "includeDrift": {
@@ -1047,6 +1051,13 @@
         },
         "arimaResult": {
           "$ref": "ArimaResult"
+        },
+        "principalComponentInfos": {
+          "description": "The information of the principal components.",
+          "type": "array",
+          "items": {
+            "$ref": "PrincipalComponentInfo"
+          }
         }
       }
     },
@@ -1213,6 +1224,33 @@
         }
       }
     },
+    "PrincipalComponentInfo": {
+      "id": "PrincipalComponentInfo",
+      "description": "Principal component infos, used only for eigen decomposition based models, e.g., PCA. Ordered by explained_variance in the descending order.",
+      "type": "object",
+      "properties": {
+        "principalComponentId": {
+          "description": "Id of the principal component.",
+          "type": "string",
+          "format": "int64"
+        },
+        "explainedVariance": {
+          "description": "Explained variance by this principal component, which is simply the eigenvalue.",
+          "type": "number",
+          "format": "double"
+        },
+        "explainedVarianceRatio": {
+          "description": "Explained_variance over the total explained variance.",
+          "type": "number",
+          "format": "double"
+        },
+        "cumulativeExplainedVarianceRatio": {
+          "description": "The explained_variance is pre-ordered in the descending order to compute the cumulative explained variance ratio.",
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
     "EvaluationMetrics": {
       "id": "EvaluationMetrics",
       "description": "Evaluation metrics of a model. These are either computed on all training data or just the eval data based on whether eval data was used during training. These are not present for imported models.",
@@ -1241,6 +1279,10 @@
         "arimaForecastingMetrics": {
           "description": "Populated for ARIMA models.",
           "$ref": "ArimaForecastingMetrics"
+        },
+        "dimensionalityReductionMetrics": {
+          "description": "Evaluation metrics when the model is a dimensionality reduction model, which currently includes PCA.",
+          "$ref": "DimensionalityReductionMetrics"
         }
       }
     },
@@ -1270,7 +1312,7 @@
           "format": "double"
         },
         "rSquared": {
-          "description": "R^2 score.",
+          "description": "R^2 score. This corresponds to r2_score in ML.EVALUATE.",
           "type": "number",
           "format": "double"
         }
@@ -1483,7 +1525,7 @@
           "format": "double"
         },
         "clusters": {
-          "description": "[Beta] Information for all clusters.",
+          "description": "Information for all clusters.",
           "type": "array",
           "items": {
             "$ref": "Cluster"
@@ -1704,6 +1746,18 @@
               "YEARLY"
             ]
           }
+        }
+      }
+    },
+    "DimensionalityReductionMetrics": {
+      "id": "DimensionalityReductionMetrics",
+      "description": "Model evaluation metrics for dimensionality reduction models.",
+      "type": "object",
+      "properties": {
+        "totalExplainedVarianceRatio": {
+          "description": "Total percentage of variance explained by the selected principal components.",
+          "type": "number",
+          "format": "double"
         }
       }
     },
@@ -2135,14 +2189,14 @@
           "type": "string"
         },
         "decimalTargetTypes": {
-          "description": "Defines the list of possible SQL data types to which the source decimal values are converted. This list and the precision and the scale parameters of the decimal field determine the target type. In the order of NUMERIC, BIGNUMERIC, and STRING, a type is picked if it is in the specified list and if it supports the precision and the scale. STRING supports all precision and scale values. If none of the listed types supports the precision and the scale, the type supporting the widest range in the specified list is picked, and if a value exceeds the supported range when reading the data, an error will be thrown. For example: suppose decimal_target_type = [\"NUMERIC\", \"BIGNUMERIC\"]. Then if (precision,scale) is: * (38,9) -> NUMERIC; * (38,9) -> BIGNUMERIC (NUMERIC cannot hold 38 integer digits); * (38,10) -> BIGNUMERIC (NUMERIC cannot hold 10 fractional digits); * (76,38) -> BIGNUMERIC; * (77,38) -> BIGNUMERIC (error if value exeeds supported range). This field cannot contain duplicate types. The order of the types in this field is ignored. For example, [\"BIGNUMERIC\", \"NUMERIC\"] is the same as [\"NUMERIC\", \"BIGNUMERIC\"] and NUMERIC always takes precedence over BIGNUMERIC. Defaults to [\"NUMERIC\", \"STRING\"] for ORC and [\"NUMERIC\"] for the other file formats.",
+          "description": "Defines the list of possible SQL data types to which the source decimal values are converted. This list and the precision and the scale parameters of the decimal field determine the target type. In the order of NUMERIC, BIGNUMERIC ([Preview](\/products\/#product-launch-stages)), and STRING, a type is picked if it is in the specified list and if it supports the precision and the scale. STRING supports all precision and scale values. If none of the listed types supports the precision and the scale, the type supporting the widest range in the specified list is picked, and if a value exceeds the supported range when reading the data, an error will be thrown. Example: Suppose the value of this field is [\"NUMERIC\", \"BIGNUMERIC\"]. If (precision,scale) is: * (38,9) -> NUMERIC; * (39,9) -> BIGNUMERIC (NUMERIC cannot hold 30 integer digits); * (38,10) -> BIGNUMERIC (NUMERIC cannot hold 10 fractional digits); * (76,38) -> BIGNUMERIC; * (77,38) -> BIGNUMERIC (error if value exeeds supported range). This field cannot contain duplicate types. The order of the types in this field is ignored. For example, [\"BIGNUMERIC\", \"NUMERIC\"] is the same as [\"NUMERIC\", \"BIGNUMERIC\"] and NUMERIC always takes precedence over BIGNUMERIC. Defaults to [\"NUMERIC\", \"STRING\"] for ORC and [\"NUMERIC\"] for the other file formats.",
           "type": "array",
           "items": {
             "type": "string",
             "enumDescriptions": [
-              "The default value when the provided type is not matching any type in the enum.",
+              "Invalid type.",
               "Depending on the order, decimal values could be converted to NUMERIC type.",
-              "Depending on the order, decimal values could be converted to BIGNUMERIC type.",
+              "Depending on the order, decimal values could be converted to BIGNUMERIC type ([Preview](\/products\/#product-launch-stages)).",
               "Depending on the order, decimal values could be converted to STRING type."
             ],
             "enum": [
@@ -2152,6 +2206,22 @@
               "STRING"
             ]
           }
+        },
+        "jsonExtension": {
+          "description": "Optional. [Optional] Load option to be used together with source_format newline-delimited JSON to indicate that a variant of JSON is being loaded. To load newline-delimited GeoJSON, specify GEOJSON (and source_format must be set to NEWLINE_DELIMITED_JSON).",
+          "type": "string",
+          "enumDescriptions": [
+            "The default if provided value is not one included in the enum, or the value is not specified. The source formate is parsed without any modification.",
+            "Use GeoJSON variant of JSON. See https:\/\/tools.ietf.org\/html\/rfc7946."
+          ],
+          "enum": [
+            "JSON_EXTENSION_UNSPECIFIED",
+            "GEOJSON"
+          ]
+        },
+        "parquetOptions": {
+          "description": "Optional. [Optional] Additional properties to set if sourceFormat is set to PARQUET.",
+          "$ref": "ParquetOptions"
         }
       }
     },
@@ -2179,7 +2249,7 @@
           "type": "string"
         },
         "type": {
-          "description": "Required. The field data type. Possible values include STRING, BYTES, INTEGER, INT64 (same as INTEGER), FLOAT, FLOAT64 (same as FLOAT), BOOLEAN, BOOL (same as BOOLEAN), TIMESTAMP, DATE, TIME, DATETIME, GEOGRAPHY, NUMERIC, RECORD (where RECORD indicates that the field contains a nested schema) or STRUCT (same as RECORD).",
+          "description": "Required. The field data type. Possible values include STRING, BYTES, INTEGER, INT64 (same as INTEGER), FLOAT, FLOAT64 (same as FLOAT), BOOLEAN, BOOL (same as BOOLEAN), TIMESTAMP, DATE, TIME, DATETIME, GEOGRAPHY, NUMERIC, BIGNUMERIC ([Preview](\/products\/#product-launch-stages)), RECORD (where RECORD indicates that the field contains a nested schema) or STRUCT (same as RECORD).",
           "type": "string"
         },
         "mode": {
@@ -2363,6 +2433,21 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "ParquetOptions": {
+      "id": "ParquetOptions",
+      "description": "Parquet Options for load and make external tables.",
+      "type": "object",
+      "properties": {
+        "enumAsString": {
+          "description": "[Optional] Indicates whether to infer Parquet ENUM logical type as STRING instead of BYTES by default.",
+          "type": "boolean"
+        },
+        "enableListInference": {
+          "description": "[Optional] Indicates whether to use schema inference specifically for Parquet LIST logical type.",
+          "type": "boolean"
         }
       }
     },
@@ -2702,14 +2787,14 @@
           "$ref": "HivePartitioningOptions"
         },
         "decimalTargetTypes": {
-          "description": "Defines the list of possible SQL data types to which the source decimal values are converted. This list and the precision and the scale parameters of the decimal field determine the target type. In the order of NUMERIC, BIGNUMERIC, and STRING, a type is picked if it is in the specified list and if it supports the precision and the scale. STRING supports all precision and scale values. If none of the listed types supports the precision and the scale, the type supporting the widest range in the specified list is picked, and if a value exceeds the supported range when reading the data, an error will be thrown. For example: suppose decimal_target_type = [\"NUMERIC\", \"BIGNUMERIC\"]. Then if (precision,scale) is: * (38,9) -> NUMERIC; * (38,9) -> BIGNUMERIC (NUMERIC cannot hold 38 integer digits); * (38,10) -> BIGNUMERIC (NUMERIC cannot hold 10 fractional digits); * (76,38) -> BIGNUMERIC; * (77,38) -> BIGNUMERIC (error if value exeeds supported range). This field cannot contain duplicate types. The order of the types in this field is ignored. For example, [\"BIGNUMERIC\", \"NUMERIC\"] is the same as [\"NUMERIC\", \"BIGNUMERIC\"] and NUMERIC always takes precedence over BIGNUMERIC. Defaults to [\"NUMERIC\", \"STRING\"] for ORC and [\"NUMERIC\"] for the other file formats.",
+          "description": "Defines the list of possible SQL data types to which the source decimal values are converted. This list and the precision and the scale parameters of the decimal field determine the target type. In the order of NUMERIC, BIGNUMERIC ([Preview](\/products\/#product-launch-stages)), and STRING, a type is picked if it is in the specified list and if it supports the precision and the scale. STRING supports all precision and scale values. If none of the listed types supports the precision and the scale, the type supporting the widest range in the specified list is picked, and if a value exceeds the supported range when reading the data, an error will be thrown. Example: Suppose the value of this field is [\"NUMERIC\", \"BIGNUMERIC\"]. If (precision,scale) is: * (38,9) -> NUMERIC; * (39,9) -> BIGNUMERIC (NUMERIC cannot hold 30 integer digits); * (38,10) -> BIGNUMERIC (NUMERIC cannot hold 10 fractional digits); * (76,38) -> BIGNUMERIC; * (77,38) -> BIGNUMERIC (error if value exeeds supported range). This field cannot contain duplicate types. The order of the types in this field is ignored. For example, [\"BIGNUMERIC\", \"NUMERIC\"] is the same as [\"NUMERIC\", \"BIGNUMERIC\"] and NUMERIC always takes precedence over BIGNUMERIC. Defaults to [\"NUMERIC\", \"STRING\"] for ORC and [\"NUMERIC\"] for the other file formats.",
           "type": "array",
           "items": {
             "type": "string",
             "enumDescriptions": [
-              "The default value when the provided type is not matching any type in the enum.",
+              "Invalid type.",
               "Depending on the order, decimal values could be converted to NUMERIC type.",
-              "Depending on the order, decimal values could be converted to BIGNUMERIC type.",
+              "Depending on the order, decimal values could be converted to BIGNUMERIC type ([Preview](\/products\/#product-launch-stages)).",
               "Depending on the order, decimal values could be converted to STRING type."
             ],
             "enum": [
@@ -2723,6 +2808,22 @@
         "thriftOptions": {
           "description": "Optional. Experimental The load options for Apache Thrift serialized data. It defines the source of IDL bundle that should be used to be parsed as the schema and deserilization options to parse Thrift data.",
           "$ref": "ThriftOptions"
+        },
+        "jsonExtension": {
+          "description": "Optional. [Optional] Load option to be used together with source_format newline-delimited JSON to indicate that a variant of JSON is being loaded. To load newline-delimited GeoJSON, specify GEOJSON (and source_format must be set to NEWLINE_DELIMITED_JSON).",
+          "type": "string",
+          "enumDescriptions": [
+            "The default if provided value is not one included in the enum, or the value is not specified. The source formate is parsed without any modification.",
+            "Use GeoJSON variant of JSON. See https:\/\/tools.ietf.org\/html\/rfc7946."
+          ],
+          "enum": [
+            "JSON_EXTENSION_UNSPECIFIED",
+            "GEOJSON"
+          ]
+        },
+        "parquetOptions": {
+          "description": "Optional. [Optional] Additional properties to set if sourceFormat is set to PARQUET.",
+          "$ref": "ParquetOptions"
         }
       }
     },
@@ -3918,7 +4019,7 @@
           "$ref": "DatasetReference"
         },
         "timeoutMs": {
-          "description": "Optional. How long to wait for the query to complete, in milliseconds, before the request times out and returns. Note that this is only a timeout for the request, not the query. If the query takes longer to run than the timeout value, the call returns without any results and with the 'jobComplete' flag set to false. You can call GetQueryResults() to wait for the query to complete and read the results. The default value is 10000 milliseconds (10 seconds).",
+          "description": "Optional. Optional: Specifies the maximum amount of time, in milliseconds, that the client is willing to wait for the query to complete. By default, this limit is 10 seconds (10,000 milliseconds). If the query is complete, the jobComplete field in the response is true. If the query has not yet completed, jobComplete is false. You can request a longer timeout period in the timeoutMs field. However, the call is not guaranteed to wait for the specified timeout; it typically returns after around 200 seconds (200,000 milliseconds), even if the query is not complete. If jobComplete is false, you can continue to wait for the query to complete by calling the getQueryResults method until the jobComplete field in the getQueryResults response is true.",
           "type": "integer",
           "format": "uint32"
         },
@@ -4449,7 +4550,7 @@
           "format": "uint64"
         },
         "type": {
-          "description": "Output only. Describes the table type. The following values are supported: TABLE: A normal BigQuery table. VIEW: A virtual table defined by a SQL query. EXTERNAL: A table that references data stored in an external storage system, such as Google Cloud Storage. The default value is TABLE.",
+          "description": "Output only. Describes the table type. The following values are supported: TABLE: A normal BigQuery table. VIEW: A virtual table defined by a SQL query. EXTERNAL: A table that references data stored in an external storage system, such as Google Cloud Storage. MATERIALIZED_VIEW: A precomputed view defined by a SQL query. The default value is TABLE.",
           "readOnly": true,
           "type": "string"
         },
@@ -4458,7 +4559,7 @@
           "$ref": "ViewDefinition"
         },
         "materializedView": {
-          "description": "Optional. [Experimental] The materialized view definition.",
+          "description": "Optional. The materialized view definition.",
           "$ref": "MaterializedViewDefinition"
         },
         "externalDataConfiguration": {
@@ -5014,16 +5115,16 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the requested dataset",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of the requested dataset",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             }
           },
@@ -5050,9 +5151,9 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the new dataset",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             }
           },
@@ -5079,16 +5180,16 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the dataset being updated",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of the dataset being updated",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             }
           },
@@ -5116,16 +5217,16 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the dataset being updated",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of the dataset being updated",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             }
           },
@@ -5153,16 +5254,16 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the dataset being deleted",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of dataset being deleted",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "deleteContents": {
@@ -5189,9 +5290,9 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the datasets to be listed",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "maxResults": {
@@ -5238,9 +5339,9 @@
           "parameters": {
             "resource": {
               "description": "REQUIRED: The resource for which the policy is being specified. See the operation documentation for the appropriate value for this field.",
+              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+$",
               "type": "string"
             }
           },
@@ -5267,9 +5368,9 @@
           "parameters": {
             "resource": {
               "description": "REQUIRED: The resource for which the policy is being requested. See the operation documentation for the appropriate value for this field.",
+              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+$",
               "type": "string"
             }
           },
@@ -5298,9 +5399,9 @@
           "parameters": {
             "resource": {
               "description": "REQUIRED: The resource for which the policy detail is being requested. See the operation documentation for the appropriate value for this field.",
+              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+$",
               "type": "string"
             }
           },
@@ -5333,23 +5434,23 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the requested model.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of the requested model.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "modelId": {
               "description": "Required. Model ID of the requested model.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             }
           },
@@ -5377,16 +5478,16 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the models to list.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of the models to list.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "maxResults": {
@@ -5424,23 +5525,23 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the model to patch.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of the model to patch.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "modelId": {
               "description": "Required. Model ID of the model to patch.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             }
           },
@@ -5469,23 +5570,23 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the model to delete.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of the model to delete.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "modelId": {
               "description": "Required. Model ID of the model to delete.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             }
           },
@@ -5512,16 +5613,16 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the job to cancel",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "jobId": {
               "description": "Required. Job ID of the job to cancel",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "location": {
@@ -5551,16 +5652,16 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the requested job.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "jobId": {
               "description": "Required. Job ID of the requested job.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "location": {
@@ -5592,9 +5693,9 @@
           "parameters": {
             "projectId": {
               "description": "Project ID of project that will be billed for the job.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             }
           },
@@ -5636,9 +5737,9 @@
           "parameters": {
             "projectId": {
               "description": "Project ID of the jobs to list.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "allUsers": {
@@ -5726,16 +5827,16 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the query job.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "jobId": {
               "description": "Required. Job ID of the query job.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "startIndex": {
@@ -5756,7 +5857,7 @@
               "format": "uint32"
             },
             "timeoutMs": {
-              "description": "How long to wait for the query to complete, in milliseconds, before returning. Default is 10 seconds. If the timeout passes before the job completes, the 'jobComplete' field in the response will be false.",
+              "description": "Optional: Specifies the maximum amount of time, in milliseconds, that the client is willing to wait for the query to complete. By default, this limit is 10 seconds (10,000 milliseconds). If the query is complete, the jobComplete field in the response is true. If the query has not yet completed, jobComplete is false. You can request a longer timeout period in the timeoutMs field. However, the call is not guaranteed to wait for the specified timeout; it typically returns after around 200 seconds (200,000 milliseconds), even if the query is not complete. If jobComplete is false, you can continue to wait for the query to complete by calling the getQueryResults method until the jobComplete field in the getQueryResults response is true.",
               "location": "query",
               "type": "integer",
               "format": "uint32"
@@ -5795,9 +5896,9 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the query request.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             }
           },
@@ -5861,9 +5962,9 @@
           "parameters": {
             "projectId": {
               "description": "Required. ID of the project.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             }
           },
@@ -5893,23 +5994,23 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the requested routine",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of the requested routine",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "routineId": {
               "description": "Required. Routine ID of the requested routine",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "readMask": {
@@ -5943,16 +6044,16 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the new routine",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of the new routine",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             }
           },
@@ -5980,23 +6081,23 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the routine to update",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of the routine to update",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "routineId": {
               "description": "Required. Routine ID of the routine to update",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             }
           },
@@ -6025,23 +6126,23 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the routine to delete",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of the routine to delete",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "routineId": {
               "description": "Required. Routine ID of the routine to delete",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             }
           },
@@ -6064,16 +6165,16 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the routines to list",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of the routines to list",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "maxResults": {
@@ -6126,23 +6227,23 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the row access policies to list.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of row access policies to list.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "tableId": {
               "description": "Required. Table ID of the table to list row access policies.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "pageToken": {
@@ -6181,9 +6282,9 @@
           "parameters": {
             "resource": {
               "description": "REQUIRED: The resource for which the policy is being specified. See the operation documentation for the appropriate value for this field.",
+              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+\/tables\/[^\/]+\/rowAccessPolicies\/[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+\/tables\/[^\/]+\/rowAccessPolicies\/[^\/]+$",
               "type": "string"
             }
           },
@@ -6210,9 +6311,9 @@
           "parameters": {
             "resource": {
               "description": "REQUIRED: The resource for which the policy is being requested. See the operation documentation for the appropriate value for this field.",
+              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+\/tables\/[^\/]+\/rowAccessPolicies\/[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+\/tables\/[^\/]+\/rowAccessPolicies\/[^\/]+$",
               "type": "string"
             }
           },
@@ -6241,9 +6342,9 @@
           "parameters": {
             "resource": {
               "description": "REQUIRED: The resource for which the policy detail is being requested. See the operation documentation for the appropriate value for this field.",
+              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+\/tables\/[^\/]+\/rowAccessPolicies\/[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+\/tables\/[^\/]+\/rowAccessPolicies\/[^\/]+$",
               "type": "string"
             }
           },
@@ -6276,23 +6377,23 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the requested table",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of the requested table",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "tableId": {
               "description": "Required. Table ID of the requested table",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "selectedFields": {
@@ -6325,16 +6426,16 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the new table",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of the new table",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             }
           },
@@ -6362,23 +6463,23 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the table to update",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of the table to update",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "tableId": {
               "description": "Required. Table ID of the table to update",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             }
           },
@@ -6407,23 +6508,23 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the table to update",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of the table to update",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "tableId": {
               "description": "Required. Table ID of the table to update",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             }
           },
@@ -6452,23 +6553,23 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the table to delete",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of the table to delete",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "tableId": {
               "description": "Required. Table ID of the table to delete",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             }
           },
@@ -6491,16 +6592,16 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project ID of the tables to list",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset ID of the tables to list",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "maxResults": {
@@ -6538,9 +6639,9 @@
           "parameters": {
             "resource": {
               "description": "REQUIRED: The resource for which the policy is being specified. See the operation documentation for the appropriate value for this field.",
+              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+\/tables\/[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+\/tables\/[^\/]+$",
               "type": "string"
             }
           },
@@ -6567,9 +6668,9 @@
           "parameters": {
             "resource": {
               "description": "REQUIRED: The resource for which the policy is being requested. See the operation documentation for the appropriate value for this field.",
+              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+\/tables\/[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+\/tables\/[^\/]+$",
               "type": "string"
             }
           },
@@ -6598,9 +6699,9 @@
           "parameters": {
             "resource": {
               "description": "REQUIRED: The resource for which the policy detail is being requested. See the operation documentation for the appropriate value for this field.",
+              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+\/tables\/[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+\/tables\/[^\/]+$",
               "type": "string"
             }
           },
@@ -6632,21 +6733,21 @@
           "httpMethod": "POST",
           "parameters": {
             "projectId": {
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "tableId": {
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             }
           },
@@ -6676,23 +6777,23 @@
           "parameters": {
             "projectId": {
               "description": "Required. Project id of the table to list.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "datasetId": {
               "description": "Required. Dataset id of the table to list.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "tableId": {
               "description": "Required. Table id of the table to list.",
+              "pattern": "^[^\/]+$",
               "location": "path",
               "required": true,
-              "pattern": "^[^\/]+$",
               "type": "string"
             },
             "startIndex": {

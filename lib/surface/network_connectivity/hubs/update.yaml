@@ -16,7 +16,6 @@
     params:
     - arg_name: description
       api_field: hub.description
-      required: true
       help_text: New description of the hub.
     - arg_name: labels
       api_field: hub.labels.additionalProperties

@@ -99,6 +99,7 @@ def _AddCreateArgs(parser):
   flags.AddPythonVersionFlag(parser, 'when creating the version')
   flags.AddMachineTypeFlagToParser(parser)
   flags.GetAcceleratorFlag().AddToParser(parser)
+  flags.AddAutoScalingFlags(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -139,7 +140,11 @@ class CreateGA(base.CreateCommand):
           machine_type=args.machine_type,
           framework=framework,
           python_version=args.python_version,
-          accelerator_config=accelerator)
+          accelerator_config=accelerator,
+          min_nodes=args.min_nodes,
+          max_nodes=args.max_nodes,
+          metrics=args.metric_targets,
+          autoscaling_hidden=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -159,7 +164,6 @@ class CreateBeta(CreateGA):
     flags.AddUserCodeArgs(parser)
     flags.AddExplainabilityFlags(parser)
     flags.AddContainerFlags(parser)
-    flags.AddAutoScalingFlags(parser)
 
   def Run(self, args):
     region = region_util.GetRegion(args)
