@@ -87,7 +87,7 @@ class CreateHelper(object):
            support_logging, support_multinic, support_client_only,
            support_grpc_protocol, support_all_protocol, support_subsetting,
            support_flexible_cache_step_one, support_flexible_cache_step_two,
-           support_negative_cache):
+           support_negative_cache, support_request_coalescing):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -146,11 +146,13 @@ class CreateHelper(object):
       cdn_flags.AddFlexibleCacheStepTwo(parser, 'backend service')
     if support_negative_cache:
       cdn_flags.AddNegativeCache(parser, 'backend service')
+    if support_request_coalescing:
+      cdn_flags.AddRequestCoalescing(parser)
 
   def __init__(self, support_l7_internal_load_balancer, support_failover,
                support_logging, support_multinic, support_subsetting,
                support_flexible_cache_step_one, support_flexible_cache_step_two,
-               support_negative_cache):
+               support_negative_cache, support_request_coalescing):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
@@ -159,12 +161,14 @@ class CreateHelper(object):
     self._support_flexible_cache_step_one = support_flexible_cache_step_one
     self._support_flexible_cache_step_two = support_flexible_cache_step_two
     self._support_negative_cache = support_negative_cache
+    self._support_request_coalescing = support_request_coalescing
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
     """Returns a global backend service create request."""
 
     if args.load_balancing_scheme == 'INTERNAL':
-      raise exceptions.ToolException(
+      raise exceptions.RequiredArgumentException(
+          '--region',
           'Must specify --region for internal load balancer.')
     if (self._support_failover and
         (args.IsSpecified('connection_drain_on_failover') or
@@ -193,7 +197,8 @@ class CreateHelper(object):
         apply_signed_url_cache_max_age=True,
         support_flexible_cache_step_one=self._support_flexible_cache_step_one,
         support_flexible_cache_step_two=self._support_flexible_cache_step_two,
-        support_negative_cache=self._support_negative_cache)
+        support_negative_cache=self._support_negative_cache,
+        support_request_coalescing=self._support_request_coalescing)
 
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
@@ -362,6 +367,7 @@ class CreateGA(base.CreateCommand):
   _support_flexible_cache_step_one = True
   _support_flexible_cache_step_two = False
   _support_negative_cache = False
+  _support_request_coalescing = False
 
   @classmethod
   def Args(cls, parser):
@@ -378,7 +384,8 @@ class CreateGA(base.CreateCommand):
         support_subsetting=cls._support_subsetting,
         support_flexible_cache_step_one=cls._support_flexible_cache_step_one,
         support_flexible_cache_step_two=cls._support_flexible_cache_step_two,
-        support_negative_cache=cls._support_negative_cache)
+        support_negative_cache=cls._support_negative_cache,
+        support_request_coalescing=cls._support_request_coalescing)
 
   def Run(self, args):
     """Issues request necessary to create Backend Service."""
@@ -393,7 +400,9 @@ class CreateGA(base.CreateCommand):
         support_flexible_cache_step_one=self._support_flexible_cache_step_one,
         support_flexible_cache_step_two=self._support_flexible_cache_step_two,
         support_negative_cache=self._support_negative_cache,
-        support_subsetting=self._support_subsetting).Run(args, holder)
+        support_subsetting=self._support_subsetting,
+        support_request_coalescing=self._support_request_coalescing).Run(
+            args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -421,7 +430,8 @@ class CreateBeta(CreateGA):
   _support_negative_cache = True
   _support_grpc_protocol = True
   _support_all_protocol = False
-  _support_subsetting = False
+  _support_subsetting = True
+  _support_request_coalescing = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -449,3 +459,4 @@ class CreateAlpha(CreateBeta):
   _support_flexible_cache_step_one = True
   _support_flexible_cache_step_two = True
   _support_negative_cache = True
+  _support_request_coalescing = True

@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.container.hub.features import base
 class Enable(base.EnableCommand):
   """Enable Config Management Feature.
 
-  This command enables Config Management Feature in Hub.
+  Enables the Config Management Feature in Hub.
 
   ## Examples
 

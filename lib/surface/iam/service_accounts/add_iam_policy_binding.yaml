@@ -3,7 +3,7 @@ help_text:
   brief: Add an IAM policy binding to an IAM service account.
   description: |
     Add an IAM policy binding to an IAM service account. A binding consists
-    of at least one member, a role, and an optional condition.
+    of at least one member, a role, and an optional condition. Adding a binding to a service account grants the specified member the specified role on the service account.
 
     When managing IAM roles, you can treat a service account either as a
     resource or as an identity. This command adds an IAM policy binding to a
@@ -43,7 +43,7 @@ request:
 
 arguments:
   resource:
-    help_text: The Service Account to which to add the IAM policy binding.
+    help_text: The service account to which the IAM policy binding is being added. Note that the user, group or service account in the --member flag is being granted access to this service account.
     spec: !REF googlecloudsdk.command_lib.iam.resources:service_account
 
 iam:

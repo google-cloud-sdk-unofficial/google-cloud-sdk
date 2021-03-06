@@ -289,6 +289,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       node_locations=get_default('node_locations'),
       node_machine_type=get_default('machine_type'),
       node_taints=get_default('node_taints'),
+      notification_config=get_default('notification_config'),
       num_nodes=get_default('num_nodes'),
       password=get_default('password'),
       preemptible=get_default('preemptible'),
@@ -339,7 +340,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_shielded_nodes=get_default('enable_shielded_nodes'),
       max_surge_upgrade=get_default('max_surge_upgrade'),
       max_unavailable_upgrade=get_default('max_unavailable_upgrade'),
-      autopilot=is_autopilot)
+      autopilot=is_autopilot,
+      enable_confidential_nodes=get_default('enable_confidential_nodes'))
 
 
 GA = 'ga'
@@ -413,6 +415,8 @@ flags_to_add = {
         'cloudrunconfig': flags.AddCloudRunConfigFlag,
         'clusterautoscaling': flags.AddClusterAutoscalingFlags,
         'clusterversion': flags.AddClusterVersionFlag,
+        'confidentialnodes':
+            lambda p: flags.AddEnableConfidentialNodesFlag(p, hidden=True),
         'disabledefaultsnat': AddDisableDefaultSnatFlagForClusterCreate,
         'databaseencryption': flags.AddDatabaseEncryptionFlag,
         'disksize': flags.AddDiskSizeFlag,
@@ -834,7 +838,6 @@ class CreateBeta(Create):
     ops.cluster_dns_domain = get_default('cluster_dns_domain')
     ops.enable_master_metrics = get_default('enable_master_metrics')
     ops.master_logs = get_default('master_logs')
-    ops.notification_config = get_default('notification_config')
     ops.enable_confidential_nodes = get_default('enable_confidential_nodes')
     ops.kubernetes_objects_changes_target = \
         getattr(args, 'kubernetes_objects_changes_target', None)
@@ -908,7 +911,6 @@ class CreateAlpha(Create):
     ops.enable_gvnic = get_default('enable_gvnic')
     ops.enable_master_metrics = get_default('enable_master_metrics')
     ops.master_logs = get_default('master_logs')
-    ops.notification_config = get_default('notification_config')
     ops.enable_confidential_nodes = get_default('enable_confidential_nodes')
     ops.cluster_dns = get_default('cluster_dns')
     ops.cluster_dns_scope = get_default('cluster_dns_scope')

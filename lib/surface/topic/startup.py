@@ -28,9 +28,9 @@ class Startup(base.TopicCommand):
 
   # Choosing a Python Interpreter
 
-  The `gcloud` CLI runs under Python. On Windows, you have the option of
-  installing a bundled Python interpreter, but on Mac and Linux you must have
-  a Python interpreter available somewhere on your system. `gcloud` will
+  The `gcloud` CLI runs under Python. On Windows and Mac, you have the option of
+  installing a bundled Python interpreter, on Linux you must have a Python
+  interpreter available somewhere on your system. `gcloud` will
   attempt to locate an interpreter on your system PATH by looking for the
   following binaries:
 
@@ -38,6 +38,9 @@ class Startup(base.TopicCommand):
       * python27
       * python
       * python3
+
+  If you have a bundled python installed it will be preferred, to override
+  this you will need to set CLOUDSDK_PYTHON env var, see below.
 
   Python 3 is preferred over Python 2. Note that `gcloud` requires Python
   version 2.7.x or 3.5-3.8.
@@ -48,9 +51,10 @@ class Startup(base.TopicCommand):
       * `dev_appserver`
       * `endpointscfg`
 
-  If you have multiple Python interpreters available or if you don't have one
-  on your PATH, you can specify which interpreter to use by setting the
-  `CLOUDSDK_PYTHON` environment variable. For example:
+  If you have multiple Python interpreters available (including a bundled
+  python) or if you don't have one on your PATH, you can specify which
+  interpreter to use by setting the `CLOUDSDK_PYTHON` environment variable. For
+  example:
 
     # Use the python3 interpreter on your path
     $ export CLOUDSDK_PYTHON=python3

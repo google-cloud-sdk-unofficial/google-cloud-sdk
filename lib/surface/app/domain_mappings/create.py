@@ -42,13 +42,11 @@ class Create(base.CreateCommand):
 
           To create a domain with a manual certificate, run:
 
-              $ {command} '*.example.com' \
-                  --certificate-management=manual --certificate-id=1234
+              $ {command} '*.example.com' --certificate-management=manual --certificate-id=1234
 
           To create a domain with no associated certificate, run:
 
-              $ {command} '*.example.com' \
-                  --certificate-management=manual
+              $ {command} '*.example.com' --certificate-management=manual
           """,
   }
 

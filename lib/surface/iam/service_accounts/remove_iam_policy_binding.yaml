@@ -35,7 +35,7 @@ request:
 
 arguments:
   resource:
-    help_text: The service account for which to remove IAM policy binding from.
+    help_text: The service account to remove the IAM policy binding from. Note that the user, group or service account in the --member flag is having its access revoked.
     spec: !REF googlecloudsdk.command_lib.iam.resources:service_account
 
 iam:

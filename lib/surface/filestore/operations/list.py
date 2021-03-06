@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.filestore import flags
 from googlecloudsdk.command_lib.filestore.instances import flags as instances_flags
 from googlecloudsdk.command_lib.filestore.operations import flags as operations_flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -51,6 +52,9 @@ class List(base.ListCommand):
     parser.display_info.AddUriFunc(UriFunc)
 
   def Run(self, args):
+    # Ensure that project is set before parsing location resource.
+    properties.VALUES.core.project.GetOrFail()
+
     location_ref = args.CONCEPTS.zone.Parse().RelativeName()
     if args.zone is None and args.location is not None:
       location_list = location_ref.split('/')

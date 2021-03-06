@@ -30,7 +30,7 @@ NA = 'NA'
 DETAILED_HELP = {
     'EXAMPLES':
         """\
-   Prints the status of Config Management Feature:
+   Print the status of the Config Management Feature:
 
     $ {command}
 
@@ -59,7 +59,7 @@ DETAILED_HELP = {
 
 
 class ConfigmanagementFeatureState(object):
-  """feature state class stores nomos status."""
+  """Feature state class stores ACM status."""
 
   def __init__(self, clusterName):
     self.name = clusterName
@@ -70,7 +70,7 @@ class ConfigmanagementFeatureState(object):
     self.policy_controller_state = NA
 
   def update_sync_state(self, fs):
-    """update config_sync state for the membership that has nomos installed.
+    """Update config_sync state for the membership that has ACM installed.
 
     Args:
       fs: ConfigManagementFeatureState
@@ -86,7 +86,7 @@ class ConfigmanagementFeatureState(object):
         self.sync_branch = fs.membershipConfig.configSync.git.syncBranch
 
   def update_policy_controller_state(self, fs):
-    """update poicy controller state for the membership that has nomos installed.
+    """Update policy controller state for the membership that has ACM installed.
 
     Args:
       fs: ConfigmanagementFeatureState
@@ -112,7 +112,7 @@ class ConfigmanagementFeatureState(object):
       self.policy_controller_state = deployment_state.name
 
   def update_pending_state(self, feature_spec_mc, feature_state_mc):
-    """update config sync and policy controller with pending state for the membership that has nomos installed.
+    """Update config sync and policy controller with the pending state.
 
     Args:
       feature_spec_mc: MembershipConfig
@@ -129,11 +129,7 @@ class ConfigmanagementFeatureState(object):
 
 
 class Status(base.ListCommand):
-  r"""Prints the status of all clusters with Config Management installed.
-
-  This command prints the status of Config Management Feature
-  resource in Hub.
-
+  """Print the status of all clusters with Config Management enabled.
   """
   detailed_help = DETAILED_HELP
 
@@ -193,7 +189,7 @@ class Status(base.ListCommand):
         if has_operator_error(fs):
           append_error(name, fs.operatorState.errors, acm_errors)
         # (b/154174276, b/156293028)
-        # check operator_state to see if nomos has been installed
+        # check operator_state to see if ACM/nomos has been installed
         if not has_operator_state(fs):
           cluster.config_sync = 'OPERATOR_STATE_UNSPECIFIED'
         else:

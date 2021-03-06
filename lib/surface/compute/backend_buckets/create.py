@@ -39,6 +39,7 @@ class Create(base.CreateCommand):
   _support_flexible_cache_step_one = True
   _support_flexible_cache_step_two = False
   _support_negative_cache = False
+  _support_request_coalescing = False
 
   @classmethod
   def Args(cls, parser):
@@ -49,6 +50,9 @@ class Create(base.CreateCommand):
     parser.display_info.AddCacheUpdater(
         backend_buckets_flags.BackendBucketsCompleter)
     signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
+
+    if cls._support_request_coalescing:
+      cdn_flags.AddRequestCoalescing(parser)
 
     if cls._support_flexible_cache_step_one:
       cdn_flags.AddFlexibleCacheStepOne(parser, 'backend bucket')
@@ -80,7 +84,8 @@ class Create(base.CreateCommand):
         backend_bucket,
         support_flexible_cache_step_one=self._support_flexible_cache_step_one,
         support_flexible_cache_step_two=self._support_flexible_cache_step_two,
-        support_negative_cache=self._support_negative_cache)
+        support_negative_cache=self._support_negative_cache,
+        support_request_coalescing=self._support_request_coalescing)
 
     if self._support_flexible_cache_step_one:
       if args.custom_response_header is not None:
@@ -118,3 +123,4 @@ class CreateAlphaBeta(Create):
   _support_flexible_cache_step_one = True
   _support_negative_cache = True
   _support_flexible_cache_step_two = True
+  _support_request_coalescing = True

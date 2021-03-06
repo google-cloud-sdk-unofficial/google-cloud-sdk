@@ -1,4 +1,6 @@
-- release_tracks: [BETA]
+- release_tracks: [BETA, GA]
+  GA:
+    hidden: true
   help_text:
     brief: List On-Demand Scanning vulnerabilities.
     description: |
@@ -12,7 +14,10 @@
   command_type: LIST
   request:
     collection: ondemandscanning.projects.locations.scans.vulnerabilities
-    api_version: v1beta1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
 
   arguments:
     resource:

@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.filestore import flags
 from googlecloudsdk.command_lib.filestore.instances import flags as instances_flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -50,6 +51,9 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """Run the list command."""
+    # Ensure that project is set before parsing location resource.
+    properties.VALUES.core.project.GetOrFail()
+
     location_ref = args.CONCEPTS.zone.Parse().RelativeName()
     if args.zone is None and args.location is not None:
       location_list = location_ref.split('/')

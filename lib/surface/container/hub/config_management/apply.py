@@ -36,7 +36,8 @@ membership = None
 class Apply(base.UpdateCommand):
   r"""Update a Config Management Feature Spec.
 
-  This command apply ConfigManagement CR with user-specified config yaml file.
+  Update a user-specified config file to a ConfigManagement Custom Resource.
+  The config file should be a yaml file.
 
   ## Examples
 
@@ -113,7 +114,7 @@ class Apply(base.UpdateCommand):
             membershipConfigs=m_configs))
 
   def _get_backfill_version(self, mem):
-    """Determines what the version field in FeatureSpec should be set to.
+    """Get the value the version field in FeatureSpec should be set to.
 
     Args:
       mem: The membership name whose Spec will be backfilled.

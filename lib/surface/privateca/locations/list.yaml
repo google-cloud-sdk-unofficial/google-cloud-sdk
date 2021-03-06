@@ -10,6 +10,9 @@
     collection: privateca.projects.locations
     api_version: v1beta1
 
+  response:
+    id_field: name
+
   arguments:
     resource:
       spec: !REF googlecloudsdk.command_lib.privateca.resources:project

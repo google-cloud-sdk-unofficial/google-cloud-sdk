@@ -97,7 +97,8 @@ class InstancesRemoveMetadata(base.UpdateCommand):
 
   def Run(self, args):
     if not args.all and not args.keys:
-      raise calliope_exceptions.ToolException(
+      raise calliope_exceptions.OneOfArgumentsRequiredException(
+          ['--keys', '--all'],
           'One of [--all] or [--keys] must be provided.')
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

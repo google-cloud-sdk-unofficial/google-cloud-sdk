@@ -47,7 +47,8 @@ class Update(base.SilentCommand):
 
   def Run(self, args):
     if not (args.proxy_header or args.backend_service):
-      raise exceptions.ToolException(
+      raise exceptions.OneOfArgumentsRequiredException(
+          ['--backend-service', '--proxy-header'],
           'You must specify at least one of [--backend-service] or '
           '[--proxy-header].')
 

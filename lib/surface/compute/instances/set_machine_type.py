@@ -48,7 +48,8 @@ class SetMachineType(base.SilentCommand):
     if (not args.IsSpecified('custom_cpu') and
         not args.IsSpecified('custom_memory') and
         not args.IsSpecified('machine_type')):
-      raise calliope_exceptions.ToolException(
+      raise calliope_exceptions.OneOfArgumentsRequiredException(
+          ['--custom-cpu', '--custom-memory', '--machine-type'],
           'One of --custom-cpu, --custom-memory, --machine-type must be '
           'specified.')
 

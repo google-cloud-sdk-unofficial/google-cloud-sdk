@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.privateca import base as privateca_base
+from googlecloudsdk.api_lib.privateca import resource_utils
 from googlecloudsdk.api_lib.util import common_args
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.privateca import response_utils
@@ -51,6 +52,9 @@ class List(base.ListCommand):
         'not_before_time': text_utils.TransformNotBeforeTime,
         'not_after_time': text_utils.TransformNotAfterTime
     })
+    parser.display_info.AddUriFunc(
+        resource_utils.MakeGetUriFunc(
+            'privateca.projects.locations.certificateAuthorities'))
 
   def Run(self, args):
     client = privateca_base.GetClientInstance()

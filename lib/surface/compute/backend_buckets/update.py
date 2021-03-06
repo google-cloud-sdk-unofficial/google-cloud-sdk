@@ -46,6 +46,7 @@ class Update(base.UpdateCommand):
   _support_flexible_cache_step_two = False
   _support_negative_cache = False
   _support_edge_policies = False
+  _support_request_coalescing = False
 
   @classmethod
   def Args(cls, parser):
@@ -54,6 +55,9 @@ class Update(base.UpdateCommand):
     backend_buckets_flags.GCS_BUCKET_ARG.AddArgument(parser)
     signed_url_flags.AddSignedUrlCacheMaxAge(
         parser, required=False, unspecified_help='')
+
+    if cls._support_request_coalescing:
+      cdn_flags.AddRequestCoalescing(parser)
 
     if cls._support_flexible_cache_step_one:
       cdn_flags.AddFlexibleCacheStepOne(
@@ -148,7 +152,8 @@ class Update(base.UpdateCommand):
         cleared_fields=cleared_fields,
         support_flexible_cache_step_one=self._support_flexible_cache_step_one,
         support_flexible_cache_step_two=self._support_flexible_cache_step_two,
-        support_negative_cache=self._support_negative_cache)
+        support_negative_cache=self._support_negative_cache,
+        support_request_coalescing=self._support_request_coalescing)
 
     if self._support_flexible_cache_step_one:
       if args.custom_response_header is not None:
@@ -215,7 +220,9 @@ class Update(base.UpdateCommand):
   def Run(self, args):
     """Issues the request necessary for updating a backend bucket."""
     if not self.AnyArgsSpecified(args)\
-        and not args.IsSpecified('signed_url_cache_max_age')\
+        and not args.IsSpecified('signed_url_cache_max_age') \
+        and not (self._support_request_coalescing
+                 and args.IsSpecified('request_coalescing')) \
         and not self.AnyFlexibleCacheArgsSpecified(args):
       raise exceptions.ToolException('At least one property must be modified.')
     return self.MakeRequests(args)
@@ -231,6 +238,7 @@ class UpdateBeta(Update):
   _support_flexible_cache_step_two = True
   _support_negative_cache = True
   _support_edge_policies = False
+  _support_request_coalescing = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -243,3 +251,4 @@ class UpdateAlpha(UpdateBeta):
   _support_flexible_cache_step_two = True
   _support_negative_cache = True
   _support_edge_policies = True
+  _support_request_coalescing = True

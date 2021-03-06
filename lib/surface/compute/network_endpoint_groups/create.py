@@ -68,7 +68,7 @@ def _JoinWithOr(strings):
     return ', '.join(strings[:-1]) + ', or ' + strings[-1]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine network endpoint group."""
 
@@ -78,7 +78,7 @@ class Create(base.CreateCommand):
   support_neg_type = False
   support_hybrid_neg = True
   support_l4ilb_neg = False
-  support_vm_ip_neg = False
+  support_vm_ip_neg = True
 
   @classmethod
   def Args(cls, parser):
@@ -192,15 +192,8 @@ class Create(base.CreateCommand):
             '--network', 'Global NEGs cannot specify network.')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-  """Create a Compute Engine network endpoint group."""
-
-  support_vm_ip_neg = True
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
+class CreateAlpha(Create):
   """Create a Google Compute Engine network endpoint group."""
 
   support_l4ilb_neg = True

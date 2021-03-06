@@ -113,7 +113,8 @@ class InstancesAddMetadata(base.UpdateCommand):
 
   def Run(self, args):
     if not args.metadata and not args.metadata_from_file:
-      raise calliope_exceptions.ToolException(
+      raise calliope_exceptions.OneOfArgumentsRequiredException(
+          ['--metadata', '--metadata-from-file'],
           'At least one of [--metadata] or [--metadata-from-file] must be '
           'provided.')
 

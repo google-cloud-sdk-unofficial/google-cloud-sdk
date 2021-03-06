@@ -68,7 +68,8 @@ def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
   # Check that port related flags are set for gRPC health check.
   args_unset = not (args.port or args.use_serving_port)
   if args_unset:
-    raise exceptions.ToolException(
+    raise exceptions.OneOfArgumentsRequiredException(
+        ['--port', '--use-serving-port'],
         'Either --port or --use-serving-port must be set for gRPC health check.'
     )
 

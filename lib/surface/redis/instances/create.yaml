@@ -95,6 +95,20 @@
           spec:
           - api_field: key
           - api_field: value
+    - arg_name: maintenance-window-day
+      api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.day
+      release_tracks: [ALPHA]
+      hidden: true
+      help_text: |
+        Day of week for maintenance window, in UTC time zone.
+        MAINTENANCE_WINDOW_DAY must be one of: SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY,
+        SATURDAY.
+    - arg_name: maintenance-window-hour
+      api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.startTime.hours
+      release_tracks: [ALPHA]
+      hidden: true
+      help_text: |
+        Hour of day (0 to 23) for maintenance window, in UTC time zone.
     - arg_name: redis-version
       api_field: instance.redisVersion
       metavar: VERSION

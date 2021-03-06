@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.run import global_methods
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import deletion
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import platforms
@@ -129,7 +130,8 @@ class Create(base.Command):
              'The existing mapping can be overriden by passing '
              '`--force-override` or by continuing at the prompt below.'),
             prompt_string='Override the existing mapping'):
-          client.DeleteDomainMapping(domain_mapping_ref)
+          deletion.Delete(domain_mapping_ref, client.GetDomainMapping,
+                          client.DeleteDomainMapping, async_=False)
           mapping = client.CreateDomainMapping(domain_mapping_ref, args.service,
                                                changes, True)
         else:

@@ -76,8 +76,8 @@ DETAILED_HELP = {
 
           $ {command} instance-1 --source-snapshot=https://compute.googleapis.com/compute/v1/projects/myproject/global/snapshots/instance-snapshot --zone=central2-a --disk=name=disk1,scope=regional
 
-        To create an instance called instance-1 as a shielded vm with
-        secure boot, virtual trusted platform module (vTPM) enabled and
+        To create an instance called instance-1 as a Shielded VM instance with
+        Secure Boot, virtual trusted platform module (vTPM) enabled and
         integrity monitoring, run:
 
           $ {command} instance-1 --zone=central2-a --shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring

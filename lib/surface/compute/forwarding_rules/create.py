@@ -137,7 +137,8 @@ class CreateHelper(object):
 
     if hasattr(args, 'service_directory_registration'
               ) and args.service_directory_registration:
-      raise exceptions.ToolException(
+      raise exceptions.InvalidArgumentException(
+          '--service-directory-registration',
           '[--service-directory-registration] can not be specified for global forwarding rules.'
       )
 
@@ -158,10 +159,12 @@ class CreateHelper(object):
                                                     is_psc_google_apis)
 
     if ports_all_specified and not is_psc_google_apis:
-      raise exceptions.ToolException(
+      raise exceptions.InvalidArgumentException(
+          '--ports',
           '[--ports] can not be specified to all for global forwarding rules.')
     if not is_psc_google_apis and not port_range:
-      raise exceptions.ToolException(
+      raise exceptions.InvalidArgumentException(
+          '--ports',
           '[--ports] is required for global forwarding rules.')
 
     if is_psc_google_apis:
@@ -173,7 +176,8 @@ class CreateHelper(object):
             ' 1-20 characters long, alphanumeric, starting with a letter.')
 
       if port_range:
-        raise exceptions.ToolException(
+        raise exceptions.InvalidArgumentException(
+            '--ports',
             '[--ports] is not allowed for PSC-GoogleApis forwarding rules.')
       if load_balancing_scheme:
         raise exceptions.InvalidArgumentException(

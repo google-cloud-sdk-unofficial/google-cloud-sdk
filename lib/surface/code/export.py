@@ -49,6 +49,8 @@ class Export(base.Command):
     common.AddImage()
     common.AddMemory()
     common.AddCpu()
+    common.EnvVarsGroup().AddEnvVars()
+    common.EnvVarsGroup().AddEnvVarsFile()
 
     common.BuildersGroup().AddBuilder()
 

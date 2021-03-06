@@ -35,13 +35,11 @@ class Update(base.UpdateCommand):
           """\
           To update an App Engine domain mapping, run:
 
-              $ {command} '*.example.com' \
-                  --certificate-id=1234
+              $ {command} '*.example.com' --certificate-id=1234
 
           To remove a certificate from a domain:
 
-              $ {command} '*.example.com' \
-                  --no-certificate-id
+              $ {command} '*.example.com' --no-certificate-id
           """,
   }
 

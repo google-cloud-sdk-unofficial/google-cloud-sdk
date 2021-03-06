@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.container.hub.features import base
 class Disable(base.DisableCommand):
   """Disable Config Management Feature.
 
-  This command disables Config Management Feature in Hub.
+  Disable the Config Management Feature in Hub.
 
   ## Examples
 

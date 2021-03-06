@@ -120,7 +120,8 @@ class SnapshotDisks(base.SilentCommand):
         scope_lister=flags.GetDefaultScopeLister(holder.client))
     if args.snapshot_names:
       if len(disk_refs) != len(args.snapshot_names):
-        raise exceptions.ToolException(
+        raise exceptions.InvalidArgumentException(
+            '--snapshot-names',
             '[--snapshot-names] must have the same number of values as disks '
             'being snapshotted.')
       snapshot_names = args.snapshot_names

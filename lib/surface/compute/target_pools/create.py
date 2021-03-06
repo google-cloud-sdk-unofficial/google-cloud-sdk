@@ -118,13 +118,15 @@ class Create(base.CreateCommand):
 
     if ((args.backup_pool and not args.IsSpecified('failover_ratio')) or
         (args.failover_ratio and not args.IsSpecified('backup_pool'))):
-      raise calliope_exceptions.ToolException(
+      raise calliope_exceptions.BadArgumentException(
+          '--failover-ratio',
           'Either both or neither of [--failover-ratio] and [--backup-pool] '
           'must be provided.')
 
     if args.failover_ratio is not None:
       if args.failover_ratio < 0 or args.failover_ratio > 1:
-        raise calliope_exceptions.ToolException(
+        raise calliope_exceptions.InvalidArgumentException(
+            '--failover-ratio',
             '[--failover-ratio] must be a number between 0 and 1, inclusive.')
 
     if args.health_check:

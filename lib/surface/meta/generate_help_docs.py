@@ -109,8 +109,15 @@ class GenerateHelpDocs(base.Command):
         metavar='COMMAND/GROUP',
         nargs='*',
         default=None,
-        help=('Restrict document generation to these dotted command paths. '
-              'For example: gcloud.alpha gcloud.beta.test'))
+        help=("""Restrict document generation to these dotted command paths.
+              For example:
+
+                gcloud.alpha gcloud.beta.test
+
+              OR
+
+                gcloud.{alpha.,beta.,}compute.instances
+              """))
 
   def Run(self, args):
     out_of_date = set()

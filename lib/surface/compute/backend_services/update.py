@@ -71,7 +71,8 @@ class UpdateHelper(object):
            support_logging, support_client_only, support_grpc_protocol,
            support_subsetting, support_all_protocol,
            support_flexible_cache_step_one, support_flexible_cache_step_two,
-           support_negative_cache, support_edge_policies):
+           support_negative_cache, support_edge_policies,
+           support_request_coalescing):
     """Add all arguments for updating a backend service."""
 
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
@@ -128,6 +129,10 @@ class UpdateHelper(object):
 
     AddIapFlag(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
+
+    if support_request_coalescing:
+      cdn_flags.AddRequestCoalescing(parser)
+
     if support_flexible_cache_step_one:
       cdn_flags.AddFlexibleCacheStepOne(
           parser, 'backend service', update_command=True)
@@ -145,7 +150,8 @@ class UpdateHelper(object):
                support_flexible_cache_step_one=False,
                support_flexible_cache_step_two=False,
                support_negative_cache=False,
-               support_edge_policies=False):
+               support_edge_policies=False,
+               support_request_coalescing=False):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
@@ -154,6 +160,7 @@ class UpdateHelper(object):
     self._support_flexible_cache_step_two = support_flexible_cache_step_two
     self._support_negative_cache = support_negative_cache
     self._support_edge_policies = support_edge_policies
+    self._support_request_coalescing = support_request_coalescing
 
   def Modify(self, client, resources, args, existing):
     """Modify Backend Service."""
@@ -222,7 +229,8 @@ class UpdateHelper(object):
         cleared_fields=cleared_fields,
         support_flexible_cache_step_one=self._support_flexible_cache_step_one,
         support_flexible_cache_step_two=self._support_flexible_cache_step_two,
-        support_negative_cache=self._support_negative_cache)
+        support_negative_cache=self._support_negative_cache,
+        support_request_coalescing=self._support_request_coalescing)
 
     if self._support_flexible_cache_step_one:
       if (replacement.cdnPolicy is not None and
@@ -282,6 +290,8 @@ class UpdateHelper(object):
         args.IsSpecified('no_health_checks'),
         args.IsSpecified('subsetting_policy')
         if self._support_subsetting else False,
+        args.IsSpecified('request_coalescing')
+        if self._support_request_coalescing else False,
         args.IsSpecified('cache_mode')
         if self._support_flexible_cache_step_one else False,
         args.IsSpecified('client_ttl')
@@ -482,6 +492,7 @@ class UpdateGA(base.UpdateCommand):
   _support_flexible_cache_step_two = False
   _support_negative_cache = False
   _support_edge_policies = False
+  _support_request_coalescing = False
 
   @classmethod
   def Args(cls, parser):
@@ -498,7 +509,8 @@ class UpdateGA(base.UpdateCommand):
         support_flexible_cache_step_one=cls._support_flexible_cache_step_one,
         support_flexible_cache_step_two=cls._support_flexible_cache_step_two,
         support_negative_cache=cls._support_negative_cache,
-        support_edge_policies=cls._support_edge_policies)
+        support_edge_policies=cls._support_edge_policies,
+        support_request_coalescing=cls._support_request_coalescing)
 
   def Run(self, args):
     """Issues requests necessary to update the Backend Services."""
@@ -509,7 +521,8 @@ class UpdateGA(base.UpdateCommand):
                         self._support_flexible_cache_step_one,
                         self._support_flexible_cache_step_two,
                         self._support_negative_cache,
-                        self._support_edge_policies).Run(args, holder)
+                        self._support_edge_policies,
+                        self._support_request_coalescing).Run(args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -522,11 +535,12 @@ class UpdateBeta(UpdateGA):
   _support_client_only = False
   _support_all_protocol = False
   _support_grpc_protocol = True
-  _support_subsetting = False
+  _support_subsetting = True
   _support_flexible_cache_step_one = True
   _support_flexible_cache_step_two = True
   _support_negative_cache = True
   _support_edge_policies = False
+  _support_request_coalescing = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -544,3 +558,4 @@ class UpdateAlpha(UpdateBeta):
   _support_flexible_cache_step_two = True
   _support_negative_cache = True
   _support_edge_policies = True
+  _support_request_coalescing = True

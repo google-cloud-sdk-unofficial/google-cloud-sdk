@@ -150,7 +150,8 @@ class Create(base.CreateCommand):
   def _GetNamesAndAddresses(self, args):
     """Returns names and addresses provided in args."""
     if not args.addresses and not args.name:
-      raise exceptions.ToolException(
+      raise exceptions.MinimumArgumentException(
+          ['NAME', '--address'],
           'At least one name or address must be provided.')
 
     if args.name:
@@ -166,7 +167,8 @@ class Create(base.CreateCommand):
       addresses = [None] * len(args.name)
 
     if len(addresses) != len(names):
-      raise exceptions.ToolException(
+      raise exceptions.BadArgumentException(
+          '--addresses',
           'If providing both, you must specify the same number of names as '
           'addresses.')
 
@@ -206,7 +208,8 @@ class Create(base.CreateCommand):
     # TODO(b/36862747): get rid of args.subnet check
     if args.subnet:
       if address_ref.Collection() == 'compute.globalAddresses':
-        raise exceptions.ToolException(
+        raise exceptions.BadArgumentException(
+            '--subnet',
             '[--subnet] may not be specified for global addresses.')
       if not args.subnet_region:
         args.subnet_region = address_ref.region

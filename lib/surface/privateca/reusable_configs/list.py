@@ -23,10 +23,10 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import constants
 from googlecloudsdk.api_lib.privateca import locations
+from googlecloudsdk.api_lib.privateca import resource_utils
 from googlecloudsdk.api_lib.util import common_args
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.privateca import response_utils
-
 
 # Resource IDs of the currently available reusable configs.
 _KnownResourceIds = [
@@ -72,6 +72,9 @@ class List(base.ListCommand):
           name.scope("locations").segment(0):label=LOCATION,
           description)
         """)
+    parser.display_info.AddUriFunc(
+        resource_utils.MakeGetUriFunc(
+            'privateca.projects.locations.reusableConfigs'))
 
   def ListLatestReusableConfigs(self, args, project, location):
     """Makes one or more List requests for the latest reusable config resources."""
@@ -110,4 +113,3 @@ class List(base.ListCommand):
 
     # TODO(b/170409946): Revert to ListLatestReusableConfigs after IAM issue.
     return self.ListKnownReusableConfigs(project, location)
-

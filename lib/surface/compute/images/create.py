@@ -117,7 +117,8 @@ class Create(base.CreateCommand):
 
     # Validate parameters.
     if args.source_disk_zone and not args.source_disk:
-      raise exceptions.ToolException(
+      raise exceptions.InvalidArgumentException(
+          '--source-disk-zone',
           'You cannot specify [--source-disk-zone] unless you are specifying '
           '[--source-disk].')
 
@@ -126,7 +127,8 @@ class Create(base.CreateCommand):
     source_image_family = args.source_image_family
 
     if source_image_project and not (source_image or source_image_family):
-      raise exceptions.ToolException(
+      raise exceptions.InvalidArgumentException(
+          '--source-image-project',
           'You cannot specify [--source-image-project] unless you are '
           'specifying [--source-image] or [--source-image-family].')
 

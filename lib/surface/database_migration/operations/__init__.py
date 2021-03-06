@@ -28,3 +28,12 @@ class Operations(base.Group):
 
   Commands for managing Database Migration Service operations.
   """
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class OperationsGA(Operations):
+  """Manage Database Migration Service operations.
+
+  Commands for managing Database Migration Service operations.
+  """

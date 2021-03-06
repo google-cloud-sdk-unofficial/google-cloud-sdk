@@ -57,7 +57,7 @@
     - googlecloudsdk.command_lib.scc.assets.request_hooks:ListAssetsReqHook
 
   arguments:
-    additional_arguments_hook: googlecloudsdk.command_lib.scc.hooks:AppendOrgArg
+    additional_arguments_hook: googlecloudsdk.command_lib.scc.hooks:AppendParentArg
 
     params:
     - arg_name: compare-duration

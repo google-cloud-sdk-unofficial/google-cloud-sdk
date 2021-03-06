@@ -319,5 +319,4 @@ def ReadFileContents(*path_parts):
 
 
 # Register some other sources for credentials and project.
-c_store.DevShellCredentialProvider().Register()
 c_store.GceCredentialProvider().Register()
