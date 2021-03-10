@@ -46,9 +46,10 @@ auto_flag_defaults = dict(list(create.base_flag_defaults.items()) + \
                           list(flag_overrides.items()))
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(create.Create):
+  """Create an Autopilot cluster for running containers."""
+
   autopilot = True
   default_flag_values = auto_flag_defaults
 
@@ -57,9 +58,10 @@ class Create(create.Create):
     create.AddFlags(create.GA, parser, auto_flag_defaults, auto_flags)
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(create.CreateBeta):
+  """Create an Autopilot cluster for running containers."""
+
   autopilot = True
   default_flag_values = auto_flag_defaults
 
@@ -68,9 +70,10 @@ class CreateBeta(create.CreateBeta):
     create.AddFlags(create.BETA, parser, auto_flag_defaults, auto_flags)
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(create.CreateAlpha):
+  """Create an Autopilot cluster for running containers."""
+
   autopilot = True
   default_flag_values = auto_flag_defaults
 

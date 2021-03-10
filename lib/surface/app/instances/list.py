@@ -68,6 +68,7 @@ class List(base.ListCommand):
             version:sort=2,
             id:sort=3,
             instance.vmStatus.yesno(no="N/A"),
+            instance.vmLiveness,
             instance.vmDebugEnabled.yesno(yes="YES", no=""):label=DEBUG_MODE
           )
     """)

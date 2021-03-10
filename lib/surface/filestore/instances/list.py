@@ -99,7 +99,8 @@ class ListAlpha(List):
     concept_parsers.ConceptParser([flags.GetListingLocationPresentationSpec(
         'The location in which to list instances.')]).AddToParser(parser)
     instances_flags.AddLocationArg(parser)
-    parser.display_info.AddFormat(instances_flags.INSTANCES_LIST_FORMAT)
+    instances_flags.AddRegionArg(parser)
+    parser.display_info.AddFormat(instances_flags.INSTANCES_LIST_FORMAT_ALPHA)
 
     def UriFunc(resource):
       registry = resources.REGISTRY.Clone()
@@ -111,6 +112,24 @@ class ListAlpha(List):
       return ref.SelfLink()
 
     parser.display_info.AddUriFunc(UriFunc)
+
+  def Run(self, args):
+    """Run the list command."""
+    # Ensure that project is set before parsing location resource.
+    properties.VALUES.core.project.GetOrFail()
+    location_ref = args.CONCEPTS.zone.Parse().RelativeName()
+    # Fetch the location value from fallback options when args.zone is absent.
+    # The fallback options will check args.region first, then args.location if
+    # args.region also absent.
+    if args.zone is None:
+      location_list = location_ref.split('/')
+      if args.region is not None:
+        location_list[-1] = args.region
+      elif args.location is not None:
+        location_list[-1] = args.location
+      location_ref = '/'.join(location_list)
+    client = filestore_client.FilestoreClient(version=self._API_VERSION)
+    return list(client.ListInstances(location_ref, limit=args.limit))
 
 
 List.detailed_help = {

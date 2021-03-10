@@ -75,6 +75,14 @@ class DeleteAlpha(Delete):
 
   _API_VERSION = filestore_client.ALPHA_API_VERSION
 
+  @staticmethod
+  def Args(parser):
+    concept_parsers.ConceptParser([flags.GetInstancePresentationSpec(
+        'The instance to delete.')]).AddToParser(parser)
+    instances_flags.AddLocationArg(parser)
+    instances_flags.AddRegionArg(parser)
+    instances_flags.AddAsyncFlag(parser)
+
 
 Delete.detailed_help = {
     'DESCRIPTION':

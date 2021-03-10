@@ -25,8 +25,8 @@ from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import log as secrets_log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class Update(base.UpdateCommand):
   r"""Update a secret replica's metadata.
 
       Update a secret replica's metadata (e.g. cmek policy). This command will

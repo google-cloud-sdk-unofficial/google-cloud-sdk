@@ -130,6 +130,12 @@
     - _COMMON_args
     - _COMMON_args_v1p1beta1
     - _COMMON_args_v1p1beta1_alpha_track
+    - api_field: outputConfig.gcsUri
+      arg_name: output-uri
+      help_text: |
+        Location to which the results should be written. Must be a Google
+        Cloud Storage URI.
+      processor: googlecloudsdk.command_lib.ml.speech.util:ValidateOutputUri
 
   output:
     format: json

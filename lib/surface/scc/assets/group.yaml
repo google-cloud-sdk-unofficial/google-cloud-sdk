@@ -28,11 +28,7 @@
     - googlecloudsdk.command_lib.scc.assets.request_hooks:GroupAssetsReqHook
 
   arguments:
-
-    resource:
-      help_text: Refers to the source whose assets should be grouped by.
-      override_resource_collection: true
-      spec: !REF googlecloudsdk.command_lib.scc.resources:organization
+    additional_arguments_hook: googlecloudsdk.command_lib.scc.hooks:AppendParentArg
 
     params:
     - arg_name: group-by

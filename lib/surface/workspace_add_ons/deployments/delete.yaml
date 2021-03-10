@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-  hidden: true
   help_text:
     brief: Delete a Google Workspace Add-ons deployment
     description: Delete a Google Workspace Add-ons deployment

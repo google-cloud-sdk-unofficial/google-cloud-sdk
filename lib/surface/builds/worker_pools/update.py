@@ -18,10 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import encoding
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import workerpool_config
 from googlecloudsdk.api_lib.compute import utils as compute_utils
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import workerpool_flags
 from googlecloudsdk.core import log
@@ -113,8 +113,12 @@ class UpdateBeta(base.UpdateCommand):
     # Send the Update request
     updated_op = client.projects_locations_workerPools.Patch(req)
 
-    raw_dict = encoding.MessageToDict(updated_op.response)
-    updated_wp = encoding.DictToMessage(raw_dict, messages.WorkerPool)
+    op_resource = resources.REGISTRY.ParseRelativeName(
+        updated_op.name, collection='cloudbuild.projects.locations.operations')
+    updated_wp = waiter.WaitFor(
+        waiter.CloudOperationPoller(client.projects_locations_workerPools,
+                                    client.projects_locations_operations),
+        op_resource, 'Updating worker pool')
 
     log.UpdatedResource(wp_resource)
 

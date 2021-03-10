@@ -106,7 +106,7 @@ ListInstances.detailed_help = {
 
           For more information regarding permissions required by managed
           instance groups, refer to Compute Engine's access control guide :
-          https://cloud.google.com/compute/docs/access/iam-permissions#instancegroupmanagers_collection.
+          https://cloud.google.com/compute/docs/access/iam#managed-instance-groups-and-iam.
         """,
     'EXAMPLES':
         """\

@@ -269,6 +269,12 @@ class CreateHelper(object):
           'The --load-balancing-scheme flag is not allowed for PSC-ILB '
           'forwarding rules.')
 
+    if args.ip_version:
+      ip_version = client.messages.ForwardingRule.IpVersionValueValuesEnum(
+          args.ip_version)
+    else:
+      ip_version = None
+
     forwarding_rule = client.messages.ForwardingRule(
         description=args.description,
         name=forwarding_rule_ref.Name(),
@@ -276,6 +282,8 @@ class CreateHelper(object):
         IPProtocol=protocol,
         networkTier=_ConstructNetworkTier(client.messages, args),
         loadBalancingScheme=load_balancing_scheme)
+    if ip_version:
+      forwarding_rule.ipVersion = ip_version
 
     ports_all_specified, range_list = _ExtractPortsAndAll(args.ports)
     if target_ref.Collection() == 'compute.serviceAttachments':

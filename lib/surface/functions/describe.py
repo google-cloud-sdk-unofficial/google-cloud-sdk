@@ -22,8 +22,11 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.functions.v1 import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
+from googlecloudsdk.command_lib.functions.v1.describe import command as command_v1
+from googlecloudsdk.command_lib.functions.v2.describe import command as command_v2
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Display details of a Google Cloud Function."""
 
@@ -43,9 +46,24 @@ class Describe(base.DescribeCommand):
     Returns:
       The specified function with its description and configured filter.
     """
-    client = util.GetApiClientInstance()
-    messages = client.MESSAGES_MODULE
-    function_ref = args.CONCEPTS.name.Parse()
-    return client.projects_locations_functions.Get(
-        messages.CloudfunctionsProjectsLocationsFunctionsGetRequest(
-            name=function_ref.RelativeName()))
+    return command_v1.Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(base.DescribeCommand):
+  """Display details of a Google Cloud Function."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    Describe.Args(parser)
+
+    # Add additional flags for GCFv2
+    flags.AddV2Flag(parser)
+
+  @util.CatchHTTPErrorRaiseHTTPException
+  def Run(self, args):
+    if flags.ShouldUseV2(args):
+      return command_v2.Run(args, self.ReleaseTrack())
+    else:
+      return command_v1.Run(args)

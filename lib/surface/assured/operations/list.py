@@ -22,12 +22,13 @@ from googlecloudsdk.api_lib.assured import endpoint_util
 from googlecloudsdk.api_lib.assured import message_util
 from googlecloudsdk.api_lib.assured import operations as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope.base import ReleaseTrack
 from googlecloudsdk.command_lib.assured import flags
-import six
 
 _DETAILED_HELP = {
     'DESCRIPTION':
-        'List all Assured Workloads operations that belong to a given parent organization.',
+        'List all Assured Workloads operations that belong to a given parent '
+        'organization.',
     'EXAMPLES':
         """ \
         The following example command lists all Assured Workloads operations
@@ -43,7 +44,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(ReleaseTrack.GA, ReleaseTrack.BETA, ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List all Assured Workloads operations that belong to a given parent organization."""
 
@@ -56,8 +57,8 @@ class List(base.ListCommand):
   def Run(self, args):
     """Run the list command."""
     with endpoint_util.AssuredWorkloadsEndpointOverridesFromRegion(
-        release_track=six.text_type(self.ReleaseTrack()), region=args.location):
-      client = apis.OperationsClient(self.ReleaseTrack())
+        release_track=self.ReleaseTrack(), region=args.location):
+      client = apis.OperationsClient(release_track=self.ReleaseTrack())
       return client.List(
           parent=message_util.CreateAssuredParent(args.organization,
                                                   args.location),

@@ -26,8 +26,8 @@ from googlecloudsdk.command_lib.secrets import log as secrets_log
 from googlecloudsdk.command_lib.secrets import util as secrets_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class SetBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class Set(base.UpdateCommand):
   r"""Set a secret's replication.
 
   Sets the replication policy for the given secret as defined in a JSON or YAML
@@ -35,7 +35,7 @@ class SetBeta(base.UpdateCommand):
 
   ## EXAMPLES
 
-  To set the replication of a secret named ``my-secret" to the contents of
+  To set the replication of a secret named 'my-secret' to the contents of
   my-file.json, run:
 
     $ {command} my-secret --replication-policy-file=my-file.json

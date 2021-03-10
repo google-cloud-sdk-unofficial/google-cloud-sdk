@@ -21,9 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.command_lib.functions.v1.deploy import command as command_v1
-from googlecloudsdk.command_lib.functions.v1.deploy import env_vars_util
 from googlecloudsdk.command_lib.functions.v1.deploy import labels_util
 from googlecloudsdk.command_lib.functions.v2.deploy import command as command_v2
+from googlecloudsdk.command_lib.functions.v2.deploy import env_vars_util
 from googlecloudsdk.command_lib.util.args import labels_util as args_labels_util
 
 

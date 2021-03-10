@@ -18,10 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import encoding
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import workerpool_config
 from googlecloudsdk.api_lib.compute import utils as compute_utils
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import workerpool_flags
 from googlecloudsdk.core import log
@@ -107,8 +107,12 @@ class CreateBeta(base.CreateCommand):
             parent=parent_resource.RelativeName(),
             workerPoolId=wp.name))
 
-    raw_dict = encoding.MessageToDict(created_op.response)
-    created_wp = encoding.DictToMessage(raw_dict, messages.WorkerPool)
+    op_resource = resources.REGISTRY.ParseRelativeName(
+        created_op.name, collection='cloudbuild.projects.locations.operations')
+    created_wp = waiter.WaitFor(
+        waiter.CloudOperationPoller(client.projects_locations_workerPools,
+                                    client.projects_locations_operations),
+        op_resource, 'Creating worker pool')
 
     # Get the workerpool ref
     wp_resource = resources.REGISTRY.Parse(

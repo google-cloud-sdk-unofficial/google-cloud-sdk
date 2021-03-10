@@ -58,13 +58,16 @@ def AddSSHArgs(parser):
 
         $ {command} example-instance --zone=us-central1-a --ssh-flag="-vvv" --ssh-flag="-L 80:localhost:80"
 
-      This flag will replace occurences of ``%USER%'' and ``%INSTANCE%'' with
-      their dereferenced values. For example, passing ``80:%INSTANCE%:80`` into
-      the flag is equivalent to passing ``80:162.222.181.197:80'' to *ssh(1)*
-      if the external IP address of 'example-instance' is 162.222.181.197.
+      This flag will replace occurences of ``%USER%'', ``%INSTANCE%'', and
+      ``%INTERNAL%'' with their dereferenced values. For example, passing
+      ``80:%INSTANCE%:80'' into the flag is equivalent to passing
+      ``80:162.222.181.197:80'' to *ssh(1)* if the external IP address of
+      'example-instance' is 162.222.181.197.
 
-      If connecting to the instance's external IP, then %INSTANCE% is replaced
-      with that, otherwise it is replaced with the internal IP.
+      If connecting to the instance's external IP, then ``%INSTANCE%'' is
+      replaced with that, otherwise it is replaced with the internal IP.
+      ``%INTERNAL%'' is always replaced with the internal interface of the
+      instance.
       """)
 
   parser.add_argument(
@@ -303,8 +306,7 @@ def DetailedHelp():
         default network, you may need to explicitly enable ssh access by adding
         a firewall-rule:
 
-          $ gcloud compute firewall-rules create --network=NETWORK \
-            default-allow-ssh --allow=tcp:22
+          $ gcloud compute firewall-rules create --network=NETWORK default-allow-ssh --allow=tcp:22
 
         {command} ensures that the user's public SSH key is present
         in the project's metadata. If the user does not have a public

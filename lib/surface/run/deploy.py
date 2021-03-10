@@ -133,6 +133,7 @@ class Deploy(base.Command):
     flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
     flags.AddLabelsFlags(parser)
+    flags.AddMinInstancesFlag(parser)
     flags.AddMaxInstancesFlag(parser)
     flags.AddCommandFlag(parser)
     flags.AddArgsFlag(parser)
@@ -152,7 +153,6 @@ class Deploy(base.Command):
 
     # Flags only supported on GKE and Knative
     cluster_group = flags.GetClusterArgGroup(parser)
-    flags.AddMinInstancesFlag(cluster_group)
     flags.AddEndpointVisibilityEnum(cluster_group)
     flags.AddHttp2Flag(cluster_group)
 
@@ -263,7 +263,6 @@ class BetaDeploy(Deploy):
     flags.AddEndpointVisibilityEnum(cluster_group)
 
     # Flags not specific to any platform
-    flags.AddMinInstancesFlag(parser)
     flags.AddDeployTagFlag(parser)
     flags.AddIngressFlag(parser)
     flags.AddHttp2Flag(parser)
@@ -292,7 +291,6 @@ class AlphaDeploy(Deploy):
     flags.AddEndpointVisibilityEnum(cluster_group, deprecated=True)
 
     # Flags not specific to any platform
-    flags.AddMinInstancesFlag(parser)
     flags.AddDeployTagFlag(parser)
     flags.AddIngressFlag(parser)
     flags.AddHttp2Flag(parser)

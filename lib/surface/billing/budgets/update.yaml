@@ -56,7 +56,7 @@
         - arg_name: budget-amount
           help_text: |
             Specify the amount of the budget. If a currency type is included, it must be the
-            currency associated with the billing account.
+            existing currency associated with the budget.
           ALPHA:
             api_field: googleCloudBillingBudgetsV1beta1UpdateBudgetRequest.budget.amount.specifiedAmount
             processor: googlecloudsdk.command_lib.billingbudgets.hooks:UpdateParseToMoneyTypeV1Beta1

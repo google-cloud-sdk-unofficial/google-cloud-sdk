@@ -23,7 +23,6 @@ from argcomplete import completers
 from googlecloudsdk.api_lib.resourcesettings import service
 from googlecloudsdk.api_lib.resourcesettings import utils as api_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.resource_settings import arguments
 from googlecloudsdk.command_lib.resource_settings import exceptions
 from googlecloudsdk.command_lib.resource_settings import utils
 
@@ -49,18 +48,12 @@ class SetValue(base.Command):
 
   @staticmethod
   def Args(parser):
-    arguments.AddSettingsNameArgToParser(parser)
     parser.add_argument(
         '--value-file',
         metavar='value-file',
         completer=completers.FilesCompleter,
         required=True,
         help='Path to JSON or YAML file that contains the resource setting.')
-    arguments.AddResourceFlagsToParser(parser)
-    parser.add_argument(
-        '--etag',
-        metavar='etag',
-        help='Etag of the resource setting.')
 
   def Run(self, args):
     """Creates or updates a setting from a JSON or YAML file.
@@ -72,8 +65,6 @@ class SetValue(base.Command):
     Returns:
       The created or updated setting.
     """
-    settings_service = api_utils.GetServiceFromArgs(args)
-    value_service = api_utils.GetValueServiceFromArgs(args)
     settings_message = service.ResourceSettingsMessages()
 
     input_setting = utils.GetMessageFromFile(
@@ -84,20 +75,25 @@ class SetValue(base.Command):
       raise exceptions.InvalidInputError(
           'Name field not present in the resource setting.')
 
+    if not utils.ValidateSettingPath(input_setting.name):
+      raise exceptions.InvalidInputError('Name field has invalid syntax')
+
+    resource_type = utils.GetResourceTypeFromString(input_setting.name)
+    settings_service = api_utils.GetServiceFromResourceType(resource_type)
+    value_service = api_utils.GetValueServiceFromResourceType(resource_type)
+
     # Syntax: [organizations|folders|projects]/{resource_id}/
     #          settings/{setting_name}/value
-    setting_name = '{}/value'.format(utils.GetSettingsPathFromArgs(args))
-    get_request = api_utils.GetGetValueRequestFromArgs(args, setting_name)
+    get_request = api_utils.GetGetValueRequestFromResourceType(
+        resource_type, input_setting.name)
 
     try:
       setting_value = settings_service.GetValue(get_request)
     except api_exceptions.HttpNotFoundError:
-      parent_resource = utils.GetParentResourceFromArgs(args)
-      setting_id = utils.GetSettingNameFromArgs(args)
-      create_request = api_utils.GetCreateRequestFromArgs(args,
-                                                          parent_resource,
-                                                          setting_id,
-                                                          input_setting)
+      parent_resource = utils.GetParentResourceFromString(input_setting.name)
+      setting_id = utils.GetSettingNameFromString(input_setting.name)
+      create_request = api_utils.GetCreateRequestFromResourceType(
+          resource_type, parent_resource, setting_id, input_setting)
 
       create_response = value_service.Create(create_request)
       return create_response
@@ -105,9 +101,7 @@ class SetValue(base.Command):
     if setting_value == input_setting:
       return setting_value
 
-    update_request = api_utils.GetUpdateValueRequestFromArgs(args,
-                                                             input_setting)
+    update_request = api_utils.GetUpdateValueRequestFromResourceType(
+        resource_type, input_setting)
     update_response = settings_service.UpdateValue(update_request)
     return update_response
-
-

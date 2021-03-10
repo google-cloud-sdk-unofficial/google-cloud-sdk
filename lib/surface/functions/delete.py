@@ -19,15 +19,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.functions.v1 import exceptions
-from googlecloudsdk.api_lib.functions.v1 import operations
 from googlecloudsdk.api_lib.functions.v1 import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
-from googlecloudsdk.core import log
-from googlecloudsdk.core.console import console_io
+from googlecloudsdk.command_lib.functions.v1.delete import command as command_v1
+from googlecloudsdk.command_lib.functions.v2.delete import command as command_v2
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete a Google Cloud Function."""
 
@@ -51,15 +50,24 @@ class Delete(base.DeleteCommand):
     Raises:
       FunctionsError: If the user doesn't confirm on prompt.
     """
-    client = util.GetApiClientInstance()
-    messages = client.MESSAGES_MODULE
-    function_ref = args.CONCEPTS.name.Parse()
-    function__url = function_ref.RelativeName()
-    prompt_message = 'Resource [{0}] will be deleted.'.format(function__url)
-    if not console_io.PromptContinue(message=prompt_message):
-      raise exceptions.FunctionsError('Deletion aborted by user.')
-    op = client.projects_locations_functions.Delete(
-        messages.CloudfunctionsProjectsLocationsFunctionsDeleteRequest(
-            name=function__url))
-    operations.Wait(op, messages, client)
-    log.DeletedResource(function__url)
+    return command_v1.Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(base.DeleteCommand):
+  """Delete a Google Cloud Function."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    Delete.Args(parser)
+
+    # Add additional flags for GCFv2
+    flags.AddV2Flag(parser)
+
+  @util.CatchHTTPErrorRaiseHTTPException
+  def Run(self, args):
+    if flags.ShouldUseV2(args):
+      return command_v2.Run(args, self.ReleaseTrack())
+    else:
+      return command_v1.Run(args)

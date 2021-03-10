@@ -39,7 +39,8 @@ class List(base.ListCommand):
           table(
            region:sort=1,
            standard.yesno(yes="YES", no="NO"):label='SUPPORTS STANDARD',
-           flexible.yesno(yes="YES", no="NO"):label='SUPPORTS FLEXIBLE'
+           flexible.yesno(yes="YES", no="NO"):label='SUPPORTS FLEXIBLE',
+           search_api.yesno(yes="YES", no="NO"):label='SUPPORTS GAE SEARCH'
           )
     """)
 

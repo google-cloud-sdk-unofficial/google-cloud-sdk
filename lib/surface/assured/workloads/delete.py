@@ -21,10 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.assured import endpoint_util
 from googlecloudsdk.api_lib.assured import workloads as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope.base import ReleaseTrack
 from googlecloudsdk.command_lib.assured import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
-import six
 
 _DETAILED_HELP = {
     'DESCRIPTION':
@@ -40,7 +40,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(ReleaseTrack.GA, ReleaseTrack.BETA, ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Delete Assured Workloads environment."""
 
@@ -62,8 +62,8 @@ class Delete(base.DeleteCommand):
       return
 
     with endpoint_util.AssuredWorkloadsEndpointOverridesFromRegion(
-        release_track=six.text_type(self.ReleaseTrack()), region=region):
-      client = apis.WorkloadsClient(self.ReleaseTrack())
+        release_track=self.ReleaseTrack(), region=region):
+      client = apis.WorkloadsClient(release_track=self.ReleaseTrack())
       self.resource_name = workload
       return client.Delete(name=self.resource_name, etag=args.etag)
 

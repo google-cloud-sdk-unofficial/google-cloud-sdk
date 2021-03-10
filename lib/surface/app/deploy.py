@@ -72,7 +72,8 @@ _DETAILED_HELP = {
 
           $ {command} ~/my_app/build.gradle
 
-        By default, the service is deployed the current project configured via:
+        By default, the service is deployed  to the current project configured
+        via:
 
           $ gcloud config set core/project PROJECT
 

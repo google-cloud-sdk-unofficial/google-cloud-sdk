@@ -81,6 +81,7 @@ class Update(base.Command):
     flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
     flags.AddLabelsFlags(parser)
+    flags.AddMinInstancesFlag(parser)
     flags.AddMaxInstancesFlag(parser)
     flags.AddCommandFlag(parser)
     flags.AddArgsFlag(parser)
@@ -100,7 +101,6 @@ class Update(base.Command):
 
     # Flags only supported on GKE and Knative
     cluster_group = flags.GetClusterArgGroup(parser)
-    flags.AddMinInstancesFlag(cluster_group)
     flags.AddEndpointVisibilityEnum(cluster_group)
     flags.AddHttp2Flag(cluster_group)
 
@@ -175,7 +175,6 @@ class BetaUpdate(Update):
 
     # Flags not specific to any platform
     flags.AddDeployTagFlag(parser)
-    flags.AddMinInstancesFlag(parser)
     flags.AddIngressFlag(parser)
     flags.AddHttp2Flag(parser)
 
@@ -199,7 +198,6 @@ class AlphaUpdate(Update):
     flags.AddEndpointVisibilityEnum(cluster_group, deprecated=True)
 
     # Flags not specific to any platform
-    flags.AddMinInstancesFlag(parser)
     flags.AddDeployTagFlag(parser)
     flags.AddIngressFlag(parser)
     flags.AddHttp2Flag(parser)

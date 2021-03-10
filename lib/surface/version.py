@@ -69,4 +69,4 @@ class Version(base.Command):
         log.status.write("""\
 Updates are available for some Cloud SDK components.  To install them,
 please run:
-  $ gcloud components update""")
+  $ gcloud components update\n""")

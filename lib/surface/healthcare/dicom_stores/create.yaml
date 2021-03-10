@@ -30,8 +30,28 @@
     params:
     - api_field: dicomStore.notificationConfig.pubsubTopic
       arg_name: pubsub-topic
+      release_tracks: [BETA, GA]
       help_text: |
         Google Cloud Pub/Sub topic to send updates to.
 
         Note: A topic must be created before publishing or subscribing to it. For instructions
         on creating topics, refer to: https://cloud.google.com/pubsub/docs/admin#create_a_topic
+
+    - group:
+        release_tracks: [ALPHA]
+        params:
+        - arg_name: pubsub-topic
+          api_field: dicomStore.notificationConfig.pubsubTopic
+          required: true
+          help_text: |
+            Google Cloud Pub/Sub topic to send updates to.
+
+            Note: A topic must be created before publishing or subscribing to it. For instructions
+            on creating topics, refer to: https://cloud.google.com/pubsub/docs/admin#create_a_topic
+        - arg_name: send-for-bulk-import
+          api_field: dicomStore.notificationConfig.sendForBulkImport
+          type: bool
+          default: false
+          help_text: |
+            Indicates whether or not to send Cloud Pub/Sub notifications on bulk import.
+            Only supported for DICOM imports.

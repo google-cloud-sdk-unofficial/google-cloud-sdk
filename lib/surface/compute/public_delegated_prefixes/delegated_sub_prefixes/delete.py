@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.public_delegated_prefixes import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.UpdateCommand):
   r"""Deletes a Compute Engine delegated sub prefix.
 
@@ -39,7 +39,7 @@ class Delete(base.UpdateCommand):
   To delete a delegated sub prefix for a regional public delegated prefix:
 
     $ {command} my-sub-prefix --public-delegated-prefix=my-pdp \
-      --public-delegated-prefix-region us-east1
+      --public-delegated-prefix-region=us-east1
   """
 
   @staticmethod

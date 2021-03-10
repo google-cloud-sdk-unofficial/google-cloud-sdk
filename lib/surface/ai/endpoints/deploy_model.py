@@ -45,6 +45,7 @@ def _AddArgs(parser, version):
 def _Run(args, version):
   """Deploy a model to an existing AI Platform endpoint."""
   validation.ValidateDisplayName(args.display_name)
+  validation.ValidateAutoscalingMetricSpecs(args.autoscaling_metric_specs)
 
   endpoint_ref = args.CONCEPTS.endpoint.Parse()
   args.region = endpoint_ref.AsDict()['locationsId']

@@ -21,8 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.assured import endpoint_util
 from googlecloudsdk.api_lib.assured import operations as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope.base import ReleaseTrack
+from googlecloudsdk.calliope.base import ReleaseTracks
 from googlecloudsdk.command_lib.assured import flags
-import six
 
 _DETAILED_HELP = {
     'DESCRIPTION':
@@ -37,7 +38,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@ReleaseTracks(ReleaseTrack.GA, ReleaseTrack.BETA, ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe Assured Workloads operations."""
 
@@ -53,6 +54,6 @@ class Describe(base.DescribeCommand):
     region = operation_resource.Parent().Name()
     operation_name = operation_resource.RelativeName()
     with endpoint_util.AssuredWorkloadsEndpointOverridesFromRegion(
-        release_track=six.text_type(self.ReleaseTrack()), region=region):
-      client = apis.OperationsClient(self.ReleaseTrack())
+        release_track=self.ReleaseTrack(), region=region):
+      client = apis.OperationsClient(release_track=self.ReleaseTrack())
       return client.Describe(name=operation_name)

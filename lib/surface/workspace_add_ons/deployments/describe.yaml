@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-  hidden: true
   help_text:
     brief: Describe a Google Workspace Add-ons deployment
     description: Describe a Google Workspace Add-ons deployment

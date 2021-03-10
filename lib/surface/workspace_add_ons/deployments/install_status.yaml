@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-  hidden: true
   help_text:
     brief: Get the install status of a Google Workspace Add-ons deployment
     description: Get the install status of a Google Workspace Add-ons deployment

@@ -24,15 +24,15 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class GetBeta(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class Get(base.DescribeCommand):
   r"""Describe a secret's replication.
 
   Describe a secret's replication
 
   ## EXAMPLES
 
-  To describe the replication of a secret named ``my-secret", run:
+  To describe the replication of a secret named 'my-secret', run:
 
     $ {command} my-secret
   """

@@ -35,13 +35,12 @@
         Arguments and flags that specify the VPC Access connector you want to create.
     params:
     - group:
-        release_tracks: [ALPHA, BETA]
         mutex: true
         params:
         - group:
             help_text: |
               The Serverless VPC Access API can internally manage the creation
-              of a subnet to house the VPC connector within.  To create this
+              of a subnet to house the VPC connector.  To create this
               subnet, the network ID (--network) and an IP CIDR range (--range)
               for the subnet must be provided.
             params:
@@ -67,7 +66,7 @@
               connector to attach your Serverless application to a Shared VPC,
               first share a subnet to the project to which you are deploying your connector.
               Then, supply the name of the subnet (--subnet) and the
-              project ID (--subnet-project) from which the subnet is hosted from to
+              project ID (--subnet-project) from which the subnet is hosted to
               connect to this VPC.
             params:
             - arg_name: subnet
@@ -82,23 +81,6 @@
               required: false
               help_text: |
                 Project ID of the provided subnet. The default is the project of the connector.
-    - arg_name: network
-      release_tracks: [GA]
-      api_field: connector.network
-      required: false
-      help_text: |
-        Name of the Compute Engine network to which the connector
-        will be connected. If left unspecified, the default network will be
-        used.
-      default: default
-    - arg_name: range
-      release_tracks: [GA]
-      api_field: connector.ipCidrRange
-      required: false
-      help_text: |
-        CIDR range of internal addresses that are reserved for this
-        connector. For example, 10.132.0.0/28. Range must be unique and
-        non-overlapping with existing ranges in the network.
     - group:
         release_tracks: [ALPHA, BETA]
         mutex: true
@@ -111,7 +93,6 @@
             - arg_name: min-throughput
               api_field: connector.minThroughput
               required: false
-              default: 200
               help_text: |
                 Minimum throughput in Mbps. Value must be a multiple of 100 from 200 through 900.
                 Must be lower than the value specified by `--max-throughput`; the set value,
@@ -119,7 +100,6 @@
             - arg_name: max-throughput
               api_field: connector.maxThroughput
               required: false
-              default: 300
               help_text: |
                 Maximum throughput in Mbps. Value must be a multiple of 100 from 300 through 1000.
                 Must be higher than the value specified by `--min-throughput`; the set value, if applicable,
@@ -131,6 +111,7 @@
             params:
             - arg_name: min-instances
               api_field: connector.minInstances
+              default: 2
               required: false
               help_text: |
                 Minimum number of instances within an autoscaling group underlying the connector.
@@ -138,6 +119,7 @@
                 `--max-instances`.
             - arg_name: max-instances
               api_field: connector.maxInstances
+              default: 10
               required: false
               help_text: |
                 Maximum number of instances within an autoscaling group underlying the connector.
@@ -148,8 +130,8 @@
       release_tracks: [ALPHA, BETA]
       required: false
       help_text: |
-        Machine type of VMs underlying the VPC Access connector.
-        If left unspecified, the e2-micro machine type will be used.
+        Machine type of VMs underlying the VPC Access connector. Accepted values are "e2-micro",
+        "f1-micro", and "e2-standard-4". If left unspecified, the e2-micro machine type is used.
     - arg_name: min-throughput
       api_field: connector.minThroughput
       release_tracks: [GA]

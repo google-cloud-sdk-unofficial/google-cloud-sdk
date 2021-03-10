@@ -22,9 +22,9 @@ from googlecloudsdk.api_lib.assured import endpoint_util
 from googlecloudsdk.api_lib.assured import message_util
 from googlecloudsdk.api_lib.assured import workloads as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope.base import ReleaseTrack
 from googlecloudsdk.command_lib.assured import flags
 from googlecloudsdk.core import log
-import six
 
 _DETAILED_HELP = {
     'DESCRIPTION':
@@ -44,7 +44,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(ReleaseTrack.GA, ReleaseTrack.BETA, ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
   """Update Assured Workloads environments."""
 
@@ -60,12 +60,15 @@ class Update(base.UpdateCommand):
     region = workload_resource.Parent().Name()
     workload_name = workload_resource.RelativeName()
     with endpoint_util.AssuredWorkloadsEndpointOverridesFromRegion(
-        release_track=six.text_type(self.ReleaseTrack()), region=region):
+        release_track=self.ReleaseTrack(), region=region):
       update_mask = message_util.CreateUpdateMask(args.display_name,
                                                   args.labels)
-      workload = message_util.CreateBetaAssuredWorkload(
-          display_name=args.display_name, labels=args.labels, etag=args.etag)
-      client = apis.WorkloadsClient(self.ReleaseTrack())
+      workload = message_util.CreateAssuredWorkload(
+          display_name=args.display_name,
+          labels=args.labels,
+          etag=args.etag,
+          release_track=self.ReleaseTrack())
+      client = apis.WorkloadsClient(release_track=self.ReleaseTrack())
       self.updated_resource = client.Update(
           workload=workload, name=workload_name, update_mask=update_mask)
       return self.updated_resource

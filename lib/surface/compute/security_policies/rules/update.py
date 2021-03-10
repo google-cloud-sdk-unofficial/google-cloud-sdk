@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.compute.security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.security_policies import flags as security_policy_flags
+from googlecloudsdk.command_lib.compute.security_policies import security_policies_utils
 from googlecloudsdk.command_lib.compute.security_policies.rules import flags
 from googlecloudsdk.core import properties
 
@@ -42,7 +43,7 @@ class UpdateHelper(object):
   """
 
   @classmethod
-  def Args(cls, parser, support_redirect):
+  def Args(cls, parser, support_redirect, support_rate_limit):
     """Generates the flagset for an Update command."""
     flags.AddPriority(parser, 'update')
     cls.SECURITY_POLICY_ARG = (
@@ -50,23 +51,47 @@ class UpdateHelper(object):
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
     flags.AddMatcher(parser, required=False)
     flags.AddAction(
-        parser, required=False, support_redirect=support_redirect)
+        parser,
+        required=False,
+        support_redirect=support_redirect,
+        support_rate_limit=support_rate_limit)
     flags.AddDescription(parser)
     flags.AddPreview(parser, default=None)
     if support_redirect:
       flags.AddRedirectTarget(parser)
+    if support_rate_limit:
+      flags.AddRateLimitOptions(parser)
 
   @classmethod
-  def Run(cls, release_track, args, support_redirect):
+  def Run(cls, release_track, args, support_redirect, support_rate_limit):
     """Validates arguments and patches a security policy rule."""
-    if not any([
+    modified_fields = [
         args.description, args.src_ip_ranges, args.expression, args.action,
         args.preview is not None
-    ]):
-      raise exceptions.MinimumArgumentException([
-          '--description', '--src-ip-ranges', '--expression', '--action',
-          '--preview'
-      ], 'At least one property must be modified.')
+    ]
+    min_args = [
+        '--description', '--src-ip-ranges', '--expression', '--action',
+        '--preview'
+    ]
+    if support_redirect:
+      modified_fields.append(args.redirect_target)
+      min_args.append('--redirect_target')
+    if support_rate_limit:
+      modified_fields.extend([
+          args.rate_limit_threshold_count,
+          args.rate_limit_threshold_interval_sec, args.conform_action,
+          args.exceed_action, args.enforce_on_key, args.ban_threshold_count,
+          args.ban_threshold_interval_sec, args.ban_duration_sec
+      ])
+      min_args.extend([
+          '--rate-limit-threshold-count', '--rate-limit-threshold-interval-sec',
+          '--conform-action', '--exceed-action', '--enforce-on-key',
+          '--ban-threshold-count', '--ban-threshold-interval-sec',
+          '--ban-duration-sec'
+      ])
+    if not any(modified_fields):
+      raise exceptions.MinimumArgumentException(
+          min_args, 'At least one property must be modified.')
 
     holder = base_classes.ComputeApiHolder(release_track)
     ref = holder.resources.Parse(
@@ -80,8 +105,12 @@ class UpdateHelper(object):
         ref, compute_client=holder.client)
 
     redirect_target = None
+    rate_limit_options = None
     if support_redirect:
       redirect_target = args.redirect_target
+    if support_rate_limit:
+      rate_limit_options = (
+          security_policies_utils.CreateRateLimitOptions(holder.client, args))
 
     return security_policy_rule.Patch(
         src_ip_ranges=args.src_ip_ranges,
@@ -89,7 +118,8 @@ class UpdateHelper(object):
         action=args.action,
         description=args.description,
         preview=args.preview,
-        redirect_target=redirect_target)
+        redirect_target=redirect_target,
+        rate_limit_options=rate_limit_options)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -110,14 +140,15 @@ class UpdateGA(base.UpdateCommand):
   SECURITY_POLICY_ARG = None
 
   _support_redirect = False
+  _support_rate_limit = False
 
   @classmethod
   def Args(cls, parser):
-    UpdateHelper.Args(parser, support_redirect=False)
+    UpdateHelper.Args(parser, cls._support_redirect, cls._support_rate_limit)
 
   def Run(self, args):
-    return UpdateHelper.Run(self.ReleaseTrack(), args,
-                            self._support_redirect)
+    return UpdateHelper.Run(self.ReleaseTrack(), args, self._support_redirect,
+                            self._support_rate_limit)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -138,14 +169,15 @@ class UpdateBeta(base.UpdateCommand):
   SECURITY_POLICY_ARG = None
 
   _support_redirect = False
+  _support_rate_limit = False
 
   @classmethod
   def Args(cls, parser):
-    UpdateHelper.Args(parser, support_redirect=False)
+    UpdateHelper.Args(parser, cls._support_redirect, cls._support_rate_limit)
 
   def Run(self, args):
-    return UpdateHelper.Run(self.ReleaseTrack(), args,
-                            self._support_redirect)
+    return UpdateHelper.Run(self.ReleaseTrack(), args, self._support_redirect,
+                            self._support_rate_limit)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -166,12 +198,12 @@ class UpdateAlpha(base.UpdateCommand):
   SECURITY_POLICY_ARG = None
 
   _support_redirect = True
+  _support_rate_limit = True
 
   @classmethod
   def Args(cls, parser):
-    UpdateHelper.Args(
-        parser, support_redirect=cls._support_redirect)
+    UpdateHelper.Args(parser, cls._support_redirect, cls._support_rate_limit)
 
   def Run(self, args):
-    return UpdateHelper.Run(self.ReleaseTrack(), args,
-                            self._support_redirect)
+    return UpdateHelper.Run(self.ReleaseTrack(), args, self._support_redirect,
+                            self._support_rate_limit)

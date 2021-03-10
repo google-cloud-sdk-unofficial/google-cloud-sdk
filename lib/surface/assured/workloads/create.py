@@ -22,9 +22,9 @@ from googlecloudsdk.api_lib.assured import endpoint_util
 from googlecloudsdk.api_lib.assured import message_util
 from googlecloudsdk.api_lib.assured import workloads as apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope.base import ReleaseTrack
 from googlecloudsdk.command_lib.assured import flags
 from googlecloudsdk.core import log
-import six
 
 _DETAILED_HELP = {
     'DESCRIPTION':
@@ -50,7 +50,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(ReleaseTrack.GA, ReleaseTrack.BETA, ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a new Assured Workloads environment."""
 
@@ -63,17 +63,18 @@ class Create(base.CreateCommand):
   def Run(self, args):
     """Run the create command."""
     with endpoint_util.AssuredWorkloadsEndpointOverridesFromRegion(
-        release_track=six.text_type(self.ReleaseTrack()), region=args.location):
+        release_track=self.ReleaseTrack(), region=args.location):
       parent = message_util.CreateAssuredParent(
           organization_id=args.organization, location=args.location)
-      workload = message_util.CreateBetaAssuredWorkload(
+      workload = message_util.CreateAssuredWorkload(
           display_name=args.display_name,
           compliance_regime=args.compliance_regime,
           billing_account=args.billing_account,
           next_rotation_time=args.next_rotation_time,
           rotation_period=args.rotation_period,
           labels=args.labels,
-          provisioned_resources_parent=args.provisioned_resources_parent)
+          provisioned_resources_parent=args.provisioned_resources_parent,
+          release_track=self.ReleaseTrack())
       client = apis.WorkloadsClient(release_track=self.ReleaseTrack())
       self.created_resource = client.Create(
           external_id=args.external_identifier,

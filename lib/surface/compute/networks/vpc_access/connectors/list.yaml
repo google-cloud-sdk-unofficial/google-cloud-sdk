@@ -38,6 +38,9 @@
            ipCidrRange,
            subnet.name:label=SUBNET,
            subnet.projectId:label=SUBNET_PROJECT,
+           machineType,
+           minInstances,
+           maxInstances,
            status
          )
   BETA:
@@ -50,8 +53,9 @@
            ipCidrRange,
            subnet.name:label=SUBNET,
            subnet.projectId:label=SUBNET_PROJECT,
-           minThroughput,
-           maxThroughput,
+           machineType,
+           minInstances,
+           maxInstances,
            state
          )
   GA:
@@ -62,6 +66,8 @@
            name.segment(3):label=REGION,
            network,
            ipCidrRange,
+           subnet.name:label=SUBNET,
+           subnet.projectId:label=SUBNET_PROJECT,
            minThroughput,
            maxThroughput,
            state

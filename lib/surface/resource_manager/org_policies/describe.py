@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.resource_manager import exceptions
 from googlecloudsdk.api_lib.resource_manager import org_policies
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import org_policies_base
@@ -44,6 +45,10 @@ class Describe(base.DescribeCommand):
     $ {command} serviceuser.services --project=foo-project --effective
   """
 
+  POLICY_V2_WARNING = ('This policy has been set with Tags through Organization'
+                       ' Policy V2 API, please use `gcloud org-policies` '
+                       'commands instead.')
+
   @staticmethod
   def Args(parser):
     flags.AddIdArgToParser(parser)
@@ -61,6 +66,8 @@ class Describe(base.DescribeCommand):
     if not args.effective:
       response = service.GetOrgPolicy(
           org_policies_base.GetOrgPolicyRequest(args))
+      if response.version is not None and response.version == 2:
+        raise exceptions.ResourceManagerError(self.POLICY_V2_WARNING)
     else:
       response = service.GetEffectiveOrgPolicy(
           self.GetEffectiveOrgPolicyRequest(args))

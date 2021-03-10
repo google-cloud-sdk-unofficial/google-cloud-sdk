@@ -19,11 +19,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope.base import ReleaseTrack
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(ReleaseTrack.GA, ReleaseTrack.BETA, ReleaseTrack.ALPHA)
 class Workloads(base.Group):
-  """Commands for reading and manipulating Assured Workloads resources."""
+  """Read and manipulate Assured Workloads resources."""
 
   category = base.SECURITY_CATEGORY
 

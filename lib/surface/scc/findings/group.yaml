@@ -32,11 +32,7 @@
     - googlecloudsdk.command_lib.scc.findings.request_hooks:GroupFindingsReqHook
 
   arguments:
-
-    resource:
-      help_text: Refers to the organization whose findings should be grouped by.
-      override_resource_collection: true
-      spec: !REF googlecloudsdk.command_lib.scc.resources:organization
+    additional_arguments_hook: googlecloudsdk.command_lib.scc.hooks:AppendParentArg
 
     params:
     - !REF googlecloudsdk.command_lib.scc.findings.flags:source

@@ -47,7 +47,7 @@ class Access(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddVersion(
+    secrets_args.AddVersionOrLatest(
         parser, purpose='to access', positional=True, required=True)
     secrets_fmt.UseSecretData(parser)
 
@@ -79,6 +79,6 @@ class AccessBeta(Access):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddVersion(
+    secrets_args.AddVersionOrLatest(
         parser, purpose='to access', positional=True, required=True)
     secrets_fmt.UseSecretData(parser)

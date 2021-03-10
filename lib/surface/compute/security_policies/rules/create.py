@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.security_policies import flags as security_policies_flags
+from googlecloudsdk.command_lib.compute.security_policies import security_policies_utils
 from googlecloudsdk.command_lib.compute.security_policies.rules import flags
 from googlecloudsdk.core import properties
 
@@ -42,23 +43,28 @@ class CreateHelper(object):
   """
 
   @classmethod
-  def Args(cls, parser, support_redirect):
+  def Args(cls, parser, support_redirect, support_rate_limit):
     """Generates the flagset for a Create command."""
     flags.AddPriority(parser, 'add')
     cls.SECURITY_POLICY_ARG = (
         security_policies_flags.SecurityPolicyArgumentForRules())
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
     flags.AddMatcher(parser)
-    flags.AddAction(parser, support_redirect=support_redirect)
+    flags.AddAction(
+        parser,
+        support_redirect=support_redirect,
+        support_rate_limit=support_rate_limit)
     flags.AddDescription(parser)
     flags.AddPreview(parser, default=None)
     if support_redirect:
       flags.AddRedirectTarget(parser)
+    if support_rate_limit:
+      flags.AddRateLimitOptions(parser)
     parser.display_info.AddCacheUpdater(
         security_policies_flags.SecurityPoliciesCompleter)
 
   @classmethod
-  def Run(cls, release_track, args, support_redirect):
+  def Run(cls, release_track, args, support_redirect, support_rate_limit):
     """Validates arguments and creates a security policy rule."""
     holder = base_classes.ComputeApiHolder(release_track)
     ref = holder.resources.Parse(
@@ -72,8 +78,12 @@ class CreateHelper(object):
         ref, compute_client=holder.client)
 
     redirect_target = None
+    rate_limit_options = None
     if support_redirect:
       redirect_target = args.redirect_target
+    if support_rate_limit:
+      rate_limit_options = (
+          security_policies_utils.CreateRateLimitOptions(holder.client, args))
 
     return security_policy_rule.Create(
         src_ip_ranges=args.src_ip_ranges,
@@ -81,7 +91,8 @@ class CreateHelper(object):
         action=args.action,
         description=args.description,
         preview=args.preview,
-        redirect_target=redirect_target)
+        redirect_target=redirect_target,
+        rate_limit_options=rate_limit_options)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -103,17 +114,15 @@ class CreateGA(base.CreateCommand):
   SECURITY_POLICY_ARG = None
 
   _support_redirect = False
+  _support_rate_limit = False
 
   @classmethod
   def Args(cls, parser):
-    CreateHelper.Args(
-        parser, support_redirect=cls._support_redirect)
+    CreateHelper.Args(parser, cls._support_redirect, cls._support_rate_limit)
 
   def Run(self, args):
-    return CreateHelper.Run(
-        self.ReleaseTrack(),
-        args,
-        support_redirect=self._support_redirect)
+    return CreateHelper.Run(self.ReleaseTrack(), args, self._support_redirect,
+                            self._support_rate_limit)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -135,17 +144,15 @@ class CreateBeta(base.CreateCommand):
   SECURITY_POLICY_ARG = None
 
   _support_redirect = False
+  _support_rate_limit = False
 
   @classmethod
   def Args(cls, parser):
-    CreateHelper.Args(
-        parser, support_redirect=cls._support_redirect)
+    CreateHelper.Args(parser, cls._support_redirect, cls._support_rate_limit)
 
   def Run(self, args):
-    return CreateHelper.Run(
-        self.ReleaseTrack(),
-        args,
-        support_redirect=self._support_redirect)
+    return CreateHelper.Run(self.ReleaseTrack(), args, self._support_redirect,
+                            self._support_rate_limit)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -167,14 +174,12 @@ class CreateAlpha(base.CreateCommand):
   SECURITY_POLICY_ARG = None
 
   _support_redirect = True
+  _support_rate_limit = True
 
   @classmethod
   def Args(cls, parser):
-    CreateHelper.Args(
-        parser, support_redirect=cls._support_redirect)
+    CreateHelper.Args(parser, cls._support_redirect, cls._support_rate_limit)
 
   def Run(self, args):
-    return CreateHelper.Run(
-        self.ReleaseTrack(),
-        args,
-        support_redirect=self._support_redirect)
+    return CreateHelper.Run(self.ReleaseTrack(), args, self._support_redirect,
+                            self._support_rate_limit)

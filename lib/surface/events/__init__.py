@@ -20,7 +20,9 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.events import exceptions
+from googlecloudsdk.command_lib.run import exceptions as run_exceptions
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
@@ -55,20 +57,7 @@ class EventsBeta(base.Group):
   @staticmethod
   def Args(parser):
     """Adds --platform and the various related args."""
-    # Add --platform
-    flags.AddPlatformArg(parser)
-
-    platform_helpers_group = parser.add_mutually_exclusive_group(
-        help='Arguments to locate resources, depending on the platform used.')
-
-    # Add --cluster and --cluster-location (plus properties)
-    gke_group = flags.GetGkeArgGroup(platform_helpers_group)
-    concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
-                                  ]).AddToParser(gke_group)
-
-    # Add --kubeconfig and --context
-    kubernetes_group = flags.GetKubernetesArgGroup(platform_helpers_group)
-    flags.AddKubeconfigFlags(kubernetes_group)
+    flags.AddPlatformAndLocationFlags(parser, anthos_only=True)
 
   def Filter(self, context, args):
     """Runs before command.Run and validates platform with passed args."""
@@ -77,7 +66,15 @@ class EventsBeta(base.Group):
     # all other passed args are valid for this platform and release track.
     flags.GetAndValidatePlatform(args, self.ReleaseTrack(),
                                  flags.Product.EVENTS)
+    self._CheckPlatform()
     return context
+
+  def _CheckPlatform(self):
+    if platforms.GetPlatform() == platforms.PLATFORM_MANAGED:
+      raise run_exceptions.PlatformError(
+          'The flag --platform={0} is not supported. '
+          'Instead of using the flag --platform={0} in "gcloud events", '
+          'run "gcloud eventarc".'.format(platforms.PLATFORM_MANAGED))
 
 
 DETAILED_HELP_ALPHA = {
@@ -111,24 +108,7 @@ class EventsAlpha(base.Group):
   @staticmethod
   def Args(parser):
     """Adds --platform and the various related args."""
-    # Add --platform
-    flags.AddPlatformArg(parser)
-
-    platform_helpers_group = parser.add_mutually_exclusive_group(
-        help='Arguments to locate resources, depending on the platform used.')
-
-    # Add --region flag
-    managed_group = flags.GetManagedArgGroup(platform_helpers_group)
-    flags.AddRegionArg(managed_group)
-
-    # Add --cluster and --cluster-location (plus properties)
-    gke_group = flags.GetGkeArgGroup(platform_helpers_group)
-    concept_parsers.ConceptParser(
-        [resource_args.CLUSTER_PRESENTATION]).AddToParser(gke_group)
-
-    # Add --kubeconfig and --context
-    kubernetes_group = flags.GetKubernetesArgGroup(platform_helpers_group)
-    flags.AddKubeconfigFlags(kubernetes_group)
+    flags.AddPlatformAndLocationFlags(parser, anthos_only=True)
 
   def Filter(self, context, args):
     """Runs before command.Run and validates platform with passed args."""
@@ -137,4 +117,12 @@ class EventsAlpha(base.Group):
     # all other passed args are valid for this platform and release track.
     flags.GetAndValidatePlatform(args, self.ReleaseTrack(),
                                  flags.Product.EVENTS)
+    self._CheckPlatform()
     return context
+
+  def _CheckPlatform(self):
+    if platforms.GetPlatform() == platforms.PLATFORM_MANAGED:
+      raise run_exceptions.PlatformError(
+          'The flag --platform={0} is not supported. '
+          'Instead of using the flag --platform={0} in "gcloud events", '
+          'run "gcloud eventarc".'.format(platforms.PLATFORM_MANAGED))

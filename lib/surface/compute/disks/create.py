@@ -124,7 +124,6 @@ def _CommonArgs(parser,
                 vss_erase_enabled=False,
                 source_instant_snapshot_enabled=False,
                 support_pd_interface=False,
-                support_provisioned_iops=False,
                 support_user_licenses=False):
   """Add arguments used for parsing in all command tracks."""
   Create.disks_arg.AddArgument(parser, operation_type='create')
@@ -184,8 +183,7 @@ def _CommonArgs(parser,
 
   _SourceArgs(parser, source_instant_snapshot_enabled)
 
-  if support_provisioned_iops:
-    disks_flags.AddProvisionedIopsFlag(parser, arg_parsers, constants)
+  disks_flags.AddProvisionedIopsFlag(parser, arg_parsers, constants)
 
   if support_user_licenses:
     parser.add_argument(
@@ -427,7 +425,6 @@ class Create(base.Command):
            support_multiwriter_disk=False,
            support_vss_erase=False,
            support_pd_interface=False,
-           support_provisioned_iops=False,
            support_user_licenses=False):
     compute_holder = self._GetApiHolder()
     client = compute_holder.client
@@ -552,7 +549,7 @@ class Create(base.Command):
 
       disk.licenses = self.ParseLicenses(args)
 
-      if support_provisioned_iops and args.IsSpecified('provisioned_iops'):
+      if args.IsSpecified('provisioned_iops'):
         if type_uri and type_uri.endswith('/pd-extreme'):
           disk.provisionedIops = args.provisioned_iops
         else:
@@ -610,8 +607,7 @@ class CreateBeta(Create):
         parser,
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
-        support_pd_interface=True,
-        support_provisioned_iops=True)
+        support_pd_interface=True)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
@@ -625,8 +621,7 @@ class CreateBeta(Create):
         supports_physical_block=True,
         support_vss_erase=True,
         support_multiwriter_disk=True,
-        support_pd_interface=True,
-        support_provisioned_iops=True)
+        support_pd_interface=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -645,7 +640,6 @@ class CreateAlpha(CreateBeta):
         vss_erase_enabled=True,
         source_instant_snapshot_enabled=True,
         support_pd_interface=True,
-        support_provisioned_iops=True,
         support_user_licenses=True)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
@@ -661,7 +655,6 @@ class CreateAlpha(CreateBeta):
         support_multiwriter_disk=True,
         support_vss_erase=True,
         support_pd_interface=True,
-        support_provisioned_iops=True,
         support_user_licenses=True)
 
 
