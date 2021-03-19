@@ -158,7 +158,7 @@ class CreateWithContainer(base.CreateCommand):
     """Creates API messages with disks attached to VM instance."""
     flags_to_check = [
         'create_disk', 'local_ssd', 'boot_disk_type', 'boot_disk_device_name',
-        'boot_disk_auto_delete'
+        'boot_disk_auto_delete', 'boot_disk_provisioned_iops'
     ]
     if hasattr(args, 'local_nvdimm'):
       flags_to_check.append('local_nvdimm')
@@ -313,6 +313,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_match_container_mount_disks = True
   _support_nvdimm = False
   _support_threads_per_core = False
+  _support_network_performance_configs = True
 
   @staticmethod
   def Args(parser):
@@ -323,9 +324,11 @@ class CreateWithContainerBeta(CreateWithContainer):
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_BETA_API_VERSION)
+    instances_flags.AddNetworkPerformanceConfigsArgs(parser)
 
   def _ValidateTrackSpecificArgs(self, args):
     instances_flags.ValidateLocalSsdFlags(args)
+    instances_flags.ValidateNetworkPerformanceConfigsArgs(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

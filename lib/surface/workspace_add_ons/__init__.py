@@ -22,7 +22,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class GSuiteAddOns(base.Group):
   """Manage Google Workspace Add-ons resources.

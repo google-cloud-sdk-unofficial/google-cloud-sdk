@@ -21,13 +21,15 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Bulk(base.Group):
   """Manipulate multiple Compute Engine virtual machines with single command executions."""
 
 
 Bulk.detailed_help = {
-    'DESCRIPTION': """
+    'DESCRIPTION':
+        """
       Manipulate multiple Compute Engine virtual machines with single command executions.
     """,
 }

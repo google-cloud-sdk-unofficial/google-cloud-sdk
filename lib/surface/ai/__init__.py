@@ -21,9 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Ai(base.Group):
-  """Manages entities in AI Platform."""
+  """Manage entities in AI Platform."""
 
   category = base.AI_AND_MACHINE_LEARNING_CATEGORY
 

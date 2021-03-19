@@ -26,3 +26,11 @@ class Metastore(base.Group):
   """Manage Dataproc Metastore resources."""
 
   category = base.DATA_ANALYTICS_CATEGORY
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class MetastoreGA(base.Group):
+  """Manage Dataproc Metastore resources."""
+
+  category = base.DATA_ANALYTICS_CATEGORY

@@ -19,26 +19,56 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ai.models import client
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class List(base.ListCommand):
-  """Lists the models of the given project and region."""
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ListV1(base.ListCommand):
+  """Lists the models of the given project and region.
+
+  ## EXAMPLES
+
+  Lists the models of project ``example'' in region ``us-central1'', run:
+
+    $ {command} --project=example --region=us-central1
+  """
 
   @staticmethod
   def Args(parser):
     flags.AddRegionResourceArg(parser, 'to list models')
 
-  def _Run(self, args):
+  def _Run(self, args, region_ref, region):
+    with endpoint_util.AiplatformEndpointOverrides(
+        version=constants.GA_VERSION, region=region):
+      client_instance = apis.GetClientInstance(
+          constants.AI_PLATFORM_API_NAME,
+          constants.AI_PLATFORM_API_VERSION[constants.GA_VERSION])
+      return client.ModelsClient(
+          client=client_instance,
+          messages=client_instance.MESSAGES_MODULE).List(region_ref=region_ref)
+
+  def Run(self, args):
     region_ref = args.CONCEPTS.region.Parse()
     region = region_ref.AsDict()['locationsId']
+    return self._Run(args, region_ref, region)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ListV1Beta1(ListV1):
+  """Lists the models of the given project and region.
+
+  ## EXAMPLES
+
+  Lists the models of project `example` in region `us-central1`, run:
+
+    $ {command} --project=example --region=us-central1
+  """
+
+  def _Run(self, args, region_ref, region):
     with endpoint_util.AiplatformEndpointOverrides(
         version=constants.BETA_VERSION, region=region):
       return client.ModelsClient().List(region_ref=region_ref)
-
-  def Run(self, args):
-    return self._Run(args)

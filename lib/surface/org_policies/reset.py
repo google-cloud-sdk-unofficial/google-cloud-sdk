@@ -23,21 +23,24 @@ import copy
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.org_policies import interfaces
 
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """\
+      Resets the policy to the default for the constraint.
+      """,
+    'EXAMPLES':
+        """\
+      To reset the policy associated with the constraint 'gcp.resourceLocations' and
+      the Project 'foo-project', run:
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+        $ {command} gcp.resourceLocations --project=foo-project
+      """,
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Reset(interfaces.OrgPolicyGetAndUpdateCommand):
-  r"""Reset the policy to the default for the constraint.
-
-  Resets the policy to the default for the constraint.
-
-  ## EXAMPLES
-
-  To reset the policy associated with the constraint 'gcp.resourceLocations' and
-  the Project 'foo-project', run:
-
-    $ {command} gcp.resourceLocations --project=foo-project
-  """
+  """Reset the policy to the default for the constraint."""
 
   def UpdatePolicy(self, policy, args):
     """Sets the reset field on the policy to True.
@@ -61,3 +64,13 @@ class Reset(interfaces.OrgPolicyGetAndUpdateCommand):
     new_policy.spec.inheritFromParent = False
 
     return new_policy
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ResetALPHA(Reset):
+  """Reset the policy to the default for the constraint."""
+  pass
+
+
+Reset.detailed_help = DETAILED_HELP

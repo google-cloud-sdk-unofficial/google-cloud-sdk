@@ -44,6 +44,7 @@ class GcloudignoreHelp(base.TopicCommand):
   * `gcloud composer environments storage {dags, data, plugins} import`
   * `gcloud container builds submit`
   * `gcloud alpha run deploy`
+  *  gcloud alpha deploy releases create
 
   To globally disable `.gcloudignore` parsing (including default file-ignore
   behavior), run:

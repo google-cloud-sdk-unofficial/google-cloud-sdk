@@ -102,6 +102,13 @@ class DeployGA(base.SilentCommand):
   def Args(parser):
     """Get arguments for this command."""
     deploy_util.ArgsDeploy(parser)
+    parser.add_argument(
+        '--use-legacy-apis',
+        action='store_true',
+        default=False,
+        hidden=True,
+        help=('Use legacy APIs (admin-console-hr) instead of Cloud Tasks FE & '
+              'Cloud Scheduler FE for queue and cron YAML uploads.'))
 
   def Run(self, args):
     runtime_builder_strategy = deploy_util.GetRuntimeBuilderStrategy(
@@ -119,7 +126,8 @@ class DeployGA(base.SilentCommand):
         runtime_builder_strategy=runtime_builder_strategy,
         parallel_build=False,
         flex_image_build_option=deploy_util.GetFlexImageBuildOption(
-            default_strategy=flex_image_build_option_default))
+            default_strategy=flex_image_build_option_default),
+        use_legacy_apis=args.use_legacy_apis)
 
   def _ServerSideExperimentEnabled(self):
     """Evaluates whether the build on server-side experiment is enabled for the project.
@@ -159,13 +167,6 @@ class DeployBeta(base.SilentCommand):
   def Args(parser):
     """Get arguments for this command."""
     deploy_util.ArgsDeploy(parser)
-    parser.add_argument(
-        '--use-ct-apis',
-        action='store_true',
-        default=False,
-        hidden=True,
-        help=('Use Cloud Tasks APIs instead of admin-console-hr for only '
-              'queue.yaml uploads.'))
 
   def Run(self, args):
     runtime_builder_strategy = deploy_util.GetRuntimeBuilderStrategy(
@@ -179,8 +180,7 @@ class DeployBeta(base.SilentCommand):
         parallel_build=True,
         flex_image_build_option=deploy_util.GetFlexImageBuildOption(
             default_strategy=deploy_util.FlexImageBuildOptions.ON_SERVER),
-        dispatch_admin_api=True,
-        use_ct_apis=True)
+        dispatch_admin_api=True)
 
 
 DeployGA.detailed_help = _DETAILED_HELP

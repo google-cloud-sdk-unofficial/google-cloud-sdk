@@ -34,13 +34,28 @@
     - arg_name: database-type
       api_field: metadataImport.databaseDump.databaseType
       help_text: |
-        The type of the database.
+        The type of the database. If unspecified, defaults to `MYSQL`.
       choices:
-      - arg_value: mysql
+      - arg_value: MYSQL
         enum_value: MYSQL
         help_text:  |
           MySQL Database
-      default: mysql
+      default: MYSQL
+      action:
+        deprecated:
+          removed: false
+          warn: |
+            The --database-type option is deprecated; use --database-dump-type instead.
+    - arg_name: database-dump-type
+      api_field: metadataImport.databaseDump.type
+      help_text: |
+        The type of the database dump. If unspecified, defaults to `MYSQL`
+      choices:
+      - arg_value: MYSQL
+        enum_value: MYSQL
+        help_text:  |
+          Database dump is a MYSQL dump file.
+      default: MYSQL
     - arg_name: database-dump
       required: true
       api_field: metadataImport.databaseDump.gcsUri

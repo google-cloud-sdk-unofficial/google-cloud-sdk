@@ -19,27 +19,59 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ai.models import client
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Describe(base.DescribeCommand):
-  """Gets detailed model information about the given model id."""
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DescribeV1(base.DescribeCommand):
+  """Gets detailed model information about the given model id.
+
+  ## EXAMPLES
+
+  Describe a model ``123'' of project ``example'' in region ``us-central1'',
+  run:
+
+    $ {command} 123 --project=example --region=us-central1
+  """
 
   @staticmethod
   def Args(parser):
     flags.AddModelResourceArg(parser, 'to describe')
 
-  def _Run(self, args):
+  def _Run(self, args, model_ref, region):
+    with endpoint_util.AiplatformEndpointOverrides(
+        version=constants.GA_VERSION, region=region):
+      client_instance = apis.GetClientInstance(
+          constants.AI_PLATFORM_API_NAME,
+          constants.AI_PLATFORM_API_VERSION[constants.GA_VERSION])
+      return client.ModelsClient(
+          client=client_instance,
+          messages=client_instance.MESSAGES_MODULE).Get(model_ref)
+
+  def Run(self, args):
     model_ref = args.CONCEPTS.model.Parse()
     region = model_ref.AsDict()['locationsId']
+    return self._Run(args, model_ref, region)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DescribeV1Beta1(DescribeV1):
+  """Gets detailed model information about the given model id.
+
+  ## EXAMPLES
+
+  Describe a model `123` of project `example` in region `us-central1`,
+  run:
+
+    $ {command} 123 --project=example --region=us-central1
+  """
+
+  def _Run(self, args, model_ref, region):
     with endpoint_util.AiplatformEndpointOverrides(
         version=constants.BETA_VERSION, region=region):
       response = client.ModelsClient().Get(model_ref)
       return response
-
-  def Run(self, args):
-    return self._Run(args)

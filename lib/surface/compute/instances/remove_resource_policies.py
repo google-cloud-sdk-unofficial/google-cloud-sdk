@@ -25,12 +25,19 @@ from googlecloudsdk.command_lib.compute.resource_policies import flags
 from googlecloudsdk.command_lib.compute.resource_policies import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class InstancesRemoveResourcePolicies(base.UpdateCommand):
-  """Remove resource policies to Compute Engine VM instances.
+  """Remove resource policies from Compute Engine VM instances.
 
     *{command}* removes resource policies from Compute Engine
     virtual instances.
+
+    ## EXAMPLES
+
+    To remove resource policy ``pol1'' from instance ``inst1'', run this:
+
+      $ {command} inst1 --resource-policies=pol1
   """
 
   @staticmethod

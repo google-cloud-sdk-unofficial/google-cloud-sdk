@@ -98,12 +98,15 @@ class Apply(base.UpdateCommand):
     msg = client.MESSAGES_MODULE
     config_sync = _parse_config_sync(loaded_cm, msg)
     policy_controller = _parse_policy_controller(loaded_cm, msg)
+    hierarchy_controller_config = _parse_hierarchy_controller_config(
+        loaded_cm, msg)
     applied_config = msg.ConfigManagementFeatureSpec.MembershipConfigsValue.AdditionalProperty(
         key=membership,
         value=msg.MembershipConfig(
             version=self._get_backfill_version(membership),
             configSync=config_sync,
-            policyController=policy_controller))
+            policyController=policy_controller,
+            hierarchyController=hierarchy_controller_config))
     # UpdateFeature uses patch method to update membership_configs map,
     # there's no need to get the existing feature spec
     m_configs = msg.ConfigManagementFeatureSpec.MembershipConfigsValue(
@@ -189,7 +192,9 @@ def _validate_meta(configmanagement):
     raise exceptions.Error('Missing required field .spec')
   spec = configmanagement['spec']
   for field in spec:
-    if field not in ['git', 'policyController', 'sourceFormat']:
+    if field not in [
+        'git', 'policyController', 'sourceFormat', 'hierarchyController'
+    ]:
       raise exceptions.Error(
           'Please remove illegal field .spec.{}'.format(field))
   if 'sourceFormat' in spec and configmanagement['spec'][
@@ -208,6 +213,14 @@ def _validate_meta(configmanagement):
         if field not in ['httpsProxy']:
           raise exceptions.Error(
               'Please remove illegal field .spec.git.proxy.{}'.format(field))
+  if 'hierarchyController' in spec:
+    for field in spec['hierarchyController']:
+      if field not in [
+          'enabled', 'enablePodTreeLabels', 'enableHierarchicalResourceQuota'
+      ]:
+        raise exceptions.Error(
+            'Please remove illegal field .spec.hierarchyController.{}'.format(
+                field))
 
 
 def _parse_config_sync(configmanagement, msg):
@@ -297,3 +310,49 @@ def _parse_policy_controller(configmanagement, msg):
     setattr(policy_controller, field, spec_policy_controller[field])
 
   return policy_controller
+
+
+def _parse_hierarchy_controller_config(configmanagement, msg):
+  """Load HierarchyController with the parsed config-management.yaml.
+
+  Args:
+    configmanagement: dict, The data loaded from the config-management.yaml
+      given by user.
+    msg: The empty message class for gkehub version v1alpha1
+
+  Returns:
+    hierarchy_controller: The Hierarchy Controller configuration for
+    MembershipConfigs, filled in the data parsed from
+    configmanagement.spec.hierarchyController
+  Raises: Error, if Hierarchy Controller `enabled` set to false but also has
+    other fields present in the config
+  """
+
+  if ('spec' not in configmanagement or
+      'hierarchyController' not in configmanagement['spec']):
+    return None
+
+  spec = configmanagement['spec']['hierarchyController']
+  # Required field
+  if spec is None or 'enabled' not in spec:
+    raise exceptions.Error(
+        'Missing required field .spec.hierarchyController.enabled')
+  enabled = spec['enabled']
+  if not isinstance(enabled, bool):
+    raise exceptions.Error(
+        'hierarchyController.enabled should be `true` or `false`')
+
+  config_proto = msg.HierarchyControllerConfig(enabled=True)
+  # When the hierarchyController is set to be enabled, hierarchy_controller will
+  # be filled with the valid fields set in spec, which
+  # were mapped from the config-management.yaml
+  for field in spec:
+    if field not in [
+        'enabled', 'enablePodTreeLabels', 'enableHierarchicalResourceQuota'
+    ]:
+      raise exceptions.Error(
+          'Please remove illegal field .spec.hierarchyController.{}'.format(
+              field))
+    setattr(config_proto, field, spec[field])
+
+  return config_proto

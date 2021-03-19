@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ai import operations
 from googlecloudsdk.api_lib.ai.models import client
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import messages as messages_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as gcloud_exceptions
@@ -31,20 +32,78 @@ from googlecloudsdk.command_lib.ai import operations_util
 from googlecloudsdk.core import yaml
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Upload(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UploadV1(base.CreateCommand):
   """Upload a new model.
 
-  Create a new AI Platform model.
+  ## EXAMPLES
+
+  To upload a model under project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} --container-image-uri="gcr.io/example/my-image"
+    --description=example-model --display-name=my-model
+    --artifact-uri='gs://bucket/path' --project=example --region=us-central1
   """
 
   def __init__(self, *args, **kwargs):
-    super(Upload, self).__init__(*args, **kwargs)
+    super(UploadV1, self).__init__(*args, **kwargs)
+    client_instance = apis.GetClientInstance(
+        constants.AI_PLATFORM_API_NAME,
+        constants.AI_PLATFORM_API_VERSION[constants.GA_VERSION])
+    self.messages = client.ModelsClient(
+        client=client_instance,
+        messages=client_instance.MESSAGES_MODULE).messages
+
+  @staticmethod
+  def Args(parser):
+    flags.AddUploadModelFlags(parser)
+
+  def Run(self, args):
+    region_ref = args.CONCEPTS.region.Parse()
+    region = region_ref.AsDict()['locationsId']
+    with endpoint_util.AiplatformEndpointOverrides(
+        version=constants.GA_VERSION, region=region):
+      client_instance = apis.GetClientInstance(
+          constants.AI_PLATFORM_API_NAME,
+          constants.AI_PLATFORM_API_VERSION[constants.GA_VERSION])
+      operation = client.ModelsClient(
+          client=client_instance,
+          messages=client_instance.MESSAGES_MODULE).UploadV1(
+              region_ref, args.display_name, args.description,
+              args.artifact_uri, args.container_image_uri,
+              args.container_command, args.container_args,
+              args.container_env_vars, args.container_ports,
+              args.container_predict_route, args.container_health_route)
+      return operations_util.WaitForOpMaybe(
+          operations_client=operations.OperationsClient(
+              client=client_instance, messages=client_instance.MESSAGES_MODULE),
+          op=operation,
+          op_ref=models_util.ParseModelOperation(operation.name))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UploadV1Beta1(UploadV1):
+  """Upload a new model.
+
+  ## EXAMPLES
+
+  To upload a model under project `example` in region
+  `us-central1`, run:
+
+    $ {command} --container-image-uri="gcr.io/example/my-image"
+    --description=example-model --display-name=my-model
+    --artifact-uri='gs://bucket/path' --project=example --region=us-central1
+  """
+
+  def __init__(self, *args, **kwargs):
+    super(UploadV1Beta1, self).__init__(*args, **kwargs)
     self.messages = client.ModelsClient().messages
 
   @staticmethod
   def Args(parser):
     flags.AddUploadModelFlags(parser)
+    flags.AddUploadModelBetaFlags(parser)
 
   def Run(self, args):
     region_ref = args.CONCEPTS.region.Parse()

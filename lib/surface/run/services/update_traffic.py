@@ -87,7 +87,8 @@ class AdjustTraffic(base.Command):
         required=True,
         prefixes=False)
     flags.AddAsyncFlag(parser)
-    flags.AddUpdateTrafficFlags(parser, cls.ReleaseTrack())
+    flags.AddUpdateTrafficFlags(parser)
+    flags.AddTrafficTagsFlags(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
     resource_printer.RegisterFormatter(
@@ -169,7 +170,6 @@ class BetaAdjustTraffic(AdjustTraffic):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
-    flags.AddTrafficTagsFlags(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -183,6 +183,3 @@ class AlphaAdjustTraffic(AdjustTraffic):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddBinAuthzBreakglassFlag(managed_group)
-
-    # Flags not specific to any platform
-    flags.AddTrafficTagsFlags(parser)

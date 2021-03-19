@@ -24,21 +24,24 @@ from googlecloudsdk.command_lib.org_policies import arguments
 from googlecloudsdk.command_lib.org_policies import utils
 from googlecloudsdk.core import log
 
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """\
+        Deletes an organization policy.
+        """,
+    'EXAMPLES':
+        """\
+        To delete the policy associated with the constraint 'gcp.resourceLocations'
+        and the Project 'foo-project', run:
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+        $ {command} gcp.resourceLocations --project=foo-project
+        """,
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.Command):
-  r"""Delete an organization policy.
-
-  Deletes an organization policy.
-
-  ## EXAMPLES
-
-  To delete the policy associated with the constraint 'gcp.resourceLocations'
-  and the Project 'foo-project', run:
-
-   $ {command} gcp.resourceLocations --project=foo-project
-  """
+  """Delete an organization policy."""
 
   @staticmethod
   def Args(parser):
@@ -63,3 +66,13 @@ class Delete(base.Command):
     delete_response = org_policy_api.DeletePolicy(policy_name)
     log.DeletedResource(policy_name, 'policy')
     return delete_response
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(Delete):
+  """Delete an organization policy."""
+  pass
+
+
+Delete.detailed_help = DETAILED_HELP

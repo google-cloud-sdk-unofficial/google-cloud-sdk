@@ -66,7 +66,10 @@ def _CommonArgs(parser,
                 supports_location_hint=False,
                 supports_erase_vss=False,
                 snapshot_csek=False,
-                image_csek=False):
+                image_csek=False,
+                supports_display_device=False,
+                supports_threads_per_core=False,
+                support_local_ssd_size=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddCreateDiskArgs(
@@ -103,7 +106,9 @@ def _CommonArgs(parser,
 
   instances_flags.AddImageArgs(parser, enable_snapshots=True)
   instances_flags.AddShieldedInstanceConfigArgs(parser)
-  instances_flags.AddDisplayDeviceArg(parser)
+
+  if supports_display_device:
+    instances_flags.AddDisplayDeviceArg(parser)
 
   instances_flags.AddReservationAffinityGroup(
       parser,
@@ -129,9 +134,17 @@ def _CommonArgs(parser,
 
   base.ASYNC_FLAG.AddToParser(parser)
 
+  if supports_threads_per_core:
+    instances_flags.AddThreadsPerCoreArgs(parser)
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.Command):
+  if support_local_ssd_size:
+    instances_flags.AddLocalSsdArgsWithSize(parser)
+  else:
+    instances_flags.AddLocalSsdArgs(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.Command):
   """Create Compute Engine virtual machine instances."""
 
   _support_nvdimm = False
@@ -148,8 +161,10 @@ class CreateAlpha(base.Command):
   _deprecate_maintenance_policy = True
   _support_create_disk_snapshots = True
   _support_boot_snapshot_uri = True
-  _support_enable_nested_virtualization = True
-  _support_threads_per_core = True
+  _support_enable_nested_virtualization = False
+  _support_threads_per_core = False
+  _support_display_device = False
+  _support_local_ssd_size = False
 
   _log_async = False
 
@@ -163,19 +178,20 @@ class CreateAlpha(base.Command):
         supports_location_hint=cls._support_location_hint,
         supports_erase_vss=cls._support_erase_vss,
         snapshot_csek=cls._support_source_snapshot_csek,
-        image_csek=cls._support_image_csek)
-    CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
+        image_csek=cls._support_image_csek,
+        supports_display_device=cls._support_display_device,
+        supports_threads_per_core=cls._support_threads_per_core,
+        support_local_ssd_size=cls._support_local_ssd_size)
+    cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeBulkSourceInstanceTemplateArg())
-    CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
-    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
+    cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
+    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPublicDnsArgs(parser, instance=True)
-    instances_flags.AddLocalSsdArgsWithSize(parser)
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddBulkCreateArgs(parser)
     instances_flags.AddBootDiskArgs(parser)
     instances_flags.AddNestedVirtualizationArgs(parser)
-    instances_flags.AddThreadsPerCoreArgs(parser)
 
   def Collection(self):
     return 'compute.instances'
@@ -216,9 +232,8 @@ class CreateAlpha(base.Command):
     instance_names = args.predefined_names or []
     instance_count = args.count or len(instance_names)
     per_instance_props = encoding.DictToAdditionalPropertyMessage(
-        {el: {} for el in instance_names},
-        compute_client.messages.BulkInsertInstanceResource.
-        PerInstancePropertiesValue)
+        {el: {} for el in instance_names}, compute_client.messages
+        .BulkInsertInstanceResource.PerInstancePropertiesValue)
 
     location_policy = self.GetLocationPolicy(args, compute_client.messages)
 
@@ -323,7 +338,8 @@ class CreateAlpha(base.Command):
         parsed_resource_policies.append(resource_policy_ref.SelfLink())
 
     display_device = None
-    if args.IsSpecified('enable_display_device'):
+    if self._support_display_device and args.IsSpecified(
+        'enable_display_device'):
       display_device = compute_client.messages.DisplayDevice(
           enableDisplay=args.enable_display_device)
 
@@ -345,9 +361,11 @@ class CreateAlpha(base.Command):
         tags=tags,
         resourcePolicies=parsed_resource_policies,
         shieldedInstanceConfig=shielded_instance_config,
-        displayDevice=display_device,
         reservationAffinity=reservation_affinity,
         advancedMachineFeatures=advanced_machine_features)
+
+    if self._support_display_device and display_device:
+      instance_properties.displayDevice = display_device
 
     if self._support_confidential_compute and confidential_instance_config:
       instance_properties.confidentialInstanceConfig = confidential_instance_config
@@ -464,4 +482,75 @@ class CreateAlpha(base.Command):
               self._status_message))
 
 
-CreateAlpha.detailed_help = DETAILED_HELP
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create Compute Engine virtual machine instances."""
+
+  _support_display_device = True
+
+  _log_async = False
+
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(
+        parser,
+        deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
+        enable_resource_policy=cls._support_disk_resource_policy,
+        supports_min_node_cpu=cls._support_min_node_cpu,
+        supports_location_hint=cls._support_location_hint,
+        supports_erase_vss=cls._support_erase_vss,
+        snapshot_csek=cls._support_source_snapshot_csek,
+        image_csek=cls._support_image_csek,
+        supports_display_device=cls._support_display_device,
+        supports_threads_per_core=cls._support_threads_per_core,
+        support_local_ssd_size=cls._support_local_ssd_size)
+    cls.SOURCE_INSTANCE_TEMPLATE = (
+        instances_flags.MakeBulkSourceInstanceTemplateArg())
+    cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
+    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
+    instances_flags.AddPublicDnsArgs(parser, instance=True)
+    instances_flags.AddConfidentialComputeArgs(parser)
+    instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
+    instances_flags.AddBulkCreateArgs(parser)
+    instances_flags.AddBootDiskArgs(parser)
+    instances_flags.AddNestedVirtualizationArgs(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create Compute Engine virtual machine instances."""
+
+  _support_enable_nested_virtualization = True
+  _support_threads_per_core = True
+  _support_display_device = True
+  _support_local_ssd_size = True
+
+  _log_async = False
+
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(
+        parser,
+        deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
+        enable_resource_policy=cls._support_disk_resource_policy,
+        supports_min_node_cpu=cls._support_min_node_cpu,
+        supports_location_hint=cls._support_location_hint,
+        supports_erase_vss=cls._support_erase_vss,
+        snapshot_csek=cls._support_source_snapshot_csek,
+        image_csek=cls._support_image_csek,
+        supports_display_device=cls._support_display_device,
+        supports_threads_per_core=cls._support_threads_per_core,
+        support_local_ssd_size=cls._support_local_ssd_size)
+    cls.SOURCE_INSTANCE_TEMPLATE = (
+        instances_flags.MakeBulkSourceInstanceTemplateArg())
+    cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
+    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
+    instances_flags.AddPublicDnsArgs(parser, instance=True)
+    instances_flags.AddConfidentialComputeArgs(parser)
+    instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
+    instances_flags.AddBulkCreateArgs(parser)
+    instances_flags.AddBootDiskArgs(parser)
+    instances_flags.AddNestedVirtualizationArgs(parser)
+
+
+Create.detailed_help = DETAILED_HELP

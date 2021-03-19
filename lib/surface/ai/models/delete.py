@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ai import operations
 from googlecloudsdk.api_lib.ai.models import client
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
@@ -28,17 +29,51 @@ from googlecloudsdk.command_lib.ai import models_util
 from googlecloudsdk.command_lib.ai import operations_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class DeleteBeta(base.DeleteCommand):
-  """Delete an existing AI Platform model."""
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DeleteV1(base.DeleteCommand):
+  """Delete an existing AI Platform model.
+
+  ## EXAMPLES
+
+  To delete a model ``123'' under project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} 123 --project=example --region=us-central1
+  """
 
   @staticmethod
   def Args(parser):
     flags.AddModelResourceArg(parser, 'to delete')
 
-  def _Run(self, args):
+  def _Run(self, args, model_ref, region):
+    with endpoint_util.AiplatformEndpointOverrides(
+        version=constants.GA_VERSION, region=region):
+      client_instance = apis.GetClientInstance(
+          constants.AI_PLATFORM_API_NAME,
+          constants.AI_PLATFORM_API_VERSION[constants.GA_VERSION])
+      return client.ModelsClient(
+          client=client_instance,
+          messages=client_instance.MESSAGES_MODULE).Delete(model_ref)
+
+  def Run(self, args):
     model_ref = args.CONCEPTS.model.Parse()
     region = model_ref.AsDict()['locationsId']
+    return self._Run(args, model_ref, region)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DeleteV1Beta1(DeleteV1):
+  """Delete an existing AI Platform model.
+
+  ## EXAMPLES
+
+  To delete a model `123` under project `example` in region
+  `us-central1`, run:
+
+    $ {command} 123 --project=example --region=us-central1
+  """
+
+  def _Run(self, args, model_ref, region):
     with endpoint_util.AiplatformEndpointOverrides(
         version=constants.BETA_VERSION, region=region):
       operation = client.ModelsClient().Delete(model_ref)
@@ -46,6 +81,3 @@ class DeleteBeta(base.DeleteCommand):
           operations_client=operations.OperationsClient(),
           op=operation,
           op_ref=models_util.ParseModelOperation(operation.name))
-
-  def Run(self, args):
-    return self._Run(args)

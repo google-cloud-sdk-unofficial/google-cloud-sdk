@@ -65,6 +65,84 @@ def _CommonArgs(parser):
       action=actions.StoreBooleanProperty(
           properties.VALUES.dataflow.print_only))
 
+  parser.add_argument(
+      '--staging-location',
+      help=('Default Google Cloud Storage location to stage temporary files. '
+            "(Must be a URL beginning with 'gs://'.)"),
+      type=arg_parsers.RegexpValidator(r'^gs://.*',
+                                       'Must begin with \'gs://\''))
+
+  parser.add_argument(
+      '--service-account-email',
+      type=arg_parsers.RegexpValidator(r'.*@.*\..*',
+                                       'must provide a valid email address'),
+      help='Default service account to run the workers as.')
+
+  parser.add_argument(
+      '--max-workers',
+      type=int,
+      help='Default maximum number of workers to run.')
+
+  parser.add_argument(
+      '--disable-public-ips',
+      action=actions.StoreBooleanProperty(
+          properties.VALUES.dataflow.disable_public_ips),
+      help='Cloud Dataflow workers must not use public IP addresses.')
+
+  parser.add_argument(
+      '--num-workers',
+      type=int,
+      help='Initial number of workers to use by default.')
+
+  parser.add_argument(
+      '--worker-machine-type',
+      help='Default type of machine to use for workers. Defaults to '
+      'server-specified.')
+
+  parser.add_argument(
+      '--subnetwork',
+      help='Default Compute Engine subnetwork for launching instances '
+      'to run your pipeline.')
+
+  parser.add_argument(
+      '--network',
+      help='Default Compute Engine network for launching instances to '
+      'run your pipeline.')
+
+  parser.add_argument(
+      '--dataflow-kms-key',
+      help='Default Cloud KMS key to protect the job resources.')
+
+  region_group = parser.add_mutually_exclusive_group()
+  region_group.add_argument(
+      '--worker-region',
+      help='Default region to run the workers in.')
+
+  region_group.add_argument(
+      '--worker-zone',
+      help='Default zone to run the workers in.')
+
+  parser.add_argument(
+      '--enable-streaming-engine',
+      action=actions.StoreBooleanProperty(
+          properties.VALUES.dataflow.enable_streaming_engine),
+      help='Enable Streaming Engine for the streaming job by default.')
+
+  parser.add_argument(
+      '--additional-experiments',
+      metavar='ADDITIONAL_EXPERIMENTS',
+      type=arg_parsers.ArgList(),
+      help=
+      ('Default experiments to pass to the job.'))
+
+  parser.add_argument(
+      '--additional-user-labels',
+      metavar='ADDITIONAL_USER_LABELS',
+      type=arg_parsers.ArgDict(),
+      action=arg_parsers.UpdateAction,
+      help=
+      ('Default user labels to pass to the job.'))
+
   image_building_args.add_argument(
       '--image-gcr-path',
       help=('The Google Container Registry location to store the flex '
@@ -126,6 +204,23 @@ def _CommonRun(args):
   Returns:
     A Job message.
   """
+  template_args = apis.TemplateArguments(
+      max_workers=args.max_workers,
+      num_workers=args.num_workers,
+      network=args.network,
+      subnetwork=args.subnetwork,
+      worker_machine_type=args.worker_machine_type,
+      kms_key_name=args.dataflow_kms_key,
+      staging_location=args.staging_location,
+      disable_public_ips=properties.VALUES.dataflow.disable_public_ips.GetBool(
+      ),
+      service_account_email=args.service_account_email,
+      worker_region=args.worker_region,
+      worker_zone=args.worker_zone,
+      enable_streaming_engine=properties.VALUES.dataflow.enable_streaming_engine
+      .GetBool(),
+      additional_experiments=args.additional_experiments,
+      additional_user_labels=args.additional_user_labels)
   image_path = args.image
   if not args.image:
     image_path = args.image_gcr_path
@@ -135,7 +230,7 @@ def _CommonRun(args):
 
   return apis.Templates.BuildAndStoreFlexTemplateFile(
       args.template_file_gcs_path, image_path,
-      args.metadata_file, args.sdk_language, args.print_only)
+      args.metadata_file, args.sdk_language, args.print_only, template_args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)

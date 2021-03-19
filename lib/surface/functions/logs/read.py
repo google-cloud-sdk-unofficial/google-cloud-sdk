@@ -74,7 +74,8 @@ class GetLogs(base.ListCommand):
         type=arg_parsers.BoundedInt(1, 1000),
         default=20,
         help=('Number of log entries to be fetched; must not be greater than '
-              '1000.'))
+              '1000. Note that the most recent entries in the specified time '
+              'range are returned, rather than the earliest.'))
     flags.AddMinLogLevelFlag(parser)
     parser.display_info.AddCacheUpdater(None)
 
@@ -119,7 +120,7 @@ class GetLogs(base.ListCommand):
     log_filter = ' '.join(log_filter)
 
     entries = list(
-        logging_common.FetchLogs(log_filter, order_by='ASC', limit=args.limit))
+        logging_common.FetchLogs(log_filter, order_by='DESC', limit=args.limit))
 
     if args.name and not entries:
       # Check if the function even exists in the given region.

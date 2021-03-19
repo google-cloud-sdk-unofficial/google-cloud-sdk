@@ -27,7 +27,6 @@ from googlecloudsdk.command_lib.spanner import resource_args
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Restore(base.RestoreCommand):
   """Restore a Cloud Spanner database."""
 
@@ -52,6 +51,10 @@ class Restore(base.RestoreCommand):
     """Register flags for this command."""
     resource_args.AddRestoreResourceArgs(parser)
     base.ASYNC_FLAG.AddToParser(parser)
+    encryption_group_parser = parser.add_argument_group()
+    resource_args.AddRestoreDbEncryptionTypeArg(encryption_group_parser)
+    resource_args.AddKmsKeyResourceArg(encryption_group_parser,
+                                       'to restore the Cloud Spanner database')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -63,34 +66,6 @@ class Restore(base.RestoreCommand):
     Returns:
       A message indicating database is restoring or when async, the operation.
     """
-    backup_ref = args.CONCEPTS.source.Parse()
-    database_ref = args.CONCEPTS.destination.Parse()
-
-    op = databases.Restore(database_ref, backup_ref)
-
-    if args.async_:
-      return log.status.Print(
-          'Restore database in progress. Operation name={}'.format(op.name))
-    return database_operations.Await(
-        op,
-        'Restoring backup {0} to database {1}'.format(backup_ref.Name(),
-                                                      database_ref.Name()))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaRestore(Restore):
-  """Restore a Cloud Spanner database with ALPHA features."""
-  __doc__ = Restore.__doc__
-
-  @staticmethod
-  def Args(parser):
-    Restore.Args(parser)
-    resource_args.AddRestoreDbEncryptionTypeArg(parser)
-    resource_args.AddKmsKeyResourceArg(parser,
-                                       'to restore the Cloud Spanner database')
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command."""
     backup_ref = args.CONCEPTS.source.Parse()
     database_ref = args.CONCEPTS.destination.Parse()
     encryption_type = resource_args.GetRestoreDbEncryptionType(args)

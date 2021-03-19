@@ -67,6 +67,7 @@ class Import(base.CreateCommand):
         required=False,
         choices=sorted(os_choices.OS_CHOICES_INSTANCE_IMPORT_BETA),
         help='Specifies the OS of the machine image being imported.')
+    daisy_utils.AddByolArg(parser)
     flags.AddZoneFlag(
         parser,
         'machine image',

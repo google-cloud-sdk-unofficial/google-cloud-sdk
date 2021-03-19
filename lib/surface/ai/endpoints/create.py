@@ -32,6 +32,13 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
+def _AddArgs(parser):
+  flags.GetDisplayNameArg('endpoint').AddToParser(parser)
+  flags.AddRegionResourceArg(parser, 'to create endpoint')
+  flags.GetDescriptionArg('endpoint').AddToParser(parser)
+  labels_util.AddCreateLabelsFlags(parser)
+
+
 def _Run(args, version):
   """Create a new AI Platform endpoint."""
   validation.ValidateDisplayName(args.display_name)
@@ -41,7 +48,19 @@ def _Run(args, version):
   with endpoint_util.AiplatformEndpointOverrides(version, region=args.region):
     endpoints_client = client.EndpointsClient(version=version)
     operation_client = operations.OperationsClient()
-    op = endpoints_client.CreateBeta(region_ref, args)
+    if version == constants.GA_VERSION:
+      op = endpoints_client.Create(
+          region_ref, args.display_name,
+          labels_util.ParseCreateArgs(
+              args, endpoints_client.messages.GoogleCloudAiplatformV1Endpoint
+              .LabelsValue), args.description)
+    else:
+      op = endpoints_client.CreateBeta(
+          region_ref, args.display_name,
+          labels_util.ParseCreateArgs(
+              args, endpoints_client.messages
+              .GoogleCloudAiplatformV1beta1Endpoint.LabelsValue),
+          args.description)
     response_msg = operations_util.WaitForOpMaybe(
         operation_client, op, endpoints_util.ParseOperation(op.name))
     if response_msg is not None:
@@ -52,16 +71,39 @@ def _Run(args, version):
     return response_msg
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CreateBeta(base.CreateCommand):
-  """Create a new AI Platform endpoint."""
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateGa(base.CreateCommand):
+  """Create a new AI Platform endpoint.
+
+  ## EXAMPLES
+
+  To create an endpoint under project ``example'' in region ``us-central1'',
+  run:
+
+    $ {command} --project=example --region=us-central1
+    --display-name=my_endpoint
+  """
 
   @staticmethod
   def Args(parser):
-    flags.GetDisplayNameArg('endpoint').AddToParser(parser)
-    flags.AddRegionResourceArg(parser, 'to create endpoint')
-    flags.GetDescriptionArg('endpoint').AddToParser(parser)
-    labels_util.AddCreateLabelsFlags(parser)
+    _AddArgs(parser)
+
+  def Run(self, args):
+    return _Run(args, constants.GA_VERSION)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class CreateBeta(CreateGa):
+  """Create a new AI Platform endpoint.
+
+  ## EXAMPLES
+
+  To create an endpoint under project ``example'' in region ``us-central1'',
+  run:
+
+    $ {command} --project=example --region=us-central1
+    --display-name=my_endpoint
+  """
 
   def Run(self, args):
     return _Run(args, constants.BETA_VERSION)

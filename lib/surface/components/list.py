@@ -65,6 +65,13 @@ class List(base.ListCommand):
         help='Show installed and available versions of all components.',
         hidden=True,
     )
+    parser.add_argument(
+        '--enable-fallback',
+        required=False,
+        action='store_true',
+        hidden=True,
+        help='Enable fallback from arm64 to x86_64 version for '
+             'darwin components.')
 
   def _SetFormat(self, args):
     attributes = [
@@ -82,6 +89,8 @@ class List(base.ListCommand):
         'id:label=ID',
         'size.size(zero="",min=1048576):label=Size:align=right',
         ])
+    if args.enable_fallback:
+      columns.append('platform:label=PLATFORM')
     args.GetDisplayInfo().AddFormat('table[{attributes}]({columns})'.format(
         attributes=','.join(attributes), columns=','.join(columns)))
 

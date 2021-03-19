@@ -562,7 +562,8 @@ def _RunCreate(compute_api,
             disk_size_gb=boot_disk_size_gb,
             image_uri=image_uri,
             kms_args=args,
-            support_kms=support_kms)
+            support_kms=support_kms,
+            disk_provisioned_iops=args.boot_disk_provisioned_iops)
     ]
   else:
     boot_disk_list = []

@@ -54,7 +54,7 @@ class List(commands.List):
     cluster_group = serverless_flags.GetClusterArgGroup(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
         '--namespace',
-        resource_args.GetNamespaceResourceSpec(),
+        resource_args.GetCoreNamespaceResourceSpec(),
         'Namespace to list triggers in.',
         required=True,
         prefixes=False)

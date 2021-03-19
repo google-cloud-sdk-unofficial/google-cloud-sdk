@@ -40,6 +40,12 @@ def _GetUri(endpoint):
   return ref.SelfLink()
 
 
+def _AddArgs(parser):
+  parser.display_info.AddFormat(_DEFAULT_FORMAT)
+  parser.display_info.AddUriFunc(_GetUri)
+  flags.AddRegionResourceArg(parser, 'to list endpoints')
+
+
 def _Run(args, version):
   region_ref = args.CONCEPTS.region.Parse()
   args.region = region_ref.AsDict()['locationsId']
@@ -47,16 +53,37 @@ def _Run(args, version):
     return client.EndpointsClient(version=version).List(region_ref)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class ListBeta(base.ListCommand):
-  """List existing AI Platform endpoints."""
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ListGa(base.ListCommand):
+  """List existing AI Platform endpoints.
+
+  ## EXAMPLES
+
+  To list the endpoints under project ``example'' in region ``us-central1'',
+  run:
+
+    $ {command} --project=example --region=us-central1
+  """
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(_DEFAULT_FORMAT)
-    parser.display_info.AddUriFunc(_GetUri)
-    flags.AddRegionResourceArg(parser, 'to list endpoints')
+    _AddArgs(parser)
+
+  def Run(self, args):
+    return _Run(args, constants.GA_VERSION)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class ListBeta(ListGa):
+  """List existing AI Platform endpoints.
+
+  ## EXAMPLES
+
+  To list the endpoints under project ``example'' in region ``us-central1'',
+  run:
+
+    $ {command} --project=example --region=us-central1
+  """
 
   def Run(self, args):
     return _Run(args, constants.BETA_VERSION)
-

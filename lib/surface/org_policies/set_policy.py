@@ -26,21 +26,24 @@ from googlecloudsdk.command_lib.org_policies import exceptions
 from googlecloudsdk.command_lib.org_policies import utils
 from googlecloudsdk.core import log
 
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """\
+      Sets an organization policy from a JSON or YAML file. The policy will be
+      created if it does not exist, or updated if it already exists.
+      """,
+    'EXAMPLES':
+        """\
+      To set the policy from the file on the path './sample_path', run:
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+        $ {command} ./sample_path
+      """,
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetPolicy(base.Command):
-  r"""Set an organization policy from a JSON or YAML file.
-
-  Sets an organization policy from a JSON or YAML file. The policy will be
-  created if it does not exist, or updated if it already exists.
-
-  ## EXAMPLES
-
-  To set the policy from the file on the path './sample_path', run:
-
-    $ {command} ./sample_path
-  """
+  """Set an organization policy from a JSON or YAML file."""
 
   @staticmethod
   def Args(parser):
@@ -86,3 +89,13 @@ class SetPolicy(base.Command):
     update_response = org_policy_api.UpdatePolicy(input_policy)
     log.UpdatedResource(input_policy.name, 'policy')
     return update_response
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SetPolicyALPHA(SetPolicy):
+  """Set an organization policy from a JSON or YAML file."""
+  pass
+
+
+SetPolicy.detailed_help = DETAILED_HELP

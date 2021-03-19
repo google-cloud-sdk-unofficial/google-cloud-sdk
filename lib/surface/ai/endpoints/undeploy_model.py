@@ -28,6 +28,12 @@ from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import operations_util
 
 
+def _AddArgs(parser):
+  flags.AddEndpointResourceArg(parser, 'to undeploy a model from')
+  flags.GetDeployedModelId().AddToParser(parser)
+  flags.GetTrafficSplitArg().AddToParser(parser)
+
+
 def _Run(args, version):
   """Undeploy a model fro man existing AI Platform endpoint."""
   endpoint_ref = args.CONCEPTS.endpoint.Parse()
@@ -35,20 +41,53 @@ def _Run(args, version):
   with endpoint_util.AiplatformEndpointOverrides(version, region=args.region):
     endpoints_client = client.EndpointsClient(version=version)
     operation_client = operations.OperationsClient()
-    op = endpoints_client.UndeployModelBeta(endpoint_ref, args)
+    if version == constants.GA_VERSION:
+      op = endpoints_client.UndeployModel(
+          endpoint_ref,
+          args.deployed_model_id,
+          traffic_split=args.traffic_split)
+    else:
+      op = endpoints_client.UndeployModelBeta(
+          endpoint_ref,
+          args.deployed_model_id,
+          traffic_split=args.traffic_split)
     return operations_util.WaitForOpMaybe(
         operation_client, op, endpoints_util.ParseOperation(op.name))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class UndeployModelBeta(base.Command):
-  """Undeploy a model from an existing AI Platform endpoint."""
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UndeployModelGa(base.Command):
+  """Undeploy a model from an existing AI Platform endpoint.
+
+  ## EXAMPLES
+
+  To undeploy a model ``456'' from an endpoint ``123'' under project ``example''
+  in region ``us-central1'', run:
+
+    $ {command} 123 --project=example --region=us-central1
+    --deployed-model-id=456
+  """
 
   @staticmethod
   def Args(parser):
-    flags.AddEndpointResourceArg(parser, 'to undeploy a model from')
-    flags.GetDeployedModelId().AddToParser(parser)
-    flags.GetTrafficSplitArg().AddToParser(parser)
+    _AddArgs(parser)
+
+  def Run(self, args):
+    _Run(args, constants.GA_VERSION)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class UndeployModelBeta(UndeployModelGa):
+  """Undeploy a model from an existing AI Platform endpoint.
+
+  ## EXAMPLES
+
+  To undeploy a model ``456'' from an endpoint ``123'' under project ``example''
+  in region ``us-central1'', run:
+
+    $ {command} 123 --project=example --region=us-central1
+    --deployed-model-id=456
+  """
 
   def Run(self, args):
     _Run(args, constants.BETA_VERSION)

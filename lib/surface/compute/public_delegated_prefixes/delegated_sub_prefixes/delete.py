@@ -27,20 +27,20 @@ from googlecloudsdk.command_lib.compute.public_delegated_prefixes import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.UpdateCommand):
-  r"""Deletes a Compute Engine delegated sub prefix.
+  r"""Deletes a Compute Engine delegated sub prefix."""
+  DETAILED_HELP = {
+      'EXAMPLES':
+          """\
+          To delete a delegated sub prefix for a global public delegated prefix:
 
-  ## EXAMPLES
+            $ {command} my-sub-prefix --public-delegated-prefix=my-pdp --global-public-delegated-prefix
 
-  To delete a delegated sub prefix for a global public delegated prefix:
+          To delete a delegated sub prefix for a regional public delegated prefix:
 
-    $ {command} my-sub-prefix --public-delegated-prefix=my-pdp \
-      --global-public-delegated-prefix
-
-  To delete a delegated sub prefix for a regional public delegated prefix:
-
-    $ {command} my-sub-prefix --public-delegated-prefix=my-pdp \
-      --public-delegated-prefix-region=us-east1
-  """
+            $ {command} my-sub-prefix --public-delegated-prefix=my-pdp --public-delegated-prefix-region=us-east1
+          """
+  }
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

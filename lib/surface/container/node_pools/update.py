@@ -188,12 +188,11 @@ class UpdateBeta(Update):
 
     flags.AddSystemConfigFlag(group, hidden=False)
 
-    # TODO(b/178746997): Unhide prior to Beta release.
     flags.AddNodeLabelsFlag(
-        group, for_node_pool=True, for_update=True, hidden=True)
+        group, for_node_pool=True, for_update=True)
     flags.AddNodeTaintsFlag(
-        group, for_node_pool=True, for_update=True, hidden=True)
-    flags.AddTagsNodePoolUpdate(group, hidden=True)
+        group, for_node_pool=True, for_update=True)
+    flags.AddTagsNodePoolUpdate(group)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -242,12 +241,11 @@ class UpdateAlpha(Update):
 
     flags.AddSystemConfigFlag(group, hidden=False)
 
-    # TODO(b/178746997): Unhide prior to Beta release.
     flags.AddNodeLabelsFlag(
-        group, for_node_pool=True, for_update=True, hidden=True)
+        group, for_node_pool=True, for_update=True)
     flags.AddNodeTaintsFlag(
-        group, for_node_pool=True, for_update=True, hidden=True)
-    flags.AddTagsNodePoolUpdate(group, hidden=True)
+        group, for_node_pool=True, for_update=True)
+    flags.AddTagsNodePoolUpdate(group)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)

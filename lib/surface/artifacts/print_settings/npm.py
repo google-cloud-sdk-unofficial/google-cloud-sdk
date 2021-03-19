@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import flags
-from googlecloudsdk.command_lib.artifacts import settings_util
+from googlecloudsdk.command_lib.artifacts.print_settings import settings_util
 from googlecloudsdk.core import log
 
 

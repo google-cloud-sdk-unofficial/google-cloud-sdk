@@ -17,15 +17,24 @@
     brief: Create a new group.
     description: Create a new group.
     examples: |
-      To create a new group:
+      To quickly create a new Google Groups discussion group with default settings:
 
-        $ {command} eng-discuss@foo.com  \
-            --organization="5149234212"  \
-            --with-initial-owner=WITH_INITIAL_OWNER  \
-            --display-name="Engineer Discuss"  \
-            --description="Group for engineering discussions"  \
-            --labels="cloudidentity.googleapis.com/groups.discussion_forum"
+        $ {command} eng-discuss@example.com --organization="example.com"
 
+      To create a new Google Groups discussion group with a display name and descripton:
+
+        $ {command} eng-discuss@example.com \
+            --organization="example.com" \
+            --display-name="Engineer Discuss" \
+            --description="Group for engineering discussions"
+
+      To create a new security group:
+
+        $ {command} security-group@example.com  \
+            --organization="example.com"  \
+            --group-type="security" \
+            --display-name="Security Group"  \
+            --description="Description of Security Group"
 
   arguments:
     params:
@@ -59,6 +68,17 @@
       help_text: |
         If specified the user making the request will be added as the initial owner of the group being
         created.
+      choices:
+      - arg_value: with-initial-owner
+        enum_value: with-initial-owner
+        help_text: |
+          The creator of the group will be the owner of the group. This is
+          the default for non-dynamic groups.
+      - arg_value: empty
+        enum_value: empty
+        help_text: |
+          The creator of the group will not be the owner of the group. This is
+          the default for dynamic groups.
 
     - arg_name: display-name
       api_field: group.displayName
@@ -82,12 +102,29 @@
         Example of a query:
         --dynamic-user-query="user.organizations.exists(org,org.title=='SWE')"
 
-    - arg_name: labels
-      required: true
-      type: str
-      help_text: |
-        Labels for group resource.
-        Example of labels "--labels cloudidentity.googleapis.com/groups.discussion_forum"
+    - group:
+        mutex: true
+        params:
+        - arg_name: labels
+          type: str
+          help_text: |
+            Labels for group resource.
+            Example of labels "--labels cloudidentity.googleapis.com/groups.discussion_forum"
+        - arg_name: group-type
+          help_text: |
+            The type of group to create. Setting group-type will add the
+            appropriate labels for the type of group being created.
+          choices:
+          - arg_value: discussion
+            enum_value: discussion
+            help_text: Creates a Google Groups discussion group.
+          - arg_value: dynamic
+            enum_value: dynamic
+            help_text: Creates a dynamic group.
+          - arg_value: security
+            enum_value: security
+            help_text: Creates a security group.
+          default: discussion
 
     - arg_name: posix-group
       release_tracks: [ALPHA]
@@ -122,22 +159,25 @@
       modify_request_hooks:
       - googlecloudsdk.command_lib.identity.groups.hooks:SetParent
       - googlecloudsdk.command_lib.identity.groups.hooks:SetEntityKey
-      - googlecloudsdk.command_lib.identity.groups.hooks:SetLabels
+      - googlecloudsdk.command_lib.identity.groups.hooks:SetLabelsCreate
       - googlecloudsdk.command_lib.identity.groups.hooks:SetDynamicUserQuery
+      - googlecloudsdk.command_lib.identity.groups.hooks:SetInitialOwner
     BETA:
       api_version: v1beta1
       modify_request_hooks:
       - googlecloudsdk.command_lib.identity.groups.hooks:SetParent
       - googlecloudsdk.command_lib.identity.groups.hooks:SetEntityKey
-      - googlecloudsdk.command_lib.identity.groups.hooks:SetLabels
+      - googlecloudsdk.command_lib.identity.groups.hooks:SetLabelsCreate
       - googlecloudsdk.command_lib.identity.groups.hooks:SetDynamicUserQuery
+      - googlecloudsdk.command_lib.identity.groups.hooks:SetInitialOwner
     GA:
       api_version: v1
       modify_request_hooks:
       - googlecloudsdk.command_lib.identity.groups.hooks:SetParent
       - googlecloudsdk.command_lib.identity.groups.hooks:SetEntityKey
-      - googlecloudsdk.command_lib.identity.groups.hooks:SetLabels
+      - googlecloudsdk.command_lib.identity.groups.hooks:SetLabelsCreate
       - googlecloudsdk.command_lib.identity.groups.hooks:SetDynamicUserQuery
+      - googlecloudsdk.command_lib.identity.groups.hooks:SetInitialOwner
 
   response:
     result_attribute: response

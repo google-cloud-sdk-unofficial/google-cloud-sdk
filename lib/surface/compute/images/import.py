@@ -185,18 +185,25 @@ class Import(base.CreateCommand):
       daisy_utils.AddAWSImageImportSourceArgs(import_from_aws)
 
     workflow = parser.add_mutually_exclusive_group()
-    workflow.add_argument(
-        '--os',
-        choices=sorted(cls._OS_CHOICES),
-        help='Specifies the OS of the disk image being imported.'
-    )
+    if cls.ReleaseTrack() == base.ReleaseTrack.GA:
+      workflow.add_argument(
+          '--os',
+          choices=sorted(cls._OS_CHOICES),
+          help='Specifies the OS of the disk image being imported.')
+    else:
+      os_group = workflow.add_group()
+      daisy_utils.AddByolArg(os_group)
+      os_group.add_argument(
+          '--os',
+          choices=sorted(cls._OS_CHOICES),
+          help='Specifies the OS of the disk image being imported.')
+
     workflow.add_argument(
         '--data-disk',
         help=('Specifies that the disk has no bootable OS installed on it. '
               'Imports the disk without making it bootable or installing '
               'Google tools on it.'),
-        action='store_true'
-    )
+        action='store_true')
     workflow.add_argument(
         '--custom-workflow',
         help=("""\
@@ -204,8 +211,7 @@ class Import(base.CreateCommand):
               should be relative to the image_import directory here: []({0}).
               For example: `debian/translate_debian_9.wf.json'""".format(
                   _WORKFLOWS_URL)),
-        hidden=True
-    )
+        hidden=True)
 
     daisy_utils.AddCommonDaisyArgs(parser)
 
@@ -360,6 +366,8 @@ class BaseImportStager(object):
     daisy_utils.AppendNetworkAndSubnetArgs(self.args, import_args)
     daisy_utils.AppendArg(import_args, 'description', self.args.description)
     daisy_utils.AppendArg(import_args, 'family', self.args.family)
+    if 'byol' in self.args:
+      daisy_utils.AppendBoolArg(import_args, 'byol', self.args.byol)
     if 'sysprep_windows' in self.args:
       daisy_utils.AppendBoolArg(import_args, 'sysprep_windows',
                                 self.args.sysprep_windows)

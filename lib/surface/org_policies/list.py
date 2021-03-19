@@ -23,6 +23,19 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.org_policies import arguments
 from googlecloudsdk.command_lib.org_policies import utils
 
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """\
+      Lists the policies set on a resource.
+      """,
+    'EXAMPLES':
+        """\
+      To list the policies set on the Project 'foo-project', run:
+
+      $ {command} --project=foo-project
+      """,
+}
+
 
 def HasListPolicy(spec):
   for rule in spec.rules:
@@ -36,19 +49,9 @@ def HasBooleanPolicy(spec):
   return any([rule.enforce is not None for rule in spec.rules])
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  r"""List the policies set on a resource.
-
-  Lists the policies set on a resource.
-
-  ## EXAMPLES
-
-  To list the policies set on the Project 'foo-project', run:
-
-    $ {command} --project=foo-project
-  """
+  """List the policies set on a resource."""
 
   @staticmethod
   def Args(parser):
@@ -91,3 +94,13 @@ class List(base.ListCommand):
           })
 
     return output
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListALPHA(List):
+  """List the policies set on a resource."""
+  pass
+
+
+List.detailed_help = DETAILED_HELP

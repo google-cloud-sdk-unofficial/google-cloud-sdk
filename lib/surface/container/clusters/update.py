@@ -672,7 +672,7 @@ class UpdateBeta(Update):
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1beta1', group, hidden=False)
     flags.AddKubernetesObjectsExportConfig(group)
     flags.AddDisableAutopilotFlag(group, hidden=True)
-    flags.AddILBSubsettingFlags(group, hidden=True)
+    flags.AddILBSubsettingFlags(group, hidden=False)
     flags.AddClusterDNSFlags(group, hidden=True)
     flags.AddCrossConnectSubnetworksMutationFlags(group)
 
@@ -803,7 +803,7 @@ class UpdateAlpha(Update):
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1alpha1', group, hidden=False)
     flags.AddKubernetesObjectsExportConfig(group)
     flags.AddDisableAutopilotFlag(group, hidden=True)
-    flags.AddILBSubsettingFlags(group, hidden=True)
+    flags.AddILBSubsettingFlags(group, hidden=False)
     flags.AddClusterDNSFlags(group, hidden=True)
     flags.AddCrossConnectSubnetworksMutationFlags(group)
 

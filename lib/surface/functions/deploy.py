@@ -71,6 +71,7 @@ class Deploy(base.Command):
     flags.AddVPCConnectorMutexGroup(parser)
     flags.AddEgressSettingsFlag(parser)
     flags.AddIngressSettingsFlag(parser)
+    flags.AddSecurityLevelFlag(parser)
 
   def Run(self, args):
     return command_v1.Run(args, track=self.ReleaseTrack())
@@ -87,14 +88,10 @@ class DeployBeta(base.Command):
 
     # Add additional args for this release track
     flags.AddBuildWorkerPoolMutexGroup(parser)
-    flags.AddSecurityLevelFlag(parser)
 
   def Run(self, args):
     return command_v1.Run(
-        args,
-        track=self.ReleaseTrack(),
-        enable_build_worker_pool=True,
-        enable_security_level=True)
+        args, track=self.ReleaseTrack(), enable_build_worker_pool=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -108,10 +105,10 @@ class DeployAlpha(base.Command):
 
     # Add additional args for this release track
     flags.AddBuildWorkerPoolMutexGroup(parser)
-    flags.AddSecurityLevelFlag(parser)
 
     # Add additional flags for GCFv2
     flags.AddRunServiceAccountFlag(parser)
+    flags.AddSignatureTypeFlag(parser)
     flags.AddTriggerEventFiltersFlag(parser)
     flags.AddTriggerLocationFlag(parser)
     flags.AddTriggerServiceAccountFlag(parser)
@@ -122,10 +119,7 @@ class DeployAlpha(base.Command):
       return command_v2.Run(args, self.ReleaseTrack())
     else:
       return command_v1.Run(
-          args,
-          track=self.ReleaseTrack(),
-          enable_build_worker_pool=True,
-          enable_security_level=True)
+          args, track=self.ReleaseTrack(), enable_build_worker_pool=True)
 
 
 DETAILED_HELP = {

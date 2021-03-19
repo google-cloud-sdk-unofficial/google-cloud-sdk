@@ -32,14 +32,37 @@ def _Run(args, version):
     return client.EndpointsClient(version=version).Get(endpoint_ref)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class DescribeBeta(base.DescribeCommand):
-  """Describe an existing AI Platform endpoint."""
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DescribeGa(base.DescribeCommand):
+  """Describe an existing AI Platform endpoint.
+
+  ## EXAMPLES
+
+  To describe an endpoint ``123'' under project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} 123 --project=example --region=us-central1
+  """
 
   @staticmethod
   def Args(parser):
     flags.AddEndpointResourceArg(parser, 'to describe')
 
   def Run(self, args):
-    return _Run(args, constants.BETA_VERSION)
+    return _Run(args, constants.GA_VERSION)
 
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class DescribeBeta(DescribeGa):
+  """Describe an existing AI Platform endpoint.
+
+  ## EXAMPLES
+
+  To describe an endpoint ``123'' under project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} 123 --project=example --region=us-central1
+  """
+
+  def Run(self, args):
+    return _Run(args, constants.BETA_VERSION)

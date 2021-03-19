@@ -115,7 +115,7 @@ ListInstances.detailed_help = {
           *   Viewer
 
           For more information regarding permissions required by
-          instance groups, refer to Compute Engine's access control guide :
-          https://cloud.google.com/compute/docs/access/iam-permissions#instancegroups_collection.
+          instance groups, refer to Compute Engine's access control guide:
+          https://cloud.google.com/compute/docs/access/iam.
         """,
 }

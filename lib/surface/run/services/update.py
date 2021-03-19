@@ -81,6 +81,7 @@ class Update(base.Command):
     flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
     flags.AddLabelsFlags(parser)
+    flags.AddGeneralAnnotationFlags(parser)
     flags.AddMinInstancesFlag(parser)
     flags.AddMaxInstancesFlag(parser)
     flags.AddCommandFlag(parser)
@@ -88,6 +89,7 @@ class Update(base.Command):
     flags.AddPortFlag(parser)
     flags.AddCpuFlag(parser)
     flags.AddNoTrafficFlag(parser)
+    flags.AddDeployTagFlag(parser)
     flags.AddServiceAccountFlag(parser)
     flags.AddImageArg(parser, required=False)
     flags.AddClientNameAndVersionFlags(parser)
@@ -174,7 +176,6 @@ class BetaUpdate(Update):
     flags.AddEndpointVisibilityEnum(cluster_group)
 
     # Flags not specific to any platform
-    flags.AddDeployTagFlag(parser)
     flags.AddIngressFlag(parser)
     flags.AddHttp2Flag(parser)
 
@@ -198,7 +199,6 @@ class AlphaUpdate(Update):
     flags.AddEndpointVisibilityEnum(cluster_group, deprecated=True)
 
     # Flags not specific to any platform
-    flags.AddDeployTagFlag(parser)
     flags.AddIngressFlag(parser)
     flags.AddHttp2Flag(parser)
 

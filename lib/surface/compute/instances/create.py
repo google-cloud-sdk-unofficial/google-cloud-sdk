@@ -101,7 +101,8 @@ def _CommonArgs(parser,
                 snapshot_csek=False,
                 image_csek=False,
                 support_multi_writer=False,
-                support_replica_zones=False):
+                support_replica_zones=False,
+                support_image_family_scope=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
@@ -142,7 +143,10 @@ def _CommonArgs(parser,
   instances_flags.AddNetworkArgs(parser)
   instances_flags.AddPrivateNetworkIpArgs(parser)
   instances_flags.AddHostnameArg(parser)
-  instances_flags.AddImageArgs(parser, enable_snapshots=True)
+  instances_flags.AddImageArgs(
+      parser,
+      enable_snapshots=True,
+      support_image_family_scope=support_image_family_scope)
   instances_flags.AddDeletionProtectionFlag(parser)
   instances_flags.AddPublicPtrArgs(parser, instance=True)
   instances_flags.AddNetworkTierArgs(parser, instance=True)
@@ -211,6 +215,7 @@ class Create(base.CreateCommand):
   _support_ipv6_network_tier = False
   _support_ipv6_public_ptr_domain = False
   _support_network_performance_configs = False
+  _support_image_family_scope = False
 
   @classmethod
   def Args(cls, parser):
@@ -221,7 +226,8 @@ class Create(base.CreateCommand):
         support_replica_zones=cls._support_replica_zones,
         enable_regional=cls._support_regional,
         support_network_interface_nic_type=cls
-        ._support_network_interface_nic_type)
+        ._support_network_interface_nic_type,
+        support_image_family_scope=cls._support_image_family_scope)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -290,9 +296,14 @@ class Create(base.CreateCommand):
     create_boot_disk = not (
         instance_utils.UseExistingBootDisk((args.disk or []) +
                                            (args.create_disk or [])))
-    image_uri = create_utils.GetImageUri(args, compute_client, create_boot_disk,
-                                         project, resource_parser,
-                                         confidential_vm)
+
+    image_family_scope = (args.image_family_scope
+                          if self._support_image_family_scope else None)
+
+    image_uri = create_utils.GetImageUri(
+        args, compute_client, create_boot_disk, project, resource_parser,
+        confidential_vm, image_family_scope=image_family_scope,
+        support_image_family_scope=self._support_image_family_scope)
 
     shielded_instance_config = create_utils.BuildShieldedInstanceConfigMessage(
         messages=compute_client.messages, args=args)
@@ -556,6 +567,8 @@ class CreateBeta(Create):
   _support_replica_zones = False
   _support_multi_writer = True
   _support_network_interface_nic_type = True
+  _support_network_performance_configs = True
+  _support_image_family_scope = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -584,7 +597,8 @@ class CreateBeta(Create):
         support_replica_zones=cls._support_replica_zones,
         support_multi_writer=cls._support_multi_writer,
         support_network_interface_nic_type=cls
-        ._support_network_interface_nic_type)
+        ._support_network_interface_nic_type,
+        support_image_family_scope=cls._support_image_family_scope)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -596,6 +610,7 @@ class CreateBeta(Create):
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_BETA_API_VERSION)
     instances_flags.AddConfidentialComputeArgs(parser)
+    instances_flags.AddNetworkPerformanceConfigsArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -626,6 +641,7 @@ class CreateAlpha(CreateBeta):
   _support_ipv6_network_tier = True
   _support_ipv6_public_ptr_domain = True
   _support_network_performance_configs = True
+  _support_image_family_scope = True
 
   @classmethod
   def Args(cls, parser):
@@ -642,7 +658,8 @@ class CreateAlpha(CreateBeta):
         snapshot_csek=cls._support_source_snapshot_csek,
         image_csek=cls._support_image_csek,
         support_replica_zones=cls._support_replica_zones,
-        support_multi_writer=cls._support_multi_writer)
+        support_multi_writer=cls._support_multi_writer,
+        support_image_family_scope=cls._support_image_family_scope)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)

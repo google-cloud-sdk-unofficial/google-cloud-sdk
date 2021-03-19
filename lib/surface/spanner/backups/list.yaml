@@ -38,21 +38,7 @@
         createTime: label=CREATION_TIME,
         expireTime: label=EXPIRATION_TIME,
         state: label=STATE,
+        encryptionInfo.encryptionType: label=ENCRYPTION_TYPE,
         sizeBytes: label=BACKUP_SIZE_IN_BYTES,
         referencingDatabases: label=IN_USE_BY
       )
-
-  ALPHA:
-    output:
-      format: |
-        table(
-          name.basename(): label=BACKUP,
-          database.basename(): label=SOURCE_DATABASE,
-          versionTime: label=VERSION_TIME,
-          createTime: label=CREATION_TIME,
-          expireTime: label=EXPIRATION_TIME,
-          state: label=STATE,
-          encryptionInfo.encryptionType: label=ENCRYPTION_TYPE,
-          sizeBytes: label=BACKUP_SIZE_IN_BYTES,
-          referencingDatabases: label=IN_USE_BY
-        )

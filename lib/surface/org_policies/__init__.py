@@ -20,20 +20,35 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """\
+        The gcloud org-policies command group lets you create and manipulate
+        Organization Policies.
+
+        The Organization Policy Service gives you centralized and programmatic control
+        over your organization's cloud resources. As the organization policy
+        administrator, you will be able to configure restrictions across your entire
+        resource hierarchy.
+
+        More information on Organization Policies can be found here:
+        https://cloud.google.com/resource-manager/docs/organization-policy/overview
+        """,
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class OrgPolicies(base.Group):
+  """Create and manage Organization Policies."""
+
+  category = base.IDENTITY_AND_SECURITY_CATEGORY
+
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
-class OrgPolicies(base.Group):
-  """Create and manage Organization Policies.
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class OrgPoliciesALPHA(OrgPolicies):
+  """Create and manage Organization Policies."""
+  pass
 
-  The gcloud org-policies command group lets you create and manipulate
-  Organization Policies.
 
-  The Organization Policy Service gives you centralized and programmatic control
-  over your organization's cloud resources. As the organization policy
-  administrator, you will be able to configure restrictions across your entire
-  resource hierarchy.
-
-  More information on Organization Policies can be found here:
-  https://cloud.google.com/resource-manager/docs/organization-policy/overview
-  """
+OrgPolicies.detailed_help = DETAILED_HELP

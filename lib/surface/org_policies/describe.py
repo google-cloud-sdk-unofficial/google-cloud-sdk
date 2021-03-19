@@ -23,21 +23,24 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.org_policies import arguments
 from googlecloudsdk.command_lib.org_policies import utils
 
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """\
+      Describes an organization policy.
+      """,
+    'EXAMPLES':
+        """\
+      To describe the policy associated with the constraint 'gcp.resourceLocations'
+      and the Project 'foo-project', run:
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+      $ {command} gcp.resourceLocations --project=foo-project
+      """,
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  r"""Describe an organization policy.
-
-  Describes an organization policy.
-
-  ## EXAMPLES
-
-  To describe the policy associated with the constraint 'gcp.resourceLocations'
-  and the Project 'foo-project', run:
-
-    $ {command} gcp.resourceLocations --project=foo-project
-  """
+  """Describe an organization policy."""
 
   @staticmethod
   def Args(parser):
@@ -71,3 +74,13 @@ class Describe(base.DescribeCommand):
       return org_policy_api.GetEffectivePolicy(policy_name)
 
     return org_policy_api.GetPolicy(policy_name)
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeALPHA(Describe):
+  """Describe an organization policy."""
+  pass
+
+
+Describe.detailed_help = DETAILED_HELP

@@ -29,6 +29,14 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
+def _AddArgs(parser):
+  flags.AddEndpointResourceArg(parser, 'to update')
+  flags.GetDisplayNameArg('endpoint', required=False).AddToParser(parser)
+  flags.GetDescriptionArg('endpoint').AddToParser(parser)
+  flags.AddTrafficSplitGroupArgs(parser)
+  labels_util.AddUpdateLabelsFlags(parser)
+
+
 def _Run(args, version):
   """Update an existing AI Platform endpoint."""
   validation.ValidateDisplayName(args.display_name)
@@ -38,8 +46,30 @@ def _Run(args, version):
   with endpoint_util.AiplatformEndpointOverrides(version, region=args.region):
     endpoints_client = client.EndpointsClient(version=version)
 
+    def GetLabels():
+      return endpoints_client.Get(endpoint_ref).labels
+
     try:
-      op = endpoints_client.PatchBeta(endpoint_ref, args)
+      if version == constants.GA_VERSION:
+        op = endpoints_client.Patch(
+            endpoint_ref,
+            labels_util.ProcessUpdateArgsLazy(
+                args, endpoints_client.messages.GoogleCloudAiplatformV1Endpoint
+                .LabelsValue, GetLabels),
+            display_name=args.display_name,
+            description=args.description,
+            traffic_split=args.traffic_split,
+            clear_traffic_split=args.clear_traffic_split)
+      else:
+        op = endpoints_client.PatchBeta(
+            endpoint_ref,
+            labels_util.ProcessUpdateArgsLazy(
+                args, endpoints_client.messages
+                .GoogleCloudAiplatformV1beta1Endpoint.LabelsValue, GetLabels),
+            display_name=args.display_name,
+            description=args.description,
+            traffic_split=args.traffic_split,
+            clear_traffic_split=args.clear_traffic_split)
     except errors.NoFieldsSpecifiedError:
       available_update_args = [
           'display_name',
@@ -59,17 +89,39 @@ def _Run(args, version):
       return op
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class UpdateBeta(base.UpdateCommand):
-  """Update an existing AI Platform endpoint."""
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateGa(base.UpdateCommand):
+  """Update an existing AI Platform endpoint.
+
+  ## EXAMPLES
+
+  To update an endpoint ``123'' under project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} 123 --project=example --region=us-central1
+    --display-name=new_name
+  """
 
   @staticmethod
   def Args(parser):
-    flags.AddEndpointResourceArg(parser, 'to update')
-    flags.GetDisplayNameArg('endpoint', required=False).AddToParser(parser)
-    flags.GetDescriptionArg('endpoint').AddToParser(parser)
-    flags.AddTrafficSplitGroupArgs(parser)
-    labels_util.AddUpdateLabelsFlags(parser)
+    _AddArgs(parser)
+
+  def Run(self, args):
+    return _Run(args, constants.GA_VERSION)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class UpdateBeta(UpdateGa):
+  """Update an existing AI Platform endpoint.
+
+  ## EXAMPLES
+
+  To update an endpoint ``123'' under project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} 123 --project=example --region=us-central1
+    --display-name=new_name
+  """
 
   def Run(self, args):
     return _Run(args, constants.BETA_VERSION)

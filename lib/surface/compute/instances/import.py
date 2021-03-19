@@ -164,6 +164,7 @@ class Import(base.CreateCommand):
         private_network_ip=args.private_network_ip,
         no_restart_on_failure=not args.restart_on_failure,
         os=args.os,
+        byol=getattr(args, 'byol', False),
         tags=args.tags,
         zone=properties.VALUES.compute.zone.Get(),
         project=args.project,
@@ -184,6 +185,7 @@ class ImportBeta(Import):
   @classmethod
   def Args(cls, parser):
     super(ImportBeta, cls).Args(parser)
+    daisy_utils.AddByolArg(parser)
 
 
 Import.detailed_help = {

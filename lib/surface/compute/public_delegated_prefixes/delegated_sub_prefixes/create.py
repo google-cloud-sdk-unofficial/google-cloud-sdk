@@ -27,20 +27,20 @@ from googlecloudsdk.command_lib.compute.public_delegated_prefixes import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.UpdateCommand):
-  r"""Creates a Compute Engine delegated sub prefix.
+  r"""Creates a Compute Engine delegated sub prefix."""
+  DETAILED_HELP = {
+      'EXAMPLES':
+          """\
+          To create a delegated sub prefix for a global public delegated prefix:
 
-  ## EXAMPLES
+            $ {command} my-sub-prefix --range=120.120.10.128/28 --public-delegated-prefix=my-pdp --global-public-delegated-prefix
 
-  To create a delegated sub prefix for a global public delegated prefix:
+          To create a delegated sub prefix for a regional public delegated prefix:
 
-    $ {command} my-sub-prefix --range=120.120.10.128/28 \
-      --public-delegated-prefix=my-pdp --global-public-delegated-prefix
-
-  To create a delegated sub prefix for a regional public delegated prefix:
-
-    $ {command} my-sub-prefix --range=120.120.10.128/30 --create-addresses \
-      --public-delegated-prefix=my-pdp --public-delegated-prefix-region=us-east1
-  """
+            $ {command} my-sub-prefix --range=120.120.10.128/30 --create-addresses --public-delegated-prefix=my-pdp --public-delegated-prefix-region=us-east1
+          """
+  }
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
