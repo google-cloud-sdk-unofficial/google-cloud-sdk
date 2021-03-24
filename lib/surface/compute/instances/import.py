@@ -173,6 +173,7 @@ class Import(base.CreateCommand):
         self.ReleaseTrack().id.lower() if self.ReleaseTrack() else None,
         hostname=getattr(args, 'hostname', None),
         no_address=getattr(args, 'no_address', False),
+        compute_service_account=getattr(args, 'compute_service_account', ''),
     )
 
 
@@ -186,6 +187,9 @@ class ImportBeta(Import):
   def Args(cls, parser):
     super(ImportBeta, cls).Args(parser)
     daisy_utils.AddByolArg(parser)
+    daisy_utils.AddComputeServiceAccountArg(
+        parser, 'instance import',
+        daisy_utils.IMPORT_ROLES_FOR_COMPUTE_SERVICE_ACCOUNT)
 
 
 Import.detailed_help = {

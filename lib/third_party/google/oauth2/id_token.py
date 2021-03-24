@@ -33,9 +33,6 @@ Example::
     id_info = id_token.verify_oauth2_token(
         token, request, 'my-client-id.example.com')
 
-    if id_info['iss'] != 'https://accounts.google.com':
-        raise ValueError('Wrong issuer.')
-
     userid = id_info['sub']
 
 By default, this will re-fetch certificates for each verification. Because
@@ -53,7 +50,7 @@ library like `CacheControl`_ to create a cache-aware
     cached_session = cachecontrol.CacheControl(session)
     request = google.auth.transport.requests.Request(session=cached_session)
 
-.. _OpenID Connect ID Token:
+.. _OpenID Connect ID Tokens:
     http://openid.net/specs/openid-connect-core-1_0.html#IDToken
 .. _CacheControl: https://cachecontrol.readthedocs.io
 """
@@ -79,6 +76,8 @@ _GOOGLE_APIS_CERTS_URL = (
     "https://www.googleapis.com/robot/v1/metadata/x509"
     "/securetoken@system.gserviceaccount.com"
 )
+
+_GOOGLE_ISSUERS = ["accounts.google.com", "https://accounts.google.com"]
 
 
 def _fetch_certs(request, certs_url):
@@ -140,10 +139,22 @@ def verify_oauth2_token(id_token, request, audience=None):
 
     Returns:
         Mapping[str, Any]: The decoded token.
+
+    Raises:
+        exceptions.GoogleAuthError: If the issuer is invalid.
     """
-    return verify_token(
+    idinfo = verify_token(
         id_token, request, audience=audience, certs_url=_GOOGLE_OAUTH2_CERTS_URL
     )
+
+    if idinfo["iss"] not in _GOOGLE_ISSUERS:
+        raise exceptions.GoogleAuthError(
+            "Wrong issuer. 'iss' should be one of the following: {}".format(
+                _GOOGLE_ISSUERS
+            )
+        )
+
+    return idinfo
 
 
 def verify_firebase_token(id_token, request, audience=None):

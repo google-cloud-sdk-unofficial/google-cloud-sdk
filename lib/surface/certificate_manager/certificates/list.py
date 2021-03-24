@@ -28,6 +28,7 @@ table(
     name.scope(certificates),
     subjectAlternativeNames.sansToString(undefined=''):label=SUBJECT_ALTERNATIVE_NAMES,
     description,
+    scope,
     expireTime.date('%Y-%m-%d %H:%M:%S %Oz', undefined=''),
     createTime.date('%Y-%m-%d %H:%M:%S %Oz', undefined=''),
     updateTime.date('%Y-%m-%d %H:%M:%S %Oz', undefined='')

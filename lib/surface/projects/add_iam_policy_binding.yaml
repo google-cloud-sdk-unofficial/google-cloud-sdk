@@ -18,12 +18,6 @@ help_text:
 
       $ {command} test-proj1@example.domain.com --member='serviceAccount:test-proj1@example.domain.com' --role='roles/editor'
 
-    To add an IAM policy binding for the role of 'roles/editor' for all
-    authenticated users on a project with identifier 'example-project-id-1',
-    run:
-
-      $ {command} example-project-id-1 --member='allAuthenticatedUsers' --role='roles/editor'
-
     To add an IAM policy binding which expires at the end of the year 2018 for
     the role of 'roles/browser' and the user 'test-user@gmail.com' on a project
     with identifier 'example-project-id-1', run:

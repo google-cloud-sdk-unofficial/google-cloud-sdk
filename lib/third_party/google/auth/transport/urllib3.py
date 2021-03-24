@@ -17,6 +17,7 @@
 from __future__ import absolute_import
 
 import logging
+import os
 import warnings
 
 # Certifi is Mozilla's certificate bundle. Urllib3 needs a certificate bundle
@@ -45,8 +46,10 @@ except ImportError as caught_exc:  # pragma: NO COVER
 import six
 import urllib3.exceptions  # pylint: disable=ungrouped-imports
 
+from google.auth import environment_vars
 from google.auth import exceptions
 from google.auth import transport
+from google.oauth2 import service_account
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -202,13 +205,18 @@ class AuthorizedHttp(urllib3.request.RequestMethods):
     credentials' headers to the request and refreshing credentials as needed.
 
     This class also supports mutual TLS via :meth:`configure_mtls_channel`
-    method. If client_cert_callback is provided, client certificate and private
+    method. In order to use this method, the `GOOGLE_API_USE_CLIENT_CERTIFICATE`
+    environment variable must be explicitly set to `true`, otherwise it does
+    nothing. Assume the environment is set to `true`, the method behaves in the
+    following manner:
+    If client_cert_callback is provided, client certificate and private
     key are loaded using the callback; if client_cert_callback is None,
     application default SSL credentials will be used. Exceptions are raised if
     there are problems with the certificate, private key, or the loading process,
     so it should be called within a try/except block.
 
-    First we create an :class:`AuthorizedHttp` instance and specify the endpoints::
+    First we set the environment variable to `true`, then create an :class:`AuthorizedHttp`
+    instance and specify the endpoints::
 
         regular_endpoint = 'https://pubsub.googleapis.com/v1/projects/{my_project_id}/topics'
         mtls_endpoint = 'https://pubsub.mtls.googleapis.com/v1/projects/{my_project_id}/topics'
@@ -255,6 +263,9 @@ class AuthorizedHttp(urllib3.request.RequestMethods):
             retried.
         max_refresh_attempts (int): The maximum number of times to attempt to
             refresh the credentials and retry the request.
+        default_host (Optional[str]): A host like "pubsub.googleapis.com".
+            This is used when a self-signed JWT is created from service
+            account credentials.
     """
 
     def __init__(
@@ -263,6 +274,7 @@ class AuthorizedHttp(urllib3.request.RequestMethods):
         http=None,
         refresh_status_codes=transport.DEFAULT_REFRESH_STATUS_CODES,
         max_refresh_attempts=transport.DEFAULT_MAX_REFRESH_ATTEMPTS,
+        default_host=None,
     ):
         if http is None:
             self.http = _make_default_http()
@@ -274,17 +286,33 @@ class AuthorizedHttp(urllib3.request.RequestMethods):
         self.credentials = credentials
         self._refresh_status_codes = refresh_status_codes
         self._max_refresh_attempts = max_refresh_attempts
+        self._default_host = default_host
         # Request instance used by internal methods (for example,
         # credentials.refresh).
         self._request = Request(self.http)
+
+        # https://google.aip.dev/auth/4111
+        # Attempt to use self-signed JWTs when a service account is used.
+        # A default host must be explicitly provided.
+        if (
+            isinstance(self.credentials, service_account.Credentials)
+            and self._default_host
+        ):
+            self.credentials._create_self_signed_jwt(
+                "https://{}/".format(self._default_host)
+            )
 
         super(AuthorizedHttp, self).__init__()
 
     def configure_mtls_channel(self, client_cert_callback=None):
         """Configures mutual TLS channel using the given client_cert_callback or
-        application default SSL credentials. Returns True if the channel is
-        mutual TLS and False otherwise. Note that the `http` provided in the
-        constructor will be overwritten.
+        application default SSL credentials. The behavior is controlled by
+        `GOOGLE_API_USE_CLIENT_CERTIFICATE` environment variable.
+        (1) If the environment variable value is `true`, the function returns True
+        if the channel is mutual TLS and False otherwise. The `http` provided
+        in the constructor will be overwritten.
+        (2) If the environment variable is not set or `false`, the function does
+        nothing and it always return False.
 
         Args:
             client_cert_callback (Optional[Callable[[], (bytes, bytes)]]):
@@ -300,6 +328,12 @@ class AuthorizedHttp(urllib3.request.RequestMethods):
             google.auth.exceptions.MutualTLSChannelError: If mutual TLS channel
                 creation failed for any reason.
         """
+        use_client_cert = os.getenv(
+            environment_vars.GOOGLE_API_USE_CLIENT_CERTIFICATE, "false"
+        )
+        if use_client_cert != "true":
+            return False
+
         try:
             import OpenSSL
         except ImportError as caught_exc:

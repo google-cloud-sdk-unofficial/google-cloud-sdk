@@ -54,7 +54,7 @@ class Gcloud(base.Group):
     # spec).
     parser.add_argument(
         '--impersonate-service-account',
-        metavar='SERVICE_ACCOUNT_EMAIL',
+        metavar='SERVICE_ACCOUNT_EMAILS',
         help='For this gcloud invocation, all API requests will be '
              'made as the given service account instead of the currently '
              'selected account. This is done without needing to create, '
@@ -63,7 +63,20 @@ class Gcloud(base.Group):
              'selected account must have an IAM role that includes the '
              'iam.serviceAccounts.getAccessToken permission for the service '
              'account. The roles/iam.serviceAccountTokenCreator role has '
-             'this permission or you may create a custom role.',
+             'this permission or you may create a custom role. '
+             'A list of service accounts, separated with comma, can be '
+             'specified. In such cases, it creates an impersonation '
+             'delegation chain. Any given service account in the list must '
+             'have the roles/iam.serviceAccountTokenCreator role on its '
+             'subsequent service account. For example, when '
+             '--impersonate-service-account=sv1@developer.gserviceaccount.com,'
+             'sv2@developer.gserviceaccount.com, the active account must have '
+             'the roles/iam.serviceAccountTokenCreator role on '
+             'sv1@developer.gserviceaccount.com which must has the '
+             'roles/iam.serviceAccountTokenCreator role on '
+             'sv2@developer.gserviceaccount.com. '
+             'sv2@developer.gserviceaccount.com is target impersonated service '
+             'account and sv1@developer.gserviceaccount.com is the delegate.',
         action=actions.StoreProperty(
             properties.VALUES.auth.impersonate_service_account))
     common_args.ProjectArgument().AddToParser(parser)

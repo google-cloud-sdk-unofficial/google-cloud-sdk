@@ -26,7 +26,8 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Start(base.Command):
   """Start a cluster."""
 
@@ -74,9 +75,3 @@ class Start(base.Command):
         timeout_s=args.timeout)
 
     return operation
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class StartGA(Start):
-  """Start a cluster."""

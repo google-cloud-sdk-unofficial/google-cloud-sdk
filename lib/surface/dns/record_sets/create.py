@@ -26,8 +26,7 @@ from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(base.CreateCommand):
+class Create(base.CreateCommand):
   """Create a record-set in a managed-zone.
 
   This command creates a record-set contained within the specified
@@ -54,7 +53,8 @@ class CreateBeta(base.CreateCommand):
     parser.display_info.AddFormat(flags.RESOURCERECORDSETS_FORMAT)
 
   def Run(self, args):
-    api_version = 'v1beta2'
+    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+
     messages = apis.GetMessagesModule('dns', api_version)
 
     dns_client = util.GetApiClient(api_version)

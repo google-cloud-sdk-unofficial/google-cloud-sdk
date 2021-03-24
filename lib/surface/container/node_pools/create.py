@@ -108,7 +108,6 @@ for examples.
 """)
   parser.display_info.AddFormat(util.NODEPOOLS_FORMAT)
   flags.AddNodeVersionFlag(parser)
-  flags.AddAcceleratorArgs(parser)
   flags.AddDiskTypeFlag(parser)
   flags.AddMetadataFlags(parser)
   flags.AddShieldedInstanceFlags(parser)
@@ -169,6 +168,7 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _Args(parser)
+    flags.AddAcceleratorArgs(parser, enable_gpu_partition=False)
     flags.AddBootDiskKmsKeyFlag(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)
@@ -249,6 +249,7 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
+    flags.AddAcceleratorArgs(parser, enable_gpu_partition=True)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDsBetaFlags(parser, for_node_pool=True)
     flags.AddBootDiskKmsKeyFlag(parser)
@@ -310,6 +311,7 @@ class CreateAlpha(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
+    flags.AddAcceleratorArgs(parser, enable_gpu_partition=True)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=False)
     flags.AddLocalSSDsAlphaFlags(parser, for_node_pool=True)

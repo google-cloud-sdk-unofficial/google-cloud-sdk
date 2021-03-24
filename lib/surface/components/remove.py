@@ -60,13 +60,6 @@ class Remove(base.SilentCommand):
         action='store_true',
         hidden=True,
         help='THIS ARGUMENT NEEDS HELP TEXT.')
-    parser.add_argument(
-        '--enable-fallback',
-        required=False,
-        action='store_true',
-        hidden=True,
-        help='Enable fallback from arm64 to x86_64 version for '
-             'darwin components.')
 
   def Run(self, args):
     """Runs the list command."""

@@ -193,6 +193,7 @@ class AlphaUpdate(Update):
     flags.AddSandboxArg(managed_group)
     flags.AddBinAuthzPolicyFlags(managed_group)
     flags.AddBinAuthzBreakglassFlag(managed_group)
+    flags.AddCmekKeyFlag(managed_group)
 
     # Flags only supported on GKE and Knative
     cluster_group = flags.GetClusterArgGroup(parser)

@@ -36,7 +36,12 @@ class List(base.ListCommand):
 
   detailed_help = {
       'DESCRIPTION':
-          '{description}',
+          """\
+          {description}
+
+          This command queries cluster across all locations unless either
+          '--region' or '--zone' are specified.
+      """,
       'EXAMPLES':
           """\
           To list existing clusters in all locations, run:

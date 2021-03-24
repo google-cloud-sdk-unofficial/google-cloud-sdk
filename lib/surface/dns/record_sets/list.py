@@ -74,13 +74,7 @@ class List(base.ListCommand):
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
-    api_version = 'v1'
-    # If in the future there are differences between API version, do NOT use
-    # this patter of checking ReleaseTrack. Break this into multiple classes.
-    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
-      api_version = 'v1beta2'
-    elif self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      api_version = 'v1alpha2'
+    api_version = util.GetApiFromTrack(self.ReleaseTrack())
 
     dns_client = util.GetApiClient(api_version)
 

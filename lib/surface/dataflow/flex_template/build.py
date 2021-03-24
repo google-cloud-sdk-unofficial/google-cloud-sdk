@@ -153,8 +153,9 @@ def _CommonArgs(parser):
            'https://cloud.google.com/container-registry/docs/overview '
            'for available multi-regions')),
       required=True)
-
-  image_building_args.add_argument(
+  pipeline_args = image_building_args.add_mutually_exclusive_group(
+      required=True)
+  pipeline_args.add_argument(
       '--jar',
       metavar='JAR',
       type=arg_parsers.ArgList(),
@@ -163,8 +164,19 @@ def _CommonArgs(parser):
             'dependent jar files required for the flex template classpath. '
             'You can pass them as a comma separated list or repeat '
             'individually with --jar flag. Ex: --jar="code.jar,dep.jar" or '
-            '--jar code.jar, --jar dep.jar.'),
-      required=True)
+            '--jar code.jar, --jar dep.jar.'))
+
+  pipeline_args.add_argument(
+      '--py-path',
+      metavar='PY_PATH',
+      type=arg_parsers.ArgList(),
+      action=arg_parsers.UpdateAction,
+      help=('Local path to your dataflow pipeline python files and all their '
+            'dependent files required for the flex template classpath. '
+            'You can pass them as a comma separated list or repeat '
+            'individually with --py-path flag. '
+            'Ex: --py-path="path/pipleline/,path/dependency/" or '
+            '--py-path path/pipleline/, --py-path path/dependency/.'))
 
   image_building_args.add_argument(
       '--flex-template-base-image',
@@ -175,8 +187,8 @@ def _CommonArgs(parser):
             'the container. You can also provide a specific version from '
             'this link  https://gcr.io/dataflow-templates-base/'),
       type=arg_parsers.RegexpValidator(
-          r'^JAVA11$|^JAVA8$|^gcr.io/.*',
-          'Must be JAVA11 or JAVA8 or begin with \'gcr.io/\''),
+          r'^JAVA11$|^JAVA8$|^PYTHON3$|^gcr.io/.*',
+          'Must be JAVA11, JAVA8, PYTHON3 or begin with \'gcr.io/\''),
       required=True)
 
   image_building_args.add_argument(
@@ -188,10 +200,14 @@ def _CommonArgs(parser):
       ('Environment variables to create for the Dockerfile. '
        'You can pass them as a comma separated list or repeat individually '
        'with --env flag. Ex: --env="A=B,C=D" or --env A=B, --env C=D.'
+       'When you reference files/dir in env variables, please specify relative '
+       'path to the paths passed via --py-path.Ex: if you pass. '
+       '--py-path="path/pipleline/" then set '
+       'FLEX_TEMPLATE_PYTHON_PY_FILE="pipeline/pipeline.py" '
        'You can find the list of supported environment variables in this '
        'link. https://cloud.google.com/dataflow/docs/guides/templates/'
-       'troubleshooting-flex-templates'
-       '#setting_required_dockerfile_environment_variables'),
+       'configuring-flex-templates'
+       '#setting_required_dockerfile_environment_variables.'),
       required=True)
 
 
@@ -224,9 +240,10 @@ def _CommonRun(args):
   image_path = args.image
   if not args.image:
     image_path = args.image_gcr_path
-    apis.Templates.BuildAndStoreFlexTemplateImage(
-        args.image_gcr_path, args.flex_template_base_image, args.jar, args.env,
-        args.sdk_language)
+    apis.Templates.BuildAndStoreFlexTemplateImage(args.image_gcr_path,
+                                                  args.flex_template_base_image,
+                                                  args.jar, args.py_path,
+                                                  args.env, args.sdk_language)
 
   return apis.Templates.BuildAndStoreFlexTemplateFile(
       args.template_file_gcs_path, image_path,

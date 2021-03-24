@@ -26,7 +26,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Update(base.Command):
   """Update a Cloud Spanner instance."""
 

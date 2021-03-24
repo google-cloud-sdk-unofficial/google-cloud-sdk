@@ -26,7 +26,8 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Stop(base.Command):
   """Stop a cluster."""
 
@@ -74,9 +75,3 @@ class Stop(base.Command):
         timeout_s=args.timeout)
 
     return operation
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class StopGA(Stop):
-  """Stop a cluster."""

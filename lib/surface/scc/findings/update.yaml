@@ -24,10 +24,7 @@
     - googlecloudsdk.command_lib.scc.findings.request_hooks:UpdateFindingsReqHook
 
   arguments:
-
-    resource:
-      help_text: The finding you want to update.
-      spec: !REF googlecloudsdk.command_lib.scc.resources:finding
+    additional_arguments_hook: googlecloudsdk.command_lib.scc.findings.resource_hooks:AppendFindingArg
 
     params:
     - !REF googlecloudsdk.command_lib.scc.findings.flags:event_time

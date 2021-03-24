@@ -82,7 +82,9 @@ from google.oauth2 import _client
 _DEFAULT_TOKEN_LIFETIME_SECS = 3600  # 1 hour in seconds
 
 
-class Credentials(credentials.Signing, credentials.Scoped, credentials.Credentials):
+class Credentials(
+    credentials.Signing, credentials.Scoped, credentials.CredentialsWithQuotaProject
+):
     """Service account credentials
 
     Usually, you'll create these credentials with one of the helper
@@ -124,6 +126,7 @@ class Credentials(credentials.Signing, credentials.Scoped, credentials.Credentia
         service_account_email,
         token_uri,
         scopes=None,
+        default_scopes=None,
         subject=None,
         project_id=None,
         quota_project_id=None,
@@ -133,8 +136,10 @@ class Credentials(credentials.Signing, credentials.Scoped, credentials.Credentia
         Args:
             signer (google.auth.crypt.Signer): The signer used to sign JWTs.
             service_account_email (str): The service account's email.
-            scopes (Sequence[str]): Scopes to request during the authorization
-                grant.
+            scopes (Sequence[str]): User-defined scopes to request during the
+                authorization grant.
+            default_scopes (Sequence[str]): Default scopes passed by a
+                Google client library. Use 'scopes' for user-defined scopes.
             token_uri (str): The OAuth 2.0 Token URI.
             subject (str): For domain-wide delegation, the email address of the
                 user to for which to request delegated access.
@@ -153,12 +158,15 @@ class Credentials(credentials.Signing, credentials.Scoped, credentials.Credentia
         super(Credentials, self).__init__()
 
         self._scopes = scopes
+        self._default_scopes = default_scopes
         self._signer = signer
         self._service_account_email = service_account_email
         self._subject = subject
         self._project_id = project_id
         self._quota_project_id = quota_project_id
         self._token_uri = token_uri
+
+        self._jwt_credentials = None
 
         if additional_claims is not None:
             self._additional_claims = additional_claims
@@ -238,11 +246,6 @@ class Credentials(credentials.Signing, credentials.Scoped, credentials.Credentia
         return self._project_id
 
     @property
-    def quota_project_id(self):
-        """Project ID to use for quota and billing purposes."""
-        return self._quota_project_id
-
-    @property
     def requires_scopes(self):
         """Checks if the credentials requires scopes.
 
@@ -252,11 +255,12 @@ class Credentials(credentials.Signing, credentials.Scoped, credentials.Credentia
         return True if not self._scopes else False
 
     @_helpers.copy_docstring(credentials.Scoped)
-    def with_scopes(self, scopes):
+    def with_scopes(self, scopes, default_scopes=None):
         return self.__class__(
             self._signer,
             service_account_email=self._service_account_email,
             scopes=scopes,
+            default_scopes=default_scopes,
             token_uri=self._token_uri,
             subject=self._subject,
             project_id=self._project_id,
@@ -278,6 +282,7 @@ class Credentials(credentials.Signing, credentials.Scoped, credentials.Credentia
             self._signer,
             service_account_email=self._service_account_email,
             scopes=self._scopes,
+            default_scopes=self._default_scopes,
             token_uri=self._token_uri,
             subject=subject,
             project_id=self._project_id,
@@ -304,6 +309,7 @@ class Credentials(credentials.Signing, credentials.Scoped, credentials.Credentia
             self._signer,
             service_account_email=self._service_account_email,
             scopes=self._scopes,
+            default_scopes=self._default_scopes,
             token_uri=self._token_uri,
             subject=self._subject,
             project_id=self._project_id,
@@ -311,20 +317,13 @@ class Credentials(credentials.Signing, credentials.Scoped, credentials.Credentia
             additional_claims=new_additional_claims,
         )
 
+    @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):
-        """Returns a copy of these credentials with a modified quota project.
 
-        Args:
-            quota_project_id (str): The project to use for quota and
-            billing purposes
-
-        Returns:
-            google.auth.service_account.Credentials: A new credentials
-                instance.
-        """
         return self.__class__(
             self._signer,
             service_account_email=self._service_account_email,
+            default_scopes=self._default_scopes,
             scopes=self._scopes,
             token_uri=self._token_uri,
             subject=self._subject,
@@ -368,16 +367,30 @@ class Credentials(credentials.Signing, credentials.Scoped, credentials.Credentia
 
     @_helpers.copy_docstring(credentials.Credentials)
     def refresh(self, request):
-        assertion = self._make_authorization_grant_assertion()
-        access_token, expiry, _ = _client.jwt_grant(request, self._token_uri, assertion)
-        self.token = access_token
-        self.expiry = expiry
+        if self._jwt_credentials is not None:
+            self._jwt_credentials.refresh(request)
+            self.token = self._jwt_credentials.token
+            self.expiry = self._jwt_credentials.expiry
+        else:
+            assertion = self._make_authorization_grant_assertion()
+            access_token, expiry, _ = _client.jwt_grant(
+                request, self._token_uri, assertion
+            )
+            self.token = access_token
+            self.expiry = expiry
 
-    @_helpers.copy_docstring(credentials.Credentials)
-    def apply(self, headers, token=None):
-        super(Credentials, self).apply(headers, token=token)
-        if self.quota_project_id is not None:
-            headers["x-goog-user-project"] = self.quota_project_id
+    def _create_self_signed_jwt(self, audience):
+        """Create a self-signed JWT from the credentials if requirements are met.
+
+        Args:
+            audience (str): The service URL. ``https://[API_ENDPOINT]/``
+        """
+        # https://google.aip.dev/auth/4111
+        # If the user has not defined scopes, create a self-signed jwt
+        if not self.scopes:
+            self._jwt_credentials = jwt.Credentials.from_signing_credentials(
+                self, audience
+            )
 
     @_helpers.copy_docstring(credentials.Signing)
     def sign_bytes(self, message):
@@ -394,7 +407,7 @@ class Credentials(credentials.Signing, credentials.Scoped, credentials.Credentia
         return self._service_account_email
 
 
-class IDTokenCredentials(credentials.Signing, credentials.Credentials):
+class IDTokenCredentials(credentials.Signing, credentials.CredentialsWithQuotaProject):
     """Open ID Connect ID Token-based service account credentials.
 
     These credentials are largely similar to :class:`.Credentials`, but instead
@@ -411,12 +424,14 @@ class IDTokenCredentials(credentials.Signing, credentials.Credentials):
             service_account.IDTokenCredentials.from_service_account_file(
                 'service-account.json'))
 
+
     Or if you already have the service account file loaded::
 
         service_account_info = json.load(open('service_account.json'))
         credentials = (
             service_account.IDTokenCredentials.from_service_account_info(
                 service_account_info))
+
 
     Both helper methods pass on arguments to the constructor, so you can
     specify additional scopes and a subject if necessary::
@@ -426,7 +441,8 @@ class IDTokenCredentials(credentials.Signing, credentials.Credentials):
                 'service-account.json',
                 scopes=['email'],
                 subject='user@example.com'))
-`
+
+
     The credentials are considered immutable. If you want to modify the scopes
     or the subject used for delegation, use :meth:`with_scopes` or
     :meth:`with_subject`::
@@ -443,6 +459,7 @@ class IDTokenCredentials(credentials.Signing, credentials.Credentials):
         token_uri,
         target_audience,
         additional_claims=None,
+        quota_project_id=None,
     ):
         """
         Args:
@@ -454,7 +471,7 @@ class IDTokenCredentials(credentials.Signing, credentials.Credentials):
                 will be set to this string.
             additional_claims (Mapping[str, str]): Any additional claims for
                 the JWT assertion used in the authorization grant.
-
+            quota_project_id (Optional[str]): The project ID used for quota and billing.
         .. note:: Typically one of the helper constructors
             :meth:`from_service_account_file` or
             :meth:`from_service_account_info` are used instead of calling the
@@ -465,6 +482,7 @@ class IDTokenCredentials(credentials.Signing, credentials.Credentials):
         self._service_account_email = service_account_email
         self._token_uri = token_uri
         self._target_audience = target_audience
+        self._quota_project_id = quota_project_id
 
         if additional_claims is not None:
             self._additional_claims = additional_claims
@@ -547,6 +565,18 @@ class IDTokenCredentials(credentials.Signing, credentials.Credentials):
             token_uri=self._token_uri,
             target_audience=target_audience,
             additional_claims=self._additional_claims.copy(),
+            quota_project_id=self.quota_project_id,
+        )
+
+    @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
+    def with_quota_project(self, quota_project_id):
+        return self.__class__(
+            self._signer,
+            service_account_email=self._service_account_email,
+            token_uri=self._token_uri,
+            target_audience=self._target_audience,
+            additional_claims=self._additional_claims.copy(),
+            quota_project_id=quota_project_id,
         )
 
     def _make_authorization_grant_assertion(self):

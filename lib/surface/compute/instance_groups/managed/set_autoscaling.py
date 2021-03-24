@@ -58,8 +58,7 @@ class SetAutoscaling(base.Command):
                                resources,
                                igm_ref,
                                args,
-                               predictive=False,
-                               scheduled=False):
+                               predictive=False):
     autoscaler = managed_instance_groups_utils.AutoscalerForMigByRef(
         client, resources, igm_ref)
     autoscaler_name = getattr(autoscaler, 'name', None)
@@ -71,8 +70,7 @@ class SetAutoscaling(base.Command):
         igm_ref,
         autoscaler_name,
         autoscaler,
-        predictive=predictive,
-        scheduled=scheduled)
+        predictive=predictive)
     return autoscaler_resource, new_one
 
   def _SetAutoscalerFromFile(
@@ -157,7 +155,6 @@ class SetAutoscalingBeta(SetAutoscaling):
     managed_instance_groups_utils.AddAutoscalerArgs(
         parser=parser,
         autoscaling_file_enabled=True,
-        scheduled=True,
         patch_args=False)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
@@ -181,8 +178,7 @@ class SetAutoscalingBeta(SetAutoscaling):
         igm_ref, client)
 
     autoscaler_resource, is_new = self.CreateAutoscalerResource(
-        client, holder.resources, igm_ref, args, predictive=True,
-        scheduled=True)
+        client, holder.resources, igm_ref, args, predictive=True)
 
     managed_instance_groups_utils.ValidateGeneratedAutoscalerIsValid(
         args, autoscaler_resource)
@@ -213,7 +209,6 @@ class SetAutoscalingAlpha(SetAutoscaling):
     managed_instance_groups_utils.AddAutoscalerArgs(
         parser=parser,
         autoscaling_file_enabled=True,
-        scheduled=True,
         patch_args=False)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
@@ -241,8 +236,7 @@ class SetAutoscalingAlpha(SetAutoscaling):
         holder.resources,
         igm_ref,
         args,
-        predictive=True,
-        scheduled=True)
+        predictive=True)
 
     managed_instance_groups_utils.ValidateGeneratedAutoscalerIsValid(
         args, autoscaler_resource)

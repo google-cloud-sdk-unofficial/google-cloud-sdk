@@ -13,6 +13,7 @@ import types
 import unittest
 
 
+from absl import flags
 from dulwich import tests
 from dulwich.tests import utils
 
@@ -25,8 +26,6 @@ _real_testcase = unittest.TestCase
 
 from google3.devtools.git.common import (  # pylint: disable-msg=C6204
     git_test_util)
-
-from google3.pyglib import flags
 
 # We need googletest to define FLAGS.test_tmpdir
 from google3.testing.pybase import googletest  # pylint: disable-msg=W0611

@@ -49,6 +49,8 @@ class Credentials(object):
         self.expiry = None
         """Optional[datetime]: When the token expires and is no longer valid.
         If this is None, the token is assumed to never expire."""
+        self._quota_project_id = None
+        """Optional[str]: Project to use for quota and billing purposes."""
 
     @property
     def expired(self):
@@ -61,7 +63,7 @@ class Credentials(object):
         if not self.expiry:
             return False
 
-        # Remove 5 minutes from expiry to err on the side of reporting
+        # Remove 10 seconds from expiry to err on the side of reporting
         # expiration early so that we avoid the 401-refresh-retry loop.
         skewed_expiry = self.expiry - _helpers.CLOCK_SKEW
         return _helpers.utcnow() >= skewed_expiry
@@ -74,6 +76,11 @@ class Credentials(object):
         is not :attr:`expired`.
         """
         return self.token is not None and not self.expired
+
+    @property
+    def quota_project_id(self):
+        """Project to use for quota and billing purposes."""
+        return self._quota_project_id
 
     @abc.abstractmethod
     def refresh(self, request):
@@ -102,6 +109,8 @@ class Credentials(object):
         headers["authorization"] = "Bearer {}".format(
             _helpers.from_bytes(token or self.token)
         )
+        if self.quota_project_id:
+            headers["x-goog-user-project"] = self.quota_project_id
 
     def before_request(self, request, method, url, headers):
         """Performs credential-specific before request logic.
@@ -123,6 +132,22 @@ class Credentials(object):
         if not self.valid:
             self.refresh(request)
         self.apply(headers)
+
+
+class CredentialsWithQuotaProject(Credentials):
+    """Abstract base for credentials supporting ``with_quota_project`` factory"""
+
+    def with_quota_project(self, quota_project_id):
+        """Returns a copy of these credentials with a modified quota project.
+
+        Args:
+            quota_project_id (str): The project to use for quota and
+                billing purposes
+
+        Returns:
+            google.oauth2.credentials.Credentials: A new credentials instance.
+        """
+        raise NotImplementedError("This credential does not support quota project.")
 
 
 class AnonymousCredentials(Credentials):
@@ -195,11 +220,17 @@ class ReadOnlyScoped(object):
     def __init__(self):
         super(ReadOnlyScoped, self).__init__()
         self._scopes = None
+        self._default_scopes = None
 
     @property
     def scopes(self):
         """Sequence[str]: the credentials' current set of scopes."""
         return self._scopes
+
+    @property
+    def default_scopes(self):
+        """Sequence[str]: the credentials' current set of default scopes."""
+        return self._default_scopes
 
     @abc.abstractproperty
     def requires_scopes(self):
@@ -219,7 +250,10 @@ class ReadOnlyScoped(object):
         Returns:
             bool: True if the credentials have the given scopes.
         """
-        return set(scopes).issubset(set(self._scopes or []))
+        credential_scopes = (
+            self._scopes if self._scopes is not None else self._default_scopes
+        )
+        return set(scopes).issubset(set(credential_scopes or []))
 
 
 class Scoped(ReadOnlyScoped):
@@ -252,7 +286,7 @@ class Scoped(ReadOnlyScoped):
     """
 
     @abc.abstractmethod
-    def with_scopes(self, scopes):
+    def with_scopes(self, scopes, default_scopes=None):
         """Create a copy of these credentials with the specified scopes.
 
         Args:
@@ -267,7 +301,7 @@ class Scoped(ReadOnlyScoped):
         raise NotImplementedError("This class does not require scoping.")
 
 
-def with_scopes_if_required(credentials, scopes):
+def with_scopes_if_required(credentials, scopes, default_scopes=None):
     """Creates a copy of the credentials with scopes if scoping is required.
 
     This helper function is useful when you do not know (or care to know) the
@@ -281,6 +315,8 @@ def with_scopes_if_required(credentials, scopes):
         credentials (google.auth.credentials.Credentials): The credentials to
             scope if necessary.
         scopes (Sequence[str]): The list of scopes to use.
+        default_scopes (Sequence[str]): Default scopes passed by a
+            Google client library. Use 'scopes' for user-defined scopes.
 
     Returns:
         google.auth.credentials.Credentials: Either a new set of scoped
@@ -288,7 +324,7 @@ def with_scopes_if_required(credentials, scopes):
             was required.
     """
     if isinstance(credentials, Scoped) and credentials.requires_scopes:
-        return credentials.with_scopes(scopes)
+        return credentials.with_scopes(scopes, default_scopes=default_scopes)
     else:
         return credentials
 

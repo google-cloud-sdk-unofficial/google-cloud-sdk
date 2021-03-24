@@ -19,6 +19,7 @@ from __future__ import absolute_import
 import functools
 import logging
 import numbers
+import os
 import time
 
 try:
@@ -40,9 +41,11 @@ from requests.packages.urllib3.util.ssl_ import (
 )  # pylint: disable=ungrouped-imports
 import six  # pylint: disable=ungrouped-imports
 
+from google.auth import environment_vars
 from google.auth import exceptions
 from google.auth import transport
 import google.auth.transport._mtls_helper
+from google.oauth2 import service_account
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -76,7 +79,7 @@ class TimeoutGuard(object):
     """A context manager raising an error if the suite execution took too long.
 
     Args:
-        timeout ([Union[None, float, Tuple[float, float]]]):
+        timeout (Union[None, Union[float, Tuple[float, float]]]):
             The maximum number of seconds a suite can run without the context
             manager raising a timeout exception on exit. If passed as a tuple,
             the smaller of the values is taken as a timeout. If ``None``, a
@@ -161,7 +164,7 @@ class Request(transport.Request):
             url (str): The URI to be requested.
             method (str): The HTTP method to use for the request. Defaults
                 to 'GET'.
-            body (bytes): The payload / body in HTTP request.
+            body (bytes): The payload or body in HTTP request.
             headers (Mapping[str, str]): Request headers.
             timeout (Optional[int]): The number of seconds to wait for a
                 response from the server. If not specified or if None, the
@@ -245,17 +248,24 @@ class AuthorizedSession(requests.Session):
         response = authed_session.request(
             'GET', 'https://www.googleapis.com/storage/v1/b')
 
+
     The underlying :meth:`request` implementation handles adding the
     credentials' headers to the request and refreshing credentials as needed.
 
     This class also supports mutual TLS via :meth:`configure_mtls_channel`
-    method. If client_cert_callback is provided, client certificate and private
+    method. In order to use this method, the `GOOGLE_API_USE_CLIENT_CERTIFICATE`
+    environment variable must be explicitly set to ``true``, otherwise it does
+    nothing. Assume the environment is set to ``true``, the method behaves in the
+    following manner:
+
+    If client_cert_callback is provided, client certificate and private
     key are loaded using the callback; if client_cert_callback is None,
     application default SSL credentials will be used. Exceptions are raised if
     there are problems with the certificate, private key, or the loading process,
     so it should be called within a try/except block.
 
-    First we create an :class:`AuthorizedSession` instance and specify the endpoints::
+    First we set the environment variable to ``true``, then create an :class:`AuthorizedSession`
+    instance and specify the endpoints::
 
         regular_endpoint = 'https://pubsub.googleapis.com/v1/projects/{my_project_id}/topics'
         mtls_endpoint = 'https://pubsub.mtls.googleapis.com/v1/projects/{my_project_id}/topics'
@@ -283,6 +293,7 @@ class AuthorizedSession(requests.Session):
         else:
             response = authed_session.request('GET', regular_endpoint)
 
+
     You can alternatively use application default SSL credentials like this::
 
         try:
@@ -306,6 +317,9 @@ class AuthorizedSession(requests.Session):
             refreshing credentials. If not passed,
             an instance of :class:`~google.auth.transport.requests.Request`
             is created.
+        default_host (Optional[str]): A host like "pubsub.googleapis.com".
+            This is used when a self-signed JWT is created from service
+            account credentials.
     """
 
     def __init__(
@@ -315,6 +329,7 @@ class AuthorizedSession(requests.Session):
         max_refresh_attempts=transport.DEFAULT_MAX_REFRESH_ATTEMPTS,
         refresh_timeout=None,
         auth_request=None,
+        default_host=None,
     ):
         super(AuthorizedSession, self).__init__()
         self.credentials = credentials
@@ -322,6 +337,7 @@ class AuthorizedSession(requests.Session):
         self._max_refresh_attempts = max_refresh_attempts
         self._refresh_timeout = refresh_timeout
         self._is_mtls = False
+        self._default_host = default_host
 
         if auth_request is None:
             auth_request_session = requests.Session()
@@ -340,12 +356,25 @@ class AuthorizedSession(requests.Session):
         # credentials.refresh).
         self._auth_request = auth_request
 
+        # https://google.aip.dev/auth/4111
+        # Attempt to use self-signed JWTs when a service account is used.
+        # A default host must be explicitly provided.
+        if (
+            isinstance(self.credentials, service_account.Credentials)
+            and self._default_host
+        ):
+            self.credentials._create_self_signed_jwt(
+                "https://{}/".format(self._default_host)
+            )
+
     def configure_mtls_channel(self, client_cert_callback=None):
         """Configure the client certificate and key for SSL connection.
 
-        If client certificate and key are successfully obtained (from the given
-        client_cert_callback or from application default SSL credentials), a
-        :class:`_MutualTlsAdapter` instance will be mounted to "https://" prefix.
+        The function does nothing unless `GOOGLE_API_USE_CLIENT_CERTIFICATE` is
+        explicitly set to `true`. In this case if client certificate and key are
+        successfully obtained (from the given client_cert_callback or from application
+        default SSL credentials), a :class:`_MutualTlsAdapter` instance will be mounted
+        to "https://" prefix.
 
         Args:
             client_cert_callback (Optional[Callable[[], (bytes, bytes)]]):
@@ -358,6 +387,13 @@ class AuthorizedSession(requests.Session):
             google.auth.exceptions.MutualTLSChannelError: If mutual TLS channel
                 creation failed for any reason.
         """
+        use_client_cert = os.getenv(
+            environment_vars.GOOGLE_API_USE_CLIENT_CERTIFICATE, "false"
+        )
+        if use_client_cert != "true":
+            self._is_mtls = False
+            return
+
         try:
             import OpenSSL
         except ImportError as caught_exc:
@@ -365,7 +401,11 @@ class AuthorizedSession(requests.Session):
             six.raise_from(new_exc, caught_exc)
 
         try:
-            self._is_mtls, cert, key = google.auth.transport._mtls_helper.get_client_cert_and_key(
+            (
+                self._is_mtls,
+                cert,
+                key,
+            ) = google.auth.transport._mtls_helper.get_client_cert_and_key(
                 client_cert_callback
             )
 
@@ -395,19 +435,17 @@ class AuthorizedSession(requests.Session):
         Args:
             timeout (Optional[Union[float, Tuple[float, float]]]):
                 The amount of time in seconds to wait for the server response
-                with each individual request.
-
-                Can also be passed as a tuple (connect_timeout, read_timeout).
-                See :meth:`requests.Session.request` documentation for details.
-
+                with each individual request. Can also be passed as a tuple
+                ``(connect_timeout, read_timeout)``. See :meth:`requests.Session.request`
+                documentation for details.
             max_allowed_time (Optional[float]):
                 If the method runs longer than this, a ``Timeout`` exception is
-                automatically raised. Unlike the ``timeout` parameter, this
+                automatically raised. Unlike the ``timeout`` parameter, this
                 value applies to the total method execution time, even if
                 multiple requests are made under the hood.
 
                 Mind that it is not guaranteed that the timeout error is raised
-                at ``max_allowed_time`. It might take longer, for example, if
+                at ``max_allowed_time``. It might take longer, for example, if
                 an underlying request takes a lot of time, but the request
                 itself does not timeout, e.g. if a large file is being
                 transmitted. The timout error will be raised after such

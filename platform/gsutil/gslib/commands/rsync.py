@@ -216,9 +216,10 @@ _DETAILED_HELP_TEXT = ("""
      it will be immediately evident that running that command without the -n
      option would cause many objects to be deleted.
 
-  2. Enable object versioning in your bucket, which will allow you to restore
+  2. Enable object versioning in your bucket, which allows you to restore
      objects if you accidentally delete them. For more details see
-     "gsutil help versions".
+     `Object Versioning
+     <https://cloud.google.com/storage/docs/object-versioning>`_.
 
 
 <B>BE CAREFUL WHEN SYNCHRONIZING OVER OS-SPECIFIC FILE TYPES (SYMLINKS, DEVICES, ETC.)</B>
@@ -502,11 +503,12 @@ _DETAILED_HELP_TEXT = ("""
                  storage class.
 
   -x pattern     Causes files/objects matching pattern to be excluded, i.e., any
-                 matching files/objects are not copied or deleted. Note that
-                 the pattern is a Python regular expression, not a wildcard (so,
-                 matching any string ending in "abc" would be specified using
-                 ".*abc$" rather than "*abc"). Note also that the exclude path
-                 is always relative (similar to Unix rsync or tar exclude
+                 matching files/objects are not copied or deleted. Note that the
+                 pattern is a `Python regular expression
+                 <https://docs.python.org/3/howto/regex.html>`_, not a wildcard
+                 (so, matching any string ending in "abc" would be specified
+                 using ".*abc$" rather than "*abc"). Note also that the exclude
+                 path is always relative (similar to Unix rsync or tar exclude
                  options). For example, if you run the command:
 
                    gsutil rsync -x "data./.*\\.txt$" dir gs://my-bucket

@@ -43,7 +43,8 @@ class UpdateHelper(object):
   """
 
   @classmethod
-  def Args(cls, parser, support_redirect, support_rate_limit):
+  def Args(cls, parser, support_redirect, support_rate_limit,
+           support_header_action):
     """Generates the flagset for an Update command."""
     flags.AddPriority(parser, 'update')
     cls.SECURITY_POLICY_ARG = (
@@ -61,9 +62,12 @@ class UpdateHelper(object):
       flags.AddRedirectTarget(parser)
     if support_rate_limit:
       flags.AddRateLimitOptions(parser)
+    if support_header_action:
+      flags.AddRequestHeadersToAdd(parser)
 
   @classmethod
-  def Run(cls, release_track, args, support_redirect, support_rate_limit):
+  def Run(cls, release_track, args, support_redirect, support_rate_limit,
+          support_header_action):
     """Validates arguments and patches a security policy rule."""
     modified_fields = [
         args.description, args.src_ip_ranges, args.expression, args.action,
@@ -112,6 +116,10 @@ class UpdateHelper(object):
       rate_limit_options = (
           security_policies_utils.CreateRateLimitOptions(holder.client, args))
 
+    request_headers_to_add = None
+    if support_header_action:
+      request_headers_to_add = args.request_headers_to_add
+
     return security_policy_rule.Patch(
         src_ip_ranges=args.src_ip_ranges,
         expression=args.expression,
@@ -119,7 +127,8 @@ class UpdateHelper(object):
         description=args.description,
         preview=args.preview,
         redirect_target=redirect_target,
-        rate_limit_options=rate_limit_options)
+        rate_limit_options=rate_limit_options,
+        request_headers_to_add=request_headers_to_add)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -141,14 +150,20 @@ class UpdateGA(base.UpdateCommand):
 
   _support_redirect = False
   _support_rate_limit = False
+  _support_header_action = False
 
   @classmethod
   def Args(cls, parser):
-    UpdateHelper.Args(parser, cls._support_redirect, cls._support_rate_limit)
+    UpdateHelper.Args(
+        parser,
+        support_redirect=cls._support_redirect,
+        support_rate_limit=cls._support_rate_limit,
+        support_header_action=cls._support_header_action)
 
   def Run(self, args):
     return UpdateHelper.Run(self.ReleaseTrack(), args, self._support_redirect,
-                            self._support_rate_limit)
+                            self._support_rate_limit,
+                            self._support_header_action)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -170,14 +185,20 @@ class UpdateBeta(base.UpdateCommand):
 
   _support_redirect = False
   _support_rate_limit = False
+  _support_header_action = False
 
   @classmethod
   def Args(cls, parser):
-    UpdateHelper.Args(parser, cls._support_redirect, cls._support_rate_limit)
+    UpdateHelper.Args(
+        parser,
+        support_redirect=cls._support_redirect,
+        support_rate_limit=cls._support_rate_limit,
+        support_header_action=cls._support_header_action)
 
   def Run(self, args):
     return UpdateHelper.Run(self.ReleaseTrack(), args, self._support_redirect,
-                            self._support_rate_limit)
+                            self._support_rate_limit,
+                            self._support_header_action)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -199,11 +220,17 @@ class UpdateAlpha(base.UpdateCommand):
 
   _support_redirect = True
   _support_rate_limit = True
+  _support_header_action = True
 
   @classmethod
   def Args(cls, parser):
-    UpdateHelper.Args(parser, cls._support_redirect, cls._support_rate_limit)
+    UpdateHelper.Args(
+        parser,
+        support_redirect=cls._support_redirect,
+        support_rate_limit=cls._support_rate_limit,
+        support_header_action=cls._support_header_action)
 
   def Run(self, args):
     return UpdateHelper.Run(self.ReleaseTrack(), args, self._support_redirect,
-                            self._support_rate_limit)
+                            self._support_rate_limit,
+                            self._support_header_action)

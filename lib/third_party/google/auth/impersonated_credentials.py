@@ -65,7 +65,9 @@ _DEFAULT_TOKEN_LIFETIME_SECS = 3600  # 1 hour in seconds
 _DEFAULT_TOKEN_URI = "https://oauth2.googleapis.com/token"
 
 
-def _make_iam_token_request(request, principal, headers, body):
+def _make_iam_token_request(
+    request, principal, headers, body, iam_endpoint_override=None
+):
     """Makes a request to the Google Cloud IAM service for an access token.
     Args:
         request (Request): The Request object to use.
@@ -73,6 +75,9 @@ def _make_iam_token_request(request, principal, headers, body):
         headers (Mapping[str, str]): Map of headers to transmit.
         body (Mapping[str, str]): JSON Payload body for the iamcredentials
             API call.
+        iam_endpoint_override (Optiona[str]): The full IAM endpoint override
+            with the target_principal embedded. This is useful when supporting
+            impersonation with regional endpoints.
 
     Raises:
         google.auth.exceptions.TransportError: Raised if there is an underlying
@@ -82,7 +87,7 @@ def _make_iam_token_request(request, principal, headers, body):
             `iamcredentials.googleapis.com` is not enabled or the
             `Service Account Token Creator` is not assigned
     """
-    iam_endpoint = _IAM_ENDPOINT.format(principal)
+    iam_endpoint = iam_endpoint_override or _IAM_ENDPOINT.format(principal)
 
     body = json.dumps(body).encode("utf-8")
 
@@ -115,7 +120,7 @@ def _make_iam_token_request(request, principal, headers, body):
         six.raise_from(new_exc, caught_exc)
 
 
-class Credentials(credentials.Credentials, credentials.Signing):
+class Credentials(credentials.CredentialsWithQuotaProject, credentials.Signing):
     """This module defines impersonated credentials which are essentially
     impersonated identities.
 
@@ -148,7 +153,7 @@ class Credentials(credentials.Credentials, credentials.Signing):
     Initialize a source credential which does not have access to
     list bucket::
 
-        from google.oauth2 import service_acccount
+        from google.oauth2 import service_account
 
         target_scopes = [
             'https://www.googleapis.com/auth/devstorage.read_only']
@@ -184,6 +189,8 @@ class Credentials(credentials.Credentials, credentials.Signing):
         target_scopes,
         delegates=None,
         lifetime=_DEFAULT_TOKEN_LIFETIME_SECS,
+        quota_project_id=None,
+        iam_endpoint_override=None,
     ):
         """
         Args:
@@ -205,6 +212,12 @@ class Credentials(credentials.Credentials, credentials.Signing):
                 target_principal.
             lifetime (int): Number of seconds the delegated credential should
                 be valid for (upto 3600).
+            quota_project_id (Optional[str]): The project ID used for quota and billing.
+                This project may be different from the project used to
+                create the credentials.
+            iam_endpoint_override (Optiona[str]): The full IAM endpoint override
+                with the target_principal embedded. This is useful when supporting
+                impersonation with regional endpoints.
         """
 
         super(Credentials, self).__init__()
@@ -221,6 +234,8 @@ class Credentials(credentials.Credentials, credentials.Signing):
         self._lifetime = lifetime
         self.token = None
         self.expiry = _helpers.utcnow()
+        self._quota_project_id = quota_project_id
+        self._iam_endpoint_override = iam_endpoint_override
 
     @_helpers.copy_docstring(credentials.Credentials)
     def refresh(self, request):
@@ -255,6 +270,7 @@ class Credentials(credentials.Credentials, credentials.Signing):
             principal=self._target_principal,
             headers=headers,
             body=body,
+            iam_endpoint_override=self._iam_endpoint_override,
         )
 
     def sign_bytes(self, message):
@@ -288,19 +304,39 @@ class Credentials(credentials.Credentials, credentials.Signing):
     def signer(self):
         return self
 
+    @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
+    def with_quota_project(self, quota_project_id):
+        return self.__class__(
+            self._source_credentials,
+            target_principal=self._target_principal,
+            target_scopes=self._target_scopes,
+            delegates=self._delegates,
+            lifetime=self._lifetime,
+            quota_project_id=quota_project_id,
+            iam_endpoint_override=self._iam_endpoint_override,
+        )
 
-class IDTokenCredentials(credentials.Credentials):
+
+class IDTokenCredentials(credentials.CredentialsWithQuotaProject):
     """Open ID Connect ID Token-based service account credentials.
 
     """
 
-    def __init__(self, target_credentials, target_audience=None, include_email=False):
+    def __init__(
+        self,
+        target_credentials,
+        target_audience=None,
+        include_email=False,
+        quota_project_id=None,
+    ):
         """
         Args:
             target_credentials (google.auth.Credentials): The target
                 credential used as to acquire the id tokens for.
             target_audience (string): Audience to issue the token for.
             include_email (bool): Include email in IdToken
+            quota_project_id (Optional[str]):  The project ID used for
+                quota and billing.
         """
         super(IDTokenCredentials, self).__init__()
 
@@ -311,15 +347,22 @@ class IDTokenCredentials(credentials.Credentials):
         self._target_credentials = target_credentials
         self._target_audience = target_audience
         self._include_email = include_email
+        self._quota_project_id = quota_project_id
 
     def from_credentials(self, target_credentials, target_audience=None):
         return self.__class__(
-            target_credentials=self._target_credentials, target_audience=target_audience
+            target_credentials=self._target_credentials,
+            target_audience=target_audience,
+            include_email=self._include_email,
+            quota_project_id=self._quota_project_id,
         )
 
     def with_target_audience(self, target_audience):
         return self.__class__(
-            target_credentials=self._target_credentials, target_audience=target_audience
+            target_credentials=self._target_credentials,
+            target_audience=target_audience,
+            include_email=self._include_email,
+            quota_project_id=self._quota_project_id,
         )
 
     def with_include_email(self, include_email):
@@ -327,6 +370,16 @@ class IDTokenCredentials(credentials.Credentials):
             target_credentials=self._target_credentials,
             target_audience=self._target_audience,
             include_email=include_email,
+            quota_project_id=self._quota_project_id,
+        )
+
+    @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
+    def with_quota_project(self, quota_project_id):
+        return self.__class__(
+            target_credentials=self._target_credentials,
+            target_audience=self._target_audience,
+            include_email=self._include_email,
+            quota_project_id=quota_project_id,
         )
 
     @_helpers.copy_docstring(credentials.Credentials)

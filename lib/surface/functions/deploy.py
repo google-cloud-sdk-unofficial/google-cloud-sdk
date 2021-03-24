@@ -105,6 +105,7 @@ class DeployAlpha(base.Command):
 
     # Add additional args for this release track
     flags.AddBuildWorkerPoolMutexGroup(parser)
+    flags.AddMinInstancesFlag(parser)
 
     # Add additional flags for GCFv2
     flags.AddRunServiceAccountFlag(parser)

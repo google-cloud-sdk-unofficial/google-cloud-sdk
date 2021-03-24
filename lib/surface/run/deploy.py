@@ -27,7 +27,6 @@ from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
-from googlecloudsdk.command_lib.builds import flags as build_flags
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
@@ -125,6 +124,7 @@ class Deploy(base.Command):
         'Service to deploy to.',
         required=True,
         prefixes=False)
+    flags.AddImageArg(parser, required=False)
     flags.AddPlatformAndLocationFlags(parser)
     flags.AddFunctionArg(parser)
     flags.AddMutexEnvVarsFlags(parser)
@@ -151,7 +151,6 @@ class Deploy(base.Command):
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
-    flags.AddImageArg(parser)
 
     # Flags only supported on GKE and Knative
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -270,7 +269,6 @@ class BetaDeploy(Deploy):
 
     # Flags specific to deploy from source
     flags.AddSourceFlag(parser)
-    flags.AddConfigFlags(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -286,6 +284,7 @@ class AlphaDeploy(Deploy):
     flags.AddSandboxArg(managed_group)
     flags.AddBinAuthzPolicyFlags(managed_group)
     flags.AddBinAuthzBreakglassFlag(managed_group)
+    flags.AddCmekKeyFlag(managed_group)
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -297,16 +296,6 @@ class AlphaDeploy(Deploy):
 
     # Flags specific to deploy from source
     flags.AddSourceFlag(parser)
-    flags.AddConfigFlags(parser)
-    # TODO(b/165145546): Remove advanced build flags for 'gcloud run deploy'
-    build_flags.AddGcsSourceStagingDirFlag(parser, True)
-    build_flags.AddGcsLogDirFlag(parser, True)
-    build_flags.AddMachineTypeFlag(parser, True)
-    build_flags.AddDiskSizeFlag(parser, True)
-    build_flags.AddSubstitutionsFlag(parser, True)
-    build_flags.AddWorkerPoolFlag(parser, True)
-    build_flags.AddNoCacheFlag(parser, True)
-    build_flags.AddIgnoreFileFlag(parser, True)
 
 
 AlphaDeploy.__doc__ = Deploy.__doc__

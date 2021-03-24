@@ -49,26 +49,24 @@ DETAILED_HELP = {
 }
 
 
-def _Args(cls, parser, patch_enable=False):
+def _Args(cls, parser):
   """Set Args based on Release Track."""
   cls.DISK_IMAGE_ARG = images_flags.MakeDiskImageArg(plural=False)
   cls.DISK_IMAGE_ARG.AddArgument(parser, operation_type='update')
   labels_util.AddUpdateLabelsFlags(parser)
 
-  if patch_enable:
-    parser.add_argument(
-        '--description',
-        help=('An optional text description for the image.'))
+  parser.add_argument(
+      '--description',
+      help=('An optional text description for the image.'))
 
-    parser.add_argument(
-        '--family',
-        help=('Name of the image family to use. If an image family is '
-              'specified when you create an instance or disk, the latest '
-              'non-deprecated image in the family is used.')
-    )
+  parser.add_argument(
+      '--family',
+      help=('Name of the image family to use. If an image family is '
+            'specified when you create an instance or disk, the latest '
+            'non-deprecated image in the family is used.')
+  )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine image."""
 
@@ -77,12 +75,12 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    _Args(cls, parser, False)
+    _Args(cls, parser)
 
   def Run(self, args):
-    return self._Run(args, False)
+    return self._Run(args)
 
-  def _Run(self, args, patch_enable=False):
+  def _Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     messages = holder.client.messages
@@ -95,11 +93,7 @@ class Update(base.UpdateCommand):
     result = None
 
     # check if need to update labels
-    if patch_enable:
-      # Throws a different error message.
-      labels_diff = labels_util.Diff.FromUpdateArgs(args)
-    else:
-      labels_diff = labels_util.GetAndValidateOpsFromArgs(args)
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
 
     if labels_diff.MayHaveUpdates():
       image = holder.client.apitools_client.images.Get(
@@ -118,24 +112,23 @@ class Update(base.UpdateCommand):
 
         requests.append((client.apitools_client.images, 'SetLabels', request))
 
-    if patch_enable:
-      should_patch = False
-      image_resource = messages.Image()
+    should_patch = False
+    image_resource = messages.Image()
 
-      if args.IsSpecified('family'):
-        image_resource.family = args.family
-        should_patch = True
+    if args.IsSpecified('family'):
+      image_resource.family = args.family
+      should_patch = True
 
-      if args.IsSpecified('description'):
-        image_resource.description = args.description
-        should_patch = True
+    if args.IsSpecified('description'):
+      image_resource.description = args.description
+      should_patch = True
 
-      if should_patch:
-        request = messages.ComputeImagesPatchRequest(
-            project=image_ref.project,
-            imageResource=image_resource,
-            image=image_ref.Name())
-        requests.append((client.apitools_client.images, 'Patch', request))
+    if should_patch:
+      request = messages.ComputeImagesPatchRequest(
+          project=image_ref.project,
+          imageResource=image_resource,
+          image=image_ref.Name())
+      requests.append((client.apitools_client.images, 'Patch', request))
 
     errors_to_collect = []
     result = client.BatchRequests(requests, errors_to_collect)
@@ -145,21 +138,4 @@ class Update(base.UpdateCommand):
       log.status.Print('Updated [{0}].'.format(image_ref))
 
     return result
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
-  """Update a Compute Engine image."""
-
-  @classmethod
-  def Args(cls, parser):
-    _Args(cls, parser, patch_enable=True)
-
-  def Run(self, args):
-    return self._Run(args, patch_enable=True)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
-  """Update a Compute Engine image."""
 

@@ -82,6 +82,9 @@ class Import(base.CreateCommand):
         docs_url='https://cloud.google.com/nat/docs/gce-example#create-nat '
         + 'and https://cloud.google.com/vpc/docs/private-access-options#pga'
     )
+    daisy_utils.AddComputeServiceAccountArg(
+        parser, 'machine image import',
+        daisy_utils.IMPORT_ROLES_FOR_COMPUTE_SERVICE_ACCOUNT)
 
   def _ValidateArgs(self, args, compute_client):
     instances_flags.ValidateNicFlags(args)

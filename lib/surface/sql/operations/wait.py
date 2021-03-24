@@ -48,7 +48,7 @@ class Wait(base.Command):
 
     Args:
       args: argparse.Namespace, The arguments that this command was invoked
-          with.
+        with.
 
     Yields:
       Operations that were waited for.
@@ -62,8 +62,18 @@ class Wait(base.Command):
           collection='sql.operations',
           params={'project': properties.VALUES.core.project.GetOrFail})
 
-      yield operations.OperationsV1Beta4.WaitForOperation(
-          sql_client,
-          operation_ref,
-          'Waiting for [{operation}]'.format(operation=operation_ref),
-          max_wait_seconds=args.timeout)
+      tries = 0
+      max_tries = 3
+      completed_operation = None
+      while not completed_operation:
+        try:
+          tries += 1
+          completed_operation = operations.OperationsV1Beta4.WaitForOperation(
+              sql_client,
+              operation_ref,
+              'Waiting for [{operation}]'.format(operation=operation_ref),
+              max_wait_seconds=args.timeout)
+        except OverflowError as e:
+          if tries >= max_tries:
+            raise e
+      yield completed_operation

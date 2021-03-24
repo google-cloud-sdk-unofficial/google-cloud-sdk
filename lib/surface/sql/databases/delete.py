@@ -48,6 +48,8 @@ class Delete(base.DeleteCommand):
   def Run(self, args):
     """Deletes a Cloud SQL database.
 
+    For MySQL, also deletes all files in the database directory.
+
     Args:
       args: argparse.Namespace, The arguments that this command was invoked
           with.

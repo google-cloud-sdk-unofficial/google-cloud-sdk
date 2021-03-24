@@ -18,7 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.resourcesettings import utils as api_utils
+from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_settings import arguments
 from googlecloudsdk.command_lib.resource_settings import utils
@@ -66,14 +68,24 @@ class Describe(base.DescribeCommand):
 
     settings_service = api_utils.GetServiceFromArgs(args)
     value_service = api_utils.GetValueServiceFromArgs(args)
-    setting_name = '{}/value'.format(utils.GetSettingsPathFromArgs(args))
+    setting_name = utils.GetSettingNameFromArgs(args)
+    setting_path = '{}/value'.format(utils.GetSettingsPathFromArgs(args))
 
     if args.effective:
       get_request = api_utils.GetLookupEffectiveValueRequestFromArgs(
-          args, setting_name)
+          args, setting_path)
       return value_service.LookupEffectiveValue(get_request)
 
-    get_request = api_utils.GetGetValueRequestFromArgs(args, setting_name)
-    setting_value = settings_service.GetValue(get_request)
+    get_request = api_utils.GetGetValueRequestFromArgs(args, setting_path)
+
+    try:
+      setting_value = settings_service.GetValue(get_request)
+    except apitools_exceptions.HttpNotFoundError as e:
+      raise exceptions.HttpException(
+          e,
+          error_format='The setting `' + setting_name +
+          '` has not been set for this resource. Please ' +
+          'set the setting first or show the flag `--effective` to lookup the effective setting instead.'
+      )
 
     return setting_value
