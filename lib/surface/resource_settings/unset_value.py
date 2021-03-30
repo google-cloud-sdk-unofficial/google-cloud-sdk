@@ -55,9 +55,10 @@ class UnsetValue(base.DescribeCommand):
     """
 
     settings_service = api_utils.GetServiceFromArgs(args)
-    setting_name = '{}/value'.format(utils.GetSettingsPathFromArgs(args))
-
-    get_request = api_utils.GetDeleteValueRequestFromArgs(args, setting_name)
-    setting_value = settings_service.DeleteValue(get_request)
+    setting_path = utils.GetSettingsPathFromArgs(args)
+    etag = input.etag if hasattr(input, 'etag') else None
+    delete_request = api_utils.GetPatchRequestFromArgs(args, setting_path, None,
+                                                       etag)
+    setting_value = settings_service.Patch(delete_request)
 
     return setting_value

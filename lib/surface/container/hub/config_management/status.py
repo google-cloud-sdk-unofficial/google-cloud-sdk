@@ -34,9 +34,9 @@ DETAILED_HELP = {
 
     $ {command}
 
-    Name             Status  Last_Synced_Token   Sync_Branch  Last_Synced_Time
+    Name             Status  Last_Synced_Token   Sync_Branch  Last_Synced_Time  Hierarchy_Controller
     managed-cluster  SYNCED  2945500b7f          acme         2020-03-23
-    11:12:31 -0700 PDT
+    11:12:31 -0700 PDT  INSTALLED
 
   View the status for the cluster named `managed-cluster-a`:
 
@@ -68,6 +68,7 @@ class ConfigmanagementFeatureState(object):
     self.last_synced = NA
     self.sync_branch = NA
     self.policy_controller_state = NA
+    self.hierarchy_controller_state = NA
 
   def update_sync_state(self, fs):
     """Update config_sync state for the membership that has ACM installed.
@@ -111,6 +112,41 @@ class ConfigmanagementFeatureState(object):
         return
       self.policy_controller_state = deployment_state.name
 
+  def update_hierarchy_controller_state(self, fs):
+    """Update hierarchy controller state for the membership that has ACM installed.
+
+    The PENDING state is set separately after this logic. The PENDING state
+    suggests the HC part in feature_spec and feature_state are inconsistent, but
+    the HC status from feature_state is not ERROR. This suggests that HC might
+    be still in the updating process, so we mark it as PENDING
+
+    Args:
+      fs: ConfigmanagementFeatureState
+    """
+    if not (fs.hierarchyControllerState and fs.hierarchyControllerState.state):
+      self.hierarchy_controller_state = NA
+      return
+    hc_deployment_state = fs.hierarchyControllerState.state
+
+    hnc_state = 'NOT_INSTALLED'
+    ext_state = 'NOT_INSTALLED'
+    if hc_deployment_state.hnc:
+      hnc_state = hc_deployment_state.hnc.name
+    if hc_deployment_state.extension:
+      ext_state = hc_deployment_state.extension.name
+    # partial mapping from ('hnc_state', 'ext_state') to 'HC_STATE',
+    # ERROR, PENDING, NA states are identified separately
+    deploys_to_status = {
+        ('INSTALLED', 'INSTALLED'): 'INSTALLED',
+        ('INSTALLED', 'NOT_INSTALLED'): 'INSTALLED',
+        ('NOT_INSTALLED', 'NOT_INSTALLED'): NA,
+    }
+    if (hnc_state, ext_state) in deploys_to_status:
+      self.hierarchy_controller_state = deploys_to_status[(hnc_state,
+                                                           ext_state)]
+    else:
+      self.hierarchy_controller_state = 'ERROR'
+
   def update_pending_state(self, feature_spec_mc, feature_state_mc):
     """Update config sync and policy controller with the pending state.
 
@@ -126,6 +162,9 @@ class ConfigmanagementFeatureState(object):
         'INSTALLED', 'GatekeeperAudit NOT_INSTALLED', NA
     ] and feature_spec_mc.policyController != feature_state_mc.policyController:
       self.policy_controller_state = 'PENDING'
+    if self.hierarchy_controller_state.__str__() != 'ERROR' and \
+        feature_spec_mc.hierarchyController != feature_state_mc.hierarchyController:
+      self.hierarchy_controller_state = 'PENDING'
 
 
 class Status(base.ListCommand):
@@ -200,6 +239,7 @@ class Status(base.ListCommand):
               append_error(name, fs.configSyncState.syncState.errors,
                            acm_errors)
             cluster.update_policy_controller_state(fs)
+            cluster.update_hierarchy_controller_state(fs)
             if name in feature_spec_memberships:
               cluster.update_pending_state(feature_spec_memberships[name],
                                            fs.membershipConfig)

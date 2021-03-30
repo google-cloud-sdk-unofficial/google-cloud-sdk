@@ -46,8 +46,7 @@ def _Args(parser, include_l7_internal_load_balancing):
     parser.display_info.AddCacheUpdater(flags.TargetHttpProxiesCompleter)
 
 
-def _Run(args, holder, include_l7_internal_load_balancing,
-         return_partial_success):
+def _Run(args, holder, include_l7_internal_load_balancing):
   """Issues requests necessary to list Target HTTP Proxies."""
   client = holder.client
 
@@ -57,8 +56,7 @@ def _Run(args, holder, include_l7_internal_load_balancing,
         client,
         regional_service=client.apitools_client.regionTargetHttpProxies,
         global_service=client.apitools_client.targetHttpProxies,
-        aggregation_service=client.apitools_client.targetHttpProxies,
-        return_partial_success=return_partial_success)
+        aggregation_service=client.apitools_client.targetHttpProxies)
   else:
     request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
     list_implementation = lister.GlobalLister(
@@ -67,13 +65,13 @@ def _Run(args, holder, include_l7_internal_load_balancing,
   return lister.Invoke(request_data, list_implementation)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA,
+                    base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List target HTTP proxies."""
 
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
   _include_l7_internal_load_balancing = True
-  _return_partial_success = False
 
   detailed_help = _DetailedHelp(_include_l7_internal_load_balancing)
 
@@ -83,12 +81,4 @@ class List(base.ListCommand):
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, self._include_l7_internal_load_balancing,
-                self._return_partial_success)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(List):
-  """List target HTTP proxies."""
-
-  _return_partial_success = True
+    return _Run(args, holder, self._include_l7_internal_load_balancing)

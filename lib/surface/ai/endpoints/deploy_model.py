@@ -27,12 +27,14 @@ from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import endpoints_util
 from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import operations_util
+from googlecloudsdk.command_lib.ai import region_util
 from googlecloudsdk.command_lib.ai import validation
 from googlecloudsdk.core import log
 
 
 def _AddArgs(parser, version):
-  flags.AddEndpointResourceArg(parser, 'to deploy a model to')
+  flags.AddEndpointResourceArg(
+      parser, 'to deploy a model to', prompt_func=region_util.PromptForOpRegion)
   flags.GetModelIdArg().AddToParser(parser)
   flags.GetDisplayNameArg('deployed model').AddToParser(parser)
   flags.GetTrafficSplitArg().AddToParser(parser)

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# Lint as: python2, python3
 # pylint: disable=g-unknown-interpreter
 # Copyright 2012 Google Inc. All Rights Reserved.
 
@@ -77,6 +76,9 @@ CONNECTION_TYPES = CONNECTION_TYPE_TO_PROPERTY_MAP.keys()
 # Data Transfer Service Authorization Info
 AUTHORIZATION_CODE = 'authorization_code'
 VERSION_INFO = 'version_info'
+
+# IAM role name that represents being a grantee on a row access policy.
+_FILTERED_DATA_VIEWER_ROLE = 'roles/bigquery.filteredDataViewer'
 
 
 def MakeIamRoleIdPropertiesJson(iam_role_id):
@@ -970,6 +972,11 @@ class JobIdGeneratorRandom(JobIdGenerator):
 class JobIdGeneratorFingerprint(JobIdGenerator):
   """Generates job ids that uniquely match the job config."""
 
+  def _HashableRepr(self, obj):
+    if isinstance(obj, bytes):
+      return obj
+    return str(obj).encode('utf-8')
+
   def _Hash(self, config, sha1):
     """Computes the sha1 hash of a dict."""
     keys = list(config.keys())
@@ -977,7 +984,7 @@ class JobIdGeneratorFingerprint(JobIdGenerator):
     # so that we will visit them in a stable order.
     keys.sort()
     for key in keys:
-      sha1.update('%s' % (key,))
+      sha1.update(self._HashableRepr(key))
       v = config[key]
       if isinstance(v, dict):
         logging.info('Hashing: %s...', key)
@@ -988,7 +995,7 @@ class JobIdGeneratorFingerprint(JobIdGenerator):
           self._Hash(inner_v, sha1)
       else:
         logging.info('Hashing: %s:%s', key, v)
-        sha1.update('%s' % (v,))
+        sha1.update(self._HashableRepr(v))
 
   def Generate(self, config):
     s1 = hashlib.sha1()
@@ -1712,6 +1719,10 @@ class BigqueryClient(object):
        ):
       return ApiClientHelper.AutoscaleAlphaReservationReference(
           projectId=project_id, location=location, reservationId=reservation_id)
+    elif (self.api_version == 'v1beta1'
+         ):
+      return ApiClientHelper.BetaReservationReference(
+          projectId=project_id, location=location, reservationId=reservation_id)
     else:
       return ApiClientHelper.ReservationReference(
           projectId=project_id, location=location, reservationId=reservation_id)
@@ -1891,6 +1902,7 @@ class BigqueryClient(object):
                         reference,
                         slots,
                         ignore_idle_slots,
+                        max_concurrency,
                         autoscale_max_slots=None):
     """Create a reservation with the given reservation reference.
 
@@ -1899,6 +1911,7 @@ class BigqueryClient(object):
       slots: Number of slots allocated to this reservation subtree.
       ignore_idle_slots: Specifies whether queries should ignore idle slots from
         other reservations.
+      max_concurrency: Reservation maximum concurrency.
       autoscale_max_slots: Number of slots to be scaled when needed.
 
     Returns:
@@ -1910,6 +1923,13 @@ class BigqueryClient(object):
     reservation = {}
     reservation['slot_capacity'] = slots
     reservation['ignore_idle_slots'] = ignore_idle_slots
+    if max_concurrency is not None:
+      if (self.api_version != 'v1beta1'
+         ):
+        raise BigqueryError(
+            'max_concurrency is only supported in v1beta1. Please specify'
+            '\'--api_version=v1beta1\' and retry.')
+      reservation['max_concurrency'] = max_concurrency
     if autoscale_max_slots is not None:
       if (self.api_version != 'autoscale_alpha'
          ):
@@ -2022,7 +2042,11 @@ class BigqueryClient(object):
         name=reference.path(), updateMask=update_mask,
         body=bi_reservation).execute()
 
-  def UpdateReservation(self, reference, slots, ignore_idle_slots,
+  def UpdateReservation(self,
+                        reference,
+                        slots,
+                        ignore_idle_slots,
+                        max_concurrency,
                         autoscale_max_slots):
     """Updates a reservation with the given reservation reference.
 
@@ -2031,6 +2055,7 @@ class BigqueryClient(object):
       slots: Number of slots allocated to this reservation subtree.
       ignore_idle_slots: Specifies whether queries should ignore idle slots from
         other reservations.
+      max_concurrency: Reservation maximum concurrency.
       autoscale_max_slots: Number of slots to be scaled when needed.
 
     Returns:
@@ -2048,6 +2073,15 @@ class BigqueryClient(object):
     if ignore_idle_slots is not None:
       reservation['ignore_idle_slots'] = ignore_idle_slots
       update_mask += 'ignore_idle_slots,'
+
+    if max_concurrency is not None:
+      if (self.api_version != 'v1beta1'
+          ):
+        raise BigqueryError(
+            'max_concurrency is only supported in v1beta1. Please specify'
+            '\'--api_version=v1beta1\' and retry.')
+      reservation['max_concurrency'] = max_concurrency
+      update_mask += 'max_concurrency,'
 
     if autoscale_max_slots is not None:
       if (self.api_version != 'autoscale_alpha'
@@ -2672,8 +2706,8 @@ class BigqueryClient(object):
              'Creation Time', 'Last Modified Time'))
     elif reference_type == ApiClientHelper.RowAccessPolicyReference:
       if print_format == 'list':
-        formatter.AddColumns(
-            ('Id', 'Filter Predicate', 'Creation Time', 'Last Modified Time'))
+        formatter.AddColumns(('Id', 'Filter Predicate', 'Grantees',
+                              'Creation Time', 'Last Modified Time'))
     elif reference_type == ApiClientHelper.TableReference:
       if print_format == 'list':
         formatter.AddColumns(('tableId', 'Type',))
@@ -2714,6 +2748,13 @@ class BigqueryClient(object):
     elif reference_type == ApiClientHelper.ReservationReference:
       formatter.AddColumns(('name', 'slotCapacity', 'ignoreIdleSlots',
                             'creationTime', 'updateTime'))
+    elif reference_type == ApiClientHelper.BetaReservationReference:
+      formatter.AddColumns(('name',
+                            'slotCapacity',
+                            'maxConcurrency',
+                            'ignoreIdleSlots',
+                            'creationTime',
+                            'updateTime'))
     elif reference_type == ApiClientHelper.AutoscaleAlphaReservationReference:
       formatter.AddColumns(
           ('name', 'slotCapacity', 'ignoreIdleSlots', 'autoscaleMaxSlots',
@@ -2760,8 +2801,11 @@ class BigqueryClient(object):
       error = job['status']['errorResult']
       error_ls = job['status'].get('errors', [])
       raise BigqueryError.Create(
-          error, error, error_ls,
-          job_ref=BigqueryClient.ConstructObjectReference(job))
+          error,
+          error,
+          error_ls,
+          job_ref=BigqueryClient.ConstructObjectReference(job),
+      )
     return job
 
   @staticmethod
@@ -3121,6 +3165,7 @@ class BigqueryClient(object):
     result['Id'] = row_access_policy_info['rowAccessPolicyReference'][
         'policyId']
     result['Filter Predicate'] = row_access_policy_info['filterPredicate']
+    result['Grantees'] = ', '.join(row_access_policy_info['grantees'])
     if 'creationTime' in row_access_policy_info:
       result['Creation '
              'Time'] = BigqueryClient.FormatTimeFromProtoTimestampJsonString(
@@ -3304,6 +3349,9 @@ class BigqueryClient(object):
       result['slotCapacity'] = '0'
     if 'ignoreIdleSlots' not in list(result.keys()):
       result['ignoreIdleSlots'] = 'False'
+    if (reference_type == ApiClientHelper.BetaReservationReference and
+        'maxConcurrency' not in list(result.keys())):
+      result['maxConcurrency'] = '0 (auto)'
     if (reference_type == ApiClientHelper.AutoscaleAlphaReservationReference and
         'autoscale' in list(result.keys())):
       if 'maxSlots' in list(result['autoscale'].keys()):
@@ -3877,7 +3925,8 @@ class BigqueryClient(object):
         pageToken=page_token,
         filter=filter_expression).execute()
 
-  def ListRowAccessPolicies(self, table_reference, page_size, page_token):
+  def ListRowAccessPoliciesWithGrantees(self, table_reference, page_size,
+                                        page_token):
     """Lists row access policies for the given table reference.
 
     Arguments:
@@ -3887,15 +3936,39 @@ class BigqueryClient(object):
 
     Returns:
       A dict that contains entries:
-        'rowAccessPolicies': a list of row access policies.
+        'rowAccessPolicies': a list of row access policies, with an additional
+          'grantees' field that contains the row access policy grantees.
         'nextPageToken': nextPageToken for the next page, if present.
     """
-    return self.GetRowAccessPoliciesApiClient().rowAccessPolicies().list(
+    response = self.GetRowAccessPoliciesApiClient().rowAccessPolicies().list(
         projectId=table_reference.projectId,
         datasetId=table_reference.datasetId,
         tableId=table_reference.tableId,
         pageSize=page_size,
         pageToken=page_token).execute()
+    if 'rowAccessPolicies' in response:
+      row_access_policies = response['rowAccessPolicies']
+      for row_access_policy in row_access_policies:
+        row_access_policy_ref = ApiClientHelper.RowAccessPolicyReference.Create(
+            **row_access_policy['rowAccessPolicyReference'])
+        iam_policy = self.GetRowAccessPolicyIAMPolicy(row_access_policy_ref)
+        grantees = self._GetGranteesFromRowAccessPolicyIamPolicy(iam_policy)
+        row_access_policy['grantees'] = grantees
+    return response
+
+  def _GetGranteesFromRowAccessPolicyIamPolicy(self, iam_policy):
+    """Returns the filtered data viewer members of the given IAM policy."""
+    bindings = iam_policy.get('bindings')
+    if not bindings:
+      return []
+
+    filtered_data_viewer_binding = next(
+        (binding for binding in bindings
+         if binding.get('role') == _FILTERED_DATA_VIEWER_ROLE), None)
+    if not filtered_data_viewer_binding:
+      return []
+
+    return filtered_data_viewer_binding.get('members', [])
 
   def GetDatasetIAMPolicy(self, reference):
     """Gets IAM policy for the given dataset resource.
@@ -3936,6 +4009,30 @@ class BigqueryClient(object):
         'projects/%s/datasets/%s/tables/%s' %
         (reference.projectId, reference.datasetId, reference.tableId))
     return self.GetIAMPolicyApiClient().tables().getIamPolicy(
+        resource=formatted_resource).execute()
+
+  def GetRowAccessPolicyIAMPolicy(self, reference):
+    """Gets IAM policy for the given row access policy resource.
+
+    Arguments:
+      reference: the RowAccessPolicyReference for the row access policy
+        resource.
+
+    Returns:
+      The IAM policy attached to the given row access policy resource.
+
+    Raises:
+      TypeError: if reference is not a RowAccessPolicyReference.
+    """
+    _Typecheck(
+        reference,
+        ApiClientHelper.RowAccessPolicyReference,
+        method='GetRowAccessPolicyIAMPolicy')
+    formatted_resource = (
+        'projects/%s/datasets/%s/tables/%s/rowAccessPolicies/%s' %
+        (reference.projectId, reference.datasetId, reference.tableId,
+         reference.policyId))
+    return self.GetIAMPolicyApiClient().rowAccessPolicies().getIamPolicy(
         resource=formatted_resource).execute()
 
   def SetDatasetIAMPolicy(self, reference, policy):
@@ -5789,6 +5886,7 @@ class BigqueryClient(object):
       decimal_target_types=None,
       json_extension=None,
       thrift_options=None,
+      parquet_options=None,
       **kwds):
     """Load the given data into BigQuery.
 
@@ -5867,6 +5965,8 @@ class BigqueryClient(object):
           Only applicable if `source_format` is 'NEWLINE_DELIMITED_JSON'.
       thrift_options: (experimental) Options for configuring Apache Thrift
           load, which is required if `source_format` is 'THRIFT'.
+      parquet_options: Options for configuring parquet files load, only
+          applicable if `source_format` is 'PARQUET'.
       **kwds: Passed on to self.ExecuteJob.
 
     Returns:
@@ -5886,6 +5986,8 @@ class BigqueryClient(object):
       load_config['useAvroLogicalTypes'] = use_avro_logical_types
     if json_extension is not None:
       load_config['jsonExtension'] = json_extension
+    if parquet_options is not None:
+      load_config['parquetOptions'] = parquet_options
     load_config['decimalTargetTypes'] = decimal_target_types
     if destination_encryption_configuration:
       load_config['destinationEncryptionConfiguration'] = (
@@ -5911,7 +6013,8 @@ class BigqueryClient(object):
         autodetect=autodetect,
         range_partitioning=range_partitioning,
         hive_partitioning_options=hive_partitioning_options,
-        thrift_options=thrift_options)
+        thrift_options=thrift_options,
+        parquet_options=parquet_options)
     return self.ExecuteJob(configuration={'load': load_config},
                            upload_file=upload_file, **kwds)
 
@@ -6378,6 +6481,10 @@ class ApiClientHelper(object):
 
     def path(self):
       return self._path_str % dict(self)
+
+  class BetaReservationReference(ReservationReference):
+    """Reference for v1beta1 reservation service."""
+    pass
 
   class AutoscaleAlphaReservationReference(ReservationReference):
     """Reference for autoscale_alpha, which has more features than stable versions."""

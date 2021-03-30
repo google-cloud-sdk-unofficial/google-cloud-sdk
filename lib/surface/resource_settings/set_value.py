@@ -43,7 +43,7 @@ class SetValue(base.Command):
 
   To set the setting from the file on the path ``./sample_path'', run:
 
-    $ {command} SETTING_NAME --value-file="./test_input.json"
+    $ {command} --value-file="./test_input.json"
   """
 
   @staticmethod
@@ -69,7 +69,7 @@ class SetValue(base.Command):
 
     input_setting = utils.GetMessageFromFile(
         args.value_file,
-        settings_message.GoogleCloudResourcesettingsV1SettingValue)
+        settings_message.GoogleCloudResourcesettingsV1Setting)
 
     if not input_setting.name:
       raise exceptions.InvalidInputError(
@@ -80,28 +80,13 @@ class SetValue(base.Command):
 
     resource_type = utils.GetResourceTypeFromString(input_setting.name)
     settings_service = api_utils.GetServiceFromResourceType(resource_type)
-    value_service = api_utils.GetValueServiceFromResourceType(resource_type)
 
     # Syntax: [organizations|folders|projects]/{resource_id}/
-    #          settings/{setting_name}/value
-    get_request = api_utils.GetGetValueRequestFromResourceType(
-        resource_type, input_setting.name)
+    #          settings/{setting_name}
+    setting_path = input_setting.name
 
-    try:
-      setting_value = settings_service.GetValue(get_request)
-    except api_exceptions.HttpNotFoundError:
-      parent_resource = utils.GetParentResourceFromString(input_setting.name)
-      setting_id = utils.GetSettingNameFromString(input_setting.name)
-      create_request = api_utils.GetCreateRequestFromResourceType(
-          resource_type, parent_resource, setting_id, input_setting)
-
-      create_response = value_service.Create(create_request)
-      return create_response
-
-    if setting_value == input_setting:
-      return setting_value
-
-    update_request = api_utils.GetUpdateValueRequestFromResourceType(
-        resource_type, input_setting)
-    update_response = settings_service.UpdateValue(update_request)
+    etag = input.etag if hasattr(input, 'etag') else None
+    update_request = api_utils.GetPatchRequestFromResourceType(
+        resource_type, setting_path, input_setting.localValue, etag)
+    update_response = settings_service.Patch(update_request)
     return update_response

@@ -114,6 +114,7 @@ class Deploy(base.Command):
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
+    flags.AddEndpointVisibilityEnum(cluster_group)
     flags.AddSecretsFlags(cluster_group)
     flags.AddConfigMapsFlags(cluster_group)
 
@@ -144,6 +145,7 @@ class Deploy(base.Command):
     flags.AddDeployTagFlag(parser)
     flags.AddServiceAccountFlag(parser)
     flags.AddClientNameAndVersionFlags(parser)
+    flags.AddIngressFlag(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
@@ -154,7 +156,6 @@ class Deploy(base.Command):
 
     # Flags only supported on GKE and Knative
     cluster_group = flags.GetClusterArgGroup(parser)
-    flags.AddEndpointVisibilityEnum(cluster_group)
     flags.AddHttp2Flag(cluster_group)
 
   def Run(self, args):
@@ -167,7 +168,7 @@ class Deploy(base.Command):
     pack = None
     source = None
     include_build = flags.FlagIsExplicitlySet(args, 'source')
-    operation_message = 'Deploying container'
+    operation_message = 'Deploying container to'
     # Build an image from source if source specified
     if include_build:
       # Create a tag for the image creation
@@ -185,8 +186,8 @@ class Deploy(base.Command):
         pack = [{'image': args.image}]
         build_type = BuildType.BUILDPACKS
       image = None if pack else args.image
-      operation_message = 'Building using {build_type} and deploying container'.format(
-          build_type=build_type.value)
+      operation_message = ('Building using {build_type} and deploying container'
+                           ' to').format(build_type=build_type.value)
     elif not args.IsSpecified('image'):
       raise c_exceptions.RequiredArgumentException(
           '--image', 'Requires a container image to deploy (e.g. '
@@ -259,12 +260,7 @@ class BetaDeploy(Deploy):
   def Args(parser):
     Deploy.CommonArgs(parser)
 
-    # Flags only supported on GKE and Knative
-    cluster_group = flags.GetClusterArgGroup(parser)
-    flags.AddEndpointVisibilityEnum(cluster_group)
-
     # Flags not specific to any platform
-    flags.AddIngressFlag(parser)
     flags.AddHttp2Flag(parser)
 
     # Flags specific to deploy from source
@@ -286,12 +282,7 @@ class AlphaDeploy(Deploy):
     flags.AddBinAuthzBreakglassFlag(managed_group)
     flags.AddCmekKeyFlag(managed_group)
 
-    # Flags specific to connecting to a cluster
-    cluster_group = flags.GetClusterArgGroup(parser)
-    flags.AddEndpointVisibilityEnum(cluster_group, deprecated=True)
-
     # Flags not specific to any platform
-    flags.AddIngressFlag(parser)
     flags.AddHttp2Flag(parser)
 
     # Flags specific to deploy from source

@@ -77,12 +77,16 @@ class Cp(base.Command):
   def Run(self, args):
     source_expansion_iterator = name_expansion.NameExpansionIterator(
         args.source, recursion_requested=args.recursive)
-    task_iterator = copy_task_iterator.CopyTaskIterator(
-        source_expansion_iterator,
-        args.destination,
-        custom_md5_digest=args.content_md5,
-    )
-    task_executor.ExecuteTasks(
-        task_iterator,
-        is_parallel=True,
-        progress_type=task_status.ProgressType.FILES_AND_BYTES)
+    with task_status.ProgressManager(
+        task_status.ProgressType.FILES_AND_BYTES) as progress_manager:
+      task_iterator = copy_task_iterator.CopyTaskIterator(
+          source_expansion_iterator,
+          args.destination,
+          custom_md5_digest=args.content_md5,
+          task_status_queue=progress_manager.task_status_queue,
+      )
+      task_executor.ExecuteTasks(
+          task_iterator,
+          is_parallel=True,
+          task_status_queue=progress_manager.task_status_queue,
+      )

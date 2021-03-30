@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import endpoints_util
 from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import operations_util
+from googlecloudsdk.command_lib.ai import region_util
 from googlecloudsdk.core.console import console_io
 
 
@@ -59,7 +60,8 @@ class DeleteGa(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddEndpointResourceArg(parser, 'to delete')
+    flags.AddEndpointResourceArg(
+        parser, 'to delete', prompt_func=region_util.PromptForOpRegion)
 
   def Run(self, args):
     return _Run(args, constants.GA_VERSION)

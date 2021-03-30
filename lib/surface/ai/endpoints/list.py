@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
+from googlecloudsdk.command_lib.ai import region_util
 from googlecloudsdk.core import resources
 
 
@@ -43,7 +44,8 @@ def _GetUri(endpoint):
 def _AddArgs(parser):
   parser.display_info.AddFormat(_DEFAULT_FORMAT)
   parser.display_info.AddUriFunc(_GetUri)
-  flags.AddRegionResourceArg(parser, 'to list endpoints')
+  flags.AddRegionResourceArg(
+      parser, 'to list endpoints', prompt_func=region_util.PromptForOpRegion)
 
 
 def _Run(args, version):

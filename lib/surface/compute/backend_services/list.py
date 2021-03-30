@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command for listing backend services."""
 
 from __future__ import absolute_import
@@ -29,8 +28,6 @@ from googlecloudsdk.command_lib.compute.backend_services import flags
 class List(base.ListCommand):
   """List backend services."""
 
-  _return_partial_success = False
-
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -46,25 +43,18 @@ class List(base.ListCommand):
         client,
         regional_service=client.apitools_client.regionBackendServices,
         global_service=client.apitools_client.backendServices,
-        aggregation_service=client.apitools_client.backendServices,
-        return_partial_success=self._return_partial_success)
+        aggregation_service=client.apitools_client.backendServices)
 
     return lister.Invoke(request_data, list_implementation)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ListBeta(List):
 
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(flags.DEFAULT_BETA_LIST_FORMAT)
     lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
-
-  _return_partial_success = True
 
 
 List.detailed_help = base_classes.GetGlobalRegionalListerHelp(

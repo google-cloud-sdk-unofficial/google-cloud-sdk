@@ -106,8 +106,7 @@ class Run(base.SilentCommand):
     """
     parser.add_argument(
         '--pipeline-file',
-        help='''A YAML or JSON file containing a v2alpha1 or v1alpha2 Pipeline
-          object. See
+        help='''A YAML or JSON file containing a v2alpha1 Pipeline object. See
 [](https://cloud.google.com/genomics/reference/rest/v2alpha1/pipelines#Pipeline)
 ''')
 
@@ -115,13 +114,13 @@ class Run(base.SilentCommand):
         '--docker-image',
         category=base.COMMONLY_USED_FLAGS,
         default=CLOUD_SDK_IMAGE,
-        help='''v2alpha1 only. A docker image to run. Requires --command-line to
+        help='''A docker image to run. Requires --command-line to
             be specified and cannot be used with --pipeline-file.''')
 
     parser.add_argument(
         '--command-line',
         category=base.COMMONLY_USED_FLAGS,
-        help='''v2alpha1 only. Command line to run with /bin/sh in the specified
+        help='''Command line to run with /bin/sh in the specified
             docker image. Cannot be used with --pipeline-file.''')
 
     parser.add_argument(
@@ -228,17 +227,7 @@ class Run(base.SilentCommand):
         type=arg_parsers.ArgList(),
         default=[],
         help='''List of additional scopes to be made available for this service
-             account. The following scopes are always requested for v1alpha2
-             requests:
-
-             https://www.googleapis.com/auth/compute
-             https://www.googleapis.com/auth/devstorage.full_control
-             https://www.googleapis.com/auth/genomics
-             https://www.googleapis.com/auth/logging.write
-             https://www.googleapis.com/auth/monitoring.write
-
-             For v2alpha1 requests, only the following scopes are always
-             requested:
+             account. The following scopes are always requested:
 
              https://www.googleapis.com/auth/devstorage.read_write
              https://www.googleapis.com/auth/genomics''')
@@ -255,17 +244,17 @@ pipeline definition file will be used.
 If no zones are specified in the pipeline definition, then the
 default zone in your local client configuration is used.
 
-If you have no default zone, then v1alpha2 pipelines may run in any zone.  For
-v2alpha1 pipelines at least one zone or region must be specified.
+If you have no default zone then at least one zone or region must be specified.
 
 For more information on default zones, see
-https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_region_in_your_local_client''')
+https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_region_in_your_local_client'''
+    )
 
     parser.add_argument(
         '--regions',
         metavar='REGION',
         type=arg_parsers.ArgList(),
-        help='''v2alpha1 only. List of Compute Engine regions the pipeline can
+        help='''List of Compute Engine regions the pipeline can
             run in.
 
 If no regions are specified with the regions flag, then regions in the
@@ -277,11 +266,12 @@ default region in your local client configuration is used.
 At least one region or region must be specified.
 
 For more information on default regions, see
-https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_region_in_your_local_client''')
+https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_region_in_your_local_client'''
+    )
 
     parser.add_argument(
         '--network',
-        help='''v2alpha1 only. The network name to attach the VM's network
+        help='''The network name to attach the VM's network
             interface to.
 
 The value will be prefixed with global/networks/ unless it contains a /, in
@@ -291,7 +281,7 @@ If unspecified, the global default network is used.''')
 
     parser.add_argument(
         '--subnetwork',
-        help='''v2alpha1 only. The subnetwork to use on the provided network.
+        help='''The subnetwork to use on the provided network.
 
 If the specified network is configured for custom subnet creation, the name of
 the subnetwork to attach the instance to must be specified here.
@@ -305,7 +295,7 @@ the virtual machine has been allocated in.''')
     parser.add_argument(
         '--boot-disk-size',
         type=int,
-        help='''v2alpha1 only. The size of the boot disk in GB.
+        help='''The size of the boot disk in GB.
 
 The boot disk size must be large enough to accomondate all Docker images from
 each action in the pipeline at the same time. If not specified, a small but
@@ -326,10 +316,9 @@ reasonable default value is used.''')
     Returns:
       Operation representing the running pipeline.
     """
-    v2 = False
     pipeline = None
-    apitools_client = genomics_util.GetGenomicsClient('v1alpha2')
-    genomics_messages = genomics_util.GetGenomicsMessages('v1alpha2')
+    apitools_client = genomics_util.GetGenomicsClient('v2alpha1')
+    genomics_messages = genomics_util.GetGenomicsMessages('v2alpha1')
     if args.pipeline_file:
       if args.command_line:
         # TODO(b/79982664): Use a mutex argument group instead.
@@ -340,20 +329,7 @@ reasonable default value is used.''')
           args.pipeline_file,
           genomics_messages.Pipeline,
           self.context[lib.STORAGE_V1_CLIENT_KEY])
-      pipeline.projectId = genomics_util.GetProjectId()
-
-      if not pipeline.docker:
-        v2 = True
-        apitools_client = genomics_util.GetGenomicsClient('v2alpha1')
-        genomics_messages = genomics_util.GetGenomicsMessages('v2alpha1')
-        pipeline = genomics_util.GetFileAsMessage(
-            args.pipeline_file,
-            genomics_messages.Pipeline,
-            self.context[lib.STORAGE_V1_CLIENT_KEY])
     elif args.command_line:
-      v2 = True
-      apitools_client = genomics_util.GetGenomicsClient('v2alpha1')
-      genomics_messages = genomics_util.GetGenomicsMessages('v2alpha1')
       pipeline = genomics_messages.Pipeline(
           actions=[genomics_messages.Action(
               imageUri=args.docker_image,
@@ -366,207 +342,161 @@ reasonable default value is used.''')
     arg_inputs, is_local_file = _ValidateAndMergeArgInputs(args)
 
     request = None
-    if v2:
-      # Create messages up front to avoid checking for None everywhere.
-      if not pipeline.resources:
-        pipeline.resources = genomics_messages.Resources()
-      resources = pipeline.resources
+    # Create messages up front to avoid checking for None everywhere.
+    if not pipeline.resources:
+      pipeline.resources = genomics_messages.Resources()
+    resources = pipeline.resources
 
-      if not resources.virtualMachine:
-        resources.virtualMachine = genomics_messages.VirtualMachine(
-            machineType='n1-standard-1')
-      virtual_machine = resources.virtualMachine
+    if not resources.virtualMachine:
+      resources.virtualMachine = genomics_messages.VirtualMachine(
+          machineType='n1-standard-1')
+    virtual_machine = resources.virtualMachine
 
-      if not virtual_machine.serviceAccount:
-        virtual_machine.serviceAccount = genomics_messages.ServiceAccount()
+    if not virtual_machine.serviceAccount:
+      virtual_machine.serviceAccount = genomics_messages.ServiceAccount()
 
-      # Always set the project id.
-      resources.projectId = genomics_util.GetProjectId()
+    # Always set the project id.
+    resources.projectId = genomics_util.GetProjectId()
 
-      # Update the pipeline based on arguments.
-      if args.memory or args.cpus:
-        # Default to n1-standard1 sizes.
-        virtual_machine.machineType = 'custom-%d-%d' % (
-            args.cpus or 1, (args.memory or 3.75) * 1024)
+    # Update the pipeline based on arguments.
+    if args.memory or args.cpus:
+      # Default to n1-standard1 sizes.
+      virtual_machine.machineType = 'custom-%d-%d' % (args.cpus or 1,
+                                                      (args.memory or 3.75) *
+                                                      1024)
 
-      if args.preemptible:
-        virtual_machine.preemptible = args.preemptible
+    if args.preemptible:
+      virtual_machine.preemptible = args.preemptible
 
-      if args.zones:
-        resources.zones = args.zones
-      elif not resources.zones and properties.VALUES.compute.zone.Get():
-        resources.zones = [properties.VALUES.compute.zone.Get()]
+    if args.zones:
+      resources.zones = args.zones
+    elif not resources.zones and properties.VALUES.compute.zone.Get():
+      resources.zones = [properties.VALUES.compute.zone.Get()]
 
-      if args.regions:
-        resources.regions = args.regions
-      elif not resources.regions and properties.VALUES.compute.region.Get():
-        resources.regions = [properties.VALUES.compute.region.Get()]
+    if args.regions:
+      resources.regions = args.regions
+    elif not resources.regions and properties.VALUES.compute.region.Get():
+      resources.regions = [properties.VALUES.compute.region.Get()]
 
-      if args.service_account_email != 'default':
-        virtual_machine.serviceAccount.email = args.service_account_email
+    if args.service_account_email != 'default':
+      virtual_machine.serviceAccount.email = args.service_account_email
 
-      if args.service_account_scopes:
-        virtual_machine.serviceAccount.scopes = args.service_account_scopes
+    if args.service_account_scopes:
+      virtual_machine.serviceAccount.scopes = args.service_account_scopes
 
-      # Always add a scope for GCS in case any arguments need it.
-      virtual_machine.serviceAccount.scopes.append(
-          'https://www.googleapis.com/auth/devstorage.read_write')
+    # Always add a scope for GCS in case any arguments need it.
+    virtual_machine.serviceAccount.scopes.append(
+        'https://www.googleapis.com/auth/devstorage.read_write')
 
-      # Attach custom network/subnetwork (if set).
-      if args.network or args.subnetwork:
-        if not virtual_machine.network:
-          virtual_machine.network = genomics_messages.Network()
-        if args.network:
-          virtual_machine.network.name = args.network
-        if args.subnetwork:
-          virtual_machine.network.subnetwork = args.subnetwork
+    # Attach custom network/subnetwork (if set).
+    if args.network or args.subnetwork:
+      if not virtual_machine.network:
+        virtual_machine.network = genomics_messages.Network()
+      if args.network:
+        virtual_machine.network.name = args.network
+      if args.subnetwork:
+        virtual_machine.network.subnetwork = args.subnetwork
 
-      if args.boot_disk_size is not None:
-        if args.boot_disk_size <= 0:
-          raise exceptions.GenomicsError(
-              'Boot disk size must be greater than zero.')
-        virtual_machine.bootDiskSizeGb = args.boot_disk_size
+    if args.boot_disk_size is not None:
+      if args.boot_disk_size <= 0:
+        raise exceptions.GenomicsError(
+            'Boot disk size must be greater than zero.')
+      virtual_machine.bootDiskSizeGb = args.boot_disk_size
 
-      # Generate paths for inputs and outputs in a shared location and put them
-      # into the environment for actions based on their name.
-      env = {}
-      if arg_inputs:
-        input_generator = _SharedPathGenerator('input')
-        for name, value in arg_inputs.items():
-          if genomics_util.IsGcsPath(value):
-            env[name] = input_generator.Generate()
-            pipeline.actions.insert(0, genomics_messages.Action(
-                imageUri=CLOUD_SDK_IMAGE,
-                commands=['/bin/sh', '-c', 'gsutil -m -q cp %s ${%s}' %
-                          (value, name)]))
-          elif name in is_local_file:
-            env[name] = input_generator.Generate()
-            pipeline.actions.insert(
-                0,
-                genomics_messages.Action(
-                    imageUri=CLOUD_SDK_IMAGE,
-                    commands=[
-                        '/bin/sh', '-c',
-                        'echo "%s" | base64 -d > ${%s}' %
-                        (base64.b64encode(value.encode()).decode(), name)
-                    ]))
-          else:
-            env[name] = value
-
-      if args.outputs:
-        output_generator = _SharedPathGenerator('output')
-        for name, value in args.outputs.items():
-          env[name] = output_generator.Generate()
-          pipeline.actions.append(genomics_messages.Action(
-              imageUri=CLOUD_SDK_IMAGE,
-              commands=['/bin/sh', '-c', 'gsutil -m -q cp ${%s} %s' % (name,
-                                                                       value)]))
-      if args.env_vars:
-        for name, value in args.env_vars.items():
+    # Generate paths for inputs and outputs in a shared location and put them
+    # into the environment for actions based on their name.
+    env = {}
+    if arg_inputs:
+      input_generator = _SharedPathGenerator('input')
+      for name, value in arg_inputs.items():
+        if genomics_util.IsGcsPath(value):
+          env[name] = input_generator.Generate()
+          pipeline.actions.insert(
+              0,
+              genomics_messages.Action(
+                  imageUri=CLOUD_SDK_IMAGE,
+                  commands=[
+                      '/bin/sh', '-c',
+                      'gsutil -m -q cp %s ${%s}' % (value, name)
+                  ]))
+        elif name in is_local_file:
+          # TODO(b/183206325): Get test coverage to 100%.
+          env[name] = input_generator.Generate()
+          pipeline.actions.insert(
+              0,
+              genomics_messages.Action(
+                  imageUri=CLOUD_SDK_IMAGE,
+                  commands=[
+                      '/bin/sh', '-c',
+                      'echo "%s" | base64 -d > ${%s}' %
+                      (base64.b64encode(value.encode()).decode(), name)
+                  ]))
+        else:
           env[name] = value
 
-      # Merge any existing pipeline arguments into the generated environment and
-      # update the pipeline.
-      if pipeline.environment:
-        for val in pipeline.environment.additionalProperties:
-          if val.key not in env:
-            env[val.key] = val.value
+    if args.outputs:
+      output_generator = _SharedPathGenerator('output')
+      for name, value in args.outputs.items():
+        env[name] = output_generator.Generate()
+        pipeline.actions.append(
+            genomics_messages.Action(
+                imageUri=CLOUD_SDK_IMAGE,
+                commands=[
+                    '/bin/sh', '-c',
+                    'gsutil -m -q cp ${%s} %s' % (name, value)
+                ]))
+    if args.env_vars:
+      for name, value in args.env_vars.items():
+        env[name] = value
 
-      pipeline.environment = genomics_messages.Pipeline.EnvironmentValue(
-          additionalProperties=genomics_util.ArgDictToAdditionalPropertiesList(
-              env,
-              genomics_messages.Pipeline.EnvironmentValue.AdditionalProperty))
+    # Merge any existing pipeline arguments into the generated environment and
+    # update the pipeline.
+    if pipeline.environment:
+      for val in pipeline.environment.additionalProperties:
+        if val.key not in env:
+          env[val.key] = val.value
 
-      if arg_inputs or args.outputs:
-        virtual_machine.disks.append(genomics_messages.Disk(
-            name=SHARED_DISK))
+    pipeline.environment = genomics_messages.Pipeline.EnvironmentValue(
+        additionalProperties=genomics_util.ArgDictToAdditionalPropertiesList(
+            env,
+            genomics_messages.Pipeline.EnvironmentValue.AdditionalProperty))
 
-        for action in pipeline.actions:
-          action.mounts.append(genomics_messages.Mount(
-              disk=SHARED_DISK,
-              path='/' + SHARED_DISK))
+    if arg_inputs or args.outputs:
+      virtual_machine.disks.append(genomics_messages.Disk(name=SHARED_DISK))
 
-      if args.logging:
-        pipeline.actions.append(genomics_messages.Action(
-            imageUri=CLOUD_SDK_IMAGE,
-            commands=['/bin/sh', '-c',
-                      'gsutil -m -q cp /google/logs/output ' + args.logging],
-            flags=[(genomics_messages.Action
-                    .FlagsValueListEntryValuesEnum.ALWAYS_RUN)]))
+      for action in pipeline.actions:
+        action.mounts.append(
+            genomics_messages.Mount(disk=SHARED_DISK, path='/' + SHARED_DISK))
 
-      # Update disk sizes if specified, potentially including the shared disk.
-      if args.disk_size:
-        disk_sizes = {}
-        for disk_encoding in args.disk_size.split(','):
-          parts = disk_encoding.split(':', 1)
-          try:
-            disk_sizes[parts[0]] = int(parts[1])
-          except:
-            raise exceptions.GenomicsError('Invalid --disk-size.')
+    if args.logging:
+      pipeline.actions.append(
+          genomics_messages.Action(
+              imageUri=CLOUD_SDK_IMAGE,
+              commands=[
+                  '/bin/sh', '-c',
+                  'gsutil -m -q cp /google/logs/output ' + args.logging
+              ],
+              flags=[(genomics_messages.Action.FlagsValueListEntryValuesEnum
+                      .ALWAYS_RUN)]))
 
-        for disk in virtual_machine.disks:
-          if disk.name in disk_sizes:
-            disk.sizeGb = disk_sizes[disk.name]
+    # Update disk sizes if specified, potentially including the shared disk.
+    if args.disk_size:
+      disk_sizes = {}
+      for disk_encoding in args.disk_size.split(','):
+        parts = disk_encoding.split(':', 1)
+        try:
+          disk_sizes[parts[0]] = int(parts[1])
+        except:
+          raise exceptions.GenomicsError('Invalid --disk-size.')
 
-      request = genomics_messages.RunPipelineRequest(
-          pipeline=pipeline,
-          labels=labels_util.ParseCreateArgs(
-              args, genomics_messages.RunPipelineRequest.LabelsValue))
-    else:
-      inputs = genomics_util.ArgDictToAdditionalPropertiesList(
-          arg_inputs,
-          genomics_messages.RunPipelineArgs.InputsValue.AdditionalProperty)
-      outputs = genomics_util.ArgDictToAdditionalPropertiesList(
-          args.outputs,
-          genomics_messages.RunPipelineArgs.OutputsValue.AdditionalProperty)
+      for disk in virtual_machine.disks:
+        if disk.name in disk_sizes:
+          disk.sizeGb = disk_sizes[disk.name]
 
-      # Set "overrides" on the resources. If the user did not pass anything on
-      # the command line, do not set anything in the resource: preserve the
-      # user-intent "did not set" vs. "set an empty value/list"
-
-      resources = genomics_messages.PipelineResources(
-          preemptible=args.preemptible)
-      if args.memory:
-        resources.minimumRamGb = args.memory
-      if args.cpus:
-        resources.minimumCpuCores = args.cpus
-      if args.disk_size:
-        resources.disks = []
-        for disk_encoding in args.disk_size.split(','):
-          disk_args = disk_encoding.split(':', 1)
-          resources.disks.append(genomics_messages.Disk(
-              name=disk_args[0],
-              sizeGb=int(disk_args[1])
-          ))
-
-      # Progression for picking the right zones...
-      #   If specified on the command line, use them.
-      #   If specified in the Pipeline definition, use them.
-      #   If there is a GCE default zone in the local configuration, use it.
-      #   Else let the API select a zone
-      if args.zones:
-        resources.zones = args.zones
-      elif pipeline.resources and pipeline.resources.zones:
-        pass
-      elif properties.VALUES.compute.zone.Get():
-        resources.zones = [properties.VALUES.compute.zone.Get()]
-
-      request = genomics_messages.RunPipelineRequest(
-          ephemeralPipeline=pipeline,
-          pipelineArgs=genomics_messages.RunPipelineArgs(
-              inputs=genomics_messages.RunPipelineArgs.InputsValue(
-                  additionalProperties=inputs),
-              outputs=genomics_messages.RunPipelineArgs.OutputsValue(
-                  additionalProperties=outputs),
-              clientId=args.run_id,
-              logging=genomics_messages.LoggingOptions(gcsPath=args.logging),
-              labels=labels_util.ParseCreateArgs(
-                  args, genomics_messages.RunPipelineArgs.LabelsValue),
-              projectId=genomics_util.GetProjectId(),
-              serviceAccount=genomics_messages.ServiceAccount(
-                  email=args.service_account_email,
-                  scopes=args.service_account_scopes),
-              resources=resources))
+    request = genomics_messages.RunPipelineRequest(
+        pipeline=pipeline,
+        labels=labels_util.ParseCreateArgs(
+            args, genomics_messages.RunPipelineRequest.LabelsValue))
 
     result = apitools_client.pipelines.Run(request)
     log.status.Print('Running [{0}].'.format(result.name))

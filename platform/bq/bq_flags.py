@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# Lint as: python2, python3
 """Flags for calling BigQuery."""
 
 import os

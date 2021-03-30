@@ -68,6 +68,15 @@ class Create(base.CreateCommand):
 
     $ Write-Output "s3cr3t" | {command} my-secret --data-file=-
     --replication-policy=user-managed --locations=us-central1,us-east1
+
+  Create a secret with an automatic replication policy and a next rotation time:
+
+    $ {command} my-secret --next-rotation-time="2030-01-01T15:30:00-05:00"
+
+  Create a secret with an automatic replication policy and a rotation period:
+
+    $ {command} my-secret --next-rotation-time="2030-01-01T15:30:00-05:00"
+    --rotation-period="7200s"
   """
   # pylint: enable=line-too-long
 
@@ -138,6 +147,14 @@ class Create(base.CreateCommand):
       'secrets. To create a user managed secret with customer managed '
       'encryption keys, please use --replication-policy-file.')
 
+  CONFIRM_EXPIRE_TIME_MESSAGE = (
+      'This secret and all of its versions will be automatically deleted at '
+      'the requested expire-time of [{expire_time}].')
+
+  CONFIRM_TTL_MESSAGE = (
+      'This secret and all of its versions will be automatically deleted '
+      'after the requested ttl of [{ttl}] has elapsed.')
+
   @staticmethod
   def Args(parser):
     secrets_args.AddSecret(
@@ -145,6 +162,9 @@ class Create(base.CreateCommand):
     secrets_args.AddDataFile(parser)
     secrets_args.AddCreateReplicationPolicyGroup(parser)
     labels_util.AddCreateLabelsFlags(parser)
+    secrets_args.AddCreateExpirationGroup(parser)
+    secrets_args.AddTopics(parser)
+    secrets_args.AddCreateRotationGroup(parser)
 
   def Run(self, args):
     messages = secrets_api.GetMessages()
@@ -222,13 +242,30 @@ class Create(base.CreateCommand):
     # flag being omitted. See b/138796299 for info.
     if args.data_file == '':  # pylint: disable=g-explicit-bool-comparison
       raise exceptions.BadFileException(self.EMPTY_DATA_FILE_MESSAGE)
+
+    if args.expire_time:
+      msg = self.CONFIRM_EXPIRE_TIME_MESSAGE.format(
+          expire_time=args.expire_time)
+      console_io.PromptContinue(
+          msg, throw_if_unattended=True, cancel_on_no=True)
+
+    if args.ttl:
+      msg = self.CONFIRM_TTL_MESSAGE.format(ttl=args.ttl)
+      console_io.PromptContinue(
+          msg, throw_if_unattended=True, cancel_on_no=True)
+
     # Create the secret
     response = secrets_api.Secrets().Create(
         secret_ref,
         labels=labels,
         locations=locations,
         policy=replication_policy,
-        keys=kms_keys)
+        expire_time=args.expire_time,
+        ttl=args.ttl,
+        keys=kms_keys,
+        topics=args.topics,
+        next_rotation_time=args.next_rotation_time,
+        rotation_period=args.rotation_period)
 
     if data:
       version = secrets_api.Secrets().AddVersion(secret_ref, data)
@@ -289,6 +326,15 @@ class CreateBeta(Create):
   expire-time:
 
     $ {command} my-secret --expire-time="2030-01-01T08:15:30-05:00"
+
+  Create a secret with an automatic replication policy and a next rotation time:
+
+    $ {command} my-secret --next-rotation-time="2030-01-01T15:30:00-05:00"
+
+  Create a secret with an automatic replication policy and a rotation period:
+
+    $ {command} my-secret --next-rotation-time="2030-01-01T15:30:00-05:00"
+    --rotation-period="7200s"
 
   """
   # pylint: enable=line-too-long
@@ -376,6 +422,7 @@ class CreateBeta(Create):
     secrets_args.AddCreateReplicationPolicyGroup(parser)
     labels_util.AddCreateLabelsFlags(parser)
     secrets_args.AddCreateExpirationGroup(parser)
+    secrets_args.AddCreateRotationGroup(parser)
     secrets_args.AddTopics(parser)
 
   def Run(self, args):
@@ -477,6 +524,8 @@ class CreateBeta(Create):
         expire_time=args.expire_time,
         ttl=args.ttl,
         keys=kms_keys,
+        next_rotation_time=args.next_rotation_time,
+        rotation_period=args.rotation_period,
         topics=args.topics)
 
     if data:

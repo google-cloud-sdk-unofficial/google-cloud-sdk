@@ -65,6 +65,7 @@ class UpdateBeta(base.UpdateCommand):
       Some value that we want to have printed later.
     """
 
+    wp_name = args.WORKER_POOL
     wp_region = args.region
 
     release_track = self.ReleaseTrack()
@@ -79,7 +80,6 @@ class UpdateBeta(base.UpdateCommand):
       wp = workerpool_config.LoadWorkerpoolConfigFromPath(
           args.config_from_file, messages)
     else:
-      wp.name = args.WORKER_POOL
       if args.peered_network is not None:
         network_config = messages.NetworkConfig()
         network_config.peeredNetwork = args.peered_network
@@ -102,7 +102,7 @@ class UpdateBeta(base.UpdateCommand):
         params={
             'projectsId': parent,
             'locationsId': wp_region,
-            'workerPoolsId': wp.name,
+            'workerPoolsId': wp_name,
         })
 
     update_mask = cloudbuild_util.MessageToFieldPaths(wp)

@@ -150,15 +150,16 @@ def AddBaseArgs(parser):
 
 def AddBetaArgs(parser):
   """Declare beta flag and positional arguments for this command parser."""
+  flags.AddActiveDirectoryDomain(parser)
   flags.AddExternalMasterGroup(parser)
   flags.AddInstanceResizeLimit(parser)
   flags.AddNetwork(parser)
   labels_util.AddCreateLabelsFlags(parser)
 
 
-def AddAlphaArgs(parser):
+def AddAlphaArgs(unused_parser):
   """Declare alpha flags for this command parser."""
-  flags.AddActiveDirectoryDomain(parser)
+  pass
 
 
 def RunBaseCreateCommand(args, release_track):

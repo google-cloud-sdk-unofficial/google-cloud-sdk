@@ -19,8 +19,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from itertools import chain
-
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.genomics import filter_rewrite
@@ -79,41 +77,6 @@ class List(base.Command):
         Run "$ gcloud topic filters" for more information.
         """)
 
-    parser.add_argument(
-        '--where',
-        default='',
-        type=str,
-        help="""\
-        A string for filtering operations created with the v1alpha2 API. The
-        following filter fields are supported:
-
-            createTime - The time this job was created, in seconds from the
-                         epoch. Can use '>=' and/or '<=' operators.
-            status     - Can be 'RUNNING', 'SUCCESS', 'FAILURE' or 'CANCELED'.
-                         Only one status may be specified.
-            labels.key - 'key' is a label key to match against a target value.
-
-        Example:
-
-            'createTime >= 1432140000 AND
-             createTime <= 1432150000 AND
-             labels.batch = test AND
-             status = RUNNING'
-
-        To calculate the timestamp as seconds from the epoch, on UNIX-like
-        systems (e.g.: Linux, Mac) use the 'date' command:
-
-          $ date --date '20150701' '+%s'
-
-          1435734000
-
-        or with Python (e.g.: Linux, Mac, Windows):
-
-          $ python -c 'from time import mktime, strptime; print int(mktime(strptime("01 July 2015", "%d %B %Y")))'
-
-          1435734000
-        """)
-
   def Run(self, args):
     """Run 'operations list'.
 
@@ -124,48 +87,23 @@ class List(base.Command):
     Returns:
       The list of operations for this project.
     """
-    both = not args.filter and not args.where
-    outputs = []
-    if both or args.filter:
-      apitools_client = genomics_util.GetGenomicsClient('v2alpha1')
-      genomics_messages = genomics_util.GetGenomicsMessages('v2alpha1')
+    apitools_client = genomics_util.GetGenomicsClient('v2alpha1')
+    genomics_messages = genomics_util.GetGenomicsMessages('v2alpha1')
 
-      request_filter = None
-      if args.filter:
-        rewriter = filter_rewrite.OperationsBackend()
-        args.filter, request_filter = rewriter.Rewrite(args.filter)
-        log.info('client_filter=%r server_filter=%r',
-                 args.filter, request_filter)
+    request_filter = None
+    if args.filter:
+      rewriter = filter_rewrite.OperationsBackend()
+      args.filter, request_filter = rewriter.Rewrite(args.filter)
+      log.info('client_filter=%r server_filter=%r', args.filter, request_filter)
 
-      request = genomics_messages.GenomicsProjectsOperationsListRequest(
-          name='projects/%s/operations' % (genomics_util.GetProjectId(),),
-          filter=request_filter)
+    request = genomics_messages.GenomicsProjectsOperationsListRequest(
+        name='projects/%s/operations' % (genomics_util.GetProjectId(),),
+        filter=request_filter)
 
-      outputs.append(list_pager.YieldFromList(
-          apitools_client.projects_operations, request,
-          limit=args.limit,
-          batch_size_attribute='pageSize',
-          batch_size=args.limit,  # Use limit if any, else server default.
-          field='operations'))
-
-    if both or args.where:
-      apitools_client = genomics_util.GetGenomicsClient()
-      genomics_messages = genomics_util.GetGenomicsMessages()
-
-      if args.where:
-        args.where += ' AND '
-
-      args.where += 'projectId=%s' % genomics_util.GetProjectId()
-
-      request = genomics_messages.GenomicsOperationsListRequest(
-          name='operations',
-          filter=args.where)
-
-      outputs.append(list_pager.YieldFromList(
-          apitools_client.operations, request,
-          limit=args.limit,
-          batch_size_attribute='pageSize',
-          batch_size=args.limit,  # Use limit if any, else server default.
-          field='operations'))
-
-    return chain.from_iterable(outputs)
+    return list_pager.YieldFromList(
+        apitools_client.projects_operations,
+        request,
+        limit=args.limit,
+        batch_size_attribute='pageSize',
+        batch_size=args.limit,  # Use limit if any, else server default.
+        field='operations')

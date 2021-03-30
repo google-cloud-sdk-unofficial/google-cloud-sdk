@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20210208",
+ "revision": "20210319",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -78,7 +78,7 @@
      "description": "View your data in Google BigQuery"
     },
     "https://www.googleapis.com/auth/cloud-platform": {
-     "description": "View and manage your data across Google Cloud Platform services"
+     "description": "See, edit, configure, and delete your Google Cloud Platform data"
     },
     "https://www.googleapis.com/auth/cloud-platform.read-only": {
      "description": "View your data across Google Cloud Platform services"
@@ -834,6 +834,10 @@
      "description": "[Optional] The maximum number of bad records that BigQuery can ignore when reading data. If the number of bad records exceeds this value, an invalid error is returned in the job result. This is only valid for CSV, JSON, and Google Sheets. The default value is 0, which requires that all records are valid. This setting is ignored for Google Cloud Bigtable, Google Cloud Datastore backups and Avro formats.",
      "format": "int32"
     },
+    "parquetOptions": {
+     "$ref": "ParquetOptions",
+     "description": "Additional properties to set if sourceFormat is set to Parquet."
+    },
     "schema": {
      "$ref": "TableSchema",
      "description": "[Optional] The schema for the data. Schema is required for CSV and JSON formats. Schema is disallowed for Google Cloud Bigtable, Cloud Datastore backups, and Avro formats."
@@ -1180,6 +1184,10 @@
     "nullMarker": {
      "type": "string",
      "description": "[Optional] Specifies a string that represents a null value in a CSV file. For example, if you specify \"\\N\", BigQuery interprets \"\\N\" as a null value when loading a CSV file. The default value is the empty string. If you set this property to a custom value, BigQuery throws an error if an empty string is present for all data types except for STRING and BYTE. For STRING and BYTE columns, BigQuery interprets the empty string as an empty value."
+    },
+    "parquetOptions": {
+     "$ref": "ParquetOptions",
+     "description": "[Optional] Options to configure parquet support."
     },
     "projectionFields": {
      "type": "array",
@@ -1621,6 +1629,10 @@
      "type": "string",
      "description": "The DDL operation performed, possibly dependent on the pre-existence of the DDL target. Possible values (new values might be added in the future): \"CREATE\": The query created the DDL target. \"SKIP\": No-op. Example cases: the query is CREATE TABLE IF NOT EXISTS while the table already exists, or the query is DROP TABLE IF EXISTS while the table does not exist. \"REPLACE\": The query replaced the DDL target. Example case: the query is CREATE OR REPLACE TABLE, and the table already exists. \"DROP\": The query deleted the DDL target."
     },
+    "ddlTargetDataset": {
+     "$ref": "DatasetReference",
+     "description": "[Output-only] The DDL target dataset. Present only for CREATE/ALTER/DROP SCHEMA queries."
+    },
     "ddlTargetRoutine": {
      "$ref": "RoutineReference",
      "description": "The DDL target routine. Present only for CREATE/DROP FUNCTION/PROCEDURE queries."
@@ -1897,6 +1909,20 @@
     "projectId": {
      "type": "string",
      "description": "[Required] The ID of the project containing this model."
+    }
+   }
+  },
+  "ParquetOptions": {
+   "id": "ParquetOptions",
+   "type": "object",
+   "properties": {
+    "enableListInference": {
+     "type": "boolean",
+     "description": "[Optional] Indicates whether to use schema inference specifically for Parquet LIST logical type."
+    },
+    "enumAsString": {
+     "type": "boolean",
+     "description": "[Optional] Indicates whether to infer Parquet ENUM logical type as STRING instead of BYTES by default."
     }
    }
   },
@@ -2665,6 +2691,11 @@
       "$ref": "TableFieldSchema"
      }
     },
+    "maxLength": {
+     "type": "string",
+     "description": "[Optional] Maximum length of values of this field for STRINGS or BYTES. If max_length is not specified, no maximum length constraint is imposed on this field. If type = \"STRING\", then max_length represents the maximum UTF-8 length of strings in this field. If type = \"BYTES\", then max_length represents the maximum number of bytes in this field. It is invalid to set this field if type \u2260 \"STRING\" and \u2260 \"BYTES\".",
+     "format": "int64"
+    },
     "mode": {
      "type": "string",
      "description": "[Optional] The field mode. Possible values include NULLABLE, REQUIRED and REPEATED. The default value is NULLABLE."
@@ -2685,9 +2716,19 @@
       }
      }
     },
+    "precision": {
+     "type": "string",
+     "description": "[Optional] Precision (maximum number of total digits in base 10) and scale (maximum number of digits in the fractional part in base 10) constraints for values of this field for NUMERIC or BIGNUMERIC. It is invalid to set precision or scale if type \u2260 \"NUMERIC\" and \u2260 \"BIGNUMERIC\". If precision and scale are not specified, no value range constraint is imposed on this field insofar as values are permitted by the type. Values of this NUMERIC or BIGNUMERIC field must be in this range when: - Precision (P) and scale (S) are specified: [-10P-S + 10-S, 10P-S - 10-S] - Precision (P) is specified but not scale (and thus scale is interpreted to be equal to zero): [-10P + 1, 10P - 1]. Acceptable values for precision and scale if both are specified: - If type = \"NUMERIC\": 1 \u2264 precision - scale \u2264 29 and 0 \u2264 scale \u2264 9. - If type = \"BIGNUMERIC\": 1 \u2264 precision - scale \u2264 38 and 0 \u2264 scale \u2264 38. Acceptable values for precision if only precision is specified but not scale (and thus scale is interpreted to be equal to zero): - If type = \"NUMERIC\": 1 \u2264 precision \u2264 29. - If type = \"BIGNUMERIC\": 1 \u2264 precision \u2264 38. If scale is specified but not precision, then it is invalid.",
+     "format": "int64"
+    },
+    "scale": {
+     "type": "string",
+     "description": "[Optional] See documentation for precision.",
+     "format": "int64"
+    },
     "type": {
      "type": "string",
-     "description": "[Required] The field data type. Possible values include STRING, BYTES, INTEGER, INT64 (same as INTEGER), FLOAT, FLOAT64 (same as FLOAT), NUMERIC, BIGNUMERIC, BOOLEAN, BOOL (same as BOOLEAN), TIMESTAMP, DATE, TIME, DATETIME, RECORD (where RECORD indicates that the field contains a nested schema) or STRUCT (same as RECORD)."
+     "description": "[Required] The field data type. Possible values include STRING, BYTES, INTEGER, INT64 (same as INTEGER), FLOAT, FLOAT64 (same as FLOAT), NUMERIC, BIGNUMERIC, BOOLEAN, BOOL (same as BOOLEAN), TIMESTAMP, DATE, TIME, DATETIME, INTERVAL, RECORD (where RECORD indicates that the field contains a nested schema) or STRUCT (same as RECORD)."
     }
    }
   },
@@ -3023,6 +3064,11 @@
      "items": {
       "$ref": "StandardSqlField"
      }
+    },
+    "bestTrialId": {
+     "description": "The best trial_id across all training runs.",
+     "type": "string",
+     "format": "int64"
     }
    }
   },
@@ -3494,7 +3540,7 @@
      ]
     },
     "timeSeriesIdColumn": {
-     "description": "The id column that will be used to indicate different time series to forecast in parallel.",
+     "description": "The time series id column that was used during ARIMA model training.",
      "type": "string"
     },
     "horizon": {
@@ -3667,7 +3713,7 @@
      "type": "boolean"
     },
     "timeSeriesId": {
-     "description": "The id to indicate different time series.",
+     "description": "The time_series_id value for this time series. It will be one of the unique values from the time_series_id_column specified during ARIMA model training. Only present when time_series_id_column training option was used.",
      "type": "string"
     },
     "seasonalPeriods": {
@@ -4242,7 +4288,7 @@
      "type": "boolean"
     },
     "timeSeriesId": {
-     "description": "The id to indicate different time series.",
+     "description": "The time_series_id value for this time series. It will be one of the unique values from the time_series_id_column specified during ARIMA model training. Only present when time_series_id_column training option was used.",
      "type": "string"
     },
     "seasonalPeriods": {
@@ -4367,6 +4413,7 @@
       "Encoded as RFC 3339 full-date format string: 1985-04-12",
       "Encoded as RFC 3339 partial-time format string: 23:20:50.52",
       "Encoded as RFC 3339 full-date \"T\" partial-time: 1985-04-12T23:20:50.52",
+      "Encoded as fully qualified 3 part: 0-5 15 2:30:45.6",
       "Encoded as WKT",
       "Encoded as a decimal string.",
       "Encoded as a decimal string.",
@@ -4384,6 +4431,7 @@
       "DATE",
       "TIME",
       "DATETIME",
+      "INTERVAL",
       "GEOGRAPHY",
       "NUMERIC",
       "BIGNUMERIC",
@@ -4450,12 +4498,14 @@
      "enumDescriptions": [
       "",
       "Non-builtin permanent scalar function.",
-      "Stored procedure."
+      "Stored procedure.",
+      "Non-builtin permanent TVF."
      ],
      "enum": [
       "ROUTINE_TYPE_UNSPECIFIED",
       "SCALAR_FUNCTION",
-      "PROCEDURE"
+      "PROCEDURE",
+      "TABLE_VALUED_FUNCTION"
      ]
     },
     "creationTime": {
@@ -4494,6 +4544,10 @@
     "returnType": {
      "description": "Optional if language = \"SQL\"; required otherwise. If absent, the return type is inferred from definition_body at query time in each query that references this routine. If present, then the evaluated result will be cast to the specified returned type at query time. For example, for the functions created with the following statements: * `CREATE FUNCTION Add(x FLOAT64, y FLOAT64) RETURNS FLOAT64 AS (x + y);` * `CREATE FUNCTION Increment(x FLOAT64) AS (Add(x, 1));` * `CREATE FUNCTION Decrement(x FLOAT64) RETURNS FLOAT64 AS (Add(x, -1));` The return_type is `{type_kind: \"FLOAT64\"}` for `Add` and `Decrement`, and is absent for `Increment` (inferred as FLOAT64 at query time). Suppose the function `Add` is replaced by `CREATE OR REPLACE FUNCTION Add(x INT64, y INT64) AS (x + y);` Then the inferred return type of `Increment` is automatically changed to INT64 at query time, while the return type of `Decrement` remains FLOAT64.",
      "$ref": "StandardSqlDataType"
+    },
+    "returnTableType": {
+     "description": "Optional. Set only if Routine is a \"TABLE_VALUED_FUNCTION\".",
+     "$ref": "StandardSqlTableType"
     },
     "importedLibraries": {
      "description": "Optional. If language = \"JAVASCRIPT\", this field stores the path of the imported JAVASCRIPT libraries.",
@@ -4568,6 +4622,20 @@
     "dataType": {
      "description": "Required unless argument_kind = ANY_TYPE.",
      "$ref": "StandardSqlDataType"
+    }
+   }
+  },
+  "StandardSqlTableType": {
+   "id": "StandardSqlTableType",
+   "description": "A table type",
+   "type": "object",
+   "properties": {
+    "columns": {
+     "description": "The columns in this table type",
+     "type": "array",
+     "items": {
+      "$ref": "StandardSqlField"
+     }
     }
    }
   },
@@ -5353,6 +5421,42 @@
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ]
+    },
+    "delete": {
+     "id": "bigquery.jobs.delete",
+     "path": "projects/{+projectId}/jobs/{+jobId}/delete",
+     "flatPath": "projects/{projectsId}/jobs/{jobsId}/delete",
+     "httpMethod": "DELETE",
+     "parameters": {
+      "projectId": {
+       "description": "Required. Project ID of the job to be deleted.",
+       "pattern": "^[^/]+$",
+       "location": "path",
+       "required": true,
+       "type": "string"
+      },
+      "jobId": {
+       "description": "Required. Job ID of the job to be deleted. If this is a parent job which has child jobs, all child jobs will be deleted as well. Deletion of child jobs directly is not allowed.",
+       "pattern": "^[^/]+$",
+       "location": "path",
+       "required": true,
+       "type": "string"
+      },
+      "location": {
+       "description": "The geographic location of the job. Required. See details at: https://cloud.google.com/bigquery/docs/locations#specifying_your_location.",
+       "location": "query",
+       "type": "string"
+      }
+     },
+     "parameterOrder": [
+      "projectId",
+      "jobId"
+     ],
+     "scopes": [
+      "https://www.googleapis.com/auth/bigquery",
+      "https://www.googleapis.com/auth/cloud-platform"
+     ],
+     "description": "Requests that a job is deleted. This call will return when the job is deleted. This method is available in limited preview."
     }
    }
   },

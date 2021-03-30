@@ -1,18 +1,25 @@
 - release_tracks: [ALPHA, GA]
-  GA:
-    hidden: true
-
   help_text:
     brief: Generate a SSH script for a Database Migration Service migration job.
     description: Generate a SSH script for a Database Migration Service migration job.
-    examples: |
-      To generate a SSH script for a Database Migration Service migration job with vm creation config, run:
+    ALPHA:
+      examples: |
+        To generate a SSH script for a Database Migration Service migration job with vm creation config, run:
 
-        $ {command} my-migration-job --vm=sample-vm --vm-port=1111 --vm-machine-type=n1-standard-1 --vm-zone-create=us-central1-a --vpc=sample-vpc --region=us-central1
+          $ {command} my-migration-job --vm=sample-vm --vm-port=1111 --vm-machine-type=n1-standard-1 --vm-zone-create=us-central1-a --vpc=sample-vpc --region=us-central1
 
-      To generate a SSH script for a Database Migration Service migration job with vm selection config, run:
+        To generate a SSH script for a Database Migration Service migration job with vm selection config, run:
 
-        $ {command} my-migration-job --vm=sample-vm --vm-port=1111 --vm-zone=us-central1-a --region=us-central1
+          $ {command} my-migration-job --vm=sample-vm --vm-port=1111 --vm-zone=us-central1-a --region=us-central1
+    GA:
+      examples: |
+        To generate a SSH script for a Database Migration Service migration job with vm creation config, run:
+
+          $ {command} my-migration-job --vm=sample-vm --vm-port=1111 --vm-machine-type=n1-standard-1 --vm-zone-create=us-central1-a --subnet=sample-subnet --region=us-central1
+
+        To generate a SSH script for a Database Migration Service migration job with vm selection config, run:
+
+          $ {command} my-migration-job --vm=sample-vm --vm-port=1111 --vm-zone=us-central1-a --region=us-central1
 
   request:
     collection: datamigration.projects.locations.migrationJobs

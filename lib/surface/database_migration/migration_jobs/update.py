@@ -40,7 +40,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update a Database Migration Service migration job."""
 
@@ -98,9 +98,3 @@ class Update(base.Command):
     return client.projects_locations_operations.Get(
         messages.DatamigrationProjectsLocationsOperationsGetRequest(
             name=operation_ref.operationsId))
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class UpdateGA(Update):
-  """Update a Database Migration Service migration job."""

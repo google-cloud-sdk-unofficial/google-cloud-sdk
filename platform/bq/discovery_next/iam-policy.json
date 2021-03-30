@@ -13,7 +13,7 @@
     "x16": "http://www.google.com/images/icons/product/search-16.gif",
     "x32": "http://www.google.com/images/icons/product/search-32.gif"
    },
-  "documentationLink": "https://developers.google.com/bigquery/",
+  "documentationLink": "https://cloud.google.com/bigquery/",
   "protocol": "rest",
   "rootUrl": "https://bigquery.googleapis.com/",
   "mtlsRootUrl": "https://bigquery.mtls.googleapis.com/",
@@ -111,7 +111,7 @@
           "description": "View your data in Google BigQuery"
         },
         "https://www.googleapis.com/auth/cloud-platform": {
-          "description": "View and manage your data across Google Cloud Platform services"
+          "description": "See, edit, configure, and delete your Google Cloud Platform data"
         },
         "https://www.googleapis.com/auth/cloud-platform.read-only": {
           "description": "View your data across Google Cloud Platform services"
@@ -220,6 +220,10 @@
               "routine": {
                 "description": "[Pick one] A routine from a different dataset to grant access to. Queries executed against that routine will have read access to views\/tables\/routines in this dataset. Only UDF is supported for now. The role field is not required when this field is set. If that routine is updated by any user, access to the routine needs to be granted again via an update operation.",
                 "$ref": "RoutineReference"
+              },
+              "dataset": {
+                "description": "[Pick one] A grant authorizing all resources of a particular type in a particular dataset access to this dataset. Only views are supported for now. The role field is not required when this field is set. If that dataset is deleted and re-created, its access needs to be granted again via an update operation.",
+                "$ref": "DatasetAccessEntry"
               }
             }
           }
@@ -248,6 +252,14 @@
           "description": "Output only. Reserved for future use.",
           "readOnly": true,
           "type": "boolean"
+        },
+        "type": {
+          "description": "Optional. The type of the dataset, one of: * DEFAULT - only accessible by owner and authorized accounts, * PUBLIC - accessible by everyone, * LINKED - linked dataset, * EXTERNAL - dataset with definition in external metadata catalog.",
+          "type": "string"
+        },
+        "linkedDatasetSource": {
+          "description": "Optional. The source when the dataset is of type LINKED.",
+          "$ref": "LinkedDatasetSource"
         }
       }
     },
@@ -302,6 +314,32 @@
         }
       }
     },
+    "DatasetAccessEntry": {
+      "id": "DatasetAccessEntry",
+      "description": "Grants all resources of particular types in a particular dataset read access to the current dataset. Similar to how individually authorized views work, updates to any resource granted through its dataset (including creation of new resources) requires read permission to referenced resources, plus write permission to the authorizing dataset.",
+      "type": "object",
+      "properties": {
+        "dataset": {
+          "description": "The dataset this entry applies to",
+          "$ref": "DatasetReference"
+        },
+        "targetTypes": {
+          "description": "Which resources in the dataset this entry applies to. Currently, only views are supported, but additional target types may be added in the future.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enumDescriptions": [
+              "Do not use. You must set a target type explicitly.",
+              "This entry applies to views in the dataset."
+            ],
+            "enum": [
+              "TARGET_TYPE_UNSPECIFIED",
+              "VIEWS"
+            ]
+          }
+        }
+      }
+    },
     "EncryptionConfiguration": {
       "id": "EncryptionConfiguration",
       "type": "object",
@@ -309,6 +347,17 @@
         "kmsKeyName": {
           "description": "Optional. Describes the Cloud KMS encryption key that will be used to protect destination BigQuery table. The BigQuery Service Account associated with your project requires access to this encryption key.",
           "type": "string"
+        }
+      }
+    },
+    "LinkedDatasetSource": {
+      "id": "LinkedDatasetSource",
+      "description": "A dataset source type which refers to another BigQuery dataset.",
+      "type": "object",
+      "properties": {
+        "sourceDataset": {
+          "description": "The source dataset reference contains project numbers and not project ids.",
+          "$ref": "DatasetReference"
         }
       }
     },
@@ -481,6 +530,11 @@
           "items": {
             "$ref": "StandardSqlField"
           }
+        },
+        "bestTrialId": {
+          "description": "The best trial_id across all training runs.",
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -971,7 +1025,7 @@
           ]
         },
         "timeSeriesIdColumn": {
-          "description": "The id column that will be used to indicate different time series to forecast in parallel.",
+          "description": "The time series id column that was used during ARIMA model training.",
           "type": "string"
         },
         "horizon": {
@@ -1144,7 +1198,7 @@
           "type": "boolean"
         },
         "timeSeriesId": {
-          "description": "The id to indicate different time series.",
+          "description": "The time_series_id value for this time series. It will be one of the unique values from the time_series_id_column specified during ARIMA model training. Only present when time_series_id_column training option was used.",
           "type": "string"
         },
         "seasonalPeriods": {
@@ -1719,7 +1773,7 @@
           "type": "boolean"
         },
         "timeSeriesId": {
-          "description": "The id to indicate different time series.",
+          "description": "The time_series_id value for this time series. It will be one of the unique values from the time_series_id_column specified during ARIMA model training. Only present when time_series_id_column training option was used.",
           "type": "string"
         },
         "seasonalPeriods": {
@@ -1844,6 +1898,7 @@
             "Encoded as RFC 3339 full-date format string: 1985-04-12",
             "Encoded as RFC 3339 partial-time format string: 23:20:50.52",
             "Encoded as RFC 3339 full-date \"T\" partial-time: 1985-04-12T23:20:50.52",
+            "Encoded as fully qualified 3 part: 0-5 15 2:30:45.6",
             "Encoded as WKT",
             "Encoded as a decimal string.",
             "Encoded as a decimal string.",
@@ -1861,6 +1916,7 @@
             "DATE",
             "TIME",
             "DATETIME",
+            "INTERVAL",
             "GEOGRAPHY",
             "NUMERIC",
             "BIGNUMERIC",
@@ -2060,6 +2116,7 @@
         },
         "allowLargeResults": {
           "description": "[Optional] If true and query uses legacy SQL dialect, allows the query to produce arbitrarily large result tables at a slight cost in performance. Requires destinationTable to be set. For standard SQL queries, this flag is ignored and large results are always allowed. However, you must still set destinationTable when result size exceeds the allowed maximum response size.",
+          "default": "false",
           "type": "boolean"
         },
         "useQueryCache": {
@@ -2069,10 +2126,12 @@
         },
         "flattenResults": {
           "description": "[Optional] If true and query uses legacy SQL dialect, flattens all nested and repeated fields in the query results. allowLargeResults must be true if this is set to false. For standard SQL queries, this flag is ignored and results are never flattened.",
+          "default": "true",
           "type": "boolean"
         },
         "maximumBillingTier": {
           "description": "[Optional, Deprecated] Maximum billing tier allowed for this query. The billing tier controls the amount of compute resources allotted to the query, and multiplies the on-demand cost of the query accordingly. A query that runs within its allotted resources will succeed and indicate its billing tier in statistics.query.billingTier, but if the query exceeds its allotted resources, it will fail with billingTierLimitExceeded. WARNING: The billed byte amount can be multiplied by an amount up to this number! Most users should not need to alter this setting, and we recommend that you avoid introducing new uses of it.",
+          "default": "1",
           "type": "integer",
           "format": "int32"
         },
@@ -2083,6 +2142,7 @@
         },
         "useLegacySql": {
           "description": "Specifies whether to use BigQuery's legacy SQL dialect for this query. The default value is true. If set to false, the query will use BigQuery's standard SQL: https:\/\/cloud.google.com\/bigquery\/sql-reference\/ When useLegacySql is set to false, the value of flattenResults is ignored; query will be run as if flattenResults is false.",
+          "default": "true",
           "type": "boolean"
         },
         "parameterMode": {
@@ -2249,7 +2309,7 @@
           "type": "string"
         },
         "type": {
-          "description": "Required. The field data type. Possible values include STRING, BYTES, INTEGER, INT64 (same as INTEGER), FLOAT, FLOAT64 (same as FLOAT), BOOLEAN, BOOL (same as BOOLEAN), TIMESTAMP, DATE, TIME, DATETIME, GEOGRAPHY, NUMERIC, BIGNUMERIC ([Preview](\/products\/#product-launch-stages)), RECORD (where RECORD indicates that the field contains a nested schema) or STRUCT (same as RECORD).",
+          "description": "Required. The field data type. Possible values include STRING, BYTES, INTEGER, INT64 (same as INTEGER), FLOAT, FLOAT64 (same as FLOAT), BOOLEAN, BOOL (same as BOOLEAN), TIMESTAMP, DATE, TIME, DATETIME, GEOGRAPHY, NUMERIC, BIGNUMERIC, INTERVAL ([Preview](\/products\/#product-launch-stages)), RECORD (where RECORD indicates that the field contains a nested schema) or STRUCT (same as RECORD).",
           "type": "string"
         },
         "mode": {
@@ -2279,6 +2339,21 @@
               }
             }
           }
+        },
+        "maxLength": {
+          "description": "Optional. Maximum length of values of this field for STRINGS or BYTES. If max_length is not specified, no maximum length constraint is imposed on this field. If type = \"STRING\", then max_length represents the maximum UTF-8 length of strings in this field. If type = \"BYTES\", then max_length represents the maximum number of bytes in this field. It is invalid to set this field if type \u2260 \"STRING\" and \u2260 \"BYTES\".",
+          "type": "string",
+          "format": "int64"
+        },
+        "precision": {
+          "description": "Optional. Precision (maximum number of total digits in base 10) and scale (maximum number of digits in the fractional part in base 10) constraints for values of this field for NUMERIC or BIGNUMERIC. It is invalid to set precision or scale if type \u2260 \"NUMERIC\" and \u2260 \"BIGNUMERIC\". If precision and scale are not specified, no value range constraint is imposed on this field insofar as values are permitted by the type. Values of this NUMERIC or BIGNUMERIC field must be in this range when: * Precision (P) and scale (S) are specified: [-10P-S + 10-S, 10P-S - 10-S] * Precision (P) is specified but not scale (and thus scale is interpreted to be equal to zero): [-10P + 1, 10P - 1]. Acceptable values for precision and scale if both are specified: * If type = \"NUMERIC\": 1 \u2264 precision - scale \u2264 29 and 0 \u2264 scale \u2264 9. * If type = \"BIGNUMERIC\": 1 \u2264 precision - scale \u2264 38 and 0 \u2264 scale \u2264 38. Acceptable values for precision if only precision is specified but not scale (and thus scale is interpreted to be equal to zero): * If type = \"NUMERIC\": 1 \u2264 precision \u2264 29. * If type = \"BIGNUMERIC\": 1 \u2264 precision \u2264 38. If scale is specified but not precision, then it is invalid.",
+          "type": "string",
+          "format": "int64"
+        },
+        "scale": {
+          "description": "Optional. See documentation for precision.",
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -3291,6 +3366,11 @@
           "readOnly": true,
           "$ref": "RoutineReference"
         },
+        "ddlTargetDataset": {
+          "description": "Output only. The DDL target dataset. Present only for CREATE\/ALTER\/DROP SCHEMA(dataset) queries.",
+          "readOnly": true,
+          "$ref": "DatasetReference"
+        },
         "exportDataStatistics": {
           "description": "Output only. Stats for EXPORT DATA statement.",
           "readOnly": true,
@@ -4257,12 +4337,14 @@
           "enumDescriptions": [
             "",
             "Non-builtin permanent scalar function.",
-            "Stored procedure."
+            "Stored procedure.",
+            "Non-builtin permanent TVF."
           ],
           "enum": [
             "ROUTINE_TYPE_UNSPECIFIED",
             "SCALAR_FUNCTION",
-            "PROCEDURE"
+            "PROCEDURE",
+            "TABLE_VALUED_FUNCTION"
           ]
         },
         "creationTime": {
@@ -4301,6 +4383,10 @@
         "returnType": {
           "description": "Optional if language = \"SQL\"; required otherwise. If absent, the return type is inferred from definition_body at query time in each query that references this routine. If present, then the evaluated result will be cast to the specified returned type at query time. For example, for the functions created with the following statements: * `CREATE FUNCTION Add(x FLOAT64, y FLOAT64) RETURNS FLOAT64 AS (x + y);` * `CREATE FUNCTION Increment(x FLOAT64) AS (Add(x, 1));` * `CREATE FUNCTION Decrement(x FLOAT64) RETURNS FLOAT64 AS (Add(x, -1));` The return_type is `{type_kind: \"FLOAT64\"}` for `Add` and `Decrement`, and is absent for `Increment` (inferred as FLOAT64 at query time). Suppose the function `Add` is replaced by `CREATE OR REPLACE FUNCTION Add(x INT64, y INT64) AS (x + y);` Then the inferred return type of `Increment` is automatically changed to INT64 at query time, while the return type of `Decrement` remains FLOAT64.",
           "$ref": "StandardSqlDataType"
+        },
+        "returnTableType": {
+          "description": "Optional. Set only if Routine is a \"TABLE_VALUED_FUNCTION\". TODO(b\/173344646) - Update return_type documentation to say it cannot be set for TABLE_VALUED_FUNCTION before preview launch.",
+          "$ref": "StandardSqlTableType"
         },
         "importedLibraries": {
           "description": "Optional. If language = \"JAVASCRIPT\", this field stores the path of the imported JAVASCRIPT libraries.",
@@ -4375,6 +4461,20 @@
         "dataType": {
           "description": "Required unless argument_kind = ANY_TYPE.",
           "$ref": "StandardSqlDataType"
+        }
+      }
+    },
+    "StandardSqlTableType": {
+      "id": "StandardSqlTableType",
+      "description": "A table type",
+      "type": "object",
+      "properties": {
+        "columns": {
+          "description": "The columns in this table type",
+          "type": "array",
+          "items": {
+            "$ref": "StandardSqlField"
+          }
         }
       }
     },
@@ -4604,6 +4704,10 @@
         },
         "useLegacySql": {
           "description": "Specifies whether to use BigQuery's legacy SQL for this view. The default value is true. If set to false, the view will use BigQuery's standard SQL: https:\/\/cloud.google.com\/bigquery\/sql-reference\/ Queries and views that reference this view must use the same flag value. A wrapper is used here because the default value is True.",
+          "type": "boolean"
+        },
+        "useExplicitColumnNames": {
+          "description": "True if the column names are explicitly specified. For example by using the 'CREATE VIEW v(c1, c2) AS ...' syntax. Can only be set for GoogleSQL viewsL.",
           "type": "boolean"
         }
       }

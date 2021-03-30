@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import endpoints_util
 from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import operations_util
+from googlecloudsdk.command_lib.ai import region_util
 from googlecloudsdk.command_lib.ai import validation
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
@@ -34,7 +35,8 @@ from googlecloudsdk.core import log
 
 def _AddArgs(parser):
   flags.GetDisplayNameArg('endpoint').AddToParser(parser)
-  flags.AddRegionResourceArg(parser, 'to create endpoint')
+  flags.AddRegionResourceArg(
+      parser, 'to create endpoint', prompt_func=region_util.PromptForOpRegion)
   flags.GetDescriptionArg('endpoint').AddToParser(parser)
   labels_util.AddCreateLabelsFlags(parser)
 

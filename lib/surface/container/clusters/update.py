@@ -656,6 +656,7 @@ class UpdateBeta(Update):
     flags.AddIstioConfigFlag(parser)
     flags.AddCloudRunConfigFlag(parser)
     flags.AddEnableIntraNodeVisibilityFlag(group)
+    flags.AddWorkloadAltsFlags(group)
     flags.AddWorkloadCertificatesFlags(group)
     flags.AddWorkloadIdentityFlags(group, use_identity_provider=True)
     flags.AddWorkloadIdentityUpdateFlags(group)
@@ -692,6 +693,7 @@ class UpdateBeta(Update):
     opts.enable_network_egress_metering = args.enable_network_egress_metering
     opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     opts.enable_workload_certificates = args.enable_workload_certificates
+    opts.enable_alts = args.enable_alts
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     flags.ValidateCloudRunConfigUpdateArgs(opts.cloud_run_config,
                                            args.disable_addons)
@@ -787,6 +789,7 @@ class UpdateAlpha(Update):
     flags.AddIstioConfigFlag(parser)
     flags.AddCloudRunConfigFlag(parser)
     flags.AddEnableIntraNodeVisibilityFlag(group)
+    flags.AddWorkloadAltsFlags(group)
     flags.AddWorkloadCertificatesFlags(group)
     flags.AddWorkloadIdentityFlags(group, use_identity_provider=True)
     flags.AddWorkloadIdentityUpdateFlags(group)
@@ -826,6 +829,7 @@ class UpdateAlpha(Update):
     opts.enable_network_egress_metering = args.enable_network_egress_metering
     opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     opts.enable_workload_certificates = args.enable_workload_certificates
+    opts.enable_alts = args.enable_alts
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     flags.ValidateCloudRunConfigUpdateArgs(opts.cloud_run_config,
                                            args.disable_addons)

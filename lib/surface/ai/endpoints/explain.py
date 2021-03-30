@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import endpoints_util
 from googlecloudsdk.command_lib.ai import flags
+from googlecloudsdk.command_lib.ai import region_util
 from googlecloudsdk.core import log
 
 
@@ -68,7 +69,9 @@ class ExplainBeta(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddEndpointResourceArg(parser, 'to request an online explanation')
+    flags.AddEndpointResourceArg(
+        parser, 'to request an online explanation',
+        prompt_func=region_util.PromptForOpRegion)
     flags.AddPredictInstanceArg(parser)
     flags.GetDeployedModelId(required=False).AddToParser(parser)
 

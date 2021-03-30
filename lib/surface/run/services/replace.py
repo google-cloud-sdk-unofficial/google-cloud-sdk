@@ -136,8 +136,9 @@ class Replace(base.Command):
 
       pretty_print.Info(
           run_messages_util.GetStartDeployMessage(
-              conn_context, service_ref,
-              operation='Applying new configuration'))
+              conn_context,
+              service_ref,
+              operation='Applying new configuration to'))
 
       deployment_stages = stages.ServiceStages()
       header = (

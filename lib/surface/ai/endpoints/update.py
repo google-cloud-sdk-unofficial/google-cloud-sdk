@@ -24,13 +24,15 @@ from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import errors
 from googlecloudsdk.command_lib.ai import flags
+from googlecloudsdk.command_lib.ai import region_util
 from googlecloudsdk.command_lib.ai import validation
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
 def _AddArgs(parser):
-  flags.AddEndpointResourceArg(parser, 'to update')
+  flags.AddEndpointResourceArg(
+      parser, 'to update', prompt_func=region_util.PromptForOpRegion)
   flags.GetDisplayNameArg('endpoint', required=False).AddToParser(parser)
   flags.GetDescriptionArg('endpoint').AddToParser(parser)
   flags.AddTrafficSplitGroupArgs(parser)

@@ -113,7 +113,6 @@ class UpdateAlpha(_Update, base.Command):
     cp_flags.AddInstanceFlag(parser)
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateGA(_Update, base.Command):
   """Update a Database Migration Service connection profile."""

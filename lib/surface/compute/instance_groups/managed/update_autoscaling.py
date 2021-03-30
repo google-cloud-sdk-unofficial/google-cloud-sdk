@@ -147,8 +147,8 @@ UpdateAutoscaling.detailed_help = {
 *{command}* updates autoscaling parameters of specified managed instance
 group.
 
-Autoscalers can use one or more policies listed below. Information on using
-multiple policies can be found here: [](https://cloud.google.com/compute/docs/autoscaler/multiple-policies)
+Autoscalers can use one or more autoscaling signals. Information on using
+multiple autoscaling signals can be found here: [](https://cloud.google.com/compute/docs/autoscaler/multiple-signals)
 
 In contrast to *{parent_command} set-autoscaling*, this command *only* updates
 specified fields. For instance:

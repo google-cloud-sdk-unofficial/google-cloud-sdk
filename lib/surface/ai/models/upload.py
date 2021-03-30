@@ -29,6 +29,7 @@ from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import models_util
 from googlecloudsdk.command_lib.ai import operations_util
+from googlecloudsdk.command_lib.ai import region_util
 from googlecloudsdk.core import yaml
 
 
@@ -57,7 +58,7 @@ class UploadV1(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddUploadModelFlags(parser)
+    flags.AddUploadModelFlags(parser, region_util.PromptForOpRegion)
 
   def Run(self, args):
     region_ref = args.CONCEPTS.region.Parse()
@@ -102,7 +103,7 @@ class UploadV1Beta1(UploadV1):
 
   @staticmethod
   def Args(parser):
-    flags.AddUploadModelFlags(parser)
+    flags.AddUploadModelFlags(parser, region_util.PromptForOpRegion)
     flags.AddUploadModelBetaFlags(parser)
 
   def Run(self, args):

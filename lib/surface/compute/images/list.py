@@ -31,8 +31,6 @@ from googlecloudsdk.core import properties
 class List(base.ListCommand):
   """List Compute Engine images."""
 
-  _return_partial_success = False
-
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(flags.LIST_FORMAT)
@@ -44,8 +42,8 @@ class List(base.ListCommand):
         help='If provided, deprecated images are shown.')
 
     if constants.PREVIEW_IMAGE_PROJECTS:
-      preview_image_projects = (
-          '{0}.'.format(', '.join(constants.PREVIEW_IMAGE_PROJECTS)))
+      preview_image_projects = ('{0}.'.format(', '.join(
+          constants.PREVIEW_IMAGE_PROJECTS)))
     else:
       preview_image_projects = '(none)'
 
@@ -83,8 +81,8 @@ class List(base.ListCommand):
     request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
 
     def ParseProject(project):
-      return holder.resources.Parse(None, {'project': project},
-                                    collection='compute.projects')
+      return holder.resources.Parse(
+          None, {'project': project}, collection='compute.projects')
 
     if args.standard_images:
       for project in constants.PUBLIC_IMAGE_PROJECTS:
@@ -95,8 +93,7 @@ class List(base.ListCommand):
         request_data.scope_set.add(ParseProject(project))
 
     list_implementation = lister.MultiScopeLister(
-        client, global_service=client.apitools_client.images,
-        return_partial_success=self._return_partial_success)
+        client, global_service=client.apitools_client.images)
 
     images = lister.Invoke(request_data, list_implementation)
 
@@ -123,20 +120,13 @@ class List(base.ListCommand):
     return images
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ListBeta(List):
 
   def AugmentImagesStatus(self, resources, images):
     """Modify images status based on OrgPolicy."""
     return policy.AugmentImagesStatus(
         resources, properties.VALUES.core.project.GetOrFail(), images)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(List):
-  """List Compute Engine images."""
-
-  _return_partial_success = True
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('images')

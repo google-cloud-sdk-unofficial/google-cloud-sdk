@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
+from googlecloudsdk.command_lib.ai import region_util
 
 
 def _Run(args, version):
@@ -46,7 +47,8 @@ class DescribeGa(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddEndpointResourceArg(parser, 'to describe')
+    flags.AddEndpointResourceArg(
+        parser, 'to describe', prompt_func=region_util.PromptForOpRegion)
 
   def Run(self, args):
     return _Run(args, constants.GA_VERSION)

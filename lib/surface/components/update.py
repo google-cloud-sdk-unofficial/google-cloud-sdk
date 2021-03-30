@@ -47,7 +47,8 @@ class Update(base.SilentCommand):
           By default, this command will update all components to their latest
           version. This can be configured by using the `--version` flag to
           choose a specific version to update to. This version may also be a
-          version older than the one that is currently installed.
+          version older than the one that is currently installed, thus allowing
+          you to downgrade your Cloud SDK installation.
 
           You can see your current Cloud SDK version by running:
 
@@ -75,8 +76,10 @@ class Update(base.SilentCommand):
   def Args(parser):
     parser.add_argument(
         '--version',
-        help='An optional Cloud SDK version to update your components to.  By '
-        'default, components are updated to the latest available version.')
+        help='An optional Cloud SDK version to update your components to. By '
+        'default, components are updated to the latest available version. By '
+        'selecting an older version you can downgrade your Cloud SDK '
+        'installation.')
     parser.add_argument(
         'component_ids',
         metavar='COMPONENT-IDS',

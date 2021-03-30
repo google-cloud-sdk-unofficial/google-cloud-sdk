@@ -135,13 +135,13 @@ class AnalyzeIamPolicyLongrunning(base.Command):
           To find out which roles or permissions a user has been granted on a
           project, and write analysis results to BigQuery, run:
 
-            $ {command} --organization=YOUR_ORG_ID --full-resource-name=YOUR_PROJECT_FULL_RESOURCE_NAME --identity='user:u1@foo.com' --bigquery-table-prefix='projects/YOUR_PROJECT_ID/datasets/YOUR_DATASET_ID/tables/YOUR_TABLE_PREFIX'
+            $ {command} --organization=YOUR_ORG_ID --full-resource-name=YOUR_PROJECT_FULL_RESOURCE_NAME --identity='user:u1@foo.com' --bigquery-dataset='projects/YOUR_PROJECT_ID/datasets/YOUR_DATASET_ID' --bigquery-table-prefix='YOUR_BIGQUERY_TABLE_PREFIX'
 
           To find out which users have been granted the
           iam.serviceAccounts.actAs permission on any applicable resources, and
           write analysis results to BigQuery, run:
 
-            $ {command} --organization=YOUR_ORG_ID --permissions='iam.serviceAccounts.actAs' --bigquery-table-prefix='projects/YOUR_PROJECT_ID/datasets/YOUR_DATASET_ID/tables/YOUR_TABLE_PREFIX'
+            $ {command} --organization=YOUR_ORG_ID --permissions='iam.serviceAccounts.actAs' --bigquery-dataset='projects/YOUR_PROJECT_ID/datasets/YOUR_DATASET_ID' --bigquery-table-prefix='YOUR_BIGQUERY_TABLE_PREFIX'
 
       """
   }

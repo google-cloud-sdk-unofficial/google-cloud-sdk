@@ -40,7 +40,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Database Migration Service migration job."""
 
@@ -101,9 +101,3 @@ class Create(base.Command):
     return client.projects_locations_operations.Get(
         messages.DatamigrationProjectsLocationsOperationsGetRequest(
             name=operation_ref.operationsId))
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class CreateGA(Create):
-  """Create a Database Migration Service migration job."""

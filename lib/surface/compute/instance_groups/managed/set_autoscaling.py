@@ -263,8 +263,8 @@ SetAutoscaling.detailed_help = {
         *{command}* sets autoscaling parameters of specified managed instance
 group.
 
-Autoscalers can use one or more policies listed below. Information on using
-multiple policies can be found here: [](https://cloud.google.com/compute/docs/autoscaler/multiple-policies)
+Autoscalers can use one or more autoscaling signals. Information on using
+multiple autoscaling signals can be found here: [](https://cloud.google.com/compute/docs/autoscaler/multiple-signals)
         """,
 }
 SetAutoscalingAlpha.detailed_help = SetAutoscaling.detailed_help

@@ -24,11 +24,10 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.accelerator_types import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA,
+                    base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List Compute Engine accelerator types."""
-
-  _return_partial_success = False
 
   @staticmethod
   def Args(parser):
@@ -48,17 +47,9 @@ class List(base.ListCommand):
     request_data = lister.ParseMultiScopeFlags(args, holder.resources)
     list_implementation = lister.MultiScopeLister(
         client,
-        aggregation_service=client.apitools_client.acceleratorTypes,
-        return_partial_success=self._return_partial_success)
+        aggregation_service=client.apitools_client.acceleratorTypes)
 
     return lister.Invoke(request_data, list_implementation)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(List):
-  """List Compute Engine accelerator types."""
-
-  _return_partial_success = True
 
 
 List.detailed_help = base_classes.GetZonalListerHelp('accelerator types')

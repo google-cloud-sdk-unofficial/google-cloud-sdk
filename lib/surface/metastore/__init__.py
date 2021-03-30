@@ -21,16 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Metastore(base.Group):
-  """Manage Dataproc Metastore resources."""
-
-  category = base.DATA_ANALYTICS_CATEGORY
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class MetastoreGA(base.Group):
   """Manage Dataproc Metastore resources."""
 
   category = base.DATA_ANALYTICS_CATEGORY

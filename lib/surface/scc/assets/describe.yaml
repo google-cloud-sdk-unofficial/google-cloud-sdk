@@ -16,6 +16,14 @@
 
         $ {command} 123456 --asset=5678
 
+      Describe an asset under project example-project, given its Cloud SCC asset id 5678
+
+        $ {command} projects/example-project/assets/5678
+
+      Describe an asset under folder 456, given its Cloud SCC asset id 5678
+
+        $ {command} folders/456/assets/5678
+
   request:
     collection: securitycenter.organizations.assets
     api_version: v1

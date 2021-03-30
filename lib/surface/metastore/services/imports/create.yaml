@@ -1,4 +1,9 @@
 - release_tracks: [ALPHA, BETA]
+  deprecate:
+    is_removed: false
+    warning: |
+      This command has been deprecated.
+      Please use `gcloud metastore services import gcs` instead.
   help_text:
     brief: |
       Import metadata into a service.

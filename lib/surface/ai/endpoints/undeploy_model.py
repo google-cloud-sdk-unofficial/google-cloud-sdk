@@ -26,10 +26,13 @@ from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import endpoints_util
 from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import operations_util
+from googlecloudsdk.command_lib.ai import region_util
 
 
 def _AddArgs(parser):
-  flags.AddEndpointResourceArg(parser, 'to undeploy a model from')
+  flags.AddEndpointResourceArg(
+      parser, 'to undeploy a model from',
+      prompt_func=region_util.PromptForOpRegion)
   flags.GetDeployedModelId().AddToParser(parser)
   flags.GetTrafficSplitArg().AddToParser(parser)
 

@@ -559,7 +559,7 @@ class CreateBeta(Create):
   _support_location_hint = False
   _support_source_snapshot_csek = False
   _support_image_csek = False
-  _support_post_key_revocation_action_type = False
+  _support_post_key_revocation_action_type = True
   _support_rsa_encrypted = True
   _deprecate_maintenance_policy = False
   _support_create_disk_snapshots = True
@@ -611,6 +611,7 @@ class CreateBeta(Create):
         parser, utils.COMPUTE_BETA_API_VERSION)
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddNetworkPerformanceConfigsArgs(parser)
+    instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

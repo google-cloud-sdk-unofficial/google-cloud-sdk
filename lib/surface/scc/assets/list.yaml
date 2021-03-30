@@ -22,6 +22,14 @@
 
         $ {command} 123456
 
+      List all assets under project (example-project)
+
+        $ {command} projects/example-project
+
+      List all assets under folder (456)
+
+        $ {command} folders/456
+
       List all assets under organization (123456) that were present as of 2019-01-01T01:00:00 GMT time.
 
         $ {command} 123456 --read-time="2019-01-01T01:00:00Z"

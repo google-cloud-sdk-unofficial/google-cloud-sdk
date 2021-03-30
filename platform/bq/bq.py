@@ -54,8 +54,8 @@ import googleapiclient
 import httplib2
 import oauth2client_4_0
 import oauth2client_4_0.client
-import oauth2client_4_0.contrib.devshell
 import oauth2client_4_0.contrib.gce
+import oauth2client_4_0.contrib.multiprocess_file_storage
 import oauth2client_4_0.file
 import oauth2client_4_0.service_account
 import oauth2client_4_0.tools
@@ -113,6 +113,7 @@ JobIdGeneratorRandom = bigquery_client.JobIdGeneratorRandom
 JobIdGeneratorFingerprint = bigquery_client.JobIdGeneratorFingerprint
 ReservationReference = bigquery_client.ApiClientHelper.ReservationReference
 AutoscaleAlphaReservationReference = bigquery_client.ApiClientHelper.AutoscaleAlphaReservationReference
+BetaReservationReference = bigquery_client.ApiClientHelper.BetaReservationReference
 CapacityCommitmentReference = bigquery_client.ApiClientHelper.CapacityCommitmentReference  # pylint: disable=line-too-long
 ReservationAssignmentReference = bigquery_client.ApiClientHelper.ReservationAssignmentReference  # pylint: disable=line-too-long
 ConnectionReference = bigquery_client.ApiClientHelper.ConnectionReference
@@ -170,6 +171,25 @@ _DDL_OPERATION_MAP = {
     'ALTER': 'Altered',
     'DROP': 'Dropped',
 }
+_PARQUET_LIST_INFERENCE_DESCRIPTION = (
+    'Use schema inference specifically for Parquet LIST logical type.\n It '
+    'checks whether the LIST node is in the standard form as documented in:\n '
+    'https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#lists\n'
+    '  <optional | required> group <name> (LIST) {\n    repeated group list '
+    '{\n      <optional | required> <element-type> element;\n    }\n  }\n '
+    'Returns the "element" node in list_element_node. The corresponding field '
+    'for the LIST node in the converted schema is treated as if the node has '
+    'the following schema:\n repeated <element-type> <name>\n This means nodes'
+    ' "list" and "element" are omitted.\n\n Otherwise, the LIST node must be '
+    'in one of the forms described by the backward-compatibility rules as '
+    'documented in:\n '
+    'https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#backward-compatibility-rules\n'
+    ' <optional | required> group <name> (LIST) {\n   repeated <element-type> '
+    '<element-name>\n }\n Returns the <element-name> node in '
+    'list_element_node. The corresponding field for the LIST node in the '
+    'converted schema is treated as if the node has the following schema:\n '
+    'repeated <element-type> <name>\n This means the element node is omitted.')
+
 
 # These aren't relevant for user-facing docstrings:
 # pylint: disable=g-doc-return-or-yield
@@ -296,12 +316,15 @@ class CachedCredentialLoader(CredentialLoader):
     """
     self.credential_cache_file = credential_cache_file
     self._read_cache_first = read_cache_first
+    # MultiprocessFileStorage recommends using scopes as the key for single-user
+    # credentials storage.
+    self._scopes_key = ','.join(sorted(_GetClientScopeFromFlags()))
     try:
-      self._storage = oauth2client_4_0.file.Storage(credential_cache_file)
+      self._storage = oauth2client_4_0.contrib.multiprocess_file_storage.MultiprocessFileStorage(
+          credential_cache_file, self._scopes_key)
     except OSError as e:
       raise bigquery_client.BigqueryError(
           'Cannot create credential file %s: %s' % (credential_cache_file, e))
-    self._verify_storage = False
 
   @property
   def storage(self):
@@ -319,13 +342,6 @@ class CachedCredentialLoader(CredentialLoader):
     # Save credentials to storage now to reuse and also avoid a warning message.
     self._storage.put(cred)
 
-    if self._verify_storage:
-      # Verify credentials storage is ok now.
-      try:
-        self._storage.get()
-      except BaseException as e:  # pylint: disable=broad-except
-        self._RaiseCredentialsCorrupt(e)
-
     cred.set_store(self._storage)
     return cred
 
@@ -336,18 +352,14 @@ class CachedCredentialLoader(CredentialLoader):
 
     try:
       creds = self._storage.get()
-    except ImportError as e:
-      # This is a workaround for switching between oauth2client versions.
-      is_v2_storage = (str(e).startswith('No module named oauth2client.'))
-      if is_v2_storage:
-        os.remove(self.credential_cache_file)
-        self._storage = oauth2client_4_0.file.Storage(
+
+      if not creds:
+        legacy_storage = oauth2client_4_0.file.Storage(
             self.credential_cache_file)
-        self._storage._create_file_if_needed()  # pylint: disable=protected-access
-        # Verify credentials storage is ok now. We don't want to silently
-        # recreate credentials every time, if this didn't work for some reason.
-        self._verify_storage = True
-      return None
+        creds = legacy_storage.get()
+        if creds:
+          self._storage.put(creds)
+
     except BaseException as e:  # pylint: disable=broad-except
       self._RaiseCredentialsCorrupt(e)
 
@@ -476,8 +488,38 @@ def _GetClientScopeFromFlags():
   return client_scope
 
 
+def _GetCredentialsLoaderFromFlags():
+  """Returns a CredentialsLoader based on user-supplied flags."""
+
+  if FLAGS.service_account:
+    if not FLAGS.service_account_credential_file:
+      raise app.UsageError(
+          'The flag --service_account_credential_file must be specified '
+          'if --service_account is used.')
+    if FLAGS.service_account_private_key_file:
+      return ServiceAccountPrivateKeyFileLoader(
+          credential_cache_file=FLAGS.service_account_credential_file,
+          read_cache_first=True,
+          service_account=FLAGS.service_account,
+          file_path=FLAGS.service_account_private_key_file,
+          password=FLAGS.service_account_private_key_password)
+    raise app.UsageError('Service account authorization requires '
+                         '--service_account_private_key_file flag to be set.')
+
+  if FLAGS.application_default_credential_file:
+    if not FLAGS.credential_file:
+      raise app.UsageError('The flag --credential_file must be specified if '
+                           '--application_default_credential_file is used.')
+    return ApplicationDefaultCredentialFileLoader(
+        credential_cache_file=FLAGS.credential_file,
+        read_cache_first=True,
+        credential_file=FLAGS.application_default_credential_file)
+  raise app.UsageError(
+      'bq.py should not be invoked. Use bq command instead.')
+
+
 def _GetCredentialsFromFlags():
-  """Returns credentials based on user supplied flags."""
+  """Returns credentials based on user-supplied flags."""
 
 
   if FLAGS.use_gce_service_account:
@@ -486,34 +528,7 @@ def _GetCredentialsFromFlags():
     return oauth2client_4_0.contrib.gce.AppAssertionCredentials()
 
 
-  if FLAGS.service_account:
-    if not FLAGS.service_account_credential_file:
-      raise app.UsageError(
-          'The flag --service_account_credential_file must be specified '
-          'if --service_account is used.')
-
-    if FLAGS.service_account_private_key_file:
-      loader = ServiceAccountPrivateKeyFileLoader(
-          credential_cache_file=FLAGS.service_account_credential_file,
-          read_cache_first=True,
-          service_account=FLAGS.service_account,
-          file_path=FLAGS.service_account_private_key_file,
-          password=FLAGS.service_account_private_key_password)
-    else:
-      raise app.UsageError('Service account authorization requires '
-                           '--service_account_private_key_file flag to be set.')
-  elif FLAGS.application_default_credential_file:
-    if not FLAGS.credential_file:
-      raise app.UsageError('The flag --credential_file must be specified if '
-                           '--application_default_credential_file is used.')
-    loader = ApplicationDefaultCredentialFileLoader(
-        credential_cache_file=FLAGS.credential_file,
-        read_cache_first=True,
-        credential_file=FLAGS.application_default_credential_file)
-  else:
-    raise app.UsageError(
-        'bq.py should not be invoked. Use bq command instead.')
-
+  loader = _GetCredentialsLoaderFromFlags()
   credentials = loader.Load()
 
 
@@ -1424,10 +1439,19 @@ class _Load(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_boolean(
         'use_avro_logical_types',
-        None,
-        'If sourceFormat is set to "AVRO", indicates whether to enable '
+        None, 'If sourceFormat is set to "AVRO", indicates whether to enable '
         'interpreting logical types into their corresponding types '
         '(ie. TIMESTAMP), instead of only using their raw types (ie. INTEGER).',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'parquet_enum_as_string',
+        False, 'Infer Parquet ENUM logical type as STRING '
+        '(instead of BYTES by default).',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'parquet_enable_list_inference',
+        False,
+        _PARQUET_LIST_INFERENCE_DESCRIPTION,
         flag_values=fv)
     flags.DEFINE_string(
         'hive_partitioning_mode',
@@ -1636,6 +1660,14 @@ class _Load(BigqueryCmd):
       if self.boundary_bytes_base64 is not None:
         thrift_options['boundary_bytes'] = self.boundary_bytes_base64
       opts['thrift_options'] = thrift_options
+    if opts['source_format'] == 'PARQUET':
+      parquet_options = {}
+      if self.parquet_enum_as_string is not None:
+        parquet_options['enum_as_string'] = self.parquet_enum_as_string
+      if self.parquet_enable_list_inference is not None:
+        parquet_options[
+            'enable_list_inference'] = self.parquet_enable_list_inference
+      opts['parquet_options'] = parquet_options
     job = client.Load(table_reference, source, schema=schema, **opts)
     if FLAGS.sync:
       _PrintJobMessages(client.FormatJobInfo(job))
@@ -1653,8 +1685,9 @@ def _CreateExternalTableDefinition(
     hive_partitioning_mode=None,
     hive_partitioning_source_uri_prefix=None,
     require_hive_partition_filter=None,
-    use_avro_logical_types=False
-):
+    use_avro_logical_types=False,
+    parquet_enum_as_string=False,
+    parquet_enable_list_inference=False):
   """Create an external table definition with the given URIs and the schema.
 
   Arguments:
@@ -1746,6 +1779,11 @@ def _CreateExternalTableDefinition(
               "useAvroLogicalTypes": true
           }
       """)
+    elif external_table_def['sourceFormat'] == 'PARQUET':
+      external_table_def['parquetOptions'] = {
+          'enumAsString': parquet_enum_as_string,
+          'enableListInference': parquet_enable_list_inference
+      }
     if ignore_unknown_values:
       external_table_def['ignoreUnknownValues'] = True
     if hive_partitioning_mode is not None:
@@ -1839,6 +1877,16 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         'interpreting logical types into their corresponding types '
         '(ie. TIMESTAMP), instead of only using their raw types (ie. INTEGER).',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'parquet_enum_as_string',
+        False, 'Infer Parquet ENUM logical type as STRING '
+        '(instead of BYTES by default).',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'parquet_enable_list_inference',
+        False,
+        _PARQUET_LIST_INFERENCE_DESCRIPTION,
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, source_uris, schema=None):
@@ -1891,8 +1939,9 @@ class _MakeExternalTableDefinition(BigqueryCmd):
             hive_partitioning_source_uri_prefix=self
             .hive_partitioning_source_uri_prefix,
             require_hive_partition_filter=self.require_hive_partition_filter,
-            use_avro_logical_types=self.use_avro_logical_types
-        ),
+            use_avro_logical_types=self.use_avro_logical_types,
+            parquet_enum_as_string=self.parquet_enum_as_string,
+            parquet_enable_list_inference=self.parquet_enable_list_inference),
         sys.stdout,
         sort_keys=True,
         indent=2)
@@ -1929,7 +1978,7 @@ class _Query(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_boolean(
         'batch',
-        False,
+        None,
         'Whether to run the query in batch mode.',
         flag_values=fv)
     flags.DEFINE_boolean(
@@ -2310,8 +2359,11 @@ class _Query(BigqueryCmd):
         kwds['write_disposition'] = 'WRITE_TRUNCATE'
       if self.require_cache:
         kwds['create_disposition'] = 'CREATE_NEVER'
+      priority = None
       if self.batch:
-        kwds['priority'] = 'BATCH'
+        priority = 'BATCH'
+      if priority is not None:
+        kwds['priority'] = priority
 
       kwds['destination_table'] = self.destination_table
       kwds['allow_large_results'] = self.allow_large_results
@@ -2453,7 +2505,9 @@ class _Query(BigqueryCmd):
 
 
 def _GetExternalDataConfig(file_path_or_simple_spec,
-                           use_avro_logical_types=False):
+                           use_avro_logical_types=False,
+                           parquet_enum_as_string=False,
+                           parquet_enable_list_inference=False):
   """Returns a ExternalDataConfiguration from the file or specification string.
 
   Determines if the input string is a file path or a string,
@@ -2531,7 +2585,9 @@ def _GetExternalDataConfig(file_path_or_simple_spec,
         schema,
         True,
         connection_id,
-        use_avro_logical_types=use_avro_logical_types)
+        use_avro_logical_types=use_avro_logical_types,
+        parquet_enum_as_string=parquet_enum_as_string,
+        parquet_enable_list_inference=parquet_enable_list_inference)
 
 
 class _Extract(BigqueryCmd):
@@ -3119,6 +3175,8 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       response = []
       if FLAGS.api_version == 'autoscale_alpha':
         object_type = AutoscaleAlphaReservationReference
+      elif FLAGS.api_version == 'v1beta1':
+        object_type = BetaReservationReference
       else:
         object_type = ReservationReference
       reference = client.GetReservationReference(
@@ -3227,8 +3285,8 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         _PrintPageToken(list_connections_results)
     elif self.row_access_policies:
       object_type = RowAccessPolicyReference
-      response = client.ListRowAccessPolicies(reference, self.max_results,
-                                              self.page_token)
+      response = client.ListRowAccessPoliciesWithGrantees(
+          reference, self.max_results, self.page_token)
       if 'rowAccessPolicies' in response:
         results = response['rowAccessPolicies']
       else:
@@ -3715,6 +3773,7 @@ def _ParseRangePartitioning(range_partitioning_spec=None):
 
 
 class _Make(BigqueryCmd):
+  """Creates a dataset or a table."""
   usage = """mk [-d] <identifier>  OR  mk [-t] <identifier> [<schema>]"""
 
   def __init__(self, name, fv):
@@ -4030,6 +4089,11 @@ class _Make(BigqueryCmd):
         'idle slots from other reservations.',
         flag_values=fv)
     flags.DEFINE_integer(
+        'max_concurrency',
+        None,
+        'Reservation maximum concurrency.',
+        flag_values=fv)
+    flags.DEFINE_integer(
         'autoscale_max_slots',
         None,
         'Number of slots to be scaled when needed. Autoscale will be enabled '
@@ -4121,10 +4185,19 @@ class _Make(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_boolean(
         'use_avro_logical_types',
-        True,
-        'If sourceFormat is set to "AVRO", indicates whether to enable '
+        True, 'If sourceFormat is set to "AVRO", indicates whether to enable '
         'interpreting logical types into their corresponding types '
         '(ie. TIMESTAMP), instead of only using their raw types (ie. INTEGER).',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'parquet_enum_as_string',
+        False, 'Infer Parquet ENUM logical type as STRING '
+        '(instead of BYTES by default).',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'parquet_enable_list_inference',
+        False,
+        _PARQUET_LIST_INFERENCE_DESCRIPTION,
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -4192,6 +4265,7 @@ class _Make(BigqueryCmd):
             reference=reference,
             slots=self.slots,
             ignore_idle_slots=ignore_idle_arg,
+            max_concurrency=self.max_concurrency,
             autoscale_max_slots=self.autoscale_max_slots)
       except BaseException as e:
         raise bigquery_client.BigqueryError(
@@ -4408,7 +4482,8 @@ class _Make(BigqueryCmd):
       external_data_config = None
       if self.external_table_definition is not None:
         external_data_config = _GetExternalDataConfig(
-            self.external_table_definition, self.use_avro_logical_types)
+            self.external_table_definition, self.use_avro_logical_types,
+            self.parquet_enum_as_string, self.parquet_enable_list_inference)
       view_udf_resources = None
       if self.view_udf_resource:
         view_udf_resources = _ParseUdfResources(self.view_udf_resource)
@@ -4543,6 +4618,11 @@ class _Update(BigqueryCmd):
         None,
         'If false, any query running in this reservation will be able to use '
         'idle slots from other reservations.',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'max_concurrency',
+        None,
+        'Reservation maximum concurrency.',
         flag_values=fv)
     flags.DEFINE_integer(
         'autoscale_max_slots',
@@ -4879,6 +4959,7 @@ class _Update(BigqueryCmd):
               reference=reference,
               slots=self.slots,
               ignore_idle_slots=ignore_idle_arg,
+              max_concurrency=self.max_concurrency,
               autoscale_max_slots=self.autoscale_max_slots)
           _PrintObjectInfo(object_info, reference, custom_format='show')
       except BaseException as e:

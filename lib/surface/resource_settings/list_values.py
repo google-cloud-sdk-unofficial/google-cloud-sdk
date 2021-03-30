@@ -55,7 +55,7 @@ class ListValues(base.ListCommand):
     settings_service = api_utils.GetServiceFromArgs(args)
     parent_resource = utils.GetParentResourceFromArgs(args)
 
-    get_request = api_utils.GetSearchRequestFromArgs(args, parent_resource)
-    setting_value = settings_service.Search(get_request)
+    get_request = api_utils.GetListRequestFromArgs(args, parent_resource, True)
+    setting_value = settings_service.List(get_request)
 
     return setting_value

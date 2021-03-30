@@ -26,12 +26,10 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.disks import flags
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List Compute Engine persistent disks."""
-
-  _return_partial_success = False
 
   @staticmethod
   def Args(parser):
@@ -50,20 +48,14 @@ class List(base.ListCommand):
         client,
         zonal_service=client.apitools_client.disks,
         regional_service=client.apitools_client.regionDisks,
-        aggregation_service=client.apitools_client.disks,
-        return_partial_success=self._return_partial_success)
+        aggregation_service=client.apitools_client.disks)
 
     return lister.Invoke(request_data, list_implementation)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(List):
-  """List Compute Engine persistent disks."""
-
-  _return_partial_success = True
-
-
 List.detailed_help = base_classes.GetMultiScopeListerHelp(
     'disks',
-    scopes=[base_classes.ScopeType.zonal_scope,
-            base_classes.ScopeType.regional_scope])
+    scopes=[
+        base_classes.ScopeType.zonal_scope,
+        base_classes.ScopeType.regional_scope
+    ])

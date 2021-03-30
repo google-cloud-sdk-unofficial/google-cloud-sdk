@@ -26,11 +26,10 @@ from googlecloudsdk.command_lib.compute.instance_groups.managed import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA,
+                    base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List Compute Engine managed instance groups."""
-
-  _return_partial_success = False
 
   @staticmethod
   def Args(parser):
@@ -47,8 +46,7 @@ class List(base.ListCommand):
         client,
         zonal_service=client.apitools_client.instanceGroupManagers,
         regional_service=client.apitools_client.regionInstanceGroupManagers,
-        aggregation_service=client.apitools_client.instanceGroupManagers,
-        return_partial_success=self._return_partial_success)
+        aggregation_service=client.apitools_client.instanceGroupManagers)
 
     migs = lister.Invoke(request_data, list_implementation)
 
@@ -62,13 +60,6 @@ class List(base.ListCommand):
     if self._had_errors:
       log.err.Print('(*) - there are errors in your autoscaling setup, please '
                     'describe the resource to see details')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(List):
-  """List Compute Engine managed instance groups."""
-
-  _return_partial_success = True
 
 
 List.detailed_help = base_classes.GetMultiScopeListerHelp(

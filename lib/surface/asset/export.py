@@ -89,6 +89,33 @@ class Export(base.Command):
 class ExportNonGA(Export):
   """Export the cloud assets to Google Cloud Storage or BigQuery."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          """\
+      Export the cloud assets to Google Cloud Storage or BigQuery. Use gcloud
+      asset operations describe to get the latest status of the operation. Note
+      that to export a project different from the project you want to bill, you
+      can use  --billing-project or authenticate with a service account.
+      See https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/gcloud-asset
+      for examples of using a service account.
+      """,
+      'EXAMPLES':
+          """\
+      To export a snapshot of assets of type 'compute.googleapis.com/Disk' in
+      project 'test-project' at '2019-03-05T00:00:00Z' to
+      'gs://bucket-name/object-name' and only export the asset metadata, run:
+
+        $ {command} --project='test-project' --asset-types='compute.googleapis.com/Disk' --snapshot-time='2019-03-05T00:00:00Z' --output-path='gs://bucket-name/object-name' --content-type='resource'
+      To export a snapshot of relationship of type INSTANCE_TO_INSTANCEGROUP in
+      project 'test-project' at '2019-03-05T00:00:00Z' to
+      'projects/projectId/datasets/datasetId/tables/table_name', overwrite the table
+      if existed, run:
+
+        $ {command} --project='test-project' --relationship-types='INSTANCE_TO_INSTANCEGROUP' --snapshot-time='2019-03-05T00:00:00Z' --bigquery-table='projects/projectId/datasets/datasetId/tables/table_name' --output-bigquery-force --content-type='relationship'
+      """
+  }
+  # pylint: enable=line-too-long
+
   @classmethod
   def Args(cls, parser):
     flags.AddParentArgs(parser, 'The project which is the root asset.',

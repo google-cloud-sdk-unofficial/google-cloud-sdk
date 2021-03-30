@@ -27,8 +27,6 @@ from googlecloudsdk.calliope import base
 class List(base.ListCommand):
   """Lists Compute Engine public delegated prefixes."""
 
-  _return_partial_success = True
-
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat("""\
@@ -50,8 +48,7 @@ class List(base.ListCommand):
         client,
         regional_service=client.apitools_client.publicDelegatedPrefixes,
         global_service=client.apitools_client.globalPublicDelegatedPrefixes,
-        aggregation_service=client.apitools_client.publicDelegatedPrefixes,
-        return_partial_success=self._return_partial_success
+        aggregation_service=client.apitools_client.publicDelegatedPrefixes
     )
 
     return lister.Invoke(request_data, list_implementation)

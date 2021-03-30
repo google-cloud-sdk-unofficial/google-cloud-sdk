@@ -69,11 +69,11 @@ class ExportAutoscaling(base.Command):
 
 ExportAutoscaling.detailed_help = {
     'brief': 'Export autoscaling parameters of a managed instance group',
-    'DESCRIPTION': """\
+    'DESCRIPTION': """
         *{command}* exports the autoscaling parameters of the specified managed
 instance group.
 
-Autoscalers can use one or more of the policies listed below. Information on
-using multiple policies can be found here: [](https://cloud.google.com/compute/docs/autoscaler/multiple-policies)
+Autoscalers can use one or more autoscaling signals. Information on using
+multiple autoscaling signals can be found here: [](https://cloud.google.com/compute/docs/autoscaler/multiple-signals)
         """,
 }

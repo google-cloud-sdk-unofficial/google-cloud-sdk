@@ -28,26 +28,21 @@ from googlecloudsdk.command_lib.database_migration import flags
 from googlecloudsdk.command_lib.database_migration.connection_profiles import flags as cp_flags
 from googlecloudsdk.core.console import console_io
 
-DETAILED_HELP = {
-    'DESCRIPTION':
-        'Create a Database Migration Service connection profile for MySQL.',
-    'EXAMPLES':
-        """\
-        To create a connection profile for MySQL:
+DESCRIPTION = ('Create a Database Migration Service connection profile for '
+               'MySQL.')
+EXAMPLES = """\
+    To create a connection profile for MySQL:
 
-            $ {command} CONNECTION_PROFILE --region=us-central1 --password=123456 --username=fakeuser --display-name=my-profile --host=1.2.3.4 --port=1111
+        $ {{command}} CONNECTION_PROFILE --region=us-central1 --password=123456 --username=fakeuser --display-name=my-profile --host=1.2.3.4 --port=1111
 
-        If the source is a Cloud SQL database, run:
+    If the source is a Cloud SQL database, run:
 
-            $ {command} CONNECTION_PROFILE --region=us-central1 --password=123456 --username=fakeuser --display-name=my-profile --host=1.2.3.4 --port=1111 --instance=my-instance
-        """,
-}
+        $ {{command}} CONNECTION_PROFILE --region=us-central1 --password=123456 --username=fakeuser --display-name=my-profile --host=1.2.3.4 --port=1111 --{instance}=my-instance
+    """
 
 
 class _MySQL(object):
   """Create a Database Migration Service connection profile for MySQL."""
-
-  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -112,6 +107,9 @@ class _MySQL(object):
 class MySQLAlpha(_MySQL, base.Command):
   """Create a Database Migration Service connection profile for MySQL."""
 
+  detailed_help = {'DESCRIPTION': DESCRIPTION,
+                   'EXAMPLES': EXAMPLES.format(instance='instance')}
+
   @staticmethod
   def Args(parser):
     _MySQL.Args(parser)
@@ -119,10 +117,12 @@ class MySQLAlpha(_MySQL, base.Command):
     cp_flags.AddInstanceFlag(parser)
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class MySQLGA(_MySQL, base.Command):
   """Create a Database Migration Service connection profile for MySQL."""
+
+  detailed_help = {'DESCRIPTION': DESCRIPTION,
+                   'EXAMPLES': EXAMPLES.format(instance='cloudsql-instance')}
 
   @staticmethod
   def Args(parser):

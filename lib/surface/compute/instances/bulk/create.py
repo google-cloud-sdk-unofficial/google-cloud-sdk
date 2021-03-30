@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import filter_rewrite
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute.instances.create import utils as create_utils
@@ -141,6 +142,26 @@ def _CommonArgs(parser,
     instances_flags.AddLocalSsdArgsWithSize(parser)
   else:
     instances_flags.AddLocalSsdArgs(parser)
+
+
+def _GetOperations(compute_client, project, operation_group_id):
+  """Requests operations with group id matching the given one."""
+
+  errors_to_collect = []
+
+  _, operation_filter = filter_rewrite.Rewriter().Rewrite(
+      expression='operationGroupId=' + operation_group_id)
+
+  operations_response = compute_client.MakeRequests(
+      [(compute_client.apitools_client.globalOperations, 'AggregatedList',
+        compute_client.apitools_client.globalOperations.GetRequestType(
+            'AggregatedList')(filter=operation_filter, project=project))],
+      errors_to_collect=errors_to_collect,
+      log_result=False,
+      always_return_operation=True,
+      no_followup=True)
+
+  return operations_response, errors_to_collect
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -440,6 +461,11 @@ class Create(base.Command):
                                                       resource_parser, project,
                                                       location, scope)
 
+    if not args.IsSpecified('format'):
+      # Unless a format is specified we are outputing status information
+      # via the Epilog, so can default to no formatted output.
+      args.format = 'disable'
+
     self._errors = []
     self._log_async = False
     self._status_message = None
@@ -449,7 +475,7 @@ class Create(base.Command):
       try:
         response = instances_service.BulkInsert(request)
         self._operation_selflink = response.selfLink
-        return
+        return {'operationGroupId': response.operationGroupId}
       except exceptions.HttpError as error:
         raise error
 
@@ -463,8 +489,22 @@ class Create(base.Command):
 
     self._errors = errors_to_collect
     if response:
-      self._status_message = response[0].statusMessage
+      operation_group_id = response[0].operationGroupId
 
+      operations_response, errors = _GetOperations(compute_client,
+                                                   request.project,
+                                                   operation_group_id)
+
+      if not errors:
+        num_successful = sum(1 for op in operations_response
+                             if op.operationType == 'insert' and
+                             str(op.status) == 'DONE' and op.error is None)
+        num_unsuccessful = request.bulkInsertInstanceResource.count - num_successful
+
+        self._status_message = 'VM instances created: {}, failed: {}.'.format(
+            num_successful, num_unsuccessful)
+
+      return {'operationGroupId': operation_group_id}
     return
 
   def Epilog(self, resources_were_displayed):
@@ -487,8 +527,6 @@ class CreateBeta(Create):
   """Create Compute Engine virtual machine instances."""
 
   _support_display_device = True
-
-  _log_async = False
 
   @classmethod
   def Args(cls, parser):
@@ -524,8 +562,6 @@ class CreateAlpha(Create):
   _support_threads_per_core = True
   _support_display_device = True
   _support_local_ssd_size = True
-
-  _log_async = False
 
   @classmethod
   def Args(cls, parser):

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief:  |
       Export metadata from a Dataproc Metastore service to Google Cloud Storage.
@@ -22,6 +22,8 @@
       api_version: v1alpha
     BETA:
       api_version: v1beta
+    GA:
+      api_version: v1
     collection: metastore.projects.locations.services
 
   arguments:
@@ -31,6 +33,21 @@
         you want to export.
       spec: !REF googlecloudsdk.command_lib.metastore.resources:service
     params:
+    - arg_name: dump-type
+      api_field: exportMetadataRequest.databaseDumpType
+      help_text: |
+        The type of the database dump. If unspecified, defaults to `mysql`.
+      choices:
+      - arg_value: mysql
+        enum_value: MYSQL
+        help_text: |
+          Database dump is a MYSQL dump file.
+      - arg_value: avro
+        enum_value: AVRO
+        help_text: |
+          Database dump contains AVRO files.
+        release_tracks: [ALPHA, BETA]
+      default: mysql
     - arg_name: destination-folder
       api_field: exportMetadataRequest.destinationGcsFolder
       required: true

@@ -596,6 +596,7 @@ flags_to_add = {
         'tags': flags.AddTagsCreate,
         'tpu': AddTpuWithServiceNetworking,
         'verticalpodautoscaling': flags.AddVerticalPodAutoscalingFlag,
+        'workloadAlts': flags.AddWorkloadAltsFlags,
         'workloadcertificates': flags.AddWorkloadCertificatesFlags,
         'workloadidentity': (lambda p: flags.AddWorkloadIdentityFlags(p, True)),
         'workloadmetadata':
@@ -689,6 +690,7 @@ flags_to_add = {
         'tags': flags.AddTagsCreate,
         'tpu': AddTpuWithServiceNetworking,
         'verticalpodautoscaling': flags.AddVerticalPodAutoscalingFlag,
+        'workloadAlts': flags.AddWorkloadAltsFlags,
         'workloadcertificates': flags.AddWorkloadCertificatesFlags,
         'workloadidentity': (lambda p: flags.AddWorkloadIdentityFlags(p, True)),
         'workloadmetadata':
@@ -905,6 +907,7 @@ class CreateBeta(Create):
     ops.enable_workload_certificates = getattr(args,
                                                'enable_workload_certificates',
                                                None)
+    ops.enable_alts = getattr(args, 'enable_alts', None)
     ops.ephemeral_storage = get_default('ephemeral_storage')
     ops.enable_workload_monitoring_eap = \
       get_default('enable_workload_monitoring_eap')
@@ -983,6 +986,7 @@ class CreateAlpha(Create):
     ops.enable_workload_certificates = getattr(args,
                                                'enable_workload_certificates',
                                                None)
+    ops.enable_alts = getattr(args, 'enable_alts', None)
     ops.enable_workload_monitoring_eap = \
       get_default('enable_workload_monitoring_eap')
     ops.private_endpoint_subnetwork = \

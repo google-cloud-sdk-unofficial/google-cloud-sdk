@@ -8,6 +8,14 @@
 
         $ {command} 123456 --group-by="security_center_properties.resource_type"
 
+      Group assets under project example-project by their type (e.g. project, disk, compute instance, service etc):
+
+        $ {command} projects/example-project --group-by="security_center_properties.resource_type"
+
+      Group assets under folder 456 by their type (e.g. project, disk, compute instance, service etc):
+
+        $ {command} folders/456 --group-by="security_center_properties.resource_type"
+
       Group compute instances (assets) under organization 123456 by their respective projects:
 
         $ {command} 123456 --filter="security_center_properties.resource_type=\"google.compute.Instance\"" --group-by="security_center_properties.resource_project"

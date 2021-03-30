@@ -42,7 +42,7 @@ def _Args(parser):
   parser.display_info.AddCacheUpdater(flags.ForwardingRulesCompleter)
 
 
-def _Run(args, holder, return_partial_success):
+def _Run(args, holder):
   """Issues request necessary to list forwarding rules."""
   client = holder.client
 
@@ -52,17 +52,15 @@ def _Run(args, holder, return_partial_success):
       client,
       regional_service=client.apitools_client.forwardingRules,
       global_service=client.apitools_client.globalForwardingRules,
-      aggregation_service=client.apitools_client.forwardingRules,
-      return_partial_success=return_partial_success)
+      aggregation_service=client.apitools_client.forwardingRules)
 
   return lister.Invoke(request_data, list_implementation)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA,
+                    base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List forwarding rules."""
-
-  _return_partial_success = False
 
   @staticmethod
   def Args(parser):
@@ -70,18 +68,7 @@ class List(base.ListCommand):
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, self._return_partial_success)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(List):
-  """List forwarding rules."""
-
-  _return_partial_success = True
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, self._return_partial_success)
+    return _Run(args, holder)
 
 
 List.detailed_help = (

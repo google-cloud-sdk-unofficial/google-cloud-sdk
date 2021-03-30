@@ -118,10 +118,14 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
                 id=sp.id, rules=org_firewall_rule))
 
     if args.IsSpecified('format') and args.format == 'json':
-      return client.messages.InstancesGetEffectiveFirewallsResponse(
-          organizationFirewalls=org_firewall,
-          firewalls=network_firewall,
-          firewallPolicys=all_firewall_policy)
+      if org_firewall:
+        return client.messages.InstancesGetEffectiveFirewallsResponse(
+            organizationFirewalls=org_firewall,
+            firewalls=network_firewall,
+            firewallPolicys=all_firewall_policy)
+      else:
+        return client.messages.InstancesGetEffectiveFirewallsResponse(
+            firewalls=network_firewall, firewallPolicys=all_firewall_policy)
 
     result = []
     for fp in org_firewall_policy:

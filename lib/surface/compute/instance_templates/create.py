@@ -36,6 +36,7 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_templates import flags as instance_templates_flags
 from googlecloudsdk.command_lib.compute.instance_templates import service_proxy_aux_data
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
+from googlecloudsdk.command_lib.compute.resource_policies import flags as maintenance_flags
 from googlecloudsdk.command_lib.compute.sole_tenancy import flags as sole_tenancy_flags
 from googlecloudsdk.command_lib.compute.sole_tenancy import util as sole_tenancy_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
@@ -94,6 +95,8 @@ def _CommonArgs(parser,
   instances_flags.AddPrivateNetworkIpArgs(parser)
   instances_flags.AddMinNodeCpuArg(parser)
   instances_flags.AddNestedVirtualizationArgs(parser)
+  maintenance_flags.AddResourcePoliciesArgs(parser, 'added to',
+                                            'instance-template')
 
   instance_templates_flags.AddServiceProxyConfigArgs(parser)
 
@@ -620,6 +623,10 @@ def _RunCreate(compute_api,
   instance_template.properties.confidentialInstanceConfig = (
       confidential_instance_config_message)
 
+  if args.IsSpecified('resource_policies'):
+    instance_template.properties.resourcePolicies = getattr(
+        args, 'resource_policies', [])
+
   if support_post_key_revocation_action_type and args.IsSpecified(
       'post_key_revocation_action_type'):
     instance_template.properties.postKeyRevocationActionType = arg_utils.ChoiceToEnum(
@@ -731,7 +738,7 @@ class CreateBeta(Create):
   _support_kms = True
   _support_resource_policy = True
   _support_location_hint = False
-  _support_post_key_revocation_action_type = False
+  _support_post_key_revocation_action_type = True
   _support_threads_per_core = False
   _support_multi_writer = True
 
@@ -750,6 +757,7 @@ class CreateBeta(Create):
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)
     instances_flags.AddConfidentialComputeArgs(parser)
+    instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.

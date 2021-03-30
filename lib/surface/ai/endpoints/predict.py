@@ -24,10 +24,13 @@ from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import endpoints_util
 from googlecloudsdk.command_lib.ai import flags
+from googlecloudsdk.command_lib.ai import region_util
 
 
 def _AddArgs(parser):
-  flags.AddEndpointResourceArg(parser, 'to do online prediction')
+  flags.AddEndpointResourceArg(
+      parser, 'to do online prediction',
+      prompt_func=region_util.PromptForOpRegion)
   flags.AddPredictInstanceArg(parser)
 
 

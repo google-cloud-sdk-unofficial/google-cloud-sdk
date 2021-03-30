@@ -40,6 +40,23 @@ class Update(base.UpdateCommand):
       Update the label of a secret named 'my-secret'.
 
         $ {command} my-secret --update-labels=foo=bar
+
+      Update a secret to have a next-rotation-time:
+
+        $ {command} my-secret --next-rotation-time="2030-01-01T15:30:00-05:00"
+
+      Update a secret to have a next-rotation-time and rotation-period:
+
+        $ {command} my-secret --next-rotation-time="2030-01-01T15:30:00-05:00"
+        --rotation-period="7200s"
+
+      Update a secret to remove the next-rotation-time:
+
+        $ {command} my-secret --remove-next-rotation-time
+
+      Update a secret to clear rotation policy:
+
+        $ {command} my-secret --remove-rotation-schedule
   """
 
   NO_CHANGES_MESSAGE = (
@@ -59,6 +76,9 @@ class Update(base.UpdateCommand):
     secrets_args.AddSecret(
         parser, purpose='to update', positional=True, required=True)
     labels_util.AddUpdateLabelsFlags(parser)
+    secrets_args.AddUpdateExpirationGroup(parser)
+    secrets_args.AddUpdateTopicsGroup(parser)
+    secrets_args.AddUpdateRotationGroup(parser)
 
   def _RunUpdate(self, original, args):
     messages = secrets_api.GetMessages()
@@ -70,11 +90,33 @@ class Update(base.UpdateCommand):
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
     if labels_diff.MayHaveUpdates():
       update_mask.append('labels')
+    if args.IsSpecified('ttl'):
+      update_mask.append('ttl')
+    if args.IsSpecified('expire_time') or args.IsSpecified('remove_expiration'):
+      update_mask.append('expire_time')
+    if ((args.IsSpecified('next_rotation_time') or
+         args.IsSpecified('remove_next_rotation_time')) or
+        args.IsSpecified('remove_rotation_schedule')):
+      update_mask.append('rotation.next_rotation_time')
+
+    if ((args.IsSpecified('rotation_period') or
+         args.IsSpecified('remove_rotation_period')) or
+        args.IsSpecified('remove_rotation_schedule')):
+      update_mask.append('rotation.rotation_period')
+
+    if args.IsSpecified('add_topics') or args.IsSpecified(
+        'remove_topics') or args.IsSpecified('clear_topics'):
+      update_mask.append('topics')
 
     # Validations
     if not update_mask:
-      raise exceptions.InvalidArgumentException(
-          'labels', self.NO_CHANGES_MESSAGE.format(secret=secret_ref.Name()))
+      raise exceptions.MinimumArgumentException([
+          '--clear-labels', '--remove-labels', '--update-labels', '--ttl',
+          '--expire-time', '--remove-expiration', '--clear-topics',
+          '--remove-topics', '--add-topics', '--next-rotation-time',
+          '--remove-next-rotation-time', '--rotation-period',
+          '--remove-rotation-period', '--remove-rotation-schedule'
+      ], self.NO_CHANGES_MESSAGE.format(secret=secret_ref.Name()))
 
     labels_update = labels_diff.Apply(messages.Secret.LabelsValue,
                                       original.labels)
@@ -82,8 +124,31 @@ class Update(base.UpdateCommand):
     if labels_update.needs_update:
       labels = labels_update.labels
 
+    if args.expire_time:
+      msg = self.CONFIRM_EXPIRE_TIME_MESSAGE.format(
+          expire_time=args.expire_time)
+      console_io.PromptContinue(
+          msg, throw_if_unattended=True, cancel_on_no=True)
+
+    if args.ttl:
+      msg = self.CONFIRM_TTL_MESSAGE.format(ttl=args.ttl)
+      console_io.PromptContinue(
+          msg, throw_if_unattended=True, cancel_on_no=True)
+
+    if 'topics' in update_mask:
+      topics = secrets_util.ApplyTopicsUpdate(args, original.topics)
+    else:
+      topics = []
+
     secret = secrets_api.Secrets().Update(
-        secret_ref=secret_ref, labels=labels, update_mask=update_mask)
+        secret_ref=secret_ref,
+        labels=labels,
+        update_mask=update_mask,
+        expire_time=args.expire_time,
+        ttl=args.ttl,
+        topics=topics,
+        next_rotation_time=args.next_rotation_time,
+        rotation_period=args.rotation_period)
     secrets_log.Secrets().Updated(secret_ref)
 
     return secret
@@ -127,6 +192,23 @@ class UpdateBeta(Update):
       Remove the expiration of a secret named 'my-secret'.
 
         $ {command} my-secret --remove-expiration
+
+      Update a secret to have a next-rotation-time:
+
+        $ {command} my-secret --next-rotation-time="2030-01-01T15:30:00-05:00"
+
+      Update a secret to have a next-rotation-time and rotation-period:
+
+        $ {command} my-secret --next-rotation-time="2030-01-01T15:30:00-05:00"
+        --rotation-period="7200s"
+
+      Update a secret to remove the next-rotation-time:
+
+        $ {command} my-secret --remove-next-rotation-time
+
+      Update a secret to clear rotation policy:
+
+        $ {command} my-secret --remove-rotation-schedule
   """
 
   NO_CHANGES_MESSAGE = (
@@ -138,6 +220,7 @@ class UpdateBeta(Update):
         parser, purpose='to update', positional=True, required=True)
     labels_util.AddUpdateLabelsFlags(parser)
     secrets_args.AddUpdateExpirationGroup(parser)
+    secrets_args.AddUpdateRotationGroup(parser)
     secrets_args.AddUpdateTopicsGroup(parser)
 
   def _RunUpdate(self, original, args):
@@ -161,12 +244,24 @@ class UpdateBeta(Update):
         'remove_topics') or args.IsSpecified('clear_topics'):
       update_mask.append('topics')
 
+    if ((args.IsSpecified('next_rotation_time') or
+         args.IsSpecified('remove_next_rotation_time')) or
+        args.IsSpecified('remove_rotation_schedule')):
+      update_mask.append('rotation.next_rotation_time')
+
+    if ((args.IsSpecified('rotation_period') or
+         args.IsSpecified('remove_rotation_period')) or
+        args.IsSpecified('remove_rotation_schedule')):
+      update_mask.append('rotation.rotation_period')
+
     # Validations
     if not update_mask:
       raise exceptions.MinimumArgumentException([
           '--clear-labels', '--remove-labels', '--update-labels', '--ttl',
-          '--expire-time', '--remove-expiration', '--clear-topics',
-          '--remove-topics', '--add-topics'
+          '--expire-time', '--remove-expiration', '--next-rotation-time',
+          '--remove-next-rotation-time', '--rotation-period',
+          '--remove-rotation-period', '--remove-rotation-schedule',
+          '--clear-topics', '--remove-topics', '--add-topics'
       ], self.NO_CHANGES_MESSAGE.format(secret=secret_ref.Name()))
 
     labels_update = labels_diff.Apply(messages.Secret.LabelsValue,
@@ -197,7 +292,9 @@ class UpdateBeta(Update):
         update_mask=update_mask,
         expire_time=args.expire_time,
         ttl=args.ttl,
-        topics=topics)
+        topics=topics,
+        next_rotation_time=args.next_rotation_time,
+        rotation_period=args.rotation_period)
     secrets_log.Secrets().Updated(secret_ref)
 
     return secret

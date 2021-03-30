@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
+from googlecloudsdk.command_lib.ai import region_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -40,7 +41,8 @@ class DescribeV1(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddModelResourceArg(parser, 'to describe')
+    flags.AddModelResourceArg(
+        parser, 'to describe', region_util.PromptForOpRegion)
 
   def _Run(self, args, model_ref, region):
     with endpoint_util.AiplatformEndpointOverrides(

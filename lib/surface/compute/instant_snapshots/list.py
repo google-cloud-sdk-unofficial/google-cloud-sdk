@@ -30,8 +30,6 @@ from googlecloudsdk.command_lib.compute.instant_snapshots import flags as ips_fl
 class List(base.ListCommand):
   """List Compute Engine persistent instant snapshots."""
 
-  _return_partial_success = True
-
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(ips_flags.MULTISCOPE_LIST_FORMAT)
@@ -49,7 +47,6 @@ class List(base.ListCommand):
         client,
         zonal_service=client.apitools_client.zoneInstantSnapshots,
         regional_service=client.apitools_client.regionInstantSnapshots,
-        aggregation_service=client.apitools_client.zoneInstantSnapshots,
-        return_partial_success=self._return_partial_success)
+        aggregation_service=client.apitools_client.zoneInstantSnapshots)
 
     return lister.Invoke(request_data, list_implementation)

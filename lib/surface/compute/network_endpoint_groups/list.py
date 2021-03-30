@@ -23,7 +23,8 @@ from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """Lists Compute Engine network endpoint groups."""
 
@@ -35,7 +36,6 @@ class List(base.ListCommand):
       ])
   support_global_scope = True
   support_regional_scope = True
-  return_partial_success = False
 
   @classmethod
   def Args(cls, parser):
@@ -65,14 +65,6 @@ class List(base.ListCommand):
         if self.support_regional_scope else None,
         global_service=client.apitools_client.globalNetworkEndpointGroups
         if self.support_global_scope else None,
-        aggregation_service=client.apitools_client.networkEndpointGroups,
-        return_partial_success=self.return_partial_success)
+        aggregation_service=client.apitools_client.networkEndpointGroups)
 
     return lister.Invoke(request_data, list_implementation)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(List):
-  """Lists Compute Engine network endpoint groups."""
-
-  return_partial_success = True

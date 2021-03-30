@@ -88,13 +88,18 @@ class Create(base.CreateCommand):
     $ {command} IP-RANGE-1 --global --prefix-length=16 --purpose=VPC_PEERING \
       --network=default
 
+  To reserve an address from network 'default' for PRIVATE_SERVICE_CONNECT, run:
+
+    $ {command} PSC-ADDRESS-1 --global --addresses=10.110.0.10 \
+      --purpose=PRIVATE_SERVICE_CONNECT --network=default
+
   """
 
   ADDRESSES_ARG = None
   SUBNETWORK_ARG = None
   NETWORK_ARG = None
 
-  _support_psc_google_apis = False
+  _support_psc_google_apis = True
 
   @classmethod
   def Args(cls, parser):

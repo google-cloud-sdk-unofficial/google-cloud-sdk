@@ -237,14 +237,15 @@ def AddBaseArgs(parser):
 
 def AddBetaArgs(parser):
   """Adds beta args and flags to the parser."""
+  flags.AddActiveDirectoryDomain(parser)
   flags.AddInstanceResizeLimit(parser)
   flags.AddNetwork(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
 
 
-def AddAlphaArgs(parser):
+def AddAlphaArgs(unused_parser):
   """Adds alpha args and flags to the parser."""
-  flags.AddActiveDirectoryDomain(parser)
+  pass
 
 
 def RunBasePatchCommand(args, release_track):

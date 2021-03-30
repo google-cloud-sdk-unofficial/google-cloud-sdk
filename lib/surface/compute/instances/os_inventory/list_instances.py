@@ -100,8 +100,6 @@ class ListInstances(base.ListCommand):
   _SPECIAL_PACKAGE_MANAGERS = ('wua', 'qfe', 'zypperPatches')
   _REGULAR_PACKAGE_MANAGERS = ('cos', 'deb', 'googet', 'rpm', 'gem', 'pip')
 
-  _return_partial_success = False
-
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -264,8 +262,7 @@ class ListInstances(base.ListCommand):
     list_implementation = lister.MultiScopeLister(
         client,
         zonal_service=client.apitools_client.instances,
-        aggregation_service=client.apitools_client.instances,
-        return_partial_success=self._return_partial_success)
+        aggregation_service=client.apitools_client.instances)
 
     instances_iterator = lister.Invoke(request_data, list_implementation)
     instances = list(instances_iterator)
@@ -333,5 +330,3 @@ class ListInstancesAlpha(ListInstances):
         InstalledPackages.wua[].Description:Security"
 
   """
-
-  _return_partial_success = True

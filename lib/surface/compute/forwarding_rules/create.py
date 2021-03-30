@@ -36,7 +36,7 @@ from six.moves import range  # pylint: disable=redefined-builtin
 
 def _Args(parser, support_global_access, support_l7_internal_load_balancing,
           support_psc_google_apis, support_all_protocol,
-          support_target_service_attachment, support_sd_registration):
+          support_target_service_attachment):
   """Add the flags to create a forwarding rule."""
 
   flags.AddUpdateArgs(
@@ -54,9 +54,7 @@ def _Args(parser, support_global_access, support_l7_internal_load_balancing,
     flags.AddAllowGlobalAccess(parser)
 
   flags.AddIsMirroringCollector(parser)
-
-  if support_sd_registration:
-    flags.AddServiceDirectoryRegistration(parser)
+  flags.AddServiceDirectoryRegistration(parser)
 
   parser.add_argument(
       '--service-label',
@@ -87,26 +85,24 @@ class CreateHelper(object):
   def __init__(self, holder, support_global_access,
                support_l7_internal_load_balancing, support_psc_google_apis,
                support_all_protocol, support_target_service_attachment,
-               support_sd_registration):
+               _support_sd_registration_for_regional):
     self._holder = holder
     self._support_global_access = support_global_access
     self._support_l7_internal_load_balancing = support_l7_internal_load_balancing
     self._support_psc_google_apis = support_psc_google_apis
     self._support_all_protocol = support_all_protocol
     self._support_target_service_attachment = support_target_service_attachment
-    self._support_sd_registration = support_sd_registration
+    self._support_sd_registration_for_regional = _support_sd_registration_for_regional
 
   @classmethod
   def Args(cls, parser, support_global_access,
            support_l7_internal_load_balancing, support_psc_google_apis,
-           support_all_protocol, support_target_service_attachment,
-           support_sd_registration):
+           support_all_protocol, support_target_service_attachment):
     cls.FORWARDING_RULE_ARG = _Args(parser, support_global_access,
                                     support_l7_internal_load_balancing,
                                     support_psc_google_apis,
                                     support_all_protocol,
-                                    support_target_service_attachment,
-                                    support_sd_registration)
+                                    support_target_service_attachment)
 
   def ConstructProtocol(self, messages, args):
     if args.ip_protocol:
@@ -135,13 +131,6 @@ class CreateHelper(object):
   def _CreateGlobalRequests(self, client, resources, args, forwarding_rule_ref):
     """Create a globally scoped request."""
 
-    if hasattr(args, 'service_directory_registration'
-              ) and args.service_directory_registration:
-      raise exceptions.InvalidArgumentException(
-          '--service-directory-registration',
-          '[--service-directory-registration] can not be specified for global forwarding rules.'
-      )
-
     is_psc_google_apis = False
     if hasattr(args,
                'target_google_apis_bundle') and args.target_google_apis_bundle:
@@ -152,6 +141,32 @@ class CreateHelper(object):
             'for forwarding rules) is not supported in this API version.')
       else:
         is_psc_google_apis = True
+
+    sd_registration = None
+    if hasattr(args, 'service_directory_registration'
+              ) and args.service_directory_registration:
+      if not is_psc_google_apis:
+        raise exceptions.InvalidArgumentException(
+            '--service-directory-registration',
+            'Can only be specified for regional forwarding rules or Private Service Connect forwarding rules targeting a Google APIs bundle.'
+        )
+      # Parse projects/../locations/..
+      match = re.match(r'^projects/([^/]+)/locations/([^/]+)$',
+                       args.service_directory_registration)
+      if not match:
+        raise exceptions.InvalidArgumentException(
+            '--service-directory-registration',
+            'Must be of the form projects/PROJECT/locations/REGION')
+      project = match.group(1)
+      region = match.group(2)
+
+      if project != forwarding_rule_ref.project:
+        raise exceptions.InvalidArgumentException(
+            '--service-directory-registration',
+            'Must be in the same project as the forwarding rule.')
+
+      sd_registration = client.messages.ForwardingRuleServiceDirectoryRegistration(
+          serviceDirectoryRegion=region)
 
     ports_all_specified, range_list = _ExtractPortsAndAll(args.ports)
     port_range = _ResolvePortRange(args.port_range, range_list)
@@ -218,6 +233,8 @@ class CreateHelper(object):
         networkTier=_ConstructNetworkTier(client.messages, args),
         loadBalancingScheme=load_balancing_scheme)
 
+    if sd_registration:
+      forwarding_rule.serviceDirectoryRegistrations.append(sd_registration)
     if args.IsSpecified('network'):
       forwarding_rule.network = flags.NetworkArg(
           self._support_l7_internal_load_balancing).ResolveAsResource(
@@ -366,6 +383,14 @@ class CreateHelper(object):
 
     if hasattr(args, 'service_directory_registration'
               ) and args.service_directory_registration:
+      if not self._support_sd_registration_for_regional:
+        raise exceptions.InvalidArgumentException(
+            '--service-directory-registration',
+            """flag is available in one or more alternate release tracks. Try:
+
+  gcloud alpha compute forwarding-rules create --service-directory-registration
+  gcloud beta compute forwarding-rules create --service-directory-registration"""
+        )
       # Parse projects/../locations/../namespaces/../services/..
       match = re.match(
           r'^projects/([^/]+)/locations/([^/]+)/namespaces/([^/]+)/services/([^/]+)$',
@@ -426,18 +451,17 @@ class Create(base.CreateCommand):
 
   _support_global_access = True
   _support_l7_internal_load_balancing = True
-  _support_psc_google_apis = False
+  _support_psc_google_apis = True
   _support_all_protocol = False
   _support_target_service_attachment = False
-  _support_sd_registration = False
+  _support_sd_registration_for_regional = False
 
   @classmethod
   def Args(cls, parser):
     CreateHelper.Args(parser, cls._support_global_access,
                       cls._support_l7_internal_load_balancing,
                       cls._support_psc_google_apis, cls._support_all_protocol,
-                      cls._support_target_service_attachment,
-                      cls._support_sd_registration)
+                      cls._support_target_service_attachment)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -446,7 +470,7 @@ class Create(base.CreateCommand):
                         self._support_psc_google_apis,
                         self._support_all_protocol,
                         self._support_target_service_attachment,
-                        self._support_sd_registration).Run(args)
+                        self._support_sd_registration_for_regional).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -454,10 +478,9 @@ class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
   _support_l7_internal_load_balancing = True
-  _support_psc_google_apis = True
   _support_all_protocol = False
   _support_target_service_attachment = False
-  _support_sd_registration = True
+  _support_sd_registration_for_regional = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -465,10 +488,9 @@ class CreateAlpha(CreateBeta):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
   _support_l7_internal_load_balancing = True
-  _support_psc_google_apis = True
   _support_all_protocol = True
   _support_target_service_attachment = True
-  _support_sd_registration = True
+  _support_sd_registration_for_regional = True
 
 
 Create.detailed_help = {
@@ -478,8 +500,8 @@ Create.detailed_help = {
 When creating a forwarding rule, exactly one of  ``--target-instance'',
 ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
 ``--target-grpc-proxy'', ``--target-ssl-proxy'', ``--target-tcp-proxy'',
-``--target-vpn-gateway'' or ``--backend-service'' must be specified.""".format(
-    overview=flags.FORWARDING_RULES_OVERVIEW)),
+``--target-vpn-gateway'', ``--backend-service'' or ``--target-google-apis-bundle''
+must be specified.""".format(overview=flags.FORWARDING_RULES_OVERVIEW)),
     'EXAMPLES':
         """
     To create a global forwarding rule that will forward all traffic on port
@@ -496,7 +518,7 @@ When creating a forwarding rule, exactly one of  ``--target-instance'',
 }
 
 CreateBeta.detailed_help = Create.detailed_help
-CreateAlpha.detailed_help = Create.detailed_help
+CreateAlpha.detailed_help = CreateBeta.detailed_help
 
 
 def _GetPortRange(ports_range_list):

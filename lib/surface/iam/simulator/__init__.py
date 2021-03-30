@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """The simulator command group for the IAM CLI."""
 
 from __future__ import absolute_import
@@ -24,11 +23,22 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.Hidden
-class Simulator(base.Group):
+class SimulatorBeta(base.Group):
   """Understand access permission impacts before IAM policy change deployment.
 
   Commands for analyzing access permission impacts before proposed IAM policy
   changes are deployed.
+  """
+
+  def Filter(self, context, args):
+    """Enables User-Project override for this surface."""
+    base.EnableUserProjectQuota()
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Hidden
+class SimulatorGA(base.Group):
+  """Understand how an IAM policy change could impact access before deploying the change.
   """
 
   def Filter(self, context, args):

@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class DatabaseMigration(base.Group):
   """Manage Database Migration Service resources.
 
@@ -31,11 +31,3 @@ class DatabaseMigration(base.Group):
 
   category = base.DATABASES_CATEGORY
 
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class DatabaseMigrationGA(DatabaseMigration):
-  """Manage Database Migration Service resources.
-
-  Commands for managing Database Migration Service resources.
-  """

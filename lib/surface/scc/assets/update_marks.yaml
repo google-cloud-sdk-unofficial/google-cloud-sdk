@@ -12,6 +12,14 @@
 
         $ {command} 5678 --organization=123456 --security-marks="key1=updatedVal"
 
+      Update value of security mark (key1) and delete other marks on asset 5678 under project example-project:
+
+        $ {command} projects/example-project/assets/5678 --security-marks="key1=updatedVal"
+
+      Update value of security mark (key1) and delete other marks on asset 5678 under folder 456:
+
+        $ {command} folders/456/assets/5678 --security-marks="key1=updatedVal"
+
       Delete all security marks on asset 5678 under organization 123456:
 
         $ {command} 5678 --organization=123456 --security-marks=""

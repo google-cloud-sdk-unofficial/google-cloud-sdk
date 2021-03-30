@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import models_util
 from googlecloudsdk.command_lib.ai import operations_util
+from googlecloudsdk.command_lib.ai import region_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -43,7 +44,8 @@ class DeleteV1(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddModelResourceArg(parser, 'to delete')
+    flags.AddModelResourceArg(
+        parser, 'to delete', region_util.PromptForOpRegion)
 
   def _Run(self, args, model_ref, region):
     with endpoint_util.AiplatformEndpointOverrides(

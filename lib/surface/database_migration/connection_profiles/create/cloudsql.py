@@ -41,7 +41,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class CloudSQL(base.Command):
   """Create a Database Migration Service connection profile for Cloud SQL."""
 
@@ -111,9 +111,3 @@ class CloudSQL(base.Command):
     return client.projects_locations_operations.Get(
         messages.DatamigrationProjectsLocationsOperationsGetRequest(
             name=operation_ref.operationsId))
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class CloudSQLGA(CloudSQL):
-  """Create a Database Migration Service connection profile for Cloud SQL."""

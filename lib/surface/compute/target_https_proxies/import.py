@@ -81,6 +81,20 @@ def _SendInsertRequest(client, target_https_proxy_ref, target_https_proxy):
           targetHttpsProxy=target_https_proxy))
 
 
+def _SendPatchRequest(client, target_https_proxy_ref, target_https_proxy):
+  """Make target HTTP proxy patch request."""
+  if target_https_proxy_ref.Collection() == 'compute.regionTargetHttpsProxies':
+    console_message = ('Target HTTPS Proxy [{0}] cannot be updated'.format(
+        target_https_proxy_ref.Name()))
+    raise NotImplementedError(console_message)
+
+  return client.apitools_client.targetHttpsProxies.Patch(
+      client.messages.ComputeTargetHttpsProxiesPatchRequest(
+          project=target_https_proxy_ref.project,
+          targetHttpsProxy=target_https_proxy_ref.Name(),
+          targetHttpsProxyResource=target_https_proxy))
+
+
 def _Run(args, holder, target_https_proxy_arg, release_track):
   """Issues requests necessary to import target HTTPS proxies."""
   client = holder.client
@@ -103,7 +117,8 @@ def _Run(args, holder, target_https_proxy_arg, release_track):
 
   # Get existing target HTTPS proxy.
   try:
-    target_https_proxies_utils.SendGetRequest(client, target_https_proxy_ref)
+    old_target_https_proxy = target_https_proxies_utils.SendGetRequest(
+        client, target_https_proxy_ref)
   except apitools_exceptions.HttpError as error:
     if error.status_code != 404:
       raise error
@@ -111,9 +126,48 @@ def _Run(args, holder, target_https_proxy_arg, release_track):
     return _SendInsertRequest(client, target_https_proxy_ref,
                               target_https_proxy)
 
-  console_message = ('Target HTTPS Proxy [{0}] cannot be updated'.format(
-      target_https_proxy_ref.Name()))
-  raise NotImplementedError(console_message)
+  if old_target_https_proxy == target_https_proxy:
+    return
+
+  console_io.PromptContinue(
+      message=('Target Https Proxy [{0}] will be overwritten.').format(
+          target_https_proxy_ref.Name()),
+      cancel_on_no=True)
+
+  # Populate id and fingerprint fields. These two fields are manually
+  # removed from the schema files.
+  target_https_proxy.id = old_target_https_proxy.id
+
+  if hasattr(old_target_https_proxy, 'fingerprint'):
+    target_https_proxy.fingerprint = old_target_https_proxy.fingerprint
+
+  # Unspecified fields are assumed to be cleared.
+  cleared_fields = []
+  if target_https_proxy.description is None:
+    cleared_fields.append('description')
+  if target_https_proxy.serverTlsPolicy is None:
+    cleared_fields.append('serverTlsPolicy')
+  if target_https_proxy.authorizationPolicy is None:
+    cleared_fields.append('authorizationPolicy')
+  if hasattr(target_https_proxy,
+             'certificateMap') and target_https_proxy.certificateMap is None:
+    cleared_fields.append('certificateMap')
+  if hasattr(target_https_proxy,
+             'httpFilters') and not target_https_proxy.httpFilters:
+    cleared_fields.append('httpFilters')
+  if target_https_proxy.proxyBind is None:
+    cleared_fields.append('proxyBind')
+  if target_https_proxy.quicOverride is None:
+    cleared_fields.append('quicOverride')
+  if not target_https_proxy.sslCertificates:
+    cleared_fields.append('sslCertificates')
+  if target_https_proxy.sslPolicy is None:
+    cleared_fields.append('sslPolicy')
+  if target_https_proxy.urlMap is None:
+    cleared_fields.append('urlMap')
+
+  with client.apitools_client.IncludeFields(cleared_fields):
+    return _SendPatchRequest(client, target_https_proxy_ref, target_https_proxy)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,

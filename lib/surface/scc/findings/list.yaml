@@ -8,6 +8,14 @@
 
         $ {command} 123456 --filter="state=\"ACTIVE\""
 
+      List all ACTIVE findings under project abc across all sources:
+
+        $ {command} projects/abc --filter="state=\"ACTIVE\""
+
+      List all ACTIVE findings under folder 456 across all sources:
+
+        $ {command} folders/456 --filter="state=\"ACTIVE\""
+
       List all ACTIVE findings under organization 123456 and source 5678:
 
         $ {command} 123456 --source=5678 --filter="state=\"ACTIVE\""

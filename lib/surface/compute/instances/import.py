@@ -72,7 +72,7 @@ class Import(base.CreateCommand):
 
     parser.add_argument(
         '--description',
-        help='Specifies a textual description of the instances.')
+        help='Specifies a textual description of the VM instances.')
     daisy_utils.AddGuestEnvironmentArg(parser)
     parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
@@ -80,7 +80,7 @@ class Import(base.CreateCommand):
     parser.add_argument(
         '--hostname',
         help="""\
-      Specify the hostname of the instance to be imported. The specified
+      Specify the hostname of the VM instance to be imported. The specified
       hostname must be RFC1035 compliant. If hostname is not specified, the
       default hostname is [INSTANCE_NAME].c.[PROJECT_ID].internal when using
       the global DNS, and [INSTANCE_NAME].[ZONE].c.[PROJECT_ID].internal
@@ -109,7 +109,7 @@ class Import(base.CreateCommand):
     errors = []
     instances = client.MakeRequests([request], errors_to_collect=errors)
     if not errors and instances:
-      message = ('The instance [{instance_name}] already exists in zone '
+      message = ('The VM instance [{instance_name}] already exists in zone '
                  '[{zone}].').format(
                      instance_name=instance_name, zone=zone)
       raise exceptions.InvalidArgumentException('INSTANCE_NAME', message)
@@ -174,6 +174,10 @@ class Import(base.CreateCommand):
         hostname=getattr(args, 'hostname', None),
         no_address=getattr(args, 'no_address', False),
         compute_service_account=getattr(args, 'compute_service_account', ''),
+        scopes=getattr(args, 'scopes', None),
+        no_scopes=getattr(args, 'no_scopes', False),
+        service_account=getattr(args, 'service_account', None),
+        no_service_account=getattr(args, 'no_service_account', False),
     )
 
 
@@ -190,6 +194,23 @@ class ImportBeta(Import):
     daisy_utils.AddComputeServiceAccountArg(
         parser, 'instance import',
         daisy_utils.IMPORT_ROLES_FOR_COMPUTE_SERVICE_ACCOUNT)
+    instances_flags.AddServiceAccountAndScopeArgs(
+        parser,
+        False,
+        extra_scopes_help=
+        'However, if neither `--scopes` nor `--no-scopes` are '
+        'specified and the project has no default service '
+        'account, then the VM instance is imported with no '
+        'scopes. Note that the level of access that a service '
+        'account has is determined by a combination of access '
+        'scopes and IAM roles so you must configure both '
+        'access scopes and IAM roles for the service account '
+        'to work properly.',
+        operation='Import')
+
+  def _ValidateArgs(self, args, compute_client):
+    super(ImportBeta, self)._ValidateArgs(args, compute_client)
+    instances_flags.ValidateServiceAccountAndScopeArgs(args)
 
 
 Import.detailed_help = {

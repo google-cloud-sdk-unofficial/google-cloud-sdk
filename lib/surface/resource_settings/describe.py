@@ -67,19 +67,16 @@ class Describe(base.DescribeCommand):
     """
 
     settings_service = api_utils.GetServiceFromArgs(args)
-    value_service = api_utils.GetValueServiceFromArgs(args)
     setting_name = utils.GetSettingNameFromArgs(args)
-    setting_path = '{}/value'.format(utils.GetSettingsPathFromArgs(args))
+    setting_path = utils.GetSettingsPathFromArgs(args)
 
     if args.effective:
-      get_request = api_utils.GetLookupEffectiveValueRequestFromArgs(
-          args, setting_path)
-      return value_service.LookupEffectiveValue(get_request)
-
-    get_request = api_utils.GetGetValueRequestFromArgs(args, setting_path)
+      get_request = api_utils.GetRequestFromArgs(args, setting_path, True)
+    else:
+      get_request = api_utils.GetRequestFromArgs(args, setting_path, False)
 
     try:
-      setting_value = settings_service.GetValue(get_request)
+      setting_value = settings_service.Get(get_request)
     except apitools_exceptions.HttpNotFoundError as e:
       raise exceptions.HttpException(
           e,

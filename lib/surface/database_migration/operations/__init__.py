@@ -22,17 +22,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Operations(base.Group):
-  """Manage Database Migration Service operations.
-
-  Commands for managing Database Migration Service operations.
-  """
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class OperationsGA(Operations):
   """Manage Database Migration Service operations.
 
   Commands for managing Database Migration Service operations.

@@ -30,7 +30,10 @@ from googlecloudsdk.core.console import console_io
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
-  """Deletes a Cloud SQL database."""
+  """Deletes a Cloud SQL database.
+
+  For MySQL, also deletes all files in the database directory.
+  """
 
   @staticmethod
   def Args(parser):

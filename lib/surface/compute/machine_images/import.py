@@ -85,11 +85,25 @@ class Import(base.CreateCommand):
     daisy_utils.AddComputeServiceAccountArg(
         parser, 'machine image import',
         daisy_utils.IMPORT_ROLES_FOR_COMPUTE_SERVICE_ACCOUNT)
+    instances_flags.AddServiceAccountAndScopeArgs(
+        parser,
+        False,
+        extra_scopes_help=
+        'However, if neither `--scopes` nor `--no-scopes` are '
+        'specified and the project has no default service '
+        'account, then the machine image is imported with no '
+        'scopes. Note that the level of access that a service '
+        'account has is determined by a combination of access '
+        'scopes and IAM roles so you must configure both '
+        'access scopes and IAM roles for the service account '
+        'to work properly.',
+        operation='Import', resource='machine image')
 
   def _ValidateArgs(self, args, compute_client):
     instances_flags.ValidateNicFlags(args)
     instances_flags.ValidateNetworkTierArgs(args)
     daisy_utils.ValidateZone(args, compute_client)
+    instances_flags.ValidateServiceAccountAndScopeArgs(args)
     try:
       args.source_uri = daisy_utils.MakeGcsUri(args.source_uri)
     except resources.UnknownCollectionException:

@@ -65,6 +65,7 @@ class CreateBeta(base.CreateCommand):
       Some value that we want to have printed later.
     """
 
+    wp_name = args.WORKER_POOL
     wp_region = args.region
 
     release_track = self.ReleaseTrack()
@@ -77,7 +78,6 @@ class CreateBeta(base.CreateCommand):
       wp = workerpool_config.LoadWorkerpoolConfigFromPath(
           args.config_from_file, messages)
     else:
-      wp.name = args.WORKER_POOL
       if args.peered_network is not None:
         network_config = messages.NetworkConfig()
         network_config.peeredNetwork = args.peered_network
@@ -105,7 +105,7 @@ class CreateBeta(base.CreateCommand):
         messages.CloudbuildProjectsLocationsWorkerPoolsCreateRequest(
             workerPool=wp,
             parent=parent_resource.RelativeName(),
-            workerPoolId=wp.name))
+            workerPoolId=wp_name))
 
     op_resource = resources.REGISTRY.ParseRelativeName(
         created_op.name, collection='cloudbuild.projects.locations.operations')

@@ -1,7 +1,4 @@
 - release_tracks: [ALPHA, GA]
-  GA:
-    hidden: true
-
   help_text:
     brief: |
       Stop a Database Migration Service migration job.

@@ -44,8 +44,6 @@ def _Args(parser):
 class List(base.ListCommand):
   """List Compute Engine instance groups."""
 
-  _return_partial_success = False
-
   @staticmethod
   def Args(parser):
     _Args(parser)
@@ -63,15 +61,14 @@ class List(base.ListCommand):
   def ComputeDynamicProperties(self, args, items, holder):
     mode = instance_groups_utils.InstanceGroupFilteringMode.ALL_GROUPS
     if args.only_managed:
-      mode = (instance_groups_utils.InstanceGroupFilteringMode
-              .ONLY_MANAGED_GROUPS)
+      mode = (
+          instance_groups_utils.InstanceGroupFilteringMode.ONLY_MANAGED_GROUPS)
     elif args.only_unmanaged:
-      mode = (instance_groups_utils.InstanceGroupFilteringMode
-              .ONLY_UNMANAGED_GROUPS)
+      mode = (
+          instance_groups_utils.InstanceGroupFilteringMode.ONLY_UNMANAGED_GROUPS
+      )
     return instance_groups_utils.ComputeInstanceGroupManagerMembership(
-        compute_holder=holder,
-        items=items,
-        filter_mode=mode)
+        compute_holder=holder, items=items, filter_mode=mode)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -84,14 +81,13 @@ class List(base.ListCommand):
         client,
         zonal_service=client.apitools_client.instanceGroups,
         regional_service=client.apitools_client.regionInstanceGroups,
-        aggregation_service=client.apitools_client.instanceGroups,
-        return_partial_success=self._return_partial_success)
+        aggregation_service=client.apitools_client.instanceGroups)
 
     return self.ComputeDynamicProperties(
         args, lister.Invoke(request_data, list_implementation), holder)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ListBeta(List):
   """List Compute Engine managed instance groups."""
 
@@ -106,15 +102,7 @@ class ListBeta(List):
         filter_mode=instance_groups_utils.InstanceGroupFilteringMode.ALL_GROUPS)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
-  """List Compute Engine managed instance groups."""
-
-  _return_partial_success = True
-
-
 List.detailed_help = base_classes.GetMultiScopeListerHelp(
-    'instance groups', (base_classes.ScopeType.regional_scope,
-                        base_classes.ScopeType.zonal_scope))
+    'instance groups',
+    (base_classes.ScopeType.regional_scope, base_classes.ScopeType.zonal_scope))
 ListBeta.detailed_help = List.detailed_help
-ListAlpha.detailed_help = ListBeta.detailed_help
