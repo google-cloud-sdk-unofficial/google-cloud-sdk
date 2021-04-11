@@ -54,7 +54,6 @@ class ImportGA(base.UpdateCommand):
   """
 
   detailed_help = DETAILED_HELP
-  _support_flexible_cache_step_two = False
   _support_negative_cache = False
 
   @classmethod
@@ -177,13 +176,12 @@ class ImportGA(base.UpdateCommand):
         cleared_fields.append('cdnPolicy.clientTtl')
       if cdn_policy.maxTtl is None:
         cleared_fields.append('cdnPolicy.maxTtl')
-      if self._support_negative_cache and not cdn_policy.negativeCachingPolicy:
+      if not cdn_policy.negativeCachingPolicy:
         cleared_fields.append('cdnPolicy.negativeCachingPolicy')
-      if self._support_flexible_cache_step_two:
-        if not cdn_policy.bypassCacheOnRequestHeaders:
-          cleared_fields.append('cdnPolicy.bypassCacheOnRequestHeaders')
-        if cdn_policy.serveWhileStale is None:
-          cleared_fields.append('cdnPolicy.serveWhileStale')
+      if not cdn_policy.bypassCacheOnRequestHeaders:
+        cleared_fields.append('cdnPolicy.bypassCacheOnRequestHeaders')
+      if cdn_policy.serveWhileStale is None:
+        cleared_fields.append('cdnPolicy.serveWhileStale')
     else:
       cleared_fields.append('cdnPolicy')
 
@@ -200,6 +198,3 @@ class ImportAlphaBeta(ImportGA):
   To edit a backend service you can export the backend service to a file,
   edit its configuration, and then import the new configuration.
   """
-
-  _support_flexible_cache_step_two = True
-  _support_negative_cache = True

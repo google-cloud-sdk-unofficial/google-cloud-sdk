@@ -1,8 +1,8 @@
-- release_tracks: [ALPHA]
+- release_tracks: [GA, BETA, ALPHA]
 
   help_text:
-    brief: Retrieves information about a table.
-    description: Retrieves information about a table.
+    brief: Retrieve information about a table.
+    description: Retrieve information about a table.
     examples: |
       To describe a table, run:
 

@@ -19,27 +19,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import exceptions as api_exceptions
-from apitools.base.py import list_pager
-
-from googlecloudsdk.api_lib.functions.v1 import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as base_exceptions
-from googlecloudsdk.core import exceptions
-from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
+from googlecloudsdk.command_lib.functions import flags
+from googlecloudsdk.command_lib.functions.v1.list import command as command_v1
+from googlecloudsdk.command_lib.functions.v2.list import command as command_v2
 
 
-def _GetFunctionsAndLogUnreachable(message, attribute):
-  """Response callback to log unreachable while generating functions."""
-  if message.unreachable:
-    log.warning('The following regions were fully or partially unreachable '
-                'for query: %s' % ', '.join(message.unreachable))
-  return getattr(message, attribute)
-
-
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Google Cloud Functions."""
 
@@ -52,51 +39,41 @@ class List(base.ListCommand):
               'from the region configured in [functions/region] property are '
               'listed.'),
         type=arg_parsers.ArgList(min_length=1),
-        default=[])
+        default=['-'])
     parser.display_info.AddFormat(
         'table(name.basename(), status, trigger():label=TRIGGER, '
         'name.scope("locations").segment(0):label=REGION)')
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
-    client = util.GetApiClientInstance()
-    messages = util.GetApiMessagesModule()
-    if args.regions:
-      locations = args.regions
+    return command_v1.Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(base.ListCommand):
+  """List Google Cloud Functions."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    parser.add_argument(
+        '--regions',
+        metavar='REGION',
+        help=('Regions containing functions to list. By default, functions '
+              'from the region configured in [functions/region] property are '
+              'listed.'),
+        type=arg_parsers.ArgList(min_length=1),
+        default=['-'])
+    parser.display_info.AddFormat(
+        'table(name.basename(), state, trigger():label=TRIGGER, '
+        'name.scope("locations").segment(0):label=REGION)')
+    base.URI_FLAG.RemoveFromParser(parser)
+
+    # Add additional flags for GCFv2
+    flags.AddV2Flag(parser)
+
+  def Run(self, args):
+    if flags.ShouldUseV2(args):
+      return command_v2.Run(args, self.ReleaseTrack())
     else:
-      locations = ['-']
-    project = properties.VALUES.core.project.GetOrFail()
-    limit = args.limit
-
-    return self._YieldFromLocations(locations, project, limit, messages, client)
-
-  def _YieldFromLocations(self, locations, project, limit, messages, client):
-    for location in locations:
-      location_ref = resources.REGISTRY.Parse(
-          location,
-          params={'projectsId': project},
-          collection='cloudfunctions.projects.locations')
-      for function in self._YieldFromLocation(
-          location_ref, limit, messages, client):
-        yield function
-
-  def _YieldFromLocation(self, location_ref, limit, messages, client):
-    list_generator = list_pager.YieldFromList(
-        service=client.projects_locations_functions,
-        request=self.BuildRequest(location_ref, messages),
-        limit=limit, field='functions',
-        batch_size_attribute='pageSize',
-        get_field_func=_GetFunctionsAndLogUnreachable)
-
-    # Decorators (e.g. util.CatchHTTPErrorRaiseHTTPException) don't work
-    # for generators. We have to catch the exception above the iteration loop,
-    # but inside the function.
-    try:
-      for item in list_generator:
-        yield item
-    except api_exceptions.HttpError as error:
-      msg = util.GetHttpErrorMessage(error)
-      exceptions.reraise(base_exceptions.HttpException(msg))
-
-  def BuildRequest(self, location_ref, messages):
-    return messages.CloudfunctionsProjectsLocationsFunctionsListRequest(
-        parent=location_ref.RelativeName())
+      return command_v1.Run(args)

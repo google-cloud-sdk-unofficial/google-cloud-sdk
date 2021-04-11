@@ -33,6 +33,14 @@ Google Cloud region of the regional endpoint to use for this command.
 
 If you specify this flag, do not specify `--regions`.
 
+If you specify `--region=global`, the model will be deployed to 'us-central1'
+by default using the global endpoint. Please use `--regions` only if you want
+to change the region where the model will be deployed against the global
+endpoint.
+
+If both flags are unspecified and you don't set ``ai_platform/region'', you will
+be prompted for region of the regional endpoint.
+
 Learn more about regional endpoints and see a list of available regions:
  https://cloud.google.com/ai-platform/prediction/docs/regional-endpoints
 """
@@ -54,7 +62,9 @@ def _AddCreateArgs(parser,
       type=arg_parsers.ArgList(min_length=1),
       help="""\
 The Google Cloud region where the model will be deployed (currently only a
-single region is supported).
+single region is supported) against the global endpoint.
+
+If you specify this flag, do not specify `--region`.
 
 Defaults to 'us-central1' while using the global endpoint.
 """)

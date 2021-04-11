@@ -36,9 +36,6 @@ class Create(base.CreateCommand):
   """
 
   BACKEND_BUCKET_ARG = None
-  _support_flexible_cache_step_one = True
-  _support_flexible_cache_step_two = False
-  _support_negative_cache = False
   _support_request_coalescing = False
 
   @classmethod
@@ -54,13 +51,7 @@ class Create(base.CreateCommand):
     if cls._support_request_coalescing:
       cdn_flags.AddRequestCoalescing(parser)
 
-    if cls._support_flexible_cache_step_one:
-      cdn_flags.AddFlexibleCacheStepOne(parser, 'backend bucket')
-    if cls._support_negative_cache:
-      cdn_flags.AddNegativeCache(parser, 'backend bucket')
-
-    if cls._support_flexible_cache_step_two:
-      cdn_flags.AddFlexibleCacheStepTwo(parser, 'backend bucket')
+    cdn_flags.AddFlexibleCacheArgs(parser, 'backend bucket')
 
   def CreateBackendBucket(self, args):
     """Creates and returns the backend bucket."""
@@ -82,17 +73,13 @@ class Create(base.CreateCommand):
         client,
         args,
         backend_bucket,
-        support_flexible_cache_step_one=self._support_flexible_cache_step_one,
-        support_flexible_cache_step_two=self._support_flexible_cache_step_two,
-        support_negative_cache=self._support_negative_cache,
         support_request_coalescing=self._support_request_coalescing)
 
-    if self._support_flexible_cache_step_one:
-      if args.custom_response_header is not None:
-        backend_bucket.customResponseHeaders = args.custom_response_header
-      if (backend_bucket.cdnPolicy is not None and
-          backend_bucket.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
-        backend_bucket.enableCdn = True
+    if args.custom_response_header is not None:
+      backend_bucket.customResponseHeaders = args.custom_response_header
+    if (backend_bucket.cdnPolicy is not None and
+        backend_bucket.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
+      backend_bucket.enableCdn = True
 
     return backend_bucket
 
@@ -120,7 +107,4 @@ class CreateAlphaBeta(Create):
   define Google Cloud Storage buckets that can serve content. URL
   maps define which requests are sent to which backend buckets.
   """
-  _support_flexible_cache_step_one = True
-  _support_negative_cache = True
-  _support_flexible_cache_step_two = True
   _support_request_coalescing = True

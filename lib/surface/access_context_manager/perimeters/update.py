@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.accesscontextmanager import policies
 from googlecloudsdk.command_lib.util.args import repeated
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class UpdatePerimetersGA(base.UpdateCommand):
   """Update an existing access zone."""
   _INCLUDE_UNRESTRICTED = False
@@ -33,13 +33,12 @@ class UpdatePerimetersGA(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    UpdatePerimetersGA.ArgsVersioned(
-        parser, version='v1', track=base.ReleaseTrack.GA)
+    UpdatePerimetersGA.ArgsVersioned(parser, version='v1')
 
   @staticmethod
-  def ArgsVersioned(parser, version='v1', track=base.ReleaseTrack.GA):
+  def ArgsVersioned(parser, version='v1'):
     perimeters.AddResourceArg(parser, 'to update')
-    perimeters.AddPerimeterUpdateArgs(parser, version=version, track=track)
+    perimeters.AddPerimeterUpdateArgs(parser, version=version)
 
   def Run(self, args):
     client = zones_api.Client(version=self._API_VERSION)
@@ -64,9 +63,9 @@ class UpdatePerimetersGA(base.UpdateCommand):
             args, result, self._API_VERSION),
         enable_vpc_accessible_services=args.enable_vpc_accessible_services,
         ingress_policies=perimeters.ParseUpdateDirectionalPoliciesArgs(
-            args, self._release_track, 'ingress-policies'),
+            args, 'ingress-policies'),
         egress_policies=perimeters.ParseUpdateDirectionalPoliciesArgs(
-            args, self._release_track, 'egress-policies'))
+            args, 'egress-policies'))
 
   def Patch(self, client, args, result, perimeter_ref, description, title,
             perimeter_type, resources, restricted_services, levels,
@@ -86,28 +85,15 @@ class UpdatePerimetersGA(base.UpdateCommand):
         egress_policies=egress_policies)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdatePerimetersBeta(UpdatePerimetersGA):
-  """Update an existing access zone."""
-  _INCLUDE_UNRESTRICTED = False
-  _API_VERSION = 'v1'
-
-  @staticmethod
-  def Args(parser):
-    UpdatePerimetersGA.ArgsVersioned(
-        parser, version='v1', track=base.ReleaseTrack.BETA)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdatePerimetersAlpha(UpdatePerimetersBeta):
+class UpdatePerimetersAlpha(UpdatePerimetersGA):
   """Update an existing access zone."""
   _INCLUDE_UNRESTRICTED = False
   _API_VERSION = 'v1alpha'
 
   @staticmethod
   def Args(parser):
-    UpdatePerimetersGA.ArgsVersioned(
-        parser, version='v1alpha', track=base.ReleaseTrack.ALPHA)
+    UpdatePerimetersGA.ArgsVersioned(parser, version='v1alpha')
 
 
 detailed_help = {
@@ -127,5 +113,4 @@ detailed_help = {
 }
 
 UpdatePerimetersGA.detailed_help = detailed_help
-UpdatePerimetersBeta.detailed_help = detailed_help
 UpdatePerimetersAlpha.detailed_help = detailed_help

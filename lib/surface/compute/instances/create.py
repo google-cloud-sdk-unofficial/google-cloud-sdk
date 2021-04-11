@@ -96,7 +96,6 @@ def _CommonArgs(parser,
                 deprecate_maintenance_policy=False,
                 enable_resource_policy=False,
                 supports_location_hint=False,
-                support_network_interface_nic_type=False,
                 supports_erase_vss=False,
                 snapshot_csek=False,
                 image_csek=False,
@@ -117,10 +116,7 @@ def _CommonArgs(parser,
       support_multi_writer=support_multi_writer,
       support_replica_zones=support_replica_zones)
   instances_flags.AddCanIpForwardArgs(parser)
-  instances_flags.AddAddressArgs(
-      parser,
-      instances=True,
-      support_network_interface_nic_type=support_network_interface_nic_type)
+  instances_flags.AddAddressArgs(parser, instances=True)
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
   instances_flags.AddMaintenancePolicyArgs(
@@ -210,7 +206,6 @@ class Create(base.CreateCommand):
   _support_threads_per_core = False
   _support_replica_zones = False
   _support_multi_writer = False
-  _support_network_interface_nic_type = True
   _support_stack_type = False
   _support_ipv6_network_tier = False
   _support_ipv6_public_ptr_domain = False
@@ -225,8 +220,6 @@ class Create(base.CreateCommand):
         support_multi_writer=cls._support_multi_writer,
         support_replica_zones=cls._support_replica_zones,
         enable_regional=cls._support_regional,
-        support_network_interface_nic_type=cls
-        ._support_network_interface_nic_type,
         support_image_family_scope=cls._support_image_family_scope)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
@@ -566,9 +559,8 @@ class CreateBeta(Create):
   _support_boot_snapshot_uri = True
   _support_replica_zones = False
   _support_multi_writer = True
-  _support_network_interface_nic_type = True
   _support_network_performance_configs = True
-  _support_image_family_scope = False
+  _support_image_family_scope = True
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -596,8 +588,6 @@ class CreateBeta(Create):
         supports_erase_vss=cls._support_erase_vss,
         support_replica_zones=cls._support_replica_zones,
         support_multi_writer=cls._support_multi_writer,
-        support_network_interface_nic_type=cls
-        ._support_network_interface_nic_type,
         support_image_family_scope=cls._support_image_family_scope)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
@@ -637,7 +627,6 @@ class CreateAlpha(CreateBeta):
   _support_threads_per_core = True
   _support_replica_zones = True
   _support_multi_writer = True
-  _support_network_interface_nic_type = True
   _support_stack_type = True
   _support_ipv6_network_tier = True
   _support_ipv6_public_ptr_domain = True
@@ -653,8 +642,6 @@ class CreateAlpha(CreateBeta):
         deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
         enable_resource_policy=cls._support_disk_resource_policy,
         supports_location_hint=cls._support_location_hint,
-        support_network_interface_nic_type=cls
-        ._support_network_interface_nic_type,
         supports_erase_vss=cls._support_erase_vss,
         snapshot_csek=cls._support_source_snapshot_csek,
         image_csek=cls._support_image_csek,

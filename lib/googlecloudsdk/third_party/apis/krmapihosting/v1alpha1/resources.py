@@ -41,17 +41,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_ANTHOSAPIENDPOINTS = (
-      'projects.locations.anthosApiEndpoints',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'anthosApiEndpoints/{anthosApiEndpointsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_KRMAPIHOSTS = (
       'projects.locations.krmApiHosts',
       '{+name}',

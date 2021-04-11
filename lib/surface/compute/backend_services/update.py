@@ -69,9 +69,7 @@ class UpdateHelper(object):
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
            support_logging, support_client_only, support_grpc_protocol,
-           support_subsetting, support_all_protocol,
-           support_flexible_cache_step_one, support_flexible_cache_step_two,
-           support_negative_cache, support_edge_policies,
+           support_subsetting, support_all_protocol, support_edge_policies,
            support_request_coalescing):
     """Add all arguments for updating a backend service."""
 
@@ -133,32 +131,20 @@ class UpdateHelper(object):
     if support_request_coalescing:
       cdn_flags.AddRequestCoalescing(parser)
 
-    if support_flexible_cache_step_one:
-      cdn_flags.AddFlexibleCacheStepOne(
-          parser, 'backend service', update_command=True)
-    if support_flexible_cache_step_two:
-      cdn_flags.AddFlexibleCacheStepTwo(
-          parser, 'backend service', update_command=True)
-    if support_negative_cache:
-      cdn_flags.AddNegativeCache(parser, 'backend service', update_command=True)
+    cdn_flags.AddFlexibleCacheArgs(
+        parser, 'backend service', update_command=True)
 
   def __init__(self,
                support_l7_internal_load_balancer,
                support_failover,
                support_logging,
                support_subsetting,
-               support_flexible_cache_step_one=False,
-               support_flexible_cache_step_two=False,
-               support_negative_cache=False,
                support_edge_policies=False,
                support_request_coalescing=False):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
     self._support_subsetting = support_subsetting
-    self._support_flexible_cache_step_one = support_flexible_cache_step_one
-    self._support_flexible_cache_step_two = support_flexible_cache_step_two
-    self._support_negative_cache = support_negative_cache
     self._support_edge_policies = support_edge_policies
     self._support_request_coalescing = support_request_coalescing
 
@@ -177,13 +163,12 @@ class UpdateHelper(object):
     if not replacement.customRequestHeaders:
       cleared_fields.append('customRequestHeaders')
 
-    if self._support_flexible_cache_step_one:
-      if args.custom_response_header is not None:
-        replacement.customResponseHeaders = args.custom_response_header
-      if args.no_custom_response_headers:
-        replacement.customResponseHeaders = []
-      if not replacement.customResponseHeaders:
-        cleared_fields.append('customResponseHeaders')
+    if args.custom_response_header is not None:
+      replacement.customResponseHeaders = args.custom_response_header
+    if args.no_custom_response_headers:
+      replacement.customResponseHeaders = []
+    if not replacement.customResponseHeaders:
+      cleared_fields.append('customResponseHeaders')
 
     if args.IsSpecified('description'):
       replacement.description = args.description
@@ -227,15 +212,11 @@ class UpdateHelper(object):
         is_update=True,
         apply_signed_url_cache_max_age=True,
         cleared_fields=cleared_fields,
-        support_flexible_cache_step_one=self._support_flexible_cache_step_one,
-        support_flexible_cache_step_two=self._support_flexible_cache_step_two,
-        support_negative_cache=self._support_negative_cache,
         support_request_coalescing=self._support_request_coalescing)
 
-    if self._support_flexible_cache_step_one:
-      if (replacement.cdnPolicy is not None and
-          replacement.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
-        replacement.enableCDN = True
+    if (replacement.cdnPolicy is not None and
+        replacement.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
+      replacement.enableCDN = True
 
     self._ApplyIapArgs(client, args.iap, existing, replacement)
 
@@ -292,38 +273,22 @@ class UpdateHelper(object):
         if self._support_subsetting else False,
         args.IsSpecified('request_coalescing')
         if self._support_request_coalescing else False,
-        args.IsSpecified('cache_mode')
-        if self._support_flexible_cache_step_one else False,
-        args.IsSpecified('client_ttl')
-        if self._support_flexible_cache_step_one else False,
-        args.IsSpecified('no_client_ttl')
-        if self._support_flexible_cache_step_one else False,
-        args.IsSpecified('default_ttl')
-        if self._support_flexible_cache_step_one else False,
-        args.IsSpecified('no_default_ttl')
-        if self._support_flexible_cache_step_one else False,
-        args.IsSpecified('max_ttl')
-        if self._support_flexible_cache_step_one else False,
-        args.IsSpecified('no_max_ttl')
-        if self._support_flexible_cache_step_one else False,
-        args.IsSpecified('negative_caching')
-        if self._support_negative_cache else False,
-        args.IsSpecified('negative_caching_policy')
-        if self._support_negative_cache else False,
-        args.IsSpecified('no_negative_caching_policies')
-        if self._support_negative_cache else False,
-        args.IsSpecified('custom_response_header')
-        if self._support_flexible_cache_step_one else False,
-        args.IsSpecified('no_custom_response_headers')
-        if self._support_flexible_cache_step_one else False,
-        args.IsSpecified('serve_while_stale')
-        if self._support_flexible_cache_step_two else False,
-        args.IsSpecified('no_serve_while_stale')
-        if self._support_flexible_cache_step_two else False,
-        args.IsSpecified('bypass_cache_on_request_headers')
-        if self._support_flexible_cache_step_two else False,
+        args.IsSpecified('cache_mode'),
+        args.IsSpecified('client_ttl'),
+        args.IsSpecified('no_client_ttl'),
+        args.IsSpecified('default_ttl'),
+        args.IsSpecified('no_default_ttl'),
+        args.IsSpecified('max_ttl'),
+        args.IsSpecified('no_max_ttl'),
+        args.IsSpecified('negative_caching'),
+        args.IsSpecified('negative_caching_policy'),
+        args.IsSpecified('no_negative_caching_policies'),
+        args.IsSpecified('custom_response_header'),
+        args.IsSpecified('no_custom_response_headers'),
+        args.IsSpecified('serve_while_stale'),
+        args.IsSpecified('no_serve_while_stale'),
+        args.IsSpecified('bypass_cache_on_request_headers'),
         args.IsSpecified('no_bypass_cache_on_request_headers')
-        if self._support_flexible_cache_step_two else False
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 
@@ -488,9 +453,6 @@ class UpdateGA(base.UpdateCommand):
   _support_all_protocol = False
   _support_grpc_protocol = True
   _support_subsetting = False
-  _support_flexible_cache_step_one = True
-  _support_flexible_cache_step_two = False
-  _support_negative_cache = False
   _support_edge_policies = False
   _support_request_coalescing = False
 
@@ -506,9 +468,6 @@ class UpdateGA(base.UpdateCommand):
         support_grpc_protocol=cls._support_grpc_protocol,
         support_subsetting=cls._support_subsetting,
         support_all_protocol=cls._support_all_protocol,
-        support_flexible_cache_step_one=cls._support_flexible_cache_step_one,
-        support_flexible_cache_step_two=cls._support_flexible_cache_step_two,
-        support_negative_cache=cls._support_negative_cache,
         support_edge_policies=cls._support_edge_policies,
         support_request_coalescing=cls._support_request_coalescing)
 
@@ -518,9 +477,6 @@ class UpdateGA(base.UpdateCommand):
     return UpdateHelper(self._support_l7_internal_load_balancer,
                         self._support_failover, self._support_logging,
                         self._support_subsetting,
-                        self._support_flexible_cache_step_one,
-                        self._support_flexible_cache_step_two,
-                        self._support_negative_cache,
                         self._support_edge_policies,
                         self._support_request_coalescing).Run(args, holder)
 
@@ -536,9 +492,6 @@ class UpdateBeta(UpdateGA):
   _support_all_protocol = False
   _support_grpc_protocol = True
   _support_subsetting = True
-  _support_flexible_cache_step_one = True
-  _support_flexible_cache_step_two = True
-  _support_negative_cache = True
   _support_edge_policies = False
   _support_request_coalescing = True
 
@@ -554,8 +507,5 @@ class UpdateAlpha(UpdateBeta):
   _support_all_protocol = True
   _support_grpc_protocol = True
   _support_subsetting = True
-  _support_flexible_cache_step_one = True
-  _support_flexible_cache_step_two = True
-  _support_negative_cache = True
   _support_edge_policies = True
   _support_request_coalescing = True

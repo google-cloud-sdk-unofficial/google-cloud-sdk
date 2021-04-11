@@ -42,9 +42,6 @@ class Update(base.UpdateCommand):
 
   BACKEND_BUCKET_ARG = None
   EDGE_SECURITY_POLICY_ARG = None
-  _support_flexible_cache_step_one = True
-  _support_flexible_cache_step_two = False
-  _support_negative_cache = False
   _support_edge_policies = False
   _support_request_coalescing = False
 
@@ -59,16 +56,8 @@ class Update(base.UpdateCommand):
     if cls._support_request_coalescing:
       cdn_flags.AddRequestCoalescing(parser)
 
-    if cls._support_flexible_cache_step_one:
-      cdn_flags.AddFlexibleCacheStepOne(
-          parser, 'backend bucket', update_command=True)
-
-    if cls._support_negative_cache:
-      cdn_flags.AddNegativeCache(parser, 'backend bucket', update_command=True)
-
-    if cls._support_flexible_cache_step_two:
-      cdn_flags.AddFlexibleCacheStepTwo(
-          parser, 'backend bucket', update_command=True)
+    cdn_flags.AddFlexibleCacheArgs(
+        parser, 'backend bucket', update_command=True)
 
     if cls._support_edge_policies:
       cls.EDGE_SECURITY_POLICY_ARG = (
@@ -86,22 +75,20 @@ class Update(base.UpdateCommand):
 
   def AnyFlexibleCacheArgsSpecified(self, args):
     """Returns true if any Flexible Cache args for updating backend bucket were specified."""
-    return ((self._support_flexible_cache_step_one and any(
+    return any(
         (args.IsSpecified('cache_mode'), args.IsSpecified('client_ttl'),
          args.IsSpecified('no_client_ttl'), args.IsSpecified('default_ttl'),
          args.IsSpecified('no_default_ttl'), args.IsSpecified('max_ttl'),
          args.IsSpecified('no_max_ttl'),
          args.IsSpecified('custom_response_header'),
-         args.IsSpecified('no_custom_response_headers')))) or
-            (self._support_negative_cache and any(
-                (args.IsSpecified('negative_caching'),
-                 args.IsSpecified('negative_caching_policy'),
-                 args.IsSpecified('no_negative_caching_policies')))) or
-            (self._support_flexible_cache_step_two and any(
-                (args.IsSpecified('serve_while_stale'),
-                 args.IsSpecified('no_serve_while_stale'),
-                 args.IsSpecified('bypass_cache_on_request_headers'),
-                 args.IsSpecified('no_bypass_cache_on_request_headers')))))
+         args.IsSpecified('no_custom_response_headers'),
+         args.IsSpecified('negative_caching'),
+         args.IsSpecified('negative_caching_policy'),
+         args.IsSpecified('no_negative_caching_policies'),
+         args.IsSpecified('serve_while_stale'),
+         args.IsSpecified('no_serve_while_stale'),
+         args.IsSpecified('bypass_cache_on_request_headers'),
+         args.IsSpecified('no_bypass_cache_on_request_headers')))
 
   def GetGetRequest(self, client, backend_bucket_ref):
     """Returns a request to retrieve the backend bucket."""
@@ -150,21 +137,17 @@ class Update(base.UpdateCommand):
         replacement,
         is_update=True,
         cleared_fields=cleared_fields,
-        support_flexible_cache_step_one=self._support_flexible_cache_step_one,
-        support_flexible_cache_step_two=self._support_flexible_cache_step_two,
-        support_negative_cache=self._support_negative_cache,
         support_request_coalescing=self._support_request_coalescing)
 
-    if self._support_flexible_cache_step_one:
-      if args.custom_response_header is not None:
-        replacement.customResponseHeaders = args.custom_response_header
-      if args.no_custom_response_headers:
-        replacement.customResponseHeaders = []
-      if not replacement.customResponseHeaders:
-        cleared_fields.append('customResponseHeaders')
-      if (replacement.cdnPolicy is not None and
-          replacement.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
-        replacement.enableCdn = True
+    if args.custom_response_header is not None:
+      replacement.customResponseHeaders = args.custom_response_header
+    if args.no_custom_response_headers:
+      replacement.customResponseHeaders = []
+    if not replacement.customResponseHeaders:
+      cleared_fields.append('customResponseHeaders')
+    if (replacement.cdnPolicy is not None and
+        replacement.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
+      replacement.enableCdn = True
 
     if not replacement.description:
       cleared_fields.append('description')
@@ -234,9 +217,6 @@ class UpdateBeta(Update):
 
   *{command}* is used to update backend buckets.
   """
-  _support_flexible_cache_step_one = True
-  _support_flexible_cache_step_two = True
-  _support_negative_cache = True
   _support_edge_policies = False
   _support_request_coalescing = True
 
@@ -247,8 +227,6 @@ class UpdateAlpha(UpdateBeta):
 
   *{command}* is used to update backend buckets.
   """
-  _support_flexible_cache_step_one = True
-  _support_flexible_cache_step_two = True
   _support_negative_cache = True
   _support_edge_policies = True
   _support_request_coalescing = True

@@ -56,7 +56,7 @@ class Delete(base.DeleteCommand):
         raise PreviewTimeFieldNotRelevantError(
             '`--preview-time` is only relevant if `--dry-run` is set to true.')
 
-      delete_warning = ('You are about to delete game server cluster {}. '
+      delete_warning = ('You are about to delete game server cluster [{}]. '
                         'Do you want to continue?'.format(args.cluster))
       if not console_io.PromptContinue(message=delete_warning):
         return None

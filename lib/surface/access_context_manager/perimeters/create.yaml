@@ -95,7 +95,6 @@
           unrestricted service lists, as well as access level lists,
           must be empty.
     - api_field: servicePerimeter.status.ingressPolicies
-      release_tracks: [ALPHA, BETA]
       metavar: YAML_FILE
       arg_name: ingress-policies
       help_text: |
@@ -113,8 +112,9 @@
         processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseIngressPolicies:api_version=v1alpha
       BETA:
         processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseIngressPolicies:api_version=v1
+      GA:
+        processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseIngressPolicies:api_version=v1
     - api_field: servicePerimeter.status.egressPolicies
-      release_tracks: [ALPHA, BETA]
       metavar: YAML_FILE
       arg_name: egress-policies
       help_text: |
@@ -131,6 +131,8 @@
       ALPHA:
         processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseEgressPolicies:api_version=v1alpha
       BETA:
+        processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseEgressPolicies:api_version=v1
+      GA:
         processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseEgressPolicies:api_version=v1
     - group:
         params:

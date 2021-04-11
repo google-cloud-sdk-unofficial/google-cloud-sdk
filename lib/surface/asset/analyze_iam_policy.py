@@ -70,4 +70,9 @@ class AnalyzeIamPolicyBeta(base.Command):
 class AnalyzeIamPolicyGA(AnalyzeIamPolicyBeta):
   """Analyzes IAM policies that match a request."""
 
+  @classmethod
+  def Args(cls, parser):
+    super(AnalyzeIamPolicyGA, cls).Args(parser)
+    flags.AddAnalyzerConditionContextGroup(parser)
+
   _API_VERSION = client_util.DEFAULT_API_VERSION

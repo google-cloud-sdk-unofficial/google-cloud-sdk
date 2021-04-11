@@ -151,6 +151,7 @@ class AnalyzeIamPolicyLongrunning(base.Command):
     flags.AddAnalyzerParentArgs(parser)
     flags.AddAnalyzerSelectorsGroup(parser)
     flags.AddAnalyzerOptionsGroup(parser, False)
+    flags.AddAnalyzerConditionContextGroup(parser)
     AddDestinationGroup(parser)
 
   def Run(self, args):

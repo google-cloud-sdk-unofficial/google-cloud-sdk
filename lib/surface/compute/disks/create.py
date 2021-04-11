@@ -609,7 +609,7 @@ class CreateBeta(Create):
   """Create Compute Engine persistent disks."""
 
   source_instant_snapshot_enabled = False
-  support_image_family_scope = False
+  support_image_family_scope = True
 
   @classmethod
   def Args(cls, parser):

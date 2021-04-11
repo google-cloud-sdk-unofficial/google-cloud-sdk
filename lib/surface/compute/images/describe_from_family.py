@@ -21,10 +21,12 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.images import flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class DescribeFromFamily(base.DescribeCommand):
   """Describe the latest image from an image family.
 
@@ -51,11 +53,43 @@ class DescribeFromFamily(base.DescribeCommand):
     if family.startswith('family/'):
       family = family[len('family/'):]
 
-    request = client.messages.ComputeImagesGetFromFamilyRequest(
-        family=family, project=image_ref.project)
+    if hasattr(args, 'zone') and args.zone:
+      request = client.messages.ComputeImageFamilyViewsGetRequest(
+          family=family, project=image_ref.project, zone=args.zone)
 
-    return client.MakeRequests([(client.apitools_client.images, 'GetFromFamily',
-                                 request)])[0]
+      return client.MakeRequests([(client.apitools_client.imageFamilyViews,
+                                   'Get', request)])[0]
+
+    else:
+      request = client.messages.ComputeImagesGetFromFamilyRequest(
+          family=family, project=image_ref.project)
+
+      return client.MakeRequests([(client.apitools_client.images,
+                                   'GetFromFamily', request)])[0]
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeFromFamilyBeta(DescribeFromFamily):
+  """Describe the latest image from an image family."""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeFromFamilyAlpha(DescribeFromFamilyBeta):
+  """Describe the latest image from an image family."""
+
+  @staticmethod
+  def Args(parser):
+    DescribeFromFamily.DiskImageArg = flags.MakeDiskImageArg()
+    DescribeFromFamily.DiskImageArg.AddArgument(
+        parser, operation_type='describe')
+    # Do not use compute_flags.AddZoneFlag() because there should be no
+    # interaction with the compute/zone property.
+    parser.add_argument(
+        '--zone',
+        completer=completers.ZonesCompleter,
+        help=('Zone to query. Returns the latest image available in the image '
+              'family, for the specified zone. If not specified, returns the '
+              'latest globally available image.'))
 
 
 DescribeFromFamily.detailed_help = {

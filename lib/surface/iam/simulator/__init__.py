@@ -36,7 +36,6 @@ class SimulatorBeta(base.Group):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class SimulatorGA(base.Group):
   """Understand how an IAM policy change could impact access before deploying the change.
   """

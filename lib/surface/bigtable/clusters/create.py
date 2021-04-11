@@ -27,7 +27,8 @@ from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class CreateCluster(base.CreateCommand):
   """Create a bigtable cluster."""
 
@@ -52,6 +53,7 @@ class CreateCluster(base.CreateCommand):
     arguments.AddClusterResourceArg(parser, 'to describe')
     arguments.ArgAdder(parser).AddClusterZone().AddClusterNodes(
         required=False, default=3).AddAsync()
+    arguments.AddKmsKeyResourceArg(parser, 'cluster')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -77,27 +79,6 @@ class CreateCluster(base.CreateCommand):
     return util.AwaitCluster(
         operation_ref,
         'Creating bigtable cluster {0}'.format(cluster_ref.Name()))
-
-  def _Cluster(self, args):
-    msgs = util.GetAdminMessages()
-    storage_type = (
-        msgs.Cluster.DefaultStorageTypeValueValuesEnum.STORAGE_TYPE_UNSPECIFIED)
-    cluster = msgs.Cluster(
-        serveNodes=args.num_nodes,
-        location=util.LocationUrl(args.zone),
-        defaultStorageType=storage_type)
-    return cluster
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateClusterAlpha(CreateCluster):
-  """Create a bigtable cluster."""
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    CreateCluster.Args(parser)
-    arguments.AddKmsKeyResourceArg(parser, 'cluster')
 
   def _Cluster(self, args):
     msgs = util.GetAdminMessages()

@@ -31,6 +31,7 @@ from googlecloudsdk.core import config
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import gce as c_gce
+from googlecloudsdk.core.credentials import store as c_store
 
 
 class Login(base.Command):
@@ -149,10 +150,23 @@ class Login(base.Command):
       creds = auth_util.DoInstalledAppBrowserFlowGoogleAuth(
           launch_browser, scopes, client_id_file=args.client_id_file)
 
-    if args.IsSpecified('client_id_file'):
-      command_auth_util.DumpADC(creds, quota_project_disabled=False)
-    elif args.disable_quota_project or (not args.add_quota_project):
-      command_auth_util.DumpADC(creds, quota_project_disabled=True)
+    target_impersonation_principal, delegates = None, None
+    impersonation_service_accounts = properties.VALUES.auth.impersonate_service_account.Get(
+    )
+    if impersonation_service_accounts:
+      (target_impersonation_principal, delegates
+      ) = c_store.ParseImpersonationAccounts(impersonation_service_accounts)
+    if not target_impersonation_principal:
+      if args.IsSpecified('client_id_file'):
+        command_auth_util.DumpADC(creds, quota_project_disabled=False)
+      elif args.disable_quota_project or (not args.add_quota_project):
+        command_auth_util.DumpADC(creds, quota_project_disabled=True)
+      else:
+        command_auth_util.DumpADCOptionalQuotaProject(creds)
     else:
-      command_auth_util.DumpADCOptionalQuotaProject(creds)
+      # TODO(b/184049366): Supports quota project with impersonated creds.
+      command_auth_util.DumpImpersonatedServiceAccountToADC(
+          creds,
+          target_principal=target_impersonation_principal,
+          delegates=delegates)
     return creds

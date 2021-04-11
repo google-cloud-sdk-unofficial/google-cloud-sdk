@@ -126,7 +126,6 @@ class ReplayRecentAccessesBeta(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class ReplayRecentAccessesGA(base.Command):
   """Determine affected recent access attempts before IAM policy change deployment."""
 

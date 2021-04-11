@@ -26,7 +26,8 @@ from googlecloudsdk.command_lib.compute.public_advertised_prefixes import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   r"""Creates a Compute Engine public advertised prefix.
 

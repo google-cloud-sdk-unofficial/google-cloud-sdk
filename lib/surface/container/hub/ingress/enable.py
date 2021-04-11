@@ -30,8 +30,8 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.util import retry
 
-
 CONFIG_MEMBERSHIP_FLAG = '--config-membership'
+BILLING_FLAG = '--billing'
 
 
 class Enable(base.EnableCommand):
@@ -43,7 +43,7 @@ class Enable(base.EnableCommand):
 
   Enable MultiClusterIngress Feature:
 
-    $ {command} --config-membership=CONFIG_MEMBERSHIP
+    $ {command} --config-membership=CONFIG_MEMBERSHIP --billing=BILLING
   """
 
   FEATURE_NAME = 'multiclusteringress'
@@ -60,6 +60,14 @@ class Enable(base.EnableCommand):
             the MultiClusterIngress and MultiClusterService CustomResourceDefinitions.
             """),
     )
+    parser.add_argument(
+        BILLING_FLAG,
+        type=str,
+        default='standalone',
+        choices=['standalone', 'anthos'],
+        help=textwrap.dedent("""\
+                        Billing type for MCI Ingresses.
+                        """))
 
   def Run(self, args):
     project = properties.VALUES.core.project.GetOrFail()
@@ -68,17 +76,17 @@ class Enable(base.EnableCommand):
       if not memberships:
         raise exceptions.Error('No Memberships available in Hub.')
       index = console_io.PromptChoice(
-          options=memberships,
-          message='Please specify a config membership:\n')
+          options=memberships, message='Please specify a config membership:\n')
       config_membership = memberships[index]
     else:
       config_membership = args.config_membership
-    config_membership = ('projects/{0}/locations/global/memberships/{1}'
-                         .format(project,
-                                 os.path.basename(config_membership)))
-    result = self.RunCommand(args, multiclusteringressFeatureSpec=(
-        base.CreateMultiClusterIngressFeatureSpec(
-            config_membership)))
+    config_membership = ('projects/{0}/locations/global/memberships/{1}'.format(
+        project, os.path.basename(config_membership)))
+    result = self.RunCommand(
+        args,
+        multiclusteringressFeatureSpec=(
+            base.CreateMultiClusterIngressFeatureSpec(config_membership,
+                                                      args.billing)))
 
     # We only want to poll for usability if everything above succeeded.
     if result is not None:
