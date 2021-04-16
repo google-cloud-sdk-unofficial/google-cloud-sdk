@@ -26,7 +26,7 @@ from googlecloudsdk.calliope import base
 
 class Create(base.CreateCommand):
   # pylint: disable=line-too-long
-  """Create a view on a logs bucket.
+  """Create a log view on a log bucket.
 
   ## EXAMPLES
 

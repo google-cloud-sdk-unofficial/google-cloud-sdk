@@ -104,7 +104,8 @@ def ValidateAndFixUpdatePolicyAgainstStateful(update_policy, group_ref,
         'Use --instance-redistribution-type=NONE')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class CreateGA(base.CreateCommand):
   """Create Compute Engine managed instance groups."""
 
@@ -118,6 +119,7 @@ class CreateGA(base.CreateCommand):
     instance_groups_flags.AddZonesFlag(parser)
     instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
     instance_groups_flags.AddMigCreateStatefulFlags(parser)
+    instance_groups_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
 
   @staticmethod
   def _CreateStatefulPolicy(args, client):
@@ -154,13 +156,12 @@ class CreateGA(base.CreateCommand):
       zonal_resource_fetcher.WarnForZonalCreation([group_ref])
     return group_ref
 
-  def _CreateDistributionPolicy(self, zones, resources, messages):
-    if not zones:
-      return None
+  def _CreateDistributionPolicy(self, args, resources, messages):
     distribution_policy = messages.DistributionPolicy()
-    if zones:
+
+    if args.zones:
       policy_zones = []
-      for zone in zones:
+      for zone in args.zones:
         zone_ref = resources.Parse(
             zone,
             collection='compute.zones',
@@ -169,7 +170,13 @@ class CreateGA(base.CreateCommand):
             messages.DistributionPolicyZoneConfiguration(
                 zone=zone_ref.SelfLink()))
       distribution_policy.zones = policy_zones
-    return distribution_policy
+
+    if args.target_distribution_shape:
+      distribution_policy.targetShape = (
+          messages.DistributionPolicy.TargetShapeValueValuesEnum)(
+              args.target_distribution_shape)
+
+    return ValueOrNone(distribution_policy)
 
   def GetRegionForGroup(self, group_ref):
     if _IsZonalGroup(group_ref):
@@ -241,6 +248,8 @@ class CreateGA(base.CreateCommand):
                      .ApplyInstanceRedistributionTypeToUpdatePolicy)(
                          client, args.GetValue('instance_redistribution_type'),
                          None)
+    instance_groups_flags.ValidateMigDistributionPolicyTargetShapeFlag(
+        args.target_distribution_shape, group_ref)
 
     instance_group_manager = client.messages.InstanceGroupManager(
         name=group_ref.Name(),
@@ -253,7 +262,7 @@ class CreateGA(base.CreateCommand):
         targetSize=int(args.size),
         autoHealingPolicies=auto_healing_policies,
         distributionPolicy=self._CreateDistributionPolicy(
-            args.zones, holder.resources, client.messages),
+            args, holder.resources, client.messages),
         updatePolicy=update_policy,
     )
 
@@ -319,49 +328,3 @@ will create one managed instance group called 'example-managed-instance-group'
 in the ``us-central1-a'' zone.
 """,
 }
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateBetaAndAlpha(CreateGA):
-  """Create Compute Engine managed instance groups."""
-
-  @classmethod
-  def Args(cls, parser):
-    CreateGA.Args(parser)
-    instance_groups_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
-
-  def _CreateDistributionPolicy(self,
-                                zones,
-                                resources,
-                                messages,
-                                target_distribution_shape=None):
-    distribution_policy = super(
-        CreateBetaAndAlpha, self)._CreateDistributionPolicy(
-            zones, resources, messages) or messages.DistributionPolicy()
-    if target_distribution_shape:
-      distribution_policy.targetShape = (
-          messages.DistributionPolicy.TargetShapeValueValuesEnum)(
-              target_distribution_shape)
-    return ValueOrNone(distribution_policy)
-
-  def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
-                                  holder):
-    instance_group_manager = (
-        super(CreateBetaAndAlpha,
-              self)._CreateInstanceGroupManager(args, group_ref, template_ref,
-                                                client, holder))
-
-    # Handle target shape args
-    target_distribution_shape = args.GetValue('target_distribution_shape')
-    instance_groups_flags.ValidateMigDistributionPolicyTargetShapeFlag(
-        target_distribution_shape, group_ref)
-    instance_group_manager.distributionPolicy = (
-        self._CreateDistributionPolicy(
-            args.zones,
-            holder.resources,
-            client.messages,
-            target_distribution_shape=target_distribution_shape))
-    return instance_group_manager
-
-
-CreateBetaAndAlpha.detailed_help = CreateGA.detailed_help

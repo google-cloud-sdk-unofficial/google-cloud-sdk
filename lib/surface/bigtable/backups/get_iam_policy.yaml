@@ -17,3 +17,8 @@ arguments:
   resource:
     help_text: Cloud Bigtable Backup to get the IAM policy for.
     spec: !REF googlecloudsdk.command_lib.bigtable.resources:backup
+
+ALPHA:
+  iam:
+    policy_version: 3
+    get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion

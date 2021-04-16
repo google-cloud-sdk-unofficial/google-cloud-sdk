@@ -27,6 +27,6 @@ from googlecloudsdk.calliope import base
 class Locations(base.Group):
   """Query Cloud Logging locations.
 
-  Commands for querying Cloud Logging locations. Cloud Logging Logs Buckets
-  may be created in these locations.
+  Commands for querying Cloud Logging locations. Cloud Logging log buckets may
+  be created in these locations.
   """

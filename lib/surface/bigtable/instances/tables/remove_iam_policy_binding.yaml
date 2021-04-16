@@ -21,6 +21,9 @@ help_text:
 
 iam:
   enable_condition: true
+  ALPHA:
+    policy_version: 3
+    get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion
 
 request:
   collection: bigtableadmin.projects.instances.tables

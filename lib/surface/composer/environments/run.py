@@ -83,6 +83,11 @@ class Run(base.Command):
                         for cmd, r in cls.SUBCOMMAND_ALLOWLIST.items()
                     ])), doc_url))
     parser.add_argument(
+        'subcommand_nested',
+        metavar='SUBCOMMAND_NESTED',
+        nargs=argparse.OPTIONAL,
+        help='Additional subcommand in case it is nested.')
+    parser.add_argument(
         'cmd_args',
         metavar='CMD_ARGS',
         nargs=argparse.REMAINDER,
@@ -112,6 +117,35 @@ class Run(base.Command):
         and set(args.cmd_args).isdisjoint({'-y', '--yes'}):
       args.cmd_args.append('--yes')
 
+  def CheckForRequiredCmdArgs(self, args):
+    """Prevents running Airflow CLI commands without required arguments.
+
+    Args:
+      args: argparse.Namespace, An object that contains the values for the
+        arguments specified in the .Args() method.
+    """
+    # Dict values are lists of tuples, each tuple represents set of arguments,
+    # where at least one argument from tuple will be required.
+    # E.g. for "users" subcommand, one of the "-p", "--password" or
+    # "--use-random-password" will be required.
+    required_cmd_args = {
+        'users': [['-p', '--password', '--use-random-password']]
+    }
+
+    def _StringifyRequiredCmdArgs(cmd_args):
+      quoted_args = ['"{}"'.format(a) for a in cmd_args]
+      return '[{}]'.format(', '.join(quoted_args))
+
+    for subcommand_required_cmd_args in required_cmd_args.get(
+        args.subcommand, []):
+      if subcommand_required_cmd_args and set(
+          subcommand_required_cmd_args).isdisjoint(set(args.cmd_args or [])):
+        raise command_util.Error(
+            'The subcommand "{}" requires one of the following command line '
+            'arguments: {}.'.format(
+                args.subcommand,
+                _StringifyRequiredCmdArgs(subcommand_required_cmd_args)))
+
   def DeprecationWarningPrompt(self, args):
     response = True
     if args.subcommand in command_util.SUBCOMMAND_DEPRECATION:
@@ -120,13 +154,21 @@ class Run(base.Command):
           default=False, cancel_on_no=True)
     return response
 
-  def CheckSubCommandAirflowSupport(self, args, airflow_version):
+  def CheckSubcommandAirflowSupport(self, args, airflow_version):
     from_version, to_version = self.SUBCOMMAND_ALLOWLIST[args.subcommand]
     if not image_versions_command_util.IsVersionInRange(
         airflow_version, from_version, to_version):
       raise command_util.Error(
-          'This subcommand {} is not supported for Composer environments with '
+          'The subcommand "{}" is not supported for Composer environments with '
           'Airflow version {}.'.format(args.subcommand, airflow_version),)
+
+  def CheckSubcommandNestedAirflowSupport(self, args, airflow_version):
+    if (args.subcommand_nested and
+        not image_versions_command_util.IsVersionInRange(
+            airflow_version, '2.0.0', None)):
+      raise command_util.Error(
+          'Nested subcommands are supported only for Composer environments '
+          'with Airflow version 2.0.0 or higher.')
 
   def ConvertKubectlError(self, error, env_obj):
     del env_obj  # Unused argument.
@@ -137,6 +179,7 @@ class Run(base.Command):
 
   def Run(self, args):
     self.DeprecationWarningPrompt(args)
+    self.CheckForRequiredCmdArgs(args)
 
     running_state = (
         api_util.GetMessagesModule(release_track=self.ReleaseTrack())
@@ -161,7 +204,8 @@ class Run(base.Command):
         image_version = env_obj.config.softwareConfig.imageVersion
         airflow_version = self._ExtractAirflowVersion(image_version)
 
-        self.CheckSubCommandAirflowSupport(args, airflow_version)
+        self.CheckSubcommandAirflowSupport(args, airflow_version)
+        self.CheckSubcommandNestedAirflowSupport(args, airflow_version)
 
         kubectl_ns = command_util.FetchKubectlNamespace(image_version)
         pod = command_util.GetGkePod(
@@ -177,6 +221,8 @@ class Run(base.Command):
           kubectl_args.append('--tty')
         kubectl_args.extend(
             ['--container', WORKER_CONTAINER, '--', 'airflow', args.subcommand])
+        if args.subcommand_nested:
+          kubectl_args.append(args.subcommand_nested)
         if args.cmd_args:
           kubectl_args.extend(args.cmd_args)
 
@@ -206,6 +252,15 @@ class RunBeta(Run):
   *my-environment* environment:
 
     airflow trigger_dag some_dag --run_id=foo
+
+  The following command (for environments with Airflow 2.0+):
+
+    {command} myenv dags list
+
+  is equivalent to running the following command from a shell inside the
+  *my-environment* environment:
+
+    airflow dags list
   """
 
   SUBCOMMAND_ALLOWLIST = command_util.SUBCOMMAND_ALLOWLIST_BETA

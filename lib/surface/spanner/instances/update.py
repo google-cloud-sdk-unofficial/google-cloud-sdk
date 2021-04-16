@@ -26,7 +26,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Update(base.Command):
   """Update a Cloud Spanner instance."""
 
@@ -71,6 +71,47 @@ class Update(base.Command):
     """
     op = instances.Patch(
         args.instance, description=args.description, nodes=args.nodes)
+    if args.async_:
+      return op
+    instance_operations.Await(op, 'Updating instance')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaUpdate(Update):
+  """Update a Cloud Spanner instance with ALPHA features."""
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Please add arguments in alphabetical order except for no- or a clear-
+    pair for that argument which can follow the argument itself.
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    flags.Instance().AddToParser(parser)
+    flags.Description(required=False).AddToParser(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+    group_parser = parser.add_argument_group(mutex=True)
+    flags.Nodes(required=False).AddToParser(group_parser)
+    flags.ProcessingUnits(required=False).AddToParser(group_parser)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+    op = instances.Patch(
+        args.instance,
+        description=args.description,
+        nodes=args.nodes,
+        processing_units=args.processing_units)
     if args.async_:
       return op
     instance_operations.Await(op, 'Updating instance')

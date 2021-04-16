@@ -45,7 +45,7 @@ class Update(base.UpdateCommand):
             $ {command} high_severity_count --log-filter="severity >= WARNING"
 
           Detailed information about filters can be found at:
-          [](https://cloud.google.com/logging/docs/view/advanced_filters)
+          [](https://cloud.google.com/logging/docs/view/logging-query-language)
 
           For advanced features such as user-defined labels and distribution
           metrics, update using a config file:

@@ -69,8 +69,7 @@ class UpdateHelper(object):
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
            support_logging, support_client_only, support_grpc_protocol,
-           support_subsetting, support_all_protocol, support_edge_policies,
-           support_request_coalescing):
+           support_subsetting, support_all_protocol, support_edge_policies):
     """Add all arguments for updating a backend service."""
 
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
@@ -128,25 +127,19 @@ class UpdateHelper(object):
     AddIapFlag(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
 
-    if support_request_coalescing:
-      cdn_flags.AddRequestCoalescing(parser)
-
-    cdn_flags.AddFlexibleCacheArgs(
-        parser, 'backend service', update_command=True)
+    cdn_flags.AddCdnPolicyArgs(parser, 'backend service', update_command=True)
 
   def __init__(self,
                support_l7_internal_load_balancer,
                support_failover,
                support_logging,
                support_subsetting,
-               support_edge_policies=False,
-               support_request_coalescing=False):
+               support_edge_policies=False):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
     self._support_subsetting = support_subsetting
     self._support_edge_policies = support_edge_policies
-    self._support_request_coalescing = support_request_coalescing
 
   def Modify(self, client, resources, args, existing):
     """Modify Backend Service."""
@@ -211,8 +204,7 @@ class UpdateHelper(object):
         replacement,
         is_update=True,
         apply_signed_url_cache_max_age=True,
-        cleared_fields=cleared_fields,
-        support_request_coalescing=self._support_request_coalescing)
+        cleared_fields=cleared_fields)
 
     if (replacement.cdnPolicy is not None and
         replacement.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
@@ -271,8 +263,7 @@ class UpdateHelper(object):
         args.IsSpecified('no_health_checks'),
         args.IsSpecified('subsetting_policy')
         if self._support_subsetting else False,
-        args.IsSpecified('request_coalescing')
-        if self._support_request_coalescing else False,
+        args.IsSpecified('request_coalescing'),
         args.IsSpecified('cache_mode'),
         args.IsSpecified('client_ttl'),
         args.IsSpecified('no_client_ttl'),
@@ -454,7 +445,6 @@ class UpdateGA(base.UpdateCommand):
   _support_grpc_protocol = True
   _support_subsetting = False
   _support_edge_policies = False
-  _support_request_coalescing = False
 
   @classmethod
   def Args(cls, parser):
@@ -468,8 +458,7 @@ class UpdateGA(base.UpdateCommand):
         support_grpc_protocol=cls._support_grpc_protocol,
         support_subsetting=cls._support_subsetting,
         support_all_protocol=cls._support_all_protocol,
-        support_edge_policies=cls._support_edge_policies,
-        support_request_coalescing=cls._support_request_coalescing)
+        support_edge_policies=cls._support_edge_policies)
 
   def Run(self, args):
     """Issues requests necessary to update the Backend Services."""
@@ -477,8 +466,7 @@ class UpdateGA(base.UpdateCommand):
     return UpdateHelper(self._support_l7_internal_load_balancer,
                         self._support_failover, self._support_logging,
                         self._support_subsetting,
-                        self._support_edge_policies,
-                        self._support_request_coalescing).Run(args, holder)
+                        self._support_edge_policies).Run(args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -493,7 +481,6 @@ class UpdateBeta(UpdateGA):
   _support_grpc_protocol = True
   _support_subsetting = True
   _support_edge_policies = False
-  _support_request_coalescing = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -508,4 +495,3 @@ class UpdateAlpha(UpdateBeta):
   _support_grpc_protocol = True
   _support_subsetting = True
   _support_edge_policies = True
-  _support_request_coalescing = True

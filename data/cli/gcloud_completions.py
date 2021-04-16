@@ -10218,8 +10218,10 @@ STATIC_COMPLETION_CLI_TREE = {
                       "internet-fqdn-port",
                       "internet-ip-port",
                       "non-gcp-private-ip-port",
+                      "private-service-connect",
                       "serverless"
                     ],
+                    "--psc-target-service": "value",
                     "--region": "dynamic",
                     "--serverless-deployment-platform": "value",
                     "--serverless-deployment-resource": "value",
@@ -16741,6 +16743,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "dynamic"
                   }
                 },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
                 "export": {
                   "commands": {},
                   "flags": {
@@ -16845,6 +16853,13 @@ STATIC_COMPLETION_CLI_TREE = {
             "targets": {
               "commands": {
                 "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--delivery-pipeline": "dynamic",
+                    "--region": "dynamic"
+                  }
+                },
+                "describe": {
                   "commands": {},
                   "flags": {
                     "--delivery-pipeline": "dynamic",
@@ -17982,6 +17997,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--behavior": [
                           "bypassresponsepolicy"
                         ],
+                        "--dns-name": "value",
                         "--local-data": "value",
                         "--response-policy": "value"
                       }
@@ -22678,6 +22694,19 @@ STATIC_COMPLETION_CLI_TREE = {
           "commands": {
             "clusters": {
               "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--region": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "value"
+                  }
+                },
                 "list": {
                   "commands": {},
                   "flags": {
@@ -32204,6 +32233,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--next-rotation-time": "value",
                 "--organization": "value",
                 "--provisioned-resources-parent": "value",
+                "--resource-settings": "value",
                 "--rotation-period": "value"
               }
             },
@@ -38396,7 +38426,9 @@ STATIC_COMPLETION_CLI_TREE = {
                 },
                 "describe-from-family": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--zone": "dynamic"
+                  }
                 },
                 "export": {
                   "commands": {},
@@ -47318,6 +47350,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--behavior": [
                           "bypassresponsepolicy"
                         ],
+                        "--dns-name": "value",
                         "--local-data": "value",
                         "--response-policy": "value"
                       }
@@ -60115,6 +60148,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--max-ttl": "value",
                 "--negative-caching": "bool",
                 "--negative-caching-policy": "value",
+                "--request-coalescing": "bool",
                 "--serve-while-stale": "value",
                 "--signed-url-cache-max-age": "value"
               }
@@ -60169,6 +60203,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--no-max-ttl": "bool",
                 "--no-negative-caching-policies": "bool",
                 "--no-serve-while-stale": "bool",
+                "--request-coalescing": "bool",
                 "--serve-while-stale": "value",
                 "--signed-url-cache-max-age": "value"
               }
@@ -60261,6 +60296,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--port-name": "value",
                 "--protocol": "value",
                 "--region": "dynamic",
+                "--request-coalescing": "bool",
                 "--serve-while-stale": "value",
                 "--session-affinity": [
                   "CLIENT_IP",
@@ -60406,6 +60442,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--port-name": "value",
                 "--protocol": "value",
                 "--region": "dynamic",
+                "--request-coalescing": "bool",
                 "--security-policy": "dynamic",
                 "--serve-while-stale": "value",
                 "--session-affinity": [
@@ -61905,6 +61942,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "dynamic",
                     "--size": "value",
                     "--stateful-disk": "value",
+                    "--target-distribution-shape": [
+                      "ANY",
+                      "BALANCED",
+                      "EVEN"
+                    ],
                     "--target-pool": "value",
                     "--template": "value",
                     "--zone": "dynamic",
@@ -62220,6 +62262,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "dynamic",
                     "--remove-stateful-disks": "value",
                     "--stateful-disk": "value",
+                    "--target-distribution-shape": [
+                      "ANY",
+                      "BALANCED",
+                      "EVEN"
+                    ],
                     "--zone": "dynamic"
                   }
                 },
@@ -62994,6 +63041,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--async": "bool",
                 "--can-ip-forward": "bool",
+                "--compute-service-account": "value",
                 "--custom-cpu": "value",
                 "--custom-extensions": "bool",
                 "--custom-memory": "value",

@@ -43,7 +43,6 @@ class Update(base.UpdateCommand):
   BACKEND_BUCKET_ARG = None
   EDGE_SECURITY_POLICY_ARG = None
   _support_edge_policies = False
-  _support_request_coalescing = False
 
   @classmethod
   def Args(cls, parser):
@@ -53,11 +52,7 @@ class Update(base.UpdateCommand):
     signed_url_flags.AddSignedUrlCacheMaxAge(
         parser, required=False, unspecified_help='')
 
-    if cls._support_request_coalescing:
-      cdn_flags.AddRequestCoalescing(parser)
-
-    cdn_flags.AddFlexibleCacheArgs(
-        parser, 'backend bucket', update_command=True)
+    cdn_flags.AddCdnPolicyArgs(parser, 'backend bucket', update_command=True)
 
     if cls._support_edge_policies:
       cls.EDGE_SECURITY_POLICY_ARG = (
@@ -136,8 +131,7 @@ class Update(base.UpdateCommand):
         args,
         replacement,
         is_update=True,
-        cleared_fields=cleared_fields,
-        support_request_coalescing=self._support_request_coalescing)
+        cleared_fields=cleared_fields)
 
     if args.custom_response_header is not None:
       replacement.customResponseHeaders = args.custom_response_header
@@ -202,11 +196,10 @@ class Update(base.UpdateCommand):
 
   def Run(self, args):
     """Issues the request necessary for updating a backend bucket."""
-    if not self.AnyArgsSpecified(args)\
-        and not args.IsSpecified('signed_url_cache_max_age') \
-        and not (self._support_request_coalescing
-                 and args.IsSpecified('request_coalescing')) \
-        and not self.AnyFlexibleCacheArgsSpecified(args):
+    if (not self.AnyArgsSpecified(args) and
+        not args.IsSpecified('signed_url_cache_max_age') and
+        not args.IsSpecified('request_coalescing') and
+        not self.AnyFlexibleCacheArgsSpecified(args)):
       raise exceptions.ToolException('At least one property must be modified.')
     return self.MakeRequests(args)
 
@@ -218,7 +211,6 @@ class UpdateBeta(Update):
   *{command}* is used to update backend buckets.
   """
   _support_edge_policies = False
-  _support_request_coalescing = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -227,6 +219,4 @@ class UpdateAlpha(UpdateBeta):
 
   *{command}* is used to update backend buckets.
   """
-  _support_negative_cache = True
   _support_edge_policies = True
-  _support_request_coalescing = True

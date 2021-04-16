@@ -49,6 +49,7 @@ class SetIamPolicy(base.Command):
       A IAM policy message.
     """
     instance_ref = util.GetInstanceRef(args.instance)
-    result = iam.SetInstanceIamPolicy(instance_ref, args.policy_file)
+    result = iam.SetInstanceIamPolicy(instance_ref, self.ReleaseTrack(),
+                                      args.policy_file)
     iam_util.LogSetIamPolicy(instance_ref.Name(), 'instance')
     return result

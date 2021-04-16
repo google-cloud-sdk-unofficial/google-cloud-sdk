@@ -80,6 +80,7 @@ class Create(base.CreateCommand):
   support_l4ilb_neg = False
   support_vm_ip_neg = True
   support_serverless_deployment = False
+  support_l7psc_neg = False
 
   @classmethod
   def Args(cls, parser):
@@ -94,7 +95,8 @@ class Create(base.CreateCommand):
         support_l4ilb_neg=cls.support_l4ilb_neg,
         support_regional_scope=cls.support_regional_scope,
         support_vm_ip_neg=cls.support_vm_ip_neg,
-        support_serverless_deployment=cls.support_serverless_deployment)
+        support_serverless_deployment=cls.support_serverless_deployment,
+        support_l7psc_neg=cls.support_l7psc_neg)
 
   def Run(self, args):
     """Issues the request necessary for adding the network endpoint group."""
@@ -115,7 +117,7 @@ class Create(base.CreateCommand):
     self._ValidateNEG(args, neg_ref)
 
     if self.support_regional_scope:
-      if self.support_serverless_deployment:
+      if self.support_serverless_deployment or self.support_l7psc_neg:
         result = neg_client.Create(
             neg_ref,
             args.network_endpoint_type,
@@ -134,7 +136,8 @@ class Create(base.CreateCommand):
             serverless_deployment_platform=args.serverless_deployment_platform,
             serverless_deployment_resource=args.serverless_deployment_resource,
             serverless_deployment_version=args.serverless_deployment_version,
-            serverless_deployment_url_mask=args.serverless_deployment_url_mask)
+            serverless_deployment_url_mask=args.serverless_deployment_url_mask,
+            psc_target_service=args.psc_target_service)
       else:
         result = neg_client.Create(
             neg_ref,
@@ -172,6 +175,7 @@ class Create(base.CreateCommand):
     valid_scopes['internet-ip-port'] = ['global']
     valid_scopes['internet-fqdn-port'] = ['global']
     valid_scopes['serverless'] = ['regional']
+    valid_scopes['private-service-connect'] = ['regional']
 
     if self.support_hybrid_neg:
       valid_scopes['non-gcp-private-ip-port'] = ['zonal']
@@ -201,6 +205,14 @@ class Create(base.CreateCommand):
                 _JoinWithOr(valid_regional_types),
                 _GetValidScopesErrorMessage(network_endpoint_type,
                                             valid_scopes)))
+
+      if network_endpoint_type == 'private-service-connect' and not args.psc_target_service:
+        raise exceptions.InvalidArgumentException(
+            '--private-service-connect',
+            'Network endpoint type private-service-connect must specify '
+            '--psc-target-service for private service NEG.'
+        )
+
     else:
       valid_global_types = valid_scopes_inverted['global']
       if network_endpoint_type not in valid_global_types:
@@ -222,3 +234,4 @@ class CreateAlpha(Create):
   support_l4ilb_neg = True
   support_neg_type = True
   support_serverless_deployment = True
+  support_l7psc_neg = True

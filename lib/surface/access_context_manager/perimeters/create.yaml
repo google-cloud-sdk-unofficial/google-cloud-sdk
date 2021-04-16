@@ -4,11 +4,10 @@
     brief: Create a new service perimeter.
     description: |
       Create a new service perimeter in a given access policy.
-
-      ## EXAMPLES
-
+    examples: |
         To create a new basic Service Perimeter:
-        $ {command} --title=my_perimeter_title --resources=projects/12345 --restricted-service="storage.googleapis.com" --policy=9876543
+
+          $ {command} --title=my_perimeter_title --resources=projects/12345 --restricted-services="storage.googleapis.com" --policy=9876543
 
   request:
     api_version: v1

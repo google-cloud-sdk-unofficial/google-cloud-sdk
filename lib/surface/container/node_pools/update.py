@@ -193,6 +193,7 @@ class UpdateBeta(Update):
     flags.AddNodeTaintsFlag(
         group, for_node_pool=True, for_update=True)
     flags.AddTagsNodePoolUpdate(group)
+    flags.AddNodePoolEnablePrivateNodes(group, for_update=True, hidden=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -211,7 +212,8 @@ class UpdateBeta(Update):
         system_config_from_file=args.system_config_from_file,
         node_labels=args.node_labels,
         node_taints=args.node_taints,
-        tags=args.tags)
+        tags=args.tags,
+        enable_private_nodes=args.enable_private_nodes)
     return ops
 
 
@@ -246,6 +248,7 @@ class UpdateAlpha(Update):
     flags.AddNodeTaintsFlag(
         group, for_node_pool=True, for_update=True)
     flags.AddTagsNodePoolUpdate(group)
+    flags.AddNodePoolEnablePrivateNodes(group, for_update=True, hidden=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -264,7 +267,8 @@ class UpdateAlpha(Update):
         system_config_from_file=args.system_config_from_file,
         node_labels=args.node_labels,
         node_taints=args.node_taints,
-        tags=args.tags)
+        tags=args.tags,
+        enable_private_nodes=args.enable_private_nodes)
     return ops
 
 

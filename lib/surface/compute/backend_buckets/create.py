@@ -26,7 +26,8 @@ from googlecloudsdk.command_lib.compute.backend_buckets import backend_buckets_u
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a backend bucket.
 
@@ -36,7 +37,6 @@ class Create(base.CreateCommand):
   """
 
   BACKEND_BUCKET_ARG = None
-  _support_request_coalescing = False
 
   @classmethod
   def Args(cls, parser):
@@ -48,10 +48,7 @@ class Create(base.CreateCommand):
         backend_buckets_flags.BackendBucketsCompleter)
     signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
 
-    if cls._support_request_coalescing:
-      cdn_flags.AddRequestCoalescing(parser)
-
-    cdn_flags.AddFlexibleCacheArgs(parser, 'backend bucket')
+    cdn_flags.AddCdnPolicyArgs(parser, 'backend bucket')
 
   def CreateBackendBucket(self, args):
     """Creates and returns the backend bucket."""
@@ -69,11 +66,7 @@ class Create(base.CreateCommand):
         bucketName=args.gcs_bucket_name,
         enableCdn=enable_cdn)
 
-    backend_buckets_utils.ApplyCdnPolicyArgs(
-        client,
-        args,
-        backend_bucket,
-        support_request_coalescing=self._support_request_coalescing)
+    backend_buckets_utils.ApplyCdnPolicyArgs(client, args, backend_bucket)
 
     if args.custom_response_header is not None:
       backend_bucket.customResponseHeaders = args.custom_response_header
@@ -97,14 +90,3 @@ class Create(base.CreateCommand):
         backendBucket=backend_bucket, project=backend_buckets_ref.project)
     return client.MakeRequests([(client.apitools_client.backendBuckets,
                                  'Insert', request)])
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CreateAlphaBeta(Create):
-  """Create a backend bucket.
-
-  *{command}* is used to create backend buckets. Backend buckets
-  define Google Cloud Storage buckets that can serve content. URL
-  maps define which requests are sent to which backend buckets.
-  """
-  _support_request_coalescing = True

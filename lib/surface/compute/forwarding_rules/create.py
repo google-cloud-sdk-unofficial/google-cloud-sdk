@@ -398,7 +398,7 @@ class CreateHelper(object):
       if not match:
         raise exceptions.InvalidArgumentException(
             '--service-directory-registration',
-            'Must be of the form projects/PROJECT/locations/REGION/namespace/NAMESPACE/services/SERVICE'
+            'Must be of the form projects/PROJECT/locations/REGION/namespaces/NAMESPACE/services/SERVICE'
         )
       project = match.group(1)
       region = match.group(2)

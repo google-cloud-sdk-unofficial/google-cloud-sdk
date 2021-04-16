@@ -233,6 +233,10 @@ class Register(base.CreateCommand):
         action='store_true',
         help=textwrap.dedent("""\
           Enable Workload Identity when registering the cluster with Hub.
+          Ensure that GKE Workload Identity is enabled on your GKE cluster, it
+          is a requirement for using Workload Identity with memberships. Refer
+          `Registering a cluster using Workload Identity` section in
+          https://cloud.google.com/anthos/multicluster-management/connect/registering-a-cluster#register_cluster
           Requires gcloud alpha or beta.
           --service_account_key_file flag should not be set if this is set.
           """),

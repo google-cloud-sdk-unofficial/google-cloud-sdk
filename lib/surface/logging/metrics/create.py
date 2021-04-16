@@ -43,7 +43,7 @@ class Create(base.CreateCommand):
             $ {command} high_severity_count --description="Number of high severity log entries" --log-filter="severity > WARNING"
 
           Detailed information about filters can be found at:
-          [](https://cloud.google.com/logging/docs/view/advanced_filters)
+          [](https://cloud.google.com/logging/docs/view/logging-query-language)
 
           To create a metric that uses advanced features like distribution or
           user-defined labels, run:

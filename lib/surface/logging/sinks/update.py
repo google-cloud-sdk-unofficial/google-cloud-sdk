@@ -44,7 +44,7 @@ class Update(base.UpdateCommand):
     $ {command} my-sink --log-filter='severity>=ERROR'
 
   Detailed information about filters can be found at:
-  [](https://cloud.google.com/logging/docs/view/advanced_filters)
+  [](https://cloud.google.com/logging/docs/view/logging-query-language)
   """
 
   @staticmethod

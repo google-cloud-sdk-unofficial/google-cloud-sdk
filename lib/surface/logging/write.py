@@ -96,8 +96,8 @@ Write.detailed_help = {
         If the destination log does not exist, it will be created.
         All log entries written with this command are considered to be from
         the "custom.googleapis.com" v1 service or the "global" v2 resource type.
-        The log entries will be listed in the Logs Viewer under that service or
-        resource type.
+        The log entries will be listed in the Logs Explorer under that service
+        or resource type.
 
         {command} should be used for simple testing purposes.
         Check Cloud Logging agent for a proper way to send log entries:

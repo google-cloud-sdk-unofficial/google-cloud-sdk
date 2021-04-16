@@ -57,4 +57,4 @@ class GetIamPolicy(base.ListCommand):
       A IAM policy message.
     """
     instance_ref = util.GetInstanceRef(args.instance)
-    return instances.GetIamPolicy(instance_ref)
+    return instances.GetIamPolicy(instance_ref, self.ReleaseTrack())

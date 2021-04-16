@@ -41,12 +41,12 @@ class Read(base.Command):
         '--location',
         required=True,
         metavar='LOCATION',
-        help='Location of the bucket. If this argument is provided then '
+        help='Location of the log bucket. If this argument is provided then '
         '`--bucket` and `--view` must also be specified.')
     view_group.add_argument(
         '--bucket',
         required=True,
-        help='Id of the bucket. If this argument is provided then '
+        help='Id of the log bucket. If this argument is provided then '
         '`--location` and `--view` must also be specified.')
     view_group.add_argument(
         '--view',
@@ -115,23 +115,23 @@ Read.detailed_help = {
 
           $ {command} "resource.type=global" --folder=[FOLDER_ID] --limit=1
 
-        To read a log entry from a bucket run:
+        To read a log entry from a global log bucket, run:
 
-          $ {command} --bucket=<bucket-id> --limit=1
+          $ {command} --bucket=<bucket-id> --location=[LOCATION] --limit=1
 
-        To read a log entry from the global _Required logs bucket using the bucket's _Default logs view:
+        To read a log entry from the global _Required log bucket using the bucket's _Default log view:
 
           $ {command} "" --bucket=_Required --location=global --view=_Default --limit=1
 
-        To read a log entry from a logs bucket using the bucket's _AllLogs logs view:
+        To read a log entry from a log bucket using the bucket's _AllLogs log view:
 
           $ {command} "" --bucket=[BUCKET_ID] --location=[LOCATION] --view=_AllLogs --limit=1
 
-        To read a log entry from a logs bucket using a cutsom logs view that you have created for the bucket:
+        To read a log entry from a log bucket using a cutsom log view that you have created for the bucket:
 
           $ {command} "" --bucket=[BUCKET_ID] --location=[LOCATION] --view=[VIEW_ID] --limit=1
 
         Detailed information about filters can be found at:
-        [](https://cloud.google.com/logging/docs/view/advanced_filters)
+        [](https://cloud.google.com/logging/docs/view/logging-query-language)
     """,
 }

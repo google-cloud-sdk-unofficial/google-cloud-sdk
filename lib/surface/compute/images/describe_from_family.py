@@ -72,11 +72,6 @@ class DescribeFromFamily(base.DescribeCommand):
 class DescribeFromFamilyBeta(DescribeFromFamily):
   """Describe the latest image from an image family."""
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeFromFamilyAlpha(DescribeFromFamilyBeta):
-  """Describe the latest image from an image family."""
-
   @staticmethod
   def Args(parser):
     DescribeFromFamily.DiskImageArg = flags.MakeDiskImageArg()
@@ -88,8 +83,13 @@ class DescribeFromFamilyAlpha(DescribeFromFamilyBeta):
         '--zone',
         completer=completers.ZonesCompleter,
         help=('Zone to query. Returns the latest image available in the image '
-              'family, for the specified zone. If not specified, returns the '
+              'family for the specified zone. If not specified, returns the '
               'latest globally available image.'))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeFromFamilyAlpha(DescribeFromFamilyBeta):
+  """Describe the latest image from an image family."""
 
 
 DescribeFromFamily.detailed_help = {

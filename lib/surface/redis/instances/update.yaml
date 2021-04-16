@@ -39,20 +39,33 @@
       action: store_true
       help_text: |
         Enables Redis AUTH for the instance.
-    - arg_name: maintenance-window-day
-      api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.day
-      release_tracks: [ALPHA]
-      hidden: true
-      help_text: |
-        Day of week for maintenance window, in UTC time zone.
-        MAINTENANCE_WINDOW_DAY must be one of: SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY,
-        SATURDAY.
-    - arg_name: maintenance-window-hour
-      api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.startTime.hours
-      release_tracks: [ALPHA]
-      hidden: true
-      help_text: |
-        Hour of day (0 to 23) for maintenance window, in UTC time zone.
+    - group:
+        release_tracks: [ALPHA]
+        mutex: true
+        params:
+        - arg_name: maintenance-window-any
+          hidden: true
+          release_tracks: [ALPHA]
+          action: store_true
+          help_text: |
+            Removes the user-specified maintenance window.
+        - group:
+            params:
+            - arg_name: maintenance-window-day
+              release_tracks: [ALPHA]
+              hidden: true
+              api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.day
+              help_text: |
+                Day of week for maintenance window, in UTC time zone.
+                MAINTENANCE_WINDOW_DAY must be one of: SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY,
+                SATURDAY.
+            - arg_name: maintenance-window-hour
+              release_tracks: [ALPHA]
+              hidden: true
+              api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.startTime.hours
+              help_text: |
+                Hour of day (0 to 23) for maintenance window, in UTC time zone.
+
     additional_arguments_hook: googlecloudsdk.command_lib.redis.util:AdditionalInstanceUpdateArguments
     labels:
       api_field: instance.labels
@@ -68,6 +81,7 @@
       - googlecloudsdk.command_lib.redis.instances_update_util:AddDisplayName
       - googlecloudsdk.command_lib.redis.instances_update_util:AddSize
       - googlecloudsdk.command_lib.redis.instances_update_util:RemoveRedisConfigs
+      - googlecloudsdk.command_lib.redis.instances_update_util:UpdateMaintenanceWindowAny
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdateMaintenanceWindowDay
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdateMaintenanceWindowHour
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdateRedisConfigs

@@ -476,7 +476,7 @@ class Create(base.Command):
         response = instances_service.BulkInsert(request)
         self._operation_selflink = response.selfLink
         return {'operationGroupId': response.operationGroupId}
-      except exceptions.HttpError as error:
+      except exceptions.HttpException as error:
         raise error
 
     errors_to_collect = []

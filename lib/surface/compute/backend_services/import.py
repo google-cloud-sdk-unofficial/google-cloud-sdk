@@ -154,15 +154,15 @@ class ImportGA(base.UpdateCommand):
 
     # Unspecified fields are assumed to be cleared.
     cleared_fields = []
-    if hasattr(backend_service, 'securitySettings') is None:
+    if not backend_service.securitySettings:
       cleared_fields.append('securitySettings')
-    if hasattr(backend_service, 'localityLbPolicy') is None:
+    if not backend_service.localityLbPolicy:
       cleared_fields.append('localityLbPolicy')
-    if hasattr(backend_service, 'circuitBreakers') is None:
+    if not backend_service.circuitBreakers:
       cleared_fields.append('circuitBreakers')
-    if hasattr(backend_service, 'consistentHash') is None:
+    if not backend_service.consistentHash:
       cleared_fields.append('consistentHash')
-    if hasattr(backend_service, 'outlierDetection') is None:
+    if not backend_service.outlierDetection:
       cleared_fields.append('outlierDetection')
     if not backend_service.customRequestHeaders:
       cleared_fields.append('customRequestHeaders')
@@ -182,6 +182,8 @@ class ImportGA(base.UpdateCommand):
         cleared_fields.append('cdnPolicy.bypassCacheOnRequestHeaders')
       if cdn_policy.serveWhileStale is None:
         cleared_fields.append('cdnPolicy.serveWhileStale')
+      if cdn_policy.requestCoalescing is None:
+        cleared_fields.append('cdnPolicy.requestCoalescing')
     else:
       cleared_fields.append('cdnPolicy')
 

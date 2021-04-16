@@ -58,25 +58,20 @@ class Import(base.CreateCommand):
     labels_util.AddCreateLabelsFlags(parser)
     daisy_utils.AddCommonDaisyArgs(parser)
     daisy_utils.AddExtraCommonDaisyArgs(parser)
-
     instances_flags.INSTANCES_ARG_FOR_IMPORT.AddArgument(
         parser, operation_type='import')
-
     daisy_utils.AddOVFSourceUriArg(parser)
-
     parser.add_argument(
         '--os',
         required=False,
         choices=sorted(cls._OS_CHOICES),
         help='Specifies the OS of the image being imported.')
-
     parser.add_argument(
         '--description',
         help='Specifies a textual description of the VM instances.')
     daisy_utils.AddGuestEnvironmentArg(parser)
     parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
-
     parser.add_argument(
         '--hostname',
         help="""\
@@ -86,6 +81,9 @@ class Import(base.CreateCommand):
       the global DNS, and [INSTANCE_NAME].[ZONE].c.[PROJECT_ID].internal
       when using zonal DNS.
       """)
+    daisy_utils.AddComputeServiceAccountArg(
+        parser, 'instance import',
+        daisy_utils.IMPORT_ROLES_FOR_COMPUTE_SERVICE_ACCOUNT)
 
   def _ValidateInstanceName(self, args):
     """Raise an exception if requested instance name is invalid."""
@@ -191,9 +189,6 @@ class ImportBeta(Import):
   def Args(cls, parser):
     super(ImportBeta, cls).Args(parser)
     daisy_utils.AddByolArg(parser)
-    daisy_utils.AddComputeServiceAccountArg(
-        parser, 'instance import',
-        daisy_utils.IMPORT_ROLES_FOR_COMPUTE_SERVICE_ACCOUNT)
     instances_flags.AddServiceAccountAndScopeArgs(
         parser,
         False,

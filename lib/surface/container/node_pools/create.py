@@ -272,6 +272,7 @@ class CreateBeta(Create):
     flags.AddNodeGroupFlag(parser)
     flags.AddEnableGcfsFlag(parser, for_node_pool=True)
     flags.AddNetworkConfigFlags(parser)
+    flags.AddNodePoolEnablePrivateNodes(parser, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -285,6 +286,7 @@ class CreateBeta(Create):
     ops.ephemeral_storage = args.ephemeral_storage
     ops.pod_ipv4_range = args.pod_ipv4_range
     ops.create_pod_ipv4_range = args.create_pod_ipv4_range
+    ops.enable_private_nodes = args.enable_private_nodes
     return ops
 
 
@@ -306,6 +308,7 @@ class CreateAlpha(Create):
     ops.enable_gcfs = args.enable_gcfs
     ops.pod_ipv4_range = args.pod_ipv4_range
     ops.create_pod_ipv4_range = args.create_pod_ipv4_range
+    ops.enable_private_nodes = args.enable_private_nodes
     return ops
 
   @staticmethod
@@ -335,5 +338,6 @@ class CreateAlpha(Create):
     flags.AddReservationAffinityFlags(parser, for_node_pool=True)
     flags.AddEnableGcfsFlag(parser, for_node_pool=True)
     flags.AddNetworkConfigFlags(parser)
+    flags.AddNodePoolEnablePrivateNodes(parser, hidden=True)
 
 Create.detailed_help = DETAILED_HELP
