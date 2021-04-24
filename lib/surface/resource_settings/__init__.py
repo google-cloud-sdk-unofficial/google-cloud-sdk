@@ -21,23 +21,24 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class ResourceSettings(base.Group):
   """Create and manage Resource Settings.
 
   The gcloud Resource Settings command group lets you create and manipulate
-  Resource Settings.
+  resource settings.
 
   The Resource Settings Service is a hierarchy-aware service with a
-  public-facing API for end-users to store settings that modify the behavior of
-  their Google Cloud Platform resources (e.g., VM, firewall, Project, etc.).
-  The settings are attached at the project level and above and can influence CRM
-  resources as well as sub-project resources that are descendants of the setting
-  attachment point.
+  public-facing API for users to store settings that modify the behavior
+  of their Google Cloud Platform resources, such as virtual machines,
+  firewalls, projects, and so forth. Settings can be attached to
+  organizations, folders, and projects, and can influence these resources
+  as well as service resources that are descendants of the resource to which
+  the settings are attached.
   """
 
   category = base.IDENTITY_AND_SECURITY_CATEGORY
 
   def Filter(self, context, args):
     del context, args
-    base.DisableUserProjectQuota()
+    base.EnableUserProjectQuotaWithFallback()

@@ -60,6 +60,7 @@ class Create(base.CreateCommand):
     _NETWORK_ARG.AddArgument(parser)
     _VPN_GATEWAY_ARG.AddArgument(parser, operation_type='create')
     flags.GetDescriptionFlag().AddToParser(parser)
+    flags.GetInterconnectAttachmentsFlag().AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.VpnGatewaysCompleter)
 
   def Run(self, args):
@@ -68,11 +69,37 @@ class Create(base.CreateCommand):
     helper = vpn_gateways_utils.VpnGatewayHelper(holder)
     vpn_gateway_ref = _VPN_GATEWAY_ARG.ResolveAsResource(args, holder.resources)
     network_ref = _NETWORK_ARG.ResolveAsResource(args, holder.resources)
-
+    vpn_interfaces_with_interconnect_attachments = None
+    if args.interconnect_attachments is not None:
+      vpn_interfaces_with_interconnect_attachments = self._mapInterconnectAttachments(
+          args, holder.resources, vpn_gateway_ref.region,
+          vpn_gateway_ref.project)
     vpn_gateway_to_insert = helper.GetVpnGatewayForInsert(
         name=vpn_gateway_ref.Name(),
         description=args.description,
-        network=network_ref.SelfLink())
+        network=network_ref.SelfLink(),
+        vpn_interfaces_with_interconnect_attachments=vpn_interfaces_with_interconnect_attachments
+    )
     operation_ref = helper.Create(vpn_gateway_ref, vpn_gateway_to_insert)
     return helper.WaitForOperation(vpn_gateway_ref, operation_ref,
                                    'Creating VPN Gateway')
+
+  def _mapInterconnectAttachments(self, args, resources, region, project):
+    """Returns dict {interfaceId : interconnectAttachmentUrl} based on initial order of names in input interconnectAttachmentName and region and project of VPN Gateway.
+
+    Args:
+      args: Namespace, argparse.Namespace.
+      resources: Generates resource references.
+      region: VPN Gateway region.
+      project: VPN Gateway project.
+    """
+    attachment_refs = args.interconnect_attachments
+    result = {
+        0:
+            flags.GetInterconnectAttachmentRef(resources, attachment_refs[0],
+                                               region, project).SelfLink(),
+        1:
+            flags.GetInterconnectAttachmentRef(resources, attachment_refs[1],
+                                               region, project).SelfLink()
+    }
+    return result

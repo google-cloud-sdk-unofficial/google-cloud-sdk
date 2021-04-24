@@ -113,6 +113,7 @@ JobIdGeneratorRandom = bigquery_client.JobIdGeneratorRandom
 JobIdGeneratorFingerprint = bigquery_client.JobIdGeneratorFingerprint
 ReservationReference = bigquery_client.ApiClientHelper.ReservationReference
 AutoscaleAlphaReservationReference = bigquery_client.ApiClientHelper.AutoscaleAlphaReservationReference
+PriorityAlphaReservationReference = bigquery_client.ApiClientHelper.PriorityAlphaReservationReference
 BetaReservationReference = bigquery_client.ApiClientHelper.BetaReservationReference
 CapacityCommitmentReference = bigquery_client.ApiClientHelper.CapacityCommitmentReference  # pylint: disable=line-too-long
 ReservationAssignmentReference = bigquery_client.ApiClientHelper.ReservationAssignmentReference  # pylint: disable=line-too-long
@@ -3175,6 +3176,8 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       response = []
       if FLAGS.api_version == 'autoscale_alpha':
         object_type = AutoscaleAlphaReservationReference
+      elif FLAGS.api_version == 'priority_alpha':
+        object_type = PriorityAlphaReservationReference
       elif FLAGS.api_version == 'v1beta1':
         object_type = BetaReservationReference
       else:
@@ -3344,6 +3347,12 @@ class _Delete(BigqueryCmd):
         short_name='t',
         flag_values=fv)
     flags.DEFINE_boolean(
+        'job',
+        False,
+        'Remove job described by this identifier.',
+        short_name='j',
+        flag_values=fv)
+    flags.DEFINE_boolean(
         'transfer_config',
         False,
         'Remove transfer configuration described by this identifier.',
@@ -3417,8 +3426,10 @@ class _Delete(BigqueryCmd):
     client = Client.Get()
 
     # pylint: disable=g-doc-exception
-    if self.d and self.t:
-      raise app.UsageError('Cannot specify more than one of -d and -t.')
+    if (self.d + self.t + self.j + self.routine + self.transfer_config +
+        self.reservation + self.reservation_assignment +
+        self.capacity_commitment + self.connection) > 1:
+      raise app.UsageError('Cannot specify more than one resource type.')
     if not identifier:
       raise app.UsageError('Must provide an identifier for rm.')
 
@@ -3430,6 +3441,9 @@ class _Delete(BigqueryCmd):
       reference = client.GetRoutineReference(identifier)
     elif self.d:
       reference = client.GetDatasetReference(identifier)
+    elif self.j:
+      reference = client.GetJobReference(
+          identifier, default_location=FLAGS.location)
     elif self.transfer_config:
       formatted_identifier = _FormatDataTransferIdentifiers(client, identifier)
       reference = TransferConfigReference(
@@ -3485,6 +3499,8 @@ class _Delete(BigqueryCmd):
            client.DatasetExists(reference)) or
           (isinstance(reference, TableReference) and
            client.TableExists(reference)) or
+          (isinstance(reference, JobReference) and client.JobExists(reference)
+          ) or
           (isinstance(reference, ModelReference) and
            client.ModelExists(reference)) or
           (isinstance(reference, RoutineReference) and
@@ -3502,6 +3518,8 @@ class _Delete(BigqueryCmd):
           delete_contents=self.recursive)
     elif isinstance(reference, TableReference):
       client.DeleteTable(reference, ignore_not_found=self.force)
+    elif isinstance(reference, JobReference):
+      client.DeleteJob(reference, ignore_not_found=self.force)
     elif isinstance(reference, ModelReference):
       client.DeleteModel(reference, ignore_not_found=self.force)
     elif isinstance(reference, RoutineReference):
@@ -4436,6 +4454,7 @@ class _Make(BigqueryCmd):
       if self.label is not None:
         labels = _ParseLabels(self.label)
 
+
       client.CreateDataset(
           reference,
           ignore_existing=True,
@@ -4444,7 +4463,8 @@ class _Make(BigqueryCmd):
           default_partition_expiration_ms=default_partition_exp_ms,
           data_location=location,
           default_kms_key=self.default_kms_key,
-          labels=labels)
+          labels=labels
+          )
       print("Dataset '%s' successfully created." % (reference,))
     elif isinstance(reference, TableReference):
       object_name = 'Table'
@@ -4518,6 +4538,255 @@ class _Make(BigqueryCmd):
           object_name,
           reference,
       ))
+
+
+class _Truncate(BigqueryCmd):  # pylint: disable=missing-docstring
+  usage = """bq truncate project_id:dataset[.table] [--timestamp] [--dry_run] [--overwrite] [--skip_fully_replicated_tables]
+"""
+
+  def __init__(self, name, fv):
+    super(_Truncate, self).__init__(name, fv)
+    flags.DEFINE_integer(
+        'timestamp',
+        None,
+        'Optional timestamp to which table(s) will be truncated. Specified as milliseconds since epoch.',
+        short_name='t',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'dry_run',
+        None,
+        'No-op that simply prints out information and the recommended timestamp without modifying tables or datasets.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'overwrite',
+        False,
+        'Overwrite existing tables. Otherwise timestamp will be appended to all output table names.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'skip_fully_replicated_tables',
+        True,
+        'Skip tables that are fully replicated (synced) and do not need to be truncated back to a point in time. This could result in datasets that have tables synchronized to different points in time, but will require less data to be re-loaded',
+        short_name='s',
+        flag_values=fv)
+
+    self._ProcessCommandRc(fv)
+
+  def RunWithArgs(self, identifier=''):
+    # pylint: disable=g-doc-exception
+    """Truncates table/dataset/project to a particular timestamp.
+
+    Examples:
+      bq truncate project_id:dataset
+      bq truncate --overwrite project_id:dataset --timestamp 123456789
+      bq truncate --skip_fully_replicated_tables=false project_id:dataset
+    """
+    client = Client.Get()
+
+    if identifier:
+      reference = client.GetReference(identifier.strip())
+    else:
+      raise app.UsageError('Must specify one of project, dataset or table')
+
+    self.truncated_table_count = 0
+    self.skipped_table_count = 0
+    self.failed_table_count = 0
+    status = []
+    if self.timestamp and not self.dry_run:
+      print(
+          'Truncating to user specified timestamp %s.(Not skipping fully replicated tables.)'
+          % self.timestamp)
+      if isinstance(reference, TableReference):
+        all_tables = [reference]
+      else:
+        if isinstance(reference, DatasetReference):
+          all_tables = list(
+              map(lambda x: client.GetReference(x['id']),
+                  client.ListTables(reference, max_results=1000 * 1000)))
+      for a_table in all_tables:
+        try:
+          status.append(
+              self._TruncateTable(a_table, str(self.timestamp), False))
+        except bigquery_client.BigqueryError as e:
+          print(e)
+          status.append((self._formatOutputString(a_table, 'Failed')))
+          self.failed_table_count += 1
+    else:
+      if isinstance(reference, TableReference):
+        all_table_infos = self._GetTableInfo(reference)
+      else:
+        if isinstance(reference, DatasetReference):
+          all_table_infos = self._GetTableInfosFromDataset(reference)
+      try:
+        recovery_timestamp = min(
+            list(map(self._GetRecoveryTimestamp, all_table_infos)))
+      except (ValueError, TypeError):
+        recovery_timestamp = None
+      # Error out if we can't figure out a recovery timestamp
+      # This can happen in following cases:
+      # 1. No multi_site_info present for a table because no commit has been
+      #  made to the table.
+      # 2. No secondary site is present.
+      if not recovery_timestamp:
+        raise app.UsageError(
+            'Unable to figure out a recovery timestamp for %s. Exiting.' %
+            reference)
+      print('Recommended timestamp to truncate to is %s' % recovery_timestamp)
+
+      for a_table in all_table_infos:
+        try:
+          table_reference = ApiClientHelper.TableReference.Create(
+              projectId=reference.projectId,
+              datasetId=reference.datasetId,
+              tableId=a_table['name'])
+          status.append(
+              self._TruncateTable(table_reference, str(recovery_timestamp),
+                                  a_table['fully_replicated']))
+        except bigquery_client.BigqueryError as e:
+          print(e)
+          status.append((self._formatOutputString(table_reference, 'Failed')))
+          self.failed_table_count += 1
+    print(
+        '%s tables truncated, %s tables failed to truncate, %s tables skipped' %
+        (self.truncated_table_count, self.failed_table_count,
+         self.skipped_table_count))
+    print(*status, sep='\n')
+
+  def _GetTableInfosFromDataset(self, dataset_reference):
+
+    # Find minimum of second maximum(latest_replicated_time) for all tables in
+    # the dataset and if they are fully replicated.
+    recovery_timestamp_for_dataset_query = ("""SELECT
+  TABLE_NAME,
+  UNIX_MILLIS(replicated_time_at_remote_site),
+  CASE
+    WHEN last_update_time <= min_latest_replicated_time THEN TRUE
+  ELSE
+  FALSE
+END
+  AS fully_replicated
+FROM (
+  SELECT
+    TABLE_NAME,
+    multi_site_info.last_update_time,
+    ARRAY_AGG(site_info.latest_replicated_time
+    ORDER BY
+      latest_replicated_time DESC)[safe_OFFSET(1)] AS replicated_time_at_remote_site,
+    ARRAY_AGG(site_info.latest_replicated_time
+    ORDER BY
+      latest_replicated_time ASC)[safe_OFFSET(0)] AS min_latest_replicated_time
+  FROM
+    %s.INFORMATION_SCHEMA.TABLES t,
+    t.multi_site_info.site_info
+  GROUP BY
+    1,
+    2)""") % dataset_reference.datasetId
+    return self._ReadTableInfo(recovery_timestamp_for_dataset_query,
+                               1000 * 1000)
+
+  def _GetTableInfo(self, table_reference):
+
+    # Find second maximum of latest_replicated_time across all sites for this
+    # table and if the table is fully replicated
+    recovery_timestamp_for_table_query = ("""SELECT
+  TABLE_NAME,
+  UNIX_MILLIS(replicated_time_at_remote_site),
+  CASE
+    WHEN last_update_time <= min_latest_replicated_time THEN TRUE
+  ELSE
+  FALSE
+END
+  AS fully_replicated
+FROM (
+  SELECT
+    TABLE_NAME,
+    multi_site_info.last_update_time,
+    ARRAY_AGG(site_info.latest_replicated_time
+    ORDER BY
+      latest_replicated_time DESC)[safe_OFFSET(1)] AS replicated_time_at_remote_site,
+    ARRAY_AGG(site_info.latest_replicated_time
+    ORDER BY
+      latest_replicated_time ASC)[safe_OFFSET(0)] AS min_latest_replicated_time
+  FROM
+    %s.INFORMATION_SCHEMA.TABLES t,
+    t.multi_site_info.site_info
+  WHERE
+    TABLE_NAME = '%s'
+  GROUP BY
+    1,
+    2 )""") % (table_reference.datasetId, table_reference.tableId)
+    return self._ReadTableInfo(recovery_timestamp_for_table_query, row_count=1)
+
+  def _GetRecoveryTimestamp(self, table_info):
+    return int(table_info['recovery_timestamp']
+              ) if table_info['recovery_timestamp'] else None
+
+  def _ReadTableInfo(self, query, row_count):
+    client = Client.Get()
+    try:
+      job = client.Query(query, use_legacy_sql=False)
+    except bigquery_client.BigqueryError as e:
+      if 'Name multi_site_info not found' in e.error['message']:
+        raise app.UsageError(
+            'This functionality is not enabled for the current project.')
+      else:
+        raise e
+    all_table_infos = []
+    if not BigqueryClient.IsFailedJob(job):
+      _, rows = client.ReadSchemaAndJobRows(
+          job['jobReference'], start_row=0, max_rows=row_count)
+      for i in range(len(rows)):
+        table_info = {}
+        table_info['name'] = rows[i][0]
+        table_info['recovery_timestamp'] = rows[i][1]
+        table_info['fully_replicated'] = rows[i][2] == 'true'
+        all_table_infos.append(table_info)
+      return all_table_infos
+
+  def _formatOutputString(self, table_reference, status):
+    return '%s %200s' % (table_reference, status)
+
+  def _TruncateTable(self, table_reference, recovery_timestamp,
+                     is_fully_replicated):
+    client = Client.Get()
+    kwds = {}
+    if not self.overwrite:
+      dest = ApiClientHelper.TableReference.Create(
+          projectId=table_reference.projectId,
+          datasetId=table_reference.datasetId,
+          tableId='_'.join(
+              [table_reference.tableId, 'TRUNCATED_AT', recovery_timestamp]))
+    else:
+      dest = table_reference
+
+    if self.skip_fully_replicated_tables and is_fully_replicated:
+      self.skipped_table_count += 1
+      return self._formatOutputString(table_reference,
+                                      'Fully replicated...Skipped')
+    if self.dry_run:
+      return self._formatOutputString(
+          dest, 'will be Truncated@%s' % recovery_timestamp)
+    kwds = {
+        'write_disposition': 'WRITE_TRUNCATE',
+        'ignore_already_exists': 'False',
+        'operation_type': 'COPY',
+    }
+    if FLAGS.location:
+      kwds['location'] = FLAGS.location
+    source_table = client.GetTableReference(
+        '%s@%s' % (table_reference, recovery_timestamp))
+    job_ref = ' '
+    try:
+      job = client.CopyTable([source_table], dest, **kwds)
+      if job is None:
+        self.failed_table_count += 1
+        return self._formatOutputString(dest, 'Failed')
+      job_ref = BigqueryClient.ConstructObjectReference(job)
+      self.truncated_table_count += 1
+      return self._formatOutputString(dest, 'Successful %s ' % job_ref)
+    except bigquery_client.BigqueryError as e:
+      print(e)
+      self.failed_table_count += 1
+      return self._formatOutputString(dest, 'Failed %s ' % job_ref)
 
 
 class _Update(BigqueryCmd):
@@ -5651,6 +5920,7 @@ def _PrintJobMessages(printable_job_info):
               table=table_id))
   elif 'Assertion' in printable_job_info:
     print('Assertion successful')
+
 
 
 def _PrintObjectInfo(object_info,
@@ -7026,6 +7296,7 @@ def main(unused_argv):
         'set-iam-policy': _SetIamPolicy,
         'shell': _Repl,
         'show': _Show,
+        'truncate': _Truncate,
         'update': _Update,
         'version': _Version,
         'wait': _Wait,

@@ -39,8 +39,7 @@ class DescribePerimeterDryRun(base.DescribeCommand):
     perimeter_ref = args.CONCEPTS.perimeter.Parse()
     policies.ValidateAccessPolicyArg(perimeter_ref, args)
     perimeter = client.Get(perimeter_ref)
-    print(perimeters.GenerateDryRunConfigDiff(perimeter, self._API_VERSION))
-    perimeters.PrintDirectionalPoliciesDryRunConfigDiff(perimeter)
+    perimeters.GenerateDryRunConfigDiff(perimeter, self._API_VERSION)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -54,37 +53,40 @@ detailed_help = {
         'Display the dry-run mode configuration for a Service Perimeter.',
     'DESCRIPTION':
         ('The dry-run mode configuration is presented as a diff against the '
-         'enforcement mode configuration. \'+\' indicates additions, \'-\' '
-         'indicates removals and entries without either of those indicate that '
-         'they are the same across the dry-run and the enforcement mode '
-         'configurations. When a particular field is completely empty, it is '
-         'displayed as \'NONE\'.\n\nNote: When this command is executed on a '
-         'Service Perimeter with no explicit dry-run mode configuration, the '
-         'effective dry-run mode configuration is inherited from the '
-         'enforcement mode configuration, and thus, the enforcement mode '
-         'configuration is displayed in such cases.'),
-    'EXAMPLES': (
-        'To display the dry-run mode configuration for a Service Perimeter:\n\n'
-        '  $ {command} my-perimeter\n\n'
-        'Sample output:\n\n'
-        '  name: my_perimeter\n'
-        '  title: My Perimeter\n'
-        '  type: PERIMETER_TYPE_REGULAR\n'
-        '  resources:\n'
-        '     +projects/123\n'
-        '     -projects/456\n'
-        '      projects/789\n'
-        '  restrictedServices:\n'
-        '    +bigquery.googleapis.com\n'
-        '    -storage.googleapis.com\n'
-        '     bigtable.googleapis.com\n'
-        '  accessLevels:\n'
-        '     NONE\n'
-        '  vpcAccessibleServices:\n'
-        '    enableRestriction: False -> True\n'
-        '    allowedServices:\n'
-        '      +bigquery.googleapis.com\n'
-        '      -storage.googleapis.com\n')
+         'enforcement mode configuration. \'+\' indicates additions in `spec`,'
+         '\'-\' indicates removals from `status` and entries without either of '
+         'those indicate that they are the same across the dry-run and the '
+         'enforcement mode configurations. When a particular field is '
+         'completely empty, it will not be displayed.\n\nNote: When this '
+         'command is executed on a Service Perimeter with no explicit dry-run '
+         'mode configuration, the effective dry-run mode configuration is '
+         'inherited from the enforcement mode configuration, and thus, the '
+         'enforcement mode configuration is displayed in such cases.'),
+    'EXAMPLES': ("""\
+To display the dry-run mode configuration for a Service Perimeter:
+
+  $ {command} my-perimeter
+
+Sample output:
+
+ ===
+   name: my_perimeter
+   title: My Perimeter
+   type: PERIMETER_TYPE_REGULAR
+   resources:
+ +   projects/123
+ -   projects/456
+     projects/789
+   restrictedServices:
+ +   bigquery.googleapis.com
+ -   storage.googleapis.com
+     bigtable.googleapis.com
+   vpcAccessibleServices:
+ +   allowedServices:
+ +     bigquery.googleapis.com
+ -     storage.googleapis.com
+ +   enableRestriction: true
+""")
 }
 
 DescribePerimeterDryRunAlpha.detailed_help = detailed_help

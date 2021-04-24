@@ -108,13 +108,37 @@ class Run(base.Command):
     """
     # Value is the lowest Airflow version for which this command needs to bypass
     # the confirmation prompt.
-    prompting_subcommands = {'delete_dag': None, 'backfill': '1.10.6'}
-    if args.subcommand in prompting_subcommands \
-        and (prompting_subcommands[args.subcommand] is None \
-             or image_versions_command_util.CompareVersions(
-                 airflow_version,
-                 prompting_subcommands[args.subcommand]) >= 0) \
-        and set(args.cmd_args).isdisjoint({'-y', '--yes'}):
+    prompting_subcommands = {
+        'backfill': '1.10.6',
+        'delete_dag': None,
+        ('dags', 'backfill'): None,
+        ('dags', 'delete'): None,
+        ('tasks', 'clear'): None,
+    }
+
+    # Handle nested commands like "dags list". There are two ways to execute
+    # nested Airflow subcommands via gcloud:
+    # 1. {command} myenv dags delete -- dag_id
+    # 2. {command} myenv dags -- delete dag_id
+    subcommand_two_level = None
+    if args.subcommand_nested:
+      subcommand_two_level = (args.subcommand, args.subcommand_nested)
+    elif args.cmd_args:
+      # It is possible that first element of args.cmd_args will not be a nested
+      # subcommand, but that is ok as it will not break entire logic.
+      # So, essentially there can be subcommand_two_level =
+      # ['info', '--anonymize'].
+      subcommand_two_level = (args.subcommand, args.cmd_args[0])
+
+    def _IsPromptingSubcommand(s):
+      return (s in prompting_subcommands and
+              (prompting_subcommands[s] is None or
+               image_versions_command_util.CompareVersions(
+                   airflow_version, prompting_subcommands[s]) >= 0))
+
+    if ((_IsPromptingSubcommand(args.subcommand) or subcommand_two_level and
+         _IsPromptingSubcommand(subcommand_two_level)) and
+        set(args.cmd_args).isdisjoint({'-y', '--yes'})):
       args.cmd_args.append('--yes')
 
   def CheckForRequiredCmdArgs(self, args):
@@ -126,24 +150,41 @@ class Run(base.Command):
     """
     # Dict values are lists of tuples, each tuple represents set of arguments,
     # where at least one argument from tuple will be required.
-    # E.g. for "users" subcommand, one of the "-p", "--password" or
+    # E.g. for "users create" subcommand, one of the "-p", "--password" or
     # "--use-random-password" will be required.
     required_cmd_args = {
-        'users': [['-p', '--password', '--use-random-password']]
+        ('users', 'create'): [['-p', '--password', '--use-random-password']],
     }
 
     def _StringifyRequiredCmdArgs(cmd_args):
       quoted_args = ['"{}"'.format(a) for a in cmd_args]
       return '[{}]'.format(', '.join(quoted_args))
 
+    # Handle nested commands like "users create". There are two ways to execute
+    # nested Airflow subcommands via gcloud:
+    # 1. {command} myenv users create -- -u User
+    # 2. {command} myenv users -- create -u User
+    # TODO (b/185343261): avoid code duplication with BypassConfirmationPrompt.
+    subcommand_two_level = None
+    if args.subcommand_nested:
+      subcommand_two_level = (args.subcommand, args.subcommand_nested)
+    elif args.cmd_args:
+      # It is possible that first element of args.cmd_args will not be a nested
+      # subcommand, but that is ok as it will not break entire logic.
+      # So, essentially there can be subcommand_two_level =
+      # ['info', '--anonymize'].
+      subcommand_two_level = (args.subcommand, args.cmd_args[0])
+
+    # For now `required_cmd_args` contains only two-level Airflow commands,
+    # but potentially in the future it could be extended for one-level
+    # commands as well, and this code will have to be updated appropriately.
     for subcommand_required_cmd_args in required_cmd_args.get(
-        args.subcommand, []):
-      if subcommand_required_cmd_args and set(
-          subcommand_required_cmd_args).isdisjoint(set(args.cmd_args or [])):
+        subcommand_two_level, []):
+      if set(subcommand_required_cmd_args).isdisjoint(set(args.cmd_args or [])):
         raise command_util.Error(
             'The subcommand "{}" requires one of the following command line '
             'arguments: {}.'.format(
-                args.subcommand,
+                ' '.join(subcommand_two_level),
                 _StringifyRequiredCmdArgs(subcommand_required_cmd_args)))
 
   def DeprecationWarningPrompt(self, args):

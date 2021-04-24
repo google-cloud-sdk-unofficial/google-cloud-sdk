@@ -98,6 +98,8 @@ def AddQueryArgument(parser):
           customer-managed encryption key whose name contains ``key'' as a word.
         * ```state:ACTIVE``` to find Cloud resources whose state contains
           ``ACTIVE'' as a word.
+        * ```NOT state:ACTIVE``` to find Cloud resources whose state doesn't
+          contain ``ACTIVE'' as a word.
         * ```createTime<1609459200``` to find Cloud resources that were
           created before ``2021-01-01 00:00:00 UTC''. 1609459200 is the epoch
           timestamp of ``2021-01-01 00:00:00 UTC'' in seconds.

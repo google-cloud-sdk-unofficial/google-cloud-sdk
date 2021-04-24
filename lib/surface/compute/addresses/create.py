@@ -228,35 +228,46 @@ class Create(base.CreateCommand):
 
     network_url = None
     if args.network:
-      if address_ref.Collection() == 'compute.addresses':
-        raise exceptions.InvalidArgumentException(
-            '--network', 'network may not be specified for regional addresses.')
-      network_url = flags.NetworkArgument().ResolveAsResource(
-          args, resource_parser).SelfLink()
       purpose = messages.Address.PurposeValueValuesEnum(args.purpose or
                                                         'VPC_PEERING')
-      supported_purposes = {
-          'VPC_PEERING': messages.Address.PurposeValueValuesEnum.VPC_PEERING
-      }
-      if self._support_psc_google_apis:
-        supported_purposes[
-            'PRIVATE_SERVICE_CONNECT'] = messages.Address.PurposeValueValuesEnum.PRIVATE_SERVICE_CONNECT
+      network_url = flags.NetworkArgument().ResolveAsResource(
+          args, resource_parser).SelfLink()
+      if purpose != messages.Address.PurposeValueValuesEnum.IPSEC_INTERCONNECT:
+        if address_ref.Collection() == 'compute.addresses':
+          raise exceptions.InvalidArgumentException(
+              '--network',
+              'network may not be specified for regional addresses.')
+        supported_purposes = {
+            'VPC_PEERING': messages.Address.PurposeValueValuesEnum.VPC_PEERING
+        }
+        if self._support_psc_google_apis:
+          supported_purposes[
+              'PRIVATE_SERVICE_CONNECT'] = messages.Address.PurposeValueValuesEnum.PRIVATE_SERVICE_CONNECT
 
-      if purpose not in supported_purposes.values():
-        raise exceptions.InvalidArgumentException(
-            '--purpose', 'must be {} for '
-            'global internal addresses.'.format(' or '.join(
-                supported_purposes.keys())))
+        if purpose not in supported_purposes.values():
+          raise exceptions.InvalidArgumentException(
+              '--purpose', 'must be {} for '
+              'global internal addresses.'.format(' or '.join(
+                  supported_purposes.keys())))
 
     if args.prefix_length:
-      if purpose != messages.Address.PurposeValueValuesEnum.VPC_PEERING:
+      if (purpose != messages.Address.PurposeValueValuesEnum.VPC_PEERING and
+          purpose !=
+          messages.Address.PurposeValueValuesEnum.IPSEC_INTERCONNECT):
         raise exceptions.InvalidArgumentException(
-            '--prefix-length', 'can only be used with [--purpose VPC_PEERING].')
+            '--prefix-length', 'can only be used with '
+            '[--purpose VPC_PEERING/IPSEC_INTERCONNECT]. Found {e}'.format(
+                e=purpose))
+
     if not args.prefix_length:
       if purpose == messages.Address.PurposeValueValuesEnum.VPC_PEERING:
         raise exceptions.RequiredArgumentException(
             '--prefix-length',
             'prefix length is needed for reserving VPC peering IP ranges.')
+      if purpose == messages.Address.PurposeValueValuesEnum.IPSEC_INTERCONNECT:
+        raise exceptions.RequiredArgumentException(
+            '--prefix-length', 'prefix length is needed for reserving IP ranges'
+            ' for IPsec-encrypted Cloud Interconnect.')
 
     return messages.Address(
         address=address,

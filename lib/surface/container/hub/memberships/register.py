@@ -157,7 +157,7 @@ class Register(base.CreateCommand):
           being registered on the Hub.
          """),
     )
-    hub_util.AddUnRegisterCommonArgs(parser)
+    hub_util.AddClusterConnectionCommonArgs(parser)
     parser.add_argument(
         '--manifest-output-file',
         type=str,
@@ -300,7 +300,17 @@ class Register(base.CreateCommand):
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
     # This incidentally verifies that the kubeconfig and context args are valid.
-    with kube_util.KubernetesClient(args) as kube_client:
+    with kube_util.KubernetesClient(
+        gke_uri=getattr(args, 'gke_uri', None),
+        gke_cluster=getattr(args, 'gke_cluster', None),
+        kubeconfig=getattr(args, 'kubeconfig', None),
+        context=getattr(args, 'context', None),
+        public_issuer_url=getattr(args, 'public_issuer_url', None),
+        enable_workload_identity=getattr(args, 'enable_workload_identity',
+                                         False),
+        manage_workload_identity_bucket=getattr(
+            args, 'manage_workload_identity_bucket', False),
+    ) as kube_client:
       kube_client.CheckClusterAdminPermissions()
       kube_util.ValidateClusterIdentifierFlags(kube_client, args)
       uuid = kube_util.GetClusterUUID(kube_client)

@@ -63,11 +63,12 @@ class List(base.ListCommand):
     parser.display_info.AddFormat("""
         table(
           name.basename(): label=INSIGHT_ID,
-          name.segment(3): label=LOCATION,
-          name.segment(5): label=INSIGHT_TYPE,
           category: label=CATEGORY,
           stateInfo.state: label=INSIGHT_STATE,
-          lastRefreshTime: label=LAST_REFRESH_TIME
+          lastRefreshTime: label=LAST_REFRESH_TIME,
+          severity: label=SEVERITY,
+          insightSubtype: label=INSIGHT_SUBTYPE,
+          description: label=DESCRIPTION
         )
     """)
 

@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute.health_checks import exceptions
 from googlecloudsdk.command_lib.compute.https_health_checks import flags
 from googlecloudsdk.core import log
 
@@ -174,7 +174,7 @@ class Update(base.UpdateCommand):
     if (args.check_interval is not None
         and (args.check_interval < CHECK_INTERVAL_LOWER_BOUND_SEC
              or args.check_interval > CHECK_INTERVAL_UPPER_BOUND_SEC)):
-      raise exceptions.ToolException(
+      raise exceptions.ArgumentError(
           '[--check-interval] must not be less than {0} second or greater '
           'than {1} seconds; received [{2}] seconds.'.format(
               CHECK_INTERVAL_LOWER_BOUND_SEC, CHECK_INTERVAL_UPPER_BOUND_SEC,
@@ -183,7 +183,7 @@ class Update(base.UpdateCommand):
     if (args.timeout is not None
         and (args.timeout < TIMEOUT_LOWER_BOUND_SEC
              or args.timeout > TIMEOUT_UPPER_BOUND_SEC)):
-      raise exceptions.ToolException(
+      raise exceptions.ArgumentError(
           '[--timeout] must not be less than {0} second or greater than {1} '
           'seconds; received: [{2}] seconds.'.format(
               TIMEOUT_LOWER_BOUND_SEC, TIMEOUT_UPPER_BOUND_SEC, args.timeout))
@@ -191,7 +191,7 @@ class Update(base.UpdateCommand):
     if (args.healthy_threshold is not None
         and (args.healthy_threshold < THRESHOLD_LOWER_BOUND
              or args.healthy_threshold > THRESHOLD_UPPER_BOUND)):
-      raise exceptions.ToolException(
+      raise exceptions.ArgumentError(
           '[--healthy-threshold] must be an integer between {0} and {1}, '
           'inclusive; received: [{2}].'.format(THRESHOLD_LOWER_BOUND,
                                                THRESHOLD_UPPER_BOUND,
@@ -200,7 +200,7 @@ class Update(base.UpdateCommand):
     if (args.unhealthy_threshold is not None
         and (args.unhealthy_threshold < THRESHOLD_LOWER_BOUND
              or args.unhealthy_threshold > THRESHOLD_UPPER_BOUND)):
-      raise exceptions.ToolException(
+      raise exceptions.ArgumentError(
           '[--unhealthy-threshold] must be an integer between {0} and {1}, '
           'inclusive; received [{2}].'.format(THRESHOLD_LOWER_BOUND,
                                               THRESHOLD_UPPER_BOUND,
@@ -213,7 +213,7 @@ class Update(base.UpdateCommand):
                       or args.healthy_threshold
                       or args.unhealthy_threshold)
     if args.description is None and args.host is None and args_unset:
-      raise exceptions.ToolException('At least one property must be modified.')
+      raise exceptions.ArgumentError('At least one property must be modified.')
 
     https_health_check_ref = self.HTTPS_HEALTH_CHECKS_ARG.ResolveAsResource(
         args, holder.resources)

@@ -24,15 +24,15 @@ from googlecloudsdk.command_lib.resource_settings import arguments
 from googlecloudsdk.command_lib.resource_settings import utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   r"""List all available resource settings.
 
-  List all available resource settings
+  List all available resource settings.
 
   ## EXAMPLES
 
-  To list all available resource settings with the Project ``foo-project'', run:
+  To list all available resource settings with the project ``foo-project'', run:
 
     $ {command} --project=foo-project
   """

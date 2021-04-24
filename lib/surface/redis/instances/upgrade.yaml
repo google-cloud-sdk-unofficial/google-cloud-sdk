@@ -30,6 +30,9 @@
       - enum_value: REDIS_5_0
         arg_value: redis_5_0
         help_text: Redis 5.0 compatibility
+      - enum_value: REDIS_6_X
+        arg_value: redis_6_x
+        help_text: Redis 6.x compatibility
 
   input:
     confirmation_prompt: |-

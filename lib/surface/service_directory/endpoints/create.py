@@ -75,7 +75,7 @@ class CreateBeta(base.CreateCommand):
           """\
           To create a Service Directory endpoint, run:
 
-            $ {command} my-endpoint --service=my-service --namespace=my-namespace --location=us-east1 --address=1.2.3.4 --port=5 --metadata=a=b,c=d
+            $ {command} my-endpoint --service=my-service --namespace=my-namespace --location=us-east1 --address=1.2.3.4 --port=5 --metadata=a=b,c=d --network=projects/123456789/locations/global/networks/default
           """,
   }
 
@@ -91,13 +91,15 @@ class CreateBeta(base.CreateCommand):
     flags.AddAddressFlag(parser)
     flags.AddPortFlag(parser)
     flags.AddMetadataFlag(parser, _RESOURCE_TYPE, _ENDPOINT_LIMIT)
+    flags.AddNetworkFlag(parser)
 
   def Run(self, args):
     client = endpoints.EndpointsClientBeta()
     endpoint_ref = args.CONCEPTS.endpoint.Parse()
     metadata = util.ParseMetadataArg(args.metadata, _RESOURCE_TYPE)
 
-    result = client.Create(endpoint_ref, args.address, args.port, metadata)
+    result = client.Create(endpoint_ref, args.address, args.port, metadata,
+                           args.network)
     log.CreatedResource(endpoint_ref.endpointsId, _RESOURCE_TYPE)
 
     return result

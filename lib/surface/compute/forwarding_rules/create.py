@@ -35,13 +35,14 @@ from six.moves import range  # pylint: disable=redefined-builtin
 
 
 def _Args(parser, support_global_access, support_l7_internal_load_balancing,
-          support_psc_google_apis, support_all_protocol,
+          support_gfe3, support_psc_google_apis, support_all_protocol,
           support_target_service_attachment):
   """Add the flags to create a forwarding rule."""
 
   flags.AddUpdateArgs(
       parser,
       include_l7_internal_load_balancing=support_l7_internal_load_balancing,
+      include_gfe3=support_gfe3,
       include_psc_google_apis=support_psc_google_apis,
       include_target_service_attachment=support_target_service_attachment)
   flags.AddIPProtocols(parser, support_all_protocol)
@@ -70,7 +71,8 @@ def _Args(parser, support_global_access, support_l7_internal_load_balancing,
   flags.AddAddressesAndIPVersions(
       parser,
       required=False,
-      include_l7_internal_load_balancing=support_l7_internal_load_balancing)
+      include_l7_internal_load_balancing=support_l7_internal_load_balancing,
+      include_gfe3=support_gfe3)
   forwarding_rule_arg = flags.ForwardingRuleArgument()
   forwarding_rule_arg.AddArgument(parser, operation_type='create')
   parser.display_info.AddCacheUpdater(flags.ForwardingRulesCompleter)
@@ -83,12 +85,14 @@ class CreateHelper(object):
   FORWARDING_RULE_ARG = None
 
   def __init__(self, holder, support_global_access,
-               support_l7_internal_load_balancing, support_psc_google_apis,
-               support_all_protocol, support_target_service_attachment,
+               support_l7_internal_load_balancing, support_gfe3,
+               support_psc_google_apis, support_all_protocol,
+               support_target_service_attachment,
                _support_sd_registration_for_regional):
     self._holder = holder
     self._support_global_access = support_global_access
     self._support_l7_internal_load_balancing = support_l7_internal_load_balancing
+    self._support_gfe3 = support_gfe3
     self._support_psc_google_apis = support_psc_google_apis
     self._support_all_protocol = support_all_protocol
     self._support_target_service_attachment = support_target_service_attachment
@@ -96,11 +100,12 @@ class CreateHelper(object):
 
   @classmethod
   def Args(cls, parser, support_global_access,
-           support_l7_internal_load_balancing, support_psc_google_apis,
-           support_all_protocol, support_target_service_attachment):
+           support_l7_internal_load_balancing, support_gfe3,
+           support_psc_google_apis, support_all_protocol,
+           support_target_service_attachment):
     cls.FORWARDING_RULE_ARG = _Args(parser, support_global_access,
                                     support_l7_internal_load_balancing,
-                                    support_psc_google_apis,
+                                    support_gfe3, support_psc_google_apis,
                                     support_all_protocol,
                                     support_target_service_attachment)
 
@@ -437,9 +442,9 @@ class CreateHelper(object):
           if not args.global_address and not args.address_region:
             if forwarding_rule_ref.Collection() == 'compute.forwardingRules':
               args.address_region = forwarding_rule_ref.region
-        address_ref = flags.AddressArg(
-            self._support_l7_internal_load_balancing).ResolveAsResource(
-                args, resources, default_scope=scope)
+        address_ref = flags.AddressArg(self._support_l7_internal_load_balancing,
+                                       self._support_gfe3).ResolveAsResource(
+                                           args, resources, default_scope=scope)
         address = address_ref.SelfLink()
 
     return address
@@ -451,6 +456,7 @@ class Create(base.CreateCommand):
 
   _support_global_access = True
   _support_l7_internal_load_balancing = True
+  _support_gfe3 = False
   _support_psc_google_apis = True
   _support_all_protocol = False
   _support_target_service_attachment = False
@@ -460,14 +466,15 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     CreateHelper.Args(parser, cls._support_global_access,
                       cls._support_l7_internal_load_balancing,
-                      cls._support_psc_google_apis, cls._support_all_protocol,
+                      cls._support_gfe3, cls._support_psc_google_apis,
+                      cls._support_all_protocol,
                       cls._support_target_service_attachment)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return CreateHelper(holder, self._support_global_access,
                         self._support_l7_internal_load_balancing,
-                        self._support_psc_google_apis,
+                        self._support_gfe3, self._support_psc_google_apis,
                         self._support_all_protocol,
                         self._support_target_service_attachment,
                         self._support_sd_registration_for_regional).Run(args)
@@ -478,6 +485,7 @@ class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
   _support_l7_internal_load_balancing = True
+  _support_gfe3 = False
   _support_all_protocol = False
   _support_target_service_attachment = False
   _support_sd_registration_for_regional = True
@@ -488,6 +496,7 @@ class CreateAlpha(CreateBeta):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
   _support_l7_internal_load_balancing = True
+  _support_gfe3 = True
   _support_all_protocol = True
   _support_target_service_attachment = True
   _support_sd_registration_for_regional = True
@@ -570,6 +579,8 @@ def _GetLoadBalancingScheme(args, messages, is_psc):
     return messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum.INTERNAL
   elif args.load_balancing_scheme == 'EXTERNAL':
     return messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum.EXTERNAL
+  elif args.load_balancing_scheme == 'EXTERNAL_MANAGED':
+    return messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum.EXTERNAL_MANAGED
   elif args.load_balancing_scheme == 'INTERNAL_SELF_MANAGED':
     return (messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum
             .INTERNAL_SELF_MANAGED)

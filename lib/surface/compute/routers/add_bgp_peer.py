@@ -137,15 +137,30 @@ class AddBgpPeerBeta(AddBgpPeer):
   """Add a BGP peer to a Compute Engine router."""
 
   ROUTER_ARG = None
+  INSTANCE_ARG = None
 
   @classmethod
   def Args(cls, parser):
+    cls.INSTANCE_ARG = instance_flags.InstanceArgumentForRouter()
+    cls.INSTANCE_ARG.AddArgument(parser)
     cls._Args(parser, support_bfd=True, support_enable=True)
 
   def Run(self, args):
     """See base.UpdateCommand."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+
+    instance_ref = None
+    if args.instance is not None:
+      instance_ref = self.INSTANCE_ARG.ResolveAsResource(
+          args,
+          holder.resources,
+          scope_lister=instance_flags.GetInstanceZoneScopeLister(holder.client))
     return self._Run(
-        args, support_bfd=True, support_enable=True, support_bfd_mode=False)
+        args,
+        support_bfd=True,
+        support_enable=True,
+        support_bfd_mode=False,
+        instance_ref=instance_ref)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

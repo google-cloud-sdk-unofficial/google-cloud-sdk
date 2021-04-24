@@ -436,14 +436,14 @@ def _ParseCapacityCommitmentIdentifier(identifier, allow_commas):
         r"""
     ^((?P<project_id>[\w:\-.]*[\w:\-]+):)?
     ((?P<location>[\w\-]+)\.)?
-    (?P<capacity_commitment_id>[\w|,]*)$
+    (?P<capacity_commitment_id>[\w|,-]*)$
     """, re.X)
   else:
     pattern = re.compile(
         r"""
     ^((?P<project_id>[\w:\-.]*[\w:\-]+):)?
     ((?P<location>[\w\-]+)\.)?
-    (?P<capacity_commitment_id>[\w]*)$
+    (?P<capacity_commitment_id>[\w|-]*)$
     """, re.X)
 
   match = re.search(pattern, identifier)
@@ -476,7 +476,7 @@ def _ParseCapacityCommitmentPath(path):
       r"""
   ^projects\/(?P<project_id>[\w:\-.]*[\w:\-]+)?
   \/locations\/(?P<location>[\w\-]+)?
-  \/capacityCommitments\/(?P<capacity_commitment_id>[\w]+)$
+  \/capacityCommitments\/(?P<capacity_commitment_id>[\w|-]+)$
   """, re.X)
 
   match = re.search(pattern, path)
@@ -711,7 +711,12 @@ def EncodeForPrinting(o):
 class BigqueryError(Exception):
 
   @staticmethod
-  def Create(error, server_error, error_ls, job_ref=None):
+  def Create(
+      error,
+      server_error,
+      error_ls,
+      job_ref=None,
+  ):
     """Returns a BigqueryError for json error embedded in server_error.
 
     If error_ls contains any errors other than the given one, those
@@ -1364,7 +1369,9 @@ class BigqueryClient(object):
     """Return the apiclient that supports reservation operations."""
     path = reservationserver_address
     # Alpha feature actually is hosted in beta endpoint.
-    if self.api_version == 'v1beta1' or self.api_version == 'autoscale_alpha':
+    if (self.api_version == 'v1beta1' or
+        self.api_version == 'autoscale_alpha' or
+        self.api_version == 'priority_alpha'):
       reservation_version = 'v1beta1'
     else:
       reservation_version = 'v1'
@@ -1459,6 +1466,15 @@ class BigqueryClient(object):
         junction = '|' if field.get('type', 'STRING') != 'RECORD' else '+'
         entry = '%s- %s: %s' % (
             junction, field['name'], field.get('type', 'STRING').lower())
+        # Print type parameters.
+        if 'maxLength' in field:
+          entry += '(%s)' % (field['maxLength'])
+        elif 'precision' in field:
+          if 'scale' in field:
+            entry += '(%s, %s)' % (field['precision'], field['scale'])
+          else:
+            entry += '(%s)' % (field['precision'])
+        # Print type mode.
         if field.get('mode', 'NULLABLE') != 'NULLABLE':
           entry += ' (%s)' % (field['mode'].lower(),)
         lines.append(prefix + entry)
@@ -1719,6 +1735,10 @@ class BigqueryClient(object):
        ):
       return ApiClientHelper.AutoscaleAlphaReservationReference(
           projectId=project_id, location=location, reservationId=reservation_id)
+    elif (self.api_version == 'priority_alpha'
+         ):
+      return ApiClientHelper.PriorityAlphaReservationReference(
+          projectId=project_id, location=location, reservationId=reservation_id)
     elif (self.api_version == 'v1beta1'
          ):
       return ApiClientHelper.BetaReservationReference(
@@ -1904,6 +1924,7 @@ class BigqueryClient(object):
                         ignore_idle_slots,
                         max_concurrency,
                         autoscale_max_slots=None):
+    # pylint: disable=g-doc-args
     """Create a reservation with the given reservation reference.
 
     Arguments:
@@ -2048,6 +2069,7 @@ class BigqueryClient(object):
                         ignore_idle_slots,
                         max_concurrency,
                         autoscale_max_slots):
+    # pylint: disable=g-doc-args
     """Updates a reservation with the given reservation reference.
 
     Arguments:
@@ -2096,6 +2118,8 @@ class BigqueryClient(object):
       else:
         # Disable autoscale.
         update_mask += 'autoscale,'
+
+
     client = self.GetReservationApiClient()
     return client.projects().locations().reservations().patch(
         name=reference.path(), updateMask=update_mask,
@@ -2523,6 +2547,7 @@ class BigqueryClient(object):
             connection_credential)
         update_mask.append('sqlDataSource.credential')
 
+
     client = self.GetConnectionV1ApiClient()
 
     return client.projects().locations().connections().patch(
@@ -2658,6 +2683,10 @@ class BigqueryClient(object):
         formatter.AddColumns(('Labels',))
         if 'defaultEncryptionConfiguration' in object_info:
           formatter.AddColumns(('kmsKeyName',))
+        if 'type' in object_info:
+          formatter.AddColumns(('Type',))
+        if 'linkedDatasetSource' in object_info:
+          formatter.AddColumns(('Source dataset',))
     elif reference_type == ApiClientHelper.TransferConfigReference:
       if print_format == 'list':
         formatter.AddColumns(('name',))
@@ -2755,6 +2784,12 @@ class BigqueryClient(object):
                             'ignoreIdleSlots',
                             'creationTime',
                             'updateTime'))
+    elif reference_type == ApiClientHelper.PriorityAlphaReservationReference:
+      formatter.AddColumns(('name',
+                            'slotCapacity',
+                            'ignoreIdleSlots',
+                            'creationTime',
+                            'updateTime'))
     elif reference_type == ApiClientHelper.AutoscaleAlphaReservationReference:
       formatter.AddColumns(
           ('name', 'slotCapacity', 'ignoreIdleSlots', 'autoscaleMaxSlots',
@@ -2782,6 +2817,7 @@ class BigqueryClient(object):
   def IsFailedJob(job):
     """Predicate to determine whether or not a job failed."""
     return 'errorResult' in job.get('status', {})
+
 
   @staticmethod
   def RaiseIfJobError(job):
@@ -2989,6 +3025,7 @@ class BigqueryClient(object):
         duration_seconds = int(stats['endTime']) / 1000 - start
         result['Duration'] = str(datetime.timedelta(seconds=duration_seconds))
       result['Start Time'] = BigqueryClient.FormatTime(start)
+
 
     query_stats = stats.get('query', {})
     if 'totalBytesProcessed' in query_stats:
@@ -3199,6 +3236,12 @@ class BigqueryClient(object):
     if 'defaultEncryptionConfiguration' in result:
       result['kmsKeyName'] = result['defaultEncryptionConfiguration'][
           'kmsKeyName']
+    if 'type' in result:
+      result['Type'] = result['type']
+      if result['type'] == 'LINKED' and 'linkedDatasetSource' in result:
+        source_dataset = result['linkedDatasetSource']['sourceDataset']
+        result['Source dataset'] = str(
+            ApiClientHelper.DatasetReference.Create(**source_dataset))
     return result
 
   @staticmethod
@@ -3676,8 +3719,7 @@ class BigqueryClient(object):
         projection='full',
         state_filter=state_filter,
         all_users=all_users,
-        parent_job_id=parent_job_id
-    )
+        parent_job_id=parent_job_id)
     if min_creation_time is not None:
       request['minCreationTime'] = min_creation_time
     if max_creation_time is not None:
@@ -4249,7 +4291,8 @@ class BigqueryClient(object):
                     default_partition_expiration_ms=None,
                     data_location=None,
                     labels=None,
-                    default_kms_key=None):
+                    default_kms_key=None
+                    ):
     """Create a dataset corresponding to DatasetReference.
 
     Args:
@@ -4272,7 +4315,7 @@ class BigqueryClient(object):
         request.
 
     Raises:
-      TypeError: if reference is not a DatasetReference.
+      TypeError: if reference is not an ApiClientHelper.DatasetReference
       BigqueryDuplicateError: if reference exists and ignore_existing
          is False.
     """
@@ -4987,6 +5030,25 @@ class BigqueryClient(object):
     _Typecheck(reference, ApiClientHelper.TableReference, method='DeleteTable')
     try:
       self.apiclient.tables().delete(**dict(reference)).execute()
+    except BigqueryNotFoundError:
+      if not ignore_not_found:
+        raise
+
+  def DeleteJob(self, reference, ignore_not_found=False):
+    """Deletes JobReference reference.
+
+    Args:
+      reference: the JobReference to delete.
+      ignore_not_found: Whether to ignore "not found" errors.
+
+    Raises:
+      TypeError: if reference is not a JobReference.
+      BigqueryNotFoundError: if reference does not exist and
+        ignore_not_found is False.
+    """
+    _Typecheck(reference, ApiClientHelper.JobReference, method='DeleteJob')
+    try:
+      self.apiclient.jobs().delete(**dict(reference)).execute()
     except BigqueryNotFoundError:
       if not ignore_not_found:
         raise
@@ -6488,6 +6550,10 @@ class ApiClientHelper(object):
 
   class AutoscaleAlphaReservationReference(ReservationReference):
     """Reference for autoscale_alpha, which has more features than stable versions."""
+    pass
+
+  class PriorityAlphaReservationReference(ReservationReference):
+    """Reservation service with Job and Reservation priority features which are currently in alpha."""
     pass
 
   class CapacityCommitmentReference(Reference):

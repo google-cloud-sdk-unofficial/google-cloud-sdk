@@ -98,7 +98,7 @@ class Unregister(base.DeleteCommand):
             consider using the command: `{parent_command} list`.
          """),
     )
-    hub_util.AddUnRegisterCommonArgs(parser)
+    hub_util.AddClusterConnectionCommonArgs(parser)
 
     # Keep this hidden as it is not used for user-facing workflows and is
     # eliminated in beta.
@@ -119,7 +119,18 @@ class Unregister(base.DeleteCommand):
 
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
-    kube_client = kube_util.KubernetesClient(args)
+
+    kube_client = kube_util.KubernetesClient(
+        gke_uri=getattr(args, 'gke_uri', None),
+        gke_cluster=getattr(args, 'gke_cluster', None),
+        kubeconfig=getattr(args, 'kubeconfig', None),
+        context=getattr(args, 'context', None),
+        public_issuer_url=getattr(args, 'public_issuer_url', None),
+        enable_workload_identity=getattr(args, 'enable_workload_identity',
+                                         False),
+        manage_workload_identity_bucket=getattr(
+            args, 'manage_workload_identity_bucket', False),
+    )
     kube_client.CheckClusterAdminPermissions()
     kube_util.ValidateClusterIdentifierFlags(kube_client, args)
     membership_id = args.CLUSTER_NAME

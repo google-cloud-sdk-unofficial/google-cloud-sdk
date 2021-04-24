@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute.health_checks import exceptions
 from googlecloudsdk.command_lib.compute.health_checks import flags
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
@@ -142,15 +142,15 @@ class Update(base.UpdateCommand):
                       or args.request
                       or args.response)
     if args.description is None and args.port_name is None and args_unset:
-      raise exceptions.ToolException('At least one property must be modified.')
+      raise exceptions.ArgumentError('At least one property must be modified.')
 
     # Check that request and response are not empty. It is acceptable for it to
     # be None.
     if args.request is not None and not args.request:
-      raise exceptions.ToolException(
+      raise exceptions.ArgumentError(
           '"request" field for UDP can not be empty.')
     if args.response is not None and not args.response:
-      raise exceptions.ToolException(
+      raise exceptions.ArgumentError(
           '"response" field for UDP can not be empty.')
 
     health_check_ref = self.HEALTH_CHECK_ARG.ResolveAsResource(

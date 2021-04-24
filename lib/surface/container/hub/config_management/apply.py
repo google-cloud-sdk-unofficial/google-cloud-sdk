@@ -49,7 +49,7 @@ class Apply(base.UpdateCommand):
 
   FEATURE_NAME = 'configmanagement'
   FEATURE_DISPLAY_NAME = 'Config Management'
-  LATEST_VERSION = '1.5.2'
+  LATEST_VERSION = '1.7.0'
 
   @classmethod
   def Args(cls, parser):
@@ -303,7 +303,7 @@ def _parse_policy_controller(configmanagement, msg):
   for field in spec_policy_controller:
     if field not in [
         'enabled', 'templateLibraryInstalled', 'auditIntervalSeconds',
-        'referentialRulesEnabled', 'exemptableNamespaces'
+        'referentialRulesEnabled', 'exemptableNamespaces', 'logDeniesEnabled'
     ]:
       raise exceptions.Error(
           'Please remove illegal field .spec.policyController.{}'.format(field))

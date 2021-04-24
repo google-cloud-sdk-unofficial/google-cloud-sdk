@@ -32,7 +32,7 @@ from googlecloudsdk.command_lib.compute.vpn_tunnels import (flags as
                                                             vpn_tunnel_flags)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddInterface(base.UpdateCommand):
   """Add an interface to a Compute Engine router.
 
@@ -183,8 +183,8 @@ class AddInterface(base.UpdateCommand):
         [self._GetSetRequest(client, router_ref, new_object)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AddInterfaceAlpha(AddInterface):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class AddInterfaceAlphaBeta(AddInterface):
   """Add an interface to a Compute Engine router.
 
   *{command}* is used to add an interface to a Compute Engine

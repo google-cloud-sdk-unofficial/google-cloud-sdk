@@ -52,6 +52,7 @@ class Create(base.CreateCommand):
     flags.AddCreateRouterArgs(parser)
     if support_keepalive_interval:
       flags.AddKeepaliveIntervalArg(parser)
+    flags.AddEncryptedInterconnectRouter(parser)
     flags.AddReplaceCustomAdvertisementArgs(parser, 'router')
     parser.display_info.AddCacheUpdater(flags.RoutersCompleter)
 
@@ -84,6 +85,8 @@ class Create(base.CreateCommand):
       if args.asn is not None:
         router_resource.bgp = messages.RouterBgp(asn=args.asn)
 
+    if args.IsSpecified('encrypted_interconnect_router'):
+      router_resource.encryptedInterconnectRouter = args.encrypted_interconnect_router
     if router_utils.HasReplaceAdvertisementFlags(args):
       mode, groups, ranges = router_utils.ParseAdvertisements(
           messages=messages, resource_class=messages.RouterBgp, args=args)
@@ -143,8 +146,28 @@ class Create(base.CreateCommand):
     return self._Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
+  """Create a Compute Engine router.
+
+     *{command}* is used to create a router to provide dynamic routing to VPN
+     tunnels and interconnects.
+  """
+
+  ROUTER_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    """See base.CreateCommand."""
+    cls._Args(parser, support_keepalive_interval=True)
+
+  def Run(self, args):
+    """See base.CreateCommand."""
+    return self._Run(args, support_keepalive_interval=True)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
   """Create a Compute Engine router.
 
      *{command}* is used to create a router to provide dynamic routing to VPN

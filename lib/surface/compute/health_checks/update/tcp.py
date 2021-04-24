@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import scope as compute_scope
+from googlecloudsdk.command_lib.compute.health_checks import exceptions
 from googlecloudsdk.command_lib.compute.health_checks import flags
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
@@ -167,7 +167,7 @@ def _ValidateArgs(args, include_log_config):
 
   if (args.description is None and args.request is None and
       args.response is None and args.port_name is None and args_unset):
-    raise exceptions.ToolException('At least one property must be modified.')
+    raise exceptions.ArgumentError('At least one property must be modified.')
 
 
 def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):

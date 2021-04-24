@@ -37,7 +37,7 @@ class PeerNotFoundError(exceptions.Error):
     super(PeerNotFoundError, self).__init__(error_msg)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveBgpPeer(base.UpdateCommand):
   """Remove a BGP peer from a Compute Engine router.
 
@@ -146,8 +146,8 @@ class RemoveBgpPeer(base.UpdateCommand):
     return self._Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RemoveBgpPeerAlpha(RemoveBgpPeer):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class RemoveBgpPeerAlphaBeta(RemoveBgpPeer):
   """Remove a BGP peer from a Compute Engine router.
 
   *{command}* removes a BGP peer from a Compute Engine router.

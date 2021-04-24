@@ -39,7 +39,7 @@ class Enable(base.Command):
 
           To enable IAP on a backend service, run:
 
-            $ {command} --resource-type=backend-service
+            $ {command} --resource-type=backend-services
                 --oauth2-client-id=CLIENT_ID --oauth2-client-secret=SECRET
                 --service=SERVICE_ID
   """,

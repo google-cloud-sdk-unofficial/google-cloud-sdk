@@ -63,6 +63,8 @@ class Create(base.CreateCommand):
     attachment_flags.AddEdgeAvailabilityDomain(parser)
     attachment_flags.AddDescription(parser)
     attachment_flags.AddMtu(parser)
+    attachment_flags.AddEncryption(parser)
+    attachment_flags.GetIpsecInternalAddressesFlag().AddToParser(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -85,6 +87,15 @@ class Create(base.CreateCommand):
     if args.router is not None:
       router_ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
 
+    ipsec_internal_addresses_urls = None
+    region = attachment_ref.region
+    if args.ipsec_internal_addresses is not None:
+      ipsec_internal_addresses_urls = [
+          attachment_flags.GetAddressRef(holder.resources, name, region,
+                                         attachment_ref.project).SelfLink()
+          for name in args.ipsec_internal_addresses
+      ]
+
     admin_enabled = attachment_flags.GetAdminEnabledFlag(args)
 
     attachment = interconnect_attachment.CreateAlpha(
@@ -94,7 +105,9 @@ class Create(base.CreateCommand):
         edge_availability_domain=args.edge_availability_domain,
         admin_enabled=admin_enabled,
         validate_only=getattr(args, 'dry_run', None),
-        mtu=getattr(args, 'mtu', None))
+        mtu=getattr(args, 'mtu', None),
+        encryption=getattr(args, 'encryption', None),
+        ipsec_internal_addresses=ipsec_internal_addresses_urls)
     self._pairing_key = attachment.pairingKey
     return attachment
 

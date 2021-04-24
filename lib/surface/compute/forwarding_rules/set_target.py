@@ -30,17 +30,19 @@ class SetTargetHelper(object):
 
   FORWARDING_RULE_ARG = None
 
-  def __init__(self, holder, include_l7_internal_load_balancing):
+  def __init__(self, holder, include_l7_internal_load_balancing, include_gfe3):
     self._holder = holder
     self._include_l7_internal_load_balancing = include_l7_internal_load_balancing
+    self._include_gfe3 = include_gfe3
 
   @classmethod
-  def Args(cls, parser, include_l7_internal_load_balancing):
+  def Args(cls, parser, include_l7_internal_load_balancing, include_gfe3):
     """Adds flags to set the target of a forwarding rule."""
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
     flags.AddUpdateArgs(
         parser,
-        include_l7_internal_load_balancing=include_l7_internal_load_balancing)
+        include_l7_internal_load_balancing=include_l7_internal_load_balancing,
+        include_gfe3=include_gfe3)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
   def Run(self, args):
@@ -101,6 +103,7 @@ class Set(base.UpdateCommand):
   FORWARDING_RULE_ARG = None
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
   _include_l7_internal_load_balancing = True
+  _include_gfe3 = False
 
   detailed_help = {
       'DESCRIPTION': ("""
@@ -117,21 +120,24 @@ class Set(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    SetTargetHelper.Args(parser, cls._include_l7_internal_load_balancing)
+    SetTargetHelper.Args(parser, cls._include_l7_internal_load_balancing,
+                         cls._include_gfe3)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return SetTargetHelper(holder,
-                           self._include_l7_internal_load_balancing).Run(args)
+    return SetTargetHelper(holder, self._include_l7_internal_load_balancing,
+                           self._include_gfe3).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SetBeta(Set):
   """Modify a forwarding rule to direct network traffic to a new target."""
   _include_l7_internal_load_balancing = True
+  _include_gfe3 = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetAlpha(SetBeta):
   """Modify a forwarding rule to direct network traffic to a new target."""
   _include_l7_internal_load_balancing = True
+  _include_gfe3 = True

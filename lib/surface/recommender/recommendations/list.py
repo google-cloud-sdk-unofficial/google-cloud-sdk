@@ -62,11 +62,12 @@ class List(base.ListCommand):
     parser.display_info.AddFormat("""
         table(
           name.basename(): label=RECOMMENDATION_ID,
-          name.segment(3): label=LOCATION,
-          name.segment(5): label=RECOMMENDER,
           primaryImpact.category: label=PRIMARY_IMPACT_CATEGORY,
           stateInfo.state: label=RECOMMENDATION_STATE,
-          lastRefreshTime: label=LAST_REFRESH_TIME
+          lastRefreshTime: label=LAST_REFRESH_TIME,
+          priority: label=PRIORITY,
+          recommenderSubtype: label=RECOMMENDER_SUBTYPE,
+          description: label=DESCRIPTION
         )
     """)
 

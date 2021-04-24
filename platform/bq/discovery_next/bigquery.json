@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20210319",
+ "revision": "20210409",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -73,9 +73,6 @@
     },
     "https://www.googleapis.com/auth/bigquery.insertdata": {
      "description": "Insert data into Google BigQuery"
-    },
-    "https://www.googleapis.com/auth/bigquery.readonly": {
-     "description": "View your data in Google BigQuery"
     },
     "https://www.googleapis.com/auth/cloud-platform": {
      "description": "See, edit, configure, and delete your Google Cloud Platform data"
@@ -1279,6 +1276,10 @@
      "type": "string",
      "description": "[Optional] Specifies whether the job is allowed to create new tables. The following values are supported: CREATE_IF_NEEDED: If the table does not exist, BigQuery creates the table. CREATE_NEVER: The table must already exist. If it does not, a 'notFound' error is returned in the job result. The default value is CREATE_IF_NEEDED. Creation, truncation and append actions occur as one atomic update upon job completion."
     },
+    "createSession": {
+     "type": "boolean",
+     "description": "If true, creates a new session, where session id will be a server generated random id. If false, runs query with an existing session_id passed in ConnectionProperty, otherwise runs query in non-session mode."
+    },
     "defaultDataset": {
      "$ref": "DatasetReference",
      "description": "[Optional] Specifies the default dataset to use for unqualified table names in the query. Note that this does not alter behavior of unqualified dataset names."
@@ -1585,6 +1586,10 @@
     "scriptStatistics": {
      "$ref": "ScriptStatistics",
      "description": "[Output-only] Statistics for a child job of a script."
+    },
+    "sessionInfoTemplate": {
+     "$ref": "SessionInfo",
+     "description": "[Output-only] [Preview] Information of the session if this job is part of one."
     },
     "startTime": {
      "type": "string",
@@ -2079,6 +2084,10 @@
       "$ref": "ConnectionProperty"
      }
     },
+    "createSession": {
+     "type": "boolean",
+     "description": "If true, creates a new session, where session id will be a server generated random id. If false, runs query with an existing session_id passed in ConnectionProperty, otherwise runs query in non-session mode."
+    },
     "defaultDataset": {
      "$ref": "DatasetReference",
      "description": "[Optional] Specifies the default datasetId and projectId to assume for any unqualified table names in the query. If not set, all table names in the query string must be qualified in the format 'datasetId.tableId'."
@@ -2205,6 +2214,10 @@
     "schema": {
      "$ref": "TableSchema",
      "description": "The schema of the results. Present only when the query completes successfully."
+    },
+    "sessionInfoTemplate": {
+     "$ref": "SessionInfo",
+     "description": "[Output-only] [Preview] Information of the session if this job is part of one."
     },
     "totalBytesProcessed": {
      "type": "string",
@@ -2378,6 +2391,16 @@
      "items": {
       "$ref": "ScriptStackFrame"
      }
+    }
+   }
+  },
+  "SessionInfo": {
+   "id": "SessionInfo",
+   "type": "object",
+   "properties": {
+    "sessionId": {
+     "type": "string",
+     "description": "[Output-only] // [Preview] Id of the session."
     }
    }
   },
@@ -2702,7 +2725,7 @@
     },
     "name": {
      "type": "string",
-     "description": "[Required] The field name. The name must contain only letters (a-z, A-Z), numbers (0-9), or underscores (_), and must start with a letter or underscore. The maximum length is 128 characters."
+     "description": "[Required] The field name. The name must contain only letters (a-z, A-Z), numbers (0-9), or underscores (_), and must start with a letter or underscore. The maximum length is 300 characters."
     },
     "policyTags": {
      "type": "object",
@@ -3023,7 +3046,8 @@
       "Boosted tree classifier model.",
       "ARIMA model.",
       "[Beta] AutoML Tables regression model.",
-      "[Beta] AutoML Tables classification model."
+      "[Beta] AutoML Tables classification model.",
+      "New name for the ARIMA model."
      ],
      "enum": [
       "MODEL_TYPE_UNSPECIFIED",
@@ -3038,7 +3062,8 @@
       "BOOSTED_TREE_CLASSIFIER",
       "ARIMA",
       "AUTOML_REGRESSOR",
-      "AUTOML_CLASSIFIER"
+      "AUTOML_CLASSIFIER",
+      "ARIMA_PLUS"
      ]
     },
     "trainingRuns": {
@@ -3543,6 +3568,13 @@
      "description": "The time series id column that was used during ARIMA model training.",
      "type": "string"
     },
+    "timeSeriesIdColumns": {
+     "description": "The time series id columns that were used during ARIMA model training.",
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
     "horizon": {
      "description": "The number of periods ahead that need to be forecasted.",
      "type": "string",
@@ -3556,6 +3588,18 @@
      "description": "The max value of non-seasonal p and q.",
      "type": "string",
      "format": "int64"
+    },
+    "decomposeTimeSeries": {
+     "description": "If true, perform decompose time series and save the results.",
+     "type": "boolean"
+    },
+    "cleanSpikesAndDips": {
+     "description": "If true, clean spikes and dips in the input time series.",
+     "type": "boolean"
+    },
+    "adjustStepChanges": {
+     "description": "If true, detect step changes and make data adjustment in the input time series.",
+     "type": "boolean"
     }
    }
   },
@@ -3620,13 +3664,6 @@
     },
     "arimaResult": {
      "$ref": "ArimaResult"
-    },
-    "principalComponentInfos": {
-     "description": "The information of the principal components.",
-     "type": "array",
-     "items": {
-      "$ref": "PrincipalComponentInfo"
-     }
     }
    }
   },
@@ -3716,6 +3753,13 @@
      "description": "The time_series_id value for this time series. It will be one of the unique values from the time_series_id_column specified during ARIMA model training. Only present when time_series_id_column training option was used.",
      "type": "string"
     },
+    "timeSeriesIds": {
+     "description": "The tuple of time_series_ids identifying this time series. It will be one of the unique tuples of values present in the time_series_id_columns specified during ARIMA model training. Only present when time_series_id_columns training option was used and the order of values here are same as the order of time_series_id_columns.",
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
     "seasonalPeriods": {
      "description": "Seasonal periods. Repeated because multiple periods are supported for one time series.",
      "type": "array",
@@ -3740,6 +3784,18 @@
        "YEARLY"
       ]
      }
+    },
+    "hasHolidayEffect": {
+     "description": "If true, holiday_effect is a part of time series decomposition result.",
+     "type": "boolean"
+    },
+    "hasSpikesAndDips": {
+     "description": "If true, spikes_and_dips is a part of time series decomposition result.",
+     "type": "boolean"
+    },
+    "hasStepChanges": {
+     "description": "If true, step_changes is a part of time series decomposition result.",
+     "type": "boolean"
     }
    }
   },
@@ -3793,33 +3849,6 @@
     }
    }
   },
-  "PrincipalComponentInfo": {
-   "id": "PrincipalComponentInfo",
-   "description": "Principal component infos, used only for eigen decomposition based models, e.g., PCA. Ordered by explained_variance in the descending order.",
-   "type": "object",
-   "properties": {
-    "principalComponentId": {
-     "description": "Id of the principal component.",
-     "type": "string",
-     "format": "int64"
-    },
-    "explainedVariance": {
-     "description": "Explained variance by this principal component, which is simply the eigenvalue.",
-     "type": "number",
-     "format": "double"
-    },
-    "explainedVarianceRatio": {
-     "description": "Explained_variance over the total explained variance.",
-     "type": "number",
-     "format": "double"
-    },
-    "cumulativeExplainedVarianceRatio": {
-     "description": "The explained_variance is pre-ordered in the descending order to compute the cumulative explained variance ratio.",
-     "type": "number",
-     "format": "double"
-    }
-   }
-  },
   "EvaluationMetrics": {
    "id": "EvaluationMetrics",
    "description": "Evaluation metrics of a model. These are either computed on all training data or just the eval data based on whether eval data was used during training. These are not present for imported models.",
@@ -3848,10 +3877,6 @@
     "arimaForecastingMetrics": {
      "description": "Populated for ARIMA models.",
      "$ref": "ArimaForecastingMetrics"
-    },
-    "dimensionalityReductionMetrics": {
-     "description": "Evaluation metrics when the model is a dimensionality reduction model, which currently includes PCA.",
-     "$ref": "DimensionalityReductionMetrics"
     }
    }
   },
@@ -4291,6 +4316,13 @@
      "description": "The time_series_id value for this time series. It will be one of the unique values from the time_series_id_column specified during ARIMA model training. Only present when time_series_id_column training option was used.",
      "type": "string"
     },
+    "timeSeriesIds": {
+     "description": "The tuple of time_series_ids identifying this time series. It will be one of the unique tuples of values present in the time_series_id_columns specified during ARIMA model training. Only present when time_series_id_columns training option was used and the order of values here are same as the order of time_series_id_columns.",
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
     "seasonalPeriods": {
      "description": "Seasonal periods. Repeated because multiple periods are supported for one time series.",
      "type": "array",
@@ -4315,18 +4347,18 @@
        "YEARLY"
       ]
      }
-    }
-   }
-  },
-  "DimensionalityReductionMetrics": {
-   "id": "DimensionalityReductionMetrics",
-   "description": "Model evaluation metrics for dimensionality reduction models.",
-   "type": "object",
-   "properties": {
-    "totalExplainedVarianceRatio": {
-     "description": "Total percentage of variance explained by the selected principal components.",
-     "type": "number",
-     "format": "double"
+    },
+    "hasHolidayEffect": {
+     "description": "If true, holiday_effect is a part of time series decomposition result.",
+     "type": "boolean"
+    },
+    "hasSpikesAndDips": {
+     "description": "If true, spikes_and_dips is a part of time series decomposition result.",
+     "type": "boolean"
+    },
+    "hasStepChanges": {
+     "description": "If true, step_changes is a part of time series decomposition result.",
+     "type": "boolean"
     }
    }
   },
@@ -4417,6 +4449,7 @@
       "Encoded as WKT",
       "Encoded as a decimal string.",
       "Encoded as a decimal string.",
+      "Encoded as a string.",
       "Encoded as a list with types matching Type.array_type.",
       "Encoded as a list with fields of type Type.struct_type[i]. List is used because a JSON object cannot have duplicate field names."
      ],
@@ -4435,6 +4468,7 @@
       "GEOGRAPHY",
       "NUMERIC",
       "BIGNUMERIC",
+      "JSON",
       "ARRAY",
       "STRUCT"
      ]
@@ -4973,7 +5007,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ]
@@ -5047,7 +5080,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ]
@@ -5193,7 +5225,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ]
@@ -5254,7 +5285,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ]
@@ -5388,7 +5418,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ]
@@ -5417,7 +5446,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ]
@@ -5483,7 +5511,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ]
@@ -5511,7 +5538,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ]
@@ -5619,7 +5645,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ]
@@ -5703,7 +5728,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ]
@@ -5781,7 +5805,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ]
@@ -5922,7 +5945,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ],
@@ -5953,7 +5975,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ],
@@ -6001,7 +6022,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ],
@@ -6048,7 +6068,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ],
@@ -6186,7 +6205,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ],
@@ -6365,7 +6383,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ],
@@ -6424,7 +6441,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ],
@@ -6484,7 +6500,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ],
@@ -6515,7 +6530,6 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
-      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ],

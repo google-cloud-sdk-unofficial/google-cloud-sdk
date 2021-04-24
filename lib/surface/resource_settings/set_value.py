@@ -27,21 +27,16 @@ from googlecloudsdk.command_lib.resource_settings import exceptions
 from googlecloudsdk.command_lib.resource_settings import utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class SetValue(base.Command):
   r"""Update the value of a resource setting.
 
-  Update the value of a resource setting
-
-  This first converts the contents of the specified file into a setting
-  object. It then fetches the current setting using GetSetting. If it does not
-  exist, the setting is created using CreateSetting.  If it does, the retrieved
-  setting is checked to see if it needs to be updated. If so, the setting is
-  updated using UpdateSetting.
+  Update the value of a resource setting.
 
   ## EXAMPLES
 
-  To set the setting from the file on the path ``./sample_path'', run:
+  To set the resource setting from the file with the path ``./sample_path'',
+  run:
 
     $ {command} --value-file="./test_input.json"
   """
@@ -68,8 +63,7 @@ class SetValue(base.Command):
     settings_message = service.ResourceSettingsMessages()
 
     input_setting = utils.GetMessageFromFile(
-        args.value_file,
-        settings_message.GoogleCloudResourcesettingsV1Setting)
+        args.value_file, settings_message.GoogleCloudResourcesettingsV1Setting)
 
     if not input_setting.name:
       raise exceptions.InvalidInputError(

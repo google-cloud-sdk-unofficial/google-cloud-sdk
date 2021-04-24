@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.0.66",
+  "CLI_VERSION": "2.0.67",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -358,6 +358,24 @@
       "sections": {
         "DESCRIPTION": "Show all information about an object.\n",
         "EXAMPLES": "bq show -j <job_id>\nbq show dataset\nbq show [--schema] dataset.table\nbq show [--view] dataset.view\nbq show [--materialized_view]\ndataset.materialized_view\nbq show -m ds.model\nbq show --routine ds.routine (requires whitelisting)\nbq show --transfer_config\nprojects/p/locations/l/transferConfigs/c\nbq show --transfer_run\nprojects/p/locations/l/transferConfigs/c/runs/r\nbq show --encryption_service_account\nbq show --connection --project_id=project\n--location=us connection\nbq show --capacity_commitment\nproject:US.capacity_commitment_id\nbq show --reservation --location=US\n--project_id=project reservation_name\nbq show --reservation_assignment --project_id=project\n--location=US\n--assignee_type=PROJECT --assignee_id=myproject\n--job_type=QUERY\nbq show --reservation_assignment --project_id=project\n--location=US\n--assignee_type=FOLDER --assignee_id=123\n--job_type=QUERY\nbq show --reservation_assignment --project_id=project\n--location=US\n--assignee_type=ORGANIZATION --assignee_id=456\n--job_type=QUERY\n"
+      }
+    },
+    "truncate": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "truncate"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Truncates table/dataset/project to a particular\ntimestamp.\n",
+        "EXAMPLES": "bq truncate project_id:dataset\nbq truncate --overwrite project_id:dataset\n--timestamp 123456789\nbq truncate --skip_fully_replicated_tables=false\nproject_id:dataset\n"
       }
     },
     "update": {

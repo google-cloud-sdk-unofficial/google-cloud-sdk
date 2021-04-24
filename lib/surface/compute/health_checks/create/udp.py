@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute.health_checks import exceptions
 from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
@@ -62,9 +62,9 @@ def _Run(args, holder, include_l7_internal_load_balancing=False):
 
   # Check that request and response are not None and empty.
   if not args.request:
-    raise exceptions.ToolException('"request" field for UDP can not be empty.')
+    raise exceptions.ArgumentError('"request" field for UDP can not be empty.')
   if not args.response:
-    raise exceptions.ToolException('"response" field for UDP can not be empty.')
+    raise exceptions.ArgumentError('"response" field for UDP can not be empty.')
 
   if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
     request = client.messages.ComputeRegionHealthChecksInsertRequest(

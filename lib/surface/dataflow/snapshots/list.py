@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.dataflow import snapshot_utils
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.Command):
   """List all Cloud Dataflow snapshots in a project in the specified region, optionally filtered by job ID."""
 

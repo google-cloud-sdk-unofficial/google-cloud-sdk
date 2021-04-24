@@ -70,7 +70,7 @@ class Update(base.Command):
           development, and install both Logging and Monitoring Agents on that
           VM instance, run:
 
-          $ {command} ops-agents-test-policy --agent-rules="type=logging;type=metrics" --instances=zones/us-central1-a/instances/test-instance --os-types=short-name=centos,version=7
+          $ {command} ops-agents-test-policy --agent-rules="type=logging,enable-autoupgrade=false;type=metrics,enable-autoupgrade=false" --instances=zones/us-central1-a/instances/test-instance --os-types=short-name=centos,version=7
 
           To update a policy named ``ops-agents-prod-policy'' to target all
           CentOS 7 VMs in zone ``us-central1-a'' with either
@@ -78,7 +78,7 @@ class Update(base.Command):
           labels, and make sure the logging agent and metrics agent versions are
           pinned to specific major versions for staging and production, run:
 
-          $ {command} ops-agents-prod-policy --agent-rules="type=logging,version=1.*.*;type=metrics,version=6.*.*" --group-labels="env=prod,product=myapp;env=staging,product=myapp" --os-types=short-name=centos,version=7 --zones=us-central1-a
+          $ {command} ops-agents-prod-policy --agent-rules="type=logging,version=1.*.*,enable-autoupgrade=false;type=metrics,version=6.*.*,enable-autoupgrade=false" --group-labels="env=prod,product=myapp;env=staging,product=myapp" --os-types=short-name=centos,version=7 --zones=us-central1-a
 
           To update a policy named ``ops-agents-labels-policy'' to clear the
           instances filters and use a group labels filter instead to target VMs

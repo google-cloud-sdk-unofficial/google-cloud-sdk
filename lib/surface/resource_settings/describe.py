@@ -26,18 +26,18 @@ from googlecloudsdk.command_lib.resource_settings import arguments
 from googlecloudsdk.command_lib.resource_settings import utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   r"""Show the value of a resource setting.
 
-  Show the value of a resource setting
+  Show the value of a resource setting.
 
   ## EXAMPLES
 
-  To describe the resource settings ``iam-projectCreatorRoles'' with the
-  Project ``foo-project'', run:
+  To describe the resource settings ``net-preferredDnsServers'' with the
+  project ``foo-project'', run:
 
-    $ {command} iam-projectCreatorRoles --project=foo-project
+    $ {command} net-preferredDnsServers --project=foo-project
   """
 
   @staticmethod

@@ -25,7 +25,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataflow import snapshot_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.Command):
   """Describe a Cloud Dataflow snapshot.
   """

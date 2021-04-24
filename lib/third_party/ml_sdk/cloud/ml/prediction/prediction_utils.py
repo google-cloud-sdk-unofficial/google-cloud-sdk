@@ -98,6 +98,9 @@ class PredictionError(Exception):
       message="There was a problem processing the outputs", code=3)
   INVALID_USER_CODE = PredictionErrorType(
       message="There was a problem processing the user code", code=4)
+  FAILED_TO_ACCESS_METADATA_SERVER = PredictionErrorType(
+      message="Could not get an access token from the metadata server",
+      code=5)
   # When adding new exception, please update the ERROR_MESSAGE_ list as well as
   # unittest.
 

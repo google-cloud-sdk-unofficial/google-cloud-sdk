@@ -1,4 +1,4 @@
-- release_tracks: [BETA, ALPHA]
+- release_tracks: [GA, BETA, ALPHA]
   help_text:
     brief:  Create a Cloud Filestore backup.
     description: |
@@ -65,6 +65,8 @@
       api_version: v1p1alpha1
     BETA:
       api_version: v1beta1
+    GA:
+      api_version: v1
     display_resource_type: backup
     collection: file.projects.locations.backups
     # Disable validating that a backups resource arg is specified (as we are using the

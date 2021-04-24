@@ -24,18 +24,20 @@ from googlecloudsdk.command_lib.resource_settings import arguments
 from googlecloudsdk.command_lib.resource_settings import utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class UnsetValue(base.DescribeCommand):
   r"""Remove the value of a resource setting.
 
-  Remove the value of a resource setting
+  Remove the value of a resource setting. This reverts the resource to
+  inheriting the resource settings from above it in the resource hierarchy,
+  if any is set on a resource above it.
 
   ## EXAMPLES
 
-  To unset the resource settings ``iam-projectCreatorRoles'' with the
-  Project ``foo-project'', run:
+  To unset the resource settings ``net-preferredDnsServers'' with the
+  project ``foo-project'', run:
 
-    $ {command} iam-projectCreatorRoles --project=foo-project
+    $ {command} net-preferredDnsServers --project=foo-project
   """
 
   @staticmethod

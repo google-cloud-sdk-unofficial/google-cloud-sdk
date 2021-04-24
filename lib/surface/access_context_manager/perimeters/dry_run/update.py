@@ -33,6 +33,22 @@ def _GetBaseConfig(perimeter):
   return perimeter.status
 
 
+def _GetRepeatedFieldValue(args, field_name, base_config_value, has_spec):
+  """Returns the repeated field value to use for the update operation."""
+  repeated_field = repeated.ParsePrimitiveArgs(args, field_name,
+                                               lambda: base_config_value or [])
+  # If there is no difference between base_config_value and command line input,
+  # AND there is no spec, then send the list of existing values from
+  # base_config_value for update operation. This is due to edge case of existing
+  # status, but no existing spec. base_config_value will be values in status in
+  # this case, and if the input is the same as what is set in status config,
+  # then an empty list will be given as the value for the corresponding field
+  # when creating the spec (which is incorrect).
+  if not has_spec and not repeated_field:
+    repeated_field = base_config_value
+  return repeated_field
+
+
 def _IsFieldSpecified(field_name, args):
   # We leave out the deprecated 'set' arg
   list_command_prefixes = ['remove_', 'add_', 'clear_']
@@ -100,28 +116,30 @@ class UpdatePerimeterDryRun(base.UpdateCommand):
     original_perimeter = client.Get(perimeter_ref)
     base_config = _GetBaseConfig(original_perimeter)
     if _IsFieldSpecified('resources', args):
-      updated_resources = repeated.ParsePrimitiveArgs(
-          args, 'resources', lambda: base_config.resources or [])
+      updated_resources = _GetRepeatedFieldValue(
+          args, 'resources', base_config.resources,
+          original_perimeter.useExplicitDryRunSpec)
     else:
       updated_resources = base_config.resources
     if _IsFieldSpecified('restricted_services', args):
-      updated_restricted_services = repeated.ParsePrimitiveArgs(
-          args, 'restricted-services',
-          lambda: base_config.restrictedServices or [])
+      updated_restricted_services = _GetRepeatedFieldValue(
+          args, 'restricted_services', base_config.restrictedServices,
+          original_perimeter.useExplicitDryRunSpec)
     else:
       updated_restricted_services = base_config.restrictedServices
     if _IsFieldSpecified('access_levels', args):
-      updated_access_levels = repeated.ParsePrimitiveArgs(
-          args, 'access-levels', lambda: base_config.accessLevels or [])
+      updated_access_levels = _GetRepeatedFieldValue(
+          args, 'access_levels', base_config.accessLevels,
+          original_perimeter.useExplicitDryRunSpec)
     else:
       updated_access_levels = base_config.accessLevels
     base_vpc_config = base_config.vpcAccessibleServices
     if base_vpc_config is None:
       base_vpc_config = messages.VpcAccessibleServices()
     if _IsFieldSpecified('vpc_allowed_services', args):
-      updated_vpc_services = repeated.ParsePrimitiveArgs(
-          args, 'vpc-allowed-services',
-          lambda: base_vpc_config.allowedServices or [])
+      updated_vpc_services = _GetRepeatedFieldValue(
+          args, 'vpc-allowed-services', base_vpc_config.allowedServices,
+          original_perimeter.useExplicitDryRunSpec)
     elif base_config.vpcAccessibleServices is not None:
       updated_vpc_services = base_vpc_config.allowedServices
     else:
@@ -132,6 +150,13 @@ class UpdatePerimeterDryRun(base.UpdateCommand):
       updated_vpc_enabled = base_vpc_config.enableRestriction
     else:
       updated_vpc_enabled = None
+    # Vpc allowed services list should only be populated if enable restrictions
+    # is set to true.
+    if updated_vpc_enabled is None:
+      updated_vpc_services = None
+    elif not updated_vpc_enabled:
+      updated_vpc_services = []
+
     return client.PatchDryRunConfig(
         perimeter_ref,
         resources=updated_resources,

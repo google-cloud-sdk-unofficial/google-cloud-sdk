@@ -1,4 +1,4 @@
-- release_tracks: [BETA, ALPHA]
+- release_tracks: [GA, BETA, ALPHA]
   help_text:
     brief: |
       Update a Cloud Filestore backup.
@@ -45,6 +45,8 @@
       api_version: v1p1alpha1
     BETA:
       api_version: v1beta1
+    GA:
+      api_version: v1
     display_resource_type: backup
     collection: file.projects.locations.backups
     modify_request_hooks:

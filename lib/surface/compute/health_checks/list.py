@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute.health_checks import exceptions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -154,8 +154,7 @@ class List(base_classes.MultiScopeLister):
     if args.protocol is not None:
       protocol_value = self._ConvertProtocolArgToValue(args)
       if protocol_value not in self._ProtocolAllowlist():
-        # TODO(b/111311137): Replace with InvalidArgumentException.
-        raise exceptions.ToolException('Invalid health check protocol ' +
+        raise exceptions.ArgumentError('Invalid health check protocol ' +
                                        args.protocol + '.')
 
     for health_check in health_checks:

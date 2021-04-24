@@ -1,4 +1,4 @@
-- release_tracks: [BETA, ALPHA]
+- release_tracks: [GA, BETA, ALPHA]
   help_text:
     ALPHA:
       brief: |
@@ -6,11 +6,46 @@
       description: |
         Restore an existing Cloud Filestore instance from an existing snapshot
         or backup.
+      examples: |
+        The following command restores an instance named 'my-instance' with a
+        fileshare named 'vol1' in the zone europe-west3-a from a backup named
+        'my-backup' in the region europe-west3.
+
+          $ {command} my-instance \
+            --zone=europe-west3-a \
+            --file-share=vol1 \
+            --source-backup=my-backup \
+            --source-backup-region=europe-west3
     BETA:
       brief: |
         Restore a Cloud Filestore instance from a backup.
       description: |
         Restore an existing Cloud Filestore instance from an existing backup.
+      examples: |
+        The following command restores an instance named 'my-instance' with a
+        fileshare named 'vol1' in the zone europe-west3-a from a backup named
+        'my-backup' in the region europe-west3.
+
+          $ {command} my-instance \
+            --zone=europe-west3-a \
+            --file-share=vol1 \
+            --source-backup=my-backup \
+            --source-backup-region=europe-west3
+    GA:
+      brief: |
+        Restore a Cloud Filestore instance from a backup.
+      description: |
+        Restore an existing Cloud Filestore instance from an existing backup.
+      examples: |
+        The following command restores an instance named 'my-instance' with a
+        fileshare named 'vol1' in the zone europe-west3-a from a backup named
+        'my-backup' in the region europe-west3.
+
+          $ {command} my-instance \
+            --zone=europe-west3-a \
+            --file-share=vol1 \
+            --source-backup=my-backup \
+            --source-backup-region=europe-west3
 
   arguments:
     resource:
@@ -27,13 +62,16 @@
       BETA:
         help_text:
           File share to restore from the backup.
+      GA:
+        help_text:
+          File share to restore from the backup.
     - arg_name: source-backup
-      release_tracks: [BETA]
+      release_tracks: [GA, BETA]
       required: true
       help_text: |
         Name of the Filestore backup to restore from.
     - arg_name: source-backup-region
-      release_tracks: [BETA]
+      release_tracks: [GA, BETA]
       required: true
       help_text: |
         Region of the Filestore backup to restore from.
@@ -78,6 +116,10 @@
       - googlecloudsdk.command_lib.filestore.snapshots.util:AddSnapshotNameToRequest
     BETA:
       api_version: v1beta1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.filestore.backups.util:AddBackupNameToRequest
+    GA:
+      api_version: v1
       modify_request_hooks:
       - googlecloudsdk.command_lib.filestore.backups.util:AddBackupNameToRequest
     collection: file.projects.locations.instances

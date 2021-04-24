@@ -37,7 +37,7 @@ class InterfaceNotFoundError(exceptions.Error):
          ).__init__(error_msg)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveInterface(base.UpdateCommand):
   """Remove an interface from a Compute Engine router.
 
@@ -146,8 +146,8 @@ class RemoveInterface(base.UpdateCommand):
     return self._Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RemoveInterfaceAlpha(RemoveInterface):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class RemoveInterfaceAlphaBeta(RemoveInterface):
   """Remove an interface from a Compute Engine router.
 
   *{command}* removes an interface from a Compute Engine router.

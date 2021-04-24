@@ -38,7 +38,7 @@ class Enable(base.Command):
 
           To disable IAP on a backend service, run:
 
-            $ {command} --resource-type=backend-service --service=SERVICE_ID
+            $ {command} --resource-type=backend-services --service=SERVICE_ID
   """,
   }
 

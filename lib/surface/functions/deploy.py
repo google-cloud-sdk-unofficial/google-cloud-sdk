@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
+from googlecloudsdk.command_lib.functions import secrets_config
 from googlecloudsdk.command_lib.functions.v1.deploy import command as command_v1
 from googlecloudsdk.command_lib.functions.v1.deploy import labels_util
 from googlecloudsdk.command_lib.functions.v2.deploy import command as command_v2
@@ -106,6 +107,9 @@ class DeployAlpha(base.Command):
     # Add additional args for this release track
     flags.AddBuildWorkerPoolMutexGroup(parser)
     flags.AddMinInstancesFlag(parser)
+
+    # Add flags for secrets
+    secrets_config.ConfigureFlags(parser)
 
     # Add additional flags for GCFv2
     flags.AddRunServiceAccountFlag(parser)
