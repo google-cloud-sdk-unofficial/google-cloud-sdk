@@ -1,20 +1,27 @@
-release_tracks: [ALPHA]
+release_tracks: [BETA, ALPHA]
 
 help_text:
   brief: |
-    Delete server TLS policy.
+    Delete ServerTlsPolicy.
   description: |
-    Delete the specified server TLS policy.
+    Delete the specified ServerTlsPolicy.
+  examples: |
+      To delete a ServerTlsPolicy called 'my-server-tls-policy', run:
+
+        $ {command} my-server-tls-policy --location=global
 
 arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.network_security.resources:serverTlsPolicy
     help_text: |
-      Name of the server TLS policy you want to delete.
+      Name of the ServerTlsPolicy you want to delete.
 
 async:
   collection: networksecurity.projects.locations.operations
 
 request: &request
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networksecurity.projects.locations.serverTlsPolicies

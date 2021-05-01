@@ -28,6 +28,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.forwarding_rules import exceptions as fw_exceptions
 from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 from googlecloudsdk.core import log
 import six
@@ -191,7 +192,7 @@ class CreateHelper(object):
       rule_name = forwarding_rule_ref.Name()
       if len(rule_name) > 20 or rule_name[0].isdigit(
       ) or not rule_name.isalnum():
-        raise exceptions.ToolException(
+        raise fw_exceptions.ArgumentError(
             'A forwarding rule to Google APIs must have a name that is between '
             ' 1-20 characters long, alphanumeric, starting with a letter.')
 

@@ -41,7 +41,8 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, include_l7_internal_load_balancing, include_log_config):
+def _Args(parser, include_l7_internal_load_balancing, include_log_config,
+          include_weighted_load_balancing):
   """Set up arguments to create an HTTPS HealthCheck."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
   flags.HealthCheckArgument(
@@ -49,7 +50,8 @@ def _Args(parser, include_l7_internal_load_balancing, include_log_config):
       include_l7_internal_load_balancing=include_l7_internal_load_balancing
   ).AddArgument(
       parser, operation_type='create')
-  health_checks_utils.AddHttpRelatedCreationArgs(parser)
+  health_checks_utils.AddHttpRelatedCreationArgs(
+      parser, include_weighted_load_balancing)
   health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTPS')
   health_checks_utils.AddHttpRelatedResponseArg(parser)
   if include_log_config:
@@ -59,7 +61,8 @@ def _Args(parser, include_l7_internal_load_balancing, include_log_config):
                                       completers.HttpsHealthChecksCompleter)
 
 
-def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
+def _Run(args, holder, include_l7_internal_load_balancing, include_log_config,
+         include_weighted_load_balancing):
   """Issues the request necessary for adding the health check."""
   client = holder.client
   messages = client.messages
@@ -79,6 +82,11 @@ def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
       requestPath=args.request_path,
       proxyHeader=proxy_header,
       response=args.response)
+
+  if include_weighted_load_balancing and args.weight_report_mode:
+    weight_report_mode = messages.HTTPSHealthCheck.WeightReportModeValueValuesEnum(
+        args.weight_report_mode)
+    https_health_check.weightReportMode = weight_report_mode
 
   health_checks_utils.ValidateAndAddPortSpecificationToHealthCheck(
       args, https_health_check)
@@ -124,26 +132,27 @@ class Create(base.CreateCommand):
 
   _include_l7_internal_load_balancing = True
   _include_log_config = True
+  _include_weighted_load_balancing = False
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
     _Args(parser, cls._include_l7_internal_load_balancing,
-          cls._include_log_config)
+          cls._include_log_config, cls._include_weighted_load_balancing)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self._include_l7_internal_load_balancing,
-                self._include_log_config)
+                self._include_log_config, self._include_weighted_load_balancing)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
 
-  pass
+  _include_weighted_load_balancing = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
 
-  pass
+  _include_weighted_load_balancing = True

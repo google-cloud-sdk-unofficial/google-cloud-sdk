@@ -40,15 +40,3 @@ arguments:
     default: deliver-immediately
   - _REF_: googlecloudsdk.command_lib.pubsub.flags:starting-offset
     default: end
-    release_tracks: [ALPHA, BETA]
-
-GA:
-  help_text:
-    brief: Create a Pub/Sub Lite subscription.
-    description: Create a Pub/Sub Lite subscription.
-    examples: |
-      To create a Pub/Sub Lite subscription, run:
-
-          $ {command} mysubscription \
-              --zone=us-central1-a \
-              --topic=mytopic

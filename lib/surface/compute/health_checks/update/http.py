@@ -41,12 +41,15 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, include_l7_internal_load_balancing, include_log_config):
+def _Args(parser, include_l7_internal_load_balancing, include_log_config,
+          include_weighted_load_balancing):
+  """Adds all the args in the parser."""
   health_check_arg = flags.HealthCheckArgument(
       'HTTP',
       include_l7_internal_load_balancing=include_l7_internal_load_balancing)
   health_check_arg.AddArgument(parser, operation_type='update')
-  health_checks_utils.AddHttpRelatedUpdateArgs(parser)
+  health_checks_utils.AddHttpRelatedUpdateArgs(parser,
+                                               include_weighted_load_balancing)
   health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'HTTP')
   health_checks_utils.AddHttpRelatedResponseArg(parser)
   if include_log_config:
@@ -89,7 +92,8 @@ def _GetRegionalSetRequest(client, health_check_ref, replacement):
               region=health_check_ref.region))
 
 
-def _Modify(client, args, existing_check, include_log_config):
+def _Modify(client, args, existing_check, include_log_config,
+            include_weighted_load_balancing):
   """Returns a modified HealthCheck message."""
   # We do not support using 'update http' with a health check of a
   # different protocol.
@@ -120,6 +124,12 @@ def _Modify(client, args, existing_check, include_log_config):
     HandlePortRelatedFlagsForUpdate(
         args, existing_check.httpHealthCheck)
 
+  if include_weighted_load_balancing:
+    weight_report_mode = existing_check.httpHealthCheck.weightReportMode
+    if args.IsSpecified('weight_report_mode'):
+      weight_report_mode = client.messages.HTTPHealthCheck.WeightReportModeValueValuesEnum(
+          args.weight_report_mode)
+
   proxy_header = existing_check.httpHealthCheck.proxyHeader
   if args.proxy_header is not None:
     proxy_header = client.messages.HTTPHealthCheck.ProxyHeaderValueValuesEnum(
@@ -132,19 +142,24 @@ def _Modify(client, args, existing_check, include_log_config):
   else:
     response = None
 
+  http_health_check = client.messages.HTTPHealthCheck(
+      host=host,
+      port=port,
+      portName=port_name,
+      requestPath=(args.request_path or
+                   existing_check.httpHealthCheck.requestPath),
+      portSpecification=port_specification,
+      proxyHeader=proxy_header,
+      response=response)
+
+  if include_weighted_load_balancing:
+    http_health_check.weightReportMode = weight_report_mode
+
   new_health_check = client.messages.HealthCheck(
       name=existing_check.name,
       description=description,
       type=client.messages.HealthCheck.TypeValueValuesEnum.HTTP,
-      httpHealthCheck=client.messages.HTTPHealthCheck(
-          host=host,
-          port=port,
-          portName=port_name,
-          requestPath=(args.request_path or
-                       existing_check.httpHealthCheck.requestPath),
-          portSpecification=port_specification,
-          proxyHeader=proxy_header,
-          response=response),
+      httpHealthCheck=http_health_check,
       checkIntervalSec=(args.check_interval or existing_check.checkIntervalSec),
       timeoutSec=args.timeout or existing_check.timeoutSec,
       healthyThreshold=(args.healthy_threshold or
@@ -159,7 +174,9 @@ def _Modify(client, args, existing_check, include_log_config):
   return new_health_check
 
 
-def _ValidateArgs(args, include_log_config):
+def _ValidateArgs(args,
+                  include_log_config,
+                  include_weighted_load_balancing=False):
   """Validates given args and raises exception if any args are invalid."""
   health_checks_utils.CheckProtocolAgnosticArgs(args)
 
@@ -171,16 +188,22 @@ def _ValidateArgs(args, include_log_config):
   if include_log_config:
     args_unset = (args.enable_logging is None and args_unset)
 
+  weight_report_mode_modified = False
+  if include_weighted_load_balancing and args.IsSpecified('weight_report_mode'):
+    weight_report_mode_modified = True
+
   if (args.description is None and args.host is None and
-      args.response is None and args.port_name is None and args_unset):
+      args.response is None and args.port_name is None and
+      not weight_report_mode_modified and args_unset):
     raise exceptions.ArgumentError('At least one property must be modified.')
 
 
-def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
+def _Run(args, holder, include_l7_internal_load_balancing, include_log_config,
+         include_weighted_load_balancing):
   """Issues the requests necessary for updating the health check."""
   client = holder.client
 
-  _ValidateArgs(args, include_log_config)
+  _ValidateArgs(args, include_log_config, include_weighted_load_balancing)
 
   health_check_arg = flags.HealthCheckArgument(
       'HTTP',
@@ -196,7 +219,8 @@ def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
 
   objects = client.MakeRequests([get_request])
 
-  new_object = _Modify(client, args, objects[0], include_log_config)
+  new_object = _Modify(client, args, objects[0], include_log_config,
+                       include_weighted_load_balancing)
 
   # If existing object is equal to the proposed object or if
   # _Modify() returns None, then there is no work to be done, so we
@@ -219,26 +243,27 @@ class Update(base.UpdateCommand):
 
   _include_l7_internal_load_balancing = True
   _include_log_config = True
+  _include_weighted_load_balancing = False
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
     _Args(parser, cls._include_l7_internal_load_balancing,
-          cls._include_log_config)
+          cls._include_log_config, cls._include_weighted_load_balancing)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self._include_l7_internal_load_balancing,
-                self._include_log_config)
+                self._include_log_config, self._include_weighted_load_balancing)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
 
-  pass
+  _include_weighted_load_balancing = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
 
-  pass
+  _include_weighted_load_balancing = True

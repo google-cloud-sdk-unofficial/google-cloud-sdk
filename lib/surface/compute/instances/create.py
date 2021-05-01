@@ -101,7 +101,8 @@ def _CommonArgs(parser,
                 image_csek=False,
                 support_multi_writer=False,
                 support_replica_zones=False,
-                support_image_family_scope=False):
+                support_image_family_scope=False,
+                support_subinterface=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
@@ -116,7 +117,11 @@ def _CommonArgs(parser,
       support_multi_writer=support_multi_writer,
       support_replica_zones=support_replica_zones)
   instances_flags.AddCanIpForwardArgs(parser)
-  instances_flags.AddAddressArgs(parser, instances=True)
+  instances_flags.AddAddressArgs(
+      parser,
+      instances=True,
+      support_subinterface=support_subinterface,
+      instance_create=True)
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
   instances_flags.AddMaintenancePolicyArgs(
@@ -211,6 +216,7 @@ class Create(base.CreateCommand):
   _support_ipv6_public_ptr_domain = False
   _support_network_performance_configs = False
   _support_image_family_scope = False
+  _support_subinterface = False
 
   @classmethod
   def Args(cls, parser):
@@ -220,7 +226,8 @@ class Create(base.CreateCommand):
         support_multi_writer=cls._support_multi_writer,
         support_replica_zones=cls._support_replica_zones,
         enable_regional=cls._support_regional,
-        support_image_family_scope=cls._support_image_family_scope)
+        support_image_family_scope=cls._support_image_family_scope,
+        support_subinterface=cls._support_subinterface)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -290,12 +297,17 @@ class Create(base.CreateCommand):
         instance_utils.UseExistingBootDisk((args.disk or []) +
                                            (args.create_disk or [])))
 
-    image_family_scope = (args.image_family_scope
-                          if self._support_image_family_scope else None)
+    image_family_scope = (
+        args.image_family_scope if self._support_image_family_scope else None)
 
     image_uri = create_utils.GetImageUri(
-        args, compute_client, create_boot_disk, project, resource_parser,
-        confidential_vm, image_family_scope=image_family_scope,
+        args,
+        compute_client,
+        create_boot_disk,
+        project,
+        resource_parser,
+        confidential_vm,
+        image_family_scope=image_family_scope,
         support_image_family_scope=self._support_image_family_scope)
 
     shielded_instance_config = create_utils.BuildShieldedInstanceConfigMessage(
@@ -561,6 +573,7 @@ class CreateBeta(Create):
   _support_multi_writer = True
   _support_network_performance_configs = True
   _support_image_family_scope = True
+  _support_subinterface = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -588,7 +601,8 @@ class CreateBeta(Create):
         supports_erase_vss=cls._support_erase_vss,
         support_replica_zones=cls._support_replica_zones,
         support_multi_writer=cls._support_multi_writer,
-        support_image_family_scope=cls._support_image_family_scope)
+        support_image_family_scope=cls._support_image_family_scope,
+        support_subinterface=cls._support_subinterface)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -632,6 +646,7 @@ class CreateAlpha(CreateBeta):
   _support_ipv6_public_ptr_domain = True
   _support_network_performance_configs = True
   _support_image_family_scope = True
+  _support_subinterface = True
 
   @classmethod
   def Args(cls, parser):
@@ -647,7 +662,8 @@ class CreateAlpha(CreateBeta):
         image_csek=cls._support_image_csek,
         support_replica_zones=cls._support_replica_zones,
         support_multi_writer=cls._support_multi_writer,
-        support_image_family_scope=cls._support_image_family_scope)
+        support_image_family_scope=cls._support_image_family_scope,
+        support_subinterface=cls._support_subinterface)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)

@@ -125,7 +125,6 @@ class Deploy(base.Command):
         'Service to deploy to.',
         required=True,
         prefixes=False)
-    flags.AddImageArg(parser, required=False)
     flags.AddPlatformAndLocationFlags(parser)
     flags.AddFunctionArg(parser)
     flags.AddMutexEnvVarsFlags(parser)
@@ -153,6 +152,8 @@ class Deploy(base.Command):
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
+
+    flags.AddImageArg(parser, required=False)
 
     # Flags only supported on GKE and Knative
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -260,11 +261,16 @@ class BetaDeploy(Deploy):
   def Args(parser):
     Deploy.CommonArgs(parser)
 
+    # Flags specific to managed CR
+    managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddBinAuthzPolicyFlags(managed_group)
+    flags.AddBinAuthzBreakglassFlag(managed_group)
+
     # Flags not specific to any platform
     flags.AddHttp2Flag(parser)
 
-    # Flags specific to deploy from source
-    flags.AddSourceFlag(parser)
+    # Flags indicating whether to deploy source or an existing image
+    flags.AddSourceAndImageFlags(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -285,8 +291,8 @@ class AlphaDeploy(Deploy):
     # Flags not specific to any platform
     flags.AddHttp2Flag(parser)
 
-    # Flags specific to deploy from source
-    flags.AddSourceFlag(parser)
+    # Flags indicating whether to deploy source or an existing image
+    flags.AddSourceAndImageFlags(parser)
 
 
 AlphaDeploy.__doc__ = Deploy.__doc__

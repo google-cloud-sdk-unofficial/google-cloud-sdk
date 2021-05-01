@@ -75,9 +75,27 @@ class DestroyBeta(Destroy):
   Destroy version '123' of the secret named 'my-secret':
 
     $ {command} 123 --secret=my-secret
+
+  Destroy version '123' of the secret named 'my-secret' using etag:
+
+    $ {command} 123 --secret=my-secret --etag=\"123\"
   """
 
   @staticmethod
   def Args(parser):
     secrets_args.AddVersion(
         parser, purpose='to destroy', positional=True, required=True)
+    secrets_args.AddVersionEtag(parser)
+
+  def Run(self, args):
+    version_ref = args.CONCEPTS.version.Parse()
+
+    # Destructive action, prompt to continue
+    console_io.PromptContinue(
+        self.CONFIRM_DESTROY_MESSAGE.format(
+            version=version_ref.Name(), secret=version_ref.Parent().Name()),
+        throw_if_unattended=True,
+        cancel_on_no=True)
+    result = secrets_api.Versions().Destroy(version_ref, etag=args.etag)
+    secrets_log.Versions().Destroyed(version_ref)
+    return result

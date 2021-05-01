@@ -14,6 +14,10 @@ help_text:
 
 request:
   collection: bigtableadmin.projects.instances.tables
+  BETA:
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=setIamPolicyRequest.policy.version
+    - googlecloudsdk.command_lib.iam.hooks:AddVersionToUpdateMaskIfNotPresent:update_mask_path=setIamPolicyRequest.updateMask
   ALPHA:
     modify_request_hooks:
     - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=setIamPolicyRequest.policy.version
@@ -24,6 +28,9 @@ arguments:
     help_text: Cloud Bigtable table to set the IAM policy on.
     spec: !REF googlecloudsdk.command_lib.bigtable.resources:table
 
+BETA:
+  iam:
+    policy_version: 3
 ALPHA:
   iam:
     policy_version: 3

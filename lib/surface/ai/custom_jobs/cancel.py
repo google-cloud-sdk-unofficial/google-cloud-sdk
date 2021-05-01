@@ -22,8 +22,16 @@ from googlecloudsdk.api_lib.ai.custom_jobs import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
-from googlecloudsdk.command_lib.ai import flags
+from googlecloudsdk.command_lib.ai.custom_jobs import flags
 from googlecloudsdk.core import log
+
+_CUSTOM_JOB_CANCEL_DISPLAY_MESSAGE = """\
+Request to cancel custom job [{id}] has been sent
+
+You may view the status of your job with the command
+
+  $ gcloud alpha ai custom-jobs describe {id}
+"""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -46,6 +54,5 @@ class Cancel(base.SilentCommand):
         version=constants.BETA_VERSION, region=region):
       response = client.CustomJobsClient(version=constants.BETA_VERSION).Cancel(
           custom_job_ref.RelativeName())
-      log.status.Print(
-          constants.CUSTOM_JOB_CANCEL_DISPLAY_MESSAGE.format(id=name))
+      log.status.Print(_CUSTOM_JOB_CANCEL_DISPLAY_MESSAGE.format(id=name))
       return response

@@ -1,19 +1,26 @@
-release_tracks: [ALPHA]
+release_tracks: [BETA, ALPHA]
 help_text:
   brief: |
-    Import client TLS policy.
+    Import ClientTlsPolicy.
   description: |
-    Import a client TLS policy.
+    Import a ClientTlsPolicy.
+  examples: |
+      To import a ClientTlsPolicy from a YAML file, run:
+
+        $ {command} my-client-tls-policy --source=my-client-tls-policy.yaml --location=global
 
 request:
   collection: networksecurity.projects.locations.clientTlsPolicies
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
 
 arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.network_security.resources:clientTlsPolicy
     help_text: |
-      Name of the client TLS policy to import.
+      Name of the ClientTlsPolicy to import.
 
 async:
   collection: networksecurity.projects.locations.operations
@@ -23,5 +30,8 @@ import:
   create_if_not_exists: true
   create_request:
     collection: networksecurity.projects.locations.clientTlsPolicies
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
     method: create

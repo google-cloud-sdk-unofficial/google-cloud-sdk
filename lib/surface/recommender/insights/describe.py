@@ -26,17 +26,19 @@ from googlecloudsdk.command_lib.recommender import flags
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Describe(base.Command):
-  r"""Describe an insight.
+  """Describe an insight."""
 
-     Describe an insight. This currently supports the following parent entities:
-     project, billing account, folder, and organization.
+  detailed_help = {
+      'DESCRIPTION': """\
+      Describe an insight. This currently supports the following parent
+      entities: project, billing account, folder, and organization.
+      """,
+      'EXAMPLES': """\
+      To describe an insight:
 
-     ## EXAMPLES
-     To describe a insight:
-
-      $ {command} INSIGHT_ID --project=${PROJECT} --location=${LOCATION}
-      --recommender=${RECOMMENDER}
-  """
+        $ {command} INSIGHT_ID --project=${PROJECT} --location=${LOCATION}
+     """
+  }
 
   @staticmethod
   def Args(parser):
@@ -52,7 +54,8 @@ class Describe(base.Command):
         type=str,
         help='insight to describe',
     )
-    parser.add_argument('--location', metavar='LOCATION', help='Location')
+    parser.add_argument(
+        '--location', metavar='LOCATION', required=True, help='Location')
     parser.add_argument(
         '--insight-type',
         metavar='INSIGHT_TYPE',

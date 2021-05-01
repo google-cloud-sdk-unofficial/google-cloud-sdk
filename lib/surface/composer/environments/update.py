@@ -101,6 +101,10 @@ class Update(base.Command):
     if self._support_autoscaling:
       params['scheduler_cpu'] = args.scheduler_cpu
       params['worker_cpu'] = args.worker_cpu
+      params['scheduler_memory_gb'] = environments_api_util.MemorySizeBytesToGB(
+          args.scheduler_memory)
+      params['worker_memory_gb'] = environments_api_util.MemorySizeBytesToGB(
+          args.worker_memory)
       params['min_workers'] = args.min_workers
       params['max_workers'] = args.max_workers
     if self._support_maintenance_window:

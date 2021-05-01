@@ -72,7 +72,6 @@ def _CommonArgs(parser, support_max_pods_per_node):
       'nodes. For example `--machine-type=n1-standard-1`.')
   parser.add_argument(
       '--disk-size',
-      default='100GB',
       type=arg_parsers.BinarySize(
           lower_bound='20GB',
           upper_bound='64TB',
@@ -350,9 +349,9 @@ class Create(base.Command):
 
   def GetOperationMessage(self, args):
     """Constructs Create message."""
-    return environments_api_util.Create(
-        self.env_ref,
-        args.node_count,
+
+    create_flags = environments_api_util.CreateEnvironmentFlags(
+        node_count=args.node_count,
         labels=args.labels,
         location=self.zone,
         machine_type=self.machine_type,
@@ -363,7 +362,7 @@ class Create(base.Command):
         service_account=args.service_account,
         oauth_scopes=args.oauth_scopes,
         tags=args.tags,
-        disk_size_gb=args.disk_size >> 30,
+        disk_size_gb=environments_api_util.DiskSizeBytesToGB(args.disk_size),
         python_version=args.python_version,
         image_version=self.image_version,
         use_ip_aliases=args.enable_ip_alias,
@@ -381,6 +380,7 @@ class Create(base.Command):
         cloud_sql_machine_type=args.cloud_sql_machine_type,
         web_server_machine_type=args.web_server_machine_type,
         release_track=self.ReleaseTrack())
+    return environments_api_util.Create(self.env_ref, create_flags)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -403,9 +403,8 @@ class CreateBeta(Create):
 
   def GetOperationMessage(self, args):
     """See base class."""
-    return environments_api_util.Create(
-        self.env_ref,
-        args.node_count,
+    create_flags = environments_api_util.CreateEnvironmentFlags(
+        node_count=args.node_count,
         labels=args.labels,
         location=self.zone,
         machine_type=self.machine_type,
@@ -416,7 +415,7 @@ class CreateBeta(Create):
         service_account=args.service_account,
         oauth_scopes=args.oauth_scopes,
         tags=args.tags,
-        disk_size_gb=args.disk_size >> 30,
+        disk_size_gb=environments_api_util.DiskSizeBytesToGB(args.disk_size),
         python_version=args.python_version,
         image_version=self.image_version,
         use_ip_aliases=args.enable_ip_alias,
@@ -438,6 +437,8 @@ class CreateBeta(Create):
         maintenance_window_end=args.maintenance_window_end,
         maintenance_window_recurrence=args.maintenance_window_recurrence,
         release_track=self.ReleaseTrack())
+
+    return environments_api_util.Create(self.env_ref, create_flags)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -469,14 +470,16 @@ class CreateAlpha(CreateBeta):
     autoscaling_group_parser = parser.add_argument_group(hidden=True)
     flags.SCHEDULER_CPU.AddToParser(autoscaling_group_parser)
     flags.WORKER_CPU.AddToParser(autoscaling_group_parser)
+    flags.SCHEDULER_MEMORY.AddToParser(autoscaling_group_parser)
+    flags.WORKER_MEMORY.AddToParser(autoscaling_group_parser)
     flags.MIN_WORKERS.AddToParser(autoscaling_group_parser)
     flags.MAX_WORKERS.AddToParser(autoscaling_group_parser)
 
   def GetOperationMessage(self, args):
     """See base class."""
-    return environments_api_util.Create(
-        self.env_ref,
-        args.node_count,
+
+    create_flags = environments_api_util.CreateEnvironmentFlags(
+        node_count=args.node_count,
         labels=args.labels,
         location=self.zone,
         machine_type=self.machine_type,
@@ -487,7 +490,7 @@ class CreateAlpha(CreateBeta):
         service_account=args.service_account,
         oauth_scopes=args.oauth_scopes,
         tags=args.tags,
-        disk_size_gb=args.disk_size >> 30,
+        disk_size_gb=environments_api_util.DiskSizeBytesToGB(args.disk_size),
         python_version=args.python_version,
         image_version=self.image_version,
         airflow_executor_type=args.airflow_executor_type,
@@ -508,9 +511,15 @@ class CreateAlpha(CreateBeta):
         web_server_machine_type=args.web_server_machine_type,
         scheduler_cpu=args.scheduler_cpu,
         worker_cpu=args.worker_cpu,
+        scheduler_memory_gb=environments_api_util.MemorySizeBytesToGB(
+            args.scheduler_memory),
+        worker_memory_gb=environments_api_util.MemorySizeBytesToGB(
+            args.worker_memory),
         min_workers=args.min_workers,
         max_workers=args.max_workers,
         maintenance_window_start=args.maintenance_window_start,
         maintenance_window_end=args.maintenance_window_end,
         maintenance_window_recurrence=args.maintenance_window_recurrence,
         release_track=self.ReleaseTrack())
+
+    return environments_api_util.Create(self.env_ref, create_flags)

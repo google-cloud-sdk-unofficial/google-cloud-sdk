@@ -28,3 +28,4 @@ class Auth(base.Group):
 
    For more details on Anthos, see https://cloud.google.com/anthos/.
   """
+  category = base.ANTHOS_AUTH_CATEGORY

@@ -52,7 +52,8 @@ class Describe(base.Command):
         type=str,
         help='Recommendation to describe',
     )
-    parser.add_argument('--location', metavar='LOCATION', help='Location')
+    parser.add_argument(
+        '--location', metavar='LOCATION', required=True, help='Location')
     parser.add_argument(
         '--recommender',
         metavar='RECOMMENDER',

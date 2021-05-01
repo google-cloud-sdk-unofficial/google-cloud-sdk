@@ -704,7 +704,12 @@ class UpdateBeta(Update):
           'of all cluster nodes at versions 1.15 or above. '
           'This operation is long-running and will block other '
           'operations on the cluster (including delete) until it has run '
-          'to completion.',
+          'to completion.'
+          'If you use maintenance windows, cluster nodes will only be re-created '
+          'during a maintenance window. If you prefer not to wait, you can '
+          'manually "upgrade" your node pools to the same version they are '
+          'already using, by setting the --cluster-version flag to the same GKE '
+          'version the nodes are already running.',
           cancel_on_no=True)
 
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes

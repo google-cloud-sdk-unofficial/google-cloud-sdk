@@ -20,4 +20,4 @@
   arguments:
     resource:
       help_text: The cluster membership to describe.
-      spec: !REF googlecloudsdk.command_lib.container.hub.memberships.resources:membership
+      spec: !REF googlecloudsdk.command_lib.container.hub.resources:membership

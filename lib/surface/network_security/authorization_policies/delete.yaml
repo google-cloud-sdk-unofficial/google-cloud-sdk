@@ -1,10 +1,14 @@
-release_tracks: [ALPHA]
+release_tracks: [BETA, ALPHA]
 
 help_text:
   brief: |
     Delete authorization policy.
   description: |
     Delete the specified authorization policy.
+  examples: |
+      To delete an authorization policy called 'my-authz-policy', run:
+
+        $ {command} my-authz-policy --location=global
 
 arguments:
   resource:
@@ -16,5 +20,8 @@ async:
   collection: networksecurity.projects.locations.operations
 
 request: &request
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networksecurity.projects.locations.authorizationPolicies

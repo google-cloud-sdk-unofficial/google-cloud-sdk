@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.forwarding_rules import exceptions as fw_exceptions
 from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
@@ -140,7 +141,7 @@ class UpdateGA(base.UpdateCommand):
     ])
 
     if not has_change:
-      raise calliope_exceptions.ToolException(
+      raise fw_exceptions.ArgumentError(
           'At least one property must be specified.')
 
     # Get replacement.

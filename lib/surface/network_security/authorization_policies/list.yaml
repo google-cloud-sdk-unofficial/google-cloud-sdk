@@ -1,13 +1,20 @@
-release_tracks: [ALPHA]
+release_tracks: [BETA, ALPHA]
 
 help_text:
   brief: |
     List authorization policies.
   description: |
     List all authorization policies in the specified location of the current project.
+  examples: |
+      To list authorization policies in the current project, run:
+
+        $ {command} --location=global
 
 request: &request
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networksecurity.projects.locations.authorizationPolicies
 
 arguments:

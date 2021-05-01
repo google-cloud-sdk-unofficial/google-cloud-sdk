@@ -181,6 +181,10 @@ class UpdateBeta(Update):
 
         $ {command} my-secret --update-labels=foo=bar
 
+      Update the label of a secret using etag.
+
+        $ {command} my-secret --update-labels=foo=bar --etag=\"123\"
+
       Update the expiration of a secret named 'my-secret' using a ttl.
 
         $ {command} my-secret --ttl="600s"
@@ -219,6 +223,7 @@ class UpdateBeta(Update):
     secrets_args.AddSecret(
         parser, purpose='to update', positional=True, required=True)
     labels_util.AddUpdateLabelsFlags(parser)
+    secrets_args.AddSecretEtag(parser)
     secrets_args.AddUpdateExpirationGroup(parser)
     secrets_args.AddUpdateRotationGroup(parser)
     secrets_args.AddUpdateTopicsGroup(parser)
@@ -290,6 +295,7 @@ class UpdateBeta(Update):
         secret_ref=secret_ref,
         labels=labels,
         update_mask=update_mask,
+        etag=args.etag,
         expire_time=args.expire_time,
         ttl=args.ttl,
         topics=topics,

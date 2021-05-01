@@ -333,8 +333,10 @@ class Register(base.CreateCommand):
       docker_credential_data = None
       if args.docker_credential_file:
         try:
-          docker_credential_data = hub_util.Base64EncodedFileContents(
-              args.docker_credential_file)
+          file_content = files.ReadBinaryFileContents(files.ExpandHomeDir(
+              args.docker_credential_file))
+          docker_credential_data = six.ensure_str(file_content,
+                                                  encoding='utf-8')
         except files.Error as e:
           raise exceptions.Error('Could not process {}: {}'.format(
               DOCKER_CREDENTIAL_FILE_FLAG, e))

@@ -48,11 +48,15 @@ class RestoreBackup(base.RestoreCommand):
         '--restore-instance',
         required=True,
         completer=flags.InstanceCompleter,
-        help='Cloud SQL instance ID that will be restored.')
+        help='The ID of the target Cloud SQL instance that the backup is '
+        'restored to.')
     parser.add_argument(
         '--backup-instance',
         completer=flags.InstanceCompleter,
-        help='The ID of the instance that the backup was taken from.')
+        help='The ID of the instance that the backup was taken from. This '
+        'argument must be specified when the backup instance is different '
+        'from the restore instance. If it is not specified, the backup '
+        'instance is considered the same as the restore instance.')
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

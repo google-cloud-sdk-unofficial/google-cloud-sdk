@@ -22,8 +22,8 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import forwarding_rules_utils as utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.forwarding_rules import exceptions
 from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core import yaml_validator
@@ -110,7 +110,7 @@ class Import(base.UpdateCommand):
           stream=data,
           schema_path=self.GetSchemaPath())
     except yaml_validator.ValidationError as e:
-      raise exceptions.ToolException(str(e))
+      raise exceptions.ValidationError(str(e))
 
     # Get existing forwarding rule.
     try:

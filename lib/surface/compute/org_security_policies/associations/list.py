@@ -71,6 +71,6 @@ List.detailed_help = {
         """\
     To list the associations of the folder with ID ``987654321", run:
 
-      $ {command} list-folder=987654321
+      $ {command} --folder=987654321
     """,
 }

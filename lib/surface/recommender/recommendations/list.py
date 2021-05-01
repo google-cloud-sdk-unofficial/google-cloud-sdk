@@ -38,8 +38,10 @@ class List(base.ListCommand):
   r"""List operations for a recommendation.
 
   This command will list all recommendations for a give cloud_entity_id,
-  location and recommender. Currently the following cloud_entity_types are
-  supported, project, billing_account, folder and organization.
+  location and recommender. Supported recommenders can be found here:
+  https://cloud.google.com/recommender/docs/recommenders.
+  Currently the following cloud_entity_types are supported: project,
+  billing_account, folder and organization.
   """
 
   detailed_help = DETAILED_HELP
@@ -58,7 +60,9 @@ class List(base.ListCommand):
         '--recommender',
         metavar='RECOMMENDER',
         required=True,
-        help='Recommender to list recommendations for')
+        help=('Recommender to list recommendations for. Supported recommenders '
+              'can be found here: '
+              'https://cloud.google.com/recommender/docs/recommenders'))
     parser.display_info.AddFormat("""
         table(
           name.basename(): label=RECOMMENDATION_ID,

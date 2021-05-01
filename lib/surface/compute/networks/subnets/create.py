@@ -44,7 +44,8 @@ def _DetailedHelp():
 
 def _AddArgs(parser, include_alpha_logging, include_l7_internal_load_balancing,
              include_aggregate_purpose, include_private_service_connect,
-             include_stack_type, include_ipv6_access_type, api_version):
+             include_stack_type, include_ipv6_access_type, include_l2,
+             api_version):
   """Add subnetwork create arguments to parser."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
 
@@ -216,6 +217,23 @@ def _AddArgs(parser, include_alpha_logging, include_l7_internal_load_balancing,
 
   parser.display_info.AddCacheUpdater(network_flags.NetworksCompleter)
 
+  if include_l2:
+    l2_args = parser.add_group(help='L2 networking specifications.')
+    l2_args.add_argument(
+        '--enable-l2',
+        action='store_true',
+        required=True,
+        help="""\
+        If set to true, enables l2 networking capability on subnetwork.
+        """)
+    l2_args.add_argument(
+        '--vlan',
+        type=int,
+        metavar='VLAN',
+        help="""\
+        Specifies ID of the vlan to tag the subnetwork.
+        """)
+
 
 def GetPrivateIpv6GoogleAccessTypeFlagMapper(messages):
   return arg_utils.ChoiceEnumMapper(
@@ -237,7 +255,7 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
                       include_alpha_logging, include_l7_internal_load_balancing,
                       include_aggregate_purpose,
                       include_private_service_connect, include_stack_type,
-                      include_ipv6_access_type):
+                      include_ipv6_access_type, include_l2):
   """Create the subnet resource."""
   subnetwork = messages.Subnetwork(
       name=subnet_ref.Name(),
@@ -341,13 +359,18 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
         messages.Subnetwork.Ipv6AccessTypeValueValuesEnum(
             args.ipv6_access_type))
 
+  if include_l2 and args.enable_l2:
+    subnetwork.enableL2 = True
+    if args.vlan is not None:
+      subnetwork.vlans.append(args.vlan)
+
   return subnetwork
 
 
 def _Run(args, holder, include_alpha_logging,
          include_l7_internal_load_balancing, include_aggregate_purpose,
          include_private_service_connect, include_stack_type,
-         include_ipv6_access_type):
+         include_ipv6_access_type, include_l2):
   """Issues a list of requests necessary for adding a subnetwork."""
   client = holder.client
 
@@ -364,7 +387,8 @@ def _Run(args, holder, include_alpha_logging,
                                  include_l7_internal_load_balancing,
                                  include_aggregate_purpose,
                                  include_private_service_connect,
-                                 include_stack_type, include_ipv6_access_type)
+                                 include_stack_type, include_ipv6_access_type,
+                                 include_l2)
   request = client.messages.ComputeSubnetworksInsertRequest(
       subnetwork=subnetwork,
       region=subnet_ref.region,
@@ -394,6 +418,7 @@ class Create(base.CreateCommand):
   _include_private_service_connect = False
   _include_stack_type = False
   _include_ipv6_access_type = False
+  _include_l2 = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
 
   detailed_help = _DetailedHelp()
@@ -404,7 +429,7 @@ class Create(base.CreateCommand):
              cls._include_l7_internal_load_balancing,
              cls._include_aggregate_purpose,
              cls._include_private_service_connect, cls._include_stack_type,
-             cls._include_ipv6_access_type, cls._api_version)
+             cls._include_ipv6_access_type, cls._include_l2, cls._api_version)
 
   def Run(self, args):
     """Issues a list of requests necessary for adding a subnetwork."""
@@ -413,7 +438,7 @@ class Create(base.CreateCommand):
                 self._include_l7_internal_load_balancing,
                 self._include_aggregate_purpose,
                 self._include_private_service_connect, self._include_stack_type,
-                self._include_ipv6_access_type)
+                self._include_ipv6_access_type, self._include_l2)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -430,4 +455,5 @@ class CreateAlpha(CreateBeta):
   _include_private_service_connect = True
   _include_stack_type = True
   _include_ipv6_access_type = True
+  _include_l2 = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION

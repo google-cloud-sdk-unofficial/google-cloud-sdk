@@ -145,7 +145,7 @@ class Import(base.CreateCommand):
           'source-uri',
           'must be a path to an object or a directory in Cloud Storage')
 
-    return daisy_utils.RunOVFImportBuild(
+    return daisy_utils.RunInstanceOVFImportBuild(
         args=args,
         compute_client=compute_holder.client,
         instance_name=args.instance_name,

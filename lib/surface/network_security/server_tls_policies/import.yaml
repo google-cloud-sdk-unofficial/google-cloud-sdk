@@ -1,19 +1,26 @@
-release_tracks: [ALPHA]
+release_tracks: [BETA, ALPHA]
 help_text:
   brief: |
-    Import server TLS policy.
+    Import ServerTlsPolicy.
   description: |
-    Import a server TLS policy.
+    Import a ServerTlsPolicy.
+  examples: |
+      To import a ServerTlsPolicy from a YAML file, run:
+
+        $ {command} my-server-tls-policy --source=my-server-tls-policy.yaml --location=global
 
 request:
   collection: networksecurity.projects.locations.serverTlsPolicies
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
 
 arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.network_security.resources:serverTlsPolicy
     help_text: |
-      Name of the server TLS policy to import.
+      Name of the ServerTlsPolicy to import.
 
 async:
   collection: networksecurity.projects.locations.operations
@@ -23,5 +30,8 @@ import:
   create_if_not_exists: true
   create_request:
     collection: networksecurity.projects.locations.serverTlsPolicies
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
     method: create

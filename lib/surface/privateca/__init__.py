@@ -22,7 +22,23 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class PrivateCa(base.Group):
+class PrivateCaBeta(base.Group):
+  """Manage private Certificate Authorities on Google Cloud.
+
+  The privateca command group lets you create and manage private certificate
+  authorities and certificates.
+  """
+
+  category = base.IDENTITY_AND_SECURITY_CATEGORY
+
+  def Filter(self, context, args):
+    del context, args
+    base.DisableUserProjectQuota()
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class PrivateCaGa(base.Group):
   """Manage private Certificate Authorities on Google Cloud.
 
   The privateca command group lets you create and manage private certificate

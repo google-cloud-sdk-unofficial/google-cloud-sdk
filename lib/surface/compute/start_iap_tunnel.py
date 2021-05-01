@@ -30,7 +30,6 @@ from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class StartIapTunnel(base.Command):
   # pylint: disable=line-too-long
   """Starts an IAP TCP forwarding tunnel.
@@ -88,6 +87,11 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
               'listening on a socket.  It is an error to specify '
               '--local-host-port with this, because that flag has no meaning '
               'with this.'))
+    parser.add_argument(
+        '--iap-tunnel-disable-connection-check',
+        default=False,
+        action='store_true',
+        help='Disables the immediate check of the connection.')
 
   def Run(self, args):
     if args.listen_on_stdin and args.IsSpecified('local_host_port'):
@@ -135,36 +139,3 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
     if not port_arg:
       log.status.Print('Picking local unused port [%d].' % local_port)
     return local_host_arg, local_port
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class StartIapTunnelAlphaBeta(StartIapTunnel):
-  # pylint: disable=line-too-long
-  """Starts an IAP TCP forwarding tunnel.
-
-  Starts a tunnel to Cloud Identity-Aware Proxy for TCP forwarding through which
-  another process can create a connection (eg. SSH, RDP) to a Google Compute
-  Engine instance.
-
-  To learn more, see the
-  [IAP for TCP forwarding documentation](https://cloud.google.com/iap/docs/tcp-forwarding-overview).
-
-  ## EXAMPLES
-
-  To open a tunnel to the instances's RDP port on an arbitrary local port, run:
-
-    $ {command} my-instance 3389
-
-  To open a tunnel to the instance's RDP port on a specific local port, run:
-
-    $ {command} my-instance 3389 --local-host-port=localhost:3333
-  """
-
-  @staticmethod
-  def Args(parser):
-    StartIapTunnel.Args(parser)
-    parser.add_argument(
-        '--iap-tunnel-disable-connection-check',
-        default=False,
-        action='store_true',
-        help='Disables the immediate check of the connection.')

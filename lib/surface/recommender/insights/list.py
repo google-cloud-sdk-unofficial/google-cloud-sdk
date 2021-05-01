@@ -39,8 +39,10 @@ class List(base.ListCommand):
   r"""List insights for a cloud entity.
 
   This command will list all insights for a give cloud entity, location and
-  insight type. Currently the following cloud_entity_types are supported,
-  project, billing_account, folder and organization.
+  insight type. Supported insight-types can be found here:
+  https://cloud.google.com/recommender/docs/insights/insight-types. Currently
+  the following cloud_entity_types are supported: project, billing_account,
+  folder and organization.
   """
 
   detailed_help = DETAILED_HELP
@@ -59,7 +61,10 @@ class List(base.ListCommand):
         '--insight-type',
         metavar='INSIGHT_TYPE',
         required=True,
-        help='Insight type to list insights for')
+        help=(
+            'Insight type to list insights for. Supported insight-types can '
+            'be found here: '
+            'https://cloud.google.com/recommender/docs/insights/insight-types'))
     parser.display_info.AddFormat("""
         table(
           name.basename(): label=INSIGHT_ID,

@@ -62,9 +62,20 @@ class CreateBeta(Create):
   Enable version '123' of the secret named 'my-secret':
 
     $ {command} 123 --secret=my-secret
+
+  Enable version '123' of the secret named 'my-secret' using etag:
+
+    $ {command} 123 --secret=my-secret --etag=\"123\"
   """
 
   @staticmethod
   def Args(parser):
     secrets_args.AddVersion(
         parser, purpose='to enable', positional=True, required=True)
+    secrets_args.AddVersionEtag(parser)
+
+  def Run(self, args):
+    version_ref = args.CONCEPTS.version.Parse()
+    result = secrets_api.Versions().Enable(version_ref, etag=args.etag)
+    secrets_log.Versions().Enabled(version_ref)
+    return result

@@ -52,13 +52,14 @@ class SetAutoscaling(base.Command):
     managed_instance_groups_utils.AddAutoscalerArgs(parser=parser)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
+    managed_instance_groups_utils.AddPredictiveAutoscaling(parser,
+                                                           standard=False)
 
   def CreateAutoscalerResource(self,
                                client,
                                resources,
                                igm_ref,
-                               args,
-                               predictive=False):
+                               args):
     autoscaler = managed_instance_groups_utils.AutoscalerForMigByRef(
         client, resources, igm_ref)
     autoscaler_name = getattr(autoscaler, 'name', None)
@@ -69,8 +70,7 @@ class SetAutoscaling(base.Command):
         client.messages,
         igm_ref,
         autoscaler_name,
-        autoscaler,
-        predictive=predictive)
+        autoscaler)
     return autoscaler_resource, new_one
 
   def _SetAutoscalerFromFile(
@@ -178,7 +178,7 @@ class SetAutoscalingBeta(SetAutoscaling):
         igm_ref, client)
 
     autoscaler_resource, is_new = self.CreateAutoscalerResource(
-        client, holder.resources, igm_ref, args, predictive=True)
+        client, holder.resources, igm_ref, args)
 
     managed_instance_groups_utils.ValidateGeneratedAutoscalerIsValid(
         args, autoscaler_resource)
@@ -235,8 +235,7 @@ class SetAutoscalingAlpha(SetAutoscaling):
         client,
         holder.resources,
         igm_ref,
-        args,
-        predictive=True)
+        args)
 
     managed_instance_groups_utils.ValidateGeneratedAutoscalerIsValid(
         args, autoscaler_resource)

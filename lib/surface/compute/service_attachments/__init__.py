@@ -23,12 +23,14 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ServiceAttachments(base.Group):
-  """List, create, and delete service attachments."""
+  """List, create, describe, update and delete service attachments."""
 
 
 ServiceAttachments.category = base.NETWORKING_CATEGORY
 
 ServiceAttachments.detailed_help = {
-    'brief': 'Manage Compute Engine service attachment resources.',
-    'DESCRIPTION': 'List, create, and delete service attachments.',
+    'brief':
+        'Manage Compute Engine service attachment resources.',
+    'DESCRIPTION':
+        'List, create, describe, update and delete service attachments.',
 }

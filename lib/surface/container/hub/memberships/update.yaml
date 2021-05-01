@@ -22,7 +22,7 @@
 
   arguments:
     resource:
-      spec: !REF googlecloudsdk.command_lib.container.hub.memberships.resources:membership
+      spec: !REF googlecloudsdk.command_lib.container.hub.resources:membership
       help_text: membership resource representing a cluster in Hub.
     params:
     - api_field: membership.description

@@ -65,7 +65,7 @@ class Delete(base.DeleteCommand):
     operation = dataproc.client.projects_regions_clusters.Delete(request)
 
     if args.async_:
-      log.status.write('Deleting [{0}] with operation [{1}].'.format(
+      log.status.Print('Deleting [{0}] with operation [{1}].'.format(
           cluster_ref, operation.name))
       return operation
 

@@ -17,7 +17,7 @@
   arguments:
     resource:
       help_text: The project to list features for.
-      spec: !REF googlecloudsdk.command_lib.container.hub.memberships.resources:project
+      spec: !REF googlecloudsdk.command_lib.container.hub.resources:project
       override_resource_collection: true
 
   response:

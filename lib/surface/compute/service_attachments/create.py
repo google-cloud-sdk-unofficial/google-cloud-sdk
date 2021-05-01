@@ -55,6 +55,7 @@ def _DetailedHelp():
   }
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a service attachment."""
 
@@ -67,11 +68,11 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     cls.SERVICE_ATTACHMENT_ARG = flags.ServiceAttachmentArgument()
     cls.SERVICE_ATTACHMENT_ARG.AddArgument(parser, operation_type='create')
-    cls.PRODUCER_FORWARDING_RULE_ARG = \
-        forwarding_rule_flags.ForwardingRuleArgumentForServiceAttachment()
+    cls.PRODUCER_FORWARDING_RULE_ARG = forwarding_rule_flags.ForwardingRuleArgumentForServiceAttachment(
+    )
     cls.PRODUCER_FORWARDING_RULE_ARG.AddArgument(parser)
-    cls.NAT_SUBNETWORK_ARG = \
-        subnetwork_flags.SubnetworkArgumentForServiceAttachment()
+    cls.NAT_SUBNETWORK_ARG = subnetwork_flags.SubnetworkArgumentForServiceAttachment(
+    )
     cls.NAT_SUBNETWORK_ARG.AddArgument(parser)
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -79,7 +80,9 @@ class Create(base.CreateCommand):
 
     flags.AddDescription(parser)
     flags.AddConnectionPreference(parser)
-    flags.AddEnableProxyProtocol(parser)
+    flags.AddEnableProxyProtocolForCreate(parser)
+    flags.AddConsumerRejectList(parser)
+    flags.AddConsumerAcceptList(parser)
 
   def Run(self, args):
     """Issue a service attachment INSERT request."""
@@ -87,9 +90,8 @@ class Create(base.CreateCommand):
     client = holder.client
     service_attachment_ref = self.SERVICE_ATTACHMENT_ARG.ResolveAsResource(
         args, holder.resources, default_scope=compute_scope.ScopeEnum.REGION)
-    producer_forwarding_rule_ref = \
-        self.PRODUCER_FORWARDING_RULE_ARG.ResolveAsResource(args,
-                                                            holder.resources)
+    producer_forwarding_rule_ref = self.PRODUCER_FORWARDING_RULE_ARG.ResolveAsResource(
+        args, holder.resources)
     nat_subnetwork_refs = self.NAT_SUBNETWORK_ARG.ResolveAsResource(
         args,
         holder.resources,
@@ -101,8 +103,7 @@ class Create(base.CreateCommand):
     ]
     connection_preference = service_attachments_utils.GetConnectionPreference(
         args, client.messages)
-    enable_proxy_protocol = service_attachments_utils.GetEnableProxyProtocol(
-        args)
+    enable_proxy_protocol = args.enable_proxy_protocol
 
     service_attachment = client.messages.ServiceAttachment(
         description=args.description,
@@ -111,6 +112,13 @@ class Create(base.CreateCommand):
         connectionPreference=connection_preference,
         enableProxyProtocol=enable_proxy_protocol,
         producerForwardingRule=producer_forwarding_rule_ref.SelfLink())
+
+    if args.IsSpecified('consumer_reject_list'):
+      service_attachment.consumerRejectLists = args.consumer_reject_list
+    if args.IsSpecified('consumer_accept_list'):
+      accept_list = service_attachments_utils.GetConsumerAcceptList(
+          args, client.messages)
+      service_attachment.consumerAcceptLists = accept_list
 
     request = client.messages.ComputeServiceAttachmentsInsertRequest(
         project=service_attachment_ref.project,

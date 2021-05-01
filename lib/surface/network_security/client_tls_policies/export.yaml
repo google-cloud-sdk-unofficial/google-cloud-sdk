@@ -1,16 +1,23 @@
-release_tracks: [ALPHA]
+release_tracks: [BETA, ALPHA]
 help_text:
   brief: |
-    Export client TLS policy.
+    Export ClientTlsPolicy.
   description: |
-    Export a client TLS policy.
+    Export a ClientTlsPolicy.
+  examples: |
+      To export a ClientTlsPolicy, run:
+
+        $ {command} my-client-tls-policy --destination=my-client-tls-policy.yaml --location=global
 
 request:
   collection: networksecurity.projects.locations.clientTlsPolicies
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
 
 arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.network_security.resources:clientTlsPolicy
     help_text: |
-      Name of the client TLS policy to export.
+      Name of the ClientTlsPolicy to export.

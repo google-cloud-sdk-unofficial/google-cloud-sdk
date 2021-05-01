@@ -36,6 +36,7 @@ class Update(base.UpdateCommand):
 
   with_rules = False
   with_tcp_time_wait_timeout = False
+  with_dynamic_port_allocation = False
 
   @classmethod
   def Args(cls, parser):
@@ -51,7 +52,8 @@ class Update(base.UpdateCommand):
         parser,
         for_create=False,
         with_rules=cls.with_rules,
-        with_tcp_time_wait_timeout=cls.with_tcp_time_wait_timeout)
+        with_tcp_time_wait_timeout=cls.with_tcp_time_wait_timeout,
+        with_dynamic_port_allocation=cls.with_dynamic_port_allocation)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -70,7 +72,8 @@ class Update(base.UpdateCommand):
         args,
         holder,
         with_rules=self.with_rules,
-        with_tcp_time_wait_timeout=self.with_tcp_time_wait_timeout)
+        with_tcp_time_wait_timeout=self.with_tcp_time_wait_timeout,
+        with_dynamic_port_allocation=self.with_dynamic_port_allocation)
 
     request_type = messages.ComputeRoutersPatchRequest
     result = service.Patch(
@@ -118,6 +121,7 @@ class UpdateAlpha(Update):
 
   with_rules = True
   with_tcp_time_wait_timeout = True
+  with_dynamic_port_allocation = True
 
 
 Update.detailed_help = {

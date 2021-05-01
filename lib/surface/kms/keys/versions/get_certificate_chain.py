@@ -61,7 +61,8 @@ def _GetCertificateChainPem(chains, chain_type):
       '{} is not a valid chain type.'.format(chain_type))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class GetCertificateChain(base.DescribeCommand):
   r"""Get a certificate chain for a given version.
 

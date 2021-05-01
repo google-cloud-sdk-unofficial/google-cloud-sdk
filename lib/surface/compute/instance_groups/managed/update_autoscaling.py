@@ -44,11 +44,10 @@ class NoMatchingAutoscalerFoundError(exceptions.Error):
 class UpdateAutoscaling(base.Command):
   """Update autoscaling parameters of a managed instance group."""
 
-  predictive = False
-
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
+    mig_utils.AddPredictiveAutoscaling(parser, standard=False)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -80,8 +79,7 @@ class UpdateAutoscaling(base.Command):
       new_autoscaler.autoscalingPolicy.scaleInControl = \
         mig_utils.BuildScaleIn(args, client.messages)
 
-    if self.predictive and args.IsSpecified(
-        'cpu_utilization_predictive_method'):
+    if args.IsSpecified('cpu_utilization_predictive_method'):
       cpu_predictive_enum = client.messages.AutoscalingPolicyCpuUtilization.PredictiveMethodValueValuesEnum
       new_autoscaler.autoscalingPolicy.cpuUtilization = client.messages.AutoscalingPolicyCpuUtilization(
       )
@@ -115,8 +113,6 @@ class UpdateAutoscaling(base.Command):
 class UpdateAutoscalingBeta(UpdateAutoscaling):
   """Update autoscaling parameters of a managed instance group."""
 
-  predictive = True
-
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
@@ -126,8 +122,6 @@ class UpdateAutoscalingBeta(UpdateAutoscaling):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAutoscalingAlpha(UpdateAutoscalingBeta):
   """Update autoscaling parameters of a managed instance group."""
-
-  predictive = True
 
   @staticmethod
   def Args(parser):

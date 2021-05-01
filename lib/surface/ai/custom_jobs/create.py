@@ -21,11 +21,22 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.ai.custom_jobs import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
-from googlecloudsdk.command_lib.ai import custom_jobs_util
 from googlecloudsdk.command_lib.ai import endpoint_util
-from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import validation
+from googlecloudsdk.command_lib.ai.custom_jobs import custom_jobs_util
+from googlecloudsdk.command_lib.ai.custom_jobs import flags
 from googlecloudsdk.core import log
+
+
+_CUSTOM_JOB_CREATION_DISPLAY_MESSAGE = """\
+Custom Job [{id}] submitted successfully.
+
+Your job is still active. You may view the status of your job with the command
+
+  $ gcloud alpha ai custom-jobs describe {id}
+
+Job State: {state}\
+"""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -50,7 +61,7 @@ class Create(base.CreateCommand):
           validation.GetAndValidateKmsKey(args), args.network,
           args.service_account)
       log.status.Print(
-          constants.CUSTOM_JOB_CREATION_DISPLAY_MESSAGE.format(
+          _CUSTOM_JOB_CREATION_DISPLAY_MESSAGE.format(
               id=custom_jobs_util.ParseJobName(response.name),
               state=response.state))
       return response

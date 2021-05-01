@@ -36,6 +36,7 @@ class Create(base.CreateCommand):
 
   with_rules = False
   with_tcp_time_wait_timeout = False
+  with_dynamic_port_allocation = False
 
   @classmethod
   def Args(cls, parser):
@@ -51,7 +52,8 @@ class Create(base.CreateCommand):
         parser,
         for_create=True,
         with_rules=cls.with_rules,
-        with_tcp_time_wait_timeout=cls.with_tcp_time_wait_timeout)
+        with_tcp_time_wait_timeout=cls.with_tcp_time_wait_timeout,
+        with_dynamic_port_allocation=cls.with_dynamic_port_allocation)
 
   def Run(self, args):
     """See base.CreateCommand."""
@@ -69,7 +71,8 @@ class Create(base.CreateCommand):
         args,
         holder,
         with_rules=self.with_rules,
-        with_tcp_time_wait_timeout=self.with_tcp_time_wait_timeout)
+        with_tcp_time_wait_timeout=self.with_tcp_time_wait_timeout,
+        with_dynamic_port_allocation=self.with_dynamic_port_allocation)
 
     replacement.nats.append(nat)
 
@@ -118,6 +121,7 @@ class CreateAlpha(Create):
 
   with_rules = True
   with_tcp_time_wait_timeout = True
+  with_dynamic_port_allocation = True
 
 
 Create.detailed_help = {

@@ -83,9 +83,34 @@ class DeleteBeta(Delete):
   Delete a secret 'my-secret':
 
     $ {command} my-secret
+
+  Delete a secret 'my-secret' using etag:
+
+    $ {command} my-secret --etag=\"123\"
   """
 
   @staticmethod
   def Args(parser):
     secrets_args.AddSecret(
         parser, purpose='to delete', positional=True, required=True)
+    secrets_args.AddSecretEtag(parser)
+
+  def Run(self, args):
+    messages = secrets_api.GetMessages()
+    secret_ref = args.CONCEPTS.secret.Parse()
+
+    # List all secret versions and parse their refs
+    versions = secrets_api.Versions().ListWithPager(
+        secret_ref=secret_ref, limit=9999)
+    active_version_count = 0
+    for version in versions:
+      if version.state != messages.SecretVersion.StateValueValuesEnum.DESTROYED:
+        active_version_count += 1
+
+    msg = self.CONFIRM_DELETE_MESSAGE.format(
+        secret=secret_ref.Name(), num_versions=active_version_count)
+    console_io.PromptContinue(msg, throw_if_unattended=True, cancel_on_no=True)
+
+    result = secrets_api.Secrets().Delete(secret_ref, etag=args.etag)
+    secrets_log.Secrets().Deleted(secret_ref)
+    return result

@@ -172,6 +172,11 @@ class BetaUpdate(Update):
   def Args(parser):
     Update.CommonArgs(parser)
 
+    # Flags specific to managed CR
+    managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddBinAuthzPolicyFlags(managed_group)
+    flags.AddBinAuthzBreakglassFlag(managed_group)
+
     # Flags not specific to any platform
     flags.AddHttp2Flag(parser)
 

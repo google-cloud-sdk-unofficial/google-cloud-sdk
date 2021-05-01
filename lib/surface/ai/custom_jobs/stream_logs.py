@@ -22,8 +22,9 @@ from googlecloudsdk.api_lib.ai.custom_jobs import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
-from googlecloudsdk.command_lib.ai import flags
+from googlecloudsdk.command_lib.ai import flags as common_flags
 from googlecloudsdk.command_lib.ai import log_util
+from googlecloudsdk.command_lib.ai.custom_jobs import flags as custom_job_flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -39,8 +40,8 @@ class StreamLogs(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddCustomJobResourceArg(parser, 'to fetch stream log')
-    flags.AddStreamLogsFlags(parser)
+    custom_job_flags.AddCustomJobResourceArg(parser, 'to fetch stream log')
+    common_flags.AddStreamLogsFlags(parser)
     parser.display_info.AddFormat(log_util.LOG_FORMAT)
 
   def Run(self, args):
