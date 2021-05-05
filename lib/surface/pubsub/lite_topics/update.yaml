@@ -19,7 +19,7 @@ request:
 arguments:
   resource:
     help_text: Topic to update.
-    spec: !REF googlecloudsdk.command_lib.pubsub.resources:lite-topic
+    spec: !REF googlecloudsdk.command_lib.pubsub.resources:lite_topic
 
   params:
   - group:

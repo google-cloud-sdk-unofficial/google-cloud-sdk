@@ -327,6 +327,7 @@ def AddServiceProxyArgsToMetadata(args):
     service_proxy_config = collections.OrderedDict()
     proxy_spec = collections.OrderedDict()
 
+    service_proxy_config['_disclaimer'] = service_proxy_aux_data.DISCLAIMER
     service_proxy_config['api-version'] = '0.2'
 
     # add --service-proxy flag data to metadata.

@@ -116,7 +116,9 @@ class Create(base.CreateCommand):
     flags.AddSubjectFlags(subject_group)
     reusable_config_group = key_generation_group.add_group(
         mutex=True, help='The x509 configuration used for this certificate.')
-    flags.AddInlineReusableConfigFlags(reusable_config_group, is_ca=False)
+    flags.AddInlineReusableConfigFlags(reusable_config_group,
+                                       is_ca_command=False,
+                                       default_max_chain_length=0)
 
     cert_arg = 'CERTIFICATE'
     concept_parsers.ConceptParser([
@@ -202,7 +204,7 @@ class Create(base.CreateCommand):
     config.publicKey.key = public_key
     config.publicKey.type = self.messages.PublicKey.TypeValueValuesEnum.PEM_RSA_KEY
     config.reusableConfig = flags.ParseReusableConfig(
-        args, location, is_ca=args.is_ca_cert)
+        args, location, is_ca_command=args.is_ca_cert)
     config.subjectConfig = flags.ParseSubjectFlags(args, is_ca=args.is_ca_cert)
 
     return config

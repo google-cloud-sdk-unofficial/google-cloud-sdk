@@ -44,8 +44,12 @@ class ConfigureDocker(base.Command):
   credential helper for all Google-supported Docker registries. If the Docker
   configuration already contains a `credHelper` entry, it will be overwritten.
 
-  Note, `docker` and `gcloud` need to be on the same system `PATH` to work
+  Note: `docker` and `gcloud` need to be on the same system `PATH` to work
   correctly.
+
+  Note: This command will not work for `docker` installed via Snap, as the
+  `docker` snap package does not currently provide an interface for credential
+  helpers.
 
   For more details on Docker credential helpers, see
   [](https://docs.docker.com/engine/reference/commandline/login/#credential-helpers).

@@ -55,11 +55,24 @@ class Create(base.CreateCommand):
     region = region_ref.AsDict()['locationsId']
     with endpoint_util.AiplatformEndpointOverrides(
         version=constants.BETA_VERSION, region=region):
-      response = client.CustomJobsClient(version=constants.BETA_VERSION).Create(
-          region_ref.RelativeName(), args.worker_pool_spec, args.config,
-          args.display_name, args.python_package_uris, args.args, args.command,
-          validation.GetAndValidateKmsKey(args), args.network,
-          args.service_account)
+      api_client = client.CustomJobsClient(version=constants.BETA_VERSION)
+
+      job_spec = custom_jobs_util.ConstructCustomJobSpec(
+          api_client,
+          config_path=args.config,
+          specs=args.worker_pool_spec,
+          network=args.network,
+          service_account=args.service_account,
+          python_package_uri=args.python_package_uris,
+          args=args.args,
+          command=args.command)
+      validation.ValidateWorkerPoolSpec(job_spec.workerPoolSpecs)
+
+      response = api_client.Create(
+          parent=region_ref.RelativeName(),
+          display_name=args.display_name,
+          job_spec=job_spec,
+          kms_key_name=validation.GetAndValidateKmsKey(args))
       log.status.Print(
           _CUSTOM_JOB_CREATION_DISPLAY_MESSAGE.format(
               id=custom_jobs_util.ParseJobName(response.name),

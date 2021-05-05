@@ -30,7 +30,7 @@ from googlecloudsdk.command_lib.compute.instance_groups.managed import rolling_a
 from googlecloudsdk.command_lib.compute.managed_instance_groups import update_instances_utils
 
 
-def _AddArgs(parser, supports_min_ready=False):
+def _AddArgs(parser, supports_min_ready=False, supports_graceful_update=False):
   """Adds args."""
   instance_groups_managed_flags.AddTypeArg(parser)
   instance_groups_managed_flags.AddMaxSurgeArg(parser)
@@ -59,6 +59,10 @@ def _AddArgs(parser, supports_min_ready=False):
             'Each version has the following format: '
             'template=TEMPLATE,target-size=FIXED_OR_PERCENT,[name=NAME]'))
   instance_groups_managed_flags.AddForceArg(parser)
+  if supports_graceful_update:
+    instance_groups_managed_flags.AddMinimalActionArg(parser, False, 'replace')
+    instance_groups_managed_flags.AddMostDisruptiveActionArg(parser, False,
+                                                             None)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -128,14 +132,27 @@ class StartUpdate(base.Command):
     for version in versions:
       if not version.name:
         version.name = igm_version_names.get(version.instanceTemplate)
-    minimal_action = (client.messages.InstanceGroupManagerUpdatePolicy.
-                      MinimalActionValueValuesEnum.REPLACE)
 
     update_policy = client.messages.InstanceGroupManagerUpdatePolicy(
         maxSurge=max_surge,
         maxUnavailable=max_unavailable,
-        minimalAction=minimal_action,
         type=update_policy_type)
+
+    # minimal_action is only available in alpha and beta APIs
+    if args.IsKnownAndSpecified('minimal_action'):
+      update_policy.minimalAction = (
+          update_instances_utils.ParseInstanceActionFlag)(
+              '--minimal-action', args.minimal_action,
+              client.messages.InstanceGroupManagerUpdatePolicy
+              .MinimalActionValueValuesEnum)
+    # most_disruptive_allowed_action is only available in alpha and beta APIs
+    if args.IsKnownAndSpecified('most_disruptive_allowed_action'):
+      update_policy.mostDisruptiveAllowedAction = (
+          update_instances_utils.ParseInstanceActionFlag)(
+              '--most-disruptive-allowed-action',
+              args.most_disruptive_allowed_action,
+              client.messages.InstanceGroupManagerUpdatePolicy
+              .MostDisruptiveAllowedActionValueValuesEnum)
     # min_ready is available in alpha and beta APIs only
     if hasattr(args, 'min_ready'):
       update_policy.minReadySec = args.min_ready
@@ -173,7 +190,9 @@ class StartUpdateBeta(StartUpdate):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, supports_min_ready=True)
+    _AddArgs(parser=parser,
+             supports_min_ready=True,
+             supports_graceful_update=True)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
@@ -186,3 +205,5 @@ StartUpdate.detailed_help = {
         *{command}* updates instances in a managed instance group,
         according to the given versions and the given update policy."""
 }
+
+StartUpdateBeta.detailed_help = StartUpdate.detailed_help

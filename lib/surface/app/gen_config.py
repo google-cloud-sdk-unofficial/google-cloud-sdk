@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """The gen-config command."""
+# TODO(b/172812887) - Delete this command entirely; it's PY2 only.
 
 from __future__ import absolute_import
 from __future__ import division

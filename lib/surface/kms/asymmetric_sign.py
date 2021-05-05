@@ -95,12 +95,11 @@ class AsymmetricSign(base.Command):
   def _VerifyResponseIntegrityFields(self, req, resp):
     """Verifies integrity fields in AsymmetricSignResponse."""
 
-    # TODO(b/170470282) Uncomment when the server populates the name field.
-    # # Verify resource name.
-    # if req.name != resp.name:
-    #   raise e2e_integrity.ResourceNameVerificationError(
-    #       e2e_integrity.GetResourceNameMismatchErrorMessage(
-    #           req.name, resp.name))
+    # Verify resource name.
+    if req.name != resp.name:
+      raise e2e_integrity.ResourceNameVerificationError(
+          e2e_integrity.GetResourceNameMismatchErrorMessage(
+              req.name, resp.name))
 
     # digest_crc32c was verified server-side.
     if not resp.verifiedDigestCrc32c:

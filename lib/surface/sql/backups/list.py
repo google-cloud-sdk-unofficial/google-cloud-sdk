@@ -48,7 +48,8 @@ class List(base.ListCommand):
         id,
         windowStartTime.iso(),
         error.code.yesno(no="-"):label=ERROR,
-        status
+        status,
+        instance
       )
     """)
     parser.display_info.AddCacheUpdater(None)

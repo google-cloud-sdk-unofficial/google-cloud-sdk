@@ -308,6 +308,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       workload_metadata=get_default('workload_metadata'),
       workload_metadata_from_node=get_default('workload_metadata_from_node'),
       enable_vertical_pod_autoscaling=get_default('enable_vertical_pod_autoscaling'),
+      enable_experimental_vertical_pod_autoscaling=get_default('enable_experimental_vertical_pod_autoscaling'),
       enable_autoprovisioning=get_default('enable_autoprovisioning'),
       autoprovisioning_config_file=get_default('autoprovisioning_config_file'),
       autoprovisioning_service_account=get_default('autoprovisioning_service_account'),
@@ -512,7 +513,7 @@ flags_to_add = {
         'tpu':
             flags.AddTpuFlags,
         'verticalpodautoscaling':
-            flags.AddVerticalPodAutoscalingFlag,
+            flags.AddVerticalPodAutoscalingFlags,
         'workloadidentity':
             flags.AddWorkloadIdentityFlags,
         'workloadmetadata':
@@ -521,90 +522,166 @@ flags_to_add = {
     BETA: {
         'accelerator':
             (lambda p: flags.AddAcceleratorArgs(p, enable_gpu_partition=True)),
-        'additionalzones': _AddAdditionalZonesGroup,
-        'addons': flags.AddBetaAddonsFlags,
-        'allowrouteoverlap': flags.AddAllowRouteOverlapFlag,
-        'args': _Args,
-        'autorepair': AddAutoRepair,
-        'autoprovisioning': AddAutoprovisioning,
-        'autoscalingprofiles': flags.AddAutoscalingProfilesFlag,
-        'authenticatorsecurity': flags.AddAuthenticatorSecurityGroupFlags,
-        'autoupgrade': AddEnableAutoUpgradeWithDefault,
-        'basicauth': flags.AddBasicAuthFlags,
-        'binauthz': flags.AddEnableBinAuthzFlag,
-        'bootdiskkms': flags.AddBootDiskKmsKeyFlag,
-        'cloudlogging': flags.AddEnableCloudLogging,
-        'cloudmonitoring': flags.AddEnableCloudMonitoring,
-        'cloudrunalpha': flags.AddEnableCloudRunAlphaFlag,
-        'cloudrunconfig': flags.AddCloudRunConfigFlag,
-        'clusterautoscaling': flags.AddClusterAutoscalingFlags,
-        'clusterdns': flags.AddClusterDNSFlags,
-        'clusterversion': flags.AddClusterVersionFlag,
-        'confidentialnodes': flags.AddEnableConfidentialNodesFlag,
-        'databaseencryption': flags.AddDatabaseEncryptionFlag,
+        'additionalzones':
+            _AddAdditionalZonesGroup,
+        'addons':
+            flags.AddBetaAddonsFlags,
+        'allowrouteoverlap':
+            flags.AddAllowRouteOverlapFlag,
+        'args':
+            _Args,
+        'autorepair':
+            AddAutoRepair,
+        'autoprovisioning':
+            AddAutoprovisioning,
+        'autoscalingprofiles':
+            flags.AddAutoscalingProfilesFlag,
+        'authenticatorsecurity':
+            flags.AddAuthenticatorSecurityGroupFlags,
+        'autoupgrade':
+            AddEnableAutoUpgradeWithDefault,
+        'basicauth':
+            flags.AddBasicAuthFlags,
+        'binauthz':
+            flags.AddEnableBinAuthzFlag,
+        'bootdiskkms':
+            flags.AddBootDiskKmsKeyFlag,
+        'cloudlogging':
+            flags.AddEnableCloudLogging,
+        'cloudmonitoring':
+            flags.AddEnableCloudMonitoring,
+        'cloudrunalpha':
+            flags.AddEnableCloudRunAlphaFlag,
+        'cloudrunconfig':
+            flags.AddCloudRunConfigFlag,
+        'clusterautoscaling':
+            flags.AddClusterAutoscalingFlags,
+        'clusterdns':
+            flags.AddClusterDNSFlags,
+        'clusterversion':
+            flags.AddClusterVersionFlag,
+        'confidentialnodes':
+            flags.AddEnableConfidentialNodesFlag,
+        'databaseencryption':
+            flags.AddDatabaseEncryptionFlag,
         'datapath': (lambda p: flags.AddDatapathProviderFlag(p, hidden=True)),
-        'dataplanev2': flags.AddDataplaneV2Flag,
-        'disabledefaultsnat': AddDisableDefaultSnatFlagForClusterCreate,
-        'disksize': flags.AddDiskSizeFlag,
-        'disktype': flags.AddDiskTypeFlag,
-        'gcfs': flags.AddEnableGcfsFlag,
-        'imageflags': flags.AddImageFlagsCreate,
-        'intranodevisibility': flags.AddEnableIntraNodeVisibilityFlag,
-        'ipalias': flags.AddIpAliasCoreFlag,
-        'ipalias_additional': flags.AddIPAliasRelatedFlags,
-        'issueclientcert': flags.AddIssueClientCertificateFlag,
-        'istioconfig': flags.AddIstioConfigFlag,
-        'kubernetesalpha': flags.AddEnableKubernetesAlphaFlag,
-        'kubernetesobjectsexport': AddKubernetesObjectsExportFlag,
-        'gvnic': flags.AddEnableGvnicFlag,
-        'gkeoidc': flags.AddGkeOidcFlag,
-        'ilbsubsetting': flags.AddILBSubsettingFlags,
-        'localssds': flags.AddLocalSSDsBetaFlags,
-        'loggingmonitoring': flags.AddEnableLoggingMonitoringSystemOnlyFlag,
-        'labels': flags.AddLabelsFlag,
-        'legacyauth': flags.AddEnableLegacyAuthorizationFlag,
-        'machinetype': flags.AddMachineTypeFlag,
-        'maintenancewindow': flags.AddMaintenanceWindowGroup,
-        'masterglobalaccess': flags.AddMasterGlobalAccessFlag,
-        'masterauth': flags.AddMasterAuthorizedNetworksFlags,
-        'mastersignals': AddMasterSignalsFlag,
-        'maxnodes': flags.AddMaxNodesPerPool,
-        'maxpodspernode': flags.AddMaxPodsPerNodeFlag,
+        'dataplanev2':
+            flags.AddDataplaneV2Flag,
+        'disabledefaultsnat':
+            AddDisableDefaultSnatFlagForClusterCreate,
+        'disksize':
+            flags.AddDiskSizeFlag,
+        'disktype':
+            flags.AddDiskTypeFlag,
+        'gcfs':
+            flags.AddEnableGcfsFlag,
+        'imageflags':
+            flags.AddImageFlagsCreate,
+        'intranodevisibility':
+            flags.AddEnableIntraNodeVisibilityFlag,
+        'ipalias':
+            flags.AddIpAliasCoreFlag,
+        'ipalias_additional':
+            flags.AddIPAliasRelatedFlags,
+        'issueclientcert':
+            flags.AddIssueClientCertificateFlag,
+        'istioconfig':
+            flags.AddIstioConfigFlag,
+        'kubernetesalpha':
+            flags.AddEnableKubernetesAlphaFlag,
+        'kubernetesobjectsexport':
+            AddKubernetesObjectsExportFlag,
+        'gvnic':
+            flags.AddEnableGvnicFlag,
+        'gkeoidc':
+            flags.AddGkeOidcFlag,
+        'ilbsubsetting':
+            flags.AddILBSubsettingFlags,
+        'localssds':
+            flags.AddLocalSSDsBetaFlags,
+        'loggingmonitoring':
+            flags.AddEnableLoggingMonitoringSystemOnlyFlag,
+        'labels':
+            flags.AddLabelsFlag,
+        'legacyauth':
+            flags.AddEnableLegacyAuthorizationFlag,
+        'machinetype':
+            flags.AddMachineTypeFlag,
+        'maintenancewindow':
+            flags.AddMaintenanceWindowGroup,
+        'masterglobalaccess':
+            flags.AddMasterGlobalAccessFlag,
+        'masterauth':
+            flags.AddMasterAuthorizedNetworksFlags,
+        'mastersignals':
+            AddMasterSignalsFlag,
+        'maxnodes':
+            flags.AddMaxNodesPerPool,
+        'maxpodspernode':
+            flags.AddMaxPodsPerNodeFlag,
         'maxunavailable':
             (lambda p: flags.AddMaxUnavailableUpgradeFlag(p, is_create=True)),
-        'metadata': flags.AddMetadataFlags,
-        'mincpu': flags.AddMinCpuPlatformFlag,
-        'networkpolicy': flags.AddNetworkPolicyFlags,
-        'nodetaints': flags.AddNodeTaintsFlag,
-        'nodeidentity': flags.AddClusterNodeIdentityFlags,
-        'nodeversion': flags.AddNodeVersionFlag,
-        'nodelabels': flags.AddNodeLabelsFlag,
-        'notificationconfig': flags.AddNotificationConfigFlag,
-        'num_nodes': flags.AddNumNodes,
-        'podsecuritypolicy': flags.AddPodSecurityPolicyFlag,
-        'preemptible': flags.AddPreemptibleFlag,
-        'privatecluster': AddPrivateClusterDeprecated,
+        'metadata':
+            flags.AddMetadataFlags,
+        'mincpu':
+            flags.AddMinCpuPlatformFlag,
+        'networkpolicy':
+            flags.AddNetworkPolicyFlags,
+        'nodetaints':
+            flags.AddNodeTaintsFlag,
+        'nodeidentity':
+            flags.AddClusterNodeIdentityFlags,
+        'nodeversion':
+            flags.AddNodeVersionFlag,
+        'nodelabels':
+            flags.AddNodeLabelsFlag,
+        'notificationconfig':
+            flags.AddNotificationConfigFlag,
+        'num_nodes':
+            flags.AddNumNodes,
+        'podsecuritypolicy':
+            flags.AddPodSecurityPolicyFlag,
+        'preemptible':
+            flags.AddPreemptibleFlag,
+        'privatecluster':
+            AddPrivateClusterDeprecated,
         'privateipv6type': (lambda p: AddPrivateIPv6Flag('v1beta1', p)),
-        'releasechannel': flags.AddReleaseChannelFlag,
-        'resourceusageexport': flags.AddResourceUsageExportFlags,
-        'reservationaffinity': flags.AddReservationAffinityFlags,
-        'shieldedinstance': flags.AddShieldedInstanceFlags,
-        'shieldednodes': flags.AddEnableShieldedNodesFlags,
-        'stackdriver': flags.AddEnableStackdriverKubernetesFlag,
+        'releasechannel':
+            flags.AddReleaseChannelFlag,
+        'resourceusageexport':
+            flags.AddResourceUsageExportFlags,
+        'reservationaffinity':
+            flags.AddReservationAffinityFlags,
+        'shieldedinstance':
+            flags.AddShieldedInstanceFlags,
+        'shieldednodes':
+            flags.AddEnableShieldedNodesFlags,
+        'stackdriver':
+            flags.AddEnableStackdriverKubernetesFlag,
         'surgeupgrade': (lambda p: flags.AddSurgeUpgradeFlag(p, default=1)),
-        'systemconfig': lambda p: flags.AddSystemConfigFlag(p, hidden=False),
-        'tags': flags.AddTagsCreate,
-        'tpu': AddTpuWithServiceNetworking,
-        'verticalpodautoscaling': flags.AddVerticalPodAutoscalingFlag,
-        'workloadAlts': flags.AddWorkloadAltsFlags,
-        'workloadcertificates': flags.AddWorkloadCertificatesFlags,
+        'systemconfig':
+            lambda p: flags.AddSystemConfigFlag(p, hidden=False),
+        'tags':
+            flags.AddTagsCreate,
+        'tpu':
+            AddTpuWithServiceNetworking,
+        'verticalpodautoscaling':
+            flags.AddVerticalPodAutoscalingFlagsExperimental,
+        'workloadAlts':
+            flags.AddWorkloadAltsFlags,
+        'workloadcertificates':
+            flags.AddWorkloadCertificatesFlags,
         'workloadidentity': (lambda p: flags.AddWorkloadIdentityFlags(p, True)),
         'workloadmetadata':
             (lambda p: flags.AddWorkloadMetadataFlag(p, use_mode=False)),
-        'workloadmonitoringeap': flags.AddEnableWorkloadMonitoringEapFlag,
-        'privateEndpointSubnetwork': flags.AddPrivateEndpointSubnetworkFlag,
-        'crossConnectNetworks': flags.AddCrossConnectSubnetworksFlag,
-        'enableserviceexternalips': flags.AddEnableServiceExternalIPs,
+        'workloadmonitoringeap':
+            flags.AddEnableWorkloadMonitoringEapFlag,
+        'privateEndpointSubnetwork':
+            flags.AddPrivateEndpointSubnetworkFlag,
+        'crossConnectNetworks':
+            flags.AddCrossConnectSubnetworksFlag,
+        'enableserviceexternalips':
+            flags.AddEnableServiceExternalIPs,
     },
     ALPHA: {
         'accelerator':
@@ -689,7 +766,8 @@ flags_to_add = {
         'systemconfig': lambda p: flags.AddSystemConfigFlag(p, hidden=False),
         'tags': flags.AddTagsCreate,
         'tpu': AddTpuWithServiceNetworking,
-        'verticalpodautoscaling': flags.AddVerticalPodAutoscalingFlag,
+        'verticalpodautoscaling':
+            flags.AddVerticalPodAutoscalingFlagsExperimental,
         'workloadAlts': flags.AddWorkloadAltsFlags,
         'workloadcertificates': flags.AddWorkloadCertificatesFlags,
         'workloadidentity': (lambda p: flags.AddWorkloadIdentityFlags(p, True)),
@@ -875,8 +953,10 @@ class CreateBeta(Create):
     ops.allow_route_overlap = get_default('allow_route_overlap')
     ops.private_cluster = get_default('private_cluster')
     ops.istio_config = get_default('istio_config')
-    ops.enable_vertical_pod_autoscaling = \
-        get_default('enable_vertical_pod_autoscaling')
+    ops.enable_vertical_pod_autoscaling = get_default(
+        'enable_vertical_pod_autoscaling')
+    ops.enable_experimental_vertical_pod_autoscaling = get_default(
+        'enable_experimental_vertical_pod_autoscaling')
     ops.security_group = get_default('security_group')
     flags.ValidateIstioConfigCreateArgs(
         get_default('istio_config'), get_default('addons'))
@@ -951,6 +1031,8 @@ class CreateAlpha(Create):
         get_default('istio_config'), get_default('addons'))
     ops.enable_vertical_pod_autoscaling = \
         get_default('enable_vertical_pod_autoscaling')
+    ops.enable_experimental_vertical_pod_autoscaling = get_default(
+        'enable_experimental_vertical_pod_autoscaling')
     ops.security_profile = get_default('security_profile')
     ops.security_profile_runtime_rules = \
         get_default('security_profile_runtime_rules')

@@ -55,7 +55,8 @@ class List(base.ListCommand):
         the command line after this command.
     """
     flags.AddParentFlagsToParser(parser)
-    parser.add_argument('--location', metavar='LOCATION', help='Location')
+    parser.add_argument(
+        '--location', metavar='LOCATION', required=True, help='Location')
     parser.add_argument(
         '--recommender',
         metavar='RECOMMENDER',

@@ -139,7 +139,8 @@ class Create(base.CreateCommand):
     flags.AddPublishCaCertFlag(parser, use_update_help_text=False)
     flags.AddPublishCrlFlag(parser, use_update_help_text=False)
     flags.AddKeyAlgorithmFlag(key_spec_group, default='rsa-pkcs1-2048-sha256')
-    flags.AddInlineReusableConfigFlags(reusable_config_group, is_ca=True)
+    flags.AddInlineReusableConfigFlags(
+        reusable_config_group, is_ca_command=True, default_max_chain_length=0)
     flags.AddValidityFlag(
         parser,
         resource_name='CA',

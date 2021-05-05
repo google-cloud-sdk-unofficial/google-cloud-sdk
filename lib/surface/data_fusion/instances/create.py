@@ -137,6 +137,7 @@ class Create(base.Command):
           operation.name,
           'Waiting for [{}] to complete. This may take several minutes.'.format(
               operation.name),
+          max_wait_ms=df.OPERATION_TIMEOUT,
           wait_ceiling_ms=df.OPERATION_TIMEOUT)
       log.CreatedResource(
           instance_ref.RelativeName(), kind='instance', is_async=False)

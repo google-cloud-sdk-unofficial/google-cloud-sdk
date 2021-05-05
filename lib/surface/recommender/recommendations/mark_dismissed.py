@@ -53,15 +53,17 @@ class MarkDismissed(base.Command):
         type=str,
         help='Recommendation id which will be marked as dismissed',
     )
-    parser.add_argument('--location', metavar='LOCATION', help='Location')
+    parser.add_argument(
+        '--location', metavar='LOCATION', required=True, help='Location')
     parser.add_argument(
         '--recommender',
         metavar='RECOMMENDER',
+        required=True,
         help='Recommender of the recommendations')
     parser.add_argument(
         '--etag',
         required=True,
-        metavar='etag',
+        metavar='ETAG',
         help='Etag of a recommendation')
 
   def Run(self, args):

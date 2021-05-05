@@ -69,7 +69,8 @@ class UpdateHelper(object):
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
            support_logging, support_client_only, support_grpc_protocol,
-           support_subsetting, support_all_protocol, support_edge_policies):
+           support_subsetting, support_unspecified_protocol,
+           support_edge_policies):
     """Add all arguments for updating a backend service."""
 
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
@@ -100,7 +101,7 @@ class UpdateHelper(object):
         parser,
         default=None,
         support_grpc_protocol=support_grpc_protocol,
-        support_all_protocol=support_all_protocol)
+        support_unspecified_protocol=support_unspecified_protocol)
 
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser)
@@ -441,7 +442,7 @@ class UpdateGA(base.UpdateCommand):
   _support_logging = True
   _support_failover = True
   _support_client_only = False
-  _support_all_protocol = False
+  _support_unspecified_protocol = False
   _support_grpc_protocol = True
   _support_subsetting = False
   _support_edge_policies = False
@@ -457,7 +458,7 @@ class UpdateGA(base.UpdateCommand):
         support_client_only=cls._support_client_only,
         support_grpc_protocol=cls._support_grpc_protocol,
         support_subsetting=cls._support_subsetting,
-        support_all_protocol=cls._support_all_protocol,
+        support_unspecified_protocol=cls._support_unspecified_protocol,
         support_edge_policies=cls._support_edge_policies)
 
   def Run(self, args):
@@ -477,7 +478,7 @@ class UpdateBeta(UpdateGA):
   """
 
   _support_client_only = False
-  _support_all_protocol = False
+  _support_unspecified_protocol = False
   _support_grpc_protocol = True
   _support_subsetting = True
   _support_edge_policies = False
@@ -491,7 +492,7 @@ class UpdateAlpha(UpdateBeta):
   """
 
   _support_client_only = True
-  _support_all_protocol = True
+  _support_unspecified_protocol = True
   _support_grpc_protocol = True
   _support_subsetting = True
   _support_edge_policies = True

@@ -85,8 +85,8 @@ class CreateHelper(object):
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_gfe3,
            support_failover, support_logging, support_multinic,
-           support_client_only, support_grpc_protocol, support_all_protocol,
-           support_subsetting):
+           support_client_only, support_grpc_protocol,
+           support_unspecified_protocol, support_subsetting):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -108,7 +108,7 @@ class CreateHelper(object):
         parser,
         default=None,
         support_grpc_protocol=support_grpc_protocol,
-        support_all_protocol=support_all_protocol)
+        support_unspecified_protocol=support_unspecified_protocol)
     flags.AddEnableCdn(parser)
     flags.AddSessionAffinity(parser, support_client_only=support_client_only)
     flags.AddAffinityCookieTtl(parser)
@@ -348,7 +348,7 @@ class CreateGA(base.CreateCommand):
   _support_multinic = True
   _support_client_only = False
   _support_grpc_protocol = True
-  _support_all_protocol = False
+  _support_unspecified_protocol = False
   _support_subsetting = False
 
   @classmethod
@@ -363,7 +363,7 @@ class CreateGA(base.CreateCommand):
         support_multinic=cls._support_multinic,
         support_client_only=cls._support_client_only,
         support_grpc_protocol=cls._support_grpc_protocol,
-        support_all_protocol=cls._support_all_protocol,
+        support_unspecified_protocol=cls._support_unspecified_protocol,
         support_subsetting=cls._support_subsetting)
 
   def Run(self, args):
@@ -401,7 +401,7 @@ class CreateBeta(CreateGA):
   _support_multinic = True
   _support_client_only = False
   _support_grpc_protocol = True
-  _support_all_protocol = False
+  _support_unspecified_protocol = False
   _support_subsetting = True
 
 
@@ -426,5 +426,5 @@ class CreateAlpha(CreateBeta):
   _support_gfe3 = True
   _support_client_only = True
   _support_grpc_protocol = True
-  _support_all_protocol = True
+  _support_unspecified_protocol = True
   _support_subsetting = True

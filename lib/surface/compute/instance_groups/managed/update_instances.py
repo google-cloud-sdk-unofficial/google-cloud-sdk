@@ -55,21 +55,34 @@ class UpdateInstances(base.Command):
                    scope_lister=flags.GetDefaultScopeLister(client))
 
     update_instances_utils.ValidateIgmReference(igm_ref)
-    minimal_action = update_instances_utils.ParseInstanceActionFlag(
-        '--minimal-action', args.minimal_action or 'none', client.messages)
-    most_disruptive_allowed_action = (
-        update_instances_utils.ParseInstanceActionFlag)(
-            '--most-disruptive-allowed-action',
-            args.most_disruptive_allowed_action or 'replace',
-            client.messages)
 
     instances = instance_groups_utils.CreateInstanceReferences(
         holder.resources, client, igm_ref, args.instances)
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
+      minimal_action = update_instances_utils.ParseInstanceActionFlag(
+          '--minimal-action', args.minimal_action or 'none',
+          client.messages.InstanceGroupManagersApplyUpdatesRequest
+          .MinimalActionValueValuesEnum)
+      most_disruptive_allowed_action = (
+          update_instances_utils.ParseInstanceActionFlag)(
+              '--most-disruptive-allowed-action',
+              args.most_disruptive_allowed_action or 'replace',
+              client.messages.InstanceGroupManagersApplyUpdatesRequest
+              .MostDisruptiveAllowedActionValueValuesEnum)
       field_name, service, requests = self._CreateZonalApplyUpdatesRequest(
           igm_ref, instances, minimal_action, most_disruptive_allowed_action,
           client)
     elif igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
+      minimal_action = update_instances_utils.ParseInstanceActionFlag(
+          '--minimal-action', args.minimal_action or 'none',
+          client.messages.RegionInstanceGroupManagersApplyUpdatesRequest
+          .MinimalActionValueValuesEnum)
+      most_disruptive_allowed_action = (
+          update_instances_utils.ParseInstanceActionFlag)(
+              '--most-disruptive-allowed-action',
+              args.most_disruptive_allowed_action or 'replace',
+              client.messages.RegionInstanceGroupManagersApplyUpdatesRequest
+              .MostDisruptiveAllowedActionValueValuesEnum)
       field_name, service, requests = self._CreateRegionalApplyUpdatesRequest(
           igm_ref, instances, minimal_action, most_disruptive_allowed_action,
           client)
@@ -85,26 +98,17 @@ class UpdateInstances(base.Command):
                                       most_disruptive_allowed_action, client):
     field_name = 'instanceGroupManagersApplyUpdatesRequest'
     service = client.apitools_client.instanceGroupManagers
-    minimal_action = instance_groups_managed_flags.MapInstanceActionEnumValue(
-        minimal_action, client.messages,
-        client.messages.InstanceGroupManagersApplyUpdatesRequest\
-            .MinimalActionValueValuesEnum)
-    most_disruptive_allowed_action = (
-        instance_groups_managed_flags.MapInstanceActionEnumValue)(
-            most_disruptive_allowed_action, client.messages,
-            client.messages.InstanceGroupManagersApplyUpdatesRequest \
-                .MostDisruptiveAllowedActionValueValuesEnum)
     requests = instance_groups_utils.SplitInstancesInRequest(
-        client.messages\
-        .ComputeInstanceGroupManagersApplyUpdatesToInstancesRequest(
-            instanceGroupManager=igm_ref.Name(),
-            instanceGroupManagersApplyUpdatesRequest=
-            client.messages.InstanceGroupManagersApplyUpdatesRequest(
-                instances=instances,
-                minimalAction=minimal_action,
-                mostDisruptiveAllowedAction=most_disruptive_allowed_action),
-            project=igm_ref.project,
-            zone=igm_ref.zone), field_name)
+        (client.messages
+         .ComputeInstanceGroupManagersApplyUpdatesToInstancesRequest)(
+             instanceGroupManager=igm_ref.Name(),
+             instanceGroupManagersApplyUpdatesRequest=
+             client.messages.InstanceGroupManagersApplyUpdatesRequest(
+                 instances=instances,
+                 minimalAction=minimal_action,
+                 mostDisruptiveAllowedAction=most_disruptive_allowed_action),
+             project=igm_ref.project,
+             zone=igm_ref.zone), field_name)
     return field_name, service, requests
 
   def _CreateRegionalApplyUpdatesRequest(
@@ -112,15 +116,6 @@ class UpdateInstances(base.Command):
       client):
     field_name = 'regionInstanceGroupManagersApplyUpdatesRequest'
     service = client.apitools_client.regionInstanceGroupManagers
-    minimal_action = instance_groups_managed_flags.MapInstanceActionEnumValue(
-        minimal_action, client.messages,
-        client.messages.RegionInstanceGroupManagersApplyUpdatesRequest \
-          .MinimalActionValueValuesEnum)
-    most_disruptive_allowed_action = (
-        instance_groups_managed_flags.MapInstanceActionEnumValue)(
-            most_disruptive_allowed_action, client.messages,
-            client.messages.RegionInstanceGroupManagersApplyUpdatesRequest \
-                .MostDisruptiveAllowedActionValueValuesEnum)
     requests = instance_groups_utils.SplitInstancesInRequest(
         client.messages
         .ComputeRegionInstanceGroupManagersApplyUpdatesToInstancesRequest(

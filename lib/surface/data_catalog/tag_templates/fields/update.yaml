@@ -39,6 +39,7 @@
         - the enum values passed to the flag and not present in tag template enum field get created
         - the enum values present in tag template enum field and missing in the list get removed
         - the order of the items on the list is preserved
+
         Enum values can only be removed from optional enum fields for now.
     - api_field: googleCloudDatacatalogV1TagTemplateField.isRequired
       arg_name: required
@@ -85,6 +86,7 @@
         - the enum values passed to the flag and not present in tag template enum field get created
         - the enum values present in tag template enum field and missing in the list get removed
         - the order of the items on the list is preserved
+
         Enum values can only be removed from optional enum fields for now.
     - api_field: googleCloudDatacatalogV1beta1TagTemplateField.isRequired
       arg_name: required

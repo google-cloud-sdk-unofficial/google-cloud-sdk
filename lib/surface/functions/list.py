@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Lists Google Cloud Functions."""
 
 from __future__ import absolute_import
@@ -64,9 +63,17 @@ class ListAlpha(base.ListCommand):
               'listed.'),
         type=arg_parsers.ArgList(min_length=1),
         default=['-'])
-    parser.display_info.AddFormat(
-        'table(name.basename(), state, trigger():label=TRIGGER, '
-        'name.scope("locations").segment(0):label=REGION)')
+
+    parser.display_info.AddFormat("""
+        table(
+          name.basename(),
+          state,
+          trigger():label=TRIGGER,
+          name.scope("locations").segment(0):label=REGION,
+          versionId():label=PRODUCT_VERSION
+        )
+    """)
+
     base.URI_FLAG.RemoveFromParser(parser)
 
     # Add additional flags for GCFv2

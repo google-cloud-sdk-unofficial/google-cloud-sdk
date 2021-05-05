@@ -18,20 +18,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import datetime
-from apitools.base.py.exceptions import HttpForbiddenError
-from apitools.base.py.exceptions import HttpNotFoundError
 from googlecloudsdk.api_lib.functions.v1 import util
-from googlecloudsdk.api_lib.logging import common as logging_common
-from googlecloudsdk.api_lib.logging import util as logging_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
-from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-import six
+from googlecloudsdk.command_lib.functions.v1.logs.read import command as command_v1
+from googlecloudsdk.command_lib.functions.v2.logs.read import command as command_v2
+
+_DEFAULT_TABLE_FORMAT = 'table(level,name,execution_id,time_utc,log)'
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class GetLogs(base.ListCommand):
   """Display log entries produced by Google Cloud Functions."""
 
@@ -90,85 +87,24 @@ class GetLogs(base.ListCommand):
     Returns:
       A generator of objects representing log entries.
     """
-    if not args.IsSpecified('format'):
-      args.format = self._Format(args)
+    return command_v1.Run(args)
 
-    return self._Run(args)
 
-  def _Run(self, args):
-    region = properties.VALUES.functions.region.Get()
-    log_filter = [
-        'resource.type="cloud_function"',
-        'resource.labels.region="%s"' % region, 'logName:"cloud-functions"'
-    ]
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class GetLogsAlpha(base.ListCommand):
+  """Display log entries produced by Google Cloud Functions."""
 
-    if args.name:
-      log_filter.append('resource.labels.function_name="%s"' % args.name)
-    if args.execution_id:
-      log_filter.append('labels.execution_id="%s"' % args.execution_id)
-    if args.min_log_level:
-      log_filter.append('severity>=%s' % args.min_log_level.upper())
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    GetLogs.Args(parser)
 
-    log_filter.append('timestamp>="%s"' % logging_util.FormatTimestamp(
-        args.start_time or
-        datetime.datetime.utcnow() - datetime.timedelta(days=7)))
+    # Add additional flags for GCFv2
+    flags.AddV2Flag(parser)
 
-    if args.end_time:
-      log_filter.append('timestamp<="%s"' %
-                        logging_util.FormatTimestamp(args.end_time))
-
-    log_filter = ' '.join(log_filter)
-
-    entries = list(
-        logging_common.FetchLogs(log_filter, order_by='DESC', limit=args.limit))
-
-    if args.name and not entries:
-      # Check if the function even exists in the given region.
-      try:
-        client = util.GetApiClientInstance()
-        messages = client.MESSAGES_MODULE
-        client.projects_locations_functions.Get(
-            messages.CloudfunctionsProjectsLocationsFunctionsGetRequest(
-                name='projects/%s/locations/%s/functions/%s' %
-                (properties.VALUES.core.project.Get(required=True), region,
-                 args.name)))
-      except (HttpForbiddenError, HttpNotFoundError):
-        # The function doesn't exist in the given region.
-        log.warning(
-            'There is no function named `%s` in region `%s`. Perhaps you '
-            'meant to specify `--region` or update the `functions/region` '
-            'configuration property?' % (args.name, region))
-
-    for entry in entries:
-      message = entry.textPayload
-      if entry.jsonPayload:
-        props = [
-            prop.value
-            for prop in entry.jsonPayload.additionalProperties
-            if prop.key == 'message'
-        ]
-        if len(props) == 1 and hasattr(props[0], 'string_value'):
-          message = props[0].string_value
-      row = {'log': message}
-      if entry.severity:
-        severity = six.text_type(entry.severity)
-        if severity in flags.SEVERITIES:
-          # Use short form (first letter) for expected severities.
-          row['level'] = severity[0]
-        else:
-          # Print full form of unexpected severities.
-          row['level'] = severity
-      if entry.resource and entry.resource.labels:
-        for label in entry.resource.labels.additionalProperties:
-          if label.key == 'function_name':
-            row['name'] = label.value
-      if entry.labels:
-        for label in entry.labels.additionalProperties:
-          if label.key == 'execution_id':
-            row['execution_id'] = label.value
-      if entry.timestamp:
-        row['time_utc'] = util.FormatTimestamp(entry.timestamp)
-      yield row
-
-  def _Format(self, args):
-    return 'table(level,name,execution_id,time_utc,log)'
+  @util.CatchHTTPErrorRaiseHTTPException
+  def Run(self, args):
+    if flags.ShouldUseV2(args):
+      return command_v2.Run(args, self.ReleaseTrack())
+    else:
+      return command_v1.Run(args)

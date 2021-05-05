@@ -56,14 +56,16 @@ class MarkFailed(base.Command):
         'RECOMMENDATION',
         type=str,
         help='Recommendation id which will be marked as FAILED.')
-    parser.add_argument('--location', metavar='LOCATION', help='Location.')
+    parser.add_argument(
+        '--location', metavar='LOCATION', required=True, help='Location.')
     parser.add_argument(
         '--recommender',
         metavar='RECOMMENDER',
+        required=True,
         help='Recommender of recommendation.')
     parser.add_argument(
         '--etag',
-        metavar='etag',
+        metavar='ETAG',
         required=True,
         help='Etag of a recommendation.')
     parser.add_argument(

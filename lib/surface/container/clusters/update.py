@@ -310,12 +310,13 @@ class Update(base.UpdateCommand):
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
-    flags.AddVerticalPodAutoscalingFlag(group)
+    flags.AddVerticalPodAutoscalingFlags(group)
     flags.AddAutoprovisioningFlags(group)
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddMasterGlobalAccessFlag(group, is_update=True)
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1', group, hidden=False)
     flags.AddNotificationConfigFlag(group)
+    flags.AddDisableAutopilotFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -331,6 +332,7 @@ class Update(base.UpdateCommand):
     opts.enable_master_global_access = args.enable_master_global_access
     opts.enable_shielded_nodes = args.enable_shielded_nodes
     opts.release_channel = args.release_channel
+    opts.disable_autopilot = args.disable_autopilot
     opts.cloud_run_config = flags.GetLegacyCloudRunFlag('{}_config', args,
                                                         get_default)
     flags.ValidateCloudRunConfigUpdateArgs(opts.cloud_run_config,
@@ -651,7 +653,7 @@ class UpdateBeta(Update):
     flags.AddEnableBinAuthzFlag(group)
     flags.AddAutoprovisioningFlags(group)
     flags.AddAutoscalingProfilesFlag(group)
-    flags.AddVerticalPodAutoscalingFlag(group)
+    flags.AddVerticalPodAutoscalingFlags(group, experimental=True)
     flags.AddResourceUsageExportFlags(group, is_update=True)
     flags.AddIstioConfigFlag(parser)
     flags.AddCloudRunConfigFlag(parser)
@@ -672,7 +674,7 @@ class UpdateBeta(Update):
     flags.AddNotificationConfigFlag(group)
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1beta1', group, hidden=False)
     flags.AddKubernetesObjectsExportConfig(group)
-    flags.AddDisableAutopilotFlag(group, hidden=True)
+    flags.AddDisableAutopilotFlag(group)
     flags.AddILBSubsettingFlags(group, hidden=False)
     flags.AddClusterDNSFlags(group, hidden=True)
     flags.AddCrossConnectSubnetworksMutationFlags(group)
@@ -694,6 +696,7 @@ class UpdateBeta(Update):
     opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     opts.enable_workload_certificates = args.enable_workload_certificates
     opts.enable_alts = args.enable_alts
+    opts.enable_experimental_vertical_pod_autoscaling = args.enable_experimental_vertical_pod_autoscaling
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     flags.ValidateCloudRunConfigUpdateArgs(opts.cloud_run_config,
                                            args.disable_addons)
@@ -789,7 +792,7 @@ class UpdateAlpha(Update):
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group)
     flags.AddResourceUsageExportFlags(group, is_update=True)
-    flags.AddVerticalPodAutoscalingFlag(group)
+    flags.AddVerticalPodAutoscalingFlags(group, experimental=True)
     flags.AddSecurityProfileForUpdateFlag(group)
     flags.AddIstioConfigFlag(parser)
     flags.AddCloudRunConfigFlag(parser)
@@ -811,7 +814,7 @@ class UpdateAlpha(Update):
     flags.AddNotificationConfigFlag(group)
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1alpha1', group, hidden=False)
     flags.AddKubernetesObjectsExportConfig(group)
-    flags.AddDisableAutopilotFlag(group, hidden=True)
+    flags.AddDisableAutopilotFlag(group)
     flags.AddILBSubsettingFlags(group, hidden=False)
     flags.AddClusterDNSFlags(group, hidden=True)
     flags.AddCrossConnectSubnetworksMutationFlags(group)
@@ -835,6 +838,7 @@ class UpdateAlpha(Update):
     opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     opts.enable_workload_certificates = args.enable_workload_certificates
     opts.enable_alts = args.enable_alts
+    opts.enable_experimental_vertical_pod_autoscaling = args.enable_experimental_vertical_pod_autoscaling
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     flags.ValidateCloudRunConfigUpdateArgs(opts.cloud_run_config,
                                            args.disable_addons)

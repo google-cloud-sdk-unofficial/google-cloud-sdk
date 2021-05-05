@@ -105,4 +105,7 @@ class Delete(base.DeleteCommand):
       encountered_errors = waiter.Wait() or encountered_errors
     if encountered_errors:
       raise command_util.EnvironmentDeleteError(
-          'Some requested deletions did not succeed.')
+          'Some requested deletions did not succeed. '
+          'Please, refer to '
+          'https://cloud.google.com/composer/docs/how-to/managing/updating '
+          'and Composer Delete Troubleshooting pages to resolve this issue.')

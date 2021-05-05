@@ -17,4 +17,4 @@ request:
 arguments:
   resource:
     help_text: Subscription to delete.
-    spec: !REF googlecloudsdk.command_lib.pubsub.resources:lite-subscription
+    spec: !REF googlecloudsdk.command_lib.pubsub.resources:lite_subscription

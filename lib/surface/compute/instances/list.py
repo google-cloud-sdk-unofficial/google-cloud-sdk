@@ -40,10 +40,12 @@ class List(base.ListCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    request_data = lister.ParseZonalFlags(args, holder.resources)
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
 
-    list_implementation = lister.ZonalParallelLister(
-        client, client.apitools_client.instances, holder.resources)
+    list_implementation = lister.MultiScopeLister(
+        client=client,
+        zonal_service=client.apitools_client.instances,
+        aggregation_service=client.apitools_client.instances)
 
     return lister.Invoke(request_data, list_implementation)
 

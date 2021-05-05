@@ -74,6 +74,7 @@
         *  '=' for all value types.
         *  '>', '<', '>=', '<=' for integer values.
         *  ':', meaning substring matching, for strings.
+
         The supported value types are:string literals in quotes, integer literals without quotes,
         boolean literals 'true' and 'false' without quotes.
         Some example filters: 'source_properties.size = 100', 'category=\"XSS\" AND event_time > 10'

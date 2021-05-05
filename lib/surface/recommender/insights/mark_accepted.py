@@ -59,10 +59,12 @@ class MarkAccepted(base.Command):
         type=str,
         help='Insight id which will be marked as accepted',
     )
-    parser.add_argument('--location', metavar='LOCATION', help='Location')
+    parser.add_argument(
+        '--location', metavar='LOCATION', required=True, help='Location')
     parser.add_argument(
         '--insight-type',
-        metavar='Insight Type',
+        metavar='INSIGHT_TYPE',
+        required=True,
         help='Insight Type of the insights')
     parser.add_argument(
         '--etag', required=True, metavar='etag', help='Etag of a insight')

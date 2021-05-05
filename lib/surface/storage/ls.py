@@ -105,7 +105,16 @@ class Ls(base.Command):
              ' --long option also prints metageneration for each listed object.'
     )
     parser.add_argument(
-        '-e', '--etag',
+        '-b',
+        '--buckets',
+        action='store_true',
+        help='When given a bucket URL, only returns buckets. Useful for'
+        ' avoiding the rule that prints the top-level objects of buckets'
+        ' matching a query. Typically used in combination with -L to get'
+        ' the full metadata of buckets.')
+    parser.add_argument(
+        '-e',
+        '--etag',
         action='store_true',
         help='Include ETag in long listing (-l) output.')
     parser.add_argument(
@@ -122,8 +131,8 @@ class Ls(base.Command):
         '-l',
         '--long',
         action='store_true',
-        help=('For objects only. Lists size in bytes, creation time, and URL.'
-              ' Note: Creation time not available for S3.'))
+        help='For objects only. Lists size in bytes, creation time, and URL.'
+        ' Note: Creation time not available for S3.')
     parser.add_argument(
         '-R', '-r', '--recursive',
         action='store_true',
@@ -152,7 +161,12 @@ class Ls(base.Command):
 
     tasks = []
     for url in storage_urls:
-      tasks.append(cloud_list_task.CloudListTask(
-          url, all_versions=args.all_versions, display_detail=display_detail,
-          include_etag=args.etag, recursion_flag=args.recursive))
+      tasks.append(
+          cloud_list_task.CloudListTask(
+              url,
+              all_versions=args.all_versions,
+              buckets_flag=args.buckets,
+              display_detail=display_detail,
+              include_etag=args.etag,
+              recursion_flag=args.recursive))
     task_executor.ExecuteTasks(tasks, is_parallel=False)
