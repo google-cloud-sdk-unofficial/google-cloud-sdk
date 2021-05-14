@@ -22,5 +22,11 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SubordinatesBeta(base.Group):
+  """Manage subordinate certificate authorities."""
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Subordinates(base.Group):
   """Manage subordinate certificate authorities."""

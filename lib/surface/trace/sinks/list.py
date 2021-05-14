@@ -25,7 +25,8 @@ DETAILED_HELP = {
     'DESCRIPTION': """
         Lists the defined sinks for the project.
     """,
-    'EXAMPLES': """
+    'EXAMPLES': """/
+
         $ {command}
     """,
 }

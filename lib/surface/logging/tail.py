@@ -20,12 +20,10 @@ from __future__ import unicode_literals
 
 import logging
 
-from google.api_core import bidi
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import gapic_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import platforms
 
@@ -118,7 +116,6 @@ class Tail(base.Command):
     try:
       # pylint: disable=g-import-not-at-top
       from googlecloudsdk.api_lib.logging import tailing
-      from googlecloudsdk.third_party.logging_v2.gapic.transports.logging_service_v2_grpc_transport import LoggingServiceV2GrpcTransport
       # pylint: enable=g-import-not-at-top
     except ImportError:
       raise NoGRPCInstalledError()
@@ -135,16 +132,14 @@ class Tail(base.Command):
       if args.buffer_window < 0 or args.buffer_window > 60:
         log.error('The buffer window must be set between 0s and 1m.')
       buffer_window_seconds = args.buffer_window
-    transport = LoggingServiceV2GrpcTransport(
-        credentials=gapic_util.StoredCredentials(),
-        address='logging.googleapis.com:443')
+    tailer = tailing.LogTailer()
 
     # By default and up to the INFO verbosity, all console output is included in
     # the log file. When tailing logs, coarse filters could cause very large
     # files. So, we limit the log file to WARNING logs and above.
     log.SetLogFileVerbosity(logging.WARNING)
-    return tailing.TailLogs(
-        bidi.BidiRpc(transport.tail_log_entries), [parent],
+    return tailer.TailLogs(
+        [parent],
         args.log_filter or '',
         buffer_window_seconds=buffer_window_seconds)
 

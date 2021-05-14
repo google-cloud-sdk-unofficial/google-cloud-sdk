@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.privateca import resource_args
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class GetCsr(base.Command):
   r"""Get the CSR for a subordinate certificate authority that has not yet been activated.
 

@@ -97,7 +97,7 @@
           - api_field: value
     - arg_name: maintenance-window-day
       api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.day
-      release_tracks: [ALPHA]
+      release_tracks: [BETA, ALPHA]
       hidden: true
       help_text: |
         Day of week for maintenance window, in UTC time zone.
@@ -105,7 +105,7 @@
         SATURDAY.
     - arg_name: maintenance-window-hour
       api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.startTime.hours
-      release_tracks: [ALPHA]
+      release_tracks: [BETA, ALPHA]
       hidden: true
       help_text: |
         Hour of day (0 to 23) for maintenance window, in UTC time zone.

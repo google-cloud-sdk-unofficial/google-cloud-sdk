@@ -29,6 +29,7 @@ from googlecloudsdk.command_lib.privateca import update_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   r"""Update an existing subordinate certificate authority.
 

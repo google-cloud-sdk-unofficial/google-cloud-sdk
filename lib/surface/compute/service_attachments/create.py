@@ -31,19 +31,20 @@ from googlecloudsdk.command_lib.compute.service_attachments import service_attac
 def _DetailedHelp():
   return {
       'brief':
-          'Create a service attachment.',
+          'Create a Google Compute Engine service attachment.',
       'DESCRIPTION':
           """\
-      *{command}* is used to create service attachments. A service attachment is
-      a component used by a service producer to setup a Private Service Connect
-      (PSC) which a service consumer could then forward traffic privately to.
+      *{command}* is used to create service attachments. A service producer
+      creates service attachments to make a service available to consumers.
+      Service consumers use Private Service Connect endpoints to privately
+      forward traffic to the service attachment.
       """,
       'EXAMPLES':
           """\
       If there is an already-created internal load balancer (ILB) with the name
-      MY_ILB in region us-central1 and there is an already-created PSC subnets
-      MY_SUBNET1 and MY_SUBNET2, create a service attachment pointing to the ILB
-      by running:
+      MY_ILB in region us-central1 and there is an already-created Private
+      Service Connect subnets MY_SUBNET1 and MY_SUBNET2, create a service
+      attachment pointing to the ILB by running:
 
         $ {command} SERVICE_ATTACHMENT_NAME --region=us-central1 --producer-forwarding-rule=MY_ILB --connection-preference=ACCEPT_AUTOMATIC --nat-subnets=MY_SUBNET1,MY_SUBNET2
 
@@ -55,9 +56,9 @@ def _DetailedHelp():
   }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
-  """Create a service attachment."""
+  """Create a Google Compute Engine service attachment."""
 
   SERVICE_ATTACHMENT_ARG = None
   PRODUCER_FORWARDING_RULE_ARG = None

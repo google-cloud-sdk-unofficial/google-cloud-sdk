@@ -43,7 +43,7 @@ Job State: {state}\
 class Create(base.CreateCommand):
   """Create a new custom job.
 
-  A created custom job right away will be attempted to be run.
+  This command will attempt to run the custom job immediately upon creation.
   """
 
   @staticmethod

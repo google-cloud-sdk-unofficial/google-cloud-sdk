@@ -184,7 +184,8 @@ class Status(base.ListCommand):
             last_synced_token:label="Last_Synced_Token",
             sync_branch:label="Sync_Branch",
             last_synced:label="Last_Synced_Time",
-            policy_controller_state:label="Policy_Controller"
+            policy_controller_state:label="Policy_Controller",
+            hierarchy_controller_state:label="Hierarchy_Controller"
       )' , acm_errors:format=list)
     """)
 

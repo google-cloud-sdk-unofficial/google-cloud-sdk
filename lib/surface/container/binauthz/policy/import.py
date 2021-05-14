@@ -44,9 +44,11 @@ class Import(base.Command):
 
   To update the current project's policy:
 
-      $ {parent_command} export > my_policy.yaml
-      $ edit my_policy.yaml
-      $ {parent_command} import my_policy.yaml
+    $ {parent_command} export > my_policy.yaml
+
+    $ edit my_policy.yaml
+
+    $ {command} my_policy.yaml
   """
 
   @classmethod

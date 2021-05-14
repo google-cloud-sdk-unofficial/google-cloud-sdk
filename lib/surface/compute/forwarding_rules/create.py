@@ -37,7 +37,7 @@ from six.moves import range  # pylint: disable=redefined-builtin
 
 def _Args(parser, support_global_access, support_l7_internal_load_balancing,
           support_gfe3, support_psc_google_apis, support_all_protocol,
-          support_target_service_attachment):
+          support_target_service_attachment, support_l3_default):
   """Add the flags to create a forwarding rule."""
 
   flags.AddUpdateArgs(
@@ -46,7 +46,7 @@ def _Args(parser, support_global_access, support_l7_internal_load_balancing,
       include_gfe3=support_gfe3,
       include_psc_google_apis=support_psc_google_apis,
       include_target_service_attachment=support_target_service_attachment)
-  flags.AddIPProtocols(parser, support_all_protocol)
+  flags.AddIPProtocols(parser, support_all_protocol, support_l3_default)
   flags.AddDescription(parser)
   flags.AddPortsAndPortRange(parser)
   flags.AddNetworkTier(
@@ -89,7 +89,7 @@ class CreateHelper(object):
                support_l7_internal_load_balancing, support_gfe3,
                support_psc_google_apis, support_all_protocol,
                support_target_service_attachment,
-               _support_sd_registration_for_regional):
+               _support_sd_registration_for_regional, support_l3_default):
     self._holder = holder
     self._support_global_access = support_global_access
     self._support_l7_internal_load_balancing = support_l7_internal_load_balancing
@@ -98,17 +98,19 @@ class CreateHelper(object):
     self._support_all_protocol = support_all_protocol
     self._support_target_service_attachment = support_target_service_attachment
     self._support_sd_registration_for_regional = _support_sd_registration_for_regional
+    self._support_l3_default = support_l3_default
 
   @classmethod
   def Args(cls, parser, support_global_access,
            support_l7_internal_load_balancing, support_gfe3,
            support_psc_google_apis, support_all_protocol,
-           support_target_service_attachment):
+           support_target_service_attachment, support_l3_default):
     cls.FORWARDING_RULE_ARG = _Args(parser, support_global_access,
                                     support_l7_internal_load_balancing,
                                     support_gfe3, support_psc_google_apis,
                                     support_all_protocol,
-                                    support_target_service_attachment)
+                                    support_target_service_attachment,
+                                    support_l3_default)
 
   def ConstructProtocol(self, messages, args):
     if args.ip_protocol:
@@ -462,6 +464,7 @@ class Create(base.CreateCommand):
   _support_all_protocol = False
   _support_target_service_attachment = False
   _support_sd_registration_for_regional = False
+  _support_l3_default = False
 
   @classmethod
   def Args(cls, parser):
@@ -469,7 +472,8 @@ class Create(base.CreateCommand):
                       cls._support_l7_internal_load_balancing,
                       cls._support_gfe3, cls._support_psc_google_apis,
                       cls._support_all_protocol,
-                      cls._support_target_service_attachment)
+                      cls._support_target_service_attachment,
+                      cls._support_l3_default)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -478,7 +482,8 @@ class Create(base.CreateCommand):
                         self._support_gfe3, self._support_psc_google_apis,
                         self._support_all_protocol,
                         self._support_target_service_attachment,
-                        self._support_sd_registration_for_regional).Run(args)
+                        self._support_sd_registration_for_regional,
+                        self._support_l3_default).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -488,8 +493,9 @@ class CreateBeta(Create):
   _support_l7_internal_load_balancing = True
   _support_gfe3 = False
   _support_all_protocol = False
-  _support_target_service_attachment = False
+  _support_target_service_attachment = True
   _support_sd_registration_for_regional = True
+  _support_l3_default = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -501,6 +507,7 @@ class CreateAlpha(CreateBeta):
   _support_all_protocol = True
   _support_target_service_attachment = True
   _support_sd_registration_for_regional = True
+  _support_l3_default = True
 
 
 Create.detailed_help = {

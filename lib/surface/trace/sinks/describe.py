@@ -25,7 +25,8 @@ DETAILED_HELP = {
     'DESCRIPTION': """
         Displays information about a sink.
     """,
-    'EXAMPLES': """
+    'EXAMPLES': """/
+
         $ {command} my-sink
     """,
 }

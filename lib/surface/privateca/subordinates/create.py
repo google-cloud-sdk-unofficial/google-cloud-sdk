@@ -38,6 +38,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   r"""Create a new subordinate certificate authority.
 
@@ -247,4 +248,3 @@ class Create(base.CreateCommand):
       log.status.Print('Created Certificate Authority [{}].'.format(
           ca_ref.RelativeName()))
       return
-

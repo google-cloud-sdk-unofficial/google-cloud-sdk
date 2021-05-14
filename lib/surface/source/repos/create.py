@@ -50,6 +50,7 @@ class Create(base.CreateCommand):
   following commands:
 
     $ gcloud init
+
     $ {command} REPOSITORY_NAME
 
   Once you push contents to it, they can be browsed in the

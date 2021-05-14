@@ -25,14 +25,15 @@ from googlecloudsdk.core.console import console_io
 
 DETAILED_HELP = {
     'DESCRIPTION':
-        """
+        """/
         Deletes a sink and halts the export of traces associated with that sink.
         Deleting a sink does not affect traces already exported through
         the deleted sink, and will not affect other sinks that are exporting
         the same traces.
     """,
     'EXAMPLES':
-        """
+        """/
+
         $ {command} my-sink
     """,
 }

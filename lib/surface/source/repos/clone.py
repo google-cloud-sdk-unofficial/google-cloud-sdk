@@ -46,13 +46,16 @@ class CloneGA(base.Command):
         warning if the cloud source repository is a mirror.
       """,
       'EXAMPLES': """\
-        The example commands below show a sample workflow.
+      The example commands below show a sample workflow.
 
-          $ gcloud init
-          $ {command} REPOSITORY_NAME DIRECTORY_NAME
-          $ cd DIRECTORY_NAME
+        $ gcloud init
+
+        $ {command} REPOSITORY_NAME DIRECTORY_NAME
+
+        $ cd DIRECTORY_NAME
           ... create/edit files and create one or more commits ...
-          $ git push origin master
+
+        $ git push origin master
       """,
   }
 

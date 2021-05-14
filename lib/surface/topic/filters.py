@@ -200,6 +200,18 @@ class Filters(base.TopicCommand):
 
           Using this data, one way of filtering projects is by their parent's ID
           by specifying ``parent.id'' as the _key_.
+
+          ### Filter on a custom list in response
+
+          By default the filter exprespression operates on root level resources.
+          In order to filter on a nested list(not at the root level of the json)
+          , one can use the `--flatten` flag to provide a the `resource-key` to
+          list. For example, To list members under `my-project` that have an
+          editor role, one can run:
+
+            $ gcloud projects get-iam-policy cloudsdktest --flatten=bindings --filter=bindings.role:roles/editor --format='value(bindings.members)'
+
+
           """).format(
               description=resource_topics.ResourceDescription('filter')),
       'EXAMPLES':

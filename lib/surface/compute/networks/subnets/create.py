@@ -444,6 +444,7 @@ class Create(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
 
+  _include_private_service_connect = True
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
 
 

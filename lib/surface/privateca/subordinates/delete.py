@@ -32,6 +32,7 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import times
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   r"""Schedule a subordinate certificate authority for deletion.
 

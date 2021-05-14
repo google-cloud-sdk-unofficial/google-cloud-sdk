@@ -185,6 +185,17 @@ def MaybeLogCloudNatHelpText(args, is_autopilot, location, project_id):
         cloudNatTemplate.substitute(REGION=location, PROJECT_ID=project_id))
 
 
+def MaybeLogDataplaneV2ScaleWarning(args):
+  # TODO(b/177430844): Remove once scale limits are gone
+  if getattr(args, 'enable_dataplane_v2', False):
+    log.warning(
+        'GKE Dataplane V2 has been certified to run up to 500 nodes per'
+        ' cluster, including node autoscaling and surge upgrades. You '
+        'may request a cluster size of up to 1000 nodes by filing a '
+        'support ticket with GCP. For more information, please see'
+        'https://cloud.google.com/kubernetes-engine/docs/concepts/dataplane-v2')
+
+
 def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
                            project_id):
   """Parses the flags provided with the cluster creation command."""
@@ -431,6 +442,8 @@ flags_to_add = {
             AddDisableDefaultSnatFlagForClusterCreate,
         'databaseencryption':
             flags.AddDatabaseEncryptionFlag,
+        'dataplanev2':
+            flags.AddDataplaneV2Flag,
         'disksize':
             flags.AddDiskSizeFlag,
         'disktype':
@@ -944,6 +957,7 @@ class CreateBeta(Create):
     get_default = lambda key: AttrValue(args, key, self.default_flag_values)
     ops = ParseCreateOptionsBase(args, self.autopilot, get_default, location,
                                  project_id)
+    MaybeLogDataplaneV2ScaleWarning(args)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
     ops.boot_disk_kms_key = get_default('boot_disk_kms_key')

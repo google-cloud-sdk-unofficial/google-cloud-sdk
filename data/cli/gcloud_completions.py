@@ -4803,6 +4803,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--all-updates-rule-pubsub-topic": "value",
                     "--billing-account": "value",
                     "--budget-amount": "value",
+                    "--calendar-period": [
+                      "calendar-period-unspecified",
+                      "month",
+                      "quarter",
+                      "year"
+                    ],
                     "--credit-types-treatment": [
                       "credit-types-treatment-unspecified",
                       "exclude-all-credits",
@@ -4811,12 +4817,14 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--disable-default-iam-recipients": "bool",
                     "--display-name": "value",
+                    "--end-date": "value",
                     "--filter-credit-types": "value",
                     "--filter-labels": "value",
                     "--filter-projects": "value",
                     "--filter-services": "value",
                     "--filter-subaccounts": "value",
                     "--last-period-amount": "bool",
+                    "--start-date": "value",
                     "--threshold-rule": "value"
                   }
                 },
@@ -4850,6 +4858,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--all-updates-rule-pubsub-topic": "value",
                     "--billing-account": "value",
                     "--budget-amount": "value",
+                    "--calendar-period": [
+                      "calendar-period-unspecified",
+                      "month",
+                      "quarter",
+                      "year"
+                    ],
                     "--clear-threshold-rules": "bool",
                     "--credit-types-treatment": [
                       "credit-types-treatment-unspecified",
@@ -4859,12 +4873,14 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--disable-default-iam-recipients": "bool",
                     "--display-name": "value",
+                    "--end-date": "value",
                     "--filter-credit-types": "value",
                     "--filter-labels": "value",
                     "--filter-projects": "value",
                     "--filter-services": "value",
                     "--filter-subaccounts": "value",
                     "--last-period-amount": "bool",
+                    "--start-date": "value",
                     "--threshold-rules-from-file": "value"
                   }
                 }
@@ -7237,6 +7253,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "ALL",
                       "ESP",
                       "ICMP",
+                      "L3_DEFAULT",
                       "SCTP",
                       "TCP",
                       "UDP"
@@ -15718,7 +15735,11 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--database-version": [
                           "MYSQL_5_6",
                           "MYSQL_5_7",
+                          "MYSQL_8_0",
+                          "POSTGRES_10",
                           "POSTGRES_11",
+                          "POSTGRES_12",
+                          "POSTGRES_13",
                           "POSTGRES_9_6"
                         ],
                         "--display-name": "value",
@@ -19273,8 +19294,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "delete": {
               "commands": {},
               "flags": {
-                "--region": "dynamic",
-                "--v2": "bool"
+                "--region": "dynamic"
               }
             },
             "deploy": {
@@ -19312,7 +19332,6 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--remove-labels": "value",
                 "--remove-secrets": "value",
                 "--retry": "bool",
-                "--run-service-account": "value",
                 "--runtime": "value",
                 "--security-level": [
                   "secure-always",
@@ -19322,35 +19341,25 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--set-build-env-vars": "value",
                 "--set-env-vars": "value",
                 "--set-secrets": "value",
-                "--signature-type": [
-                  "cloudevent",
-                  "event",
-                  "http"
-                ],
                 "--source": "value",
                 "--stage-bucket": "value",
                 "--timeout": "value",
                 "--trigger-bucket": "value",
                 "--trigger-event": "value",
-                "--trigger-event-filters": "value",
                 "--trigger-http": "bool",
-                "--trigger-location": "dynamic",
                 "--trigger-resource": "value",
-                "--trigger-service-account": "value",
                 "--trigger-topic": "value",
                 "--update-build-env-vars": "value",
                 "--update-env-vars": "value",
                 "--update-labels": "value",
                 "--update-secrets": "value",
-                "--v2": "bool",
                 "--vpc-connector": "value"
               }
             },
             "describe": {
               "commands": {},
               "flags": {
-                "--region": "dynamic",
-                "--v2": "bool"
+                "--region": "dynamic"
               }
             },
             "event-types": {
@@ -19380,8 +19389,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--limit": "value",
                 "--page-size": "value",
                 "--regions": "value",
-                "--sort-by": "value",
-                "--v2": "bool"
+                "--sort-by": "value"
               }
             },
             "logs": {
@@ -19402,8 +19410,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "dynamic",
                     "--sort-by": "value",
                     "--start-time": "value",
-                    "--uri": "bool",
-                    "--v2": "bool"
+                    "--uri": "bool"
                   }
                 }
               },
@@ -22465,6 +22472,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--description": "value",
                     "--enable-analytics": "bool",
+                    "--index": "value",
                     "--location": "value",
                     "--restricted-fields": "value",
                     "--retention-days": "value"
@@ -22514,12 +22522,16 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update": {
                   "commands": {},
                   "flags": {
+                    "--add-index": "value",
+                    "--clear-indexes": "bool",
                     "--description": "value",
                     "--enable-loglink": "bool",
                     "--location": "value",
                     "--locked": "bool",
+                    "--remove-indexes": "value",
                     "--restricted-fields": "value",
-                    "--retention-days": "value"
+                    "--retention-days": "value",
+                    "--update-index": "value"
                   }
                 }
               },
@@ -22629,10 +22641,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--billing-account": "value",
-                    "--filter": "value",
                     "--folder": "value",
                     "--limit": "value",
                     "--location": "value",
+                    "--operation-filter": "value",
                     "--organization": "dynamic",
                     "--page-size": "value",
                     "--sort-by": "value"
@@ -25252,6 +25264,44 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
+            "endpoint-policies": {
+              "commands": {
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "value"
+                  }
+                },
+                "export": {
+                  "commands": {},
+                  "flags": {
+                    "--destination": "value",
+                    "--location": "value"
+                  }
+                },
+                "import": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "value",
+                    "--source": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "http-filters": {
               "commands": {
                 "delete": {
@@ -25354,6 +25404,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--accelerator-core-count": "value",
                     "--accelerator-type": [
+                      "NVIDIA_TESLA_A100",
                       "NVIDIA_TESLA_K80",
                       "NVIDIA_TESLA_P100",
                       "NVIDIA_TESLA_P100_VWS",
@@ -25490,6 +25541,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--accelerator-core-count": "value",
                     "--accelerator-type": [
+                      "NVIDIA_TESLA_A100",
                       "NVIDIA_TESLA_K80",
                       "NVIDIA_TESLA_P100",
                       "NVIDIA_TESLA_P100_VWS",
@@ -27315,6 +27367,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "internal",
                   "internal-and-cloud-load-balancing"
                 ],
+                "--key": "value",
                 "--kubeconfig": "value",
                 "--labels": "value",
                 "--max-instances": "value",
@@ -27801,6 +27854,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "internal",
                       "internal-and-cloud-load-balancing"
                     ],
+                    "--key": "value",
                     "--kubeconfig": "value",
                     "--labels": "value",
                     "--max-instances": "value",
@@ -36180,6 +36234,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--all-updates-rule-pubsub-topic": "value",
                     "--billing-account": "value",
                     "--budget-amount": "value",
+                    "--calendar-period": [
+                      "calendar-period-unspecified",
+                      "month",
+                      "quarter",
+                      "year"
+                    ],
                     "--credit-types-treatment": [
                       "credit-types-treatment-unspecified",
                       "exclude-all-credits",
@@ -36188,12 +36248,14 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--disable-default-iam-recipients": "bool",
                     "--display-name": "value",
+                    "--end-date": "value",
                     "--filter-credit-types": "value",
                     "--filter-labels": "value",
                     "--filter-projects": "value",
                     "--filter-services": "value",
                     "--filter-subaccounts": "value",
                     "--last-period-amount": "bool",
+                    "--start-date": "value",
                     "--threshold-rule": "value"
                   }
                 },
@@ -36227,6 +36289,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--all-updates-rule-pubsub-topic": "value",
                     "--billing-account": "value",
                     "--budget-amount": "value",
+                    "--calendar-period": [
+                      "calendar-period-unspecified",
+                      "month",
+                      "quarter",
+                      "year"
+                    ],
                     "--clear-threshold-rules": "bool",
                     "--credit-types-treatment": [
                       "credit-types-treatment-unspecified",
@@ -36236,12 +36304,14 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--disable-default-iam-recipients": "bool",
                     "--display-name": "value",
+                    "--end-date": "value",
                     "--filter-credit-types": "value",
                     "--filter-labels": "value",
                     "--filter-projects": "value",
                     "--filter-services": "value",
                     "--filter-subaccounts": "value",
                     "--last-period-amount": "bool",
+                    "--start-date": "value",
                     "--threshold-rules-from-file": "value"
                   }
                 }
@@ -37991,6 +38061,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--target-instance-zone": "dynamic",
                     "--target-pool": "value",
                     "--target-pool-region": "dynamic",
+                    "--target-service-attachment": "value",
+                    "--target-service-attachment-region": "dynamic",
                     "--target-ssl-proxy": "value",
                     "--target-tcp-proxy": "value",
                     "--target-vpn-gateway": "value",
@@ -40966,7 +41038,8 @@ STATIC_COMPLETION_CLI_TREE = {
                         ],
                         "--purpose": [
                           "INTERNAL_HTTPS_LOAD_BALANCER",
-                          "PRIVATE"
+                          "PRIVATE",
+                          "PRIVATE_SERVICE_CONNECT"
                         ],
                         "--range": "value",
                         "--region": "dynamic",
@@ -42518,6 +42591,68 @@ STATIC_COMPLETION_CLI_TREE = {
                       "PREMIUM",
                       "STANDARD"
                     ]
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "service-attachments": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--connection-preference": [
+                      "ACCEPT_AUTOMATIC",
+                      "ACCEPT_MANUAL"
+                    ],
+                    "--consumer-accept-list": "value",
+                    "--consumer-reject-list": "value",
+                    "--description": "value",
+                    "--enable-proxy-protocol": "bool",
+                    "--nat-subnets": "dynamic",
+                    "--nat-subnets-region": "dynamic",
+                    "--producer-forwarding-rule": "dynamic",
+                    "--producer-forwarding-rule-region": "dynamic",
+                    "--region": "dynamic"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--regexp": "value",
+                    "--regions": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--connection-preference": [
+                      "ACCEPT_AUTOMATIC",
+                      "ACCEPT_MANUAL"
+                    ],
+                    "--consumer-accept-list": "value",
+                    "--consumer-reject-list": "value",
+                    "--enable-proxy-protocol": "bool",
+                    "--nat-subnets": "dynamic",
+                    "--nat-subnets-region": "dynamic",
+                    "--region": "dynamic"
                   }
                 }
               },
@@ -54559,6 +54694,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--accelerator-core-count": "value",
                     "--accelerator-type": [
+                      "NVIDIA_TESLA_A100",
                       "NVIDIA_TESLA_K80",
                       "NVIDIA_TESLA_P100",
                       "NVIDIA_TESLA_P100_VWS",
@@ -54695,6 +54831,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--accelerator-core-count": "value",
                     "--accelerator-type": [
+                      "NVIDIA_TESLA_A100",
                       "NVIDIA_TESLA_K80",
                       "NVIDIA_TESLA_P100",
                       "NVIDIA_TESLA_P100_VWS",
@@ -55964,6 +56101,19 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "dynamic",
                     "--sort-by": "value",
                     "--uri": "bool"
+                  }
+                },
+                "reschedule-maintenance": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--region": "dynamic",
+                    "--reschedule-type": [
+                      "immediate",
+                      "next-available-window",
+                      "specific-time"
+                    ],
+                    "--schedule-time": "value"
                   }
                 },
                 "update": {
@@ -59729,6 +59879,8 @@ STATIC_COMPLETION_CLI_TREE = {
             "add-iam-policy-binding": {
               "commands": {},
               "flags": {
+                "--condition": "value",
+                "--condition-from-file": "value",
                 "--member": "value",
                 "--role": "dynamic"
               }
@@ -59782,6 +59934,9 @@ STATIC_COMPLETION_CLI_TREE = {
             "remove-iam-policy-binding": {
               "commands": {},
               "flags": {
+                "--all": "bool",
+                "--condition": "value",
+                "--condition-from-file": "value",
                 "--member": "value",
                 "--role": "dynamic"
               }
@@ -59914,6 +60069,12 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--billing-account": "value",
                 "--budget-amount": "value",
+                "--calendar-period": [
+                  "calendar-period-unspecified",
+                  "month",
+                  "quarter",
+                  "year"
+                ],
                 "--credit-types-treatment": [
                   "credit-types-treatment-unspecified",
                   "exclude-all-credits",
@@ -59922,6 +60083,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 ],
                 "--disable-default-iam-recipients": "bool",
                 "--display-name": "value",
+                "--end-date": "value",
                 "--filter-credit-types": "value",
                 "--filter-labels": "value",
                 "--filter-projects": "value",
@@ -59930,6 +60092,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--last-period-amount": "bool",
                 "--notifications-rule-monitoring-notification-channels": "value",
                 "--notifications-rule-pubsub-topic": "value",
+                "--start-date": "value",
                 "--threshold-rule": "value"
               }
             },
@@ -59961,6 +60124,12 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--add-threshold-rule": "value",
                 "--billing-account": "value",
                 "--budget-amount": "value",
+                "--calendar-period": [
+                  "calendar-period-unspecified",
+                  "month",
+                  "quarter",
+                  "year"
+                ],
                 "--clear-threshold-rules": "bool",
                 "--credit-types-treatment": [
                   "credit-types-treatment-unspecified",
@@ -59970,6 +60139,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 ],
                 "--disable-default-iam-recipients": "bool",
                 "--display-name": "value",
+                "--end-date": "value",
                 "--filter-credit-types": "value",
                 "--filter-labels": "value",
                 "--filter-projects": "value",
@@ -59978,6 +60148,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--last-period-amount": "bool",
                 "--notifications-rule-monitoring-notification-channels": "value",
                 "--notifications-rule-pubsub-topic": "value",
+                "--start-date": "value",
                 "--threshold-rules-from-file": "value"
               }
             }
@@ -67188,6 +67359,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--enable-cloud-logging": "bool",
                 "--enable-cloud-monitoring": "bool",
                 "--enable-cloud-run-alpha": "bool",
+                "--enable-dataplane-v2": "bool",
                 "--enable-intra-node-visibility": "bool",
                 "--enable-ip-alias": "bool",
                 "--enable-kubernetes-alpha": "bool",
@@ -68242,7 +68414,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--database-version": [
                       "MYSQL_5_6",
                       "MYSQL_5_7",
+                      "MYSQL_8_0",
+                      "POSTGRES_10",
                       "POSTGRES_11",
+                      "POSTGRES_12",
+                      "POSTGRES_13",
                       "POSTGRES_9_6"
                     ],
                     "--display-name": "value",
@@ -75570,6 +75746,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--accelerator-core-count": "value",
                 "--accelerator-type": [
+                  "NVIDIA_TESLA_A100",
                   "NVIDIA_TESLA_K80",
                   "NVIDIA_TESLA_P100",
                   "NVIDIA_TESLA_P100_VWS",
@@ -75632,6 +75809,12 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--location": "dynamic"
               }
             },
+            "get-health": {
+              "commands": {},
+              "flags": {
+                "--location": "dynamic"
+              }
+            },
             "get-iam-policy": {
               "commands": {},
               "flags": {
@@ -75681,6 +75864,14 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--location": "dynamic"
               }
             },
+            "rollback": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--location": "dynamic",
+                "--target-snapshot": "value"
+              }
+            },
             "set-iam-policy": {
               "commands": {},
               "flags": {
@@ -75706,6 +75897,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--accelerator-core-count": "value",
                 "--accelerator-type": [
+                  "NVIDIA_TESLA_A100",
                   "NVIDIA_TESLA_K80",
                   "NVIDIA_TESLA_P100",
                   "NVIDIA_TESLA_P100_VWS",

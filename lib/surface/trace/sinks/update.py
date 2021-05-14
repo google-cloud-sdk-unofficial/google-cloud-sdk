@@ -25,7 +25,7 @@ from googlecloudsdk.core import log
 
 DETAILED_HELP = {
     'DESCRIPTION':
-        """
+        """/
         Changes the *[destination]* associated with a sink.
         The new destination must already exist and Stackdriver Trace must have
         permission to write to it.
@@ -33,9 +33,9 @@ DETAILED_HELP = {
         Trace spans are exported to the new destination in a few minutes.
     """,
     'EXAMPLES':
-        """
-        $ {command} my-sink
-          bigquery.googleapis.com/projects/my-project/datasets/my_new_dataset
+        """/
+
+        $ {command} my-sink bigquery.googleapis.com/projects/my-project/datasets/my_new_dataset
     """,
 }
 

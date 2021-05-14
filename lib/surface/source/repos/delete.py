@@ -39,6 +39,7 @@ class Delete(base.DeleteCommand):
   following commands:
 
     $ gcloud init
+
     $ {command} REPOSITORY_NAME
 
   """

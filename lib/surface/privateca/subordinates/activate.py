@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.core.util import files
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Activate(base.SilentCommand):
   r"""Activate a subordinate certificate authority in a pending state.
 

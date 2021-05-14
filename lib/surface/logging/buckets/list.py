@@ -80,7 +80,7 @@ class ListAlpha(List):
     parser.display_info.AddFormat(
         'table(name.segment(-3):label=LOCATION, '
         'name.segment(-1):label=BUCKET_ID, retentionDays, restrictedFields, '
-        'lifecycle_state, locked, create_time, update_time)')
+        'indexConfigs, lifecycle_state, locked, create_time, update_time)')
 
 
 List.detailed_help = DETAILED_HELP

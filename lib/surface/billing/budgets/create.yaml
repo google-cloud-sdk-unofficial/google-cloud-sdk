@@ -180,6 +180,47 @@
         Set of credit types, specifying that usage from only this set of credits should be included
         in the budget. If a nonempty list is specified, then --credit-types-treatment must be
         include-specified-credits.
+    - group:
+        mutex: true
+        params:
+        - arg_name: calendar-period
+          ALPHA:
+            api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.calendarPeriod
+          BETA:
+            api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.calendarPeriod
+          GA:
+            api_field: googleCloudBillingBudgetsV1Budget.budgetFilter.calendarPeriod
+          help_text: |
+            Specifies to track usage for recurring calendar period.
+        - group:
+            params:
+            - arg_name: start-date
+              ALPHA:
+                api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.customPeriod.startDate
+                processor: googlecloudsdk.command_lib.billingbudgets.hooks:CreateParseToDateTypeV1Beta1
+              BETA:
+                api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.customPeriod.startDate
+                processor: googlecloudsdk.command_lib.billingbudgets.hooks:CreateParseToDateTypeV1Beta1
+              GA:
+                api_field: googleCloudBillingBudgetsV1Budget.budgetFilter.customPeriod.startDate
+                processor: googlecloudsdk.command_lib.billingbudgets.hooks:CreateParseToDateTypeV1
+              required: true
+              help_text: |
+                Specifies to track usage after any start date. This time period is static, it does not
+                recur.
+            - arg_name: end-date
+              ALPHA:
+                api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.customPeriod.endDate
+                processor: googlecloudsdk.command_lib.billingbudgets.hooks:CreateParseToDateTypeV1Beta1
+              BETA:
+                api_field: googleCloudBillingBudgetsV1beta1CreateBudgetRequest.budget.budgetFilter.customPeriod.endDate
+                processor: googlecloudsdk.command_lib.billingbudgets.hooks:CreateParseToDateTypeV1Beta1
+              GA:
+                api_field: googleCloudBillingBudgetsV1Budget.budgetFilter.customPeriod.endDate
+                processor: googlecloudsdk.command_lib.billingbudgets.hooks:CreateParseToDateTypeV1
+              help_text: |
+                Specifies to track usage before any end date. This time period is static, it does not
+                recur. If specified, --start-date must also be specified.
     - arg_name: all-updates-rule-pubsub-topic
       release_tracks: [ALPHA, BETA]
       ALPHA:

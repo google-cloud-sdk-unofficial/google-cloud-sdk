@@ -58,9 +58,9 @@ def _Run(holder, service_attachment_refs):
   return client.MakeRequests(requests)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
-  """Delete one or more service attachments."""
+  """Delete one or more Google Compute Engine service attachments."""
 
   SERVICE_ATTACHMENT_ARG = None
   detailed_help = _DetailedHelp()

@@ -19,12 +19,6 @@ arguments:
     help_text: Cloud Bigtable table to get the IAM policy for.
     spec: !REF googlecloudsdk.command_lib.bigtable.resources:table
 
-BETA:
-  iam:
-    policy_version: 3
-    get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion
-
-ALPHA:
-  iam:
-    policy_version: 3
-    get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion
+iam:
+  policy_version: 3
+  get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion

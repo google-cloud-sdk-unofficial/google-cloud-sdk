@@ -376,6 +376,7 @@ class Update(base.UpdateCommand):
       cluster_name = cluster.name
       cluster_node_count = cluster.currentNodeCount
       cluster_zone = cluster.zone
+      self.MaybeLogDataplaneV2ScaleWarning(cluster)
     except (exceptions.HttpException, apitools_exceptions.HttpForbiddenError,
             util.Error) as error:
       if cluster_is_required:
@@ -615,6 +616,19 @@ to completion."""
         getattr(args, 'add_cross_connect_subnetworks', False) or
         getattr(args, 'remove_cross_connect_subnetworks', False) or
         getattr(args, 'clear_cross_connect_subnetworks', False))
+
+  def MaybeLogDataplaneV2ScaleWarning(self, cluster):
+    if (cluster.networkConfig is not None and
+        cluster.networkConfig.datapathProvider is not None and
+        cluster.networkConfig.datapathProvider.name == 'ADVANCED_DATAPATH'):
+      # TODO(b/177430844): Remove once scale limits are gone
+      log.warning(
+          'GKE Dataplane V2 has been certified to run up to 500 nodes per'
+          ' cluster, including node autoscaling and surge upgrades. You '
+          'may request a cluster size of up to 1000 nodes by filing a '
+          'support ticket with GCP. For more information, please see'
+          'https://cloud.google.com/kubernetes-engine/docs/concepts/dataplane-v2'
+      )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

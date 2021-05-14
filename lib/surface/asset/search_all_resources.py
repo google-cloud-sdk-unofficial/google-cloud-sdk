@@ -100,12 +100,14 @@ def AddQueryArgument(parser):
           ``ACTIVE'' as a word.
         * ```NOT state:ACTIVE``` to find Cloud resources whose state doesn't
           contain ``ACTIVE'' as a word.
-        * ```createTime<1609459200``` to find Cloud resources that were
-          created before ``2021-01-01 00:00:00 UTC''. 1609459200 is the epoch
-          timestamp of ``2021-01-01 00:00:00 UTC'' in seconds.
-        * ```updateTime>1609459200``` to find Cloud resources that were
-          updated after ``2021-01-01 00:00:00 UTC''. 1609459200 is the epoch
-          timestamp of ``2021-01-01 00:00:00 UTC'' in seconds.
+        * ```createTime<1609459200``` or ```createTime<2021-01-01``` or
+          ```createTime<"2021-01-01T00:00:00"``` to find Cloud resources that
+          were created before ``2021-01-01 00:00:00 UTC''. 1609459200 is the
+          epoch timestamp of ``2021-01-01 00:00:00 UTC'' in seconds.
+        * ```updateTime>1609459200``` or ```updateTime>2021-01-01``` or
+          ```updateTime>"2021-01-01T00:00:00"``` to find Cloud resources that
+          were updated after ``2021-01-01 00:00:00 UTC''. 1609459200 is the
+          epoch timestamp of ``2021-01-01 00:00:00 UTC'' in seconds.
         * ```Important``` to find Cloud resources that contain ``Important''
           as a word in any of the searchable fields.
         * ```Impor*``` to find Cloud resources that contain ``Impor'' as a

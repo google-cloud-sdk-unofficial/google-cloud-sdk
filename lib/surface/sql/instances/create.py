@@ -41,12 +41,12 @@ import six
 DETAILED_HELP = {
     'EXAMPLES':
         """\
-        To create a MySQL 5.7 instance with ID ``prod-instance'' and machine
-        type ``db-n1-standard-1'', in the region ``us-central1'' (a zone will be
+        To create a MySQL 5.7 instance with ID ``prod-instance'' that has 2
+        CPUs, 4 GB of RAM, and is in the region ``us-central1'' (a zone will be
         auto-assigned), where the 'root' user has its password set to
         ``password123'', run:
 
-          $ {command} prod-instance --database-version=MYSQL_5_7 --tier=db-n1-standard-1 --region=us-central1 --root-password=password123
+          $ {command} prod-instance --database-version=MYSQL_5_7 --cpu=2 --memory=4GB --region=us-central1 --root-password=password123
 
         To create a Postgres 9.6 instance with ID ``prod-instance'' that has 2
         CPUs, 8 GiB of RAM, and is in the zone ``us-central1-a'', where the

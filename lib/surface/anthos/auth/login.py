@@ -29,7 +29,8 @@ class Login(base.BinaryBackedCommand):
   """Authenticate clusters using the Anthos client."""
 
   detailed_help = {
-      'EXAMPLES': """
+      'EXAMPLES':
+          """
       To  add credentials to default kubeconfig file:
 
           $ {command} --cluster=testcluster --login-config=kubectl-anthos-config.yaml
@@ -66,14 +67,15 @@ class Login(base.BinaryBackedCommand):
 
     # Get contents of config, parsing either URL or File.
     login_config, config_contents, is_url = anthoscli_backend.GetFileOrURL(
-        login_config,
-        args.login_config_cert)
+        login_config, args.login_config_cert)
 
     # Get Preferred Auth Method and handle prompting.
     force_update = args.set_preferred_auth
     authmethod, ldapuser, ldappass = anthoscli_backend.GetPreferredAuthForCluster(
-        cluster=cluster, login_config=login_config,
-        config_contents=config_contents, force_update=force_update,
+        cluster=cluster,
+        login_config=login_config,
+        config_contents=config_contents,
+        force_update=force_update,
         is_url=is_url)
 
     # Log and execute binary command with flags.
@@ -90,6 +92,7 @@ class Login(base.BinaryBackedCommand):
         ldap_user=ldapuser,
         ldap_pass=ldappass,
         preferred_auth=authmethod,
-        env=anthoscli_backend.GetEnvArgsForCommand())
+        env=anthoscli_backend.GetEnvArgsForCommand(
+            extra_vars={'GCLOUD_AUTH_PLUGIN': 'true'}))
     return anthoscli_backend.LoginResponseHandler(
         response, list_clusters_only=(cluster is None))

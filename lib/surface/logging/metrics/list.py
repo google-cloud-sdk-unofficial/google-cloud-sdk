@@ -31,9 +31,11 @@ class ListGA(base.ListCommand):
 
   detailed_help = {
       'DESCRIPTION': """\
-          Lists all logs-based metrics.
+      Lists all logs-based metrics.
       """,
       'EXAMPLES': """\
+      To list the top 10 logs-based metrics, run:
+
         $ {command} --limit=10
       """,
   }

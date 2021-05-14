@@ -44,9 +44,9 @@ def _Run(holder, service_attachment_ref):
   return client.MakeRequests([(collection, 'Get', request)])[0]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
-  """Display detailed information about a service attachment."""
+  """Display details about a Google Compute Engine service attachment."""
 
   SERVICE_ATTACHMENT_ARG = None
   detailed_help = _DetailedHelp()

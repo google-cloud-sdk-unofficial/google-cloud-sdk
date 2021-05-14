@@ -10,10 +10,12 @@
 
       ## EXAMPLES
 
-        To replace all perimeters within a policy, using etag:
+      To replace all perimeters within a policy, using etag:
+
         $ {command} my-policy-number --source-file=path-to-file-containing-all-replacement-service-perimeters.yaml --etag=optional-latest-etag-of-policy
 
-        To replace all perimeters within a policy, without using etag:
+      To replace all perimeters within a policy, without using etag:
+
         $ {command} my-policy-number --source-file=path-to-file-containing-all-replacement-service-perimeters.yaml
 
   request:

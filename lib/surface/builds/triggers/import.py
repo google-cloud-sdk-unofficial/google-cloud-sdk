@@ -30,16 +30,17 @@ class Import(base.Command):
   detailed_help = {
       'EXAMPLES':
           """\
-          To import a trigger from a file:
-            $ cat > trigger.yaml <<EOF
-            name: my-trigger
-            github:
-              owner: GoogleCloudPlatform
-              name: cloud-builders
-              push:
-                branch: .*
-            EOF
-            $ {command} --source=trigger.yaml
+      To import a trigger from a file:
+        $ cat > trigger.yaml <<EOF
+        name: my-trigger
+        github:
+          owner: GoogleCloudPlatform
+          name: cloud-builders
+          push:
+            branch: .*
+        EOF
+
+        $ {command} --source=trigger.yaml
           """,
   }
 

@@ -29,6 +29,7 @@ from googlecloudsdk.command_lib.privateca import text_utils
 from googlecloudsdk.core import properties
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List the subordinate certificate authorities within a location."""
 
