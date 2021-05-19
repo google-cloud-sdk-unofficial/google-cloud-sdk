@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import argparse
 import cmd
-import codecs
 import collections
 import datetime
 import functools
@@ -17,8 +16,6 @@ import json
 import os
 import pdb
 import pipes
-import pkgutil
-import platform
 import re
 import shlex
 import sys
@@ -117,28 +114,21 @@ PriorityAlphaReservationReference = bigquery_client.ApiClientHelper.PriorityAlph
 BetaReservationReference = bigquery_client.ApiClientHelper.BetaReservationReference
 CapacityCommitmentReference = bigquery_client.ApiClientHelper.CapacityCommitmentReference  # pylint: disable=line-too-long
 ReservationAssignmentReference = bigquery_client.ApiClientHelper.ReservationAssignmentReference  # pylint: disable=line-too-long
+BetaReservationAssignmentReference = bigquery_client.ApiClientHelper.BetaReservationAssignmentReference  # pylint: disable=line-too-long
 ConnectionReference = bigquery_client.ApiClientHelper.ConnectionReference
 
 # pylint: enable=g-bad-name
 
 
-def _GetVersion():
-  """Returns content of VERSION file which is same directory as this file."""
-  root = 'bq'
-  return six.ensure_str(pkgutil.get_data(root, 'VERSION'))
-
-
-_VERSION_NUMBER = _GetVersion()
-
 if os.environ.get('CLOUDSDK_WRAPPER') == '1':
   _CLIENT_ID = '32555940559.apps.googleusercontent.com'
   _CLIENT_SECRET = 'ZmssLNjJy2998hD4CTg2ejr2'
   _CLIENT_USER_AGENT = 'google-cloud-sdk' + os.environ.get(
-      'CLOUDSDK_VERSION', _VERSION_NUMBER)
+      'CLOUDSDK_VERSION', bq_utils.VERSION_NUMBER)
 else:
   _CLIENT_ID = '977385342095.apps.googleusercontent.com'
   _CLIENT_SECRET = 'wbER7576mc_1YOII0dGk7jEE'
-  _CLIENT_USER_AGENT = 'bq/' + _VERSION_NUMBER
+  _CLIENT_USER_AGENT = 'bq/' + bq_utils.VERSION_NUMBER
 
 _GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive'
 _BIGQUERY_SCOPE = 'https://www.googleapis.com/auth/bigquery'
@@ -151,16 +141,6 @@ _CLIENT_INFO = {
     'client_secret': _CLIENT_SECRET,
     'user_agent': _CLIENT_USER_AGENT,
 }
-_BIGQUERY_TOS_MESSAGE = (
-    'In order to get started, please visit the Google APIs Console to '
-    'create a project and agree to our Terms of Service:\n'
-    '\thttps://console.cloud.google.com/\n\n'
-    'For detailed sign-up instructions, please see our Getting Started '
-    'Guide:\n'
-    '\thttps://cloud.google.com/bigquery/docs/quickstarts/'
-    'quickstart-command-line\n\n'
-    'Once you have completed the sign-up process, please try your command '
-    'again.')
 _DELIMITER_MAP = {
     'tab': '\t',
     '\\t': '\t',
@@ -375,7 +355,7 @@ class CachedCredentialLoader(CredentialLoader):
     return creds
 
   def _RaiseCredentialsCorrupt(self, e):
-    BigqueryCmd.ProcessError(
+    bq_utils.ProcessError(
         e,
         name='GetCredentialsFromFlags',
         message_prefix=(
@@ -559,7 +539,7 @@ def _PrintDryRunInfo(job):
   num_bytes_accuracy = job['statistics']['query'].get(
       'totalBytesProcessedAccuracy', 'PRECISE')
   if FLAGS.format in ['prettyjson', 'json']:
-    _PrintFormattedJsonObject(job)
+    bq_utils.PrintFormattedJsonObject(job)
   elif FLAGS.format == 'csv':
     print(num_bytes)
   else:
@@ -588,30 +568,6 @@ def _PrintDryRunInfo(job):
               'modified, running this query will process %s of data and the '
               'accuracy is unknown because of federated tables or clustered '
               'tables.' % (num_bytes,))
-
-
-def _PrintFormattedJsonObject(obj, default_format='json'):
-  """Prints obj in a JSON format according to the "--format" flag.
-
-  Args:
-    obj: The object to print.
-    default_format: The format to use if the "--format" flag does not specify a
-      valid json format: 'json' or 'prettyjson'.
-  """
-  json_formats = ['json', 'prettyjson']
-  if FLAGS.format in json_formats:
-    use_format = FLAGS.format
-  else:
-    use_format = default_format
-
-  if use_format == 'json':
-    print(json.dumps(obj, separators=(',', ':')))
-  elif use_format == 'prettyjson':
-    print(json.dumps(obj, sort_keys=True, indent=2))
-  else:
-    raise ValueError(
-        'Invalid json format for printing: \'%s\', expected one of: %s' %
-        (use_format, json_formats))
 
 
 def _GetJobIdFromFlags():
@@ -1151,130 +1107,13 @@ class BigqueryCmd(NewCmd):
     try:
       return_value = self.RunWithArgs(*args, **kwds)
     except BaseException as e:
-      return BigqueryCmd.ProcessError(e, name=self._command_name)
+      return bq_utils.ProcessError(e, name=self._command_name)
     return return_value
-
-  @staticmethod
-  def ProcessError(
-      e,
-      name='unknown',
-      message_prefix='You have encountered a bug in the BigQuery CLI.'):
-    """Translate an error message into some printing and a return code."""
-
-    if isinstance(e, SystemExit):
-      return e.code  # sys.exit called somewhere, hopefully intentionally.
-
-    response = []
-    retcode = 1
-
-    (etype, value, tb) = sys.exc_info()
-    trace = ''.join(traceback.format_exception(etype, value, tb))
-    # pragma pylint: disable=line-too-long
-    contact_us_msg = (
-        'Please file a bug report in our '
-        'public '
-        'issue tracker:\n'
-        '  https://issuetracker.google.com/issues/new?component=187149&template=0\n'
-        'Please include a brief description of '
-        'the steps that led to this issue, as well as '
-        'any rows that can be made public from '
-        'the following information: \n\n')
-    error_details = ('========================================\n'
-                     '== Platform ==\n'
-                     '  %s\n'
-                     '== bq version ==\n'
-                     '  %s\n'
-                     '== Command line ==\n'
-                     '  %s\n'
-                     '== UTC timestamp ==\n'
-                     '  %s\n'
-                     '== Error trace ==\n'
-                     '%s'
-                     '========================================\n') % (
-                         ':'.join([
-                             platform.python_implementation(),
-                             platform.python_version(),
-                             platform.platform()
-                         ]),
-                         six.ensure_str(_VERSION_NUMBER),
-                         [six.ensure_str(item) for item in sys.argv],
-                         time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()),
-                         six.ensure_str(trace))
-
-    codecs.register_error('strict', codecs.replace_errors)
-    message = bigquery_client.EncodeForPrinting(e)
-    if isinstance(e, (bigquery_client.BigqueryNotFoundError,
-                      bigquery_client.BigqueryDuplicateError)):
-      response.append('BigQuery error in %s operation: %s' % (name, message))
-      retcode = 2
-    elif isinstance(e, bigquery_client.BigqueryTermsOfServiceError):
-      response.append(str(e) + '\n')
-      response.append(_BIGQUERY_TOS_MESSAGE)
-    elif isinstance(e, bigquery_client.BigqueryInvalidQueryError):
-      response.append('Error in query string: %s' % (message,))
-    elif (isinstance(e, bigquery_client.BigqueryError) and
-          not isinstance(e, bigquery_client.BigqueryInterfaceError)):
-      response.append('BigQuery error in %s operation: %s' % (name, message))
-    elif isinstance(e, (app.UsageError, TypeError)):
-      response.append(message)
-    elif (isinstance(e, SyntaxError) or
-          isinstance(e, bigquery_client.BigquerySchemaError)):
-      response.append('Invalid input: %s' % (message,))
-    elif isinstance(e, flags.Error):
-      response.append('Error parsing command: %s' % (message,))
-    elif isinstance(e, KeyboardInterrupt):
-      response.append('')
-    else:  # pylint: disable=broad-except
-      # Errors with traceback information are printed here.
-      # The traceback module has nicely formatted the error trace
-      # for us, so we don't want to undo that via TextWrap.
-      if isinstance(e, bigquery_client.BigqueryInterfaceError):
-        message_prefix = (
-            'Bigquery service returned an invalid reply in %s operation: %s.'
-            '\n\n'
-            'Please make sure you are using the latest version '
-            'of the bq tool and try again. '
-            'If this problem persists, you may have encountered a bug in the '
-            'bigquery client.' % (name, message))
-      elif isinstance(e, oauth2client_4_0.client.Error):
-        message_prefix = (
-            'Authorization error. This may be a network connection problem, '
-            'so please try again. If this problem persists, the credentials '
-            'may be corrupt. Try deleting and re-creating your credentials. '
-            'You can delete your credentials using '
-            '"bq init --delete_credentials".'
-            '\n\n'
-            'If this problem still occurs, you may have encountered a bug '
-            'in the bigquery client.')
-      elif (isinstance(e, six.moves.http_client.HTTPException) or
-            isinstance(e, googleapiclient.errors.Error) or
-            isinstance(e, httplib2.HttpLib2Error)):
-        message_prefix = (
-            'Network connection problem encountered, please try again.'
-            '\n\n'
-            'If this problem persists, you may have encountered a bug in the '
-            'bigquery client.')
-
-      message = message_prefix + ' ' + contact_us_msg
-      wrap_error_message = True
-      if wrap_error_message:
-        message = flags.text_wrap(message)
-      print(message)
-      print(error_details)
-      response.append(
-          'Unexpected exception in %s operation: %s' % (name, message))
-
-    response_message = '\n'.join(response)
-    wrap_error_message = True
-    if wrap_error_message:
-      response_message = flags.text_wrap(response_message)
-    print(response_message)
-    return retcode
 
   def PrintJobStartInfo(self, job):
     """Print a simple status line."""
     if FLAGS.format in ['prettyjson', 'json']:
-      _PrintFormattedJsonObject(job)
+      bq_utils.PrintFormattedJsonObject(job)
     else:
       reference = BigqueryClient.ConstructObjectReference(job)
       print('Successfully started %s %s' % (self._command_name, reference))
@@ -1980,7 +1819,22 @@ class _Query(BigqueryCmd):
     flags.DEFINE_boolean(
         'batch',
         None,
-        'Whether to run the query in batch mode.',
+        'Whether to run the query in batch mode. Ignored if --priority flag is '
+        'specified.',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'priority',
+        None,
+        [
+            'HIGH',
+            'INTERACTIVE',
+            'BATCH',
+        ],
+        'Query priority. If not specified, priority is determined using the '
+        '--batch flag. Options include:'
+        '\n HIGH (only available for whitelisted reservations)'
+        '\n INTERACTIVE'
+        '\n BATCH',
         flag_values=fv)
     flags.DEFINE_boolean(
         'append_table',
@@ -2360,9 +2214,16 @@ class _Query(BigqueryCmd):
         kwds['write_disposition'] = 'WRITE_TRUNCATE'
       if self.require_cache:
         kwds['create_disposition'] = 'CREATE_NEVER'
+      if ((self.batch and self.priority is not None and
+           self.priority != 'BATCH') or
+          (self.batch is not None and not self.batch and
+           self.priority == 'BATCH')):
+        raise app.UsageError('Conflicting values of --batch and --priority.')
       priority = None
       if self.batch:
         priority = 'BATCH'
+      if self.priority is not None:
+        priority = self.priority
       if priority is not None:
         kwds['priority'] = priority
 
@@ -3136,7 +2997,10 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         _PrintPageToken(response)
     elif self.reservation_assignment:
       try:
-        object_type = ReservationAssignmentReference
+        if FLAGS.api_version == 'v1beta1':
+          object_type = BetaReservationAssignmentReference
+        else:
+          object_type = ReservationAssignmentReference
         reference = client.GetReservationReference(
             identifier=identifier if identifier else '-',
             default_location=FLAGS.location,
@@ -4111,6 +3975,13 @@ class _Make(BigqueryCmd):
         None,
         'Reservation maximum concurrency.',
         flag_values=fv)
+    flags.DEFINE_bool(
+        'enable_queuing_and_priorities',
+        None,
+        'Whether to enable queuing and new job prioritization behavior for the '
+        'reservation. Reservation must be whitelisted in order to set this '
+        'flag.',
+        flag_values=fv)
     flags.DEFINE_integer(
         'autoscale_max_slots',
         None,
@@ -4132,6 +4003,20 @@ class _Make(BigqueryCmd):
         'jobs are not preemptible, i.e., they are not available for other jobs '
         'running in the reservation. These jobs will not utilize idle slots '
         'from other reservations.',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'priority',
+        None,
+        [
+            'HIGH',
+            'INTERACTIVE',
+            'BATCH',
+        ],
+        'Reservation assignment default job priority. Reservation must be '
+        'whitelisted in order to set this flag. Options include:'
+        '\n HIGH'
+        '\n INTERACTIVE'
+        '\n BATCH',
         flag_values=fv)
     flags.DEFINE_string(
         'reservation_id',
@@ -4284,6 +4169,7 @@ class _Make(BigqueryCmd):
             slots=self.slots,
             ignore_idle_slots=ignore_idle_arg,
             max_concurrency=self.max_concurrency,
+            enable_queuing_and_priorities=self.enable_queuing_and_priorities,
             autoscale_max_slots=self.autoscale_max_slots)
       except BaseException as e:
         raise bigquery_client.BigqueryError(
@@ -4315,6 +4201,7 @@ class _Make(BigqueryCmd):
         object_info = client.CreateReservationAssignment(
             reference=reference,
             job_type=self.job_type,
+            priority=self.priority,
             assignee_type=self.assignee_type,
             assignee_id=self.assignee_id)
         reference = client.GetReservationAssignmentReference(
@@ -4391,6 +4278,7 @@ class _Make(BigqueryCmd):
         formatter.AddDict(result)
       formatter.Print()
     elif self.connection:
+      # Create a new connection.
       if not self.connection_type:
         raise app.UsageError('Need to specify --connection_type.')
       if self.connection_type == 'AWS' and self.iam_role_id:
@@ -4403,13 +4291,15 @@ class _Make(BigqueryCmd):
       if self.connection_type == 'Azure' and self.tenant_id:
         self.properties = bigquery_client.MakeTenantIdPropertiesJson(
             self.tenant_id)
-      if not self.properties:
+
+      param_properties = self.properties
+      if not param_properties:
         raise app.UsageError('Need to specify --properties')
       created_connection = client.CreateConnection(
           project_id=FLAGS.project_id,
           location=FLAGS.location,
           connection_type=self.connection_type,
-          properties=self.properties,
+          properties=param_properties,
           connection_credential=self.connection_credential,
           display_name=self.display_name,
           description=self.description,
@@ -4869,6 +4759,22 @@ class _Update(BigqueryCmd):
         None, 'Destination reservation ID. '
         'Used in conjunction with --reservation_assignment.',
         flag_values=fv)
+    flags.DEFINE_enum(
+        'priority',
+        None,
+        [
+            'HIGH',
+            'INTERACTIVE',
+            'BATCH',
+            '',
+        ],
+        'Reservation assignment default job priority. Reservation must be '
+        'whitelisted in order to set this flag. Options include:'
+        '\n HIGH'
+        '\n INTERACTIVE'
+        '\n BATCH'
+        '\n empty string to unset priority',
+        flag_values=fv)
     flags.DEFINE_string(
         'reservation_size',
         None, 'BI reservation size. Can be specified in bytes '
@@ -4892,6 +4798,13 @@ class _Update(BigqueryCmd):
         'max_concurrency',
         None,
         'Reservation maximum concurrency.',
+        flag_values=fv)
+    flags.DEFINE_bool(
+        'enable_queuing_and_priorities',
+        None,
+        'Whether to enable queuing and new job prioritization behavior for the '
+        'reservation. Reservation must be whitelisted in order to set this '
+        'flag.',
         flag_values=fv)
     flags.DEFINE_integer(
         'autoscale_max_slots',
@@ -5229,6 +5142,7 @@ class _Update(BigqueryCmd):
               slots=self.slots,
               ignore_idle_slots=ignore_idle_arg,
               max_concurrency=self.max_concurrency,
+              enable_queuing_and_priorities=self.enable_queuing_and_priorities,
               autoscale_max_slots=self.autoscale_max_slots)
           _PrintObjectInfo(object_info, reference, custom_format='show')
       except BaseException as e:
@@ -5272,15 +5186,28 @@ class _Update(BigqueryCmd):
       try:
         reference = client.GetReservationAssignmentReference(
             identifier=identifier, default_location=FLAGS.location)
-        object_info = client.MoveReservationAssignment(
-            reference=reference,
-            destination_reservation_id=FLAGS.destination_reservation_id,
-            default_location=FLAGS.location)
-        moved_reference = client.GetReservationAssignmentReference(
-            path=object_info['name'])
+        if self.destination_reservation_id and self.priority is not None:
+          raise bigquery_client.BigqueryError(
+              'Cannot specify both --destination_reservation_id and '
+              '--priority.')
+        if self.destination_reservation_id:
+          object_info = client.MoveReservationAssignment(
+              reference=reference,
+              destination_reservation_id=self.destination_reservation_id,
+              default_location=FLAGS.location)
+          reference = client.GetReservationAssignmentReference(
+              path=object_info['name'])
+        elif self.priority is not None:
+          object_info = client.UpdateReservationAssignment(
+              reference, self.priority)
+        else:
+          raise bigquery_client.BigqueryError(
+              'Either --destination_reservation_id or --priority must be '
+              'specified.')
+
         _PrintObjectInfo(
             object_info,
-            moved_reference,
+            reference,
             custom_format='show',
             print_reference=False)
       except BaseException as e:
@@ -5933,9 +5860,9 @@ def _PrintObjectInfo(object_info,
   if custom_format == 'schema':
     if 'schema' not in object_info or 'fields' not in object_info['schema']:
       raise app.UsageError('Unable to retrieve schema from specified table.')
-    _PrintFormattedJsonObject(object_info['schema']['fields'])
+    bq_utils.PrintFormattedJsonObject(object_info['schema']['fields'])
   elif FLAGS.format in ['prettyjson', 'json']:
-    _PrintFormattedJsonObject(object_info)
+    bq_utils.PrintFormattedJsonObject(object_info)
   elif FLAGS.format in [None, 'sparse', 'pretty']:
     formatter = _GetFormatterFromFlags()
     BigqueryClient.ConfigureFormatter(
@@ -5961,7 +5888,7 @@ def _PrintObjectInfo(object_info,
 
 def _PrintObjectsArray(object_infos, objects_type):
   if FLAGS.format in ['prettyjson', 'json']:
-    _PrintFormattedJsonObject(object_infos)
+    bq_utils.PrintFormattedJsonObject(object_infos)
   elif FLAGS.format in [None, 'sparse', 'pretty']:
     if not object_infos:
       return
@@ -5986,7 +5913,7 @@ def _PrintObjectsArray(object_infos, objects_type):
 
 def _PrintObjectsArrayWithToken(object_infos, objects_type):
   if FLAGS.format in ['prettyjson', 'json']:
-    _PrintFormattedJsonObject(object_infos)
+    bq_utils.PrintFormattedJsonObject(object_infos)
   elif FLAGS.format in [None, 'sparse', 'pretty']:
     _PrintObjectsArray(object_infos['results'], objects_type)
     if 'token' in object_infos:
@@ -6216,7 +6143,7 @@ class _Insert(BigqueryCmd):
       result, errors = Flush()
 
     if FLAGS.format in ['prettyjson', 'json']:
-      _PrintFormattedJsonObject(result)
+      bq_utils.PrintFormattedJsonObject(result)
     elif FLAGS.format in [None, 'sparse', 'pretty']:
       if errors:
         for entry in result['insertErrors']:
@@ -6417,7 +6344,8 @@ class _GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
     client = Client.Get()
     reference = self.GetReferenceFromIdentifier(client, identifier)
     result_policy = self.GetPolicyForReference(client, reference)
-    _PrintFormattedJsonObject(result_policy, default_format='prettyjson')
+    bq_utils.PrintFormattedJsonObject(
+        result_policy, default_format='prettyjson')
 
 
 class _SetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
@@ -6456,7 +6384,8 @@ class _SetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
     with open(filename, 'r') as file_obj:
       policy = json.load(file_obj)
       result_policy = self.SetPolicyForReference(client, reference, policy)
-      _PrintFormattedJsonObject(result_policy, default_format='prettyjson')
+      bq_utils.PrintFormattedJsonObject(
+          result_policy, default_format='prettyjson')
 
 
 class _IamPolicyBindingCmd(_IamPolicyCmd):  # pylint: disable=missing-docstring
@@ -6562,7 +6491,8 @@ class _AddIamPolicyBinding(_IamPolicyBindingCmd):  # pylint: disable=missing-doc
                role=self.role,
                resource_type=reference.typename,  # e.g. 'table' or 'dataset'
                identifier=reference))
-    _PrintFormattedJsonObject(result_policy, default_format='prettyjson')
+    bq_utils.PrintFormattedJsonObject(
+        result_policy, default_format='prettyjson')
 
   @staticmethod
   def AddBindingToPolicy(policy, member, role):
@@ -6669,7 +6599,8 @@ class _RemoveIamPolicyBinding(_IamPolicyBindingCmd):  # pylint: disable=missing-
                role=self.role,
                resource_type=reference.typename,  # e.g. 'table' or 'dataset'
                identifier=reference))
-    _PrintFormattedJsonObject(result_policy, default_format='prettyjson')
+    bq_utils.PrintFormattedJsonObject(
+        result_policy, default_format='prettyjson')
 
   @staticmethod
   def RemoveBindingFromPolicy(policy, member, role):
@@ -6829,7 +6760,7 @@ class CommandLoop(cmd.Cmd):
       return True
     except BaseException as e:
       name = line.split(' ')[0]
-      BigqueryCmd.ProcessError(e, name=name)
+      bq_utils.ProcessError(e, name=name)
       self._last_return_code = 1
     return False
 
@@ -7078,7 +7009,7 @@ class _Version(BigqueryCmd):
 
   def RunWithArgs(self):
     """Return the version of bq."""
-    print('This is BigQuery CLI %s' % (_VERSION_NUMBER,))
+    print('This is BigQuery CLI %s' % (bq_utils.VERSION_NUMBER,))
 
 
 def _ParseUdfResources(udf_resources):

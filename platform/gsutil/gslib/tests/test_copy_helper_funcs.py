@@ -19,6 +19,7 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 
+import collections
 import datetime
 import logging
 import os
@@ -47,6 +48,7 @@ from gslib.utils import parallelism_framework_util
 from gslib.utils import posix_util
 from gslib.utils import system_util
 from gslib.utils import hashing_helper
+from gslib.utils.copy_helper import _CheckCloudHashes
 from gslib.utils.copy_helper import _DelegateUploadFileToObject
 from gslib.utils.copy_helper import _GetPartitionInfo
 from gslib.utils.copy_helper import _SelectUploadCompressionStrategy
@@ -363,6 +365,18 @@ class TestCpFuncs(GsUtilUnitTestCase):
     self.assertTrue(isinstance(translated_exc, ResumableUploadAbortException))
     self.assertIn('this can happen if a file changes size',
                   translated_exc.reason)
+
+  def testTranslateApitoolsResumableUploadExceptionStreamExhausted(self):
+    """Test that StreamExhausted error gets handled."""
+    gsutil_api = GcsJsonApi(GSMockBucketStorageUri,
+                            CreateOrGetGsutilLogger('copy_test'),
+                            DiscardMessagesQueue())
+    exc = apitools_exceptions.StreamExhausted('Not enough bytes')
+    translated_exc = gsutil_api._TranslateApitoolsResumableUploadException(exc)
+    self.assertTrue(isinstance(translated_exc, ResumableUploadAbortException))
+    self.assertIn(
+        'if this issue persists, try deleting the tracker files'
+        ' present under ~/.gsutil/tracker-files/', translated_exc.reason)
 
   def testSetContentTypeFromFile(self):
     """Tests that content type is correctly determined for symlinks."""
@@ -738,3 +752,14 @@ class TestExpandUrlToSingleBlr(GsUtilUnitTestCase):
 
     self.assertTrue(have_existing_dst_container)
     self.assertEqual(exp_url, StorageUrlFromString('gs://test/folder/'))
+
+  def testCheckCloudHashesIsSkippedCorrectly(self):
+    FakeObject = collections.namedtuple('FakeObject', ['md5Hash'])
+
+    with SetBotoConfigForTest([('GSUtil', 'check_hashes', 'never')]):
+      # Should not raise a hash mismatch error:
+      _CheckCloudHashes(logger=None,
+                        src_url=None,
+                        dst_url=None,
+                        src_obj_metadata=FakeObject(md5Hash='a'),
+                        dst_obj_metadata=FakeObject(md5Hash='b'))

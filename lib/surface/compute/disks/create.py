@@ -543,14 +543,9 @@ class Create(base.Command):
       if self.source_instant_snapshot_enabled:
         disk.sourceInstantSnapshot = self.GetSourceInstantSnapshotUri(
             args, compute_holder)
-      if (support_multiwriter_disk and
-          disk_ref.Collection() == 'compute.regionDisks' and
-          args.IsSpecified('multi_writer')):
-        raise exceptions.InvalidArgumentException(
-            '--multi-writer',
-            ('--multi-writer can be used only with --zone flag'))
 
-      if (support_multiwriter_disk and disk_ref.Collection() == 'compute.disks'
+      if (support_multiwriter_disk
+          and disk_ref.Collection() in ['compute.disks', 'compute.regionDisks']
           and args.IsSpecified('multi_writer')):
         disk.multiWriter = args.multi_writer
 

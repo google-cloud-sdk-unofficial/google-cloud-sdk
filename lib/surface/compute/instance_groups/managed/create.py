@@ -42,6 +42,9 @@ from googlecloudsdk.core import properties
 # explicitly asks us for more).
 _MAX_LEN_FOR_DEDUCED_BASE_INSTANCE_NAME = 54
 
+# Flags valid only for regional MIGs.
+REGIONAL_FLAGS = ['instance_redistribution_type', 'target_distribution_shape']
+
 
 def _AddInstanceGroupManagerArgs(parser):
   """Adds args."""
@@ -117,9 +120,10 @@ class CreateGA(base.CreateCommand):
     igm_arg = instance_groups_flags.GetInstanceGroupManagerArg(zones_flag=True)
     igm_arg.AddArgument(parser, operation_type='create')
     instance_groups_flags.AddZonesFlag(parser)
-    instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
     instance_groups_flags.AddMigCreateStatefulFlags(parser)
-    instance_groups_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
+    managed_flags.AddMigInstanceRedistributionTypeFlag(parser)
+    managed_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
+    # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   @staticmethod
   def _CreateStatefulPolicy(args, client):
@@ -233,6 +237,7 @@ class CreateGA(base.CreateCommand):
   def _CreateInstanceGroupManager(
       self, args, group_ref, template_ref, client, holder):
     """Create parts of Instance Group Manager shared for the track."""
+    managed_flags.ValidateRegionalMigFlagsUsage(args, REGIONAL_FLAGS, group_ref)
     instance_groups_flags.ValidateManagedInstanceGroupScopeArgs(
         args, holder.resources)
     health_check = managed_instance_groups_utils.GetHealthCheckUri(
@@ -242,14 +247,10 @@ class CreateGA(base.CreateCommand):
             client.messages, health_check, args.initial_delay))
     managed_instance_groups_utils.ValidateAutohealingPolicies(
         auto_healing_policies)
-    instance_groups_flags.ValidateMigInstanceRedistributionTypeFlag(
-        args.GetValue('instance_redistribution_type'), group_ref)
     update_policy = (managed_instance_groups_utils
                      .ApplyInstanceRedistributionTypeToUpdatePolicy)(
                          client, args.GetValue('instance_redistribution_type'),
                          None)
-    instance_groups_flags.ValidateMigDistributionPolicyTargetShapeFlag(
-        args.target_distribution_shape, group_ref)
 
     instance_group_manager = client.messages.InstanceGroupManager(
         name=group_ref.Name(),

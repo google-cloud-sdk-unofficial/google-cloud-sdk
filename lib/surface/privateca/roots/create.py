@@ -24,7 +24,9 @@ from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.command_lib.privateca import create_utils
+from googlecloudsdk.command_lib.privateca import create_utils_v1
 from googlecloudsdk.command_lib.privateca import flags
+from googlecloudsdk.command_lib.privateca import flags_v1
 from googlecloudsdk.command_lib.privateca import iam
 from googlecloudsdk.command_lib.privateca import operations
 from googlecloudsdk.command_lib.privateca import p4sa
@@ -36,8 +38,9 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
 
 
-# pylint: disable=line-too-long
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
+  # pylint: disable=line-too-long
   r"""Create a new root certificate authority.
 
   ## EXAMPLES
@@ -45,21 +48,138 @@ class Create(base.CreateCommand):
   To create a root CA that supports one layer of subordinates:
 
       $ {command} prod-root \
+        --pool my-pool \
         --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1" \
+        --subject="CN=Joonix Production Root CA" \
+        --max-chain-length=1
+
+  To create a root CA that is based on an existing CA:
+
+      $ {command} prod-root \
+        --pool my-pool \
+        --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1" \
+        --from-ca=source-root \
+        --from-ca-location=us-central1
+  """
+
+  def __init__(self, *args, **kwargs):
+    super(Create, self).__init__(*args, **kwargs)
+    self.client = privateca_base.GetClientInstance(api_version='v1')
+    self.messages = privateca_base.GetMessagesModule(api_version='v1')
+
+  @staticmethod
+  def Args(parser):
+    key_spec_group = parser.add_group(
+        mutex=True,
+        help='The key configuration used for the CA certificate. Defaults to a '
+        'managed key if not specified.')
+    x509_config_group = parser.add_group(
+        mutex=True,
+        required=False,
+        help='The X.509 configuration used for the CA certificate.')
+
+    concept_parsers.ConceptParser([
+        presentation_specs.ResourcePresentationSpec(
+            'CERTIFICATE_AUTHORITY',
+            resource_args.CreateCertAuthorityResourceSpec(
+                'Certificate Authority'),
+            'The name of the root CA to create.',
+            required=True),
+        presentation_specs.ResourcePresentationSpec(
+            '--kms-key-version',
+            resource_args.CreateKmsKeyVersionResourceSpec(),
+            'An existing KMS key version to back this CA.',
+            group=key_spec_group),
+        presentation_specs.ResourcePresentationSpec(
+            '--from-ca',
+            resource_args.CreateCertAuthorityResourceSpec(
+                'source CA',
+                location_fallthroughs=[deps.ArgFallthrough('--location'), resource_args.LOCATION_PROPERTY_FALLTHROUGH],
+                pool_id_fallthroughs=[deps.ArgFallthrough('--pool')]),
+            'An existing CA from which to copy configuration values for the new CA. '
+            'You can still override any of those values by explicitly providing '
+            'the appropriate flags. The specified existing CA must be part of '
+            'the same pool as the one being created.',
+            flag_name_overrides={
+                'project': '',
+                'location': '',
+                'pool': '',
+            },
+            prefixes=True)
+    ]).AddToParser(parser)
+    flags.AddSubjectFlags(parser, subject_required=False)
+    flags.AddKeyAlgorithmFlag(key_spec_group, default='rsa-pkcs1-4096-sha256')
+    flags.AddValidityFlag(
+        parser,
+        resource_name='CA',
+        default_value='P10Y',
+        default_value_text='10 years')
+    labels_util.AddCreateLabelsFlags(parser)
+    flags.AddBucketFlag(parser)
+    flags_v1.AddUsePresetProfilesFlag(x509_config_group)
+    flags_v1.AddInlineX509ParametersFlags(x509_config_group, is_ca_command=True)
+
+  def Run(self, args):
+    new_ca, ca_ref, _ = create_utils_v1.CreateCAFromArgs(
+        args, is_subordinate=False)
+    pool_ref = ca_ref.Parent()
+    project_ref = pool_ref.Parent().Parent()
+    key_version_ref = args.CONCEPTS.kms_key_version.Parse()
+    kms_key_ref = key_version_ref.Parent() if key_version_ref else None
+
+    iam.CheckCreateCertificateAuthorityPermissions(project_ref, kms_key_ref)
+
+    bucket_ref = None
+    if args.IsSpecified('bucket'):
+      bucket_ref = storage.ValidateBucketForCertificateAuthority(args.bucket)
+      new_ca.gcsBucket = bucket_ref.bucket
+
+    p4sa_email = p4sa.GetOrCreate(project_ref)
+    p4sa.AddResourceRoleBindings(p4sa_email, kms_key_ref, bucket_ref)
+
+    operation = self.client.projects_locations_caPools_certificateAuthorities.Create(
+        self.messages
+        .PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesCreateRequest(
+            certificateAuthority=new_ca,
+            certificateAuthorityId=ca_ref.Name(),
+            parent=pool_ref.RelativeName(),
+            requestId=request_utils.GenerateRequestId()))
+
+    ca_response = operations.Await(operation, 'Creating Certificate Authority.')
+    ca = operations.GetMessageFromResponse(ca_response,
+                                           self.messages.CertificateAuthority)
+
+    log.status.Print('Created Certificate Authority [{}].'.format(ca.name))
+
+
+# pylint: disable=line-too-long
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  r"""Create a new root certificate authority.
+
+  ## EXAMPLES
+
+  To create a root CA that supports one layer of subordinates:
+
+      $ {command} prod-root \
+        --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1"
+        \
         --subject="CN=Joonix Production Root CA" \
         --max-chain-length=1
 
   To create a root CA and restrict what it can issue:
 
       $ {command} prod-root \
-        --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1" \
+        --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1"
+        \
         --subject="CN=Joonix Production Root CA" \
         --issuance-policy=policy.yaml
 
   To create a root CA that doesn't publicly publish CA certificate and CRLs:
 
       $ {command} root-2 \
-        --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1" \
+        --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1"
+        \
         --subject="CN=Joonix Production Root CA" \
         --issuance-policy=policy.yaml \
         --no-publish-ca-cert \
@@ -68,12 +188,13 @@ class Create(base.CreateCommand):
   To create a root CA that is based on an existing CA:
 
       $ {command} prod-root \
-        --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1" \
+        --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1"
+        \
         --from-ca=source-root --from-ca-location=us-central1
   """
 
   def __init__(self, *args, **kwargs):
-    super(Create, self).__init__(*args, **kwargs)
+    super(CreateBeta, self).__init__(*args, **kwargs)
     self.client = privateca_base.GetClientInstance()
     self.messages = privateca_base.GetMessagesModule()
 
@@ -82,7 +203,7 @@ class Create(base.CreateCommand):
     key_spec_group = parser.add_group(
         mutex=True,
         help='The key configuration used for the CA certificate. Defaults to a '
-             'managed key if not specified.')
+        'managed key if not specified.')
     reusable_config_group = parser.add_group(
         mutex=True,
         required=False,
@@ -103,12 +224,14 @@ class Create(base.CreateCommand):
         presentation_specs.ResourcePresentationSpec(
             '--reusable-config',
             resource_args.CreateReusableConfigResourceSpec(
-                location_fallthroughs=[deps.Fallthrough(
-                    function=lambda: '',
-                    hint=('location will default to the same location as '
-                          'the CA'),
-                    active=False,
-                    plural=False)]),
+                location_fallthroughs=[
+                    deps.Fallthrough(
+                        function=lambda: '',
+                        hint=('location will default to the same location as '
+                              'the CA'),
+                        active=False,
+                        plural=False)
+                ]),
             'The Reusable Config containing X.509 values for this CA.',
             flag_name_overrides={
                 'location': '',
@@ -117,29 +240,30 @@ class Create(base.CreateCommand):
             group=reusable_config_group),
         presentation_specs.ResourcePresentationSpec(
             '--from-ca',
-            resource_args.CreateCertificateAuthorityResourceSpec(
-                'source CA'),
+            resource_args.CreateCertificateAuthorityResourceSpec('source CA'),
             'An existing CA from which to copy configuration values for the new CA. '
             'You can still override any of those values by explicitly providing '
             'the appropriate flags.',
             flag_name_overrides={'project': '--from-ca-project'},
             prefixes=True)
     ]).AddToParser(parser)
-    flags.AddTierFlag(parser)
     flags.AddSubjectFlags(parser, subject_required=False)
-    flags.AddPublishCaCertFlag(parser, use_update_help_text=False)
-    flags.AddPublishCrlFlag(parser, use_update_help_text=False)
     flags.AddKeyAlgorithmFlag(key_spec_group, default='rsa-pkcs1-4096-sha256')
-    flags.AddInlineReusableConfigFlags(
-        reusable_config_group, is_ca_command=True, default_max_chain_length=None)
     flags.AddValidityFlag(
         parser,
         resource_name='CA',
         default_value='P10Y',
         default_value_text='10 years')
-    flags.AddCertificateAuthorityIssuancePolicyFlag(parser)
     labels_util.AddCreateLabelsFlags(parser)
     flags.AddBucketFlag(parser)
+    flags.AddTierFlag(parser)
+    flags.AddPublishCaCertFlag(parser, use_update_help_text=False)
+    flags.AddPublishCrlFlag(parser, use_update_help_text=False)
+    flags.AddCertificateAuthorityIssuancePolicyFlag(parser)
+    flags.AddInlineReusableConfigFlags(
+        reusable_config_group,
+        is_ca_command=True,
+        default_max_chain_length=None)
 
   def Run(self, args):
     new_ca, ca_ref, _ = create_utils.CreateCAFromArgs(

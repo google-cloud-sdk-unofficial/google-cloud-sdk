@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to create a custom job in AI platform."""
+"""Command to create a custom job in Vertex AI."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.ai import validation
 from googlecloudsdk.command_lib.ai.custom_jobs import custom_jobs_util
 from googlecloudsdk.command_lib.ai.custom_jobs import flags
 from googlecloudsdk.core import log
-
 
 _CUSTOM_JOB_CREATION_DISPLAY_MESSAGE = """\
 Custom Job [{id}] submitted successfully.

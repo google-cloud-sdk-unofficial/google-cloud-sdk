@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for AI Platform hyperparameter tuning job."""
+"""Command group for Vertex AI hyperparameter tuning job."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,5 +23,6 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class HpTuningJobs(base.Group):
-  """AI Platform hyperparameter tuning job commands."""
-  pass
+  """Manage Vertex AI hyperparameter tuning jobs."""
+
+  category = base.VERTEX_AI_CATEGORY

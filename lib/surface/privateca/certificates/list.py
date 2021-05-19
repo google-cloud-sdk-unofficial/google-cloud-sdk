@@ -59,6 +59,8 @@ _DETAILED_HELP = {
 }
 
 
+# TODO(b/177604350): Remove Beta code paths.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List certificates within a project."""
 

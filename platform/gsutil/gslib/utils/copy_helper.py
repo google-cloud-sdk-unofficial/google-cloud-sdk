@@ -26,7 +26,6 @@ import csv
 import datetime
 import errno
 import gzip
-from hashlib import md5
 import json
 import logging
 import mimetypes
@@ -129,6 +128,7 @@ from gslib.utils.hashing_helper import CHECK_HASH_IF_FAST_ELSE_FAIL
 from gslib.utils.hashing_helper import CHECK_HASH_NEVER
 from gslib.utils.hashing_helper import ConcatCrc32c
 from gslib.utils.hashing_helper import GetDownloadHashAlgs
+from gslib.utils.hashing_helper import GetMd5
 from gslib.utils.hashing_helper import GetUploadHashAlgs
 from gslib.utils.hashing_helper import HashingFileUploadWrapper
 from gslib.utils.metadata_util import ObjectIsGzipEncoded
@@ -184,12 +184,6 @@ open_files_map = AtomicDict(
 # We don't allow multiple processes on Windows, so using a process-safe lock
 # would be unnecessary.
 open_files_lock = parallelism_framework_util.CreateLock()
-
-# Declarations for tracking state of one-time warning that use of KMS is
-# disabling parallel composite uploads.
-global kms_compose_warning, kms_compose_warning_lock
-kms_compose_warning_lock = parallelism_framework_util.CreateLock()
-kms_compose_warning = True
 
 # For debugging purposes; if True, files and objects that fail hash validation
 # will be saved with the below suffix appended.
@@ -290,19 +284,6 @@ suggested_sliced_transfers = AtomicDict(
     manager=(parallelism_framework_util.top_level_manager
              if CheckMultiprocessingAvailableAndInit().is_available else None))
 suggested_sliced_transfers_lock = parallelism_framework_util.CreateLock()
-
-# TODO(KMS, Compose): Remove this once we support compose across CMEK-encrypted
-# components, making such parallel composite uploads possible.
-global bucket_metadata_pcu_check, bucket_metadata_pcu_check_lock
-# When considering whether we should perform a parallel composite upload to a
-# gs bucket, we check if the bucket metadata contains a defaultKmsKeyName. If
-# so, we don't do a pcu. Additionally, we only want to perform this check once,
-# hence the lock.
-#
-# Becomes True or False once populated. If we ever allow multiple destination
-# arguments to cp, this could become a dict of bucket name -> bool.
-bucket_metadata_pcu_check = None
-bucket_metadata_pcu_check_lock = parallelism_framework_util.CreateLock()
 
 
 class FileConcurrencySkipError(Exception):
@@ -616,8 +597,9 @@ def ConstructDstUrl(src_url,
   if exp_src_url.IsFileUrl() and (exp_src_url.IsStream() or
                                   exp_src_url.IsFifo()):
     if have_existing_dest_subdir:
+      type_text = 'stream' if exp_src_url.IsStream() else 'named pipe'
       raise CommandException('Destination object name needed when '
-                             'source is a stream')
+                             'source is a %s' % type_text)
     return exp_dst_url
 
   if not recursion_requested and not have_multiple_srcs:
@@ -765,7 +747,7 @@ def _CreateDigestsFromLocalFile(status_queue, algs, file_name, src_url,
   """
   hash_dict = {}
   if 'md5' in algs:
-    hash_dict['md5'] = md5()
+    hash_dict['md5'] = GetMd5()
   if 'crc32c' in algs:
     hash_dict['crc32c'] = crcmod.predefined.Crc('crc-32c')
   with open(file_name, 'rb') as fp:
@@ -798,6 +780,15 @@ def _CheckCloudHashes(logger, src_url, dst_url, src_obj_metadata,
     CommandException: if cloud digests don't match local digests.
   """
   # See hack comment in _CheckHashes.
+
+  # Sometimes (e.g. when kms is enabled for s3) the values we check below are
+  # not actually content hashes. The early exit here provides users a workaround
+  # for this case and any others we've missed.
+  check_hashes_config = config.get('GSUtil', 'check_hashes',
+                                   CHECK_HASH_IF_FAST_ELSE_FAIL)
+  if check_hashes_config == CHECK_HASH_NEVER:
+    return
+
   checked_one = False
   download_hashes = {}
   upload_hashes = {}
@@ -1012,7 +1003,7 @@ def _PartitionFile(fp,
     # naming scheme for the temporary components allows users to take
     # advantage of resumable uploads for each component.
     encoded_name = six.ensure_binary(PARALLEL_UPLOAD_STATIC_SALT + fp.name)
-    content_md5 = md5()
+    content_md5 = GetMd5()
     content_md5.update(encoded_name)
     digest = content_md5.hexdigest()
     temp_file_name = (random_prefix + PARALLEL_UPLOAD_TEMP_NAMESPACE + digest +
@@ -1277,24 +1268,13 @@ def _DoParallelCompositeUpload(fp,
   return elapsed_time, composed_object
 
 
-def _WarnOnceAboutKmsCompose(logger):
-  global kms_compose_warning, kms_compose_warning_lock
-  with kms_compose_warning_lock:
-    if kms_compose_warning:
-      kms_compose_warning = False
-      logger.warning('WARNING: Not using parallel composite upload for '
-                     'KMS-encryption. This combination is not currently '
-                     'supported by GCS.')
-
-
 def _ShouldDoParallelCompositeUpload(logger,
                                      allow_splitting,
                                      src_url,
                                      dst_url,
                                      file_size,
                                      gsutil_api,
-                                     canned_acl=None,
-                                     kms_keyname=None):
+                                     canned_acl=None):
   """Determines whether parallel composite upload strategy should be used.
 
   Args:
@@ -1307,7 +1287,6 @@ def _ShouldDoParallelCompositeUpload(logger,
         has any metadata attributes set that would discourage us from using
         parallel composite uploads.
     canned_acl: Canned ACL to apply to destination object, if any.
-    kms_keyname: Cloud KMS key name to encrypt destination, if any.
 
   Returns:
     True iff a parallel upload should be performed on the source file.
@@ -1317,9 +1296,6 @@ def _ShouldDoParallelCompositeUpload(logger,
   parallel_composite_upload_threshold = HumanReadableToBytes(
       config.get('GSUtil', 'parallel_composite_upload_threshold',
                  DEFAULT_PARALLEL_COMPOSITE_UPLOAD_THRESHOLD))
-
-  disable_parallel_composite_upload_kms_check = config.getbool(
-      'GSUtil', 'disable_parallel_composite_upload_kms_check', False)
 
   all_factors_but_size = (
       allow_splitting  # Don't split the pieces multiple times.
@@ -1333,8 +1309,7 @@ def _ShouldDoParallelCompositeUpload(logger,
   # TODO: Once compiled crcmod is being distributed by major Linux distributions
   # remove this check.
   if (all_factors_but_size and parallel_composite_upload_threshold == 0 and
-      file_size >= PARALLEL_COMPOSITE_SUGGESTION_THRESHOLD) and (
-          not kms_keyname or disable_parallel_composite_upload_kms_check):
+      file_size >= PARALLEL_COMPOSITE_SUGGESTION_THRESHOLD):
     with suggested_sliced_transfers_lock:
       if not suggested_sliced_transfers.get('suggested'):
         logger.info('\n'.join(
@@ -1353,64 +1328,8 @@ def _ShouldDoParallelCompositeUpload(logger,
                 'composite objects.')) + '\n')
         suggested_sliced_transfers['suggested'] = True
 
-  all_factors_with_size = (all_factors_but_size and
-                           parallel_composite_upload_threshold > 0 and
-                           file_size >= parallel_composite_upload_threshold)
-
-  # TODO(b/177276545): 'disable_parallel_composite_upload_kms_check' is used to soft-launch support for kms composition.
-  # Remove this behavior once fully launched.
-  if disable_parallel_composite_upload_kms_check:
-    return all_factors_with_size
-  if not all_factors_with_size:
-    return False
-
-  # TODO(KMS, Compose): Until we ensure service-side that we have efficient
-  # compose functionality over objects with distinct KMS encryption keys (CMEKs)
-  # or distinct CSEKs, don't utilize parallel composite uploads.
-  if kms_keyname:
-    _WarnOnceAboutKmsCompose(logger)
-    return False
-
-  # TODO(KMS, Compose): Once GCS supports compose operations over
-  # CMEK-encrypted objects, remove this check and return the boolean result of
-  # the predicate above, minus the top-level "not" operator.
-  #
-  # To avoid unnecessary API calls, we only perform this check once we're sure
-  # we'd otherwise do a parallel composite upload. To prevent gsutil from
-  # attempting parallel composite uploads to a bucket with its defaultKmsKeyName
-  # metadata attribute set, we check once for this attribute. We then cache that
-  # result so that each copy operation can check there, rather than having to
-  # do its own duplicate API call to check for this.
-  #
-  # Pre-emptive check; while this is susceptible to race conditions at the start
-  # of this gsutil invocation, and not reliable in the case where we see
-  # bucket_metadata_pcu_check has not been populated yet, it helps to avoid
-  # the slowdown of acquiring a lock in the case where the variable HAS been
-  # populated.
-  global bucket_metadata_pcu_check, bucket_metadata_pcu_check_lock
-  if bucket_metadata_pcu_check is not None:
-    return bucket_metadata_pcu_check
-  with bucket_metadata_pcu_check_lock:
-    # Check again once we've attained the lock; it's possible that between the
-    # time we checked above and now, another thread released the lock and
-    # populated bucket_metadata_pcu_check.
-    if bucket_metadata_pcu_check is not None:
-      return bucket_metadata_pcu_check
-
-    try:
-      bucket = gsutil_api.GetBucket(dst_url.bucket_name,
-                                    provider=dst_url.scheme,
-                                    fields=['id', 'encryption'])
-      if bucket.encryption and bucket.encryption.defaultKmsKeyName:
-        bucket_metadata_pcu_check = False
-      else:
-        bucket_metadata_pcu_check = True
-    except ServiceException:
-      # Treat an API call failure as if we checked and there was no key.
-      bucket_metadata_pcu_check = True
-    if not bucket_metadata_pcu_check:
-      _WarnOnceAboutKmsCompose(logger)
-    return bucket_metadata_pcu_check
+  return (all_factors_but_size and parallel_composite_upload_threshold > 0 and
+          file_size >= parallel_composite_upload_threshold)
 
 
 def ExpandUrlToSingleBlr(url_str,
@@ -2180,8 +2099,7 @@ def _UploadFileToObject(src_url,
       dst_url,
       src_obj_size,
       gsutil_api,
-      canned_acl=global_copy_helper_opts.canned_acl,
-      kms_keyname=dst_obj_metadata.kmsKeyName)
+      canned_acl=global_copy_helper_opts.canned_acl)
   non_resumable_upload = (
       (0 if upload_size is None else upload_size) < ResumableThreshold() or
       src_url.IsStream() or src_url.IsFifo())

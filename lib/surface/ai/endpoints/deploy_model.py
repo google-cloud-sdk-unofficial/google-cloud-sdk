@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""AI Platform endpoints deploy-model command."""
+"""Vertex AI endpoints deploy-model command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -44,7 +44,7 @@ def _AddArgs(parser, version):
 
 
 def _Run(args, version):
-  """Deploy a model to an existing AI Platform endpoint."""
+  """Deploy a model to an existing Vertex AI endpoint."""
   validation.ValidateDisplayName(args.display_name)
   if version != constants.GA_VERSION:
     validation.ValidateAutoscalingMetricSpecs(args.autoscaling_metric_specs)
@@ -97,7 +97,7 @@ def _Run(args, version):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class DeployModelGa(base.Command):
-  """Deploy a model to an existing AI Platform endpoint.
+  """Deploy a model to an existing Vertex AI endpoint.
 
   ## EXAMPLES
 
@@ -119,7 +119,7 @@ class DeployModelGa(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class DeployModelBeta(DeployModelGa):
-  """Deploy a model to an existing AI Platform endpoint.
+  """Deploy a model to an existing Vertex AI endpoint.
 
   ## EXAMPLES
 

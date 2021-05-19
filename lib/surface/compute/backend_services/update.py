@@ -478,7 +478,7 @@ class UpdateBeta(UpdateGA):
   """
 
   _support_client_only = False
-  _support_unspecified_protocol = False
+  _support_unspecified_protocol = True
   _support_grpc_protocol = True
   _support_subsetting = True
   _support_edge_policies = False

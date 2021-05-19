@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""AI Platform endpoints delete command."""
+"""Vertex AI endpoints delete command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -31,7 +31,7 @@ from googlecloudsdk.core.console import console_io
 
 
 def _Run(args, version):
-  """Delete an existing AI Platform endpoint."""
+  """Delete an existing Vertex AI endpoint."""
   endpoint_ref = args.CONCEPTS.endpoint.Parse()
   args.region = endpoint_ref.AsDict()['locationsId']
   endpoint_id = endpoint_ref.AsDict()['endpointsId']
@@ -48,7 +48,7 @@ def _Run(args, version):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class DeleteGa(base.DeleteCommand):
-  """Delete an existing AI Platform endpoint.
+  """Delete an existing Vertex AI endpoint.
 
   ## EXAMPLES
 
@@ -69,7 +69,7 @@ class DeleteGa(base.DeleteCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class DeleteBeta(DeleteGa):
-  """Delete an existing AI Platform endpoint.
+  """Delete an existing Vertex AI endpoint.
 
   ## EXAMPLES
 

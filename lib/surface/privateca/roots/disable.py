@@ -27,7 +27,8 @@ from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.core import log
 
 
-class Disable(base.SilentCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DisableBeta(base.SilentCommand):
   r"""Disable a root certificate authority.
 
     Disables a root certificate authority. The root certificate authority
@@ -62,6 +63,55 @@ class Disable(base.SilentCommand):
 
     operation = client.projects_locations_certificateAuthorities.Disable(
         messages.PrivatecaProjectsLocationsCertificateAuthoritiesDisableRequest(
+            name=ca_ref.RelativeName(),
+            disableCertificateAuthorityRequest=messages
+            .DisableCertificateAuthorityRequest(
+                requestId=request_utils.GenerateRequestId())))
+
+    operations.Await(operation, 'Disabling Root CA')
+
+    log.status.Print('Disabled Root CA [{}].'.format(ca_ref.RelativeName()))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Disable(base.SilentCommand):
+  r"""Disable a root certificate authority.
+
+    Disables a root certificate authority. The root certificate authority
+    will not be allowed to issue certificates once disabled. It may still revoke
+    certificates and/or generate CRLs. The CA certfificate will still be
+    included in the FetchCaCertificates response for the parent CA Pool.
+
+    ## EXAMPLES
+
+    To disable a root CA:
+
+        $ {command} prod-root --pool prod-root-pool --location=us-west1
+  """
+
+  @staticmethod
+  def Args(parser):
+    resource_args.AddCertAuthorityPositionalResourceArg(parser, 'to disable')
+
+  def Run(self, args):
+    client = privateca_base.GetClientInstance(api_version='v1')
+    messages = privateca_base.GetMessagesModule(api_version='v1')
+
+    ca_ref = args.CONCEPTS.certificate_authority.Parse()
+
+    current_ca = client.projects_locations_caPools_certificateAuthorities.Get(
+        messages
+        .PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesGetRequest(
+            name=ca_ref.RelativeName()))
+
+    resource_args.CheckExpectedCAType(
+        messages.CertificateAuthority.TypeValueValuesEnum.SELF_SIGNED,
+        current_ca,
+        version='v1')
+
+    operation = client.projects_locations_caPools_certificateAuthorities.Disable(
+        messages
+        .PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesDisableRequest(
             name=ca_ref.RelativeName(),
             disableCertificateAuthorityRequest=messages
             .DisableCertificateAuthorityRequest(

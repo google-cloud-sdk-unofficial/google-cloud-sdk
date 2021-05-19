@@ -26,6 +26,8 @@ from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
+# TODO(b/177604350): Remove Beta code paths.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   r"""Update an existing certificate.
 

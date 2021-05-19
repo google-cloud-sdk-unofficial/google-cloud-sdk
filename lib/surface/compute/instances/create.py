@@ -94,7 +94,6 @@ def _CommonArgs(parser,
                 enable_regional=False,
                 enable_kms=False,
                 deprecate_maintenance_policy=False,
-                enable_resource_policy=False,
                 supports_location_hint=False,
                 supports_erase_vss=False,
                 snapshot_csek=False,
@@ -110,7 +109,6 @@ def _CommonArgs(parser,
       parser,
       enable_kms=enable_kms,
       enable_snapshots=True,
-      resource_policy=enable_resource_policy,
       source_snapshot_csek=snapshot_csek,
       image_csek=image_csek,
       support_boot=True,
@@ -196,7 +194,6 @@ class Create(base.CreateCommand):
   _support_kms = True
   _support_nvdimm = False
   _support_public_dns = False
-  _support_disk_resource_policy = False
   _support_erase_vss = False
   _support_machine_image_key = False
   _support_location_hint = False
@@ -217,6 +214,7 @@ class Create(base.CreateCommand):
   _support_network_performance_configs = False
   _support_image_family_scope = False
   _support_subinterface = False
+  _support_secure_tag = False
 
   @classmethod
   def Args(cls, parser):
@@ -345,7 +343,6 @@ class Create(base.CreateCommand):
             holder=holder,
             support_kms=self._support_kms,
             support_nvdimm=self._support_nvdimm,
-            support_disk_resource_policy=self._support_disk_resource_policy,
             support_source_snapshot_csek=self._support_source_snapshot_csek,
             support_boot_snapshot_uri=self._support_boot_snapshot_uri,
             support_image_csek=self._support_image_csek,
@@ -389,6 +386,10 @@ class Create(base.CreateCommand):
           serviceAccounts=project_to_sa[instance_ref.project],
           scheduling=scheduling,
           tags=tags)
+
+      if self._support_secure_tag:
+        if args.secure_tags:
+          instance.secureTags = args.secure_tags
 
       if args.private_ipv6_google_access_type is not None:
         instance.privateIpv6GoogleAccess = (
@@ -558,7 +559,6 @@ class CreateBeta(Create):
   _support_kms = True
   _support_nvdimm = False
   _support_public_dns = False
-  _support_disk_resource_policy = True
   _support_erase_vss = True
   _support_machine_image_key = True
   _support_location_hint = False
@@ -574,6 +574,7 @@ class CreateBeta(Create):
   _support_network_performance_configs = True
   _support_image_family_scope = True
   _support_subinterface = False
+  _support_secure_tag = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -597,7 +598,6 @@ class CreateBeta(Create):
         parser,
         enable_regional=cls._support_regional,
         enable_kms=cls._support_kms,
-        enable_resource_policy=cls._support_disk_resource_policy,
         supports_erase_vss=cls._support_erase_vss,
         support_replica_zones=cls._support_replica_zones,
         support_multi_writer=cls._support_multi_writer,
@@ -626,7 +626,6 @@ class CreateAlpha(CreateBeta):
   _support_kms = True
   _support_nvdimm = True
   _support_public_dns = True
-  _support_disk_resource_policy = True
   _support_erase_vss = True
   _support_machine_image_key = True
   _support_location_hint = True
@@ -647,6 +646,7 @@ class CreateAlpha(CreateBeta):
   _support_network_performance_configs = True
   _support_image_family_scope = True
   _support_subinterface = True
+  _support_secure_tag = True
 
   @classmethod
   def Args(cls, parser):
@@ -655,7 +655,6 @@ class CreateAlpha(CreateBeta):
         enable_regional=cls._support_regional,
         enable_kms=cls._support_kms,
         deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
-        enable_resource_policy=cls._support_disk_resource_policy,
         supports_location_hint=cls._support_location_hint,
         supports_erase_vss=cls._support_erase_vss,
         snapshot_csek=cls._support_source_snapshot_csek,
@@ -684,6 +683,7 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddStackTypeArgs(parser)
     instances_flags.AddIpv6NetworkTierArgs(parser)
     instances_flags.AddNetworkPerformanceConfigsArgs(parser)
+    instances_flags.AddSecureTagsArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

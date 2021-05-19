@@ -35,7 +35,7 @@ class List(base.ListCommand):
     parser.display_info.AddFormat(ips_flags.MULTISCOPE_LIST_FORMAT)
     parser.display_info.AddUriFunc(utils.MakeGetUriFunc())
     lister.AddMultiScopeListerFlags(parser, zonal=True, regional=True)
-    parser.display_info.AddCacheUpdater(completers.InstantSnapshotsCompleter)
+    parser.display_info.AddCacheUpdater(completers.AllInstantSnapshotsCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -45,8 +45,8 @@ class List(base.ListCommand):
 
     list_implementation = lister.MultiScopeLister(
         client,
-        zonal_service=client.apitools_client.zoneInstantSnapshots,
+        zonal_service=client.apitools_client.instantSnapshots,
         regional_service=client.apitools_client.regionInstantSnapshots,
-        aggregation_service=client.apitools_client.zoneInstantSnapshots)
+        aggregation_service=client.apitools_client.instantSnapshots)
 
     return lister.Invoke(request_data, list_implementation)

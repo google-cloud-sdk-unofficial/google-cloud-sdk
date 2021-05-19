@@ -24,3 +24,20 @@
     resource:
       help_text: Cloud Game Server Cluster to describe.
       spec: !REF googlecloudsdk.command_lib.game.resources:cluster
+    params:
+    - arg_name: view
+      release_tracks: [ALPHA]
+      api_field: view
+      help_text: |
+        There are two possible views, 'basic' and 'full', default is 'basic'
+      choices:
+      - enum_value: BASIC
+        arg_value: basic
+        help_text: |
+          Include info of the game server cluster resource, but not the registered
+          Kubernetes cluster's info such as versions or provider.
+      - enum_value: FULL
+        arg_value: full
+        help_text: |
+          Include info for both the game server cluster resource and registered Kuberentes cluster.
+      default: basic

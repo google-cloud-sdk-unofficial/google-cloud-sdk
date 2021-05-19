@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to list models in AI platform."""
+"""Command to list models in Vertex AI."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,6 +25,14 @@ from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import region_util
+
+
+_DEFAULT_FORMAT = """
+        table(
+            name.basename():label=MODEL_ID,
+            displayName
+        )
+    """
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -40,6 +48,7 @@ class ListV1(base.ListCommand):
 
   @staticmethod
   def Args(parser):
+    parser.display_info.AddFormat(_DEFAULT_FORMAT)
     flags.AddRegionResourceArg(
         parser, 'to list models', prompt_func=region_util.PromptForOpRegion)
 

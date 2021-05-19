@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""AI Platform endpoints update command."""
+"""Vertex AI endpoints update command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -40,7 +40,7 @@ def _AddArgs(parser):
 
 
 def _Run(args, version):
-  """Update an existing AI Platform endpoint."""
+  """Update an existing Vertex AI endpoint."""
   validation.ValidateDisplayName(args.display_name)
 
   endpoint_ref = args.CONCEPTS.endpoint.Parse()
@@ -74,26 +74,21 @@ def _Run(args, version):
             clear_traffic_split=args.clear_traffic_split)
     except errors.NoFieldsSpecifiedError:
       available_update_args = [
-          'display_name',
-          'traffic_split',
-          'clear_traffic_split',
-          'update_labels',
-          'clear_labels',
-          'remove_labels',
-          'description'
+          'display_name', 'traffic_split', 'clear_traffic_split',
+          'update_labels', 'clear_labels', 'remove_labels', 'description'
       ]
       if not any(args.IsSpecified(arg) for arg in available_update_args):
         raise
       log.status.Print('No update to perform.')
       return None
     else:
-      log.UpdatedResource(op.name, kind='AI Platform endpoint')
+      log.UpdatedResource(op.name, kind='Vertex AI endpoint')
       return op
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateGa(base.UpdateCommand):
-  """Update an existing AI Platform endpoint.
+  """Update an existing Vertex AI endpoint.
 
   ## EXAMPLES
 
@@ -114,7 +109,7 @@ class UpdateGa(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class UpdateBeta(UpdateGa):
-  """Update an existing AI Platform endpoint.
+  """Update an existing Vertex AI endpoint.
 
   ## EXAMPLES
 

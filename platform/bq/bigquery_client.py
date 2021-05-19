@@ -1810,11 +1810,19 @@ class BigqueryClient(object):
       raise BigqueryError('Location not specified.')
     reservation_id = reservation_id or default_reservation_id
     reservation_assignment_id = reservation_assignment_id or default_reservation_assignment_id
-    return ApiClientHelper.ReservationAssignmentReference.Create(
-        projectId=project_id,
-        location=location,
-        reservationId=reservation_id,
-        reservationAssignmentId=reservation_assignment_id)
+    if (self.api_version == 'v1beta1'
+       ):
+      return ApiClientHelper.BetaReservationAssignmentReference.Create(
+          projectId=project_id,
+          location=location,
+          reservationId=reservation_id,
+          reservationAssignmentId=reservation_assignment_id)
+    else:
+      return ApiClientHelper.ReservationAssignmentReference.Create(
+          projectId=project_id,
+          location=location,
+          reservationId=reservation_id,
+          reservationAssignmentId=reservation_assignment_id)
 
   def GetConnectionReference(self,
                              identifier=None,
@@ -1923,6 +1931,7 @@ class BigqueryClient(object):
                         slots,
                         ignore_idle_slots,
                         max_concurrency,
+                        enable_queuing_and_priorities,
                         autoscale_max_slots=None):
     # pylint: disable=g-doc-args
     """Create a reservation with the given reservation reference.
@@ -1933,6 +1942,8 @@ class BigqueryClient(object):
       ignore_idle_slots: Specifies whether queries should ignore idle slots from
         other reservations.
       max_concurrency: Reservation maximum concurrency.
+      enable_queuing_and_priorities: Whether queuing and new prioritization
+        behavior should be enabled for the reservation.
       autoscale_max_slots: Number of slots to be scaled when needed.
 
     Returns:
@@ -1951,6 +1962,17 @@ class BigqueryClient(object):
             'max_concurrency is only supported in v1beta1. Please specify'
             '\'--api_version=v1beta1\' and retry.')
       reservation['max_concurrency'] = max_concurrency
+
+    if enable_queuing_and_priorities is not None:
+      if (self.api_version != 'v1beta1'
+         ):
+        raise BigqueryError(
+            'enable_queuing_and_priorities is only supported in v1beta1. '
+            'Please specify \'--api_version=v1beta1\' and retry.')
+      reservation['enable_queuing_and_priorities'] = {}
+      reservation['enable_queuing_and_priorities'][
+          'value'] = enable_queuing_and_priorities
+
     if autoscale_max_slots is not None:
       if (self.api_version != 'autoscale_alpha'
          ):
@@ -2068,6 +2090,7 @@ class BigqueryClient(object):
                         slots,
                         ignore_idle_slots,
                         max_concurrency,
+                        enable_queuing_and_priorities,
                         autoscale_max_slots):
     # pylint: disable=g-doc-args
     """Updates a reservation with the given reservation reference.
@@ -2078,6 +2101,8 @@ class BigqueryClient(object):
       ignore_idle_slots: Specifies whether queries should ignore idle slots from
         other reservations.
       max_concurrency: Reservation maximum concurrency.
+      enable_queuing_and_priorities: Whether queuing and new prioritization
+        behavior should be enabled for the reservation.
       autoscale_max_slots: Number of slots to be scaled when needed.
 
     Returns:
@@ -2104,6 +2129,17 @@ class BigqueryClient(object):
             '\'--api_version=v1beta1\' and retry.')
       reservation['max_concurrency'] = max_concurrency
       update_mask += 'max_concurrency,'
+
+    if enable_queuing_and_priorities is not None:
+      if (self.api_version != 'v1beta1'
+         ):
+        raise BigqueryError(
+            'enable_queuing_and_priorities is only supported in v1beta1. '
+            'Please specify \'--api_version=v1beta1\' and retry.')
+      reservation['enable_queuing_and_priorities'] = {}
+      reservation['enable_queuing_and_priorities'][
+          'value'] = enable_queuing_and_priorities
+      update_mask += 'enable_queuing_and_priorities.value,'
 
     if autoscale_max_slots is not None:
       if (self.api_version != 'autoscale_alpha'
@@ -2273,14 +2309,15 @@ class BigqueryClient(object):
     return client.projects().locations().capacityCommitments().merge(
         parent=parent, body=body).execute()
 
-  def CreateReservationAssignment(self, reference, job_type, assignee_type,
-                                  assignee_id):
+  def CreateReservationAssignment(self, reference, job_type, priority,
+                                  assignee_type, assignee_id):
     """Creates a reservation assignment for a given project/folder/organization.
 
     Arguments:
       reference: Reference to the project reservation is assigned. Location must
         be the same location as the reservation.
       job_type: Type of jobs for this assignment.
+      priority: Default job priority for this assignment.
       assignee_type: Type of assignees for the reservation assignment.
       assignee_id: Project/folder/organization ID, to which the reservation is
         assigned.
@@ -2295,6 +2332,13 @@ class BigqueryClient(object):
     if not job_type:
       raise BigqueryError('job_type not specified.')
     reservation_assignment['job_type'] = job_type
+    if priority:
+      if (self.api_version != 'v1beta1'
+         ):
+        raise BigqueryError(
+            'priority is only supported in v1beta1. Please specify'
+            '\'--api_version=v1beta1\' and retry.')
+      reservation_assignment['priority'] = priority
     if not assignee_type:
       raise BigqueryError('assignee_type not specified.')
     if not assignee_id:
@@ -2328,6 +2372,38 @@ class BigqueryClient(object):
 
     return client.projects().locations().reservations().assignments().move(
         name=reference.path(), body=body).execute()
+
+  def UpdateReservationAssignment(self, reference, priority):
+    """Updates reservation assignment.
+
+    Arguments:
+      reference: Reference to the reservation assignment.
+      priority: Default job priority for this assignment.
+
+    Returns:
+      Reservation assignment object that was updated.
+
+    Raises:
+      BigqueryError: if assignment cannot be updated.
+    """
+    reservation_assignment = {}
+    update_mask = ''
+    if priority is not None:
+      if (self.api_version != 'v1beta1'
+         ):
+        raise BigqueryError(
+            'priority is only supported in v1beta1. Please specify'
+            '\'--api_version=v1beta1\' and retry.')
+      if not priority:
+        priority = 'JOB_PRIORITY_UNSPECIFIED'
+      reservation_assignment['priority'] = priority
+      update_mask += 'priority,'
+
+    client = self.GetReservationApiClient()
+    return client.projects().locations().reservations().assignments().patch(
+        name=reference.path(),
+        updateMask=update_mask,
+        body=reservation_assignment).execute()
 
   def ListReservationAssignments(self, reference, page_size, page_token):
     """Lists reservation assignments for given project and location.
@@ -2782,6 +2858,7 @@ class BigqueryClient(object):
                             'slotCapacity',
                             'maxConcurrency',
                             'ignoreIdleSlots',
+                            'enableQueuingAndPriorities',
                             'creationTime',
                             'updateTime'))
     elif reference_type == ApiClientHelper.PriorityAlphaReservationReference:
@@ -2797,6 +2874,8 @@ class BigqueryClient(object):
     elif reference_type == ApiClientHelper.CapacityCommitmentReference:
       formatter.AddColumns(('name', 'slotCount', 'plan', 'renewalPlan', 'state',
                             'commitmentStartTime', 'commitmentEndTime'))
+    elif reference_type == ApiClientHelper.BetaReservationAssignmentReference:
+      formatter.AddColumns(('name', 'jobType', 'assignee', 'priority'))
     elif reference_type == ApiClientHelper.ReservationAssignmentReference:
       formatter.AddColumns(('name', 'jobType', 'assignee'))
     elif reference_type == ApiClientHelper.ConnectionReference:
@@ -2985,7 +3064,8 @@ class BigqueryClient(object):
           reservation=object_info, reference_type=object_type)
     elif object_type == ApiClientHelper.CapacityCommitmentReference:
       return BigqueryClient.FormatCapacityCommitmentInfo(object_info)
-    elif object_type == ApiClientHelper.ReservationAssignmentReference:
+    elif issubclass(object_type,
+                    ApiClientHelper.ReservationAssignmentReference):
       return BigqueryClient.FormatReservationAssignmentInfo(object_info)
     elif object_type == ApiClientHelper.ConnectionReference:
       return BigqueryClient.FormatConnectionInfo(object_info)
@@ -3130,6 +3210,23 @@ class BigqueryClient(object):
       return type_kind
 
   @staticmethod
+  def FormatRoutineTableType(table_type):
+    """Converts a routine table type to a pretty string representation.
+
+    Arguments:
+      table_type: Routine table type dict to format.
+
+    Returns:
+      A formatted string.
+    """
+    columns = [
+        '{} {}'.format(column['name'],
+                       BigqueryClient.FormatRoutineDataType(column['type']))
+        for column in table_type['columns']
+    ]
+    return 'TABLE<{}>'.format(', '.join(columns))
+
+  @staticmethod
   def FormatRoutineArgumentInfo(argument):
     """Converts a routine argument to a pretty string representation.
 
@@ -3168,6 +3265,7 @@ class BigqueryClient(object):
     result['Language'] = routine_info.get('language', '')
     signature = '()'
     return_type = routine_info.get('returnType')
+    return_table_type = routine_info.get('returnTableType')
     if 'arguments' in routine_info:
       argument_list = routine_info['arguments']
       signature = '({})'.format(', '.join(
@@ -3176,7 +3274,10 @@ class BigqueryClient(object):
     if return_type:
       signature = '{} -> {}'.format(
           signature, BigqueryClient.FormatRoutineDataType(return_type))
-    if return_type or ('arguments' in routine_info):
+    if return_table_type:
+      signature = '{} -> {}'.format(
+          signature, BigqueryClient.FormatRoutineTableType(return_table_type))
+    if return_type or return_table_type or ('arguments' in routine_info):
       result['Signature'] = signature
     if 'definitionBody' in routine_info:
       result['Definition'] = routine_info['definitionBody']
@@ -3395,6 +3496,9 @@ class BigqueryClient(object):
     if (reference_type == ApiClientHelper.BetaReservationReference and
         'maxConcurrency' not in list(result.keys())):
       result['maxConcurrency'] = '0 (auto)'
+    if (reference_type == ApiClientHelper.BetaReservationReference and
+        'enableQueuingAndPriorities' not in list(result.keys())):
+      result['enableQueuingAndPriorities'] = 'False'
     if (reference_type == ApiClientHelper.AutoscaleAlphaReservationReference and
         'autoscale' in list(result.keys())):
       if 'maxSlots' in list(result['autoscale'].keys()):
@@ -6582,8 +6686,12 @@ class ApiClientHelper(object):
     def reservation_path(self):
       return self._reservation_format_str % dict(self)
 
+  class BetaReservationAssignmentReference(ReservationAssignmentReference):
+    """Reference for v1beta1 reservation service."""
+    pass
+
   class BiReservationReference(Reference):
-    """ Helper class to provide a reference to bi reservation. """
+    """Helper class to provide a reference to bi reservation."""
     _required_fields = frozenset(('projectId', 'location'))
     _format_str = '%(projectId)s:%(location)s'
     _path_str = 'projects/%(projectId)s/locations/%(location)s/biReservation'

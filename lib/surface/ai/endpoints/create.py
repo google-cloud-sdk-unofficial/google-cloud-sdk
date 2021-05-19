@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""AI Platform endpoints create command."""
+"""Vertex AI endpoints create command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -42,7 +42,7 @@ def _AddArgs(parser):
 
 
 def _Run(args, version):
-  """Create a new AI Platform endpoint."""
+  """Create a new Vertex AI endpoint."""
   validation.ValidateDisplayName(args.display_name)
 
   region_ref = args.CONCEPTS.region.Parse()
@@ -68,14 +68,14 @@ def _Run(args, version):
     if response_msg is not None:
       response = encoding.MessageToPyValue(response_msg)
       if 'name' in response:
-        log.status.Print(('Created AI Platform endpoint: {}.').format(
-            response['name']))
+        log.status.Print(
+            ('Created Vertex AI endpoint: {}.').format(response['name']))
     return response_msg
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGa(base.CreateCommand):
-  """Create a new AI Platform endpoint.
+  """Create a new Vertex AI endpoint.
 
   ## EXAMPLES
 
@@ -96,7 +96,7 @@ class CreateGa(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateBeta(CreateGa):
-  """Create a new AI Platform endpoint.
+  """Create a new Vertex AI endpoint.
 
   ## EXAMPLES
 

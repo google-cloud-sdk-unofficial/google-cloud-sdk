@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to check stream logs of a custom job in AI Platform."""
+"""Command to check stream logs of a custom job in Vertex AI."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.ai.custom_jobs import flags as custom_job_flags
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class StreamLogs(base.Command):
-  """Show stream logs from a running AI Platform custom job.
+  """Show stream logs from a running Vertex AI custom job.
 
      ## EXAMPLES
 

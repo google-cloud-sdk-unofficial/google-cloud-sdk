@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""AI Platform endpoints list command."""
+"""Vertex AI endpoints list command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import region_util
 from googlecloudsdk.core import resources
 
-
 _DEFAULT_FORMAT = """
         table(
             name.basename():label=ENDPOINT_ID,
@@ -36,8 +35,8 @@ _DEFAULT_FORMAT = """
 
 
 def _GetUri(endpoint):
-  ref = resources.REGISTRY.ParseRelativeName(
-      endpoint.name, constants.ENDPOINTS_COLLECTION)
+  ref = resources.REGISTRY.ParseRelativeName(endpoint.name,
+                                             constants.ENDPOINTS_COLLECTION)
   return ref.SelfLink()
 
 
@@ -57,7 +56,7 @@ def _Run(args, version):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListGa(base.ListCommand):
-  """List existing AI Platform endpoints.
+  """List existing Vertex AI endpoints.
 
   ## EXAMPLES
 
@@ -77,7 +76,7 @@ class ListGa(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ListBeta(ListGa):
-  """List existing AI Platform endpoints.
+  """List existing Vertex AI endpoints.
 
   ## EXAMPLES
 

@@ -265,6 +265,7 @@ class BetaDeploy(Deploy):
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddBinAuthzPolicyFlags(managed_group)
     flags.AddBinAuthzBreakglassFlag(managed_group)
+    flags.AddCmekKeyFlag(managed_group)
 
     # Flags not specific to any platform
     flags.AddHttp2Flag(parser)

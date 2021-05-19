@@ -25,50 +25,119 @@
 
   response:
     id_field: name
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.game.servers.clusters.list_hooks:ConvertListResponseToViewDataMap
 
   arguments:
     resource:
       help_text: Cloud Game Servers Realm of the Game Server Cluster to list.
       spec: !REF googlecloudsdk.command_lib.game.resources:default_realm
+    params:
+    - arg_name: view
+      release_tracks: [ALPHA]
+      api_field: view
+      help_text: |
+        There are two possible views, 'basic' and 'full', default is 'basic'
+      choices:
+      - enum_value: BASIC
+        arg_value: basic
+        help_text: |
+          Include info of the game server cluster resource, but not the registered
+          Kubernetes cluster's info such as versions or provider.
+      - enum_value: FULL
+        arg_value: full
+        help_text: |
+          Include info for both the game server cluster resource and registered Kuberentes cluster.
+      default: basic
 
   output:
     ALPHA:
       format: |
-        table(
-           name.basename():label=NAME,
-           name.scope("locations").segment(0):label=LOCATION,
-           name.scope("realms").segment(0):label=REALM,
-           description:label=DESCRIPTION,
-           createTime,
-           updateTime,
-           connectionInfo.namespace:label=NAMPESPACE,
-           firstof(connectionInfo.gkeClusterReference.cluster,connectionInfo.gkeHubClusterReference.membership):label=CLUSTER_REFERENCE,
-           allocationPriority:label=ALLOCATION_PRIORITY,
-           labels
-         )
+        multi(
+          basic:format="table(
+             name.basename():label=NAME,
+             name.scope("locations").segment(0):label=LOCATION,
+             name.scope("realms").segment(0):label=REALM,
+             description:label=DESCRIPTION,
+             createTime,
+             updateTime,
+             connectionInfo.namespace:label=NAMPESPACE,
+             firstof(connectionInfo.gkeClusterReference.cluster,connectionInfo.gkeHubClusterReference.membership):label=CLUSTER_REFERENCE,
+             allocationPriority:label=ALLOCATION_PRIORITY,
+             labels
+           )",
+          full:format="table(
+             name.basename():label=NAME,
+             name.scope("locations").segment(0):label=LOCATION,
+             name.scope("realms").segment(0):label=REALM,
+             description:label=DESCRIPTION,
+             createTime,
+             updateTime,
+             connectionInfo.namespace:label=NAMPESPACE,
+             firstof(connectionInfo.gkeClusterReference.cluster,connectionInfo.gkeHubClusterReference.membership):label=CLUSTER_REFERENCE,
+             allocationPriority:label=ALLOCATION_PRIORITY,
+             labels,
+             clusterState.agonesVersionInstalled:label=AGONES_VERSION,
+             clusterState.kubernetesVersionInstalled:label=KUBERNETES_VERSION,
+             clusterState.provider:label=PROVIDER,
+             clusterState.versionInstalledErrorMessage:label=VERSION_ERROR
+           )"
+        )
     BETA:
       format: |
-        table(
-           name.basename():label=NAME,
-           name.scope("locations").segment(0):label=LOCATION,
-           name.scope("realms").segment(0):label=REALM,
-           description:label=DESCRIPTION,
-           createTime,
-           updateTime,
-           connectionInfo.namespace:label=NAMPESPACE,
-           connectionInfo.gkeClusterReference.cluster:label=GKE_CLUSTER,
-           labels
-         )
+        multi(
+          basic:format="table(
+             name.basename():label=NAME,
+             name.scope("locations").segment(0):label=LOCATION,
+             name.scope("realms").segment(0):label=REALM,
+             description:label=DESCRIPTION,
+             createTime,
+             updateTime,
+             connectionInfo.namespace:label=NAMPESPACE,
+             connectionInfo.gkeClusterReference.cluster:label=GKE_CLUSTER,
+             labels
+           )",
+          full:format="table(
+             name.basename():label=NAME,
+             name.scope("locations").segment(0):label=LOCATION,
+             name.scope("realms").segment(0):label=REALM,
+             description:label=DESCRIPTION,
+             createTime,
+             updateTime,
+             connectionInfo.namespace:label=NAMPESPACE,
+             connectionInfo.gkeClusterReference.cluster:label=GKE_CLUSTER,
+             labels,
+             clusterState.agonesVersionInstalled:label=AGONES_VERSION,
+             clusterState.kubernetesVersionInstalled:label=KUBERNETES_VERSION,
+             clusterState.provider:label=PROVIDER
+           )"
+        )
     GA:
       format: |
-        table(
-           name.basename():label=NAME,
-           name.scope("locations").segment(0):label=LOCATION,
-           name.scope("realms").segment(0):label=REALM,
-           description:label=DESCRIPTION,
-           createTime,
-           updateTime,
-           connectionInfo.namespace:label=NAMPESPACE,
-           connectionInfo.gkeClusterReference.cluster:label=GKE_CLUSTER,
-           labels
-         )
+        multi(
+          basic:format="table(
+             name.basename():label=NAME,
+             name.scope("locations").segment(0):label=LOCATION,
+             name.scope("realms").segment(0):label=REALM,
+             description:label=DESCRIPTION,
+             createTime,
+             updateTime,
+             connectionInfo.namespace:label=NAMPESPACE,
+             connectionInfo.gkeClusterReference.cluster:label=GKE_CLUSTER,
+             labels
+           )",
+          full:format="table(
+             name.basename():label=NAME,
+             name.scope("locations").segment(0):label=LOCATION,
+             name.scope("realms").segment(0):label=REALM,
+             description:label=DESCRIPTION,
+             createTime,
+             updateTime,
+             connectionInfo.namespace:label=NAMPESPACE,
+             connectionInfo.gkeClusterReference.cluster:label=GKE_CLUSTER,
+             labels,
+             clusterState.agonesVersionInstalled:label=AGONES_VERSION,
+             clusterState.kubernetesVersionInstalled:label=KUBERNETES_VERSION,
+             clusterState.provider:label=PROVIDER
+           )"
+        )

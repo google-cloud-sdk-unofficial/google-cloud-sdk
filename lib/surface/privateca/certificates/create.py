@@ -59,6 +59,8 @@ def _WritePemChain(pem_cert, issuing_chain, cert_file):
         "Could not write certificate to '{}'.".format(cert_file))
 
 
+# TODO(b/177604350): Remove Beta code paths.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   r"""Create a new certificate.
 

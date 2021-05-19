@@ -24,12 +24,14 @@ from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import resource_utils
 from googlecloudsdk.api_lib.util import common_args
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.privateca import response_utils
 from googlecloudsdk.command_lib.privateca import text_utils
 from googlecloudsdk.core import properties
 
 
-class List(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
   """List the root certificate authorities within a location."""
 
   @staticmethod
@@ -72,6 +74,71 @@ class List(base.ListCommand):
 
     return list_pager.YieldFromList(
         client.projects_locations_certificateAuthorities,
+        request,
+        field='certificateAuthorities',
+        limit=args.limit,
+        batch_size_attribute='pageSize',
+        batch_size=args.page_size,
+        get_field_func=response_utils.GetFieldAndLogUnreachable)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
+  """List the root certificate authorities within a location."""
+
+  @staticmethod
+  def Args(parser):
+    base.Argument(
+        '--location',
+        help='Location of the certificate authorities. If ommitted, root CAs across all regions will be listed.'
+    ).AddToParser(parser)
+    base.Argument(
+        '--pool',
+        help='ID of the CA Pool where the certificate authorities reside. If ommitted, root CAs across all CA pools will be listed.'
+    ).AddToParser(parser)
+    base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
+    base.FILTER_FLAG.RemoveFromParser(parser)
+
+    parser.display_info.AddFormat("""
+        table(
+          name.basename(),
+          name.scope().segment(-5):label=LOCATION,
+          name.scope().segment(-3):label=POOL,
+          state,
+          ca_certificate_descriptions[0].subject_description.not_before_time():label=NOT_BEFORE,
+          ca_certificate_descriptions[0].subject_description.not_after_time():label=NOT_AFTER)
+        """)
+    parser.display_info.AddTransforms({
+        'not_before_time': text_utils.TransformNotBeforeTime,
+        'not_after_time': text_utils.TransformNotAfterTime
+    })
+    parser.display_info.AddUriFunc(
+        resource_utils.MakeGetUriFunc(
+            'privateca.projects.locations.certificateAuthorities'))
+
+  def Run(self, args):
+    client = privateca_base.GetClientInstance(api_version='v1')
+    messages = privateca_base.GetMessagesModule(api_version='v1')
+
+    location = args.location if args.IsSpecified('location') else '-'
+    ca_pool_id = args.pool if args.IsSpecified('pool') else '-'
+
+    if location == '-' and ca_pool_id != '-':
+      raise exceptions.InvalidArgumentException(
+          '--location',
+          'If a pool id is specified, you must also specify the location of that pool.'
+      )
+
+    parent_resource = 'projects/{}/locations/{}/caPools/{}'.format(
+        properties.VALUES.core.project.GetOrFail(), location, ca_pool_id)
+
+    request = messages.PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesListRequest(
+        parent=parent_resource,
+        filter='type:SELF_SIGNED',
+        orderBy=common_args.ParseSortByArg(args.sort_by))
+
+    return list_pager.YieldFromList(
+        client.projects_locations_caPools_certificateAuthorities,
         request,
         field='certificateAuthorities',
         limit=args.limit,

@@ -25,6 +25,18 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
 
 
+def _TransformAppProfileToRoutingInfo(app_profile):
+  """Extracts the routing info from the app profile."""
+  if ('singleClusterRouting' in app_profile and
+      'clusterId' in app_profile['singleClusterRouting']):
+    return app_profile['singleClusterRouting']['clusterId']
+  elif 'multiClusterRoutingUseAny' in app_profile:
+    if 'clusterIds' in app_profile['multiClusterRoutingUseAny']:
+      return ','.join(app_profile['multiClusterRoutingUseAny']['clusterIds'])
+    return 'MULTI_CLUSTER_USE_ANY'
+  return ''
+
+
 class ListAppProfiles(base.ListCommand):
   """List Bigtable app profiles."""
 
@@ -41,13 +53,18 @@ class ListAppProfiles(base.ListCommand):
   @staticmethod
   def Args(parser):
     arguments.AddInstanceResourceArg(parser, 'to list app profiles for')
+
+    parser.display_info.AddTransforms({
+        'routingInfo': _TransformAppProfileToRoutingInfo,
+    })
+
     # ROUTING is a oneof SingleClusterRouting, MultiClusterRoutingUseAny.
     # Combine into a single ROUTING column in the table.
     parser.display_info.AddFormat("""
           table(
             name.basename():sort=1,
             description:wrap,
-            singleClusterRouting.clusterId.yesno(no="MULTI_CLUSTER_USE_ANY"):label=ROUTING,
+            routingInfo():wrap:label=ROUTING,
             singleClusterRouting.allowTransactionalWrites.yesno("Yes"):label=TRANSACTIONAL_WRITES
           )
         """)

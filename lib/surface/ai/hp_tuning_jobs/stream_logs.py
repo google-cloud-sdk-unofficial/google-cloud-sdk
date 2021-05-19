@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to check stream logs of a hyperparameter tuning job in AI Platform."""
+"""Command to check stream logs of a hyperparameter tuning job in Vertex AI."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.ai import log_util
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class StreamLogs(base.Command):
-  """Stream logs from a running AI Platform hyperparameter tuning job.
+  """Stream logs from a running Vertex AI hyperparameter tuning job.
 
      ## EXAMPLES
 

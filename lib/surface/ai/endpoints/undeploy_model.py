@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""AI Platform endpoints undeploy-model command."""
+"""Vertex AI endpoints undeploy-model command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -31,14 +31,15 @@ from googlecloudsdk.command_lib.ai import region_util
 
 def _AddArgs(parser):
   flags.AddEndpointResourceArg(
-      parser, 'to undeploy a model from',
+      parser,
+      'to undeploy a model from',
       prompt_func=region_util.PromptForOpRegion)
   flags.GetDeployedModelId().AddToParser(parser)
   flags.GetTrafficSplitArg().AddToParser(parser)
 
 
 def _Run(args, version):
-  """Undeploy a model fro man existing AI Platform endpoint."""
+  """Undeploy a model fro man existing Vertex AI endpoint."""
   endpoint_ref = args.CONCEPTS.endpoint.Parse()
   args.region = endpoint_ref.AsDict()['locationsId']
   with endpoint_util.AiplatformEndpointOverrides(version, region=args.region):
@@ -60,7 +61,7 @@ def _Run(args, version):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UndeployModelGa(base.Command):
-  """Undeploy a model from an existing AI Platform endpoint.
+  """Undeploy a model from an existing Vertex AI endpoint.
 
   ## EXAMPLES
 
@@ -81,7 +82,7 @@ class UndeployModelGa(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class UndeployModelBeta(UndeployModelGa):
-  """Undeploy a model from an existing AI Platform endpoint.
+  """Undeploy a model from an existing Vertex AI endpoint.
 
   ## EXAMPLES
 

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""AI Platform endpoints predict command."""
+"""Vertex AI endpoints predict command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,13 +29,14 @@ from googlecloudsdk.command_lib.ai import region_util
 
 def _AddArgs(parser):
   flags.AddEndpointResourceArg(
-      parser, 'to do online prediction',
+      parser,
+      'to do online prediction',
       prompt_func=region_util.PromptForOpRegion)
   flags.AddPredictInstanceArg(parser)
 
 
 def _Run(args, version):
-  """Run AI Platform online prediction."""
+  """Run Vertex AI online prediction."""
   endpoint_ref = args.CONCEPTS.endpoint.Parse()
   args.region = endpoint_ref.AsDict()['locationsId']
   with endpoint_util.AiplatformEndpointOverrides(
@@ -56,9 +57,9 @@ def _Run(args, version):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class PredictGa(base.Command):
-  """Run AI Platform online prediction.
+  """Run Vertex AI online prediction.
 
-     `{command}` sends a prediction request to AI Platform endpoint for the
+     `{command}` sends a prediction request to Vertex AI endpoint for the
      given instances. This command will read up to 100 instances, though the
      service itself will accept instances up to the payload limit size
      (currently, 1.5MB).
@@ -82,9 +83,9 @@ class PredictGa(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class PredictBeta(PredictGa):
-  """Run AI Platform online prediction.
+  """Run Vertex AI online prediction.
 
-     `{command}` sends a prediction request to AI Platform endpoint for the
+     `{command}` sends a prediction request to Vertex AI endpoint for the
      given instances. This command will read up to 100 instances, though the
      service itself will accept instances up to the payload limit size
      (currently, 1.5MB).

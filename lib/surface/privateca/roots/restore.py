@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Restore(base.SilentCommand):
   r"""Restore a root Certificate Authority.
 

@@ -246,6 +246,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       node_version=get_default('node_version'),
       create_subnetwork=get_default('create_subnetwork'),
       disable_default_snat=get_default('disable_default_snat'),
+      dataplane_v2=get_default('enable_dataplane_v2'),
       disk_type=get_default('disk_type'),
       enable_autorepair=enable_autorepair,
       enable_autoscaling=get_default('enable_autoscaling'),
@@ -676,6 +677,8 @@ flags_to_add = {
             lambda p: flags.AddSystemConfigFlag(p, hidden=False),
         'tags':
             flags.AddTagsCreate,
+        'threads_per_core':
+            flags.AddThreadsPerCore,
         'tpu':
             AddTpuWithServiceNetworking,
         'verticalpodautoscaling':
@@ -778,6 +781,7 @@ flags_to_add = {
         'surgeupgrade': (lambda p: flags.AddSurgeUpgradeFlag(p, default=1)),
         'systemconfig': lambda p: flags.AddSystemConfigFlag(p, hidden=False),
         'tags': flags.AddTagsCreate,
+        'threads_per_core': flags.AddThreadsPerCore,
         'tpu': AddTpuWithServiceNetworking,
         'verticalpodautoscaling':
             flags.AddVerticalPodAutoscalingFlagsExperimental,
@@ -960,6 +964,7 @@ class CreateBeta(Create):
     MaybeLogDataplaneV2ScaleWarning(args)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
+    ops.threads_per_core = get_default('threads_per_core')
     ops.boot_disk_kms_key = get_default('boot_disk_kms_key')
     ops.min_cpu_platform = get_default('min_cpu_platform')
     ops.enable_pod_security_policy = get_default('enable_pod_security_policy')
@@ -984,7 +989,6 @@ class CreateBeta(Create):
     ops.enable_gvnic = get_default('enable_gvnic')
     ops.system_config_from_file = get_default('system_config_from_file')
     ops.datapath_provider = get_default('datapath_provider')
-    ops.dataplane_v2 = get_default('enable_dataplane_v2')
     ops.enable_l4_ilb_subsetting = get_default('enable_l4_ilb_subsetting')
     ops.disable_default_snat = get_default('disable_default_snat')
     ops.cluster_dns = get_default('cluster_dns')
@@ -1025,6 +1029,7 @@ class CreateAlpha(Create):
     get_default = lambda key: AttrValue(args, key, self.default_flag_values)
     ops = ParseCreateOptionsBase(args, self.autopilot, get_default, location,
                                  project_id)
+    ops.threads_per_core = get_default('threads_per_core')
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
     ops.boot_disk_kms_key = get_default('boot_disk_kms_key')
@@ -1066,7 +1071,6 @@ class CreateAlpha(Create):
     ops.enable_logging_monitoring_system_only = \
         get_default('enable_logging_monitoring_system_only')
     ops.datapath_provider = get_default('datapath_provider')
-    ops.dataplane_v2 = get_default('enable_dataplane_v2')
     ops.enable_gvnic = get_default('enable_gvnic')
     ops.enable_master_metrics = get_default('enable_master_metrics')
     ops.master_logs = get_default('master_logs')

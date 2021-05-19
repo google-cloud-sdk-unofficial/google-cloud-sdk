@@ -34,6 +34,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_templates import flags as instance_templates_flags
+from googlecloudsdk.command_lib.compute.instance_templates import mesh_util
 from googlecloudsdk.command_lib.compute.instance_templates import service_proxy_aux_data
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 from googlecloudsdk.command_lib.compute.resource_policies import flags as maintenance_flags
@@ -41,6 +42,7 @@ from googlecloudsdk.command_lib.compute.sole_tenancy import flags as sole_tenanc
 from googlecloudsdk.command_lib.compute.sole_tenancy import util as sole_tenancy_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
+from googlecloudsdk.core import log
 
 import six
 
@@ -59,9 +61,9 @@ def _CommonArgs(parser,
                 support_source_instance,
                 support_local_ssd_size=False,
                 support_kms=False,
-                support_resource_policy=False,
                 support_location_hint=False,
-                support_multi_writer=False):
+                support_multi_writer=False,
+                support_mesh=False):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
@@ -69,7 +71,6 @@ def _CommonArgs(parser,
   instances_flags.AddCreateDiskArgs(
       parser,
       enable_kms=support_kms,
-      resource_policy=support_resource_policy,
       support_boot=True,
       support_multi_writer=support_multi_writer)
   if support_local_ssd_size:
@@ -99,6 +100,8 @@ def _CommonArgs(parser,
                                             'instance-template')
 
   instance_templates_flags.AddServiceProxyConfigArgs(parser)
+  if support_mesh:
+    instance_templates_flags.AddMeshArgs(parser, hide_arguments=True)
 
   sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
 
@@ -399,6 +402,33 @@ def AddServiceProxyArgsToMetadata(args):
     args.metadata['gce-service-proxy'] = json.dumps(service_proxy_config)
 
 
+def ConfigureMeshTemplate(args):
+  """Adds Anthos Service Mesh configuration into the instance template.
+
+  Args:
+      args: argparse.Namespace, An object that contains the values for the
+        arguments specified in the .Args() method.
+  """
+
+  if getattr(args, 'mesh', False):
+    # Add the required scopes.
+    if args.scopes is None:
+      args.scopes = constants.DEFAULT_SCOPES[:]
+    if 'cloud-platform' not in args.scopes and 'https://www.googleapis.com/auth/cloud-platform' not in args.scopes:
+      args.scopes.append('cloud-platform')
+
+    workload_namespace = mesh_util.ParseWorkload(
+        args.mesh['workload'])
+    with mesh_util.KubernetesClient(
+        gke_cluster=args.mesh['gke-cluster']) as kube_client:
+      log.status.Print(
+          'Verifying GKE cluster and Anthos Service Mesh installation...')
+      if kube_client.HasNamespaceReaderPermissions(
+          'default', 'istio-system', workload_namespace):
+        mesh_util.VerifyClusterSetup(kube_client)
+      # TODO(b/186186273): Generate instance metadata for ASM VM.
+
+
 def _RunCreate(compute_api,
                args,
                support_source_instance,
@@ -406,7 +436,8 @@ def _RunCreate(compute_api,
                support_location_hint=False,
                support_post_key_revocation_action_type=False,
                support_threads_per_core=False,
-               support_multi_writer=False):
+               support_multi_writer=False,
+               support_mesh=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -423,6 +454,8 @@ def _RunCreate(compute_api,
       support_threads_per_core: Indicates whether changing the number of threads
         per core is supported.
       support_multi_writer: Indicates whether a disk can have multiple writers.
+      support_mesh: Indicates whether adding VM to a Anthos Service Mesh is
+        supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -431,6 +464,8 @@ def _RunCreate(compute_api,
   instances_flags.ValidateNetworkTierArgs(args)
 
   instance_templates_flags.ValidateServiceProxyFlags(args)
+  if support_mesh:
+    instance_templates_flags.ValidateMeshFlag(args)
 
   client = compute_api.client
 
@@ -442,6 +477,9 @@ def _RunCreate(compute_api,
 
   AddScopesForServiceProxy(args)
   AddServiceProxyArgsToMetadata(args)
+
+  if support_mesh:
+    ConfigureMeshTemplate(args)
 
   metadata = metadata_utils.ConstructMetadataMessage(
       client.messages,
@@ -684,6 +722,7 @@ class Create(base.CreateCommand):
   _support_post_key_revocation_action_type = False
   _support_threads_per_core = False
   _support_multi_writer = False
+  _support_mesh = False
 
   @classmethod
   def Args(cls, parser):
@@ -693,7 +732,8 @@ class Create(base.CreateCommand):
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
         support_location_hint=cls._support_location_hint,
-        support_multi_writer=cls._support_multi_writer)
+        support_multi_writer=cls._support_multi_writer,
+        support_mesh=cls._support_mesh)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_GA_API_VERSION)
@@ -718,7 +758,8 @@ class Create(base.CreateCommand):
         support_post_key_revocation_action_type=self
         ._support_post_key_revocation_action_type,
         support_threads_per_core=self._support_threads_per_core,
-        support_multi_writer=self._support_multi_writer)
+        support_multi_writer=self._support_multi_writer,
+        support_mesh=self._support_mesh)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -737,11 +778,11 @@ class CreateBeta(Create):
   """
   _support_source_instance = True
   _support_kms = True
-  _support_resource_policy = True
   _support_location_hint = False
   _support_post_key_revocation_action_type = True
   _support_threads_per_core = False
   _support_multi_writer = True
+  _support_mesh = False
 
   @classmethod
   def Args(cls, parser):
@@ -751,9 +792,9 @@ class CreateBeta(Create):
         support_local_ssd_size=False,
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
-        support_resource_policy=cls._support_resource_policy,
         support_location_hint=cls._support_location_hint,
-        support_multi_writer=cls._support_multi_writer)
+        support_multi_writer=cls._support_multi_writer,
+        support_mesh=cls._support_mesh)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)
@@ -779,7 +820,8 @@ class CreateBeta(Create):
         support_post_key_revocation_action_type=self
         ._support_post_key_revocation_action_type,
         support_threads_per_core=self._support_threads_per_core,
-        support_multi_writer=self._support_multi_writer)
+        support_multi_writer=self._support_multi_writer,
+        support_mesh=self._support_mesh)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -798,11 +840,11 @@ class CreateAlpha(Create):
   """
   _support_source_instance = True
   _support_kms = True
-  _support_resource_policy = True
   _support_location_hint = True
   _support_post_key_revocation_action_type = True
   _support_threads_per_core = True
   _support_multi_writer = True
+  _support_mesh = True
 
   @classmethod
   def Args(cls, parser):
@@ -812,9 +854,9 @@ class CreateAlpha(Create):
         support_local_ssd_size=True,
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
-        support_resource_policy=cls._support_resource_policy,
         support_location_hint=cls._support_location_hint,
-        support_multi_writer=cls._support_multi_writer)
+        support_multi_writer=cls._support_multi_writer,
+        support_mesh=cls._support_mesh)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddConfidentialComputeArgs(parser)
@@ -844,7 +886,8 @@ class CreateAlpha(Create):
         support_post_key_revocation_action_type=self
         ._support_post_key_revocation_action_type,
         support_threads_per_core=self._support_threads_per_core,
-        support_multi_writer=self._support_multi_writer)
+        support_multi_writer=self._support_multi_writer,
+        support_mesh=self._support_mesh)
 
 
 DETAILED_HELP = {

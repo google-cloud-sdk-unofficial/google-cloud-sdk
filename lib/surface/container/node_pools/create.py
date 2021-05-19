@@ -273,9 +273,11 @@ class CreateBeta(Create):
     flags.AddEnableGcfsFlag(parser, for_node_pool=True)
     flags.AddNetworkConfigFlags(parser)
     flags.AddNodePoolEnablePrivateNodes(parser, hidden=True)
+    flags.AddThreadsPerCore(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
+    ops.threads_per_core = args.threads_per_core
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
     ops.boot_disk_kms_key = args.boot_disk_kms_key
@@ -296,6 +298,7 @@ class CreateAlpha(Create):
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
+    ops.threads_per_core = args.threads_per_core
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
     ops.local_ssd_volume_configs = args.local_ssd_volumes
@@ -339,5 +342,7 @@ class CreateAlpha(Create):
     flags.AddEnableGcfsFlag(parser, for_node_pool=True)
     flags.AddNetworkConfigFlags(parser)
     flags.AddNodePoolEnablePrivateNodes(parser, hidden=True)
+    flags.AddThreadsPerCore(parser)
+
 
 Create.detailed_help = DETAILED_HELP

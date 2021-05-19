@@ -24,5 +24,6 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Model(base.Group):
-  """AI Platform model commands."""
-  pass
+  """Manage Vertex AI models."""
+
+  category = base.VERTEX_AI_CATEGORY

@@ -130,7 +130,7 @@ class Update(base.Command):
 class UpdateBeta(Update):
   """Update properties of a Cloud Composer environment."""
 
-  _support_autoscaling = False
+  _support_autoscaling = True
   _support_maintenance_window = True
 
   @staticmethod
@@ -141,8 +141,8 @@ class UpdateBeta(Update):
     # Environment upgrade arguments
     UpdateBeta.support_environment_upgrades = True
     flags.AddEnvUpgradeFlagsToGroup(Update.update_type_group)
-
     flags.AddMaintenanceWindowFlagsGroup(Update.update_type_group)
+    flags.AddAutoscalingUpdateFlagsToGroup(Update.update_type_group)
 
   @staticmethod
   def Args(parser):
@@ -192,4 +192,3 @@ class UpdateAlpha(UpdateBeta):
   @staticmethod
   def Args(parser):
     UpdateBeta.AlphaAndBetaArgs(parser)
-    flags.AddAutoscalingUpdateFlagsToGroup(Update.update_type_group)

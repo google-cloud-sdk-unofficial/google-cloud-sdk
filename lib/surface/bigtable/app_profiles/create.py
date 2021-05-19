@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class CreateAppProfile(base.CreateCommand):
   """Create a new Bigtable app profile."""
 
@@ -57,6 +58,33 @@ class CreateAppProfile(base.CreateCommand):
         'app profile',
         required=False).AddForce('create').AddAppProfileRouting())
 
+  def _CreateAppProfile(self, app_profile_ref, args):
+    """Creates an AppProfile with the given arguments.
+
+    Args:
+      app_profile_ref: A resource reference of the new app profile.
+      args: an argparse namespace. All the arguments that were provided to this
+          command invocation.
+
+    Raises:
+      ConflictingArgumentsException:
+          If both cluster and multi_cluster are present.
+          If both multi_cluster and transactional_writes are present.
+          If both cluster and restrict_to are present.
+      OneOfArgumentsRequiredException: If neither cluster or multi_cluster are
+          present.
+
+    Returns:
+      Created app profile resource object.
+    """
+    return app_profiles.Create(
+        app_profile_ref,
+        cluster=args.route_to,
+        description=args.description,
+        multi_cluster=args.route_any,
+        transactional_writes=args.transactional_writes,
+        force=args.force)
+
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -65,23 +93,61 @@ class CreateAppProfile(base.CreateCommand):
         command invocation.
 
     Raises:
-      exceptions.ConflictingArgumentsException: If the user provides
-        --transactional-writes and --route-any.
+      ConflictingArgumentsException:
+          If both cluster and multi_cluster are present.
+          If both multi_cluster and transactional_writes are present.
+          If both cluster and restrict_to are present.
+      OneOfArgumentsRequiredException: If neither cluster or multi_cluster are
+          present.
 
     Returns:
       Created resource.
     """
     app_profile_ref = args.CONCEPTS.app_profile.Parse()
     try:
-      result = app_profiles.Create(
-          app_profile_ref,
-          cluster=args.route_to,
-          description=args.description,
-          multi_cluster=args.route_any,
-          transactional_writes=args.transactional_writes,
-          force=args.force)
+      result = self._CreateAppProfile(app_profile_ref, args)
     except HttpError as e:
       util.FormatErrorMessages(e)
     else:
       log.CreatedResource(app_profile_ref.Name(), kind='app profile')
       return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAppProfileAlpha(CreateAppProfile):
+  """Create a new Bigtable app profile."""
+
+  @staticmethod
+  def Args(parser):
+    arguments.AddAppProfileResourceArg(parser, 'to create')
+    (arguments.ArgAdder(parser).AddDescription(
+        'app profile', required=False).AddForce('create').AddAppProfileRouting(
+            allow_restrict_to=True))
+
+  def _CreateAppProfile(self, app_profile_ref, args):
+    """Creates an AppProfile with the given arguments, including restrict_to.
+
+    Args:
+      app_profile_ref: A resource reference of the new app profile.
+      args: an argparse namespace. All the arguments that were provided to this
+          command invocation.
+
+    Raises:
+      ConflictingArgumentsException:
+          If both cluster and multi_cluster are present.
+          If both multi_cluster and transactional_writes are present.
+          If both cluster and restrict_to are present.
+      OneOfArgumentsRequiredException: If neither cluster or multi_cluster are
+          present.
+
+    Returns:
+      Created app profile resource object.
+    """
+    return app_profiles.Create(
+        app_profile_ref,
+        cluster=args.route_to,
+        description=args.description,
+        multi_cluster=args.route_any,
+        restrict_to=args.restrict_to,
+        transactional_writes=args.transactional_writes,
+        force=args.force)

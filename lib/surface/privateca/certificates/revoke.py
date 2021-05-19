@@ -80,6 +80,8 @@ def _ParseCertificateResource(args):
        'serial number.'))
 
 
+# TODO(b/177604350): Remove Beta code paths.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Revoke(base.SilentCommand):
   r"""Revoke a certificate.
 

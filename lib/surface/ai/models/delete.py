@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""AI Platform models delete command."""
+"""Vertex AI models delete command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,7 +32,7 @@ from googlecloudsdk.command_lib.ai import region_util
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class DeleteV1(base.DeleteCommand):
-  """Delete an existing AI Platform model.
+  """Delete an existing Vertex AI model.
 
   ## EXAMPLES
 
@@ -44,8 +44,8 @@ class DeleteV1(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddModelResourceArg(
-        parser, 'to delete', region_util.PromptForOpRegion)
+    flags.AddModelResourceArg(parser, 'to delete',
+                              region_util.PromptForOpRegion)
 
   def _Run(self, args, model_ref, region):
     with endpoint_util.AiplatformEndpointOverrides(
@@ -65,7 +65,7 @@ class DeleteV1(base.DeleteCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DeleteV1Beta1(DeleteV1):
-  """Delete an existing AI Platform model.
+  """Delete an existing Vertex AI model.
 
   ## EXAMPLES
 

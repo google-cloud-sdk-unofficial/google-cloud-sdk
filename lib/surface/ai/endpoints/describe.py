@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""AI Platform endpoints describe command."""
+"""Vertex AI endpoints describe command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -35,7 +35,7 @@ def _Run(args, version):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class DescribeGa(base.DescribeCommand):
-  """Describe an existing AI Platform endpoint.
+  """Describe an existing Vertex AI endpoint.
 
   ## EXAMPLES
 
@@ -56,7 +56,7 @@ class DescribeGa(base.DescribeCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class DescribeBeta(DescribeGa):
-  """Describe an existing AI Platform endpoint.
+  """Describe an existing Vertex AI endpoint.
 
   ## EXAMPLES
 

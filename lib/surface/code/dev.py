@@ -155,7 +155,9 @@ class Dev(base.Command):
     if _IsDebug():
       _PrintDependencyVersions(args)
 
-    settings = local.Settings.FromArgs(args)
+    settings = local.Settings.Defaults()
+    settings = settings.WithArgs(args)
+
     local_file_generator = local_files.LocalRuntimeFiles(settings)
 
     kubernetes_config = six.ensure_text(local_file_generator.KubernetesConfig())

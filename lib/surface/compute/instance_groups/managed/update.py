@@ -25,8 +25,12 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
+from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as managed_flags
 from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_healing_utils
 import six
+
+# Flags valid only for regional MIGs.
+REGIONAL_FLAGS = ['instance_redistribution_type', 'target_distribution_shape']
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
@@ -49,9 +53,10 @@ class UpdateGA(base.UpdateCommand):
         """)
     autohealing_params_group = autohealing_group.add_group()
     auto_healing_utils.AddAutohealingArgs(autohealing_params_group)
-    instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
     instance_groups_flags.AddMigUpdateStatefulFlags(parser)
-    instance_groups_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
+    managed_flags.AddMigInstanceRedistributionTypeFlag(parser)
+    managed_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
+    # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _GetUpdatedStatefulPolicy(self,
                                 client,
@@ -130,16 +135,7 @@ class UpdateGA(base.UpdateCommand):
         auto_healing_policies)
     return auto_healing_policies
 
-  def _PatchRedistributionType(self, igm_patch, args, igm_resource, client,
-                               holder):
-    igm_ref = (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
-               .ResolveAsResource)(
-                   args,
-                   holder.resources,
-                   default_scope=compute_scope.ScopeEnum.ZONE,
-                   scope_lister=flags.GetDefaultScopeLister(client))
-    instance_groups_flags.ValidateMigInstanceRedistributionTypeFlag(
-        args.GetValue('instance_redistribution_type'), igm_ref)
+  def _PatchRedistributionType(self, igm_patch, args, igm_resource, client):
     igm_patch.updatePolicy = (managed_instance_groups_utils
                               .ApplyInstanceRedistributionTypeToUpdatePolicy)(
                                   client,
@@ -147,10 +143,8 @@ class UpdateGA(base.UpdateCommand):
                                   igm_resource.updatePolicy)
 
   def _PatchTargetDistributionShape(self, patch_instance_group_manager,
-                                    target_distribution_shape, igm_ref,
-                                    igm_resource, client):
-    instance_groups_flags.ValidateMigDistributionPolicyTargetShapeFlag(
-        target_distribution_shape, igm_ref)
+                                    target_distribution_shape, igm_resource,
+                                    client):
     distribution_policy = igm_resource.distributionPolicy
     if distribution_policy is None:
       distribution_policy = client.messages.DistributionPolicy()
@@ -179,6 +173,7 @@ class UpdateGA(base.UpdateCommand):
   def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,
                                        client, holder):
     """Create IGM resource patch."""
+    managed_flags.ValidateRegionalMigFlagsUsage(args, REGIONAL_FLAGS, igm_ref)
     patch_instance_group_manager = client.messages.InstanceGroupManager()
     auto_healing_policies = self._GetValidatedAutohealingPolicies(
         holder, client, args, igm_resource)
@@ -186,7 +181,7 @@ class UpdateGA(base.UpdateCommand):
       patch_instance_group_manager.autoHealingPolicies = auto_healing_policies
     if args.IsSpecified('instance_redistribution_type'):
       self._PatchRedistributionType(patch_instance_group_manager, args,
-                                    igm_resource, client, holder)
+                                    igm_resource, client)
     if self._StatefulArgsSet(args):
       patch_instance_group_manager = (
           self._PatchStatefulPolicy(patch_instance_group_manager, args,
@@ -194,7 +189,7 @@ class UpdateGA(base.UpdateCommand):
     if args.target_distribution_shape:
       self._PatchTargetDistributionShape(patch_instance_group_manager,
                                          args.target_distribution_shape,
-                                         igm_ref, igm_resource, client)
+                                         igm_resource, client)
     return patch_instance_group_manager
 
   def Run(self, args):

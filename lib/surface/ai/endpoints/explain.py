@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""AI Platform endpoints explain command."""
+"""Vertex AI endpoints explain command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,7 +29,7 @@ from googlecloudsdk.core import log
 
 
 def _Run(args, version):
-  """Run AI Platform online explanation."""
+  """Run Vertex AI online explanation."""
   endpoint_ref = args.CONCEPTS.endpoint.Parse()
   args.region = endpoint_ref.AsDict()['locationsId']
   with endpoint_util.AiplatformEndpointOverrides(
@@ -52,9 +52,9 @@ def _Run(args, version):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ExplainBeta(base.Command):
-  """Request an online explanation from an AI Platform endpoint.
+  """Request an online explanation from an Vertex AI endpoint.
 
-     `{command}` sends an explanation request to the AI Platform endpoint for
+     `{command}` sends an explanation request to the Vertex AI endpoint for
      the given instances. This command reads up to 100 instances, though the
      service itself accepts instances up to the payload limit size
      (currently, 1.5MB).
@@ -70,7 +70,8 @@ class ExplainBeta(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddEndpointResourceArg(
-        parser, 'to request an online explanation',
+        parser,
+        'to request an online explanation',
         prompt_func=region_util.PromptForOpRegion)
     flags.AddPredictInstanceArg(parser)
     flags.GetDeployedModelId(required=False).AddToParser(parser)

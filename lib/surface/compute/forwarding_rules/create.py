@@ -495,7 +495,7 @@ class CreateBeta(Create):
   _support_all_protocol = False
   _support_target_service_attachment = True
   _support_sd_registration_for_regional = True
-  _support_l3_default = False
+  _support_l3_default = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -400,6 +400,13 @@ class CreateBeta(Create):
     super(CreateBeta, cls).Args(parser)
 
     flags.AddMaintenanceWindowFlagsGroup(parser)
+    autoscaling_group_parser = parser.add_argument_group(hidden=True)
+    flags.SCHEDULER_CPU.AddToParser(autoscaling_group_parser)
+    flags.WORKER_CPU.AddToParser(autoscaling_group_parser)
+    flags.SCHEDULER_MEMORY.AddToParser(autoscaling_group_parser)
+    flags.WORKER_MEMORY.AddToParser(autoscaling_group_parser)
+    flags.MIN_WORKERS.AddToParser(autoscaling_group_parser)
+    flags.MAX_WORKERS.AddToParser(autoscaling_group_parser)
 
   def GetOperationMessage(self, args):
     """See base class."""
@@ -433,6 +440,14 @@ class CreateBeta(Create):
         web_server_access_control=self.web_server_access_control,
         cloud_sql_machine_type=args.cloud_sql_machine_type,
         web_server_machine_type=args.web_server_machine_type,
+        scheduler_cpu=args.scheduler_cpu,
+        worker_cpu=args.worker_cpu,
+        scheduler_memory_gb=environments_api_util.MemorySizeBytesToGB(
+            args.scheduler_memory),
+        worker_memory_gb=environments_api_util.MemorySizeBytesToGB(
+            args.worker_memory),
+        min_workers=args.min_workers,
+        max_workers=args.max_workers,
         maintenance_window_start=args.maintenance_window_start,
         maintenance_window_end=args.maintenance_window_end,
         maintenance_window_recurrence=args.maintenance_window_recurrence,
@@ -466,14 +481,6 @@ class CreateAlpha(CreateBeta):
         help="""The type of executor by which task instances are run on Airflow;
         currently supported executor types are CELERY and KUBERNETES.
         Defaults to CELERY. Cannot be updated.""")
-
-    autoscaling_group_parser = parser.add_argument_group(hidden=True)
-    flags.SCHEDULER_CPU.AddToParser(autoscaling_group_parser)
-    flags.WORKER_CPU.AddToParser(autoscaling_group_parser)
-    flags.SCHEDULER_MEMORY.AddToParser(autoscaling_group_parser)
-    flags.WORKER_MEMORY.AddToParser(autoscaling_group_parser)
-    flags.MIN_WORKERS.AddToParser(autoscaling_group_parser)
-    flags.MAX_WORKERS.AddToParser(autoscaling_group_parser)
 
   def GetOperationMessage(self, args):
     """See base class."""

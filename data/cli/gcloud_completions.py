@@ -2177,6 +2177,81 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
+            "model-monitoring-jobs": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--analysis-instance-schema": "value",
+                    "--display-name": "value",
+                    "--drift-thresholds": "value",
+                    "--emails": "value",
+                    "--endpoint": "value",
+                    "--labels": "value",
+                    "--log-ttl": "value",
+                    "--monitoring-config-from-file": "value",
+                    "--monitoring-frequency": "value",
+                    "--predict-instance-schema": "value",
+                    "--prediction-sampling-rate": "value",
+                    "--region": "value",
+                    "--sample-predict-request": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "pause": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "resume": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--analysis-instance-schema": "value",
+                    "--clear-labels": "bool",
+                    "--display-name": "value",
+                    "--drift-thresholds": "value",
+                    "--emails": "value",
+                    "--log-ttl": "value",
+                    "--monitoring-config-from-file": "value",
+                    "--monitoring-frequency": "value",
+                    "--prediction-sampling-rate": "value",
+                    "--region": "dynamic",
+                    "--remove-labels": "value",
+                    "--update-labels": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "models": {
               "commands": {
                 "delete": {
@@ -2235,6 +2310,242 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--index": "value",
                     "--region": "dynamic"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "tensorboard-experiments": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--description": "value",
+                    "--display-name": "value",
+                    "--labels": "value",
+                    "--region": "dynamic",
+                    "--tensorboard-experiment-id": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--tensorboard-id": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--tensorboard-id": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "dynamic",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--clear-labels": "bool",
+                    "--description": "value",
+                    "--display-name": "value",
+                    "--region": "dynamic",
+                    "--remove-labels": "value",
+                    "--tensorboard-id": "dynamic",
+                    "--update-labels": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "tensorboard-runs": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--description": "value",
+                    "--display-name": "value",
+                    "--labels": "value",
+                    "--region": "dynamic",
+                    "--tensorboard-id": "dynamic",
+                    "--tensorboard-run-id": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "dynamic",
+                    "--sort-by": "value",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--clear-labels": "bool",
+                    "--description": "value",
+                    "--display-name": "value",
+                    "--region": "dynamic",
+                    "--remove-labels": "value",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic",
+                    "--update-labels": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "tensorboard-time-series": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--description": "value",
+                    "--display-name": "value",
+                    "--plugin-data": "value",
+                    "--plugin-name": "value",
+                    "--region": "dynamic",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic",
+                    "--type": [
+                      "blob-sequence",
+                      "scalar",
+                      "tensor"
+                    ]
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic",
+                    "--tensorboard-run-id": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic",
+                    "--tensorboard-run-id": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "dynamic",
+                    "--sort-by": "value",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic",
+                    "--tensorboard-run-id": "dynamic",
+                    "--uri": "bool"
+                  }
+                },
+                "read": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--max-data-points": "value",
+                    "--region": "dynamic",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic",
+                    "--tensorboard-run-id": "dynamic"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--description": "value",
+                    "--display-name": "value",
+                    "--plugin-data": "value",
+                    "--plugin-name": "value",
+                    "--region": "dynamic",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic",
+                    "--tensorboard-run-id": "dynamic"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "tensorboards": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--description": "value",
+                    "--display-name": "value",
+                    "--labels": "value",
+                    "--region": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--clear-labels": "bool",
+                    "--description": "value",
+                    "--display-name": "value",
+                    "--region": "dynamic",
+                    "--remove-labels": "value",
+                    "--update-labels": "value"
                   }
                 }
               },
@@ -3023,6 +3334,49 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--async": "bool",
+                    "--region": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "instances": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--assign-ip": "bool",
+                    "--async": "bool",
+                    "--availability-type": [
+                      "REGIONAL",
+                      "ZONAL"
+                    ],
+                    "--cluster": "value",
+                    "--cpu": "value",
+                    "--database-flags": "value",
+                    "--instance-type": [
+                      "PRIMARY",
+                      "READ"
+                    ],
+                    "--memory": "value",
+                    "--read-pool-size": "value",
+                    "--region": "value",
+                    "--tier": "value",
+                    "--zone": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--cluster": "value",
+                    "--region": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "value",
                     "--region": "value"
                   }
                 }
@@ -5150,7 +5504,8 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--host-uri": "value",
                         "--peered-network": "value",
                         "--read-access-token-name": "value",
-                        "--user-name": "value"
+                        "--user-name": "value",
+                        "--webhook-secret-name": "value"
                       }
                     },
                     "delete": {
@@ -5178,7 +5533,8 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--api-key": "value",
                         "--host-uri": "value",
                         "--read-access-token-name": "value",
-                        "--user-name": "value"
+                        "--user-name": "value",
+                        "--webhook-secret-name": "value"
                       }
                     }
                   },
@@ -9216,6 +9572,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--resource-policies": "value",
                     "--restart-on-failure": "bool",
                     "--scopes": "value",
+                    "--secure-tags": "value",
                     "--service-account": "value",
                     "--shielded-integrity-monitoring": "bool",
                     "--shielded-secure-boot": "bool",
@@ -13671,6 +14028,135 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--zone": "value"
                   }
                 },
+                "tpu-vm": {
+                  "commands": {
+                    "accelerator-types": {
+                      "commands": {
+                        "describe": {
+                          "commands": {},
+                          "flags": {
+                            "--zone": "value"
+                          }
+                        },
+                        "list": {
+                          "commands": {},
+                          "flags": {
+                            "--filter": "value",
+                            "--limit": "value",
+                            "--page-size": "value",
+                            "--sort-by": "value",
+                            "--zone": "dynamic"
+                          }
+                        }
+                      },
+                      "flags": {}
+                    },
+                    "create": {
+                      "commands": {},
+                      "flags": {
+                        "--accelerator-type": "value",
+                        "--async": "bool",
+                        "--data-disk": "value",
+                        "--description": "value",
+                        "--internal-ips": "bool",
+                        "--labels": "value",
+                        "--metadata": "value",
+                        "--metadata-from-file": "value",
+                        "--network": "value",
+                        "--preemptible": "bool",
+                        "--range": "value",
+                        "--reserved": "bool",
+                        "--scopes": "value",
+                        "--service-account": "value",
+                        "--subnetwork": "value",
+                        "--tags": "value",
+                        "--zone": "value"
+                      }
+                    },
+                    "delete": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--zone": "value"
+                      }
+                    },
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--zone": "value"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool",
+                        "--zone": "dynamic"
+                      }
+                    },
+                    "ssh": {
+                      "commands": {},
+                      "flags": {
+                        "--command": "value",
+                        "--dry-run": "bool",
+                        "--force-key-file-overwrite": "bool",
+                        "--internal-ip": "bool",
+                        "--output-directory": "value",
+                        "--plain": "bool",
+                        "--ssh-flag": "value",
+                        "--ssh-key-expiration": "value",
+                        "--ssh-key-expire-after": "value",
+                        "--ssh-key-file": "value",
+                        "--strict-host-key-checking": [
+                          "ask",
+                          "no",
+                          "yes"
+                        ],
+                        "--worker": "value",
+                        "--zone": "dynamic"
+                      }
+                    },
+                    "start": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--zone": "value"
+                      }
+                    },
+                    "stop": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--zone": "value"
+                      }
+                    },
+                    "versions": {
+                      "commands": {
+                        "describe": {
+                          "commands": {},
+                          "flags": {
+                            "--zone": "value"
+                          }
+                        },
+                        "list": {
+                          "commands": {},
+                          "flags": {
+                            "--filter": "value",
+                            "--limit": "value",
+                            "--page-size": "value",
+                            "--sort-by": "value",
+                            "--zone": "dynamic"
+                          }
+                        }
+                      },
+                      "flags": {}
+                    }
+                  },
+                  "flags": {}
+                },
                 "versions": {
                   "commands": {
                     "describe": {
@@ -14047,6 +14533,180 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "container": {
           "commands": {
+            "aws": {
+              "commands": {
+                "clusters": {
+                  "commands": {
+                    "create": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--aws-region": "value",
+                        "--cluster-ipv4-cidr": "value",
+                        "--cluster-version": "value",
+                        "--database-encryption-key": "value",
+                        "--iam-instance-profile": "value",
+                        "--instance-type": "value",
+                        "--key-pair-name": "value",
+                        "--main-volume-size": "value",
+                        "--region": "value",
+                        "--role-arn": "value",
+                        "--role-session-name": "value",
+                        "--root-volume-size": "value",
+                        "--service-ipv4-cidr": "value",
+                        "--services-lb-subnet-id": "value",
+                        "--subnet-id": "value",
+                        "--tags": "value",
+                        "--validate-only": "bool",
+                        "--vpc-id": "value"
+                      }
+                    },
+                    "delete": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--region": "value",
+                        "--validate-only": "bool"
+                      }
+                    },
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--region": "value"
+                      }
+                    },
+                    "get-kubeconfig": {
+                      "commands": {},
+                      "flags": {
+                        "--output-file": "value",
+                        "--region": "value"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--region": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
+                "get-server-config": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "value"
+                  }
+                },
+                "node-pools": {
+                  "commands": {
+                    "create": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--cluster": "value",
+                        "--enable-autoscaling": "bool",
+                        "--iam-instance-profile": "value",
+                        "--instance-type": "value",
+                        "--key-pair-name": "value",
+                        "--max-nodes": "value",
+                        "--max-pods-per-node": "value",
+                        "--min-nodes": "value",
+                        "--node-version": "value",
+                        "--num-nodes": "value",
+                        "--region": "value",
+                        "--root-volume-size": "value",
+                        "--subnet-id": "value",
+                        "--validate-only": "bool"
+                      }
+                    },
+                    "delete": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--cluster": "value",
+                        "--region": "value",
+                        "--validate-only": "bool"
+                      }
+                    },
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--cluster": "value",
+                        "--region": "value"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--cluster": "value",
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--region": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    }
+                  },
+                  "flags": {}
+                }
+              },
+              "flags": {}
+            },
+            "azure": {
+              "commands": {
+                "clients": {
+                  "commands": {
+                    "create": {
+                      "commands": {},
+                      "flags": {
+                        "--application-id": "value",
+                        "--region": "value",
+                        "--tenant-id": "value",
+                        "--validate-only": "bool"
+                      }
+                    },
+                    "delete": {
+                      "commands": {},
+                      "flags": {
+                        "--region": "value"
+                      }
+                    },
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--region": "value"
+                      }
+                    },
+                    "get-public-cert": {
+                      "commands": {},
+                      "flags": {
+                        "--output-file": "value",
+                        "--region": "value"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--region": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    }
+                  },
+                  "flags": {}
+                }
+              },
+              "flags": {}
+            },
             "binauthz": {
               "commands": {
                 "attestations": {
@@ -14324,6 +14984,15 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--autoscaling-profile": "value",
                     "--boot-disk-kms-key": "value",
                     "--cloud-run-config": "value",
+                    "--cluster-dns": [
+                      "clouddns",
+                      "default"
+                    ],
+                    "--cluster-dns-domain": "value",
+                    "--cluster-dns-scope": [
+                      "cluster",
+                      "vpc"
+                    ],
                     "--cluster-ipv4-cidr": "value",
                     "--cluster-secondary-range-name": "value",
                     "--cluster-version": "value",
@@ -14445,6 +15114,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--subnetwork": "value",
                     "--system-config-from-file": "value",
                     "--tags": "value",
+                    "--threads-per-core": "value",
                     "--tpu-ipv4-cidr": "value",
                     "--username": "value",
                     "--workload-metadata": [
@@ -14552,6 +15222,15 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--clear-maintenance-window": "bool",
                     "--clear-resource-usage-bigquery-dataset": "bool",
                     "--cloud-run-config": "value",
+                    "--cluster-dns": [
+                      "clouddns",
+                      "default"
+                    ],
+                    "--cluster-dns-domain": "value",
+                    "--cluster-dns-scope": [
+                      "cluster",
+                      "vpc"
+                    ],
                     "--complete-credential-rotation": "bool",
                     "--complete-ip-rotation": "bool",
                     "--database-encryption-key": "value",
@@ -15022,6 +15701,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--shielded-secure-boot": "bool",
                     "--system-config-from-file": "value",
                     "--tags": "value",
+                    "--threads-per-core": "value",
                     "--workload-metadata": [
                       "EXPOSED",
                       "GCE_METADATA",
@@ -19529,7 +20209,11 @@ STATIC_COMPLETION_CLI_TREE = {
                       "commands": {},
                       "flags": {
                         "--location": "value",
-                        "--realm": "value"
+                        "--realm": "value",
+                        "--view": [
+                          "basic",
+                          "full"
+                        ]
                       }
                     },
                     "list": {
@@ -19541,7 +20225,11 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--page-size": "value",
                         "--realm": "value",
                         "--sort-by": "value",
-                        "--uri": "bool"
+                        "--uri": "bool",
+                        "--view": [
+                          "basic",
+                          "full"
+                        ]
                       }
                     },
                     "update": {
@@ -21199,7 +21887,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "value",
                     "--resource-type": [
                       "app-engine",
-                      "backend-services"
+                      "backend-services",
+                      "iap_gateway"
                     ],
                     "--role": "value",
                     "--service": "value"
@@ -21236,7 +21925,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "value",
                     "--resource-type": [
                       "app-engine",
-                      "backend-services"
+                      "backend-services",
+                      "iap_gateway"
                     ],
                     "--service": "value",
                     "--sort-by": "value"
@@ -21252,7 +21942,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "value",
                     "--resource-type": [
                       "app-engine",
-                      "backend-services"
+                      "backend-services",
+                      "iap_gateway"
                     ],
                     "--role": "value",
                     "--service": "value"
@@ -21264,7 +21955,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "value",
                     "--resource-type": [
                       "app-engine",
-                      "backend-services"
+                      "backend-services",
+                      "iap_gateway"
                     ],
                     "--service": "value"
                   }
@@ -22536,6 +23228,16 @@ STATIC_COMPLETION_CLI_TREE = {
                 }
               },
               "flags": {}
+            },
+            "copy": {
+              "commands": {},
+              "flags": {
+                "--billing-account": "value",
+                "--folder": "value",
+                "--location": "value",
+                "--log_filter": "value",
+                "--organization": "dynamic"
+              }
             },
             "locations": {
               "commands": {
@@ -25339,6 +26041,44 @@ STATIC_COMPLETION_CLI_TREE = {
                 }
               },
               "flags": {}
+            },
+            "observability-policies": {
+              "commands": {
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "value"
+                  }
+                },
+                "export": {
+                  "commands": {},
+                  "flags": {
+                    "--destination": "value",
+                    "--location": "value"
+                  }
+                },
+                "import": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "value",
+                    "--source": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
             }
           },
           "flags": {}
@@ -25858,6 +26598,15 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--limit": "value",
                     "--page-size": "value",
                     "--sort-by": "value",
+                    "--zone": "value"
+                  }
+                },
+                "publish": {
+                  "commands": {},
+                  "flags": {
+                    "--attributes": "value",
+                    "--message": "value",
+                    "--ordering-key": "value",
                     "--zone": "value"
                   }
                 },
@@ -32219,6 +32968,14 @@ STATIC_COMPLETION_CLI_TREE = {
             "--roles": "value"
           }
         },
+        "analyze-move": {
+          "commands": {},
+          "flags": {
+            "--blockers-only": "value",
+            "--destination-folder": "value",
+            "--destination-organization": "value"
+          }
+        },
         "export": {
           "commands": {},
           "flags": {
@@ -33344,6 +34101,81 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
+            "model-monitoring-jobs": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--analysis-instance-schema": "value",
+                    "--display-name": "value",
+                    "--drift-thresholds": "value",
+                    "--emails": "value",
+                    "--endpoint": "value",
+                    "--labels": "value",
+                    "--log-ttl": "value",
+                    "--monitoring-config-from-file": "value",
+                    "--monitoring-frequency": "value",
+                    "--predict-instance-schema": "value",
+                    "--prediction-sampling-rate": "value",
+                    "--region": "value",
+                    "--sample-predict-request": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "pause": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "resume": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--analysis-instance-schema": "value",
+                    "--clear-labels": "bool",
+                    "--display-name": "value",
+                    "--drift-thresholds": "value",
+                    "--emails": "value",
+                    "--log-ttl": "value",
+                    "--monitoring-config-from-file": "value",
+                    "--monitoring-frequency": "value",
+                    "--prediction-sampling-rate": "value",
+                    "--region": "dynamic",
+                    "--remove-labels": "value",
+                    "--update-labels": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "models": {
               "commands": {
                 "delete": {
@@ -33402,6 +34234,242 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--index": "value",
                     "--region": "dynamic"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "tensorboard-experiments": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--description": "value",
+                    "--display-name": "value",
+                    "--labels": "value",
+                    "--region": "dynamic",
+                    "--tensorboard-experiment-id": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--tensorboard-id": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--tensorboard-id": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "dynamic",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--clear-labels": "bool",
+                    "--description": "value",
+                    "--display-name": "value",
+                    "--region": "dynamic",
+                    "--remove-labels": "value",
+                    "--tensorboard-id": "dynamic",
+                    "--update-labels": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "tensorboard-runs": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--description": "value",
+                    "--display-name": "value",
+                    "--labels": "value",
+                    "--region": "dynamic",
+                    "--tensorboard-id": "dynamic",
+                    "--tensorboard-run-id": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "dynamic",
+                    "--sort-by": "value",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--clear-labels": "bool",
+                    "--description": "value",
+                    "--display-name": "value",
+                    "--region": "dynamic",
+                    "--remove-labels": "value",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic",
+                    "--update-labels": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "tensorboard-time-series": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--description": "value",
+                    "--display-name": "value",
+                    "--plugin-data": "value",
+                    "--plugin-name": "value",
+                    "--region": "dynamic",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic",
+                    "--type": [
+                      "blob-sequence",
+                      "scalar",
+                      "tensor"
+                    ]
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic",
+                    "--tensorboard-run-id": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic",
+                    "--tensorboard-run-id": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "dynamic",
+                    "--sort-by": "value",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic",
+                    "--tensorboard-run-id": "dynamic",
+                    "--uri": "bool"
+                  }
+                },
+                "read": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--max-data-points": "value",
+                    "--region": "dynamic",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic",
+                    "--tensorboard-run-id": "dynamic"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--description": "value",
+                    "--display-name": "value",
+                    "--plugin-data": "value",
+                    "--plugin-name": "value",
+                    "--region": "dynamic",
+                    "--tensorboard-experiment-id": "dynamic",
+                    "--tensorboard-id": "dynamic",
+                    "--tensorboard-run-id": "dynamic"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "tensorboards": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--description": "value",
+                    "--display-name": "value",
+                    "--labels": "value",
+                    "--region": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--clear-labels": "bool",
+                    "--description": "value",
+                    "--display-name": "value",
+                    "--region": "dynamic",
+                    "--remove-labels": "value",
+                    "--update-labels": "value"
                   }
                 }
               },
@@ -38027,6 +39095,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "AH",
                       "ESP",
                       "ICMP",
+                      "L3_DEFAULT",
                       "SCTP",
                       "TCP",
                       "UDP"
@@ -44422,6 +45491,15 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--autoscaling-profile": "value",
                     "--boot-disk-kms-key": "value",
                     "--cloud-run-config": "value",
+                    "--cluster-dns": [
+                      "clouddns",
+                      "default"
+                    ],
+                    "--cluster-dns-domain": "value",
+                    "--cluster-dns-scope": [
+                      "cluster",
+                      "vpc"
+                    ],
                     "--cluster-ipv4-cidr": "value",
                     "--cluster-secondary-range-name": "value",
                     "--cluster-version": "value",
@@ -44537,6 +45615,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--subnetwork": "value",
                     "--system-config-from-file": "value",
                     "--tags": "value",
+                    "--threads-per-core": "value",
                     "--tpu-ipv4-cidr": "value",
                     "--username": "value",
                     "--workload-metadata": [
@@ -44644,6 +45723,15 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--clear-maintenance-window": "bool",
                     "--clear-resource-usage-bigquery-dataset": "bool",
                     "--cloud-run-config": "value",
+                    "--cluster-dns": [
+                      "clouddns",
+                      "default"
+                    ],
+                    "--cluster-dns-domain": "value",
+                    "--cluster-dns-scope": [
+                      "cluster",
+                      "vpc"
+                    ],
                     "--complete-credential-rotation": "bool",
                     "--complete-ip-rotation": "bool",
                     "--database-encryption-key": "value",
@@ -44926,6 +46014,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--shielded-secure-boot": "bool",
                     "--system-config-from-file": "value",
                     "--tags": "value",
+                    "--threads-per-core": "value",
                     "--workload-metadata": [
                       "EXPOSED",
                       "GCE_METADATA",
@@ -45521,6 +46610,24 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "data-fusion": {
           "commands": {
+            "add-iam-policy-binding": {
+              "commands": {},
+              "flags": {
+                "--location": "value",
+                "--member": "value",
+                "--role": "value"
+              }
+            },
+            "get-iam-policy": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--location": "value",
+                "--page-size": "value",
+                "--sort-by": "value"
+              }
+            },
             "instances": {
               "commands": {
                 "create": {
@@ -45611,6 +46718,20 @@ STATIC_COMPLETION_CLI_TREE = {
                 }
               },
               "flags": {}
+            },
+            "remove-iam-policy-binding": {
+              "commands": {},
+              "flags": {
+                "--location": "value",
+                "--member": "value",
+                "--role": "value"
+              }
+            },
+            "set-iam-policy": {
+              "commands": {},
+              "flags": {
+                "--location": "value"
+              }
             }
           },
           "flags": {}
@@ -46807,6 +47928,124 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--filter": "value",
                     "--limit": "value",
                     "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            }
+          },
+          "flags": {}
+        },
+        "datastream": {
+          "commands": {
+            "connection-profiles": {
+              "commands": {
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "operations": {
+              "commands": {
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "private-connections": {
+              "commands": {
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--force": "bool",
+                    "--region": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "streams": {
+              "commands": {
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "value",
                     "--sort-by": "value",
                     "--uri": "bool"
                   }
@@ -55538,6 +56777,15 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--zone": "value"
                   }
                 },
+                "publish": {
+                  "commands": {},
+                  "flags": {
+                    "--attributes": "value",
+                    "--message": "value",
+                    "--ordering-key": "value",
+                    "--zone": "value"
+                  }
+                },
                 "update": {
                   "commands": {},
                   "flags": {
@@ -56438,6 +57686,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "internal",
                   "internal-and-cloud-load-balancing"
                 ],
+                "--key": "value",
                 "--kubeconfig": "value",
                 "--labels": "value",
                 "--max-instances": "value",
@@ -56844,6 +58093,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "internal",
                       "internal-and-cloud-load-balancing"
                     ],
+                    "--key": "value",
                     "--kubeconfig": "value",
                     "--labels": "value",
                     "--max-instances": "value",

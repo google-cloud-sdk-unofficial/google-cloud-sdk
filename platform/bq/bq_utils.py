@@ -1,11 +1,45 @@
 #!/usr/bin/env python
 """A library of functions to handle bq flags consistently."""
 
+import codecs
+import json
 import os
+import pkgutil
+import platform
+import sys
+import textwrap
+import time
+import traceback
+
 from absl import app
 from absl import flags
+import googleapiclient
+import httplib2
+import oauth2client_4_0.client
+import six
+
+import bigquery_client
 
 FLAGS = flags.FLAGS
+_BIGQUERY_TOS_MESSAGE = (
+    'In order to get started, please visit the Google APIs Console to '
+    'create a project and agree to our Terms of Service:\n'
+    '\thttps://console.cloud.google.com/\n\n'
+    'For detailed sign-up instructions, please see our Getting Started '
+    'Guide:\n'
+    '\thttps://cloud.google.com/bigquery/docs/quickstarts/'
+    'quickstart-command-line\n\n'
+    'Once you have completed the sign-up process, please try your command '
+    'again.')
+
+
+def _GetVersion():
+  """Returns content of VERSION file which is same directory as this file."""
+  root = 'bq_utils'
+  return six.ensure_str(pkgutil.get_data(root, 'VERSION'))
+
+
+VERSION_NUMBER = _GetVersion()
 
 
 def GetBigqueryRcFilename():
@@ -73,3 +107,147 @@ def ProcessBigqueryrcSection(section_name, flag_values):
           old_value = getattr(flag_values, flag)
           flag_values[flag].parse(value)
           setattr(flag_values, flag, old_value + getattr(flag_values, flag))
+
+
+def ProcessError(
+    err,
+    name='unknown',
+    message_prefix='You have encountered a bug in the BigQuery CLI.'):
+  """Translate an error message into some printing and a return code."""
+
+  if isinstance(err, SystemExit):
+    return err.code  # sys.exit called somewhere, hopefully intentionally.
+
+  response = []
+  retcode = 1
+
+  (etype, value, tb) = sys.exc_info()
+  trace = ''.join(traceback.format_exception(etype, value, tb))
+  # pragma pylint: disable=line-too-long
+  contact_us_msg = (
+      'Please file a bug report in our '
+      'public '
+      'issue tracker:\n'
+      '  https://issuetracker.google.com/issues/new?component=187149&template=0\n'
+      'Please include a brief description of '
+      'the steps that led to this issue, as well as '
+      'any rows that can be made public from '
+      'the following information: \n\n')
+  platform_str = ':'.join([
+      platform.python_implementation(),
+      platform.python_version(),
+      platform.platform()
+  ])
+  error_details = textwrap.dedent("""\
+     ========================================
+     == Platform ==
+       %s
+     == bq version ==
+       %s
+     == Command line ==
+       %s
+     == UTC timestamp ==
+       %s
+     == Error trace ==
+     %s
+     ========================================
+     """) % (
+         platform_str,
+         six.ensure_str(VERSION_NUMBER),
+         [six.ensure_str(item) for item in sys.argv],
+         time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime()),
+         six.ensure_str(trace))
+
+  codecs.register_error('strict', codecs.replace_errors)
+  message = bigquery_client.EncodeForPrinting(err)
+  if isinstance(err, (bigquery_client.BigqueryNotFoundError,
+                      bigquery_client.BigqueryDuplicateError)):
+    response.append('BigQuery error in %s operation: %s' % (name, message))
+    retcode = 2
+  elif isinstance(err, bigquery_client.BigqueryTermsOfServiceError):
+    response.append(str(err) + '\n')
+    response.append(_BIGQUERY_TOS_MESSAGE)
+  elif isinstance(err, bigquery_client.BigqueryInvalidQueryError):
+    response.append('Error in query string: %s' % (message,))
+  elif (isinstance(err, bigquery_client.BigqueryError) and
+        not isinstance(err, bigquery_client.BigqueryInterfaceError)):
+    response.append('BigQuery error in %s operation: %s' % (name, message))
+  elif isinstance(err, (app.UsageError, TypeError)):
+    response.append(message)
+  elif (isinstance(err, SyntaxError) or
+        isinstance(err, bigquery_client.BigquerySchemaError)):
+    response.append('Invalid input: %s' % (message,))
+  elif isinstance(err, flags.Error):
+    response.append('Error parsing command: %s' % (message,))
+  elif isinstance(err, KeyboardInterrupt):
+    response.append('')
+  else:  # pylint: disable=broad-except
+    # Errors with traceback information are printed here.
+    # The traceback module has nicely formatted the error trace
+    # for us, so we don't want to undo that via TextWrap.
+    if isinstance(err, bigquery_client.BigqueryInterfaceError):
+      message_prefix = (
+          'Bigquery service returned an invalid reply in %s operation: %s.'
+          '\n\n'
+          'Please make sure you are using the latest version '
+          'of the bq tool and try again. '
+          'If this problem persists, you may have encountered a bug in the '
+          'bigquery client.' % (name, message))
+    elif isinstance(err, oauth2client_4_0.client.Error):
+      message_prefix = (
+          'Authorization error. This may be a network connection problem, '
+          'so please try again. If this problem persists, the credentials '
+          'may be corrupt. Try deleting and re-creating your credentials. '
+          'You can delete your credentials using '
+          '"bq init --delete_credentials".'
+          '\n\n'
+          'If this problem still occurs, you may have encountered a bug '
+          'in the bigquery client.')
+    elif (isinstance(err, six.moves.http_client.HTTPException) or
+          isinstance(err, googleapiclient.errors.Error) or
+          isinstance(err, httplib2.HttpLib2Error)):
+      message_prefix = (
+          'Network connection problem encountered, please try again.'
+          '\n\n'
+          'If this problem persists, you may have encountered a bug in the '
+          'bigquery client.')
+
+    message = message_prefix + ' ' + contact_us_msg
+    wrap_error_message = True
+    if wrap_error_message:
+      message = flags.text_wrap(message)
+    print(message)
+    print(error_details)
+    response.append('Unexpected exception in %s operation: %s' %
+                    (name, message))
+
+  response_message = '\n'.join(response)
+  wrap_error_message = True
+  if wrap_error_message:
+    response_message = flags.text_wrap(response_message)
+  print(response_message)
+  return retcode
+
+
+def PrintFormattedJsonObject(obj, default_format='json'):
+  """Prints obj in a JSON format according to the "--format" flag.
+
+  Args:
+    obj: The object to print.
+    default_format: The format to use if the "--format" flag does not specify a
+      valid json format: 'json' or 'prettyjson'.
+  """
+  json_formats = ['json', 'prettyjson']
+  if FLAGS.format in json_formats:
+    use_format = FLAGS.format
+  else:
+    use_format = default_format
+
+  if use_format == 'json':
+    print(json.dumps(obj, separators=(',', ':')))
+  elif use_format == 'prettyjson':
+    print(json.dumps(obj, sort_keys=True, indent=2))
+  else:
+    raise ValueError(
+        'Invalid json format for printing: \'%s\', expected one of: %s' %
+        (use_format, json_formats))

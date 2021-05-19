@@ -24,7 +24,6 @@ import base64
 import binascii
 import datetime
 import gzip
-import hashlib
 import logging
 import os
 import pickle
@@ -96,6 +95,7 @@ from gslib.utils.copy_helper import PARALLEL_UPLOAD_TEMP_NAMESPACE
 from gslib.utils.copy_helper import TrackerFileType
 from gslib.utils.hashing_helper import CalculateB64EncodedMd5FromContents
 from gslib.utils.hashing_helper import CalculateMd5FromContents
+from gslib.utils.hashing_helper import GetMd5
 from gslib.utils.posix_util import GID_ATTR
 from gslib.utils.posix_util import MODE_ATTR
 from gslib.utils.posix_util import NA_ID
@@ -2873,10 +2873,10 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     tmp_dir = self.CreateTempDir()
     fpath = self.CreateTempFile(file_name='foo',
                                 tmpdir=tmp_dir,
-                                contents=b'a' * ONE_KIB * 512)
+                                contents=b'a' * ONE_KIB * ONE_KIB)
     test_callback_file = self.CreateTempFile(contents=pickle.dumps(
         HaltingCopyCallbackHandler(True,
-                                   int(ONE_KIB) * 384)))
+                                   int(ONE_KIB) * 512)))
     resumable_threshold_for_test = ('GSUtil', 'resumable_threshold',
                                     str(ONE_KIB))
     resumable_chunk_size_for_test = ('GSUtil', 'json_resumable_chunk_size',
@@ -2892,7 +2892,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
       self.assertIn('Artifically halting upload', stderr)
       fpath = self.CreateTempFile(file_name='foo',
                                   tmpdir=tmp_dir,
-                                  contents=b'b' * ONE_KIB * 512)
+                                  contents=b'b' * ONE_KIB * ONE_KIB)
       stderr = self.RunGsUtil(['cp', fpath, suri(bucket_uri)],
                               expected_status=1,
                               return_stderr=True)
@@ -2908,10 +2908,10 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     tmp_dir = self.CreateTempDir()
     fpath = self.CreateTempFile(file_name='foo',
                                 tmpdir=tmp_dir,
-                                contents=b'a' * ONE_KIB * 512)
+                                contents=b'a' * ONE_KIB * ONE_KIB)
     test_callback_file = self.CreateTempFile(contents=pickle.dumps(
         HaltingCopyCallbackHandler(True,
-                                   int(ONE_KIB) * 384)))
+                                   int(ONE_KIB) * 512)))
     resumable_threshold_for_test = ('GSUtil', 'resumable_threshold',
                                     str(ONE_KIB))
     resumable_chunk_size_for_test = ('GSUtil', 'json_resumable_chunk_size',
@@ -2958,7 +2958,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     # Create component 0 to be used in the resume; it must match the name
     # that will be generated in copy_helper, so we use the same scheme.
     encoded_name = (PARALLEL_UPLOAD_STATIC_SALT + source_file).encode(UTF8)
-    content_md5 = hashlib.md5()
+    content_md5 = GetMd5()
     content_md5.update(encoded_name)
     digest = content_md5.hexdigest()
     component_object_name = (tracker_prefix + PARALLEL_UPLOAD_TEMP_NAMESPACE +
@@ -3053,6 +3053,23 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     finally:
       # Clean up if something went wrong.
       DeleteTrackerFile(tracker_file_name)
+
+  @SkipForS3('Test uses gs-specific KMS encryption')
+  def test_kms_key_correctly_applied_to_composite_upload(self):
+    bucket_uri = self.CreateBucket()
+    fpath = self.CreateTempFile(contents=b'abcd')
+    obj_suri = suri(bucket_uri, 'composed')
+    key_fqn = self.authorize_project_to_use_testing_kms_key()
+
+    with SetBotoConfigForTest([
+        ('GSUtil', 'encryption_key', key_fqn),
+        ('GSUtil', 'parallel_composite_upload_threshold', '1'),
+        ('GSUtil', 'parallel_composite_upload_component_size', '1')
+    ]):
+      self.RunGsUtil(['cp', fpath, obj_suri])
+
+    with SetBotoConfigForTest([('GSUtil', 'prefer_api', 'json')]):
+      self.AssertObjectUsesCMEK(obj_suri, key_fqn)
 
   # This temporarily changes the tracker directory to unwritable which
   # interferes with any parallel running tests that use the tracker directory.
@@ -3583,7 +3600,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     ])
     # Compute the MD5 of the uncompressed bytes.
     with gzip.open(input_filename) as fp:
-      hash_dict = {'md5': hashlib.md5()}
+      hash_dict = {'md5': GetMd5()}
       hashing_helper.CalculateHashesFromContents(fp, hash_dict)
       in_file_md5 = hash_dict['md5'].digest()
 
@@ -3592,7 +3609,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     self.RunGsUtil(['cp', suri(object_uri), suri(fpath2)])
     # Compute MD5 of the downloaded (uncompressed) file, and validate it.
     with open(fpath2, 'rb') as fp:
-      hash_dict = {'md5': hashlib.md5()}
+      hash_dict = {'md5': GetMd5()}
       hashing_helper.CalculateHashesFromContents(fp, hash_dict)
       out_file_md5 = hash_dict['md5'].digest()
     self.assertEqual(in_file_md5, out_file_md5)

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to get a model in AI platform."""
+"""Command to get a model in Vertex AI."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -41,8 +41,8 @@ class DescribeV1(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddModelResourceArg(
-        parser, 'to describe', region_util.PromptForOpRegion)
+    flags.AddModelResourceArg(parser, 'to describe',
+                              region_util.PromptForOpRegion)
 
   def _Run(self, args, model_ref, region):
     with endpoint_util.AiplatformEndpointOverrides(

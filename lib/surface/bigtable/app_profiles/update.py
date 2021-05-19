@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class UpdateAppProfile(base.CreateCommand):
   """Update a Bigtable app profile."""
 
@@ -58,6 +59,33 @@ class UpdateAppProfile(base.CreateCommand):
         'app profile', required=False).AddAppProfileRouting(
             required=False).AddForce('update').AddAsync())
 
+  def _UpdateAppProfile(self, app_profile_ref, args):
+    """Updates an AppProfile with the given arguments.
+
+    Args:
+      app_profile_ref: A resource reference of the new app profile.
+      args: an argparse namespace. All the arguments that were provided to this
+          command invocation.
+
+    Raises:
+      ConflictingArgumentsException:
+          If both cluster and multi_cluster are present.
+          If both multi_cluster and transactional_writes are present.
+          If both cluster and restrict_to are present.
+      OneOfArgumentsRequiredException: If neither cluster or multi_cluster are
+          present.
+
+    Returns:
+      Long running operation.
+    """
+    return app_profiles.Update(
+        app_profile_ref,
+        cluster=args.route_to,
+        description=args.description,
+        multi_cluster=args.route_any,
+        transactional_writes=args.transactional_writes,
+        force=args.force)
+
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -66,21 +94,19 @@ class UpdateAppProfile(base.CreateCommand):
         command invocation.
 
     Raises:
-      exceptions.ConflictingArgumentsException: If the user provides
-        --transactional-writes and --route-any.
+      ConflictingArgumentsException:
+          If both cluster and multi_cluster are present.
+          If both multi_cluster and transactional_writes are present.
+          If both cluster and restrict_to are present.
+      OneOfArgumentsRequiredException: If neither cluster or multi_cluster are
+          present.
 
     Returns:
-      Created resource.
+      Updated resource.
     """
     app_profile_ref = args.CONCEPTS.app_profile.Parse()
     try:
-      result = app_profiles.Update(
-          app_profile_ref,
-          cluster=args.route_to,
-          description=args.description,
-          multi_cluster=args.route_any,
-          transactional_writes=args.transactional_writes,
-          force=args.force)
+      result = self._UpdateAppProfile(app_profile_ref, args)
     except HttpError as e:
       util.FormatErrorMessages(e)
     else:
@@ -96,3 +122,44 @@ class UpdateAppProfile(base.CreateCommand):
       return util.AwaitAppProfile(
           operation_ref,
           'Updating bigtable app profile {0}'.format(app_profile_ref.Name()))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAppProfileAlpha(UpdateAppProfile):
+  """Update a Bigtable app profile."""
+
+  @staticmethod
+  def Args(parser):
+    arguments.AddAppProfileResourceArg(parser, 'to update')
+    (arguments.ArgAdder(parser).AddDescription(
+        'app profile', required=False).AddAppProfileRouting(
+            required=False,
+            allow_restrict_to=True).AddForce('update').AddAsync())
+
+  def _UpdateAppProfile(self, app_profile_ref, args):
+    """Updates an AppProfile with the given arguments, including restrict_to.
+
+    Args:
+      app_profile_ref: A resource reference of the new app profile.
+      args: an argparse namespace. All the arguments that were provided to this
+          command invocation.
+
+    Raises:
+      ConflictingArgumentsException:
+          If both cluster and multi_cluster are present.
+          If both multi_cluster and transactional_writes are present.
+          If both cluster and restrict_to are present.
+      OneOfArgumentsRequiredException: If neither cluster or multi_cluster are
+          present.
+
+    Returns:
+      Long running operation.
+    """
+    return app_profiles.Update(
+        app_profile_ref,
+        cluster=args.route_to,
+        description=args.description,
+        multi_cluster=args.route_any,
+        restrict_to=args.restrict_to,
+        transactional_writes=args.transactional_writes,
+        force=args.force)

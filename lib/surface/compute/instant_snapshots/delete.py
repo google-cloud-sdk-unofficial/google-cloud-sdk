@@ -47,9 +47,9 @@ class Delete(base.DeleteCommand):
     messages = client.MESSAGES_MODULE
     requests = []
     for ips_ref in ips_refs:
-      if ips_ref.Collection() == 'compute.zoneInstantSnapshots':
-        service = client.zoneInstantSnapshots
-        request = messages.ComputeZoneInstantSnapshotsDeleteRequest(
+      if ips_ref.Collection() == 'compute.instantSnapshots':
+        service = client.instantSnapshots
+        request = messages.ComputeInstantSnapshotsDeleteRequest(
             instantSnapshot=ips_ref.Name(),
             project=ips_ref.project,
             zone=ips_ref.zone)

@@ -311,17 +311,13 @@ _CHECKSUM_VALIDATION_TEXT = """
 _RETRY_HANDLING_TEXT = """
 <B>RETRY HANDLING</B>
   The ``cp`` command retries when failures occur, but if enough failures happen
-  during a particular copy or delete operation, the ``cp`` command skips that
-  object and moves on. If any failures were not successfully retried by the end
-  of the copy run, the ``cp`` command reports the number of failures, and
-  exits with a non-zero status.
-
-  Note that there are cases where retrying never succeeds, such as if you have
-  insufficient write permissions to the destination bucket, or if the destination
-  path for an object is longer than the maximum allowed length.
-
-  For more details about gsutil's retry handling, see
-  "gsutil help retries".
+  during a particular copy or delete operation, or if a failure isn't retryable,
+  the ``cp`` command skips that object and moves on. If any failures were not
+  successfully retried by the end of the copy run, the ``cp`` command reports the
+  number of failures, and exits with a non-zero status.
+  
+  For details about gsutil's overall retry handling, see `Retry strategy
+  <https://cloud.google.com/storage/docs/retry-strategy#tools>`_.
 """
 
 _RESUMABLE_TRANSFERS_TEXT = """
@@ -363,8 +359,9 @@ _STREAMING_TRANSFERS_TEXT = """
 
     long_running_computation | gsutil cp - gs://my-bucket/obj
 
-  Streaming uploads using the JSON API (see "gsutil help apis") are buffered in
-  memory part-way back into the file and can thus retry in the event of network
+  Streaming uploads using the `JSON API
+  <https://cloud.google.com/storage/docs/request-endpoints#gsutil>`_ are buffered
+  in memory part-way back into the file and can thus retry in the event of network
   or service problems.
 
   Streaming transfers using the XML API do not support resumable
@@ -491,8 +488,8 @@ _OPTIONS_TEXT = """
                  at its destination. However, you can use "daisy chain" mode to change a
                  composite object into a non-composite object. For example:
 
-                     gsutil cp -D -p gs://bucket/obj gs://bucket/obj_tmp
-                     gsutil mv -p gs://bucket/obj_tmp gs://bucket/obj
+                     gsutil cp -D gs://bucket/obj gs://bucket/obj_tmp
+                     gsutil mv gs://bucket/obj_tmp gs://bucket/obj
 
                  NOTE: "Daisy chain" mode is automatically used when copying
                  between providers: for example, when copying data from Cloud Storage

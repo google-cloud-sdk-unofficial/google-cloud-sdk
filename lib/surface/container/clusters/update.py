@@ -690,7 +690,7 @@ class UpdateBeta(Update):
     flags.AddKubernetesObjectsExportConfig(group)
     flags.AddDisableAutopilotFlag(group)
     flags.AddILBSubsettingFlags(group, hidden=False)
-    flags.AddClusterDNSFlags(group, hidden=True)
+    flags.AddClusterDNSFlags(group, hidden=False)
     flags.AddCrossConnectSubnetworksMutationFlags(group)
     flags.AddEnableServiceExternalIPs(group)
 
@@ -830,7 +830,7 @@ class UpdateAlpha(Update):
     flags.AddKubernetesObjectsExportConfig(group)
     flags.AddDisableAutopilotFlag(group)
     flags.AddILBSubsettingFlags(group, hidden=False)
-    flags.AddClusterDNSFlags(group, hidden=True)
+    flags.AddClusterDNSFlags(group, hidden=False)
     flags.AddCrossConnectSubnetworksMutationFlags(group)
     flags.AddEnableServiceExternalIPs(group)
 

@@ -62,7 +62,6 @@ DETAILED_HELP = {
 
 def _CommonArgs(parser,
                 deprecate_maintenance_policy=False,
-                enable_resource_policy=False,
                 supports_min_node_cpu=False,
                 supports_location_hint=False,
                 supports_erase_vss=False,
@@ -76,7 +75,6 @@ def _CommonArgs(parser,
   instances_flags.AddCreateDiskArgs(
       parser,
       enable_snapshots=True,
-      resource_policy=enable_resource_policy,
       source_snapshot_csek=snapshot_csek,
       image_csek=image_csek,
       include_name=False)
@@ -170,7 +168,6 @@ class Create(base.Command):
 
   _support_nvdimm = False
   _support_public_dns = False
-  _support_disk_resource_policy = True
   _support_erase_vss = True
   _support_min_node_cpu = True
   _support_location_hint = True
@@ -194,7 +191,6 @@ class Create(base.Command):
     _CommonArgs(
         parser,
         deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
-        enable_resource_policy=cls._support_disk_resource_policy,
         supports_min_node_cpu=cls._support_min_node_cpu,
         supports_location_hint=cls._support_location_hint,
         supports_erase_vss=cls._support_erase_vss,
@@ -319,7 +315,6 @@ class Create(base.Command):
           create_boot_disk=create_boot_disk,
           boot_disk_size_gb=boot_disk_size_gb,
           support_nvdimm=self._support_nvdimm,
-          support_disk_resource_policy=self._support_disk_resource_policy,
           support_source_snapshot_csek=self._support_source_snapshot_csek,
           support_boot_snapshot_uri=self._support_boot_snapshot_uri,
           support_image_csek=self._support_image_csek,
@@ -533,7 +528,6 @@ class CreateBeta(Create):
     _CommonArgs(
         parser,
         deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
-        enable_resource_policy=cls._support_disk_resource_policy,
         supports_min_node_cpu=cls._support_min_node_cpu,
         supports_location_hint=cls._support_location_hint,
         supports_erase_vss=cls._support_erase_vss,
@@ -568,7 +562,6 @@ class CreateAlpha(Create):
     _CommonArgs(
         parser,
         deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
-        enable_resource_policy=cls._support_disk_resource_policy,
         supports_min_node_cpu=cls._support_min_node_cpu,
         supports_location_hint=cls._support_location_hint,
         supports_erase_vss=cls._support_erase_vss,

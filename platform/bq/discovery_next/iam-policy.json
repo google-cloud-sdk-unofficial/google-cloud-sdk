@@ -5622,7 +5622,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "Lists all models in the specified dataset. Requires the READER dataset role."
+          "description": "Lists all models in the specified dataset. Requires the READER dataset role. After retrieving the list of models, you can get information about a particular model by calling the models.get method."
         },
         "patch": {
           "id": "bigquery.models.patch",

@@ -49,7 +49,7 @@ class Apply(base.UpdateCommand):
 
   FEATURE_NAME = 'configmanagement'
   FEATURE_DISPLAY_NAME = 'Config Management'
-  LATEST_VERSION = '1.7.0'
+  LATEST_VERSION = '1.7.1'
 
   @classmethod
   def Args(cls, parser):
