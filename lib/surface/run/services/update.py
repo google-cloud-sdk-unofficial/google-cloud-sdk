@@ -118,7 +118,7 @@ class Update(base.Command):
     Returns:
       googlecloudsdk.api_lib.run.Service, the updated service
     """
-    changes = flags.GetConfigurationChanges(args)
+    changes = flags.GetServiceConfigurationChanges(args)
     if not changes or (len(changes) == 1 and isinstance(
         changes[0], config_changes.SetClientNameAndVersionAnnotationChange)):
       raise exceptions.NoConfigurationChangeError(

@@ -38,7 +38,7 @@ class UpdateInstances(base.Command):
     parser.display_info.AddFormat("""
         table(project(),
               zone(),
-              selfLink.basename():label=INSTANCE,
+              instanceName:label=INSTANCE,
               status)""")
     instance_groups_managed_flags.AddUpdateInstancesArgs(parser=parser)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
@@ -56,8 +56,6 @@ class UpdateInstances(base.Command):
 
     update_instances_utils.ValidateIgmReference(igm_ref)
 
-    instances = instance_groups_utils.CreateInstanceReferences(
-        holder.resources, client, igm_ref, args.instances)
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
       minimal_action = update_instances_utils.ParseInstanceActionFlag(
           '--minimal-action', args.minimal_action or 'none',
@@ -69,9 +67,9 @@ class UpdateInstances(base.Command):
               args.most_disruptive_allowed_action or 'replace',
               client.messages.InstanceGroupManagersApplyUpdatesRequest
               .MostDisruptiveAllowedActionValueValuesEnum)
-      field_name, service, requests = self._CreateZonalApplyUpdatesRequest(
-          igm_ref, instances, minimal_action, most_disruptive_allowed_action,
-          client)
+      instances_holder_field = 'instanceGroupManagersApplyUpdatesRequest'
+      request = self._CreateZonalApplyUpdatesRequest(
+          igm_ref, minimal_action, most_disruptive_allowed_action, client)
     elif igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
       minimal_action = update_instances_utils.ParseInstanceActionFlag(
           '--minimal-action', args.minimal_action or 'none',
@@ -83,52 +81,46 @@ class UpdateInstances(base.Command):
               args.most_disruptive_allowed_action or 'replace',
               client.messages.RegionInstanceGroupManagersApplyUpdatesRequest
               .MostDisruptiveAllowedActionValueValuesEnum)
-      field_name, service, requests = self._CreateRegionalApplyUpdatesRequest(
-          igm_ref, instances, minimal_action, most_disruptive_allowed_action,
-          client)
+      instances_holder_field = 'regionInstanceGroupManagersApplyUpdatesRequest'
+      request = self._CreateRegionalApplyUpdatesRequest(
+          igm_ref, minimal_action, most_disruptive_allowed_action, client)
+    else:
+      raise ValueError('Unknown reference type {0}'.format(
+          igm_ref.Collection()))
 
-    requests = instance_groups_utils.GenerateRequestTuples(
-        service, 'ApplyUpdatesToInstances', requests)
+    return instance_groups_utils.SendInstancesRequestsAndPostProcessOutputs(
+        api_holder=holder,
+        method_name='ApplyUpdatesToInstances',
+        request_template=request,
+        instances_holder_field=instances_holder_field,
+        igm_ref=igm_ref,
+        instances=args.instances)
 
-    operations = instance_groups_utils.MakeRequestsList(client, requests,
-                                                        field_name)
-    return operations
-
-  def _CreateZonalApplyUpdatesRequest(self, igm_ref, instances, minimal_action,
+  def _CreateZonalApplyUpdatesRequest(self, igm_ref, minimal_action,
                                       most_disruptive_allowed_action, client):
-    field_name = 'instanceGroupManagersApplyUpdatesRequest'
-    service = client.apitools_client.instanceGroupManagers
-    requests = instance_groups_utils.SplitInstancesInRequest(
-        (client.messages
-         .ComputeInstanceGroupManagersApplyUpdatesToInstancesRequest)(
-             instanceGroupManager=igm_ref.Name(),
-             instanceGroupManagersApplyUpdatesRequest=
-             client.messages.InstanceGroupManagersApplyUpdatesRequest(
-                 instances=instances,
-                 minimalAction=minimal_action,
-                 mostDisruptiveAllowedAction=most_disruptive_allowed_action),
-             project=igm_ref.project,
-             zone=igm_ref.zone), field_name)
-    return field_name, service, requests
+    return client.messages.ComputeInstanceGroupManagersApplyUpdatesToInstancesRequest(
+        instanceGroupManager=igm_ref.Name(),
+        instanceGroupManagersApplyUpdatesRequest=client.messages
+        .InstanceGroupManagersApplyUpdatesRequest(
+            instances=[],
+            minimalAction=minimal_action,
+            mostDisruptiveAllowedAction=most_disruptive_allowed_action),
+        project=igm_ref.project,
+        zone=igm_ref.zone)
 
-  def _CreateRegionalApplyUpdatesRequest(
-      self, igm_ref, instances, minimal_action, most_disruptive_allowed_action,
-      client):
-    field_name = 'regionInstanceGroupManagersApplyUpdatesRequest'
-    service = client.apitools_client.regionInstanceGroupManagers
-    requests = instance_groups_utils.SplitInstancesInRequest(
-        client.messages
-        .ComputeRegionInstanceGroupManagersApplyUpdatesToInstancesRequest(
-            instanceGroupManager=igm_ref.Name(),
-            regionInstanceGroupManagersApplyUpdatesRequest=client.messages
-            .RegionInstanceGroupManagersApplyUpdatesRequest(
-                instances=instances,
-                minimalAction=minimal_action,
-                mostDisruptiveAllowedAction=most_disruptive_allowed_action),
-            project=igm_ref.project,
-            region=igm_ref.region,
-        ), field_name)
-    return field_name, service, requests
+  def _CreateRegionalApplyUpdatesRequest(self, igm_ref, minimal_action,
+                                         most_disruptive_allowed_action,
+                                         client):
+    return client.messages.ComputeRegionInstanceGroupManagersApplyUpdatesToInstancesRequest(
+        instanceGroupManager=igm_ref.Name(),
+        regionInstanceGroupManagersApplyUpdatesRequest=client.messages
+        .RegionInstanceGroupManagersApplyUpdatesRequest(
+            instances=[],
+            minimalAction=minimal_action,
+            mostDisruptiveAllowedAction=most_disruptive_allowed_action),
+        project=igm_ref.project,
+        region=igm_ref.region,
+    )
 
 
 UpdateInstances.detailed_help = {
@@ -149,6 +141,11 @@ UpdateInstances.detailed_help = {
           the risk of rolling out too many changes at once. Possible actions are:
           `none`, `refresh`, `restart` and `replace`. The level of disruption to the
           instance is ordered as: `none` < `refresh` < `restart` < `replace`.
+
+          The command returns the operation status per instance, which might be
+          ``FAIL'', ``SUCCESS'', or ``MEMBER_NOT_FOUND''. ``MEMBER_NOT_FOUND''
+          is returned only for regional groups when the gcloud command-line tool
+          wasn't able to resolve the zone from the instance name.
         """,
     'EXAMPLES':
         """\

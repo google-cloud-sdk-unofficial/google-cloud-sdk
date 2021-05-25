@@ -68,6 +68,7 @@ def _Args(parser,
   instances_flags.AddImageArgs(parser)
   instances_flags.AddConfidentialComputeArgs(parser)
   instances_flags.AddNestedVirtualizationArgs(parser)
+  instances_flags.AddThreadsPerCoreArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
 
   parser.add_argument(
@@ -89,7 +90,6 @@ class CreateWithContainer(base.CreateCommand):
   _support_create_boot_disk = True
   _support_match_container_mount_disks = True
   _support_nvdimm = False
-  _support_threads_per_core = False
   _support_network_performance_configs = False
 
   @staticmethod
@@ -272,15 +272,12 @@ class CreateWithContainer(base.CreateCommand):
       if confidential_instance_config:
         instance.confidentialInstanceConfig = confidential_instance_config
 
-      has_threads_per_core = (
-          self._support_threads_per_core and args.threads_per_core is not None)
       if (args.enable_nested_virtualization is not None or
-          has_threads_per_core):
-        threads_per_core = args.threads_per_core if has_threads_per_core else None
+          args.threads_per_core is not None):
         instance.advancedMachineFeatures = (
             instance_utils.CreateAdvancedMachineFeaturesMessage(
                 compute_client.messages, args.enable_nested_virtualization,
-                threads_per_core))
+                args.threads_per_core))
 
       shielded_instance_config = create_utils.BuildShieldedInstanceConfigMessage(
           messages=compute_client.messages, args=args)
@@ -312,7 +309,6 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_create_boot_disk = True
   _support_match_container_mount_disks = True
   _support_nvdimm = False
-  _support_threads_per_core = False
   _support_network_performance_configs = True
 
   @staticmethod
@@ -339,7 +335,6 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_create_boot_disk = True
   _support_match_container_mount_disks = True
   _support_nvdimm = True
-  _support_threads_per_core = True
   _support_network_performance_configs = True
 
   @staticmethod
@@ -355,7 +350,6 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
 
-    instances_flags.AddThreadsPerCoreArgs(parser)
     instances_flags.AddStackTypeArgs(parser)
     instances_flags.AddIpv6NetworkTierArgs(parser)
     instances_flags.AddNetworkPerformanceConfigsArgs(parser)

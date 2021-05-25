@@ -79,7 +79,8 @@ class Export(base.Command):
         help='File containing yaml specifications for kubernetes resources.')
 
   def Run(self, args):
-    settings = local.Settings.Defaults().WithArgs(args)
+    settings = local.AssembleSettings(args)
+
     local_file_generator = local_files.LocalRuntimeFiles(settings)
 
     with files.FileWriter(args.kubernetes_file) as output:

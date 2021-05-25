@@ -118,6 +118,11 @@ class Ls(base.Command):
         action='store_true',
         help='Include ETag in long listing (-l) output.')
     parser.add_argument(
+        '--readable-sizes',
+        action='store_true',
+        help='When used with -l, prints object sizes in human readable format'
+        ' (e.g., 1 KiB, 234 MiB, 2 GiB, etc.)')
+    parser.add_argument(
         '-L',
         '--full',
         action='store_true',
@@ -151,13 +156,14 @@ class Ls(base.Command):
     else:
       storage_urls = [storage_url.CloudUrl(cloud_api.DEFAULT_PROVIDER)]
 
-    display_detail = cloud_list_task.DisplayDetail.SHORT
     if args.full:
       display_detail = cloud_list_task.DisplayDetail.FULL
-    if args.json:
+    elif args.json:
       display_detail = cloud_list_task.DisplayDetail.JSON
-    if args.long:
+    elif args.long:
       display_detail = cloud_list_task.DisplayDetail.LONG
+    else:
+      display_detail = cloud_list_task.DisplayDetail.SHORT
 
     tasks = []
     for url in storage_urls:
@@ -168,5 +174,6 @@ class Ls(base.Command):
               buckets_flag=args.buckets,
               display_detail=display_detail,
               include_etag=args.etag,
+              readable_sizes=args.readable_sizes,
               recursion_flag=args.recursive))
-    task_executor.ExecuteTasks(tasks, is_parallel=False)
+    task_executor.execute_tasks(tasks, parallelizable=False)

@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.asset import client_util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
 
@@ -122,6 +123,74 @@ def AddQueryArgument(parser):
         """))
 
 
+def AddAssetTypesArgument(parser):
+  parser.add_argument(
+      '--asset-types',
+      metavar='ASSET_TYPES',
+      type=arg_parsers.ArgList(),
+      default=[],
+      hidden=True,
+      help=("""\
+        A list of asset types that the IAM policies are attached to. If not
+        specified or empty, it will search the IAM policies that are attached to
+        all the [searchable asset types](https://cloud.google.com/asset-inventory/docs/supported-asset-types#searchable_asset_types).
+        Example: ``cloudresourcemanager.googleapis.com/Project,compute.googleapis.com/Instance''
+        to search the IAM policies attached to project and VM instance
+        resources. Regular expressions are also supported. For example:
+        ``compute.googleapis.com.*'' snapshots the IAM policies whose asset type starts with ``compute.googleapis.com''. See
+        [RE2](https://github.com/google/re2/wiki/Syntax) for all supported
+        regular expression syntax. If the regular expression does not match any
+        supported asset type, an ``INVALID_ARGUMENT'' error will be returned.
+
+        A list of asset types that the IAM policies are attached to. If empty,
+        it will search the IAM policies that are attached to all the [searchable asset types](https://cloud.google.com/asset-inventory/docs/supported-asset-types#searchable_asset_types).
+
+        Regular expressions are also supported. For example:
+
+          * ``compute.googleapis.com.*'' snapshots IAM policies attached to
+            asset type starts with ``compute.googleapis.com''.
+          * ``.*Instance'' snapshots IAM policies attached to asset type ends
+            with ``Instance''.
+          * ``.*Instance.*'' snapshots IAM policies attached to asset type
+            contains ``Instance''.
+
+        See [RE2](https://github.com/google/re2/wiki/Syntax) for all supported
+        regular expression syntax. If the regular expression does not match any
+        supported asset type, an ``INVALID_ARGUMENT'' error will be returned.
+        """))
+
+
+def AddOrderByArgument(parser):
+  parser.add_argument(
+      '--order-by',
+      metavar='ORDER_BY',
+      required=False,
+      hidden=True,
+      help=("""\
+        A comma-separated list of fields specifying the sorting order of the
+        results. The default order is ascending. Add `` DESC'' after the field
+        name to indicate descending order. Redundant space characters are
+        ignored. Example: ``assetType DESC, resource''. Only singular primitive
+        fields in the response are sortable:
+
+          * `resource`
+          * `assetType`
+          * `project`
+
+        All the other fields such as repeated fields (e.g., `folders`) and
+        non-primitive fields (e.g., `policy`) are not supported.
+
+        Both ```--order-by``` and ```--sort-by``` flags can be used to sort the
+        output, with the following differences:
+
+        * The ```--order-by``` flag performs server-side sorting (better
+          performance), while the ```--sort-by``` flag performs client-side
+          sorting.
+        * The ```--sort-by``` flag supports all the fields in the output, while
+          the ```--order-by``` flag only supports limited fields as shown above.
+        """))
+
+
 # pylint: enable=line-too-long
 
 
@@ -145,6 +214,14 @@ class SearchAllIamPoliciesBeta(base.ListCommand):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class SearchAllIamPolicies(SearchAllIamPoliciesBeta):
   """Searches all IAM policies within the specified accessible scope, such as a project, folder or organization."""
+
+  @staticmethod
+  def Args(parser):
+    AddScopeArgument(parser)
+    AddQueryArgument(parser)
+    AddAssetTypesArgument(parser)
+    AddOrderByArgument(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     client = client_util.AssetSearchClient(client_util.DEFAULT_API_VERSION)

@@ -107,17 +107,21 @@ class Create(base.CreateCommand):
             },
             prefixes=True)
     ]).AddToParser(parser)
-    flags.AddSubjectFlags(parser, subject_required=False)
-    flags.AddKeyAlgorithmFlag(key_spec_group, default='rsa-pkcs1-4096-sha256')
-    flags.AddValidityFlag(
+    flags_v1.AddSubjectFlags(parser, subject_required=False)
+    flags_v1.AddKeyAlgorithmFlag(
+        key_spec_group, default='rsa-pkcs1-4096-sha256')
+    flags_v1.AddValidityFlag(
         parser,
         resource_name='CA',
         default_value='P10Y',
         default_value_text='10 years')
     labels_util.AddCreateLabelsFlags(parser)
-    flags.AddBucketFlag(parser)
+    flags_v1.AddBucketFlag(parser)
     flags_v1.AddUsePresetProfilesFlag(x509_config_group)
-    flags_v1.AddInlineX509ParametersFlags(x509_config_group, is_ca_command=True)
+    # If max_chain_len is unspecified, no max length will be provided to the
+    # server on create, this allowing any number of subordinates.
+    flags_v1.AddInlineX509ParametersFlags(
+        x509_config_group, is_ca_command=True, default_max_chain_length=None)
 
   def Run(self, args):
     new_ca, ca_ref, _ = create_utils_v1.CreateCAFromArgs(

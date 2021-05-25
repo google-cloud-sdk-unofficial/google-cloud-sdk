@@ -235,9 +235,8 @@ class Register(base.CreateCommand):
           Enable Workload Identity when registering the cluster with Hub.
           Ensure that GKE Workload Identity is enabled on your GKE cluster, it
           is a requirement for using Workload Identity with memberships. Refer
-          `Registering a cluster using Workload Identity` section in
+          to the `Registering a cluster using Workload Identity` section in
           https://cloud.google.com/anthos/multicluster-management/connect/registering-a-cluster#register_cluster
-          Requires gcloud alpha or beta.
           --service_account_key_file flag should not be set if this is set.
           """),
     )
@@ -250,7 +249,7 @@ class Register(base.CreateCommand):
           Use this option when the OpenID Provider Configuration and associated
           JSON Web Key Set for validating the cluster's service account JWTs
           are served at a public endpoint different from the cluster API server.
-          Requires gcloud alpha or beta and --enable-workload-identity.
+          Requires --enable-workload-identity.
           """),
     )
     # Keep this hidden as it is not used for user-facing workflows and is

@@ -196,7 +196,7 @@ class Deploy(base.Command):
     # Deploy a container with an image
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())
-    changes = flags.GetConfigurationChanges(args)
+    changes = flags.GetServiceConfigurationChanges(args)
     changes.insert(
         0,
         config_changes.DeleteAnnotationChange(

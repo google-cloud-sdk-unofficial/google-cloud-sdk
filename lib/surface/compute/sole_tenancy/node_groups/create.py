@@ -85,6 +85,20 @@ class Create(base.CreateCommand):
     if hasattr(args, 'location_hint') and args.location_hint:
       node_group.locationHint = args.location_hint
 
+    if hasattr(args, 'share_setting') and args.share_setting:
+      share_settings_arguments = args.share_setting.split(':')
+      if len(share_settings_arguments) == 2 and share_settings_arguments[
+          0] == 'specific_projects' and share_settings_arguments[1]:
+        share_settings = util.BuildShareSettings(messages,
+                                                 share_settings_arguments[0],
+                                                 share_settings_arguments[1])
+        node_group.shareSettings = share_settings
+      else:
+        raise exceptions.UnknownArgumentException(
+            '--share_setting',
+            'Value for `share-setting` must match \'specific_projects:proj1,proj2,...\' '
+        )
+
     request = messages.ComputeNodeGroupsInsertRequest(
         nodeGroup=node_group,
         initialNodeCount=args.target_size,
@@ -118,3 +132,4 @@ class CreateAlpha(CreateBeta):
     flags.AddAutoscalingPolicyArgToParser(parser, required_mode=True)
     flags.AddMaintenanceWindowArgToParser(parser)
     flags.AddLocationHintArgToParser(parser)
+    flags.AddShareSettingsArgToParser(parser)

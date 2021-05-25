@@ -26,7 +26,6 @@ class SubordinatesBeta(base.Group):
   """Manage subordinate certificate authorities."""
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Subordinates(base.Group):
   """Manage subordinate certificate authorities."""

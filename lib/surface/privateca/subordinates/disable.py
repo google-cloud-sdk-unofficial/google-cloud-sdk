@@ -28,7 +28,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class Disable(base.SilentCommand):
+class DisableBeta(base.SilentCommand):
   r"""Disable a subordinate certificate authority.
 
     Disables a subordinate certificate authority. The subordinate certificate
@@ -48,8 +48,8 @@ class Disable(base.SilentCommand):
         parser, 'to disable')
 
   def Run(self, args):
-    client = privateca_base.GetClientInstance()
-    messages = privateca_base.GetMessagesModule()
+    client = privateca_base.GetClientInstance(api_version='v1beta1')
+    messages = privateca_base.GetMessagesModule(api_version='v1beta1')
 
     ca_ref = args.CONCEPTS.certificate_authority.Parse()
 
@@ -72,3 +72,52 @@ class Disable(base.SilentCommand):
 
     log.status.Print('Disabled Subordinate CA [{}].'.format(
         ca_ref.RelativeName()))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Disable(base.SilentCommand):
+  r"""Disable a subordinate certificate authority.
+
+    Disables a subordinate certificate authority. The subordinate certificate
+    authority will not be allowed to issue certificates once disabled. It may
+    still revoke certificates and/or generate CRLs.
+
+    ## EXAMPLES
+
+    To disable a subordinate CA:
+
+        $ {command} server-tls1 --location=us-west1 --pool=my-pool
+  """
+
+  @staticmethod
+  def Args(parser):
+    resource_args.AddCertAuthorityPositionalResourceArg(parser, 'to disable')
+
+  def Run(self, args):
+    client = privateca_base.GetClientInstance(api_version='v1')
+    messages = privateca_base.GetMessagesModule(api_version='v1')
+
+    ca_ref = args.CONCEPTS.certificate_authority.Parse()
+    ca_name = ca_ref.RelativeName()
+
+    current_ca = client.projects_locations_caPools_certificateAuthorities.Get(
+        messages
+        .PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesGetRequest(
+            name=ca_name))
+
+    resource_args.CheckExpectedCAType(
+        messages.CertificateAuthority.TypeValueValuesEnum.SUBORDINATE,
+        current_ca,
+        version='v1')
+
+    operation = client.projects_locations_caPools_certificateAuthorities.Disable(
+        messages
+        .PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesDisableRequest(
+            name=ca_name,
+            disableCertificateAuthorityRequest=messages
+            .DisableCertificateAuthorityRequest(
+                requestId=request_utils.GenerateRequestId())))
+
+    operations.Await(operation, 'Disabling Subordinate CA')
+
+    log.status.Print('Disabled Subordinate CA [{}].'.format(ca_name))

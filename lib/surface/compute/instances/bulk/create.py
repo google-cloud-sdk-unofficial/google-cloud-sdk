@@ -68,7 +68,6 @@ def _CommonArgs(parser,
                 snapshot_csek=False,
                 image_csek=False,
                 supports_display_device=False,
-                supports_threads_per_core=False,
                 support_local_ssd_size=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -105,6 +104,8 @@ def _CommonArgs(parser,
 
   instances_flags.AddImageArgs(parser, enable_snapshots=True)
   instances_flags.AddShieldedInstanceConfigArgs(parser)
+  instances_flags.AddNestedVirtualizationArgs(parser)
+  instances_flags.AddThreadsPerCoreArgs(parser)
 
   if supports_display_device:
     instances_flags.AddDisplayDeviceArg(parser)
@@ -132,9 +133,6 @@ def _CommonArgs(parser,
       '--description', help='Specifies a textual description of the instances.')
 
   base.ASYNC_FLAG.AddToParser(parser)
-
-  if supports_threads_per_core:
-    instances_flags.AddThreadsPerCoreArgs(parser)
 
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
@@ -179,10 +177,9 @@ class Create(base.Command):
   _deprecate_maintenance_policy = True
   _support_create_disk_snapshots = True
   _support_boot_snapshot_uri = True
-  _support_enable_nested_virtualization = False
-  _support_threads_per_core = False
   _support_display_device = False
   _support_local_ssd_size = False
+  _support_secure_tags = False
 
   _log_async = False
 
@@ -197,7 +194,6 @@ class Create(base.Command):
         snapshot_csek=cls._support_source_snapshot_csek,
         image_csek=cls._support_image_csek,
         supports_display_device=cls._support_display_device,
-        supports_threads_per_core=cls._support_threads_per_core,
         support_local_ssd_size=cls._support_local_ssd_size)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeBulkSourceInstanceTemplateArg())
@@ -208,7 +204,6 @@ class Create(base.Command):
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddBulkCreateArgs(parser)
     instances_flags.AddBootDiskArgs(parser)
-    instances_flags.AddNestedVirtualizationArgs(parser)
 
   def Collection(self):
     return 'compute.instances'
@@ -333,9 +328,8 @@ class Create(base.Command):
     # If either nested or threads_per_core are given, make an
     # AdvancedMachineFeatures message.
     advanced_machine_features = None
-    if ((self._support_enable_nested_virtualization and
-         args.enable_nested_virtualization is not None) or
-        (self._support_threads_per_core and args.threads_per_core is not None)):
+    if (args.enable_nested_virtualization is not None or
+        args.threads_per_core is not None):
       advanced_machine_features = (
           instance_utils.CreateAdvancedMachineFeaturesMessage(
               compute_client.messages, args.enable_nested_virtualization,
@@ -380,6 +374,8 @@ class Create(base.Command):
         reservationAffinity=reservation_affinity,
         advancedMachineFeatures=advanced_machine_features)
 
+    if self._support_secure_tags and args.secure_tags:
+      instance_properties.secureTags = args.secure_tags
     if self._support_display_device and display_device:
       instance_properties.displayDevice = display_device
 
@@ -522,6 +518,7 @@ class CreateBeta(Create):
   """Create Compute Engine virtual machine instances."""
 
   _support_display_device = True
+  _support_secure_tags = False
 
   @classmethod
   def Args(cls, parser):
@@ -534,7 +531,6 @@ class CreateBeta(Create):
         snapshot_csek=cls._support_source_snapshot_csek,
         image_csek=cls._support_image_csek,
         supports_display_device=cls._support_display_device,
-        supports_threads_per_core=cls._support_threads_per_core,
         support_local_ssd_size=cls._support_local_ssd_size)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeBulkSourceInstanceTemplateArg())
@@ -545,17 +541,15 @@ class CreateBeta(Create):
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddBulkCreateArgs(parser)
     instances_flags.AddBootDiskArgs(parser)
-    instances_flags.AddNestedVirtualizationArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
   """Create Compute Engine virtual machine instances."""
 
-  _support_enable_nested_virtualization = True
-  _support_threads_per_core = True
   _support_display_device = True
   _support_local_ssd_size = True
+  _support_secure_tags = True
 
   @classmethod
   def Args(cls, parser):
@@ -568,7 +562,6 @@ class CreateAlpha(Create):
         snapshot_csek=cls._support_source_snapshot_csek,
         image_csek=cls._support_image_csek,
         supports_display_device=cls._support_display_device,
-        supports_threads_per_core=cls._support_threads_per_core,
         support_local_ssd_size=cls._support_local_ssd_size)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeBulkSourceInstanceTemplateArg())
@@ -579,7 +572,7 @@ class CreateAlpha(Create):
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddBulkCreateArgs(parser)
     instances_flags.AddBootDiskArgs(parser)
-    instances_flags.AddNestedVirtualizationArgs(parser)
+    instances_flags.AddSecureTagsArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

@@ -114,7 +114,7 @@ class List(base.ListCommand):
     })
     parser.display_info.AddUriFunc(
         resource_utils.MakeGetUriFunc(
-            'privateca.projects.locations.certificateAuthorities'))
+            'privateca.projects.locations.caPools.certificateAuthorities'))
 
   def Run(self, args):
     client = privateca_base.GetClientInstance(api_version='v1')

@@ -26,11 +26,12 @@ from googlecloudsdk.command_lib.privateca import flags
 from googlecloudsdk.command_lib.privateca import operations
 from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.command_lib.privateca import update_utils
+from googlecloudsdk.command_lib.privateca import update_utils_v1
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class Update(base.UpdateCommand):
+class UpdateBeta(base.UpdateCommand):
   r"""Update an existing root certificate authority.
 
   ## EXAMPLES
@@ -76,6 +77,63 @@ class Update(base.UpdateCommand):
     operation = client.projects_locations_certificateAuthorities.Patch(
         messages.PrivatecaProjectsLocationsCertificateAuthoritiesPatchRequest(
             name=ca_ref.RelativeName(),
+            certificateAuthority=ca_to_update,
+            updateMask=','.join(update_mask),
+            requestId=request_utils.GenerateRequestId()))
+
+    return operations.Await(operation, 'Updating Root CA.')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Update(base.UpdateCommand):
+  r"""Update an existing root certificate authority.
+
+  ## EXAMPLES
+    To update labels on a root CA:
+
+      $ {command} prod-root \
+        --location=us-west1 \
+        --pool=my-pool \
+        --update-labels=foo=bar
+
+    To disable publishing CRLs for a root CA:
+
+      $ {command} prod-root \
+        --location=us-west1 \
+        --pool=my-pool \
+        --no-publish-crl
+  """
+
+  @staticmethod
+  def Args(parser):
+    resource_args.AddCertAuthorityPositionalResourceArg(parser, 'to update')
+    labels_util.AddUpdateLabelsFlags(parser)
+
+  def Run(self, args):
+    client = privateca_base.GetClientInstance(api_version='v1')
+    messages = privateca_base.GetMessagesModule(api_version='v1')
+
+    ca_ref = args.CONCEPTS.certificate_authority.Parse()
+    ca_name = ca_ref.RelativeName()
+
+    current_ca = client.projects_locations_caPools_certificateAuthorities.Get(
+        messages
+        .PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesGetRequest(
+            name=ca_name))
+
+    resource_args.CheckExpectedCAType(
+        messages.CertificateAuthority.TypeValueValuesEnum.SELF_SIGNED,
+        current_ca,
+        version='v1')
+
+    ca_to_update, update_mask = update_utils_v1.UpdateCAFromArgs(
+        args, current_ca.labels)
+
+    # Patch is the REST client method associated with updating a CA.
+    operation = client.projects_locations_caPools_certificateAuthorities.Patch(
+        messages
+        .PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesPatchRequest(
+            name=ca_name,
             certificateAuthority=ca_to_update,
             updateMask=','.join(update_mask),
             requestId=request_utils.GenerateRequestId()))

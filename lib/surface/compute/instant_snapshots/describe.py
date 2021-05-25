@@ -43,9 +43,9 @@ class Describe(base.DescribeCommand):
 
     ips_ref = Describe.ips_arg.ResolveAsResource(args, holder.resources)
 
-    if ips_ref.Collection() == 'compute.instantSnapshots':
-      service = client.apitools_client.instantSnapshots
-      request_type = messages.ComputeInstantSnapshotsGetRequest
+    if ips_ref.Collection() == 'compute.zoneInstantSnapshots':
+      service = client.apitools_client.zoneInstantSnapshots
+      request_type = messages.ComputeZoneInstantSnapshotsGetRequest
     elif ips_ref.Collection() == 'compute.regionInstantSnapshots':
       service = client.apitools_client.regionInstantSnapshots
       request_type = messages.ComputeRegionInstantSnapshotsGetRequest

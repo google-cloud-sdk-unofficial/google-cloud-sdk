@@ -115,7 +115,7 @@ class AdjustTraffic(base.Command):
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
 
-    changes = flags.GetConfigurationChanges(args)
+    changes = flags.GetServiceConfigurationChanges(args)
     if not changes:
       raise exceptions.NoConfigurationChangeError(
           'No traffic configuration change requested.')

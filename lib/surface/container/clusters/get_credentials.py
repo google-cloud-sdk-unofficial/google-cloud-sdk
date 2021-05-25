@@ -156,6 +156,7 @@ class GetCredentialsBeta(base.Command):
     """Register flags for this command."""
     flags.AddGetCredentialsArgs(parser)
     flags.AddCrossConnectSubnetworkFlag(parser)
+    flags.AddPrivateEndpointFQDNFlag(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -167,9 +168,11 @@ class GetCredentialsBeta(base.Command):
     Raises:
       util.Error: if the cluster is unreachable or not running.
     """
+    flags.VerifyGetCredentialsFlags(args)
     cluster, cluster_ref = _BaseRun(args, self.context)
     util.ClusterConfig.Persist(cluster, cluster_ref.projectId, args.internal_ip,
-                               args.cross_connect_subnetwork)
+                               args.cross_connect_subnetwork,
+                               args.private_endpoint_fqdn)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -220,6 +223,7 @@ class GetCredentialsAlpha(base.Command):
     """
     flags.AddGetCredentialsArgs(parser)
     flags.AddCrossConnectSubnetworkFlag(parser)
+    flags.AddPrivateEndpointFQDNFlag(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -231,6 +235,8 @@ class GetCredentialsAlpha(base.Command):
     Raises:
       util.Error: if the cluster is unreachable or not running.
     """
+    flags.VerifyGetCredentialsFlags(args)
     cluster, cluster_ref = _BaseRun(args, self.context)
     util.ClusterConfig.Persist(cluster, cluster_ref.projectId, args.internal_ip,
-                               args.cross_connect_subnetwork)
+                               args.cross_connect_subnetwork,
+                               args.private_endpoint_fqdn)

@@ -482,6 +482,10 @@ class CreateAlpha(CreateBeta):
         currently supported executor types are CELERY and KUBERNETES.
         Defaults to CELERY. Cannot be updated.""")
 
+    privately_used_public_ips_group = parser.add_argument_group(hidden=True)
+    flags.ENABLE_PRIVATELY_USED_PUBLIC_IPS_FLAG.AddToParser(
+        privately_used_public_ips_group)
+
   def GetOperationMessage(self, args):
     """See base class."""
 
@@ -513,6 +517,7 @@ class CreateAlpha(CreateBeta):
         web_server_ipv4_cidr=args.web_server_ipv4_cidr,
         cloud_sql_ipv4_cidr=args.cloud_sql_ipv4_cidr,
         master_ipv4_cidr=args.master_ipv4_cidr,
+        privately_used_public_ips=args.enable_privately_used_public_ips,
         web_server_access_control=self.web_server_access_control,
         cloud_sql_machine_type=args.cloud_sql_machine_type,
         web_server_machine_type=args.web_server_machine_type,

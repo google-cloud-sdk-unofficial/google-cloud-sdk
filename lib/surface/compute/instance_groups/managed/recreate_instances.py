@@ -45,7 +45,7 @@ class RecreateInstances(base.Command):
     parser.display_info.AddFormat("""
         table(project(),
               zone(),
-              selfLink.basename():label=INSTANCE,
+              instanceName:label=INSTANCE,
               status)""")
     _AddArgs(parser=parser)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
@@ -63,48 +63,50 @@ class RecreateInstances(base.Command):
         holder.resources,
         default_scope=default_scope,
         scope_lister=scope_lister)
-    instances = instance_groups_utils.CreateInstanceReferences(
-        holder.resources, client, igm_ref, args.instances)
 
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
-      field_name = 'instanceGroupManagersRecreateInstancesRequest'
-      service = client.apitools_client.instanceGroupManagers
-      requests = instance_groups_utils.SplitInstancesInRequest(
-          client.messages.ComputeInstanceGroupManagersRecreateInstancesRequest(
-              instanceGroupManager=igm_ref.Name(),
-              instanceGroupManagersRecreateInstancesRequest=
-              client.messages.InstanceGroupManagersRecreateInstancesRequest(
-                  instances=instances),
-              project=igm_ref.project,
-              zone=igm_ref.zone), field_name)
+      instances_holder_field = 'instanceGroupManagersRecreateInstancesRequest'
+      request = client.messages.ComputeInstanceGroupManagersRecreateInstancesRequest(
+          instanceGroupManager=igm_ref.Name(),
+          instanceGroupManagersRecreateInstancesRequest=client.messages
+          .InstanceGroupManagersRecreateInstancesRequest(instances=[]),
+          project=igm_ref.project,
+          zone=igm_ref.zone)
     elif igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
-      field_name = 'regionInstanceGroupManagersRecreateRequest'
-      service = client.apitools_client.regionInstanceGroupManagers
-      requests = instance_groups_utils.SplitInstancesInRequest(
-          client.messages.
-          ComputeRegionInstanceGroupManagersRecreateInstancesRequest(
-              instanceGroupManager=igm_ref.Name(),
-              regionInstanceGroupManagersRecreateRequest=
-              client.messages.RegionInstanceGroupManagersRecreateRequest(
-                  instances=instances),
-              project=igm_ref.project,
-              region=igm_ref.region,), field_name)
+      instances_holder_field = 'regionInstanceGroupManagersRecreateRequest'
+      request = client.messages.ComputeRegionInstanceGroupManagersRecreateInstancesRequest(
+          instanceGroupManager=igm_ref.Name(),
+          regionInstanceGroupManagersRecreateRequest=client.messages
+          .RegionInstanceGroupManagersRecreateRequest(instances=[]),
+          project=igm_ref.project,
+          region=igm_ref.region,
+      )
     else:
       raise ValueError('Unknown reference type {0}'.format(
           igm_ref.Collection()))
 
-    requests = instance_groups_utils.GenerateRequestTuples(
-        service, 'RecreateInstances', requests)
-
-    return instance_groups_utils.MakeRequestsList(client, requests, field_name)
+    return instance_groups_utils.SendInstancesRequestsAndPostProcessOutputs(
+        api_holder=holder,
+        method_name='RecreateInstances',
+        request_template=request,
+        instances_holder_field=instances_holder_field,
+        igm_ref=igm_ref,
+        instances=args.instances)
 
 
 RecreateInstances.detailed_help = {
-    'brief': 'Recreate instances managed by a managed instance group.',
-    'DESCRIPTION': """
+    'brief':
+        'Recreate instances managed by a managed instance group.',
+    'DESCRIPTION':
+        """
         *{command}* is used to recreate one or more instances in a managed
 instance group. The underlying virtual machine instances are deleted and
 recreated based on the latest instance template configured for the managed
 instance group.
+
+The command returns the operation status per instance, which might be ``FAIL'',
+``SUCCESS'', or ``MEMBER_NOT_FOUND''. ``MEMBER_NOT_FOUND'' is returned only for
+regional groups when the gcloud command-line tool wasn't able to resolve the
+zone from the instance name.
 """,
 }

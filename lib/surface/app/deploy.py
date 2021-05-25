@@ -90,6 +90,10 @@ _DETAILED_HELP = {
         environment, run:
 
           $ gcloud config set app/promote_by_default false
+
+        To deploy a service that will run as a service account, run:
+
+          $ {command} ~/my_app/app.yaml --service-account=SERVICE_ACCOUNT
         """,
 }
 

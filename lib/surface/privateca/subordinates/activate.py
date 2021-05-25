@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Activate a pending Certificate Authority."""
+"""Activate a pending certificate authority."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,7 +29,7 @@ from googlecloudsdk.core.util import files
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class Activate(base.SilentCommand):
+class ActivateBeta(base.SilentCommand):
   r"""Activate a subordinate certificate authority in a pending state.
 
   ## EXAMPLES
@@ -92,6 +92,81 @@ class Activate(base.SilentCommand):
     operation = client.projects_locations_certificateAuthorities.Activate(
         messages
         .PrivatecaProjectsLocationsCertificateAuthoritiesActivateRequest(
+            name=ca_ref.RelativeName(),
+            activateCertificateAuthorityRequest=messages
+            .ActivateCertificateAuthorityRequest(
+                pemCaCertificate=pem_cert,
+                subordinateConfig=messages.SubordinateConfig(
+                    pemIssuerChain=messages.SubordinateConfigChain(
+                        pemCertificates=pem_chain)))))
+
+    operations.Await(operation, 'Activating Certificate Authority.')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Activate(base.SilentCommand):
+  r"""Activate a subordinate certificate authority awaiting user activation.
+
+  ## EXAMPLES
+
+  To activate a subordinate CA named 'server-tls-1' in the location 'us-west1'
+
+  and CA Pool 'server-tls-pool' using a PEM certificate chain in 'chain.crt':
+
+    $ {command} server-tls-1 \
+      --location=us-west1 \
+      --pool=server-tls-pool \
+      --pem-chain=./chain.crt
+  """
+
+  @staticmethod
+  def Args(parser):
+    resource_args.AddCertAuthorityPositionalResourceArg(parser, 'to activate')
+    base.Argument(
+        '--pem-chain',
+        required=True,
+        help='A file containing a list of PEM-encoded certificates, starting '
+        'with the current CA certificate and ending with the root CA '
+        'certificate.').AddToParser(parser)
+
+  def _ParsePemChainFromFile(self, pem_chain_file):
+    """Parses a pem chain from a file, splitting the leaf cert and chain.
+
+    Args:
+      pem_chain_file: file containing the pem_chain.
+
+    Raises:
+      exceptions.InvalidArgumentException if not enough certificates are
+      included.
+
+    Returns:
+      A tuple with (leaf_cert, rest_of_chain)
+    """
+    try:
+      pem_chain_input = files.ReadFileContents(pem_chain_file)
+    except (files.Error, OSError, IOError):
+      raise exceptions.BadFileException(
+          "Could not read provided PEM chain file '{}'.".format(pem_chain_file))
+
+    certs = pem_utils.ValidateAndParsePemChain(pem_chain_input)
+    if len(certs) < 2:
+      raise exceptions.InvalidArgumentException(
+          'pem-chain',
+          'The pem_chain must include at least two certificates - the subordinate CA certificate and an issuer certificate.'
+      )
+
+    return certs[0], certs[1:]
+
+  def Run(self, args):
+    client = privateca_base.GetClientInstance(api_version='v1')
+    messages = privateca_base.GetMessagesModule(api_version='v1')
+    ca_ref = args.CONCEPTS.certificate_authority.Parse()
+
+    pem_cert, pem_chain = self._ParsePemChainFromFile(args.pem_chain)
+
+    operation = client.projects_locations_caPools_certificateAuthorities.Activate(
+        messages
+        .PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesActivateRequest(
             name=ca_ref.RelativeName(),
             activateCertificateAuthorityRequest=messages
             .ActivateCertificateAuthorityRequest(

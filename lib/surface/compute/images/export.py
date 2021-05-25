@@ -54,7 +54,10 @@ class Export(base.CreateCommand):
 
     flags.compute_flags.AddZoneFlag(
         parser, 'image', 'export',
-        explanation='The zone to use when exporting the image.')
+        help_text='The zone to use when exporting the image. When you export '
+                  'an image, the export tool creates and uses temporary VMs '
+                  'in your project for the export process. Use this flag to '
+                  'specify the zone to use for these temporary VMs.')
 
     parser.add_argument(
         '--destination-uri',
@@ -75,17 +78,26 @@ class Export(base.CreateCommand):
     parser.add_argument(
         '--network',
         help=('The name of the network in your project to use for the image '
-              'export. The network must have access to Cloud Storage. '
-              'If not specified, the network named `default` is used.'),
+              'export. When you export an image, the export tool creates and '
+              'uses temporary VMs in your project for the export process. Use '
+              'this flag to specify the network to use for these temporary VMs.'
+              ),
     )
 
     parser.add_argument(
         '--subnet',
-        help=('Name of the subnetwork in your project to use for the image '
-              'export. If the network resource is in legacy mode, do not '
-              'provide this property. If the network is in auto subnet mode, '
-              'providing the subnetwork is optional. If the network is in '
-              'custom subnet mode, then this field should be specified.'),
+        help="""\
+      Name of the subnetwork in your project to use for the image export. When
+      you export an image, the export tool creates and uses temporary VMs in
+      your project for the export process. Use this flag to specify the
+      subnetwork to use for these temporary VMs.
+          * If the network resource is in legacy mode, do not provide this
+            property.
+          * If the network is in auto subnet mode, specifying the subnetwork is
+            optional.
+          * If the network is in custom subnet mode, then this field must be
+            specified.
+        """
     )
 
     daisy_utils.AddComputeServiceAccountArg(
@@ -194,8 +206,8 @@ Export.detailed_help = {
         which is a `disk.raw` file that is tarred and gzipped.
 
         The `--export-format` flag exports the image to a format supported
-        by QEMU using qemu-img. Valid formats include 'vmdk', 'vhdx', 'vpc',
-        'vdi', and 'qcow2'.
+        by QEMU using qemu-img. Valid formats include `vmdk`, `vhdx`, `vpc`,
+        `vdi`, and `qcow2`.
         """,
     'EXAMPLES':
         """\

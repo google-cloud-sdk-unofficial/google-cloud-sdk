@@ -35,7 +35,7 @@ class AbandonInstances(base.Command):
     parser.display_info.AddFormat("""
         table(project(),
               zone(),
-              selfLink.basename():label=INSTANCE,
+              instanceName:label=INSTANCE,
               status)""")
     parser.add_argument('--instances',
                         type=arg_parsers.ArgList(min_length=1),
@@ -57,45 +57,42 @@ class AbandonInstances(base.Command):
         holder.resources,
         default_scope=default_scope,
         scope_lister=scope_lister)
-    instances = instance_groups_utils.CreateInstanceReferences(
-        holder.resources, client, igm_ref, args.instances)
 
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
-      field_name = 'instanceGroupManagersAbandonInstancesRequest'
-      service = client.apitools_client.instanceGroupManagers
-      requests = instance_groups_utils.SplitInstancesInRequest(
-          client.messages.ComputeInstanceGroupManagersAbandonInstancesRequest(
-              instanceGroupManager=igm_ref.Name(),
-              instanceGroupManagersAbandonInstancesRequest=
-              client.messages.InstanceGroupManagersAbandonInstancesRequest(
-                  instances=instances),
-              project=igm_ref.project,
-              zone=igm_ref.zone), field_name)
+      instances_holder_field = 'instanceGroupManagersAbandonInstancesRequest'
+      request = client.messages.ComputeInstanceGroupManagersAbandonInstancesRequest(
+          instanceGroupManager=igm_ref.Name(),
+          instanceGroupManagersAbandonInstancesRequest=client.messages
+          .InstanceGroupManagersAbandonInstancesRequest(instances=[]),
+          project=igm_ref.project,
+          zone=igm_ref.zone)
     elif igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
-      field_name = 'regionInstanceGroupManagersAbandonInstancesRequest'
-      service = client.apitools_client.regionInstanceGroupManagers
-      requests = instance_groups_utils.SplitInstancesInRequest(
-          client.messages.
-          ComputeRegionInstanceGroupManagersAbandonInstancesRequest(
-              instanceGroupManager=igm_ref.Name(),
-              regionInstanceGroupManagersAbandonInstancesRequest=client.
-              messages.RegionInstanceGroupManagersAbandonInstancesRequest(
-                  instances=instances),
-              project=igm_ref.project,
-              region=igm_ref.region,), field_name)
+      instances_holder_field = 'regionInstanceGroupManagersAbandonInstancesRequest'
+      request = client.messages.ComputeRegionInstanceGroupManagersAbandonInstancesRequest(
+          instanceGroupManager=igm_ref.Name(),
+          regionInstanceGroupManagersAbandonInstancesRequest=client.messages
+          .RegionInstanceGroupManagersAbandonInstancesRequest(instances=[]),
+          project=igm_ref.project,
+          region=igm_ref.region,
+      )
     else:
       raise ValueError('Unknown reference type {0}'.format(
           igm_ref.Collection()))
 
-    requests = instance_groups_utils.GenerateRequestTuples(
-        service, 'AbandonInstances', requests)
-
-    return instance_groups_utils.MakeRequestsList(client, requests, field_name)
+    return instance_groups_utils.SendInstancesRequestsAndPostProcessOutputs(
+        api_holder=holder,
+        method_name='AbandonInstances',
+        request_template=request,
+        instances_holder_field=instances_holder_field,
+        igm_ref=igm_ref,
+        instances=args.instances)
 
 
 AbandonInstances.detailed_help = {
-    'brief': 'Abandon instances owned by a managed instance group.',
-    'DESCRIPTION': """
+    'brief':
+        'Abandon instances owned by a managed instance group.',
+    'DESCRIPTION':
+        """
         *{command}* abandons one or more instances from a managed instance
 group, thereby reducing the targetSize of the group. Once instances have been
 abandoned, the currentSize of the group is automatically reduced as well to
@@ -103,8 +100,13 @@ reflect the change.
 
 Abandoning an instance does not reboot or delete the underlying virtual machine
 instances, but just removes the instances from the instance group. If you would
-like the delete the underlying instances, use the `delete-instances` command
+like to delete the underlying instances, use the `delete-instances` command
 instead.
+
+The command returns the operation status per instance, which might be ``FAIL'',
+``SUCCESS'', or ``MEMBER_NOT_FOUND''. ``MEMBER_NOT_FOUND'' is returned only for
+regional groups when the gcloud command-line tool wasn't able to resolve the
+zone from the instance name.
 
 For a more detailed overview of how abandoning instances from a managed instance
 group works, refer to this section:

@@ -85,12 +85,11 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     # pylint: disable=missing-docstring
-    def Push(image, dest_names, creds, http_obj, src_name, session_push_type):
+    def Push(image, dest_names, creds, http_obj, session_push_type):
       for dest_name in dest_names:
         with session_push_type(dest_name, creds, http_obj) as push:
           push.upload(image)
           log.CreatedResource(dest_name)
-      log.UpdatedResource(src_name)
 
     http_obj = http.Http()
 
@@ -121,8 +120,7 @@ class Create(base.CreateCommand):
       with docker_image_list.FromRegistry(src_name, creds,
                                           http_obj) as manifest_list:
         if manifest_list.exists():
-          Push(manifest_list, dest_names, creds, http_obj, src_name,
-               v2_2_session.Push)
+          Push(manifest_list, dest_names, creds, http_obj, v2_2_session.Push)
           return
 
       with v2_2_image.FromRegistry(
@@ -131,9 +129,8 @@ class Create(base.CreateCommand):
           http_obj,
           accepted_mimes=docker_http.SUPPORTED_MANIFEST_MIMES) as v2_2_img:
         if v2_2_img.exists():
-          Push(v2_2_img, dest_names, creds, http_obj, src_name,
-               v2_2_session.Push)
+          Push(v2_2_img, dest_names, creds, http_obj, v2_2_session.Push)
           return
 
       with v2_image.FromRegistry(src_name, creds, http_obj) as v2_img:
-        Push(v2_img, dest_names, creds, http_obj, src_name, v2_session.Push)
+        Push(v2_img, dest_names, creds, http_obj, v2_session.Push)

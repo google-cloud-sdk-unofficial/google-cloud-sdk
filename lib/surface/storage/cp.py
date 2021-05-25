@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import multiprocessing
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import name_expansion
 from googlecloudsdk.command_lib.storage.tasks import task_executor
@@ -77,16 +79,16 @@ class Cp(base.Command):
   def Run(self, args):
     source_expansion_iterator = name_expansion.NameExpansionIterator(
         args.source, recursion_requested=args.recursive)
-    with task_status.ProgressManager(
-        task_status.ProgressType.FILES_AND_BYTES) as progress_manager:
-      task_iterator = copy_task_iterator.CopyTaskIterator(
-          source_expansion_iterator,
-          args.destination,
-          custom_md5_digest=args.content_md5,
-          task_status_queue=progress_manager.task_status_queue,
-      )
-      task_executor.ExecuteTasks(
-          task_iterator,
-          is_parallel=True,
-          task_status_queue=progress_manager.task_status_queue,
-      )
+    task_status_queue = multiprocessing.Queue()
+    task_iterator = copy_task_iterator.CopyTaskIterator(
+        source_expansion_iterator,
+        args.destination,
+        custom_md5_digest=args.content_md5,
+        task_status_queue=task_status_queue,
+    )
+    self.exit_code = task_executor.execute_tasks(
+        task_iterator,
+        parallelizable=True,
+        task_status_queue=task_status_queue,
+        progress_type=task_status.ProgressType.FILES_AND_BYTES,
+    )
