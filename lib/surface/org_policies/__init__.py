@@ -43,6 +43,10 @@ class OrgPolicies(base.Group):
 
   category = base.IDENTITY_AND_SECURITY_CATEGORY
 
+  def Filter(self, context, args):
+    del context, args
+    base.EnableUserProjectQuotaWithFallback()
+
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -47,9 +47,8 @@ class Apply(base.UpdateCommand):
     --config=/path/to/config-management.yaml
   """
 
-  FEATURE_NAME = 'configmanagement'
-  FEATURE_DISPLAY_NAME = 'Config Management'
-  LATEST_VERSION = '1.7.1'
+  feature_name = 'configmanagement'
+  LATEST_VERSION = '1.7.2'
 
   @classmethod
   def Args(cls, parser):
@@ -129,17 +128,17 @@ class Apply(base.UpdateCommand):
     try:
       project_id = properties.VALUES.core.project.GetOrFail()
       name = 'projects/{0}/locations/global/features/{1}'.format(
-          project_id, self.FEATURE_NAME)
+          project_id, self.feature_name)
       response = base.GetFeature(name)
     except apitools_exceptions.HttpUnauthorizedError as e:
       raise exceptions.Error(
           'You are not authorized to see the status of {} '
           'Feature from project [{}]. Underlying error: {}'.format(
-              self.FEATURE_DISPLAY_NAME, project_id, e))
+              self.feature.display_name, project_id, e))
     except apitools_exceptions.HttpNotFoundError as e:
       raise exceptions.Error(
           '{} Feature for project [{}] is not enabled'.format(
-              self.FEATURE_DISPLAY_NAME, project_id))
+              self.feature.display_name, project_id))
 
     # First check FeatureSpec to see if an existing version is set
     mem_config = _parse_membership(response, mem)

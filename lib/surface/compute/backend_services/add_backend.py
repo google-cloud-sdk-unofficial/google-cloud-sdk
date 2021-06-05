@@ -35,17 +35,19 @@ from googlecloudsdk.command_lib.compute.backend_services import flags
 class AddBackend(base.UpdateCommand):
   """Add a backend to a backend service.
 
-  *{command}* adds a backend to a backend service. A
-  backend is a group of VMs or network endpoints that can handle
-  requests sent to a load balancer.
+  *{command}* adds a backend to a Google Cloud load balancer or Traffic
+  Director. Depending on the load balancing scheme of the backend service,
+  backends can be instance groups (managed or unmanaged), zonal network endpoint
+  groups (zonal NEGs), serverless NEGs, or an internet NEG. For more
+  information, see the [backend services
+  overview](https://cloud.google.com/load-balancing/docs/backend-service).
 
-  To modify the parameters of a backend after it has been added
-  to the backend service, use
-  `gcloud compute backend-services update-backend` or
-  `gcloud compute backend-services edit`.
+  For most load balancers, you can define how Google Cloud measures capacity by
+  selecting a balancing mode. For more information, see [traffic
+  distribution](https://cloud.google.com/load-balancing/docs/backend-service#traffic_distribution).
 
-  For more information about the available settings, see
-  https://cloud.google.com/load-balancing/docs/backend-service.
+  To modify a backend, use the `gcloud compute backend-services update-backend`
+  or `gcloud compute backend-services edit` command.
   """
 
   support_global_neg = True

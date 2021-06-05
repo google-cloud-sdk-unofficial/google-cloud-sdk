@@ -44,23 +44,19 @@ class InvalidResourceError(calliope_exceptions.ToolException):
 
 
 class Edit(base.Command):
-  """Modify backend services.
+  """Modify a backend service.
 
-    *{command}* can be used to modify a backend service. The backend
-  service resource is fetched from the server and presented in a text
-  editor. After the file is saved and closed, this command will
-  update the resource. Only fields that can be modified are
-  displayed in the editor.
+    *{command}* modifies a backend service of a Google Cloud load balancer or
+    Traffic Director. The backend service resource is fetched from the server
+    and presented in a text editor that displays the configurable fields.
 
-  Backends are named by their associated instances groups, and one
-  of the ``--group'' or ``--instance-group'' flags is required to
-  identify the backend that you are modifying.  You cannot "change"
-  the instance group associated with a backend, but you can accomplish
-  something similar with ``backend-services remove-backend'' and
-  ``backend-services add-backend''.
+    The specific editor is defined by the ``EDITOR'' environment variable.
 
-  The editor used to modify the resource is chosen by inspecting
-  the ``EDITOR'' environment variable.
+    The name of each backend corresponds to the name of an instance group,
+    zonal NEG, serverless NEG, or internet NEG.
+
+    To add, remove, or swap backends, use the `gcloud compute backend-services
+    remove-backend` and `gcloud compute backend-services add-backend` commands.
   """
 
   DEFAULT_FORMAT = 'yaml'

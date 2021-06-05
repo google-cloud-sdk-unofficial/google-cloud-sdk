@@ -3336,6 +3336,11 @@
           "type": "string",
           "format": "int64"
         },
+        "dmlStats": {
+          "description": "Output only. Detailed statistics for DML statements INSERT, UPDATE, DELETE, MERGE or TRUNCATE.",
+          "readOnly": true,
+          "$ref": "DmlStats"
+        },
         "undeclaredQueryParameters": {
           "description": "Output only. Standard SQL only: list of undeclared query parameters detected during a dry run validation.",
           "readOnly": true,
@@ -3610,6 +3615,31 @@
         }
       }
     },
+    "DmlStats": {
+      "id": "DmlStats",
+      "description": "Detailed statistics for DML statements",
+      "type": "object",
+      "properties": {
+        "insertedRowCount": {
+          "description": "Output only. Number of inserted Rows. Populated by DML INSERT and MERGE statements",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
+        },
+        "deletedRowCount": {
+          "description": "Output only. Number of deleted Rows. populated by DML DELETE, MERGE and TRUNCATE statements.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
+        },
+        "updatedRowCount": {
+          "description": "Output only. Number of updated Rows. Populated by DML UPDATE and MERGE statements.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
     "RowAccessPolicyReference": {
       "id": "RowAccessPolicyReference",
       "description": "Id path of a row access policy.",
@@ -3671,6 +3701,11 @@
         },
         "slotMs": {
           "description": "External service cost in terms of bigquery slot milliseconds.",
+          "type": "string",
+          "format": "int64"
+        },
+        "reservedSlotCount": {
+          "description": "Non-preemptable reserved slots used for external job. For example, reserved slots for Cloua AI Platform job are the VM usages converted to BigQuery slot with equivalent mount of price.",
           "type": "string",
           "format": "int64"
         }
@@ -4243,6 +4278,11 @@
           "readOnly": true,
           "type": "string",
           "format": "int64"
+        },
+        "dmlStats": {
+          "description": "Output only. Detailed statistics for DML statements INSERT, UPDATE, DELETE, MERGE or TRUNCATE.",
+          "readOnly": true,
+          "$ref": "DmlStats"
         }
       }
     },
@@ -4690,7 +4730,7 @@
           "$ref": "EncryptionConfiguration"
         },
         "snapshotDefinition": {
-          "description": "Output only. Contains information regarding snapshot. This value is set via snapshot creation.",
+          "description": "Output only. Contains information about the snapshot. This value is set via snapshot creation.",
           "readOnly": true,
           "$ref": "SnapshotDefinition"
         }
@@ -4716,7 +4756,7 @@
           "type": "boolean"
         },
         "useExplicitColumnNames": {
-          "description": "True if the column names are explicitly specified. For example by using the 'CREATE VIEW v(c1, c2) AS ...' syntax. Can only be set for GoogleSQL viewsL.",
+          "description": "True if the column names are explicitly specified. For example by using the 'CREATE VIEW v(c1, c2) AS ...' syntax. Can only be set for GoogleSQL views.",
           "type": "boolean"
         }
       }
@@ -4776,11 +4816,11 @@
       "type": "object",
       "properties": {
         "baseTableReference": {
-          "description": "Required. Reference describing the ID of the table that is snapshotted.",
+          "description": "Required. Reference describing the ID of the table that was snapshot.",
           "$ref": "TableReference"
         },
         "snapshotTime": {
-          "description": "Required. The time at which the base table was snapshot.",
+          "description": "Required. The time at which the base table was snapshot. This value is reported in the JSON response using RFC3339 format.",
           "type": "string",
           "format": "google-datetime"
         }

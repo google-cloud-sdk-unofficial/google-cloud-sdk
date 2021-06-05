@@ -34,7 +34,7 @@ _BIGQUERY_TOS_MESSAGE = (
 
 
 def _GetVersion():
-  """Returns content of VERSION file which is same directory as this file."""
+  """Returns content of VERSION file found in same dir as the cli binary."""
   root = 'bq_utils'
   return six.ensure_str(pkgutil.get_data(root, 'VERSION'))
 

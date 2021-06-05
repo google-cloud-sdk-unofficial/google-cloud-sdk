@@ -90,10 +90,6 @@ _DETAILED_HELP = {
         environment, run:
 
           $ gcloud config set app/promote_by_default false
-
-        To deploy a service that will run as a service account, run:
-
-          $ {command} ~/my_app/app.yaml --service-account=SERVICE_ACCOUNT
         """,
 }
 
@@ -171,6 +167,12 @@ class DeployBeta(base.SilentCommand):
   def Args(parser):
     """Get arguments for this command."""
     deploy_util.ArgsDeploy(parser)
+    parser.add_argument(
+        '--service-account',
+        help=(
+            'The service account that this deployed version will run as. '
+            'If this argument is not specified, the App Engine default '
+            'service account will be used for your current deployed version.'))
 
   def Run(self, args):
     runtime_builder_strategy = deploy_util.GetRuntimeBuilderStrategy(
@@ -183,7 +185,8 @@ class DeployBeta(base.SilentCommand):
         runtime_builder_strategy=runtime_builder_strategy,
         parallel_build=True,
         flex_image_build_option=deploy_util.GetFlexImageBuildOption(
-            default_strategy=deploy_util.FlexImageBuildOptions.ON_SERVER))
+            default_strategy=deploy_util.FlexImageBuildOptions.ON_SERVER),
+        service_account=args.service_account)
 
 
 DeployGA.detailed_help = _DETAILED_HELP

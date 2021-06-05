@@ -34,8 +34,4 @@ class Describe(base.DescribeCommand):
     $ {command}
   """
 
-  FEATURE_NAME = 'multiclusterservicediscovery'
-  FEATURE_DISPLAY_NAME = 'Multi Cluster Services'
-
-  def Run(self, args):
-    return self.RunCommand(args)
+  feature_name = 'multiclusterservicediscovery'

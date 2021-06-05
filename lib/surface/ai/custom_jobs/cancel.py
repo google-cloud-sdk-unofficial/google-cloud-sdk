@@ -30,29 +30,69 @@ Request to cancel custom job [{id}] has been sent
 
 You may view the status of your job with the command
 
-  $ gcloud alpha ai custom-jobs describe {id}
+  $ gcloud{version} ai custom-jobs describe {id}
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class Cancel(base.SilentCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CancelGA(base.SilentCommand):
   """Cancel a running custom job.
 
   If the job is already finished,
   the command will not perform any operation.
+
+  ## EXAMPLES
+
+  To cancel a job ``123'' under project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} 123 --project=example --region=us-central1
   """
 
   @staticmethod
   def Args(parser):
     flags.AddCustomJobResourceArg(parser, 'to cancel')
 
+  def _Run(self, args, custom_job_ref):
+    region = custom_job_ref.AsDict()['locationsId']
+    name = custom_job_ref.Name()
+    with endpoint_util.AiplatformEndpointOverrides(
+        version=constants.GA_VERSION, region=region):
+      response = client.CustomJobsClient(version=constants.GA_VERSION).Cancel(
+          custom_job_ref.RelativeName())
+      log.status.Print(
+          _CUSTOM_JOB_CANCEL_DISPLAY_MESSAGE.format(id=name, version=''))
+      return response
+
   def Run(self, args):
     custom_job_ref = args.CONCEPTS.custom_job.Parse()
-    name = custom_job_ref.Name()
+    return self._Run(args, custom_job_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class CancelPreGA(CancelGA):
+  """Cancel a running custom job.
+
+  If the job is already finished,
+  the command will not perform any operation.
+
+  To cancel a job ``123'' under project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} 123 --project=example --region=us-central1
+  """
+
+  @staticmethod
+  def Args(parser):
+    flags.AddCustomJobResourceArg(parser, 'to cancel')
+
+  def _Run(self, args, custom_job_ref):
     region = custom_job_ref.AsDict()['locationsId']
+    name = custom_job_ref.Name()
     with endpoint_util.AiplatformEndpointOverrides(
         version=constants.BETA_VERSION, region=region):
       response = client.CustomJobsClient(version=constants.BETA_VERSION).Cancel(
           custom_job_ref.RelativeName())
-      log.status.Print(_CUSTOM_JOB_CANCEL_DISPLAY_MESSAGE.format(id=name))
+      log.status.Print(
+          _CUSTOM_JOB_CANCEL_DISPLAY_MESSAGE.format(id=name, version=' beta'))
       return response

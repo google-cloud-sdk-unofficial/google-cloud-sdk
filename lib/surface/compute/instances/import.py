@@ -84,6 +84,19 @@ class Import(base.CreateCommand):
     daisy_utils.AddComputeServiceAccountArg(
         parser, 'instance import',
         daisy_utils.IMPORT_ROLES_FOR_COMPUTE_SERVICE_ACCOUNT)
+    instances_flags.AddServiceAccountAndScopeArgs(
+        parser,
+        False,
+        extra_scopes_help=
+        'However, if neither `--scopes` nor `--no-scopes` are '
+        'specified and the project has no default service '
+        'account, then the VM instance is imported with no '
+        'scopes. Note that the level of access that a service '
+        'account has is determined by a combination of access '
+        'scopes and IAM roles so you must configure both '
+        'access scopes and IAM roles for the service account '
+        'to work properly.',
+        operation='Import')
 
   def _ValidateInstanceName(self, args):
     """Raise an exception if requested instance name is invalid."""
@@ -119,6 +132,7 @@ class Import(base.CreateCommand):
     instances_flags.ValidateNicFlags(args)
     instances_flags.ValidateNetworkTierArgs(args)
     daisy_utils.ValidateZone(args, compute_client)
+    instances_flags.ValidateServiceAccountAndScopeArgs(args)
 
   def Run(self, args):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -189,23 +203,10 @@ class ImportBeta(Import):
   def Args(cls, parser):
     super(ImportBeta, cls).Args(parser)
     daisy_utils.AddByolArg(parser)
-    instances_flags.AddServiceAccountAndScopeArgs(
-        parser,
-        False,
-        extra_scopes_help=
-        'However, if neither `--scopes` nor `--no-scopes` are '
-        'specified and the project has no default service '
-        'account, then the VM instance is imported with no '
-        'scopes. Note that the level of access that a service '
-        'account has is determined by a combination of access '
-        'scopes and IAM roles so you must configure both '
-        'access scopes and IAM roles for the service account '
-        'to work properly.',
-        operation='Import')
 
+  # pylint: disable=useless-super-delegation
   def _ValidateArgs(self, args, compute_client):
     super(ImportBeta, self)._ValidateArgs(args, compute_client)
-    instances_flags.ValidateServiceAccountAndScopeArgs(args)
 
 
 Import.detailed_help = {

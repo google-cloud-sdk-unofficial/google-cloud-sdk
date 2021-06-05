@@ -317,6 +317,7 @@ class Update(base.UpdateCommand):
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1', group, hidden=False)
     flags.AddNotificationConfigFlag(group)
     flags.AddDisableAutopilotFlag(group)
+    flags.AddAuthenticatorSecurityGroupFlags(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -348,6 +349,7 @@ class Update(base.UpdateCommand):
           cancel_on_no=True)
     opts.disable_default_snat = args.disable_default_snat
     opts.notification_config = args.notification_config
+    opts.security_group = args.security_group
     return opts
 
   def Run(self, args):
@@ -693,6 +695,7 @@ class UpdateBeta(Update):
     flags.AddClusterDNSFlags(group, hidden=False)
     flags.AddCrossConnectSubnetworksMutationFlags(group)
     flags.AddEnableServiceExternalIPs(group)
+    flags.AddAuthenticatorSecurityGroupFlags(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -766,6 +769,7 @@ class UpdateBeta(Update):
           ' complete this step shortly after enabling CloudDNS.',
           cancel_on_no=True)
     opts.enable_service_externalips = args.enable_service_externalips
+    opts.security_group = args.security_group
     return opts
 
 
@@ -833,6 +837,7 @@ class UpdateAlpha(Update):
     flags.AddClusterDNSFlags(group, hidden=False)
     flags.AddCrossConnectSubnetworksMutationFlags(group)
     flags.AddEnableServiceExternalIPs(group)
+    flags.AddAuthenticatorSecurityGroupFlags(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -902,5 +907,6 @@ class UpdateAlpha(Update):
           ' complete this step shortly after enabling CloudDNS.',
           cancel_on_no=True)
     opts.enable_service_externalips = args.enable_service_externalips
+    opts.security_group = args.security_group
 
     return opts

@@ -65,7 +65,7 @@ class Create(base.CreateCommand):
     attachment_flags.AddEncryption(parser)
     attachment_flags.GetIpsecInternalAddressesFlag().AddToParser(parser)
 
-  def Run(self, args):
+  def _Run(self, args, support_ipv6_fields=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     attachment_ref = self.INTERCONNECT_ATTACHMENT_ARG.ResolveAsResource(
         args,
@@ -102,6 +102,27 @@ class Create(base.CreateCommand):
           for name in args.ipsec_internal_addresses
       ]
 
+    if support_ipv6_fields:
+      return interconnect_attachment.CreateAlpha(
+          description=args.description,
+          interconnect=interconnect_ref,
+          attachment_type='DEDICATED',
+          router=router_ref,
+          vlan_tag_802_1q=args.vlan,
+          admin_enabled=admin_enabled,
+          candidate_subnets=args.candidate_subnets,
+          bandwidth=getattr(args, 'bandwidth', None),
+          validate_only=getattr(args, 'dry_run', None),
+          mtu=getattr(args, 'mtu', None),
+          encryption=getattr(args, 'encryption', None),
+          ipsec_internal_addresses=ipsec_internal_addresses_urls,
+          stack_type=getattr(args, 'stack_type', None),
+          candidate_ipv6_subnets=args.candidate_ipv6_subnets,
+          cloud_router_ipv6_interface_id=getattr(
+              args, 'cloud_router_ipv6_interface_id', None),
+          customer_router_ipv6_interface_id=getattr(
+              args, 'customer_router_ipv6_interface_id', None))
+
     return interconnect_attachment.CreateAlpha(
         description=args.description,
         interconnect=interconnect_ref,
@@ -122,6 +143,10 @@ class Create(base.CreateCommand):
                'more detailed help.'.format(_DOCUMENTATION_LINK))
     log.status.Print(message)
 
+  def Run(self, args):
+    """See base.CreateCommand."""
+    return self._Run(args)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
@@ -136,3 +161,11 @@ class CreateAlpha(Create):
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
     attachment_flags.AddDryRun(parser)
+    attachment_flags.AddStackType(parser)
+    attachment_flags.AddCandidateIpv6Subnets(parser)
+    attachment_flags.AddCloudRouterIpv6InterfaceId(parser)
+    attachment_flags.AddCustomerRouterIpv6InterfaceId(parser)
+
+  def Run(self, args):
+    """See base.CreateCommand."""
+    return self._Run(args, support_ipv6_fields=True)

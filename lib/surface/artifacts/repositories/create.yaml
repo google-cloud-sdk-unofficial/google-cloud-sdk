@@ -49,7 +49,14 @@
         help_text: YUM package format.
       - arg_value: PYPI
         enum_value: PYPI
-        help_text: PyPI package format.
+        help_text: (DEPRECATED) Python package format. Use PYTHON instead.
+      - arg_value: PYTHON
+        enum_value: PYPI
+        help_text: Python package format.
+      - arg_value: GOOGET
+        enum_value: GOOGET
+        help_text:  GooGet package format.
+
     - arg_name: description
       api_field: repository.description
       help_text: |

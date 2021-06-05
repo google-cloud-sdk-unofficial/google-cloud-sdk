@@ -36,6 +36,10 @@ PREREQUISITE_OPTION_ERROR_MSG = """\
 Cannot specify --{opt} without --{prerequisite}.
 """
 
+INVALID_OPTION_FOR_V2_ERROR_MSG = """\
+Cannot specify --{opt} with Composer 2.X or greater.
+"""
+
 DETAILED_HELP = {
     'EXAMPLES':
         """\
@@ -210,8 +214,15 @@ class Create(base.Command):
     _CommonArgs(parser, cls._support_max_pods_per_node)
 
   def Run(self, args):
-    self.ParseIpAliasConfigOptions(args)
-    self.ParsePrivateEnvironmentConfigOptions(args)
+    self.image_version = None
+    if args.airflow_version:
+      self.image_version = image_versions_util.ImageVersionFromAirflowVersion(
+          args.airflow_version)
+    elif args.image_version:
+      self.image_version = args.image_version
+
+    self.ParseIpAliasConfigOptions(args, self.image_version)
+    self.ParsePrivateEnvironmentConfigOptions(args, self.image_version)
     self.ParsePrivateEnvironmentWebServerCloudSqlRanges(args)
     self.ParseWebServerAccessControlConfigOptions(args)
 
@@ -244,13 +255,6 @@ class Create(base.Command):
     if args.kms_key:
       self.kms_key = flags.GetAndValidateKmsEncryptionKey(args)
 
-    self.image_version = None
-    if args.airflow_version:
-      self.image_version = image_versions_util.ImageVersionFromAirflowVersion(
-          args.airflow_version)
-    elif args.image_version:
-      self.image_version = args.image_version
-
     operation = self.GetOperationMessage(args)
 
     details = 'with operation [{0}]'.format(operation.name)
@@ -273,35 +277,45 @@ class Create(base.Command):
             'Error creating [{}]: {}'.format(self.env_ref.RelativeName(),
                                              six.text_type(e)))
 
-  def ParseIpAliasConfigOptions(self, args):
+  def ParseIpAliasConfigOptions(self, args, image_version):
     """Parses the options for VPC-native configuration."""
-    if args.cluster_ipv4_cidr and not args.enable_ip_alias:
+    if (args.enable_ip_alias and
+        not image_versions_util.IsImageVersionStringComposerV1(image_version)):
+      raise command_util.InvalidUserInputError(
+          INVALID_OPTION_FOR_V2_ERROR_MSG.format(opt='enable-ip-alias'))
+    if (args.cluster_ipv4_cidr and not args.enable_ip_alias and
+        image_versions_util.IsImageVersionStringComposerV1(image_version)):
       raise command_util.InvalidUserInputError(
           PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-ip-alias', opt='cluster-ipv4-cidr'))
-    if args.cluster_secondary_range_name and not args.enable_ip_alias:
+    if (args.cluster_secondary_range_name and not args.enable_ip_alias and
+        image_versions_util.IsImageVersionStringComposerV1(image_version)):
       raise command_util.InvalidUserInputError(
           PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-ip-alias',
               opt='cluster-secondary-range-name'))
-    if args.services_ipv4_cidr and not args.enable_ip_alias:
+    if (args.services_ipv4_cidr and not args.enable_ip_alias and
+        image_versions_util.IsImageVersionStringComposerV1(image_version)):
       raise command_util.InvalidUserInputError(
           PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-ip-alias', opt='services-ipv4-cidr'))
-    if args.services_secondary_range_name and not args.enable_ip_alias:
+    if (args.services_secondary_range_name and not args.enable_ip_alias and
+        image_versions_util.IsImageVersionStringComposerV1(image_version)):
       raise command_util.InvalidUserInputError(
           PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-ip-alias',
               opt='services-secondary-range-name'))
-    if self._support_max_pods_per_node and args.max_pods_per_node \
-        and not args.enable_ip_alias:
+    if (self._support_max_pods_per_node and args.max_pods_per_node and
+        not args.enable_ip_alias and
+        image_versions_util.IsImageVersionStringComposerV1(image_version)):
       raise command_util.InvalidUserInputError(
           PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-ip-alias', opt='max-pods-per-node'))
 
-  def ParsePrivateEnvironmentConfigOptions(self, args):
+  def ParsePrivateEnvironmentConfigOptions(self, args, image_version):
     """Parses the options for Private Environment configuration."""
-    if args.enable_private_environment and not args.enable_ip_alias:
+    if (args.enable_private_environment and not args.enable_ip_alias and
+        image_versions_util.IsImageVersionStringComposerV1(image_version)):
       raise command_util.InvalidUserInputError(
           PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-ip-alias', opt='enable-private-environment'))

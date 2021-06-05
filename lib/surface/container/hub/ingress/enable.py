@@ -25,6 +25,7 @@ import time
 from googlecloudsdk.api_lib.services import enable_api
 from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.command_lib.container.hub.features import base
+from googlecloudsdk.command_lib.container.hub.features import info
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
@@ -47,10 +48,7 @@ class Enable(base.EnableCommand):
     $ {command} --config-membership=CONFIG_MEMBERSHIP --billing=BILLING
   """
 
-  FEATURE_NAME = 'multiclusteringress'
-  FEATURE_DISPLAY_NAME = 'Ingress'
-  FEATURE_API = 'multiclusteringress.googleapis.com'
-  MCSD_FEATURE_API = 'multiclusterservicediscovery.googleapis.com'
+  feature_name = 'multiclusteringress'
 
   @classmethod
   def Args(cls, parser):
@@ -88,8 +86,9 @@ class Enable(base.EnableCommand):
     # MCI requires MCSD. Enablement of the Hub feature for MCSD is taken care
     # of by CLH but we need to enable the OP API before that happens. If not,
     # CLH will return an error asking for the API to be enabled.
-    if not enable_api.IsServiceEnabled(project, self.MCSD_FEATURE_API):
-      enable_api.EnableService(project, self.MCSD_FEATURE_API)
+    mcsd_api = info.Get('multiclusterservicediscovery').api
+    if not enable_api.IsServiceEnabled(project, mcsd_api):
+      enable_api.EnableService(project, mcsd_api)
 
     result = self.RunCommand(
         args,
@@ -113,7 +112,7 @@ class Enable(base.EnableCommand):
 
     project = properties.VALUES.core.project.GetOrFail()
     feature_name = 'projects/{}/locations/global/features/{}'.format(
-        project, self.FEATURE_NAME)
+        project, self.feature_name)
 
     client = core_apis.GetClientInstance('gkehub', 'v1alpha1')
     ok_code = client.MESSAGES_MODULE.FeatureStateDetails.CodeValueValuesEnum.OK

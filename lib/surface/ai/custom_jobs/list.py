@@ -25,16 +25,51 @@ from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class List(base.ListCommand):
-  """Lists the existing custom jobs."""
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ListGA(base.ListCommand):
+  """Lists the existing custom jobs.
+
+  ## EXAMPLES
+
+  To list the jobs of project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} --project=example --region=us-central1
+  """
 
   @staticmethod
   def Args(parser):
     flags.AddRegionResourceArg(parser, 'to list custom jobs')
 
+  def _Run(self, args, region_ref):
+    region = region_ref.AsDict()['locationsId']
+    with endpoint_util.AiplatformEndpointOverrides(
+        version=constants.GA_VERSION, region=region):
+      return client.CustomJobsClient(version=constants.GA_VERSION).List(
+          region=region_ref.RelativeName())
+
   def Run(self, args):
     region_ref = args.CONCEPTS.region.Parse()
+    return self._Run(args, region_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class ListPreGA(ListGA):
+  """Lists the existing custom jobs.
+
+  ## EXAMPLES
+
+  To list the jobs of project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} --project=example --region=us-central1
+  """
+
+  @staticmethod
+  def Args(parser):
+    flags.AddRegionResourceArg(parser, 'to list custom jobs')
+
+  def _Run(self, args, region_ref):
     region = region_ref.AsDict()['locationsId']
     with endpoint_util.AiplatformEndpointOverrides(
         version=constants.BETA_VERSION, region=region):

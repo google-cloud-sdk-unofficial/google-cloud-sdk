@@ -297,6 +297,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       num_nodes=get_default('num_nodes'),
       password=get_default('password'),
       preemptible=get_default('preemptible'),
+      security_group=get_default('security_group'),
       scopes=get_default('scopes'),
       service_account=get_default('service_account'),
       services_ipv4_cidr=get_default('services_ipv4_cidr'),
@@ -417,6 +418,8 @@ flags_to_add = {
             AddAutoprovisioning,
         'autoupgrade':
             AddEnableAutoUpgradeWithDefault,
+        'authenticatorsecurity':
+            lambda p: flags.AddAuthenticatorSecurityGroupFlags(p, hidden=True),
         'args':
             _Args,
         'basicauth':

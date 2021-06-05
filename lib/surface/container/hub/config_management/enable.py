@@ -33,9 +33,7 @@ class Enable(base.EnableCommand):
     $ {command}
   """
 
-  FEATURE_NAME = 'configmanagement'
-  FEATURE_DISPLAY_NAME = 'Config Management'
-  FEATURE_API = 'anthosconfigmanagement.googleapis.com'
+  feature_name = 'configmanagement'
 
   @classmethod
   def Args(cls, parser):

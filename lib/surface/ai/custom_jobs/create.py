@@ -32,25 +32,87 @@ Custom Job [{id}] submitted successfully.
 
 Your job is still active. You may view the status of your job with the command
 
-  $ gcloud alpha ai custom-jobs describe {id}
+  $ gcloud{version} ai custom-jobs describe {id}
 
 Job State: {state}\
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class Create(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateGA(base.CreateCommand):
   """Create a new custom job.
 
   This command will attempt to run the custom job immediately upon creation.
+
+  ## EXAMPLES
+
+  To create a job under project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} --region=us-central1 --project=example
+    --worker-pool-spec=replica-count=1,machine-type='n1-highmem-2',container-image-uri='gcr.io/ucaip-test/ucaip-training-test'
+    --display-name=test
+  """
+
+  @staticmethod
+  def Args(parser):
+    flags.AddCreateCustomJobFlags(parser, version=constants.GA_VERSION)
+
+  def _Run(self, args, region_ref):
+    region = region_ref.AsDict()['locationsId']
+    with endpoint_util.AiplatformEndpointOverrides(
+        version=constants.GA_VERSION, region=region):
+      api_client = client.CustomJobsClient(version=constants.GA_VERSION)
+
+      job_spec = custom_jobs_util.ConstructCustomJobSpec(
+          api_client,
+          config_path=args.config,
+          specs=args.worker_pool_spec,
+          network=args.network,
+          service_account=args.service_account,
+          python_package_uri=args.python_package_uris,
+          args=args.args,
+          command=args.command)
+      validation.ValidateWorkerPoolSpec(job_spec.workerPoolSpecs)
+
+      response = api_client.CreateV1(
+          parent=region_ref.RelativeName(),
+          display_name=args.display_name,
+          job_spec=job_spec,
+          kms_key_name=validation.GetAndValidateKmsKey(args))
+      log.status.Print(
+          _CUSTOM_JOB_CREATION_DISPLAY_MESSAGE.format(
+              id=custom_jobs_util.ParseJobName(response.name),
+              version='',
+              state=response.state))
+      return response
+
+  def Run(self, args):
+    region_ref = args.CONCEPTS.region.Parse()
+    return self._Run(args, region_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class CreatePreGA(CreateGA):
+  """Create a new custom job.
+
+  This command will attempt to run the custom job immediately upon creation.
+
+  ## EXAMPLES
+
+  To create a job under project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} --region=us-central1 --project=example
+    --worker-pool-spec=replica-count=1,machine-type='n1-highmem-2',container-image-uri='gcr.io/ucaip-test/ucaip-training-test'
+    --display-name=test
   """
 
   @staticmethod
   def Args(parser):
     flags.AddCreateCustomJobFlags(parser)
 
-  def Run(self, args):
-    region_ref = args.CONCEPTS.region.Parse()
+  def _Run(self, args, region_ref):
     region = region_ref.AsDict()['locationsId']
     with endpoint_util.AiplatformEndpointOverrides(
         version=constants.BETA_VERSION, region=region):
@@ -67,7 +129,7 @@ class Create(base.CreateCommand):
           command=args.command)
       validation.ValidateWorkerPoolSpec(job_spec.workerPoolSpecs)
 
-      response = api_client.Create(
+      response = api_client.CreateV1beta1(
           parent=region_ref.RelativeName(),
           display_name=args.display_name,
           job_spec=job_spec,
@@ -75,5 +137,6 @@ class Create(base.CreateCommand):
       log.status.Print(
           _CUSTOM_JOB_CREATION_DISPLAY_MESSAGE.format(
               id=custom_jobs_util.ParseJobName(response.name),
+              version=' beta',
               state=response.state))
       return response

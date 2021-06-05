@@ -37,12 +37,12 @@ class Regions(base.Group):
     # Ensures the run/platform property is either unset or set to `managed` and
     # all other passed args are valid for this platform and release track.
     flags.GetAndValidatePlatform(
-        args, self.ReleaseTrack(), flags.Product.RUN, allow_empty=True)
+        args, self.ReleaseTrack(), flags.Product.RUN)
     self._CheckPlatform()
     return context
 
   def _CheckPlatform(self):
-    platform = platforms.GetPlatform(prompt_if_unset=False)
+    platform = platforms.GetPlatform()
     if platform is not None and platform != platforms.PLATFORM_MANAGED:
       raise exceptions.PlatformError(
           'This command group only supports listing regions for '

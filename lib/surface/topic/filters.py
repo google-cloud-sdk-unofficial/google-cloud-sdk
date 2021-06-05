@@ -45,8 +45,9 @@ class Filters(base.TopicCommand):
 
           *LogicOperator*::
 
-          Expressions containing both *AND* and *OR* must be parenthesized to
-          disambiguate precedence.
+          Logic operators must be in uppercase: *AND*, *OR*, *NOT*.
+          Additionally, expressions containing both *AND* and *OR* must be
+          parenthesized to disambiguate precedence.
 
           *NOT* _term-1_:::
 

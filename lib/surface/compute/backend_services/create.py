@@ -326,19 +326,18 @@ class CreateHelper(object):
 class CreateGA(base.CreateCommand):
   """Create a backend service.
 
-  *{command}* creates a backend service. A backend service defines how Cloud
-  Load Balancing distributes traffic. The backend service configuration contains
-  a set of values, such as the protocol used to connect to backends, various
-  distribution and session settings, health checks, and timeouts. These settings
-  provide fine-grained control over how your load balancer behaves. Most of the
-  settings have default values that allow for easy configuration if you need to
-  get started quickly.
+  *{command}* creates a backend service for a Google Cloud load balancer or
+  Traffic Director. A backend service defines how to distribute traffic to
+  backends. Depending on the load balancing scheme of the backend service,
+  backends can be instance groups (managed or unmanaged), zonal network endpoint
+  groups (zonal NEGs), serverless NEGs, or an internet NEG. For more
+  information, see the [backend services
+  overview](https://cloud.google.com/load-balancing/docs/backend-service).
 
   After you create a backend service, you add backends by using `gcloud
-  compute backend-services add-backend`.
+  compute backend-services add-backend` or `gcloud compute backend-services
+  edit`.
 
-  For more information about the available settings, see
-  https://cloud.google.com/load-balancing/docs/backend-service.
   """
 
   _support_l7_internal_load_balancer = True

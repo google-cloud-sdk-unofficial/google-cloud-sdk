@@ -47,6 +47,15 @@ class Config(base.Group):
   behavior on a per-invocation basis. Properties allow you to maintain the same
   settings across command executions.
 
+  In addition to setting properties in a configuration, and the use of flags, it
+  is possible to override the value of a property with an environment variable.
+  The matching environment variable for a property is of the form
+  'CLOUDSDK_CATEGORY_PROPERTY'. For example, to demonstrate overriding
+  the ``project'' property in the ``core'' category to ``my-project'', use a
+  command like:
+
+    $ CLOUDSDK_CORE_PROJECT=my-project gcloud config get-value core/project
+
   For more information on configurations, see `gcloud topic configurations`.
 
   ## AVAILABLE PROPERTIES

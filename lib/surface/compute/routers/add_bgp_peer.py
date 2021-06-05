@@ -37,13 +37,20 @@ class AddBgpPeer(base.UpdateCommand):
   ROUTER_ARG = None
 
   @classmethod
-  def _Args(cls, parser, support_bfd=False, support_enable=False):
+  def _Args(cls,
+            parser,
+            support_bfd=False,
+            support_enable=False,
+            support_enable_ipv6=False):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddBgpPeerArgs(
-        parser, for_add_bgp_peer=True, support_bfd=support_bfd,
-        support_enable=support_enable)
+        parser,
+        for_add_bgp_peer=True,
+        support_bfd=support_bfd,
+        support_enable=support_enable,
+        support_enable_ipv6=support_enable_ipv6)
     flags.AddReplaceCustomAdvertisementArgs(parser, 'peer')
 
   @classmethod
@@ -55,6 +62,7 @@ class AddBgpPeer(base.UpdateCommand):
            support_bfd=False,
            support_enable=False,
            support_bfd_mode=False,
+           support_enable_ipv6=False,
            instance_ref=None):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     messages = holder.client.messages
@@ -71,6 +79,7 @@ class AddBgpPeer(base.UpdateCommand):
         support_bfd=support_bfd,
         support_enable=support_enable,
         support_bfd_mode=support_bfd_mode,
+        support_enable_ipv6=support_enable_ipv6,
         instance_ref=instance_ref)
 
     if router_utils.HasReplaceAdvertisementFlags(args):
@@ -123,9 +132,10 @@ class AddBgpPeer(base.UpdateCommand):
         })
 
     operation_poller = poller.Poller(service, target_router_ref)
-    return waiter.WaitFor(operation_poller, operation_ref,
-                          'Creating peer [{0}] in router [{1}]'.format(
-                              peer.name, router_ref.Name()))
+    return waiter.WaitFor(
+        operation_poller, operation_ref,
+        'Creating peer [{0}] in router [{1}]'.format(peer.name,
+                                                     router_ref.Name()))
 
   def Run(self, args):
     """See base.UpdateCommand."""
@@ -160,6 +170,7 @@ class AddBgpPeerBeta(AddBgpPeer):
         support_bfd=True,
         support_enable=True,
         support_bfd_mode=False,
+        support_enable_ipv6=False,
         instance_ref=instance_ref)
 
 
@@ -174,7 +185,8 @@ class AddBgpPeerAlpha(AddBgpPeerBeta):
   def Args(cls, parser):
     cls.INSTANCE_ARG = instance_flags.InstanceArgumentForRouter()
     cls.INSTANCE_ARG.AddArgument(parser)
-    cls._Args(parser, support_bfd=True, support_enable=True)
+    cls._Args(
+        parser, support_bfd=True, support_enable=True, support_enable_ipv6=True)
 
   def Run(self, args):
     """See base.UpdateCommand."""
@@ -191,6 +203,7 @@ class AddBgpPeerAlpha(AddBgpPeerBeta):
         support_bfd=True,
         support_enable=True,
         support_bfd_mode=True,
+        support_enable_ipv6=True,
         instance_ref=instance_ref)
 
 
@@ -199,6 +212,7 @@ def _CreateBgpPeerMessage(messages,
                           support_bfd=False,
                           support_enable=False,
                           support_bfd_mode=False,
+                          support_enable_ipv6=False,
                           instance_ref=None):
   """Creates a BGP peer with base attributes based on flag arguments."""
   bfd = None
@@ -213,7 +227,12 @@ def _CreateBgpPeerMessage(messages,
       enable = messages.RouterBgpPeer.EnableValueValuesEnum.TRUE
     else:
       enable = messages.RouterBgpPeer.EnableValueValuesEnum.FALSE
-
+  enable_ipv6 = None
+  if support_enable_ipv6 and args.enable_ipv6 is not None:
+    if args.enable_ipv6:
+      enable_ipv6 = True
+    else:
+      enable_ipv6 = False
   if instance_ref is not None:
     return messages.RouterBgpPeer(
         name=args.peer_name,
@@ -224,6 +243,16 @@ def _CreateBgpPeerMessage(messages,
         enable=enable,
         routerApplianceInstance=instance_ref.SelfLink(),
         bfd=bfd)
+  elif support_enable_ipv6 and enable_ipv6 is not None:
+    return messages.RouterBgpPeer(
+        name=args.peer_name,
+        interfaceName=args.interface,
+        peerIpAddress=args.peer_ip_address,
+        peerAsn=args.peer_asn,
+        advertisedRoutePriority=args.advertised_route_priority,
+        enable=enable,
+        bfd=bfd,
+        enableIpv6=enable_ipv6)
   elif support_bfd or support_enable:
     return messages.RouterBgpPeer(
         name=args.peer_name,

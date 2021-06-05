@@ -104,7 +104,13 @@ class UpdateBeta(Update):
         labels=labels,
         label_fingerprint=label_fingerprint,
         bandwidth=getattr(args, 'bandwidth', None),
-        mtu=getattr(args, 'mtu', None))
+        mtu=getattr(args, 'mtu', None),
+        stack_type=getattr(args, 'stack_type', None),
+        candidate_ipv6_subnets=getattr(args, 'candidate_ipv6_subnets', None),
+        cloud_router_ipv6_interface_id=getattr(
+            args, 'cloud_router_ipv6_interface_id', None),
+        customer_router_ipv6_interface_id=getattr(
+            args, 'customer_router_ipv6_interface_id', None))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -119,3 +125,7 @@ class UpdateAlpha(UpdateBeta):
   @classmethod
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
+    attachment_flags.AddStackType(parser)
+    attachment_flags.AddCandidateIpv6Subnets(parser)
+    attachment_flags.AddCloudRouterIpv6InterfaceId(parser)
+    attachment_flags.AddCustomerRouterIpv6InterfaceId(parser)

@@ -153,7 +153,10 @@ class Import(base.CreateCommand):
 
     flags.compute_flags.AddZoneFlag(
         parser, 'image', 'import',
-        explanation='The zone in which to do the work of importing the image.')
+        help_text='Zone to use when importing the image. When you import '
+                  'an image, the import tool creates and uses temporary VMs '
+                  'in your project for the import process. Use this flag to '
+                  'specify the zone to use for these temporary VMs.')
 
     if cls.ReleaseTrack() == base.ReleaseTrack.GA:
       source = parser.add_mutually_exclusive_group(required=True)
@@ -225,19 +228,28 @@ class Import(base.CreateCommand):
 
     parser.add_argument(
         '--network',
-        help=('Name of the network in your project to use for the image import.'
-              ' The network must have access to Cloud Storage. If not '
-              'specified, the network named `default` is used.'),
+        help=('Name of the network in your project to use for the image '
+              'import. When you import an image, the import tool creates and '
+              'uses temporary VMs in your project for the import process. Use '
+              'this flag to specify the network to use for these temporary VMs.'
+              ),
     )
 
     parser.add_argument(
         '--subnet',
-        help=('Name of the subnetwork in your project to use for the image '
-              'import. If the network resource is in legacy mode, do not '
-              'provide this property. If the network is in auto subnet mode, '
-              'providing the subnetwork is optional. If the network is in '
-              'custom subnet mode, then this field should be specified. '
-              'Region or zone should be specified if this field is specified.'),
+        help=("""\
+      Name of the subnetwork in your project to use for the image import. When
+      you import an image, the import tool creates and uses temporary VMs in
+      your project for the import process. Use this flag to specify the
+      subnetwork to use for these temporary VMs.
+          * If the network resource is in legacy mode, do not provide this
+            property.
+          * If the network is in auto subnet mode, specifying the subnetwork is
+            optional.
+          * If the network is in custom subnet mode, then this field must be
+            specified.
+        """
+              ),
     )
 
     parser.add_argument(

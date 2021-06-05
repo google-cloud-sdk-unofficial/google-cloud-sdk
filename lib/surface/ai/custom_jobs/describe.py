@@ -25,16 +25,52 @@ from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai.custom_jobs import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class Describe(base.DescribeCommand):
-  """Get detailed information about the custom job by given id."""
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DescribeGA(base.DescribeCommand):
+  """Get detailed information about the custom job by given id.
+
+  ## EXAMPLES
+
+  To get a job ``123'' under project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} 123 --project=example --region=us-central1
+  """
 
   @staticmethod
   def Args(parser):
     flags.AddCustomJobResourceArg(parser, 'to describe')
 
+  def _Run(self, args, custom_job_ref):
+    region = custom_job_ref.AsDict()['locationsId']
+    with endpoint_util.AiplatformEndpointOverrides(
+        version=constants.GA_VERSION, region=region):
+      response = client.CustomJobsClient(version=constants.GA_VERSION).Get(
+          custom_job_ref.RelativeName())
+      return response
+
   def Run(self, args):
     custom_job_ref = args.CONCEPTS.custom_job.Parse()
+    return self._Run(args, custom_job_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class DescribePreGA(DescribeGA):
+  """Get detailed information about the custom job by given id.
+
+  ## EXAMPLES
+
+  To get a job ``123'' under project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} 123 --project=example --region=us-central1
+  """
+
+  @staticmethod
+  def Args(parser):
+    flags.AddCustomJobResourceArg(parser, 'to describe')
+
+  def _Run(self, args, custom_job_ref):
     region = custom_job_ref.AsDict()['locationsId']
     with endpoint_util.AiplatformEndpointOverrides(
         version=constants.BETA_VERSION, region=region):

@@ -101,17 +101,21 @@ class List(base.ListCommand):
           # Don't print upgrade hints for alpha clusters, they aren't
           # upgradeable.
           continue
-        ver_status = vv.Compare(c.currentMasterVersion, c.currentNodeVersion)
-        if ver_status == VersionVerifier.UPGRADE_AVAILABLE:
-          c.currentNodeVersion += ' *'
 
-          upgrade_available = True
-        elif ver_status == VersionVerifier.SUPPORT_ENDING:
-          c.currentNodeVersion += ' **'
-          support_ending = True
-        elif ver_status == VersionVerifier.UNSUPPORTED:
-          c.currentNodeVersion += ' ***'
-          unsupported = True
+        if c.nodePools:
+          ver_status = vv.Compare(c.currentMasterVersion, c.currentNodeVersion)
+          if ver_status == VersionVerifier.UPGRADE_AVAILABLE:
+            c.currentNodeVersion += ' *'
+            upgrade_available = True
+          elif ver_status == VersionVerifier.SUPPORT_ENDING:
+            c.currentNodeVersion += ' **'
+            support_ending = True
+          elif ver_status == VersionVerifier.UNSUPPORTED:
+            c.currentNodeVersion += ' ***'
+            unsupported = True
+        else:
+          # cnv is cluster api version for clusters w/ 0 nodes, so hide
+          c.currentNodeVersion = ''
 
       if upgrade_available:
         self._upgrade_hint += UpgradeHelpText.UPGRADE_AVAILABLE

@@ -33,6 +33,4 @@ class Disable(base.DisableCommand):
     $ {command}
   """
 
-  FEATURE_NAME = 'multiclusteringress'
-  FEATURE_DISPLAY_NAME = 'Ingress'
-  FEATURE_API = 'multiclusteringress.googleapis.com'
+  feature_name = 'multiclusteringress'

@@ -36,7 +36,11 @@ class UpdateBgpPeer(base.UpdateCommand):
   ROUTER_ARG = None
 
   @classmethod
-  def _Args(cls, parser, support_bfd=False, support_enable=False):
+  def _Args(cls,
+            parser,
+            support_bfd=False,
+            support_enable=False,
+            support_enable_ipv6=False):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser)
     base.ASYNC_FLAG.AddToParser(parser)
@@ -45,6 +49,7 @@ class UpdateBgpPeer(base.UpdateCommand):
         for_add_bgp_peer=False,
         support_bfd=support_bfd,
         support_enable=support_enable,
+        support_enable_ipv6=support_enable_ipv6,
         is_update=True)
     flags.AddUpdateCustomAdvertisementArgs(parser, 'peer')
 
@@ -56,7 +61,8 @@ class UpdateBgpPeer(base.UpdateCommand):
            args,
            support_bfd=False,
            support_enable=False,
-           support_bfd_mode=False):
+           support_bfd_mode=False,
+           support_enable_ipv6=False):
     # Manually ensure replace/incremental flags are mutually exclusive.
     router_utils.CheckIncompatibleFlagsOrRaise(args)
 
@@ -76,7 +82,8 @@ class UpdateBgpPeer(base.UpdateCommand):
         args,
         support_bfd=support_bfd,
         support_enable=support_enable,
-        support_bfd_mode=support_bfd_mode)
+        support_bfd_mode=support_bfd_mode,
+        support_enable_ipv6=support_enable_ipv6)
 
     if router_utils.HasReplaceAdvertisementFlags(args):
       mode, groups, ranges = router_utils.ParseAdvertisements(
@@ -169,9 +176,10 @@ class UpdateBgpPeer(base.UpdateCommand):
         })
 
     operation_poller = poller.Poller(service, target_router_ref)
-    return waiter.WaitFor(operation_poller, operation_ref,
-                          'Updating peer [{0}] in router [{1}]'.format(
-                              peer.name, router_ref.Name()))
+    return waiter.WaitFor(
+        operation_poller, operation_ref,
+        'Updating peer [{0}] in router [{1}]'.format(peer.name,
+                                                     router_ref.Name()))
 
   def Run(self, args):
     """See base.UpdateCommand."""
@@ -201,11 +209,16 @@ class UpdateBgpPeerAlpha(UpdateBgpPeerBeta):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser, support_bfd=True, support_enable=True)
+    cls._Args(
+        parser, support_bfd=True, support_enable=True, support_enable_ipv6=True)
 
   def Run(self, args):
     return self._Run(
-        args, support_bfd=True, support_enable=True, support_bfd_mode=True)
+        args,
+        support_bfd=True,
+        support_enable=True,
+        support_bfd_mode=True,
+        support_enable_ipv6=True)
 
 
 def _UpdateBgpPeerMessage(messages,
@@ -213,7 +226,8 @@ def _UpdateBgpPeerMessage(messages,
                           args,
                           support_bfd=False,
                           support_enable=False,
-                          support_bfd_mode=False):
+                          support_bfd_mode=False,
+                          support_enable_ipv6=False):
   """Updates base attributes of a BGP peer based on flag arguments."""
 
   peer = router_utils.FindBgpPeerOrRaise(router_message, args.peer_name)
@@ -231,6 +245,8 @@ def _UpdateBgpPeerMessage(messages,
       attrs['enable'] = messages.RouterBgpPeer.EnableValueValuesEnum.TRUE
     else:
       attrs['enable'] = messages.RouterBgpPeer.EnableValueValuesEnum.FALSE
+  if support_enable_ipv6 and args.enable_ipv6 is not None:
+    attrs['enableIpv6'] = args.enable_ipv6
   for attr, value in attrs.items():
     if value is not None:
       setattr(peer, attr, value)
@@ -242,7 +258,6 @@ def _UpdateBgpPeerMessage(messages,
       bfd = _UpdateBgpPeerBfdMessage(messages, peer, args)
     if bfd is not None:
       setattr(peer, 'bfd', bfd)
-
   return peer
 
 

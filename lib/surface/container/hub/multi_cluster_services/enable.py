@@ -33,9 +33,7 @@ class Enable(base.EnableCommand):
     $ {command}
   """
 
-  FEATURE_NAME = 'multiclusterservicediscovery'
-  FEATURE_DISPLAY_NAME = 'Multi Cluster Services'
-  FEATURE_API = 'multiclusterservicediscovery.googleapis.com'
+  feature_name = 'multiclusterservicediscovery'
 
   def Run(self, args):
     self.RunCommand(

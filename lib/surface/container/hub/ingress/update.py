@@ -43,8 +43,7 @@ class Update(base.UpdateCommand):
     $ {command} --config-membership=CONFIG_MEMBERSHIP
   """
 
-  FEATURE_NAME = 'multiclusteringress'
-  FEATURE_DISPLAY_NAME = 'Ingress'
+  feature_name = 'multiclusteringress'
 
   @classmethod
   def Args(cls, parser):

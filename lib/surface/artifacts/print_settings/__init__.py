@@ -44,8 +44,8 @@ class PrintSettings(base.Group):
 
       $ {command} npm --repository=my-repo
 
-  To print a snippet to add to the pypi .pypirc and pip.comf file for
+  To print a snippet to add to the Python .pypirc and pip.comf files for
   repository my-repo in the current project, run:
 
-      $ {command} pypi --repository=my-repo
+      $ {command} python --repository=my-repo
   """

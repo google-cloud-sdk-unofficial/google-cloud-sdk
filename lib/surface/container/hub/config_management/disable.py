@@ -33,6 +33,4 @@ class Disable(base.DisableCommand):
     $ {command}
   """
 
-  FEATURE_NAME = 'configmanagement'
-  FEATURE_DISPLAY_NAME = 'Config Management'
-  FEATURE_API = 'anthosconfigmanagement.googleapis.com'
+  feature_name = 'configmanagement'

@@ -418,15 +418,21 @@ def ConfigureMeshTemplate(args):
     if 'cloud-platform' not in args.scopes and 'https://www.googleapis.com/auth/cloud-platform' not in args.scopes:
       args.scopes.append('cloud-platform')
 
-    workload_namespace = mesh_util.ParseWorkload(
+    workload_namespace, workload_name = mesh_util.ParseWorkload(
         args.mesh['workload'])
     with mesh_util.KubernetesClient(
         gke_cluster=args.mesh['gke-cluster']) as kube_client:
       log.status.Print(
           'Verifying GKE cluster and Anthos Service Mesh installation...')
-      if kube_client.HasNamespaceReaderPermissions(
-          'default', 'istio-system', workload_namespace):
+      namespaces = ['default', 'istio-system', workload_namespace]
+      if kube_client.NamespacesExist(
+          *namespaces) and kube_client.HasNamespaceReaderPermissions(
+              *namespaces):
         mesh_util.VerifyClusterSetup(kube_client)
+
+        workload_manifest = kube_client.GetWorkloadGroupCR(
+            workload_namespace, workload_name)
+        mesh_util.VerifyWorkloadSetup(kube_client, workload_manifest)
       # TODO(b/186186273): Generate instance metadata for ASM VM.
 
 

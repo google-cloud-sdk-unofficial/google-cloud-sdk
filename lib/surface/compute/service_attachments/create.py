@@ -80,7 +80,7 @@ class Create(base.CreateCommand):
     parser.display_info.AddCacheUpdater(flags.ServiceAttachmentsCompleter)
 
     flags.AddDescription(parser)
-    flags.AddConnectionPreference(parser)
+    flags.AddConnectionPreference(parser, is_update=False)
     flags.AddEnableProxyProtocolForCreate(parser)
     flags.AddConsumerRejectList(parser)
     flags.AddConsumerAcceptList(parser)

@@ -101,7 +101,8 @@ def _CommonArgs(parser,
                 support_multi_writer=False,
                 support_replica_zones=False,
                 support_image_family_scope=False,
-                support_subinterface=False):
+                support_subinterface=False,
+                support_node_project=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
@@ -186,6 +187,9 @@ def _CommonArgs(parser,
       resource_registry.RESOURCE_REGISTRY['compute.instances'].list_format)
   parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
 
+  if support_node_project:
+    instances_flags.AddNodeProjectArgs(parser)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
@@ -215,6 +219,7 @@ class Create(base.CreateCommand):
   _support_image_family_scope = False
   _support_subinterface = False
   _support_secure_tag = False
+  _support_node_project = False
 
   @classmethod
   def Args(cls, parser):
@@ -225,7 +230,8 @@ class Create(base.CreateCommand):
         support_replica_zones=cls._support_replica_zones,
         enable_regional=cls._support_regional,
         support_image_family_scope=cls._support_image_family_scope,
-        support_subinterface=cls._support_subinterface)
+        support_subinterface=cls._support_subinterface,
+        support_node_project=cls._support_node_project)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -268,7 +274,8 @@ class Create(base.CreateCommand):
         compute_client,
         skip_defaults,
         support_node_affinity=True,
-        support_location_hint=self._support_location_hint)
+        support_location_hint=self._support_location_hint,
+        support_node_project=self._support_node_project)
     tags = instance_utils.GetTags(args, compute_client)
     labels = instance_utils.GetLabels(args, compute_client)
     metadata = instance_utils.GetMetadata(args, compute_client, skip_defaults)
@@ -572,6 +579,7 @@ class CreateBeta(Create):
   _support_image_family_scope = True
   _support_subinterface = False
   _support_secure_tag = False
+  _support_node_project = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -599,7 +607,8 @@ class CreateBeta(Create):
         support_replica_zones=cls._support_replica_zones,
         support_multi_writer=cls._support_multi_writer,
         support_image_family_scope=cls._support_image_family_scope,
-        support_subinterface=cls._support_subinterface)
+        support_subinterface=cls._support_subinterface,
+        support_node_project=cls._support_node_project)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -643,6 +652,7 @@ class CreateAlpha(CreateBeta):
   _support_image_family_scope = True
   _support_subinterface = True
   _support_secure_tag = True
+  _support_node_project = True
 
   @classmethod
   def Args(cls, parser):
@@ -658,7 +668,8 @@ class CreateAlpha(CreateBeta):
         support_replica_zones=cls._support_replica_zones,
         support_multi_writer=cls._support_multi_writer,
         support_image_family_scope=cls._support_image_family_scope,
-        support_subinterface=cls._support_subinterface)
+        support_subinterface=cls._support_subinterface,
+        support_node_project=cls._support_node_project)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)

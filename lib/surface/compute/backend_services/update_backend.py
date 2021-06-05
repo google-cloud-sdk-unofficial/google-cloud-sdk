@@ -32,26 +32,18 @@ from googlecloudsdk.command_lib.compute.backend_services import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateBackend(base.UpdateCommand):
-  """Update an existing backend in a backend service.
+  """Update an existing backend of a load balancer or Traffic Director.
 
-  *{command}* updates a backend that is part of a backend
-  service. This is useful for changing the way a backend
-  behaves. Example changes that can be made include changing the
-  load balancing policy and draining a backend by setting
-  its capacity scaler to zero.
+  *{command}* updates attributes of a backend that is already associated with a
+  backend service. Configurable attributes depend on the load balancing scheme
+  and the type of backend (instance group, zonal NEG, serverless NEG, or
+  internet NEG). For more information, see [traffic
+  distribution](https://cloud.google.com/load-balancing/docs/backend-service#traffic_distribution).
+  and the [Failover for Internal TCP/UDP Load Balancing
+  overview](https://cloud.google.com/load-balancing/docs/internal/failover-overview).
 
-  Backends are instance groups or network endpoint groups. One
-  of the `--network-endpoint-group` or `--instance-group` flags is required to
-  identify the backend that you are modifying. You cannot change
-  the instance group or network endpoint group associated with a backend, but
-  you can remove a backend and add a new one with `backend-services
-  remove-backend` and `backend-services add-backend`.
-
-  The `gcloud compute backend-services edit` command can also
-  update a backend if the use of a text editor is desired.
-
-  For more information about the available settings, see
-  https://cloud.google.com/load-balancing/docs/backend-service.
+  To add, remove, or swap backends, use the `gcloud compute backend-services
+  remove-backend` and `gcloud compute backend-services add-backend` commands.
   """
 
   @staticmethod
