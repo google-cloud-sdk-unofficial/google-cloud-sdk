@@ -23,7 +23,7 @@ from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
@@ -76,7 +76,7 @@ def _Modify(args, existing):
       new_path_matchers.append(path_matcher)
 
   if not path_matcher_found:
-    raise exceptions.ToolException(
+    raise compute_exceptions.ArgumentError(
         'No path matcher with the name [{0}] was found.'.format(
             args.path_matcher_name))
 

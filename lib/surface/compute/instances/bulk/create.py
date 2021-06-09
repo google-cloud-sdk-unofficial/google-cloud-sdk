@@ -286,10 +286,15 @@ class Create(base.Command):
     shielded_instance_config = create_utils.BuildShieldedInstanceConfigMessage(
         messages=compute_client.messages, args=args)
 
+    confidential_vm = False
     if self._support_confidential_compute:
       confidential_instance_config = (
           create_utils.BuildConfidentialInstanceConfigMessage(
               messages=compute_client.messages, args=args))
+
+      confidential_vm = (
+          args.IsSpecified('confidential_compute') and
+          args.confidential_compute)
 
     service_accounts = create_utils.GetProjectServiceAccount(
         args, project, compute_client, skip_defaults)
@@ -317,9 +322,14 @@ class Create(base.Command):
           support_persistent_attached_disks=False,
           use_disk_type_uri=False)
 
-    machine_type = 'n1-standard-1'
-    if args.IsSpecified('machine_type'):
-      machine_type = args.machine_type
+    machine_type_name = None
+    if instance_utils.CheckSpecifiedMachineTypeArgs(args, skip_defaults):
+      machine_type_name = instance_utils.CreateMachineTypeName(
+          args, confidential_vm)
+
+      # Check to see if the custom machine type ratio is supported
+      instance_utils.CheckCustomCpuRamRatio(compute_client, project, location,
+                                            machine_type_name)
 
     can_ip_forward = instance_utils.GetCanIpForward(args, skip_defaults)
     guest_accelerators = create_utils.GetAcceleratorsForInstanceProperties(
@@ -345,7 +355,7 @@ class Create(base.Command):
             project=project,
             location=location,
             scope=scope)
-        parsed_resource_policies.append(resource_policy_ref.SelfLink())
+        parsed_resource_policies.append(resource_policy_ref.Name())
 
     display_device = None
     if self._support_display_device and args.IsSpecified(
@@ -362,7 +372,7 @@ class Create(base.Command):
         disks=disks,
         guestAccelerators=guest_accelerators,
         labels=labels,
-        machineType=machine_type,
+        machineType=machine_type_name,
         metadata=metadata,
         minCpuPlatform=args.min_cpu_platform,
         networkInterfaces=network_interfaces,

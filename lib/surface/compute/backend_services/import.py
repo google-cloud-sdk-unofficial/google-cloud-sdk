@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_services_utils
 from googlecloudsdk.command_lib.compute.backend_services import flags
@@ -125,7 +125,7 @@ class ImportGA(base.UpdateCommand):
           stream=data,
           schema_path=self.GetSchemaPath())
     except yaml_validator.ValidationError as e:
-      raise exceptions.ToolException(str(e))
+      raise exceptions.ValidationError(str(e))
 
     # Get existing backend service.
     try:

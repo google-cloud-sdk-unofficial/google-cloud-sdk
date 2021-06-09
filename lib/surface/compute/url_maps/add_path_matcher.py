@@ -25,7 +25,7 @@ from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.backend_buckets import (
     flags as backend_bucket_flags)
@@ -179,7 +179,7 @@ def _ModifyBase(client, args, existing):
     for host_rule in existing.hostRules:
       for host in host_rule.hosts:
         if host in new_hosts:
-          raise exceptions.ToolException(
+          raise compute_exceptions.ArgumentError(
               'Cannot create a new host rule with host [{0}] because the '
               'host is already part of a host rule that references the path '
               'matcher [{1}].'.format(host, host_rule.pathMatcher))
@@ -204,7 +204,7 @@ def _ModifyBase(client, args, existing):
         break
 
     if not target_host_rule:
-      raise exceptions.ToolException(
+      raise compute_exceptions.ArgumentError(
           'No host rule with host [{0}] exists. Check your spelling or '
           'use [--new-hosts] to create a new host rule.'.format(
               args.existing_host))
@@ -228,7 +228,7 @@ def _ModifyBase(client, args, existing):
             if path_matcher.name != target_host_rule.pathMatcher
         ]
       else:
-        raise exceptions.ToolException(
+        raise compute_exceptions.ArgumentError(
             'This operation will orphan the path matcher [{0}]. To '
             'delete the orphan path matcher, rerun this command with '
             '[--delete-orphaned-path-matcher] or use [gcloud compute '

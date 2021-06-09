@@ -26,6 +26,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import property_selector
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
@@ -120,7 +121,7 @@ def _EditResource(args, client, holder, original_object, url_map_ref, track):
     try:
       file_contents = edit.OnlineEdit(file_contents)
     except edit.NoSaveException:
-      raise exceptions.ToolException('Edit aborted by user.')
+      raise compute_exceptions.AbortedError('Edit aborted by user.')
     try:
       resource_list = _ProcessEditedResource(holder, url_map_ref, file_contents,
                                              original_object, original_record,
@@ -140,7 +141,7 @@ def _EditResource(args, client, holder, original_object, url_map_ref, track):
       if not console_io.PromptContinue(
           message=message,
           prompt_string='Would you like to edit the resource again?'):
-        raise exceptions.ToolException('Edit aborted by user.')
+        raise compute_exceptions.AbortedError('Edit aborted by user.')
   return resource_list
 
 

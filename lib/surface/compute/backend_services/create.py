@@ -25,6 +25,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import cdn_flags_utils as cdn_flags
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_services_utils
@@ -226,7 +227,7 @@ class CreateHelper(object):
         not args.cache_key_include_query_string or
         args.cache_key_query_string_blacklist is not None or
         args.cache_key_query_string_whitelist is not None):
-      raise exceptions.ToolException(
+      raise compute_exceptions.ArgumentError(
           'Custom cache key flags cannot be used for regional requests.')
 
     if (self._support_multinic and args.IsSpecified('network') and

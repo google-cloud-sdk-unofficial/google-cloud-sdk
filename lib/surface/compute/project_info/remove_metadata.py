@@ -24,7 +24,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.compute import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -84,7 +84,7 @@ class RemoveMetadata(base.UpdateCommand):
 
   def Run(self, args):
     if not args.all and not args.keys:
-      raise calliope_exceptions.ToolException(
+      raise exceptions.ArgumentError(
           'One of [--all] or [--keys] must be provided.')
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

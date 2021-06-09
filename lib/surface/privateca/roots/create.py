@@ -36,6 +36,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -50,7 +51,7 @@ class Create(base.CreateCommand):
       $ {command} prod-root \
         --pool my-pool \
         --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1" \
-        --subject="CN=Joonix Production Root CA" \
+        --subject="CN=Joonix Production Root CA, O=Google" \
         --max-chain-length=1
 
   To create a root CA that is based on an existing CA:
@@ -94,7 +95,10 @@ class Create(base.CreateCommand):
             '--from-ca',
             resource_args.CreateCertAuthorityResourceSpec(
                 'source CA',
-                location_fallthroughs=[deps.ArgFallthrough('--location'), resource_args.LOCATION_PROPERTY_FALLTHROUGH],
+                location_fallthroughs=[
+                    deps.ArgFallthrough('--location'),
+                    resource_args.LOCATION_PROPERTY_FALLTHROUGH
+                ],
                 pool_id_fallthroughs=[deps.ArgFallthrough('--pool')]),
             'An existing CA from which to copy configuration values for the new CA. '
             'You can still override any of those values by explicitly providing '
@@ -122,6 +126,39 @@ class Create(base.CreateCommand):
     # server on create, this allowing any number of subordinates.
     flags_v1.AddInlineX509ParametersFlags(
         x509_config_group, is_ca_command=True, default_max_chain_length=None)
+    flags_v1.AddAutoEnableFlag(parser)
+
+  def _EnableCertificateAuthority(self, ca_name):
+    """Enables the given CA."""
+    enable_request = self.messages.PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesEnableRequest(
+        name=ca_name,
+        enableCertificateAuthorityRequest=self.messages
+        .EnableCertificateAuthorityRequest(
+            requestId=request_utils.GenerateRequestId()))
+    operation = self.client.projects_locations_caPools_certificateAuthorities.Enable(
+        enable_request)
+    return operations.Await(operation, 'Enabling CA.')
+
+  def _ShouldEnableCa(self, args, ca_ref):
+    """Determines whether the CA should be enabled or not."""
+    if args.auto_enable:
+      return True
+
+    # Return false if there already is an enabled CA in the pool.
+    ca_pool_name = ca_ref.Parent().RelativeName()
+    list_response = self.client.projects_locations_caPools_certificateAuthorities.List(
+        self.messages
+        .PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesListRequest(
+            parent=ca_pool_name))
+    if create_utils_v1.HasEnabledCa(
+        list_response.certificateAuthorities, self.messages):
+      return False
+
+     # Prompt the user if they would like to enable a CA in the pool.
+    return console_io.PromptContinue(
+        message='The CaPool [{}] has no enabled CAs and cannot issue any '
+        'certificates until at least one CA is enabled. Would you like to '
+        'also enable this CA?'.format(ca_ref.Parent().Name()), default=False)
 
   def Run(self, args):
     new_ca, ca_ref, _ = create_utils_v1.CreateCAFromArgs(
@@ -154,6 +191,8 @@ class Create(base.CreateCommand):
                                            self.messages.CertificateAuthority)
 
     log.status.Print('Created Certificate Authority [{}].'.format(ca.name))
+    if self._ShouldEnableCa(args, ca_ref):
+      self._EnableCertificateAuthority(ca_ref.RelativeName())
 
 
 # pylint: disable=line-too-long
@@ -168,7 +207,7 @@ class CreateBeta(Create):
       $ {command} prod-root \
         --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1"
         \
-        --subject="CN=Joonix Production Root CA" \
+        --subject="CN=Joonix Production Root CA, O=Google" \
         --max-chain-length=1
 
   To create a root CA and restrict what it can issue:
@@ -176,7 +215,7 @@ class CreateBeta(Create):
       $ {command} prod-root \
         --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1"
         \
-        --subject="CN=Joonix Production Root CA" \
+        --subject="CN=Joonix Production Root CA, O=Google" \
         --issuance-policy=policy.yaml
 
   To create a root CA that doesn't publicly publish CA certificate and CRLs:
@@ -184,7 +223,7 @@ class CreateBeta(Create):
       $ {command} root-2 \
         --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1"
         \
-        --subject="CN=Joonix Production Root CA" \
+        --subject="CN=Joonix Production Root CA, O=Google" \
         --issuance-policy=policy.yaml \
         --no-publish-ca-cert \
         --no-publish-crl

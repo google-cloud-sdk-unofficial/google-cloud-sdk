@@ -32,7 +32,7 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(base.ListCommand):
-  """List the subordinate certificate authorities within a location."""
+  """List the subordinate certificate authorities within a project."""
 
   @staticmethod
   def Args(parser):
@@ -84,7 +84,7 @@ class ListBeta(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List the subordinate certificate authorities within a location and/or a CA Pool."""
+  """List the subordinate certificate authorities within a project."""
 
   @staticmethod
   def Args(parser):
@@ -110,6 +110,7 @@ class List(base.ListCommand):
           name.scope().segment(-5):label=LOCATION,
           name.scope().segment(-3):label=POOL,
           state,
+          state.regex("ENABLED","YES","NO"):label=INCLUDED_IN_POOL_ISSUANCE,
           ca_certificate_descriptions[0].subject_description.not_before_time():label=NOT_BEFORE,
           ca_certificate_descriptions[0].subject_description.not_after_time():label=NOT_AFTER)
         """)
@@ -128,7 +129,7 @@ class List(base.ListCommand):
     location_property_fallback = properties.VALUES.privateca.location.Get()
     if args.IsSpecified('location'):
       location = args.location
-    elif location_property_fallback:
+    elif location_property_fallback and args.IsSpecified('pool'):
       location = location_property_fallback
     else:
       location = '-'

@@ -7,6 +7,8 @@
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
+
+import json
 import os
 
 
@@ -14,10 +16,12 @@ import bootstrapping
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import config
 from googlecloudsdk.core import context_aware
+from googlecloudsdk.core import log
 from googlecloudsdk.core import metrics
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import gce as c_gce
 from googlecloudsdk.core.util import encoding
+from googlecloudsdk.core.util import files
 
 
 def _MaybeAddBotoOption(args, section, name, value):
@@ -26,6 +30,38 @@ def _MaybeAddBotoOption(args, section, name, value):
   args.append('-o')
   args.append('{section}:{name}={value}'.format(
       section=section, name=name, value=value))
+
+
+def _GetCertProviderCommand(context_config):
+  """Returns the cert provider command from the context config."""
+  # TODO(b/190102217) - Cleanup code that handles both version of context_config
+  if hasattr(context_config, 'cert_provider_command'):
+    return context_config.cert_provider_command
+
+  try:
+    contents = files.ReadFileContents(context_config.config_path)
+    json_out = json.loads(contents)
+    if 'cert_provider_command' in json_out:
+      return json_out['cert_provider_command']
+  except files.Error as e:
+    log.debug('context aware settings discovery file %s - %s',
+              context_config.config_path, e)
+
+
+def _AddContextAwareOptions(args):
+  """Adds device certificate settings for mTLS."""
+  context_config = context_aware.Config()
+  # TODO(b/190102217) - Cleanup code that handles both version of context_config
+  use_client_certificate = (
+      context_config and
+      getattr(context_config, 'use_client_certificate', True))
+  _MaybeAddBotoOption(args, 'Credentials', 'use_client_certificate',
+                      use_client_certificate)
+  if context_config:
+    cert_provider_command = _GetCertProviderCommand(context_config)
+    # Don't need to pass mTLS data if gsutil shouldn't be using it.
+    _MaybeAddBotoOption(args, 'Credentials', 'cert_provider_command',
+                        cert_provider_command)
 
 
 def main():
@@ -99,13 +135,7 @@ def main():
                       properties.VALUES.core.custom_ca_certs_file.Get())
 
   # Sync device certificate settings for mTLS.
-  context_config = context_aware.Config()
-  _MaybeAddBotoOption(args, 'Credentials', 'use_client_certificate',
-                      context_config.use_client_certificate)
-  if context_config.use_client_certificate:
-    # Don't need to pass mTLS data if gsutil shouldn't be using it.
-    _MaybeAddBotoOption(args, 'Credentials', 'cert_provider_command',
-                        context_config.cert_provider_command)
+  _AddContextAwareOptions(args)
 
   # Note that the original args to gsutil will be appended after the args we've
   # supplied here.

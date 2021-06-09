@@ -59,9 +59,7 @@ class Create(base.CreateCommand):
     flags.AddTriggerResourceArg(parser, 'The trigger to create.', required=True)
     flags.AddEventFiltersArg(parser, cls.ReleaseTrack(), required=True)
     flags.AddServiceAccountArg(parser)
-    flags.AddDestinationRunServiceArg(parser, required=True)
-    flags.AddDestinationRunPathArg(parser)
-    flags.AddDestinationRunRegionArg(parser)
+    flags.AddDestinationArgs(parser)
     flags.AddTransportTopicResourceArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 

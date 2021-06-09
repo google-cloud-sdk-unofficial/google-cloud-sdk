@@ -20,11 +20,16 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.privateca import base as privateca_base
+from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.privateca import create_utils_v1
+from googlecloudsdk.command_lib.privateca import flags_v1
 from googlecloudsdk.command_lib.privateca import operations
 from googlecloudsdk.command_lib.privateca import pem_utils
 from googlecloudsdk.command_lib.privateca import resource_args
+from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
 
@@ -119,6 +124,11 @@ class Activate(base.SilentCommand):
       --pem-chain=./chain.crt
   """
 
+  def __init__(self, *args, **kwargs):
+    super(Activate, self).__init__(*args, **kwargs)
+    self.client = privateca_base.GetClientInstance(api_version='v1')
+    self.messages = privateca_base.GetMessagesModule(api_version='v1')
+
   @staticmethod
   def Args(parser):
     resource_args.AddCertAuthorityPositionalResourceArg(parser, 'to activate')
@@ -128,6 +138,7 @@ class Activate(base.SilentCommand):
         help='A file containing a list of PEM-encoded certificates, starting '
         'with the current CA certificate and ending with the root CA '
         'certificate.').AddToParser(parser)
+    flags_v1.AddAutoEnableFlag(parser)
 
   def _ParsePemChainFromFile(self, pem_chain_file):
     """Parses a pem chain from a file, splitting the leaf cert and chain.
@@ -157,6 +168,38 @@ class Activate(base.SilentCommand):
 
     return certs[0], certs[1:]
 
+  def _EnableCertificateAuthority(self, ca_name):
+    """Enables the given CA."""
+    enable_request = self.messages.PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesEnableRequest(
+        name=ca_name,
+        enableCertificateAuthorityRequest=self.messages
+        .EnableCertificateAuthorityRequest(
+            requestId=request_utils.GenerateRequestId()))
+    operation = self.client.projects_locations_caPools_certificateAuthorities.Enable(
+        enable_request)
+    return operations.Await(operation, 'Enabling CA.')
+
+  def _ShouldEnableCa(self, args, ca_ref):
+    """Determines whether the CA should be enabled or not."""
+    if args.auto_enable:
+      return True
+
+    # Return false if there already is an enabled CA in the pool.
+    ca_pool_name = ca_ref.Parent().RelativeName()
+    list_response = self.client.projects_locations_caPools_certificateAuthorities.List(
+        self.messages
+        .PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesListRequest(
+            parent=ca_pool_name))
+    if create_utils_v1.HasEnabledCa(
+        list_response.certificateAuthorities, self.messages):
+      return False
+
+     # Prompt the user if they would like to enable a CA in the pool.
+    return console_io.PromptContinue(
+        message='The CaPool [{}] has no enabled CAs and cannot issue any '
+        'certificates until at least one CA is enabled. Would you like to '
+        'also enable this CA?'.format(ca_ref.Parent().Name()), default=False)
+
   def Run(self, args):
     client = privateca_base.GetClientInstance(api_version='v1')
     messages = privateca_base.GetMessagesModule(api_version='v1')
@@ -176,3 +219,7 @@ class Activate(base.SilentCommand):
                         pemCertificates=pem_chain)))))
 
     operations.Await(operation, 'Activating Certificate Authority.')
+    log.status.Print('Activated Certificate Authority [{}].'.format(
+        ca_ref.Name()))
+    if self._ShouldEnableCa(args, ca_ref):
+      self._EnableCertificateAuthority(ca_ref.RelativeName())

@@ -23,7 +23,7 @@ from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
@@ -92,7 +92,7 @@ def _Modify(args, existing):
       new_host_rules.append(host_rule)
 
   if not path_matcher_to_remove:
-    raise exceptions.ToolException(
+    raise compute_exceptions.ArgumentError(
         'No host rule contains the host [{0}].'.format(args.host))
 
   replacement.hostRules = new_host_rules
@@ -110,7 +110,7 @@ def _Modify(args, existing):
           if path_matcher.name != path_matcher_to_remove
       ]
     else:
-      raise exceptions.ToolException(
+      raise compute_exceptions.ArgumentError(
           'This operation will orphan the path matcher [{0}]. To '
           'delete the orphan path matcher, rerun this command with '
           '[--delete-orphaned-path-matcher] or use [gcloud compute '

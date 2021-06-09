@@ -23,7 +23,7 @@ from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_services_utils
@@ -121,7 +121,7 @@ class UpdateBackend(base.UpdateCommand):
       if hasattr(group_ref, 'region'):
         scope_type = 'region'
         scope_name = group_ref.region
-      raise exceptions.ToolException(
+      raise exceptions.ArgumentError(
           'No backend with name [{0}] in {1} [{2}] is part of the backend '
           'service [{3}].'.format(group_ref.Name(), scope_type, scope_name,
                                   backend_service_ref.Name()))
@@ -169,7 +169,8 @@ class UpdateBackend(base.UpdateCommand):
         args.capacity_scaler is not None,
         args.failover is not None,
     ]):
-      raise exceptions.ToolException('At least one property must be modified.')
+      raise exceptions.UpdatePropertyError(
+          'At least one property must be modified.')
 
   def Run(self, args):
     """Issues requests necessary to update backend of the Backend Service."""
@@ -246,7 +247,8 @@ class UpdateBackendBeta(UpdateBackend):
         args.capacity_scaler is not None,
         args.failover is not None,
     ]):
-      raise exceptions.ToolException('At least one property must be modified.')
+      raise exceptions.UpdatePropertyError(
+          'At least one property must be modified.')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -299,7 +301,8 @@ class UpdateBackendAlpha(UpdateBackendBeta):
         args.capacity_scaler is not None,
         args.failover is not None,
     ]):
-      raise exceptions.ToolException('At least one property must be modified.')
+      raise exceptions.UpdatePropertyError(
+          'At least one property must be modified.')
 
 
 def _ClearMutualExclusiveBackendCapacityThresholds(backend):

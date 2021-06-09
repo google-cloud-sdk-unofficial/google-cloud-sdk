@@ -295,10 +295,20 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
+    persistence_group = parser.add_group(
+        mutex=True, required=True, help='Certificate persistence options.')
     base.Argument(
         '--cert-output-file',
         help='The path where the resulting PEM-encoded certificate chain file should be written (ordered from leaf to root).',
-        required=False).AddToParser(parser)
+        required=False).AddToParser(persistence_group)
+    base.Argument(
+        '--validate-only',
+        help='If this flag is set, the certificate resource will not be persisted '
+        'and the returned certificate will not contain the pem_certificate field.',
+        action='store_true',
+        default=False,
+        required=False).AddToParser(persistence_group)
+
     flags_v1.AddValidityFlag(parser, 'certificate', 'P30D', '30 days')
     labels_util.AddCreateLabelsFlags(parser)
 
@@ -325,13 +335,6 @@ class Create(base.CreateCommand):
         help='The name of an existing certificate authority to use for '
         'issuing the certificate. If omitted, a certificate authority '
         'will be will be chosen from the CA pool by the service on your behalf.',
-        required=False).AddToParser(parser)
-    base.Argument(
-        '--validate-only',
-        help='If this flag is set, the certificate resource will not be persisted '
-        'and the returned certificate will not contain the pem_certificate field.',
-        action='store_true',
-        default=False,
         required=False).AddToParser(parser)
     subject_group = key_generation_group.add_group(
         help='The subject names for the certificate.', required=True)
@@ -365,6 +368,9 @@ class Create(base.CreateCommand):
             required=False),
     ]).AddToParser(parser)
 
+    # The only time a resource is returned is when args.validate_only is set.
+    parser.display_info.AddFormat('yaml(certificateDescription)')
+
   @classmethod
   def _GenerateCertificateIdFallthrough(cls):
     cls.id_fallthrough_was_used = False
@@ -379,25 +385,13 @@ class Create(base.CreateCommand):
         active=False,
         plural=False)
 
-  def _GetIssuingCaPool(self, ca_pool_name):
-    return self.client.projects_locations_caPools.Get(
-        self.messages.PrivatecaProjectsLocationsCaPoolsGetRequest(
-            name=ca_pool_name))
-
-  def _ValidateArgs(self, args, issuing_pool):
+  def _ValidateArgs(self, args):
     """Validates the command-line args."""
     if args.IsSpecified('use_preset_profile') and args.IsSpecified('template'):
       raise exceptions.OneOfArgumentsRequiredException(
           ['--use-preset-profile', '--template'],
           ('To create a certificate, please specify either a preset profile '
            'or a certificate template.'))
-
-    if args.IsSpecified('cert_output_file') and args.IsSpecified(
-        'validate_only'):
-      raise exceptions.OneOfArgumentsRequiredException(
-          ['--cert-output-file', '--validate-only'],
-          ('Certificates created in validate-only mode do not have the '
-           'PEM-encoded certificate field.'))
 
     if not args.IsSpecified('csr') and not args.IsSpecified('generate_key'):
       # This should not happen because of the required arg group, but protects
@@ -407,18 +401,9 @@ class Create(base.CreateCommand):
           ('To create a certificate, please specify either a CSR or the '
            '--generate-key flag to create a new key.'))
 
-    if issuing_pool.tier == self.messages.CaPool.TierValueValuesEnum.DEVOPS:
-      Create._ValidateArgsForDevOpsIssuer(args)
-
   @classmethod
-  def _ValidateArgsForDevOpsIssuer(cls, args):
-    """Validates the command-line args when the issuer is a DevOps CA pool."""
-    if not args.IsSpecified('cert_output_file'):
-      raise exceptions.RequiredArgumentException(
-          '--cert-output-file',
-          'Certificate must be written to a file since the issuing CA pool '
-          'does not support describing certificates after they are issued.')
-
+  def _PrintWarningsForUnpersistedCert(cls, args):
+    """Prints warnings if certain command-line args are used for an unpersisted cert."""
     unused_args = []
     if not cls.id_fallthrough_was_used:
       unused_args.append('certificate ID')
@@ -451,11 +436,9 @@ class Create(base.CreateCommand):
     self.client = privateca_base.GetClientInstance(api_version='v1')
     self.messages = privateca_base.GetMessagesModule(api_version='v1')
 
+    self._ValidateArgs(args)
+
     cert_ref = args.CONCEPTS.certificate.Parse()
-    issuing_pool = self._GetIssuingCaPool(cert_ref.Parent().RelativeName())
-
-    self._ValidateArgs(args, issuing_pool)
-
     labels = labels_util.ParseCreateArgs(args,
                                          self.messages.Certificate.LabelsValue)
 
@@ -484,17 +467,21 @@ class Create(base.CreateCommand):
     certificate = self.client.projects_locations_caPools_certificates.Create(
         request)
 
+    # Validate-only certs don't have a resource name or pem certificate.
+    if args.validate_only:
+      return certificate
+
     status_message = 'Created Certificate'
-    # DevOps certs won't have a name.
+
     if certificate.name:
       status_message += ' [{}]'.format(certificate.name)
+    else:
+      Create._PrintWarningsForUnpersistedCert(args)
 
-    if args.IsSpecified('cert_output_file'):
+    if certificate.pemCertificate:
       status_message += ' and saved it to [{}]'.format(args.cert_output_file)
       _WritePemChain(certificate.pemCertificate,
                      certificate.pemCertificateChain, args.cert_output_file)
-    elif args.validate_only:
-      status_message += ' in dry-run mode'
 
     status_message += '.'
     log.status.Print(status_message)

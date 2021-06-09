@@ -38,7 +38,6 @@ REQUIRED_PERMISSIONS = [
 ]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetCredentials(base.Command):
   """Fetch credentials for a Hub-registered cluster to be used in Connect Gateway.
 

@@ -23,7 +23,7 @@ from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_services_utils
@@ -165,7 +165,7 @@ class AddBackend(base.UpdateCommand):
           scope = 'zone'
         elif group_ref.Collection() == 'compute.regionInstanceGroups':
           scope = 'region'
-        raise exceptions.ToolException(
+        raise exceptions.ArgumentError(
             'Backend [{}] in {} [{}] already exists in backend service '
             '[{}].'.format(group_ref.Name(),
                            scope,

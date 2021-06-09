@@ -26,6 +26,7 @@ from googlecloudsdk.api_lib.compute import utils as compute_api
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.compute import exceptions
 from googlecloudsdk.command_lib.compute.firewall_rules import flags
 
 
@@ -73,7 +74,7 @@ class UpdateFirewall(base.UpdateCommand):
     args_unset = (args_unset and args.enable_logging is None)
     args_unset = args_unset and not args.logging_metadata
     if args_unset:
-      raise calliope_exceptions.ToolException(
+      raise exceptions.UpdatePropertyError(
           'At least one property must be modified.')
 
     if args.rules and args.allow:

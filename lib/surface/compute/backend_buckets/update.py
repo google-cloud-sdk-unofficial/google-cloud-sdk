@@ -22,8 +22,9 @@ from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+
 from googlecloudsdk.command_lib.compute import cdn_flags_utils as cdn_flags
+from googlecloudsdk.command_lib.compute import exceptions
 from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_buckets import backend_buckets_utils
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
@@ -200,7 +201,8 @@ class Update(base.UpdateCommand):
         not args.IsSpecified('signed_url_cache_max_age') and
         not args.IsSpecified('request_coalescing') and
         not self.AnyFlexibleCacheArgsSpecified(args)):
-      raise exceptions.ToolException('At least one property must be modified.')
+      raise exceptions.UpdatePropertyError(
+          'At least one property must be modified.')
     return self.MakeRequests(args)
 
 

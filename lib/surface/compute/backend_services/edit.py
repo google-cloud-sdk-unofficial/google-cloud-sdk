@@ -26,6 +26,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import property_selector
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.compute import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_services_utils
 from googlecloudsdk.command_lib.compute.backend_services import flags
@@ -183,7 +184,7 @@ class Edit(base.Command):
       try:
         file_contents = edit.OnlineEdit(file_contents)
       except edit.NoSaveException:
-        raise calliope_exceptions.ToolException('Edit aborted by user.')
+        raise exceptions.AbortedError('Edit aborted by user.')
       try:
         resource_list = self._ProcessEditedResource(holder, backend_service_ref,
                                                     file_contents,
@@ -206,7 +207,7 @@ class Edit(base.Command):
         if not console_io.PromptContinue(
             message=message,
             prompt_string='Would you like to edit the resource again?'):
-          raise calliope_exceptions.ToolException('Edit aborted by user.')
+          raise exceptions.AbortedError('Edit aborted by user.')
     return resource_list
 
   def GetExampleResource(self, client):

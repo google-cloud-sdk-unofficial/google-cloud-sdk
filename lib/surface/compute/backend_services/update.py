@@ -29,6 +29,7 @@ from googlecloudsdk.api_lib.compute.backend_services import (
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import cdn_flags_utils as cdn_flags
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_services_utils
@@ -282,7 +283,8 @@ class UpdateHelper(object):
         args.IsSpecified('bypass_cache_on_request_headers'),
         args.IsSpecified('no_bypass_cache_on_request_headers')
     ]):
-      raise exceptions.ToolException('At least one property must be modified.')
+      raise compute_exceptions.UpdatePropertyError(
+          'At least one property must be modified.')
 
   def GetSetRequest(self, client, backend_service_ref, replacement):
     """Returns a backend service patch request."""

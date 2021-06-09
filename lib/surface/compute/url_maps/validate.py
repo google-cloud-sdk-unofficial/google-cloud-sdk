@@ -22,7 +22,7 @@ import textwrap
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import yaml_validator
@@ -149,7 +149,7 @@ class Validate(base.Command):
           stream=data,
           schema_path=_GetSchemaPath(self.ReleaseTrack()))
     except yaml_validator.ValidationError as e:
-      raise exceptions.ToolException(str(e))
+      raise compute_exceptions.ValidationError(str(e))
 
     # Send UrlMap.validate request
     if args.region is not None:

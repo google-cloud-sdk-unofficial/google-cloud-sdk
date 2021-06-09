@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 
 
 def _Args(cls, parser, support_network_tier, support_global_access,
-          support_labels):
+          support_labels, support_source_ip_range):
   """Add the flags to create a forwarding rule."""
   cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
   cls.FORWARDING_RULE_ARG.AddArgument(parser)
@@ -38,6 +38,8 @@ def _Args(cls, parser, support_network_tier, support_global_access,
   if support_network_tier:
     flags.AddNetworkTier(
         parser, supports_network_tier_flag=True, for_update=True)
+  if support_source_ip_range:
+    flags.AddSourceIpRanges(parser)
   if support_global_access:
     flags.AddAllowGlobalAccess(parser)
 
@@ -50,6 +52,7 @@ class UpdateGA(base.UpdateCommand):
 
   _support_global_access = True
   _support_network_tier = False
+  _support_source_ip_range = False
   _support_labels = True
 
   @classmethod
@@ -59,7 +62,8 @@ class UpdateGA(base.UpdateCommand):
         parser,
         support_network_tier=cls._support_network_tier,
         support_global_access=cls._support_global_access,
-        support_labels=cls._support_labels)
+        support_labels=cls._support_labels,
+        support_source_ip_range=cls._support_source_ip_range)
 
   def _CreateGlobalSetLabelsRequest(self, messages, forwarding_rule_ref,
                                     forwarding_rule, replacement):
@@ -95,6 +99,10 @@ class UpdateGA(base.UpdateCommand):
   def _HasNextTierChange(self, args):
     return self._support_network_tier and args.network_tier is not None
 
+  def _HasSourceIpRangeChange(self, args):
+    return self._support_source_ip_range and args.IsSpecified(
+        'source_ip_ranges')
+
   def _HasGlobalAccessChange(self, args):
     return self._support_global_access and args.IsSpecified(
         'allow_global_access')
@@ -107,6 +115,10 @@ class UpdateGA(base.UpdateCommand):
     if self._HasNextTierChange(args):
       forwarding_rule.networkTier = self.ConstructNetworkTier(
           messages, args.network_tier)
+      has_change = True
+
+    if self._HasSourceIpRangeChange(args):
+      forwarding_rule.sourceIpRanges = args.source_ip_ranges
       has_change = True
 
     if self._HasGlobalAccessChange(args):
@@ -137,7 +149,8 @@ class UpdateGA(base.UpdateCommand):
     has_change = any([
         has_labels_updates,
         self._HasNextTierChange(args),
-        self._HasGlobalAccessChange(args)
+        self._HasGlobalAccessChange(args),
+        self._HasSourceIpRangeChange(args)
     ])
 
     if not has_change:
@@ -203,6 +216,7 @@ class UpdateBeta(UpdateGA):
   _support_global_access = True
   _support_network_tier = False
   _support_labels = True
+  _support_source_ip_range = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -212,6 +226,7 @@ class UpdateAlpha(UpdateBeta):
   _support_global_access = True
   _support_network_tier = True
   _support_labels = True
+  _support_source_ip_range = True
 
 
 UpdateGA.detailed_help = {

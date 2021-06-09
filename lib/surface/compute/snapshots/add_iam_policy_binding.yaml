@@ -39,5 +39,6 @@ iam:
     policy: Policy
     set_iam_policy_request: ComputeSnapshotsSetIamPolicyRequest
   enable_condition: true
+  hide_special_member_types: true
   policy_version: 3
   get_iam_policy_version_path: optionsRequestedPolicyVersion

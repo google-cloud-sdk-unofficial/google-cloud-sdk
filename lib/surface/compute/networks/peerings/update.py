@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import exceptions
 from googlecloudsdk.command_lib.compute.networks.peerings import flags
 from googlecloudsdk.core import properties
 
@@ -96,4 +96,5 @@ class Update(base.Command):
         args.import_subnet_routes_with_public_ip is None])
 
     if all(check_args):
-      raise exceptions.ToolException('At least one property must be modified.')
+      raise exceptions.UpdatePropertyError(
+          'At least one property must be modified.')

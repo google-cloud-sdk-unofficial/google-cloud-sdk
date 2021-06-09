@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import certificate_utils
 from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.command_lib.privateca import create_utils
 from googlecloudsdk.command_lib.privateca import create_utils_v1
@@ -38,6 +39,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
 
@@ -49,7 +51,7 @@ class CreateBeta(base.CreateCommand):
   To create a subordinate CA named 'server-tls-1' whose issuer is on Private CA:
 
     $ {command} server-tls-1 \
-      --subject="CN=Joonix TLS CA" \
+      --subject="CN=Joonix TLS CA, O=Google" \
       --issuer=prod-root --issuer-location=us-west1 \
       --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
 
@@ -57,7 +59,7 @@ class CreateBeta(base.CreateCommand):
   elsewhere:
 
     $ {command} server-tls-1 \
-      --subject="CN=Joonix TLS CA" \
+      --subject="CN=Joonix TLS CA, O=Google" \
       --create-csr \
       --csr-output-file="./csr.pem" \
       --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
@@ -262,7 +264,7 @@ class Create(base.CreateCommand):
 
     $ {command} server-tls-1 \
       --pool=my-pool \
-      --subject="CN=Joonix TLS CA" \
+      --subject="CN=Joonix TLS CA, O=Google" \
       --issuer=prod-root --issuer-pool=other-pool --issuer-location=us-west1 \
       --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
 
@@ -271,7 +273,7 @@ class Create(base.CreateCommand):
 
     $ {command} server-tls-1 \
       --pool=my-pool \
-      --subject="CN=Joonix TLS CA" \
+      --subject="CN=Joonix TLS CA, O=Google" \
       --create-csr \
       --csr-output-file="./csr.pem" \
       --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
@@ -305,6 +307,17 @@ class Create(base.CreateCommand):
         mutex=True,
         required=True,
         help='The issuer configuration used for this CA certificate.')
+    issuing_resource_group = issuer_configuration_group.add_group(
+        mutex=False,
+        required=False,
+        help='The issuing resource used for this CA certificate.')
+    base.Argument(
+        '--issuer-ca',
+        help=(
+            'The Certificate Authority ID of the CA to issue the subordinate '
+            'CA certificate from. This ID is optional. If ommitted, '
+            'any available ENABLED CA in the issuing CA pool will be chosen.'),
+        required=False).AddToParser(issuing_resource_group)
 
     concept_parsers.ConceptParser([
         presentation_specs.ResourcePresentationSpec(
@@ -314,11 +327,15 @@ class Create(base.CreateCommand):
             'The name of the subordinate CA to create.',
             required=True),
         presentation_specs.ResourcePresentationSpec(
-            '--issuer',
-            resource_args.CreateCertAuthorityResourceSpec('Issuer'),
-            'The issuing certificate authority to use, if it is on Private CA.',
+            '--issuer-pool',
+            resource_args.CreateCaPoolResourceSpec('Issuer'),
+            'The issuing CA Pool to use, if it is on Private CA.',
             prefixes=True,
-            group=issuer_configuration_group),
+            required=False,
+            flag_name_overrides={
+                'location': '--issuer-location',
+            },
+            group=issuing_resource_group),
         presentation_specs.ResourcePresentationSpec(
             '--kms-key-version',
             resource_args.CreateKmsKeyVersionResourceSpec(),
@@ -344,6 +361,7 @@ class Create(base.CreateCommand):
             },
             prefixes=True)
     ]).AddToParser(parser)
+
     flags_v1.AddSubjectFlags(parser, subject_required=False)
     flags_v1.AddKeyAlgorithmFlag(
         key_spec_group, default='rsa-pkcs1-2048-sha256')
@@ -375,8 +393,41 @@ class Create(base.CreateCommand):
         help=('The path where the resulting PEM-encoded CSR file should be '
               'written.'),
         required=True).AddToParser(offline_issuer_group)
+    flags_v1.AddAutoEnableFlag(parser)
 
-  def _SignCsr(self, issuer_pool_ref, csr, lifetime):
+  def _EnableCertificateAuthority(self, ca_name):
+    """Enable the given CA."""
+    enable_request = self.messages.PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesEnableRequest(
+        name=ca_name,
+        enableCertificateAuthorityRequest=self.messages
+        .EnableCertificateAuthorityRequest(
+            requestId=request_utils.GenerateRequestId()))
+    operation = self.client.projects_locations_caPools_certificateAuthorities.Enable(
+        enable_request)
+    return operations.Await(operation, 'Enabling CA.')
+
+  def _ShouldEnableCa(self, args, ca_ref):
+    """Determines whether the CA should be enabled or not."""
+    if args.auto_enable:
+      return True
+
+    # Return false if there already is an enabled CA in the pool.
+    ca_pool_name = ca_ref.Parent().RelativeName()
+    list_response = self.client.projects_locations_caPools_certificateAuthorities.List(
+        self.messages
+        .PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesListRequest(
+            parent=ca_pool_name))
+    if create_utils_v1.HasEnabledCa(
+        list_response.certificateAuthorities, self.messages):
+      return False
+
+     # Prompt the user if they would like to enable a CA in the pool.
+    return console_io.PromptContinue(
+        message='The CaPool [{}] has no enabled CAs and cannot issue any '
+        'certificates until at least one CA is enabled. Would you like to '
+        'also enable this CA?'.format(ca_ref.Parent().Name()), default=False)
+
+  def _SignCsr(self, issuer_pool_ref, csr, lifetime, issuer_ca_id):
     """Issues a certificate under the given issuer with the given settings."""
     certificate_id = 'subordinate-{}'.format(certificate_utils.GenerateCertId())
     issuer_pool_name = issuer_pool_ref.RelativeName()
@@ -386,6 +437,7 @@ class Create(base.CreateCommand):
         certificateId=certificate_id,
         parent=issuer_pool_name,
         requestId=request_utils.GenerateRequestId(),
+        issuingCertificateAuthorityId=issuer_ca_id,
         certificate=self.messages.Certificate(
             name=certificate_name, lifetime=lifetime, pemCsr=csr))
 
@@ -413,13 +465,20 @@ class Create(base.CreateCommand):
     project_ref = ca_ref.Parent().Parent().Parent()
     key_version_ref = args.CONCEPTS.kms_key_version.Parse()
     kms_key_ref = key_version_ref.Parent() if key_version_ref else None
+    if not args.IsSpecified('issuer_pool') and args.IsSpecified('auto_enable'):
+      raise exceptions.InvalidArgumentException([
+          '--auto-enable'
+      ], ('The \'--auto-enable\' is only supported in the create command if an '
+          'issuer resource is specified. You can use the \'--auto-enable\' '
+          'command in the subordinate CA activate command.'))
 
     iam_v1.CheckCreateCertificateAuthorityPermissions(project_ref, kms_key_ref)
     if issuer_ref:
-      issuer_pool_ref = issuer_ref.Parent()
-      iam_v1.CheckCreateCertificatePermissions(issuer_pool_ref)
-      # Proactively look for issuing CA issues to avoid downstream issues.
-      create_utils_v1.ValidateIssuingCA(issuer_ref.RelativeName())
+      iam_v1.CheckCreateCertificatePermissions(issuer_ref)
+      # Proactively look for issuing CA Pool problems to avoid downstream
+      # issues.
+      issuer_ca = args.issuer_ca if args.IsSpecified('issuer_ca') else None
+      create_utils_v1.ValidateIssuingPool(issuer_ref.RelativeName(), issuer_ca)
 
     bucket_ref = None
     if args.IsSpecified('bucket'):
@@ -453,11 +512,14 @@ class Create(base.CreateCommand):
       return
 
     if issuer_ref:
-      issuer_pool_ref = issuer_ref.Parent()
-      ca_certificate = self._SignCsr(issuer_pool_ref, csr, new_ca.lifetime)
-      self._ActivateCertificateAuthority(ca_ref.RelativeName(),
-                                         ca_certificate.pemCertificate,
-                                         issuer_ref.RelativeName())
+      issuer_ca = args.issuer_ca if args.IsSpecified('issuer_ca') else None
+      ca_certificate = self._SignCsr(issuer_ref, csr, new_ca.lifetime,
+                                     issuer_ca)
+      self._ActivateCertificateAuthority(
+          ca_ref.RelativeName(), ca_certificate.pemCertificate,
+          ca_certificate.issuerCertificateAuthority)
       log.status.Print('Created Certificate Authority [{}].'.format(
           ca_ref.RelativeName()))
+      if self._ShouldEnableCa(args, ca_ref):
+        self._EnableCertificateAuthority(ca_ref.RelativeName())
       return
