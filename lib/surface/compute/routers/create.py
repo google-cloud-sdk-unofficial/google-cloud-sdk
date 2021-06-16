@@ -30,7 +30,6 @@ from googlecloudsdk.core import resources
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine router.
 
@@ -41,7 +40,7 @@ class Create(base.CreateCommand):
   ROUTER_ARG = None
 
   @classmethod
-  def _Args(cls, parser, support_keepalive_interval=False):
+  def _Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
         'The network for this router')
@@ -50,8 +49,7 @@ class Create(base.CreateCommand):
     cls.ROUTER_ARG.AddArgument(parser, operation_type='create')
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddCreateRouterArgs(parser)
-    if support_keepalive_interval:
-      flags.AddKeepaliveIntervalArg(parser)
+    flags.AddKeepaliveIntervalArg(parser)
     flags.AddEncryptedInterconnectRouter(parser)
     flags.AddReplaceCustomAdvertisementArgs(parser, 'router')
     parser.display_info.AddCacheUpdater(flags.RoutersCompleter)
@@ -61,7 +59,7 @@ class Create(base.CreateCommand):
     """See base.CreateCommand."""
     cls._Args(parser)
 
-  def _Run(self, args, support_keepalive_interval=False):
+  def _Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     messages = holder.client.messages
     service = holder.client.apitools_client.routers
@@ -74,16 +72,11 @@ class Create(base.CreateCommand):
         description=args.description,
         network=network_ref.SelfLink())
 
-    if support_keepalive_interval:
-      # Add bgp field with the assigned asn and/or keepalive_interval
-      if args.asn is not None or args.keepalive_interval is not None:
-        router_resource.bgp = (
-            messages.RouterBgp(
-                asn=args.asn, keepaliveInterval=args.keepalive_interval))
-    else:
-      # Add bgp field with the assigned asn.
-      if args.asn is not None:
-        router_resource.bgp = messages.RouterBgp(asn=args.asn)
+    # Add bgp field with the assigned asn and/or keepalive_interval
+    if args.asn is not None or args.keepalive_interval is not None:
+      router_resource.bgp = (
+          messages.RouterBgp(
+              asn=args.asn, keepaliveInterval=args.keepalive_interval))
 
     if args.IsSpecified('encrypted_interconnect_router'):
       router_resource.encryptedInterconnectRouter = args.encrypted_interconnect_router
@@ -144,23 +137,3 @@ class Create(base.CreateCommand):
   def Run(self, args):
     """See base.UpdateCommand."""
     return self._Run(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CreateBeta(Create):
-  """Create a Compute Engine router.
-
-     *{command}* is used to create a router to provide dynamic routing to VPN
-     tunnels and interconnects.
-  """
-
-  ROUTER_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    """See base.CreateCommand."""
-    cls._Args(parser, support_keepalive_interval=True)
-
-  def Run(self, args):
-    """See base.CreateCommand."""
-    return self._Run(args, support_keepalive_interval=True)

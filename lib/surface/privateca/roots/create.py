@@ -49,7 +49,7 @@ class Create(base.CreateCommand):
   To create a root CA that supports one layer of subordinates:
 
       $ {command} prod-root \
-        --pool my-pool \
+        --pool=my-pool \
         --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1" \
         --subject="CN=Joonix Production Root CA, O=Google" \
         --max-chain-length=1
@@ -57,10 +57,9 @@ class Create(base.CreateCommand):
   To create a root CA that is based on an existing CA:
 
       $ {command} prod-root \
-        --pool my-pool \
+        --pool=my-pool \
         --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1" \
-        --from-ca=source-root \
-        --from-ca-location=us-central1
+        --from-ca=source-root
   """
 
   def __init__(self, *args, **kwargs):
@@ -154,7 +153,7 @@ class Create(base.CreateCommand):
         list_response.certificateAuthorities, self.messages):
       return False
 
-     # Prompt the user if they would like to enable a CA in the pool.
+    # Prompt the user if they would like to enable a CA in the pool.
     return console_io.PromptContinue(
         message='The CaPool [{}] has no enabled CAs and cannot issue any '
         'certificates until at least one CA is enabled. Would you like to '

@@ -45,5 +45,7 @@ class DmV2(base.Group):
   category = base.MANAGEMENT_TOOLS_CATEGORY
 
   def Filter(self, context, args):
+    # TODO(b/190530874):  Determine if command group works with project number
+    base.RequireProjectID(args)
     del context, args
     base.DisableUserProjectQuota()

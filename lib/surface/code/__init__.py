@@ -41,5 +41,7 @@ class Code(base.Group):
   }
 
   def Filter(self, context, args):
+    # TODO(b/190528427):  Determine if command group works with project number
+    base.RequireProjectID(args)
     flags.Validate(args)
     return context

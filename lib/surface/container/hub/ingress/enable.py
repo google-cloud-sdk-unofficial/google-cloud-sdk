@@ -32,9 +32,6 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.util import retry
 
-CONFIG_MEMBERSHIP_FLAG = '--config-membership'
-BILLING_FLAG = '--billing'
-
 
 class Enable(base.EnableCommand):
   """Enable MultiClusterIngress Feature.
@@ -45,29 +42,21 @@ class Enable(base.EnableCommand):
 
   Enable MultiClusterIngress Feature:
 
-    $ {command} --config-membership=CONFIG_MEMBERSHIP --billing=BILLING
+    $ {command} --config-membership=CONFIG_MEMBERSHIP
   """
 
   feature_name = 'multiclusteringress'
 
-  @classmethod
-  def Args(cls, parser):
+  @staticmethod
+  def Args(parser):
     parser.add_argument(
-        CONFIG_MEMBERSHIP_FLAG,
+        '--config-membership',
         type=str,
         help=textwrap.dedent("""\
             Membership resource representing the cluster which hosts
             the MultiClusterIngress and MultiClusterService CustomResourceDefinitions.
             """),
     )
-    parser.add_argument(
-        BILLING_FLAG,
-        type=str,
-        default='standalone',
-        choices=['standalone', 'anthos'],
-        help=textwrap.dedent("""\
-                        Billing type for MCI Ingresses.
-                        """))
 
   def Run(self, args):
     project = properties.VALUES.core.project.GetOrFail()
@@ -79,22 +68,19 @@ class Enable(base.EnableCommand):
           options=memberships, message='Please specify a config membership:\n')
       config_membership = memberships[index]
     else:
-      config_membership = args.config_membership
-    config_membership = ('projects/{0}/locations/global/memberships/{1}'.format(
-        project, os.path.basename(config_membership)))
+      config_membership = os.path.basename(args.config_membership)
 
     # MCI requires MCSD. Enablement of the Hub feature for MCSD is taken care
     # of by CLH but we need to enable the OP API before that happens. If not,
     # CLH will return an error asking for the API to be enabled.
     mcsd_api = info.Get('multiclusterservicediscovery').api
-    if not enable_api.IsServiceEnabled(project, mcsd_api):
-      enable_api.EnableService(project, mcsd_api)
+    enable_api.EnableServiceIfDisabled(project, mcsd_api)
 
     result = self.RunCommand(
         args,
         multiclusteringressFeatureSpec=(
-            base.CreateMultiClusterIngressFeatureSpec(config_membership,
-                                                      args.billing)))
+            base.CreateMultiClusterIngressFeatureSpec(
+                self.MembershipResourceName(config_membership))))
 
     # We only want to poll for usability if everything above succeeded.
     if result is not None:
@@ -109,10 +95,6 @@ class Enable(base.EnableCommand):
     timeout = 120000
     timeout_message = ('Please use the `describe` command to check Feature'
                        'state for debugging information.\n')
-
-    project = properties.VALUES.core.project.GetOrFail()
-    feature_name = 'projects/{}/locations/global/features/{}'.format(
-        project, self.feature_name)
 
     client = core_apis.GetClientInstance('gkehub', 'v1alpha1')
     ok_code = client.MESSAGES_MODULE.FeatureStateDetails.CodeValueValuesEnum.OK
@@ -137,7 +119,7 @@ class Enable(base.EnableCommand):
             status_update_func=_StatusUpdate)
 
         def _PollFunc():
-          return base.GetFeature(feature_name)
+          return base.GetFeature(self.FeatureResourceName())
 
         def _IsNotDone(feature, unused_state):
           feature_state = feature.featureState

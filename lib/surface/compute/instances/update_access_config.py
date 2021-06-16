@@ -27,11 +27,13 @@ from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
-    'DESCRIPTION': """
+    'DESCRIPTION':
+        """
         *{command}* is used to update access configurations for network
         interfaces of Compute Engine virtual machines.
         """,
-    'EXAMPLES': """
+    'EXAMPLES':
+        """
     To update network interface of an instance to 'nic0', run:
 
       $ {command} example-instance  --network-interface=nic0 --zone=us-central1-b
@@ -39,19 +41,17 @@ DETAILED_HELP = {
 }
 
 
-def _Args(parser, support_public_dns, support_network_tier,
-          support_ipv6_ptr_domain):
+def _Args(parser, support_public_dns, support_network_tier):
   """Register parser args common to all tracks."""
 
   flags.INSTANCE_ARG.AddArgument(parser)
   flags.AddNetworkInterfaceArgs(parser)
   flags.AddPublicPtrArgs(parser, instance=False)
+  flags.AddIpv6PublicPtrArgs(parser)
   if support_public_dns:
     flags.AddPublicDnsArgs(parser, instance=False)
   if support_network_tier:
     flags.AddNetworkTierArgs(parser, instance=False, for_update=True)
-  if support_ipv6_ptr_domain:
-    flags.AddIpv6PublicPtrArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -60,39 +60,32 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
 
   _support_public_dns = False
   _support_network_tier = False
-  _support_ipv6_public_ptr_domain = False
 
   @classmethod
   def Args(cls, parser):
     _Args(
         parser,
         support_public_dns=cls._support_public_dns,
-        support_network_tier=cls._support_network_tier,
-        support_ipv6_ptr_domain=cls._support_ipv6_public_ptr_domain)
+        support_network_tier=cls._support_network_tier)
 
   def CreateReference(self, client, resources, args):
     return flags.INSTANCE_ARG.ResolveAsResource(
-        args,
-        resources,
-        scope_lister=flags.GetInstanceZoneScopeLister(client))
+        args, resources, scope_lister=flags.GetInstanceZoneScopeLister(client))
 
   def GetGetRequest(self, client, instance_ref):
-    return (client.apitools_client.instances,
-            'Get',
+    return (client.apitools_client.instances, 'Get',
             client.messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
 
   def GetSetRequest(self, client, args, instance_ref, replacement):
     for network_interface in replacement.networkInterfaces:
       if network_interface.name == args.network_interface:
-        if (self._support_ipv6_public_ptr_domain and
-            network_interface.ipv6AccessConfigs is not None and
+        if (network_interface.ipv6AccessConfigs is not None and
             network_interface.ipv6AccessConfigs):
           access_config_replacement = network_interface.ipv6AccessConfigs[0]
         else:
           access_config_replacement = network_interface.accessConfigs[0]
 
-    return (client.apitools_client.instances,
-            'UpdateAccessConfig',
+    return (client.apitools_client.instances, 'UpdateAccessConfig',
             client.messages.ComputeInstancesUpdateAccessConfigRequest(
                 instance=instance_ref.instance,
                 networkInterface=args.network_interface,
@@ -115,11 +108,10 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
       set_ptr = False
 
     set_ipv6_ptr = None
-    if self._support_ipv6_public_ptr_domain:
-      if args.ipv6_public_ptr_domain:
-        set_ipv6_ptr = True
-      elif args.no_ipv6_public_ptr:
-        set_ipv6_ptr = False
+    if args.ipv6_public_ptr_domain:
+      set_ipv6_ptr = True
+    elif args.no_ipv6_public_ptr:
+      set_ipv6_ptr = False
 
     modified = encoding.CopyProtoMessage(original)
     for interface in modified.networkInterfaces:
@@ -160,8 +152,7 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
 
   def Run(self, args):
     flags.ValidatePublicPtrFlags(args)
-    if self._support_ipv6_public_ptr_domain:
-      flags.ValidateIpv6PublicPtrFlags(args)
+    flags.ValidateIpv6PublicPtrFlags(args)
     if self._support_public_dns:
       flags.ValidatePublicDnsFlags(args)
     if self._support_network_tier:
@@ -180,9 +171,8 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
     # Modify() returns None, then there is no work to be done, so we
     # print the resource and return.
     if not new_object or objects[0] == new_object:
-      log.status.Print(
-          'No change requested; skipping update for [{0}].'.format(
-              objects[0].name))
+      log.status.Print('No change requested; skipping update for [{0}].'.format(
+          objects[0].name))
       return objects
 
     return client.MakeRequests(
@@ -195,7 +185,6 @@ class UpdateAccessConfigInstancesBeta(UpdateAccessConfigInstances):
 
   _support_public_dns = False
   _support_network_tier = False
-  _support_ipv6_public_ptr_domain = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -204,7 +193,6 @@ class UpdateAccessConfigInstancesAlpha(UpdateAccessConfigInstances):
 
   _support_public_dns = True
   _support_network_tier = True
-  _support_ipv6_public_ptr_domain = True
 
 
 UpdateAccessConfigInstances.detailed_help = DETAILED_HELP

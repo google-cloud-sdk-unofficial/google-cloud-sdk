@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import scope as compute_scopes
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
@@ -161,7 +161,7 @@ class SetDiskAutoDelete(base.UpdateCommand):
       An attached disk object.
 
     Raises:
-      exceptions.ToolException: If a disk with name cannot be found attached to
+      exceptions.ArgumentError: If a disk with name cannot be found attached to
           the instance or if the user does not choose a specific disk when
           prompted.
     """
@@ -176,7 +176,7 @@ class SetDiskAutoDelete(base.UpdateCommand):
           matched_attached_disks.append(attached_disk)
 
     if not matched_attached_disks:
-      raise exceptions.ToolException(
+      raise compute_exceptions.ArgumentError(
           'Disk [{}] is not attached to instance [{}] in zone [{}].'
           .format(name, instance_ref.instance, instance_ref.zone))
     elif len(matched_attached_disks) == 1:
@@ -191,7 +191,7 @@ class SetDiskAutoDelete(base.UpdateCommand):
         options=choice_names,
         message='[{}] matched multiple disks. Choose one:'.format(name))
     if idx is None:
-      raise exceptions.ToolException(
+      raise compute_exceptions.ArgumentError(
           'Found multiple disks matching [{}] attached to instance [{}] '
           'in zone [{}].'
           .format(name, instance_ref.instance, instance_ref.zone))
@@ -211,14 +211,14 @@ class SetDiskAutoDelete(base.UpdateCommand):
       An attached disk object.
 
     Raises:
-      exceptions.ToolException: If a disk with device name cannot be found
-          attached to the instance.
+      compute_exceptions.ArgumentError: If a disk with device name cannot be
+          found attached to the instance.
     """
     for disk in instance.disks:
       if disk.deviceName == device_name:
         return disk
 
-    raise exceptions.ToolException(
+    raise compute_exceptions.ArgumentError(
         'No disk with device name [{}] is attached to instance [{}] '
         'in zone [{}].'
         .format(device_name, instance_ref.instance, instance_ref.zone))

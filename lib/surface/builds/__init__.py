@@ -32,5 +32,7 @@ class Builds(base.Group):
     parser.display_info.AddTransforms(transforms.GetTransforms())
 
   def Filter(self, context, args):
+    # TODO(b/190527928):  Determine if command group works with project number
+    base.RequireProjectID(args)
     del context, args
     base.EnableUserProjectQuotaWithFallback()

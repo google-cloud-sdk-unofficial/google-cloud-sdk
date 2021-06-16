@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.command_lib.compute.target_pools import flags
@@ -86,14 +86,14 @@ class RemoveInstances(base.SilentCommand):
                          for instance_ref in instance_refs)
 
     if len(unique_regions) > 1:
-      raise calliope_exceptions.ToolException(
+      raise compute_exceptions.ArgumentError(
           'Instances must all be in the same region as the target pool.')
 
     region = unique_regions.pop()
 
     # Check that the region of the instances is the same as target pool region.
     if args.region and region != args.region:
-      raise calliope_exceptions.ToolException(
+      raise compute_exceptions.ArgumentError(
           'Instances must all be in the same region as the target pool.')
 
     args.region = region

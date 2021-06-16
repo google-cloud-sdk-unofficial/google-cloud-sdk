@@ -27,3 +27,8 @@ class Notebooks(base.Group):
   """Notebooks Command Group."""
 
   category = base.AI_AND_MACHINE_LEARNING_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190538034):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

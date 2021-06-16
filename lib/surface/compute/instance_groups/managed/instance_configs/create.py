@@ -32,13 +32,12 @@ import six
 
 
 # TODO(b/70321546): rewrite help
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
-class Create(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateGA(base.CreateCommand):
   """Create per-instance config for an instance in a managed instance group."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     instance_groups_flags.GetInstanceGroupManagerArg(
         region_flag=True).AddArgument(
             parser, operation_type='create a per-instance config for')
@@ -60,7 +59,7 @@ class Create(base.CreateCommand):
     return instance_references[0]
 
   def Run(self, args):
-    instance_groups_flags.ValidateMigStatefulFlagsForInstanceConfigs(args)
+    self._ValidateStatefulFlagsForInstanceConfigs(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -82,9 +81,8 @@ class Create(base.CreateCommand):
     configs_getter.check_if_instance_config_exists(
         igm_ref=igm_ref, instance_ref=instance_ref, should_exist=False)
 
-    per_instance_config_message = (
-        instance_configs_messages.CreatePerInstanceConfigMessage)(
-            holder, instance_ref, args.stateful_disk, args.stateful_metadata)
+    per_instance_config_message = self._CreatePerInstanceConfigMessage(
+        holder, instance_ref, args)
 
     operation_ref = instance_configs_messages.CallPerInstanceConfigUpdate(
         holder=holder,
@@ -115,8 +113,15 @@ class Create(base.CreateCommand):
 
     return create_result
 
+  def _ValidateStatefulFlagsForInstanceConfigs(self, args):
+    instance_groups_flags.ValidateMigStatefulFlagsForInstanceConfigs(args)
 
-Create.detailed_help = {
+  def _CreatePerInstanceConfigMessage(self, holder, instance_ref, args):
+    return instance_configs_messages.CreatePerInstanceConfigMessage(
+        holder, instance_ref, args.stateful_disk, args.stateful_metadata)
+
+
+CreateGA.detailed_help = {
     'brief':
         'Create a per-instance config for an instance in a '
         'managed instance group.',
@@ -137,10 +142,71 @@ Create.detailed_help = {
         add stateful metadata ``my-key:my-value'', on instance
         ``my-instance'', run:
 
-          $ {command} my-group --region=europe-west4 --instance=my-instance --stateful-disk=device-name=my-disk,source=projects/my-project/zones/us-central1-a/disks/my-disk-3 --stateful-metadata="my-key=my-value"
+          $ {{command}} {group} {region} {instance} {disk} {metadata}
 
         If ``my-disk'' did not exist previously in the per-instance config,
         and if it does not exist in the group's instance template, then the
         command adds ``my-disk'' to my-instance.
-        """
+        """.format(
+            group='my-group',
+            region='--region=europe-west4',
+            instance='--instance=my-instance',
+            disk=('--stateful-disk=device-name=my-disk,source='
+                  'projects/my-project/zones/us-central1-a/disks/my-disk-3'),
+            metadata='--stateful-metadata="my-key=my-value"')
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(CreateGA):
+  """Create per-instance config for an instance in a managed instance group."""
+
+
+CreateBeta.detailed_help = CreateGA.detailed_help
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create per-instance config for an instance in a managed instance group."""
+
+  @classmethod
+  def Args(cls, parser):
+    CreateGA.Args(parser)
+    instance_groups_flags.AddMigStatefulIPsFlagsForInstanceConfigs(parser)
+
+  def _CreatePerInstanceConfigMessage(self, holder, instance_ref, args):
+    return instance_configs_messages.CreatePerInstanceConfigMessageWithIPs(
+        holder, instance_ref, args.stateful_disk, args.stateful_metadata,
+        args.stateful_internal_ip, args.stateful_external_ip)
+
+  def _ValidateStatefulFlagsForInstanceConfigs(self, args):
+    super(CreateAlpha, self)._ValidateStatefulFlagsForInstanceConfigs(args)
+    instance_groups_flags.ValidateMigStatefulIPFlagsForInstanceConfigs(args)
+
+
+CreateAlpha.detailed_help = {
+    'brief': CreateBeta.detailed_help['brief'],
+    'DESCRIPTION': CreateBeta.detailed_help['DESCRIPTION'],
+    'EXAMPLES':
+        CreateBeta.detailed_help['EXAMPLES'] +
+        """\
+
+        To create a per-instance config with a stateful internal IP
+        ``192.168.0.10'' and a stateful external IP reserved in address
+        ``my-address'', on instance ``my-instance'', run:
+
+          $ {{command}} {group} {region} {instance} {internal_ip} {external_ip}
+
+        If the provided IP address is not yet reserved, the MIG automatically
+        creates a corresponding IP address reservation.
+        """.format(
+            group='my-group',
+            region='--region=europe-west4',
+            instance='--instance=my-instance',
+            internal_ip=('--stateful-internal-ip=address=192.168.0.10,'
+                         'interface-name=nic0'),
+            external_ip=('--stateful-external-ip=address='
+                         '/projects/example-project/regions/europe-west4/'
+                         'addresses/my-address'
+                         ',interface-name=nic0'))
 }

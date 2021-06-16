@@ -26,3 +26,8 @@ from googlecloudsdk.calliope import base
 class Scheduler(base.Group):
   """Manage Cloud Scheduler jobs and schedules."""
   category = base.CI_CD_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190539417):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

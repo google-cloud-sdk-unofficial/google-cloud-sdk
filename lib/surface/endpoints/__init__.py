@@ -48,6 +48,8 @@ class Endpoints(base.Group):
     Returns:
       The updated context.
     """
+    # TODO(b/190533981):  Determine if command group works with project number
+    base.RequireProjectID(args)
     base.DisableUserProjectQuota()
     context['servicemanagement-v1'] = apis.GetClientInstance(
         'servicemanagement', 'v1')

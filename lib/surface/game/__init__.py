@@ -27,9 +27,19 @@ class GameservicesGA(base.Group):
   """Managed Cloud Game Services."""
   category = base.SOLUTIONS_CATEGORY
 
+  def Filter(self, context, args):
+    # TODO(b/190534527):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA,
                     base.ReleaseTrack.BETA)
 class Gameservices(base.Group):
   """Managed Cloud Game Services."""
   category = base.SOLUTIONS_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190534527):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

@@ -26,3 +26,8 @@ from googlecloudsdk.calliope import base
 class Lifesciences(base.Group):
   """Manage Cloud Life Sciences resources."""
   category = base.SOLUTIONS_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190534871):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

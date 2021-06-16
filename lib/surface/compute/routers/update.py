@@ -29,19 +29,17 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine router."""
 
   ROUTER_ARG = None
 
   @classmethod
-  def _Args(cls, parser, support_keepalive_interval=False):
+  def _Args(cls, parser):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
     base.ASYNC_FLAG.AddToParser(parser)
-    if support_keepalive_interval:
-      flags.AddKeepaliveIntervalArg(parser)
+    flags.AddKeepaliveIntervalArg(parser)
     flags.AddAsnArg(parser)
     flags.AddUpdateCustomAdvertisementArgs(parser, 'router')
 
@@ -49,7 +47,7 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     cls._Args(parser)
 
-  def _Run(self, args, support_keepalive_interval=False):
+  def _Run(self, args):
     # Manually ensure replace/incremental flags are mutually exclusive.
     router_utils.CheckIncompatibleFlagsOrRaise(args)
 
@@ -64,7 +62,7 @@ class Update(base.UpdateCommand):
     replacement.bgp = replacement.bgp or messages.RouterBgp()
     existing_mode = replacement.bgp.advertiseMode
 
-    if support_keepalive_interval and args.keepalive_interval is not None:
+    if args.keepalive_interval is not None:
       setattr(replacement.bgp, 'keepaliveInterval', args.keepalive_interval)
 
     if args.asn is not None:
@@ -174,20 +172,6 @@ class Update(base.UpdateCommand):
   def Run(self, args):
     """See base.UpdateCommand."""
     return self._Run(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class UpdateBeta(Update):
-  """Update a Compute Engine router."""
-
-  ROUTER_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    cls._Args(parser, support_keepalive_interval=True)
-
-  def Run(self, args):
-    return self._Run(args, support_keepalive_interval=True)
 
 
 Update.detailed_help = {

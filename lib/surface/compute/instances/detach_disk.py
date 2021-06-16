@@ -23,7 +23,7 @@ from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import scope as compute_scopes
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
@@ -115,7 +115,7 @@ class DetachDisk(base.UpdateCommand):
       ]
 
       if len(existing.disks) == len(replacement.disks):
-        raise exceptions.ToolException(
+        raise compute_exceptions.ArgumentError(
             'Disk [{0}] is not attached to instance [{1}] in zone [{2}].'
             .format(disk_ref.Name(), instance_ref.instance, instance_ref.zone))
 
@@ -124,7 +124,7 @@ class DetachDisk(base.UpdateCommand):
                            if disk.deviceName != args.device_name]
 
       if len(existing.disks) == len(replacement.disks):
-        raise exceptions.ToolException(
+        raise compute_exceptions.ArgumentError(
             'No disk with device name [{0}] is attached to instance [{1}] in '
             'zone [{2}].'
             .format(args.device_name, instance_ref.instance, instance_ref.zone))

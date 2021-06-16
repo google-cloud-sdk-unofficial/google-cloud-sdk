@@ -127,14 +127,39 @@ def AddInternalIPArg(group):
         """)
 
 
+def AddTroubleshootArg(parser):
+  parser.add_argument(
+      '--troubleshoot',
+      action='store_true',
+      help="""\
+          If you can't connect to the VM using SSH, you can investigate the problem using the --troubleshoot flag:
+
+            $ {command} VM_NAME --zone=ZONE --troubleshoot
+
+          The troubleshoot flag runs tests and returns recommendations for four types of issues:
+            VM status
+            Network connectivity
+            User permissions
+            VPC settings
+          """
+  )
+
+
+def RunTroubleshooting(project=None, zone=None, instance=None,
+                       iap_tunnel_args=None):
+  """Run each category of troubleshoot action."""
+  raise NotImplementedError
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Ssh(base.Command):
   """SSH into a virtual machine instance."""
 
   category = base.TOOLS_CATEGORY
+  enable_troubleshoot_flag = False
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Set up arguments for this command.
 
     Args:
@@ -144,6 +169,9 @@ class Ssh(base.Command):
     AddCommandArg(parser)
     AddSSHArgs(parser)
     AddContainerArg(parser)
+    if cls.enable_troubleshoot_flag:
+      AddTroubleshootArg(parser)
+
     flags.AddZoneFlag(
         parser, resource_type='instance', operation_type='connect to')
     ssh_utils.AddVerifyInternalIpArg(parser)
@@ -168,6 +196,16 @@ class Ssh(base.Command):
     project = ssh_helper.GetProject(client, instance_ref.project)
     host_keys = ssh_helper.GetHostKeysFromGuestAttributes(client, instance_ref,
                                                           instance, project)
+    iap_tunnel_args = iap_tunnel.SshTunnelArgs.FromArgs(
+        args, self.ReleaseTrack(), instance_ref,
+        ssh_utils.GetExternalInterface(instance, no_raise=True))
+
+    internal_address = ssh_utils.GetInternalIPAddress(instance)
+
+    if hasattr(args, 'troubleshoot') and args.troubleshoot:
+      RunTroubleshooting(project, args.zone or instance_ref.zone,
+                         instance, iap_tunnel_args)
+      return
     if not host_keys and host_keys is not None:
       # Only display this message if there was an attempt to retrieve
       # host keys but it was unsuccessful. If Guest Attributes is disabled,
@@ -185,12 +223,6 @@ class Ssh(base.Command):
       user, use_oslogin = ssh.CheckForOsloginAndGetUser(
           instance, project, user, public_key, expiration_micros,
           self.ReleaseTrack(), username_requested=username_requested)
-
-    iap_tunnel_args = iap_tunnel.SshTunnelArgs.FromArgs(
-        args, self.ReleaseTrack(), instance_ref,
-        ssh_utils.GetExternalInterface(instance, no_raise=True))
-
-    internal_address = ssh_utils.GetInternalIPAddress(instance)
 
     if iap_tunnel_args:
       # IAP Tunnel only uses instance_address for the purpose of --ssh-flag
@@ -281,11 +313,13 @@ class Ssh(base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SshBeta(Ssh):
   """SSH into a virtual machine instance (Beta)."""
+  enable_troubleshoot_flag = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SshAlpha(SshBeta):
   """SSH into a virtual machine instance (Alpha)."""
+  enable_troubleshoot_flag = False
 
 
 def DetailedHelp():

@@ -318,6 +318,7 @@ class Update(base.UpdateCommand):
     flags.AddNotificationConfigFlag(group)
     flags.AddDisableAutopilotFlag(group)
     flags.AddAuthenticatorSecurityGroupFlags(group, hidden=True)
+    flags.AddILBSubsettingFlags(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -330,6 +331,7 @@ class Update(base.UpdateCommand):
     opts.enable_resource_consumption_metering = \
         args.enable_resource_consumption_metering
     opts.enable_intra_node_visibility = args.enable_intra_node_visibility
+    opts.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting
     opts.enable_master_global_access = args.enable_master_global_access
     opts.enable_shielded_nodes = args.enable_shielded_nodes
     opts.release_channel = args.release_channel
@@ -696,6 +698,7 @@ class UpdateBeta(Update):
     flags.AddCrossConnectSubnetworksMutationFlags(group)
     flags.AddEnableServiceExternalIPs(group)
     flags.AddAuthenticatorSecurityGroupFlags(group, hidden=True)
+    flags.AddEnableGcfsFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -770,6 +773,7 @@ class UpdateBeta(Update):
           cancel_on_no=True)
     opts.enable_service_externalips = args.enable_service_externalips
     opts.security_group = args.security_group
+    opts.enable_gcfs = args.enable_gcfs
     return opts
 
 
@@ -838,6 +842,7 @@ class UpdateAlpha(Update):
     flags.AddCrossConnectSubnetworksMutationFlags(group)
     flags.AddEnableServiceExternalIPs(group)
     flags.AddAuthenticatorSecurityGroupFlags(group, hidden=True)
+    flags.AddEnableGcfsFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -908,5 +913,6 @@ class UpdateAlpha(Update):
           cancel_on_no=True)
     opts.enable_service_externalips = args.enable_service_externalips
     opts.security_group = args.security_group
+    opts.enable_gcfs = args.enable_gcfs
 
     return opts

@@ -19,10 +19,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import os
-from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.hub.config_management import utils
 from googlecloudsdk.command_lib.container.hub.features import base as feature_base
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 
 NA = 'NA'
@@ -189,21 +188,10 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
     """)
 
   def Run(self, args):
-    try:
-      project_id = properties.VALUES.core.project.GetOrFail()
-      memberships = feature_base.ListMemberships(project_id)
-      name = 'projects/{0}/locations/global/features/{1}'.format(
-          project_id, self.feature_name)
-      response = feature_base.GetFeature(name)
-    except apitools_exceptions.HttpUnauthorizedError as e:
-      raise exceptions.Error(
-          'You are not authorized to see the status of {} '
-          'Feature from project [{}]. Underlying error: {}'.format(
-              self.feature.display_name, project_id, e))
-    except apitools_exceptions.HttpNotFoundError as e:
-      raise exceptions.Error(
-          '{} Feature for project [{}] is not enabled'.format(
-              self.feature.display_name, project_id))
+    project_id = properties.VALUES.core.project.GetOrFail()
+
+    memberships = feature_base.ListMemberships(project_id)
+    response = utils.try_get_configmanagement(project_id)
     if not memberships:
       return None
     acm_status = []

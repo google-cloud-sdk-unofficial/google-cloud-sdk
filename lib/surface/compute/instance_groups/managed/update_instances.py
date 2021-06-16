@@ -88,13 +88,21 @@ class UpdateInstances(base.Command):
       raise ValueError('Unknown reference type {0}'.format(
           igm_ref.Collection()))
 
-    return instance_groups_utils.SendInstancesRequestsAndPostProcessOutputs(
-        api_holder=holder,
-        method_name='ApplyUpdatesToInstances',
-        request_template=request,
-        instances_holder_field=instances_holder_field,
-        igm_ref=igm_ref,
-        instances=args.instances)
+    if args.all_instances:
+      return instance_groups_utils.SendAllInstancesRequest(
+          api_holder=holder,
+          method_name='ApplyUpdatesToInstances',
+          request_template=request,
+          all_instances_holder_field=instances_holder_field,
+          igm_ref=igm_ref)
+    else:
+      return instance_groups_utils.SendInstancesRequestsAndPostProcessOutputs(
+          api_holder=holder,
+          method_name='ApplyUpdatesToInstances',
+          request_template=request,
+          instances_holder_field=instances_holder_field,
+          igm_ref=igm_ref,
+          instances=args.instances)
 
   def _CreateZonalApplyUpdatesRequest(self, igm_ref, minimal_action,
                                       most_disruptive_allowed_action, client):

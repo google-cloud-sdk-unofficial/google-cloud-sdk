@@ -265,7 +265,7 @@ class Create(base.CreateCommand):
     $ {command} server-tls-1 \
       --pool=my-pool \
       --subject="CN=Joonix TLS CA, O=Google" \
-      --issuer=prod-root --issuer-pool=other-pool --issuer-location=us-west1 \
+      --issuer-pool=other-pool --issuer-location=us-west1 \
       --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
 
   To create a subordinate CA named 'server-tls-1' whose issuer is located
@@ -283,8 +283,8 @@ class Create(base.CreateCommand):
 
     $ {command} server-tls-1 \
       --pool=my-pool \
-      --issuer=prod-root --issuer-pool=other-pool --issuer-location=us-west1 \
-      --from-ca=source-ca --from-ca-location=us-central1 \
+      --issuer-pool=other-pool --issuer-location=us-west1 \
+      --from-ca=source-ca \
       --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
   """
 
@@ -421,7 +421,7 @@ class Create(base.CreateCommand):
         list_response.certificateAuthorities, self.messages):
       return False
 
-     # Prompt the user if they would like to enable a CA in the pool.
+    # Prompt the user if they would like to enable a CA in the pool.
     return console_io.PromptContinue(
         message='The CaPool [{}] has no enabled CAs and cannot issue any '
         'certificates until at least one CA is enabled. Would you like to '

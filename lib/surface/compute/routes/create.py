@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.forwarding_rules import flags as ilb_flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
@@ -212,7 +213,7 @@ class Create(base.CreateCommand):
               client)).SelfLink()
     else:
       if args.next_hop_instance_zone:
-        raise exceptions.ToolException(
+        raise compute_exceptions.ArgumentError(
             '[--next-hop-instance-zone] can only be specified in conjunction '
             'with [--next-hop-instance].')
       next_hop_instance_uri = None
@@ -232,7 +233,7 @@ class Create(base.CreateCommand):
           holder.resources,
           scope_lister=compute_flags.GetDefaultScopeLister(client)).SelfLink()
     elif args.next_hop_vpn_tunnel_region:
-      raise exceptions.ToolException(
+      raise compute_exceptions.ArgumentError(
           '[--next-hop-vpn-tunnel-region] can only be specified in '
           'conjunction with [--next-hop-vpn-tunnel].')
 

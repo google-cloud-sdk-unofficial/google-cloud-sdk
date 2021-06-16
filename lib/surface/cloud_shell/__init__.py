@@ -50,6 +50,8 @@ class CloudShell(base.Group):
     pass
 
   def Filter(self, context, args):
+    # TODO(b/190528585):  Determine if command group works with project number
+    base.RequireProjectID(args)
     del context, args
     # Intentionally disable the user project override.  Cloud Shell is inteded
     # to be able to be used without first creating a GCP project.

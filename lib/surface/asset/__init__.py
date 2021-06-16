@@ -28,3 +28,8 @@ class Asset(base.Group):
   """Manage the Cloud Asset Inventory."""
 
   category = base.SECURITY_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190524367):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

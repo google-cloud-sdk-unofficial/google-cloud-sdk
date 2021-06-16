@@ -27,5 +27,7 @@ class BigtableV2(base.Group):
   category = base.DATABASES_CATEGORY
 
   def Filter(self, context, args):
+    # TODO(b/190525916):  Determine if command group works with project number
+    base.RequireProjectID(args)
     del context, args
     base.DisableUserProjectQuota()

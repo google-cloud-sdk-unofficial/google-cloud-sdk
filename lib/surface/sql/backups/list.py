@@ -34,15 +34,15 @@ from googlecloudsdk.core import properties
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """Lists all backups associated with a given instance.
+  """Lists all backups associated with the project or a given instance.
 
-  Lists all backups associated with a given Cloud SQL instance and
-  configuration in the reverse chronological order of the enqueued time.
+  Lists all backups associated with the project or a given Cloud SQL instance
+  and configuration in the reverse chronological order of the enqueued time.
   """
 
   @staticmethod
   def Args(parser):
-    flags.AddInstance(parser)
+    flags.AddInstance(parser, True)
     parser.display_info.AddFormat("""
       table(
         id,

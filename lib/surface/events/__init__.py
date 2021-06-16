@@ -66,6 +66,7 @@ class EventsBeta(base.Group):
     # all other passed args are valid for this platform and release track.
     flags.GetAndValidatePlatform(args, self.ReleaseTrack(),
                                  flags.Product.EVENTS)
+    base.RequireProjectID(args)
     self._CheckPlatform()
     return context
 
@@ -117,6 +118,8 @@ class EventsAlpha(base.Group):
     # all other passed args are valid for this platform and release track.
     flags.GetAndValidatePlatform(args, self.ReleaseTrack(),
                                  flags.Product.EVENTS)
+    # TODO(b/190533973):  Determine if command group works with project number
+    base.RequireProjectID(args)
     self._CheckPlatform()
     return context
 

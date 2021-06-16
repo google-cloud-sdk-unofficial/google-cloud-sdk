@@ -277,7 +277,7 @@ class Create(base.CreateCommand):
   To create a certificate using a CSR:
 
       $ {command} frontend-server-tls \
-        --issuer=my-pool --issuer-location=us-west1 \
+        --issuer-pool=my-pool --issuer-location=us-west1 \
         --csr=./csr.pem \
         --cert-output-file=./cert.pem \
         --validity=P30D
@@ -285,7 +285,7 @@ class Create(base.CreateCommand):
     To create a certificate using a client-generated key:
 
       $ {command} frontend-server-tls \
-        --issuer=my-pool --issuer-location=us-west1 \
+        --issuer-pool=my-pool --issuer-location=us-west1 \
         --generate-key \
         --key-output-file=./key \
         --cert-output-file=./cert.pem \

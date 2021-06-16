@@ -38,3 +38,8 @@ class Iap(base.Group):
   """
 
   category = 'Identity and Security'
+
+  def Filter(self, context, args):
+    # TODO(b/190535352):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

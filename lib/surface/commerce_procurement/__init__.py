@@ -27,3 +27,8 @@ class CommerceProcurement(base.Group):
   """Manages Google Cloud Commerce Procurement resources."""
 
   category = base.COMMERCE_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190527939):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

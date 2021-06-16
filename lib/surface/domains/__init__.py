@@ -53,5 +53,7 @@ class Domains(base.Group):
   }
 
   def Filter(self, context, args):
+    # TODO(b/190533158):  Determine if command group works with project number
+    base.RequireProjectID(args)
     del context, args
     base.DisableUserProjectQuota()

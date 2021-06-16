@@ -30,5 +30,7 @@ class Logging(base.Group):
   category = base.MANAGEMENT_TOOLS_CATEGORY
 
   def Filter(self, context, args):
+    # TODO(b/190536377):  Determine if command group works with project number
+    base.RequireProjectID(args)
     del context, args
     base.EnableUserProjectQuotaWithFallback()

@@ -188,18 +188,12 @@ class Import(base.CreateCommand):
       daisy_utils.AddAWSImageImportSourceArgs(import_from_aws)
 
     workflow = parser.add_mutually_exclusive_group()
-    if cls.ReleaseTrack() == base.ReleaseTrack.GA:
-      workflow.add_argument(
-          '--os',
-          choices=sorted(cls._OS_CHOICES),
-          help='Specifies the OS of the disk image being imported.')
-    else:
-      os_group = workflow.add_group()
-      daisy_utils.AddByolArg(os_group)
-      os_group.add_argument(
-          '--os',
-          choices=sorted(cls._OS_CHOICES),
-          help='Specifies the OS of the disk image being imported.')
+    os_group = workflow.add_group()
+    daisy_utils.AddByolArg(os_group)
+    os_group.add_argument(
+        '--os',
+        choices=sorted(cls._OS_CHOICES),
+        help='Specifies the OS of the disk image being imported.')
 
     workflow.add_argument(
         '--data-disk',

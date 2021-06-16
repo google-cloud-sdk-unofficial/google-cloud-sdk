@@ -54,6 +54,7 @@ def _Args(parser, messages, supports_force_create=False):
 
   image_utils.AddGuestOsFeaturesArg(parser, messages)
   kms_resource_args.AddKmsKeyResourceArg(parser, 'image')
+  flags.AddSourceDiskProjectFlag(parser)
 
   # Alpha and Beta Args
   if supports_force_create:
@@ -122,6 +123,12 @@ class Create(base.CreateCommand):
           'You cannot specify [--source-disk-zone] unless you are specifying '
           '[--source-disk].')
 
+    if args.source_disk_project and not args.source_disk:
+      raise exceptions.InvalidArgumentException(
+          'source_disk_project',
+          'You cannot specify [source_disk_project] unless you are '
+          'specifying [--source_disk].')
+
     source_image_project = args.source_image_project
     source_image = args.source_image
     source_image_family = args.source_image_family
@@ -149,8 +156,10 @@ class Create(base.CreateCommand):
       image.rawDisk = messages.Image.RawDiskValue(source=source_uri)
     elif args.source_disk:
       source_disk_ref = flags.SOURCE_DISK_ARG.ResolveAsResource(
-          args, holder.resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(client))
+          args,
+          holder.resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(client),
+          source_project=args.source_disk_project)
       image.sourceDisk = source_disk_ref.SelfLink()
       image.sourceDiskEncryptionKey = csek_utils.MaybeLookupKeyMessage(
           csek_keys, source_disk_ref, client.apitools_client)
@@ -267,6 +276,11 @@ Create.detailed_help = {
         To create an image 'my-image' from a disk 'my-disk' in zone 'us-east1-a', run:
 
             $ {command} my-image --source-disk=my-disk --source-disk-zone=us-east1-a
+
+        To create an image 'my-image' from a disk 'my-disk' in zone 'us-east1-a' with source
+        disk project 'source-disk-project' run:
+
+            $ {command} my-image --source-disk=my-disk --source-disk-zone=us-east1-a --source-disk-project=source-disk-project
 
         To create an image 'my-image' from another image 'source-image'
         with source image project 'source-image-project', run:

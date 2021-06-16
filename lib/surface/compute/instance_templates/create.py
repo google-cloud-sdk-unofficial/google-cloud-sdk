@@ -97,6 +97,8 @@ def _CommonArgs(parser,
   instances_flags.AddMinNodeCpuArg(parser)
   instances_flags.AddNestedVirtualizationArgs(parser)
   instances_flags.AddThreadsPerCoreArgs(parser)
+  instances_flags.AddStackTypeArgs(parser)
+  instances_flags.AddIpv6NetworkTierArgs(parser)
   maintenance_flags.AddResourcePoliciesArgs(parser, 'added to',
                                             'instance-template')
 
@@ -860,8 +862,6 @@ class CreateAlpha(Create):
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
-    instances_flags.AddStackTypeArgs(parser)
-    instances_flags.AddIpv6NetworkTierArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.

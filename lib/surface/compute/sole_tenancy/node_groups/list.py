@@ -23,8 +23,7 @@ from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Compute Engine node groups."""
 
@@ -48,6 +47,23 @@ class List(base.ListCommand):
         client, aggregation_service=client.apitools_client.nodeGroups)
 
     return lister.Invoke(request_data, list_implementation)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """List Compute Engine node groups."""
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""\
+        table(
+          name,
+          zone.basename(),
+          description,
+          nodeTemplate.basename(),
+          size:label=NODES,
+          shareSettings.yesno(yes="true", no="false"):label=SHARED
+        )""")
 
 
 List.detailed_help = base_classes.GetRegionalListerHelp('node groups')

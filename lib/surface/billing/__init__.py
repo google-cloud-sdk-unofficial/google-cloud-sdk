@@ -43,5 +43,7 @@ class Billing(base.Group):
   category = base.BILLING_CATEGORY
 
   def Filter(self, context, args):
+    # TODO(b/190525933):  Determine if command group works with project number
+    base.RequireProjectID(args)
     del context, args
     base.DisableUserProjectQuota()

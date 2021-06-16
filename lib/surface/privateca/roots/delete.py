@@ -141,16 +141,16 @@ class Delete(base.DeleteCommand):
 
     To delete a root CA:
 
-      $ {command} prod-root --pool my-pool --location='us-west1'
+      $ {command} prod-root --pool=my-pool --location='us-west1'
 
     To delete a CA while skipping the confirmation
     input:
 
-      $ {command} prod-root --pool my-pool --location='us-west1' --quiet
+      $ {command} prod-root --pool=my-pool --location='us-west1' --quiet
 
     To undo the deletion for a root CA:
 
-      $ {parent_command} undelete prod-root --pool my-pool --location='us-west1'
+      $ {parent_command} undelete prod-root --pool=my-pool --location='us-west1'
 
   """
 

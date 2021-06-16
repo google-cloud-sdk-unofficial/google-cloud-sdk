@@ -27,6 +27,8 @@ from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
+from googlecloudsdk.command_lib.artifacts import docker_util
+from googlecloudsdk.command_lib.run import artifact_registry
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
@@ -145,6 +147,7 @@ class Deploy(base.Command):
     flags.AddServiceAccountFlag(parser)
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddIngressFlag(parser)
+    flags.AddHttp2Flag(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
@@ -155,30 +158,49 @@ class Deploy(base.Command):
 
     flags.AddImageArg(parser, required=False)
 
-    # Flags only supported on GKE and Knative
-    cluster_group = flags.GetClusterArgGroup(parser)
-    flags.AddHttp2Flag(cluster_group)
-
   def Run(self, args):
     """Deploy a container to Cloud Run."""
-    flags.GetAndValidatePlatform(args, self.ReleaseTrack(), flags.Product.RUN)
+    platform = flags.GetAndValidatePlatform(
+        args, self.ReleaseTrack(), flags.Product.RUN)
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
+
+    include_build = flags.FlagIsExplicitlySet(args, 'source')
+    if not include_build and not args.IsSpecified('image'):
+      raise c_exceptions.RequiredArgumentException(
+          '--image', 'Requires a container image to deploy (e.g. '
+          '`gcr.io/cloudrun/hello:latest`) if no build source is provided.')
+
+    # Obtaining the connection context prompts the user to select a region if
+    # one hasn't been provided. We want to do this prior to preparing a source
+    # deploy so that we can use that region for the Artifact Registry repo.
+    conn_context = connection_context.GetConnectionContext(
+        args, flags.Product.RUN, self.ReleaseTrack())
+
     build_type = None
     image = None
     pack = None
     source = None
-    include_build = flags.FlagIsExplicitlySet(args, 'source')
     operation_message = 'Deploying container to'
+    repo_to_create = None
     # Build an image from source if source specified
     if include_build:
       # Create a tag for the image creation
       source = args.source
-      if not args.IsSpecified('image'):
-        args.image = 'gcr.io/{projectID}/cloud-run-source-deploy/{service}:{tag}'.format(
-            projectID=properties.VALUES.core.project.Get(required=True),
-            service=service_ref.servicesId,
-            tag=uuid.uuid4().hex)
+
+      ar_repo = docker_util.DockerRepo(
+          project_id=properties.VALUES.core.project.Get(required=True),
+          location_id=artifact_registry.RepoRegion(
+              args,
+              cluster_location=(conn_context.cluster_location if
+                                platform == platforms.PLATFORM_GKE else None)),
+          repo_id='cloud-run-source-deploy')
+      if artifact_registry.ShouldCreateRepository(ar_repo):
+        repo_to_create = ar_repo
+      args.image = '{repo}/{service}:{tag}'.format(
+          repo=ar_repo.GetDockerString(),
+          service=service_ref.servicesId,
+          tag=uuid.uuid4().hex)
       # Use GCP Buildpacks if Dockerfile doesn't exist
       docker_file = args.source + '/Dockerfile'
       if os.path.exists(docker_file):
@@ -189,13 +211,8 @@ class Deploy(base.Command):
       image = None if pack else args.image
       operation_message = ('Building using {build_type} and deploying container'
                            ' to').format(build_type=build_type.value)
-    elif not args.IsSpecified('image'):
-      raise c_exceptions.RequiredArgumentException(
-          '--image', 'Requires a container image to deploy (e.g. '
-          '`gcr.io/cloudrun/hello:latest`) if no build source is provided.')
+
     # Deploy a container with an image
-    conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack())
     changes = flags.GetServiceConfigurationChanges(args)
     changes.insert(
         0,
@@ -218,7 +235,9 @@ class Deploy(base.Command):
       deployment_stages = stages.ServiceStages(
           include_iam_policy_set=allow_unauth is not None,
           include_route=has_latest,
-          include_build=include_build)
+          include_build=include_build,
+          include_create_repo=repo_to_create is not None,
+      )
       header = None
       if include_build:
         header = 'Building and deploying'
@@ -241,7 +260,8 @@ class Deploy(base.Command):
             prefetch=service,
             build_image=image,
             build_pack=pack,
-            build_source=source)
+            build_source=source,
+            repo_to_create=repo_to_create)
 
       if args.async_:
         pretty_print.Success('Service [{{bold}}{serv}{{reset}}] is deploying '
@@ -267,9 +287,6 @@ class BetaDeploy(Deploy):
     flags.AddBinAuthzBreakglassFlag(managed_group)
     flags.AddCmekKeyFlag(managed_group)
 
-    # Flags not specific to any platform
-    flags.AddHttp2Flag(parser)
-
     # Flags indicating whether to deploy source or an existing image
     flags.AddSourceAndImageFlags(parser)
 
@@ -288,9 +305,6 @@ class AlphaDeploy(Deploy):
     flags.AddBinAuthzPolicyFlags(managed_group)
     flags.AddBinAuthzBreakglassFlag(managed_group)
     flags.AddCmekKeyFlag(managed_group)
-
-    # Flags not specific to any platform
-    flags.AddHttp2Flag(parser)
 
     # Flags indicating whether to deploy source or an existing image
     flags.AddSourceAndImageFlags(parser)

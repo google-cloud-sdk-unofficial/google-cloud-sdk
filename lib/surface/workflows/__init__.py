@@ -27,12 +27,22 @@ class Workflows(base.Group):
 
   category = base.TOOLS_CATEGORY
 
+  def Filter(self, context, args):
+    # TODO(b/190541902):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class WorkflowsBeta(base.Group):
   """Manage your Cloud Workflows resources."""
 
   category = base.TOOLS_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190541902):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args
 
 
 @base.Hidden
@@ -41,3 +51,8 @@ class WorkflowsAlpha(base.Group):
   """Manage your Cloud Workflows resources."""
 
   category = base.TOOLS_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190541902):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

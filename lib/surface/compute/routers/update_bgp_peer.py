@@ -39,7 +39,6 @@ class UpdateBgpPeer(base.UpdateCommand):
   def _Args(cls,
             parser,
             support_bfd=False,
-            support_enable=False,
             support_enable_ipv6=False):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser)
@@ -48,7 +47,6 @@ class UpdateBgpPeer(base.UpdateCommand):
         parser,
         for_add_bgp_peer=False,
         support_bfd=support_bfd,
-        support_enable=support_enable,
         support_enable_ipv6=support_enable_ipv6,
         is_update=True)
     flags.AddUpdateCustomAdvertisementArgs(parser, 'peer')
@@ -60,7 +58,6 @@ class UpdateBgpPeer(base.UpdateCommand):
   def _Run(self,
            args,
            support_bfd=False,
-           support_enable=False,
            support_bfd_mode=False,
            support_enable_ipv6=False):
     # Manually ensure replace/incremental flags are mutually exclusive.
@@ -81,7 +78,6 @@ class UpdateBgpPeer(base.UpdateCommand):
         replacement,
         args,
         support_bfd=support_bfd,
-        support_enable=support_enable,
         support_bfd_mode=support_bfd_mode,
         support_enable_ipv6=support_enable_ipv6)
 
@@ -194,11 +190,11 @@ class UpdateBgpPeerBeta(UpdateBgpPeer):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser, support_bfd=True, support_enable=True)
+    cls._Args(parser, support_bfd=True)
 
   def Run(self, args):
     return self._Run(
-        args, support_bfd=True, support_enable=True, support_bfd_mode=False)
+        args, support_bfd=True, support_bfd_mode=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -210,13 +206,12 @@ class UpdateBgpPeerAlpha(UpdateBgpPeerBeta):
   @classmethod
   def Args(cls, parser):
     cls._Args(
-        parser, support_bfd=True, support_enable=True, support_enable_ipv6=True)
+        parser, support_bfd=True, support_enable_ipv6=True)
 
   def Run(self, args):
     return self._Run(
         args,
         support_bfd=True,
-        support_enable=True,
         support_bfd_mode=True,
         support_enable_ipv6=True)
 
@@ -225,7 +220,6 @@ def _UpdateBgpPeerMessage(messages,
                           router_message,
                           args,
                           support_bfd=False,
-                          support_enable=False,
                           support_bfd_mode=False,
                           support_enable_ipv6=False):
   """Updates base attributes of a BGP peer based on flag arguments."""
@@ -240,7 +234,7 @@ def _UpdateBgpPeerMessage(messages,
       'advertisedRoutePriority': args.advertised_route_priority,
   }
 
-  if support_enable and args.enabled is not None:
+  if args.enabled is not None:
     if args.enabled:
       attrs['enable'] = messages.RouterBgpPeer.EnableValueValuesEnum.TRUE
     else:

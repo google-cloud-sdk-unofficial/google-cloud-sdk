@@ -29,5 +29,7 @@ class Tasks(base.Group):
   category = base.CI_CD_CATEGORY
 
   def Filter(self, context, args):
+    # TODO(b/190541099):  Determine if command group works with project number
+    base.RequireProjectID(args)
     del context, args
     base.DisableUserProjectQuota()

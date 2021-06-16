@@ -29,3 +29,8 @@ class GSuiteAddOns(base.Group):
   Commands for managing Google Workspace Add-ons resources.
   """
   category = base.UNCATEGORIZED_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190541887):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

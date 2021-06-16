@@ -50,6 +50,8 @@ class Projects(base.Group):
     parser.display_info.AddUriFunc(util.ProjectsUriFunc)
 
   def Filter(self, context, args):
+    # TODO(b/190538477):  Determine if command group works with project number
+    base.RequireProjectID(args)
     del context, args
     # Don't ever take this off. Use gcloud quota for projects operations so
     # you can create a project before you have a project.

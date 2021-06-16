@@ -32,3 +32,8 @@ class Labelmanager(base.Group):
     the labels in the org. As the label user, you will be able to bind label
     values to different resources.
   """
+
+  def Filter(self, context, args):
+    # TODO(b/190536013):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

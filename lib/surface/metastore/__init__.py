@@ -27,3 +27,8 @@ class Metastore(base.Group):
   """Manage Dataproc Metastore resources."""
 
   category = base.DATA_ANALYTICS_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190537289):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

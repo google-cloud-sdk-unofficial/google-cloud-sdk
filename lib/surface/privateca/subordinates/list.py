@@ -84,7 +84,26 @@ class ListBeta(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List the subordinate certificate authorities within a project."""
+  """List subordinate certificate authorities.
+
+  List the subordinate certificate authorities within a project.
+
+  ## EXAMPLES
+
+  To list all subordinate certificate authorities in a project:
+
+  $ {command}
+
+  To list all subordinate certificate authorities within a project and location
+  'us-central1':
+
+  $ {command} --location=us-central1
+
+  To list all subordinate certificate authorities within a CA Pool in location
+  'us-central1':
+
+  $ {command} --pool=my-pool --location=us-central1
+  """
 
   @staticmethod
   def Args(parser):

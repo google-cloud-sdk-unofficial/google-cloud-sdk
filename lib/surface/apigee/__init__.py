@@ -54,3 +54,8 @@ class Apigee(base.Group):
             $ {command} apis undeploy --environment=test --api=hello-world
           """
   }
+
+  def Filter(self, context, args):
+    # TODO(b/190525329):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

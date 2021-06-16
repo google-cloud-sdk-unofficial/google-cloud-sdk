@@ -57,6 +57,8 @@ class Composer(base.Group):
     Returns:
       The refined command context.
     """
+    # TODO(b/190528955):  Determine if command group works with project number
+    base.RequireProjectID(args)
     # The Composer API performs quota checking based on the resource project, so
     # user project overrides are not needed. The 'environments run' command
     # spawns a call to the Kubernetes Engine API, and the 'container' command

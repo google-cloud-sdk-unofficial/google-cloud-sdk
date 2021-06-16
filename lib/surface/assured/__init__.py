@@ -34,3 +34,8 @@ class Assured(base.Group):
         Read and manipulate Assured Workloads data controls.
     """,
   }
+
+  def Filter(self, context, args):
+    # TODO(b/190525911):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

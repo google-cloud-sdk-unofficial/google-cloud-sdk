@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import target_proxies_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_certificates import (
@@ -76,7 +76,7 @@ def _CheckMissingArgument(args):
           'ssl_certificates', 'url_map', 'quic_override', 'ssl_policy',
           'clear_ssl_policy'
       ]):
-    raise exceptions.ToolException(
+    raise compute_exceptions.ArgumentError(
         'You must specify at least one of [--ssl-certificates], '
         '[--url-map], [--quic-override], [--ssl-policy] or '
         '[--clear-ssl-policy].')

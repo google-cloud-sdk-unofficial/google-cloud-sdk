@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.target_pools import flags
 
@@ -95,12 +95,12 @@ class SetBackup(base.SilentCommand):
       target_reference = client.messages.TargetReference()
 
     if args.backup_pool and args.failover_ratio is None:
-      raise calliope_exceptions.ToolException(
+      raise compute_exceptions.ArgumentError(
           '[--failover-ratio] must be provided when setting a backup pool.')
 
     if args.failover_ratio is not None and (
         args.failover_ratio < 0 or args.failover_ratio > 1):
-      raise calliope_exceptions.ToolException(
+      raise compute_exceptions.ArgumentError(
           '[--failover-ratio] must be a number between 0 and 1, inclusive.')
 
     request = client.messages.ComputeTargetPoolsSetBackupRequest(

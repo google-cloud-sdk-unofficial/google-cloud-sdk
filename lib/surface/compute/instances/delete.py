@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core.console import console_io
 from six.moves import zip
@@ -131,7 +131,7 @@ class Delete(base.DeleteCommand):
         'this operation if they are not attached to any other instances:',
         prompt_list)
     if not console_io.PromptContinue(message=prompt_message):
-      raise exceptions.ToolException('Deletion aborted by user.')
+      raise compute_exceptions.AbortedError('Deletion aborted by user.')
 
   def AutoDeleteMustBeChanged(self, args, disk_resource):
     """Returns True if the autoDelete property of the disk must be changed."""

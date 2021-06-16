@@ -28,3 +28,8 @@ class ActiveDirectory(base.Group):
   """Manage Managed Microsoft AD resources."""
 
   category = base.IDENTITY_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190523114):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 import six
@@ -80,7 +80,7 @@ class SetUsageBucket(base.SilentCommand):
     client = holder.client
 
     if not args.bucket and args.prefix:
-      raise calliope_exceptions.ToolException(
+      raise compute_exceptions.ArgumentError(
           '[--prefix] cannot be specified when unsetting the usage bucket.')
 
     bucket_uri = None

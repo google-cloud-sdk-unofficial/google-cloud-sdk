@@ -22,7 +22,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import target_proxies_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute.backend_services import (
     flags as backend_service_flags)
 from googlecloudsdk.command_lib.compute.ssl_certificates import (
@@ -146,7 +146,7 @@ class Update(base.SilentCommand):
             'ssl_certificates', 'proxy_header', 'backend_service', 'ssl_policy',
             'clear_ssl_policy'
         ]):
-      raise exceptions.ToolException(
+      raise compute_exceptions.UpdatePropertyError(
           'You must specify at least one of [--ssl-certificates], '
           '[--backend-service], [--proxy-header], [--ssl-policy] or '
           '[--clear-ssl-policy].')

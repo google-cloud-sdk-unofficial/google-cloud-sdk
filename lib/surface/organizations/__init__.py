@@ -42,5 +42,7 @@ class Organizations(base.Group):
   category = base.MANAGEMENT_TOOLS_CATEGORY
 
   def Filter(self, context, args):
+    # TODO(b/190538570):  Determine if command group works with project number
+    base.RequireProjectID(args)
     del context, args
     base.DisableUserProjectQuota()

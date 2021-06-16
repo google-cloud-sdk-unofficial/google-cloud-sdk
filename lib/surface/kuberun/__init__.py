@@ -42,5 +42,7 @@ class KubeRun(base.Group):
 
   def Filter(self, context, args):
     """Runs before any commands in this group."""
+    # TODO(b/190535898):  Determine if command group works with project number
+    base.RequireProjectID(args)
     del context, args
     base.OptOutRequests()  # TODO(b/168098776): Remove to migrate to requests.

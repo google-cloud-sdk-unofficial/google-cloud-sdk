@@ -37,6 +37,8 @@ class ApiGateway(base.Group):
   category = base.API_PLATFORM_AND_ECOSYSTEMS_CATEGORY
 
   def Filter(self, context, args):
+    # TODO(b/190524392):  Determine if command group works with project number
+    base.RequireProjectID(args)
     del context, args
     base.DisableUserProjectQuota()
     resources.REGISTRY.RegisterApiByName('apigateway', 'v1')

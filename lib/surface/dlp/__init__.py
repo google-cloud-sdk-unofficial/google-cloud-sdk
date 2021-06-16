@@ -37,3 +37,8 @@ class DLP(base.Group):
   or Cloud Datastore instances.
   """
   category = base.SECURITY_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190532822):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

@@ -95,6 +95,7 @@ class Update(base.Command):
     flags.AddImageArg(parser, required=False)
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddIngressFlag(parser)
+    flags.AddHttp2Flag(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
@@ -102,10 +103,6 @@ class Update(base.Command):
   @staticmethod
   def Args(parser):
     Update.CommonArgs(parser)
-
-    # Flags only supported on GKE and Knative
-    cluster_group = flags.GetClusterArgGroup(parser)
-    flags.AddHttp2Flag(cluster_group)
 
   def Run(self, args):
     """Update the service resource.
@@ -178,9 +175,6 @@ class BetaUpdate(Update):
     flags.AddBinAuthzBreakglassFlag(managed_group)
     flags.AddCmekKeyFlag(managed_group)
 
-    # Flags not specific to any platform
-    flags.AddHttp2Flag(parser)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaUpdate(Update):
@@ -196,9 +190,6 @@ class AlphaUpdate(Update):
     flags.AddBinAuthzPolicyFlags(managed_group)
     flags.AddBinAuthzBreakglassFlag(managed_group)
     flags.AddCmekKeyFlag(managed_group)
-
-    # Flags not specific to any platform
-    flags.AddHttp2Flag(parser)
 
 
 AlphaUpdate.__doc__ = Update.__doc__

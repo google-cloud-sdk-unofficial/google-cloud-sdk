@@ -71,6 +71,8 @@ def _Args(parser,
   instances_flags.AddShieldedInstanceConfigArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
   instances_flags.AddPrivateNetworkIpArgs(parser)
+  instances_flags.AddStackTypeArgs(parser)
+  instances_flags.AddIpv6NetworkTierArgs(parser)
 
   if enable_guest_accelerators:
     instances_flags.AddAcceleratorArgs(parser)
@@ -457,8 +459,6 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
-    instances_flags.AddStackTypeArgs(parser)
-    instances_flags.AddIpv6NetworkTierArgs(parser)
 
   def Run(self, args):
     """Issues an InstanceTemplates.Insert request.

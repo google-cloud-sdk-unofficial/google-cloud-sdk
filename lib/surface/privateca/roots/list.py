@@ -84,7 +84,26 @@ class ListBeta(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List the root certificate authorities within a project."""
+  """List root certificate authorities.
+
+  List the root certificate authorities within a project.
+
+  ## EXAMPLES
+
+  To list all root certificate authorities in a projects:
+
+  $ {command}
+
+  To list all root certificate authorities within a project and location
+  'us-central1':
+
+  $ {command} --location=us-central1
+
+  To list all root certificate authorities within a CA Pool in location
+  'us-central1':
+
+  $ {command} --pool=my-pool --location=us-central1
+  """
 
   @staticmethod
   def Args(parser):

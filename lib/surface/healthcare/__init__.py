@@ -27,3 +27,8 @@ from googlecloudsdk.calliope import base
 class Healthcare(base.Group):
   """Manage Cloud Healthcare resources."""
   category = base.SOLUTIONS_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190534652):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

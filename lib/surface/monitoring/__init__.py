@@ -37,6 +37,11 @@ class MonitoringGA(base.Group):
       """
   }
 
+  def Filter(self, context, args):
+    # TODO(b/190537295):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class MonitoringBeta(base.Group):
@@ -56,6 +61,11 @@ class MonitoringBeta(base.Group):
               * https://cloud.google.com/monitoring/dashboards/api-dashboard
       """
   }
+
+  def Filter(self, context, args):
+    # TODO(b/190537295):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -77,3 +87,8 @@ class MonitoringAlpha(base.Group):
               * https://cloud.google.com/monitoring/dashboards/api-dashboard
       """
   }
+
+  def Filter(self, context, args):
+    # TODO(b/190537295):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

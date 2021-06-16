@@ -138,7 +138,8 @@ class Run(base.Command):
 
     if ((_IsPromptingSubcommand(args.subcommand) or subcommand_two_level and
          _IsPromptingSubcommand(subcommand_two_level)) and
-        set(args.cmd_args).isdisjoint({'-y', '--yes'})):
+        set(args.cmd_args or []).isdisjoint({'-y', '--yes'})):
+      args.cmd_args = args.cmd_args or []
       args.cmd_args.append('--yes')
 
   def CheckForRequiredCmdArgs(self, args):

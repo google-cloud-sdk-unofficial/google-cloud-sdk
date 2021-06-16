@@ -46,5 +46,7 @@ class Datafusion(base.Group):
   category = base.BIG_DATA_CATEGORY
 
   def Filter(self, context, args):
+    # TODO(b/190530064):  Determine if command group works with project number
+    base.RequireProjectID(args)
     del context, args
     base.DisableUserProjectQuota()

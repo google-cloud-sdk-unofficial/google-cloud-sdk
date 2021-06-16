@@ -95,13 +95,6 @@ class Update(base.UpdateCommand):
         --location=us-west1 \
         --pool=my-pool \
         --update-labels=foo=bar
-
-    To disable publishing CRLs for a root CA:
-
-      $ {command} prod-root \
-        --location=us-west1 \
-        --pool=my-pool \
-        --no-publish-crl
   """
 
   @staticmethod

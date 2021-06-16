@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2019 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,4 +31,6 @@ class Recaptcha(base.Group):
   category = base.IDENTITY_AND_SECURITY_CATEGORY
 
   def Filter(self, context, args):
+    # TODO(b/190538818):  Determine if command group works with project number
+    base.RequireProjectID(args)
     del context, args

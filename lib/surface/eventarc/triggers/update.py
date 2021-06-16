@@ -75,10 +75,16 @@ class Update(base.UpdateCommand):
     # The type can't be updated, so it's safe to use the old trigger's type.
     # In the async case, this is the only way to get the type.
     self._event_type = client.GetEventType(old_trigger)
-    operation = client.Patch(trigger_ref, event_filters, args.service_account,
-                             args.destination_run_service,
-                             args.destination_run_path,
-                             args.destination_run_region, update_mask)
+    trigger_message = client.BuildCloudRunTriggerMessage(
+        trigger_ref,
+        event_filters,
+        args.service_account,
+        args.destination_run_service,
+        args.destination_run_path,
+        args.destination_run_region,
+        None,
+    )
+    operation = client.Patch(trigger_ref, trigger_message, update_mask)
     if args.async_:
       return operation
     return client.WaitFor(operation, 'Updating', trigger_ref)

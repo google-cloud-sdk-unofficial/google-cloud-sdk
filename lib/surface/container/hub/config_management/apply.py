@@ -20,8 +20,8 @@ from __future__ import unicode_literals
 
 import os
 import textwrap
-from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.util import apis as core_apis
+from googlecloudsdk.command_lib.container.hub.config_management import utils
 from googlecloudsdk.command_lib.container.hub.features import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
@@ -48,7 +48,6 @@ class Apply(base.UpdateCommand):
   """
 
   feature_name = 'configmanagement'
-  LATEST_VERSION = '1.7.2'
 
   @classmethod
   def Args(cls, parser):
@@ -68,6 +67,15 @@ class Apply(base.UpdateCommand):
         required=True)
 
   def Run(self, args):
+    # check static yaml fields before query membership
+    try:
+      loaded_cm = yaml.load_path(args.config)
+    except yaml.Error as e:
+      raise exceptions.Error(
+          'Invalid config yaml file {}'.format(args.config), e)
+    _validate_meta(loaded_cm)
+
+    # make sure a valid membership is selected
     project = properties.VALUES.core.project.GetOrFail()
     memberships = base.ListMemberships(project)
     if not memberships:
@@ -85,14 +93,6 @@ class Apply(base.UpdateCommand):
       if membership not in memberships:
         raise exceptions.Error(
             'Membership {} is not in Hub.'.format(membership))
-
-    try:
-      loaded_cm = yaml.load_path(args.config)
-    except yaml.Error as e:
-      raise exceptions.Error(
-          'Invalid config yaml file {}'.format(args.config), e)
-    _validate_meta(loaded_cm)
-
     client = core_apis.GetClientInstance('gkehub', 'v1alpha1')
     msg = client.MESSAGES_MODULE
     config_sync = _parse_config_sync(loaded_cm, msg)
@@ -125,20 +125,8 @@ class Apply(base.UpdateCommand):
       version: A string denoting the version field in MembershipConfig
     Raises: Error, if retrieving FeatureSpec of FeatureState fails
     """
-    try:
-      project_id = properties.VALUES.core.project.GetOrFail()
-      name = 'projects/{0}/locations/global/features/{1}'.format(
-          project_id, self.feature_name)
-      response = base.GetFeature(name)
-    except apitools_exceptions.HttpUnauthorizedError as e:
-      raise exceptions.Error(
-          'You are not authorized to see the status of {} '
-          'Feature from project [{}]. Underlying error: {}'.format(
-              self.feature.display_name, project_id, e))
-    except apitools_exceptions.HttpNotFoundError as e:
-      raise exceptions.Error(
-          '{} Feature for project [{}] is not enabled'.format(
-              self.feature.display_name, project_id))
+    project_id = properties.VALUES.core.project.GetOrFail()
+    response = utils.try_get_configmanagement(project_id)
 
     # First check FeatureSpec to see if an existing version is set
     mem_config = _parse_membership(response, mem)
@@ -157,10 +145,10 @@ class Apply(base.UpdateCommand):
             # spec. If we did, this would result in an error updating spec,
             # rendering this gcloud command unusable.
             return fs.membershipConfig.version \
-              if fs.membershipConfig.version <= self.LATEST_VERSION else ''
+              if fs.membershipConfig.version <= utils.LATEST_VERSION else ''
 
     # If Spec/State did not contain version, return default (latest version)
-    return self.LATEST_VERSION
+    return utils.LATEST_VERSION
 
 
 def _parse_membership(response, mem):
@@ -180,46 +168,19 @@ def _validate_meta(configmanagement):
   """
   if not isinstance(configmanagement, dict):
     raise exceptions.Error('Invalid ConfigManagement template.')
-  if ('apiVersion' not in configmanagement or
-      configmanagement['apiVersion'] != 'configmanagement.gke.io/v1'):
+  if configmanagement.get('applySpecVersion') != 1:
     raise exceptions.Error(
-        'Only support "apiVersion: configmanagement.gke.io/v1"')
-  if ('kind' not in configmanagement or
-      configmanagement['kind'] != 'ConfigManagement'):
-    raise exceptions.Error('Only support "kind: ConfigManagement"')
+        'Only "applySpecVersion: 1" is supported. To use a later version,'
+        'please fetch the config by running\n'
+        'g3cloud alpha container hub config-management fetch-for-apply')
+
   if 'spec' not in configmanagement:
     raise exceptions.Error('Missing required field .spec')
   spec = configmanagement['spec']
   for field in spec:
-    if field not in [
-        'git', 'policyController', 'sourceFormat', 'hierarchyController'
-    ]:
+    if field not in [utils.CONFIG_SYNC, utils.POLICY_CONTROLLER, utils.HNC]:
       raise exceptions.Error(
           'Please remove illegal field .spec.{}'.format(field))
-  if 'sourceFormat' in spec and configmanagement['spec'][
-      'sourceFormat'] not in ['hierarchy', 'unstructured']:
-    raise exceptions.Error('Please remove illegal value of .spec.sourceFormat')
-  if 'git' in spec:
-    for field in spec['git']:
-      if field not in [
-          'policyDir', 'proxy', 'secretType', 'syncBranch', 'syncRepo',
-          'syncRev', 'syncWait'
-      ]:
-        raise exceptions.Error(
-            'Please remove illegal field .spec.git.{}'.format(field))
-    if 'proxy' in spec['git']:
-      for field in spec['git']['proxy']:
-        if field not in ['httpsProxy']:
-          raise exceptions.Error(
-              'Please remove illegal field .spec.git.proxy.{}'.format(field))
-  if 'hierarchyController' in spec:
-    for field in spec['hierarchyController']:
-      if field not in [
-          'enabled', 'enablePodTreeLabels', 'enableHierarchicalResourceQuota'
-      ]:
-        raise exceptions.Error(
-            'Please remove illegal field .spec.hierarchyController.{}'.format(
-                field))
 
 
 def _parse_config_sync(configmanagement, msg):
@@ -235,28 +196,47 @@ def _parse_config_sync(configmanagement, msg):
   Raises: Error, if required fields are missing from .spec.git
   """
 
-  if('spec' not in configmanagement or 'git' not in configmanagement['spec']):
+  if ('spec' not in configmanagement or
+      utils.CONFIG_SYNC not in configmanagement['spec']):
     return None
-  spec_git = configmanagement['spec']['git']
+  spec_git = configmanagement['spec'][utils.CONFIG_SYNC]
+  for field in spec_git:
+    if field not in yaml.load(
+        utils.APPLY_SPEC_VERSION_1)['spec'][utils.CONFIG_SYNC]:
+      raise exceptions.Error(
+          'The field .spec.{}.{}'.format(utils.CONFIG_SYNC, field) +
+          ' is unrecognized in this applySpecVersion. Please remove.')
   git_config = msg.GitConfig()
   config_sync = msg.ConfigSync(git=git_config)
+  # missing `enabled: true` will disable configSync
+  if 'enabled' not in spec_git:
+    raise exceptions.Error(
+        'Missing required field [{}.enabled]'.format(utils.CONFIG_SYNC))
+  if not spec_git['enabled']:
+    return config_sync
   # https://cloud.google.com/anthos-config-management/docs/how-to/installing#configuring-git-repo
   # Required field
   for field in ['syncRepo', 'secretType']:
     if field not in spec_git:
-      raise exceptions.Error('Missing required field [{}].'.format(field))
+      raise exceptions.Error('Missing required field [{}.{}].'.format(
+          utils.CONFIG_SYNC, field))
+  # TODO(b/189131417) remove git validation, catch the CLH result instead.
+  valid_sf = ['hierarchy', 'unstructured']
+  if 'sourceFormat' in spec_git and spec_git['sourceFormat'] not in valid_sf:
+    raise exceptions.Error('Please fix unrecognized value of '
+                           '.spec.{}.sourceFormat, only [{}] are supported'
+                           .format(utils.CONFIG_SYNC, ','.join(valid_sf)))
   for field in [
-      'policyDir', 'secretType', 'syncBranch', 'syncRepo', 'syncRev'
+      'policyDir', 'secretType', 'syncBranch', 'syncRepo', 'syncRev',
+      'httpsProxy'
   ]:
     if field in spec_git:
       setattr(git_config, field, spec_git[field])
   if 'syncWait' in spec_git:
     git_config.syncWaitSecs = spec_git['syncWait']
-  if 'proxy' in spec_git and 'httpsProxy' in spec_git['proxy']:
-    git_config.httpsProxy = spec_git['proxy']['httpsProxy']
 
-  if 'sourceFormat' in configmanagement['spec']:
-    config_sync.sourceFormat = configmanagement['spec']['sourceFormat']
+  if 'sourceFormat' in spec_git:
+    config_sync.sourceFormat = spec_git['sourceFormat']
   return config_sync
 
 
@@ -271,8 +251,7 @@ def _parse_policy_controller(configmanagement, msg):
     policy_controller: The Policy Controller configuration for
     MembershipConfigs, filled in the data parsed from
     configmanagement.spec.policyController
-  Raises: Error, if Policy Controller `enabled` set to false but also has
-    other fields present in the config
+  Raises: Error, if Policy Controller `enabled` is missing or not a boolean
   """
 
   if ('spec' not in configmanagement or
@@ -289,13 +268,8 @@ def _parse_policy_controller(configmanagement, msg):
   if not isinstance(enabled, bool):
     raise exceptions.Error(
         'policyController.enabled should be `true` or `false`')
-  if not enabled:
-    if len(spec_policy_controller.items()) > 1:
-      raise exceptions.Error('Policy Controller is disabled, '
-                             'remove the other config fields.')
-    return msg.PolicyController(enabled=False)
 
-  policy_controller = msg.PolicyController(enabled=True)
+  policy_controller = msg.PolicyController()
   # When the policyController is set to be enabled, policy_controller will
   # be filled with the valid fields set in spec_policy_controller, which
   # were mapped from the config-management.yaml
@@ -341,7 +315,7 @@ def _parse_hierarchy_controller_config(configmanagement, msg):
     raise exceptions.Error(
         'hierarchyController.enabled should be `true` or `false`')
 
-  config_proto = msg.HierarchyControllerConfig(enabled=True)
+  config_proto = msg.HierarchyControllerConfig()
   # When the hierarchyController is set to be enabled, hierarchy_controller will
   # be filled with the valid fields set in spec, which
   # were mapped from the config-management.yaml
@@ -350,7 +324,7 @@ def _parse_hierarchy_controller_config(configmanagement, msg):
         'enabled', 'enablePodTreeLabels', 'enableHierarchicalResourceQuota'
     ]:
       raise exceptions.Error(
-          'Please remove illegal field .spec.hierarchyController.{}'.format(
+          'Please remove illegal field .spec.hierarchyController{}'.format(
               field))
     setattr(config_proto, field, spec[field])
 

@@ -26,3 +26,8 @@ class CertificateManagerAlpha(base.Group):
   """Manage SSL certificates for your Google Cloud projects."""
 
   category = base.NETWORKING_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190527816):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

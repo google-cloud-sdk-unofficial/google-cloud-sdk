@@ -23,7 +23,7 @@ from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -92,7 +92,7 @@ class AddMetadata(base.UpdateCommand):
 
   def Run(self, args):
     if not args.metadata and not args.metadata_from_file:
-      raise calliope_exceptions.ToolException(
+      raise compute_exceptions.ArgumentError(
           'At least one of [--metadata] or [--metadata-from-file] must be '
           'provided.')
 

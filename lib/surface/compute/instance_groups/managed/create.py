@@ -107,8 +107,7 @@ def ValidateAndFixUpdatePolicyAgainstStateful(update_policy, group_ref,
         'Use --instance-redistribution-type=NONE')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGA(base.CreateCommand):
   """Create Compute Engine managed instance groups."""
 
@@ -125,8 +124,14 @@ class CreateGA(base.CreateCommand):
     managed_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
-  @staticmethod
-  def _CreateStatefulPolicy(args, client):
+  def _HandleStatefulArgs(self, instance_group_manager, args, client):
+    instance_groups_flags.ValidateManagedInstanceGroupStatefulDisksProperties(
+        args)
+    if args.stateful_disk:
+      instance_group_manager.statefulPolicy = (
+          self._CreateStatefulPolicy(args, client))
+
+  def _CreateStatefulPolicy(self, args, client):
     """Create stateful policy from disks of args --stateful-disk."""
     stateful_disks = []
     for stateful_disk_dict in (args.stateful_disk or []):
@@ -267,11 +272,7 @@ class CreateGA(base.CreateCommand):
         updatePolicy=update_policy,
     )
 
-    # Handle stateful args
-    instance_groups_flags.ValidateManagedInstanceGroupStatefulProperties(args)
-    if args.stateful_disk:
-      instance_group_manager.statefulPolicy = (
-          self._CreateStatefulPolicy(args, client))
+    self._HandleStatefulArgs(instance_group_manager, args, client)
 
     # Validate updatePolicy + statefulPolicy combination
     ValidateAndFixUpdatePolicyAgainstStateful(
@@ -329,3 +330,62 @@ will create one managed instance group called 'example-managed-instance-group'
 in the ``us-central1-a'' zone.
 """,
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(CreateGA):
+  """Create Compute Engine managed instance groups."""
+
+  @classmethod
+  def Args(cls, parser):
+    CreateGA.Args(parser)
+
+
+CreateBeta.detailed_help = CreateGA.detailed_help
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create Compute Engine managed instance groups."""
+
+  @classmethod
+  def Args(cls, parser):
+    CreateBeta.Args(parser)
+    instance_groups_flags.AddMigCreateStatefulIPsFlags(parser)
+
+  def _HandleStatefulArgs(self, instance_group_manager, args, client):
+    instance_groups_flags.ValidateManagedInstanceGroupStatefulDisksProperties(
+        args)
+    instance_groups_flags.ValidateManagedInstanceGroupStatefulIPsProperties(
+        args)
+    if args.stateful_disk or args.stateful_internal_ip or args.stateful_external_ip:
+      instance_group_manager.statefulPolicy = (
+          self._CreateStatefulPolicy(args, client))
+
+  def _CreateStatefulPolicy(self, args, client):
+    stateful_policy = super(CreateAlpha, self)._CreateStatefulPolicy(args,
+                                                                     client)
+    stateful_internal_ips = []
+    for stateful_ip_dict in args.stateful_internal_ip or []:
+      stateful_internal_ips.append(
+          policy_utils.MakeStatefulPolicyPreservedStateInternalIPEntry(
+              client.messages, stateful_ip_dict))
+    stateful_internal_ips.sort(key=lambda x: x.key)
+    stateful_policy.preservedState.internalIPs = (
+        client.messages.StatefulPolicyPreservedState.InternalIPsValue(
+            additionalProperties=stateful_internal_ips))
+
+    stateful_external_ips = []
+    for stateful_ip_dict in args.stateful_external_ip or []:
+      stateful_external_ips.append(
+          policy_utils.MakeStatefulPolicyPreservedStateExternalIPEntry(
+              client.messages, stateful_ip_dict))
+    stateful_external_ips.sort(key=lambda x: x.key)
+    stateful_policy.preservedState.externalIPs = (
+        client.messages.StatefulPolicyPreservedState.ExternalIPsValue(
+            additionalProperties=stateful_external_ips))
+
+    return stateful_policy
+
+
+CreateAlpha.detailed_help = CreateBeta.detailed_help

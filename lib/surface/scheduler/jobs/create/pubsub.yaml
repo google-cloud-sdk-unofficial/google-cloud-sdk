@@ -2,7 +2,7 @@
     brief: Create a Cloud Scheduler job with a Pub/Sub target.
     description: Create a Cloud Scheduler job with a Pub/Sub target.
     examples: |
-      The following command creates a job that publishes a messgae with the body
+      The following command creates a job that publishes a message with the body
       'Hello' to the Pub/Sub topic 'cron-topic' every 3 hours:
 
         $ {command} my-job --schedule="0 */3 * * *"

@@ -29,3 +29,8 @@ class WebSecurityScanner(base.Group):
   Commands for managing Google Cloud Web Security Scanner resources.
   """
   category = base.SECURITY_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190541292):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

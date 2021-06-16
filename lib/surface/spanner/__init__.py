@@ -35,3 +35,8 @@ class Spanner(base.Group):
   @staticmethod
   def Args(parser):
     parser.display_info.AddUriFunc(_GetUri)
+
+  def Filter(self, context, args):
+    # TODO(b/190539984):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

@@ -27,3 +27,8 @@ class Dialogflow(base.Group):
   """Interact with and manage Dialogflow agents, entities, and intents.
   """
   category = base.AI_AND_MACHINE_LEARNING_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190532304):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

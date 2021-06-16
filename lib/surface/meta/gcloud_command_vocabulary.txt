@@ -99,6 +99,7 @@ restart
 restore
 restore-backup
 resume
+resume-instances
 revoke
 rollback
 run
@@ -119,7 +120,10 @@ show-rows
 snapshot
 ssh
 start
+start-instances
 stop
+stop-instances
+suspend-instances
 undelete
 unset
 update

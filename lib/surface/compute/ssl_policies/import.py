@@ -22,7 +22,7 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.ssl_policies import ssl_policies_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.ssl_policies import flags
 from googlecloudsdk.command_lib.export import util as export_util
@@ -81,7 +81,7 @@ class Import(base.UpdateCommand):
           stream=data,
           schema_path=self.GetSchemaPath())
     except yaml_validator.ValidationError as e:
-      raise exceptions.ToolException(str(e))
+      raise compute_exceptions.ValidationError(str(e))
 
     # Get existing SSL policy.
     try:

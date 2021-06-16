@@ -30,3 +30,8 @@ class RemoteBuildExecution(base.Group):
   Implementation for commands for Remote Build Execution Admin API integration.
   """
   category = base.CI_CD_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190539111):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

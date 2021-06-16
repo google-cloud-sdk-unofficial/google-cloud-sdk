@@ -37,3 +37,8 @@ class Recommender(base.Group):
   Interact with and manage resources in Cloud Recommender.
   """
   category = base.API_PLATFORM_AND_ECOSYSTEMS_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190538831):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

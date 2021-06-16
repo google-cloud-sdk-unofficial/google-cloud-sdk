@@ -68,7 +68,7 @@ class UpdateFromFile(base.Command):
         '--most-disruptive-allowed-action',
         help=('If specified, Compute Engine returns an error if the update '
               'requires a higher action to be applied to the instance. If '
-              'not specified, the default will be REFRESH'))
+              'not specified, the default will be REFRESH.'))
     parser.add_argument(
         '--minimal-action',
         help=(

@@ -31,6 +31,7 @@ from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scopes
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
@@ -149,12 +150,15 @@ def _CommonArgs(parser,
       support_image_family_scope=support_image_family_scope)
   instances_flags.AddDeletionProtectionFlag(parser)
   instances_flags.AddPublicPtrArgs(parser, instance=True)
+  instances_flags.AddIpv6PublicPtrDomainArg(parser)
   instances_flags.AddNetworkTierArgs(parser, instance=True)
   instances_flags.AddShieldedInstanceConfigArgs(parser)
   instances_flags.AddDisplayDeviceArg(parser)
   instances_flags.AddMinNodeCpuArg(parser)
   instances_flags.AddNestedVirtualizationArgs(parser)
   instances_flags.AddThreadsPerCoreArgs(parser)
+  instances_flags.AddStackTypeArgs(parser)
+  instances_flags.AddIpv6NetworkTierArgs(parser)
 
   instances_flags.AddReservationAffinityGroup(
       parser,
@@ -212,9 +216,6 @@ class Create(base.CreateCommand):
   _enable_pd_interface = False
   _support_replica_zones = False
   _support_multi_writer = False
-  _support_stack_type = False
-  _support_ipv6_network_tier = False
-  _support_ipv6_public_ptr_domain = False
   _support_network_performance_configs = False
   _support_image_family_scope = False
   _support_subinterface = False
@@ -290,10 +291,7 @@ class Create(base.CreateCommand):
         location=zone,
         scope=compute_scopes.ScopeEnum.ZONE,
         skip_defaults=skip_defaults,
-        support_public_dns=self._support_public_dns,
-        support_stack_type=self._support_stack_type,
-        support_ipv6_network_tier=self._support_ipv6_network_tier,
-        support_ipv6_public_ptr_domain=self._support_ipv6_public_ptr_domain)
+        support_public_dns=self._support_public_dns)
 
     confidential_vm = (
         args.IsSpecified('confidential_compute') and args.confidential_compute)
@@ -522,7 +520,7 @@ class Create(base.CreateCommand):
             r'Invalid value for field \'resource.machineType\': .+. '
             r'Machine type with name \'.+\' does not exist in zone \'.+\'\.')
         if re.search(invalid_machine_type_message_regex, six.text_type(e)):
-          raise exceptions.ToolException(
+          raise compute_exceptions.ArgumentError(
               six.text_type(e) +
               '\nUse `gcloud compute machine-types list --zones` to see the '
               'available machine  types.')
@@ -645,9 +643,6 @@ class CreateAlpha(CreateBeta):
   _enable_pd_interface = True
   _support_replica_zones = True
   _support_multi_writer = True
-  _support_stack_type = True
-  _support_ipv6_network_tier = True
-  _support_ipv6_public_ptr_domain = True
   _support_network_performance_configs = True
   _support_image_family_scope = True
   _support_subinterface = True
@@ -678,7 +673,6 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddSourceMachineImageEncryptionKey(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddPublicDnsArgs(parser, instance=True)
-    instances_flags.AddIpv6PublicPtrDomainArg(parser)
     instances_flags.AddLocalSsdArgsWithSize(parser)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddConfidentialComputeArgs(parser)
@@ -686,8 +680,6 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddStableFleetArgs(parser)
-    instances_flags.AddStackTypeArgs(parser)
-    instances_flags.AddIpv6NetworkTierArgs(parser)
     instances_flags.AddNetworkPerformanceConfigsArgs(parser)
     instances_flags.AddSecureTagsArgs(parser)
 

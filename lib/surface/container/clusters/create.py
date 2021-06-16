@@ -258,6 +258,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_cloud_logging=args.enable_cloud_logging if (hasattr(args, 'enable_cloud_logging') and args.IsSpecified('enable_cloud_logging')) else None,
       enable_cloud_monitoring=args.enable_cloud_monitoring if (hasattr(args, 'enable_cloud_monitoring') and args.IsSpecified('enable_cloud_monitoring')) else None,
       enable_workload_monitoring_eap=get_default('enable_workload_monitoring_eap'),
+      enable_l4_ilb_subsetting=get_default('enable_l4_ilb_subsetting'),
       enable_ip_alias=enable_ip_alias,
       enable_intra_node_visibility=get_default('enable_intra_node_visibility'),
       enable_kubernetes_alpha=get_default('enable_kubernetes_alpha'),
@@ -452,6 +453,8 @@ flags_to_add = {
             flags.AddDiskSizeFlag,
         'disktype':
             flags.AddDiskTypeFlag,
+        'ilbsubsetting':
+            lambda p: flags.AddILBSubsettingFlags(p, hidden=True),
         'imageflags':
             flags.AddImageFlagsCreate,
         'intranodevisibility':
@@ -992,7 +995,6 @@ class CreateBeta(Create):
     ops.enable_gvnic = get_default('enable_gvnic')
     ops.system_config_from_file = get_default('system_config_from_file')
     ops.datapath_provider = get_default('datapath_provider')
-    ops.enable_l4_ilb_subsetting = get_default('enable_l4_ilb_subsetting')
     ops.disable_default_snat = get_default('disable_default_snat')
     ops.cluster_dns = get_default('cluster_dns')
     ops.cluster_dns_scope = get_default('cluster_dns_scope')
@@ -1067,7 +1069,6 @@ class CreateAlpha(Create):
     ops.max_surge_upgrade = get_default('max_surge_upgrade')
     ops.max_unavailable_upgrade = get_default('max_unavailable_upgrade')
     ops.linux_sysctls = get_default('linux_sysctls')
-    ops.enable_l4_ilb_subsetting = get_default('enable_l4_ilb_subsetting')
     ops.disable_default_snat = get_default('disable_default_snat')
     ops.system_config_from_file = get_default('system_config_from_file')
     ops.enable_cost_management = get_default('enable_cost_management')

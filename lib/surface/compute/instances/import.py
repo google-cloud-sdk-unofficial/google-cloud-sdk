@@ -66,6 +66,7 @@ class Import(base.CreateCommand):
         required=False,
         choices=sorted(cls._OS_CHOICES),
         help='Specifies the OS of the image being imported.')
+    daisy_utils.AddByolArg(parser)
     parser.add_argument(
         '--description',
         help='Specifies a textual description of the VM instances.')
@@ -202,7 +203,6 @@ class ImportBeta(Import):
   @classmethod
   def Args(cls, parser):
     super(ImportBeta, cls).Args(parser)
-    daisy_utils.AddByolArg(parser)
 
   # pylint: disable=useless-super-delegation
   def _ValidateArgs(self, args, compute_client):

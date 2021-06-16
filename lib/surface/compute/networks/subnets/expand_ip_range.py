@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as exceptions
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute.networks.subnets import flags
 from googlecloudsdk.core.console import console_io
 import ipaddress
@@ -77,7 +78,7 @@ class ExpandIpRange(base.SilentCommand):
   def _GetOriginalIpCidrRange(self, client, subnetwork_ref):
     subnetwork = self._GetSubnetwork(client, subnetwork_ref)
     if not subnetwork:
-      raise exceptions.ToolException(
+      raise compute_exceptions.ArgumentError(
           'Subnet [{subnet}] was not found in region {region}.'.format(
               subnet=subnetwork_ref.Name(), region=subnetwork_ref.region))
 
@@ -102,7 +103,7 @@ class ExpandIpRange(base.SilentCommand):
     prompt_message = prompt_message_template.format(
         subnetwork_name, original_ip_cidr_range, new_ip_cidr_range)
     if not console_io.PromptContinue(message=prompt_message, default=True):
-      raise exceptions.ToolException('Operation aborted by user.')
+      raise compute_exceptions.AbortedError('Operation aborted by user.')
 
   def _CreateExpandIpCidrRangeRequest(self, client, subnetwork_ref,
                                       new_ip_cidr_range):

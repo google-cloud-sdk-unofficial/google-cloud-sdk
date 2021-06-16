@@ -45,5 +45,7 @@ class CloudKms(base.Group):
   category = base.IDENTITY_AND_SECURITY_CATEGORY
 
   def Filter(self, context, args):
+    # TODO(b/190535383):  Determine if command group works with project number
+    base.RequireProjectID(args)
     del context, args
     base.DisableUserProjectQuota()

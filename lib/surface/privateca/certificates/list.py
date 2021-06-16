@@ -140,18 +140,17 @@ class List(base.ListCommand):
   ## EXAMPLES
   To list all Certificates issued by a given CA pool, run:
 
-      $ {command} --issuer-pool my-pool --location us-west1
+      $ {command} --issuer-pool=my-pool --location=us-west1
 
       To list all Certificates issued by all CA pools in a
       location, run:
 
-      $ {command} --location us-west1
+      $ {command} --location=us-west1
 
       To list all Certificates issued directly under a CA, run:
 
-      $ {command} --issuer-pool my-pool --location us-west1 \
-        --filter
-        "issuer_certificate_authority='projects/my-project/locations/us-west1/caPools/my-pool/certificateAuthorities/my-ca'"
+      $ {command} --issuer-pool=my-pool --location=us-west1 \
+        --filter="issuer_certificate_authority='projects/my-project/locations/us-west1/caPools/my-pool/certificateAuthorities/my-ca'"
 
       You can omit the --location flag in both of the above examples if you've
       already set the privateca/location property. For example:
@@ -159,7 +158,7 @@ class List(base.ListCommand):
       $ {top_command} config set privateca/location us-west1
 
       # The following is equivalent to the first example above.
-          $ {command} --issuer-pool my-pool
+          $ {command} --issuer-pool=my-pool
 
       # The following is equivalent to the second example above.
       $ {command}

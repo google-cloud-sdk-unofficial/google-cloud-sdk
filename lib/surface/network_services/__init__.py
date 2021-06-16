@@ -21,8 +21,13 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class NetworkServices(base.Group):
   """Manage Network Services resources."""
 
   category = base.NETWORKING_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190537939):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

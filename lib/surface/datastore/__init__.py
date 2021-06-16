@@ -46,5 +46,7 @@ class Datastore(base.Group):
   category = base.DATABASES_CATEGORY
 
   def Filter(self, context, args):
+    # TODO(b/190530439):  Determine if command group works with project number
+    base.RequireProjectID(args)
     del context, args
     base.DisableUserProjectQuota()

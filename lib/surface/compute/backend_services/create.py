@@ -85,7 +85,7 @@ class CreateHelper(object):
 
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_gfe3,
-           support_failover, support_logging, support_multinic,
+           support_l7_rxlb, support_failover, support_logging, support_multinic,
            support_client_only, support_grpc_protocol,
            support_unspecified_protocol, support_subsetting):
     """Add flags to create a backend service to the parser."""
@@ -117,7 +117,8 @@ class CreateHelper(object):
     flags.AddLoadBalancingScheme(
         parser,
         include_l7_ilb=support_l7_internal_load_balancer,
-        include_gfe3=support_gfe3)
+        include_gfe3=support_gfe3,
+        include_l7_rxlb=support_l7_rxlb)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=False)
     flags.AddCacheKeyIncludeProtocol(parser, default=True)
     flags.AddCacheKeyIncludeHost(parser, default=True)
@@ -145,10 +146,11 @@ class CreateHelper(object):
     cdn_flags.AddCdnPolicyArgs(parser, 'backend service')
 
   def __init__(self, support_l7_internal_load_balancer, support_gfe3,
-               support_failover, support_logging, support_multinic,
-               support_subsetting):
+               support_l7_rxlb, support_failover, support_logging,
+               support_multinic, support_subsetting):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_gfe3 = support_gfe3
+    self._support_l7_rxlb = support_l7_rxlb
     self._support_failover = support_failover
     self._support_logging = support_logging
     self._support_multinic = support_multinic
@@ -159,8 +161,7 @@ class CreateHelper(object):
 
     if args.load_balancing_scheme == 'INTERNAL':
       raise exceptions.RequiredArgumentException(
-          '--region',
-          'Must specify --region for internal load balancer.')
+          '--region', 'Must specify --region for internal load balancer.')
     if (self._support_failover and
         (args.IsSpecified('connection_drain_on_failover') or
          args.IsSpecified('drop_traffic_if_unhealthy') or
@@ -343,6 +344,7 @@ class CreateGA(base.CreateCommand):
 
   _support_l7_internal_load_balancer = True
   _support_gfe3 = False
+  _support_l7_rxlb = False
   _support_failover = True
   _support_logging = True
   _support_multinic = True
@@ -358,6 +360,7 @@ class CreateGA(base.CreateCommand):
         support_l7_internal_load_balancer=cls
         ._support_l7_internal_load_balancer,
         support_gfe3=cls._support_gfe3,
+        support_l7_rxlb=cls._support_l7_rxlb,
         support_failover=cls._support_failover,
         support_logging=cls._support_logging,
         support_multinic=cls._support_multinic,
@@ -374,6 +377,7 @@ class CreateGA(base.CreateCommand):
         support_l7_internal_load_balancer=self
         ._support_l7_internal_load_balancer,
         support_gfe3=self._support_gfe3,
+        support_l7_rxlb=self._support_l7_rxlb,
         support_failover=self._support_failover,
         support_logging=self._support_logging,
         support_multinic=self._support_multinic,
@@ -424,6 +428,7 @@ class CreateAlpha(CreateBeta):
   https://cloud.google.com/load-balancing/docs/backend-service.
   """
   _support_gfe3 = True
+  _support_l7_rxlb = True
   _support_client_only = True
   _support_grpc_protocol = True
   _support_unspecified_protocol = True

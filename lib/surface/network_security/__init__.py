@@ -26,3 +26,8 @@ class NetworkSecurity(base.Group):
   """Manage Network Security resources."""
 
   category = base.NETWORKING_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190537848):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

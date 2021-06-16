@@ -82,7 +82,7 @@
               help_text: |
                 Project ID of the provided subnet. The default is the project of the connector.
     - group:
-        release_tracks: [ALPHA, BETA]
+        release_tracks: [ALPHA, BETA, GA]
         mutex: true
         params:
         - group:
@@ -132,21 +132,3 @@
       help_text: |
         Machine type of VMs underlying the VPC Access connector. Accepted values are "e2-micro",
         "f1-micro", and "e2-standard-4". If left unspecified, the e2-micro machine type is used.
-    - arg_name: min-throughput
-      api_field: connector.minThroughput
-      release_tracks: [GA]
-      required: false
-      help_text: |
-        Minimum throughput in Mbps. Value must be a multiple of 100 from 200 through 900.
-        Must be lower than the value specified by `--max-throughput`; the set value, if applicable,
-        or the default maximum throughput value.
-      default: 200
-    - arg_name: max-throughput
-      api_field: connector.maxThroughput
-      release_tracks: [GA]
-      required: false
-      help_text: |
-        Maximum throughput in Mbps. Value must be a multiple of 100 from 300 through 1000.
-        Must be higher than the value specified by `--min-throughput`; the set value, if applicable,
-        or the default minimum throughput value.
-      default: 300

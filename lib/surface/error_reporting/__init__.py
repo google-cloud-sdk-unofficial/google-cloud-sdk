@@ -39,6 +39,8 @@ class ErrorReporting(base.Group):
     Returns:
       The updated context.
     """
+    # TODO(b/190533984):  Determine if command group works with project number
+    base.RequireProjectID(args)
     base.DisableUserProjectQuota()
     context['clouderrorreporting_client_v1beta1'] = apis.GetClientInstance(
         'clouderrorreporting', 'v1beta1')

@@ -24,7 +24,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import daisy_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 from googlecloudsdk.command_lib.compute.os_config import flags
 from googlecloudsdk.core import log
@@ -159,4 +159,4 @@ def _PromptForUpgrade(ref, args):
   prompt_message = buf.getvalue()
 
   if not console_io.PromptContinue(message=prompt_message):
-    raise calliope_exceptions.ToolException('Upgrade aborted by user.')
+    raise compute_exceptions.AbortedError('Upgrade aborted by user.')

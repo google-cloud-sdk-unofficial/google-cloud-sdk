@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instances import (flags as
                                                           instance_flags)
@@ -69,7 +69,7 @@ class CreateHelper(object):
     instance_ref = self.INSTANCE_ARG.ResolveAsResource(args, holder.resources)
 
     if target_instance_ref.zone != instance_ref.zone:
-      raise calliope_exceptions.ToolException(
+      raise compute_exceptions.ArgumentError(
           'Target instance zone must match the virtual machine instance zone.')
 
     target_instance = client.messages.TargetInstance(
