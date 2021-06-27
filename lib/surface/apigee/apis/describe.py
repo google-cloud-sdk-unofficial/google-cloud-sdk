@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib import apigee
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.apigee import defaults
 from googlecloudsdk.command_lib.apigee import resource_args
 
@@ -55,10 +56,14 @@ class Describe(base.DescribeCommand):
   """
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument("--verbose", action="store_true",
                         help="Include proxy revision info in the description.")
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      parser.add_argument("--revision",
+                          help="Include proxy revision info for a specific "
+                          "revision ID in the description.")
     resource_args.AddSingleResourceArgument(
         parser,
         "organization.api",
@@ -69,11 +74,21 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     """Run the describe command."""
     identifiers = args.CONCEPTS.api.Parse().AsDict()
+
     result = apigee.APIsClient.Describe(identifiers)
 
-    if args.verbose:
+    if args.verbose or args.revision is not None:
       revisions = []
-      for revision in result["revision"]:
+      rev_nums = result["revision"]
+      if args.revision is not None:
+        if args.revision not in rev_nums:
+          message = "No revision %r among API %s's revisions: %s"%(
+              args.revision, identifiers["apisId"], rev_nums)
+          raise exceptions.InvalidArgumentException("--revision", message)
+        rev_nums = [args.revision]
+        # No need to check whether the provided revision exists; RevisionsClient
+        # will raise an appropriate error should it not.
+      for revision in rev_nums:
         identifiers["revisionsId"] = revision
         revision_result = apigee.RevisionsClient.Describe(identifiers)
         del revision_result["name"]

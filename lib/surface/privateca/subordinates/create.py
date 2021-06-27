@@ -404,7 +404,7 @@ class Create(base.CreateCommand):
             requestId=request_utils.GenerateRequestId()))
     operation = self.client.projects_locations_caPools_certificateAuthorities.Enable(
         enable_request)
-    return operations.Await(operation, 'Enabling CA.')
+    return operations.Await(operation, 'Enabling CA.', api_version='v1')
 
   def _ShouldEnableCa(self, args, ca_ref):
     """Determines whether the CA should be enabled or not."""
@@ -455,7 +455,7 @@ class Create(base.CreateCommand):
                 certificateAuthority=issuer_ca_name)))
     operation = self.client.projects_locations_caPools_certificateAuthorities.Activate(
         activate_request)
-    return operations.Await(operation, 'Activating CA.')
+    return operations.Await(operation, 'Activating CA.', api_version='v1')
 
   def Run(self, args):
     new_ca, ca_ref, issuer_ref = create_utils_v1.CreateCAFromArgs(
@@ -496,7 +496,7 @@ class Create(base.CreateCommand):
                 certificateAuthorityId=ca_ref.Name(),
                 parent=ca_ref.Parent().RelativeName(),
                 requestId=request_utils.GenerateRequestId())),
-        'Creating Certificate Authority.')
+        'Creating Certificate Authority.', api_version='v1')
 
     csr_response = self.client.projects_locations_caPools_certificateAuthorities.Fetch(
         self.messages

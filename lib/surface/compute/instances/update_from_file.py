@@ -35,7 +35,9 @@ class UpdateFromFile(base.Command):
   detailed_help = {
       'DESCRIPTION':
           """\
-          Update a Compute Engine virtual machine instance using a configuration file.
+          Update a Compute Engine virtual machine instance using a configuration
+          file. For more information, see
+          https://cloud.google.com/compute/docs/instances/update-instance-properties.
           """,
       'EXAMPLES':
           """\

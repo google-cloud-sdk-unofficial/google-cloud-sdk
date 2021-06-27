@@ -18,16 +18,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import os
 import textwrap
 import time
 
 from googlecloudsdk.api_lib.services import enable_api
-from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.command_lib.container.hub.features import base
 from googlecloudsdk.command_lib.container.hub.features import info
 from googlecloudsdk.core import exceptions
-from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.util import retry
@@ -59,28 +56,28 @@ class Enable(base.EnableCommand):
     )
 
   def Run(self, args):
-    project = properties.VALUES.core.project.GetOrFail()
     if not args.config_membership:
-      memberships = base.ListMemberships(project)
+      memberships = base.ListMemberships()
       if not memberships:
         raise exceptions.Error('No Memberships available in Hub.')
       index = console_io.PromptChoice(
           options=memberships, message='Please specify a config membership:\n')
       config_membership = memberships[index]
     else:
-      config_membership = os.path.basename(args.config_membership)
+      config_membership = args.config_membership
+    config_membership = self.MembershipResourceName(config_membership)
 
     # MCI requires MCSD. Enablement of the Hub feature for MCSD is taken care
     # of by CLH but we need to enable the OP API before that happens. If not,
     # CLH will return an error asking for the API to be enabled.
     mcsd_api = info.Get('multiclusterservicediscovery').api
-    enable_api.EnableServiceIfDisabled(project, mcsd_api)
+    enable_api.EnableServiceIfDisabled(self.Project(), mcsd_api)
 
-    result = self.RunCommand(
-        args,
-        multiclusteringressFeatureSpec=(
-            base.CreateMultiClusterIngressFeatureSpec(
-                self.MembershipResourceName(config_membership))))
+    f = self.messages.Feature(
+        spec=self.messages.CommonFeatureSpec(
+            multiclusteringress=self.messages.MultiClusterIngressFeatureSpec(
+                configMembership=config_membership)))
+    result = self.Enable(f)
 
     # We only want to poll for usability if everything above succeeded.
     if result is not None:
@@ -95,9 +92,7 @@ class Enable(base.EnableCommand):
     timeout = 120000
     timeout_message = ('Please use the `describe` command to check Feature'
                        'state for debugging information.\n')
-
-    client = core_apis.GetClientInstance('gkehub', 'v1alpha1')
-    ok_code = client.MESSAGES_MODULE.FeatureStateDetails.CodeValueValuesEnum.OK
+    ok_code = self.messages.FeatureState.CodeValueValuesEnum.OK
 
     try:
       with progress_tracker.ProgressTracker(
@@ -119,13 +114,12 @@ class Enable(base.EnableCommand):
             status_update_func=_StatusUpdate)
 
         def _PollFunc():
-          return base.GetFeature(self.FeatureResourceName())
+          return self.GetFeature()
 
         def _IsNotDone(feature, unused_state):
-          feature_state = feature.featureState
-          if feature_state is None or feature_state.details is None:
+          if feature.state is None or feature.state.state is None:
             return True
-          return feature_state.details.code != ok_code
+          return feature.state.state.code != ok_code
 
         return retryer.RetryOnResult(
             func=_PollFunc, should_retry_if=_IsNotDone, sleep_ms=500)

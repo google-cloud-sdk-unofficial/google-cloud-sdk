@@ -26,19 +26,11 @@ class Enable(base.EnableCommand):
 
   Enables the Config Management Feature in Hub.
 
-  ## Examples
+  ## EXAMPLES
 
-  Enable Config Management Feature:
+  To enable the Config Management Feature, run:
 
     $ {command}
   """
 
   feature_name = 'configmanagement'
-
-  @classmethod
-  def Args(cls, parser):
-    pass
-
-  def Run(self, args):
-    return self.RunCommand(args, configmanagementFeatureSpec=(
-        base.CreateConfigManagementFeatureSpec()))

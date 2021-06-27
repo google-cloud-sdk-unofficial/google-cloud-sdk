@@ -136,7 +136,7 @@ class Create(base.CreateCommand):
             requestId=request_utils.GenerateRequestId()))
     operation = self.client.projects_locations_caPools_certificateAuthorities.Enable(
         enable_request)
-    return operations.Await(operation, 'Enabling CA.')
+    return operations.Await(operation, 'Enabling CA.', api_version='v1')
 
   def _ShouldEnableCa(self, args, ca_ref):
     """Determines whether the CA should be enabled or not."""
@@ -185,7 +185,7 @@ class Create(base.CreateCommand):
             parent=pool_ref.RelativeName(),
             requestId=request_utils.GenerateRequestId()))
 
-    ca_response = operations.Await(operation, 'Creating Certificate Authority.')
+    ca_response = operations.Await(operation, 'Creating Certificate Authority.', api_version='v1')
     ca = operations.GetMessageFromResponse(ca_response,
                                            self.messages.CertificateAuthority)
 

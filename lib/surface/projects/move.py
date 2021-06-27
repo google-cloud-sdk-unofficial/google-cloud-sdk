@@ -40,8 +40,6 @@ class Move(base.Command):
       * There is no folder with the given ID, if a folder is given as the
         destination.
       * More than one of organization or folder is provided.
-      * The new destination is not in the same organization as the project, if
-        the project is already in an organization.
       * The active account does not have  the
         resourcemanager.projects.update permission for the given
         project.

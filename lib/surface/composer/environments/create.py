@@ -40,6 +40,10 @@ INVALID_OPTION_FOR_V2_ERROR_MSG = """\
 Cannot specify --{opt} with Composer 2.X or greater.
 """
 
+INVALID_OPTION_FOR_V1_ERROR_MSG = """\
+Cannot specify --{opt} with Composer 1.X.
+"""
+
 DETAILED_HELP = {
     'EXAMPLES':
         """\
@@ -57,7 +61,7 @@ DETAILED_HELP = {
 }
 
 
-def _CommonArgs(parser, support_max_pods_per_node):
+def _CommonArgs(parser, support_max_pods_per_node, release_track):
   """Common arguments that apply to all ReleaseTracks."""
   resource_args.AddEnvironmentResourceArg(parser, 'to create')
   base.ASYNC_FLAG.AddToParser(parser)
@@ -181,7 +185,7 @@ information on how to structure KEYs and VALUEs, run
       version will be selected. The version numbers that are used will
       be stored.""")
   flags.AddIpAliasEnvironmentFlags(parser, support_max_pods_per_node)
-  flags.AddPrivateIpEnvironmentFlags(parser)
+  flags.AddPrivateIpEnvironmentFlags(parser, release_track)
   web_server_group = parser.add_mutually_exclusive_group()
   flags.WEB_SERVER_ALLOW_IP.AddToParser(web_server_group)
   flags.WEB_SERVER_ALLOW_ALL.AddToParser(web_server_group)
@@ -210,8 +214,8 @@ class Create(base.Command):
   _support_max_pods_per_node = False
 
   @classmethod
-  def Args(cls, parser):
-    _CommonArgs(parser, cls._support_max_pods_per_node)
+  def Args(cls, parser, release_track=base.ReleaseTrack.GA):
+    _CommonArgs(parser, cls._support_max_pods_per_node, release_track)
 
   def Run(self, args):
     self.image_version = None
@@ -223,8 +227,10 @@ class Create(base.Command):
 
     self.ParseIpAliasConfigOptions(args, self.image_version)
     self.ParsePrivateEnvironmentConfigOptions(args, self.image_version)
-    self.ParsePrivateEnvironmentWebServerCloudSqlRanges(args)
-    self.ParseWebServerAccessControlConfigOptions(args)
+    self.ParsePrivateEnvironmentWebServerCloudSqlRanges(args,
+                                                        self.image_version,
+                                                        self.ReleaseTrack())
+    self.ParseWebServerAccessControlConfigOptions(args, self.image_version)
 
     flags.ValidateDiskSize('--disk-size', args.disk_size)
     self.env_ref = args.CONCEPTS.environment.Parse()
@@ -332,7 +338,13 @@ class Create(base.Command):
               prerequisite='enable-private-environment',
               opt='master-ipv4-cidr'))
 
-  def ParsePrivateEnvironmentWebServerCloudSqlRanges(self, args):
+  def ParsePrivateEnvironmentWebServerCloudSqlRanges(self, args, image_version,
+                                                     release_track):
+    if (args.web_server_ipv4_cidr and
+        not image_versions_util.IsImageVersionStringComposerV1(image_version)):
+      raise command_util.InvalidUserInputError(
+          INVALID_OPTION_FOR_V2_ERROR_MSG.format(opt='web-server-ipv4-cidr'))
+
     if args.web_server_ipv4_cidr and not args.enable_private_environment:
       raise command_util.InvalidUserInputError(
           PREREQUISITE_OPTION_ERROR_MSG.format(
@@ -345,13 +357,38 @@ class Create(base.Command):
               prerequisite='enable-private-environment',
               opt='cloud-sql-ipv4-cidr'))
 
-  def ParseWebServerAccessControlConfigOptions(self, args):
-    if (args.enable_private_environment and not args.web_server_allow_ip and
-        not args.web_server_allow_all and not args.web_server_deny_all):
+    if (release_track != base.ReleaseTrack.GA and
+        args.composer_network_ipv4_cidr and
+        image_versions_util.IsImageVersionStringComposerV1(image_version)):
+      raise command_util.InvalidUserInputError(
+          INVALID_OPTION_FOR_V1_ERROR_MSG.format(
+              opt='composer-network-ipv4-cidr'))
+
+    if (release_track != base.ReleaseTrack.GA and
+        args.composer_network_ipv4_cidr and
+        not args.enable_private_environment):
+      raise command_util.InvalidUserInputError(
+          PREREQUISITE_OPTION_ERROR_MSG.format(
+              prerequisite='enable-private-environment',
+              opt='composer-network-ipv4-cidr'))
+
+  def ParseWebServerAccessControlConfigOptions(self, args, image_version):
+    if (args.enable_private_environment and
+        image_versions_util.IsImageVersionStringComposerV1(image_version) and
+        not args.web_server_allow_ip and not args.web_server_allow_all and
+        not args.web_server_deny_all):
       raise command_util.InvalidUserInputError(
           'Cannot specify --enable-private-environment without one of: ' +
           '--web-server-allow-ip, --web-server-allow-all ' +
           'or --web-server-deny-all')
+
+    if (args.enable_private_environment and
+        not image_versions_util.IsImageVersionStringComposerV1(image_version)
+        and (args.web_server_allow_ip or args.web_server_allow_all or
+             args.web_server_deny_all)):
+      raise command_util.InvalidUserInputError(
+          'Cannot specify --web-server-allow-ip, --web-server-allow-all ' +
+          'or --web-server-deny-all with Composer 2.X or greater.')
 
     # Default to allow all if no flag is specified.
     self.web_server_access_control = (
@@ -410,17 +447,27 @@ class CreateBeta(Create):
   _support_max_pods_per_node = True
 
   @classmethod
-  def Args(cls, parser):
-    super(CreateBeta, cls).Args(parser)
+  def Args(cls, parser, release_track=base.ReleaseTrack.BETA):
+    super(CreateBeta, cls).Args(parser, base.ReleaseTrack.BETA)
 
+    if release_track == base.ReleaseTrack.BETA:
+      flags.ENVIRONMENT_SIZE_BETA.choice_arg.AddToParser(parser)
+    elif release_track == base.ReleaseTrack.ALPHA:
+      flags.ENVIRONMENT_SIZE_ALPHA.choice_arg.AddToParser(parser)
     flags.AddMaintenanceWindowFlagsGroup(parser)
     autoscaling_group_parser = parser.add_argument_group(hidden=True)
     flags.SCHEDULER_CPU.AddToParser(autoscaling_group_parser)
     flags.WORKER_CPU.AddToParser(autoscaling_group_parser)
+    flags.WEB_SERVER_CPU.AddToParser(autoscaling_group_parser)
     flags.SCHEDULER_MEMORY.AddToParser(autoscaling_group_parser)
     flags.WORKER_MEMORY.AddToParser(autoscaling_group_parser)
+    flags.WEB_SERVER_MEMORY.AddToParser(autoscaling_group_parser)
+    flags.SCHEDULER_STORAGE.AddToParser(autoscaling_group_parser)
+    flags.WORKER_STORAGE.AddToParser(autoscaling_group_parser)
+    flags.WEB_SERVER_STORAGE.AddToParser(autoscaling_group_parser)
     flags.MIN_WORKERS.AddToParser(autoscaling_group_parser)
     flags.MAX_WORKERS.AddToParser(autoscaling_group_parser)
+    flags.NUM_SCHEDULERS.AddToParser(autoscaling_group_parser)
 
   def GetOperationMessage(self, args):
     """See base class."""
@@ -451,20 +498,32 @@ class CreateBeta(Create):
         master_ipv4_cidr=args.master_ipv4_cidr,
         web_server_ipv4_cidr=args.web_server_ipv4_cidr,
         cloud_sql_ipv4_cidr=args.cloud_sql_ipv4_cidr,
+        composer_network_ipv4_cidr=args.composer_network_ipv4_cidr,
         web_server_access_control=self.web_server_access_control,
         cloud_sql_machine_type=args.cloud_sql_machine_type,
         web_server_machine_type=args.web_server_machine_type,
         scheduler_cpu=args.scheduler_cpu,
         worker_cpu=args.worker_cpu,
+        web_server_cpu=args.web_server_cpu,
         scheduler_memory_gb=environments_api_util.MemorySizeBytesToGB(
             args.scheduler_memory),
         worker_memory_gb=environments_api_util.MemorySizeBytesToGB(
             args.worker_memory),
+        web_server_memory_gb=environments_api_util.MemorySizeBytesToGB(
+            args.web_server_memory),
+        scheduler_storage_gb=environments_api_util.MemorySizeBytesToGB(
+            args.scheduler_storage),
+        worker_storage_gb=environments_api_util.MemorySizeBytesToGB(
+            args.worker_storage),
+        web_server_storage_gb=environments_api_util.MemorySizeBytesToGB(
+            args.web_server_storage),
         min_workers=args.min_workers,
         max_workers=args.max_workers,
+        scheduler_count=args.scheduler_count,
         maintenance_window_start=args.maintenance_window_start,
         maintenance_window_end=args.maintenance_window_end,
         maintenance_window_recurrence=args.maintenance_window_recurrence,
+        environment_size=args.environment_size,
         release_track=self.ReleaseTrack())
 
     return environments_api_util.Create(self.env_ref, create_flags)
@@ -481,8 +540,8 @@ class CreateAlpha(CreateBeta):
   """
 
   @classmethod
-  def Args(cls, parser):
-    super(CreateAlpha, cls).Args(parser)
+  def Args(cls, parser, release_track=base.ReleaseTrack.ALPHA):
+    super(CreateAlpha, cls).Args(parser, release_track)
 
     # Adding alpha arguments
     parser.add_argument(
@@ -505,6 +564,7 @@ class CreateAlpha(CreateBeta):
 
     create_flags = environments_api_util.CreateEnvironmentFlags(
         node_count=args.node_count,
+        environment_size=args.environment_size,
         labels=args.labels,
         location=self.zone,
         machine_type=self.machine_type,
@@ -530,6 +590,7 @@ class CreateAlpha(CreateBeta):
         private_endpoint=args.enable_private_endpoint,
         web_server_ipv4_cidr=args.web_server_ipv4_cidr,
         cloud_sql_ipv4_cidr=args.cloud_sql_ipv4_cidr,
+        composer_network_ipv4_cidr=args.composer_network_ipv4_cidr,
         master_ipv4_cidr=args.master_ipv4_cidr,
         privately_used_public_ips=args.enable_privately_used_public_ips,
         web_server_access_control=self.web_server_access_control,
@@ -537,12 +598,22 @@ class CreateAlpha(CreateBeta):
         web_server_machine_type=args.web_server_machine_type,
         scheduler_cpu=args.scheduler_cpu,
         worker_cpu=args.worker_cpu,
+        web_server_cpu=args.web_server_cpu,
         scheduler_memory_gb=environments_api_util.MemorySizeBytesToGB(
             args.scheduler_memory),
         worker_memory_gb=environments_api_util.MemorySizeBytesToGB(
             args.worker_memory),
+        web_server_memory_gb=environments_api_util.MemorySizeBytesToGB(
+            args.web_server_memory),
+        scheduler_storage_gb=environments_api_util.MemorySizeBytesToGB(
+            args.scheduler_storage),
+        worker_storage_gb=environments_api_util.MemorySizeBytesToGB(
+            args.worker_storage),
+        web_server_storage_gb=environments_api_util.MemorySizeBytesToGB(
+            args.web_server_storage),
         min_workers=args.min_workers,
         max_workers=args.max_workers,
+        scheduler_count=args.scheduler_count,
         maintenance_window_start=args.maintenance_window_start,
         maintenance_window_end=args.maintenance_window_end,
         maintenance_window_recurrence=args.maintenance_window_recurrence,

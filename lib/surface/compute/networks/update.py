@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.compute.networks import network_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.console import progress_tracker
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -55,6 +56,14 @@ class Update(base.UpdateCommand):
 
   NETWORK_ARG = None
 
+  MIGRATION_STAGES = dict(
+      VALIDATING_NETWORK='Validating Network',
+      CREATING_SUBNETWORK='Creating Subnetwork',
+      UPDATING_INSTANCES='Updating Instances',
+      UPDATING_INSTANCE_GROUPS='Updating Instance Groups',
+      UPDATING_FORWARDING_RULES='Updating Forwarding Rules',
+      CONVERTING_NETWORK_TO_SUBNET_MODE='Converting Network to Subnet Mode')
+
   @classmethod
   def Args(cls, parser):
     cls.NETWORK_ARG = flags.NetworkArgument()
@@ -77,6 +86,7 @@ class Update(base.UpdateCommand):
       result = service.SwitchToCustomMode(
           messages.ComputeNetworksSwitchToCustomModeRequest(
               project=network_ref.project, network=network_ref.Name()))
+
       operation_ref = resources.REGISTRY.Parse(
           result.name,
           params={'project': network_ref.project},
@@ -92,8 +102,15 @@ class Update(base.UpdateCommand):
         return result
 
       operation_poller = poller.Poller(service, network_ref)
-      return waiter.WaitFor(operation_poller, operation_ref,
-                            'Switching network to custom-mode')
+
+      if result.operationType == 'switchLegacyToCustomModeBeta':
+        return self._WaitForLegacyNetworkMigration(operation_poller,
+                                                   operation_ref)
+
+      return waiter.WaitFor(
+          poller=operation_poller,
+          operation_ref=operation_ref,
+          message='Switching network to custom-mode')
 
     network_resource = messages.Network()
     should_patch = False
@@ -120,6 +137,43 @@ class Update(base.UpdateCommand):
               networkResource=network_resource))
 
     return resource
+
+  def _WaitForLegacyNetworkMigration(self, operation_poller, operation_ref):
+    progress_stages = []
+    for key, label in self.MIGRATION_STAGES.items():
+      progress_stages.append(progress_tracker.Stage(label, key=key))
+
+    tracker = progress_tracker.StagedProgressTracker(
+        message='Migrating Network from Legacy to Custom Mode',
+        stages=progress_stages)
+    first_status_message = list(self.MIGRATION_STAGES.keys())[0]
+    tracker.last_status_message = first_status_message
+
+    return waiter.WaitFor(
+        poller=operation_poller,
+        operation_ref=operation_ref,
+        custom_tracker=tracker,
+        tracker_update_func=self._LegacyNetworkMigrationTrackerUpdateFunc)
+
+  def _LegacyNetworkMigrationTrackerUpdateFunc(self, tracker, operation,
+                                               unused_status):
+    latest_status_message = operation.statusMessage
+    self._MarkStagesCompleted(tracker, latest_status_message)
+    tracker.StartStage(latest_status_message)
+    tracker.last_status_message = latest_status_message
+
+
+# Mark all stages between last and latest status messages as completed
+
+  def _MarkStagesCompleted(self, tracker, latest_status_message):
+    ordered_stages = list(self.MIGRATION_STAGES.keys())
+    last_status_message_idx = ordered_stages.index(tracker.last_status_message)
+    latest_status_message_idx = ordered_stages.index(latest_status_message)
+    stages_to_update = list(self.MIGRATION_STAGES.keys()
+                           )[last_status_message_idx:latest_status_message_idx]
+
+    for stage_to_update in stages_to_update:
+      tracker.CompleteStage(stage_to_update)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -18,12 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import sys
-
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import log
@@ -46,11 +43,7 @@ class Delete(base.DeleteCommand):
           allowed.
     """
     base.ASYNC_FLAG.AddToParser(parser)
-    parser.add_argument(
-        'id',
-        type=arg_parsers.BoundedInt(1, sys.maxsize),
-        help="""The ID of the backup run. You can find the ID by running
-            $ gcloud beta sql backups list.""")
+    flags.AddBackupRunId(parser)
     flags.AddInstance(parser)
     parser.display_info.AddCacheUpdater(None)
 

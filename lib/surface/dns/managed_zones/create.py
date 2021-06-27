@@ -210,6 +210,7 @@ class CreateBeta(base.CreateCommand):
   def Args(parser):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
     _AddArgsCommon(parser, messages)
+    flags.GetManagedZoneGkeClustersArg().AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
 
   def Run(self, args):
@@ -228,6 +229,13 @@ class CreateBeta(base.CreateCommand):
          NOTE: You can provide an empty value ("") for private zones that
           have NO network binding.
           """))
+
+    # We explicitly want to allow --gkeclusters='' as an optional flag.
+    if args.visibility == 'public' and args.IsSpecified('gkeclusters'):
+      raise exceptions.InvalidArgumentException(
+          '--gkeclusters',
+          'If --visibility is set to public (default), setting gkeclusters is '
+          'not allowed.')
 
     api_version = util.GetApiFromTrack(self.ReleaseTrack())
     dns = util.GetApiClient(api_version)
@@ -258,8 +266,16 @@ class CreateBeta(base.CreateCommand):
           messages.ManagedZonePrivateVisibilityConfigNetwork(
               networkUrl=nurl)
           for nurl in network_urls]
+
+      # Handle the case when '--gkeclusters' is not specified.
+      gkeclusters = args.gkeclusters or []
+
+      gkecluster_configs = [
+          messages.ManagedZonePrivateVisibilityConfigGKECluster(
+              gkeClusterName=name) for name in gkeclusters
+      ]
       visibility_config = messages.ManagedZonePrivateVisibilityConfig(
-          networks=network_configs)
+          networks=network_configs, gkeClusters=gkecluster_configs)
 
     if args.forwarding_targets or args.private_forwarding_targets:
       forwarding_config = command_util.BetaParseManagedZoneForwardingConfigWithForwardingPath(
@@ -335,4 +351,5 @@ class CreateAlpha(CreateBeta):
   def Args(parser):
     messages = apis.GetMessagesModule('dns', 'v1alpha2')
     _AddArgsCommon(parser, messages)
+    flags.GetManagedZoneGkeClustersArg().AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)

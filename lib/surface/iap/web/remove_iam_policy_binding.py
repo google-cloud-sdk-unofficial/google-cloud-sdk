@@ -42,13 +42,13 @@ class RemoveIamPolicyBinding(base.Command):
           To remove an IAM policy binding for the role of 'roles/editor' for the
           user 'test-user@gmail.com' on IAP IAM resource IAP_IAM_RESOURCE, run:
 
-            $ {command} IAP_IAM_RESOURCE --member='user:test-user@gmail.com'
+            $ {command} --resource-type=IAP_IAM_RESOURCE --member='user:test-user@gmail.com'
                 --role='roles/editor'
 
           To remove an IAM policy binding for the role of 'roles/editor' from
           all authenticated users on IAP IAM resource IAP_IAM_RESOURCE,run:
 
-            $ {command} IAP_IAM_RESOURCE --member='allAuthenticatedUsers'
+            $ {command} --resource-type=IAP_IAM_RESOURCE --member='allAuthenticatedUsers'
                 --role='roles/editor'
 
           To remove an IAM policy binding with a condition of
@@ -58,7 +58,7 @@ class RemoveIamPolicyBinding(base.Command):
           'test-user@gmail.com' on IAP IAM resource IAP_IAM_RESOURCE,
           run:
 
-            $ {command} IAP_IAM_RESOURCE --member='user:test-user@gmail.com'
+            $ {command} --resource-type=IAP_IAM_RESOURCE --member='user:test-user@gmail.com'
                 --role='roles/browser' --condition='expression=request.time <
                 timestamp("2019-01-01T00:00:00Z"),title=expires_end_of_2018,
                 description=Expires at midnight on 2018-12-31'
@@ -67,7 +67,7 @@ class RemoveIamPolicyBinding(base.Command):
           role of 'roles/browser' and for the user 'test-user@gmail.com' on IAP
           IAM resource IAP_IAM_RESOURCE, run:
 
-            $ {command} IAP_IAM_RESOURCE --member='user:test-user@gmail.com'
+            $ {command} --resource-type=IAP_IAM_RESOURCE --member='user:test-user@gmail.com'
                 --role='roles/browser' --all
 
           See https://cloud.google.com/iam/docs/managing-policies for details of

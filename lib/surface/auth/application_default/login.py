@@ -159,7 +159,7 @@ class Login(base.Command):
     if not target_impersonation_principal:
       if args.IsSpecified('client_id_file'):
         command_auth_util.DumpADC(creds, quota_project_disabled=False)
-      elif args.disable_quota_project or (not args.add_quota_project):
+      elif args.disable_quota_project:
         command_auth_util.DumpADC(creds, quota_project_disabled=True)
       else:
         command_auth_util.DumpADCOptionalQuotaProject(creds)

@@ -190,7 +190,8 @@ class Delete(base.DeleteCommand):
             ignoreActiveCertificates=args.ignore_active_certificates,
             requestId=request_utils.GenerateRequestId()))
 
-    ca_response = operations.Await(operation, 'Deleting Root CA')
+    ca_response = operations.Await(
+        operation, 'Deleting Root CA', api_version='v1')
     ca = operations.GetMessageFromResponse(ca_response,
                                            messages.CertificateAuthority)
 

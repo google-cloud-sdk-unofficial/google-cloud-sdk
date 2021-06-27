@@ -44,8 +44,7 @@ class UpdateBeta(base.UpdateCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    parser = workerpool_flags.AddWorkerpoolUpdateArgs(
-        parser, release_track=base.ReleaseTrack.BETA)
+    parser = workerpool_flags.AddWorkerpoolUpdateArgs(parser)
     parser.display_info.AddFormat("""
           table(
             name,
@@ -80,10 +79,6 @@ class UpdateBeta(base.UpdateCommand):
       wp = workerpool_config.LoadWorkerpoolConfigFromPath(
           args.config_from_file, messages)
     else:
-      if args.peered_network is not None:
-        network_config = messages.NetworkConfig()
-        network_config.peeredNetwork = args.peered_network
-        wp.networkConfig = network_config
       worker_config = messages.WorkerConfig()
       if args.worker_machine_type is not None:
         worker_config.machineType = args.worker_machine_type

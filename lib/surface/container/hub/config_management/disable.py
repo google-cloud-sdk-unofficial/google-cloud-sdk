@@ -26,9 +26,9 @@ class Disable(base.DisableCommand):
 
   Disable the Config Management Feature in Hub.
 
-  ## Examples
+  ## EXAMPLES
 
-  Disable Config Management Feature:
+  To disable the Config Management Feature, run:
 
     $ {command}
   """

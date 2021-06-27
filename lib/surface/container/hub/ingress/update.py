@@ -18,17 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import os
 import textwrap
 
 from googlecloudsdk.command_lib.container.hub.features import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
-
-
-CONFIG_MEMBERSHIP_FLAG = '--config-membership'
 
 
 class Update(base.UpdateCommand):
@@ -48,7 +43,7 @@ class Update(base.UpdateCommand):
   @classmethod
   def Args(cls, parser):
     parser.add_argument(
-        CONFIG_MEMBERSHIP_FLAG,
+        '--config-membership',
         type=str,
         help=textwrap.dedent("""\
             Membership resource representing the cluster which hosts
@@ -64,22 +59,20 @@ class Update(base.UpdateCommand):
 
     console_io.PromptContinue(default=True, cancel_on_no=True)
 
-    project = properties.VALUES.core.project.GetOrFail()
-    if not args.config_membership:
-      memberships = base.ListMemberships(project)
+    config_membership = args.config_membership
+    if not config_membership:
+      memberships = base.ListMemberships()
       if not memberships:
         raise exceptions.Error('No Memberships available in Hub.')
       index = console_io.PromptChoice(
           options=memberships,
           message='Please specify a config membership:\n')
       config_membership = memberships[index]
-    else:
-      config_membership = args.config_membership
-    config_membership = ('projects/{0}/locations/global/memberships/{1}'
-                         .format(project,
-                                 os.path.basename(config_membership)))
 
-    self.RunCommand('multiclusteringress_feature_spec.config_membership',
-                    multiclusteringressFeatureSpec=(
-                        base.CreateMultiClusterIngressFeatureSpec(
-                            config_membership)))
+    config_membership = self.MembershipResourceName(config_membership)
+    f = self.messages.Feature(
+        spec=self.messages.CommonFeatureSpec(
+            multiclusteringress=self.messages.MultiClusterIngressFeatureSpec(
+                configMembership=config_membership)))
+
+    self.Update(['spec.multiclusteringress.config_membership'], f)

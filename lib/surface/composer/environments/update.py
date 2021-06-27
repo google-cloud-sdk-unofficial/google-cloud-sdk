@@ -45,6 +45,7 @@ class Update(base.Command):
   detailed_help = DETAILED_HELP
   _support_autoscaling = False
   _support_maintenance_window = False
+  _support_environment_size = False
 
   @staticmethod
   def Args(parser):
@@ -98,15 +99,37 @@ class Update(base.Command):
 
     params['cloud_sql_machine_type'] = args.cloud_sql_machine_type
     params['web_server_machine_type'] = args.web_server_machine_type
+    if self._support_environment_size:
+      if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+        params[
+            'environment_size'] = flags.ENVIRONMENT_SIZE_BETA.GetEnumForChoice(
+                args.environment_size)
+      elif self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+        params[
+            'environment_size'] = flags.ENVIRONMENT_SIZE_ALPHA.GetEnumForChoice(
+                args.environment_size)
     if self._support_autoscaling:
       params['scheduler_cpu'] = args.scheduler_cpu
       params['worker_cpu'] = args.worker_cpu
+      params['web_server_cpu'] = args.web_server_cpu
       params['scheduler_memory_gb'] = environments_api_util.MemorySizeBytesToGB(
           args.scheduler_memory)
       params['worker_memory_gb'] = environments_api_util.MemorySizeBytesToGB(
           args.worker_memory)
+      params[
+          'web_server_memory_gb'] = environments_api_util.MemorySizeBytesToGB(
+              args.web_server_memory)
+      params[
+          'scheduler_storage_gb'] = environments_api_util.MemorySizeBytesToGB(
+              args.scheduler_storage)
+      params['worker_storage_gb'] = environments_api_util.MemorySizeBytesToGB(
+          args.worker_storage)
+      params[
+          'web_server_storage_gb'] = environments_api_util.MemorySizeBytesToGB(
+              args.web_server_storage)
       params['min_workers'] = args.min_workers
       params['max_workers'] = args.max_workers
+      params['scheduler_count'] = args.scheduler_count
     if self._support_maintenance_window:
       params['maintenance_window_start'] = args.maintenance_window_start
       params['maintenance_window_end'] = args.maintenance_window_end
@@ -132,9 +155,10 @@ class UpdateBeta(Update):
 
   _support_autoscaling = True
   _support_maintenance_window = True
+  _support_environment_size = True
 
   @staticmethod
-  def AlphaAndBetaArgs(parser):
+  def AlphaAndBetaArgs(parser, release_track=base.ReleaseTrack.BETA):
     """Arguments available only in both alpha and beta."""
     Update.Args(parser)
 
@@ -142,12 +166,13 @@ class UpdateBeta(Update):
     UpdateBeta.support_environment_upgrades = True
     flags.AddEnvUpgradeFlagsToGroup(Update.update_type_group)
     flags.AddMaintenanceWindowFlagsGroup(Update.update_type_group)
-    flags.AddAutoscalingUpdateFlagsToGroup(Update.update_type_group)
+    flags.AddAutoscalingUpdateFlagsToGroup(Update.update_type_group,
+                                           release_track)
 
   @staticmethod
   def Args(parser):
     """Arguments available only in beta, not in alpha."""
-    UpdateBeta.AlphaAndBetaArgs(parser)
+    UpdateBeta.AlphaAndBetaArgs(parser, base.ReleaseTrack.BETA)
 
   def Run(self, args):
     env_ref = args.CONCEPTS.environment.Parse()
@@ -191,4 +216,4 @@ class UpdateAlpha(UpdateBeta):
 
   @staticmethod
   def Args(parser):
-    UpdateBeta.AlphaAndBetaArgs(parser)
+    UpdateBeta.AlphaAndBetaArgs(parser, base.ReleaseTrack.ALPHA)

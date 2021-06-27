@@ -346,27 +346,35 @@ class Create(base.CreateCommand):
     flags_v1.AddUsePresetProfilesFlag(x509_parameters_group)
 
     cert_arg = 'CERTIFICATE'
-    concept_parsers.ConceptParser([
-        presentation_specs.ResourcePresentationSpec(
-            cert_arg,
-            resource_args.CreateCertResourceSpec(
-                cert_arg, [Create._GenerateCertificateIdFallthrough()]),
-            'The name of the certificate to issue. If the certificate ID is '
-            'omitted, a random identifier will be generated according to the '
-            'following format: {YYYYMMDD}-{3 random alphanumeric characters}-'
-            '{3 random alphanumeric characters}. The certificate ID is not '
-            'required when the issuing CA is in the DevOps tier.',
-            required=True),
-        presentation_specs.ResourcePresentationSpec(
-            '--template',
-            resource_args.CreateCertificateTemplateResourceSpec(
-                'certificate_template'),
-            'The name of a certificate template to use for issuing this '
-            'certificate, if desired. A template may overwrite parts of the '
-            'certificate request, and the use of certificate templates may be '
-            'required and/or regulated by the issuing CA Pool\'s CA Manager.',
-            required=False),
-    ]).AddToParser(parser)
+    concept_parsers.ConceptParser(
+        [
+            presentation_specs.ResourcePresentationSpec(
+                cert_arg,
+                resource_args.CreateCertResourceSpec(
+                    cert_arg, [Create._GenerateCertificateIdFallthrough()]),
+                'The name of the certificate to issue. If the certificate ID '
+                'is omitted, a random identifier will be generated according '
+                'to the following format: {YYYYMMDD}-{3 random alphanumeric '
+                'characters}-{3 random alphanumeric characters}. The '
+                'certificate ID is not required when the issuing CA pool is in '
+                'the DevOps tier.',
+                required=True),
+            presentation_specs.ResourcePresentationSpec(
+                '--template',
+                resource_args.CreateCertificateTemplateResourceSpec(
+                    'certificate_template'),
+                'The name of a certificate template to use for issuing this '
+                'certificate, if desired. A template may overwrite parts of '
+                'the certificate request, and the use of certificate templates '
+                'may be required and/or regulated by the issuing CA Pool\'s CA '
+                'Manager. The specified template must be in the same location '
+                'as the issuing CA Pool.',
+                required=False,
+                prefixes=True),
+        ],
+        command_level_fallthroughs={
+            '--template.location': ['CERTIFICATE.issuer-location']
+        }).AddToParser(parser)
 
     # The only time a resource is returned is when args.validate_only is set.
     parser.display_info.AddFormat('yaml(certificateDescription)')
@@ -456,6 +464,11 @@ class Create(base.CreateCommand):
 
     template_ref = args.CONCEPTS.template.Parse()
     if template_ref:
+      if template_ref.locationsId != cert_ref.locationsId:
+        raise exceptions.InvalidArgumentException(
+            '--template',
+            'The certificate template must be in the same location as the '
+            'issuing CA Pool.')
       request.certificate.certificateTemplate = template_ref.RelativeName()
 
     if args.csr:

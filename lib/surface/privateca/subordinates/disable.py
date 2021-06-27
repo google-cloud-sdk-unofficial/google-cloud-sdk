@@ -118,6 +118,6 @@ class Disable(base.SilentCommand):
             .DisableCertificateAuthorityRequest(
                 requestId=request_utils.GenerateRequestId())))
 
-    operations.Await(operation, 'Disabling Subordinate CA')
+    operations.Await(operation, 'Disabling Subordinate CA', api_version='v1')
 
     log.status.Print('Disabled Subordinate CA [{}].'.format(ca_name))

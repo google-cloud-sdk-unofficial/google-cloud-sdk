@@ -43,21 +43,21 @@ class AddIamPolicyBinding(base.Command):
           user 'test-user@gmail.com' on IAP IAM resource IAP_IAM_RESOURCE,
           run:
 
-            $ {command} IAP_IAM_RESOURCE --member='user:test-user@gmail.com'
+            $ {command} --resource-type=IAP_IAM_RESOURCE --member='user:test-user@gmail.com'
                 --role='roles/editor'
 
           To add an IAM policy binding for the role of 'roles/editor' for all
           authenticated users on IAP IAM resource IAP_IAM_RESOURCE,
           run:
 
-            $ {command} IAP_IAM_RESOURCE --member='allAuthenticatedUsers'
+            $ {command} --resource-type=IAP_IAM_RESOURCE --member='allAuthenticatedUsers'
                 --role='roles/editor'
 
           To add an IAM policy binding which expires at the end of the year 2018
           for the role of 'roles/browser' and the user 'test-user@gmail.com' on
           IAP IAM resource IAP_IAM_RESOURCE, run:
 
-            $ {command} IAP_IAM_RESOURCE --member='user:test-user@gmail.com'
+            $ {command} --resource-type=IAP_IAM_RESOURCE --member='user:test-user@gmail.com'
                 --role='roles/browser' --condition='expression=request.time <
                 timestamp("2019-01-01T00:00:00Z"),title=expires_end_of_2018,
                 description=Expires at midnight on 2018-12-31'

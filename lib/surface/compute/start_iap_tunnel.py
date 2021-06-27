@@ -19,6 +19,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import collections
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -28,8 +30,16 @@ from googlecloudsdk.command_lib.compute import scope
 from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
+_CreateTargetArgs = collections.namedtuple('_TargetArgs', [
+    'project', 'zone', 'instance', 'interface', 'port', 'region', 'network',
+    'ip'
+])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class StartIapTunnel(base.Command):
   # pylint: disable=line-too-long
   """Starts an IAP TCP forwarding tunnel.
@@ -97,23 +107,43 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
     if args.listen_on_stdin and args.IsSpecified('local_host_port'):
       raise calliope_exceptions.ConflictingArgumentsException(
           '--listen-on-stdin', '--local-host-port')
-    project, zone, instance, interface, port = self._GetTargetArgs(args)
+    target = self._GetTargetArgs(args)
 
     if args.listen_on_stdin:
-      iap_tunnel_helper = iap_tunnel.IapTunnelStdinHelper(
-          args, project, zone, instance, interface, port)
-      iap_tunnel_helper.Run()
+      iap_tunnel_helper = iap_tunnel.IapTunnelStdinHelper(args, target.project)
     else:
       local_host, local_port = self._GetLocalHostPort(args)
       check_connection = True
       if hasattr(args, 'iap_tunnel_disable_connection_check'):
         check_connection = not args.iap_tunnel_disable_connection_check
       iap_tunnel_helper = iap_tunnel.IapTunnelProxyServerHelper(
-          args, project, zone, instance, interface, port, local_host,
-          local_port, check_connection)
-      iap_tunnel_helper.StartProxyServer()
+          args, target.project, local_host, local_port, check_connection)
+
+    if target.ip:
+      iap_tunnel_helper.ConfigureForIP(target.zone, target.region,
+                                       target.network, target.ip, target.port)
+    else:
+      iap_tunnel_helper.ConfigureForInstance(target.zone, target.instance,
+                                             target.interface, target.port)
+
+    iap_tunnel_helper.Run()
 
   def _GetTargetArgs(self, args):
+    # TODO(b/190426150): change to just "IsSpecified" when going to GA
+    if args.IsKnownAndSpecified('network') and args.IsKnownAndSpecified(
+        'region'):
+      return _CreateTargetArgs(
+          project=properties.VALUES.core.project.GetOrFail(),
+          # TODO(b/190426150): remove zone param for on-prem
+          zone=args.zone,
+          region=args.region,
+          network=args.network,
+          # TODO(b/190426150): validate IPv4 format
+          ip=args.instance_name,
+          port=args.instance_port,
+          instance=None,
+          interface=None)
+
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     ssh_helper = ssh_utils.BaseSSHCLIHelper()
@@ -123,13 +153,15 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
         scope_lister=flags.GetInstanceZoneScopeLister(client))[0]
     instance_obj = ssh_helper.GetInstance(client, instance_ref)
 
-    project = instance_ref.project
-    zone = instance_ref.zone
-    instance = instance_obj.name
-    port = args.instance_port
-    interface = ssh_utils.GetInternalInterface(instance_obj).name
-
-    return project, zone, instance, interface, port
+    return _CreateTargetArgs(
+        project=instance_ref.project,
+        zone=instance_ref.zone,
+        instance=instance_obj.name,
+        interface=ssh_utils.GetInternalInterface(instance_obj).name,
+        port=args.instance_port,
+        region=None,
+        network=None,
+        ip=None)
 
   def _GetLocalHostPort(self, args):
     local_host_arg = args.local_host_port.host or 'localhost'
@@ -139,3 +171,36 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
     if not port_arg:
       log.status.Print('Picking local unused port [%d].' % local_port)
     return local_host_arg, local_port
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class StartIapTunnelAlpha(StartIapTunnel):
+  # pylint: disable=line-too-long
+  """Starts an IAP TCP forwarding tunnel.
+
+  Starts a tunnel to Cloud Identity-Aware Proxy for TCP forwarding through which
+  another process can create a connection (eg. SSH, RDP) to a Google Compute
+  Engine instance or IPv4 address.
+
+  To learn more, see the
+  [IAP for TCP forwarding documentation](https://cloud.google.com/iap/docs/tcp-forwarding-overview).
+
+  ## EXAMPLES
+
+  To open a tunnel to the instances's RDP port on an arbitrary local port, run:
+
+    $ {command} my-instance 3389
+
+  To open a tunnel to the instance's RDP port on a specific local port, run:
+
+    $ {command} my-instance 3389 --local-host-port=localhost:3333
+
+  To open a tunnel to the IP's RDP port on an arbitrary local port, run:
+
+    $ {command} my-instance 10.1.2.3 3389 --network=default --region=us-central1
+  """
+
+  @staticmethod
+  def Args(parser):
+    StartIapTunnel.Args(parser)
+    iap_tunnel.AddIpBasedTunnelArgs(parser)

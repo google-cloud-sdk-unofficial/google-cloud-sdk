@@ -37,7 +37,6 @@ _MISSING_COMMITMENTS_QUOTA_REGEX = r'Quota .COMMITMENTS. exceeded.+'
 def _CommonArgsAlphaBeta(track, parser):
   """Add common flags for Alpha, Beta track."""
   flags.MakeCommitmentArg(False).AddArgument(parser, operation_type='create')
-  flags.AddCreateFlags(parser)
   messages = apis.GetMessagesModule('compute', track)
   flags.GetTypeMapperFlag(messages).choice_arg.AddToParser(parser)
 
@@ -45,6 +44,7 @@ def _CommonArgsAlphaBeta(track, parser):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create Compute Engine commitments."""
+  _support_share_setting = False
   detailed_help = {
       'EXAMPLES': '''
         To create a commitment called ``commitment-1'' in the ``us-central1''
@@ -58,7 +58,8 @@ class Create(base.Command):
   @classmethod
   def Args(cls, parser):
     flags.MakeCommitmentArg(False).AddArgument(parser, operation_type='create')
-    flags.AddCreateFlags(parser)
+    flags.AddCreateFlags(
+        parser, support_share_setting=cls._support_share_setting)
 
   def _MakeCreateRequest(
       self, args, messages, project, region, commitment_ref, holder):
@@ -113,10 +114,13 @@ class Create(base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create Compute Engine commitments."""
+  _support_share_setting = False
 
   @classmethod
   def Args(cls, parser):
     _CommonArgsAlphaBeta('beta', parser)
+    flags.AddCreateFlags(
+        parser, support_share_setting=cls._support_share_setting)
 
   def _MakeCreateRequest(self, args, messages, project, region, commitment_ref,
                          holder):
@@ -139,7 +143,10 @@ class CreateBeta(Create):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Create Compute Engine commitments."""
+  _support_share_setting = True
 
   @classmethod
   def Args(cls, parser):
     _CommonArgsAlphaBeta('alpha', parser)
+    flags.AddCreateFlags(
+        parser, support_share_setting=cls._support_share_setting)

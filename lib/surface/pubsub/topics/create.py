@@ -62,7 +62,7 @@ def _GetTopicPresentationSpec():
       'to create.', positional=True, plural=True)
 
 
-def _Run(args, legacy_output=False, schema=None, message_encoding=None):
+def _Run(args, legacy_output=False):
   """Creates one or more topics."""
   client = topics.TopicsClient()
 
@@ -83,6 +83,14 @@ def _Run(args, legacy_output=False, schema=None, message_encoding=None):
             '--topic-encryption-key was not fully specified.')
 
   message_storage_policy_allowed_regions = args.message_storage_policy_allowed_regions
+
+  schema = getattr(args, 'schema', None)
+  if schema:
+    schema = args.CONCEPTS.schema.Parse().RelativeName()
+  message_encoding_list = getattr(args, 'message_encoding', None)
+  message_encoding = None
+  if message_encoding_list:
+    message_encoding = message_encoding_list[0]
 
   failed = []
   for topic_ref in args.CONCEPTS.topic.Parse():
@@ -126,6 +134,7 @@ class Create(base.CreateCommand):
     resource_args.AddResourceArgs(
         parser, [_GetKmsKeyPresentationSpec(),
                  _GetTopicPresentationSpec()])
+    flags.AddSchemaSettingsFlags(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
     parser.add_argument(
@@ -159,19 +168,8 @@ class CreateBeta(Create):
         ' be stored at rest.')
 
   def Run(self, args):
-    schema = getattr(args, 'schema', None)
-    if schema:
-      schema = args.CONCEPTS.schema.Parse().RelativeName()
-    message_encoding_list = getattr(args, 'message_encoding', None)
-    message_encoding = None
-    if message_encoding_list:
-      message_encoding = message_encoding_list[0]
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
-    return _Run(
-        args,
-        legacy_output=legacy_output,
-        schema=schema,
-        message_encoding=message_encoding)
+    return _Run(args, legacy_output=legacy_output)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

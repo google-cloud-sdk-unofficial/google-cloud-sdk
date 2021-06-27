@@ -52,6 +52,9 @@ DETAILED_GA_HELP = {
         """
         Connects to a Cloud SQL instance.
 
+        This command temporarily changes the authorized networks for this
+        instance to allow the connection from your IP address.
+
         NOTE: If you're connecting from an IPv6 address, or are constrained by
         certain organization policies (restrictPublicIP,
         restrictAuthorizedNetworks), consider running the beta version of this

@@ -117,7 +117,7 @@ class EnableGA(base.SilentCommand):
             .EnableCertificateAuthorityRequest(
                 requestId=request_utils.GenerateRequestId())))
 
-    operations.Await(operation, 'Enabling Subordinate CA')
+    operations.Await(operation, 'Enabling Subordinate CA', api_version='v1')
 
     log.status.Print('Enabled Subordinate CA [{}].'.format(
         ca_ref.RelativeName()))

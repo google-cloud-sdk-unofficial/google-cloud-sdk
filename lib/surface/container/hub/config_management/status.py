@@ -18,11 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import os
+from googlecloudsdk.api_lib.container.hub import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.hub.config_management import utils
 from googlecloudsdk.command_lib.container.hub.features import base as feature_base
-from googlecloudsdk.core import properties
 
 NA = 'NA'
 
@@ -83,7 +81,7 @@ class ConfigmanagementFeatureState(object):
         self.last_synced_token = fs.configSyncState.syncState.syncToken[:7]
       self.last_synced = fs.configSyncState.syncState.lastSyncTime
       if has_config_sync_git(fs):
-        self.sync_branch = fs.membershipConfig.configSync.git.syncBranch
+        self.sync_branch = fs.membershipSpec.configSync.git.syncBranch
 
   def update_policy_controller_state(self, fs):
     """Update policy controller state for the membership that has ACM installed.
@@ -100,14 +98,15 @@ class ConfigmanagementFeatureState(object):
         'GatekeeperControllerManager':
             pc_deployment_state.gatekeeperControllerManagerState
     }
-    if fs.membershipConfig and fs.membershipConfig.version and fs.membershipConfig.version > '1.4.1':
+    if (fs.membershipSpec and fs.membershipSpec.version and
+        fs.membershipSpec.version > '1.4.1'):
       expected_deploys['GatekeeperAudit'] = pc_deployment_state.gatekeeperAudit
     for deployment_name, deployment_state in expected_deploys.items():
       if not deployment_state:
         continue
       elif deployment_state.name != 'INSTALLED':
-        self.policy_controller_state = '{} {}'.format(
-            deployment_name, deployment_state)
+        self.policy_controller_state = '{} {}'.format(deployment_name,
+                                                      deployment_state)
         return
       self.policy_controller_state = deployment_state.name
 
@@ -167,8 +166,7 @@ class ConfigmanagementFeatureState(object):
 
 
 class Status(feature_base.FeatureCommand, base.ListCommand):
-  """Print the status of all clusters with Config Management enabled.
-  """
+  """Print the status of all clusters with Config Management enabled."""
   detailed_help = DETAILED_HELP
 
   feature_name = 'configmanagement'
@@ -188,29 +186,34 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
     """)
 
   def Run(self, args):
-    project_id = properties.VALUES.core.project.GetOrFail()
-
-    memberships = feature_base.ListMemberships(project_id)
-    response = utils.try_get_configmanagement(project_id)
+    memberships = feature_base.ListMemberships()
+    f = self.GetFeature()
     if not memberships:
       return None
     acm_status = []
     acm_errors = []
-    feature_spec_memberships = parse_feature_spec_memberships(response)
-    feature_state_memberships = parse_feature_state_memberships(response)
+    feature_spec_memberships = {
+        util.MembershipShortname(m): s
+        for m, s in self.hubclient.ToPyDict(f.membershipSpecs).items()
+        if s is not None and s.configmanagement is not None
+    }
+    feature_state_memberships = {
+        util.MembershipShortname(m): s
+        for m, s in self.hubclient.ToPyDict(f.membershipStates).items()
+    }
     for name in memberships:
       cluster = ConfigmanagementFeatureState(name)
       if name not in feature_state_memberships:
         acm_status.append(cluster)
         continue
       md = feature_state_memberships[name]
-      fs = md.value.configmanagementFeatureState
+      fs = md.configmanagement
       # (b/153587485) Show FeatureState.code if it's not OK
       # as it indicates an unreachable cluster or a dated syncState.code
-      if md.value.code is None:
+      if md.state is None or md.state.code is None:
         cluster.config_sync = 'CODE_UNSPECIFIED'
-      elif md.value.code.name != 'OK':
-        cluster.config_sync = md.value.code.name
+      elif md.state.code.name != 'OK':
+        cluster.config_sync = md.state.code.name
       else:
         # operator errors could occur regardless of the deployment_state
         if has_operator_error(fs):
@@ -229,32 +232,11 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
             cluster.update_policy_controller_state(fs)
             cluster.update_hierarchy_controller_state(fs)
             if name in feature_spec_memberships:
-              cluster.update_pending_state(feature_spec_memberships[name],
-                                           fs.membershipConfig)
+              cluster.update_pending_state(
+                  feature_spec_memberships[name].configmanagement,
+                  fs.membershipSpec)
       acm_status.append(cluster)
     return {'acm_errors': acm_errors, 'acm_status': acm_status}
-
-
-def parse_feature_spec_memberships(response):
-  if response.configmanagementFeatureSpec is None or response.configmanagementFeatureSpec.membershipConfigs is None:
-    feature_spec_membership_details = []
-  else:
-    feature_spec_membership_details = response.configmanagementFeatureSpec.membershipConfigs.additionalProperties
-  return {
-      membership_detail.key: membership_detail.value
-      for membership_detail in feature_spec_membership_details
-  }
-
-
-def parse_feature_state_memberships(response):
-  if response.featureState is None or response.featureState.detailsByMembership is None:
-    feature_state_membership_details = []
-  else:
-    feature_state_membership_details = response.featureState.detailsByMembership.additionalProperties
-  return {
-      os.path.basename(membership_detail.key): membership_detail
-      for membership_detail in feature_state_membership_details
-  }
 
 
 def has_operator_state(fs):
@@ -270,12 +252,9 @@ def has_config_sync_error(fs):
 
 
 def has_config_sync_git(fs):
-  return fs.membershipConfig and fs.membershipConfig.configSync and fs.membershipConfig.configSync.git
+  return fs.membershipSpec and fs.membershipSpec.configSync and fs.membershipSpec.configSync.git
 
 
 def append_error(cluster, state_errors, acm_errors):
   for error in state_errors:
-    acm_errors.append({
-        'cluster': cluster,
-        'error': error.errorMessage
-    })
+    acm_errors.append({'cluster': cluster, 'error': error.errorMessage})

@@ -148,4 +148,5 @@ class Update(base.UpdateCommand):
             updateMask=','.join(update_mask),
             requestId=request_utils.GenerateRequestId()))
 
-    return operations.Await(operation, 'Updating Subordinate CA.')
+    return operations.Await(
+        operation, 'Updating Subordinate CA.', api_version='v1')

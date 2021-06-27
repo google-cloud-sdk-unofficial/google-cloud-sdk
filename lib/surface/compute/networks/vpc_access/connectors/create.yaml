@@ -127,8 +127,9 @@
                 `--min-instances`.
     - arg_name: machine-type
       api_field: connector.machineType
-      release_tracks: [ALPHA, BETA]
+      release_tracks: [ALPHA, BETA, GA]
       required: false
       help_text: |
-        Machine type of VMs underlying the VPC Access connector. Accepted values are "e2-micro",
-        "f1-micro", and "e2-standard-4". If left unspecified, the e2-micro machine type is used.
+        Machine type of VMs underlying the VPC Access connector. Accepted values are ``e2-micro'',
+        ``f1-micro'', and ``e2-standard-4''.  If left unspecified, the ``e2-micro'' machine type is
+        used.

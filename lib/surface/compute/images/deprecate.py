@@ -81,20 +81,32 @@ class DeprecateImages(base.SilentCommand):
     deprecate_group.add_argument(
         '--deprecate-on',
         help="""\
-        Specifies time (in the same format as *--delete-on*) when this image
-        will be marked as DEPRECATED. State will not be changed - it has only
-        informational purpose.
+        Specifies a date when the image should be marked as DEPRECATED.
+
+        Note: On the specified date, the image state does not change.
+        An explicit request to deprecate the image must be made in order to change the state.
+
         This flag is mutually exclusive with *--deprecate-in*.
+
+        The date and time specified must be valid RFC 3339 full-date or date-time.
+        For times in UTC, this looks like ``YYYY-MM-DDTHH:MM:SSZ''.
+        For example: 2020-01-02T00:00:00Z for midnight on January 2, 2020 in UTC.
         """)
 
     deprecate_group.add_argument(
         '--deprecate-in',
         type=arg_parsers.Duration(),
         help="""\
-        Specifies time (in the same format as *--delete-in*) until the image
-        will be marked DEPRECATED. State will not be changed - it is only for
-        informational purposes.
+        Specifies a time duration in which the image is marked as ``DEPRECATED''.
+
+        Note: On the specified date, the image state does not change.
+        An explicit request to deprecate the image must be made in order to change the state.
+
         This flag is mutually exclusive with *--deprecate-on*.
+
+        For example, specifying ``30d'' marks the image as ``DEPRECATED'' in 30 days from the current system time.
+        See $ gcloud topic datetimes for information on duration formats.
+
        """)
 
     delete_group = parser.add_mutually_exclusive_group()
@@ -102,29 +114,31 @@ class DeprecateImages(base.SilentCommand):
     delete_group.add_argument(
         '--delete-on',
         help="""\
-        Similar to *--delete-in*, but specifies an absolute time when the image
-        will be marked as DELETED. Note: The image will not actually be
-        deleted - this field is for informational purposes (see the description
-        of --delete-in for more details). The date and time specified must be
-        valid RFC 3339 full-date or date-time. For times in UTC, this looks
-        like ``YYYY-MM-DDTHH:MM:SSZ''. For example: 2020-01-02T00:00:00Z for
-        midnight on January 2, 2020 in UTC.
+        Specifies a date when the image is marked as ``DELETED''.
+
+        Note: On the specified date, the image state does not change.
+        An explicit request to delete the image must be made in order to remove the image from the list.
+
         This flag is mutually exclusive with *--delete-in*.
+
+        The date and time specified must be valid RFC 3339 full-date or date-time.
+        For times in UTC, this looks like ``YYYY-MM-DDTHH:MM:SSZ''.
+        For example: 2020-01-02T00:00:00Z for midnight on January 2, 2020 in UTC.
+
         """)
 
     delete_group.add_argument(
         '--delete-in',
         type=arg_parsers.Duration(),
         help="""\
-       Specifies the amount of time until the image will be marked as DELETED.
-       Note: The image will not actually be deleted - this field is only for
-       informational purposes (see below). For instance, specifying ``30d'' will
-       mark the image as DELETED in 30 days from the current system time.
+       Specifies a time duration in which the image is marked as ``DELETED''.
+
+       Note: On the specified date, the image state does not change.
+       An explicit request to delete the image must be made in order to remove it from the image list.
+
+       For example, specifying ``30d'' marks the image as ``DELETED'' in 30 days from the current system time.
        See $ gcloud topic datetimes for information on duration formats.
 
-       Note that the image will not be deleted automatically. The image will
-       only be marked as deleted. An explicit request to delete the image must
-       be made in order to remove it from the image list.
        This flag is mutually exclusive with *--delete-on*.
        """)
 
@@ -133,20 +147,31 @@ class DeprecateImages(base.SilentCommand):
     obsolete_group.add_argument(
         '--obsolete-on',
         help="""\
-       Specifies time (in the same format as *--delete-on*) when this image will
-       be marked as OBSOLETE. State will not be changed - it has only
-       informational purpose.
-       This flag is mutually exclusive with *--obsolete-in*.
+        Specifies a date when the image is marked as ``OBSOLETE''.
+
+        Note: On the specified date, the image state does not change.
+        An explicit request to delete the image must be made in order to remove the image from the list.
+
+        This flag is mutually exclusive with *--obsolete-in*.
+
+        The date and time specified must be valid RFC 3339 full-date or date-time.
+        For times in UTC, this looks like ``YYYY-MM-DDTHH:MM:SSZ''.
+        For example: 2020-01-02T00:00:00Z for midnight on January 2, 2020 in UTC.
        """)
 
     obsolete_group.add_argument(
         '--obsolete-in',
         type=arg_parsers.Duration(),
         help="""\
-       Specifies time (in the same format as *--delete-in*) until the image
-       will be marked OBSOLETE. State will not be changed - it is only for
-       informational purposes.
+       Specifies a time duration in which the image is marked as ``OBSOLETE''.
+
+       Note: On the specified date, the image state does not change.
+       An explicit request to delete the image must be made in order to remove it from the image list.
+
        This flag is mutually exclusive with *--obsolete-on*.
+
+       For example, specifying ``30d'' marks the image as ``OBSOLETE'' in 30 days from the current system time.
+       See $ gcloud topic datetimes for information on duration formats.
        """)
 
   def Run(self, args):

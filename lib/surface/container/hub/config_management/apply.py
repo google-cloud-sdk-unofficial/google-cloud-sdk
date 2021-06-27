@@ -18,52 +18,41 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import os
-import textwrap
-from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.command_lib.container.hub.config_management import utils
 from googlecloudsdk.command_lib.container.hub.features import base
 from googlecloudsdk.core import exceptions
-from googlecloudsdk.core import properties
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_io
 
-MEMBERSHIP_FLAG = '--membership'
-CONFIG_YAML_FLAG = '--config'
-membership = None
+EXAMPLES = """\
+    To apply a YAML config file to a membership, run:
+
+      $ {command} --membership=CLUSTER_NAME --config=/path/to/config-management.yaml
+"""
 
 
 class Apply(base.UpdateCommand):
-  r"""Update a Config Management Feature Spec.
+  """Update a Config Management Feature Spec.
 
   Update a user-specified config file to a ConfigManagement Custom Resource.
   The config file should be a yaml file.
-
-  ## Examples
-
-  Apply ConfigManagement yaml file:
-
-    $ {command} --membership=CLUSTER_NAME \
-    --config=/path/to/config-management.yaml
   """
+
+  detailed_help = {'EXAMPLES': EXAMPLES}
 
   feature_name = 'configmanagement'
 
   @classmethod
   def Args(cls, parser):
     parser.add_argument(
-        MEMBERSHIP_FLAG,
+        '--membership',
         type=str,
-        help=textwrap.dedent("""\
-            The Membership name provided during registration.
-            """),
+        help='The Membership name provided during registration.',
     )
     parser.add_argument(
-        CONFIG_YAML_FLAG,
+        '--config',
         type=str,
-        help=textwrap.dedent("""\
-            The path to config-management.yaml.
-            """),
+        help='The path to config-management.yaml.',
         required=True)
 
   def Run(self, args):
@@ -71,17 +60,16 @@ class Apply(base.UpdateCommand):
     try:
       loaded_cm = yaml.load_path(args.config)
     except yaml.Error as e:
-      raise exceptions.Error(
-          'Invalid config yaml file {}'.format(args.config), e)
+      raise exceptions.Error('Invalid config yaml file {}'.format(args.config),
+                             e)
     _validate_meta(loaded_cm)
 
     # make sure a valid membership is selected
-    project = properties.VALUES.core.project.GetOrFail()
-    memberships = base.ListMemberships(project)
+    memberships = base.ListMemberships()
     if not memberships:
       raise exceptions.Error('No Memberships available in Hub.')
     # User should choose an existing membership if not provide one
-    global membership
+    membership = None
     if not args.membership:
       index = console_io.PromptChoice(
           options=memberships,
@@ -93,71 +81,51 @@ class Apply(base.UpdateCommand):
       if membership not in memberships:
         raise exceptions.Error(
             'Membership {} is not in Hub.'.format(membership))
-    client = core_apis.GetClientInstance('gkehub', 'v1alpha1')
-    msg = client.MESSAGES_MODULE
-    config_sync = _parse_config_sync(loaded_cm, msg)
-    policy_controller = _parse_policy_controller(loaded_cm, msg)
+
+    config_sync = _parse_config_sync(loaded_cm, self.messages)
+    policy_controller = _parse_policy_controller(loaded_cm, self.messages)
     hierarchy_controller_config = _parse_hierarchy_controller_config(
-        loaded_cm, msg)
-    applied_config = msg.ConfigManagementFeatureSpec.MembershipConfigsValue.AdditionalProperty(
-        key=membership,
-        value=msg.MembershipConfig(
+        loaded_cm, self.messages)
+
+    spec = self.messages.MembershipFeatureSpec(
+        configmanagement=self.messages.ConfigManagementMembershipSpec(
             version=self._get_backfill_version(membership),
             configSync=config_sync,
             policyController=policy_controller,
             hierarchyController=hierarchy_controller_config))
+    spec_map = {self.MembershipResourceName(membership): spec}
+
     # UpdateFeature uses patch method to update membership_configs map,
     # there's no need to get the existing feature spec
-    m_configs = msg.ConfigManagementFeatureSpec.MembershipConfigsValue(
-        additionalProperties=[applied_config])
-    self.RunCommand(
-        'configmanagement_feature_spec.membership_configs',
-        configmanagementFeatureSpec=msg.ConfigManagementFeatureSpec(
-            membershipConfigs=m_configs))
+    patch = self.messages.Feature(
+        membershipSpecs=self.hubclient.ToMembershipSpecs(spec_map))
+    self.Update(['membership_specs'], patch)
 
-  def _get_backfill_version(self, mem):
+  def _get_backfill_version(self, membership_id):
     """Get the value the version field in FeatureSpec should be set to.
 
     Args:
-      mem: The membership name whose Spec will be backfilled.
+      membership_id: The membership short name whose Spec will be backfilled.
 
     Returns:
       version: A string denoting the version field in MembershipConfig
     Raises: Error, if retrieving FeatureSpec of FeatureState fails
     """
-    project_id = properties.VALUES.core.project.GetOrFail()
-    response = utils.try_get_configmanagement(project_id)
+    f = self.GetFeature()
+    spec_version, state_version = utils.versions_for_member(f, membership_id)
 
-    # First check FeatureSpec to see if an existing version is set
-    mem_config = _parse_membership(response, mem)
-    if mem_config and mem_config.version:
-      return mem_config.version
+    if spec_version:
+      return spec_version
 
-    # Next, check FeatureState
-    if response.featureState and response.featureState.detailsByMembership:
-      membership_details = response.featureState.detailsByMembership.additionalProperties
-      for m in membership_details:
-        if os.path.basename(m.key) == mem:
-          fs = m.value.configmanagementFeatureState
-          if fs and fs.membershipConfig and fs.membershipConfig.version:
-            # If the version on the cluster is later than the latest supported
-            # version in the Hub API, we do not want to write this version to
-            # spec. If we did, this would result in an error updating spec,
-            # rendering this gcloud command unusable.
-            return fs.membershipConfig.version \
-              if fs.membershipConfig.version <= utils.LATEST_VERSION else ''
+    if state_version > utils.LATEST_VERSION:
+      # If the version on the cluster is later than the latest supported
+      # version in the Hub API, we do not want to write this version to
+      # spec. If we did, this would result in an error updating spec,
+      # rendering this gcloud command unusable.
+      return ''
 
     # If Spec/State did not contain version, return default (latest version)
-    return utils.LATEST_VERSION
-
-
-def _parse_membership(response, mem):
-  if response.configmanagementFeatureSpec is None or response.configmanagementFeatureSpec.membershipConfigs is None:
-    return None
-
-  for details in response.configmanagementFeatureSpec.membershipConfigs.additionalProperties:
-    if details.key == mem:
-      return details.value
+    return state_version or utils.LATEST_VERSION
 
 
 def _validate_meta(configmanagement):
@@ -189,7 +157,8 @@ def _parse_config_sync(configmanagement, msg):
   Args:
     configmanagement: dict, The data loaded from the config-management.yaml
       given by user.
-    msg: The empty message class for gkehub version v1alpha1
+    msg: The Hub messages package.
+
   Returns:
     config_sync: The ConfigSync configuration holds configmanagement.spec.git
     being used in MembershipConfigs
@@ -206,12 +175,12 @@ def _parse_config_sync(configmanagement, msg):
       raise exceptions.Error(
           'The field .spec.{}.{}'.format(utils.CONFIG_SYNC, field) +
           ' is unrecognized in this applySpecVersion. Please remove.')
-  git_config = msg.GitConfig()
-  config_sync = msg.ConfigSync(git=git_config)
+  git_config = msg.ConfigManagementGitConfig()
+  config_sync = msg.ConfigManagementConfigSync(git=git_config)
   # missing `enabled: true` will disable configSync
   if 'enabled' not in spec_git:
-    raise exceptions.Error(
-        'Missing required field [{}.enabled]'.format(utils.CONFIG_SYNC))
+    raise exceptions.Error('Missing required field [{}.enabled]'.format(
+        utils.CONFIG_SYNC))
   if not spec_git['enabled']:
     return config_sync
   # https://cloud.google.com/anthos-config-management/docs/how-to/installing#configuring-git-repo
@@ -223,9 +192,10 @@ def _parse_config_sync(configmanagement, msg):
   # TODO(b/189131417) remove git validation, catch the CLH result instead.
   valid_sf = ['hierarchy', 'unstructured']
   if 'sourceFormat' in spec_git and spec_git['sourceFormat'] not in valid_sf:
-    raise exceptions.Error('Please fix unrecognized value of '
-                           '.spec.{}.sourceFormat, only [{}] are supported'
-                           .format(utils.CONFIG_SYNC, ','.join(valid_sf)))
+    raise exceptions.Error(
+        'Please fix unrecognized value of '
+        '.spec.{}.sourceFormat, only [{}] are supported'.format(
+            utils.CONFIG_SYNC, ','.join(valid_sf)))
   for field in [
       'policyDir', 'secretType', 'syncBranch', 'syncRepo', 'syncRev',
       'httpsProxy'
@@ -246,7 +216,8 @@ def _parse_policy_controller(configmanagement, msg):
   Args:
     configmanagement: dict, The data loaded from the config-management.yaml
       given by user.
-    msg: The empty message class for gkehub version v1alpha1
+    msg: The Hub messages package.
+
   Returns:
     policy_controller: The Policy Controller configuration for
     MembershipConfigs, filled in the data parsed from
@@ -269,7 +240,7 @@ def _parse_policy_controller(configmanagement, msg):
     raise exceptions.Error(
         'policyController.enabled should be `true` or `false`')
 
-  policy_controller = msg.PolicyController()
+  policy_controller = msg.ConfigManagementPolicyController()
   # When the policyController is set to be enabled, policy_controller will
   # be filled with the valid fields set in spec_policy_controller, which
   # were mapped from the config-management.yaml
@@ -291,7 +262,7 @@ def _parse_hierarchy_controller_config(configmanagement, msg):
   Args:
     configmanagement: dict, The data loaded from the config-management.yaml
       given by user.
-    msg: The empty message class for gkehub version v1alpha1
+    msg: The Hub messages package.
 
   Returns:
     hierarchy_controller: The Hierarchy Controller configuration for
@@ -315,7 +286,7 @@ def _parse_hierarchy_controller_config(configmanagement, msg):
     raise exceptions.Error(
         'hierarchyController.enabled should be `true` or `false`')
 
-  config_proto = msg.HierarchyControllerConfig()
+  config_proto = msg.ConfigManagementHierarchyControllerConfig()
   # When the hierarchyController is set to be enabled, hierarchy_controller will
   # be filled with the valid fields set in spec, which
   # were mapped from the config-management.yaml

@@ -19,11 +19,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import encoding
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.dataproc import constants
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
+from googlecloudsdk.api_lib.dataproc import display_helper
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
@@ -31,24 +31,6 @@ from googlecloudsdk.core import properties
 
 
 STATE_MATCHER_ENUM_MAP = {'active': 'ACTIVE', 'inactive': 'NON_ACTIVE'}
-
-
-class TypedJob(util.Bunch):
-  """Job with additional type field that corresponds to the job_type one_of."""
-
-  def __init__(self, job):
-    super(TypedJob, self).__init__(encoding.MessageToDict(job))
-    self._job = job
-    self._type = None
-
-  @property
-  def type(self):
-    for field in [field.name for field in self._job.all_fields()]:
-      if field.endswith('Job'):
-        job_type, _, _ = field.rpartition('Job')
-        if self._job.get_assigned_value(field):
-          return job_type
-    raise AttributeError('Job has no job type')
 
 
 class List(base.ListCommand):
@@ -94,7 +76,7 @@ class List(base.ListCommand):
     parser.display_info.AddFormat("""
           table(
             reference.jobId,
-            type.yesno(no="-"),
+            jobType.yesno(no="-"):label=TYPE,
             status.state:label=STATUS
           )
     """)
@@ -122,7 +104,7 @@ class List(base.ListCommand):
         limit=args.limit, field='jobs',
         batch_size=args.page_size,
         batch_size_attribute='pageSize')
-    return (TypedJob(job) for job in jobs)
+    return (display_helper.DisplayHelper(job) for job in jobs)
 
   @staticmethod
   def GetRequest(messages, project, region, args):

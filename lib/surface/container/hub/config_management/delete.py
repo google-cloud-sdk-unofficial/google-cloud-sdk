@@ -30,15 +30,16 @@ MEMBERSHIP_FLAG = '--membership'
              'Please use `unmanage` instead.'),
     error=('This command has been removed.'
            'Please use `unmanage` instead.'))
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(unmanage.Unmanage):
   """Remove the Config Management Feature Spec for the given membership.
 
   Remove the Config Management Feature Spec for the given membership. The
   existing ConfigManagement resources in the clusters will become unmanaged.
 
-  ## Examples
+  ## EXAMPLES
 
-  Apply ConfigManagement yaml file:
+  To remove the Config Management Feature spec for a Membership, run:
 
     $ {command} --membership=CLUSTER_NAME
   """

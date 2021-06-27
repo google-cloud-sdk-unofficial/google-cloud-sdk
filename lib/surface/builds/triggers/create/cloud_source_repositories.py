@@ -91,6 +91,7 @@ class CreateCSR(base.CreateCommand):
             tagName=args.tag_pattern,
         ),
     )
+    trigger_utils.ParseRequireApproval(trigger, args, messages)
 
     # Build Config
     project = properties.VALUES.core.project.Get(required=True)

@@ -177,7 +177,7 @@ class Activate(base.SilentCommand):
             requestId=request_utils.GenerateRequestId()))
     operation = self.client.projects_locations_caPools_certificateAuthorities.Enable(
         enable_request)
-    return operations.Await(operation, 'Enabling CA.')
+    return operations.Await(operation, 'Enabling CA.', api_version='v1')
 
   def _ShouldEnableCa(self, args, ca_ref):
     """Determines whether the CA should be enabled or not."""
@@ -218,7 +218,8 @@ class Activate(base.SilentCommand):
                     pemIssuerChain=messages.SubordinateConfigChain(
                         pemCertificates=pem_chain)))))
 
-    operations.Await(operation, 'Activating Certificate Authority.')
+    operations.Await(
+        operation, 'Activating Certificate Authority.', api_version='v1')
     log.status.Print('Activated Certificate Authority [{}].'.format(
         ca_ref.Name()))
     if self._ShouldEnableCa(args, ca_ref):

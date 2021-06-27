@@ -31,7 +31,6 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine virtual machine network interface.
 
@@ -43,9 +42,6 @@ class Update(base.UpdateCommand):
   sets 172.16.0.1/32 from range r1 of the default interface's subnetwork
   as the interface's alias IP.
   """
-
-  support_stack_type = False
-  support_ipv6_network_tier = False
 
   @classmethod
   def Args(cls, parser):
@@ -96,34 +92,28 @@ class Update(base.UpdateCommand):
             --aliases="10.128.1.0/24;r1:/32"
         """.format(alias_network_migration_help))
 
-    if cls.support_stack_type:
-      parser.add_argument(
-          '--stack-type',
-          choices={
-              'IPV4_ONLY':
-                  'The network interface will be assigned IPv4 addresses.',
-              'IPV4_IPV6':
-                  'The network interface can have both IPv4 and IPv6 addresses.'
-          },
-          type=arg_utils.ChoiceToEnumName,
-          help=('The stack type for this network interface to identify whether '
-                'the IPv6 feature is enabled or not.'))
+    parser.add_argument(
+        '--stack-type',
+        choices={
+            'IPV4_ONLY':
+                'The network interface will be assigned IPv4 addresses.',
+            'IPV4_IPV6':
+                'The network interface can have both IPv4 and IPv6 addresses.'
+        },
+        type=arg_utils.ChoiceToEnumName,
+        help=('The stack type for the default network interface. Determines if '
+              'IPv6 is enabled on the default network interface.'))
 
-    if cls.support_ipv6_network_tier:
-      parser.add_argument(
-          '--ipv6-network-tier',
-          choices={
-              'PREMIUM':
-                  ('High quality, Google-grade network tier, support for '
-                   'all networking products.'),
-              'STANDARD': ('Public Internet quality, only limited support for '
-                           'other networking products.')
-          },
-          type=arg_utils.ChoiceToEnumName,
-          help=(
-              'Specifies the IPv6 network tier that will be used to configure '
-              'the instance network interface IPv6 access config. Only `PREMIUM` '
-              'is supported for now.'))
+    parser.add_argument(
+        '--ipv6-network-tier',
+        choices={
+            'PREMIUM':
+                ('High quality, Google-grade network tier.')
+        },
+        type=arg_utils.ChoiceToEnumName,
+        help=(
+            'Specifies the IPv6 network tier that will be used to configure '
+            'the instance network interface IPv6 access config.'))
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -222,20 +212,3 @@ class Update(base.UpdateCommand):
         operation_poller, operation_ref,
         'Updating network interface [{0}] of instance [{1}]'.format(
             args.network_interface, instance_ref.Name()))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
-  r"""Update a Google Compute Engine virtual machine network interface.
-
-  *{command}* updates network interfaces of a Google Compute Engine
-  virtual machine. For example:
-
-    $ {command} example-instance --zone us-central1-a --aliases r1:172.16.0.1/32
-
-  sets 172.16.0.1/32 from range r1 of the default interface's subnetwork
-  as the interface's alias IP.
-  """
-
-  support_stack_type = True
-  support_ipv6_network_tier = True

@@ -34,9 +34,3 @@ class Enable(base.EnableCommand):
   """
 
   feature_name = 'multiclusterservicediscovery'
-
-  def Run(self, args):
-    self.RunCommand(
-        args,
-        multiclusterservicediscoveryFeatureSpec=(
-            base.CreateMultiClusterServiceDiscoveryFeatureSpec()))

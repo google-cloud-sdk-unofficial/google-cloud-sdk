@@ -179,6 +179,7 @@ class UpdateBeta(base.UpdateCommand):
   def Args(parser):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
     _CommonArgs(parser, messages)
+    flags.GetManagedZoneGkeClustersArg().AddToParser(parser)
 
   def Run(self, args):
     api_version = util.GetApiFromTrack(self.ReleaseTrack())
@@ -203,7 +204,7 @@ class UpdateBeta(base.UpdateCommand):
           networkUrl=peering_network)
 
     visibility_config = None
-    if args.networks:
+    if args.networks or args.gkeclusters:
       networks = args.networks if args.networks != [''] else []
 
       def GetNetworkSelfLink(network):
@@ -219,8 +220,15 @@ class UpdateBeta(base.UpdateCommand):
           messages.ManagedZonePrivateVisibilityConfigNetwork(networkUrl=nurl)
           for nurl in network_urls
       ]
+
+      gkeclusters = args.gkeclusters or []
+
+      gkecluster_configs = [
+          messages.ManagedZonePrivateVisibilityConfigGKECluster(
+              gkeClusterName=name) for name in gkeclusters
+      ]
       visibility_config = messages.ManagedZonePrivateVisibilityConfig(
-          networks=network_configs)
+          networks=network_configs, gkeClusters=gkecluster_configs)
 
     reverse_lookup_config = None
     if args.IsSpecified(
@@ -254,3 +262,4 @@ class UpdateAlpha(UpdateBeta):
   def Args(parser):
     messages = apis.GetMessagesModule('dns', 'v1alpha2')
     _CommonArgs(parser, messages)
+    flags.GetManagedZoneGkeClustersArg().AddToParser(parser)

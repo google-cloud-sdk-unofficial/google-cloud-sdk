@@ -44,8 +44,7 @@ class CreateBeta(base.CreateCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    parser = workerpool_flags.AddWorkerpoolCreateArgs(
-        parser, release_track=base.ReleaseTrack.BETA)
+    parser = workerpool_flags.AddWorkerpoolCreateArgs(parser)
     parser.display_info.AddFormat("""
           table(
             name,
