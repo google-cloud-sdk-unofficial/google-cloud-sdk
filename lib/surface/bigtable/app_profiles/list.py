@@ -37,6 +37,14 @@ def _TransformAppProfileToRoutingInfo(app_profile):
   return ''
 
 
+def _TransformAppProfileToFailoverRadius(app_profile):
+  """Extracts the failover radius from the app profile."""
+  if 'multiClusterRoutingUseAny' in app_profile:
+    if 'failoverRadius' in app_profile['multiClusterRoutingUseAny']:
+      return app_profile['multiClusterRoutingUseAny']['failoverRadius']
+  return ''
+
+
 class ListAppProfiles(base.ListCommand):
   """List Bigtable app profiles."""
 
@@ -56,6 +64,7 @@ class ListAppProfiles(base.ListCommand):
 
     parser.display_info.AddTransforms({
         'routingInfo': _TransformAppProfileToRoutingInfo,
+        'failoverRadius': _TransformAppProfileToFailoverRadius,
     })
 
     # ROUTING is a oneof SingleClusterRouting, MultiClusterRoutingUseAny.
@@ -65,7 +74,8 @@ class ListAppProfiles(base.ListCommand):
             name.basename():sort=1,
             description:wrap,
             routingInfo():wrap:label=ROUTING,
-            singleClusterRouting.allowTransactionalWrites.yesno("Yes"):label=TRANSACTIONAL_WRITES
+            singleClusterRouting.allowTransactionalWrites.yesno("Yes"):label=TRANSACTIONAL_WRITES,
+            failoverRadius():label=FAILOVER_RADIUS
           )
         """)
 

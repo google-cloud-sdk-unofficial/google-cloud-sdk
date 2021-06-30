@@ -70,6 +70,7 @@ def AddBaseArgs(parser):
   base.ASYNC_FLAG.AddToParser(parser)
   parser.display_info.AddFormat(flags.GetInstanceListFormat())
   flags.AddActivationPolicy(parser)
+  flags.AddActiveDirectoryDomain(parser)
   flags.AddAssignIp(parser)
   flags.AddAuthorizedNetworks(parser)
   flags.AddAvailabilityType(parser)
@@ -150,7 +151,6 @@ def AddBaseArgs(parser):
 
 def AddBetaArgs(parser):
   """Declare beta flag and positional arguments for this command parser."""
-  flags.AddActiveDirectoryDomain(parser)
   flags.AddExternalMasterGroup(parser)
   flags.AddInstanceResizeLimit(parser)
   flags.AddNetwork(parser)

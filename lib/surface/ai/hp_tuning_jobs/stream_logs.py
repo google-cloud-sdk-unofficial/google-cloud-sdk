@@ -26,7 +26,8 @@ from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import log_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class StreamLogs(base.Command):
   """Stream logs from a running Vertex AI hyperparameter tuning job.
 
@@ -46,13 +47,15 @@ class StreamLogs(base.Command):
   def Run(self, args):
     hptuning_job_ref = args.CONCEPTS.hptuning_job.Parse()
     region = hptuning_job_ref.AsDict()['locationsId']
+    version = constants.GA_VERSION if self.ReleaseTrack(
+    ) == base.ReleaseTrack.GA else constants.BETA_VERSION
     with endpoint_util.AiplatformEndpointOverrides(
-        version=constants.BETA_VERSION, region=region):
+        version=version, region=region):
       relative_name = hptuning_job_ref.RelativeName()
       return log_util.StreamLogs(
           hptuning_job_ref.AsDict()['hyperparameterTuningJobsId'],
-          continue_function=client.HpTuningJobsClient().CheckJobComplete(
-              relative_name),
+          continue_function=client.HpTuningJobsClient(
+              version=version).CheckJobComplete(relative_name),
           polling_interval=args.polling_interval,
           task_name=args.task_name,
           allow_multiline=args.allow_multiline_logs)

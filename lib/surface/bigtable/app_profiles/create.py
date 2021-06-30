@@ -70,7 +70,6 @@ class CreateAppProfile(base.CreateCommand):
       ConflictingArgumentsException:
           If both cluster and multi_cluster are present.
           If both multi_cluster and transactional_writes are present.
-          If both cluster and restrict_to are present.
       OneOfArgumentsRequiredException: If neither cluster or multi_cluster are
           present.
 
@@ -96,7 +95,6 @@ class CreateAppProfile(base.CreateCommand):
       ConflictingArgumentsException:
           If both cluster and multi_cluster are present.
           If both multi_cluster and transactional_writes are present.
-          If both cluster and restrict_to are present.
       OneOfArgumentsRequiredException: If neither cluster or multi_cluster are
           present.
 
@@ -122,7 +120,7 @@ class CreateAppProfileAlpha(CreateAppProfile):
     arguments.AddAppProfileResourceArg(parser, 'to create')
     (arguments.ArgAdder(parser).AddDescription(
         'app profile', required=False).AddForce('create').AddAppProfileRouting(
-            allow_restrict_to=True))
+            allow_restrict_to=True, allow_failover_radius=True))
 
   def _CreateAppProfile(self, app_profile_ref, args):
     """Creates an AppProfile with the given arguments, including restrict_to.
@@ -137,6 +135,7 @@ class CreateAppProfileAlpha(CreateAppProfile):
           If both cluster and multi_cluster are present.
           If both multi_cluster and transactional_writes are present.
           If both cluster and restrict_to are present.
+          If both cluster and failover_radius are present.
       OneOfArgumentsRequiredException: If neither cluster or multi_cluster are
           present.
 
@@ -149,5 +148,6 @@ class CreateAppProfileAlpha(CreateAppProfile):
         description=args.description,
         multi_cluster=args.route_any,
         restrict_to=args.restrict_to,
+        failover_radius=args.failover_radius,
         transactional_writes=args.transactional_writes,
         force=args.force)

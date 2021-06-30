@@ -53,6 +53,23 @@ class PrintAccessToken(base.Command):
     $ curl -H "Content-Type: application/x-www-form-urlencoded" \
     -d "access_token=$(gcloud auth application-default print-access-token)" \
     https://www.googleapis.com/oauth2/v1/tokeninfo
+
+  Note that token itself may not be enough to access some services.
+  If you use the token with curl or similar tools, you may see
+  permission errors similar to "Your application has authenticated using end
+  user credentials from the Google Cloud SDK or Google Cloud Shell".
+  If it happens, you may need to provide a quota project in the
+  "X-Goog-User-Project" header. For example,
+
+    $ curl -H "X-Goog-User-Project: your-project" \
+        -H \
+        "Authorization: Bearer $(gcloud auth application-default\
+     print-access-token)" foo.googleapis.com
+
+  The identity that granted the token must have the serviceusage.services.use
+  permission on the provided project. See
+  https://cloud.google.com/apis/docs/system-parameters for more
+  information.
   """
 
   @staticmethod

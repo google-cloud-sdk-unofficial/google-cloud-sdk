@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.kms import exceptions
 from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.command_lib.kms import maps
 
@@ -54,12 +54,12 @@ class Create(base.CreateCommand):
     messages = cloudkms_base.GetMessagesModule()
 
     if not args.protection_level:
-      raise exceptions.ToolException(
+      raise exceptions.ArgumentError(
           "--protection-level needs to be specified when creating an import job"
       )
 
     if not args.import_method:
-      raise exceptions.ToolException(
+      raise exceptions.ArgumentError(
           "--import-method needs to be specified when creating an import job")
 
     import_job_ref = flags.ParseImportJobName(args)

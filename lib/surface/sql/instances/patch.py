@@ -50,16 +50,13 @@ def _PrintAndConfirmWarningMessage(args, database_version):
   """Print and confirm warning indicating the effect of applying the patch."""
   continue_msg = None
 
-  # TODO(b/162789572): `in` check is only required until GA.
-  active_directory_changed = ('active_directory_domain' in args and
-                              args.active_directory_domain is not None)
   insights_query_length_changed = (
       'insights_config_query_string_length' in args and
       args.insights_config_query_string_length is not None)
   if any([
       args.tier,
       args.enable_database_replication is not None,
-      active_directory_changed,
+      args.active_directory_domain is not None,
       insights_query_length_changed,
   ]):
     continue_msg = ('WARNING: This patch modifies a value that requires '
@@ -133,6 +130,7 @@ def AddBaseArgs(parser):
   """Adds base args and flags to the parser."""
   # TODO(b/35705305): move common flags to command_lib.sql.flags
   flags.AddActivationPolicy(parser)
+  flags.AddActiveDirectoryDomain(parser)
   flags.AddAssignIp(parser)
   base.ASYNC_FLAG.AddToParser(parser)
   gae_apps_group = parser.add_mutually_exclusive_group()
@@ -237,7 +235,6 @@ def AddBaseArgs(parser):
 
 def AddBetaArgs(parser):
   """Adds beta args and flags to the parser."""
-  flags.AddActiveDirectoryDomain(parser)
   flags.AddInstanceResizeLimit(parser)
   flags.AddNetwork(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)

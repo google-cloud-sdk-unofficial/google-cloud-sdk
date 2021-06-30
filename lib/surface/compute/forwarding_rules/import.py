@@ -50,6 +50,7 @@ class Import(base.UpdateCommand):
 
   FORWARDING_RULE_ARG = None
   detailed_help = DETAILED_HELP
+  _support_source_ip_range = False
 
   @classmethod
   def GetApiVersion(cls):
@@ -136,7 +137,19 @@ class Import(base.UpdateCommand):
     forwarding_rule.id = forwarding_rule_old.id
     forwarding_rule.fingerprint = forwarding_rule_old.fingerprint
 
-    return self.SendPatchRequest(client, forwarding_rule_ref, forwarding_rule)
+    # Unspecified fields are assumed to be cleared.
+    cleared_fields = []
+    if not forwarding_rule.networkTier:
+      cleared_fields.append('networkTier')
+    if not forwarding_rule.allowGlobalAccess:
+      cleared_fields.append('allowGlobalAccess')
+    if self._support_source_ip_range and not forwarding_rule.sourceIpRanges:
+      cleared_fields.append('sourceIpRanges')
+    if not forwarding_rule.metadataFilters:
+      cleared_fields.append('metadataFilters')
+
+    with client.apitools_client.IncludeFields(cleared_fields):
+      return self.SendPatchRequest(client, forwarding_rule_ref, forwarding_rule)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -164,4 +177,5 @@ class ImportBeta(Import):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ImportAlpha(ImportBeta):
   """Import a forwarding rule."""
+  _support_source_ip_range = True
   pass

@@ -71,7 +71,6 @@ class UpdateAppProfile(base.CreateCommand):
       ConflictingArgumentsException:
           If both cluster and multi_cluster are present.
           If both multi_cluster and transactional_writes are present.
-          If both cluster and restrict_to are present.
       OneOfArgumentsRequiredException: If neither cluster or multi_cluster are
           present.
 
@@ -97,7 +96,6 @@ class UpdateAppProfile(base.CreateCommand):
       ConflictingArgumentsException:
           If both cluster and multi_cluster are present.
           If both multi_cluster and transactional_writes are present.
-          If both cluster and restrict_to are present.
       OneOfArgumentsRequiredException: If neither cluster or multi_cluster are
           present.
 
@@ -133,8 +131,8 @@ class UpdateAppProfileAlpha(UpdateAppProfile):
     arguments.AddAppProfileResourceArg(parser, 'to update')
     (arguments.ArgAdder(parser).AddDescription(
         'app profile', required=False).AddAppProfileRouting(
-            required=False,
-            allow_restrict_to=True).AddForce('update').AddAsync())
+            required=False, allow_restrict_to=True,
+            allow_failover_radius=True).AddForce('update').AddAsync())
 
   def _UpdateAppProfile(self, app_profile_ref, args):
     """Updates an AppProfile with the given arguments, including restrict_to.
@@ -149,6 +147,7 @@ class UpdateAppProfileAlpha(UpdateAppProfile):
           If both cluster and multi_cluster are present.
           If both multi_cluster and transactional_writes are present.
           If both cluster and restrict_to are present.
+          If both cluster and failover_radius are present.
       OneOfArgumentsRequiredException: If neither cluster or multi_cluster are
           present.
 
@@ -161,5 +160,6 @@ class UpdateAppProfileAlpha(UpdateAppProfile):
         description=args.description,
         multi_cluster=args.route_any,
         restrict_to=args.restrict_to,
+        failover_radius=args.failover_radius,
         transactional_writes=args.transactional_writes,
         force=args.force)

@@ -19,11 +19,14 @@ import sys
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import config
+from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import platforms_install
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.updater import update_manager
 from googlecloudsdk.core.util import encoding
+from googlecloudsdk.core.util import files
+from googlecloudsdk.core.util import platforms
 from googlecloudsdk import gcloud_main
 
 # pylint:disable=superfluous-parens
@@ -80,6 +83,11 @@ def ParseArgs():
                       help='Disable all interactive prompts. If input is '
                       'required, defaults will be used or an error will be '
                       'raised')
+  parser.add_argument(
+      '--install-python',
+      default=False,
+      action='store_true',
+      help='Attempt to install Python. MacOs only.')
 
   return parser.parse_args(bootstrapping.GetDecodedArgv()[1:])
 
@@ -190,6 +198,70 @@ the Google Cloud Platform.
       ['--quiet', 'components', verb, '--allow-no-backup'] + component_ids)
 
 
+MACOS_PYTHON_INSTALL_PATH = '/Library/Frameworks/Python.framework/Versions/3.7/'
+MACOS_PYTHON = 'macos_python-3.7.9.tar.gz'
+MACOS_PYTHON_URL = 'https://dl.google.com/dl/cloudsdk/channels/rapid/' + MACOS_PYTHON
+PYTHON_VERSION = '3.7'
+
+
+def MaybeInstallPythonOnMac():
+  """Optionally install Python on Mac machines."""
+  if platforms.OperatingSystem.Current() != platforms.OperatingSystem.MACOSX:
+    return
+  if platforms.Architecture.Current() != platforms.Architecture.x86_64:
+    return
+  if platforms.Platform.IsActuallyM1ArmArchitecture():
+    return
+
+  print('\nCloud SDK works best with Python {} and certain modules.\n'.format(
+      PYTHON_VERSION))
+
+  already_have_python_version = os.path.isdir(MACOS_PYTHON_INSTALL_PATH)
+  if already_have_python_version:
+    prompt = ('Python {} installation detected, install recommended'
+              ' modules?'.format(PYTHON_VERSION))
+  else:
+    prompt = 'Download and run Python {} installer?'.format(PYTHON_VERSION)
+  setup_python = console_io.PromptContinue(prompt_string=prompt, default=False)
+
+  if setup_python:
+    install_errors = []
+    if not already_have_python_version:
+      print('Running Python {} installer, you may be prompted for sudo '
+            'password...'.format(PYTHON_VERSION))
+      with files.TemporaryDirectory() as tempdir:
+        with files.ChDir(tempdir):
+          curl_args = ['curl', '--silent', '-O', MACOS_PYTHON_URL]
+          exit_code = execution_utils.Exec(curl_args, no_exit=True)
+          if exit_code != 0:
+            install_errors.append('Failed to download Python installer')
+          else:
+            exit_code = execution_utils.Exec(['tar', '-xf', MACOS_PYTHON],
+                                             no_exit=True)
+            if exit_code != 0:
+              install_errors.append('Failed to extract Python installer')
+            else:
+              exit_code = execution_utils.Exec([
+                  'sudo', 'installer', '-target', '/', '-pkg',
+                  './python-3.7.9-macosx10.9.pkg'
+              ],
+                                               no_exit=True)
+              if exit_code != 0:
+                install_errors.append('Installer failed.')
+
+    if not install_errors:
+      print('Setting up virtual environment')
+      if os.path.isdir(config.Paths().virtualenv_dir):
+        _CLI.Execute(['config', 'virtualenv', 'update'])
+        _CLI.Execute(['config', 'virtualenv', 'enable'])
+      else:
+        _CLI.Execute(['config', 'virtualenv', 'create'])
+        _CLI.Execute(['config', 'virtualenv', 'enable'])
+    else:
+      print('Failed to install Python. Errors \n\n{}'.format(
+          '\n*'.join(install_errors)))
+
+
 def main():
   pargs = ParseArgs()
   if pargs.screen_reader is not None:
@@ -216,7 +288,8 @@ def main():
           bin_path=bootstrapping.BIN_DIR,
           sdk_root=bootstrapping.SDK_ROOT,
       )
-
+      if pargs.install_python:
+        MaybeInstallPythonOnMac()
       print("""\
 
 For more information on how to get started, please visit:

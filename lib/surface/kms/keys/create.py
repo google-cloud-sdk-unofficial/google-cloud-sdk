@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.kms import exceptions as kms_exceptions
 from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.command_lib.kms import maps
 from googlecloudsdk.command_lib.kms import resource_args
@@ -150,7 +150,7 @@ class Create(base.CreateCommand):
     # default if the purpose is encryption.
     if not args.default_algorithm:
       if args.purpose != 'encryption':
-        raise exceptions.ToolException(
+        raise kms_exceptions.ArgumentError(
             '--default-algorithm needs to be specified when creating a key with'
             ' --purpose={}. The valid algorithms are: {}'.format(
                 args.purpose, ', '.join(valid_algorithms)))
@@ -158,7 +158,7 @@ class Create(base.CreateCommand):
 
     # Check default algorithm and purpose are compatible.
     if args.default_algorithm not in valid_algorithms:
-      raise exceptions.ToolException(
+      raise kms_exceptions.ArgumentError(
           'Default algorithm and purpose are incompatible. Here are the valid '
           'algorithms for --purpose={}: {}'.format(args.purpose,
                                                    ', '.join(valid_algorithms)))

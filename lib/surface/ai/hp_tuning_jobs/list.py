@@ -25,9 +25,18 @@ from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List existing hyperparameter tuning jobs."""
+  """List existing hyperparameter tuning jobs.
+
+  ## EXAMPLES
+
+  To list the jobs of project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} --project=example --region=us-central1
+  """
 
   @staticmethod
   def Args(parser):
@@ -36,6 +45,9 @@ class List(base.ListCommand):
   def Run(self, args):
     region_ref = args.CONCEPTS.region.Parse()
     region = region_ref.AsDict()['locationsId']
+    version = constants.GA_VERSION if self.ReleaseTrack(
+    ) == base.ReleaseTrack.GA else constants.BETA_VERSION
     with endpoint_util.AiplatformEndpointOverrides(
-        version=constants.BETA_VERSION, region=region):
-      return client.HpTuningJobsClient().List(region=region_ref.RelativeName())
+        version=version, region=region):
+      return client.HpTuningJobsClient(version=version).List(
+          region=region_ref.RelativeName())

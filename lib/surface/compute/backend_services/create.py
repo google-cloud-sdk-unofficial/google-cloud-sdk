@@ -87,7 +87,8 @@ class CreateHelper(object):
   def Args(cls, parser, support_l7_internal_load_balancer, support_gfe3,
            support_l7_rxlb, support_failover, support_logging, support_multinic,
            support_client_only, support_grpc_protocol,
-           support_unspecified_protocol, support_subsetting):
+           support_unspecified_protocol, support_subsetting,
+           support_connection_tracking):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -145,9 +146,13 @@ class CreateHelper(object):
 
     cdn_flags.AddCdnPolicyArgs(parser, 'backend service')
 
+    if support_connection_tracking:
+      flags.AddConnectionTrackingPolicy(parser)
+
   def __init__(self, support_l7_internal_load_balancer, support_gfe3,
                support_l7_rxlb, support_failover, support_logging,
-               support_multinic, support_subsetting):
+               support_multinic, support_subsetting,
+               support_connection_tracking):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_gfe3 = support_gfe3
     self._support_l7_rxlb = support_l7_rxlb
@@ -155,6 +160,7 @@ class CreateHelper(object):
     self._support_logging = support_logging
     self._support_multinic = support_multinic
     self._support_subsetting = support_subsetting
+    self._support_connection_tracking = support_connection_tracking
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
     """Returns a global backend service create request."""
@@ -250,6 +256,10 @@ class CreateHelper(object):
                                                    self._support_failover)
     if self._support_subsetting:
       backend_services_utils.ApplySubsettingArgs(client, args, backend_service)
+
+    if self._support_connection_tracking:
+      backend_services_utils.ApplyConnectionTrackingPolicyArgs(
+          client, args, backend_service)
 
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
@@ -352,6 +362,7 @@ class CreateGA(base.CreateCommand):
   _support_grpc_protocol = True
   _support_unspecified_protocol = False
   _support_subsetting = False
+  _support_connection_tracking = False
 
   @classmethod
   def Args(cls, parser):
@@ -367,7 +378,8 @@ class CreateGA(base.CreateCommand):
         support_client_only=cls._support_client_only,
         support_grpc_protocol=cls._support_grpc_protocol,
         support_unspecified_protocol=cls._support_unspecified_protocol,
-        support_subsetting=cls._support_subsetting)
+        support_subsetting=cls._support_subsetting,
+        support_connection_tracking=cls._support_connection_tracking)
 
   def Run(self, args):
     """Issues request necessary to create Backend Service."""
@@ -381,7 +393,9 @@ class CreateGA(base.CreateCommand):
         support_failover=self._support_failover,
         support_logging=self._support_logging,
         support_multinic=self._support_multinic,
-        support_subsetting=self._support_subsetting).Run(args, holder)
+        support_subsetting=self._support_subsetting,
+        support_connection_tracking=self._support_connection_tracking).Run(
+            args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -407,6 +421,7 @@ class CreateBeta(CreateGA):
   _support_grpc_protocol = True
   _support_unspecified_protocol = True
   _support_subsetting = True
+  _support_connection_tracking = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -433,3 +448,4 @@ class CreateAlpha(CreateBeta):
   _support_grpc_protocol = True
   _support_unspecified_protocol = True
   _support_subsetting = True
+  _support_connection_tracking = True

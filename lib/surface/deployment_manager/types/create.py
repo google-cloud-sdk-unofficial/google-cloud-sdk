@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.deployment_manager import dm_base
 from googlecloudsdk.api_lib.deployment_manager import dm_labels
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deployment_manager import composite_types
+from googlecloudsdk.command_lib.deployment_manager import dm_util
 from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -97,11 +98,7 @@ To create a new composite type, run:
         project=composite_type_ref.project,
         compositeType=composite_type)
 
-    dm_write.Execute(self.client,
-                     self.messages,
-                     self.resources,
-                     request,
-                     args.async_,
-                     self.client.compositeTypes.Insert,
-                     LogResource)
-
+    response = dm_write.Execute(self.client, self.messages, self.resources,
+                                request, args.async_,
+                                self.client.compositeTypes.Insert, LogResource)
+    dm_util.LogOperationStatus(response, 'Create')

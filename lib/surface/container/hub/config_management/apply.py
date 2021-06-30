@@ -24,6 +24,8 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_io
 
+# Pull out the example text so the example command can be one line without the
+# py linter complaining. The docgen tool properly breaks it into multiple lines.
 EXAMPLES = """\
     To apply a YAML config file to a membership, run:
 
@@ -140,7 +142,7 @@ def _validate_meta(configmanagement):
     raise exceptions.Error(
         'Only "applySpecVersion: 1" is supported. To use a later version,'
         'please fetch the config by running\n'
-        'g3cloud alpha container hub config-management fetch-for-apply')
+        'gcloud container hub config-management fetch-for-apply')
 
   if 'spec' not in configmanagement:
     raise exceptions.Error('Missing required field .spec')
@@ -198,7 +200,7 @@ def _parse_config_sync(configmanagement, msg):
             utils.CONFIG_SYNC, ','.join(valid_sf)))
   for field in [
       'policyDir', 'secretType', 'syncBranch', 'syncRepo', 'syncRev',
-      'httpsProxy'
+      'httpsProxy', 'gcpServiceAccountEmail'
   ]:
     if field in spec_git:
       setattr(git_config, field, spec_git[field])
@@ -247,7 +249,8 @@ def _parse_policy_controller(configmanagement, msg):
   for field in spec_policy_controller:
     if field not in [
         'enabled', 'templateLibraryInstalled', 'auditIntervalSeconds',
-        'referentialRulesEnabled', 'exemptableNamespaces', 'logDeniesEnabled'
+        'referentialRulesEnabled', 'exemptableNamespaces', 'logDeniesEnabled',
+        'mutationEnabled'
     ]:
       raise exceptions.Error(
           'Please remove illegal field .spec.policyController.{}'.format(field))

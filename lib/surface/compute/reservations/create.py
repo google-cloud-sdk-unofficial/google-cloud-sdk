@@ -73,7 +73,7 @@ class Create(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a Compute Engine reservation."""
-  _support_share_setting = False
+  _support_share_setting = True
   _support_location_hint = False
 
   @classmethod

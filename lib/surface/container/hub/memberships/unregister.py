@@ -67,22 +67,22 @@ class Unregister(base.DeleteCommand):
 
     Unregister a non-GKE cluster referenced from a specific kubeconfig file:
 
-      $ {command} my-cluster \
+      $ {command} my-membership \
         --context=my-cluster-context \
         --kubeconfig=/home/user/custom_kubeconfig
 
     Unregister a non-GKE cluster referenced from the default kubeconfig file:
 
-      $ {command} my-cluster --context=my-cluster-context
+      $ {command} my-membership --context=my-cluster-context
 
     Unregister a GKE cluster referenced from a GKE URI:
 
-      $ {command} my-cluster \
+      $ {command} my-membership \
         --gke-uri=my-cluster-gke-uri
 
     Unregister a GKE cluster referenced from a GKE Cluster location and name:
 
-      $ {command} my-cluster \
+      $ {command} my-membership \
         --gke-cluster=my-cluster-region-or-zone/my-cluster
 
   """

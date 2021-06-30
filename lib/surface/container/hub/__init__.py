@@ -44,11 +44,11 @@ class Hub(base.Group):
 
     $ {command} config-management --help
 
-  Manage MultiClusterIngress feature on all memberships:
+  Manage Multi-cluster Ingress feature on all memberships:
 
     $ {command} ingress --help
 
-  Manage MultiClusterServices feature on all memberships:
+  Manage Multi-cluster Services feature on all memberships:
 
     $ {command} multi-cluster-services --help
 

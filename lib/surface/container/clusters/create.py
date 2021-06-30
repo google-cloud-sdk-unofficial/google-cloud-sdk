@@ -454,7 +454,7 @@ flags_to_add = {
         'disktype':
             flags.AddDiskTypeFlag,
         'ilbsubsetting':
-            lambda p: flags.AddILBSubsettingFlags(p, hidden=True),
+            flags.AddILBSubsettingFlags,
         'imageflags':
             flags.AddImageFlagsCreate,
         'intranodevisibility':
@@ -913,6 +913,9 @@ class Create(base.CreateCommand):
       log.warning(
           'Starting with version 1.19, newly created clusters and node-pools will have COS_CONTAINERD as the default node image when no image type is specified.'
       )
+
+    if options.enable_l4_ilb_subsetting:
+      log.warning('L4 ILB Subsetting cannot be disabled, once enabled.')
 
     if options.enable_kubernetes_alpha:
       console_io.PromptContinue(

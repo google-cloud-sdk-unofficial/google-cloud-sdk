@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command to get the status of MultiClusterServices Feature."""
+"""The command to get the status of Multi-cluster Services Feature."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,14 +22,14 @@ from googlecloudsdk.command_lib.container.hub.features import base
 
 
 class Describe(base.DescribeCommand):
-  """Describe the status of MultiClusterServices Feature resource.
+  """Describe the status of the Multi-cluster Services Feature resource.
 
-  This command describes the status of MultiClusterServices Feature
-  resource in Hub.
+  This command gets the detailed status of the Multi-cluster Services Feature
+  in Hub.
 
-  ## Examples
+  ## EXAMPLES
 
-  Describe MultiClusterServices Feature:
+  To describe the Multi-cluster Services Feature, run:
 
     $ {command}
   """

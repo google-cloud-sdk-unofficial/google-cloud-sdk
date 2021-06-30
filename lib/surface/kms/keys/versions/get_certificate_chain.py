@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.kms import exceptions as kms_exceptions
 from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
@@ -94,11 +95,11 @@ class GetCertificateChain(base.DescribeCommand):
             name=version_ref.RelativeName()))
     if (version.protectionLevel !=
         messages.CryptoKeyVersion.ProtectionLevelValueValuesEnum.HSM):
-      raise exceptions.ToolException(
+      raise kms_exceptions.ArgumentError(
           'Certificate chains are only available for HSM key versions.')
     if (version.state ==
         messages.CryptoKeyVersion.StateValueValuesEnum.PENDING_GENERATION):
-      raise exceptions.ToolException(
+      raise kms_exceptions.ArgumentError(
           'Certificate chains are unavailable until the version is generated.')
     try:
       log.WriteToFileOrStdout(

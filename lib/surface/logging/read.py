@@ -127,11 +127,9 @@ Read.detailed_help = {
 
           $ {command} "" --bucket=[BUCKET_ID] --location=[LOCATION] --view=_AllLogs --limit=1
 
-        To read a log entry from a log bucket using a cutsom log view that you have created for the bucket:
+        To read a log entry from a log bucket using a custom log view that you have created for the bucket:
 
           $ {command} "" --bucket=[BUCKET_ID] --location=[LOCATION] --view=[VIEW_ID] --limit=1
 
-        Detailed information about filters can be found at:
-        [](https://cloud.google.com/logging/docs/view/logging-query-language)
     """,
 }

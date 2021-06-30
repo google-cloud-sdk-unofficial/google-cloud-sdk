@@ -42,6 +42,7 @@ from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 
 
@@ -167,9 +168,13 @@ class Deploy(base.Command):
 
     include_build = flags.FlagIsExplicitlySet(args, 'source')
     if not include_build and not args.IsSpecified('image'):
-      raise c_exceptions.RequiredArgumentException(
-          '--image', 'Requires a container image to deploy (e.g. '
-          '`gcr.io/cloudrun/hello:latest`) if no build source is provided.')
+      if console_io.CanPrompt() and self.ReleaseTrack() != base.ReleaseTrack.GA:
+        args.source = flags.PromptForDefaultSource()
+        include_build = True
+      else:
+        raise c_exceptions.RequiredArgumentException(
+            '--image', 'Requires a container image to deploy (e.g. '
+            '`gcr.io/cloudrun/hello:latest`) if no build source is provided.')
 
     # Obtaining the connection context prompts the user to select a region if
     # one hasn't been provided. We want to do this prior to preparing a source
@@ -211,6 +216,8 @@ class Deploy(base.Command):
       image = None if pack else args.image
       operation_message = ('Building using {build_type} and deploying container'
                            ' to').format(build_type=build_type.value)
+      pretty_print.Info(messages_util.GetBuildEquivalentForSourceRunMessage(
+          service_ref.servicesId, pack, source))
 
     # Deploy a container with an image
     changes = flags.GetServiceConfigurationChanges(args)

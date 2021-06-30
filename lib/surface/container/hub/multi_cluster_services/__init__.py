@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for MultiClusterServiceDiscovery Feature."""
+"""Command group for Multi-cluster Services Feature."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class MultiClusterServiceDiscovery(base.Group):
-  """Manage MultiClusterServiceDiscovery Feature."""
+  """Manage Multi-cluster Services Feature."""
   pass

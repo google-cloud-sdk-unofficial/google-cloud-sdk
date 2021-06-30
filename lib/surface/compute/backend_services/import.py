@@ -77,44 +77,81 @@ class ImportGA(base.UpdateCommand):
         parser, operation_type='import')
     export_util.AddImportFlags(parser, cls.GetSchemaPath(for_help=True))
 
-  def SendPatchRequest(self, client, backend_service_ref, replacement):
-    """Send Backend Services patch request."""
+  def SendPatchRequest(self, client, resources, backend_service_ref,
+                       replacement):
+    """Sends a Backend Services patch request and waits for the operation to finish.
+
+    Args:
+      client: The API client.
+      resources: The resource parser.
+      backend_service_ref: The backend service reference.
+      replacement: The backend service to patch with.
+
+    Returns:
+      The operation result.
+    """
     if backend_service_ref.Collection() == 'compute.regionBackendServices':
-      return client.apitools_client.regionBackendServices.Patch(
+      service = client.apitools_client.regionBackendServices
+      operation = client.apitools_client.regionBackendServices.Patch(
           client.messages.ComputeRegionBackendServicesPatchRequest(
               project=backend_service_ref.project,
               region=backend_service_ref.region,
               backendService=backend_service_ref.Name(),
               backendServiceResource=replacement))
+    else:
+      service = client.apitools_client.backendServices
+      operation = client.apitools_client.backendServices.Patch(
+          client.messages.ComputeBackendServicesPatchRequest(
+              project=backend_service_ref.project,
+              backendService=backend_service_ref.Name(),
+              backendServiceResource=replacement))
 
-    return client.apitools_client.backendServices.Patch(
-        client.messages.ComputeBackendServicesPatchRequest(
-            project=backend_service_ref.project,
-            backendService=backend_service_ref.Name(),
-            backendServiceResource=replacement))
+    return backend_services_utils.WaitForOperation(resources, service,
+                                                   operation,
+                                                   backend_service_ref,
+                                                   'Updating backend service')
 
-  def SendInsertRequest(self, client, backend_service_ref, backend_service):
-    """Send Backend Services insert request."""
+  def SendInsertRequest(self, client, resources, backend_service_ref,
+                        backend_service):
+    """Sends a Backend Services insert request and waits for the operation to finish.
+
+    Args:
+      client: The API client.
+      resources: The resource parser.
+      backend_service_ref: The backend service reference.
+      backend_service: The backend service to insert.
+
+    Returns:
+      The operation result.
+    """
     if backend_service_ref.Collection() == 'compute.regionBackendServices':
-      return client.apitools_client.regionBackendServices.Insert(
+      service = client.apitools_client.regionBackendServices
+      operation = client.apitools_client.regionBackendServices.Insert(
           client.messages.ComputeRegionBackendServicesInsertRequest(
               project=backend_service_ref.project,
               region=backend_service_ref.region,
               backendService=backend_service))
+    else:
+      service = client.apitools_client.backendServices
+      operation = client.apitools_client.backendServices.Insert(
+          client.messages.ComputeBackendServicesInsertRequest(
+              project=backend_service_ref.project,
+              backendService=backend_service))
 
-    return client.apitools_client.backendServices.Insert(
-        client.messages.ComputeBackendServicesInsertRequest(
-            project=backend_service_ref.project,
-            backendService=backend_service))
+    return backend_services_utils.WaitForOperation(resources, service,
+                                                   operation,
+                                                   backend_service_ref,
+                                                   'Creating backend service')
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
+    resources = holder.resources
 
     backend_service_ref = (
         flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
             args,
-            holder.resources,
+            resources,
             scope_lister=compute_flags.GetDefaultScopeLister(client)))
 
     data = console_io.ReadFromFileOrStdin(args.source or '-', binary=False)
@@ -135,7 +172,7 @@ class ImportGA(base.UpdateCommand):
       if error.status_code != 404:
         raise error
       # Backend service does not exist, create a new one.
-      return self.SendInsertRequest(client, backend_service_ref,
+      return self.SendInsertRequest(client, resources, backend_service_ref,
                                     backend_service)
 
     # No change, do not send requests to server.
@@ -188,7 +225,8 @@ class ImportGA(base.UpdateCommand):
       cleared_fields.append('cdnPolicy')
 
     with client.apitools_client.IncludeFields(cleared_fields):
-      return self.SendPatchRequest(client, backend_service_ref, backend_service)
+      return self.SendPatchRequest(client, resources, backend_service_ref,
+                                   backend_service)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)

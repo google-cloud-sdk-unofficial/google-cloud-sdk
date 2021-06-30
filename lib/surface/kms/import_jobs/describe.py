@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.kms import exceptions as kms_exceptions
 from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
@@ -73,12 +74,12 @@ class Describe(base.DescribeCommand):
     # import jobs.
     if (args.attestation_file and import_job.protectionLevel !=
         messages.ImportJob.ProtectionLevelValueValuesEnum.HSM):
-      raise exceptions.ToolException(
+      raise kms_exceptions.ArgumentError(
           'Attestations are only available for HSM import jobs.')
 
     if (args.attestation_file and import_job.state == messages.ImportJob
         .StateValueValuesEnum.PENDING_GENERATION):
-      raise exceptions.ToolException(
+      raise kms_exceptions.ArgumentError(
           'The attestation is unavailable until the import job is generated.')
 
     if args.attestation_file and import_job.attestation is not None:

@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.kms import exceptions as kms_exceptions
 from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.command_lib.kms import maps
 from googlecloudsdk.command_lib.kms import resource_args
@@ -126,7 +126,7 @@ class Update(base.UpdateCommand):
       fields_to_update.append('labels')
     if args.remove_rotation_schedule:
       if args.rotation_period or args.next_rotation_time:
-        raise exceptions.ToolException(
+        raise kms_exceptions.ArgumentError(
             'You cannot set and remove rotation schedule at the same time.')
       fields_to_update.append('rotationPeriod')
       fields_to_update.append('nextRotationTime')
@@ -139,7 +139,7 @@ class Update(base.UpdateCommand):
 
     # Raise an exception when no update field is specified.
     if not args.primary_version and not fields_to_update:
-      raise exceptions.ToolException(
+      raise kms_exceptions.UpdateError(
           'At least one of --primary-version or --update-labels or '
           '--remove-labels or --clear-labels or --rotation-period or '
           '--next-rotation-time or --remove-rotation-schedule or '
@@ -188,7 +188,7 @@ class Update(base.UpdateCommand):
     if args.default_algorithm:
       valid_algorithms = maps.VALID_ALGORITHMS_MAP[crypto_key.purpose]
       if args.default_algorithm not in valid_algorithms:
-        raise exceptions.ToolException(
+        raise kms_exceptions.UpdateError(
             'Update failed: Algorithm {algorithm} is not valid. Here are the '
             'valid algorithm(s) for purpose {purpose}: {all_algorithms}'.format(
                 algorithm=args.default_algorithm,
@@ -234,7 +234,7 @@ class Update(base.UpdateCommand):
     elif fields_to_update:
       err += " Field(s) '{}' were updated.".format(
           "', '".join(fields_to_update))
-    raise exceptions.ToolException(err)
+    raise kms_exceptions.UpdateError(err)
 
   def Run(self, args):
     """Updates the relevant fields (of a CryptoKey) from the flags."""

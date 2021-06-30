@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Hub features."""
+"""Command group for Hub Features."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -21,7 +21,14 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Featuress(base.Group):
-  """List enabled features for all your GKE and other Kubernetes clusters registered with Hub."""
-  pass
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+)
+class Features(base.Group):
+  """Manage Hub Feature resources.
+
+  These commands manage Features generically. Most Features offer specialized
+  commands under dedicated sub-groups that may be more effective for that
+  specific Feature.
+  """

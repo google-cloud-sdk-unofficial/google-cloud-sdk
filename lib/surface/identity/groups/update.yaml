@@ -54,7 +54,7 @@
           help_text: Clear existing description on group being updated.
 
     - group:
-        release_tracks: [ALPHA]
+        release_tracks: [ALPHA, BETA]
         mutex: true
         params:
         - arg_name: add-posix-group
@@ -145,6 +145,7 @@
       - googlecloudsdk.command_lib.identity.groups.hooks:SetResourceName
       - googlecloudsdk.command_lib.identity.groups.hooks:SetGroupUpdateMask
       - googlecloudsdk.command_lib.identity.groups.hooks:SetLabels
+      - googlecloudsdk.command_lib.identity.groups.hooks:UpdatePosixGroups
       - googlecloudsdk.command_lib.identity.groups.hooks:SetDynamicUserQuery
     GA:
       api_version: v1

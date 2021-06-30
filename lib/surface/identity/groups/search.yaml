@@ -53,6 +53,8 @@
         'cloudidentity.googleapis.com/groups.security' and an empty value added to them.
         *This is an immutable change and the security label cannot be removed once added.*
 
+        POSIX groups have a label with a key of 'cloudidentity.googleapis.com/groups.posix'.
+
         Dynamic groups have a label with a key of 'cloudidentity.googleapis.com/groups.dynamic'.
 
         Identity-mapped groups for Cloud Search have a label with a key of 'system/groups/external'

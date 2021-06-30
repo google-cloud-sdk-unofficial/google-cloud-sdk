@@ -32,6 +32,7 @@ class Update(base.UpdateCommand):
   _include_alpha_logging = False
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
   _include_l7_internal_load_balancing = True
+  _include_regional_managed_proxy = False
   _include_internal_ipv6_access_type = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
 
@@ -47,6 +48,7 @@ class Update(base.UpdateCommand):
 
     flags.AddUpdateArgs(parser, cls._include_alpha_logging,
                         cls._include_l7_internal_load_balancing,
+                        cls._include_regional_managed_proxy,
                         cls._include_internal_ipv6_access_type,
                         cls._api_version)
 
@@ -77,6 +79,11 @@ class Update(base.UpdateCommand):
       if args.role is not None:
         set_role_active = getattr(args, 'role', None) == 'ACTIVE'
 
+    set_new_purpose = None
+    if self._include_regional_managed_proxy:
+      if args.purpose is not None:
+        set_new_purpose = getattr(args, 'purpose', None)
+
     private_ipv6_google_access_type = args.private_ipv6_google_access_type
 
     stack_type = getattr(args, 'stack_type', None)
@@ -95,6 +102,7 @@ class Update(base.UpdateCommand):
         filter_expr=filter_expr,
         metadata_fields=metadata_fields,
         set_role_active=set_role_active,
+        set_new_purpose=set_new_purpose,
         drain_timeout_seconds=drain_timeout_seconds,
         private_ipv6_google_access_type=private_ipv6_google_access_type,
         stack_type=stack_type,
@@ -115,4 +123,5 @@ class UpdateAlpha(UpdateBeta):
 
   _include_alpha_logging = True
   _include_internal_ipv6_access_type = True
+  _include_regional_managed_proxy = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION

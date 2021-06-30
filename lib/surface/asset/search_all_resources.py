@@ -184,6 +184,41 @@ def AddOrderByArgument(parser):
         """))
 
 
+def AddReadMaskArgument(parser):
+  parser.add_argument(
+      '--read-mask',
+      metavar='READ_MASK',
+      required=False,
+      help=("""\
+        A comma-separated list of fields specifying which fields to be returned
+        in the results. Only `"*"` or combination of top level fields can be
+        specified. Examples: `"*"`, `"name,location"`, `"name,versionedResources"`.
+
+        The read_mask paths must be valid field paths listed but not limited to
+        the following (both snake_case and camelCase are supported):
+          * `name`
+          * `asset_type` or `assetType`
+          * `project`
+          * `display_name` or `displayName`
+          * `description`
+          * `location`
+          * `labels`
+          * `network_tags` or `networkTags`
+          * `kms_key` or `kmsKey`
+          * `create_time` or `createTime`
+          * `update_time` or `updateTime`
+          * `state`
+          * `additional_attributes` or `additionalAttributes`
+          * `versioned_resources` or `versionedResources`
+
+        If read_mask is not specified, all fields except versionedResources
+        will be returned.
+
+        If only `"*"` is specified, all fields including versionedResources will
+        be returned.
+        """))
+
+
 # pylint: enable=line-too-long
 
 
@@ -209,6 +244,15 @@ class SearchAllResourcesBeta(base.ListCommand):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class SearchAllResources(SearchAllResourcesBeta):
   """Searches all Cloud resources within the specified accessible scope, such as a project, folder or organization."""
+
+  @staticmethod
+  def Args(parser):
+    AddScopeArgument(parser)
+    AddQueryArgument(parser)
+    AddAssetTypesArgument(parser)
+    AddOrderByArgument(parser)
+    AddReadMaskArgument(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     client = client_util.AssetSearchClient(client_util.DEFAULT_API_VERSION)

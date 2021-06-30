@@ -127,7 +127,7 @@
           default: discussion
 
     - arg_name: posix-group
-      release_tracks: [ALPHA]
+      release_tracks: [ALPHA, BETA]
       api_field: group.posixGroups
       metavar: POSIX_GROUP
       type:
@@ -142,7 +142,7 @@
             type: str
 
       help_text: |
-        Group id (gid) and name of the POSIX group that you want to associate
+        Group ID (gid) and name of the POSIX group that you want to associate
         with the specified Cloud Identity group. You can specify multiple POSIX
         groups with multiple instances of this flag.
 

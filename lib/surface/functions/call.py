@@ -55,9 +55,7 @@ class Call(base.Command):
   def Args(parser):
     """Register flags for this command."""
     flags.AddFunctionResourceArg(parser, 'to execute')
-    parser.add_argument(
-        '--data',
-        help='JSON string with data that will be passed to the function.')
+    flags.AddDataFlag(parser)
 
   @util.CatchHTTPErrorRaiseHTTPException
   def Run(self, args):
@@ -83,11 +81,12 @@ class CallAlpha(base.Command):
   def Args(parser):
     """Register flags for this command."""
     flags.AddFunctionResourceArg(parser, 'to execute')
-    parser.add_argument(
-        '--data',
-        help='JSON string with data that will be passed to the function.')
-    # Add additional flags for GCFv2
     flags.AddV2Flag(parser)
+
+    # Add additional flags for GCFv2
+    data_flag_group = parser.add_mutually_exclusive_group()
+    flags.AddDataFlag(data_flag_group)
+    flags.AddCloudEventsFlag(data_flag_group)
 
   def Run(self, args):
     if flags.ShouldUseV2(args):

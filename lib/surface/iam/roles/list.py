@@ -71,7 +71,7 @@ class List(base.ListCommand):
 
     parent_name = iam_util.GetParentName(args.organization, args.project)
     if args.limit is not None and (args.limit < 1):
-      raise exceptions.ToolException('Limit size must be >=1')
+      raise exceptions.InvalidArgumentException('Limit size must be >=1')
 
     return list_pager.YieldFromList(
         client.organizations_roles,

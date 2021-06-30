@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command to disable MultiClusterServices Feature."""
+"""The command to disable Multi-cluster Services Feature."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,13 +22,13 @@ from googlecloudsdk.command_lib.container.hub.features import base
 
 
 class Disable(base.DisableCommand):
-  """Disable MultiClusterServices Feature.
+  """Disable the Multi-cluster Services Feature.
 
-  This command disables MultiClusterServices Feature in Hub.
+  This command disables the Multi-cluster Services Feature in Hub.
 
-  ## Examples
+  ## EXAMPLES
 
-  Disable MultiClusterServices Feature:
+  To disable the Multi-cluster Services Feature, run:
 
     $ {command}
   """

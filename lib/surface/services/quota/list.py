@@ -48,7 +48,7 @@ class List(base.ListCommand):
   To list the quota metrics for service 'example.googleapis.com' and consumer
   'organizations/54321', run:
 
-    $ {command} --service=example.googleapis.com --consumer=folders/54321
+    $ {command} --service=example.googleapis.com --consumer=organizations/54321
   """
 
   @staticmethod

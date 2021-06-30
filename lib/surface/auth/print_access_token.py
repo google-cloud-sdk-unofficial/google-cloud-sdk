@@ -49,6 +49,20 @@ class AccessToken(base.Command):
         {description}
         See [RFC6749](https://tools.ietf.org/html/rfc6749) for more
         information about access tokens.
+
+        Note that token itself may not be enough to access some services.
+        If you use the token with curl or similar tools, you may see
+        permission errors similar to "API has not been used in
+        project 32555940559 before or it is disabled.". If it happens, you may
+        need to provide a quota project in the "X-Goog-User-Project" header.
+        For example,
+
+          $ curl -H "X-Goog-User-Project: your-project" -H "Authorization: Bearer $(gcloud auth print-access-token)" foo.googleapis.com
+
+        The identity that granted the token must have the
+        serviceusage.services.use permission on the provided project. See
+        https://cloud.google.com/apis/docs/system-parameters for more
+        information.
         """,
       'EXAMPLES': """\
         To print access tokens:

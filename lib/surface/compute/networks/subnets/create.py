@@ -42,11 +42,12 @@ def _DetailedHelp():
   }
 
 
-def _AddArgs(parser, include_alpha_logging, include_l7_internal_load_balancing,
-             include_aggregate_purpose, include_private_service_connect,
-             include_internal_ipv6_access_type, include_l2, api_version):
+def _AddArgs(parser, include_alpha_logging, include_regional_managed_proxy,
+             include_l7_internal_load_balancing, include_aggregate_purpose,
+             include_private_service_connect, include_internal_ipv6_access_type,
+             include_l2, api_version):
   """Add subnetwork create arguments to parser."""
-  parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+  parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_WITH_IPV6_FIELD)
 
   flags.SubnetworkArgument().AddArgument(parser, operation_type='create')
   network_flags.NetworkArgumentForOtherResource(
@@ -146,6 +147,10 @@ def _AddArgs(parser, include_alpha_logging, include_l7_internal_load_balancing,
           'Reserved for Internal HTTP(S) Load Balancing.',
   }
 
+  if include_regional_managed_proxy:
+    purpose_choices['REGIONAL_MANAGED_PROXY'] = (
+        'Reserved for Regional HTTP(S) Load Balancing')
+
   if include_aggregate_purpose:
     purpose_choices['AGGREGATE'] = (
         'Reserved for Aggregate Ranges used for aggregating '
@@ -167,6 +172,24 @@ def _AddArgs(parser, include_alpha_logging, include_l7_internal_load_balancing,
         help='The purpose of this subnetwork.')
 
   if include_l7_internal_load_balancing:
+    if include_regional_managed_proxy:
+      help_text = (
+          'The role of subnetwork. This field is required when the '
+          'purpose is set to REGIONAL_MANAGED_PROXY or '
+          'INTERNAL_HTTPS_LOAD_BALANCER. The value can be set to '
+          'ACTIVE or BACKUP. An ACTIVE subnetwork is one that is currently '
+          'being used for Internal HTTP(S) Load Balancing. A BACKUP '
+          'subnetwork is one that is ready to be promoted to ACTIVE or is '
+          'currently draining.')
+    else:
+      help_text = (
+          'The role of subnetwork. This field is required when '
+          'purpose=INTERNAL_HTTPS_LOAD_BALANCER. The value can be set to '
+          'ACTIVE or BACKUP. An ACTIVE subnetwork is one that is currently '
+          'being used for Internal HTTP(S) Load Balancing. A BACKUP '
+          'subnetwork is one that is ready to be promoted to ACTIVE or is '
+          'currently draining.')
+
     parser.add_argument(
         '--role',
         choices={
@@ -174,12 +197,7 @@ def _AddArgs(parser, include_alpha_logging, include_l7_internal_load_balancing,
             'BACKUP': 'The BACKUP subnet that could be promoted to ACTIVE.'
         },
         type=lambda x: x.replace('-', '_').upper(),
-        help=('The role of subnetwork. This field is required when '
-              'purpose=INTERNAL_HTTPS_LOAD_BALANCER. The value can be set to '
-              'ACTIVE or BACKUP. An ACTIVE subnetwork is one that is currently '
-              'being used for Internal HTTP(S) Load Balancing. A BACKUP '
-              'subnetwork is one that is ready to be promoted to ACTIVE or is '
-              'currently draining.'))
+        help=help_text)
 
   # Add private ipv6 google access enum based on api version.
   messages = apis.GetMessagesModule('compute', api_version)
@@ -250,7 +268,7 @@ def GetPrivateIpv6GoogleAccessTypeFlagMapper(messages):
 
 def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
                       include_alpha_logging, include_l7_internal_load_balancing,
-                      include_aggregate_purpose,
+                      include_regional_managed_proxy, include_aggregate_purpose,
                       include_private_service_connect, include_l2):
   """Create the subnet resource."""
   subnetwork = messages.Subnetwork(
@@ -308,7 +326,9 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
       subnetwork.purpose = messages.Subnetwork.PurposeValueValuesEnum(
           args.purpose)
     if (subnetwork.purpose == messages.Subnetwork.PurposeValueValuesEnum
-        .INTERNAL_HTTPS_LOAD_BALANCER):
+        .INTERNAL_HTTPS_LOAD_BALANCER or
+        (include_regional_managed_proxy and subnetwork.purpose
+         == messages.Subnetwork.PurposeValueValuesEnum.REGIONAL_MANAGED_PROXY)):
       # Clear unsupported fields in the subnet resource
       subnetwork.privateIpGoogleAccess = None
       subnetwork.enableFlowLogs = None
@@ -364,8 +384,9 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
 
 
 def _Run(args, holder, include_alpha_logging,
-         include_l7_internal_load_balancing, include_aggregate_purpose,
-         include_private_service_connect, include_l2):
+         include_l7_internal_load_balancing, include_regional_managed_proxy,
+         include_aggregate_purpose, include_private_service_connect,
+         include_l2):
   """Issues a list of requests necessary for adding a subnetwork."""
   client = holder.client
 
@@ -380,6 +401,7 @@ def _Run(args, holder, include_alpha_logging,
   subnetwork = _CreateSubnetwork(client.messages, subnet_ref, network_ref, args,
                                  include_alpha_logging,
                                  include_l7_internal_load_balancing,
+                                 include_regional_managed_proxy,
                                  include_aggregate_purpose,
                                  include_private_service_connect, include_l2)
   request = client.messages.ComputeSubnetworksInsertRequest(
@@ -407,6 +429,7 @@ class Create(base.CreateCommand):
   _include_alpha_logging = False
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
   _include_l7_internal_load_balancing = True
+  _include_regional_managed_proxy = False
   _include_aggregate_purpose = False
   _include_private_service_connect = False
   _include_internal_ipv6_access_type = False
@@ -418,6 +441,7 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     _AddArgs(parser, cls._include_alpha_logging,
+             cls._include_regional_managed_proxy,
              cls._include_l7_internal_load_balancing,
              cls._include_aggregate_purpose,
              cls._include_private_service_connect,
@@ -429,6 +453,7 @@ class Create(base.CreateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self._include_alpha_logging,
                 self._include_l7_internal_load_balancing,
+                self._include_regional_managed_proxy,
                 self._include_aggregate_purpose,
                 self._include_private_service_connect, self._include_l2)
 
@@ -448,4 +473,5 @@ class CreateAlpha(CreateBeta):
   _include_private_service_connect = True
   _include_l2 = True
   _include_internal_ipv6_access_type = True
+  _include_regional_managed_proxy = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION

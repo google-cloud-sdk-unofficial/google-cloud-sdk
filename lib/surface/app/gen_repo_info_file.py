@@ -23,7 +23,7 @@ import json
 import os
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.app import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 from googlecloudsdk.third_party.appengine.tools import context_util
@@ -89,7 +89,8 @@ class GenRepoInfoFile(base.Command):
 
   def Run(self, args):
     if six.PY3:
-      raise exceptions.ToolException('This command does not support python3.')
+      raise exceptions.NotSupportedPy3Exception(
+          'This command does not support python3.')
 
     log.warning('This command is deprecated. Please use '
                 '`gcloud beta source debug gen-repo-info-file` instead.')

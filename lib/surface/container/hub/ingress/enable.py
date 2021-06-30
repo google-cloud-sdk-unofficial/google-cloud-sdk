@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command to enable MultiClusterIngress Feature."""
+"""The command to enable Multi-cluster Ingress Feature."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -31,13 +31,13 @@ from googlecloudsdk.core.util import retry
 
 
 class Enable(base.EnableCommand):
-  """Enable MultiClusterIngress Feature.
+  """Enable Multi-cluster Ingress Feature.
 
-  This command enables MultiClusterIngress Feature in Hub.
+  This command enables Multi-cluster Ingress Feature in Hub.
 
-  ## Examples
+  ## EXAMPLES
 
-  Enable MultiClusterIngress Feature:
+  To enable the Ingress Feature, run:
 
     $ {command} --config-membership=CONFIG_MEMBERSHIP
   """

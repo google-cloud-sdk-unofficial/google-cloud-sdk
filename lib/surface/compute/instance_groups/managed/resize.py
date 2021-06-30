@@ -30,17 +30,30 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-def _AddArgs(parser, creation_retries):
+def _AddArgs(parser, creation_retries, suspended_stopped_sizes):
   """Adds args."""
   parser.add_argument(
       '--size',
-      required=True,
+      required=not suspended_stopped_sizes,
       type=arg_parsers.BoundedInt(0, sys.maxsize, unlimited=True),
-      help=('Target number of instances in managed instance group.'))
+      help='Target number of running instances in managed instance group.')
 
   if creation_retries:
-    parser.add_argument('--creation-retries', action='store_true', default=True,
-                        help='When instance creation fails retry it.')
+    parser.add_argument(
+        '--creation-retries',
+        action='store_true',
+        default=True,
+        help='When instance creation fails retry it.')
+
+  if suspended_stopped_sizes:
+    parser.add_argument(
+        '--suspended-size',
+        type=arg_parsers.BoundedInt(0, sys.maxsize, unlimited=True),
+        help='Target number of suspended instances in managed instance group.')
+    parser.add_argument(
+        '--stopped-size',
+        type=arg_parsers.BoundedInt(0, sys.maxsize, unlimited=True),
+        help='Target number of stopped instances in managed instance group.')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -49,7 +62,8 @@ class Resize(base.Command):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, creation_retries=False)
+    _AddArgs(
+        parser=parser, creation_retries=False, suspended_stopped_sizes=False)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
@@ -60,30 +74,38 @@ class Resize(base.Command):
                 default_scope=compute_scope.ScopeEnum.ZONE,
                 scope_lister=flags.GetDefaultScopeLister(client)))
 
+  @staticmethod
+  def _MakeIgmResizeRequest(client, igm_ref, args):
+    service = client.apitools_client.instanceGroupManagers
+    request = client.messages.ComputeInstanceGroupManagersResizeRequest(
+        instanceGroupManager=igm_ref.Name(),
+        size=args.size,
+        project=igm_ref.project,
+        zone=igm_ref.zone)
+    return client.MakeRequests([(service, 'Resize', request)])
+
+  @staticmethod
+  def _MakeRmigResizeRequest(client, igm_ref, args):
+    service = client.apitools_client.regionInstanceGroupManagers
+    request = client.messages.ComputeRegionInstanceGroupManagersResizeRequest(
+        instanceGroupManager=igm_ref.Name(),
+        size=args.size,
+        project=igm_ref.project,
+        region=igm_ref.region)
+    return client.MakeRequests([(service, 'Resize', request)])
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
     igm_ref = self.CreateGroupReference(client, holder.resources, args)
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
-      service = client.apitools_client.instanceGroupManagers
-      request = client.messages.ComputeInstanceGroupManagersResizeRequest(
-          instanceGroupManager=igm_ref.Name(),
-          size=args.size,
-          project=igm_ref.project,
-          zone=igm_ref.zone)
-    elif igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
-      service = client.apitools_client.regionInstanceGroupManagers
-      request = client.messages.ComputeRegionInstanceGroupManagersResizeRequest(
-          instanceGroupManager=igm_ref.Name(),
-          size=args.size,
-          project=igm_ref.project,
-          region=igm_ref.region)
-    else:
-      raise ValueError('Unknown reference type {0}'.format(
-          igm_ref.Collection()))
+      return self._MakeIgmResizeRequest(client, igm_ref, args)
 
-    return client.MakeRequests([(service, 'Resize', request)])
+    if igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
+      return self._MakeRmigResizeRequest(client, igm_ref, args)
+
+    raise ValueError('Unknown reference type {0}'.format(igm_ref.Collection()))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -92,9 +114,25 @@ class ResizeBeta(Resize):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, creation_retries=True)
+    _AddArgs(
+        parser=parser, creation_retries=True, suspended_stopped_sizes=False)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
+
+  @staticmethod
+  def _MakeIgmResizeAdvancedRequest(client, igm_ref, args):
+    service = client.apitools_client.instanceGroupManagers
+    request = (
+        client.messages.ComputeInstanceGroupManagersResizeAdvancedRequest(
+            instanceGroupManager=igm_ref.Name(),
+            instanceGroupManagersResizeAdvancedRequest=(
+                client.messages.InstanceGroupManagersResizeAdvancedRequest(
+                    targetSize=args.size,
+                    noCreationRetries=not args.creation_retries,
+                )),
+            project=igm_ref.project,
+            zone=igm_ref.zone))
+    return client.MakeRequests([(service, 'ResizeAdvanced', request)])
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -102,86 +140,137 @@ class ResizeBeta(Resize):
 
     igm_ref = self.CreateGroupReference(client, holder.resources, args)
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
-      service = client.apitools_client.instanceGroupManagers
-      method = 'ResizeAdvanced'
-      request = (
-          client.messages.ComputeInstanceGroupManagersResizeAdvancedRequest(
-              instanceGroupManager=igm_ref.Name(),
-              instanceGroupManagersResizeAdvancedRequest=(
-                  client.messages.InstanceGroupManagersResizeAdvancedRequest(
-                      targetSize=args.size,
-                      noCreationRetries=not args.creation_retries,
-                  )),
-              project=igm_ref.project,
-              zone=igm_ref.zone))
-    else:
+      return self._MakeIgmResizeAdvancedRequest(client, igm_ref, args)
+
+    if igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
       if not args.creation_retries:
         raise exceptions.ConflictingArgumentsException(
             '--no-creation-retries', '--region')
-      service = client.apitools_client.regionInstanceGroupManagers
-      method = 'Resize'
-      request = client.messages.ComputeRegionInstanceGroupManagersResizeRequest(
-          instanceGroupManager=igm_ref.Name(),
-          size=args.size,
-          project=igm_ref.project,
-          region=igm_ref.region)
+      return self._MakeRmigResizeRequest(client, igm_ref, args)
 
-    return client.MakeRequests([(service, method, request)])
+    raise ValueError('Unknown reference type {0}'.format(igm_ref.Collection()))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ResizeAlpha(ResizeBeta):
-  """Set managed instance group size."""
+  """Set managed instance group sizes."""
 
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser=parser, creation_retries=True, suspended_stopped_sizes=True)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
+
+  @staticmethod
+  def _ValidateArgs(args):
+    if not (args.size or args.suspended_size or args.stopped_size):
+      raise exceptions.OneOfArgumentsRequiredException(
+          ['--size', '--suspended-size', '--stopped-size'],
+          'At least one of the sizes must be specified')
+    if not args.creation_retries:
+      if not args.size:
+        raise exceptions.RequiredArgumentException(
+            '--size',
+            'Size must be specified when --no-creation-retries flag is used.')
+      if args.suspended_size:
+        raise exceptions.ConflictingArgumentsException('--suspended-size',
+                                                       '--no-creation-retries')
+      if args.stopped_size:
+        raise exceptions.ConflictingArgumentsException('--stopped-size',
+                                                       '--no-creation-retries')
+
+  @staticmethod
+  def _MakeIgmPatchResource(client, args):
+    igm_patch_resource = client.messages.InstanceGroupManager()
+    if args.size:
+      igm_patch_resource.targetSize = args.size
+    if args.suspended_size:
+      igm_patch_resource.targetSuspendedSize = args.suspended_size
+    if args.stopped_size:
+      igm_patch_resource.targetStoppedSize = args.stopped_size
+    return igm_patch_resource
+
+  @staticmethod
+  def _MakeIgmPatchRequest(client, igm_ref, args):
+    service = client.apitools_client.instanceGroupManagers
+    request = client.messages.ComputeInstanceGroupManagersPatchRequest(
+        instanceGroupManager=igm_ref.Name(),
+        instanceGroupManagerResource=ResizeAlpha._MakeIgmPatchResource(
+            client, args),
+        project=igm_ref.project,
+        zone=igm_ref.zone)
+    return client.MakeRequests([(service, 'Patch', request)])
+
+  @staticmethod
+  def _MakeRmigResizeAdvancedRequest(client, igm_ref, args):
+    service = client.apitools_client.regionInstanceGroupManagers
+    request = (
+        client.messages
+        .ComputeRegionInstanceGroupManagersResizeAdvancedRequest(
+            instanceGroupManager=igm_ref.Name(),
+            regionInstanceGroupManagersResizeAdvancedRequest=(
+                client.messages
+                .RegionInstanceGroupManagersResizeAdvancedRequest(
+                    targetSize=args.size,
+                    noCreationRetries=not args.creation_retries,
+                )),
+            project=igm_ref.project,
+            region=igm_ref.region))
+    return client.MakeRequests([(service, 'ResizeAdvanced', request)])
+
+  @staticmethod
+  def _MakeRmigPatchRequest(client, igm_ref, args):
+    service = client.apitools_client.regionInstanceGroupManagers
+    request = client.messages.ComputeRegionInstanceGroupManagersPatchRequest(
+        instanceGroupManager=igm_ref.Name(),
+        instanceGroupManagerResource=ResizeAlpha._MakeIgmPatchResource(
+            client, args),
+        project=igm_ref.project,
+        region=igm_ref.region)
+    return client.MakeRequests([(service, 'Patch', request)])
+
+  # pylint: disable=line-too-long
+  # |  scope   | creation_retries arg | suspended or stopped _size arg |            method             |
+  # |----------|----------------------|--------------------------------|-------------------------------|
+  # | zonal    | True                 | True                           | Patch                         |
+  # | zonal    | True                 | False                          | ResizeAdvanced                |
+  # | zonal    | False                | True                           | ConflictingArgumentsException |
+  # | zonal    | False                | False                          | ResizeAdvanced                |
+  # | regional | True                 | True                           | Patch                         |
+  # | regional | True                 | False                          | Resize      TODO(b/178852691) |
+  # | regional | False                | True                           | ConflictingArgumentsException |
+  # | regional | False                | False                          | ResizeAdvanced                |
+  # pylint: enable=line-too-long
   def Run(self, args):
+    self._ValidateArgs(args)
+
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
     igm_ref = self.CreateGroupReference(client, holder.resources, args)
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
-      service = client.apitools_client.instanceGroupManagers
-      method = 'ResizeAdvanced'
-      request = (
-          client.messages.ComputeInstanceGroupManagersResizeAdvancedRequest(
-              instanceGroupManager=igm_ref.Name(),
-              instanceGroupManagersResizeAdvancedRequest=(
-                  client.messages.InstanceGroupManagersResizeAdvancedRequest(
-                      targetSize=args.size,
-                      noCreationRetries=not args.creation_retries,
-                  )),
-              project=igm_ref.project,
-              zone=igm_ref.zone))
-    else:
-      if args.creation_retries:
-        # TODO(b/178852691): Redirect whole alpha traffic to ResizeAdvanced,
-        # even if the "no-creation-retries" flag is not set. This would be the
-        # intended shape of this code, and this is would be also consistent with
-        # zonal version. Instead of doing it immediately, this TODO is added to
-        # get the desired gradual launch behavior.
-        service = client.apitools_client.regionInstanceGroupManagers
-        method = 'Resize'
-        request = client.messages.ComputeRegionInstanceGroupManagersResizeRequest(
-            instanceGroupManager=igm_ref.Name(),
-            size=args.size,
-            project=igm_ref.project,
-            region=igm_ref.region)
-      else:
-        service = client.apitools_client.regionInstanceGroupManagers
-        method = 'ResizeAdvanced'
-        request = (
-            client.messages
-            .ComputeRegionInstanceGroupManagersResizeAdvancedRequest(
-                instanceGroupManager=igm_ref.Name(),
-                regionInstanceGroupManagersResizeAdvancedRequest=(
-                    client.messages
-                    .RegionInstanceGroupManagersResizeAdvancedRequest(
-                        targetSize=args.size,
-                        noCreationRetries=not args.creation_retries,
-                    )),
-                project=igm_ref.project,
-                region=igm_ref.region))
+      # user specifies --no-creation-retries flag explicitly
+      if not args.creation_retries:
+        return self._MakeIgmResizeAdvancedRequest(client, igm_ref, args)
 
-    return client.MakeRequests([(service, method, request)])
+      return self._MakeIgmPatchRequest(client, igm_ref, args)
+
+    if igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
+      # user specifies --no-creation-retries flag explicitly
+      if not args.creation_retries:
+        return self._MakeRmigResizeAdvancedRequest(client, igm_ref, args)
+
+      if args.suspended_size or args.stopped_size:
+        return self._MakeRmigPatchRequest(client, igm_ref, args)
+
+      # TODO(b/178852691): Redirect whole alpha traffic to ResizeAdvanced,
+      # even if the "no-creation-retries" flag is not set. This would be the
+      # intended shape of this code, and this is would be also consistent with
+      # zonal version. Instead of doing it immediately, this TODO is added to
+      # get the desired gradual launch behavior.
+      return self._MakeRmigResizeRequest(client, igm_ref, args)
+
+    raise ValueError('Unknown reference type {0}'.format(igm_ref.Collection()))
 
 
 Resize.detailed_help = {

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command to disable MultiClusterIngress Feature."""
+"""The command to disable Multi-cluster Ingress Feature."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,13 +22,13 @@ from googlecloudsdk.command_lib.container.hub.features import base
 
 
 class Disable(base.DisableCommand):
-  """Disable MultiClusterIngress Feature.
+  """Disable Multi-cluster Ingress Feature.
 
-  This command disables MultiClusterIngress Feature in Hub.
+  This command disables Multi-cluster Ingress Feature in Hub.
 
-  ## Examples
+  ## EXAMPLES
 
-  Disable MultiClusterIngress Feature:
+  To disable the Ingress Feature, run:
 
     $ {command}
   """

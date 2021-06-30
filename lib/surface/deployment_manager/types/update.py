@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.deployment_manager import dm_base
 from googlecloudsdk.api_lib.deployment_manager import dm_labels
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deployment_manager import composite_types
+from googlecloudsdk.command_lib.deployment_manager import dm_util
 from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -98,11 +99,7 @@ To update a composite type, run:
         compositeType=args.name,
         compositeTypeResource=composite_type)
 
-    dm_write.Execute(self.client,
-                     self.messages,
-                     self.resources,
-                     update_request,
-                     args.async_,
-                     self.client.compositeTypes.Update,
-                     LogResource)
-
+    response = dm_write.Execute(self.client, self.messages, self.resources,
+                                update_request, args.async_,
+                                self.client.compositeTypes.Update, LogResource)
+    dm_util.LogOperationStatus(response, 'Update')

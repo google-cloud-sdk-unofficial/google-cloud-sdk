@@ -23,14 +23,23 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
+from googlecloudsdk.command_lib.ai import hp_tuning_jobs_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Cancel(base.SilentCommand):
   """Cancel a running hyperparameter tuning job.
 
   If the job is already finished, the command will not perform any operation.
+
+  ## EXAMPLES
+
+  To cancel a job ``123'' under project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} 123 --project=example --region=us-central1
   """
 
   @staticmethod
@@ -41,10 +50,15 @@ class Cancel(base.SilentCommand):
     hptuning_job_ref = args.CONCEPTS.hptuning_job.Parse()
     name = hptuning_job_ref.Name()
     region = hptuning_job_ref.AsDict()['locationsId']
+    version = constants.GA_VERSION if self.ReleaseTrack(
+    ) == base.ReleaseTrack.GA else constants.BETA_VERSION
     with endpoint_util.AiplatformEndpointOverrides(
-        version=constants.BETA_VERSION, region=region):
-      response = client.HpTuningJobsClient().Cancel(
+        version=version, region=region):
+      response = client.HpTuningJobsClient(version=version).Cancel(
           hptuning_job_ref.RelativeName())
       log.status.Print(
-          constants.HPTUNING_JOB_CANCEL_DISPLAY_MESSAGE.format(id=name))
+          constants.HPTUNING_JOB_CANCEL_DISPLAY_MESSAGE.format(
+              id=name,
+              version=hp_tuning_jobs_util.OutputCommandVersion(
+                  self.ReleaseTrack())))
       return response

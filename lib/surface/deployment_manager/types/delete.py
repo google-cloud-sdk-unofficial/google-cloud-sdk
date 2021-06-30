@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.deployment_manager import dm_base
 from googlecloudsdk.api_lib.deployment_manager import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deployment_manager import composite_types
+from googlecloudsdk.command_lib.deployment_manager import dm_util
 from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.core import log
@@ -83,11 +84,7 @@ class Delete(base.DeleteCommand, dm_base.DmCommand):
                    project=composite_type_ref.project,
                    compositeType=args.name))
 
-    dm_write.Execute(self.client,
-                     self.messages,
-                     self.resources,
-                     request,
-                     args.async_,
-                     self.client.compositeTypes.Delete,
-                     LogResource)
-
+    response = dm_write.Execute(self.client, self.messages, self.resources,
+                                request, args.async_,
+                                self.client.compositeTypes.Delete, LogResource)
+    dm_util.LogOperationStatus(response, 'Delete')

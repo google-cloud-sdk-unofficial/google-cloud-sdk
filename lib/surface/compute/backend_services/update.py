@@ -71,7 +71,7 @@ class UpdateHelper(object):
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
            support_logging, support_client_only, support_grpc_protocol,
            support_subsetting, support_unspecified_protocol,
-           support_edge_policies):
+           support_edge_policies, support_connection_tracking):
     """Add all arguments for updating a backend service."""
 
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
@@ -131,17 +131,22 @@ class UpdateHelper(object):
 
     cdn_flags.AddCdnPolicyArgs(parser, 'backend service', update_command=True)
 
+    if support_connection_tracking:
+      flags.AddConnectionTrackingPolicy(parser)
+
   def __init__(self,
                support_l7_internal_load_balancer,
                support_failover,
                support_logging,
                support_subsetting,
-               support_edge_policies=False):
+               support_edge_policies=False,
+               support_connection_tracking=False):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
     self._support_subsetting = support_subsetting
     self._support_edge_policies = support_edge_policies
+    self._support_connection_tracking = support_connection_tracking
 
   def Modify(self, client, resources, args, existing):
     """Modify Backend Service."""
@@ -212,6 +217,10 @@ class UpdateHelper(object):
         replacement.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
       replacement.enableCDN = True
 
+    if self._support_connection_tracking:
+      backend_services_utils.ApplyConnectionTrackingPolicyArgs(
+          client, args, replacement)
+
     self._ApplyIapArgs(client, args.iap, existing, replacement)
 
     backend_services_utils.ApplyFailoverPolicyArgs(
@@ -281,7 +290,13 @@ class UpdateHelper(object):
         args.IsSpecified('serve_while_stale'),
         args.IsSpecified('no_serve_while_stale'),
         args.IsSpecified('bypass_cache_on_request_headers'),
-        args.IsSpecified('no_bypass_cache_on_request_headers')
+        args.IsSpecified('no_bypass_cache_on_request_headers'),
+        args.IsSpecified('connection_persistence_on_unhealthy_backends')
+        if self._support_connection_tracking else False,
+        args.IsSpecified('tracking_mode')
+        if self._support_connection_tracking else False,
+        args.IsSpecified('idle_timeout_sec')
+        if self._support_connection_tracking else False
     ]):
       raise compute_exceptions.UpdatePropertyError(
           'At least one property must be modified.')
@@ -448,6 +463,7 @@ class UpdateGA(base.UpdateCommand):
   _support_grpc_protocol = True
   _support_subsetting = False
   _support_edge_policies = False
+  _support_connection_tracking = False
 
   @classmethod
   def Args(cls, parser):
@@ -461,15 +477,16 @@ class UpdateGA(base.UpdateCommand):
         support_grpc_protocol=cls._support_grpc_protocol,
         support_subsetting=cls._support_subsetting,
         support_unspecified_protocol=cls._support_unspecified_protocol,
-        support_edge_policies=cls._support_edge_policies)
+        support_edge_policies=cls._support_edge_policies,
+        support_connection_tracking=cls._support_connection_tracking)
 
   def Run(self, args):
     """Issues requests necessary to update the Backend Services."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return UpdateHelper(self._support_l7_internal_load_balancer,
                         self._support_failover, self._support_logging,
-                        self._support_subsetting,
-                        self._support_edge_policies).Run(args, holder)
+                        self._support_subsetting, self._support_edge_policies,
+                        self._support_connection_tracking).Run(args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -484,6 +501,7 @@ class UpdateBeta(UpdateGA):
   _support_grpc_protocol = True
   _support_subsetting = True
   _support_edge_policies = False
+  _support_connection_tracking = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -498,3 +516,4 @@ class UpdateAlpha(UpdateBeta):
   _support_grpc_protocol = True
   _support_subsetting = True
   _support_edge_policies = True
+  _support_connection_tracking = True

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command to get the status of MultiClusterIngress Feature."""
+"""The command to get the status of Multi-cluster Ingress Feature."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,14 +22,14 @@ from googlecloudsdk.command_lib.container.hub.features import base
 
 
 class Describe(base.DescribeCommand):
-  """Describe the status of MultiClusterIngress Feature resource.
+  """Describe the status of Multi-cluster Ingress Feature resource.
 
-  This command describes the status of MultiClusterIngress Feature resource in
+  This command describes the status of Multi-cluster Ingress Feature resource in
   Hub.
 
-  ## Examples
+  ## EXAMPLES
 
-  Describe MultiClusterIngress Feature:
+  To describe the Ingress Feature, run:
 
     $ {command}
   """

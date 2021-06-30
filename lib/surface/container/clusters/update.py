@@ -318,7 +318,7 @@ class Update(base.UpdateCommand):
     flags.AddNotificationConfigFlag(group)
     flags.AddDisableAutopilotFlag(group)
     flags.AddAuthenticatorSecurityGroupFlags(group, hidden=True)
-    flags.AddILBSubsettingFlags(group, hidden=True)
+    flags.AddILBSubsettingFlags(group, hidden=False)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -332,6 +332,12 @@ class Update(base.UpdateCommand):
         args.enable_resource_consumption_metering
     opts.enable_intra_node_visibility = args.enable_intra_node_visibility
     opts.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting
+    if opts.enable_l4_ilb_subsetting:
+      console_io.PromptContinue(
+          message='Enabling L4 ILB Subsetting is a one-way operation.'
+          'Once enabled, this configuration cannot be disabled.'
+          'Existing ILB services should be recreated to use Subsetting.',
+          cancel_on_no=True)
     opts.enable_master_global_access = args.enable_master_global_access
     opts.enable_shielded_nodes = args.enable_shielded_nodes
     opts.release_channel = args.release_channel
@@ -760,6 +766,12 @@ class UpdateBeta(Update):
     opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
     opts.disable_autopilot = args.disable_autopilot
     opts.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting
+    if opts.enable_l4_ilb_subsetting:
+      console_io.PromptContinue(
+          message='Enabling L4 ILB Subsetting is a one-way operation.'
+          'Once enabled, this configuration cannot be disabled.'
+          'Existing ILB services should be recreated to use Subsetting.',
+          cancel_on_no=True)
     opts.cluster_dns = args.cluster_dns
     opts.cluster_dns_scope = args.cluster_dns_scope
     opts.cluster_dns_domain = args.cluster_dns_domain
@@ -900,6 +912,12 @@ class UpdateAlpha(Update):
     opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
     opts.disable_autopilot = args.disable_autopilot
     opts.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting
+    if opts.enable_l4_ilb_subsetting:
+      console_io.PromptContinue(
+          message='Enabling L4 ILB Subsetting is a one-way operation.'
+          'Once enabled, this configuration cannot be disabled.'
+          'Existing ILB services should be recreated to use Subsetting.',
+          cancel_on_no=True)
     opts.cluster_dns = args.cluster_dns
     opts.cluster_dns_scope = args.cluster_dns_scope
     opts.cluster_dns_domain = args.cluster_dns_domain

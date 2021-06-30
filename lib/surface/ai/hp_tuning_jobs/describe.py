@@ -25,9 +25,18 @@ from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Get detail information about the hyperparameter tuning job by given id."""
+  """Get detail information about the hyperparameter tuning job by given id.
+
+  ## EXAMPLES
+
+  To get a job ``123'' under project ``example'' in region
+  ``us-central1'', run:
+
+    $ {command} 123 --project=example --region=us-central1
+  """
 
   @staticmethod
   def Args(parser):
@@ -36,8 +45,10 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     hptuning_job_ref = args.CONCEPTS.hptuning_job.Parse()
     region = hptuning_job_ref.AsDict()['locationsId']
+    version = constants.GA_VERSION if self.ReleaseTrack(
+    ) == base.ReleaseTrack.GA else constants.BETA_VERSION
     with endpoint_util.AiplatformEndpointOverrides(
-        version=constants.BETA_VERSION, region=region):
-      response = client.HpTuningJobsClient().Get(
+        version=version, region=region):
+      response = client.HpTuningJobsClient(version=version).Get(
           hptuning_job_ref.RelativeName())
       return response

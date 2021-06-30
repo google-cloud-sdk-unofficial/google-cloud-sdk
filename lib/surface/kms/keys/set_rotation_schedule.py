@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.kms import exceptions
 from googlecloudsdk.command_lib.kms import flags
 
 
@@ -76,7 +76,7 @@ class SetRotationSchedule(base.UpdateCommand):
       fields_to_update.append('nextRotationTime')
 
     if not fields_to_update:
-      raise exceptions.ToolException(
+      raise exceptions.ArgumentError(
           'At least one of --next-rotation-time or --rotation-period must be '
           'specified.')
     req.updateMask = ','.join(fields_to_update)

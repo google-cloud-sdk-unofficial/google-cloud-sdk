@@ -111,7 +111,8 @@ class Delete(base.Command):
     expander = expansion.GCSPathExpander()
     objects, dirs = expander.ExpandPaths(paths)
     if dirs and not args.recursive:
-      raise exceptions.ToolException(
+      raise exceptions.RequiredArgumentException(
+          '--recursive',
           'Source path matches directories but --recursive was not specified.')
 
     buckets = []

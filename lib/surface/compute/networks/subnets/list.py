@@ -25,11 +25,10 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.networks.subnets import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List subnetworks."""
 
-  _default_list_format = flags.DEFAULT_LIST_FORMAT
+  _default_list_format = flags.DEFAULT_LIST_FORMAT_WITH_IPV6_FIELD
 
   @classmethod
   def Args(cls, parser):
@@ -45,10 +44,12 @@ class List(base.ListCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    request_data = lister.ParseRegionalFlags(args, holder.resources)
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
 
-    list_implementation = lister.RegionalLister(
-        client, client.apitools_client.subnetworks)
+    list_implementation = lister.MultiScopeLister(
+        client=client,
+        regional_service=client.apitools_client.subnetworks,
+        aggregation_service=client.apitools_client.subnetworks)
 
     for resource in lister.Invoke(request_data, list_implementation):
       if args.network is None:
@@ -57,12 +58,6 @@ class List(base.ListCommand):
         network_ref = holder.resources.Parse(resource['network'])
         if network_ref.Name() == args.network:
           yield resource
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(List):
-
-  _default_list_format = flags.DEFAULT_LIST_FORMAT_WITH_IPV6_FIELD
 
 
 List.detailed_help = base_classes.GetRegionalListerHelp('subnetworks')

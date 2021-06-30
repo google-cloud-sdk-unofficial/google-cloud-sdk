@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.kms import exceptions as kms_exceptions
 from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.command_lib.kms import maps
 
@@ -77,7 +77,7 @@ class Update(base.UpdateCommand):
 
     # Raise an exception when no update field is specified.
     if not fields_to_update:
-      raise exceptions.ToolException(
+      raise kms_exceptions.UpdateError(
           'An error occured: --external-key-uri or --state must be specified.')
 
     return fields_to_update
@@ -102,7 +102,7 @@ class Update(base.UpdateCommand):
   def CheckKeyIsExternal(self, key_version, messages):
     if (key_version.protectionLevel !=
         messages.CryptoKeyVersion.ProtectionLevelValueValuesEnum.EXTERNAL):
-      raise exceptions.ToolException(
+      raise kms_exceptions.UpdateError(
           'External key URI updates are only available for key versions '
           'with EXTERNAL protection level')
 

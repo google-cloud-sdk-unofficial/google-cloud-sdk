@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.kms import exceptions as kms_exceptions
 from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
@@ -72,12 +73,12 @@ class Describe(base.DescribeCommand):
     # key versions.
     if (args.attestation_file and version.protectionLevel !=
         messages.CryptoKeyVersion.ProtectionLevelValueValuesEnum.HSM):
-      raise exceptions.ToolException(
+      raise kms_exceptions.ArgumentError(
           'Attestations are only available for HSM key versions.')
 
     if (args.attestation_file and version.state ==
         messages.CryptoKeyVersion.StateValueValuesEnum.PENDING_GENERATION):
-      raise exceptions.ToolException(
+      raise kms_exceptions.ArgumentError(
           'The attestation is unavailable until the version is generated.')
 
     if args.attestation_file and version.attestation is not None:

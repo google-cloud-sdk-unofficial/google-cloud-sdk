@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command to update MultiClusterIngress Feature."""
+"""The command to update Multi-cluster Ingress Feature."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,13 +27,13 @@ from googlecloudsdk.core.console import console_io
 
 
 class Update(base.UpdateCommand):
-  """Update MultiClusterIngress Feature.
+  """Update Multi-cluster Ingress Feature.
 
-  This command updates MultiClusterIngress Feature in Hub.
+  This command updates Multi-cluster Ingress Feature in Hub.
 
-  ## Examples
+  ## EXAMPLES
 
-  Update MultiClusterIngress Feature:
+  To update the Ingress Feature, run:
 
     $ {command} --config-membership=CONFIG_MEMBERSHIP
   """

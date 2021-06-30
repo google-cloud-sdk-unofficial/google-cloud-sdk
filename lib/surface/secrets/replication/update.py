@@ -20,8 +20,9 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.secrets import api as secrets_api
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.secrets import args as secrets_args
+from googlecloudsdk.command_lib.secrets import exceptions
 from googlecloudsdk.command_lib.secrets import log as secrets_log
 
 
@@ -104,18 +105,20 @@ class Update(base.UpdateCommand):
       locations = []
       for replica in secret.replication.userManaged.replicas:
         if not replica.location:
-          raise exceptions.ToolException(self.MISCONFIGURED_REPLICATION_MESSAGE)
+          raise exceptions.MisconfiguredReplicationError(
+              self.MISCONFIGURED_REPLICATION_MESSAGE)
         locations.append(replica.location)
       updated_secret = secrets_api.Secrets().SetReplication(
           secret_ref, 'user-managed', locations, [])
       secrets_log.Secrets().UpdatedReplication(secret_ref)
       return updated_secret
-    raise exceptions.ToolException(self.MISCONFIGURED_REPLICATION_MESSAGE)
+    raise exceptions.MisconfiguredReplicationError(
+        self.MISCONFIGURED_REPLICATION_MESSAGE)
 
   def _SetKmsKey(self, secret_ref, secret, kms_key, location):
     if secret.replication.automatic:
       if location:
-        raise exceptions.BadArgumentException(
+        raise calliope_exceptions.BadArgumentException(
             'location', self.LOCATION_AND_AUTOMATIC_MESSAGE)
       updated_secret = secrets_api.Secrets().SetReplication(
           secret_ref, 'automatic', [], [kms_key])
@@ -123,14 +126,15 @@ class Update(base.UpdateCommand):
       return updated_secret
     if secret.replication.userManaged and secret.replication.userManaged.replicas:
       if not location:
-        raise exceptions.RequiredArgumentException(
+        raise calliope_exceptions.RequiredArgumentException(
             'location', self.LOCATION_REQUIRED_MESSAGE)
       locations = []
       keys = []
       found_location = False
       for replica in secret.replication.userManaged.replicas:
         if not replica.location:
-          raise exceptions.ToolException(self.MISCONFIGURED_REPLICATION_MESSAGE)
+          raise exceptions.MisconfiguredReplicationError(
+              self.MISCONFIGURED_REPLICATION_MESSAGE)
         locations.append(replica.location)
         if location == replica.location:
           found_location = True
@@ -138,27 +142,29 @@ class Update(base.UpdateCommand):
         elif replica.customerManagedEncryption and replica.customerManagedEncryption.kmsKeyName:
           keys.append(replica.customerManagedEncryption.kmsKeyName)
       if not found_location:
-        raise exceptions.InvalidArgumentException(
+        raise calliope_exceptions.InvalidArgumentException(
             'location', self.LOCATION_NOT_IN_POLICY_MESSAGE)
       if len(locations) != len(keys):
-        raise exceptions.ToolException(self.PARTIALLY_CMEK_MESSAGE)
+        raise exceptions.MisconfiguredEncryptionError(
+            self.PARTIALLY_CMEK_MESSAGE)
       updated_secret = secrets_api.Secrets().SetReplication(
           secret_ref, 'user-managed', locations, keys)
       secrets_log.Secrets().UpdatedReplication(secret_ref)
       return updated_secret
-    raise exceptions.ToolException(self.MISCONFIGURED_REPLICATION_MESSAGE)
+    raise exceptions.MisconfiguredReplicationError(
+        self.MISCONFIGURED_REPLICATION_MESSAGE)
 
   def Run(self, args):
     secret_ref = args.CONCEPTS.secret.Parse()
 
     if not args.remove_cmek and not args.set_kms_key:
-      raise exceptions.MinimumArgumentException(
+      raise calliope_exceptions.MinimumArgumentException(
           ['--remove-cmek', '--set-kms-key'])
     if args.remove_cmek and args.set_kms_key:
-      raise exceptions.ConflictingArgumentsException(
+      raise calliope_exceptions.ConflictingArgumentsException(
           self.REMOVE_AND_SET_CMEK_MESSAGE)
     if args.remove_cmek and args.location:
-      raise exceptions.ConflictingArgumentsException(
+      raise calliope_exceptions.ConflictingArgumentsException(
           self.REMOVE_CMEK_AND_LOCATION_MESSAGE)
 
     # args.set_kms_key without args.location is allowed only if the secret has
@@ -168,7 +174,7 @@ class Update(base.UpdateCommand):
     secret = secrets_api.Secrets().GetOrNone(secret_ref)
     # Secret does not exist
     if secret is None:
-      raise exceptions.InvalidArgumentException(
+      raise calliope_exceptions.InvalidArgumentException(
           'secret',
           self.SECRET_MISSING_MESSAGE.format(secret=secret_ref.Name()))
 

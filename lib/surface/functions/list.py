@@ -67,7 +67,7 @@ class ListAlpha(base.ListCommand):
     parser.display_info.AddFormat("""
         table(
           name.basename(),
-          state,
+          state():label=STATE,
           trigger():label=TRIGGER,
           name.scope("locations").segment(0):label=REGION,
           versionId():label=PRODUCT_VERSION

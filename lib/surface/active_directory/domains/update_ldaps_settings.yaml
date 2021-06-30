@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [GA, BETA, ALPHA]
 
   help_text:
     brief: Update the LDAPS settings for a domain.
@@ -24,6 +24,10 @@
     collection: managedidentities.projects.locations.global.domains
     ALPHA:
       api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
     method: updateLdapssettings
     modify_request_hooks:
     - googlecloudsdk.command_lib.active_directory.domains_update_util:ProcessPfxFile
@@ -55,6 +59,6 @@
         - arg_name: clear-certificates
           type: bool
           help_text: |
-            Disable LDAPS by clearing all existing certificates.
+            Disable LDAPS by deleting all existing certificates. Certificates will need to be re-uploaded if LDAPS is to be re-enabled.
   async:
     collection: managedidentities.projects.locations.global.operations
