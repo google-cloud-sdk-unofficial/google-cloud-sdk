@@ -22,11 +22,11 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Bulk(base.Group):
+class Config(base.Group):
   """Manage Compute Engine virtual machine configurations."""
 
 
-Bulk.detailed_help = {
+Config.detailed_help = {
     'DESCRIPTION': """
       Manage Compute Engine virtual machine configurations.
     """,

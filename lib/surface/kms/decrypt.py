@@ -30,7 +30,6 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Decrypt(base.Command):
   r"""Decrypt a ciphertext file using a Cloud KMS key.
 
@@ -52,6 +51,10 @@ class Decrypt(base.Command):
   '-', that file is read from stdin. Note that both files cannot be read from
   stdin. Similarly, if `--plaintext-file` is set to '-', the decrypted plaintext
   is written to stdout.
+
+  By default, the command performs integrity verification on data sent to and
+  received from Cloud KMS. Use `--skip-integrity-verification` to disable
+  integrity verification.
 
   ## EXAMPLES
 
@@ -79,10 +82,6 @@ class Decrypt(base.Command):
         --plaintext-file='-'
   """
 
-  # Class variable which denotes whether this release track supports integrity
-  # verification.
-  supports_integrity_verification = False
-
   @staticmethod
   def Args(parser):
     flags.AddKeyResourceFlags(
@@ -100,6 +99,7 @@ class Decrypt(base.Command):
         'a file with `gcloud kms encrypt`')
     flags.AddPlaintextFileFlag(parser, 'to output')
     flags.AddAadFileFlag(parser)
+    flags.AddSkipIntegrityVerification(parser)
 
   def _ReadFileOrStdin(self, path, max_bytes):
     data = console_io.ReadFromFileOrStdin(path, binary=True)
@@ -110,7 +110,7 @@ class Decrypt(base.Command):
     return data
 
   def _PerformIntegrityVerification(self, args):
-    return self.supports_integrity_verification and not args.skip_integrity_verification
+    return not args.skip_integrity_verification
 
   def _CreateDecryptRequest(self, args):
     if (args.ciphertext_file == '-' and
@@ -205,64 +205,3 @@ class Decrypt(base.Command):
             args.plaintext_file, resp.plaintext, binary=True, overwrite=True)
     except files.Error as e:
       raise exceptions.BadFileException(e)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class DecryptBeta(Decrypt):
-  r"""Decrypt a ciphertext file using a Cloud KMS key.
-
-  `{command}` decrypts the given ciphertext file using the given Cloud KMS key
-  and writes the result to the named plaintext file. Note that to permit users
-  to decrypt using a key, they must be have at least one of the following IAM
-  roles for that key: `roles/cloudkms.cryptoKeyDecrypter`,
-  `roles/cloudkms.cryptoKeyEncrypterDecrypter`.
-
-  Additional authenticated data (AAD) is used as an additional check by Cloud
-  KMS to authenticate a decryption request. If an additional authenticated data
-  file is provided, its contents must match the additional authenticated data
-  provided during encryption and must not be larger than 64KiB. If you don't
-  provide a value for `--additional-authenticated-data-file`, an empty string is
-  used. For a thorough explanation of AAD, refer to this
-  guide: https://cloud.google.com/kms/docs/additional-authenticated-data
-
-  If `--ciphertext-file` or `--additional-authenticated-data-file` is set to
-  '-', that file is read from stdin. Note that both files cannot be read from
-  stdin. Similarly, if `--plaintext-file` is set to '-', the decrypted plaintext
-  is written to stdout.
-
-  By default, the command performs integrity verification on data sent to and
-  received from Cloud KMS. Use `--skip-integrity-verification` to disable
-  integrity verification.
-
-  ## EXAMPLES
-
-  To decrypt the file 'path/to/ciphertext' using the key `frodo` with key
-  ring `fellowship` and location `global` and write the plaintext
-  to 'path/to/plaintext.dec', run:
-
-    $ {command} \
-        --key=frodo \
-        --keyring=fellowship \
-        --location=global \
-        --ciphertext-file=path/to/input/ciphertext \
-        --plaintext-file=path/to/output/plaintext.dec
-
-  To decrypt the file 'path/to/ciphertext' using the key `frodo` and the
-  additional authenticated data that was used to encrypt the ciphertext, and
-  write the decrypted plaintext to stdout, run:
-
-    $ {command} \
-        --key=frodo \
-        --keyring=fellowship \
-        --location=global \
-        --additional-authenticated-data-file=path/to/aad \
-        --ciphertext-file=path/to/input/ciphertext \
-        --plaintext-file='-'
-  """
-
-  supports_integrity_verification = True
-
-  @staticmethod
-  def Args(parser):
-    super(DecryptBeta, DecryptBeta).Args(parser)
-    flags.AddSkipIntegrityVerification(parser)

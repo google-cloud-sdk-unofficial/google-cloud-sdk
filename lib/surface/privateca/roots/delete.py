@@ -131,7 +131,7 @@ class Delete(base.DeleteCommand):
 
     The CA specified in this command MUST:
 
-      1) be disabled.
+      1) be in the DISABLED or STAGED state.
       2) have no un-revoked or un-expired certificates. Use the revoke command
          to revoke any active certificates.
 
@@ -141,17 +141,16 @@ class Delete(base.DeleteCommand):
 
     To delete a root CA:
 
-      $ {command} prod-root --pool=my-pool --location='us-west1'
+      $ {command} prod-root --pool=my-pool --location=us-west1
 
     To delete a CA while skipping the confirmation
     input:
 
-      $ {command} prod-root --pool=my-pool --location='us-west1' --quiet
+      $ {command} prod-root --pool=my-pool --location=us-west1 --quiet
 
     To undo the deletion for a root CA:
 
-      $ {parent_command} undelete prod-root --pool=my-pool --location='us-west1'
-
+      $ {parent_command} undelete prod-root --pool=my-pool --location=us-west1
   """
 
   @staticmethod

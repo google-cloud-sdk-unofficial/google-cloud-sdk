@@ -64,35 +64,65 @@ def _GetSchemaPath(release_track, for_help=False):
       'compute', _GetApiVersion(release_track), 'UrlMap', for_help=for_help)
 
 
-def _SendPatchRequest(client, url_map_ref, replacement):
-  """Sends URL Map patch request."""
+def _SendPatchRequest(client, resources, url_map_ref, replacement):
+  """Sends a URL map patch request and waits for the operation to finish.
+
+  Args:
+    client: The API client.
+    resources: The resource parser.
+    url_map_ref: The URL map reference.
+    replacement: The URL map to patch with.
+
+  Returns:
+    The operation result.
+  """
   if url_map_ref.Collection() == 'compute.regionUrlMaps':
-    return client.apitools_client.regionUrlMaps.Patch(
+    service = client.apitools_client.regionUrlMaps
+    operation = client.apitools_client.regionUrlMaps.Patch(
         client.messages.ComputeRegionUrlMapsPatchRequest(
             project=url_map_ref.project,
             region=url_map_ref.region,
             urlMap=url_map_ref.Name(),
             urlMapResource=replacement))
+  else:
+    service = client.apitools_client.urlMaps
+    operation = client.apitools_client.urlMaps.Patch(
+        client.messages.ComputeUrlMapsPatchRequest(
+            project=url_map_ref.project,
+            urlMap=url_map_ref.Name(),
+            urlMapResource=replacement))
 
-  return client.apitools_client.urlMaps.Patch(
-      client.messages.ComputeUrlMapsPatchRequest(
-          project=url_map_ref.project,
-          urlMap=url_map_ref.Name(),
-          urlMapResource=replacement))
+  return url_maps_utils.WaitForOperation(resources, service, operation,
+                                         url_map_ref, 'Updating URL map')
 
 
-def _SendInsertRequest(client, url_map_ref, url_map):
-  """Sends URL Map insert request."""
+def _SendInsertRequest(client, resources, url_map_ref, url_map):
+  """Sends a URL map insert request and waits for the operation to finish.
+
+  Args:
+    client: The API client.
+    resources: The resource parser.
+    url_map_ref: The URL map reference.
+    url_map: The URL map to insert.
+
+  Returns:
+    The operation result.
+  """
   if url_map_ref.Collection() == 'compute.regionUrlMaps':
-    return client.apitools_client.regionUrlMaps.Insert(
+    service = client.apitools_client.regionUrlMaps
+    operation = client.apitools_client.regionUrlMaps.Insert(
         client.messages.ComputeRegionUrlMapsInsertRequest(
             project=url_map_ref.project,
             region=url_map_ref.region,
             urlMap=url_map))
+  else:
+    service = client.apitools_client.urlMaps
+    operation = client.apitools_client.urlMaps.Insert(
+        client.messages.ComputeUrlMapsInsertRequest(
+            project=url_map_ref.project, urlMap=url_map))
 
-  return client.apitools_client.urlMaps.Insert(
-      client.messages.ComputeUrlMapsInsertRequest(
-          project=url_map_ref.project, urlMap=url_map))
+  return url_maps_utils.WaitForOperation(resources, service, operation,
+                                         url_map_ref, 'Creating URL map')
 
 
 def _GetClearedFieldsForDuration(duration, field_prefix):
@@ -274,10 +304,11 @@ def _GetClearedFieldsForHeaderAction(header_action, field_prefix):
 def _Run(args, holder, url_map_arg, release_track):
   """Issues requests necessary to import URL maps."""
   client = holder.client
+  resources = holder.resources
 
   url_map_ref = url_map_arg.ResolveAsResource(
       args,
-      holder.resources,
+      resources,
       default_scope=compute_scope.ScopeEnum.GLOBAL,
       scope_lister=compute_flags.GetDefaultScopeLister(client))
 
@@ -303,7 +334,7 @@ def _Run(args, holder, url_map_arg, release_track):
     if error.status_code != 404:
       raise error
     # Url Map does not exist, create a new one.
-    return _SendInsertRequest(client, url_map_ref, url_map)
+    return _SendInsertRequest(client, resources, url_map_ref, url_map)
 
   # No change, do not send requests to server.
   if url_map_old == url_map:
@@ -352,7 +383,7 @@ def _Run(args, holder, url_map_arg, release_track):
         url_map.headerAction, 'headerAction.')
 
   with client.apitools_client.IncludeFields(cleared_fields):
-    return _SendPatchRequest(client, url_map_ref, url_map)
+    return _SendPatchRequest(client, resources, url_map_ref, url_map)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA,

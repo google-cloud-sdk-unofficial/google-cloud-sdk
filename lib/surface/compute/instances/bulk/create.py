@@ -73,6 +73,7 @@ def _CommonArgs(parser,
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddCreateDiskArgs(
       parser,
+      enable_kms=True,
       enable_snapshots=True,
       source_snapshot_csek=snapshot_csek,
       image_csek=image_csek,
@@ -106,6 +107,7 @@ def _CommonArgs(parser,
   instances_flags.AddShieldedInstanceConfigArgs(parser)
   instances_flags.AddNestedVirtualizationArgs(parser)
   instances_flags.AddThreadsPerCoreArgs(parser)
+  instances_flags.AddBootDiskArgs(parser, enable_kms=True)
 
   if supports_display_device:
     instances_flags.AddDisplayDeviceArg(parser)
@@ -203,7 +205,6 @@ class Create(base.Command):
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddBulkCreateArgs(parser)
-    instances_flags.AddBootDiskArgs(parser)
 
   def Collection(self):
     return 'compute.instances'
@@ -314,6 +315,7 @@ class Create(base.Command):
           image_uri=image_uri,
           create_boot_disk=create_boot_disk,
           boot_disk_size_gb=boot_disk_size_gb,
+          support_kms=True,
           support_nvdimm=self._support_nvdimm,
           support_source_snapshot_csek=self._support_source_snapshot_csek,
           support_boot_snapshot_uri=self._support_boot_snapshot_uri,
@@ -550,7 +552,6 @@ class CreateBeta(Create):
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddBulkCreateArgs(parser)
-    instances_flags.AddBootDiskArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -581,7 +582,6 @@ class CreateAlpha(Create):
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddBulkCreateArgs(parser)
-    instances_flags.AddBootDiskArgs(parser)
     instances_flags.AddSecureTagsArgs(parser)
 
 

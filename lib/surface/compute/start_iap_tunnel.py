@@ -120,8 +120,8 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
           args, target.project, local_host, local_port, check_connection)
 
     if target.ip:
-      iap_tunnel_helper.ConfigureForIP(target.zone, target.region,
-                                       target.network, target.ip, target.port)
+      iap_tunnel_helper.ConfigureForIP(target.region, target.network, target.ip,
+                                       target.port)
     else:
       iap_tunnel_helper.ConfigureForInstance(target.zone, target.instance,
                                              target.interface, target.port)
@@ -134,13 +134,12 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
         'region'):
       return _CreateTargetArgs(
           project=properties.VALUES.core.project.GetOrFail(),
-          # TODO(b/190426150): remove zone param for on-prem
-          zone=args.zone,
           region=args.region,
           network=args.network,
           # TODO(b/190426150): validate IPv4 format
           ip=args.instance_name,
           port=args.instance_port,
+          zone=None,
           instance=None,
           interface=None)
 

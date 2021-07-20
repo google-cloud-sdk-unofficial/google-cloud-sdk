@@ -49,17 +49,17 @@ class Create(base.CreateCommand):
   To create a root CA that supports one layer of subordinates:
 
       $ {command} prod-root \
-        --pool=my-pool \
-        --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1" \
-        --subject="CN=Joonix Production Root CA, O=Google" \
-        --max-chain-length=1
+          --location=us-west1 --pool=my-pool \
+          --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1" \
+          --subject="CN=Joonix Production Root CA, O=Google" \
+          --max-chain-length=1
 
   To create a root CA that is based on an existing CA:
 
       $ {command} prod-root \
-        --pool=my-pool \
-        --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1" \
-        --from-ca=source-root
+          --location=us-west1 --pool=my-pool \
+          --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1" \
+          --from-ca=source-root
   """
 
   def __init__(self, *args, **kwargs):

@@ -108,16 +108,16 @@ class Submit(base.CreateCommand):
       'EXAMPLES': ("""
       To submit a build with source located at storage URL `gs://bucket/object.zip`:
 
-         $ {command}  `gs://bucket/object.zip` --tag=gcr.io/my-project/image
+         $ {command}  "gs://bucket/object.zip" --tag=gcr.io/my-project/image
 
       To submit a build with source located at storage URL `gs://bucket/object.zip`
       using config file `config.yaml`:
 
-        $ {command} `gs://bucket/object.zip` --tag=gcr.io/my-project/image --config=config.yaml
+        $ {command} "gs://bucket/object.zip" --tag=gcr.io/my-project/image --config=config.yaml
 
       To submit a build with local source `source.tgz` asynchronously:
 
-        $ {command} `source.tgz` --tag=gcr.io/my-project/image --async
+        $ {command} "source.tgz" --tag=gcr.io/my-project/image --async
       """)
   }
 

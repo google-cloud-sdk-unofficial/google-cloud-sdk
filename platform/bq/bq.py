@@ -1733,6 +1733,18 @@ class _Query(BigqueryCmd):
         None,
         'Target dataset used to create scheduled query.',
         flag_values=fv)
+    flags.DEFINE_multi_string(
+        'connection_property', None, 'Connection properties', flag_values=fv)
+    flags.DEFINE_boolean(
+        'create_session',
+        None,
+        'Whether to create a new session and run the query in the sesson.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'session_id',
+        None,
+        'An existing session id where the query will be run.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, *args):
@@ -1876,6 +1888,31 @@ class _Query(BigqueryCmd):
              transfer_name))
       return
 
+    if self.connection_property:
+      kwds['connection_properties'] = []
+      for key_value in self.connection_property:
+        key_value = key_value.split('=', 2)
+        if len(key_value) != 2:
+          raise app.UsageError(
+              'Invalid connection_property syntax; expected key=value')
+        kwds['connection_properties'].append({
+            'key': key_value[0],
+            'value': key_value[1]
+        })
+    if self.session_id:
+      if 'connection_properties' not in kwds:
+        kwds['connection_properties'] = []
+      for connection_property in kwds['connection_properties']:
+        if connection_property['key'] == 'session_id':
+          raise app.UsageError(
+              '--session_id should not be set if session_id is specified in '
+              '--connection_properties')
+      kwds['connection_properties'].append({
+          'key': 'session_id',
+          'value': self.session_id
+      })
+    if self.create_session:
+      kwds['create_session'] = self.create_session
     if self.rpc:
       if self.allow_large_results:
         raise app.UsageError(
@@ -1981,6 +2018,12 @@ class _Query(BigqueryCmd):
             max_creation_time=None,
             page_token=None,
             parent_job_id=job['jobReference']['jobId']))
+
+    # If there is no child job, show the parent job result instead.
+    if not child_jobs:
+      self.PrintNonScriptQueryJobResults(client, job)
+      return
+
     child_jobs.sort(key=lambda job: job['statistics']['creationTime'])
     if len(child_jobs) == self.max_child_jobs + 1:
       # The number of child jobs exceeds the maximum number to fetch.  There
@@ -3665,6 +3708,13 @@ class _Make(BigqueryCmd):
         'Number of slots to be scaled when needed. Autoscale will be enabled '
         'when setting this.',
         flag_values=fv)
+    flags.DEFINE_integer(
+        'autoscale_budget_slot_hours',
+        None,
+        'If not None, enables reservation autoscaling. Defines the upper limit '
+        'of autoscaled slot-hours this reservation can get during 7*24 hour '
+        'rolling window.',
+        flag_values=fv)
     flags.DEFINE_enum(
         'job_type',
         None, ['QUERY', 'PIPELINE', 'ML_EXTERNAL'],
@@ -3836,8 +3886,8 @@ class _Make(BigqueryCmd):
             ignore_idle_slots=ignore_idle_arg,
             max_concurrency=self.max_concurrency,
             enable_queuing_and_priorities=self.enable_queuing_and_priorities,
-            autoscale_max_slots=self.autoscale_max_slots
-        )
+            autoscale_max_slots=self.autoscale_max_slots,
+            autoscale_budget_slot_hours=self.autoscale_budget_slot_hours)
       except BaseException as e:
         raise bigquery_client.BigqueryError(
             "Failed to create reservation '%s': %s" % (identifier, e))
@@ -4472,6 +4522,13 @@ class _Update(BigqueryCmd):
         'Number of slots to be scaled when needed. Autoscale will be enabled '
         'when setting this.',
         flag_values=fv)
+    flags.DEFINE_integer(
+        'autoscale_budget_slot_hours',
+        None,
+        'If not None, enables reservation autoscaling. Defines the upper limit '
+        'of autoscaled slot-hours this reservation can get during 7*24 hour '
+        'rolling window.',
+        flag_values=fv)
     flags.DEFINE_boolean(
         'transfer_config',
         False,
@@ -4791,8 +4848,8 @@ class _Update(BigqueryCmd):
               ignore_idle_slots=ignore_idle_arg,
               max_concurrency=self.max_concurrency,
               enable_queuing_and_priorities=self.enable_queuing_and_priorities,
-              autoscale_max_slots=self.autoscale_max_slots
-          )
+              autoscale_max_slots=self.autoscale_max_slots,
+              autoscale_budget_slot_hours=self.autoscale_budget_slot_hours)
           _PrintObjectInfo(object_info, reference, custom_format='show')
       except BaseException as e:
         raise bigquery_client.BigqueryError(
@@ -5495,6 +5552,8 @@ def _PrintJobMessages(printable_job_info):
   elif 'Assertion' in printable_job_info:
     print('Assertion successful')
 
+  if 'Session Id' in printable_job_info:
+    print('In session: %s' % printable_job_info['Session Id'])
 
 
 def _PrintObjectInfo(object_info,
@@ -6601,7 +6660,20 @@ class _Init(BigqueryCmd):
         formatter.AddDict(result)
       formatter.Print()
 
-      if len(projects) == 1:
+      if FLAGS.project_id:
+        matching_projects = [
+            p for p in map(BigqueryClient.ConstructObjectReference, projects)
+            if p.projectId == FLAGS.project_id
+        ]
+        if not matching_projects:
+          print('This user does not have access to project_id %s' %
+                FLAGS.project_id)
+          return 1
+        project_reference = matching_projects[0]
+        print('Setting %s as the default.' % (project_reference,))
+        print()
+        entries['project_id'] = project_reference.projectId
+      elif len(projects) == 1:
         project_reference = BigqueryClient.ConstructObjectReference(projects[0])
         print('Found only one project, setting %s as the default.' %
               (project_reference,))

@@ -41,15 +41,15 @@
       To get metadata for the 'frontend-server-tls' certificate:
 
         $ {command} frontend-server-tls \
-          --issuer-pool=my-pool --issuer-location=us-west1
+            --issuer-pool=my-pool --issuer-location=us-west1
 
       To download the PEM-encoded certificate for the 'frontend-server-tls'
       certificate to a file
       called 'frontend-server-tls.crt':
 
         $ {command} frontend-server-tls \
-          --issuer-pool=my-pool --issuer-location=us-west1 \
-          --format="value(pem_cert)" > ./frontend-server-tls.crt
+            --issuer-pool=my-pool --issuer-location=us-west1 \
+            --format="value(pemCertificate)" > ./frontend-server-tls.crt
 
   request:
     collection: privateca.projects.locations.caPools.certificates

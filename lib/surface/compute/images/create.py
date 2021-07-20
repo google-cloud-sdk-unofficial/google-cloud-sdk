@@ -69,7 +69,25 @@ def _Args(parser, messages, supports_force_create=False):
     where image content is to be stored. If not specified, the multi-region
     location closest to the source is chosen automatically.
     """)
+  parser.add_argument(
+      '--locked',
+      action='store_true',
+      default=None,
+      hidden=True,
+      help="""\
+    Specifies that any boot disk created from this image can't be used
+    for data backup operations such as snapshot creation, image creation,
+    instance snapshot creation, and disk cloning.
 
+    If a VM instance is created using this image, the boot disk is fixed
+    to this VM. The disk can't be attached to any other VMs, whether in
+    `read-write` mode or in `read-only` mode. Also, any VM created from this
+    disk, has the following characteristics:
+
+    * The VM can't be used for creating machine images or instance templates
+    * After the VM is created, you can't attach any secondary disk
+    * After the VM is deleted, the attached boot disk can't be retained
+    """)
   compute_flags.AddShieldedInstanceInitialStateKeyArg(parser)
 
 
@@ -193,6 +211,8 @@ class Create(base.CreateCommand):
     if args.IsSpecified('storage_location'):
       image.storageLocations = [args.storage_location]
 
+    if hasattr(image, 'locked'):
+      image.locked = args.locked
     request = messages.ComputeImagesInsertRequest(
         image=image,
         project=image_ref.project)

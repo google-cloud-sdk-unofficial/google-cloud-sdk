@@ -27,8 +27,10 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import iap_tunnel
+from googlecloudsdk.command_lib.compute import network_troubleshooter
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute import ssh_utils
+from googlecloudsdk.command_lib.compute import vpc_troubleshooter
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.command_lib.util.ssh import containers
 from googlecloudsdk.command_lib.util.ssh import ssh
@@ -132,23 +134,40 @@ def AddTroubleshootArg(parser):
       '--troubleshoot',
       action='store_true',
       help="""\
-          If you can't connect to the VM using SSH, you can investigate the problem using the --troubleshoot flag:
+          If you can't connect to a virtual machine (VM) instance using SSH, you can investigate the problem using the --troubleshoot flag:
 
             $ {command} VM_NAME --zone=ZONE --troubleshoot
 
           The troubleshoot flag runs tests and returns recommendations for four types of issues:
-            VM status
-            Network connectivity
-            User permissions
-            VPC settings
+          - VM status
+          - Network connectivity
+          - User permissions
+          - Virtual Private Cloud (VPC) settings
           """
   )
 
 
+# pylint: disable=unused-argument
 def RunTroubleshooting(project=None, zone=None, instance=None,
                        iap_tunnel_args=None):
   """Run each category of troubleshoot action."""
-  raise NotImplementedError
+
+  network_args = {
+      'project': project,
+      'zone': zone,
+      'instance': instance,
+  }
+  network = network_troubleshooter.NetworkTroubleshooter(**network_args)
+  network()
+
+  vpc_args = {
+      'project': project,
+      'zone': zone,
+      'instance': instance,
+      'iap_tunnel_args': iap_tunnel_args
+  }
+  vpc = vpc_troubleshooter.VPCTroubleshooter(**vpc_args)
+  vpc()
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -157,6 +176,7 @@ class Ssh(base.Command):
 
   category = base.TOOLS_CATEGORY
   enable_troubleshoot_flag = False
+  enable_ip_based_flags = False
 
   @classmethod
   def Args(cls, parser):
@@ -171,6 +191,9 @@ class Ssh(base.Command):
     AddContainerArg(parser)
     if cls.enable_troubleshoot_flag:
       AddTroubleshootArg(parser)
+    # TODO(b/190426150): Move this to Beta and then GA.
+    if cls.enable_ip_based_flags:
+      iap_tunnel.AddIpBasedTunnelArgs(parser)
 
     flags.AddZoneFlag(
         parser, resource_type='instance', operation_type='connect to')
@@ -180,10 +203,60 @@ class Ssh(base.Command):
     AddInternalIPArg(routing_group)
     iap_tunnel.AddSshTunnelArgs(parser, routing_group)
 
+  def _RunOnPrem(self, args):
+    env = ssh.Environment.Current()
+    env.RequireSSH()
+    user, ip = ssh_utils.GetUserAndInstance(args.user_host)
+    remote = ssh.Remote(ip, user)
+
+    iap_tunnel_args = iap_tunnel.CreateOnPremSshTunnelArgs(
+        args, self.ReleaseTrack(), ip)
+
+    extra_flags = ssh.ParseAndSubstituteSSHFlags(args, remote, ip, ip)
+
+    remainder = []
+
+    if args.ssh_args:
+      remainder.extend(args.ssh_args)
+
+    # Transform args.command into arg list or None if no command
+    command_list = args.command.split(' ') if args.command else None
+    tty = containers.GetTty(args.container, command_list)
+    remote_command = containers.GetRemoteCommand(args.container, command_list)
+
+    # Do not include default port since that will prevent users from
+    # specifying a custom port (b/121998342).
+    ssh_cmd_args = {'remote': remote,
+                    'extra_flags': extra_flags,
+                    'remote_command': remote_command,
+                    'tty': tty,
+                    'iap_tunnel_args': iap_tunnel_args,
+                    'remainder': remainder}
+
+    cmd = ssh.SSHCommand(**ssh_cmd_args)
+
+    if args.dry_run:
+      log.out.Print(' '.join(cmd.Build(env)))
+      return
+
+    # Errors from SSH itself result in an ssh.CommandError being raised
+    return_code = cmd.Run(
+        env,
+        force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
+    if return_code:
+      # This is the return code of the remote command.  Problems with SSH itself
+      # will result in ssh.CommandError being raised above.
+      sys.exit(return_code)
+
   def Run(self, args):
     """See ssh_utils.BaseSSHCLICommand.Run."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
+
+    if (args.IsKnownAndSpecified('network') and
+        args.IsKnownAndSpecified('region')):
+      self._RunOnPrem(args)
+      return
 
     ssh_helper = ssh_utils.BaseSSHCLIHelper()
     ssh_helper.Run(args)
@@ -196,7 +269,7 @@ class Ssh(base.Command):
     project = ssh_helper.GetProject(client, instance_ref.project)
     host_keys = ssh_helper.GetHostKeysFromGuestAttributes(client, instance_ref,
                                                           instance, project)
-    iap_tunnel_args = iap_tunnel.SshTunnelArgs.FromArgs(
+    iap_tunnel_args = iap_tunnel.CreateSshTunnelArgs(
         args, self.ReleaseTrack(), instance_ref,
         ssh_utils.GetExternalInterface(instance, no_raise=True))
 
@@ -314,12 +387,14 @@ class Ssh(base.Command):
 class SshBeta(Ssh):
   """SSH into a virtual machine instance (Beta)."""
   enable_troubleshoot_flag = False
+  enable_ip_based_flags = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SshAlpha(SshBeta):
   """SSH into a virtual machine instance (Alpha)."""
-  enable_troubleshoot_flag = False
+  enable_troubleshoot_flag = True
+  enable_ip_based_flags = True
 
 
 def DetailedHelp():

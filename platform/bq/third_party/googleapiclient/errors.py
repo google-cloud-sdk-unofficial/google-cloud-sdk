@@ -128,7 +128,7 @@ class MediaUploadSizeError(Error):
 
 
 class ResumableUploadError(HttpError):
-    """Error occurred during resumable upload."""
+    """Error occured during resumable upload."""
 
     pass
 
@@ -146,7 +146,7 @@ class InvalidNotificationError(Error):
 
 
 class BatchError(HttpError):
-    """Error occurred during batch operations."""
+    """Error occured during batch operations."""
 
     @util.positional(2)
     def __init__(self, reason, resp=None, content=None):
@@ -156,7 +156,7 @@ class BatchError(HttpError):
 
     def __repr__(self):
         if getattr(self.resp, "status", None) is None:
-            return '<BatchError "%s">' % (self.reason,)
+            return '<BatchError "%s">' % (self.reason)
         else:
             return '<BatchError %s "%s">' % (self.resp.status, self.reason)
 

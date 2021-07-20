@@ -22,10 +22,24 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+DETAILED_HELP = {
+    'DESCRIPTION': """\
+        The gcloud alpha storage command group lets you create and manage
+        Cloud Storage resources such as buckets and objects.
+
+        More information on Cloud Storage can be found here:
+        https://cloud.google.com/storage, and detailed documentation can be
+        found here: https://cloud.google.com/storage/docs/
+        """,
+}
+
+
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Storage(base.Group):
-  """Manage Cloud Storage buckets and objects."""
+  """Create and manage Cloud Storage buckets and objects."""
+
+  detailed_help = DETAILED_HELP
 
   def Filter(self, context, args):
     # TODO(b/190541521):  Determine if command group works with project number

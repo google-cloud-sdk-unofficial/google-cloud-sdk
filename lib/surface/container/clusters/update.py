@@ -317,7 +317,7 @@ class Update(base.UpdateCommand):
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1', group, hidden=False)
     flags.AddNotificationConfigFlag(group)
     flags.AddDisableAutopilotFlag(group)
-    flags.AddAuthenticatorSecurityGroupFlags(group, hidden=True)
+    flags.AddAuthenticatorSecurityGroupFlags(group)
     flags.AddILBSubsettingFlags(group, hidden=False)
 
   def ParseUpdateOptions(self, args, locations):
@@ -461,18 +461,25 @@ class Update(base.UpdateCommand):
       if args.start_ip_rotation:
         msg_tmpl = """This will start an IP Rotation on cluster [{name}]. The \
 master will be updated to serve on a new IP address in addition to the current \
-IP address. Kubernetes Engine will then recreate all nodes ({num_nodes} nodes) \
-to point to the new IP address. This operation is long-running and will block \
-other operations on the cluster (including delete) until it has run to \
-completion."""
+IP address. Kubernetes Engine will then schedule recreation of all nodes \
+({num_nodes} nodes) to point to the new IP address. If maintenence window is \
+used, nodes are not recreated until a maintenance window occurs. See \
+documentation \
+https://cloud.google.com/kubernetes-engine/docs/how-to/ip-rotation on how to \
+manually update nodes. This operation is long-running and will block other \
+operations on the cluster (including delete) until it has run to completion."""
         rotate_credentials = False
       elif args.start_credential_rotation:
         msg_tmpl = """This will start an IP and Credentials Rotation on cluster\
  [{name}]. The master will be updated to serve on a new IP address in addition \
 to the current IP address, and cluster credentials will be rotated. Kubernetes \
-Engine will then recreate all nodes ({num_nodes} nodes) to point to the new IP \
-address. This operation is long-running and will block other operations on the \
-cluster (including delete) until it has run to completion."""
+Engine will then schedule recreation of all nodes ({num_nodes} nodes) to point \
+to the new IP address. If maintenence window is used, nodes are not recreated \
+until a maintenance window occurs. See documentation \
+https://cloud.google.com/kubernetes-engine/docs/how-to/credential-rotation \
+on how to manually update nodes. This operation is long-running and will block \
+other operations on the cluster (including delete) until it has run to \
+completion."""
         rotate_credentials = True
       console_io.PromptContinue(
           message=msg_tmpl.format(
@@ -491,6 +498,10 @@ cluster [{name}]. The master will be updated to stop serving on the old IP \
 address and only serve on the new IP address. Make sure all API clients have \
 been updated to communicate with the new IP address (e.g. by running `gcloud \
 container clusters get-credentials --project {project} --zone {zone} {name}`). \
+If maintenence window is used, nodes are not recreated until a maintenance \
+window occurs. See documentation \
+https://cloud.google.com/kubernetes-engine/docs/how-to/ip-rotation on how to \
+manually update nodes. \
 This operation is long-running and will block other operations on the cluster \
 (including delete) until it has run to completion."""
       elif args.complete_credential_rotation:
@@ -499,7 +510,10 @@ This operation is long-running and will block other operations on the cluster \
 address and only serve on the new IP address. Old cluster credentials will be \
 invalidated. Make sure all API clients have been updated to communicate with \
 the new IP address (e.g. by running `gcloud container clusters get-credentials \
---project {project} --zone {zone} {name}`). This operation is long-running and \
+--project {project} --zone {zone} {name}`). If maintenence window is used, \
+nodes are not recreated until a maintenance window occurs. See documentation \
+https://cloud.google.com/kubernetes-engine/docs/how-to/credential-rotation \
+on how to manually update nodes. This operation is long-running and \
 will block other operations on the cluster (including delete) until it has run \
 to completion."""
       console_io.PromptContinue(
@@ -687,6 +701,7 @@ class UpdateBeta(Update):
     flags.AddWorkloadIdentityFlags(group, use_identity_provider=True)
     flags.AddWorkloadIdentityUpdateFlags(group)
     flags.AddGkeOidcFlag(group)
+    flags.AddIdentityServiceFlag(group)
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
     flags.AddReleaseChannelFlag(group, is_update=True, hidden=False)
@@ -703,7 +718,7 @@ class UpdateBeta(Update):
     flags.AddClusterDNSFlags(group, hidden=False)
     flags.AddCrossConnectSubnetworksMutationFlags(group)
     flags.AddEnableServiceExternalIPs(group)
-    flags.AddAuthenticatorSecurityGroupFlags(group, hidden=True)
+    flags.AddAuthenticatorSecurityGroupFlags(group)
     flags.AddEnableGcfsFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
@@ -763,6 +778,7 @@ class UpdateBeta(Update):
     opts.kubernetes_objects_changes_target = args.kubernetes_objects_changes_target
     opts.kubernetes_objects_snapshots_target = args.kubernetes_objects_snapshots_target
     opts.enable_gke_oidc = args.enable_gke_oidc
+    opts.enable_identity_service = args.enable_identity_service
     opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
     opts.disable_autopilot = args.disable_autopilot
     opts.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting
@@ -836,6 +852,7 @@ class UpdateAlpha(Update):
     flags.AddWorkloadIdentityFlags(group, use_identity_provider=True)
     flags.AddWorkloadIdentityUpdateFlags(group)
     flags.AddGkeOidcFlag(group)
+    flags.AddIdentityServiceFlag(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
@@ -853,7 +870,7 @@ class UpdateAlpha(Update):
     flags.AddClusterDNSFlags(group, hidden=False)
     flags.AddCrossConnectSubnetworksMutationFlags(group)
     flags.AddEnableServiceExternalIPs(group)
-    flags.AddAuthenticatorSecurityGroupFlags(group, hidden=True)
+    flags.AddAuthenticatorSecurityGroupFlags(group)
     flags.AddEnableGcfsFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
@@ -909,6 +926,7 @@ class UpdateAlpha(Update):
     opts.kubernetes_objects_changes_target = args.kubernetes_objects_changes_target
     opts.kubernetes_objects_snapshots_target = args.kubernetes_objects_snapshots_target
     opts.enable_gke_oidc = args.enable_gke_oidc
+    opts.enable_identity_service = args.enable_identity_service
     opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
     opts.disable_autopilot = args.disable_autopilot
     opts.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting

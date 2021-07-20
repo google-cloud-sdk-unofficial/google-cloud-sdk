@@ -222,12 +222,13 @@ class CreateBeta(base.CreateCommand):
             '--networks',
             'If --visibility is set to public (default), setting networks is '
             'not allowed.')
-    if args.visibility == 'private' and args.networks is None:
-      raise exceptions.RequiredArgumentException('--networks', ("""
-           If --visibility is set to private, a list of networks must be
-           provided.'
+    if args.visibility == 'private' and args.networks is None and args.gkeclusters is None:
+      raise exceptions.RequiredArgumentException(
+          '--networks, --gkeclusters',
+          ("""If --visibility is set to private, a list of networks or list of
+           GKE clusters must be provided.'
          NOTE: You can provide an empty value ("") for private zones that
-          have NO network binding.
+          have NO network or GKE clusters binding.
           """))
 
     # We explicitly want to allow --gkeclusters='' as an optional flag.
@@ -251,7 +252,8 @@ class CreateBeta(base.CreateCommand):
     visibility_config = None
     if visibility == messages.ManagedZone.VisibilityValueValuesEnum.private:
       # Handle explicitly empty networks case (--networks='')
-      networks = args.networks if args.networks != [''] else []
+      networks = args.networks if args.networks and args.networks != [''
+                                                                     ] else []
 
       def GetNetworkSelfLink(network):
         return registry.Parse(

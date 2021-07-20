@@ -391,12 +391,14 @@ class Create(base.Command):
           'or --web-server-deny-all with Composer 2.X or greater.')
 
     # Default to allow all if no flag is specified.
-    self.web_server_access_control = (
-        environments_api_util.BuildWebServerAllowedIps(
-            args.web_server_allow_ip, args.web_server_allow_all or
-            not args.web_server_allow_ip, args.web_server_deny_all))
-    flags.ValidateIpRanges(
-        [acl['ip_range'] for acl in self.web_server_access_control])
+    self.web_server_access_control = None
+    if image_versions_util.IsImageVersionStringComposerV1(image_version):
+      self.web_server_access_control = (
+          environments_api_util.BuildWebServerAllowedIps(
+              args.web_server_allow_ip, args.web_server_allow_all or
+              not args.web_server_allow_ip, args.web_server_deny_all))
+      flags.ValidateIpRanges(
+          [acl['ip_range'] for acl in self.web_server_access_control])
 
   def GetOperationMessage(self, args):
     """Constructs Create message."""

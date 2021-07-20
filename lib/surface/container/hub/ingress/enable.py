@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import os
 import textwrap
 import time
 
@@ -64,7 +65,10 @@ class Enable(base.EnableCommand):
           options=memberships, message='Please specify a config membership:\n')
       config_membership = memberships[index]
     else:
-      config_membership = args.config_membership
+      # Strip to the final path component to allow short and long names.
+      # Assumes long names are for the same project and global location.
+      # TODO(b/192580393): Use the resource args instead of this hack.
+      config_membership = os.path.basename(args.config_membership)
     config_membership = self.MembershipResourceName(config_membership)
 
     # MCI requires MCSD. Enablement of the Hub feature for MCSD is taken care

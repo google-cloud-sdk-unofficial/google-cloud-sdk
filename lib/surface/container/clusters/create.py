@@ -271,6 +271,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_private_nodes=get_default('enable_private_nodes'),
       enable_private_endpoint=get_default('enable_private_endpoint'),
       enable_gke_oidc=getattr(args, 'enable_gke_oidc', None),
+      enable_identity_service=getattr(args, 'enable_identity_service', None),
       image_type=get_default('image_type'),
       image=get_default('image'),
       image_project=get_default('image_project'),
@@ -420,7 +421,7 @@ flags_to_add = {
         'autoupgrade':
             AddEnableAutoUpgradeWithDefault,
         'authenticatorsecurity':
-            lambda p: flags.AddAuthenticatorSecurityGroupFlags(p, hidden=True),
+            flags.AddAuthenticatorSecurityGroupFlags,
         'args':
             _Args,
         'basicauth':
@@ -615,6 +616,8 @@ flags_to_add = {
             flags.AddEnableGvnicFlag,
         'gkeoidc':
             flags.AddGkeOidcFlag,
+        'identityservice':
+            flags.AddIdentityServiceFlag,
         'ilbsubsetting':
             flags.AddILBSubsettingFlags,
         'localssds':
@@ -738,6 +741,7 @@ flags_to_add = {
         'gcfs': flags.AddEnableGcfsFlag,
         'gkeoidc': flags.AddGkeOidcFlag,
         'gvnic': flags.AddEnableGvnicFlag,
+        'identityservice': flags.AddIdentityServiceFlag,
         'ilbsubsetting': flags.AddILBSubsettingFlags,
         'imageflags': flags.AddImageFlagsCreate,
         'intranodevisibility': flags.AddEnableIntraNodeVisibilityFlag,

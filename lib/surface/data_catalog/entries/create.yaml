@@ -75,7 +75,6 @@
               Create a Kafka Cluster entry.
             params:
             - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:kafka_cluster_bootstrap_servers_required
-            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:kafka_cluster_properties_gcs_uri
         - group:
             hidden: true
             params:

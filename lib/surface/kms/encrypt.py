@@ -30,7 +30,6 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Encrypt(base.Command):
   r"""Encrypt a plaintext file using a key.
 
@@ -48,6 +47,10 @@ class Encrypt(base.Command):
   that file is read from stdin. Similarly, if `--ciphertext-file` is set to '-',
   the ciphertext is written to stdout.
 
+  By default, the command performs integrity verification on data sent to and
+  received from Cloud KMS. Use `--skip-integrity-verification` to disable
+  integrity verification.
+
   ## EXAMPLES
   The following command will read the file 'path/to/plaintext', encrypt it using
   the CryptoKey `frodo` with the KeyRing `fellowship` and Location `global`, and
@@ -61,10 +64,6 @@ class Encrypt(base.Command):
         --ciphertext-file=path/to/output/ciphertext
   """
 
-  # Class variable which denotes whether this release track supports integrity
-  # verification.
-  supports_integrity_verification = False
-
   @staticmethod
   def Args(parser):
     flags.AddKeyResourceFlags(parser, 'The key to use for encryption.')
@@ -72,6 +71,7 @@ class Encrypt(base.Command):
     flags.AddPlaintextFileFlag(parser, 'to encrypt')
     flags.AddCiphertextFileFlag(parser, 'to output')
     flags.AddAadFileFlag(parser)
+    flags.AddSkipIntegrityVerification(parser)
 
   def _ReadFileOrStdin(self, path, max_bytes):
     data = console_io.ReadFromFileOrStdin(path, binary=True)
@@ -82,7 +82,7 @@ class Encrypt(base.Command):
     return data
 
   def _PerformIntegrityVerification(self, args):
-    return self.supports_integrity_verification and not args.skip_integrity_verification
+    return not args.skip_integrity_verification
 
   def _MaybeStripResourceVersion(self, req_name, resp_name):
     """Strips the trailing '/cryptoKeyVersions/xx' from Response's resource name.
@@ -216,46 +216,3 @@ class Encrypt(base.Command):
           args.ciphertext_file, resp.ciphertext, binary=True, overwrite=True)
     except files.Error as e:
       raise exceptions.BadFileException(e)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class EncryptBeta(Encrypt):
-  r"""Encrypt a plaintext file using a key.
-
-  Encrypts the given plaintext file using the given CryptoKey and writes the
-  result to the named ciphertext file. The plaintext file must not be larger
-  than 64KiB.
-
-  If an additional authenticated data file is provided, its contents must also
-  be provided during decryption. The file must not be larger than 64KiB.
-
-  The flag `--version` indicates the version of the key to use for
-  encryption. By default, the primary version is used.
-
-  If `--plaintext-file` or `--additional-authenticated-data-file` is set to '-',
-  that file is read from stdin. Similarly, if `--ciphertext-file` is set to '-',
-  the ciphertext is written to stdout.
-
-  By default, the command performs integrity verification on data sent to and
-  received from Cloud KMS. Use `--skip-integrity-verification` to disable
-  integrity verification.
-
-  ## EXAMPLES
-  The following command will read the file 'path/to/plaintext', encrypt it using
-  the CryptoKey `frodo` with the KeyRing `fellowship` and Location `global`, and
-  write the ciphertext to 'path/to/ciphertext'.
-
-    $ {command} \
-        --key=frodo \
-        --keyring=fellowship \
-        --location=global \
-        --plaintext-file=path/to/input/plaintext \
-        --ciphertext-file=path/to/output/ciphertext
-  """
-
-  supports_integrity_verification = True
-
-  @staticmethod
-  def Args(parser):
-    super(EncryptBeta, EncryptBeta).Args(parser)
-    flags.AddSkipIntegrityVerification(parser)

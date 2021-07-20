@@ -70,8 +70,6 @@ def _Args(parser,
   instances_flags.AddNestedVirtualizationArgs(parser)
   instances_flags.AddThreadsPerCoreArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
-  instances_flags.AddStackTypeArgs(parser)
-  instances_flags.AddIpv6NetworkTierArgs(parser)
 
   parser.add_argument(
       '--description', help='Specifies a textual description of the instances.')
@@ -352,6 +350,8 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddNetworkPerformanceConfigsArgs(parser)
+    instances_flags.AddStackTypeArgs(parser)
+    instances_flags.AddIpv6NetworkTierArgs(parser)
 
   def _ValidateTrackSpecificArgs(self, args):
     instances_flags.ValidateLocalSsdFlags(args)

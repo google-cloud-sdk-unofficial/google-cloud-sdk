@@ -29,12 +29,29 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(base.CreateCommand):
-  """Create a worker pool for use by Google Cloud Build.
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
+  """Create a worker pool for use by Google Cloud Build."""
 
-  Create a worker pool for use by Google Cloud Build.
-  """
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To create a worker pool named `wp1` in region `us-central1`, run:
+
+            $ {command} wp1 --region=us-central1
+
+          To create a worker pool in project `p1` in region `us-central1` where workers are of machine type
+          `e2-standard-2` and are peered to the VPC network `projects/123/global/networks/default` and have a disk size of
+          64GB, run:
+
+            $ {command} wp1 --project=p1 --region=us-central1 \
+                --peered-network=projects/123/global/networks/default \
+                --worker-machine-type=e2-standard-2 \
+                --worker-disk-size=64GB
+          """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -74,22 +91,48 @@ class CreateBeta(base.CreateCommand):
     # Get the workerpool proto from either the flags or the specified file.
     wp = messages.WorkerPool()
     if args.config_from_file is not None:
-      wp = workerpool_config.LoadWorkerpoolConfigFromPath(
-          args.config_from_file, messages)
+      try:
+        wp = workerpool_config.LoadWorkerpoolConfigFromPath(
+            args.config_from_file, messages)
+      except cloudbuild_util.ParseProtoException as err:
+        log.err.Print('\nFailed to parse configuration from file. If you'
+                      ' were a Beta user, note that the format for this'
+                      ' file has changed slightly for GA.\n')
+        raise err
     else:
-      if args.peered_network is not None:
+      if release_track == base.ReleaseTrack.GA:
+        wp.privatePoolV1Config = messages.PrivatePoolV1Config()
+
         network_config = messages.NetworkConfig()
-        network_config.peeredNetwork = args.peered_network
+        if args.peered_network is not None:
+          network_config.peeredNetwork = args.peered_network
+        if args.no_external_ip:
+          network_config.egressOption = messages.NetworkConfig.EgressOptionValueValuesEnum.NO_PUBLIC_EGRESS
+        wp.privatePoolV1Config.networkConfig = network_config
+
+        worker_config = messages.WorkerConfig()
+        if args.worker_machine_type is not None:
+          worker_config.machineType = args.worker_machine_type
+        if args.worker_disk_size is not None:
+          worker_config.diskSizeGb = compute_utils.BytesToGb(
+              args.worker_disk_size)
+        wp.privatePoolV1Config.workerConfig = worker_config
+
+      else:
+        network_config = messages.NetworkConfig()
+        if args.peered_network is not None:
+          network_config.peeredNetwork = args.peered_network
         wp.networkConfig = network_config
-      worker_config = messages.WorkerConfig()
-      if args.worker_machine_type is not None:
-        worker_config.machineType = args.worker_machine_type
-      if args.worker_disk_size is not None:
-        worker_config.diskSizeGb = compute_utils.BytesToGb(
-            args.worker_disk_size)
-      if args.no_external_ip:
-        worker_config.noExternalIp = True
-      wp.workerConfig = worker_config
+
+        worker_config = messages.WorkerConfig()
+        if args.worker_machine_type is not None:
+          worker_config.machineType = args.worker_machine_type
+        if args.worker_disk_size is not None:
+          worker_config.diskSizeGb = compute_utils.BytesToGb(
+              args.worker_disk_size)
+        if args.no_external_ip:
+          worker_config.noExternalIp = True
+        wp.workerConfig = worker_config
 
     parent = properties.VALUES.core.project.Get(required=True)
 
@@ -136,9 +179,11 @@ class CreateBeta(base.CreateCommand):
     return created_wp
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create a worker pool for use by Google Cloud Build.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a worker pool for use by Google Cloud Build."""
 
-  Create a worker pool for use by Google Cloud Build.
-  """
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a worker pool for use by Google Cloud Build."""

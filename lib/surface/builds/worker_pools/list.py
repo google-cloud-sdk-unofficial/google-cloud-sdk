@@ -24,12 +24,20 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
-  """List all worker pools in a Google Cloud project.
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
+  """List all worker pools in a Google Cloud project."""
 
-  List all worker pools in a Google Cloud project.
-  """
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To fetch a list of worker pools running in region `us-central1`, run:
+
+            $ {command} --region=us-central1
+          """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -43,7 +51,7 @@ class ListBeta(base.ListCommand):
     parser.add_argument(
         '--region',
         required=True,
-        help='The Cloud region to list WorkerPools in.')
+        help='The Cloud region to list worker pools in.')
     parser.display_info.AddFormat("""
           table(
             name,
@@ -92,9 +100,11 @@ class ListBeta(base.ListCommand):
     return wp_list
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
-  """List all worker pools in a Google Cloud project.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """List all worker pools in a Google Cloud project."""
 
-  List all worker pools in a Google Cloud project.
-  """
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """List all worker pools in a Google Cloud project."""

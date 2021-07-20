@@ -88,7 +88,7 @@ class CreateHelper(object):
            support_l7_rxlb, support_failover, support_logging, support_multinic,
            support_client_only, support_grpc_protocol,
            support_unspecified_protocol, support_subsetting,
-           support_connection_tracking):
+           support_subsetting_subset_size, support_connection_tracking):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -131,6 +131,8 @@ class CreateHelper(object):
 
     if support_subsetting:
       flags.AddSubsettingPolicy(parser)
+      if support_subsetting_subset_size:
+        flags.AddSubsettingSubsetSize(parser)
 
     if support_failover:
       flags.AddConnectionDrainOnFailover(parser, default=None)
@@ -152,7 +154,7 @@ class CreateHelper(object):
   def __init__(self, support_l7_internal_load_balancer, support_gfe3,
                support_l7_rxlb, support_failover, support_logging,
                support_multinic, support_subsetting,
-               support_connection_tracking):
+               support_subsetting_subset_size, support_connection_tracking):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_gfe3 = support_gfe3
     self._support_l7_rxlb = support_l7_rxlb
@@ -160,6 +162,7 @@ class CreateHelper(object):
     self._support_logging = support_logging
     self._support_multinic = support_multinic
     self._support_subsetting = support_subsetting
+    self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_connection_tracking = support_connection_tracking
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
@@ -194,6 +197,9 @@ class CreateHelper(object):
         is_update=False,
         apply_signed_url_cache_max_age=True)
 
+    if self._support_subsetting:
+      backend_services_utils.ApplySubsettingArgs(
+          client, args, backend_service, self._support_subsetting_subset_size)
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
           client.messages.BackendService.SessionAffinityValueValuesEnum(
@@ -255,7 +261,8 @@ class CreateHelper(object):
                                                    backend_service,
                                                    self._support_failover)
     if self._support_subsetting:
-      backend_services_utils.ApplySubsettingArgs(client, args, backend_service)
+      backend_services_utils.ApplySubsettingArgs(
+          client, args, backend_service, self._support_subsetting_subset_size)
 
     if self._support_connection_tracking:
       backend_services_utils.ApplyConnectionTrackingPolicyArgs(
@@ -362,6 +369,7 @@ class CreateGA(base.CreateCommand):
   _support_grpc_protocol = True
   _support_unspecified_protocol = False
   _support_subsetting = False
+  _support_subsetting_subset_size = False
   _support_connection_tracking = False
 
   @classmethod
@@ -379,6 +387,7 @@ class CreateGA(base.CreateCommand):
         support_grpc_protocol=cls._support_grpc_protocol,
         support_unspecified_protocol=cls._support_unspecified_protocol,
         support_subsetting=cls._support_subsetting,
+        support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_connection_tracking=cls._support_connection_tracking)
 
   def Run(self, args):
@@ -394,6 +403,7 @@ class CreateGA(base.CreateCommand):
         support_logging=self._support_logging,
         support_multinic=self._support_multinic,
         support_subsetting=self._support_subsetting,
+        support_subsetting_subset_size=self._support_subsetting_subset_size,
         support_connection_tracking=self._support_connection_tracking).Run(
             args, holder)
 
@@ -421,6 +431,7 @@ class CreateBeta(CreateGA):
   _support_grpc_protocol = True
   _support_unspecified_protocol = True
   _support_subsetting = True
+  _support_subsetting_subset_size = False
   _support_connection_tracking = True
 
 
@@ -448,4 +459,5 @@ class CreateAlpha(CreateBeta):
   _support_grpc_protocol = True
   _support_unspecified_protocol = True
   _support_subsetting = True
+  _support_subsetting_subset_size = True
   _support_connection_tracking = True

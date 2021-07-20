@@ -70,8 +70,9 @@ class UpdateHelper(object):
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
            support_logging, support_client_only, support_grpc_protocol,
-           support_subsetting, support_unspecified_protocol,
-           support_edge_policies, support_connection_tracking):
+           support_subsetting, support_subsetting_subset_size,
+           support_unspecified_protocol, support_edge_policies,
+           support_connection_tracking):
     """Add all arguments for updating a backend service."""
 
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
@@ -116,6 +117,8 @@ class UpdateHelper(object):
         parser, required=False, unspecified_help='')
     if support_subsetting:
       flags.AddSubsettingPolicy(parser)
+      if support_subsetting_subset_size:
+        flags.AddSubsettingSubsetSize(parser)
 
     if support_failover:
       flags.AddConnectionDrainOnFailover(parser, default=None)
@@ -139,12 +142,14 @@ class UpdateHelper(object):
                support_failover,
                support_logging,
                support_subsetting,
+               support_subsetting_subset_size,
                support_edge_policies=False,
                support_connection_tracking=False):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
     self._support_subsetting = support_subsetting
+    self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_edge_policies = support_edge_policies
     self._support_connection_tracking = support_connection_tracking
 
@@ -203,7 +208,8 @@ class UpdateHelper(object):
           drainingTimeoutSec=args.connection_draining_timeout)
 
     if self._support_subsetting:
-      backend_services_utils.ApplySubsettingArgs(client, args, replacement)
+      backend_services_utils.ApplySubsettingArgs(
+          client, args, replacement, self._support_subsetting_subset_size)
 
     backend_services_utils.ApplyCdnPolicyArgs(
         client,
@@ -274,6 +280,8 @@ class UpdateHelper(object):
         args.IsSpecified('no_health_checks'),
         args.IsSpecified('subsetting_policy')
         if self._support_subsetting else False,
+        args.IsSpecified('subsetting_subset_size')
+        if self._support_subsetting_subset_size else False,
         args.IsSpecified('request_coalescing'),
         args.IsSpecified('cache_mode'),
         args.IsSpecified('client_ttl'),
@@ -462,6 +470,7 @@ class UpdateGA(base.UpdateCommand):
   _support_unspecified_protocol = False
   _support_grpc_protocol = True
   _support_subsetting = False
+  _support_subsetting_subset_size = False
   _support_edge_policies = False
   _support_connection_tracking = False
 
@@ -476,6 +485,7 @@ class UpdateGA(base.UpdateCommand):
         support_client_only=cls._support_client_only,
         support_grpc_protocol=cls._support_grpc_protocol,
         support_subsetting=cls._support_subsetting,
+        support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_unspecified_protocol=cls._support_unspecified_protocol,
         support_edge_policies=cls._support_edge_policies,
         support_connection_tracking=cls._support_connection_tracking)
@@ -485,7 +495,9 @@ class UpdateGA(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return UpdateHelper(self._support_l7_internal_load_balancer,
                         self._support_failover, self._support_logging,
-                        self._support_subsetting, self._support_edge_policies,
+                        self._support_subsetting,
+                        self._support_subsetting_subset_size,
+                        self._support_edge_policies,
                         self._support_connection_tracking).Run(args, holder)
 
 
@@ -500,6 +512,7 @@ class UpdateBeta(UpdateGA):
   _support_unspecified_protocol = True
   _support_grpc_protocol = True
   _support_subsetting = True
+  _support_subsetting_subset_size = False
   _support_edge_policies = False
   _support_connection_tracking = True
 
@@ -515,5 +528,6 @@ class UpdateAlpha(UpdateBeta):
   _support_unspecified_protocol = True
   _support_grpc_protocol = True
   _support_subsetting = True
+  _support_subsetting_subset_size = True
   _support_edge_policies = True
   _support_connection_tracking = True

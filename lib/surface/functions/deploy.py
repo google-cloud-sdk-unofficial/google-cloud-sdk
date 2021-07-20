@@ -33,7 +33,7 @@ class Deploy(base.Command):
   """Create or update a Google Cloud Function."""
 
   @staticmethod
-  def Args(parser):
+  def Args(parser, track=base.ReleaseTrack.GA):
     """Register flags for this command."""
     # Add a positional "resource argument" for the name of the function
     flags.AddFunctionResourceArg(parser, 'to deploy')
@@ -42,7 +42,7 @@ class Deploy(base.Command):
     flags.AddAllowUnauthenticatedFlag(parser)
     flags.AddFunctionMemoryFlag(parser)
     flags.AddFunctionRetryFlag(parser)
-    flags.AddFunctionTimeoutFlag(parser)
+    flags.AddFunctionTimeoutFlag(parser, track)
     flags.AddMaxInstancesFlag(parser)
     flags.AddRuntimeFlag(parser)
     flags.AddServiceAccountFlag(parser)
@@ -83,9 +83,9 @@ class DeployBeta(base.Command):
   """Create or update a Google Cloud Function."""
 
   @staticmethod
-  def Args(parser):
+  def Args(parser, track=base.ReleaseTrack.BETA):
     """Register flags for this command."""
-    Deploy.Args(parser)
+    Deploy.Args(parser, track)
 
     # Add additional args for this release track
     flags.AddBuildWorkerPoolMutexGroup(parser)
@@ -100,9 +100,9 @@ class DeployAlpha(base.Command):
   """Create or update a Google Cloud Function."""
 
   @staticmethod
-  def Args(parser):
+  def Args(parser, track=base.ReleaseTrack.ALPHA):
     """Register flags for this command."""
-    Deploy.Args(parser)
+    Deploy.Args(parser, track)
 
     # Add additional args for this release track
     flags.AddBuildWorkerPoolMutexGroup(parser)

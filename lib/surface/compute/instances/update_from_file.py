@@ -27,11 +27,11 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateFromFile(base.Command):
   """Update a Compute Engine virtual machine instance using a configuration file."""
 
+  _support_secure_tag = False
   detailed_help = {
       'DESCRIPTION':
           """\
@@ -78,6 +78,16 @@ class UpdateFromFile(base.Command):
             'the instance irrespective of what action is required for the '
             'update to take effect. If not specified, then Compute Engine acts '
             'based on the minimum action required.'))
+    if cls._support_secure_tag:
+      parser.add_argument(
+          '--clear-secure-tag',
+          dest='clear_secure_tag',
+          action='store_true',
+          default=None,
+          help=(
+              'If specified, all secure tags bound to this instance will be'
+              ' removed.'
+          ))
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -120,6 +130,20 @@ class UpdateFromFile(base.Command):
         instanceResource=instance,
         minimalAction=minimal_action,
         mostDisruptiveAllowedAction=most_disruptive_allowed_action)
+    if self._support_secure_tag and args.clear_secure_tag:
+      request.clearSecureTag = True
 
     client.MakeRequests([(client.apitools_client.instances, 'Update', request)])
     return
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateFromFileBeta(UpdateFromFile):
+  """Update a Compute Engine virtual machine instance using a configuration file."""
+  _support_secure_tag = False
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateFromFileAlpha(UpdateFromFile):
+  """Update a Compute Engine virtual machine instance using a configuration file."""
+  _support_secure_tag = True

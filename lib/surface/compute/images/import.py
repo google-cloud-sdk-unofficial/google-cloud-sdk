@@ -210,7 +210,15 @@ class Import(base.CreateCommand):
                   _WORKFLOWS_URL)),
         hidden=True)
 
-    daisy_utils.AddCommonDaisyArgs(parser)
+    daisy_utils.AddCommonDaisyArgs(
+        parser,
+        operation='an import',
+        extra_timeout_help=("""
+
+          If you are importing a large image that takes longer than 24 hours to
+          import, either use the RAW disk format to reduce the time needed for
+          converting the image, or split the data into several smaller images.
+          """))
 
     parser.add_argument(
         '--guest-environment',

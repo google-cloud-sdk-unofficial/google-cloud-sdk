@@ -405,12 +405,16 @@ def AddServiceProxyArgsToMetadata(args):
     args.metadata['gce-service-proxy'] = json.dumps(service_proxy_config)
 
 
-def ConfigureMeshTemplate(args):
+def ConfigureMeshTemplate(args, instance_template_ref, network_interfaces):
   """Adds Anthos Service Mesh configuration into the instance template.
 
   Args:
       args: argparse.Namespace, An object that contains the values for the
         arguments specified in the .Args() method.
+      instance_template_ref: Reference to the current instance template to be
+        created.
+      network_interfaces: network interfaces configured for the instance
+        template.
   """
 
   if getattr(args, 'mesh', False):
@@ -430,12 +434,25 @@ def ConfigureMeshTemplate(args):
       if kube_client.NamespacesExist(
           *namespaces) and kube_client.HasNamespaceReaderPermissions(
               *namespaces):
-        mesh_util.VerifyClusterSetup(kube_client)
-
+        membership_manifest = kube_client.GetMembershipCR()
+        # Verify Identity Provider CR existence only.
+        _ = kube_client.GetIdentityProviderCR()
+        namespace_manifest = kube_client.GetNamespace(workload_namespace)
         workload_manifest = kube_client.GetWorkloadGroupCR(
             workload_namespace, workload_name)
-        mesh_util.VerifyWorkloadSetup(kube_client, workload_manifest)
-      # TODO(b/186186273): Generate instance metadata for ASM VM.
+        mesh_util.VerifyWorkloadSetup(workload_manifest)
+
+        expansionagateway_ip = kube_client.RetrieveExpansionGatewayIP()
+        root_cert = kube_client.RetrieveKubernetesRootCert()
+
+        log.status.Print(
+            'Configuring the instance template for Anthos Service Mesh...')
+        project_id = instance_template_ref.project
+        mesh_util.ConfigureInstanceTemplate(
+            args, kube_client, project_id, network_interfaces[0].network,
+            workload_namespace, workload_name, workload_manifest,
+            namespace_manifest, membership_manifest, expansionagateway_ip,
+            root_cert)
 
 
 def _RunCreate(compute_api,
@@ -484,14 +501,6 @@ def _RunCreate(compute_api,
   AddScopesForServiceProxy(args)
   AddServiceProxyArgsToMetadata(args)
 
-  if support_mesh:
-    ConfigureMeshTemplate(args)
-
-  metadata = metadata_utils.ConstructMetadataMessage(
-      client.messages,
-      metadata=args.metadata,
-      metadata_from_file=args.metadata_from_file)
-
   if hasattr(args, 'network_interface') and args.network_interface:
     network_interfaces = (
         instance_template_utils.CreateNetworkInterfaceMessages)(
@@ -520,6 +529,14 @@ def _RunCreate(compute_api,
             stack_type=stack_type,
             ipv6_network_tier=ipv6_network_tier)
     ]
+
+  if support_mesh:
+    ConfigureMeshTemplate(args, instance_template_ref, network_interfaces)
+
+  metadata = metadata_utils.ConstructMetadataMessage(
+      client.messages,
+      metadata=args.metadata,
+      metadata_from_file=args.metadata_from_file)
 
   # Compute the shieldedInstanceConfig message.
   shieldedinstance_config_message = BuildShieldedInstanceConfigMessage(

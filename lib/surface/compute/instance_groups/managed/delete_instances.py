@@ -188,5 +188,3 @@ If you want to keep the underlying virtual machines but still remove them
 from the managed instance group, use the abandon-instances command instead.
 """,
 }
-
-DeleteInstancesAlpha.detailed_help = DeleteInstances.detailed_help

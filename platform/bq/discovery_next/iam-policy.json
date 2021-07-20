@@ -585,13 +585,6 @@
         "dataSplitResult": {
           "description": "Data split result of the training run. Only set when the input data is actually split.",
           "$ref": "DataSplitResult"
-        },
-        "globalExplanations": {
-          "description": "Global explanations for important features of the model. For multi-class models, there is one entry for each label class. For other models, there is only one entry in the list.",
-          "type": "array",
-          "items": {
-            "$ref": "GlobalExplanation"
-          }
         }
       }
     },
@@ -1837,40 +1830,6 @@
         }
       }
     },
-    "GlobalExplanation": {
-      "id": "GlobalExplanation",
-      "description": "Global explanations containing the top most important features after training.",
-      "type": "object",
-      "properties": {
-        "explanations": {
-          "description": "A list of the top global explanations. Sorted by absolute value of attribution in descending order.",
-          "type": "array",
-          "items": {
-            "$ref": "Explanation"
-          }
-        },
-        "classLabel": {
-          "description": "Class label for this set of global explanations. Will be empty\/null for binary logistic and linear regression models. Sorted alphabetically in descending order.",
-          "type": "string"
-        }
-      }
-    },
-    "Explanation": {
-      "id": "Explanation",
-      "description": "Explanation for a single feature.",
-      "type": "object",
-      "properties": {
-        "featureName": {
-          "description": "Full name of the feature. For non-numerical features, will be formatted like .. Overall size of feature name will always be truncated to first 120 characters.",
-          "type": "string"
-        },
-        "attribution": {
-          "description": "Attribution of feature.",
-          "type": "number",
-          "format": "double"
-        }
-      }
-    },
     "StandardSqlField": {
       "id": "StandardSqlField",
       "description": "A field or a column.",
@@ -2198,6 +2157,10 @@
           "items": {
             "$ref": "ConnectionProperty"
           }
+        },
+        "createSession": {
+          "description": "If true, creates a new session using a randomly generated session_id. If false, runs query with an existing session_id passed in ConnectionProperty, otherwise runs query in non-session mode. The session location will be set to Job.JobReference.location if it is present, otherwise it's set to the default location based on existing routing logic.",
+          "type": "boolean"
         }
       }
     },
@@ -3211,7 +3174,7 @@
           "$ref": "ScriptStatistics"
         },
         "rowLevelSecurityStatistics": {
-          "description": "Output only. [Preview] Statistics for row-level security. Present only for query and extract jobs.",
+          "description": "Output only. Statistics for row-level security. Present only for query and extract jobs.",
           "readOnly": true,
           "$ref": "RowLevelSecurityStatistics"
         },
@@ -3219,6 +3182,11 @@
           "description": "Output only. [Alpha] Information of the multi-statement transaction if this job is part of one.",
           "readOnly": true,
           "$ref": "TransactionInfo"
+        },
+        "sessionInfo": {
+          "description": "Output only. [Preview] Information of the session if this job is part of one.",
+          "readOnly": true,
+          "$ref": "SessionInfo"
         }
       }
     },
@@ -3273,7 +3241,7 @@
           "format": "int64"
         },
         "billingTier": {
-          "description": "Output only. Billing tier for the job.",
+          "description": "Output only. Billing tier for the job. This is a BigQuery-specific concept which is not related to the GCP notion of \"free tier\". The value here is a measure of the query's resource consumption relative to the amount of data scanned. For on-demand queries, the limit is 100, and all queries within this limit are billed at the standard on-demand rates. On-demand queries that exceed this limit will fail with a billingTierLimitExceeded error.",
           "readOnly": true,
           "type": "integer",
           "format": "int32"
@@ -3350,7 +3318,7 @@
           }
         },
         "statementType": {
-          "description": "Output only. The type of query statement, if valid. Possible values (new values might be added in the future): \"SELECT\": SELECT query. \"INSERT\": INSERT query; see https:\/\/cloud.google.com\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language. \"UPDATE\": UPDATE query; see https:\/\/cloud.google.com\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language. \"DELETE\": DELETE query; see https:\/\/cloud.google.com\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language. \"MERGE\": MERGE query; see https:\/\/cloud.google.com\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language. \"ALTER_TABLE\": ALTER TABLE query. \"ALTER_VIEW\": ALTER VIEW query. \"ASSERT\": ASSERT condition AS 'description'. \"CREATE_FUNCTION\": CREATE FUNCTION query. \"CREATE_MODEL\": CREATE [OR REPLACE] MODEL ... AS SELECT ... . \"CREATE_PROCEDURE\": CREATE PROCEDURE query. \"CREATE_TABLE\": CREATE [OR REPLACE] TABLE without AS SELECT. \"CREATE_TABLE_AS_SELECT\": CREATE [OR REPLACE] TABLE ... AS SELECT ... . \"CREATE_VIEW\": CREATE [OR REPLACE] VIEW ... AS SELECT ... . \"DROP_FUNCTION\" : DROP FUNCTION query. \"DROP_PROCEDURE\": DROP PROCEDURE query. \"DROP_TABLE\": DROP TABLE query. \"DROP_VIEW\": DROP VIEW query. \"EXPORT_MODEL\": EXPORT MODEL query.",
+          "description": "Output only. The type of query statement, if valid. Possible values: * `SELECT`: [SELECT](\/bigquery\/docs\/reference\/standard-sql\/query-syntax#select_list) statement. * `INSERT`: [INSERT](\/bigquery\/docs\/reference\/standard-sql\/dml-syntax#insert_statement) statement. * `UPDATE`: [UPDATE](\/bigquery\/docs\/reference\/standard-sql\/query-syntax#update_statement) statement. * `DELETE`: [DELETE](\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language) statement. * `MERGE`: [MERGE](\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language) statement. * `ALTER_TABLE`: [ALTER TABLE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#alter_table_set_options_statement) statement. * `ALTER_VIEW`: [ALTER VIEW](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#alter_view_set_options_statement) statement. * `ASSERT`: [ASSERT](\/bigquery\/docs\/reference\/standard-sql\/debugging-statements#assert) statement. * `CREATE_FUNCTION`: [CREATE FUNCTION](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_function_statement) statement. * `CREATE_MODEL`: [CREATE MODEL](\/bigquery-ml\/docs\/reference\/standard-sql\/bigqueryml-syntax-create#create_model_statement) statement. * `CREATE_PROCEDURE`: [CREATE PROCEDURE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_procedure) statement. * `CREATE_ROW_ACCESS_POLICY`: [CREATE ROW ACCESS POLICY](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_row_access_policy_statement) statement. * `CREATE_TABLE`: [CREATE TABLE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_table_statement) statement, without AS SELECT. * `CREATE_TABLE_AS_SELECT`: [CREATE TABLE AS SELECT](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#query_statement) statement. * `CREATE_VIEW`: [CREATE VIEW](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#create_view_statement) statement. * `DROP_FUNCTION` : [DROP FUNCTION](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_function_statement) statement. * `DROP_PROCEDURE`: [DROP PROCEDURE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_procedure_statement) statement. * `DROP_ROW_ACCESS_POLICY`: [DROP [ALL] ROW ACCESS POLICY|POLICIES](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_row_access_policy_statement) statement. * `DROP_TABLE`: [DROP TABLE](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_table_statement) statement. * `DROP_VIEW`: [DROP VIEW](\/bigquery\/docs\/reference\/standard-sql\/data-definition-language#drop_view_statement) statement. * `EXPORT_MODEL`: [EXPORT MODEL](\/bigquery-ml\/docs\/reference\/standard-sql\/bigqueryml-syntax-export-model) statement.",
           "readOnly": true,
           "type": "string"
         },
@@ -3365,12 +3333,12 @@
           "$ref": "TableReference"
         },
         "ddlTargetRowAccessPolicy": {
-          "description": "Output only. [Preview] The DDL target row access policy. Present only for CREATE\/DROP ROW ACCESS POLICY queries.",
+          "description": "Output only. The DDL target row access policy. Present only for CREATE\/DROP ROW ACCESS POLICY queries.",
           "readOnly": true,
           "$ref": "RowAccessPolicyReference"
         },
         "ddlAffectedRowAccessPolicyCount": {
-          "description": "Output only. [Preview] The number of row access policies affected by a DDL statement. Present only for DROP ALL ROW ACCESS POLICIES queries.",
+          "description": "Output only. The number of row access policies affected by a DDL statement. Present only for DROP ALL ROW ACCESS POLICIES queries.",
           "readOnly": true,
           "type": "string",
           "format": "int64"
@@ -3923,7 +3891,7 @@
     },
     "RowLevelSecurityStatistics": {
       "id": "RowLevelSecurityStatistics",
-      "description": "[Preview] Statistics for row-level security.",
+      "description": "Statistics for row-level security.",
       "type": "object",
       "properties": {
         "rowLevelSecurityApplied": {
@@ -3939,6 +3907,18 @@
       "properties": {
         "transactionId": {
           "description": "Output only. [Alpha] Id of the transaction.",
+          "readOnly": true,
+          "type": "string"
+        }
+      }
+    },
+    "SessionInfo": {
+      "id": "SessionInfo",
+      "description": "[Preview] Information related to sessions.",
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "description": "Output only. The id of the session.",
           "readOnly": true,
           "type": "string"
         }
@@ -4206,6 +4186,10 @@
         "requestId": {
           "description": "Optional. A unique user provided identifier to ensure idempotent behavior for queries. Note that this is different from the job_id. It has the following properties: 1. It is case-sensitive, limited to up to 36 ASCII characters. A UUID is recommended. 2. Read only queries can ignore this token since they are nullipotent by definition. 3. For the purposes of idempotency ensured by the request_id, a request is considered duplicate of another only if they have the same request_id and are actually duplicates. When determining whether a request is a duplicate of another request, all parameters in the request that may affect the result are considered. For example, query, connection_properties, query_parameters, use_legacy_sql are parameters that affect the result and are considered when determining whether a request is a duplicate, but properties like timeout_ms don't affect the result and are thus not considered. Dry run query requests are never considered duplicate of another request. 4. When a duplicate mutating query request is detected, it returns: a. the results of the mutation if it completes successfully within the timeout. b. the running operation if it is still in progress at the end of the timeout. 5. Its lifetime is limited to 15 minutes. In other words, if two requests are sent with the same request_id, but more than 15 minutes apart, idempotency is not guaranteed.",
           "type": "string"
+        },
+        "createSession": {
+          "description": "Optional. If true, creates a new session using a randomly generated session_id. If false, runs query with an existing session_id passed in ConnectionProperty, otherwise runs query in non-session mode. The session location will be set to QueryRequest.location if it is present, otherwise it's set to the default location based on existing routing logic.",
+          "type": "boolean"
         }
       }
     },
@@ -4278,6 +4262,11 @@
           "readOnly": true,
           "type": "string",
           "format": "int64"
+        },
+        "sessionInfo": {
+          "description": "Output only. Information of the session if this job is part of one.",
+          "readOnly": true,
+          "$ref": "SessionInfo"
         },
         "dmlStats": {
           "description": "Output only. Detailed statistics for DML statements INSERT, UPDATE, DELETE, MERGE or TRUNCATE.",
@@ -6411,35 +6400,6 @@
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
           "description": "Lists all row access policies on the specified table."
-        },
-        "setIamPolicy": {
-          "id": "bigquery.rowAccessPolicies.setIamPolicy",
-          "path": "bigquery/v2/{+resource}:setIamPolicy",
-          "flatPath": "bigquery/v2/projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies/{rowAccessPoliciesId}:setIamPolicy",
-          "httpMethod": "POST",
-          "parameters": {
-            "resource": {
-              "description": "REQUIRED: The resource for which the policy is being specified. See the operation documentation for the appropriate value for this field.",
-              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+\/tables\/[^\/]+\/rowAccessPolicies\/[^\/]+$",
-              "location": "path",
-              "required": true,
-              "type": "string"
-            }
-          },
-          "parameterOrder": [
-            "resource"
-          ],
-          "request": {
-            "$ref": "SetIamPolicyRequest"
-          },
-          "response": {
-            "$ref": "Policy"
-          },
-          "scopes": [
-            "https://www.googleapis.com/auth/bigquery",
-            "https://www.googleapis.com/auth/cloud-platform"
-          ],
-          "description": "Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors."
         },
         "getIamPolicy": {
           "id": "bigquery.rowAccessPolicies.getIamPolicy",

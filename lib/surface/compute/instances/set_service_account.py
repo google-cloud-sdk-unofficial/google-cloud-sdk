@@ -29,13 +29,24 @@ from googlecloudsdk.command_lib.compute.instances import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetServiceAccount(base.SilentCommand):
-  """Set service account and scopes for a Compute Engine instance."""
+  """Set a service account and access scopes for a Compute Engine VM instance.
+  """
 
   detailed_help = {
-      'EXAMPLES': """
-  To set a service account with `pubsub` and `trace` scopes, run:
+      'DESCRIPTION':
+          """\
+      `{command}` lets you configure a service account and access scopes for a
+      Compute Engine VM instance.
 
-    $ {command} example-instance --scopes=pubsub,trace --zone=us-central1-b --service-account=example-account
+      As a best practice, grant the ``cloud-platform'' access scope on your
+      VM instance. Then, to restrict resource access, grant only the required
+      IAM roles to the VM instance's service account. For more information,
+      see [](https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#changeserviceaccountandscopes#best_practices).
+        """,
+      'EXAMPLES': """
+  To set a service account with the ``cloud-platform'' scope, run:
+
+    $ {command} example-instance --scopes=cloud-platform --zone=us-central1-b --service-account=example-account
   """}
 
   def __init__(self, *args, **kwargs):

@@ -24,12 +24,20 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
-  """Describe a worker pool used by Google Cloud Build.
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
+  """Describe a worker pool used by Google Cloud Build."""
 
-  Describe a worker pool used by Google Cloud Build.
-  """
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To get information about a worker pool named `wp1` in region `us-central1`, run:
+
+            $ {command} wp1 --region=us-central1
+          """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -42,9 +50,9 @@ class DescribeBeta(base.DescribeCommand):
     parser.add_argument(
         '--region',
         required=True,
-        help='The Cloud region where the WorkerPool is.')
+        help='The Cloud region where the worker pool is.')
     parser.add_argument(
-        'WORKER_POOL', help='The ID of the WorkerPool to describe.')
+        'WORKER_POOL', help='The ID of the worker pool to describe.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -92,9 +100,11 @@ class DescribeBeta(base.DescribeCommand):
     return wp
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(DescribeBeta):
-  """Describe a worker pool used by Google Cloud Build.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+  """Describe a worker pool used by Google Cloud Build."""
 
-  Describe a worker pool used by Google Cloud Build.
-  """
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(Describe):
+  """Describe a worker pool used by Google Cloud Build."""

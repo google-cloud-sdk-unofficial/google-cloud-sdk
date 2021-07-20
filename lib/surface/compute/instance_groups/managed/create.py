@@ -63,9 +63,7 @@ def _AddInstanceGroupManagerArgs(parser):
       required=True,
       type=arg_parsers.BoundedInt(0, sys.maxsize, unlimited=True),
       help='The initial number of instances you want in this group.')
-  parser.add_argument(
-      '--description',
-      help='An optional description for this group.')
+  instance_groups_flags.AddDescriptionFlag(parser)
   parser.add_argument(
       '--target-pool',
       type=arg_parsers.ArgList(),
@@ -113,7 +111,7 @@ class CreateGA(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(managed_flags.DEFAULT_LIST_FORMAT)
+    parser.display_info.AddFormat(managed_flags.DEFAULT_CREATE_OR_LIST_FORMAT)
     _AddInstanceGroupManagerArgs(parser)
     auto_healing_utils.AddAutohealingArgs(parser)
     igm_arg = instance_groups_flags.GetInstanceGroupManagerArg(zones_flag=True)
@@ -141,7 +139,7 @@ class CreateGA(base.CreateCommand):
     stateful_disks.sort(key=lambda x: x.key)
     return policy_utils.MakeStatefulPolicy(client.messages, stateful_disks)
 
-  def CreateGroupReference(self, args, client, resources):
+  def _CreateGroupReference(self, args, client, resources):
     if args.zones:
       zone_ref = resources.Parse(
           args.zones[0],
@@ -187,20 +185,20 @@ class CreateGA(base.CreateCommand):
 
     return ValueOrNone(distribution_policy)
 
-  def GetRegionForGroup(self, group_ref):
+  def _GetRegionForGroup(self, group_ref):
     if _IsZonalGroup(group_ref):
       return utils.ZoneNameToRegionName(group_ref.zone)
     else:
       return group_ref.region
 
-  def GetServiceForGroup(self, group_ref, compute):
+  def _GetServiceForGroup(self, group_ref, compute):
     if _IsZonalGroup(group_ref):
       return compute.instanceGroupManagers
     else:
       return compute.regionInstanceGroupManagers
 
-  def CreateResourceRequest(self, group_ref, instance_group_manager, client,
-                            resources):
+  def _CreateResourceRequest(self, group_ref, instance_group_manager, client,
+                             resources):
     if _IsZonalGroup(group_ref):
       instance_group_manager.zone = group_ref.zone
       return client.messages.ComputeInstanceGroupManagersInsertRequest(
@@ -222,7 +220,7 @@ class CreateGA(base.CreateCommand):
       self, target_pools, group_ref, holder):
     pool_refs = []
     if target_pools:
-      region = self.GetRegionForGroup(group_ref)
+      region = self._GetRegionForGroup(group_ref)
       for pool in target_pools:
         pool_refs.append(holder.resources.Parse(
             pool,
@@ -232,12 +230,6 @@ class CreateGA(base.CreateCommand):
             },
             collection='compute.targetPools'))
     return [pool_ref.SelfLink() for pool_ref in pool_refs]
-
-  def _GetInstanceGroupManagerBaseInstanceName(
-      self, base_name_arg, group_ref):
-    if base_name_arg:
-      return base_name_arg
-    return None
 
   def _CreateInstanceGroupManager(
       self, args, group_ref, template_ref, client, holder):
@@ -261,8 +253,7 @@ class CreateGA(base.CreateCommand):
         name=group_ref.Name(),
         description=args.description,
         instanceTemplate=template_ref.SelfLink(),
-        baseInstanceName=self._GetInstanceGroupManagerBaseInstanceName(
-            args.base_instance_name, group_ref),
+        baseInstanceName=args.base_instance_name,
         targetPools=self._GetInstanceGroupManagerTargetPools(
             args.target_pool, group_ref, holder),
         targetSize=int(args.size),
@@ -281,6 +272,21 @@ class CreateGA(base.CreateCommand):
 
     return instance_group_manager
 
+  def _PostProcessOutput(self, holder, migs):
+    # 0 to 1 MIGs.
+    for mig in [encoding.MessageToDict(m) for m in migs]:
+      # At this point we're missing information about autoscaler and current
+      # size. To avoid making additional calls to API, we assume current size to
+      # be 0, since MIG has just been created. We also assume that there's no
+      # autoscaler, since API doesn't allow to insert MIG simultaneously with
+      # autoscaler.
+      mig['size'] = 0
+      # Same as "mig['autoscaled'] = 'no'", but making sure that property value
+      # is consistent with the one used to list groups.
+      managed_instance_groups_utils.ResolveAutoscalingStatusForMig(
+          holder.client, mig)
+      yield mig
+
   def Run(self, args):
     """Creates and issues an instanceGroupManagers.Insert request.
 
@@ -294,7 +300,7 @@ class CreateGA(base.CreateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    group_ref = self.CreateGroupReference(args, client, holder.resources)
+    group_ref = self._CreateGroupReference(args, client, holder.resources)
 
     template_ref = holder.resources.Parse(
         args.template,
@@ -303,16 +309,11 @@ class CreateGA(base.CreateCommand):
 
     instance_group_manager = self._CreateInstanceGroupManager(
         args, group_ref, template_ref, client, holder)
-    request = self.CreateResourceRequest(group_ref, instance_group_manager,
-                                         client, holder.resources)
-    service = self.GetServiceForGroup(group_ref, client.apitools_client)
+    request = self._CreateResourceRequest(group_ref, instance_group_manager,
+                                          client, holder.resources)
+    service = self._GetServiceForGroup(group_ref, client.apitools_client)
     migs = client.MakeRequests([(service, 'Insert', request)])
-
-    migs_as_dicts = [encoding.MessageToDict(m) for m in migs]
-    _, augmented_migs = (
-        managed_instance_groups_utils.AddAutoscaledPropertyToMigs(
-            migs_as_dicts, client, holder.resources))
-    return augmented_migs
+    return self._PostProcessOutput(holder, migs)
 
 
 CreateGA.detailed_help = {

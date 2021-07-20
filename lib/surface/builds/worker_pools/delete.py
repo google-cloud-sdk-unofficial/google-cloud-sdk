@@ -26,12 +26,20 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeleteBeta(base.DeleteCommand):
-  """Delete a worker pool from Google Cloud Build.
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Delete(base.DeleteCommand):
+  """Delete a worker pool from Google Cloud Build."""
 
-  Delete a worker pool from Google Cloud Build.
-  """
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To delete a worker pool named `wp1` in region `us-central1`, run:
+
+            $ {command} wp1 --region=us-central1
+          """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -44,9 +52,9 @@ class DeleteBeta(base.DeleteCommand):
     parser.add_argument(
         '--region',
         required=True,
-        help='The Cloud region where the WorkerPool is.')
+        help='The Cloud region where the worker pool is.')
     parser.add_argument(
-        'WORKER_POOL', help='The ID of the WorkerPool to delete.')
+        'WORKER_POOL', help='The ID of the worker pool to delete.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -95,9 +103,11 @@ class DeleteBeta(base.DeleteCommand):
     log.DeletedResource(wp_resource)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(DeleteBeta):
-  """Delete a worker pool from Google Cloud Build.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(Delete):
+  """Delete a worker pool from Google Cloud Build."""
 
-  Delete a worker pool from Google Cloud Build.
-  """
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(Delete):
+  """Delete a worker pool from Google Cloud Build."""

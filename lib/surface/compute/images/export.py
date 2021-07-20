@@ -104,7 +104,15 @@ class Export(base.CreateCommand):
         parser, 'image export',
         daisy_utils.EXPORT_ROLES_FOR_COMPUTE_SERVICE_ACCOUNT)
 
-    daisy_utils.AddCommonDaisyArgs(parser)
+    daisy_utils.AddCommonDaisyArgs(
+        parser,
+        operation='an export',
+        extra_timeout_help=("""
+
+          If you are exporting a large image that takes longer than 24 hours to
+          export, either use the RAW disk format to reduce the time needed for
+          converting the image, or split the data into several smaller images.
+          """))
 
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 

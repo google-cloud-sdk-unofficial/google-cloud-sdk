@@ -41,16 +41,15 @@
       To get metadata for the root CA 'prod-root' in location 'us-west1' and CA Pool 'my-pool':
 
         $ {command} server-tls-1 \
-          --location=us --pool='my-pool'
+            --location=us-west1 --pool=my-pool
 
-      To download the PEM-encoded CA certificate for the 'prod-root'
+      To download the PEM-encoded CA certificate chain for the 'prod-root'
       CA in location 'us-west1' and CA Pool 'my-pool' to a file
       called 'prod-root.crt':
 
         $ {command} prod-root \
-          --location=us-west1 \
-          --pool=my-pool \
-          --format="value(pem_cert)" > ./prod-root.crt
+            --location=us-west1 --pool=my-pool \
+            --format="value(pemCaCertificates)" > ./prod-root.crt
 
   request:
     collection: privateca.projects.locations.caPools.certificateAuthorities

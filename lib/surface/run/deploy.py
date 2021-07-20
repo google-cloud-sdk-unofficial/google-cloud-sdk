@@ -313,6 +313,7 @@ class AlphaDeploy(Deploy):
     flags.AddBinAuthzBreakglassFlag(managed_group)
     flags.AddCmekKeyFlag(managed_group)
     flags.AddCpuThrottlingFlag(managed_group)
+    flags.AddConfidentialFlag(managed_group)
 
     # Flags indicating whether to deploy source or an existing image
     flags.AddSourceAndImageFlags(parser)

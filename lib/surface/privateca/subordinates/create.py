@@ -263,29 +263,29 @@ class Create(base.CreateCommand):
   To create a subordinate CA named 'server-tls-1' whose issuer is on Private CA:
 
     $ {command} server-tls-1 \
-      --pool=my-pool \
-      --subject="CN=Joonix TLS CA, O=Google" \
-      --issuer-pool=other-pool --issuer-location=us-west1 \
-      --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
+        --location=us-west1 --pool=my-pool \
+        --subject="CN=Joonix TLS CA, O=Google" \
+        --issuer-pool=other-pool --issuer-location=us-west1 \
+        --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
 
   To create a subordinate CA named 'server-tls-1' whose issuer is located
   elsewhere:
 
     $ {command} server-tls-1 \
-      --pool=my-pool \
-      --subject="CN=Joonix TLS CA, O=Google" \
-      --create-csr \
-      --csr-output-file="./csr.pem" \
-      --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
+        --location=us-west1 --pool=my-pool \
+        --subject="CN=Joonix TLS CA, O=Google" \
+        --create-csr \
+        --csr-output-file=./csr.pem \
+        --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
 
   To create a subordinate CA named 'server-tls-1' chaining up to a root CA
   named 'prod-root' based on an existing CA:
 
     $ {command} server-tls-1 \
-      --pool=my-pool \
-      --issuer-pool=other-pool --issuer-location=us-west1 \
-      --from-ca=source-ca \
-      --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
+        --location=us-west1 --pool=my-pool \
+        --issuer-pool=other-pool --issuer-location=us-west1 \
+        --from-ca=source-ca \
+        --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
   """
 
   def __init__(self, *args, **kwargs):

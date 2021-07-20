@@ -185,7 +185,7 @@ class UpdateBeta(base.UpdateCommand):
 
   _support_redirect = False
   _support_rate_limit = False
-  _support_header_action = False
+  _support_header_action = True
 
   @classmethod
   def Args(cls, parser):

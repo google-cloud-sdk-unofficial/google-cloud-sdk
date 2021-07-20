@@ -33,7 +33,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    parser.display_info.AddFormat(flags.DEFAULT_CREATE_OR_LIST_FORMAT)
     lister.AddMultiScopeListerFlags(parser, zonal=True, regional=True)
 
   def Run(self, args):

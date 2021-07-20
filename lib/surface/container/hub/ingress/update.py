@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import os
 import textwrap
 
 from googlecloudsdk.command_lib.container.hub.features import base
@@ -68,6 +69,11 @@ class Update(base.UpdateCommand):
           options=memberships,
           message='Please specify a config membership:\n')
       config_membership = memberships[index]
+    else:
+      # Strip to the final path component to allow short and long names.
+      # Assumes long names are for the same project and global location.
+      # TODO(b/192580393): Use the resource args instead of this hack.
+      config_membership = os.path.basename(args.config_membership)
 
     config_membership = self.MembershipResourceName(config_membership)
     f = self.messages.Feature(

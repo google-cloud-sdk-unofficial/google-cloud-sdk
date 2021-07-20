@@ -56,7 +56,7 @@ class Import(base.CreateCommand):
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddNoAddressArg(parser)
     labels_util.AddCreateLabelsFlags(parser)
-    daisy_utils.AddCommonDaisyArgs(parser)
+    daisy_utils.AddCommonDaisyArgs(parser, operation='an import')
     daisy_utils.AddExtraCommonDaisyArgs(parser)
     instances_flags.INSTANCES_ARG_FOR_IMPORT.AddArgument(
         parser, operation_type='import')

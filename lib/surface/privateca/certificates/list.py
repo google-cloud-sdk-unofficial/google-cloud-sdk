@@ -149,8 +149,9 @@ class List(base.ListCommand):
 
       To list all Certificates issued directly under a CA, run:
 
-      $ {command} --issuer-pool=my-pool --location=us-west1 \
-        --filter="issuer_certificate_authority='projects/my-project/locations/us-west1/caPools/my-pool/certificateAuthorities/my-ca'"
+      $ {command} --issuer-pool=my-pool \
+          --location=us-west1 \
+          --filter="issuer_certificate_authority='projects/1234567890/locations/us-west1/caPools/my-pool/certificateAuthorities/my-ca'"
 
       You can omit the --location flag in both of the above examples if you've
       already set the privateca/location property. For example:

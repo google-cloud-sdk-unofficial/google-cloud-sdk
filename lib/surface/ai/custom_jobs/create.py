@@ -30,13 +30,15 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 _JOB_CREATION_DISPLAY_MESSAGE_TEMPLATE = """\
-Custom Job [{id}] submitted successfully.
+CustomJob [{job_name}] is submitted successfully.
 
 Your job is still active. You may view the status of your job with the command
 
-  $ {command_prefix} ai custom-jobs describe {id}
+  $ {command_prefix} ai custom-jobs describe {job_name}
 
-Job State: {state}\
+or continue streaming the logs with the command
+
+  $ {command_prefix} ai custom-jobs stream-logs {job_name}\
 """
 
 
@@ -69,9 +71,7 @@ class CreateGA(base.CreateCommand):
 
     log.status.Print(
         _JOB_CREATION_DISPLAY_MESSAGE_TEMPLATE.format(
-            id=custom_jobs_util.ParseJobName(response.name),
-            command_prefix=cmd_prefix,
-            state=response.state))
+            job_name=response.name, command_prefix=cmd_prefix))
 
   def _PrepareJobSpec(self, args, api_client, project, region):
     job_config = api_client.ImportResourceMessage(
@@ -98,6 +98,8 @@ class CreateGA(base.CreateCommand):
     project = properties.VALUES.core.project.GetOrFail()
     region_ref = args.CONCEPTS.region.Parse()
     region = region_ref.AsDict()['locationsId']
+    validation.ValidateRegion(region)
+
     with endpoint_util.AiplatformEndpointOverrides(
         version=self._version, region=region):
       api_client = client.CustomJobsClient(version=self._version)

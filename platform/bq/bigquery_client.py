@@ -702,6 +702,7 @@ class BigqueryError(Exception):
       server_error,
       error_ls,
       job_ref=None,
+      session_id=None,
   ):
     """Returns a BigqueryError for json error embedded in server_error.
 
@@ -714,6 +715,7 @@ class BigqueryError(Exception):
         case that error is malformed.)
       error_ls: Additional errors to include in the error message.
       job_ref: JobReference, if this is an error associated with a job.
+      session_id: Id of the session if the job is part of one.
 
     Returns:
       BigqueryError representing error.
@@ -741,6 +743,8 @@ class BigqueryError(Exception):
       error_message = '\n'.join(new_error_messages)
       if error_message:
         message += '- ' + error_message
+    if session_id:
+      message += '\nIn session: %s' % session_id
 
     # Sometimes we will have type(message) being <type 'unicode'>, for example
     # from an invalid query containing a non-English string.  Reduce this
@@ -1915,8 +1919,8 @@ class BigqueryClient(object):
       ignore_idle_slots,
       max_concurrency,
       enable_queuing_and_priorities,
-      autoscale_max_slots=None
-  ):
+      autoscale_max_slots=None,
+      autoscale_budget_slot_hours=None):
     # pylint: disable=g-doc-args
     """Return the request body for CreateReservation.
 
@@ -1928,6 +1932,8 @@ class BigqueryClient(object):
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
       autoscale_max_slots: Number of slots to be scaled when needed.
+      autoscale_budget_slot_hours: The budget expressed in slot-hours for 7*24
+        hour rolling window.
 
     Returns:
       Reservation object that was created.
@@ -1957,15 +1963,24 @@ class BigqueryClient(object):
           'value'] = enable_queuing_and_priorities
 
     if (autoscale_max_slots is not None
+        or autoscale_budget_slot_hours is not None
        ):
       if (self.api_version != 'autoscale_alpha'
          ):
         raise BigqueryError(
             'Autoscale is only supported in autoscale_alpha. Please '
             'specify \'--api_version=autoscale_alpha\' and retry.')
+      if (autoscale_max_slots is not None and
+          autoscale_budget_slot_hours is not None):
+        raise BigqueryError(
+            '--autoscale_max_slots and --autoscale_budget_slot_hours can not '
+            'be specified at the same time.')
       reservation['autoscale'] = {}
       if autoscale_max_slots is not None:
         reservation['autoscale']['max_slots'] = autoscale_max_slots
+      if autoscale_budget_slot_hours is not None:
+        reservation['autoscale'][
+            'budget_slot_hours'] = autoscale_budget_slot_hours
 
     return reservation
 
@@ -1976,8 +1991,8 @@ class BigqueryClient(object):
       ignore_idle_slots,
       max_concurrency,
       enable_queuing_and_priorities,
-      autoscale_max_slots=None
-  ):
+      autoscale_max_slots=None,
+      autoscale_budget_slot_hours=None):
     # pylint: disable=g-doc-args
     """Create a reservation with the given reservation reference.
 
@@ -1990,6 +2005,8 @@ class BigqueryClient(object):
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
       autoscale_max_slots: Number of slots to be scaled when needed.
+      autoscale_budget_slot_hours: The budget expressed in slot-hours for 7*24
+        hour rolling window.
 
     Returns:
       Reservation object that was created.
@@ -2003,6 +2020,7 @@ class BigqueryClient(object):
         max_concurrency,
         enable_queuing_and_priorities,
         autoscale_max_slots,
+        autoscale_budget_slot_hours
     )
     client = self.GetReservationApiClient()
     parent = 'projects/%s/locations/%s' % (reference.projectId,
@@ -2111,8 +2129,8 @@ class BigqueryClient(object):
       ignore_idle_slots,
       max_concurrency,
       enable_queuing_and_priorities,
-      autoscale_max_slots
-  ):
+      autoscale_max_slots,
+      autoscale_budget_slot_hours=None):
     # pylint: disable=g-doc-args
     """Return the request body and update mask for UpdateReservation.
 
@@ -2124,6 +2142,8 @@ class BigqueryClient(object):
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
       autoscale_max_slots: Number of slots to be scaled when needed.
+      autoscale_budget_slot_hours: The budget expressed in slot-hours for 7*24
+        hour rolling window.
 
     Returns:
       Reservation object that was updated.
@@ -2162,17 +2182,32 @@ class BigqueryClient(object):
       update_mask += 'enable_queuing_and_priorities.value,'
 
     if (autoscale_max_slots is not None
+        or autoscale_budget_slot_hours is not None
        ):
       if (self.api_version != 'autoscale_alpha'
          ):
         raise BigqueryError(
             'Autoscale is only supported in autoscale_alpha. Please '
             'specify \'--api_version=autoscale_alpha\' and retry.')
+      if (autoscale_max_slots is not None and
+          autoscale_budget_slot_hours is not None):
+        raise BigqueryError(
+            '--autoscale_max_slots and --autoscale_budget_slot_hours can not '
+            'be specified at the same time.')
       if autoscale_max_slots is not None:
         if autoscale_max_slots != 0:
           reservation['autoscale'] = {}
           reservation['autoscale']['max_slots'] = autoscale_max_slots
           update_mask += 'autoscale.max_slots,'
+        else:
+          # Disable autoscale.
+          update_mask += 'autoscale,'
+      if autoscale_budget_slot_hours is not None:
+        if autoscale_budget_slot_hours != 0:
+          reservation['autoscale'] = {}
+          reservation['autoscale'][
+              'budget_slot_hours'] = autoscale_budget_slot_hours
+          update_mask += 'autoscale.budget_slot_hours,'
         else:
           # Disable autoscale.
           update_mask += 'autoscale,'
@@ -2186,7 +2221,8 @@ class BigqueryClient(object):
       ignore_idle_slots,
       max_concurrency,
       enable_queuing_and_priorities,
-      autoscale_max_slots
+      autoscale_max_slots,
+      autoscale_budget_slot_hours=None,
   ):
     # pylint: disable=g-doc-args
     """Updates a reservation with the given reservation reference.
@@ -2200,6 +2236,8 @@ class BigqueryClient(object):
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
       autoscale_max_slots: Number of slots to be scaled when needed.
+      autoscale_budget_slot_hours: The budget expressed in slot-hours for 7*24
+        hour rolling window.
 
     Returns:
       Reservation object that was updated.
@@ -2212,8 +2250,8 @@ class BigqueryClient(object):
         ignore_idle_slots,
         max_concurrency,
         enable_queuing_and_priorities,
-        autoscale_max_slots
-        )
+        autoscale_max_slots,
+        autoscale_budget_slot_hours)
     client = self.GetReservationApiClient()
     return client.projects().locations().reservations().patch(
         name=reference.path(), updateMask=update_mask,
@@ -2947,6 +2985,8 @@ class BigqueryClient(object):
           'ignoreIdleSlots',
           'autoscaleMaxSlots',
           'autoscaleCurrentSlots',
+          'autoscaleBudgetSlotHours',
+          'autoscaleUsedBudgetSlotHours',
           'creationTime',
           'updateTime'))
     elif reference_type == ApiClientHelper.CapacityCommitmentReference:
@@ -2975,6 +3015,20 @@ class BigqueryClient(object):
     """Predicate to determine whether or not a job failed."""
     return 'errorResult' in job.get('status', {})
 
+  @staticmethod
+  def GetSessionId(job):
+    """Helper to return the session id if the job is part of one.
+
+    Args:
+      job: a job resource to get statistics and sessionInfo from.
+
+    Returns:
+      sessionId, if the job is part of a session.
+    """
+    stats = job.get('statistics', {})
+    if 'sessionInfo' in stats and 'sessionId' in stats['sessionInfo']:
+      return stats['sessionInfo']['sessionId']
+    return None
 
   @staticmethod
   def RaiseIfJobError(job):
@@ -2998,6 +3052,7 @@ class BigqueryClient(object):
           error,
           error_ls,
           job_ref=BigqueryClient.ConstructObjectReference(job),
+          session_id=BigqueryClient.GetSessionId(job),
       )
     return job
 
@@ -3185,6 +3240,9 @@ class BigqueryClient(object):
         result['Duration'] = str(datetime.timedelta(seconds=duration_seconds))
       result['Start Time'] = BigqueryClient.FormatTime(start)
 
+    session_id = BigqueryClient.GetSessionId(job_info)
+    if session_id:
+      result['Session Id'] = session_id
 
     query_stats = stats.get('query', {})
     if 'totalBytesProcessed' in query_stats:
@@ -3586,6 +3644,13 @@ class BigqueryClient(object):
         result['autoscaleCurrentSlots'] = '0'
         if 'currentSlots' in result['autoscale']:
           result['autoscaleCurrentSlots'] = result['autoscale']['currentSlots']
+      if 'budgetSlotHours' in result['autoscale']:
+        result['autoscaleBudgetSlotHours'] = result['autoscale'][
+            'budgetSlotHours']
+        result['autoscaleUsedBudgetSlotHours'] = '0'
+        if 'usedBudgetSlotHours' in result['autoscale']:
+          result['autoscaleUsedBudgetSlotHours'] = result['autoscale'][
+              'usedBudgetSlotHours']
       # The original 'autoscale' fields is not needed anymore now.
       result.pop('autoscale', None)
     return result
@@ -5446,6 +5511,7 @@ class BigqueryClient(object):
       udf_resources=None,
       use_legacy_sql=None,
       location=None,
+      connection_properties=None,
       **kwds):
     """Executes the given query using the rpc-style query api.
 
@@ -5472,6 +5538,10 @@ class BigqueryClient(object):
       use_legacy_sql: Whether to use Legacy SQL. If not set, the default value
         is true.
       location: Optional. The geographic location where the job should run.
+      connection_properties: Optional. Connection properties to use when running
+        the query, presented as a list of key/value pairs. A key of "time_zone"
+        indicates that the query will be run with the default timezone
+        corresponding to the value.
       **kwds: Extra keyword arguments passed directly to jobs.Query().
 
     Returns:
@@ -5510,6 +5580,7 @@ class BigqueryClient(object):
         use_legacy_sql=use_legacy_sql,
         min_completion_ratio=min_completion_ratio,
         location=location)
+    _ApplyParameters(request, connection_properties=connection_properties)
     _ApplyParameters(request, dry_run=dry_run)
     return self.apiclient.jobs().query(
         body=request, projectId=project_id, **kwds).execute()
@@ -5834,6 +5905,7 @@ class BigqueryClient(object):
       external_table_definitions_json=None,
       udf_resources=None,
       location=None,
+      connection_properties=None,
       **kwds):
     """Executes the given query using the rpc-style query api.
 
@@ -5862,6 +5934,10 @@ class BigqueryClient(object):
         definitions.
       udf_resources: Array of inline and remote UDF resources.
       location: Optional. The geographic location where the job should run.
+      connection_properties: Optional. Connection properties to use when running
+        the query, presented as a list of key/value pairs. A key of "time_zone"
+        indicates that the query will be run with the default timezone
+        corresponding to the value.
       **kwds: Passed directly to self.ExecuteSyncQuery.
 
     Raises:
@@ -5930,6 +6006,7 @@ class BigqueryClient(object):
               external_table_definitions_json=external_table_definitions_json,
               udf_resources=udf_resources,
               location=location,
+              connection_properties=connection_properties,
               **kwds)
           if dry_run:
             execution = dict(
@@ -6002,6 +6079,8 @@ class BigqueryClient(object):
       range_partitioning=None,
       script_options=None,
       job_timeout_ms=None,
+      create_session=None,
+      connection_properties=None,
       **kwds):
     # pylint: disable=g-doc-args
     """Execute the given query, returning the created job.
@@ -6100,8 +6179,10 @@ class BigqueryClient(object):
         query_parameters=query_parameters,
         time_partitioning=time_partitioning,
         clustering=clustering,
+        create_session=create_session,
         min_completion_ratio=min_completion_ratio,
         range_partitioning=range_partitioning)
+    _ApplyParameters(query_config, connection_properties=connection_properties)
     request = {'query': query_config}
     _ApplyParameters(
         request, dry_run=dry_run, labels=labels, job_timeout_ms=job_timeout_ms)

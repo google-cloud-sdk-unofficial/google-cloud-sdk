@@ -28,14 +28,23 @@ from googlecloudsdk.command_lib.compute.instances import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SetScopes(base.SilentCommand):
-  """Set scopes and service account for a Compute Engine instance."""
+  """Set scopes and service account for a Compute Engine VM instance.
+  """
 
   detailed_help = {
-      'EXAMPLES': """
-  To set a service account with `pubsub` and `trace` scopes, run:
+      'DESCRIPTION':
+          """\
+        `{command}` lets you configure service account and scopes for a
+        Compute Engine VM instance.
 
-    $ {command} example-instance --scopes=pubsub,trace --zone=us-central1-b --service-account=example-account
-  """}
+        Note: This command might be deprecated in a future release.
+        Use `gcloud compute instances set-service-account` instead.
+        """,
+      'EXAMPLES': """
+       To set a service account with the ``cloud-platform'' scope, run:
+
+    $ {command} example-instance --scopes=cloud-platform --zone=us-central1-b --service-account=example-account
+       """}
 
   def __init__(self, *args, **kwargs):
     super(self.__class__, self).__init__(*args, **kwargs)

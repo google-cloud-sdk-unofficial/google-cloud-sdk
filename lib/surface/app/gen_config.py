@@ -68,7 +68,6 @@ def _Args(parser):
             'normally one of the generated files, but when generating a '
             'custom runtime there can be an app.yaml containing parameters.'))
 
-  # TODO(b/24843650): Enumerate the valid runtimes for vm: true/env: 2
   rt_list = [r for r in appinfo.GetAllRuntimes() if r not in ['vm', 'custom']]
   parser.add_argument(
       '--runtime',

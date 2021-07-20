@@ -53,6 +53,7 @@ class UpdateGA(base.UpdateCommand):
     autohealing_params_group = autohealing_group.add_group()
     auto_healing_utils.AddAutohealingArgs(autohealing_params_group)
     instance_groups_flags.AddMigUpdateStatefulFlags(parser)
+    instance_groups_flags.AddDescriptionFlag(parser, for_update=True)
     managed_flags.AddMigInstanceRedistributionTypeFlag(parser)
     managed_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
@@ -196,6 +197,8 @@ class UpdateGA(base.UpdateCommand):
       self._PatchTargetDistributionShape(patch_instance_group_manager,
                                          args.target_distribution_shape,
                                          igm_resource, client)
+    if args.IsSpecified('description'):
+      patch_instance_group_manager.description = args.description
     return patch_instance_group_manager
 
   def Run(self, args):

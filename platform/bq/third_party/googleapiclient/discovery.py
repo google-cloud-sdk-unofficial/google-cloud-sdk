@@ -874,7 +874,7 @@ def createMethod(methodName, methodDesc, rootDesc, schema):
                 else:
                     # This is a multipart/related upload.
                     msgRoot = MIMEMultipart("related")
-                    # msgRoot should not write out its own headers
+                    # msgRoot should not write out it's own headers
                     setattr(msgRoot, "_write_headers", lambda self: None)
 
                     # attach the body as one part

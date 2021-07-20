@@ -30,12 +30,15 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class AsymmetricDecrypt(base.Command):
   r"""Decrypt an input file using an asymmetric-encryption key version.
 
   Decrypts the given ciphertext file using the provided asymmetric-encryption
   key version and saves the decrypted data to the plaintext file.
+
+  By default, the command performs integrity verification on data sent to and
+  received from Cloud KMS. Use `--skip-integrity-verification` to disable
+  integrity verification.
 
   ## EXAMPLES
   The following command will read the file '/tmp/my/secret.file.enc', decrypt it
@@ -52,19 +55,16 @@ class AsymmetricDecrypt(base.Command):
 
   """
 
-  # Class variable which denotes whether this release track supports integrity
-  # verification.
-  supports_integrity_verification = False
-
   @staticmethod
   def Args(parser):
     flags.AddKeyResourceFlags(parser, 'to use for asymmetric-decryption.')
     flags.AddCryptoKeyVersionFlag(parser, 'to use for asymmetric-decryption')
     flags.AddCiphertextFileFlag(parser, 'to decrypt')
     flags.AddPlaintextFileFlag(parser, 'to output')
+    flags.AddSkipIntegrityVerification(parser)
 
   def _PerformIntegrityVerification(self, args):
-    return self.supports_integrity_verification and not args.skip_integrity_verification
+    return not args.skip_integrity_verification
 
   def _CreateAsymmetricDecryptRequest(self, args):
     try:
@@ -127,37 +127,3 @@ class AsymmetricDecrypt(base.Command):
           private=True)
     except files.Error as e:
       raise exceptions.BadFileException(e)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class AsymmetricDecryptBeta(AsymmetricDecrypt):
-  r"""Decrypt an input file using an asymmetric-encryption key version.
-
-  Decrypts the given ciphertext file using the provided asymmetric-encryption
-  key version and saves the decrypted data to the plaintext file.
-
-  By default, the command performs integrity verification on data sent to and
-  received from Cloud KMS. Use `--skip-integrity-verification` to disable
-  integrity verification.
-
-  ## EXAMPLES
-  The following command will read the file '/tmp/my/secret.file.enc', decrypt it
-  using the asymmetric CryptoKey `dont-panic` Version 3 and write the plaintext
-  to '/tmp/my/secret.file.dec'.
-
-    $ {command} \
-    --location=us-central1 \
-    --keyring=hitchhiker \
-    --key=dont-panic \
-    --version=3 \
-    --ciphertext-file=/tmp/my/secret.file.enc \
-    --plaintext-file=/tmp/my/secret.file.dec
-
-  """
-
-  supports_integrity_verification = True
-
-  @staticmethod
-  def Args(parser):
-    super(AsymmetricDecryptBeta, AsymmetricDecryptBeta).Args(parser)
-    flags.AddSkipIntegrityVerification(parser)

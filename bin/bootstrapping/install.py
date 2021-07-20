@@ -250,6 +250,8 @@ def MaybeInstallPythonOnMac():
                 install_errors.append('Installer failed.')
 
     if not install_errors:
+      os.environ['CLOUDSDK_PYTHON'] = '{}/bin/python3'.format(
+          MACOS_PYTHON_INSTALL_PATH)
       print('Setting up virtual environment')
       if os.path.isdir(config.Paths().virtualenv_dir):
         _CLI.Execute(['config', 'virtualenv', 'update'])

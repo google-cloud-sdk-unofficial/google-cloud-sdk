@@ -84,7 +84,7 @@ class OsUpgrade(base.Command):
              'true to upgrade with staging windows install media.',
         hidden=True)
 
-    daisy_utils.AddCommonDaisyArgs(parser)
+    daisy_utils.AddCommonDaisyArgs(parser, operation='an upgrade')
     daisy_utils.AddExtraCommonDaisyArgs(parser)
 
     flags.INSTANCES_ARG_FOR_OS_UPGRADE.AddArgument(

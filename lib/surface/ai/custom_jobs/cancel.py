@@ -23,14 +23,15 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai.custom_jobs import flags
+from googlecloudsdk.command_lib.ai.custom_jobs import validation
 from googlecloudsdk.core import log
 
 _CUSTOM_JOB_CANCEL_DISPLAY_MESSAGE = """\
-Request to cancel custom job [{id}] has been sent
+Request to cancel CustomJob [{job_name}] has been sent.
 
 You may view the status of your job with the command
 
-  $ gcloud{version} ai custom-jobs describe {id}
+  $ {command_prefix} ai custom-jobs describe {job_name}
 """
 
 
@@ -48,25 +49,29 @@ class CancelGA(base.SilentCommand):
 
     $ {command} 123 --project=example --region=us-central1
   """
+  _api_version = constants.GA_VERSION
 
   @staticmethod
   def Args(parser):
     flags.AddCustomJobResourceArg(parser, 'to cancel')
 
-  def _Run(self, args, custom_job_ref):
-    region = custom_job_ref.AsDict()['locationsId']
-    name = custom_job_ref.Name()
-    with endpoint_util.AiplatformEndpointOverrides(
-        version=constants.GA_VERSION, region=region):
-      response = client.CustomJobsClient(version=constants.GA_VERSION).Cancel(
-          custom_job_ref.RelativeName())
-      log.status.Print(
-          _CUSTOM_JOB_CANCEL_DISPLAY_MESSAGE.format(id=name, version=''))
-      return response
+  def _CommandPrefix(self):
+    return 'gcloud'
 
   def Run(self, args):
     custom_job_ref = args.CONCEPTS.custom_job.Parse()
-    return self._Run(args, custom_job_ref)
+    region = custom_job_ref.AsDict()['locationsId']
+    validation.ValidateRegion(region)
+
+    with endpoint_util.AiplatformEndpointOverrides(
+        version=self._api_version, region=region):
+      job_name = custom_job_ref.RelativeName()
+      response = client.CustomJobsClient(
+          version=self._api_version).Cancel(job_name)
+      log.status.Print(
+          _CUSTOM_JOB_CANCEL_DISPLAY_MESSAGE.format(
+              job_name=job_name, command_prefix=self._CommandPrefix()))
+      return response
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -82,17 +87,7 @@ class CancelPreGA(CancelGA):
     $ {command} 123 --project=example --region=us-central1
   """
 
-  @staticmethod
-  def Args(parser):
-    flags.AddCustomJobResourceArg(parser, 'to cancel')
+  _api_version = constants.BETA_VERSION
 
-  def _Run(self, args, custom_job_ref):
-    region = custom_job_ref.AsDict()['locationsId']
-    name = custom_job_ref.Name()
-    with endpoint_util.AiplatformEndpointOverrides(
-        version=constants.BETA_VERSION, region=region):
-      response = client.CustomJobsClient(version=constants.BETA_VERSION).Cancel(
-          custom_job_ref.RelativeName())
-      log.status.Print(
-          _CUSTOM_JOB_CANCEL_DISPLAY_MESSAGE.format(id=name, version=' beta'))
-      return response
+  def _CommandPrefix(self):
+    return 'gcloud ' + self.ReleaseTrack().prefix

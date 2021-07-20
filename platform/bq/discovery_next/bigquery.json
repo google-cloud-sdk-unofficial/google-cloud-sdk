@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20210525",
+ "revision": "20210701",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -93,6 +93,40 @@
   }
  },
  "schemas": {
+  "BiEngineReason": {
+   "id": "BiEngineReason",
+   "type": "object",
+   "properties": {
+    "code": {
+     "type": "string",
+     "description": "[Output-only] High-level BI Engine reason for partial or disabled acceleration.",
+     "default": "$(reason.code)"
+    },
+    "message": {
+     "type": "string",
+     "description": "[Output-only] Free form human-readable reason for partial or disabled acceleration.",
+     "default": "$(reason.message)"
+    }
+   }
+  },
+  "BiEngineStatistics": {
+   "id": "BiEngineStatistics",
+   "type": "object",
+   "properties": {
+    "biEngineMode": {
+     "type": "string",
+     "description": "[Output-only] Specifies which mode of BI Engine acceleration was performed (if any).",
+     "default": "$(stats.bi_engine_mode)"
+    },
+    "biEngineReasons": {
+     "type": "array",
+     "description": "In case of DISABLED or PARTIAL bi_engine_mode, these contain the explanatory reasons as to why BI Engine could not accelerate. In case the full query was accelerated, this field is not populated.",
+     "items": {
+      "$ref": "BiEngineReason"
+     }
+    }
+   }
+  },
   "BigQueryModelTraining": {
    "id": "BigQueryModelTraining",
    "type": "object",
@@ -579,6 +613,27 @@
      "additionalProperties": {
       "type": "string"
      }
+    }
+   }
+  },
+  "DmlStatistics": {
+   "id": "DmlStatistics",
+   "type": "object",
+   "properties": {
+    "deletedRowCount": {
+     "type": "string",
+     "description": "Number of deleted Rows. populated by DML DELETE, MERGE and TRUNCATE statements.",
+     "format": "int64"
+    },
+    "insertedRowCount": {
+     "type": "string",
+     "description": "Number of inserted Rows. Populated by DML INSERT and MERGE statements.",
+     "format": "int64"
+    },
+    "updatedRowCount": {
+     "type": "string",
+     "description": "Number of updated Rows. Populated by DML UPDATE and MERGE statements.",
+     "format": "int64"
     }
    }
   },
@@ -1594,7 +1649,7 @@
      "$ref": "ScriptStatistics",
      "description": "[Output-only] Statistics for a child job of a script."
     },
-    "sessionInfoTemplate": {
+    "sessionInfo": {
      "$ref": "SessionInfo",
      "description": "[Output-only] [Preview] Information of the session if this job is part of one."
     },
@@ -1623,6 +1678,10 @@
    "id": "JobStatistics2",
    "type": "object",
    "properties": {
+    "biEngineStatistics": {
+     "$ref": "BiEngineStatistics",
+     "description": "BI Engine specific Statistics. [Output-only] BI Engine specific Statistics."
+    },
     "billingTier": {
      "type": "integer",
      "description": "[Output-only] Billing tier for the job.",
@@ -1662,7 +1721,7 @@
      "description": "[Output-only] The DDL target table. Present only for CREATE/DROP TABLE/VIEW and DROP ALL ROW ACCESS POLICIES queries."
     },
     "dmlStats": {
-     "type": "any",
+     "$ref": "DmlStatistics",
      "description": "[Output-only] Detailed statistics for DML statements Present only for DML statements INSERT, UPDATE, DELETE or TRUNCATE."
     },
     "estimatedBytesProcessed": {
@@ -2191,7 +2250,7 @@
      "description": "Whether the query result was fetched from the query cache."
     },
     "dmlStats": {
-     "type": "any",
+     "$ref": "DmlStatistics",
      "description": "[Output-only] Detailed statistics for DML statements Present only for DML statements INSERT, UPDATE, DELETE or TRUNCATE."
     },
     "errors": {
@@ -3148,13 +3207,6 @@
     "dataSplitResult": {
      "description": "Data split result of the training run. Only set when the input data is actually split.",
      "$ref": "DataSplitResult"
-    },
-    "globalExplanations": {
-     "description": "Global explanations for important features of the model. For multi-class models, there is one entry for each label class. For other models, there is only one entry in the list.",
-     "type": "array",
-     "items": {
-      "$ref": "GlobalExplanation"
-     }
     }
    }
   },
@@ -4397,40 +4449,6 @@
     "evaluationTable": {
      "description": "Table reference of the evaluation data after split.",
      "$ref": "TableReference"
-    }
-   }
-  },
-  "GlobalExplanation": {
-   "id": "GlobalExplanation",
-   "description": "Global explanations containing the top most important features after training.",
-   "type": "object",
-   "properties": {
-    "explanations": {
-     "description": "A list of the top global explanations. Sorted by absolute value of attribution in descending order.",
-     "type": "array",
-     "items": {
-      "$ref": "Explanation"
-     }
-    },
-    "classLabel": {
-     "description": "Class label for this set of global explanations. Will be empty/null for binary logistic and linear regression models. Sorted alphabetically in descending order.",
-     "type": "string"
-    }
-   }
-  },
-  "Explanation": {
-   "id": "Explanation",
-   "description": "Explanation for a single feature.",
-   "type": "object",
-   "properties": {
-    "featureName": {
-     "description": "Full name of the feature. For non-numerical features, will be formatted like .. Overall size of feature name will always be truncated to first 120 characters.",
-     "type": "string"
-    },
-    "attribution": {
-     "description": "Attribution of feature.",
-     "type": "number",
-     "format": "double"
     }
    }
   },

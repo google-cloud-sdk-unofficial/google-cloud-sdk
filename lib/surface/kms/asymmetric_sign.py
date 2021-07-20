@@ -30,7 +30,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class AsymmetricSign(base.Command):
   r"""Sign a user input file using an asymmetric-signing key version.
 
@@ -38,6 +37,10 @@ class AsymmetricSign(base.Command):
   asymmetric-signing key version and saves the base64 encoded signature.
 
   The required flag `signature-file` indicates the path to store signature.
+
+  By default, the command performs integrity verification on data sent to and
+  received from Cloud KMS. Use `--skip-integrity-verification` to disable
+  integrity verification.
 
   ## EXAMPLES
   The following command will read the file '/tmp/my/file.to.sign', digest it
@@ -56,10 +59,6 @@ class AsymmetricSign(base.Command):
 
   """
 
-  # Class variable which denotes whether this release track supports integrity
-  # verification.
-  supports_integrity_verification = False
-
   @staticmethod
   def Args(parser):
     flags.AddKeyResourceFlags(parser, 'to use for signing.')
@@ -67,9 +66,10 @@ class AsymmetricSign(base.Command):
     flags.AddDigestAlgorithmFlag(parser, 'The algorithm to digest the input.')
     flags.AddInputFileFlag(parser, 'to sign')
     flags.AddSignatureFileFlag(parser, 'to output')
+    flags.AddSkipIntegrityVerification(parser)
 
   def _PerformIntegrityVerification(self, args):
-    return self.supports_integrity_verification and not args.skip_integrity_verification
+    return not args.skip_integrity_verification
 
   def _CreateAsymmetricSignRequest(self, args):
     try:
@@ -135,43 +135,3 @@ class AsymmetricSign(base.Command):
           private=True)
     except files.Error as e:
       raise exceptions.BadFileException(e)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class AsymmetricSignBeta(AsymmetricSign):
-  r"""Sign a user input file using an asymmetric-signing key version.
-
-  Creates a digital signature of the input file using the provided
-  asymmetric-signing key version and saves the base64 encoded signature.
-
-  The required flag `signature-file` indicates the path to store signature.
-
-  By default, the command performs integrity verification on data sent to and
-  received from Cloud KMS. Use `--skip-integrity-verification` to disable
-  integrity verification.
-
-  ## EXAMPLES
-  The following command will read the file '/tmp/my/file.to.sign', digest it
-  with the digest algorithm 'sha256' and sign it using the asymmetric CryptoKey
-  `dont-panic` Version 3, and save the signature in base64 format to
-  '/tmp/my/signature'.
-
-    $ {command} \
-    --location=us-central1 \
-    --keyring=hitchhiker \
-    --key=dont-panic \
-    --version=3 \
-    --digest-algorithm=sha256 \
-    --input-file=/tmp/my/file.to.sign \
-    --signature-file=/tmp/my/signature
-
-  """
-
-  # Class variable which denotes whether this release track supports integrity
-  # verification.
-  supports_integrity_verification = True
-
-  @staticmethod
-  def Args(parser):
-    super(AsymmetricSignBeta, AsymmetricSignBeta).Args(parser)
-    flags.AddSkipIntegrityVerification(parser)

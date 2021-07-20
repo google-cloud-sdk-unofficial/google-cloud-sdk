@@ -191,6 +191,7 @@ class AlphaUpdate(Update):
     flags.AddBinAuthzBreakglassFlag(managed_group)
     flags.AddCmekKeyFlag(managed_group)
     flags.AddCpuThrottlingFlag(managed_group)
+    flags.AddConfidentialFlag(managed_group)
 
 
 AlphaUpdate.__doc__ = Update.__doc__

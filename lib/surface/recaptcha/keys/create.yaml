@@ -99,7 +99,7 @@
                 arg_value: nocaptcha
                 help_text: |
                   Execute requests for this key will always return nocaptcha.
-              - enum_value: CHALLENGE
+              - enum_value: UNSOLVABLE_CHALLENGE
                 arg_value: challenge
                 help_text: |
                   Execute requests for this key will always return an unsolvable

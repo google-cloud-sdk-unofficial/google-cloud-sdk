@@ -45,6 +45,7 @@ def _TransformAppProfileToFailoverRadius(app_profile):
   return ''
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class ListAppProfiles(base.ListCommand):
   """List Bigtable app profiles."""
 
@@ -57,6 +58,43 @@ class ListAppProfiles(base.ListCommand):
 
           """),
   }
+
+  @staticmethod
+  def Args(parser):
+    arguments.AddInstanceResourceArg(parser, 'to list app profiles for')
+
+    parser.display_info.AddTransforms({
+        'routingInfo': _TransformAppProfileToRoutingInfo,
+    })
+
+    # ROUTING is a oneof SingleClusterRouting, MultiClusterRoutingUseAny.
+    # Combine into a single ROUTING column in the table.
+    parser.display_info.AddFormat("""
+          table(
+            name.basename():sort=1,
+            description:wrap,
+            routingInfo():wrap:label=ROUTING,
+            singleClusterRouting.allowTransactionalWrites.yesno("Yes"):label=TRANSACTIONAL_WRITES
+          )
+        """)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+    instance_ref = args.CONCEPTS.instance.Parse()
+    return app_profiles.List(instance_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAppProfilesAlpha(ListAppProfiles):
+  """List Bigtable app profiles."""
 
   @staticmethod
   def Args(parser):
@@ -78,16 +116,3 @@ class ListAppProfiles(base.ListCommand):
             failoverRadius():label=FAILOVER_RADIUS
           )
         """)
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    instance_ref = args.CONCEPTS.instance.Parse()
-    return app_profiles.List(instance_ref)
