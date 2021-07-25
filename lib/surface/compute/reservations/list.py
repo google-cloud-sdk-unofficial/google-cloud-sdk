@@ -33,7 +33,8 @@ class List(base.ListCommand):
         table(name,
               specificReservation.inUseCount,
               specificReservation.count,
-              zone.basename())
+              zone.basename(),
+              shareSettings.shareType)
         """)
     parser.display_info.AddUriFunc(utils.MakeGetUriFunc())
     lister.AddZonalListerArgs(parser, hidden=True)

@@ -34,10 +34,11 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Storage(base.Group):
   """Create and manage Cloud Storage buckets and objects."""
+
+  category = base.STORAGE_CATEGORY
 
   detailed_help = DETAILED_HELP
 

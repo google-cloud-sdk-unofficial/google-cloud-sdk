@@ -33,58 +33,61 @@ class Ls(base.Command):
   # pylint:disable=g-backslash-continuation
   detailed_help = {
       'DESCRIPTION': """\
-      *{command}* lets you list your Cloud Storage buckets and objects.
-      Forward slashes in object names are logically treated as directories for
-      the purposes of listing contents. See below for example of how to use
-      wildcards to get the listing behavior you want.
+      List your Cloud Storage buckets in a project and objects in a bucket.
+      This command treats forward slashes in object names as directories. See
+      below for examples of how to use wildcards to get the listing behavior
+      you want.
       """,
       'EXAMPLES': """\
-      To list the buckets in current project:
+      The following command lists the buckets in the default project:
 
-      $ gcloud alpha storage ls
+        $ {command}
 
-      To list the contents of a bucket:
+      The following command lists the buckets in the specified project:
 
-          $ {command} gs://my-bucket
+        $ {command} --project=my-project
+
+      The following command lists the contents of a bucket:
+
+        $ {command} gs://my-bucket
 
       You can use wildcards to match multiple paths (including multiple
-      buckets). Bucket wildcards are expanded only to the buckets contained in
-      your current project:
+      buckets). Bucket wildcards are expanded to match only buckets contained in
+      your current project. The following command matches ".txt" objects that
+      begin with "log" and that are stored in buckets in your project that begin
+      with "my-b":
 
-          $ {command} gs://my-b*/log*.txt
+        $ {command} gs://my-b*/log*.txt
 
       The following wildcards are valid and match only within the current
       directory:
 
-          *: Matches zero or more characters
-          ?: Matches zero or one characters
-          []: Matches a character range (ex. [a-z] or [0-9])
+        *: Matches zero or more characters
+        ?: Matches zero or one characters
+        []: Matches a character range (ex. [a-z] or [0-9])
 
       You can use double-star wildcards to match zero or more directory levels
-      in a path:
+      in a path. The following command matches all ".txt" objects in a bucket.
 
-          $ {command} gs://my-bucket/**/log*.txt
-
-      You can also use double-star to match all files after a root in a path:
-
-          $ {command} gs://my-bucket/**
+        $ {command} gs://my-bucket/**/*.txt
 
       Double-star expansion can not be combined with other expressions in a
-      given path segment and will operate as a single star in that context. For
+      given path segment and operates as a single star in that context. For
       example:
 
-          gs://my-bucket/dir**/log.txt      is treated as:
+        gs://my-bucket/dir**/log.txt      is treated as:
 
-          gs://my-bucket/dir*/log.txt       and instead should be written as:
+        gs://my-bucket/dir*/log.txt       and instead should be written as:
 
-          gs://my-bucket/dir*/**/log.txt    to get the recursive behavior.
+        gs://my-bucket/dir*/**/log.txt    to get the recursive behavior.
 
-      List all items recursively with formatting by using -r:
+      The following command lists all items recursively with formatting by
+      using `--recursive`:
 
-      $ {command} ls -r gs://bucket
+        $ {command} --recursive gs://bucket
 
-      Recursive listings are similar to ** except with line breaks and header
-      formatting for each container.
+      Recursive listings are similar to ``**'' except recursive listings include
+      line breaks and header formatting for each subdirectory.
       """
   }
   # pylint:enable=g-backslash-continuation
@@ -96,47 +99,49 @@ class Ls(base.Command):
         'path',
         nargs='*',
         help='The path of objects and directories to list. The path must begin'
-             ' with gs:// and may or may not contain wildcard characters.')
+             ' with gs:// and is allowed to contain wildcard characters.')
     parser.add_argument(
         '-a', '--all-versions',
         action='store_true',
-        help='Includes non-current object versions / generations in the listing'
-             ' (only useful with a versioning-enabled bucket). If combined with'
-             ' --long option also prints metageneration for each listed object.'
+        help='Include non-current object versions in the listing. This flag is'
+        ' typically only useful for buckets with'
+        ' [object versioning](https://cloud.google.com/storage/docs/object-versioning)'
+        ' enabled. If combined with the `--long` option, the metageneration'
+        ' for each listed object is also included.'
     )
     parser.add_argument(
         '-b',
         '--buckets',
         action='store_true',
-        help='When given a bucket URL, only returns buckets. Useful for'
+        help='When given a bucket URL, only return buckets. Useful for'
         ' avoiding the rule that prints the top-level objects of buckets'
-        ' matching a query. Typically used in combination with -L to get'
+        ' matching a query. Typically used in combination with `--full` to get'
         ' the full metadata of buckets.')
     parser.add_argument(
         '-e',
         '--etag',
         action='store_true',
-        help='Include ETag in long listing (-l) output.')
+        help='Include ETag metadata in listings that use the `--long` flag.')
     parser.add_argument(
         '--readable-sizes',
         action='store_true',
-        help='When used with -l, prints object sizes in human readable format'
-        ' (e.g., 1 KiB, 234 MiB, 2 GiB, etc.)')
+        help='When used with `--long`, print object sizes in human'
+        ' readable format, such as 1 KiB, 234 MiB, or 2 GiB.')
     parser.add_argument(
         '-L',
         '--full',
         action='store_true',
-        help='Lists all available metadata about items in rows.')
+        help='List all available metadata about items in rows.')
     parser.add_argument(
         '-j',
         '--json',
         action='store_true',
-        help='Lists all available metadata about items as a JSON dump.')
+        help='List all available metadata about items as a JSON dump.')
     parser.add_argument(
         '-l',
         '--long',
         action='store_true',
-        help='For objects only. Lists size in bytes, creation time, and URL.'
+        help='For objects only. List size in bytes, creation time, and URL.'
         ' Note: Creation time not available for S3.')
     parser.add_argument(
         '-R', '-r', '--recursive',

@@ -1,0 +1,35 @@
+release_tracks: [ALPHA]
+command_type: CONFIG_EXPORT
+help_text:
+  brief: Export the configuration for an IP address.
+  description: |
+    *{command}* exports the configuration for a Compute Engine IP address.
+
+    Compute Engine IP address configurations can be exported in Kubernetes Resource Model (krm) or
+    Terraform HCL formats. The default format is `krm`.
+
+    Specifying `--all` allows you to export the configurations for all IP addresses within the
+    project.
+
+    Specifying `--path` allows you to export the configuration(s) to a local directory.
+  examples: |
+    To export the configuration for an IP address, run:
+
+      $ {command} my-address
+
+    To export the configuration for an IP address to a file, run:
+
+      $ {command} my-address --path=/path/to/dir/
+
+    To export the configuration for an IP address in Terraform HCL format, run:
+
+      $ {command} my-address --resource-format=terraform
+
+    To export the configurations for all IP addresses within a project, run:
+
+      $ {command} --all
+
+arguments:
+  resource:
+    help_text: IP address to export the configuration for.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:address

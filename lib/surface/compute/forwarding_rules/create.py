@@ -489,7 +489,7 @@ class Create(base.CreateCommand):
   _support_l7_rxlb = False
   _support_psc_google_apis = True
   _support_all_protocol = False
-  _support_target_service_attachment = False
+  _support_target_service_attachment = True
   _support_sd_registration_for_regional = False
   _support_l3_default = False
   _support_source_ip_range = False

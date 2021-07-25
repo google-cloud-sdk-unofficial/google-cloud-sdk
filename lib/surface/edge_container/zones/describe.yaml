@@ -1,0 +1,32 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: |
+      Describe an Edge Container zone.
+    description: |
+      Describe an Edge Container zone.
+    examples: |
+      To display the metadata for the zone `us-central1-edge-operator-a`, run:
+
+        $ {command} us-central1-edge-operator-a
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.edge_container.resources:zone
+      is_positional: true
+      help_text: |
+        The zone name.
+      override_resource_collection: true
+
+  request:
+    collection: edgecontainer.projects.locations
+    api_version: v1alpha
+    # NOTE: Zones are not proper API resources; getting zones is implemented by
+    # querying the Locations API and parsing the metadata of the resulting
+    # regions.
+    method: list
+    disable_resource_check: true
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.edge_container.locations:ExtractZoneFromLocations

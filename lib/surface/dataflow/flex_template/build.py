@@ -145,13 +145,16 @@ def _CommonArgs(parser):
 
   image_building_args.add_argument(
       '--image-gcr-path',
-      help=('The Google Container Registry location to store the flex '
-            'template image to be built.'),
+      help=('The Google Container Registry or Google Artifact Registry '
+            'location to store the flex template image to be built.'),
       type=arg_parsers.RegexpValidator(
-          r'^(.*\.){0,1}gcr.io/.*',
-          ('Must begin with \'[multi-region.]gcr.io/\'. Please check '
+          r'^(.*\.){0,1}gcr.io/.*|^(.){2,}-docker.pkg.dev/.*',
+          ('Must begin with \'[multi-region.]gcr.io/\' or '
+           '\'[region.]-docker.pkg.dev/\'. Please check '
            'https://cloud.google.com/container-registry/docs/overview '
-           'for available multi-regions')),
+           'for available multi-regions in GCR or '
+           'https://cloud.google.com/artifact-registry/docs/repo-organize#'
+           'locations for available location in GAR')),
       required=True)
   pipeline_args = image_building_args.add_mutually_exclusive_group(
       required=True)

@@ -1,0 +1,26 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: List Cloud Media Asset asset transformation.
+    description: List Media Asset asset transformation.
+    examples: |
+      To list all asset transformation:
+
+        $ {command} --asset-type my-at --asset my-asset
+
+  request:
+    collection: mediaasset.projects.locations.assetTypes.assets.transformations
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.media.asset.transformations.hooks:AddDefaultParentInfoToAssetTransformationRequests
+    ALPHA:
+      api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: The Cloud Media Asset asset to list.
+      spec: !REF googlecloudsdk.command_lib.media.asset.resources:asset
+
+    params:
+    - arg_name: page-token
+      api_field: pageToken
+      help_text: |
+        The next page token value returned from a previous List request, if any.

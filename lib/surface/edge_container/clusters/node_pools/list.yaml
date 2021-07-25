@@ -1,0 +1,32 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List Edge Container nodePools.
+    description: |
+      List Edge Container nodePools.
+    examples: |
+      To list the nodePools, run:
+
+        $ {command}
+
+  request:
+    collection: edgecontainer.projects.locations.clusters.nodePools
+    api_version: v1alpha
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Parent Edge Container location to list all contained Edge Container nodePools.
+      spec: !REF googlecloudsdk.command_lib.edge_container.resources:cluster
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        nodeCount:label=NODECOUNT,
+        site:label=SITE,
+        labels:label=LABELS,
+        createTime.date():label=CREATED
+      )

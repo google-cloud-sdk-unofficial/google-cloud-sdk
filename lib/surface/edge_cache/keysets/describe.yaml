@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA, GA]
+  hidden: true
+  help_text:
+    brief: Show details about an EdgeCacheKeyset.
+    description: Show details about an EdgeCacheKeyset.
+    examples: |
+      To show details a keyset, run:
+
+        $ {command} my-keyset
+
+  request:
+    collection: networkservices.projects.locations.edgeCacheKeysets
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: The EdgeCacheKeyset you want to describe.
+      spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheKeyset

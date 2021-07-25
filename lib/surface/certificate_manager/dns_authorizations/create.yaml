@@ -1,0 +1,54 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Create a DNS Authorization
+    description: |
+      Create a new DNS Authorization.
+    examples: |
+      To create a DNS authorization called `my-authorization`, run:
+
+        $ {command} my-authorization --domain=host.example.com
+
+  request:
+    collection: certificatemanager.projects.locations.dnsAuthorizations
+    api_version: v1alpha2
+
+  async:
+    collection: certificatemanager.projects.locations.operations
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        domain:label=DOMAIN,
+        dnsResourceRecord.name:label=DNS_RECORD,
+        dnsResourceRecord.type:label=RECORD_TYPE,
+        dnsResourceRecord.data:label=DNS_VALUE
+      )
+
+  arguments:
+    resource:
+      help_text: The name of the DNS Authorization to create.
+      spec: !REF googlecloudsdk.command_lib.certificate_manager.resources:dnsAuthorization
+
+    params:
+    - arg_name: description
+      api_field: dnsAuthorization.description
+      help_text: |
+        Human-readable description of the resource.
+    - arg_name: domain
+      api_field: dnsAuthorization.domain
+      required: true
+      help_text: |
+        Public domain name to create an authorization for.
+    - arg_name: labels
+      api_field: dnsAuthorization.labels.additionalProperties
+      metavar: KEY=VALUE
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
+      help_text: |
+        List of label KEY=VALUE pairs to add.

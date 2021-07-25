@@ -1,0 +1,31 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Delete a DNS Authorization.
+    description: |
+      Delete a DNS Authorization.
+    examples: |
+      To delete a DNS Authorization called `my-authorization`, run:
+
+        $ {command} my-authorization
+
+  request:
+    collection: certificatemanager.projects.locations.dnsAuthorizations
+    api_version: v1alpha2
+
+  async:
+    collection: certificatemanager.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The name of the DNS Authorization to delete.
+      spec: !REF googlecloudsdk.command_lib.certificate_manager.resources:dnsAuthorization
+
+    labels:
+      api_field: dnsAuthorization.labels
+
+    params:
+    - arg_name: description
+      api_field: dnsAuthorization.description
+      help_text: |
+        Human-readable description of the resource.

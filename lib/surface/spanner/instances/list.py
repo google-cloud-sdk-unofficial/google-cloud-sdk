@@ -24,7 +24,7 @@ from googlecloudsdk.api_lib.spanner import instances
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List the Cloud Spanner instances in this project."""
 
@@ -62,8 +62,8 @@ class List(base.ListCommand):
     return instances.List()
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaList(List):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class BetaList(List):
   """List the Cloud Spanner instances in this project."""
 
   @staticmethod

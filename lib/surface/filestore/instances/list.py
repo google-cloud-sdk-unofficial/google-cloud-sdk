@@ -76,7 +76,8 @@ class ListBeta(List):
             'The location in which to list instances.')
     ]).AddToParser(parser)
     instances_flags.AddLocationArg(parser)
-    parser.display_info.AddFormat(instances_flags.INSTANCES_LIST_FORMAT)
+    instances_flags.AddRegionArg(parser)
+    parser.display_info.AddFormat(instances_flags.INSTANCES_LIST_FORMAT_ALPHA_BETA)
 
     def UriFunc(resource):
       registry = filestore_client.GetFilestoreRegistry(
@@ -100,7 +101,7 @@ class ListAlpha(List):
         'The location in which to list instances.')]).AddToParser(parser)
     instances_flags.AddLocationArg(parser)
     instances_flags.AddRegionArg(parser)
-    parser.display_info.AddFormat(instances_flags.INSTANCES_LIST_FORMAT_ALPHA)
+    parser.display_info.AddFormat(instances_flags.INSTANCES_LIST_FORMAT_ALPHA_BETA)
 
     def UriFunc(resource):
       registry = resources.REGISTRY.Clone()

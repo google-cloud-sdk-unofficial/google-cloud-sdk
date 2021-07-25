@@ -1,0 +1,16 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Export grpc route.
+  description: |
+    Export a grpc route.
+
+request:
+  collection: networkservices.projects.locations.grpcRoutes
+  api_version: v1alpha1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:grpcRoute
+    help_text: |
+      Name of the grpc route to export.

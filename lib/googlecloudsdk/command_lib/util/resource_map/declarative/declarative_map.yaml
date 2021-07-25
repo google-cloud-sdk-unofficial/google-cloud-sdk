@@ -1,0 +1,1630 @@
+accessapproval:
+  Folders: {}
+  FoldersApprovalrequests: {}
+  Organizations: {}
+  OrganizationsApprovalrequests: {}
+  Projects: {}
+  ProjectsApprovalrequests: {}
+accesscontextmanager:
+  Accesspolicies:
+    asset_inventory_type: accesscontextmanager.googleapis.com/Accesspolicy
+    krm_group: accesscontextmanager
+    krm_kind: AccessContextManagerAccessPolicy
+    support_bulk_export: true
+    support_single_export: false
+  AccesspoliciesAccesslevels:
+    asset_inventory_type: accesscontextmanager.googleapis.com/Accesslevel
+    krm_group: accesscontextmanager
+    krm_kind: AccessContextManagerAccessLevel
+    support_bulk_export: true
+    support_single_export: false
+  AccesspoliciesServiceperimeters:
+    asset_inventory_type: accesscontextmanager.googleapis.com/Serviceperimeter
+    krm_group: accesscontextmanager
+    krm_kind: AccessContextManagerServicePerimeter
+    support_bulk_export: true
+    support_single_export: false
+  Operations: {}
+  Organizations: {}
+  OrganizationsGcpuseraccessbindings: {}
+admin:
+  Asps: {}
+  Chromeosdevices: {}
+  Customer: {}
+  Customers: {}
+  Domainaliases: {}
+  Domains: {}
+  Groups: {}
+  Members: {}
+  Mobiledevices: {}
+  Notifications: {}
+  Orgunits: {}
+  Resources: {}
+  ResourcesBuildings: {}
+  ResourcesCalendars: {}
+  ResourcesFeatures: {}
+  Roleassignments: {}
+  Roles: {}
+  Schemas: {}
+  Tokens: {}
+  Users: {}
+  UsersPhotos: {}
+aiplatform:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsBatchpredictionjobs: {}
+  ProjectsLocationsCustomjobs: {}
+  ProjectsLocationsCustomjobsOperations: {}
+  ProjectsLocationsDatalabelingjobs: {}
+  ProjectsLocationsDatalabelingjobsOperations: {}
+  ProjectsLocationsDatasets: {}
+  ProjectsLocationsDatasetsAnnotationspecs: {}
+  ProjectsLocationsDatasetsAnnotationspecsOperations: {}
+  ProjectsLocationsDatasetsDataitems: {}
+  ProjectsLocationsDatasetsDataitemsAnnotations: {}
+  ProjectsLocationsDatasetsDataitemsAnnotationsOperations: {}
+  ProjectsLocationsDatasetsDataitemsOperations: {}
+  ProjectsLocationsDatasetsOperations: {}
+  ProjectsLocationsDatasetsSavedqueries: {}
+  ProjectsLocationsDatasetsSavedqueriesOperations: {}
+  ProjectsLocationsEndpoints: {}
+  ProjectsLocationsEndpointsOperations: {}
+  ProjectsLocationsFeaturestores: {}
+  ProjectsLocationsFeaturestoresEntitytypes: {}
+  ProjectsLocationsFeaturestoresEntitytypesFeatures: {}
+  ProjectsLocationsFeaturestoresEntitytypesFeaturesOperations: {}
+  ProjectsLocationsFeaturestoresEntitytypesOperations: {}
+  ProjectsLocationsFeaturestoresOperations: {}
+  ProjectsLocationsHyperparametertuningjobs: {}
+  ProjectsLocationsHyperparametertuningjobsOperations: {}
+  ProjectsLocationsIndexendpoints: {}
+  ProjectsLocationsIndexendpointsOperations: {}
+  ProjectsLocationsIndexes: {}
+  ProjectsLocationsIndexesOperations: {}
+  ProjectsLocationsMigratableresources: {}
+  ProjectsLocationsMigratableresourcesOperations: {}
+  ProjectsLocationsModeldeploymentmonitoringjobs: {}
+  ProjectsLocationsModeldeploymentmonitoringjobsOperations: {}
+  ProjectsLocationsModels: {}
+  ProjectsLocationsModelsEvaluations: {}
+  ProjectsLocationsModelsEvaluationsOperations: {}
+  ProjectsLocationsModelsEvaluationsSlices: {}
+  ProjectsLocationsModelsOperations: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsPipelinejobs: {}
+  ProjectsLocationsPipelinejobsOperations: {}
+  ProjectsLocationsSpecialistpools: {}
+  ProjectsLocationsSpecialistpoolsOperations: {}
+  ProjectsLocationsStudies: {}
+  ProjectsLocationsStudiesTrials: {}
+  ProjectsLocationsStudiesTrialsOperations: {}
+  ProjectsLocationsTensorboards: {}
+  ProjectsLocationsTensorboardsExperiments: {}
+  ProjectsLocationsTensorboardsExperimentsOperations: {}
+  ProjectsLocationsTensorboardsExperimentsRuns: {}
+  ProjectsLocationsTensorboardsExperimentsRunsOperations: {}
+  ProjectsLocationsTensorboardsExperimentsRunsTimeseries: {}
+  ProjectsLocationsTensorboardsExperimentsRunsTimeseriesOperations: {}
+  ProjectsLocationsTensorboardsOperations: {}
+  ProjectsLocationsTrainingpipelines: {}
+  ProjectsLocationsTrainingpipelinesOperations: {}
+anthosevents:
+  ApiV1Namespaces: {}
+  ApiV1NamespacesConfigmaps: {}
+  ApiV1NamespacesSecrets: {}
+  ApiV1NamespacesServiceaccounts: {}
+  Customresourcedefinitions: {}
+  Kuberuns: {}
+  Namespaces: {}
+  NamespacesApiserversources: {}
+  NamespacesBrokers: {}
+  NamespacesCloudauditlogssources: {}
+  NamespacesCloudpubsubsources: {}
+  NamespacesCloudruns: {}
+  NamespacesCloudschedulersources: {}
+  NamespacesCloudstoragesources: {}
+  NamespacesCustomresourcedefinitions: {}
+  NamespacesPingsources: {}
+  NamespacesTriggers: {}
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsConfigmaps: {}
+  ProjectsLocationsNamespaces: {}
+  ProjectsLocationsSecrets: {}
+  ProjectsLocationsServiceaccounts: {}
+apigateway:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsApis: {}
+  ProjectsLocationsApisConfigs: {}
+  ProjectsLocationsGateways: {}
+  ProjectsLocationsOperations: {}
+apigee:
+  Organizations: {}
+  OrganizationsAnalyticsDatastores: {}
+  OrganizationsApiproducts: {}
+  OrganizationsApiproductsAttributes: {}
+  OrganizationsApiproductsRateplans: {}
+  OrganizationsApis: {}
+  OrganizationsApisRevisions: {}
+  OrganizationsApps: {}
+  OrganizationsDatacollectors: {}
+  OrganizationsDevelopers: {}
+  OrganizationsDevelopersApps: {}
+  OrganizationsDevelopersAppsAttributes: {}
+  OrganizationsDevelopersAppsKeys: {}
+  OrganizationsDevelopersAttributes: {}
+  OrganizationsDevelopersSubscriptions: {}
+  OrganizationsEnvgroups: {}
+  OrganizationsEnvgroupsAttachments: {}
+  OrganizationsEnvironments: {}
+  OrganizationsEnvironmentsAnalyticsExports: {}
+  OrganizationsEnvironmentsApis: {}
+  OrganizationsEnvironmentsApisRevisions: {}
+  OrganizationsEnvironmentsApisRevisionsDebugsessions: {}
+  OrganizationsEnvironmentsApisRevisionsDebugsessionsData: {}
+  OrganizationsEnvironmentsArchivedeployments: {}
+  OrganizationsEnvironmentsFlowhooks: {}
+  OrganizationsEnvironmentsKeystores: {}
+  OrganizationsEnvironmentsKeystoresAliases: {}
+  OrganizationsEnvironmentsOptimizedstats: {}
+  OrganizationsEnvironmentsQueries: {}
+  OrganizationsEnvironmentsReferences: {}
+  OrganizationsEnvironmentsResourcefiles: {}
+  OrganizationsEnvironmentsStats: {}
+  OrganizationsEnvironmentsTargetservers: {}
+  OrganizationsEnvironmentsTraceconfigOverrides: {}
+  OrganizationsHostqueries: {}
+  OrganizationsHoststats: {}
+  OrganizationsInstances: {}
+  OrganizationsInstancesAttachments: {}
+  OrganizationsInstancesCanaryevaluations: {}
+  OrganizationsInstancesNataddresses: {}
+  OrganizationsOperations: {}
+  OrganizationsOptimizedhoststats: {}
+  OrganizationsReports: {}
+  OrganizationsSharedflows: {}
+  OrganizationsSharedflowsRevisions: {}
+  OrganizationsSites: {}
+  OrganizationsSitesApicategories: {}
+apikeys:
+  Operations: {}
+  Projects: {}
+  ProjectsKeys: {}
+appengine:
+  Apps: {}
+  AppsAuthorizedcertificates: {}
+  AppsDomainmappings: {}
+  AppsFirewallIngressrules: {}
+  AppsLocations: {}
+  AppsOperations: {}
+  AppsServices: {}
+  AppsServicesVersions: {}
+  AppsServicesVersionsInstances: {}
+  Projects: {}
+artifactregistry:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsRepositories:
+    asset_inventory_type: artifactregistry.googleapis.com/Repository
+    krm_group: artifactregistry
+    krm_kind: ArtifactRegistryRepository
+    support_bulk_export: true
+    support_single_export: true
+  ProjectsLocationsRepositoriesFiles: {}
+  ProjectsLocationsRepositoriesPackages: {}
+  ProjectsLocationsRepositoriesPackagesTags: {}
+  ProjectsLocationsRepositoriesPackagesVersions: {}
+assuredworkloads:
+  Organizations: {}
+  OrganizationsLocations: {}
+  OrganizationsLocationsOperations: {}
+  OrganizationsLocationsWorkloads: {}
+bigquery:
+  Datasets:
+    asset_inventory_type: bigquery.googleapis.com/Dataset
+    krm_group: bigquery
+    krm_kind: BigQueryDataset
+    support_bulk_export: true
+    support_single_export: true
+  Jobs:
+    asset_inventory_type: bigquery.googleapis.com/Job
+    krm_group: bigquery
+    krm_kind: BigQueryJob
+    support_bulk_export: true
+    support_single_export: true
+  Projects: {}
+  Tabledata: {}
+  Tables:
+    asset_inventory_type: bigquery.googleapis.com/Table
+    krm_group: bigquery
+    krm_kind: BigQueryTable
+    support_bulk_export: true
+    support_single_export: true
+bigquerydatatransfer:
+  Projects: {}
+  ProjectsDatasources: {}
+  ProjectsLocations: {}
+  ProjectsLocationsDatasources: {}
+  ProjectsLocationsTransferconfigs: {}
+  ProjectsLocationsTransferconfigsRuns: {}
+  ProjectsTransferconfigs: {}
+  ProjectsTransferconfigsRuns: {}
+bigtableadmin:
+  Operations: {}
+  Projects: {}
+  ProjectsInstances:
+    asset_inventory_type: bigtableadmin.googleapis.com/Instance
+    krm_group: bigtable
+    krm_kind: BigtableInstance
+    support_bulk_export: true
+    support_single_export: true
+  ProjectsInstancesAppprofiles:
+    asset_inventory_type: bigtableadmin.googleapis.com/Appprofile
+    krm_group: bigtable
+    krm_kind: BigtableAppProfile
+    support_bulk_export: true
+    support_single_export: true
+  ProjectsInstancesClusters: {}
+  ProjectsInstancesClustersBackups: {}
+  ProjectsInstancesTables:
+    asset_inventory_type: bigtableadmin.googleapis.com/Table
+    krm_group: bigtable
+    krm_kind: BigtableTable
+    support_bulk_export: true
+    support_single_export: true
+  ProjectsLocations: {}
+billingbudgets:
+  Billingaccounts: {}
+  BillingaccountsBudgets: {}
+binaryauthorization:
+  Projects: {}
+  ProjectsAttestors: {}
+  ProjectsPolicy: {}
+  Systempolicy: {}
+certificatemanager:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsCertificatemaps: {}
+  ProjectsLocationsCertificatemapsCertificatemapentries: {}
+  ProjectsLocationsCertificates: {}
+  ProjectsLocationsDnsauthorizations: {}
+  ProjectsLocationsOperations: {}
+cloudasset:
+  Feeds: {}
+  Iampolicies: {}
+  Operations: {}
+  Resources: {}
+cloudbilling:
+  Billingaccounts: {}
+  Projects: {}
+cloudbuild:
+  Operations: {}
+  Projects: {}
+  ProjectsBuilds: {}
+  ProjectsGithubenterpriseconfigs: {}
+  ProjectsLocations: {}
+  ProjectsLocationsBitbucketserverconfigs: {}
+  ProjectsLocationsBuilds: {}
+  ProjectsLocationsGithubenterpriseconfigs: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsWorkerpools: {}
+  ProjectsTriggers:
+    asset_inventory_type: cloudbuild.googleapis.com/Trigger
+    krm_group: cloudbuild
+    krm_kind: CloudBuildTrigger
+    support_bulk_export: true
+    support_single_export: false
+  ProjectsWorkerpools: {}
+cloudcommerceconsumerprocurement:
+  Billingaccounts: {}
+  BillingaccountsAccounts: {}
+  BillingaccountsAccountsOperations: {}
+  BillingaccountsOrders: {}
+  BillingaccountsOrdersOperations: {}
+  BillingaccountsOrdersOrderallocations: {}
+  BillingaccountsOrdersOrderallocationsOperations: {}
+  Projects: {}
+  ProjectsEntitlements: {}
+  ProjectsFreetrials: {}
+  ProjectsFreetrialsOperations: {}
+clouddebugger:
+  DebuggerDebuggees: {}
+  DebuggerDebuggeesBreakpoints: {}
+clouddeploy:
+  Projects: {}
+  ProjectsDeliverypipelines: {}
+  ProjectsDeliverypipelinesReleases: {}
+  ProjectsDeliverypipelinesReleasesDeliverypipelines: {}
+  ProjectsDeliverypipelinesReleasesTargets: {}
+  ProjectsLocations: {}
+  ProjectsLocationsDeliverypipelines: {}
+  ProjectsLocationsDeliverypipelinesReleases: {}
+  ProjectsLocationsDeliverypipelinesReleasesRollouts: {}
+  ProjectsLocationsDeliverypipelinesTargets: {}
+  ProjectsLocationsOperations: {}
+clouderrorreporting:
+  Projects: {}
+  ProjectsGroups: {}
+cloudfunctions:
+  Operations: {}
+  Projects: {}
+  ProjectsBuckets: {}
+  ProjectsLocations: {}
+  ProjectsLocationsFunctions: {}
+  ProjectsLocationsOperations: {}
+  ProvidersEvent_types: {}
+cloudidentity:
+  Customers: {}
+  CustomersUserinvitations: {}
+  Devices: {}
+  DevicesDeviceusers: {}
+  DevicesDeviceusersClientstates: {}
+  Groups: {}
+  GroupsMemberships: {}
+cloudiot:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsRegistries: {}
+  ProjectsLocationsRegistriesDevices: {}
+  ProjectsLocationsRegistriesDevicesConfigversions: {}
+  ProjectsLocationsRegistriesDevicesStates: {}
+cloudkms:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsKeyrings:
+    asset_inventory_type: cloudkms.googleapis.com/Keyring
+    krm_group: kms
+    krm_kind: KMSKeyRing
+    support_bulk_export: true
+    support_single_export: true
+  ProjectsLocationsKeyringsCryptokeys:
+    asset_inventory_type: cloudkms.googleapis.com/Cryptokey
+    krm_group: kms
+    krm_kind: KMSCryptoKey
+    support_bulk_export: true
+    support_single_export: false
+  ProjectsLocationsKeyringsCryptokeysCryptokeyversions: {}
+  ProjectsLocationsKeyringsImportjobs: {}
+cloudresourcemanager:
+  Folders: {}
+  Liens:
+    asset_inventory_type: cloudresourcemanager.googleapis.com/Lien
+    krm_group: resourcemanager
+    krm_kind: ResourceManagerLien
+    support_bulk_export: true
+    support_single_export: false
+  Operations: {}
+  Organizations: {}
+  Projects: {}
+  Tagkeys: {}
+  Tagvalues: {}
+cloudscheduler:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsJobs: {}
+cloudshell:
+  Operations: {}
+  Users: {}
+  UsersEnvironments: {}
+cloudtasks:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsQueues: {}
+  ProjectsLocationsQueuesTasks: {}
+cloudtrace:
+  Projects: {}
+  ProjectsTracesinks: {}
+composer:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsEnvironments: {}
+  ProjectsLocationsOperations: {}
+composerflex:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsContexts: {}
+  ProjectsLocationsWorkflows: {}
+  ProjectsLocationsWorkflowsRuns: {}
+compute:
+  Acceleratortypes: {}
+  Addresses:
+    asset_inventory_type: compute.googleapis.com/Address
+    krm_group: compute
+    krm_kind: ComputeAddress
+    support_bulk_export: true
+    support_single_export: true
+  Autoscalers: {}
+  Backendbuckets:
+    asset_inventory_type: compute.googleapis.com/Backendbucket
+    krm_group: compute
+    krm_kind: ComputeBackendBucket
+    support_bulk_export: true
+    support_single_export: true
+  Backendservices:
+    asset_inventory_type: compute.googleapis.com/BackendService
+    krm_group: compute
+    krm_kind: ComputeBackendService
+    support_bulk_export: true
+    support_single_export: true
+  Disks:
+    asset_inventory_type: compute.googleapis.com/Disk
+    krm_group: compute
+    krm_kind: ComputeDisk
+    support_bulk_export: true
+    support_single_export: true
+  Disktypes: {}
+  Externalvpngateways:
+    asset_inventory_type: compute.googleapis.com/Externalvpngateway
+    krm_group: compute
+    krm_kind: ComputeExternalVPNGateway
+    support_bulk_export: true
+    support_single_export: true
+  Firewallpolicies: {}
+  Firewalls:
+    asset_inventory_type: compute.googleapis.com/Firewall
+    krm_group: compute
+    krm_kind: ComputeFirewall
+    support_bulk_export: true
+    support_single_export: true
+  Forwardingrules:
+    asset_inventory_type: compute.googleapis.com/ForwardingRule
+    krm_group: compute
+    krm_kind: ComputeForwardingRule
+    support_bulk_export: true
+    support_single_export: true
+  Globaladdresses: {}
+  Globalforwardingrules: {}
+  Globalnetworkendpointgroups: {}
+  Globaloperations: {}
+  Globalorganizationoperations: {}
+  Globalpublicdelegatedprefixes: {}
+  Healthchecks:
+    asset_inventory_type: compute.googleapis.com/HealthCheck
+    krm_group: compute
+    krm_kind: ComputeHealthCheck
+    support_bulk_export: true
+    support_single_export: true
+  Httphealthchecks:
+    asset_inventory_type: compute.googleapis.com/HttpHealthCheck
+    krm_group: compute
+    krm_kind: ComputeHTTPHealthCheck
+    support_bulk_export: true
+    support_single_export: true
+  Httpshealthchecks:
+    asset_inventory_type: compute.googleapis.com/HttpsHealthCheck
+    krm_group: compute
+    krm_kind: ComputeHTTPSHealthCheck
+    support_bulk_export: true
+    support_single_export: true
+  Imagefamilyviews: {}
+  Images:
+    asset_inventory_type: compute.googleapis.com/Image
+    krm_group: compute
+    krm_kind: ComputeImage
+    support_bulk_export: true
+    support_single_export: true
+  Instancegroupmanagers: {}
+  Instancegroups:
+    asset_inventory_type: compute.googleapis.com/InstanceGroup
+    krm_group: compute
+    krm_kind: ComputeInstanceGroup
+    support_bulk_export: true
+    support_single_export: true
+  Instances:
+    asset_inventory_type: compute.googleapis.com/Instance
+    krm_group: compute
+    krm_kind: ComputeInstance
+    support_bulk_export: true
+    support_single_export: true
+  Instancetemplates:
+    asset_inventory_type: compute.googleapis.com/InstanceTemplate
+    krm_group: compute
+    krm_kind: ComputeInstanceTemplate
+    support_bulk_export: true
+    support_single_export: true
+  Interconnectattachments:
+    asset_inventory_type: compute.googleapis.com/Interconnectattachment
+    krm_group: compute
+    krm_kind: ComputeInterconnectAttachment
+    support_bulk_export: true
+    support_single_export: true
+  Interconnectlocations: {}
+  Interconnects: {}
+  Licensecodes: {}
+  Licenses: {}
+  Machineimages: {}
+  Machinetypes: {}
+  Networkendpointgroups:
+    asset_inventory_type: compute.googleapis.com/Networkendpointgroup
+    krm_group: compute
+    krm_kind: ComputeNetworkEndpointGroup
+    support_bulk_export: true
+    support_single_export: true
+  Networkfirewallpolicies: {}
+  Networks:
+    asset_inventory_type: compute.googleapis.com/Network
+    krm_group: compute
+    krm_kind: ComputeNetwork
+    support_bulk_export: true
+    support_single_export: true
+  Nexthopgateways: {}
+  Nodegroups:
+    asset_inventory_type: compute.googleapis.com/Nodegroup
+    krm_group: compute
+    krm_kind: ComputeNodeGroup
+    support_bulk_export: true
+    support_single_export: true
+  Nodetemplates:
+    asset_inventory_type: compute.googleapis.com/Nodetemplate
+    krm_group: compute
+    krm_kind: ComputeNodeTemplate
+    support_bulk_export: true
+    support_single_export: true
+  Nodetypes: {}
+  Organizationsecuritypolicies:
+    asset_inventory_type: compute.googleapis.com/Securitypolicy
+    krm_group: compute
+    krm_kind: ComputeSecurityPolicy
+    support_bulk_export: true
+    support_single_export: true
+  Packetmirrorings: {}
+  Projects: {}
+  Publicadvertisedprefixes: {}
+  Publicdelegatedprefixes: {}
+  Regionacceleratortypes: {}
+  Regionautoscalers: {}
+  Regionbackendservices: {}
+  Regioncommitments: {}
+  Regiondisks: {}
+  Regiondisktypes: {}
+  Regionhealthchecks: {}
+  Regionhealthcheckservices: {}
+  Regioninplacesnapshots: {}
+  Regioninstancegroupmanagers: {}
+  Regioninstancegroups: {}
+  Regioninstantsnapshots: {}
+  Regionmachinetypes: {}
+  Regionnetworkendpointgroups: {}
+  Regionnetworkfirewallpolicies: {}
+  Regionnotificationendpoints: {}
+  Regionoperations: {}
+  Regions: {}
+  Regionsslcertificates: {}
+  Regiontargethttpproxies: {}
+  Regiontargethttpsproxies: {}
+  Regionurlmaps: {}
+  Reservations:
+    asset_inventory_type: compute.googleapis.com/Reservation
+    krm_group: compute
+    krm_kind: ComputeReservation
+    support_bulk_export: true
+    support_single_export: true
+  Resourcepolicies:
+    asset_inventory_type: compute.googleapis.com/Resourcepolicy
+    krm_group: compute
+    krm_kind: ComputeResourcePolicy
+    support_bulk_export: true
+    support_single_export: true
+  Routers:
+    asset_inventory_type: compute.googleapis.com/Router
+    krm_group: compute
+    krm_kind: ComputeRouter
+    support_bulk_export: true
+    support_single_export: true
+  Routes:
+    asset_inventory_type: compute.googleapis.com/Route
+    krm_group: compute
+    krm_kind: ComputeRoute
+    support_bulk_export: true
+    support_single_export: true
+  Securitypolicies: {}
+  Securitypolicyrules: {}
+  Serviceattachments: {}
+  Snapshots:
+    asset_inventory_type: compute.googleapis.com/Snapshot
+    krm_group: compute
+    krm_kind: ComputeSnapshot
+    support_bulk_export: true
+    support_single_export: true
+  Sslcertificates:
+    asset_inventory_type: compute.googleapis.com/Sslcertificate
+    krm_group: compute
+    krm_kind: ComputeSSLCertificate
+    support_bulk_export: true
+    support_single_export: true
+  Sslpolicies:
+    asset_inventory_type: compute.googleapis.com/SslPolicy
+    krm_group: compute
+    krm_kind: ComputeSSLPolicy
+    support_bulk_export: true
+    support_single_export: true
+  Subnetworks:
+    asset_inventory_type: compute.googleapis.com/Subnetwork
+    krm_group: compute
+    krm_kind: ComputeSubnetwork
+    support_bulk_export: true
+    support_single_export: true
+  Targetgrpcproxies:
+    asset_inventory_type: compute.googleapis.com/TargetGrpcProxy
+    krm_group: compute
+    krm_kind: ComputeTargetGRPCProxy
+    support_bulk_export: true
+    support_single_export: true
+  Targethttpproxies:
+    asset_inventory_type: compute.googleapis.com/TargetHttpProxy
+    krm_group: compute
+    krm_kind: ComputeTargetHTTPProxy
+    support_bulk_export: true
+    support_single_export: true
+  Targethttpsproxies:
+    asset_inventory_type: compute.googleapis.com/TargetHttpsProxy
+    krm_group: compute
+    krm_kind: ComputeTargetHTTPSProxy
+    support_bulk_export: true
+    support_single_export: true
+  Targetinstances:
+    asset_inventory_type: compute.googleapis.com/Targetinstance
+    krm_group: compute
+    krm_kind: ComputeTargetInstance
+    support_bulk_export: true
+    support_single_export: true
+  Targetpools:
+    asset_inventory_type: compute.googleapis.com/TargetPool
+    krm_group: compute
+    krm_kind: ComputeTargetPool
+    support_bulk_export: true
+    support_single_export: true
+  Targetsslproxies:
+    asset_inventory_type: compute.googleapis.com/Targetsslproxy
+    krm_group: compute
+    krm_kind: ComputeTargetSSLProxy
+    support_bulk_export: true
+    support_single_export: true
+  Targettcpproxies:
+    asset_inventory_type: compute.googleapis.com/TargetTcpProxy
+    krm_group: compute
+    krm_kind: ComputeTargetTCPProxy
+    support_bulk_export: true
+    support_single_export: true
+  Targetvpngateways:
+    asset_inventory_type: compute.googleapis.com/Targetvpngateway
+    krm_group: compute
+    krm_kind: ComputeTargetVPNGateway
+    support_bulk_export: true
+    support_single_export: true
+  Urlmaps:
+    asset_inventory_type: compute.googleapis.com/UrlMap
+    krm_group: compute
+    krm_kind: ComputeURLMap
+    support_bulk_export: true
+    support_single_export: true
+  Vpngateways:
+    asset_inventory_type: compute.googleapis.com/Vpngateway
+    krm_group: compute
+    krm_kind: ComputeVPNGateway
+    support_bulk_export: true
+    support_single_export: true
+  Vpntunnels:
+    asset_inventory_type: compute.googleapis.com/Vpntunnel
+    krm_group: compute
+    krm_kind: ComputeVPNTunnel
+    support_bulk_export: true
+    support_single_export: true
+  Zoneinplacesnapshots: {}
+  Zoneinstantsnapshots: {}
+  Zoneoperations: {}
+  Zones: {}
+container:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsClusters:
+    asset_inventory_type: container.googleapis.com/Cluster
+    krm_group: container
+    krm_kind: ContainerCluster
+    support_bulk_export: true
+    support_single_export: true
+  ProjectsLocationsClustersNodepools:
+    asset_inventory_type: container.googleapis.com/Nodepool
+    krm_group: container
+    krm_kind: ContainerNodePool
+    support_bulk_export: true
+    support_single_export: false
+  ProjectsLocationsOperations: {}
+  ProjectsZones: {}
+  ProjectsZonesClusters: {}
+  ProjectsZonesClustersNodepools: {}
+  ProjectsZonesOperations: {}
+containeranalysis:
+  Operations: {}
+  Projects: {}
+  ProjectsNotes: {}
+  ProjectsOccurrences: {}
+  ProjectsScanconfigs: {}
+  Providers: {}
+  ProvidersNotes: {}
+datacatalog:
+  Catalog: {}
+  Entries: {}
+  Projects: {}
+  ProjectsCrawlers: {}
+  ProjectsCrawlersCrawlerruns: {}
+  ProjectsLocations: {}
+  ProjectsLocationsEntrygroups: {}
+  ProjectsLocationsEntrygroupsEntries: {}
+  ProjectsLocationsEntrygroupsEntriesTags: {}
+  ProjectsLocationsTagtemplates: {}
+  ProjectsLocationsTagtemplatesFields: {}
+  ProjectsLocationsTagtemplatesFieldsEnumvalues: {}
+  ProjectsLocationsTaxonomies: {}
+  ProjectsLocationsTaxonomiesPolicytags: {}
+  ProjectsTaxonomies: {}
+  ProjectsTaxonomiesCategories: {}
+dataflow:
+  Projects: {}
+  ProjectsCatalogtemplates: {}
+  ProjectsJobs:
+    asset_inventory_type: dataflow.googleapis.com/Job
+    krm_group: dataflow
+    krm_kind: DataflowJob
+    support_bulk_export: false
+    support_single_export: false
+  ProjectsLocations: {}
+  ProjectsLocationsJobs: {}
+  ProjectsLocationsSnapshots: {}
+  ProjectsLocationsTemplates: {}
+  ProjectsSnapshots: {}
+  ProjectsTemplates:
+    asset_inventory_type: dataflow.googleapis.com/Flextemplatejob
+    krm_group: dataflow
+    krm_kind: DataflowFlexTemplateJob
+    support_bulk_export: false
+    support_single_export: false
+datafusion:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsInstances: {}
+  ProjectsLocationsOperations: {}
+datamigration:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsConnectionprofiles: {}
+  ProjectsLocationsMigrationjobs: {}
+  ProjectsLocationsOperations: {}
+dataproc:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsAutoscalingpolicies: {}
+  ProjectsLocationsWorkflowtemplates: {}
+  ProjectsRegions: {}
+  ProjectsRegionsAutoscalingpolicies: {}
+  ProjectsRegionsClusters: {}
+  ProjectsRegionsJobs: {}
+  ProjectsRegionsOperations: {}
+  ProjectsRegionsOperations_list: {}
+  ProjectsRegionsWorkflowtemplates: {}
+datastore:
+  Projects: {}
+  ProjectsIndexes: {}
+  ProjectsOperations: {}
+deploymentmanager:
+  Compositetypes: {}
+  Deployments: {}
+  Manifests: {}
+  Operations: {}
+  Projects: {}
+  Resources: {}
+  Typeproviders: {}
+  Types: {}
+dialogflow:
+  Projects: {}
+  ProjectsAgent: {}
+  ProjectsAgentEntitytypes: {}
+  ProjectsAgentEnvironments: {}
+  ProjectsAgentEnvironmentsUsers: {}
+  ProjectsAgentEnvironmentsUsersSessions: {}
+  ProjectsAgentEnvironmentsUsersSessionsContexts: {}
+  ProjectsAgentEnvironmentsUsersSessionsEntitytypes: {}
+  ProjectsAgentIntents: {}
+  ProjectsAgentKnowledgebases: {}
+  ProjectsAgentKnowledgebasesDocuments: {}
+  ProjectsAgentSessions: {}
+  ProjectsAgentSessionsContexts: {}
+  ProjectsAgentSessionsEntitytypes: {}
+  ProjectsConversationprofiles: {}
+  ProjectsConversations: {}
+  ProjectsConversationsParticipants: {}
+  ProjectsKnowledgebases: {}
+  ProjectsKnowledgebasesDocuments: {}
+  ProjectsLocations: {}
+  ProjectsLocationsAgentEntitytypes: {}
+  ProjectsLocationsAgentEnvironments: {}
+  ProjectsLocationsAgentEnvironmentsUsers: {}
+  ProjectsLocationsAgentEnvironmentsUsersSessions: {}
+  ProjectsLocationsAgentEnvironmentsUsersSessionsContexts: {}
+  ProjectsLocationsAgentEnvironmentsUsersSessionsEntitytypes: {}
+  ProjectsLocationsAgentIntents: {}
+  ProjectsLocationsAgentSessions: {}
+  ProjectsLocationsAgentSessionsContexts: {}
+  ProjectsLocationsAgentSessionsEntitytypes: {}
+  ProjectsLocationsConversationprofiles: {}
+  ProjectsLocationsConversations: {}
+  ProjectsLocationsConversationsParticipants: {}
+  ProjectsLocationsKnowledgebases: {}
+  ProjectsLocationsKnowledgebasesDocuments: {}
+  ProjectsLocationsOperations: {}
+  ProjectsOperations: {}
+discovery:
+  ApisVersions: {}
+dlp:
+  Infotypes: {}
+  Organizations: {}
+  OrganizationsDeidentifytemplates: {}
+  OrganizationsInspecttemplates: {}
+  OrganizationsLocations: {}
+  OrganizationsLocationsDeidentifytemplates: {}
+  OrganizationsLocationsInspecttemplates: {}
+  OrganizationsLocationsJobtriggers: {}
+  OrganizationsLocationsStoredinfotypes: {}
+  OrganizationsStoredinfotypes: {}
+  Projects: {}
+  ProjectsContent: {}
+  ProjectsDeidentifytemplates: {}
+  ProjectsDlpjobs: {}
+  ProjectsImage: {}
+  ProjectsInspecttemplates: {}
+  ProjectsJobtriggers: {}
+  ProjectsLocations: {}
+  ProjectsLocationsDeidentifytemplates: {}
+  ProjectsLocationsDlpjobs: {}
+  ProjectsLocationsInspecttemplates: {}
+  ProjectsLocationsJobtriggers: {}
+  ProjectsLocationsStoredinfotypes: {}
+  ProjectsStoredinfotypes: {}
+dns:
+  Changes: {}
+  Dnskeys: {}
+  Managedzoneoperations: {}
+  Managedzones:
+    asset_inventory_type: dns.googleapis.com/Managedzone
+    krm_group: dns
+    krm_kind: DNSManagedZone
+    support_bulk_export: true
+    support_single_export: true
+  Policies:
+    asset_inventory_type: dns.googleapis.com/Policy
+    krm_group: dns
+    krm_kind: DNSPolicy
+    support_bulk_export: true
+    support_single_export: true
+  Projects: {}
+  ProjectsManagedzonesRrsets: {}
+  Resourcerecordsets:
+    asset_inventory_type: dns.googleapis.com/Recordset
+    krm_group: dns
+    krm_kind: DNSRecordSet
+    support_bulk_export: true
+    support_single_export: false
+  Responsepolicies: {}
+  Responsepolicyrules: {}
+domains:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsRegistrations: {}
+essentialcontacts:
+  Folders: {}
+  FoldersContacts: {}
+  Organizations: {}
+  OrganizationsContacts: {}
+  Projects: {}
+  ProjectsContacts: {}
+eventarc:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsTriggers: {}
+eventflow:
+  Projects: {}
+  ProjectsFlows: {}
+events:
+  Namespaces: {}
+  NamespacesCustomresourcedefinitions: {}
+  NamespacesTriggers: {}
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsCustomresourcedefinitions: {}
+  ProjectsLocationsTriggers: {}
+file:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsBackups: {}
+  ProjectsLocationsInstances: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsSnapshots: {}
+firestore:
+  Projects: {}
+  ProjectsDatabases: {}
+  ProjectsDatabasesCollectiongroups: {}
+  ProjectsDatabasesCollectiongroupsFields: {}
+  ProjectsDatabasesCollectiongroupsIndexes: {}
+  ProjectsDatabasesDocuments: {}
+  ProjectsDatabasesIndexes:
+    asset_inventory_type: firestore.googleapis.com/Index
+    krm_group: firestore
+    krm_kind: FirestoreIndex
+    support_bulk_export: true
+    support_single_export: false
+  ProjectsDatabasesOperations: {}
+  ProjectsLocations: {}
+gameservices:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsGameserverdeployments: {}
+  ProjectsLocationsGameserverdeploymentsConfigs: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsRealms: {}
+  ProjectsLocationsRealmsGameserverclusters: {}
+genomics:
+  Operations: {}
+  Pipelines: {}
+  Projects: {}
+  ProjectsOperations: {}
+gkehub:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsGlobalFeatures: {}
+  ProjectsLocationsGlobalMemberships: {}
+  ProjectsLocationsMemberships: {}
+  ProjectsLocationsOperations: {}
+gsuiteaddons:
+  Projects: {}
+  ProjectsDeployments: {}
+healthcare:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsDatasets: {}
+  ProjectsLocationsDatasetsAnnotationstores: {}
+  ProjectsLocationsDatasetsAnnotationstoresAnnotations: {}
+  ProjectsLocationsDatasetsConsentstores: {}
+  ProjectsLocationsDatasetsConsentstoresAttributedefinitions: {}
+  ProjectsLocationsDatasetsConsentstoresConsentartifacts: {}
+  ProjectsLocationsDatasetsConsentstoresConsents: {}
+  ProjectsLocationsDatasetsConsentstoresUserdatamappings: {}
+  ProjectsLocationsDatasetsDicomstores: {}
+  ProjectsLocationsDatasetsFhirstores: {}
+  ProjectsLocationsDatasetsHl7v2stores: {}
+  ProjectsLocationsDatasetsHl7v2storesMessages: {}
+  ProjectsLocationsDatasetsOperations: {}
+  ProjectsLocationsServicesDeidentify: {}
+iam:
+  Iampolicies: {}
+  Organizations: {}
+  OrganizationsRoles: {}
+  Policies: {}
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsWorkloadidentitypools: {}
+  ProjectsLocationsWorkloadidentitypoolsOperations: {}
+  ProjectsLocationsWorkloadidentitypoolsProviders: {}
+  ProjectsLocationsWorkloadidentitypoolsProvidersOperations: {}
+  ProjectsRoles: {}
+  ProjectsServiceaccounts:
+    asset_inventory_type: iam.googleapis.com/Serviceaccount
+    krm_group: iam
+    krm_kind: IAMServiceAccount
+    support_bulk_export: true
+    support_single_export: false
+  ProjectsServiceaccountsIdentitybindings: {}
+  ProjectsServiceaccountsKeys:
+    asset_inventory_type: iam.googleapis.com/Serviceaccountkey
+    krm_group: iam
+    krm_kind: IAMServiceAccountKey
+    support_bulk_export: false
+    support_single_export: false
+  Roles:
+    asset_inventory_type: iam.googleapis.com/Customrole
+    krm_group: iam
+    krm_kind: IAMCustomRole
+    support_bulk_export: true
+    support_single_export: false
+iamassist:
+  Operations: {}
+  Replays: {}
+  Simulator: {}
+iamcredentials:
+  Serviceaccounts: {}
+iap:
+  Projects: {}
+  ProjectsBrands: {}
+  ProjectsBrandsIdentityawareproxyclients: {}
+  ProjectsIap_web: {}
+  ProjectsIap_webServices: {}
+  ProjectsIap_webServicesVersions: {}
+krmapihosting:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsAnthosapiendpoints: {}
+  ProjectsLocationsKrmapihosts: {}
+  ProjectsLocationsOperations: {}
+kubernetesedge:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsClusters: {}
+  ProjectsLocationsClustersNodepools: {}
+  ProjectsLocationsClustersNodepoolsNodes: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsSites: {}
+  ProjectsLocationsSitesMachines: {}
+labelmanager:
+  Labelkeys: {}
+  Labelvalues: {}
+  Operations: {}
+language:
+  Documents: {}
+lifesciences:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsOperations: {}
+logging:
+  Billingaccounts: {}
+  BillingaccountsBuckets: {}
+  BillingaccountsBucketsViews: {}
+  BillingaccountsExclusions: {}
+  BillingaccountsLocations: {}
+  BillingaccountsSinks: {}
+  Exclusions: {}
+  Folders: {}
+  FoldersExclusions: {}
+  FoldersLocations: {}
+  FoldersLocationsBuckets: {}
+  FoldersLocationsBucketsViews: {}
+  FoldersSinks: {}
+  Locations: {}
+  LocationsBuckets: {}
+  LocationsBucketsJobs: {}
+  LocationsBucketsTables: {}
+  LocationsBucketsViews: {}
+  Organizations: {}
+  OrganizationsExclusions: {}
+  OrganizationsLocations: {}
+  OrganizationsLocationsBuckets: {}
+  OrganizationsLocationsBucketsViews: {}
+  OrganizationsSinks: {}
+  Projects: {}
+  ProjectsExclusions: {}
+  ProjectsLocations: {}
+  ProjectsLocationsBuckets: {}
+  ProjectsLocationsBucketsViews: {}
+  ProjectsMetrics: {}
+  ProjectsSinks: {}
+  Sinks:
+    asset_inventory_type: logging.googleapis.com/Logsink
+    krm_group: logging
+    krm_kind: LoggingLogSink
+    support_bulk_export: true
+    support_single_export: false
+luxadmin:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsBackups: {}
+  ProjectsLocationsClusters: {}
+  ProjectsLocationsClustersInstances: {}
+  ProjectsLocationsClustersUsers: {}
+  ProjectsLocationsOperations: {}
+managedidentities:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsGlobalDomains: {}
+  ProjectsLocationsGlobalDomainsSqlintegrations: {}
+  ProjectsLocationsGlobalOperations: {}
+  ProjectsLocationsGlobalPeerings: {}
+mediaasset:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsAssettypes: {}
+  ProjectsLocationsAssettypesAssets: {}
+  ProjectsLocationsAssettypesAssetsTransformations: {}
+  ProjectsLocationsComplextypes: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsTransformers: {}
+memcache:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsInstances:
+    asset_inventory_type: memcache.googleapis.com/Instance
+    krm_group: memcache
+    krm_kind: MemcacheInstance
+    support_bulk_export: true
+    support_single_export: true
+  ProjectsLocationsOperations: {}
+metastore:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsServices: {}
+  ProjectsLocationsServicesMetadataimports: {}
+ml:
+  Projects: {}
+  ProjectsJobs: {}
+  ProjectsLocations: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsStudies: {}
+  ProjectsLocationsStudiesTrials: {}
+  ProjectsModels: {}
+  ProjectsModelsVersions: {}
+  ProjectsOperations: {}
+monitoring:
+  Projects: {}
+  ProjectsAlertpolicies:
+    asset_inventory_type: monitoring.googleapis.com/Alertpolicy
+    krm_group: monitoring
+    krm_kind: MonitoringAlertPolicy
+    support_bulk_export: true
+    support_single_export: false
+  ProjectsAlertpoliciesConditions: {}
+  ProjectsDashboards: {}
+  ProjectsGroups: {}
+  ProjectsMetricdescriptors: {}
+  ProjectsMonitoredresourcedescriptors: {}
+  ProjectsNotificationchanneldescriptors: {}
+  ProjectsNotificationchannels:
+    asset_inventory_type: monitoring.googleapis.com/Notificationchannel
+    krm_group: monitoring
+    krm_kind: MonitoringNotificationChannel
+    support_bulk_export: true
+    support_single_export: false
+  ProjectsUptimecheckconfigs: {}
+networkconnectivity:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsGlobalHubs: {}
+  ProjectsLocationsInternalranges: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsPolicybasedroutes: {}
+  ProjectsLocationsSpokes: {}
+networkmanagement:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsGlobalConnectivitytests: {}
+  ProjectsLocationsGlobalOperations: {}
+networksecurity:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsAuthorizationpolicies: {}
+  ProjectsLocationsClienttlspolicies: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsServertlspolicies: {}
+networkservices:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsEdgecachekeysets: {}
+  ProjectsLocationsEdgecacheorigins: {}
+  ProjectsLocationsEdgecacheservices: {}
+  ProjectsLocationsEndpointconfigselectors: {}
+  ProjectsLocationsHttpfilters: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsRouters: {}
+notebooks:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsEnvironments: {}
+  ProjectsLocationsExecutions: {}
+  ProjectsLocationsInstances: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsSchedules: {}
+ondemandscanning:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsScans: {}
+  ProjectsLocationsScansVulnerabilities: {}
+orgpolicy:
+  Folders: {}
+  FoldersPolicies: {}
+  Organizations: {}
+  OrganizationsPolicies: {}
+  Policies: {}
+  Projects: {}
+  ProjectsPolicies: {}
+osconfig:
+  Folders: {}
+  FoldersAssignments: {}
+  FoldersGuestpolicies: {}
+  FoldersOsconfigs: {}
+  Organizations: {}
+  OrganizationsAssignments: {}
+  OrganizationsGuestpolicies: {}
+  OrganizationsOsconfigs: {}
+  Projects: {}
+  ProjectsAssignments: {}
+  ProjectsGuestpolicies: {}
+  ProjectsOsconfigs: {}
+  ProjectsPatchdeployments: {}
+  ProjectsPatchjobs: {}
+oslogin:
+  Users: {}
+  UsersProjects: {}
+  UsersSshpublickeys: {}
+policysimulator:
+  Folders: {}
+  FoldersLocations: {}
+  FoldersLocationsReplays: {}
+  Operations: {}
+  Organizations: {}
+  OrganizationsLocations: {}
+  OrganizationsLocationsReplays: {}
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsReplays: {}
+  Simulator: {}
+policytroubleshooter:
+  Iam: {}
+privateca:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsCertificateauthorities: {}
+  ProjectsLocationsCertificateauthoritiesCertificaterevocationlists: {}
+  ProjectsLocationsCertificateauthoritiesCertificates: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsReusableconfigs: {}
+publicca: {}
+pubsub:
+  Projects: {}
+  ProjectsSchemas: {}
+  ProjectsSnapshots: {}
+  ProjectsSubscriptions:
+    asset_inventory_type: pubsub.googleapis.com/Subscription
+    krm_group: pubsub
+    krm_kind: PubSubSubscription
+    support_bulk_export: true
+    support_single_export: true
+  ProjectsTopics:
+    asset_inventory_type: pubsub.googleapis.com/Topic
+    krm_group: pubsub
+    krm_kind: PubSubTopic
+    support_bulk_export: true
+    support_single_export: true
+pubsublite:
+  AdminProjects: {}
+  AdminProjectsLocations: {}
+  AdminProjectsLocationsSubscriptions: {}
+  AdminProjectsLocationsTopics: {}
+  AdminProjectsLocationsTopicsSubscriptions: {}
+recaptchaenterprise:
+  Projects: {}
+  ProjectsKeys: {}
+recommender:
+  Billingaccounts: {}
+  BillingaccountsLocations: {}
+  BillingaccountsLocationsInsighttypes: {}
+  BillingaccountsLocationsInsighttypesInsights: {}
+  BillingaccountsLocationsRecommenders: {}
+  BillingaccountsLocationsRecommendersRecommendations: {}
+  Folders: {}
+  FoldersLocations: {}
+  FoldersLocationsInsighttypes: {}
+  FoldersLocationsInsighttypesInsights: {}
+  FoldersLocationsRecommenders: {}
+  FoldersLocationsRecommendersRecommendations: {}
+  Operations: {}
+  Organizations: {}
+  OrganizationsLocations: {}
+  OrganizationsLocationsInsighttypes: {}
+  OrganizationsLocationsInsighttypesInsights: {}
+  OrganizationsLocationsRecommenders: {}
+  OrganizationsLocationsRecommendersRecommendations: {}
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsInsighttypes: {}
+  ProjectsLocationsInsighttypesInsights: {}
+  ProjectsLocationsRecommenders: {}
+  ProjectsLocationsRecommendersRecommendations: {}
+redis:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsInstances:
+    asset_inventory_type: redis.googleapis.com/Instance
+    krm_group: redis
+    krm_kind: RedisInstance
+    support_bulk_export: true
+    support_single_export: true
+  ProjectsLocationsOperations: {}
+remotebuildexecution:
+  Projects: {}
+  ProjectsInstances: {}
+  ProjectsInstancesWorkerpools: {}
+  ProjectsOperations: {}
+resourcesettings:
+  Folders: {}
+  FoldersSettings: {}
+  Organizations: {}
+  OrganizationsSettings: {}
+  Projects: {}
+  ProjectsSettings: {}
+run:
+  ApiV1Namespaces: {}
+  ApiV1NamespacesSecrets: {}
+  Namespaces: {}
+  NamespacesCloudauditlogssources: {}
+  NamespacesCloudpubsubsources: {}
+  NamespacesCloudschedulersources: {}
+  NamespacesCloudstoragesources: {}
+  NamespacesConfigurations: {}
+  NamespacesCustomresourcedefinitions: {}
+  NamespacesDomainmappings: {}
+  NamespacesJobs: {}
+  NamespacesRevisions: {}
+  NamespacesRoutes: {}
+  NamespacesServices: {}
+  NamespacesTriggers: {}
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsCloudauditlogssources: {}
+  ProjectsLocationsCloudpubsubsources: {}
+  ProjectsLocationsCloudschedulersources: {}
+  ProjectsLocationsCloudstoragesources: {}
+  ProjectsLocationsConfigurations: {}
+  ProjectsLocationsCustomresourcedefinitions: {}
+  ProjectsLocationsDomainmappings: {}
+  ProjectsLocationsNamespaces: {}
+  ProjectsLocationsRevisions: {}
+  ProjectsLocationsRoutes: {}
+  ProjectsLocationsSecrets: {}
+  ProjectsLocationsServices: {}
+  ProjectsLocationsTriggers: {}
+runtimeconfig:
+  Projects: {}
+  ProjectsConfigs: {}
+  ProjectsConfigsOperations: {}
+  ProjectsConfigsVariables: {}
+  ProjectsConfigsWaiters: {}
+sddc:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsClustergroupbackups: {}
+  ProjectsLocationsClustergroups: {}
+  ProjectsLocationsClustergroupsClusters: {}
+  ProjectsLocationsClustergroupsIpaddresses: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsPrivatecloudbackups: {}
+  ProjectsLocationsPrivateclouds: {}
+  ProjectsLocationsPrivatecloudsClusters: {}
+  ProjectsLocationsPrivatecloudsIpaddresses: {}
+secretmanager:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsSecrets:
+    asset_inventory_type: secretmanager.googleapis.com/Secret
+    krm_group: secretmanager
+    krm_kind: SecretManagerSecret
+    support_bulk_export: true
+    support_single_export: true
+  ProjectsSecretsVersions:
+    asset_inventory_type: secretmanager.googleapis.com/Secretversion
+    krm_group: secretmanager
+    krm_kind: SecretManagerSecretVersion
+    support_bulk_export: true
+    support_single_export: false
+securitycenter:
+  Organizations: {}
+  OrganizationsAssets: {}
+  OrganizationsNotificationconfigs: {}
+  OrganizationsOperations: {}
+  OrganizationsSources: {}
+  OrganizationsSourcesFindings: {}
+serviceconsumermanagement:
+  Operations: {}
+  Services: {}
+  ServicesConsumerquotametrics: {}
+  ServicesConsumerquotametricsLimits: {}
+servicedirectory:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsNamespaces: {}
+  ProjectsLocationsNamespacesServices: {}
+  ProjectsLocationsNamespacesServicesEndpoints: {}
+servicemanagement:
+  Operations: {}
+  Services: {}
+  ServicesConfigs: {}
+  ServicesCustomersettings: {}
+  ServicesProjectsettings: {}
+  ServicesRollouts: {}
+servicenetworking:
+  Operations: {}
+  ServicesProjects: {}
+  ServicesProjectsGlobal: {}
+  ServicesProjectsGlobalNetworks: {}
+serviceusage:
+  Operations: {}
+  Services:
+    asset_inventory_type: serviceusage.googleapis.com/
+    krm_group: serviceusage
+    krm_kind: Service
+    support_bulk_export: true
+    support_single_export: true
+  ServicesConsumerquotametrics: {}
+  ServicesConsumerquotametricsLimits: {}
+source:
+  Projects: {}
+  ProjectsRepos: {}
+  ProjectsReposAliases: {}
+  ProjectsReposAliasesFiles: {}
+  ProjectsReposRevisions: {}
+  ProjectsReposRevisionsFiles: {}
+  ProjectsReposWorkspaces: {}
+  ProjectsReposWorkspacesFiles: {}
+  ProjectsReposWorkspacesSnapshots: {}
+  ProjectsReposWorkspacesSnapshotsFiles: {}
+sourcerepo:
+  Projects: {}
+  ProjectsRepos:
+    asset_inventory_type: sourcerepo.googleapis.com/Repository
+    krm_group: sourcerepo
+    krm_kind: SourceRepoRepository
+    support_bulk_export: true
+    support_single_export: true
+spanner:
+  Projects: {}
+  ProjectsInstanceconfigs: {}
+  ProjectsInstances:
+    asset_inventory_type: spanner.googleapis.com/Instance
+    krm_group: spanner
+    krm_kind: SpannerInstance
+    support_bulk_export: true
+    support_single_export: true
+  ProjectsInstancesBackups: {}
+  ProjectsInstancesBackupsOperations: {}
+  ProjectsInstancesDatabases:
+    asset_inventory_type: spanner.googleapis.com/Database
+    krm_group: spanner
+    krm_kind: SpannerDatabase
+    support_bulk_export: true
+    support_single_export: true
+  ProjectsInstancesDatabasesOperations: {}
+  ProjectsInstancesDatabasesSessions: {}
+  ProjectsInstancesOperations: {}
+speech:
+  Operations: {}
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsCustomclasses: {}
+  ProjectsLocationsPhrasesets: {}
+  Speech: {}
+sqladmin:
+  Backupruns: {}
+  Databases:
+    asset_inventory_type: sqladmin.googleapis.com/Database
+    krm_group: sql
+    krm_kind: SQLDatabase
+    support_bulk_export: true
+    support_single_export: true
+  Instances:
+    asset_inventory_type: sqladmin.googleapis.com/Instance
+    krm_group: sql
+    krm_kind: SQLInstance
+    support_bulk_export: true
+    support_single_export: true
+  Operations: {}
+  Projects: {}
+  Sslcerts:
+    asset_inventory_type: sqladmin.googleapis.com/Sslcert
+    krm_group: sql
+    krm_kind: SQLSSLCert
+    support_bulk_export: false
+    support_single_export: false
+storage:
+  Bucketaccesscontrols:
+    asset_inventory_type: storage.googleapis.com/Bucketaccesscontrol
+    krm_group: storage
+    krm_kind: StorageBucketAccessControl
+    support_bulk_export: true
+    support_single_export: false
+  Buckets:
+    asset_inventory_type: storage.googleapis.com/Bucket
+    krm_group: storage
+    krm_kind: StorageBucket
+    support_bulk_export: true
+    support_single_export: false
+  Defaultobjectaccesscontrols:
+    asset_inventory_type: storage.googleapis.com/Defaultobjectaccesscontrol
+    krm_group: storage
+    krm_kind: StorageDefaultObjectAccessControl
+    support_bulk_export: true
+    support_single_export: false
+  Notifications:
+    asset_inventory_type: storage.googleapis.com/Notification
+    krm_group: storage
+    krm_kind: StorageNotification
+    support_bulk_export: true
+    support_single_export: false
+  Objectaccesscontrols: {}
+  Objects: {}
+  Projects: {}
+  ProjectsHmackeys: {}
+  ProjectsServiceaccount: {}
+storagetransfer:
+  Googleserviceaccounts: {}
+  Transferjobs:
+    asset_inventory_type: storagetransfer.googleapis.com/Job
+    krm_group: storagetransfer
+    krm_kind: StorageTransferJob
+    support_bulk_export: true
+    support_single_export: false
+  Transferoperations: {}
+testing:
+  Projects: {}
+  ProjectsTestmatrices: {}
+  Testenvironmentcatalog: {}
+toolresults:
+  Projects: {}
+  ProjectsHistories: {}
+  ProjectsHistoriesExecutions: {}
+  ProjectsHistoriesExecutionsClusters: {}
+  ProjectsHistoriesExecutionsEnvironments: {}
+  ProjectsHistoriesExecutionsSteps: {}
+  ProjectsHistoriesExecutionsStepsPerfsampleseries: {}
+  ProjectsHistoriesExecutionsStepsTestcases: {}
+tpu:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsAcceleratortypes: {}
+  ProjectsLocationsNodes: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsRuntimeversions: {}
+  ProjectsLocationsTensorflowversions: {}
+transcoder:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsJobs: {}
+  ProjectsLocationsJobtemplates: {}
+translate:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsGlossaries: {}
+  ProjectsLocationsOperations: {}
+videointelligence:
+  OperationsProjects: {}
+  OperationsProjectsLocations: {}
+  OperationsProjectsLocationsOperations: {}
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsOperations: {}
+  Videos: {}
+vision:
+  Files: {}
+  Images: {}
+  Locations: {}
+  LocationsOperations: {}
+  Operations: {}
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsProducts: {}
+  ProjectsLocationsProductsReferenceimages: {}
+  ProjectsLocationsProductsets: {}
+  ProjectsLocationsProductsetsProducts: {}
+  ProjectsOperations: {}
+vpcaccess:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsConnectors: {}
+  ProjectsLocationsOperations: {}
+websecurityscanner:
+  Projects: {}
+  ProjectsScanconfigs: {}
+  ProjectsScanconfigsScanruns: {}
+  ProjectsScanconfigsScanrunsCrawledurls: {}
+  ProjectsScanconfigsScanrunsFindings: {}
+workflowexecutions:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsWorkflows: {}
+  ProjectsLocationsWorkflowsExecutions: {}
+workflows:
+  Projects: {}
+  ProjectsLocations: {}
+  ProjectsLocationsOperations: {}
+  ProjectsLocationsWorkflows: {}

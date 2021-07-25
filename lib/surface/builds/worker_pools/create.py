@@ -61,7 +61,8 @@ class Create(base.CreateCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    parser = workerpool_flags.AddWorkerpoolCreateArgs(parser)
+    parser = workerpool_flags.AddWorkerpoolCreateArgs(parser,
+                                                      base.ReleaseTrack.GA)
     parser.display_info.AddFormat("""
           table(
             name,
@@ -106,7 +107,8 @@ class Create(base.CreateCommand):
         network_config = messages.NetworkConfig()
         if args.peered_network is not None:
           network_config.peeredNetwork = args.peered_network
-        if args.no_external_ip:
+        # All of the egress flags are mutually exclusive with each other.
+        if args.no_external_ip or args.no_public_egress:
           network_config.egressOption = messages.NetworkConfig.EgressOptionValueValuesEnum.NO_PUBLIC_EGRESS
         wp.privatePoolV1Config.networkConfig = network_config
 
@@ -183,7 +185,43 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a worker pool for use by Google Cloud Build."""
 
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser-like object. It is mocked out in order
+        to capture some information, but behaves like an ArgumentParser.
+    """
+    parser = workerpool_flags.AddWorkerpoolCreateArgs(parser,
+                                                      base.ReleaseTrack.BETA)
+    parser.display_info.AddFormat("""
+          table(
+            name,
+            createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
+            state
+          )
+        """)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
   """Create a worker pool for use by Google Cloud Build."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser-like object. It is mocked out in order
+        to capture some information, but behaves like an ArgumentParser.
+    """
+    parser = workerpool_flags.AddWorkerpoolCreateArgs(parser,
+                                                      base.ReleaseTrack.ALPHA)
+    parser.display_info.AddFormat("""
+          table(
+            name,
+            createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
+            state
+          )
+        """)

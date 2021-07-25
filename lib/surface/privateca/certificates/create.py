@@ -29,6 +29,7 @@ from googlecloudsdk.command_lib.privateca import create_utils
 from googlecloudsdk.command_lib.privateca import flags
 from googlecloudsdk.command_lib.privateca import flags_v1
 from googlecloudsdk.command_lib.privateca import key_generation
+from googlecloudsdk.command_lib.privateca import pem_utils
 from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -54,7 +55,7 @@ def _ReadCsr(csr_file):
 def _WritePemChain(pem_cert, issuing_chain, cert_file):
   try:
     pem_chain = [pem_cert] + issuing_chain
-    files.WriteFileContents(cert_file, '\n'.join(pem_chain))
+    files.WriteFileContents(cert_file, pem_utils.PemChainForOutput(pem_chain))
   except (files.Error, OSError, IOError):
     raise exceptions.BadFileException(
         "Could not write certificate to '{}'.".format(cert_file))

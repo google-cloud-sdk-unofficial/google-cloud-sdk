@@ -44,6 +44,7 @@ class Update(base.Command):
 
   detailed_help = DETAILED_HELP
   _support_autoscaling = False
+  _support_ha_scheduler = False
   _support_maintenance_window = False
   _support_environment_size = False
 
@@ -69,8 +70,13 @@ class Update(base.Command):
     flags.WEB_SERVER_MACHINE_TYPE.AddToParser(Update.update_type_group)
 
   def _ConstructPatch(self, env_ref, args, support_environment_upgrades=False):
+    env_obj = environments_api_util.Get(
+        env_ref, release_track=self.ReleaseTrack())
+    is_composer_v1 = image_versions_command_util.IsImageVersionStringComposerV1(
+        env_obj.config.softwareConfig.imageVersion)
 
     params = dict(
+        is_composer_v1=is_composer_v1,
         env_ref=env_ref,
         node_count=args.node_count,
         update_pypi_packages_from_file=args.update_pypi_packages_from_file,
@@ -135,6 +141,8 @@ class Update(base.Command):
       params['maintenance_window_end'] = args.maintenance_window_end
       params[
           'maintenance_window_recurrence'] = args.maintenance_window_recurrence
+    if self._support_ha_scheduler:
+      params['scheduler_count'] = args.scheduler_count
 
     return patch_util.ConstructPatch(**params)
 
@@ -154,6 +162,7 @@ class UpdateBeta(Update):
   """Update properties of a Cloud Composer environment."""
 
   _support_autoscaling = True
+  _support_ha_scheduler = True
   _support_maintenance_window = True
   _support_environment_size = True
 

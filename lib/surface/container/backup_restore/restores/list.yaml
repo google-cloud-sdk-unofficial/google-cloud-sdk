@@ -1,0 +1,44 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List restores.
+    description: |
+      List Backup for GKE restores.
+
+      ## EXAMPLES
+
+      To list all restores in project 'my-project' in location 'us-central1', run:
+
+        $ {command} --project=my-project --location=us-central1
+
+      To list all restores in project 'my-project' across all locations, run:
+
+        $ {command} --project=my-project
+
+  request:
+    collection: gkebackup.projects.locations.restores
+    ALPHA:
+      api_version: v1alpha1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: |
+        Name of the location from which to list restores (provided via options or through
+        properties):
+        `--project=<project> --location=<location>`.
+      spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:default_location
+
+  output:
+    ALPHA:
+      # TODO(b/191807690): Finalize the columns and formats with UX.
+      format: |
+        table(
+           name.basename():label=NAME,
+           backup,
+           createTime,
+           completeTime,
+           state
+         )

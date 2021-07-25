@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: "List details of multiple revisions."
+    description: "List details of multiple revisions."
+    examples: |
+      List revisions in a particular deployment:
+
+        $ {command} --deployment=my-deployment
+
+  request:
+    collection: config.projects.locations.deployments.revisions
+
+  arguments:
+    resource:
+      help_text: "The deployment resource to which the revisions belong."
+      spec: !REF googlecloudsdk.command_lib.blueprints.resources:deployment
+
+  response:
+    id_field: name
+
+  output:
+    format: |
+      table(
+      name.basename(),
+      state,
+      action,
+      blueprint.firstof(gcsSource,gitSource.repo):label=BLUEPRINT
+      )

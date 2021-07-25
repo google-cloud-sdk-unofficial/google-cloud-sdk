@@ -76,6 +76,7 @@ class Create(base.CreateCommand):
     tpus_flags.AddDiskSizeFlag(parser)
     tpus_flags.AddMachineTypeArgs(parser)
     tpus_flags.AddNetworkArgs(parser)
+    tpus_flags.AddUseWithNotebook(parser)
 
   def Run(self, args):
     tpu_utils.DefaultArgs.ValidateName(args)
@@ -111,13 +112,16 @@ class Create(base.CreateCommand):
       instance = tpu_utils.Instance(self.ReleaseTrack())
       gce_image = args.gce_image
       if not gce_image:
+        use_dl_images = args.use_dl_images
+        if args.use_with_notebook:
+          use_dl_images = True
         gce_image = instance.ResolveImageFromTensorflowVersion(
-            args.tf_version, 'ml-images', args.use_dl_images)
+            args.tf_version, use_dl_images)
       try:
         instance_operation_ref = instance.Create(
             args.name, args.zone, args.machine_type,
             utils.BytesToGb(args.disk_size), args.preemptible_vm, gce_image,
-            args.network)
+            args.network, args.use_with_notebook)
       except HttpConflictError:
         err_msg = ('VM with name:{} already exists, '
                    'try a different name.').format(args.name)

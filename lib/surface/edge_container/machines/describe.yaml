@@ -1,0 +1,18 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: Show details about the machine.
+  description: Show details about the machine.
+  examples: |
+    To show details about a device, run:
+
+      $ {command} my-machine --name=my-name
+
+request:
+  collection: edgecontainer.projects.locations.machines
+  api_version: v1alpha
+
+arguments:
+  resource:
+    help_text: The machine you want to describe.
+    spec: !REF googlecloudsdk.command_lib.edge_container.resources:machine

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2014 Google LLC. All Rights Reserved.
+# Copyright 2021 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ from googlecloudsdk.command_lib.compute import iap_tunnel
 from googlecloudsdk.command_lib.compute import network_troubleshooter
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute import ssh_utils
+from googlecloudsdk.command_lib.compute import user_permission_troubleshooter
 from googlecloudsdk.command_lib.compute import vpc_troubleshooter
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.command_lib.util.ssh import containers
@@ -37,6 +38,13 @@ from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import retry
+
+RECOMMEND_MESSAGE = """
+Recommendation: To check for possible causes of SSH connectivity issues and get
+recommendations, rerun the ssh command with the --troubleshoot option. Example:
+
+gcloud alpha ssh example-instance --zone=us-central1-a --troubleshoot
+"""
 
 
 def AddCommandArg(parser):
@@ -134,7 +142,7 @@ def AddTroubleshootArg(parser):
       '--troubleshoot',
       action='store_true',
       help="""\
-          If you can't connect to a virtual machine (VM) instance using SSH, you can investigate the problem using the --troubleshoot flag:
+          If you can't connect to a virtual machine (VM) instance using SSH, you can investigate the problem using the `--troubleshoot` flag:
 
             $ {command} VM_NAME --zone=ZONE --troubleshoot
 
@@ -143,15 +151,13 @@ def AddTroubleshootArg(parser):
           - Network connectivity
           - User permissions
           - Virtual Private Cloud (VPC) settings
-          """
-  )
+          """)
 
 
 # pylint: disable=unused-argument
 def RunTroubleshooting(project=None, zone=None, instance=None,
                        iap_tunnel_args=None):
   """Run each category of troubleshoot action."""
-
   network_args = {
       'project': project,
       'zone': zone,
@@ -160,11 +166,21 @@ def RunTroubleshooting(project=None, zone=None, instance=None,
   network = network_troubleshooter.NetworkTroubleshooter(**network_args)
   network()
 
+  user_permission_args = {
+      'project': project,
+      'zone': zone,
+      'instance': instance,
+      'iap_tunnel_args': iap_tunnel_args,
+  }
+  user_permission = user_permission_troubleshooter.UserPermissionTroubleshooter(
+      **user_permission_args)
+  user_permission()
+
   vpc_args = {
       'project': project,
       'zone': zone,
       'instance': instance,
-      'iap_tunnel_args': iap_tunnel_args
+      'iap_tunnel_args': iap_tunnel_args,
   }
   vpc = vpc_troubleshooter.VPCTroubleshooter(**vpc_args)
   vpc()
@@ -279,6 +295,7 @@ class Ssh(base.Command):
       RunTroubleshooting(project, args.zone or instance_ref.zone,
                          instance, iap_tunnel_args)
       return
+
     if not host_keys and host_keys is not None:
       # Only display this message if there was an attempt to retrieve
       # host keys but it was unsuccessful. If Guest Attributes is disabled,
@@ -374,10 +391,16 @@ class Ssh(base.Command):
                                              options)
 
     # Errors from SSH itself result in an ssh.CommandError being raised
-    return_code = cmd.Run(
-        ssh_helper.env,
-        force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
+    try:
+      return_code = cmd.Run(
+          ssh_helper.env,
+          force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
+    except ssh.CommandError as e:
+      log.status.Print(RECOMMEND_MESSAGE)
+      raise e
+
     if return_code:
+      log.status.Print(RECOMMEND_MESSAGE)
       # This is the return code of the remote command.  Problems with SSH itself
       # will result in ssh.CommandError being raised above.
       sys.exit(return_code)

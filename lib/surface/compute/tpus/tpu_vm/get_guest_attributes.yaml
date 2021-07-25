@@ -1,0 +1,51 @@
+- release_tracks: [ALPHA]
+  command_type: LIST
+  help_text:
+    brief: Retrieves the Guest Attributes for a Cloud TPU VM.
+    description: Retrieves the Guest Attributes for a Cloud TPU VM.
+    examples: |
+      The following command retrieves the guest attributes:
+
+        $ {command} my-tpu --zone=us-central1-b
+
+      To select only a specific query path, use the --query-path flag:
+
+        $ {command} my-tpu --zone=us-central1-b --query-path=lifecycle/event
+
+      To only display the guest attributes for one of the workers in a TPU pod, you can use the
+      --filter flag like so:
+
+        $ {command} my-tpu --zone=us-central1-b --filter="worker_id:3"
+
+      where 3 is an example of the worker ID (0-indexed).
+
+  request:
+    collection: tpu.projects.locations.nodes
+    api_version: v2alpha1
+    method: getGuestAttributes
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.compute.tpus.tpu_vm.util:TransformGuestAttributes
+
+  arguments:
+    resource:
+      help_text: The Cloud TPU VM.
+      spec: !REF googlecloudsdk.command_lib.compute.tpus.tpu_vm.resources:tpu
+
+    params:
+    - arg_name: query-path
+      api_field: getGuestAttributesRequest.queryPath
+      required: false
+      help_text: |
+        Attribute path to query. Can be empty string or of the form `<namespace>/` or
+        `<namespace>/<key>`. Default is the empty string.
+
+  output:
+    format: |
+      table(
+      namespace,
+      key,
+      worker_id,
+      value
+      )

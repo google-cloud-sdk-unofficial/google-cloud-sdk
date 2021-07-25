@@ -1,0 +1,19 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: |
+      Delete a Datastream connection profile.
+    description: |
+      Deletes a connection profile.
+    examples: |
+      To delete a connection profile:
+
+          $ {command} CONNECTION_PROFILE --location=us-central1
+
+  request:
+    collection: datastream.projects.locations.connectionProfiles
+
+  arguments:
+    resource:
+      help_text: |
+        Connection profile resource - Connection profile to delete.
+      spec: !REF googlecloudsdk.command_lib.datastream.resources:connection_profile

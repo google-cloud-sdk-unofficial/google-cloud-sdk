@@ -54,7 +54,8 @@ class Update(base.UpdateCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    parser = workerpool_flags.AddWorkerpoolUpdateArgs(parser)
+    parser = workerpool_flags.AddWorkerpoolUpdateArgs(parser,
+                                                      base.ReleaseTrack.GA)
     parser.display_info.AddFormat("""
           table(
             name,
@@ -105,10 +106,13 @@ class Update(base.UpdateCommand):
               args.worker_disk_size)
         wp.privatePoolV1Config.workerConfig = worker_config
 
-        if args.no_external_ip:
-          nc = messages.NetworkConfig()
+        nc = messages.NetworkConfig()
+        # All of the egress flags are mutually exclusive with each other.
+        if args.no_external_ip or args.no_public_egress:
           nc.egressOption = messages.NetworkConfig.EgressOptionValueValuesEnum.NO_PUBLIC_EGRESS
-          wp.privatePoolV1Config.networkConfig = nc
+        if args.public_egress:
+          nc.egressOption = messages.NetworkConfig.EgressOptionValueValuesEnum.PUBLIC_EGRESS
+        wp.privatePoolV1Config.networkConfig = nc
       else:
         worker_config = messages.WorkerConfig()
         if args.worker_machine_type is not None:
@@ -118,6 +122,7 @@ class Update(base.UpdateCommand):
               args.worker_disk_size)
         if args.no_external_ip:
           worker_config.noExternalIp = True
+
         wp.workerConfig = worker_config
 
     # Get the workerpool ref
@@ -162,7 +167,43 @@ class Update(base.UpdateCommand):
 class UpdateBeta(Update):
   """Update a worker pool used by Google Cloud Build."""
 
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser-like object. It is mocked out in order
+        to capture some information, but behaves like an ArgumentParser.
+    """
+    parser = workerpool_flags.AddWorkerpoolUpdateArgs(parser,
+                                                      base.ReleaseTrack.BETA)
+    parser.display_info.AddFormat("""
+          table(
+            name,
+            createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
+            state
+          )
+        """)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(Update):
   """Update a worker pool used by Google Cloud Build."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser-like object. It is mocked out in order
+        to capture some information, but behaves like an ArgumentParser.
+    """
+    parser = workerpool_flags.AddWorkerpoolUpdateArgs(parser,
+                                                      base.ReleaseTrack.ALPHA)
+    parser.display_info.AddFormat("""
+          table(
+            name,
+            createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
+            state
+          )
+        """)

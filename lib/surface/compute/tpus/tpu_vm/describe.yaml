@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Describe a Cloud TPU VM node.
+    description: Describe a Cloud TPU VM node.
+    examples: |
+      The following command describes a Cloud TPU VM node with ID `my-tpu` in zone `us-central1-b`:
+
+        $ {command} my-tpu --zone=us-central1-b
+
+  request:
+    collection: tpu.projects.locations.nodes
+    api_version: v2alpha1
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.compute.tpus.tpu_vm.util:CheckTPUVMNode
+
+  arguments:
+    resource:
+      help_text: The Cloud TPU VM node you want to describe.
+      spec: !REF googlecloudsdk.command_lib.compute.tpus.tpu_vm.resources:tpu

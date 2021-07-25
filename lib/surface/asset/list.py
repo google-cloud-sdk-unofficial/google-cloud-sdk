@@ -25,15 +25,16 @@ from googlecloudsdk.command_lib.asset import utils as asset_utils
 from googlecloudsdk.command_lib.util.args import common_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List the cloud assets."""
+  """List the Cloud assets."""
 
   # pylint: disable=line-too-long
   detailed_help = {
       'DESCRIPTION':
           """\
-      List the cloud assets. Note
+      List the Cloud assets. Note
       that to list a project different from the project you want to bill, you
       can use  --billing-project or authenticate with a service account.
       See https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/gcloud-asset

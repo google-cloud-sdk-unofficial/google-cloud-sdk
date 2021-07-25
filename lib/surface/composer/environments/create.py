@@ -261,7 +261,9 @@ class Create(base.Command):
     if args.kms_key:
       self.kms_key = flags.GetAndValidateKmsEncryptionKey(args)
 
-    operation = self.GetOperationMessage(args)
+    operation = self.GetOperationMessage(
+        args,
+        image_versions_util.IsImageVersionStringComposerV1(self.image_version))
 
     details = 'with operation [{0}]'.format(operation.name)
     if args.async_:
@@ -400,7 +402,7 @@ class Create(base.Command):
       flags.ValidateIpRanges(
           [acl['ip_range'] for acl in self.web_server_access_control])
 
-  def GetOperationMessage(self, args):
+  def GetOperationMessage(self, args, is_composer_v1):
     """Constructs Create message."""
 
     create_flags = environments_api_util.CreateEnvironmentFlags(
@@ -433,7 +435,8 @@ class Create(base.Command):
         cloud_sql_machine_type=args.cloud_sql_machine_type,
         web_server_machine_type=args.web_server_machine_type,
         release_track=self.ReleaseTrack())
-    return environments_api_util.Create(self.env_ref, create_flags)
+    return environments_api_util.Create(self.env_ref, create_flags,
+                                        is_composer_v1)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -457,7 +460,8 @@ class CreateBeta(Create):
     elif release_track == base.ReleaseTrack.ALPHA:
       flags.ENVIRONMENT_SIZE_ALPHA.choice_arg.AddToParser(parser)
     flags.AddMaintenanceWindowFlagsGroup(parser)
-    autoscaling_group_parser = parser.add_argument_group(hidden=True)
+    autoscaling_group_parser = parser.add_argument_group(
+        flags.AUTOSCALING_FLAG_GROUP_DESCRIPTION)
     flags.SCHEDULER_CPU.AddToParser(autoscaling_group_parser)
     flags.WORKER_CPU.AddToParser(autoscaling_group_parser)
     flags.WEB_SERVER_CPU.AddToParser(autoscaling_group_parser)
@@ -469,9 +473,11 @@ class CreateBeta(Create):
     flags.WEB_SERVER_STORAGE.AddToParser(autoscaling_group_parser)
     flags.MIN_WORKERS.AddToParser(autoscaling_group_parser)
     flags.MAX_WORKERS.AddToParser(autoscaling_group_parser)
+    # Note: this flag is available for creation of both Composer 1.*.* and 2.*.*
+    # environments.
     flags.NUM_SCHEDULERS.AddToParser(autoscaling_group_parser)
 
-  def GetOperationMessage(self, args):
+  def GetOperationMessage(self, args, is_composer_v1):
     """See base class."""
     create_flags = environments_api_util.CreateEnvironmentFlags(
         node_count=args.node_count,
@@ -528,7 +534,8 @@ class CreateBeta(Create):
         environment_size=args.environment_size,
         release_track=self.ReleaseTrack())
 
-    return environments_api_util.Create(self.env_ref, create_flags)
+    return environments_api_util.Create(self.env_ref, create_flags,
+                                        is_composer_v1)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -561,7 +568,7 @@ class CreateAlpha(CreateBeta):
     flags.ENABLE_PRIVATELY_USED_PUBLIC_IPS_FLAG.AddToParser(
         privately_used_public_ips_group)
 
-  def GetOperationMessage(self, args):
+  def GetOperationMessage(self, args, is_composer_v1):
     """See base class."""
 
     create_flags = environments_api_util.CreateEnvironmentFlags(
@@ -621,4 +628,5 @@ class CreateAlpha(CreateBeta):
         maintenance_window_recurrence=args.maintenance_window_recurrence,
         release_track=self.ReleaseTrack())
 
-    return environments_api_util.Create(self.env_ref, create_flags)
+    return environments_api_util.Create(self.env_ref, create_flags,
+                                        is_composer_v1)

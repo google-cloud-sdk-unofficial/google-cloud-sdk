@@ -16,25 +16,78 @@
   help_text:
     brief: Create a new group.
     description: Create a new group.
-    examples: |
-      To quickly create a new Google Groups discussion group with default settings:
+    GA:
+      examples: |
+        To quickly create a new Google Groups discussion group with default settings:
 
-        $ {command} eng-discuss@example.com --organization="example.com"
+          $ {command} eng-discuss@example.com --organization="example.com"
 
-      To create a new Google Groups discussion group with a display name and descripton:
+        To create a new Google Groups discussion group with a display name and descripton:
 
-        $ {command} eng-discuss@example.com \
-            --organization="example.com" \
-            --display-name="Engineer Discuss" \
-            --description="Group for engineering discussions"
+          $ {command} eng-discuss@example.com \
+              --organization="example.com" \
+              --display-name="Engineer Discuss" \
+              --description="Group for engineering discussions"
 
-      To create a new security group:
+        To create a new security group:
 
-        $ {command} security-group@example.com  \
-            --organization="example.com"  \
-            --group-type="security" \
-            --display-name="Security Group"  \
-            --description="Description of Security Group"
+          $ {command} security-group@example.com  \
+              --organization="example.com"  \
+              --group-type="security" \
+              --display-name="Security Group"  \
+              --description="Description of Security Group"
+    BETA:
+      examples: |
+        To quickly create a new Google Groups discussion group with default settings:
+
+          $ {command} eng-discuss@example.com --organization="example.com"
+
+        To create a new Google Groups discussion group with a display name and descripton:
+
+          $ {command} eng-discuss@example.com \
+              --organization="example.com" \
+              --display-name="Engineer Discuss" \
+              --description="Group for engineering discussions"
+
+        To create a new security group:
+
+          $ {command} security-group@example.com  \
+              --organization="example.com"  \
+              --group-type="security" \
+              --display-name="Security Group"  \
+              --description="Description of Security Group"
+
+        To create a new POSIX group:
+
+          $ {command} eng-discuss@example.com \
+              --organization="example.com" \
+              --posix-group=name=eng,gid=1005
+    ALPHA:
+      examples: |
+        To quickly create a new Google Groups discussion group with default settings:
+
+          $ {command} eng-discuss@example.com --organization="example.com"
+
+        To create a new Google Groups discussion group with a display name and descripton:
+
+          $ {command} eng-discuss@example.com \
+              --organization="example.com" \
+              --display-name="Engineer Discuss" \
+              --description="Group for engineering discussions"
+
+        To create a new security group:
+
+          $ {command} security-group@example.com  \
+              --organization="example.com"  \
+              --group-type="security" \
+              --display-name="Security Group"  \
+              --description="Description of Security Group"
+
+        To create a new POSIX group:
+
+          $ {command} eng-discuss@example.com \
+              --organization="example.com" \
+              --posix-group=name=eng,gid=1005
 
   arguments:
     params:

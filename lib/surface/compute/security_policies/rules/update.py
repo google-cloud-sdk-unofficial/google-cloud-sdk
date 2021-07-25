@@ -59,7 +59,7 @@ class UpdateHelper(object):
     flags.AddDescription(parser)
     flags.AddPreview(parser, default=None)
     if support_redirect:
-      flags.AddRedirectTarget(parser)
+      flags.AddRedirectOptions(parser)
     if support_rate_limit:
       flags.AddRateLimitOptions(parser)
     if support_header_action:
@@ -78,8 +78,8 @@ class UpdateHelper(object):
         '--preview'
     ]
     if support_redirect:
-      modified_fields.append(args.redirect_target)
-      min_args.append('--redirect_target')
+      modified_fields.extend([args.redirect_type, args.redirect_target])
+      min_args.extend(['--redirect-type', '--redirect-target'])
     if support_rate_limit:
       modified_fields.extend([
           args.rate_limit_threshold_count,
@@ -108,10 +108,11 @@ class UpdateHelper(object):
     security_policy_rule = client.SecurityPolicyRule(
         ref, compute_client=holder.client)
 
-    redirect_target = None
+    redirect_options = None
     rate_limit_options = None
     if support_redirect:
-      redirect_target = args.redirect_target
+      redirect_options = (
+          security_policies_utils.CreateRedirectOptions(holder.client, args))
     if support_rate_limit:
       rate_limit_options = (
           security_policies_utils.CreateRateLimitOptions(holder.client, args))
@@ -126,7 +127,7 @@ class UpdateHelper(object):
         action=args.action,
         description=args.description,
         preview=args.preview,
-        redirect_target=redirect_target,
+        redirect_options=redirect_options,
         rate_limit_options=rate_limit_options,
         request_headers_to_add=request_headers_to_add)
 
@@ -183,7 +184,7 @@ class UpdateBeta(base.UpdateCommand):
 
   SECURITY_POLICY_ARG = None
 
-  _support_redirect = False
+  _support_redirect = True
   _support_rate_limit = False
   _support_header_action = True
 

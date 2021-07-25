@@ -1,0 +1,25 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Delete an EdgeCacheOrigin.
+    description: |
+      Delete a EdgeCacheOrigin.
+    examples: |
+      To delete a EdgeCacheOrigin called 'my-origin', run:
+
+        $ {command} my-origin
+
+  request:
+    collection: networkservices.projects.locations.edgeCacheOrigins
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+
+  async:
+    collection: networkservices.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The name of the EdgeCacheOrigin to delete.
+      spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheOrigin

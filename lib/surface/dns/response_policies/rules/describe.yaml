@@ -1,0 +1,20 @@
+- release_tracks: [BETA, ALPHA]
+  help_text:
+    brief: Shows details about a response policy rule.
+    description: Shows details about a Cloud DNS response policy rule.
+    examples: |
+      To show details about a response policy rule, run:
+
+        $ {command} --response-policy=myresponsepolicy rulename
+
+  request:
+    collection: dns.responsePolicyRules
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta2
+
+  arguments:
+    resource:
+      help_text: The response policy rule to describe.
+      spec: !REF googlecloudsdk.command_lib.dns.resources:response_policy_rule

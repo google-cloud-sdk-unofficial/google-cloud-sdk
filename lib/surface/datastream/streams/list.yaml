@@ -1,0 +1,30 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: List Datastream stream resources.
+    description: List Datastream stream resources.
+    examples: |
+      To list all streams in a project and location 'us-central1', run:
+
+        $ {command} --location=us-central1
+
+  request:
+    collection: datastream.projects.locations.streams
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The location you want to list the streams for.
+      spec: !REF googlecloudsdk.command_lib.datastream.resources:location
+
+  output:
+    format: |
+      table(
+        displayName:label=NAME,
+        state:label=STATE,
+        sourceConfig.sourceConnectionProfileName:label=SOURCE,
+        destinationConfig.destinationConnectionProfileName:label=DESTINATION,
+        createTime,
+        updateTime
+      )

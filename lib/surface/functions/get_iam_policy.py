@@ -19,11 +19,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.functions.v1 import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
+from googlecloudsdk.command_lib.functions.v1.get_iam_policy import command as command_v1
+from googlecloudsdk.command_lib.functions.v2.get_iam_policy import command as command_v2
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class GetIamPolicy(base.ListCommand):
   """Get IAM policy for a Google Cloud Function."""
 
@@ -52,5 +54,43 @@ class GetIamPolicy(base.ListCommand):
     Returns:
       The specified function with its description and configured filter.
     """
-    function_ref = args.CONCEPTS.name.Parse()
-    return util.GetFunctionIamPolicy(function_ref.RelativeName())
+    return command_v1.Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class GetIamPolicyAlpha(base.ListCommand):
+  """Get IAM policy for a Google Cloud Function."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To get the iam policy for `FUNCTION-1` run:
+
+            $ {command} FUNCTION-1
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    flags.AddFunctionResourceArg(parser, 'to get IAM policy for')
+
+    # Add additional flags for GCFv2
+    flags.AddV2Flag(parser)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      The specified function with its description and configured filter.
+    """
+    if flags.ShouldUseV2(args):
+      return command_v2.Run(args, self.ReleaseTrack())
+    else:
+      return command_v1.Run(args)

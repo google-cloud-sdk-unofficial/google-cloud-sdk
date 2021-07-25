@@ -28,13 +28,12 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs import instance_configs_messages
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
-class CreateInstanceGA(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class CreateInstanceBetaAndGA(base.CreateCommand):
   """Create a new virtual machine instance in a managed instance group."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     instance_groups_flags.GetInstanceGroupManagerArg(
         region_flag=True).AddArgument(
             parser, operation_type='create instance in')
@@ -68,8 +67,7 @@ class CreateInstanceGA(base.CreateCommand):
     return instance_ref
 
   def Run(self, args):
-    instance_groups_flags.ValidateMigStatefulFlagsForInstanceConfigs(
-        args, need_disk_source=True)
+    self._ValidateStatefulFlagsForInstanceConfigs(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -84,13 +82,8 @@ class CreateInstanceGA(base.CreateCommand):
     instance_ref = self._CreateNewInstanceReference(
         holder=holder, igm_ref=igm_ref, instance_name=args.instance)
 
-    per_instance_config_message = (
-        instance_configs_messages.CreatePerInstanceConfigMessage)(
-            holder,
-            instance_ref,
-            args.stateful_disk,
-            args.stateful_metadata,
-            disk_getter=NonExistentDiskGetter())
+    per_instance_config_message = self._CreatePerInstanceConfgMessage(
+        holder, instance_ref, args)
 
     operation_ref, service = instance_configs_messages.CallCreateInstances(
         holder=holder,
@@ -102,8 +95,20 @@ class CreateInstanceGA(base.CreateCommand):
                                    'Creating instance.')
     return create_result
 
+  def _ValidateStatefulFlagsForInstanceConfigs(self, args):
+    instance_groups_flags.ValidateMigStatefulFlagsForInstanceConfigs(
+        args, need_disk_source=True)
 
-CreateInstanceGA.detailed_help = {
+  def _CreatePerInstanceConfgMessage(self, holder, instance_ref, args):
+    return instance_configs_messages.CreatePerInstanceConfigMessage(
+        holder,
+        instance_ref,
+        args.stateful_disk,
+        args.stateful_metadata,
+        disk_getter=NonExistentDiskGetter())
+
+
+CreateInstanceBetaAndGA.detailed_help = {
     'brief':
         ('Create a new virtual machine instance in a managed instance group '
          'with a defined name and optionally its stateful configuration.'),
@@ -115,7 +120,7 @@ CreateInstanceGA.detailed_help = {
         corresponding newly created per-instance config. An instance with a
         per-instance config will preserve its given name, specified disks, and
         specified metadata key-values during instance recreation, auto-healing,
-        and updates and any other lifecycle transitions of the instance.
+        updates, and any other lifecycle transitions of the instance.
         """,
     'EXAMPLES':
         """\
@@ -128,6 +133,66 @@ CreateInstanceGA.detailed_help = {
                   --instance=instance-1 \\
                   --stateful-disk='device-name=foo,source=https://compute.googleapis.com/compute/alpha/projects/my-project/zones/europe-west4/disks/disk-1,mode=rw,auto-delete=on-permanent-instance-deletion' \\
                   --stateful-metadata='my-key=my-value'
+        """
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateInstanceAlpha(CreateInstanceBetaAndGA):
+  """Create a new virtual machine instance in a managed instance group."""
+
+  @classmethod
+  def Args(cls, parser):
+    instance_groups_flags.GetInstanceGroupManagerArg(
+        region_flag=True).AddArgument(
+            parser, operation_type='create instance in')
+    instance_groups_flags.AddCreateInstancesFlags(parser, add_stateful_ips=True)
+
+  def _ValidateStatefulFlagsForInstanceConfigs(self, args):
+    super(CreateInstanceAlpha,
+          self)._ValidateStatefulFlagsForInstanceConfigs(args)
+    instance_groups_flags.ValidateMigStatefulIPFlagsForInstanceConfigs(args)
+
+  def _CreatePerInstanceConfgMessage(self, holder, instance_ref, args):
+    return instance_configs_messages.CreatePerInstanceConfigMessageWithIPs(
+        holder,
+        instance_ref,
+        args.stateful_disk,
+        args.stateful_metadata,
+        args.stateful_internal_ip,
+        args.stateful_external_ip,
+        disk_getter=NonExistentDiskGetter())
+
+
+CreateInstanceAlpha.detailed_help = {
+    'brief': CreateInstanceBetaAndGA.detailed_help['brief'],
+    'DESCRIPTION':
+        """\
+        *{command}* creates a  virtual machine instance with a defined name and
+        optionally its stateful configuration: stateful disk, stateful
+        metadata key-values, and stateful IP addressess. Stateful configuration
+        is stored in the corresponding newly created per-instance config.
+        An instance with a per-instance config will preserve its given name,
+        specified disks, specified metadata key-values, and specified internal
+        and external IPs during instance recreation, auto-healing, updates,
+        and any other lifecycle transitions of the instance.
+        """,
+    'EXAMPLES':
+        """\
+        To create an instance `instance-1` in `my-group`
+        (in region europe-west4) with metadata `my-key: my-value`, a disk
+        `disk-1` attached to it as the device `device-1`,
+        stateful internal IP `192.168.0.10` on the default interface (nic0),
+        and existing address reservation `my-address` for stateful external IP
+        on interface `nic1`, run:
+
+            $ {command} \\
+                  my-group --region=europe-west4 \\
+                  --instance=instance-1 \\
+                  --stateful-disk='device-name=foo,source=https://compute.googleapis.com/compute/alpha/projects/my-project/zones/europe-west4/disks/disk-1,mode=rw,auto-delete=on-permanent-instance-deletion' \\
+                  --stateful-metadata='my-key=my-value' \\
+                  --stateful-internal-ip=address=192.168.0.10,auto-delete=on-permanent-instance-deletion \\
+                  --stateful-external-ip=address=/projects/example-project/regions/europe-west4/addresses/my-address,interface-name=nic1
         """
 }
 

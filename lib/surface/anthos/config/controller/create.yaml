@@ -1,0 +1,42 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Create Anthos Config Controller instances
+    description: Create an Anthos Config Controller instance.
+    examples: |
+      To create an Anthos Config Controller instance with the name acc-default, run:
+
+        $ {command} acc-default --location=us-central1
+  request:
+    collection: krmapihosting.projects.locations.krmApiHosts
+    method: create
+    create_request_hook: googlecloudsdk.command_lib.anthos.config.controller.create_utils:CreateUpdateRequest
+
+  async:
+    collection: krmapihosting.projects.locations.operations
+  arguments:
+    resource:
+      help_text: "The identifier for an Anthos Config Controller instance."
+      spec: !REF googlecloudsdk.command_lib.anthos.config.controller.resources:instance
+    params:
+    - api_field: krmApiHost.masterIpv4CidrBlock
+      arg_name: master-ipv4-cidr-block
+      help_text: The /28 network that the masters will use. Defaults to '172.16.0.128/28' if flag is not provided.
+    - api_field: krmApiHost.network
+      arg_name: network
+      help_text: Existing VPC Network to put the GKE cluster and nodes in. Defaults to 'default' if flag is not provided.
+    - api_field: krmApiHost.manBlock
+      arg_name: man-block
+      help_text: Master Authorized Network. Allows access to the k8s master from this block. Defaults to '0.0.0.0/0' if flag is not provided.
+    - api_field: krmApiHost.clusterCidrBlock
+      arg_name: cluster-ipv4-cidr-block
+      help_text: The IP address range for the cluster pod IPs. Set to /netmask for example '/14' to have a range chosen with a specific netmask. Defaults to '/20' if flag is not provided.
+    - api_field: krmApiHost.servicesCidrBlock
+      arg_name: services-ipv4-cidr-block
+      help_text: The IP address range for the cluster service IPs. Set to /netmask for example '/14' to have a range chosen with a specific netmask. Defaults to '/27' if flag is not provided.
+    - api_field: krmApiHost.clusterNamedRange
+      arg_name: cluster-named-range
+      help_text: The name of the existing secondary range in the clusters subnetwork to use for pod IP addresses. Alternatively, cluster_cidr_block can be used to automatically create a GKE-managed one.
+    - api_field: krmApiHost.servicesNamedRange
+      arg_name: services-named-range
+      help_text: The name of the existing secondary range in the clusters subnetwork to use for service ClusterIPs. Alternatively, services_cidr_block can be used to automatically create a GKE-managed one.
+    additional_arguments_hook: googlecloudsdk.command_lib.anthos.config.controller.create_utils:AddExtraArgs

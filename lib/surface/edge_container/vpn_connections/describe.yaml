@@ -1,0 +1,18 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Show details about a VPN connection.
+    description: Show details about a VPN connection.
+    examples: |
+      To show details about the VPN connection 'test-vpn-connection' at location 'my-location', run:
+
+        $ {command} test-vpn-connection --location 'my-location'
+
+  request:
+    collection: edgecontainer.projects.locations.vpnConnections
+    api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: VPN connection you want to describe.
+      spec: !REF googlecloudsdk.command_lib.edge_container.resources:vpnConnection

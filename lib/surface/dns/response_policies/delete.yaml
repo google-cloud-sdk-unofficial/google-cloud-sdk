@@ -1,0 +1,24 @@
+- release_tracks: [BETA, ALPHA]
+  help_text:
+    brief: Deletes a Cloud DNS response policy.
+    description: |
+      Deletes a Cloud DNS response policy.
+      ## EXAMPLES
+
+      To delete a response policy, run:
+
+        $ {command} myresponsepolicy
+
+  request:
+    collection: dns.responsePolicies
+    method: delete
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta2
+
+  arguments:
+    resource:
+      help_text: The name of the response policy that you want to delete.
+      is_positional: true
+      spec: !REF googlecloudsdk.command_lib.dns.resources:response_policy

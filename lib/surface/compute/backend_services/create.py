@@ -257,6 +257,8 @@ class CreateHelper(object):
           drainingTimeoutSec=args.connection_draining_timeout)
     if args.custom_request_header is not None:
       backend_service.customRequestHeaders = args.custom_request_header
+    if args.custom_response_header is not None:
+      backend_service.customResponseHeaders = args.custom_response_header
     backend_services_utils.ApplyFailoverPolicyArgs(client.messages, args,
                                                    backend_service,
                                                    self._support_failover)

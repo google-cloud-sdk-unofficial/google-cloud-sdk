@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.privateca import pem_utils
 from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
@@ -90,7 +91,8 @@ class ExportBeta(base.SilentCommand):
     if args.include_chain:
       pem_chain += certificate.pemCertificateChain
 
-    files.WriteFileContents(args.output_file, '\n'.join(pem_chain))
+    files.WriteFileContents(args.output_file,
+                            pem_utils.PemChainForOutput(pem_chain))
     log.status.write('Exported certificate [{}] to [{}].'.format(
         certificate_ref.RelativeName(), args.output_file))
 
@@ -158,6 +160,7 @@ class Export(base.SilentCommand):
     if args.include_chain:
       pem_chain += certificate.pemCertificateChain
 
-    files.WriteFileContents(args.output_file, '\n'.join(pem_chain))
+    files.WriteFileContents(args.output_file,
+                            pem_utils.PemChainForOutput(pem_chain))
     log.status.write('Exported certificate [{}] to [{}].'.format(
         certificate_ref.RelativeName(), args.output_file))

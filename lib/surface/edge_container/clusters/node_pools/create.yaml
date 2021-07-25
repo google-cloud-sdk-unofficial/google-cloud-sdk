@@ -1,0 +1,43 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Create an Edge Container node pool.
+    description: |
+      Create a new Edge Container nodePool.
+    examples: |
+      To create a node pool called 'test-nodePool', run:
+
+        $ {command} my-nodePool
+
+  request:
+    collection: edgecontainer.projects.locations.clusters.nodePools
+    api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: Edge Container node pool to create.
+      spec: !REF googlecloudsdk.command_lib.edge_container.resources:nodePool
+
+    params:
+    # TODO(b/176452774)  Generate an argument for the `labels` param.
+    - arg_name: node-count
+      api_field: nodePool.nodeCount
+      required: true
+      help_text: |
+        Default nodeCount used by this node pool.
+    - arg_name: node-location
+      api_field: nodePool.nodeLocation
+      required: true
+      help_text: |
+        Google Edge Cloud zone where nodes in this node pool will be created.
+    - arg_name: machine-filter
+      api_field: nodePool.machineFilter
+      help_text: |
+        Only machines matching this filter will be allowed to join the node
+        pool. The filtering language accepts strings like "name=<name>", and is
+        documented in more detail at https://google.aip.dev/160.
+    labels:
+      api_field: nodePool.labels
+
+  async:
+    collection: edgecontainer.projects.locations.operations

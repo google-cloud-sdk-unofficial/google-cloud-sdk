@@ -1,0 +1,22 @@
+- release_tracks: [BETA]
+
+  help_text:
+    brief: Cancel a Datastream operation.
+    description: Cancel a Datastream operation.
+    examples: |
+      To cancel an operation, run:
+
+          $ {command} OPERATION --location=us-central1
+
+  request:
+    collection: datastream.projects.locations.operations
+    method: cancel
+
+  arguments:
+    resource:
+      help_text: |
+        Operation resource - Datastream operation to cancel.
+      spec: !REF googlecloudsdk.command_lib.datastream.resources:operation
+
+  output:
+    format: none

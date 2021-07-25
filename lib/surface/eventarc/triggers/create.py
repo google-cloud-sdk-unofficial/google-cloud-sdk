@@ -81,7 +81,6 @@ class Create(base.CreateCommand):
 
     # destination Cloud Run service
     if args.IsSpecified('destination_run_service'):
-
       destination_run_region = self.GetDestinationLocation(
           args, trigger_ref, 'destination_run_region', 'Cloud Run service')
 
@@ -90,6 +89,7 @@ class Create(base.CreateCommand):
           args.destination_run_service, args.destination_run_path,
           destination_run_region, transport_topic_ref)
       dest_str = 'Cloud Run service [{}]'.format(args.destination_run_service)
+      loading_msg = ''
     # destination GKE service
     elif args.IsSpecified('destination_gke_service'):
       destination_gke_location = self.GetDestinationLocation(
@@ -103,6 +103,7 @@ class Create(base.CreateCommand):
           args.destination_gke_path, transport_topic_ref)
       dest_str = 'GKE service [{}] in cluster [{}]'.format(
           args.destination_gke_service, args.destination_gke_cluster)
+      loading_msg = 'this operation may take several minutes'
     else:
       raise UnsupportedDestinationError('Must specify a valid destination.')
 
@@ -111,7 +112,7 @@ class Create(base.CreateCommand):
     if args.async_:
       return operation
 
-    response = client.WaitFor(operation, 'Creating', trigger_ref)
+    response = client.WaitFor(operation, 'Creating', trigger_ref, loading_msg)
     trigger_dict = encoding.MessageToPyValue(response)
     if types.IsPubsubType(self._event_type):
       topic = trigger_dict['transport']['pubsub']['topic']

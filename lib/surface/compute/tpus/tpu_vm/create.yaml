@@ -1,0 +1,48 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Create a new Cloud TPU VM node.
+    description: Create a new Cloud TPU VM node.
+    examples: |
+      The following command creates a TPU VM node with ID `my-tpu` in the default user project,
+      network and compute/region (with other defaults supplied by API):
+
+        $ {command} my-tpu
+
+
+      The following command creates a TPU VM node with ID `my-tpu`:
+
+        $ {command} my-tpu --zone=us-central1-a --range='10.240.0.0/29' --accelerator-type='v2-8' --network=my-tf-network --description='My TF Node' --version='2.3'
+
+  request:
+    _COMMON_: create_request
+    api_version: v2alpha1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetParentRequestHook
+
+  async:
+    collection: tpu.projects.locations.operations
+    result_attribute: response
+    extract_resource_result: false
+
+  arguments:
+    resource:
+      help_text: The Cloud TPU VM node you want to create.
+      spec: !REF googlecloudsdk.command_lib.compute.tpus.tpu_vm.resources:tpu
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:accelerator_type
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:description
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:network
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:subnetwork
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:enable_external_ips
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:version
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:preemptible
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:reserved
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:range
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:service_account
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:service_account_scopes
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:labels
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:metadata
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:metadata_from_file
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:tags
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:data_disks

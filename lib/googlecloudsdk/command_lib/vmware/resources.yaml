@@ -1,0 +1,73 @@
+project:
+  name: project
+  collection: vmwareengine.projects
+  attributes:
+  - &project
+    parameter_name: projectsId
+    attribute_name: project
+    help: Project ID.
+    property: core/project
+  disable_auto_completers: false
+
+location:
+  name: location
+  collection: vmwareengine.projects.locations
+  attributes:
+  - *project
+  - &location
+    parameter_name: locationsId
+    attribute_name: location
+    help: Zone of the private cloud or cluster.
+    property: compute/zone
+  disable_auto_completers: false
+
+privatecloud:
+  name: privatecloud
+  collection: vmwareengine.projects.locations.privateClouds
+  attributes:
+  - *project
+  - *location
+  - &privatecloud
+    parameter_name: privateCloudsId
+    attribute_name: privatecloud
+    help: VMware Engine private cloud.
+  disable_auto_completers: false
+
+cluster:
+  name: cluster
+  collection: vmwareengine.projects.locations.privateClouds.clusters
+  attributes:
+  - *project
+  - *location
+  - *privatecloud
+  - &cluster
+    parameter_name: clustersId
+    attribute_name: cluster
+    help: Resource ID of the cluster
+  disable_auto_completers: false
+
+
+operation:
+  name: operation
+  collection: vmwareengine.projects.locations.operations
+  attributes:
+  - *project
+  - *location
+  - parameter_name: operationsId
+    attribute_name: operation
+    help: |
+      The name of the VMware Engine operation.
+  disable_auto_completers: false
+
+
+nodetype:
+  name: nodetype
+  collection: vmwareengine.projects.locations.nodeTypes
+  attributes:
+  - *project
+  - *location
+  - parameter_name: nodeTypesId
+    attribute_name: nodetype
+    help: |
+      Node Type in a VMware Engine cluster.
+  disable_auto_completers: false

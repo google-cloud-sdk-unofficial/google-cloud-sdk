@@ -34,13 +34,17 @@ import six
 POLL_TIMEOUT = 36000  # 10 hours is recommended by PD team b/131850402#comment20
 
 
-def _Args(parser, messages, supports_force_create=False):
+def _Args(parser,
+          messages,
+          supports_force_create=False,
+          support_user_licenses=False):
   """Set Args based on Release Track."""
   # GA Args
   parser.display_info.AddFormat(flags.LIST_FORMAT)
 
   sources_group = parser.add_mutually_exclusive_group(required=True)
-  flags.AddCommonArgs(parser)
+
+  flags.AddCommonArgs(parser, support_user_licenses=support_user_licenses)
   flags.AddCommonSourcesArgs(parser, sources_group)
 
   Create.DISK_IMAGE_ARG = flags.MakeDiskImageArg()
@@ -110,7 +114,7 @@ class Create(base.CreateCommand):
   def Run(self, args):
     return self._Run(args)
 
-  def _Run(self, args):
+  def _Run(self, args, support_user_licenses=False):
     """Returns a list of requests necessary for adding images."""
     holder = self._GetApiHolder()
     client = holder.client
@@ -124,6 +128,8 @@ class Create(base.CreateCommand):
         sourceType=messages.Image.SourceTypeValueValuesEnum.RAW,
         family=args.family)
 
+    if support_user_licenses and args.IsSpecified('user_licenses'):
+      image.userLicenses = args.user_licenses
     csek_keys = csek_utils.CsekKeyStore.FromArgs(
         args, self._ALLOW_RSA_ENCRYPTED_CSEK_KEYS)
     if csek_keys:
@@ -244,13 +250,15 @@ class CreateBeta(Create):
   @classmethod
   def Args(cls, parser):
     messages = cls._GetApiHolder(no_http=True).client.messages
-    _Args(parser,
-          messages,
-          supports_force_create=True)
+    _Args(
+        parser,
+        messages,
+        supports_force_create=True,
+        support_user_licenses=True)
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
-    return self._Run(args)
+    return self._Run(args, support_user_licenses=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -262,13 +270,15 @@ class CreateAlpha(Create):
   @classmethod
   def Args(cls, parser):
     messages = cls._GetApiHolder(no_http=True).client.messages
-    _Args(parser,
-          messages,
-          supports_force_create=True)
+    _Args(
+        parser,
+        messages,
+        supports_force_create=True,
+        support_user_licenses=True)
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
-    return self._Run(args)
+    return self._Run(args, support_user_licenses=True)
 
 
 Create.detailed_help = {

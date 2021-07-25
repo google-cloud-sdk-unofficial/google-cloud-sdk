@@ -104,7 +104,7 @@ def _CommonArgs(parser,
 
   instance_templates_flags.AddServiceProxyConfigArgs(parser)
   if support_mesh:
-    instance_templates_flags.AddMeshArgs(parser, hide_arguments=True)
+    instance_templates_flags.AddMeshArgs(parser)
 
   sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
 
@@ -405,6 +405,7 @@ def AddServiceProxyArgsToMetadata(args):
     args.metadata['gce-service-proxy'] = json.dumps(service_proxy_config)
 
 
+# TODO(b/186187191): Add e2e test for the --mesh flag.
 def ConfigureMeshTemplate(args, instance_template_ref, network_interfaces):
   """Adds Anthos Service Mesh configuration into the instance template.
 
@@ -437,13 +438,14 @@ def ConfigureMeshTemplate(args, instance_template_ref, network_interfaces):
         membership_manifest = kube_client.GetMembershipCR()
         # Verify Identity Provider CR existence only.
         _ = kube_client.GetIdentityProviderCR()
+
         namespace_manifest = kube_client.GetNamespace(workload_namespace)
         workload_manifest = kube_client.GetWorkloadGroupCR(
             workload_namespace, workload_name)
         mesh_util.VerifyWorkloadSetup(workload_manifest)
 
-        expansionagateway_ip = kube_client.RetrieveExpansionGatewayIP()
-        root_cert = kube_client.RetrieveKubernetesRootCert()
+        asm_revision = mesh_util.RetrieveWorkloadRevision(namespace_manifest)
+        mesh_config = kube_client.RetrieveMeshConfig(asm_revision)
 
         log.status.Print(
             'Configuring the instance template for Anthos Service Mesh...')
@@ -451,8 +453,7 @@ def ConfigureMeshTemplate(args, instance_template_ref, network_interfaces):
         mesh_util.ConfigureInstanceTemplate(
             args, kube_client, project_id, network_interfaces[0].network,
             workload_namespace, workload_name, workload_manifest,
-            namespace_manifest, membership_manifest, expansionagateway_ip,
-            root_cert)
+            membership_manifest, asm_revision, mesh_config)
 
 
 def _RunCreate(compute_api,
@@ -800,7 +801,7 @@ class CreateBeta(Create):
   _support_location_hint = False
   _support_post_key_revocation_action_type = True
   _support_multi_writer = True
-  _support_mesh = False
+  _support_mesh = True
 
   @classmethod
   def Args(cls, parser):

@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Cancel a Compute Engine future reservation.
+    description: Canel a Compute Engine future reservation.
+    examples: |
+      To cancel a given Compute Engine future reservation, run:
+
+        $ {command} my-reservation --zone=ZONE
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.compute.resources:future_reservation
+      help_text: The name of the future reservation to cancel.
+
+  request:
+    api_version: alpha
+    collection: compute.futureReservations
+    method: cancel
+
+  async:
+    api_version: alpha
+    collection: compute.zoneOperations
+    method: wait
+    response_name_field: selfLink
+    state:
+      field: status
+      success_values: ['DONE']

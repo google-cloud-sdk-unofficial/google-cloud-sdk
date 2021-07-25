@@ -22,5 +22,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Hidden
 class Buckets(base.Group):
   """Manage Cloud Storage buckets."""

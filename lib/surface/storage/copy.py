@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.storage import storage_parallel
 from googlecloudsdk.core import log
 
 
+@base.Hidden
 @base.Deprecate(is_removed=False, warning='This command is deprecated. '
                 'Use `gcloud alpha storage cp` instead.')
 class Copy(base.Command):

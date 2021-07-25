@@ -68,7 +68,7 @@ def _JoinWithOr(strings):
     return ', '.join(strings[:-1]) + ', or ' + strings[-1]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine network endpoint group."""
 
@@ -117,7 +117,7 @@ class Create(base.CreateCommand):
     self._ValidateNEG(args, neg_ref)
 
     if self.support_regional_scope:
-      if self.support_serverless_deployment or self.support_l7psc_neg:
+      if self.support_serverless_deployment:
         result = neg_client.Create(
             neg_ref,
             args.network_endpoint_type,
@@ -137,6 +137,24 @@ class Create(base.CreateCommand):
             serverless_deployment_resource=args.serverless_deployment_resource,
             serverless_deployment_version=args.serverless_deployment_version,
             serverless_deployment_url_mask=args.serverless_deployment_url_mask,
+            psc_target_service=args.psc_target_service)
+
+      elif self.support_l7psc_neg:
+        result = neg_client.Create(
+            neg_ref,
+            args.network_endpoint_type,
+            default_port=args.default_port,
+            network=args.network,
+            subnet=args.subnet,
+            cloud_run_service=args.cloud_run_service,
+            cloud_run_tag=args.cloud_run_tag,
+            cloud_run_url_mask=args.cloud_run_url_mask,
+            app_engine_app=args.app_engine_app,
+            app_engine_service=args.app_engine_service,
+            app_engine_version=args.app_engine_version,
+            app_engine_url_mask=args.app_engine_url_mask,
+            cloud_function_name=args.cloud_function_name,
+            cloud_function_url_mask=args.cloud_function_url_mask,
             psc_target_service=args.psc_target_service)
       else:
         result = neg_client.Create(
@@ -227,11 +245,16 @@ class Create(base.CreateCommand):
             '--network', 'Global NEGs cannot specify network.')
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a Google Compute Engine network endpoint group."""
+  support_l7psc_neg = True
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+class CreateAlpha(CreateBeta):
   """Create a Google Compute Engine network endpoint group."""
 
   support_l4ilb_neg = True
   support_neg_type = True
   support_serverless_deployment = True
-  support_l7psc_neg = True

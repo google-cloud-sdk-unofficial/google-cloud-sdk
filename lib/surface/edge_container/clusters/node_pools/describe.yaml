@@ -1,0 +1,18 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: Show details about the nodePool.
+  description: Show details about the nodePool.
+  examples: |
+    To show details about a device, run:
+
+      $ {command} my-nodePool --name=my-name
+
+request:
+  collection: edgecontainer.projects.locations.clusters.nodePools
+  api_version: v1alpha
+
+arguments:
+  resource:
+    help_text: The nodePool you want to describe.
+    spec: !REF googlecloudsdk.command_lib.edge_container.resources:nodePool

@@ -68,13 +68,6 @@ class DeleteBeta(Delete):
 
   _API_VERSION = filestore_client.BETA_API_VERSION
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(Delete):
-  """Delete a Cloud Filestore instance."""
-
-  _API_VERSION = filestore_client.ALPHA_API_VERSION
-
   @staticmethod
   def Args(parser):
     concept_parsers.ConceptParser([flags.GetInstancePresentationSpec(
@@ -82,6 +75,13 @@ class DeleteAlpha(Delete):
     instances_flags.AddLocationArg(parser)
     instances_flags.AddRegionArg(parser)
     instances_flags.AddAsyncFlag(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(DeleteBeta):
+  """Delete a Cloud Filestore instance."""
+
+  _API_VERSION = filestore_client.ALPHA_API_VERSION
 
 
 Delete.detailed_help = {

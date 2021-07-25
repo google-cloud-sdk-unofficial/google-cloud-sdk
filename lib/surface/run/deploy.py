@@ -163,8 +163,6 @@ class Deploy(base.Command):
     """Deploy a container to Cloud Run."""
     platform = flags.GetAndValidatePlatform(
         args, self.ReleaseTrack(), flags.Product.RUN)
-    service_ref = args.CONCEPTS.service.Parse()
-    flags.ValidateResource(service_ref)
 
     include_build = flags.FlagIsExplicitlySet(args, 'source')
     if not include_build and not args.IsSpecified('image'):
@@ -175,6 +173,9 @@ class Deploy(base.Command):
         raise c_exceptions.RequiredArgumentException(
             '--image', 'Requires a container image to deploy (e.g. '
             '`gcr.io/cloudrun/hello:latest`) if no build source is provided.')
+
+    service_ref = args.CONCEPTS.service.Parse()
+    flags.ValidateResource(service_ref)
 
     # Obtaining the connection context prompts the user to select a region if
     # one hasn't been provided. We want to do this prior to preparing a source

@@ -1,0 +1,19 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: |
+      Delete a Datastream private connection route.
+    description: |
+      Deletes a Datastream private connection route.
+    examples: |
+      To delete a Datastream private connection route:
+
+          $ {command} ROUTE --location=us-central1
+
+  request:
+    collection: datastream.projects.locations.privateConnections.routes
+
+  arguments:
+    resource:
+      help_text: |
+        The Route to delete.
+      spec: !REF googlecloudsdk.command_lib.datastream.resources:route

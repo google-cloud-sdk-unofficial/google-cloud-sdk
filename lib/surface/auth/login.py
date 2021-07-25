@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.api_lib.auth import exceptions as auth_exceptions
+from googlecloudsdk.api_lib.auth import external_account as auth_external_account
 from googlecloudsdk.api_lib.auth import util as auth_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
@@ -31,6 +32,7 @@ from googlecloudsdk.core import config
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.credentials import creds as c_creds
 from googlecloudsdk.core.credentials import devshell as c_devshell
 from googlecloudsdk.core.credentials import gce as c_gce
 from googlecloudsdk.core.credentials import store as c_store
@@ -123,6 +125,11 @@ class Login(base.Command):
         help='The gcloud command-line tool is using google-auth-library-python '
              'as its new auth library during login. Use this flag to switch '
              'back to the oauth2client.')
+    # TODO(b/190114370): This will also support JSON service account files.
+    parser.add_argument(
+        '--cred-file',
+        hidden=True,
+        help='Path to the external credential configuration file.')
     parser.display_info.AddFormat('none')
 
   def Run(self, args):
@@ -136,6 +143,13 @@ class Login(base.Command):
     if args.enable_gdrive_access:
       scopes += (auth_util.GOOGLE_DRIVE_SCOPE,)
 
+    if args.cred_file:
+      cred_config = (
+          auth_external_account.GetExternalAccountCredentialsConfig(
+              args.cred_file))
+    else:
+      cred_config = None
+
     if c_devshell.IsDevshellEnvironment():
       if c_devshell.HasDevshellAuth():
         message = textwrap.dedent("""
@@ -146,7 +160,8 @@ class Login(base.Command):
         answer = console_io.PromptContinue(message=message)
         if not answer:
           return None
-    elif c_gce.Metadata().connected:
+    elif (c_gce.Metadata().connected and
+          not auth_external_account.IsExternalAccountConfig(cred_config)):
       message = textwrap.dedent("""
           You are running on a Google Compute Engine virtual machine.
           It is recommended that you use service accounts for authentication.
@@ -167,7 +182,7 @@ class Login(base.Command):
 
     account = args.account
 
-    if account and not args.force:
+    if account and not args.force and not args.cred_file:
       try:
         creds = c_store.Load(account=account, scopes=scopes)
       except c_store.Error:
@@ -179,6 +194,12 @@ class Login(base.Command):
                     '`--force` flag.'.format(account))
         return LoginAs(account, creds, args.project, args.activate, args.brief,
                        args.update_adc, args.add_quota_project_to_adc)
+
+    if args.cred_file:
+      return LoginWithCredFileConfig(cred_config, scopes, args.project,
+                                     args.activate, args.brief, args.update_adc,
+                                     args.add_quota_project_to_adc,
+                                     args.account)
 
     # No valid creds, do the web flow.
     launch_browser = check_browser.ShouldLaunchBrowser(args.launch_browser)
@@ -205,6 +226,73 @@ class Login(base.Command):
                    args.update_adc, args.add_quota_project_to_adc)
 
 
+def LoginWithCredFileConfig(cred_config, scopes, project, activate, brief,
+                            update_adc, add_quota_project_to_adc, args_account):
+  """Login with the provided configuration loaded from --cred-file.
+
+  Args:
+    cred_config (Mapping): The configuration dictionary representing the
+      credentials. This is loaded from the --cred-file argument.
+    scopes (Tuple[str]): The default OAuth scopes to use.
+    project (Optional[str]): The optional project ID to activate / persist.
+    activate (bool): Whether to set the new account associated with the
+      credentials to active.
+    brief (bool): Whether to use minimal user output.
+    update_adc (bool): Whether to write the obtained credentials to the
+      well-known location for Application Default Credentials (ADC).
+    add_quota_project_to_adc (bool): Whether to add the quota project to the
+      application default credentials file.
+    args_account (Optional[str]): The optional ACCOUNT argument. When provided,
+      this should match the account ID on the authenticated credentials.
+
+  Returns:
+    google.auth.credentials.Credentials: The authenticated stored credentials.
+
+  Raises:
+    calliope_exceptions.ConflictingArgumentsException: If conflicting arguments
+      are provided.
+    calliope_exceptions.InvalidArgumentException: If invalid arguments are
+      provided.
+  """
+  # Remove reauth scope (only applicable to 1P user accounts).
+  scopes = tuple(x for x in scopes if x != config.REAUTH_SCOPE)
+  # Reject unsupported arguments.
+  if add_quota_project_to_adc:
+    raise calliope_exceptions.ConflictingArgumentsException(
+        '[--add-quota-project-to-adc] cannot be specified with --cred-file')
+  if auth_external_account.IsExternalAccountConfig(cred_config):
+    creds = auth_external_account.CredentialsFromAdcDictGoogleAuth(cred_config)
+    account = creds.service_account_email
+  else:
+    # TODO(b/190114370): support service account key files.
+    raise calliope_exceptions.InvalidArgumentException(
+        '--cred-file',
+        'Only external-account credential file types are supported.')
+
+  if args_account and args_account != account:
+    raise calliope_exceptions.InvalidArgumentException(
+        'ACCOUNT',
+        'The given account name does not match the account name in the '
+        'credential file. This argument can be omitted when using '
+        'credential files.')
+  # Check if account already exists in storage.
+  try:
+    exist_creds = c_store.Load(account=account, scopes=scopes)
+  except c_store.Error:
+    exist_creds = None
+  if exist_creds:
+    message = textwrap.dedent("""
+      You are already authenticated with '%s'.
+      Do you wish to proceed and overwrite existing credentials?
+      """)
+    answer = console_io.PromptContinue(message=message % account, default=True)
+    if not answer:
+      return None
+  # Store credentials and activate if --activate is true.
+  c_store.Store(creds, account, scopes=scopes)
+  return LoginAs(account, creds, project, activate, brief, update_adc, False)
+
+
 def LoginAs(account, creds, project, activate, brief, update_adc,
             add_quota_project_to_adc):
   """Logs in with valid credentials."""
@@ -218,11 +306,18 @@ def LoginAs(account, creds, project, activate, brief, update_adc,
     properties.PersistProperty(properties.VALUES.core.project, project)
 
   if not brief:
+    if c_creds.IsExternalAccountCredentials(creds):
+      confirmation_msg = (
+          'Authenticated with external account credentials for: [{0}].'.format(
+              account))
+    else:
+      confirmation_msg = 'You are now logged in as [{0}].'.format(account)
     log.status.write(
-        '\nYou are now logged in as [{account}].\n'
+        '\n{confirmation_msg}\n'
         'Your current project is [{project}].  You can change this setting '
         'by running:\n  $ gcloud config set project PROJECT_ID\n'.format(
-            account=account, project=properties.VALUES.core.project.Get()))
+            confirmation_msg=confirmation_msg,
+            project=properties.VALUES.core.project.Get()))
   return creds
 
 

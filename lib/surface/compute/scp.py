@@ -26,10 +26,31 @@ from googlecloudsdk.command_lib.compute import scp_utils
 from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.util.ssh import ip
 
-_DETAILED_HELP = {
-    'brief': ('Copy files to and from Google Compute Engine '
-              'virtual machines via scp.'),
-    'DESCRIPTION': """
+
+_ON_PREM_EXTRA_DESCRIPTION = """
+
+If the `--region` and `--network` flags are provided, then `--plain` and
+`--tunnel-through-iap` are implied and any remote file names must be prefixed
+with the remote IP address instead of the instance name. This is most useful for
+connecting to on-prem resources.
+"""
+
+_ON_PREM_EXTRA_EXAMPLES = """
+
+To use the IP address of your remote VM (eg, for on-prem), you must also specify
+the `--region` and `--network` flags:
+
+  $ {command} 10.1.2.3:~/narnia ~/wardrobe --region=us-central1 --network=default
+"""
+
+
+def _DetailedHelp(version):
+  """Generate detailed help for each version."""
+  detailed_help = {
+      'brief': ('Copy files to and from Google Compute Engine '
+                'virtual machines via scp.'),
+      'DESCRIPTION':
+          """
 *{command}* securely copies files between a virtual machine instance and your
 local machine using the scp command.
 *This command does not work for Windows VMs.*
@@ -46,7 +67,8 @@ In order to set up a successful transfer, follow these guidelines:
     be local.
 
 Under the covers, *scp(1)* is used to facilitate the transfer.""",
-    'EXAMPLES': """
+      'EXAMPLES':
+          """
 To copy a remote directory, `~/narnia`, from ``example-instance'' to the
 `~/wardrobe` directory of your local host, run:
 
@@ -74,65 +96,80 @@ Or alternatively, allow access for the next two minutes:
 
   $ {command} --recurse example-instance:~/narnia ~/wardrobe --ssh-key-expire-after=2m
 """,
-}
+  }
+
+  if version == 'ALPHA':
+    detailed_help['DESCRIPTION'] += _ON_PREM_EXTRA_DESCRIPTION
+    detailed_help['EXAMPLES'] += _ON_PREM_EXTRA_EXAMPLES
+
+  return detailed_help
 
 
-def _Args(parser):
-  """Set up arguments for this command.
-
-  Args:
-    parser: An argparse.ArgumentParser.
-  """
-  scp_utils.BaseScpHelper.Args(parser)
-
-  parser.add_argument('--port', help='The port to connect to.')
-
-  parser.add_argument(
-      '--recurse', action='store_true', help='Upload directories recursively.')
-
-  parser.add_argument(
-      '--compress', action='store_true', help='Enable compression.')
-
-  parser.add_argument(
-      '--scp-flag',
-      action='append',
-      help='Extra flag to be sent to scp. This flag may be repeated.')
-
-  ssh_utils.AddVerifyInternalIpArg(parser)
-
-  routing_group = parser.add_mutually_exclusive_group()
-  routing_group.add_argument(
-      '--internal-ip',
-      default=False,
-      action='store_true',
-      help="""\
-      Connect to instances using their internal IP addresses rather than their
-      external IP addresses. Use this to connect from one instance to another
-      on the same VPC network, over a VPN connection, or between two peered
-      VPC networks.
-
-      For this connection to work, you must configure your networks and
-      firewall to allow SSH connections to the internal IP address of
-      the instance to which you want to connect.
-
-      To learn how to use this flag, see
-      [](https://cloud.google.com/compute/docs/instances/connecting-advanced#sshbetweeninstances).
-      """)
-
-  iap_tunnel.AddSshTunnelArgs(parser, routing_group)
-
-
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Scp(base.Command):
   """Copy files to and from Google Compute Engine virtual machines via scp."""
 
   category = base.TOOLS_CATEGORY
+  enable_ip_based_flags = False
 
-  @staticmethod
-  def Args(parser):
-    _Args(parser)
+  @classmethod
+  def Args(cls, parser):
+    """Set up arguments for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser.
+    """
+    scp_utils.BaseScpHelper.Args(parser)
+
+    parser.add_argument('--port', help='The port to connect to.')
+
+    parser.add_argument(
+        '--recurse',
+        action='store_true',
+        help='Upload directories recursively.')
+
+    parser.add_argument(
+        '--compress', action='store_true', help='Enable compression.')
+
+    parser.add_argument(
+        '--scp-flag',
+        action='append',
+        help='Extra flag to be sent to scp. This flag may be repeated.')
+
+    ssh_utils.AddVerifyInternalIpArg(parser)
+
+    routing_group = parser.add_mutually_exclusive_group()
+    routing_group.add_argument(
+        '--internal-ip',
+        default=False,
+        action='store_true',
+        help="""\
+        Connect to instances using their internal IP addresses rather than their
+        external IP addresses. Use this to connect from one instance to another
+        on the same VPC network, over a VPN connection, or between two peered
+        VPC networks.
+
+        For this connection to work, you must configure your networks and
+        firewall to allow SSH connections to the internal IP address of
+        the instance to which you want to connect.
+
+        To learn how to use this flag, see
+        [](https://cloud.google.com/compute/docs/instances/connecting-advanced#sshbetweeninstances).
+        """)
+
+    iap_tunnel.AddSshTunnelArgs(parser, routing_group)
+    # TODO(b/190426150): Move this to Beta and then GA.
+    if cls.enable_ip_based_flags:
+      iap_tunnel.AddIpBasedTunnelArgs(parser)
 
   def Run(self, args):
     """See scp_utils.BaseScpCommand.Run."""
+
+    on_prem = (
+        args.IsKnownAndSpecified('network') and
+        args.IsKnownAndSpecified('region'))
+    if on_prem:
+      args.plain = True
 
     if args.internal_ip:
       ip_type = ip.IpTypeEnum.INTERNAL
@@ -151,6 +188,7 @@ class Scp(base.Command):
     return scp_helper.RunScp(
         holder,
         args,
+        on_prem=on_prem,
         port=args.port,
         recursive=args.recurse,
         compress=args.compress,
@@ -159,4 +197,18 @@ class Scp(base.Command):
         ip_type=ip_type)
 
 
-Scp.detailed_help = _DETAILED_HELP
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ScpBeta(Scp):
+  """Copy files to and from Google Compute Engine virtual machines via scp (Beta)."""
+  enable_ip_based_flags = False
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ScpAlpha(ScpBeta):
+  """Copy files to and from Google Compute Engine virtual machines via scp (Alpha)."""
+  enable_ip_based_flags = True
+
+
+ScpAlpha.detailed_help = _DetailedHelp('ALPHA')
+ScpBeta.detailed_help = _DetailedHelp('BETA')
+Scp.detailed_help = _DetailedHelp('GA')

@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA, GA]
+
+  help_text:
+    brief: Export an EdgeCacheOrigin.
+    description: Export an EdgeCacheOrigin to YAML.
+    examples: |
+      To export an origin, run:
+
+        $ {command} my-origin --destination=my-origin.yaml
+
+  request:
+    collection: networkservices.projects.locations.edgeCacheOrigins
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+
+  arguments:
+    resource:
+      help_text: The EdgeCacheOrigin you want to export.
+      spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheOrigin

@@ -431,7 +431,7 @@ class Create(base.CreateCommand):
   _include_l7_internal_load_balancing = True
   _include_regional_managed_proxy = False
   _include_aggregate_purpose = False
-  _include_private_service_connect = False
+  _include_private_service_connect = True
   _include_internal_ipv6_access_type = False
   _include_l2 = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION

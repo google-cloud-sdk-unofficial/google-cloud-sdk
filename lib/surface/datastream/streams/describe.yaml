@@ -1,0 +1,16 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: Show details about a Datastream stream resource.
+    description: Show details about a Datastream stream resource.
+    examples: |
+      To show details about a stream, run:
+
+        $ {command} my-stream --location=us-central1
+
+  request:
+    collection: datastream.projects.locations.streams
+
+  arguments:
+    resource:
+      help_text: The stream you want to get the details of.
+      spec: !REF googlecloudsdk.command_lib.datastream.resources:stream

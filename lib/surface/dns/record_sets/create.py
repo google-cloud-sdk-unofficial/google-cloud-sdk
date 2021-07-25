@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.dns import resource_record_sets as rrsets_util
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.api_lib.util import apis
@@ -26,21 +28,25 @@ from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import properties
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a record-set in a managed-zone.
+  """Creates a record-set in a managed-zone."""
 
-  This command creates a record-set contained within the specified
-  managed-zone.
+  detailed_help = {
+      'DESCRIPTION':
+          textwrap.dedent("""\
+          This command creates a record-set contained within the specified
+          managed-zone.
+          """),
+      'EXAMPLES':
+          textwrap.dedent("""\
+          To create a record-set with dnsName foo.bar.com., record type A,
+          rrdata [1.2.3.4, 9.8.7.6] and ttl 60 in my_zone run this:
 
-  ## EXAMPLES
-
-  To create a record-set with dnsName foo.bar.com., record type A, rrdata
-  [1.2.3.4, 9.8.7.6] and ttl 60 in my_zone run this:
-
-    $ {command} foo.bar.com. --rrdatas=1.2.3.4,9.8.7.6 --type=A --ttl=60
-      --zone=my_zone
-
-  """
+          $ {command} foo.bar.com. --rrdatas=1.2.3.4,9.8.7.6 --type=A --ttl=60
+            --zone=my_zone
+          """)
+  }
 
   @classmethod
   def Args(cls, parser):
@@ -74,3 +80,18 @@ class Create(base.CreateCommand):
                 args, api_version)))
 
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class CreateBeta(Create):
+  """Creates a record-set in a managed-zone on the beta release track."""
+
+  @classmethod
+  def Args(cls, parser):
+    flags.GetZoneArg().AddToParser(parser)
+    flags.GetResourceRecordSetsNameArg().AddToParser(parser)
+    flags.GetResourceRecordSetsTypeArg(True).AddToParser(parser)
+    flags.GetResourceRecordSetsTtlArg(False).AddToParser(parser)
+    flags.GetResourceRecordSetsRrdatasArgGroup().AddToParser(parser)
+    parser.display_info.AddCacheUpdater(None)
+    parser.display_info.AddFormat(flags.RESOURCERECORDSETS_FORMAT)

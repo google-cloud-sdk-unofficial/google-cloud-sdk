@@ -58,7 +58,7 @@ class CreateHelper(object):
     flags.AddDescription(parser)
     flags.AddPreview(parser, default=None)
     if support_redirect:
-      flags.AddRedirectTarget(parser)
+      flags.AddRedirectOptions(parser)
     if support_rate_limit:
       flags.AddRateLimitOptions(parser)
     if support_header_action:
@@ -81,10 +81,11 @@ class CreateHelper(object):
     security_policy_rule = client.SecurityPolicyRule(
         ref, compute_client=holder.client)
 
-    redirect_target = None
+    redirect_options = None
     rate_limit_options = None
     if support_redirect:
-      redirect_target = args.redirect_target
+      redirect_options = (
+          security_policies_utils.CreateRedirectOptions(holder.client, args))
     if support_rate_limit:
       rate_limit_options = (
           security_policies_utils.CreateRateLimitOptions(holder.client, args))
@@ -99,7 +100,7 @@ class CreateHelper(object):
         action=args.action,
         description=args.description,
         preview=args.preview,
-        redirect_target=redirect_target,
+        redirect_options=redirect_options,
         rate_limit_options=rate_limit_options,
         request_headers_to_add=request_headers_to_add)
 
@@ -161,7 +162,7 @@ class CreateBeta(base.CreateCommand):
 
   SECURITY_POLICY_ARG = None
 
-  _support_redirect = False
+  _support_redirect = True
   _support_rate_limit = False
   _support_header_action = True
 

@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List Anthos Config Controller instances
+    description: List Anthos Config Controller instances.
+    examples: |
+      To list all Anthos Config Controller instances in the region 'us-central1', run:
+
+        $ {command} --location=us-central1
+
+      To list all Anthos Config Controller instances in all regions, run:
+
+        $ {command}
+
+  request:
+    collection: krmapihosting.projects.locations.krmApiHosts
+
+  arguments:
+    resource:
+      help_text: List of Anthos Config Controller instances.
+      spec: !REF googlecloudsdk.command_lib.anthos.config.controller.resources:instance-list
+
+  output:
+    format: table(name,name.scope("locations").segment(0):label=LOCATION)

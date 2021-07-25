@@ -35,28 +35,31 @@ class Cp(base.Command):
   detailed_help = {
       'DESCRIPTION':
           """
-      Copy data between your local file system and the cloud, copy data within
-      the cloud, and copy data between cloud storage providers.
+      Copy data between your local file system and the cloud, within the cloud,
+      and between cloud storage providers.
       """,
       'EXAMPLES':
           """
 
-      To upload all text files from the local directory to a bucket:
+      The following command uploads all text files from the local directory to a
+      bucket:
 
-        $ *{command}* *.txt gs://my-bucket
+        $ {command} *.txt gs://my-bucket
 
-      Similarly, you can download text files from a bucket:
+      The following command downloads all text files from a bucket to your
+      current directory:
 
-        $ *{command}* gs://my-bucket/*.txt .
+        $ {command} gs://my-bucket/*.txt .
 
-      You can also transfer objects between cloud storage providers:
+      The following command transfers all text files from a bucket to a
+      different cloud storage provider:
 
-        $ *{command}* gs://my-bucket/*.txt s3://my-bucket
+        $ {command} gs://my-bucket/*.txt s3://my-bucket
 
-      If you want to copy an entire directory tree you need to use the -r
-      option. For example, to upload the directory tree "dir":
+      Use the -r option to copy an entire directory tree. The following command
+      uploads the directory tree "dir":
 
-        $ *{command}* -r dir gs://my-bucket
+        $ {command} -r dir gs://my-bucket
       """,
   }
 
@@ -65,12 +68,6 @@ class Cp(base.Command):
     parser.add_argument('source', nargs='+', help='The source path(s) to copy.')
     parser.add_argument('destination', help='The destination path.')
     parser.add_argument(
-        '--content-md5',
-        type=str,
-        help=('Manually set a MD5 hash digest for the contents of an upload'
-              ' file. Cannot be used when uploading multiple files. The custom'
-              ' digest will be validated in the cloud.'))
-    parser.add_argument(
         '-R',
         '-r',
         '--recursive',
@@ -78,6 +75,7 @@ class Cp(base.Command):
         help='Recursively copy the contents of any directories that match the'
         ' source path expression.')
     flags.add_precondition_flags(parser)
+    flags.add_object_metadata_flags(parser)
 
   def Run(self, args):
     source_expansion_iterator = name_expansion.NameExpansionIterator(

@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 import re
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import base_classes_resource_registry as resource_registry
 from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import metadata_utils
@@ -187,8 +186,7 @@ def _CommonArgs(parser,
   csek_utils.AddCsekKeyArgs(parser)
 
   base.ASYNC_FLAG.AddToParser(parser)
-  parser.display_info.AddFormat(
-      resource_registry.RESOURCE_REGISTRY['compute.instances'].list_format)
+  parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
   parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
 
   if support_node_project:

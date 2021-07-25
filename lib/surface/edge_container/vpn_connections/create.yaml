@@ -1,0 +1,52 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Create a VPN connection between an Edge Container cluster and a VPC network.
+    description: |
+      Creates a new VPN connection.
+    examples: |
+      To create a connection called 'my-vpn-connection' between the VPC network 'my-vpc' and
+      the Edge Container cluster 'my-cluster' which is at location 'my-location', run:
+
+        $ {command} my-vpn-connection --location 'my-location' --vpc-network 'my-vpc' --cluster 'my-cluster'
+
+      Here VPC network and cluster should be under the same project.
+
+  request:
+    collection: edgecontainer.projects.locations.vpnConnections
+    api_version: v1alpha
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.edge_container.vpn:SetVPNClusterPath
+
+  arguments:
+    resource:
+      help_text: VPN connection to create.
+      spec: !REF googlecloudsdk.command_lib.edge_container.resources:vpnConnection
+
+    params:
+    - arg_name: cluster
+      api_field: vpnConnection.cluster
+      help_text: |
+        The name of the cluster to be connected under current project.
+      required: true
+    - arg_name: vpc-network
+      api_field: vpnConnection.vpc
+      help_text: |
+        The name of the {{vpc_name_short}} to be connected under current project.
+      required: true
+    - arg_name: nat-gateway-ip
+      api_field: vpnConnection.natGatewayIp
+      help_text: |
+        The NAT gateway IP for the gateway floating IPs. Do not specify this if no NAT is used.
+    - arg_name: high-availability
+      api_field: vpnConnection.enableHighAvailability
+      type: bool
+      help_text: |
+        Enables high availability on cluster side. This creates an additional VPN endpoint in
+        cluster. Multiple Nodes/NodePools are required to enable this feature.
+
+    labels:
+      api_field: vpnConnection.labels
+
+  async:
+    collection: edgecontainer.projects.locations.operations

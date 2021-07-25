@@ -1,0 +1,44 @@
+- release_tracks: [ALPHA, GA]
+  hidden: true
+  help_text:
+    brief: Import an EdgeCacheKeyset.
+    description: |
+      Import an EdgeCacheKeyset. If the named keyset already exists, it will be updated to
+      match the imported resource configuration.
+
+      Note: If you are updating an existing keyset, you should ensure that it includes
+      any public keys still needed to validate incoming user requests.
+
+      If the named keyset does not already exist, a new keyset will be created
+      with that name.
+
+    examples: |
+      To import an EdgeCacheKeyset from a YAML file, run:
+
+        $ {command} my-keyset --source=my-keyset.yaml
+
+  request:
+    collection: networkservices.projects.locations.edgeCacheKeysets
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
+
+  async:
+    collection: networkservices.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The EdgeCacheKeyset you want to import.
+      spec: !REF googlecloudsdk.command_lib.edge_cache.resources:edgeCacheKeyset
+
+  import:
+    abort_if_equivalent: true
+    create_if_not_exists: true
+    create_request:
+      collection: networkservices.projects.locations.edgeCacheKeysets
+      ALPHA:
+        api_version: v1alpha1
+      GA:
+        api_version: v1
+      method: create

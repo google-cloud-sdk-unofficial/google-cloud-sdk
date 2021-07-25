@@ -1,0 +1,38 @@
+- release_tracks: [BETA, ALPHA]
+  help_text:
+    brief: View the list of all your Cloud DNS response policies.
+    description: |
+      Displays the list of all Cloud DNS response policies in a given project.
+      ## EXAMPLES
+
+      To see the list of all the response policies, run:
+
+        $ {command}
+
+      To see the list of first 10 response policies, run:
+
+        $ {command} --limit=10
+
+  request:
+    collection: dns.responsePolicies
+    method: list
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta2
+
+  response:
+    id_field: responsePolicyName
+
+  arguments:
+    resource:
+      help_text: The project you want to list response policies for.
+      spec: !REF googlecloudsdk.command_lib.dns.resources:project
+
+
+  output:
+    format: |
+      table(responsePolicyName,
+            description,
+            networks.firstof(networkUrl).map().scope().join(", "):label=NETWORKS
+      )

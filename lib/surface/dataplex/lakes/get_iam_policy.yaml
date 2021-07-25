@@ -1,0 +1,18 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: |
+      Retrieve a Dataplex Lake Resource IAM policy.
+    description: |
+      Get a Dataplex Lake Iam Policy based on project_id, location, and lake_id.
+
+      {top_command} dataplex lake get-iam-policy projects/{project_id}/locations/{location}/lakes/{lake_id}
+    examples: |
+      {top_command} dataplex lake get-iam-policy projects/test-project/locations/us-central1/lakes/test-lake
+  request:
+    collection: dataplex.projects.locations.lakes
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Lake IAM policy you want to retrieve.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:lake

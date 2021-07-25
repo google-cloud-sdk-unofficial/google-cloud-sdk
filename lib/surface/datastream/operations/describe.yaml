@@ -1,0 +1,16 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: Show details about a operation.
+    description: Show details about a operation.
+    examples: |
+      To show details about a operation, run:
+
+        $ {command} my-operation --location=us-central1
+
+  request:
+    collection: datastream.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The operation you want to get the details of.
+      spec: !REF googlecloudsdk.command_lib.datastream.resources:operation

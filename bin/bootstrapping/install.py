@@ -222,7 +222,7 @@ def MaybeInstallPythonOnMac():
               ' modules?'.format(PYTHON_VERSION))
   else:
     prompt = 'Download and run Python {} installer?'.format(PYTHON_VERSION)
-  setup_python = console_io.PromptContinue(prompt_string=prompt, default=False)
+  setup_python = console_io.PromptContinue(prompt_string=prompt, default=True)
 
   if setup_python:
     install_errors = []

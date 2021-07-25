@@ -1,0 +1,39 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Updates an Edge Container node pool.
+    description: |
+      Updates an Edge Container node pool.
+    examples: |
+      To update a node pool called 'test-node-pool', run:
+
+        $ {command} test-node-pool
+
+  request:
+    collection: edgecontainer.projects.locations.clusters.nodePools
+    api_version: v1alpha
+
+  update:
+    read_modify_update: true
+
+  arguments:
+    resource:
+      help_text: Edge Container node pool to update.
+      spec: !REF googlecloudsdk.command_lib.edge_container.resources:nodePool
+
+    params:
+    - arg_name: node-count
+      api_field: nodePool.nodeCount
+      help_text: |
+        Default nodeCount used by this node pool.
+    - arg_name: machine-filter
+      api_field: nodePool.machineFilter
+      help_text: |
+        Only machines matching this filter will be allowed to join the node
+        pool. The filtering language accepts strings like "name=<name>", and is
+        documented in more detail at https://google.aip.dev/160.
+    labels:
+      api_field: nodePool.labels
+
+  async:
+    collection: edgecontainer.projects.locations.operations

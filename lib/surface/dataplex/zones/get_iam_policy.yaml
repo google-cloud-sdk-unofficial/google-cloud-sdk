@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: |
+      Retreive a Dataplex Zone Resource IAM policy.
+    description: |
+      Get a new Dataplex Zone Iam Policy based on project_id, location, lake_id, and zone_id.
+
+      {top_command} dataplex lake get-iam-policy projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id}
+    examples: |
+      {top_command} dataplex lake get-iam-policy projects/test-project/locations/us-central1/lakes/test-lake/zones/test-zone
+
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.lakes.zones
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Zone IAM policy you want to retrieve.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:zone

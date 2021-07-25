@@ -1,0 +1,38 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Delete a restore.
+    description: |
+      Delete a Backup for GKE restore.
+
+      ## EXAMPLES
+
+      To delete a restore 'my-restore' in project 'my-project' in location 'us-central1', run:
+
+        $ {command} my-restore --project=my-project --location=us-central1
+
+  request:
+    collection: gkebackup.projects.locations.restores
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.container.backup_restore.hooks:AddForceToDeleteRequest
+    ALPHA:
+      api_version: v1alpha1
+
+  arguments:
+    resource:
+      help_text: |
+        Name of the restore to delete. The name may be provided either as a relative name, e.g.
+        `projects/<project>/locations/<location>/restores/<restore>`
+        or as a single ID name (with the parent resources provided via options or through
+        properties), e.g.
+        `RESTORE --project=<project> --location=<location>`.
+      spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:restore
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:etag
+
+  async:
+    collection: gkebackup.projects.locations.operations
+    ALPHA:
+      api_version: v1alpha1
+      extract_resource_result: false

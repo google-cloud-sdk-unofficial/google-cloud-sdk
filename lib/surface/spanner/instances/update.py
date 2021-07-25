@@ -26,7 +26,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update a Cloud Spanner instance."""
 
@@ -76,9 +76,9 @@ class Update(base.Command):
     instance_operations.Await(op, 'Updating instance')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaUpdate(Update):
-  """Update a Cloud Spanner instance with ALPHA features."""
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class BetaUpdate(Update):
+  """Update a Cloud Spanner instance."""
 
   @staticmethod
   def Args(parser):

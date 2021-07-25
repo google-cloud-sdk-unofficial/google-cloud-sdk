@@ -86,17 +86,24 @@ class Update(base.UpdateCommand):
     disk_info = api_util.GetDiskInfo(disk_ref, client, messages)
     service = disk_info.GetService()
 
-    if support_user_licenses and args.IsSpecified(
-        'zone') and _UserLicensesFlagsIncluded(args):
+    if support_user_licenses and _UserLicensesFlagsIncluded(args):
       disk_res = messages.Disk(name=disk_ref.Name())
       if args.IsSpecified('update_user_licenses'):
         disk_res.userLicenses = args.update_user_licenses
-      disk_update_request = messages.ComputeDisksUpdateRequest(
-          project=disk_ref.project,
-          disk=disk_ref.Name(),
-          diskResource=disk_res,
-          zone=disk_ref.zone,
-          paths=['userLicenses'])
+      if args.IsSpecified('zone'):
+        disk_update_request = messages.ComputeDisksUpdateRequest(
+            project=disk_ref.project,
+            disk=disk_ref.Name(),
+            diskResource=disk_res,
+            zone=disk_ref.zone,
+            paths=['userLicenses'])
+      elif args.IsSpecified('region'):
+        disk_update_request = messages.ComputeRegionDisksUpdateRequest(
+            project=disk_ref.project,
+            disk=disk_ref.Name(),
+            diskResource=disk_res,
+            region=disk_ref.region,
+            paths=['userLicenses'])
 
       update_operation = service.Update(disk_update_request)
       update_operation_ref = holder.resources.Parse(

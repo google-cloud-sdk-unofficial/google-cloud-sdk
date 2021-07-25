@@ -1,0 +1,20 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Describe an Edge Container region.
+  description: |
+    Describe an Edge Container region.
+  examples: |
+    To display the metadata for the region `us-central1`, run:
+
+      $ {command} us-central1
+
+arguments:
+  resource:
+    help_text: The region to describe.
+    spec: !REF googlecloudsdk.command_lib.edge_container.resources:location
+
+request:
+  collection: edgecontainer.projects.locations
+  api_version: v1alpha

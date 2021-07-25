@@ -25,6 +25,31 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.instances import flags
 
+RESOURCE_TYPE = 'instances'
+
+DETAILED_HELP = {
+    'brief':
+        'List Compute Engine ' + RESOURCE_TYPE,
+    'DESCRIPTION':
+        """\
+          *{{command}}* displays all Compute Engine {0} in a project.
+        """.format(RESOURCE_TYPE)
+}
+
+EXAMPLE_FORMAT = """\
+          To list all {0} in a project in table form, run:
+
+            $ {{command}}
+
+      To list the URIs of all {0} in a project, run:
+
+            $ {{command}} --uri
+
+      To list the IPv6 info of all {0} in a project, run:
+
+            $ {{command}} --format="{1}"
+    """
+
 
 class List(base.ListCommand):
   """List Compute Engine virtual machine instances."""
@@ -50,4 +75,6 @@ class List(base.ListCommand):
     return lister.Invoke(request_data, list_implementation)
 
 
-List.detailed_help = base_classes.GetZonalListerHelp('instances')
+List.detailed_help = DETAILED_HELP.copy()
+List.detailed_help['EXAMPLES'] = EXAMPLE_FORMAT.format(
+    RESOURCE_TYPE, flags.IPV6_INFO_LIST_FORMAT)

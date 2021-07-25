@@ -1,0 +1,39 @@
+- release_tracks: [BETA, ALPHA]
+  help_text:
+    brief: View the list of Cloud DNS response policy rules within a response policy.
+    description: Displays the list of all Cloud DNS response policy rules in a given response policy.
+    examples: |
+      To see the list of all response policies, run:
+
+        $ {command}
+
+      To see a list of the first 10 response policies, run:
+
+        $ {command} --limit=10
+
+  request:
+    collection: dns.responsePolicyRules
+    method: list
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta2
+
+  response:
+    id_field: ruleName
+
+  arguments:
+    resource:
+      help_text: The response policy you want to list response policy rules for.
+      spec: !REF googlecloudsdk.command_lib.dns.resources:response_policy
+      is_positional: true
+
+  output:
+    format: |
+      table(ruleName,
+            description,
+            behavior,
+            localData.localDatas.*extract(ttl).flatten():label=TTL,
+            localData.localDatas.*extract(type).flatten():label=TYPE,
+            localData.localDatas.*extract(rrdatas).flatten():label=RRDATA
+      )

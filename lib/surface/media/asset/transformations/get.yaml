@@ -1,0 +1,19 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Retrieve a new Cloud Media Asset asset transformation to check the status.
+    description: Get a new Media Asset transformation.
+    examples: |
+      To get a specific asset transformation with id  my-aTrans, run:
+
+        $ {command} my-aTrans --asset-type my-at --asset my-asset
+
+  request:
+    collection: mediaasset.projects.locations.assetTypes.assets.transformations
+    method: get
+    ALPHA:
+      api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: The Cloud Media Asset asset transformation to create.
+      spec: !REF googlecloudsdk.command_lib.media.asset.resources:transformation

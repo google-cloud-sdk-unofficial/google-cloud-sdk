@@ -26,7 +26,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Cloud Spanner instance."""
 
@@ -74,9 +74,9 @@ class Create(base.CreateCommand):
     instance_operations.Await(op, 'Creating instance')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaCreate(Create):
-  """Create a Cloud Spanner instance with ALPHA features."""
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class BetaCreate(Create):
+  """Create a Cloud Spanner instance."""
 
   @staticmethod
   def Args(parser):

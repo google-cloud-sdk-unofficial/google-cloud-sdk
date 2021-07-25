@@ -16,12 +16,47 @@
   help_text:
     brief: Update a group.
     description: Update a group.
-    examples: |
-      To update a group:
+    GA:
+      examples: |
+        To update a group:
 
-        $ {command} eng-discuss@foo.com  \
-            --display-name="New Engineer Discuss"  \
-            --description="Group for engineering discussions"
+          $ {command} eng-discuss@foo.com  \
+              --display-name="New Engineer Discuss"  \
+              --description="Group for engineering discussions"
+    BETA:
+      examples: |
+        To update a group:
+
+          $ {command} eng-discuss@foo.com  \
+              --display-name="New Engineer Discuss"  \
+              --description="Group for engineering discussions"
+
+        To create a POSIX group from an existing Google Group:
+
+          $ {command} eng-discuss@foo.com \
+              --add-posix-group=name=eng,gid=1005
+
+        To remove POSIX information from a Google Group:
+
+          $ {command} eng-discuss@foo.com \
+              --remove-posix-groups=eng
+    ALPHA:
+      examples: |
+        To update a group:
+
+          $ {command} eng-discuss@foo.com  \
+              --display-name="New Engineer Discuss"  \
+              --description="Group for engineering discussions"
+
+        To create a POSIX group from an existing Google Group:
+
+          $ {command} eng-discuss@foo.com \
+              --add-posix-group=name=eng,gid=1005
+
+        To remove POSIX information from a Google Group:
+
+          $ {command} eng-discuss@foo.com \
+              --remove-posix-groups=eng
 
   arguments:
     params:
