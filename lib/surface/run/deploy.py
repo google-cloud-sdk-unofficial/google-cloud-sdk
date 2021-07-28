@@ -315,6 +315,7 @@ class AlphaDeploy(Deploy):
     flags.AddCmekKeyFlag(managed_group)
     flags.AddCpuThrottlingFlag(managed_group)
     flags.AddConfidentialFlag(managed_group)
+    flags.AddCmekKeyRevocationActionTypeFlag(managed_group)
 
     # Flags indicating whether to deploy source or an existing image
     flags.AddSourceAndImageFlags(parser)

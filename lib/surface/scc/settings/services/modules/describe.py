@@ -15,6 +15,10 @@
 # limitations under the License.
 """`gcloud alpha scc settings services modules describe` command."""
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.scc.settings import flags
 from googlecloudsdk.command_lib.scc.settings import utils
@@ -48,11 +52,9 @@ class Describe(base.DescribeCommand):
     """Call corresponding APIs based on the flag."""
     response = utils.SettingsClient().DescribeService(args)
     configs = response.modules.additionalProperties if response.modules else []
-    state = [
-        p.value.moduleEnablementState for p in configs if p.key == args.module
-    ]
-    if state:
-      return state[0]
+    config = [p.value for p in configs if p.key == args.module]
+    if config:
+      return config[0]
     else:
       log.err.Print('No effective setting found for module {}'.format(
           args.module))

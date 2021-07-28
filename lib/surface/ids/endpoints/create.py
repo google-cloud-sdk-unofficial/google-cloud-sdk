@@ -59,7 +59,9 @@ class Create(base.CreateCommand):
     flags.AddNetworkArg(parser)
     flags.AddDescriptionArg(parser)
     flags.AddSeverityArg(parser)
+    flags.AddTrafficLogsArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
@@ -67,12 +69,14 @@ class Create(base.CreateCommand):
     network = args.network
     severity = args.severity
     description = args.description
+    enable_traffic_logs = args.enable_traffic_logs
     is_async = args.async_
 
     client = ids_api.Client(self.ReleaseTrack())
     operation = client.CreateEndpoint(endpoint.Name(),
                                       endpoint.Parent().RelativeName(), network,
-                                      severity, description)
+                                      severity, description,
+                                      enable_traffic_logs)
     # Return the in-progress operation if async is requested.
     if is_async:
       # Delete operations have no format by default,

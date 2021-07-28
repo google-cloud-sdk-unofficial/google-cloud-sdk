@@ -48,7 +48,7 @@ class Update(base.UpdateCommand):
     flags.AddDatabaseFlags(parser)
     flags.AddInstance(parser)
     flags.AddMemory(parser)
-    flags.AddReadPoolSize(parser, False)
+    flags.AddReadPoolSize(parser)
     flags.AddRegion(parser)
     flags.AddTier(parser)
     flags.AddZone(parser)
@@ -56,14 +56,14 @@ class Update(base.UpdateCommand):
     # understand the use cases
 
   def Run(self, args):
-    """This is what gets called when the user runs the command.
+    """Constructs and sends request.
 
     Args:
       args: argparse.Namespace, An object that contains the values for the
           arguments specified in the .Args() method.
 
     Returns:
-      A resource object dispatched by display.Displayer().
+      ProcessHttpResponse of the request made.
     """
     client = api_util.AlloyDBClient(api_util.API_VERSION_DEFAULT)
     alloydb_client = client.alloydb_client

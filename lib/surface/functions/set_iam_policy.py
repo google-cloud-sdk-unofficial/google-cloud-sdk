@@ -19,12 +19,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.functions.v1 import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
-from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.command_lib.functions.v1.set_iam_policy import command as command_v1
+from googlecloudsdk.command_lib.functions.v2.set_iam_policy import command as command_v2
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class SetIamPolicy(base.Command):
   """Sets IAM policy for a Google Cloud Function."""
 
@@ -54,16 +55,44 @@ class SetIamPolicy(base.Command):
     Returns:
       The specified function with its description and configured filter.
     """
-    client = util.GetApiClientInstance()
-    messages = client.MESSAGES_MODULE
-    function_ref = args.CONCEPTS.name.Parse()
-    policy, update_mask = iam_util.ParseYamlOrJsonPolicyFile(
-        args.policy_file, messages.Policy)
-    result = client.projects_locations_functions.SetIamPolicy(
-        messages.CloudfunctionsProjectsLocationsFunctionsSetIamPolicyRequest(
-            resource=function_ref.RelativeName(),
-            setIamPolicyRequest=messages.SetIamPolicyRequest(
-                policy=policy,
-                updateMask=update_mask)))
-    iam_util.LogSetIamPolicy(function_ref.Name(), 'function')
-    return result
+    return command_v1.Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SetIamPolicyAlpha(base.Command):
+  """Sets IAM policy for a Google Cloud Function."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To set the iam policy for `FUNCTION-1` to the policy defined in `POLICY-FILE-1` run:
+
+            $ {command} FUNCTION-1 POLICY-FILE-1
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    flags.AddFunctionResourceArg(parser, 'to get IAM policy for')
+    flags.AddIAMPolicyFileArg(parser)
+
+    # Add additional flags for GCFv2
+    flags.AddV2Flag(parser)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      The specified function with its description and configured filter.
+    """
+    if flags.ShouldUseV2(args):
+      return command_v2.Run(args, self.ReleaseTrack())
+    else:
+      return command_v1.Run(args)

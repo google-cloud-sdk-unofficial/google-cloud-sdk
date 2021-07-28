@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetKeyString(base.DescribeCommand):
   """Get key string of an API key."""
 

@@ -26,50 +26,40 @@ from googlecloudsdk.core.util import iso_duration
 
 
 class Create(base.Command):
-  """Make Cloud Storage buckets."""
+  """Create buckets for storing objects."""
 
   detailed_help = {
       'DESCRIPTION':
           """
-      The create command creates a new bucket.
+      Create a new bucket.
       """,
       'EXAMPLES':
           """
 
-      Create a Google Cloud Storage bucket named "my-bucket":
+      The following command creates a Cloud Storage bucket named ``my-bucket'':
 
-        $ *{command}* gs://my-bucket
+        $ {command} gs://my-bucket
 
-      Create a bucket with the "nearline" default storage class:
+      The following command creates a bucket with the ``nearline'' default
+      [storage class](https://cloud.google.com/storage/docs/storage-classes) in
+      the ``asia'' [location](https://cloud.google.com/storage/docs/locations):
 
-        $ *{command}* gs://my-bucket --storage-class=nearline
-
-      Create a bucket with the location "asia". Location can only be
-      specified on bucket creation:
-
-        $ *{command}* gs://my-bucket --location=asia
-
-      Create a bucket with uniform bucket level access turned on:
-
-        $ *{command}* gs://my-bucket --uniform-bucket-level-access
-
-      Create a bucket with a default object retention period of
-      1 year, 1 month, 1 day, and 5 seconds. Any ISO 8601 duration string will
-      work:
-
-        $ *{command}* gs://my-bucket --retention-period=1Y1M1D5S
+        $ {command} gs://my-bucket --storage-class=nearline --location=asia
       """,
   }
 
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'url', type=str, help='Specifies the URL of the bucket to create.')
+        'url', type=str, help='The URL of the bucket to create.')
     parser.add_argument(
         '--location',
         '-l',
         type=str,
-        help="Specifies the bucket's region. Default varies by cloud provider.")
+        help=('[Location](https://cloud.google.com/storage/docs/locations)'
+              ' for the bucket. If not specified, the location used by Cloud'
+              ' Storage is ``us\'\'. A bucket\'s location cannot be changed'
+              ' after creation.'))
     parser.add_argument(
         '--uniform-bucket-level-access',
         '-b',
@@ -80,16 +70,22 @@ class Create(base.Command):
         '-c',
         '-s',
         type=str,
-        help=('Specifies the bucket\'s default storage class. Default is'
-              ' the cloud provider\'s "Standard" class.'))
+        help=('Default [storage class]'
+              '(https://cloud.google.com/storage/docs/storage-classes) for'
+              ' the bucket. If not specified, the default storage class'
+              ' used by Cloud Storage is "Standard".'))
     parser.add_argument(
         '--retention-period',
         '-retention',
         '-r',
         type=str,
-        help=("Specifies the bucket's default retention period for objects."
-              ' Default is no policy, which keeps objects indefinitely. Only'
-              ' available for Google Cloud Storage via the JSON API.'))
+        help=('Minimum [retention period](https://cloud.google.com'
+              '/storage/docs/bucket-lock#retention-periods)'
+              ' for objects stored in the bucket, for example'
+              ' ``--retention-period=1Y1M1D5S\'\'. Objects added to the bucket'
+              ' cannot be deleted until they\'ve been stored for the specified'
+              ' length of time. Default is no retention period. Only available'
+              ' for Cloud Storage using the JSON API.'))
 
   def Run(self, args):
     resource = resource_reference.BucketResource(

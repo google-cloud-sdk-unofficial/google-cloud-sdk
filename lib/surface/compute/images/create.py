@@ -99,8 +99,6 @@ def _Args(parser,
 class Create(base.CreateCommand):
   """Create Compute Engine images."""
 
-  _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = False
-
   @classmethod
   def Args(cls, parser):
     messages = cls._GetApiHolder(no_http=True).client.messages
@@ -130,8 +128,7 @@ class Create(base.CreateCommand):
 
     if support_user_licenses and args.IsSpecified('user_licenses'):
       image.userLicenses = args.user_licenses
-    csek_keys = csek_utils.CsekKeyStore.FromArgs(
-        args, self._ALLOW_RSA_ENCRYPTED_CSEK_KEYS)
+    csek_keys = csek_utils.CsekKeyStore.FromArgs(args, True)
     if csek_keys:
       image.imageEncryptionKey = csek_utils.MaybeToMessage(
           csek_keys.LookupKey(image_ref,
@@ -243,10 +240,6 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create Compute Engine images."""
 
-  # Used in CreateRequests. We only want to allow RSA key wrapping in
-  # alpha/beta, *not* GA.
-  _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = True
-
   @classmethod
   def Args(cls, parser):
     messages = cls._GetApiHolder(no_http=True).client.messages
@@ -264,8 +257,6 @@ class CreateBeta(Create):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
   """Create Compute Engine images."""
-
-  _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = True
 
   @classmethod
   def Args(cls, parser):

@@ -5885,6 +5885,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--project-key": "value",
                         "--pull-request-pattern": "value",
                         "--repo-slug": "value",
+                        "--service-account": "value",
                         "--substitutions": "value",
                         "--tag-pattern": "value",
                         "--trigger-config": "value"
@@ -5904,6 +5905,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--inline-config": "value",
                         "--name": "value",
                         "--repo": "value",
+                        "--service-account": "value",
                         "--substitutions": "value",
                         "--tag-pattern": "value",
                         "--trigger-config": "value"
@@ -5926,6 +5928,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--pull-request-pattern": "value",
                         "--repo-name": "value",
                         "--repo-owner": "value",
+                        "--service-account": "value",
                         "--substitutions": "value",
                         "--tag-pattern": "value",
                         "--trigger-config": "value"
@@ -5944,6 +5947,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--inline-config": "value",
                         "--name": "value",
                         "--repo": "value",
+                        "--service-account": "value",
                         "--substitutions": "value",
                         "--tag": "value",
                         "--topic": "value",
@@ -5964,6 +5968,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--name": "value",
                         "--repo": "value",
                         "--secret": "value",
+                        "--service-account": "value",
                         "--substitutions": "value",
                         "--tag": "value",
                         "--trigger-config": "value"
@@ -10960,6 +10965,35 @@ STATIC_COMPLETION_CLI_TREE = {
                   },
                   "flags": {}
                 },
+                "macsec": {
+                  "commands": {
+                    "add-key": {
+                      "commands": {},
+                      "flags": {
+                        "--key-name": "value",
+                        "--start-time": "value"
+                      }
+                    },
+                    "get-config": {
+                      "commands": {},
+                      "flags": {}
+                    },
+                    "remove-key": {
+                      "commands": {},
+                      "flags": {
+                        "--key-name": "value"
+                      }
+                    },
+                    "update": {
+                      "commands": {},
+                      "flags": {
+                        "--enabled": "bool",
+                        "--fail-open": "bool"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
                 "update": {
                   "commands": {},
                   "flags": {
@@ -11238,6 +11272,8 @@ STATIC_COMPLETION_CLI_TREE = {
                       "commands": {},
                       "flags": {
                         "--firewall-policy": "value",
+                        "--firewall-policy-region": "dynamic",
+                        "--global-firewall-policy": "bool",
                         "--name": "value",
                         "--network": "value",
                         "--replace-association-on-target": "bool"
@@ -11247,6 +11283,8 @@ STATIC_COMPLETION_CLI_TREE = {
                       "commands": {},
                       "flags": {
                         "--firewall-policy": "value",
+                        "--firewall-policy-region": "dynamic",
+                        "--global-firewall-policy": "bool",
                         "--name": "value"
                       }
                     }
@@ -12675,9 +12713,9 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update": {
                   "commands": {},
                   "flags": {
-                    "--async": "bool",
+                    "--share-with": "value",
                     "--vm-count": "value",
-                    "--zone": "value"
+                    "--zone": "dynamic"
                   }
                 }
               },
@@ -15319,11 +15357,23 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--iam-instance-profile": "value",
                         "--instance-type": "value",
                         "--location": "value",
+                        "--main-volume-iops": "value",
+                        "--main-volume-kms-key-arn": "value",
                         "--main-volume-size": "value",
+                        "--main-volume-type": [
+                          "gp2",
+                          "gp3"
+                        ],
                         "--pod-address-cidr-blocks": "value",
                         "--role-arn": "value",
                         "--role-session-name": "value",
+                        "--root-volume-iops": "value",
+                        "--root-volume-kms-key-arn": "value",
                         "--root-volume-size": "value",
+                        "--root-volume-type": [
+                          "gp2",
+                          "gp3"
+                        ],
                         "--security-group-ids": "value",
                         "--service-address-cidr-blocks": "value",
                         "--service-load-balancer-subnet-ids": "value",
@@ -15388,8 +15438,16 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--max-nodes": "value",
                         "--max-pods-per-node": "value",
                         "--min-nodes": "value",
+                        "--node-labels": "value",
+                        "--node-taints": "value",
                         "--node-version": "value",
+                        "--root-volume-iops": "value",
+                        "--root-volume-kms-key-arn": "value",
                         "--root-volume-size": "value",
+                        "--root-volume-type": [
+                          "gp2",
+                          "gp3"
+                        ],
                         "--security-group-ids": "value",
                         "--ssh-ec2-key-pair": "value",
                         "--subnet-id": "value",
@@ -15417,6 +15475,28 @@ STATIC_COMPLETION_CLI_TREE = {
                       "commands": {},
                       "flags": {
                         "--cluster": "value",
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--location": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
+                "operations": {
+                  "commands": {
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--location": "value"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
                         "--filter": "value",
                         "--limit": "value",
                         "--location": "value",
@@ -15551,6 +15631,8 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--max-nodes": "value",
                         "--max-pods-per-node": "value",
                         "--min-nodes": "value",
+                        "--node-labels": "value",
+                        "--node-taints": "value",
                         "--node-version": "value",
                         "--root-volume-size": "value",
                         "--ssh-public-key": "value",
@@ -15579,6 +15661,28 @@ STATIC_COMPLETION_CLI_TREE = {
                       "commands": {},
                       "flags": {
                         "--cluster": "value",
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--location": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
+                "operations": {
+                  "commands": {
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--location": "value"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
                         "--filter": "value",
                         "--limit": "value",
                         "--location": "value",
@@ -16039,6 +16143,23 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--description": "value"
                       }
+                    }
+                  },
+                  "flags": {}
+                },
+                "continuous-validation": {
+                  "commands": {
+                    "describe": {
+                      "commands": {},
+                      "flags": {}
+                    },
+                    "disable": {
+                      "commands": {},
+                      "flags": {}
+                    },
+                    "enable": {
+                      "commands": {},
+                      "flags": {}
                     }
                   },
                   "flags": {}
@@ -16802,6 +16923,25 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {}
                 },
                 "multi-cluster-services": {
+                  "commands": {
+                    "describe": {
+                      "commands": {},
+                      "flags": {}
+                    },
+                    "disable": {
+                      "commands": {},
+                      "flags": {
+                        "--force": "bool"
+                      }
+                    },
+                    "enable": {
+                      "commands": {},
+                      "flags": {}
+                    }
+                  },
+                  "flags": {}
+                },
+                "service-directory": {
                   "commands": {
                     "describe": {
                       "commands": {},
@@ -21117,6 +21257,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--page-size": "value",
                         "--performance-metrics": "bool",
                         "--record-video": "bool",
+                        "--resign": "bool",
                         "--results-bucket": "value",
                         "--results-dir": "value",
                         "--results-history-name": "value",
@@ -21420,7 +21561,8 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--member": "value",
                 "--region": "dynamic",
-                "--role": "value"
+                "--role": "value",
+                "--v2": "bool"
               }
             },
             "add-invoker-policy-binding": {
@@ -21599,7 +21741,8 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--member": "value",
                 "--region": "dynamic",
-                "--role": "value"
+                "--role": "value",
+                "--v2": "bool"
               }
             },
             "remove-invoker-policy-binding": {
@@ -21612,7 +21755,8 @@ STATIC_COMPLETION_CLI_TREE = {
             "set-iam-policy": {
               "commands": {},
               "flags": {
-                "--region": "dynamic"
+                "--region": "dynamic",
+                "--v2": "bool"
               }
             }
           },
@@ -23647,6 +23791,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--async": "bool",
                     "--description": "value",
+                    "--enable-traffic-logs": "bool",
                     "--labels": "value",
                     "--network": "value",
                     "--severity": [
@@ -28573,6 +28718,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--labels": "value",
                     "--message-encoding": "value",
+                    "--message-retention-duration": "value",
                     "--message-storage-policy-allowed-regions": "value",
                     "--schema": "value",
                     "--schema-project": "value",
@@ -28659,6 +28805,8 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--clear-labels": "bool",
+                    "--clear-message-retention-duration": "bool",
+                    "--message-retention-duration": "value",
                     "--message-storage-policy-allowed-regions": "value",
                     "--recompute-message-storage-policy": "bool",
                     "--remove-labels": "value",
@@ -32534,7 +32682,6 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--content-language": "value",
                 "--content-md5": "value",
                 "--content-type": "value",
-                "--custom-headers": "value",
                 "--custom-metadata": "value",
                 "--custom-time": "value",
                 "--if-generation-match": "value",
@@ -39337,6 +39484,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--inline-config": "value",
                         "--name": "value",
                         "--repo": "value",
+                        "--service-account": "value",
                         "--substitutions": "value",
                         "--tag-pattern": "value",
                         "--trigger-config": "value"
@@ -39359,6 +39507,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--pull-request-pattern": "value",
                         "--repo-name": "value",
                         "--repo-owner": "value",
+                        "--service-account": "value",
                         "--substitutions": "value",
                         "--tag-pattern": "value",
                         "--trigger-config": "value"
@@ -45035,9 +45184,9 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update": {
                   "commands": {},
                   "flags": {
-                    "--async": "bool",
+                    "--share-with": "value",
                     "--vm-count": "value",
-                    "--zone": "value"
+                    "--zone": "dynamic"
                   }
                 }
               },
@@ -45508,7 +45657,11 @@ STATIC_COMPLETION_CLI_TREE = {
                       "json",
                       "yaml"
                     ],
-                    "--file-name": "value"
+                    "--file-name": "value",
+                    "--type": [
+                      "CLOUD_ARMOR",
+                      "CLOUD_ARMOR_EDGE"
+                    ]
                   }
                 },
                 "delete": {
@@ -52423,6 +52576,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--page-size": "value",
                         "--performance-metrics": "bool",
                         "--record-video": "bool",
+                        "--resign": "bool",
                         "--results-bucket": "value",
                         "--results-dir": "value",
                         "--results-history-name": "value",
@@ -58045,6 +58199,8 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--async": "bool",
                     "--description": "value",
+                    "--destination-cloud-sql-instance": "value",
+                    "--destination-gke-master-cluster": "value",
                     "--destination-instance": "value",
                     "--destination-ip-address": "value",
                     "--destination-network": "value",
@@ -58053,6 +58209,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--labels": "value",
                     "--other-projects": "value",
                     "--protocol": "value",
+                    "--source-cloud-sql-instance": "value",
+                    "--source-gke-master-cluster": "value",
                     "--source-instance": "value",
                     "--source-ip-address": "value",
                     "--source-network": "value",
@@ -58092,11 +58250,17 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--async": "bool",
+                    "--clear-destination-cloud-sql-instance": "bool",
+                    "--clear-destination-gke-master-cluster": "bool",
                     "--clear-destination-instance": "bool",
                     "--clear-destination-ip-address": "bool",
+                    "--clear-source-cloud-sql-instance": "bool",
+                    "--clear-source-gke-master-cluster": "bool",
                     "--clear-source-instance": "bool",
                     "--clear-source-ip-address": "bool",
                     "--description": "value",
+                    "--destination-cloud-sql-instance": "value",
+                    "--destination-gke-master-cluster": "value",
                     "--destination-instance": "value",
                     "--destination-ip-address": "value",
                     "--destination-network": "value",
@@ -58105,6 +58269,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--labels": "value",
                     "--other-projects": "value",
                     "--protocol": "value",
+                    "--source-cloud-sql-instance": "value",
+                    "--source-gke-master-cluster": "value",
                     "--source-instance": "value",
                     "--source-ip-address": "value",
                     "--source-network": "value",
@@ -68950,9 +69116,8 @@ STATIC_COMPLETION_CLI_TREE = {
             "update": {
               "commands": {},
               "flags": {
-                "--async": "bool",
                 "--vm-count": "value",
-                "--zone": "value"
+                "--zone": "dynamic"
               }
             }
           },
@@ -79680,6 +79845,8 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--async": "bool",
                 "--description": "value",
+                "--destination-cloud-sql-instance": "value",
+                "--destination-gke-master-cluster": "value",
                 "--destination-instance": "value",
                 "--destination-ip-address": "value",
                 "--destination-network": "value",
@@ -79688,6 +79855,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--labels": "value",
                 "--other-projects": "value",
                 "--protocol": "value",
+                "--source-cloud-sql-instance": "value",
+                "--source-gke-master-cluster": "value",
                 "--source-instance": "value",
                 "--source-ip-address": "value",
                 "--source-network": "value",
@@ -79727,11 +79896,17 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--async": "bool",
+                "--clear-destination-cloud-sql-instance": "bool",
+                "--clear-destination-gke-master-cluster": "bool",
                 "--clear-destination-instance": "bool",
                 "--clear-destination-ip-address": "bool",
+                "--clear-source-cloud-sql-instance": "bool",
+                "--clear-source-gke-master-cluster": "bool",
                 "--clear-source-instance": "bool",
                 "--clear-source-ip-address": "bool",
                 "--description": "value",
+                "--destination-cloud-sql-instance": "value",
+                "--destination-gke-master-cluster": "value",
                 "--destination-instance": "value",
                 "--destination-ip-address": "value",
                 "--destination-network": "value",
@@ -79740,6 +79915,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--labels": "value",
                 "--other-projects": "value",
                 "--protocol": "value",
+                "--source-cloud-sql-instance": "value",
+                "--source-gke-master-cluster": "value",
                 "--source-instance": "value",
                 "--source-ip-address": "value",
                 "--source-network": "value",
@@ -83128,6 +83305,22 @@ STATIC_COMPLETION_CLI_TREE = {
     },
     "services": {
       "commands": {
+        "api-keys": {
+          "commands": {
+            "list": {
+              "commands": {},
+              "flags": {
+                "--deleted": "bool",
+                "--filter": "value",
+                "--limit": "value",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
+              }
+            }
+          },
+          "flags": {}
+        },
         "disable": {
           "commands": {},
           "flags": {

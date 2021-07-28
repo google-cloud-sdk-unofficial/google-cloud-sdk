@@ -15,6 +15,10 @@
 # limitations under the License.
 """`gcloud alpha scc settings services modules enable` command."""
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.scc.settings import flags
 from googlecloudsdk.command_lib.scc.settings import utils

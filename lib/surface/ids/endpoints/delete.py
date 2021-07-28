@@ -52,6 +52,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     flags.AddEndpointResource(parser)
     base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, True)
 
   def Run(self, args):
     endpoint = args.CONCEPTS.endpoint.Parse()

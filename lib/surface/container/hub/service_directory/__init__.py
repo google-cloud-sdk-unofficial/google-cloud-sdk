@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class ServiceDirectory(base.Group):
   """Manage the Service Directory Feature."""
   pass

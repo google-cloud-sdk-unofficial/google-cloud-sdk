@@ -82,6 +82,10 @@ def _Run(args, legacy_output=False):
         raise core_exceptions.Error(
             '--topic-encryption-key was not fully specified.')
 
+  retention_duration = getattr(args, 'message_retention_duration', None)
+  if retention_duration:
+    retention_duration = util.FormatDuration(retention_duration)
+
   message_storage_policy_allowed_regions = args.message_storage_policy_allowed_regions
 
   schema = getattr(args, 'schema', None)
@@ -99,6 +103,7 @@ def _Run(args, legacy_output=False):
           topic_ref,
           labels=labels,
           kms_key=kms_key,
+          message_retention_duration=retention_duration,
           message_storage_policy_allowed_regions=message_storage_policy_allowed_regions,
           schema=schema,
           message_encoding=message_encoding)
@@ -175,3 +180,19 @@ class CreateBeta(Create):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Creates one or more Cloud Pub/Sub topics."""
+
+  @staticmethod
+  def Args(parser):
+    resource_args.AddResourceArgs(
+        parser, [_GetKmsKeyPresentationSpec(),
+                 _GetTopicPresentationSpec()])
+    flags.AddSchemaSettingsFlags(parser)
+    labels_util.AddCreateLabelsFlags(parser)
+    flags.AddTopicMessageRetentionFlags(parser, is_update=False)
+
+    parser.add_argument(
+        '--message-storage-policy-allowed-regions',
+        metavar='REGION',
+        type=arg_parsers.ArgList(),
+        help='A list of one or more Cloud regions where messages are allowed to'
+        ' be stored at rest.')

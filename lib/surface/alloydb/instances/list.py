@@ -44,12 +44,6 @@ class List(base.ListCommand):
   def Args(parser):
     """Specifies additional command flags.
 
-    --cluster: An optional flag that, if specified, will only list instances
-        within that given cluster.
-
-    --region: A flag that must specify the region of the cluster, if --cluster
-        is specified.
-
     Args:
       parser: argparse.Parser: Parser object for command line inputs
     """
@@ -70,18 +64,14 @@ class List(base.ListCommand):
     parser.display_info.AddFormat(_INSTANCE_FORMAT)
 
   def Run(self, args):
-    """Entry point for command.
+    """Constructs and sends request.
 
     Args:
       args: argparse.Namespace, An object that contains the values for the
           arguments specified in the .Args() method.
 
     Returns:
-      A resource object dispatched by display.Displayer().
-
-    Raises:
-      InvalidArgumentException: An error if either --cluster or --region is
-          is specified but not both.
+      ProcessHttpResponse of the request made.
     """
     client = api_util.AlloyDBClient(api_util.API_VERSION_DEFAULT)
     alloydb_client = client.alloydb_client

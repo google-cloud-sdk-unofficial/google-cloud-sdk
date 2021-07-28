@@ -50,8 +50,8 @@ class Rollback(base.CreateCommand):
   """Rollbacks a target to a prior rollout.
 
   If release is not specified, the command rollbacks the target with the last
-  deployed release. If optional rollout-id parameter is not specified, a
-  generated rollout ID will be used.
+  successful deployed release. If optional rollout-id parameter is not
+  specified, a generated rollout ID will be used.
 
   """
   detailed_help = _DETAILED_HELP

@@ -43,11 +43,16 @@ class Create(base.CreateCommand):
     flags.AddRootVolumeSize(parser)
     flags.AddValidateOnly(parser, 'node pool to create')
     flags.AddTags(parser, 'node pool')
+    flags.AddNodeLabels(parser)
+    flags.AddNodeTaints(parser)
 
     aws_flags.AddInstanceType(parser)
     aws_flags.AddSshEC2KeyPair(parser)
     aws_flags.AddIamInstanceProfile(parser)
     aws_flags.AddSecurityGroupIds(parser, 'nodes')
+    aws_flags.AddRootVolumeType(parser)
+    aws_flags.AddRootVolumeIops(parser)
+    aws_flags.AddRootVolumeKmsKeyArn(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -62,7 +67,9 @@ class Create(base.CreateCommand):
                                                      release_track):
       node_pool_client = node_pools.NodePoolsClient(track=release_track)
       args.root_volume_size = flags.GetRootVolumeSize(args)
-      args.main_volume_size = flags.GetMainVolumeSize(args)
+      args.root_volume_type = aws_flags.GetRootVolumeType(args)
+      args.node_taints = flags.GetNodeTaints(args)
+
       op = node_pool_client.Create(node_pool_ref, args)
       op_ref = resource_args.GetOperationResource(op)
 

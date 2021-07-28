@@ -25,8 +25,8 @@
     format: |
       table(
         name.basename():label=NAME,
-        nodeCount:label=NODECOUNT,
-        site:label=SITE,
+        nodeCount:label=NODE_COUNT,
+        nodeLocation:label=NODE_LOCATION,
         labels:label=LABELS,
         createTime.date():label=CREATED
       )

@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.secrets import api as secrets_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import fmt as secrets_fmt
+from googlecloudsdk.core.resource import resource_expr_rewrite
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -77,3 +78,13 @@ class ListBeta(List):
         required=True)
     secrets_fmt.UseVersionTable(parser)
     base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
+
+  def Run(self, args):
+    secret_ref = args.CONCEPTS.secret.Parse()
+    rewriter = resource_expr_rewrite.Backend()
+    server_filter = None
+    if args.filter:
+      _, server_filter = rewriter.Rewrite(args.filter)
+
+    return secrets_api.Versions().ListWithPager(
+        secret_ref=secret_ref, limit=args.limit, request_filter=server_filter)

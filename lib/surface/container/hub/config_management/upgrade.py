@@ -36,7 +36,7 @@ class Upgrade(base.UpdateCommand):
 
   To upgrade a membership named CLUSTER_NAME, run:
 
-    $ {command} --membership=CLUSTER_NAME
+    $ {command} --membership=CLUSTER_NAME --version=VERSION
   """
 
   feature_name = 'configmanagement'
@@ -48,18 +48,25 @@ class Upgrade(base.UpdateCommand):
         type=str,
         help='The Membership name provided during registration.',
     )
+    parser.add_argument(
+        '--version',
+        type=str,
+        help='The version of ACM to change to.',
+        required=True
+    )
 
   def Run(self, args):
     f = self.GetFeature()
+    new_version = args.version
     membership = _get_or_prompt_membership(args.membership)
-    declared_v, cluster_v = utils.versions_for_member(f, membership)
+    _, cluster_v = utils.versions_for_member(f, membership)
 
-    if not self._validate_versions(membership, declared_v, cluster_v):
+    if not self._validate_versions(membership, cluster_v, new_version):
       return
     console_io.PromptContinue(
-        'You are about to upgrade the {} Feature for membership {} from version "{}" to version '
+        'You are about to change the {} Feature for membership {} from version "{}" to version '
         '"{}".'.format(self.feature.display_name, membership, cluster_v,
-                       utils.LATEST_VERSION),
+                       new_version),
         throw_if_unattended=True,
         cancel_on_no=True)
 
@@ -70,31 +77,20 @@ class Upgrade(base.UpdateCommand):
         patch = spec
     if patch.configmanagement is None:
       patch.configmanagement = self.messages.ConfigManagementMembershipSpec()
-    patch.configmanagement.version = utils.LATEST_VERSION
+    patch.configmanagement.version = new_version
 
     f = self.messages.Feature(
         membershipSpecs=self.hubclient.ToMembershipSpecs(
             {self.MembershipResourceName(membership): patch}))
     self.Update(['membershipSpecs'], f)
 
-  def _validate_versions(self, membership, declared_v, cluster_v):
-    if declared_v == utils.LATEST_VERSION:
+  def _validate_versions(self, membership, cluster_v, new_v):
+    if cluster_v == new_v:
       log.status.Print(
-          'Membership {} already has the latest version of the {} Feature declared ({}).'
-          .format(membership, self.feature.display_name, utils.LATEST_VERSION))
+          'Membership {} already has version {} of the {} Feature installed.'
+          .format(membership, cluster_v, self.feature.display_name))
       return False
-    if cluster_v == utils.LATEST_VERSION:
-      log.status.Print(
-          'Membership {} already has the latest version of the {} Feature installed ({}).'
-          .format(membership, self.feature.display_name, utils.LATEST_VERSION))
-      return True
 
-    if cluster_v > utils.LATEST_VERSION:
-      raise exceptions.Error(
-          'Membership {} has a version of the {} Feature installed ({}) that is '
-          'not supported by this command.'.format(membership,
-                                                  self.feature.display_name,
-                                                  cluster_v))
     return True
 
 
@@ -120,3 +116,4 @@ def _get_or_prompt_membership(membership):
   elif membership not in memberships:
     raise exceptions.Error('Membership {} is not in Hub.'.format(membership))
   return membership
+

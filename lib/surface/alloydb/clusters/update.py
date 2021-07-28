@@ -35,8 +35,6 @@ class Update(base.UpdateCommand):
   def Args(parser):
     """Specifies additional command flags.
 
-      --region: The region the cluster will be located in.
-
     Args:
       parser: argparse.Parser: Parser object for command line inputs.
 
@@ -44,18 +42,18 @@ class Update(base.UpdateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddRegion(parser)
     flags.AddCluster(parser)
+    flags.AddNetwork(parser)
 
   def Run(self, args):
-    """This is what gets called when the user runs the command.
+    """Constructs and sends request.
 
     Args:
       args: argparse.Namespace, An object that contains the values for the
           arguments specified in the .Args() method.
 
     Returns:
-      A resource object dispatched by display.Displayer().
+      ProcessHttpResponse of the request made.
     """
-    args.format = 'default'
     client = api_util.AlloyDBClient(api_util.API_VERSION_DEFAULT)
     alloydb_client = client.alloydb_client
     alloydb_messages = client.alloydb_messages
@@ -63,7 +61,10 @@ class Update(base.UpdateCommand):
         'alloydb.projects.locations.clusters',
         projectsId=properties.VALUES.core.project.GetOrFail,
         locationsId=args.region, clustersId=args.cluster)
+    cluster_resource = alloydb_messages.Cluster()
+    cluster_resource.network = args.network
     req = alloydb_messages.AlloydbProjectsLocationsClustersPatchRequest(
+        cluster=cluster_resource,
         name=cluster_ref.RelativeName())
     op = alloydb_client.projects_locations_clusters.Patch(req)
     if not args.async_:

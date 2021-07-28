@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 
 class Reservations(base.Group):
   """Manage Compute Engine reservations."""
-  category = base.NETWORKING_CATEGORY
+  category = base.COMPUTE_CATEGORY
 
 Reservations.detailed_help = {
     'DESCRIPTION': """

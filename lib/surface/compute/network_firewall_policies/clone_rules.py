@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.network_firewall_policies import client
+from googlecloudsdk.api_lib.compute.network_firewall_policies import region_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
 
@@ -49,6 +50,9 @@ class CloneRules(base.UpdateCommand):
 
     network_firewall_policy = client.NetworkFirewallPolicy(
         ref, compute_client=holder.client)
+    if hasattr(ref, 'region'):
+      network_firewall_policy = region_client.RegionNetworkFirewallPolicy(
+          ref, compute_client=holder.client)
 
     return network_firewall_policy.CloneRules(
         source_firewall_policy=args.source_firewall_policy,
@@ -57,9 +61,20 @@ class CloneRules(base.UpdateCommand):
 CloneRules.detailed_help = {
     'EXAMPLES':
         """\
-    To clone the rules of an network firewall policy with NAME ``my-policy'',
-    from another network firewall policy with NAME ``source-policy'', run:
+    To clone the rules of a global network firewall policy with NAME
+    ``my-policy'',
+    from another network firewall policy with NAME
+    ``source-policy'', run:
 
-      $ {command} my-policy --source-firewall-policy=source-policy
+      $ {command} my-policy --source-firewall-policy=source-policy --global
+
+    To clone the rules of a region network firewall policy with NAME
+    ``my-region-policy'', in region ``region-a'',
+    from another network firewall policy with NAME
+    ``source-policy'', run:
+
+      $ {command} my-region-policy \
+          --source-firewall-policy=source-policy \
+          --region=region-a
     """,
 }

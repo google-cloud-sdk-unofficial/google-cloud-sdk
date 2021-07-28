@@ -53,9 +53,9 @@ class Ls(base.Command):
 
       You can use wildcards to match multiple paths (including multiple
       buckets). Bucket wildcards are expanded to match only buckets contained in
-      your current project. The following command matches ".txt" objects that
-      begin with "log" and that are stored in buckets in your project that begin
-      with "my-b":
+      your current project. The following command matches ``.txt'' objects that
+      begin with ``log'' and that are stored in buckets in your project that
+      begin with ``my-b'':
 
         $ {command} gs://my-b*/log*.txt
 
@@ -67,7 +67,7 @@ class Ls(base.Command):
         []: Matches a character range (ex. [a-z] or [0-9])
 
       You can use double-star wildcards to match zero or more directory levels
-      in a path. The following command matches all ".txt" objects in a bucket.
+      in a path. The following command matches all ``.txt'' objects in a bucket.
 
         $ {command} gs://my-bucket/**/*.txt
 

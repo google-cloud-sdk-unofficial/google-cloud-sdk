@@ -19,14 +19,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.functions.v1 import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
+from googlecloudsdk.command_lib.functions.v1.add_iam_policy_binding import command as command_v1
+from googlecloudsdk.command_lib.functions.v2.add_iam_policy_binding import command as command_v2
 from googlecloudsdk.command_lib.iam import iam_util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class AddIamPolicyBinding(base.Command):
-  """Add an IAM policy binding for a Google Cloud Function."""
+  """Adds an IAM policy binding for a Google Cloud Function."""
 
   detailed_help = {
       'DESCRIPTION': '{description}',
@@ -41,20 +43,67 @@ class AddIamPolicyBinding(base.Command):
 
   @staticmethod
   def Args(parser):
-    """Register flags for this command."""
+    """Registers flags for this command.
+
+    Args:
+      parser: The argparse parser.
+    """
     flags.AddFunctionResourceArg(parser, 'to add IAM policy binding for')
     iam_util.AddArgsForAddIamPolicyBinding(parser)
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
+    """Runs the command.
 
     Args:
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
 
     Returns:
-      The specified function with its description and configured filter.
+      The updated IAM policy.
     """
-    function_ref = args.CONCEPTS.name.Parse()
-    return util.AddFunctionIamPolicyBinding(
-        function_ref.RelativeName(), args.member, args.role)
+    return command_v1.Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AddIamPolicyBindingAlpha(base.Command):
+  """Adds an IAM policy binding for a Google Cloud Function."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To add the iam policy binding for `FUNCTION-1` to role
+          `ROLE-1` for member `MEMBER-1` run:
+
+            $ {command} FUNCTION-1 --member=MEMBER-1 --role=ROLE-1
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    """Registers flags for this command.
+
+    Args:
+      parser: The argparse parser.
+    """
+    flags.AddFunctionResourceArg(parser, 'to add IAM policy binding for')
+    iam_util.AddArgsForAddIamPolicyBinding(parser)
+
+    # Add additional flags for GCFv2.
+    flags.AddV2Flag(parser)
+
+  def Run(self, args):
+    """Runs the command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      The updated IAM policy.
+    """
+    if flags.ShouldUseV2(args):
+      return command_v2.Run(args, self.ReleaseTrack())
+    else:
+      return command_v1.Run(args)

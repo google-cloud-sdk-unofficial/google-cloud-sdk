@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: |
+      List Dataplex Lake Resources.
+    description: |
+      List Dataplex Lake resource based on project and location.
+
+      {top_command} dataplex lake list projects/{project_id}/locations/{location}
+    examples: |
+      {top_command} list projects/test-project/locations/us-central1
+
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.lakes
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Lake you want to list.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:location

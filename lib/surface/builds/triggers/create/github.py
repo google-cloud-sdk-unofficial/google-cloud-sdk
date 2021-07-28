@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import trigger_config as trigger_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.builds import flags as build_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -35,11 +34,11 @@ class CreateGitHub(base.CreateCommand):
           """\
             To create a push trigger for all branches:
 
-              $ {command} --name="my-trigger" --repo-owner="GoogleCloudPlatform" --repo-name="cloud-builders" --branch-pattern=".*" --build-config="cloudbuild.yaml"
+              $ {command} --name="my-trigger" --service-account="projects/my-project/serviceAccounts/my-byosa@my-project.iam.gserviceaccount.com" --repo-owner="GoogleCloudPlatform" --repo-name="cloud-builders" --branch-pattern=".*" --build-config="cloudbuild.yaml"
 
             To create a pull request trigger for master:
 
-              $ {command} --name="my-trigger" --repo-owner="GoogleCloudPlatform" --repo-name="cloud-builders" --pull-request-pattern="^master$" --build-config="cloudbuild.yaml"
+              $ {command} --name="my-trigger" --service-account="projects/my-project/serviceAccounts/my-byosa@my-project.iam.gserviceaccount.com" --repo-owner="GoogleCloudPlatform" --repo-name="cloud-builders" --pull-request-pattern="^master$" --build-config="cloudbuild.yaml"
           """,
   }
 
@@ -53,7 +52,6 @@ class CreateGitHub(base.CreateCommand):
     """
     messages = cloudbuild_util.GetMessagesModule()
     flag_config = trigger_utils.AddTriggerArgs(parser)
-    build_flags.AddRegionFlag(flag_config, hidden=True)
     flag_config.add_argument(
         '--repo-owner', help='Owner of the GitHub Repository.', required=True)
     flag_config.add_argument(

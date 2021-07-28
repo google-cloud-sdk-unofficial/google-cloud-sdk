@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cloud Pub/Sub topics update command."""
 
 from __future__ import absolute_import
@@ -23,7 +22,9 @@ from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
+from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import resource_args
+from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
@@ -70,8 +71,7 @@ def _GetKmsKeyNameFromArgs(args):
   return None
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Updates an existing Cloud Pub/Sub topic."""
 
@@ -148,14 +148,25 @@ class Update(base.UpdateCommand):
     client = topics.TopicsClient()
     topic_ref = args.CONCEPTS.topic.Parse()
 
+    message_retention_duration = getattr(args, 'message_retention_duration',
+                                         None)
+    if message_retention_duration:
+      message_retention_duration = util.FormatDuration(
+          message_retention_duration)
+    clear_message_retention_duration = getattr(
+        args, 'clear_message_retention_duration', None)
+
     labels_update = labels_util.ProcessUpdateArgsLazy(
-        args, client.messages.Topic.LabelsValue,
+        args,
+        client.messages.Topic.LabelsValue,
         orig_labels_thunk=lambda: client.Get(topic_ref).labels)
 
     result = None
     try:
       result = client.Patch(topic_ref, labels_update.GetOrNone(),
                             _GetKmsKeyNameFromArgs(args),
+                            message_retention_duration,
+                            clear_message_retention_duration,
                             args.recompute_message_storage_policy,
                             args.message_storage_policy_allowed_regions)
     except topics.NoFieldsSpecifiedError:
@@ -170,3 +181,78 @@ class Update(base.UpdateCommand):
     else:
       log.UpdatedResource(topic_ref.RelativeName(), kind='topic')
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Updates an existing Cloud Pub/Sub topic."""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Updates an existing Cloud Pub/Sub topic."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To update existing labels on a Cloud Pub/Sub topic, run:
+
+              $ {command} mytopic --update-labels=KEY1=VAL1,KEY2=VAL2
+
+          To clear all labels on a Cloud Pub/Sub topic, run:
+
+              $ {command} mytopic --clear-labels
+
+          To remove an existing label on a Cloud Pub/Sub topic, run:
+
+              $ {command} mytopic --remove-labels=KEY1,KEY2
+
+          To enable customer-managed encryption for a Cloud Pub/Sub topic by protecting message data with a Cloud KMS CryptoKey, run:
+
+              $ {command} mytopic --topic-encryption-key=projects/PROJECT_ID/locations/KMS_LOCATION/keyRings/KEYRING/cryptoKeys/KEY
+
+          To enable or update retention on a Cloud Pub/Sub topic, run:
+
+              $ {command} mytopic --message-retention-duration=MESSAGE_RETENTION_DURATION
+
+          To disable retention on a Cloud Pub/Sub topic, run:
+
+              $ {command} mytopic --clear-message-retention-duration
+
+          To update a Cloud Pub/Sub topic's message storage policy, run:
+
+              $ {command} mytopic --message-storage-policy-allowed-regions=some-cloud-region1,some-cloud-region2
+
+          To recompute a Cloud Pub/Sub topic's message storage policy based on your organization's "Resource Location Restriction" policy, run:
+
+              $ {command} mytopic --recompute-message-storage-policy
+          """
+  }
+
+  @staticmethod
+  def Args(parser):
+    """Registers flags for this command."""
+    resource_args.AddTopicResourceArg(parser, 'to update.')
+    labels_util.AddUpdateLabelsFlags(parser)
+    resource_args.AddResourceArgs(parser, [
+        kms_resource_args.GetKmsKeyPresentationSpec(
+            'topic',
+            flag_overrides=_KMS_FLAG_OVERRIDES,
+            permission_info=_KMS_PERMISSION_INFO)
+    ])
+    flags.AddTopicMessageRetentionFlags(parser, is_update=True)
+
+    msp_group = parser.add_group(
+        mutex=True, help='Message storage policy options.')
+    msp_group.add_argument(
+        '--recompute-message-storage-policy',
+        action='store_true',
+        help='If given, Cloud Pub/Sub will recompute the regions where messages'
+        ' can be stored at rest, based on your organization\'s "Resource '
+        ' Location Restriction" policy.')
+    msp_group.add_argument(
+        '--message-storage-policy-allowed-regions',
+        metavar='REGION',
+        type=arg_parsers.ArgList(),
+        help='A list of one or more Cloud regions where messages are allowed to'
+        ' be stored at rest.')

@@ -84,6 +84,6 @@ Copy.detailed_help = {
 
         To copy log entries in a specific time window, run:
 
-          $ {command} 'BUCKET_ID DESTINATION --location=LOCATION timestamp<="2015-05-31T23:59:59Z" AND timestamp>="2015-05-31T00:00:00Z"'
+          $ {command} 'BUCKET_ID DESTINATION --location=LOCATION --log-filter=timestamp<="2021-05-31T23:59:59Z" AND timestamp>="2021-05-31T00:00:00Z"'
     """,
 }

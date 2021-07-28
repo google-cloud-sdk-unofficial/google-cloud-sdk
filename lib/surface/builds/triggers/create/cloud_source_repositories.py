@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import trigger_config as trigger_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.builds import flags as build_flags
 from googlecloudsdk.command_lib.source import resource_args as repo_resource
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
@@ -38,7 +37,7 @@ class CreateCSR(base.CreateCommand):
           """\
             To create a push trigger for all branches:
 
-              $ {command} --name="my-trigger" --repo="my-repo" --branch-pattern=".*" --build-config="cloudbuild.yaml"
+              $ {command} --name="my-trigger" --service-account="projects/my-project/serviceAccounts/my-byosa@my-project.iam.gserviceaccount.com" --repo="my-repo" --branch-pattern=".*" --build-config="cloudbuild.yaml"
           """,
   }
 
@@ -52,7 +51,6 @@ class CreateCSR(base.CreateCommand):
     """
 
     flag_config = trigger_utils.AddTriggerArgs(parser)
-    build_flags.AddRegionFlag(flag_config, hidden=True)
     repo_spec = presentation_specs.ResourcePresentationSpec(
         '--repo',  # This defines how the "anchor" or leaf argument is named.
         repo_resource.GetRepoResourceSpec(),
@@ -87,6 +85,7 @@ class CreateCSR(base.CreateCommand):
     trigger = messages.BuildTrigger(
         name=args.name,
         description=args.description,
+        serviceAccount=args.service_account,
         triggerTemplate=messages.RepoSource(
             repoName=repo,
             branchName=args.branch_pattern,

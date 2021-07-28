@@ -116,8 +116,22 @@ def _CheckImageName(image_name):
     raise exceptions.InvalidArgumentException('IMAGE_NAME', name_message)
 
 
-def _CheckForExistingImage(image_name, compute_holder):
-  """Check that the destination image does not already exist."""
+def _CheckForExistingImage(image_name,
+                           compute_holder,
+                           arg_name='IMAGE_NAME',
+                           expect_to_exist=False):
+  """Check if image already exists."""
+
+  # Don't perform a check for image name used in E2E test as passing an invalid
+  # name to the backend is currently the only way to perform a quick sanity E2E
+  # check on the backend. Alternative is not to perform the check on whether
+  # image exists at all which would lead to worse customer experience. No
+  # security issue with this as the backend does the same check on whether an
+  # image exists or not.
+  expect_to_exist_image_name_exclusions = ['sample-image-123']
+  if expect_to_exist and image_name in expect_to_exist_image_name_exclusions:
+    return
+
   image_ref = resources.REGISTRY.Parse(
       image_name,
       collection='compute.images',
@@ -131,9 +145,12 @@ def _CheckForExistingImage(image_name, compute_holder):
   except utils.ImageNotFoundError:
     image_exists = False
 
-  if image_exists:
+  if not expect_to_exist and image_exists:
     message = 'The image [{0}] already exists.'.format(image_name)
-    raise exceptions.InvalidArgumentException('IMAGE_NAME', message)
+    raise exceptions.InvalidArgumentException(arg_name, message)
+  elif expect_to_exist and not image_exists:
+    message = 'The image [{0}] does not exist.'.format(image_name)
+    raise exceptions.InvalidArgumentException(arg_name, message)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -295,7 +312,7 @@ class Import(base.CreateCommand):
     _CheckImageName(args.image_name)
     _CheckForExistingImage(args.image_name, compute_holder)
 
-    stager = self._CreateImportStager(args)
+    stager = self._CreateImportStager(args, compute_holder)
     import_metadata = stager.Stage()
 
     # TODO(b/79591894): Once we've cleaned up the Argo output, replace this
@@ -315,14 +332,14 @@ class Import(base.CreateCommand):
         release_track=self.ReleaseTrack().id.lower()
         if self.ReleaseTrack() else None)
 
-  def _CreateImportStager(self, args):
+  def _CreateImportStager(self, args, compute_holder):
     if self.ReleaseTrack(
     ) != base.ReleaseTrack.GA and _HasExternalCloudProvider(args):
       return ImportFromExternalCloudProviderStager(self.storage_client, args)
 
     if args.source_image:
       return ImportFromImageStager(
-          self.storage_client, args)
+          self.storage_client, compute_holder, args)
 
     if daisy_utils.IsLocalFile(args.source_file):
       return ImportFromLocalFileStager(
@@ -417,11 +434,26 @@ class ImportFromExternalCloudProviderStager(BaseImportStager):
         super(ImportFromExternalCloudProviderStager, self).Stage())
     return import_args
 
+  def GetBucketLocation(self):
+    if self.args.zone:
+      return daisy_utils.GetRegionFromZone(self.args.zone)
+    return super(ImportFromExternalCloudProviderStager,
+                 self).GetBucketLocation()
+
 
 class ImportFromImageStager(BaseImportStager):
   """Image import stager from an existing image."""
 
+  def __init__(self, storage_client, compute_holder, args):
+    super(ImportFromImageStager, self).__init__(storage_client, args)
+    self.compute_holder = compute_holder
+
   def Stage(self):
+    _CheckForExistingImage(
+        self.args.source_image,
+        self.compute_holder,
+        arg_name='source-image',
+        expect_to_exist=True)
     import_args = []
 
     daisy_utils.AppendArg(import_args, 'source_image', self.args.source_image)
@@ -437,6 +469,11 @@ class ImportFromImageStager(BaseImportStager):
     # source_name should be of the form 'global/images/image-name'.
     source_name = ref.RelativeName()[len(ref.Parent().RelativeName() + '/'):]
     return source_name
+
+  def GetBucketLocation(self):
+    if self.args.zone:
+      return daisy_utils.GetRegionFromZone(self.args.zone)
+    return super(ImportFromImageStager, self).GetBucketLocation()
 
 
 class BaseImportFromFileStager(BaseImportStager):

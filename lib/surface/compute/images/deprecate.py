@@ -83,8 +83,7 @@ class DeprecateImages(base.SilentCommand):
         help="""\
         Specifies a date when the image should be marked as DEPRECATED.
 
-        Note: On the specified date, the image state does not change.
-        An explicit request to deprecate the image must be made in order to change the state.
+        Note: This is only informational and the image will not be deprecated unless you manually deprecate it.
 
         This flag is mutually exclusive with *--deprecate-in*.
 
@@ -97,14 +96,14 @@ class DeprecateImages(base.SilentCommand):
         '--deprecate-in',
         type=arg_parsers.Duration(),
         help="""\
-        Specifies a time duration in which the image is marked as ``DEPRECATED''.
+        Specifies a time duration in which the image should be marked as ``DEPRECATED''.
 
-        Note: On the specified date, the image state does not change.
-        An explicit request to deprecate the image must be made in order to change the state.
+        Note: This is only informational and the image will not be deprecated unless you manually deprecate it.
 
         This flag is mutually exclusive with *--deprecate-on*.
 
-        For example, specifying ``30d'' marks the image as ``DEPRECATED'' in 30 days from the current system time.
+        For example, specifying ``30d'' sets the planned ``DEPRECATED'' date to 30 days from the current system time,
+        but does not deprecate the image. You must manually deprecate the image in 30 days.
         See $ gcloud topic datetimes for information on duration formats.
 
        """)
@@ -114,10 +113,9 @@ class DeprecateImages(base.SilentCommand):
     delete_group.add_argument(
         '--delete-on',
         help="""\
-        Specifies a date when the image is marked as ``DELETED''.
+        Specifies a date when the image should be marked as ``DELETED''.
 
-        Note: On the specified date, the image state does not change.
-        An explicit request to delete the image must be made in order to remove the image from the list.
+        Note: This is only informational and the image will not be deleted unless you manually delete it.
 
         This flag is mutually exclusive with *--delete-in*.
 
@@ -131,15 +129,15 @@ class DeprecateImages(base.SilentCommand):
         '--delete-in',
         type=arg_parsers.Duration(),
         help="""\
-       Specifies a time duration in which the image is marked as ``DELETED''.
+        Specifies a time duration in which the image should be marked as ``DELETED''.
 
-       Note: On the specified date, the image state does not change.
-       An explicit request to delete the image must be made in order to remove it from the image list.
+        Note: This is only informational and the image will not be deleted unless you manually delete it.
 
-       For example, specifying ``30d'' marks the image as ``DELETED'' in 30 days from the current system time.
-       See $ gcloud topic datetimes for information on duration formats.
+        For example, specifying ``30d'' sets the planned ``DELETED'' time to 30 days from the current system time,
+        but does not delete the image. You must manually delete the image in 30 days.
+        See $ gcloud topic datetimes for information on duration formats.
 
-       This flag is mutually exclusive with *--delete-on*.
+        This flag is mutually exclusive with *--delete-on*.
        """)
 
     obsolete_group = parser.add_mutually_exclusive_group()
@@ -147,10 +145,9 @@ class DeprecateImages(base.SilentCommand):
     obsolete_group.add_argument(
         '--obsolete-on',
         help="""\
-        Specifies a date when the image is marked as ``OBSOLETE''.
+        Specifies a date when the image should be marked as ``OBSOLETE''.
 
-        Note: On the specified date, the image state does not change.
-        An explicit request to delete the image must be made in order to remove the image from the list.
+        Note: This is only informational and the image will not be obsoleted unless you manually obsolete it.
 
         This flag is mutually exclusive with *--obsolete-in*.
 
@@ -163,16 +160,16 @@ class DeprecateImages(base.SilentCommand):
         '--obsolete-in',
         type=arg_parsers.Duration(),
         help="""\
-       Specifies a time duration in which the image is marked as ``OBSOLETE''.
+        Specifies a time duration in which the image should be marked as ``OBSOLETE''.
 
-       Note: On the specified date, the image state does not change.
-       An explicit request to delete the image must be made in order to remove it from the image list.
+        Note: This is only informational and the image will not be obsoleted unless you manually obsolete it.
 
-       This flag is mutually exclusive with *--obsolete-on*.
+        This flag is mutually exclusive with *--obsolete-on*.
 
-       For example, specifying ``30d'' marks the image as ``OBSOLETE'' in 30 days from the current system time.
-       See $ gcloud topic datetimes for information on duration formats.
-       """)
+        For example, specifying ``30d'' sets the planned ``OBSOLETE'' time to 30 days from the current system time,
+        but does not obsolete the image. You must manually obsolete the image in 30 days.
+        See $ gcloud topic datetimes for information on duration formats.
+        """)
 
   def Run(self, args):
     """Invokes requests necessary for deprecating images."""

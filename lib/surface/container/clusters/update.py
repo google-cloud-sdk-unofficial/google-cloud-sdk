@@ -94,6 +94,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
                     api_adapter.ISTIO: _ParseAddonDisabled,
                     api_adapter.APPLICATIONMANAGER: _ParseAddonDisabled,
+                    api_adapter.BACKUPRESTORE: _ParseAddonDisabled,
                     api_adapter.CLOUDBUILD: _ParseAddonDisabled,
                     api_adapter.NODELOCALDNS: _ParseAddonDisabled,
                     api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
@@ -109,6 +110,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {dashboard}=ENABLED|DISABLED
 {istio}=ENABLED|DISABLED
 {application_manager}=ENABLED|DISABLED
+{backuprestore}=ENABLED|DISABLED
 {network_policy}=ENABLED|DISABLED
 {cloudrun}=ENABLED|DISABLED
 {cloudbuild}=ENABLED|DISABLED
@@ -121,6 +123,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     network_policy=api_adapter.NETWORK_POLICY,
     istio=api_adapter.ISTIO,
     application_manager=api_adapter.APPLICATIONMANAGER,
+    backuprestore=api_adapter.BACKUPRESTORE,
     cloudrun=api_adapter.CLOUDRUN_ADDONS[0],
     cloudbuild=api_adapter.CLOUDBUILD,
     configconnector=api_adapter.CONFIGCONNECTOR,
@@ -140,6 +143,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
                     api_adapter.ISTIO: _ParseAddonDisabled,
                     api_adapter.APPLICATIONMANAGER: _ParseAddonDisabled,
+                    api_adapter.BACKUPRESTORE: _ParseAddonDisabled,
                     api_adapter.NODELOCALDNS: _ParseAddonDisabled,
                     api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
@@ -154,6 +158,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {dashboard}=ENABLED|DISABLED
 {istio}=ENABLED|DISABLED
 {application_manager}=ENABLED|DISABLED
+{backuprestore}=ENABLED|DISABLED
 {network_policy}=ENABLED|DISABLED
 {cloudrun}=ENABLED|DISABLED
 {configconnector}=ENABLED|DISABLED
@@ -165,6 +170,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     network_policy=api_adapter.NETWORK_POLICY,
     istio=api_adapter.ISTIO,
     application_manager=api_adapter.APPLICATIONMANAGER,
+    backuprestore=api_adapter.BACKUPRESTORE,
     cloudrun=api_adapter.CLOUDRUN_ADDONS[0],
     configconnector=api_adapter.CONFIGCONNECTOR,
     nodelocaldns=api_adapter.NODELOCALDNS,

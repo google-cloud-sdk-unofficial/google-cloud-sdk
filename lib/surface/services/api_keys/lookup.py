@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.services import apikeys
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Lookup(base.Command):
   """Look up resource name of a key string."""
 

@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.network_firewall_policies import client
+from googlecloudsdk.api_lib.compute.network_firewall_policies import region_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
 
@@ -36,7 +37,8 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     cls.NETWORK_FIREWALL_POLICY_ARG = (
-        flags.NetworkFirewallPolicyAssociationArgument(operation='create'))
+        flags.NetworkFirewallPolicyAssociationArgument(
+            required=True, operation='create'))
     cls.NETWORK_FIREWALL_POLICY_ARG.AddArgument(parser, operation_type='create')
     flags.AddArgsCreateAssociation(parser)
     parser.display_info.AddCacheUpdater(flags.NetworkFirewallPoliciesCompleter)
@@ -45,20 +47,19 @@ class Create(base.CreateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.NETWORK_FIREWALL_POLICY_ARG.ResolveAsResource(
         args, holder.resources)
+
     network_firewall_policy = client.NetworkFirewallPolicy(
         ref, compute_client=holder.client)
+    if hasattr(ref, 'region'):
+      network_firewall_policy = region_client.RegionNetworkFirewallPolicy(
+          ref, compute_client=holder.client)
 
     network_ref = flags.NetworkArgumentForOtherResource(
-        'The network to which the subnetwork belongs.').ResolveAsResource(
+        'The network to which the firewall policy attaches.').ResolveAsResource(
             args, holder.resources)
 
-    name = None
-    attachment_target = None
+    name = args.name
     replace_existing_association = False
-
-    if args.IsSpecified('name'):
-      name = args.name
-
     attachment_target = network_ref.SelfLink()
 
     replace_existing_association = False
@@ -74,15 +75,27 @@ class Create(base.CreateCommand):
         replace_existing_association=replace_existing_association,
         only_generate_request=False)
 
+
 Create.detailed_help = {
     'EXAMPLES':
         """\
-    To associate a network firewall policy with name ``my-policy''
+    To associate a global network firewall policy with name ``my-policy''
     to network ``my-network'' with an association named ``my-association'', run:
 
       $ {command}
           --firewall-policy=my-policy
           --network=my-network
           --name=my-association
+          --global-firewall-policy
+
+    To associate a network firewall policy with name ``my-region-policy'' in
+    region ``region-a''
+    to network ``my-network'' with an association named ``my-association'', run:
+
+      $ {command}
+          --firewall-policy=my-policy
+          --network=my-network
+          --name=my-association
+          --firewall-policy-region=region-a
     """,
 }

@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: |
+      Retrieve a Dataplex Lake Resource.
+    description: |
+      Get a Dataplex Lake resource based on project, location, and lake.
+
+      {top_command} dataplex lake describe projects/{project_id}/locations/{location}/lakes/{lake_id}
+    examples: |
+      $ {command} describe projects/{project_id}/locations/{us-central1}/lakes/test-lake
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.lakes
+    method: get
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Lake you want to retrieve.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:lake

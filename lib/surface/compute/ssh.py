@@ -31,6 +31,7 @@ from googlecloudsdk.command_lib.compute import network_troubleshooter
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.compute import user_permission_troubleshooter
+from googlecloudsdk.command_lib.compute import vm_status_troubleshooter
 from googlecloudsdk.command_lib.compute import vpc_troubleshooter
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.command_lib.util.ssh import containers
@@ -43,7 +44,7 @@ RECOMMEND_MESSAGE = """
 Recommendation: To check for possible causes of SSH connectivity issues and get
 recommendations, rerun the ssh command with the --troubleshoot option. Example:
 
-gcloud alpha ssh example-instance --zone=us-central1-a --troubleshoot
+gcloud alpha compute ssh example-instance --zone=us-central1-a --troubleshoot
 """
 
 
@@ -185,6 +186,14 @@ def RunTroubleshooting(project=None, zone=None, instance=None,
   vpc = vpc_troubleshooter.VPCTroubleshooter(**vpc_args)
   vpc()
 
+  vm_status_args = {
+      'project': project,
+      'zone': zone,
+      'instance': instance,
+  }
+  vm_status = vm_status_troubleshooter.VMStatusTroubleshooter(**vm_status_args)
+  vm_status()
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Ssh(base.Command):
@@ -219,116 +228,87 @@ class Ssh(base.Command):
     AddInternalIPArg(routing_group)
     iap_tunnel.AddSshTunnelArgs(parser, routing_group)
 
-  def _RunOnPrem(self, args):
-    env = ssh.Environment.Current()
-    env.RequireSSH()
-    user, ip = ssh_utils.GetUserAndInstance(args.user_host)
-    remote = ssh.Remote(ip, user)
-
-    iap_tunnel_args = iap_tunnel.CreateOnPremSshTunnelArgs(
-        args, self.ReleaseTrack(), ip)
-
-    extra_flags = ssh.ParseAndSubstituteSSHFlags(args, remote, ip, ip)
-
-    remainder = []
-
-    if args.ssh_args:
-      remainder.extend(args.ssh_args)
-
-    # Transform args.command into arg list or None if no command
-    command_list = args.command.split(' ') if args.command else None
-    tty = containers.GetTty(args.container, command_list)
-    remote_command = containers.GetRemoteCommand(args.container, command_list)
-
-    # Do not include default port since that will prevent users from
-    # specifying a custom port (b/121998342).
-    ssh_cmd_args = {'remote': remote,
-                    'extra_flags': extra_flags,
-                    'remote_command': remote_command,
-                    'tty': tty,
-                    'iap_tunnel_args': iap_tunnel_args,
-                    'remainder': remainder}
-
-    cmd = ssh.SSHCommand(**ssh_cmd_args)
-
-    if args.dry_run:
-      log.out.Print(' '.join(cmd.Build(env)))
-      return
-
-    # Errors from SSH itself result in an ssh.CommandError being raised
-    return_code = cmd.Run(
-        env,
-        force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
-    if return_code:
-      # This is the return code of the remote command.  Problems with SSH itself
-      # will result in ssh.CommandError being raised above.
-      sys.exit(return_code)
-
   def Run(self, args):
     """See ssh_utils.BaseSSHCLICommand.Run."""
+
+    on_prem = (
+        args.IsKnownAndSpecified('network') and
+        args.IsKnownAndSpecified('region'))
+    if on_prem:
+      args.plain = True
+
+    # These two lines are needed to ensure reauth is performed as needed, even
+    # for on-prem, which doesn't use the resulting variables.
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    if (args.IsKnownAndSpecified('network') and
-        args.IsKnownAndSpecified('region')):
-      self._RunOnPrem(args)
-      return
-
     ssh_helper = ssh_utils.BaseSSHCLIHelper()
     ssh_helper.Run(args)
-    user, instance_name = ssh_utils.GetUserAndInstance(args.user_host)
-    instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
-        [instance_name], compute_scope.ScopeEnum.ZONE, args.zone,
-        holder.resources,
-        scope_lister=instance_flags.GetInstanceZoneScopeLister(client))[0]
-    instance = ssh_helper.GetInstance(client, instance_ref)
-    project = ssh_helper.GetProject(client, instance_ref.project)
-    host_keys = ssh_helper.GetHostKeysFromGuestAttributes(client, instance_ref,
-                                                          instance, project)
-    iap_tunnel_args = iap_tunnel.CreateSshTunnelArgs(
-        args, self.ReleaseTrack(), instance_ref,
-        ssh_utils.GetExternalInterface(instance, no_raise=True))
 
-    internal_address = ssh_utils.GetInternalIPAddress(instance)
+    if on_prem:
+      user, ip = ssh_utils.GetUserAndInstance(args.user_host)
+      remote = ssh.Remote(ip, user)
 
-    if hasattr(args, 'troubleshoot') and args.troubleshoot:
-      RunTroubleshooting(project, args.zone or instance_ref.zone,
-                         instance, iap_tunnel_args)
-      return
-
-    if not host_keys and host_keys is not None:
-      # Only display this message if there was an attempt to retrieve
-      # host keys but it was unsuccessful. If Guest Attributes is disabled,
-      # there is no attempt to retrieve host keys.
-      log.status.Print('Unable to retrieve host keys from instance metadata. '
-                       'Continuing.')
-    expiration, expiration_micros = ssh_utils.GetSSHKeyExpirationFromArgs(args)
-    if args.plain:
-      use_oslogin = False
+      iap_tunnel_args = iap_tunnel.CreateOnPremSshTunnelArgs(
+          args, self.ReleaseTrack(), ip)
+      instance_address = ip
+      internal_address = ip
     else:
-      public_key = ssh_helper.keys.GetPublicKey().ToEntry(include_comment=True)
-      # If there is an '@' symbol in the user_host arg, the user is requesting
-      # to connect as a specific user. This may get overridden by OS Login.
-      username_requested = '@' in args.user_host
-      user, use_oslogin = ssh.CheckForOsloginAndGetUser(
-          instance, project, user, public_key, expiration_micros,
-          self.ReleaseTrack(), username_requested=username_requested)
+      user, instance_name = ssh_utils.GetUserAndInstance(args.user_host)
+      instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
+          [instance_name], compute_scope.ScopeEnum.ZONE, args.zone,
+          holder.resources,
+          scope_lister=instance_flags.GetInstanceZoneScopeLister(client))[0]
+      instance = ssh_helper.GetInstance(client, instance_ref)
+      project = ssh_helper.GetProject(client, instance_ref.project)
+      host_keys = ssh_helper.GetHostKeysFromGuestAttributes(
+          client, instance_ref, instance, project)
+      iap_tunnel_args = iap_tunnel.CreateSshTunnelArgs(
+          args, self.ReleaseTrack(), instance_ref,
+          ssh_utils.GetExternalInterface(instance, no_raise=True))
 
-    if iap_tunnel_args:
-      # IAP Tunnel only uses instance_address for the purpose of --ssh-flag
-      # substitution. In this case, dest_addr doesn't do much, it just matches
-      # against entries in the user's ssh_config file. It's best to use
-      # something unique to avoid false positive matches, thus we use
-      # HostKeyAlias.
-      instance_address = internal_address
-      dest_addr = ssh_utils.HostKeyAlias(instance)
-    elif args.internal_ip:
-      instance_address = internal_address
-      dest_addr = instance_address
-    else:
-      instance_address = ssh_utils.GetExternalIPAddress(instance)
-      dest_addr = instance_address
-    remote = ssh.Remote(dest_addr, user)
+      internal_address = ssh_utils.GetInternalIPAddress(instance)
+
+      if hasattr(args, 'troubleshoot') and args.troubleshoot:
+        RunTroubleshooting(project, args.zone or instance_ref.zone,
+                           instance, iap_tunnel_args)
+        return
+
+      if not host_keys and host_keys is not None:
+        # Only display this message if there was an attempt to retrieve
+        # host keys but it was unsuccessful. If Guest Attributes is disabled,
+        # there is no attempt to retrieve host keys.
+        log.status.Print('Unable to retrieve host keys from instance metadata. '
+                         'Continuing.')
+      expiration, expiration_micros = ssh_utils.GetSSHKeyExpirationFromArgs(
+          args)
+      if args.plain:
+        use_oslogin = False
+      else:
+        public_key = ssh_helper.keys.GetPublicKey().ToEntry(
+            include_comment=True)
+        # If there is an '@' symbol in the user_host arg, the user is requesting
+        # to connect as a specific user. This may get overridden by OS Login.
+        username_requested = '@' in args.user_host
+        user, use_oslogin = ssh.CheckForOsloginAndGetUser(
+            instance, project, user, public_key, expiration_micros,
+            self.ReleaseTrack(), username_requested=username_requested)
+
+      if iap_tunnel_args:
+        # IAP Tunnel only uses instance_address for the purpose of --ssh-flag
+        # substitution. In this case, dest_addr doesn't do much, it just matches
+        # against entries in the user's ssh_config file. It's best to use
+        # something unique to avoid false positive matches, thus we use
+        # HostKeyAlias.
+        instance_address = internal_address
+        dest_addr = ssh_utils.HostKeyAlias(instance)
+      elif args.internal_ip:
+        instance_address = internal_address
+        dest_addr = instance_address
+      else:
+        instance_address = ssh_utils.GetExternalIPAddress(instance)
+        dest_addr = instance_address
+      remote = ssh.Remote(dest_addr, user)
 
     identity_file = None
     options = None
@@ -386,7 +366,7 @@ class Ssh(base.Command):
       except retry.WaitException:
         raise ssh_utils.NetworkError()
 
-    if args.internal_ip:
+    if args.internal_ip and not on_prem:
       ssh_helper.PreliminarilyVerifyInstance(instance.id, remote, identity_file,
                                              options)
 
@@ -420,57 +400,80 @@ class SshAlpha(SshBeta):
   enable_ip_based_flags = True
 
 
-def DetailedHelp():
+_ON_PREM_EXTRA_DESCRIPTION = """
+
+If the `--region` and `--network` flags are provided, then `--plain` and
+`--tunnel-through-iap` are implied and an IP address must be supplied instead of
+an instance name. This is most useful for connecting to on-prem resources.
+"""
+
+_ON_PREM_EXTRA_EXAMPLES = """
+
+To use the IP address of your remote VM (eg, for on-prem), you must also specify
+the `--region` and `--network` flags:
+
+  $ {command} 10.1.2.3 --region=us-central1 --network=default
+"""
+
+
+def _DetailedHelp(version):
   """Construct help text based on the command release track."""
   detailed_help = {
       'brief': 'SSH into a virtual machine instance',
       'DESCRIPTION': """\
-        *{command}* is a thin wrapper around the *ssh(1)* command that
-        takes care of authentication and the translation of the
-        instance name into an IP address.
+*{command}* is a thin wrapper around the *ssh(1)* command that
+takes care of authentication and the translation of the
+instance name into an IP address.
 
-        Note, this command does not work when connecting to Windows VMs. To
-        connect to a Windows instance using a command-line method, refer to this
-        guide: https://cloud.google.com/compute/docs/instances/connecting-to-instance#windows_cli
+Note, this command does not work when connecting to Windows VMs. To
+connect to a Windows instance using a command-line method, refer to this
+guide: https://cloud.google.com/compute/docs/instances/connecting-to-instance#windows_cli
 
-        The default network comes preconfigured to allow ssh access to
-        all VMs. If the default network was edited, or if not using the
-        default network, you may need to explicitly enable ssh access by adding
-        a firewall-rule:
+The default network comes preconfigured to allow ssh access to
+all VMs. If the default network was edited, or if not using the
+default network, you may need to explicitly enable ssh access by adding
+a firewall-rule:
 
-          $ gcloud compute firewall-rules create --network=NETWORK default-allow-ssh --allow=tcp:22
+  $ gcloud compute firewall-rules create --network=NETWORK default-allow-ssh --allow=tcp:22
 
-        {command} ensures that the user's public SSH key is present
-        in the project's metadata. If the user does not have a public
-        SSH key, one is generated using *ssh-keygen(1)* (if the `--quiet`
-        flag is given, the generated key will have an empty passphrase).
-        """,
+*{command}* ensures that the user's public SSH key is present
+in the project's metadata. If the user does not have a public
+SSH key, one is generated using *ssh-keygen(1)* (if the `--quiet`
+flag is given, the generated key will have an empty passphrase).
+""",
       'EXAMPLES': """\
-        To SSH into 'example-instance' in zone ``us-central1-a'', run:
+To SSH into 'example-instance' in zone ``us-central1-a'', run:
 
-          $ {command} example-instance --zone=us-central1-a
+  $ {command} example-instance --zone=us-central1-a
 
-        You can also run a command on the virtual machine. For
-        example, to get a snapshot of the guest's process tree, run:
+You can also run a command on the virtual machine. For
+example, to get a snapshot of the guest's process tree, run:
 
-          $ {command} example-instance --zone=us-central1-a --command="ps -ejH"
+  $ {command} example-instance --zone=us-central1-a --command="ps -ejH"
 
-        If you are using the Google Container-Optimized virtual machine image,
-        you can SSH into one of your containers with:
+If you are using the Google Container-Optimized virtual machine image,
+you can SSH into one of your containers with:
 
-          $ {command} example-instance --zone=us-central1-a --container=CONTAINER
+  $ {command} example-instance --zone=us-central1-a --container=CONTAINER
 
-        You can limit the allowed time to ssh. For example, to allow a key to be
-        used through 2019:
+You can limit the allowed time to ssh. For example, to allow a key to be
+used through 2019:
 
-          $ {command} example-instance --zone=us-central1-a --ssh-key-expiration="2020-01-01T00:00:00:00Z"
+  $ {command} example-instance --zone=us-central1-a --ssh-key-expiration="2020-01-01T00:00:00:00Z"
 
-        Or alternatively, allow access for the next two minutes:
+Or alternatively, allow access for the next two minutes:
 
-          $ {command} example-instance --zone=us-central1-a --ssh-key-expire-after=2m
-        """,
+  $ {command} example-instance --zone=us-central1-a --ssh-key-expire-after=2m
+""",
   }
+
+  if version == 'ALPHA':
+    detailed_help['DESCRIPTION'] += _ON_PREM_EXTRA_DESCRIPTION
+    detailed_help['EXAMPLES'] += _ON_PREM_EXTRA_EXAMPLES
+
   return detailed_help
 
 
-Ssh.detailed_help = DetailedHelp()
+SshAlpha.detailed_help = _DetailedHelp('ALPHA')
+SshBeta.detailed_help = _DetailedHelp('BETA')
+Ssh.detailed_help = _DetailedHelp('GA')

@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Operations(base.Group):
-  """Manage Certificate Manager operations.
+  """Manage Edge Cache operations.
 
   Commands for managing long-running operations.
   """

@@ -30,7 +30,7 @@ from googlecloudsdk.core.util import files
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine security policy.
 
@@ -104,8 +104,8 @@ class Create(base.CreateCommand):
     return security_policy.Create(template)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateAlphaBeta(Create):
   """Create a Compute Engine security policy.
 
   *{command}* is used to create security policies. A security policy policy is a
@@ -126,8 +126,7 @@ class CreateAlpha(Create):
         choices=['CLOUD_ARMOR', 'CLOUD_ARMOR_EDGE'],
         type=lambda x: x.upper(),
         metavar='SECURITY_POLICY_TYPE',
-        help=('The type indicates the intended use of the security policy. '
-              'Can be either CLOUD_ARMOR or CLOUD_ARMOR_EDGE.'))
+        help=('The type indicates the intended use of the security policy.'))
 
     group.add_argument(
         '--file-name',

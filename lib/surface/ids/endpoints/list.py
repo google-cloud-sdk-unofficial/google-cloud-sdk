@@ -42,7 +42,8 @@ table(
     name.scope("locations").segment(0):label=LOCATION,
     severity,
     state,
-    network
+    network,
+    trafficLogs
 )
 """
 

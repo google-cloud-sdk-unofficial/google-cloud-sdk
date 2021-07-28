@@ -83,6 +83,7 @@ class Create(base.CreateCommand):
     flags.AddMainVolumeSize(parser)
     flags.AddTags(parser, "cluster")
     flags.AddValidateOnly(parser, "creation of the cluster")
+    flags.AddDatabaseEncryption(parser, hidden=True)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(command_util.CLUSTERS_FORMAT)
 
@@ -112,6 +113,7 @@ class Create(base.CreateCommand):
     main_volume_size = flags.GetMainVolumeSize(args)
     validate_only = flags.GetValidateOnly(args)
     tags = flags.GetTags(args)
+    db_resource_group_id, db_kms_key_id = flags.GetDatabaseEncryption(args)
     admin_users = [properties.VALUES.core.account.Get()]
     async_ = getattr(args, "async_", False)
 
@@ -134,7 +136,9 @@ class Create(base.CreateCommand):
           main_volume_size=main_volume_size,
           validate_only=validate_only,
           tags=tags,
-          admin_users=admin_users)
+          admin_users=admin_users,
+          db_resource_group_id=db_resource_group_id,
+          db_kms_key_id=db_kms_key_id)
 
       op_ref = resource_args.GetOperationResource(op)
 

@@ -43,10 +43,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    """Specifies additional command flags.
-
-    --region: An optional flag that, if specified, will only list clusters
-        within that given region.
+    """Constructs and sends request.
 
     Args:
       parser: argparse.Parser: Parser object for command line inputs.
@@ -61,14 +58,14 @@ class List(base.ListCommand):
     parser.display_info.AddFormat(CLUSTER_FORMAT)
 
   def Run(self, args):
-    """This is what gets called when the user runs the command.
+    """Constructs and sends request.
 
     Args:
       args: argparse.Namespace, An object that contains the values for the
           arguments specified in the .Args() method.
 
     Returns:
-      A resource object dispatched by display.Displayer().
+      ProcessHttpResponse of the request made.
     """
     client = api_util.AlloyDBClient(api_util.API_VERSION_DEFAULT)
     alloydb_client = client.alloydb_client

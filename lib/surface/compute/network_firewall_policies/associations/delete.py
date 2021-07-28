@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.network_firewall_policies import client
+from googlecloudsdk.api_lib.compute.network_firewall_policies import region_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
 
@@ -46,22 +47,37 @@ class Delete(base.CreateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.NETWORK_FIREWALL_POLICY_ARG.ResolveAsResource(
         args, holder.resources)
+
     network_firewall_policy = client.NetworkFirewallPolicy(
         ref, compute_client=holder.client)
+    if hasattr(ref, 'region'):
+      network_firewall_policy = region_client.RegionNetworkFirewallPolicy(
+          ref, compute_client=holder.client)
 
     return network_firewall_policy.DeleteAssociation(
         firewall_policy=args.firewall_policy,
         name=args.name,
         only_generate_request=False)
 
+
 Delete.detailed_help = {
     'EXAMPLES':
         """\
-    To delete an association from a network firewall policy with NAME
+    To delete an association from a global network firewall policy with NAME
     ``my-policy'' and association name ``my-association'', run:
 
       $ {command}
           --firewall-policy=my-policy
           --name=my-association
+          --global-firewall-policy
+
+    To delete an association from a regional network firewall policy with NAME
+    ``my-policy'' in region ``region-a'' and association name
+    ``my-association'', run:
+
+      $ {command}
+          --firewall-policy=my-policy
+          --name=my-association
+          --firewall-policy-region=region-a
     """,
 }

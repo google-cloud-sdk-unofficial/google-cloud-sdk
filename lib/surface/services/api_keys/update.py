@@ -74,6 +74,7 @@ DETAILED_HELP = {
 }
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
   """Update an API key's metadata."""
 

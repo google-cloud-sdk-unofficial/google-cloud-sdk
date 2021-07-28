@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 import base64
 import hashlib
+import json
 import os
 import subprocess
 import tempfile
@@ -185,11 +186,11 @@ class EnablePersonalAuthSession(base.Command):
   # To account for this we retry on that error, but this is so rare that
   # a single retry should be sufficient.
   #
-  # def encrypt_with_cluster_key(self, cluster_public_key: str,
-  #                              secret: str, openssl_executable: str) -> str:
+  # def encode_token_using_openssl(self, cluster_public_key: str,
+  #                                secret: str, openssl_executable: str) -> str:
   @retry.RetryOnException(max_retrials=1)
-  def encrypt_with_cluster_key(self, cluster_public_key, secret,
-                               openssl_executable):
+  def encode_token_using_openssl(self, cluster_public_key, secret,
+                                 openssl_executable):
     cluster_key_hash = hashlib.sha256(
         (cluster_public_key + '\n').encode('utf-8')).hexdigest()
     iv_bytes = base64.b16encode(os.urandom(16))
@@ -227,14 +228,69 @@ class EnablePersonalAuthSession(base.Command):
     return '{}:{}:{}:{}:{}'.format(cluster_key_hash, encoded_token, encoded_pad,
                                    initialization_vector, hmac_tag)
 
+  def is_tink_library_installed(self):
+    try:
+      # pylint: disable=g-import-not-at-top
+      # pylint: disable=unused-import
+      import tink
+      from tink import hybrid
+      from tink import cleartext_keyset_handle
+      # pylint: enable=g-import-not-at-top
+      # pylint: enable=unused-import
+      return True
+    except ImportError:
+      return False
+
+  # def encrypt_with_cluster_key(self, cluster_public_key: str,
+  #                              secret: str, openssl_executable: str) -> str:
+  def encrypt_with_cluster_key(self, cluster_public_key, secret,
+                               openssl_executable):
+    if openssl_executable:
+      return self.encode_token_using_openssl(cluster_public_key, secret,
+                                             openssl_executable)
+    try:
+      # pylint: disable=g-import-not-at-top
+      import tink
+      from tink import hybrid
+      from tink import cleartext_keyset_handle
+      # pylint: enable=g-import-not-at-top
+    except ImportError:
+      raise exceptions.PersonalAuthError(
+          'Cannot load the Tink cryptography library. Either the '
+          'library is not installed, or site packages are not '
+          'enabled for the Google Cloud SDK. Please consult Cloud '
+          'Dataproc Personal Auth documentation on adding Tink to '
+          'Google Cloud SDK for further instructions.\n'
+          'https://cloud.google.com/dataproc/docs/concepts/iam/personal-auth')
+
+    hybrid.register()
+    context = b''
+
+    # Extract value of key corresponding to primary key.
+    public_key_value = json.loads(
+        cluster_public_key)['key'][0]['keyData']['value']
+    cluster_key_hash = hashlib.sha256(
+        (public_key_value + '\n').encode('utf-8')).hexdigest()
+
+    # Load public key and create keyset handle.
+    reader = tink.JsonKeysetReader(cluster_public_key)
+    kh_pub = cleartext_keyset_handle.read(reader)
+
+    # Create encrypter instance.
+    encrypter = kh_pub.primitive(hybrid.HybridEncrypt)
+    ciphertext = encrypter.encrypt(secret.encode('utf-8'), context)
+
+    encoded_token = base64.b64encode(ciphertext).decode('utf-8')
+    return '{}:{}'.format(cluster_key_hash, encoded_token)
+
   # def inject_credentials(
   #     self, dataproc: dp.Dataproc, project: str, region: str,
   #     cluster_name: str, cluster_uuid: str, access_boundary_json: str,
-  #     openssl_executable: str,
-  #     operation_poller: waiter.CloudOperationPollerNoResources):
+  #     operation_poller: waiter.CloudOperationPollerNoResources),
+  #     openssl_executable: str:
   def inject_credentials(self, dataproc, project, region, cluster_name,
                          cluster_uuid, cluster_key, access_boundary_json,
-                         openssl_executable, operation_poller):
+                         operation_poller, openssl_executable):
     downscoped_token = util.GetCredentials(access_boundary_json)
     if not downscoped_token:
       raise exceptions.PersonalAuthError(
@@ -273,19 +329,33 @@ class EnablePersonalAuthSession(base.Command):
     else:
       access_boundary_json = flags.ProjectGcsObjectsAccessBoundary(project)
 
-    openssl_executable = args.openssl_command
-    if not openssl_executable:
-      try:
-        openssl_executable = files.FindExecutableOnPath('openssl')
-      except ValueError:
-        log.fatal('Could not find openssl on your system. The enable-session '
-                  'command requires openssl to be installed.')
+    # ECIES keys should be used by default. If tink libraries are absent from
+    # the system then fallback to using RSA keys.
+    cluster_key_type = 'ECIES' if self.is_tink_library_installed() else 'RSA'
+
+    cluster_key = None
+    if cluster_key_type == 'ECIES':
+      # Try to fetch ECIES keys from cluster's master nodes metadata.
+      # If ECIES keys are not available then again fallback to RSA keys.
+      cluster_key = clusters.ClusterKey(cluster, cluster_key_type)
+      if not cluster_key:
+        cluster_key_type = 'RSA'
+
+    openssl_executable = None
+    if cluster_key_type == 'RSA':
+      cluster_key = clusters.ClusterKey(cluster, cluster_key_type)
+      openssl_executable = args.openssl_command
+      if not openssl_executable:
+        try:
+          openssl_executable = files.FindExecutableOnPath('openssl')
+        except ValueError:
+          log.fatal('Could not find openssl on your system. The enable-session '
+                    'command requires openssl to be installed.')
 
     operation_poller = waiter.CloudOperationPollerNoResources(
         dataproc.client.projects_regions_operations,
         lambda operation: operation.name)
     try:
-      cluster_key = clusters.ClusterKey(cluster)
       if not cluster_key:
         raise exceptions.PersonalAuthError(
             'The cluster {} does not support personal auth.'.format(
@@ -297,7 +367,7 @@ class EnablePersonalAuthSession(base.Command):
           autotick=True):
         self.inject_credentials(dataproc, project, region, cluster_name,
                                 cluster_uuid, cluster_key, access_boundary_json,
-                                openssl_executable, operation_poller)
+                                operation_poller, openssl_executable)
 
       if not args.refresh_credentials:
         return
@@ -312,7 +382,7 @@ class EnablePersonalAuthSession(base.Command):
           # Cluster keys are periodically regenerated, so fetch the latest
           # each time we inject credentials.
           cluster = dataproc.client.projects_regions_clusters.Get(get_request)
-          cluster_key = clusters.ClusterKey(cluster)
+          cluster_key = clusters.ClusterKey(cluster, cluster_key_type)
           if not cluster_key:
             raise exceptions.PersonalAuthError(
                 'The cluster {} does not support personal auth.'.format(
@@ -324,8 +394,8 @@ class EnablePersonalAuthSession(base.Command):
               time.sleep(30)
               self.inject_credentials(dataproc, project, region, cluster_name,
                                       cluster_uuid, cluster_key,
-                                      access_boundary_json, openssl_executable,
-                                      operation_poller)
+                                      access_boundary_json, operation_poller,
+                                      openssl_executable)
               failure_count = 0
             except ValueError as err:
               log.error(err)

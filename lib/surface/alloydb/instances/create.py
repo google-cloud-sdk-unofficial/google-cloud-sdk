@@ -57,16 +57,15 @@ class Create(base.CreateCommand):
     # understand the use cases
 
   def Run(self, args):
-    """This is what gets called when the user runs the command.
+    """Constructs and sends request.
 
     Args:
       args: argparse.Namespace, An object that contains the values for the
           arguments specified in the .Args() method.
 
     Returns:
-      A resource object dispatched by display.Displayer().
+      ProcessHttpResponse of the request made.
     """
-    args.format = 'default'
     client = api_util.AlloyDBClient(api_util.API_VERSION_DEFAULT)
     alloydb_client = client.alloydb_client
     alloydb_messages = client.alloydb_messages

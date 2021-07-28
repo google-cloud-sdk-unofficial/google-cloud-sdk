@@ -56,10 +56,10 @@ class Cp(base.Command):
 
         $ {command} gs://my-bucket/*.txt s3://my-bucket
 
-      Use the -r option to copy an entire directory tree. The following command
-      uploads the directory tree "dir":
+      Use the `--recursive` option to copy an entire directory tree. The
+      following command uploads the directory tree ``dir'':
 
-        $ {command} -r dir gs://my-bucket
+        $ {command} --recursive dir gs://my-bucket
       """,
   }
 

@@ -177,8 +177,8 @@ def _parse_config_sync(configmanagement, msg):
       raise exceptions.Error(
           'The field .spec.{}.{}'.format(utils.CONFIG_SYNC, field) +
           ' is unrecognized in this applySpecVersion. Please remove.')
-  git_config = msg.ConfigManagementGitConfig()
-  config_sync = msg.ConfigManagementConfigSync(git=git_config)
+
+  config_sync = msg.ConfigManagementConfigSync()
   # missing `enabled: true` will disable configSync
   if 'enabled' not in spec_git:
     raise exceptions.Error('Missing required field [{}.enabled]'.format(
@@ -187,6 +187,8 @@ def _parse_config_sync(configmanagement, msg):
     return config_sync
   # https://cloud.google.com/anthos-config-management/docs/how-to/installing#configuring-git-repo
   # Required field
+  git_config = msg.ConfigManagementGitConfig()
+  config_sync.git = git_config
   for field in ['syncRepo', 'secretType']:
     if field not in spec_git:
       raise exceptions.Error('Missing required field [{}.{}].'.format(

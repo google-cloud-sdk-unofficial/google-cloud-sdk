@@ -72,6 +72,7 @@ DETAILED_HELP = {
 }
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create an API key."""
 

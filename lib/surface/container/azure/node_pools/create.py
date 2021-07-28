@@ -47,6 +47,8 @@ class Create(base.CreateCommand):
     flags.AddTags(parser, 'node pool')
     flags.AddValidateOnly(parser, 'creation of the node pool')
     flags.AddMaxPodsPerNode(parser)
+    flags.AddNodeLabels(parser)
+    flags.AddNodeTaints(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(command_util.NODE_POOL_FORMAT)
 
@@ -63,6 +65,8 @@ class Create(base.CreateCommand):
     validate_only = flags.GetValidateOnly(args)
     max_pods_per_node = flags.GetMaxPodsPerNode(args)
     min_nodes, max_nodes = flags.GetAutoscalingParams(args)
+    taints = flags.GetNodeTaints(args)
+    labels = flags.GetNodeLabels(args)
 
     async_ = args.async_
 
@@ -81,7 +85,9 @@ class Create(base.CreateCommand):
           validate_only=validate_only,
           min_nodes=min_nodes,
           max_nodes=max_nodes,
-          max_pods_per_node=max_pods_per_node)
+          max_pods_per_node=max_pods_per_node,
+          taints=taints,
+          labels=labels)
 
       op_ref = resource_args.GetOperationResource(op)
 

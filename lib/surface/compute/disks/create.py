@@ -457,14 +457,9 @@ class Create(base.Command):
         args, disk_refs, compute_holder, from_image)
     snapshot_uri = self.GetSnapshotUri(args, compute_holder)
 
-    # Those features are only exposed in alpha/beta, it would be nice to have
-    # code supporting them only in alpha and beta versions of the command.
     labels = self.GetLabels(args, client)
 
-    allow_rsa_encrypted = self.ReleaseTrack() in [
-        base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
-    ]
-    csek_keys = csek_utils.CsekKeyStore.FromArgs(args, allow_rsa_encrypted)
+    csek_keys = csek_utils.CsekKeyStore.FromArgs(args, True)
 
     for project in project_to_source_image:
       source_image_uri = project_to_source_image[project].uri
@@ -473,8 +468,6 @@ class Create(base.Command):
               csek_keys, compute_holder.resources,
               [source_image_uri, snapshot_uri], client.apitools_client))
 
-    # end of alpha/beta features.
-
     guest_os_feature_messages = _ParseGuestOsFeaturesToMessages(
         args, client.messages)
 
@@ -482,9 +475,6 @@ class Create(base.Command):
     for disk_ref in disk_refs:
       type_uri = self.GetDiskTypeUri(args, disk_ref, compute_holder)
 
-      # Those features are only exposed in alpha/beta, it would be nice to have
-      # code supporting them only in alpha and beta versions of the command.
-      # TODO(b/65161039): Stop checking release path in the middle of GA code.
       kwargs = {}
       if csek_keys:
         disk_key_or_none = csek_keys.LookupKey(disk_ref,
@@ -503,6 +493,9 @@ class Create(base.Command):
         kwargs['diskEncryptionKey'] = kms_utils.MaybeGetKmsKey(
             args, client.messages, kwargs.get('diskEncryptionKey', None))
 
+      # Those features are only exposed in alpha/beta, it would be nice to have
+      # code supporting them only in alpha and beta versions of the command.
+      # TODO(b/65161039): Stop checking release path in the middle of GA code.
       if support_pd_interface and args.interface:
         kwargs['interface'] = arg_utils.ChoiceToEnum(
             args.interface, client.messages.Disk.InterfaceValueValuesEnum)

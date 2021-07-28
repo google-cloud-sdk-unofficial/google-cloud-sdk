@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import trigger_config as trigger_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.builds import flags as build_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -36,11 +35,11 @@ class CreateBitbucketServer(base.CreateCommand):
           """\
             To create a push trigger for all branches:
 
-              $ {command} --name="my-trigger" --project-key="GoogleCloudPlatform" --repo-slug="cloud-builders" --bitbucket-server-config-resource="projects/1234/locations/global/bitbucketServerConfigs/5678" --branch-pattern=".*" --build-config="cloudbuild.yaml"
+              $ {command} --name="my-trigger" --service-account="projects/my-project/serviceAccounts/my-byosa@my-project.iam.gserviceaccount.com" --project-key="GoogleCloudPlatform" --repo-slug="cloud-builders" --bitbucket-server-config-resource="projects/1234/locations/global/bitbucketServerConfigs/5678" --branch-pattern=".*" --build-config="cloudbuild.yaml"
 
             To create a pull request trigger for main:
 
-              $ {command} --name="my-trigger" --project-key="GoogleCloudPlatform" --repo-slug="cloud-builders" --bitbucket-server-config-resource="projects/1234/locations/global/bitbucketServerConfigs/5678" --pull-request-pattern="^main$" --build-config="cloudbuild.yaml"
+              $ {command} --name="my-trigger" --service-account="projects/my-project/serviceAccounts/my-byosa@my-project.iam.gserviceaccount.com" --project-key="GoogleCloudPlatform" --repo-slug="cloud-builders" --bitbucket-server-config-resource="projects/1234/locations/global/bitbucketServerConfigs/5678" --pull-request-pattern="^main$" --build-config="cloudbuild.yaml"
           """,
   }
 
@@ -54,7 +53,6 @@ class CreateBitbucketServer(base.CreateCommand):
     """
     messages = cloudbuild_util.GetMessagesModule()
     flag_config = trigger_utils.AddTriggerArgs(parser)
-    build_flags.AddRegionFlag(flag_config, hidden=True)
     flag_config.add_argument(
         '--repo-slug', help='Bitbucket Server repository slug.', required=True)
     flag_config.add_argument(

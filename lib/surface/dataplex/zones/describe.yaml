@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: |
+      Retrieve a Dataplex Zone Resource.
+    description: |
+      Get a Dataplex Zone resource based on project, location, lake, and zone.
+
+      {top_command} dataplex zone describe projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id}
+    examples: |
+      $ {command} dataplex zone describe projects/project_id/locations/us-central1/lakes/test-lake/zones/test-zone
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.lakes.zones
+    method: get
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Zones you want to retrieve.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:zone

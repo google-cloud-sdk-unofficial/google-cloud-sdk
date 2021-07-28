@@ -16,17 +16,18 @@
       is_positional: true
       help_text: |
         The zone name.
-      override_resource_collection: true
 
   request:
     collection: edgecontainer.projects.locations
     api_version: v1alpha
-    # NOTE: Zones are not proper API resources; getting zones is implemented by
-    # querying the Locations API and parsing the metadata of the resulting
-    # regions.
-    method: list
-    disable_resource_check: true
+    # Because the resource argument is a zone, the default list method will
+    # attempt to list '/projects/{project}/locations/{zone}/locations', whereas
+    # the GetLocation API should be called with a region (and then the zone
+    # extracted from the response). This hook replaces 'locations/{zone}' with
+    # 'locations/{region}'.
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.edge_container.locations:ReplaceResourceZoneWithRegion
 
   response:
     modify_response_hooks:
-    - googlecloudsdk.command_lib.edge_container.locations:ExtractZoneFromLocations
+    - googlecloudsdk.command_lib.edge_container.locations:ExtractZoneFromLocation

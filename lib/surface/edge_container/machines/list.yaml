@@ -25,6 +25,9 @@
     format: |
       table(
         name.basename():label=NAME,
-        labels:label=LABELS,
-        createTime:label=CREATETIME
+        zone:label=ZONE,
+        labels['/cpu']:label=CPU,
+        labels['/ram_mb']:label=RAM_MB,
+        labels['/gpu_type']:label=GPU_TYPE,
+        hostedNode.split('/').slice(:8).join('/'):label=HOSTED_NODE_POOL
       )

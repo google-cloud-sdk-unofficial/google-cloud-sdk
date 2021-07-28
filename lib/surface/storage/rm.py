@@ -44,18 +44,18 @@ class Rm(base.Command):
       'EXAMPLES':
           """
 
-      The following command deletes a Cloud Storage object named "my-object"
-      from the bucket "my-bucket":
+      The following command deletes a Cloud Storage object named ``my-object''
+      from the bucket ``my-bucket'':
 
         $ {command} gs://my-bucket/my-object
 
       The following command deletes all objects directly within the directory
-      "my-dir" but no objects within subdirectories:
+      ``my-dir'' but no objects within subdirectories:
 
         $ {command} gs://my-bucket/my-dir/*
 
       The following command deletes all objects and subdirectories within the
-      directory "my-dir":
+      directory ``my-dir'':
 
         $ {command} gs://my-bucket/my-dir/**
 
@@ -65,12 +65,12 @@ class Rm(base.Command):
       instead to delete all versions.
 
       The following command deletes all versions of all resources in
-      "my-bucket" and then deletes the bucket.
+      ``my-bucket'' and then deletes the bucket.
 
         $ {command} --recursive gs://my-bucket/
 
       The following command deletes all text files in the top-level of
-      "my-bucket", but not text files in subdirectories:
+      ``my-bucket'', but not text files in subdirectories:
 
         $ {command} -recursive gs://my-bucket/*.txt
 

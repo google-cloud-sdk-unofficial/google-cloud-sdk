@@ -28,6 +28,7 @@ OP_BASE_CMD = 'gcloud services operations '
 OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Clone(base.CreateCommand):
   """Create a new API key with the same metadata as input key."""
 

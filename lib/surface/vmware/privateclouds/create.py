@@ -36,11 +36,11 @@ DETAILED_HELP = {
           To create a private cloud in the ``us-west2-a'' zone using ``standard-72'' nodes that connects to the ``default-vpc'' VPC network of another project, run:
 
 
-          $ {command} my-privatecloud --location=us-west2-a --project=my-project --cluster=my-management-cluster --node-type=standard-72 --node-count=3 --management-range=192.168.0.0/20 --network=default-vpc --network-project=another-project
+          $ {command} my-privatecloud --location=us-west2-a --project=my-project --cluster=my-management-cluster --node-type=standard-72 --node-count=3 --management-range=192.168.0.0/24 --network=default-vpc --network-project=another-project
 
           Or:
 
-          $ {command} my-privatecloud --cluster=my-management-cluster--node-type=standard-72 --node-count=3 --management-range=192.168.0.0/20 --network=default-vpc --network-project=another-project
+          $ {command} my-privatecloud --cluster=my-management-cluster--node-type=standard-72 --node-count=3 --management-range=192.168.0.0/24 --network=default-vpc --network-project=another-project
 
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,

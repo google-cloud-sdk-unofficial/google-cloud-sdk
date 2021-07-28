@@ -60,9 +60,7 @@
       help_text: |
         Project ID of the source endpoint.
     - group:
-        release_tracks: [BETA]
         mutex: true
-        hidden: true
         params:
         - arg_name: source-gke-master-cluster
           api_field: connectivityTest.source.gkeMasterCluster
@@ -73,9 +71,7 @@
           help_text: |
             Clear existing source cluster for Google Kubernetes Engine master.
     - group:
-        release_tracks: [BETA]
         mutex: true
-        hidden: true
         params:
         - arg_name: source-cloud-sql-instance
           api_field: connectivityTest.source.cloudSqlInstance
@@ -122,9 +118,7 @@
       help_text: |
         Project ID of the destination endpoint.
     - group:
-        release_tracks: [BETA]
         mutex: true
-        hidden: true
         params:
         - arg_name: destination-gke-master-cluster
           api_field: connectivityTest.destination.gkeMasterCluster
@@ -135,9 +129,7 @@
           help_text: |
             Clear existing destination cluster for Google Kubernetes Engine master.
     - group:
-        release_tracks: [BETA]
         mutex: true
-        hidden: true
         params:
         - arg_name: destination-cloud-sql-instance
           api_field: connectivityTest.destination.cloudSqlInstance
@@ -189,7 +181,9 @@
       modify_request_hooks:
       - googlecloudsdk.command_lib.network_management.util:ValidateInstanceNames
       - googlecloudsdk.command_lib.network_management.util:ValidateNetworkURIs
-      - googlecloudsdk.command_lib.network_management.util:ClearEndpointAttrs
+      - googlecloudsdk.command_lib.network_management.util:ClearEndpointAttrsBeta
+      - googlecloudsdk.command_lib.network_management.util:ValidateGKEMasterClustersURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateCloudSQLInstancesURIs
     method: patch
     collection: networkmanagement.projects.locations.global.connectivityTests
 

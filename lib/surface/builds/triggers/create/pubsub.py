@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import trigger_config as trigger_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.builds import flags as build_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -36,7 +35,7 @@ class CreatePubSub(base.CreateCommand):
           """\
             To create a Pub/Sub trigger that listens to topic `my-topic` and builds off branch `my-branch` in a GitHub repository named `my-repo`:
 
-              $ {command} --name=my-pubsub-trigger --topic=projects/my-project/topics/my-topic --repo=https://www.github.com/owner/repo --branch=my-branch
+              $ {command} --name=my-pubsub-trigger --service-account="projects/my-project/serviceAccounts/my-byosa@my-project.iam.gserviceaccount.com" --topic=projects/my-project/topics/my-topic --repo=https://www.github.com/owner/repo --branch=my-branch
           """,
   }
 
@@ -49,7 +48,6 @@ class CreatePubSub(base.CreateCommand):
     """
 
     flag_config = trigger_utils.AddTriggerArgs(parser)
-    build_flags.AddRegionFlag(flag_config, hidden=True)
     flag_config.add_argument(
         '--topic',
         help='The topic to which this trigger should subscribe.',

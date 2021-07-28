@@ -23,6 +23,7 @@ import textwrap
 
 from googlecloudsdk.api_lib.auth import exceptions as auth_exceptions
 from googlecloudsdk.api_lib.auth import external_account as auth_external_account
+from googlecloudsdk.api_lib.auth import service_account as auth_service_account
 from googlecloudsdk.api_lib.auth import util as auth_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
@@ -125,11 +126,11 @@ class Login(base.Command):
         help='The gcloud command-line tool is using google-auth-library-python '
              'as its new auth library during login. Use this flag to switch '
              'back to the oauth2client.')
-    # TODO(b/190114370): This will also support JSON service account files.
     parser.add_argument(
         '--cred-file',
         hidden=True,
-        help='Path to the external credential configuration file.')
+        help='Path to the external account configuration file or service '
+        'account credential key file.')
     parser.display_info.AddFormat('none')
 
   def Run(self, args):
@@ -144,9 +145,7 @@ class Login(base.Command):
       scopes += (auth_util.GOOGLE_DRIVE_SCOPE,)
 
     if args.cred_file:
-      cred_config = (
-          auth_external_account.GetExternalAccountCredentialsConfig(
-              args.cred_file))
+      cred_config = auth_util.GetCredentialsConfigFromFile(args.cred_file)
     else:
       cred_config = None
 
@@ -263,11 +262,14 @@ def LoginWithCredFileConfig(cred_config, scopes, project, activate, brief,
   if auth_external_account.IsExternalAccountConfig(cred_config):
     creds = auth_external_account.CredentialsFromAdcDictGoogleAuth(cred_config)
     account = creds.service_account_email
+  elif auth_service_account.IsServiceAccountConfig(cred_config):
+    creds = auth_service_account.CredentialsFromAdcDictGoogleAuth(cred_config)
+    account = creds.service_account_email
   else:
-    # TODO(b/190114370): support service account key files.
     raise calliope_exceptions.InvalidArgumentException(
         '--cred-file',
-        'Only external-account credential file types are supported.')
+        'Only external account or service account JSON credential file types '
+        'are supported.')
 
   if args_account and args_account != account:
     raise calliope_exceptions.InvalidArgumentException(
@@ -309,6 +311,10 @@ def LoginAs(account, creds, project, activate, brief, update_adc,
     if c_creds.IsExternalAccountCredentials(creds):
       confirmation_msg = (
           'Authenticated with external account credentials for: [{0}].'.format(
+              account))
+    elif c_creds.IsServiceAccountCredentials(creds):
+      confirmation_msg = (
+          'Authenticated with service account credentials for: [{0}].'.format(
               account))
     else:
       confirmation_msg = 'You are now logged in as [{0}].'.format(account)

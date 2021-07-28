@@ -66,6 +66,12 @@ class Create(base.CreateCommand):
     aws_flags.AddRoleSessionName(parser)
     aws_flags.AddVpcId(parser)
     aws_flags.AddSecurityGroupIds(parser, 'control plane replicas')
+    aws_flags.AddRootVolumeType(parser)
+    aws_flags.AddRootVolumeIops(parser)
+    aws_flags.AddRootVolumeKmsKeyArn(parser)
+    aws_flags.AddMainVolumeType(parser)
+    aws_flags.AddMainVolumeIops(parser)
+    aws_flags.AddMainVolumeKmsKeyArn(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -80,7 +86,9 @@ class Create(base.CreateCommand):
                                                      release_track):
       cluster_client = clusters.Client(track=release_track)
       args.root_volume_size = flags.GetRootVolumeSize(args)
+      args.root_volume_type = aws_flags.GetRootVolumeType(args)
       args.main_volume_size = flags.GetMainVolumeSize(args)
+      args.main_volume_type = aws_flags.GetMainVolumeType(args)
       op = cluster_client.Create(cluster_ref, args)
       op_ref = resource_args.GetOperationResource(op)
 

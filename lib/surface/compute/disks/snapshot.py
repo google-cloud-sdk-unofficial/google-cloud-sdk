@@ -145,16 +145,16 @@ class SnapshotDisks(base.SilentCommand):
     requests = []
 
     for disk_ref, snapshot_ref in zip(disk_refs, snapshot_refs):
-      # This feature is only exposed in alpha/beta
-      allow_rsa_encrypted = self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
-                                                    base.ReleaseTrack.BETA]
-      csek_keys = csek_utils.CsekKeyStore.FromArgs(args, allow_rsa_encrypted)
+      csek_keys = csek_utils.CsekKeyStore.FromArgs(args, True)
+      snapshot_key_or_none = csek_utils.MaybeLookupKeyMessage(
+          csek_keys, snapshot_ref, client)
       disk_key_or_none = csek_utils.MaybeLookupKeyMessage(
           csek_keys, disk_ref, client)
 
       snapshot_message = messages.Snapshot(
           name=snapshot_ref.Name(),
           description=args.description,
+          snapshotEncryptionKey=snapshot_key_or_none,
           sourceDiskEncryptionKey=disk_key_or_none,
           chainName=args.chain_name)
 

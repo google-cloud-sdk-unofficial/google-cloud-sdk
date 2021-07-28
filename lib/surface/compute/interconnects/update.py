@@ -83,8 +83,7 @@ class Update(base.UpdateCommand):
         noc_contact_email=args.noc_contact_email,
         location=None,
         labels=labels,
-        label_fingerprint=label_fingerprint
-    )
+        label_fingerprint=label_fingerprint)
 
   def Run(self, args):
     self._DoRun(args)

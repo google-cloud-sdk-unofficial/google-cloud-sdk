@@ -39,6 +39,50 @@ class Create(base.CreateCommand):
 
   _API_VERSION = filestore_client.V1_API_VERSION
 
+  detailed_help = {
+      'DESCRIPTION':
+          'Create a Cloud Filestore instance.',
+      'EXAMPLES':
+          """\
+    The following command creates a Cloud Filestore instance named NAME with a single volume.
+
+      $ {command} NAME \
+      --description=DESCRIPTION --tier=TIER \
+      --file-share=name=VOLUME_NAME,capacity=CAPACITY \
+      --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE \
+      --zone=ZONE \
+      --flags-file=FLAGS_FILE
+
+    Example json configuration file:
+  {
+  "--file-share":
+  {
+    "capacity": "61440",
+    "name": "my_vol",
+    "nfs-export-options": [
+      {
+        "access-mode": "READ_WRITE",
+        "ip-ranges": [
+          "10.0.0.0/8",
+        ],
+        "squash-mode": "NO_ROOT_SQUASH",
+      },
+       {
+        "access-mode": "READ_ONLY",
+        "ip-ranges": [
+          "192.168.0.0/24"
+        ],
+        "squash-mode": "ROOT_SQUASH"
+        "anon_uid": 1003,
+        "anon_gid": 1003
+      }
+    ],
+  }
+  }
+
+    """
+  }
+
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, Create._API_VERSION)
@@ -83,33 +127,17 @@ class CreateBeta(Create):
 
   _API_VERSION = filestore_client.BETA_API_VERSION
 
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser, CreateBeta._API_VERSION)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create a Cloud Filestore instance."""
-
-  _API_VERSION = filestore_client.ALPHA_API_VERSION
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser, CreateAlpha._API_VERSION)
-
-
-Create.detailed_help = {
-    'DESCRIPTION':
-        'Create a Cloud Filestore instance.',
-    'EXAMPLES':
-        """\
+  detailed_help = {
+      'DESCRIPTION':
+          'Create a Cloud Filestore instance.',
+      'EXAMPLES':
+          """\
     The following command creates a Cloud Filestore instance named NAME with a single volume.
 
       $ {command} NAME \
       --description=DESCRIPTION --tier=TIER \
       --file-share=name=VOLUME_NAME,capacity=CAPACITY \
-      --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE \
+      --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE \
       --zone=ZONE \
       --flags-file=FLAGS_FILE
 
@@ -141,4 +169,63 @@ Create.detailed_help = {
   }
 
     """
-    }
+  }
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser, CreateBeta._API_VERSION)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a Cloud Filestore instance."""
+
+  _API_VERSION = filestore_client.ALPHA_API_VERSION
+
+  detailed_help = {
+      'DESCRIPTION':
+          'Create a Cloud Filestore instance.',
+      'EXAMPLES':
+          """\
+    The following command creates a Cloud Filestore instance named NAME with a single volume.
+
+      $ {command} NAME \
+      --description=DESCRIPTION --tier=TIER \
+      --file-share=name=VOLUME_NAME,capacity=CAPACITY \
+      --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE \
+      --zone=ZONE \
+      --flags-file=FLAGS_FILE
+
+    Example json configuration file:
+  {
+  "--file-share":
+  {
+    "capacity": "61440",
+    "name": "my_vol",
+    "nfs-export-options": [
+      {
+        "access-mode": "READ_WRITE",
+        "ip-ranges": [
+          "10.0.0.0/8",
+        ],
+        "squash-mode": "NO_ROOT_SQUASH",
+      },
+       {
+        "access-mode": "READ_ONLY",
+        "ip-ranges": [
+          "192.168.0.0/24"
+        ],
+        "squash-mode": "ROOT_SQUASH"
+        "anon_uid": 1003,
+        "anon_gid": 1003
+      }
+    ],
+  }
+  }
+
+    """
+  }
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser, CreateAlpha._API_VERSION)
