@@ -4764,6 +4764,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--billing-account": "value",
                     "--compliance-regime": [
                       "CJIS",
+                      "EU_REGIONS_AND_SUPPORT",
                       "FEDRAMP_HIGH",
                       "FEDRAMP_MODERATE",
                       "HIPAA",
@@ -9294,6 +9295,14 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--zone": "dynamic"
                       }
                     },
+                    "set-standby-policy": {
+                      "commands": {},
+                      "flags": {
+                        "--initial-delay": "value",
+                        "--region": "dynamic",
+                        "--zone": "dynamic"
+                      }
+                    },
                     "set-target-pools": {
                       "commands": {},
                       "flags": {
@@ -11351,6 +11360,8 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--disabled": "bool",
                         "--enable-logging": "bool",
                         "--firewall-policy": "value",
+                        "--firewall-policy-region": "dynamic",
+                        "--global-firewall-policy": "bool",
                         "--layer4-configs": "value",
                         "--src-ip-ranges": "value",
                         "--src-secure-tags": "value",
@@ -11361,13 +11372,17 @@ STATIC_COMPLETION_CLI_TREE = {
                     "delete": {
                       "commands": {},
                       "flags": {
-                        "--firewall-policy": "value"
+                        "--firewall-policy": "value",
+                        "--firewall-policy-region": "dynamic",
+                        "--global-firewall-policy": "bool"
                       }
                     },
                     "describe": {
                       "commands": {},
                       "flags": {
-                        "--firewall-policy": "value"
+                        "--firewall-policy": "value",
+                        "--firewall-policy-region": "dynamic",
+                        "--global-firewall-policy": "bool"
                       }
                     },
                     "update": {
@@ -11387,6 +11402,8 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--disabled": "bool",
                         "--enable-logging": "bool",
                         "--firewall-policy": "value",
+                        "--firewall-policy-region": "dynamic",
+                        "--global-firewall-policy": "bool",
                         "--layer4-configs": "value",
                         "--new-priority": "value",
                         "--src-ip-ranges": "value",
@@ -12998,6 +13015,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--async": "bool",
                         "--auto-allocate-nat-external-ips": "bool",
+                        "--enable-dynamic-port-allocation": "bool",
                         "--enable-endpoint-independent-mapping": "bool",
                         "--enable-logging": "bool",
                         "--icmp-idle-timeout": "value",
@@ -13006,6 +13024,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "ERRORS_ONLY",
                           "TRANSLATIONS_ONLY"
                         ],
+                        "--max-ports-per-vm": "value",
                         "--min-ports-per-vm": "value",
                         "--nat-all-subnet-ip-ranges": "bool",
                         "--nat-custom-subnet-ip-ranges": "value",
@@ -13100,12 +13119,14 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--async": "bool",
                         "--auto-allocate-nat-external-ips": "bool",
                         "--clear-icmp-idle-timeout": "bool",
+                        "--clear-max-ports-per-vm": "bool",
                         "--clear-min-ports-per-vm": "bool",
                         "--clear-nat-external-drain-ip-pool": "bool",
                         "--clear-tcp-established-idle-timeout": "bool",
                         "--clear-tcp-time-wait-timeout": "bool",
                         "--clear-tcp-transitory-idle-timeout": "bool",
                         "--clear-udp-idle-timeout": "bool",
+                        "--enable-dynamic-port-allocation": "bool",
                         "--enable-endpoint-independent-mapping": "bool",
                         "--enable-logging": "bool",
                         "--icmp-idle-timeout": "value",
@@ -13114,6 +13135,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "ERRORS_ONLY",
                           "TRANSLATIONS_ONLY"
                         ],
+                        "--max-ports-per-vm": "value",
                         "--min-ports-per-vm": "value",
                         "--nat-all-subnet-ip-ranges": "bool",
                         "--nat-custom-subnet-ip-ranges": "value",
@@ -13809,6 +13831,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--max-nodes": "value",
                         "--min-nodes": "value",
                         "--node-template": "value",
+                        "--share-setting": "value",
                         "--zone": "dynamic"
                       }
                     }
@@ -15504,6 +15527,12 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--sort-by": "value",
                         "--uri": "bool"
                       }
+                    },
+                    "wait": {
+                      "commands": {},
+                      "flags": {
+                        "--location": "value"
+                      }
                     }
                   },
                   "flags": {}
@@ -15690,6 +15719,12 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--sort-by": "value",
                         "--uri": "bool"
                       }
+                    },
+                    "wait": {
+                      "commands": {},
+                      "flags": {
+                        "--location": "value"
+                      }
                     }
                   },
                   "flags": {}
@@ -15737,6 +15772,16 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--location": "value"
                       }
                     },
+                    "get-iam-policy": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--location": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value"
+                      }
+                    },
                     "list": {
                       "commands": {},
                       "flags": {
@@ -15746,6 +15791,12 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--page-size": "value",
                         "--sort-by": "value",
                         "--uri": "bool"
+                      }
+                    },
+                    "set-iam-policy": {
+                      "commands": {},
+                      "flags": {
+                        "--location": "value"
                       }
                     },
                     "update": {
@@ -15806,6 +15857,17 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--location": "value"
                       }
                     },
+                    "get-iam-policy": {
+                      "commands": {},
+                      "flags": {
+                        "--backup-plan": "value",
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--location": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value"
+                      }
+                    },
                     "list": {
                       "commands": {},
                       "flags": {
@@ -15816,6 +15878,13 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--page-size": "value",
                         "--sort-by": "value",
                         "--uri": "bool"
+                      }
+                    },
+                    "set-iam-policy": {
+                      "commands": {},
+                      "flags": {
+                        "--backup-plan": "value",
+                        "--location": "value"
                       }
                     },
                     "update": {
@@ -15901,6 +15970,16 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--location": "value"
                       }
                     },
+                    "get-iam-policy": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--location": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value"
+                      }
+                    },
                     "list": {
                       "commands": {},
                       "flags": {
@@ -15910,6 +15989,12 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--page-size": "value",
                         "--sort-by": "value",
                         "--uri": "bool"
+                      }
+                    },
+                    "set-iam-policy": {
+                      "commands": {},
+                      "flags": {
+                        "--location": "value"
                       }
                     },
                     "update": {
@@ -21730,7 +21815,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--limit": "value",
                     "--page-size": "value",
                     "--sort-by": "value",
-                    "--uri": "bool"
+                    "--uri": "bool",
+                    "--v2": "bool"
                   }
                 }
               },
@@ -28316,6 +28402,29 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "pubsub": {
           "commands": {
+            "lite-operations": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--zone": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--done": "bool",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--subscription": "value",
+                    "--zone": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "lite-subscriptions": {
               "commands": {
                 "ack-up-to": {
@@ -28360,6 +28469,19 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--limit": "value",
                     "--page-size": "value",
                     "--sort-by": "value",
+                    "--zone": "value"
+                  }
+                },
+                "seek": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--event-time": "value",
+                    "--publish-time": "value",
+                    "--starting-offset": [
+                      "beginning",
+                      "end"
+                    ],
                     "--zone": "value"
                   }
                 },
@@ -35006,6 +35128,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--billing-account": "value",
                 "--compliance-regime": [
                   "CJIS",
+                  "EU_REGIONS_AND_SUPPORT",
                   "FEDRAMP_HIGH",
                   "FEDRAMP_MODERATE",
                   "HIPAA",
@@ -38117,6 +38240,27 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "artifacts": {
           "commands": {
+            "apt": {
+              "commands": {
+                "import": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--gcs-source": "value",
+                    "--location": "value"
+                  }
+                },
+                "upload": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "value",
+                    "--source": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "docker": {
               "commands": {
                 "images": {
@@ -38258,6 +38402,13 @@ STATIC_COMPLETION_CLI_TREE = {
             },
             "print-settings": {
               "commands": {
+                "apt": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value",
+                    "--repository": "value"
+                  }
+                },
                 "gradle": {
                   "commands": {},
                   "flags": {
@@ -38287,6 +38438,13 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--json-key": "value",
+                    "--location": "value",
+                    "--repository": "value"
+                  }
+                },
+                "yum": {
+                  "commands": {},
+                  "flags": {
                     "--location": "value",
                     "--repository": "value"
                   }
@@ -38452,6 +38610,27 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--repository": "value",
                     "--sort-by": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "yum": {
+              "commands": {
+                "import": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--gcs-source": "value",
+                    "--location": "value"
+                  }
+                },
+                "upload": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "value",
+                    "--source": "value"
                   }
                 }
               },
@@ -38707,6 +38886,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--billing-account": "value",
                     "--compliance-regime": [
                       "CJIS",
+                      "EU_REGIONS_AND_SUPPORT",
                       "FEDRAMP_HIGH",
                       "FEDRAMP_MODERATE",
                       "HIPAA",
@@ -40818,9 +40998,11 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--clear-labels": "bool",
+                    "--clear-user-licenses": "bool",
                     "--region": "dynamic",
                     "--remove-labels": "value",
                     "--update-labels": "value",
+                    "--update-user-licenses": "value",
                     "--zone": "dynamic"
                   }
                 }
@@ -43982,6 +44164,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--psc-target-service": "value",
                     "--region": "dynamic",
+                    "--serverless-deployment-platform": "value",
+                    "--serverless-deployment-resource": "value",
+                    "--serverless-deployment-url-mask": "value",
+                    "--serverless-deployment-version": "value",
                     "--subnet": "value",
                     "--zone": "dynamic"
                   }
@@ -53710,7 +53896,8 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--dataset": "value",
                     "--location": "value",
-                    "--pubsub-topic": "value"
+                    "--pubsub-topic": "value",
+                    "--send-for-bulk-import": "bool"
                   }
                 },
                 "deidentify": {
@@ -53834,7 +54021,8 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--dataset": "value",
                     "--location": "value",
-                    "--pubsub-topic": "value"
+                    "--pubsub-topic": "value",
+                    "--send-for-bulk-import": "bool"
                   }
                 }
               },
@@ -71790,6 +71978,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--location": "value"
                   }
                 },
+                "get-credentials": {
+                  "commands": {},
+                  "flags": {}
+                },
                 "list": {
                   "commands": {},
                   "flags": {
@@ -75455,7 +75647,9 @@ STATIC_COMPLETION_CLI_TREE = {
           "flags": {
             "--allow-unauthenticated": "bool",
             "--build-env-vars-file": "value",
+            "--build-worker-pool": "value",
             "--clear-build-env-vars": "bool",
+            "--clear-build-worker-pool": "bool",
             "--clear-env-vars": "bool",
             "--clear-labels": "bool",
             "--clear-max-instances": "bool",
@@ -80304,6 +80498,23 @@ STATIC_COMPLETION_CLI_TREE = {
       },
       "flags": {}
     },
+    "policy-intelligence": {
+      "commands": {
+        "query-activity": {
+          "commands": {},
+          "flags": {
+            "--activity-type": [
+              "serviceAccountKeyLastAuthentication",
+              "serviceAccountLastAuthentication"
+            ],
+            "--limit": "value",
+            "--page-size": "value",
+            "--query-filter": "value"
+          }
+        }
+      },
+      "flags": {}
+    },
     "policy-troubleshoot": {
       "commands": {
         "iam": {
@@ -81409,6 +81620,90 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--topic-encryption-key-location": "dynamic",
                 "--topic-encryption-key-project": "dynamic",
                 "--update-labels": "value"
+              }
+            }
+          },
+          "flags": {}
+        }
+      },
+      "flags": {}
+    },
+    "recaptcha": {
+      "commands": {
+        "keys": {
+          "commands": {
+            "create": {
+              "commands": {},
+              "flags": {
+                "--allow-all-domains": "bool",
+                "--allow-amp-traffic": "bool",
+                "--android": "bool",
+                "--bundle-ids": "value",
+                "--display-name": "value",
+                "--domains": "value",
+                "--integration-type": [
+                  "checkbox",
+                  "invisible",
+                  "score"
+                ],
+                "--ios": "bool",
+                "--labels": "value",
+                "--package-names": "value",
+                "--security-preference": [
+                  "balance",
+                  "challenge-security-preference-unspecified",
+                  "security",
+                  "usability"
+                ],
+                "--testing-challenge": [
+                  "challenge",
+                  "nocaptcha"
+                ],
+                "--testing-score": "value",
+                "--web": "bool"
+              }
+            },
+            "delete": {
+              "commands": {},
+              "flags": {}
+            },
+            "describe": {
+              "commands": {},
+              "flags": {}
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
+              }
+            },
+            "migrate": {
+              "commands": {},
+              "flags": {}
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--allow-all-domains": "bool",
+                "--allow-amp-traffic": "bool",
+                "--android": "bool",
+                "--bundle-ids": "value",
+                "--display-name": "value",
+                "--domains": "value",
+                "--ios": "bool",
+                "--labels": "value",
+                "--package-names": "value",
+                "--security-preference": [
+                  "balance",
+                  "challenge-security-preference-unspecified",
+                  "security",
+                  "usability"
+                ],
+                "--web": "bool"
               }
             }
           },
@@ -82915,7 +83210,9 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "delete": {
           "commands": {},
-          "flags": {}
+          "flags": {
+            "--etag": "value"
+          }
         },
         "describe": {
           "commands": {},
@@ -83002,6 +83299,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "--add-topics": "value",
             "--clear-labels": "bool",
             "--clear-topics": "bool",
+            "--etag": "value",
             "--expire-time": "value",
             "--next-rotation-time": "value",
             "--remove-expiration": "bool",
@@ -83038,18 +83336,21 @@ STATIC_COMPLETION_CLI_TREE = {
             "destroy": {
               "commands": {},
               "flags": {
+                "--etag": "value",
                 "--secret": "dynamic"
               }
             },
             "disable": {
               "commands": {},
               "flags": {
+                "--etag": "value",
                 "--secret": "dynamic"
               }
             },
             "enable": {
               "commands": {},
               "flags": {
+                "--etag": "value",
                 "--secret": "dynamic"
               }
             },

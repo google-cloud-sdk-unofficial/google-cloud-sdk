@@ -18,6 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import itertools
+import re
+
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
@@ -49,9 +52,30 @@ class List(base.ListCommand):
     else:
       project = properties.VALUES.core.project.GetOrFail()
 
+    if args.filter:
+      regions = self.GetRegions(args.filter)
+      if not regions:
+        # The filter is not a list of regions: continue as global request
+        # and retain the filter.
+        pass
+      else:
+        # The filter is a list of regions: clear the filter since its value
+        # is not meaningful to list_pager.
+        args.filter = None
+        region_generators = []
+        for region in regions:
+          region_generators.append(
+              list_pager.YieldFromList(
+                  client.regionNetworkFirewallPolicies,
+                  messages.ComputeRegionNetworkFirewallPoliciesListRequest(
+                      project=project, region=region),
+                  field='items',
+                  limit=args.limit,
+                  batch_size=None))
+        return itertools.chain.from_iterable(region_generators)
+
     request = messages.ComputeNetworkFirewallPoliciesListRequest(
         project=project)
-
     return list_pager.YieldFromList(
         client.networkFirewallPolicies,
         request,
@@ -59,14 +83,38 @@ class List(base.ListCommand):
         limit=args.limit,
         batch_size=None)
 
+  @staticmethod
+  def GetRegions(pattern):
+    """Validate and return matched pattern for a list of regions.
+
+    Args:
+      pattern: The string input
+
+    Returns:
+      - The list of regions, where pattern is in the following pattern:
+        region: (region-1 region-2 ...)
+      - None if pattern does not match.
+    """
+    matcher = re.compile(r'[^\S]*(\bregion[^\S]*\:)[^\S]*\((.+)\)[^\S]*')
+    matches = matcher.match(pattern.strip())
+    if not matches:
+      return None
+    return matches.group(2).split()
+
 
 List.detailed_help = {
     'EXAMPLES':
         """\
-    To list network firewall policies under project
+    To list global network firewall policies under project
     ``my-project'', run:
 
-      $ {command}
-          --project=my-project
+      $ {command} --project=my-project
+
+    To list regional network firewall policies under project
+    ``my-project'', specify a list of regions with ``--filter'':
+
+      $ {command} \
+          --project=my-project \
+          --filter="region: (region-a region-b)"
     """,
 }

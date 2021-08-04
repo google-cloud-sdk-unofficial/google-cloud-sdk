@@ -41,11 +41,12 @@ class Delete(base.DeleteCommand):
 
   def Run(self, args):
     """Run the delete command."""
-    nodepool_ref = resource_args.ParseAzureNodePoolResourceArg(args)
-    async_ = args.async_
 
-    with endpoint_util.GkemulticloudEndpointOverride(nodepool_ref.locationsId,
-                                                     self.ReleaseTrack()):
+    with endpoint_util.GkemulticloudEndpointOverride(
+        resource_args.ParseAzureNodePoolResourceArg(args).locationsId,
+        self.ReleaseTrack()):
+      # Parsing again after endpoint override is set.
+      nodepool_ref = resource_args.ParseAzureNodePoolResourceArg(args)
       api_client = azure_api_util.NodePoolsClient(track=self.ReleaseTrack())
       api_client.Delete(nodepool_ref, validate_only=True)
       cluster = azure_api_util.ClustersClient(
@@ -63,6 +64,9 @@ class Delete(base.DeleteCommand):
 
       op = api_client.Delete(nodepool_ref)
       op_ref = resource_args.GetOperationResource(op)
+      log.CreatedResource(op_ref, kind=constants.LRO_KIND)
+
+      async_ = args.async_
       if not async_:
         waiter.WaitFor(
             waiter.CloudOperationPollerNoResources(
@@ -71,4 +75,5 @@ class Delete(base.DeleteCommand):
             'Deleting node pool {}'.format(nodepool_ref.azureNodePoolsId),
             wait_ceiling_ms=constants.MAX_LRO_POLL_INTERVAL_MS)
 
-      log.DeletedResource(nodepool_ref, kind='Azure Node Pool')
+      log.DeletedResource(
+          nodepool_ref, kind=constants.AZURE_NODEPOOL_KIND, is_async=async_)

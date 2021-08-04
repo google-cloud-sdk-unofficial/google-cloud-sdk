@@ -163,30 +163,31 @@ class ResizeAlpha(ResizeBeta):
 
   @staticmethod
   def _ValidateArgs(args):
-    if not (args.size or args.suspended_size or args.stopped_size):
+    if (args.size is None and args.suspended_size is None and
+        args.stopped_size is None):
       raise exceptions.OneOfArgumentsRequiredException(
           ['--size', '--suspended-size', '--stopped-size'],
           'At least one of the sizes must be specified')
     if not args.creation_retries:
-      if not args.size:
+      if args.size is None:
         raise exceptions.RequiredArgumentException(
             '--size',
             'Size must be specified when --no-creation-retries flag is used.')
-      if args.suspended_size:
+      if args.suspended_size is not None:
         raise exceptions.ConflictingArgumentsException('--suspended-size',
                                                        '--no-creation-retries')
-      if args.stopped_size:
+      if args.stopped_size is not None:
         raise exceptions.ConflictingArgumentsException('--stopped-size',
                                                        '--no-creation-retries')
 
   @staticmethod
   def _MakeIgmPatchResource(client, args):
     igm_patch_resource = client.messages.InstanceGroupManager()
-    if args.size:
+    if args.size is not None:
       igm_patch_resource.targetSize = args.size
-    if args.suspended_size:
+    if args.suspended_size is not None:
       igm_patch_resource.targetSuspendedSize = args.suspended_size
-    if args.stopped_size:
+    if args.stopped_size is not None:
       igm_patch_resource.targetStoppedSize = args.stopped_size
     return igm_patch_resource
 
@@ -260,7 +261,7 @@ class ResizeAlpha(ResizeBeta):
       if not args.creation_retries:
         return self._MakeRmigResizeAdvancedRequest(client, igm_ref, args)
 
-      if args.suspended_size or args.stopped_size:
+      if args.suspended_size is not None or args.stopped_size is not None:
         return self._MakeRmigPatchRequest(client, igm_ref, args)
 
       # TODO(b/178852691): Redirect whole alpha traffic to ResizeAdvanced,

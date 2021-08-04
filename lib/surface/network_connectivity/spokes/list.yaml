@@ -1,15 +1,18 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: List spokes.
     description: List all spokes in the specified project.
     examples: |
-      Lists all spokes in region ``us-central1''.
+      To list all spokes in region ``us-central1'', run:
 
         $ {command} --region=us-central1
 
   request: &request
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
     collection: networkconnectivity.projects.locations.spokes
 
   arguments:
@@ -18,4 +21,33 @@
       help_text: The project of the spokes to display.
 
   output:
-    format: json
+    GA:
+      format: |
+        table(
+            name.basename(),
+            name.segment(3):label=REGION,
+            hub.basename(),
+            format(
+                "{0}{1}{2}",
+                linkedVpnTunnels.yesno(yes="VPN tunnel", no=""),
+                linkedInterconnectAttachments.yesno(yes="VLAN attachment", no=""),
+                linkedRouterApplianceInstances.yesno(yes="Router appliance", no="")
+            ):label=TYPE,
+            firstof(linkedVpnTunnels.uris, linkedInterconnectAttachments.uris, linkedRouterApplianceInstances.instances).len():label="RESOURCE COUNT",
+            description
+        )
+    ALPHA:
+      format: |
+        table(
+            name.basename(),
+            name.segment(3):label=REGION,
+            hub.basename(),
+            format(
+                "{0}{1}{2}",
+                linkedVpnTunnels.yesno(yes="VPN tunnel", no=""),
+                linkedInterconnectAttachments.yesno(yes="VLAN attachment", no=""),
+                linkedRouterApplianceInstances.yesno(yes="Router appliance", no="")
+            ):label=TYPE,
+            firstof(linkedVpnTunnels, linkedInterconnectAttachments, linkedRouterApplianceInstances).len():label="RESOURCE COUNT",
+            description
+        )

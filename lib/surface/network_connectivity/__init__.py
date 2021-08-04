@@ -22,8 +22,21 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class NetworkConnectivityAlpha(base.Group):
+  """Manage Network Connectivity Center resources."""
+
+  category = base.NETWORKING_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO(b/190537535):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class NetworkConnectivity(base.Group):
-  """Manage Network Connectivity Resources."""
+  """Manage Network Connectivity Center resources."""
 
   category = base.NETWORKING_CATEGORY
 

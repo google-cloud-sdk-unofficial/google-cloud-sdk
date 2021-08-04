@@ -1,7 +1,11 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: Update a Key.
     description: Update a reCAPTCHA Key.
+    examples: |
+        To update the information of a reCAPTCHA key, run:
+
+          $ {command} test-key --labels="foo=bar" --web --domains=test.com.mx
 
   request:
     collection: recaptchaenterprise.projects.keys
@@ -45,7 +49,7 @@
             - arg_name: allow-amp-traffic
               api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.allowAmpTraffic
               help_text: |
-                Wether this key can be used on AMP (Accelerated Mobile Pages) websites.
+                Whether this key can be used on AMP (Accelerated Mobile Pages) websites.
             - group:
                 mutex: true
                 required: false
@@ -53,7 +57,7 @@
                 - arg_name: allow-all-domains
                   api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.allowAllDomains
                   help_text: |
-                    If set, domain name enforcemente will NOT be enabled on this key.
+                    If set, domain name enforcement will NOT be enabled on this key.
                 - arg_name: domains
                   api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.allowedDomains
                   help_text: |

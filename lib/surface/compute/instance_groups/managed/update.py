@@ -302,7 +302,10 @@ class UpdateAlpha(UpdateBeta):
 
     # Update the interfaces specified in IPs to be updated.
     for update_ip in (update_ips or []):
-      interface_name = update_ip.get('interface-name')
+      # Interface name is optional, use the default if not specified.
+      interface_name = update_ip.get(
+          'interface-name',
+          instance_groups_flags.STATEFUL_IP_DEFAULT_INTERFACE_NAME)
       updated_preserved_state_ip = update_ip_to_ip_entry_lambda(update_ip)
       # Patch semantics on the stateful IP flag.
       if interface_name in final_ips_map:

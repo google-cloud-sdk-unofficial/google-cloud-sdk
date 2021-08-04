@@ -35,10 +35,11 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Run the describe command."""
-    cluster_ref = args.CONCEPTS.cluster.Parse()
 
-    with endpoint_util.GkemulticloudEndpointOverride(cluster_ref.locationsId,
-                                                     self.ReleaseTrack()):
-
+    with endpoint_util.GkemulticloudEndpointOverride(
+        resource_args.ParseAwsClusterResourceArg(args).locationsId,
+        self.ReleaseTrack()):
+      # Parsing again after endpoint override is set.
+      cluster_ref = resource_args.ParseAwsClusterResourceArg(args)
       cluster_client = clusters.Client(track=self.ReleaseTrack())
       return cluster_client.Get(cluster_ref)

@@ -17,7 +17,9 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import githubenterprise_flags
 from googlecloudsdk.core import log
@@ -68,10 +70,15 @@ class CreateAlpha(base.CreateCommand):
     parent_resource = resources.REGISTRY.Create(
         collection='cloudbuild.projects', projectId=parent)
     # Send the Create request
-    created_config = client.projects_githubEnterpriseConfigs.Create(
+    created_op = client.projects_githubEnterpriseConfigs.Create(
         messages.CloudbuildProjectsGithubEnterpriseConfigsCreateRequest(
             parent=parent_resource.RelativeName(), gitHubEnterpriseConfig=ghe))
-
+    op_resource = resources.REGISTRY.ParseRelativeName(
+        created_op.name, collection='cloudbuild.projects.locations.operations')
+    created_config = waiter.WaitFor(
+        waiter.CloudOperationPoller(client.projects_githubEnterpriseConfigs,
+                                    client.projects_locations_operations),
+        op_resource, 'Creating github enterprise config')
     ghe_resource = resources.REGISTRY.Parse(
         None,
         collection='cloudbuild.projects.githubEnterpriseConfigs',

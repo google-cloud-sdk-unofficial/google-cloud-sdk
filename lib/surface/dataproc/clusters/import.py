@@ -50,9 +50,7 @@ To import a cluster from standard output, run:
   @classmethod
   def GetApiVersion(cls):
     """Returns the API version based on the release track."""
-    if cls.ReleaseTrack() == base.ReleaseTrack.GA:
-      return 'v1'
-    return 'v1beta2'
+    return 'v1'
 
   @classmethod
   def Args(cls, parser):

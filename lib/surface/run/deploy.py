@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 
 import enum
 import os.path
-import uuid
 
 from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import traffic
@@ -191,7 +190,6 @@ class Deploy(base.Command):
     repo_to_create = None
     # Build an image from source if source specified
     if include_build:
-      # Create a tag for the image creation
       source = args.source
 
       ar_repo = docker_util.DockerRepo(
@@ -203,12 +201,13 @@ class Deploy(base.Command):
           repo_id='cloud-run-source-deploy')
       if artifact_registry.ShouldCreateRepository(ar_repo):
         repo_to_create = ar_repo
-      args.image = '{repo}/{service}:{tag}'.format(
+      # The image is built with latest tag. After build, the image digest
+      # from the build result will be added to the image of the service spec.
+      args.image = '{repo}/{service}'.format(
           repo=ar_repo.GetDockerString(),
-          service=service_ref.servicesId,
-          tag=uuid.uuid4().hex)
+          service=service_ref.servicesId)
       # Use GCP Buildpacks if Dockerfile doesn't exist
-      docker_file = args.source + '/Dockerfile'
+      docker_file = source + '/Dockerfile'
       if os.path.exists(docker_file):
         build_type = BuildType.DOCKERFILE
       else:

@@ -18,13 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import multiprocessing
-
 from googlecloudsdk.api_lib.storage import request_config_factory
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import name_expansion
 from googlecloudsdk.command_lib.storage.tasks import task_executor
+from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
 from googlecloudsdk.command_lib.storage.tasks import task_status
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_task_iterator
 
@@ -80,9 +79,9 @@ class Cp(base.Command):
   def Run(self, args):
     source_expansion_iterator = name_expansion.NameExpansionIterator(
         args.source, recursion_requested=args.recursive)
-    task_status_queue = multiprocessing.Queue()
-    user_request_args = request_config_factory.get_user_request_args_from_command_args(
-        args)
+    task_status_queue = task_graph_executor.multiprocessing_context.Queue()
+    user_request_args = (
+        request_config_factory.get_user_request_args_from_command_args(args))
     task_iterator = copy_task_iterator.CopyTaskIterator(
         source_expansion_iterator,
         args.destination,

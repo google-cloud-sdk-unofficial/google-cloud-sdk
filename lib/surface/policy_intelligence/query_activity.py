@@ -60,8 +60,79 @@ _API_VERSION_V1BETA1 = 'v1beta1'
 _API_VERSION_V1 = 'v1'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+def _Args(parser):
+  """Parses arguments for the commands."""
+  parser.add_argument(
+      '--activity-type',
+      required=True,
+      type=str,
+      choices=[
+          'serviceAccountLastAuthentication',
+          'serviceAccountKeyLastAuthentication'
+      ],
+      help="""Type of the activities.
+      """)
+  parser.add_mutually_exclusive_group(required=True).add_argument(
+      '--project',
+      type=str,
+      help="""The project ID or number to query the activities.
+      """)
+  parser.add_argument(
+      '--query-filter',
+      type=str,
+      default='',
+      help='Filter on activities, separated by "OR" if multiple filters are specified. At most 10 filter restrictions are supported in the query-filter. e.g. --query-filter=\'activities.full_resource_name="//iam.googleapis.com/projects/project-id/serviceAccounts/service-account-name-1@project-id.iam.gserviceaccount.com" OR activities.full_resource_name="//iam.googleapis.com/projects/project-id/serviceAccounts/service-account-name-2@project-id.iam.gserviceaccount.com"\''
+  )
+  parser.add_argument(
+      '--limit',
+      type=arg_parsers.BoundedInt(1, sys.maxsize, unlimited=True),
+      default=1000,
+      help='Max number of query result. Default to be 1000 and max to be unlimited, i.e., --limit=unlimited.'
+  )
+  parser.add_argument(
+      '--page-size',
+      type=arg_parsers.BoundedInt(1, 1000),
+      default=500,
+      help='Max page size for each http response. Default to be 500 and max to be 1000.'
+  )
+
+
+def _Run(release_track, args):
+  policy_analyzer_client, messages = policy_analyzer.GetClientAndMessages(
+      release_track)
+  query_activity_parent = 'projects/{0}/locations/global/activityTypes/{1}'.format(
+      args.project, args.activity_type)
+  query_activity_request = messages.PolicyanalyzerProjectsLocationsActivityTypesActivitiesQueryRequest(
+      parent=query_activity_parent, filter=args.query_filter)
+  policy_analyzer_service = policy_analyzer_client.ProjectsLocationsActivityTypesActivitiesService(
+      policy_analyzer_client)
+  return list_pager.YieldFromList(
+      policy_analyzer_service,
+      query_activity_request,
+      method='Query',
+      batch_size=args.page_size,
+      field='activities',
+      limit=args.limit,
+      batch_size_attribute='pageSize')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.Hidden
+class QueryActivityBeta(base.Command):
+  """Query activities on cloud resource."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    """Parses arguments for the commands."""
+    _Args(parser)
+
+  def Run(self, args):
+    return _Run(self.ReleaseTrack(), args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class QueryActivityGA(base.Command):
   """Query activities on cloud resource."""
 
@@ -70,54 +141,7 @@ class QueryActivityGA(base.Command):
   @staticmethod
   def Args(parser):
     """Parses arguments for the commands."""
-    parser.add_argument(
-        '--activity-type',
-        required=True,
-        type=str,
-        choices=[
-            'serviceAccountLastAuthentication',
-            'serviceAccountKeyLastAuthentication'
-        ],
-        help="""Type of the activities.
-        """)
-    parser.add_mutually_exclusive_group(required=True).add_argument(
-        '--project',
-        type=str,
-        help="""The project ID or number to query the activities.
-        """)
-    parser.add_argument(
-        '--query-filter',
-        type=str,
-        default='',
-        help='Filter on activities, separated by "OR" if multiple filters are specified. At most 10 filter restrictions are supported in the query-filter. e.g. --query-filter=\'activities.full_resource_name="//iam.googleapis.com/projects/project-id/serviceAccounts/service-account-name-1@project-id.iam.gserviceaccount.com" OR activities.full_resource_name="//iam.googleapis.com/projects/project-id/serviceAccounts/service-account-name-2@project-id.iam.gserviceaccount.com"\''
-    )
-    parser.add_argument(
-        '--limit',
-        type=arg_parsers.BoundedInt(1, sys.maxsize, unlimited=True),
-        default=1000,
-        help='Max number of query result. Default to be 1000 and max to be unlimited, i.e., --limit=unlimited.'
-    )
-    parser.add_argument(
-        '--page-size',
-        type=arg_parsers.BoundedInt(1, 1000),
-        default=500,
-        help='Max page size for each http response. Default to be 500 and max to be 1000.'
-    )
+    _Args(parser)
 
   def Run(self, args):
-    policy_analyzer_client, messages = policy_analyzer.GetClientAndMessages(
-        self.ReleaseTrack())
-    query_activity_parent = 'projects/{0}/locations/global/activityTypes/{1}'.format(
-        args.project, args.activity_type)
-    query_activity_request = messages.PolicyanalyzerProjectsLocationsActivityTypesActivitiesQueryRequest(
-        parent=query_activity_parent, filter=args.query_filter)
-    policy_analyzer_service = policy_analyzer_client.ProjectsLocationsActivityTypesActivitiesService(
-        policy_analyzer_client)
-    return list_pager.YieldFromList(
-        policy_analyzer_service,
-        query_activity_request,
-        method='Query',
-        batch_size=args.page_size,
-        field='activities',
-        limit=args.limit,
-        batch_size_attribute='pageSize')
+    return _Run(self.ReleaseTrack(), args)

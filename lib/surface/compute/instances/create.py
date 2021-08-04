@@ -33,6 +33,7 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scopes
+from googlecloudsdk.command_lib.compute import secure_tags_utils
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 from googlecloudsdk.command_lib.compute.resource_policies import flags as maintenance_flags
 from googlecloudsdk.command_lib.compute.resource_policies import util as maintenance_util
@@ -390,9 +391,8 @@ class Create(base.CreateCommand):
           scheduling=scheduling,
           tags=tags)
 
-      if self._support_secure_tag:
-        if args.secure_tags:
-          instance.secureTags = args.secure_tags
+      if self._support_secure_tag and args.secure_tags:
+        instance.secureTags = secure_tags_utils.GetSecureTags(args.secure_tags)
 
       if args.private_ipv6_google_access_type is not None:
         instance.privateIpv6GoogleAccess = (

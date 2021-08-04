@@ -21,11 +21,11 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Recaptcha(base.Group):
-  """Manage reCAPTCHA Keys.
+  """Manage reCAPTCHA Enterprise Keys.
 
-  Commands for managing reCAPTCHA Keys.
+  Commands for managing reCAPTCHA Enterprise Keys.
   """
 
   category = base.IDENTITY_AND_SECURITY_CATEGORY

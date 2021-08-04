@@ -1,7 +1,11 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: Create a Key.
     description: Create a reCAPTCHA Key.
+    examples: |
+      To create a new reCAPTCHA key for websites showing no CAPTCHA challenge, run:
+
+        $ {command} --display-name=test-key-name --web --allow-all-domains --integration-type=score
 
   request:
     collection: recaptchaenterprise.projects.keys
@@ -13,7 +17,7 @@
       spec: !REF googlecloudsdk.command_lib.recaptcha.resources:project
       is_parent_resource: true
       help_text: |
-        The reCAPTCHA Key to create
+        The reCAPTCHA Key to create.
 
     params:
     - arg_name: display-name

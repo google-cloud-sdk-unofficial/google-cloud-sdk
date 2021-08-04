@@ -25,8 +25,7 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine node group."""
 
@@ -67,4 +66,18 @@ class Update(base.UpdateCommand):
         node_template=args.node_template,
         additional_node_count=args.add_nodes,
         delete_nodes=args.delete_nodes,
-        autoscaling_policy_args=args if autoscaling_policy else None)
+        autoscaling_policy_args=args if autoscaling_policy else None,
+        share_setting=args.share_setting
+        if hasattr(args, 'share_setting') else None)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a Compute Engine node group."""
+
+  @staticmethod
+  def Args(parser):
+    flags.MakeNodeGroupArg().AddArgument(parser)
+    flags.AddUpdateArgsToParser(parser)
+    flags.AddAutoscalingPolicyArgToParser(parser)
+    flags.AddShareSettingsArgToParser(parser)

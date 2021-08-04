@@ -41,11 +41,12 @@ class Delete(base.DeleteCommand):
 
   def Run(self, args):
     """Run the delete command."""
-    cluster_ref = args.CONCEPTS.cluster.Parse()
-    async_ = args.async_
 
-    with endpoint_util.GkemulticloudEndpointOverride(cluster_ref.locationsId,
-                                                     self.ReleaseTrack()):
+    with endpoint_util.GkemulticloudEndpointOverride(
+        resource_args.ParseAzureClusterResourceArg(args).locationsId,
+        self.ReleaseTrack()):
+      # Parsing again after endpoint override is set.
+      cluster_ref = resource_args.ParseAzureClusterResourceArg(args)
       api_client = azure_api_util.ClustersClient(track=self.ReleaseTrack())
 
       cluster = api_client.Get(cluster_ref)
@@ -61,6 +62,9 @@ class Delete(base.DeleteCommand):
 
       op = api_client.Delete(cluster_ref)
       op_ref = resource_args.GetOperationResource(op)
+      log.CreatedResource(op_ref, kind=constants.LRO_KIND)
+
+      async_ = args.async_
       if not async_:
         waiter.WaitFor(
             waiter.CloudOperationPollerNoResources(
@@ -69,4 +73,5 @@ class Delete(base.DeleteCommand):
             'Deleting cluster {}'.format(cluster_ref.azureClustersId),
             wait_ceiling_ms=constants.MAX_LRO_POLL_INTERVAL_MS)
 
-      log.DeletedResource(cluster_ref, kind='Azure Cluster')
+      log.DeletedResource(
+          cluster_ref, kind=constants.AZURE_CLUSTER_KIND, is_async=async_)

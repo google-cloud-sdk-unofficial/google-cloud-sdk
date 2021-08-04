@@ -62,7 +62,7 @@ def _UserLicensesFlagsIncluded(args):
       'clear_user_licenses')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine persistent disk."""
 
@@ -139,8 +139,22 @@ class Update(base.UpdateCommand):
             disk_ref.Name()))
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  r"""Update a Compute Engine persistent disk."""
+
+  DISK_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    _CommonArgs(cls, parser, support_user_licenses=True)
+
+  def Run(self, args):
+    return self._Run(args, support_user_licenses=True)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
+class UpdateAlpha(UpdateBeta):
   r"""Update a Compute Engine persistent disk."""
 
   DISK_ARG = None

@@ -248,7 +248,9 @@ class Create(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a Google Compute Engine network endpoint group."""
+
   support_l7psc_neg = True
+  support_serverless_deployment = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -257,4 +259,3 @@ class CreateAlpha(CreateBeta):
 
   support_l4ilb_neg = True
   support_neg_type = True
-  support_serverless_deployment = True

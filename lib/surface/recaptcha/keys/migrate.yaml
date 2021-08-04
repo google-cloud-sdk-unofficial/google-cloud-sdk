@@ -1,7 +1,11 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: Migrate a key to reCAPTCHA Enterprise.
     description: Migrate a key from reCAPTCHA to reCAPTCHA Enterprise.
+    examples: |
+        To migrate a key from reCAPTCHA to reCAPTCHA Enterprise, run:
+
+          $ {command} test-key
 
   request:
     collection: recaptchaenterprise.projects.keys

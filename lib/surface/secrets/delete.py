@@ -38,6 +38,10 @@ class Delete(base.DeleteCommand):
   Delete a secret 'my-secret':
 
     $ {command} my-secret
+
+  Delete a secret 'my-secret' using an etag:
+
+    $ {command} my-secret --etag=\"123\"
   """
 
   CONFIRM_DELETE_MESSAGE = (
@@ -48,6 +52,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     secrets_args.AddSecret(
         parser, purpose='to delete', positional=True, required=True)
+    secrets_args.AddSecretEtag(parser)
 
   def Run(self, args):
     messages = secrets_api.GetMessages()
@@ -65,7 +70,7 @@ class Delete(base.DeleteCommand):
         secret=secret_ref.Name(), num_versions=active_version_count)
     console_io.PromptContinue(msg, throw_if_unattended=True, cancel_on_no=True)
 
-    result = secrets_api.Secrets().Delete(secret_ref)
+    result = secrets_api.Secrets().Delete(secret_ref, etag=args.etag)
     secrets_log.Secrets().Deleted(secret_ref)
     return result
 

@@ -73,6 +73,7 @@ class Deploy(base.Command):
     flags.AddEgressSettingsFlag(parser)
     flags.AddIngressSettingsFlag(parser)
     flags.AddSecurityLevelFlag(parser)
+    flags.AddBuildWorkerPoolMutexGroup(parser)
 
   def Run(self, args):
     return command_v1.Run(args, track=self.ReleaseTrack())
@@ -87,12 +88,8 @@ class DeployBeta(base.Command):
     """Register flags for this command."""
     Deploy.Args(parser, track)
 
-    # Add additional args for this release track
-    flags.AddBuildWorkerPoolMutexGroup(parser)
-
   def Run(self, args):
-    return command_v1.Run(
-        args, track=self.ReleaseTrack(), enable_build_worker_pool=True)
+    return command_v1.Run(args, track=self.ReleaseTrack())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -105,7 +102,6 @@ class DeployAlpha(base.Command):
     Deploy.Args(parser, track)
 
     # Add additional args for this release track
-    flags.AddBuildWorkerPoolMutexGroup(parser)
     flags.AddMinInstancesFlag(parser)
 
     # Add flags for secrets
@@ -123,8 +119,7 @@ class DeployAlpha(base.Command):
     if flags.ShouldUseV2(args):
       return command_v2.Run(args, self.ReleaseTrack())
     else:
-      return command_v1.Run(
-          args, track=self.ReleaseTrack(), enable_build_worker_pool=True)
+      return command_v1.Run(args, track=self.ReleaseTrack())
 
 
 DETAILED_HELP = {

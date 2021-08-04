@@ -564,9 +564,10 @@ class CreateAlpha(CreateBeta):
         currently supported executor types are CELERY and KUBERNETES.
         Defaults to CELERY. Cannot be updated.""")
 
-    privately_used_public_ips_group = parser.add_argument_group(hidden=True)
+    composer_alpha_group = parser.add_argument_group(hidden=True)
     flags.ENABLE_PRIVATELY_USED_PUBLIC_IPS_FLAG.AddToParser(
-        privately_used_public_ips_group)
+        composer_alpha_group)
+    flags.ENABLE_IP_MASQ_AGENT_FLAG.AddToParser(composer_alpha_group)
 
   def GetOperationMessage(self, args, is_composer_v1):
     """See base class."""
@@ -594,6 +595,7 @@ class CreateAlpha(CreateBeta):
         cluster_ipv4_cidr_block=args.cluster_ipv4_cidr,
         services_ipv4_cidr_block=args.services_ipv4_cidr,
         max_pods_per_node=args.max_pods_per_node,
+        enable_ip_masq_agent=args.enable_ip_masq_agent,
         kms_key=self.kms_key,
         private_environment=args.enable_private_environment,
         private_endpoint=args.enable_private_endpoint,

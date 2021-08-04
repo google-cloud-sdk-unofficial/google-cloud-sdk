@@ -19,13 +19,13 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container import util as gke_util
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.aws import node_pools
 from googlecloudsdk.command_lib.container.aws import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
+from googlecloudsdk.command_lib.container.gkemulticloud import operations
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -46,21 +46,25 @@ class Delete(base.DeleteCommand):
     release_track = self.ReleaseTrack()
     node_pool_ref = args.CONCEPTS.node_pool.Parse()
 
-    validate_only = getattr(args, 'validate_only', False)
-    if not validate_only:
-      console_io.PromptContinue(
-          message=gke_util.ConstructList(
-              'The following node pool will be deleted.', [
-                  '[{name}] in cluster [{cluster}] in [{region}]'.format(
-                      name=node_pool_ref.awsNodePoolsId,
-                      cluster=node_pool_ref.awsClustersId,
-                      region=node_pool_ref.locationsId)
-              ]),
-          throw_if_unattended=True,
-          cancel_on_no=True)
+    with endpoint_util.GkemulticloudEndpointOverride(
+        resource_args.ParseAwsNodePoolResourceArg(args).locationsId,
+        release_track):
+      # Parsing again after endpoint override is set.
+      node_pool_ref = resource_args.ParseAwsNodePoolResourceArg(args)
 
-    with endpoint_util.GkemulticloudEndpointOverride(node_pool_ref.locationsId,
-                                                     release_track):
+      validate_only = getattr(args, 'validate_only', False)
+      if not validate_only:
+        console_io.PromptContinue(
+            message=gke_util.ConstructList(
+                'The following node pool will be deleted.', [
+                    '[{name}] in cluster [{cluster}] in [{region}]'.format(
+                        name=node_pool_ref.awsNodePoolsId,
+                        cluster=node_pool_ref.awsClustersId,
+                        region=node_pool_ref.locationsId)
+                ]),
+            throw_if_unattended=True,
+            cancel_on_no=True)
+
       node_pool_client = node_pools.NodePoolsClient(track=release_track)
       op = node_pool_client.Delete(node_pool_ref, args)
       op_ref = resource_args.GetOperationResource(op)
@@ -69,13 +73,14 @@ class Delete(base.DeleteCommand):
         args.format = 'disable'
         return
 
+      log.CreatedResource(op_ref, kind=constants.LRO_KIND)
+
       async_ = getattr(args, 'async_', False)
       if not async_:
-        waiter.WaitFor(
-            waiter.CloudOperationPollerNoResources(
-                node_pool_client.client.projects_locations_operations),
+        op_client = operations.Client(track=release_track)
+        op_client.Wait(
             op_ref,
-            'Deleting node pool {}'.format(node_pool_ref.awsNodePoolsId),
-            wait_ceiling_ms=constants.MAX_LRO_POLL_INTERVAL_MS)
+            'Deleting node pool {}'.format(node_pool_ref.awsNodePoolsId))
 
-      log.DeletedResource(node_pool_ref)
+      log.DeletedResource(
+          node_pool_ref, kind=constants.AWS_NODEPOOL_KIND, is_async=async_)

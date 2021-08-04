@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts.print_settings import settings_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Yum(base.Command):
   """Print settings to add to the yum.repos.d directory.
 

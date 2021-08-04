@@ -17,7 +17,9 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import githubenterprise_flags
 from googlecloudsdk.core import log
@@ -84,7 +86,15 @@ class UpdateAlpha(base.UpdateCommand):
         gitHubEnterpriseConfig=ghe,
         updateMask=','.join(update_mask))
     # Send the Update request
-    updated_ghe = client.projects_githubEnterpriseConfigs.Patch(req)
+    updated_op = client.projects_githubEnterpriseConfigs.Patch(req)
+
+    op_resource = resources.REGISTRY.ParseRelativeName(
+        updated_op.name, collection='cloudbuild.projects.locations.operations')
+
+    updated_ghe = waiter.WaitFor(
+        waiter.CloudOperationPoller(client.projects_githubEnterpriseConfigs,
+                                    client.projects_locations_operations),
+        op_resource, 'Updating GitHub Enterprise Config')
 
     log.UpdatedResource(ghe_resource)
 

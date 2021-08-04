@@ -30,14 +30,13 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    parser.add_argument('operation_id', help='The operation id to look up.')
-    resource_args.AddLocationResourceArg(parser, 'to describe an operation')
+    resource_args.AddOperationResourceArg(parser, 'to describe')
 
   def Run(self, args):
     """Runs the describe command."""
-    release_track = self.ReleaseTrack()
-    location_ref = args.CONCEPTS.location.Parse()
-    with endpoint_util.GkemulticloudEndpointOverride(location_ref.locationsId,
-                                                     release_track):
-      op_client = operations.Client(track=release_track)
-      return op_client.Describe(args, location_ref)
+    with endpoint_util.GkemulticloudEndpointOverride(
+        resource_args.ParseOperationResourceArg(args).locationsId,
+        self.ReleaseTrack()):
+      op_client = operations.Client(track=self.ReleaseTrack())
+      op_ref = resource_args.ParseOperationResourceArg(args)
+      return op_client.Describe(op_ref)

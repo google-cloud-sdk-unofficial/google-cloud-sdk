@@ -1,10 +1,10 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Delete a spoke.
     description: Delete the specified spoke.
     examples: |
-      Delete a spoke with name ``myspoke'' in region ``us-central1''.
+      To delete a spoke with name ``myspoke'' in region ``us-central1'', run:
 
         $ {command} myspoke --region=us-central1
 
@@ -17,6 +17,9 @@
     collection: networkconnectivity.projects.locations.operations
 
   request: &request
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
     method: delete
     collection: networkconnectivity.projects.locations.spokes

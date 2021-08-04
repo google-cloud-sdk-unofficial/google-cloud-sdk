@@ -181,7 +181,10 @@ class CreateAlpha(CreateBeta):
 
   def _ValidateStatefulFlagsForInstanceConfigs(self, args):
     super(CreateAlpha, self)._ValidateStatefulFlagsForInstanceConfigs(args)
-    instance_groups_flags.ValidateMigStatefulIPFlagsForInstanceConfigs(args)
+    instance_groups_flags.ValidateMigStatefulIPFlagsForInstanceConfigs(
+        args=args,
+        current_internal_addresses=[],
+        current_external_addresses=[])
 
 
 CreateAlpha.detailed_help = {

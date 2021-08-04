@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -27,8 +28,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeleteAlpha(base.DeleteCommand):
-  """Delete a github enterprise config from Google Cloud Build.
-  """
+  """Delete a github enterprise config from Google Cloud Build."""
 
   @staticmethod
   def Args(parser):
@@ -38,8 +38,7 @@ class DeleteAlpha(base.DeleteCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    parser.add_argument('CONFIG',
-                        help='The id of the GitHub Enterprise Config')
+    parser.add_argument('CONFIG', help='The id of the GitHub Enterprise Config')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -70,7 +69,14 @@ class DeleteAlpha(base.DeleteCommand):
         })
 
     # Send the Delete request
-    client.projects_githubEnterpriseConfigs.Delete(
+    deleted_op = client.projects_githubEnterpriseConfigs.Delete(
         messages.CloudbuildProjectsGithubEnterpriseConfigsDeleteRequest(
             name=ghe_resource.RelativeName()))
+    op_resource = resources.REGISTRY.ParseRelativeName(
+        deleted_op.name, collection='cloudbuild.projects.locations.operations')
+    waiter.WaitFor(
+        waiter.CloudOperationPollerNoResources(
+            client.projects_locations_operations), op_resource,
+        'Deleting GitHub Enterprise Config')
     log.DeletedResource(ghe_resource)
+

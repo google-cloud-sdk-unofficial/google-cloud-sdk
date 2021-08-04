@@ -64,7 +64,7 @@ class Describe(base.DescribeCommand):
         template_ref, args.version)
 
     # Filter out OUTPUT_ONLY fields and resource identifying fields. Note this
-    # needs to be kept in sync with v1/v1beta2 workflow_templates.proto.
+    # needs to be kept in sync with v1 workflow_templates.proto.
     workflow_template.id = None
     workflow_template.name = None
     workflow_template.version = None

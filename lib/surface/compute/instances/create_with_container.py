@@ -49,7 +49,7 @@ def _Args(parser,
       support_multi_writer=support_multi_writer)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddContainerMountDiskFlag(parser)
-  instances_flags.AddAddressArgs(parser, instances=True)
+  instances_flags.AddAddressArgs(parser, instances=True, containers=True)
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
   instances_flags.AddMaintenancePolicyArgs(
@@ -284,10 +284,10 @@ class CreateWithContainer(base.CreateCommand):
       if shielded_instance_config:
         instance.shieldedInstanceConfig = shielded_instance_config
 
-      if self._support_network_performance_configs and \
-          args.IsSpecified('network_performance_configs'):
-        instance.networkPerformanceConfig = \
-            instance_utils.GetNetworkPerformanceConfig(args, compute_client)
+      if (self._support_network_performance_configs and
+          args.IsSpecified('network_performance_configs')):
+        instance.networkPerformanceConfig = (
+            instance_utils.GetNetworkPerformanceConfig(args, compute_client))
 
       request = compute_client.messages.ComputeInstancesInsertRequest(
           instance=instance,

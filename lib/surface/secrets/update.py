@@ -41,6 +41,10 @@ class Update(base.UpdateCommand):
 
         $ {command} my-secret --update-labels=foo=bar
 
+      Update the label of a secret using an etag.
+
+        $ {command} my-secret --update-labels=foo=bar --etag=\"123\"
+
       Update a secret to have a next-rotation-time:
 
         $ {command} my-secret --next-rotation-time="2030-01-01T15:30:00-05:00"
@@ -76,6 +80,7 @@ class Update(base.UpdateCommand):
     secrets_args.AddSecret(
         parser, purpose='to update', positional=True, required=True)
     labels_util.AddUpdateLabelsFlags(parser)
+    secrets_args.AddSecretEtag(parser)
     secrets_args.AddUpdateExpirationGroup(parser)
     secrets_args.AddUpdateTopicsGroup(parser)
     secrets_args.AddUpdateRotationGroup(parser)
@@ -144,6 +149,7 @@ class Update(base.UpdateCommand):
         secret_ref=secret_ref,
         labels=labels,
         update_mask=update_mask,
+        etag=args.etag,
         expire_time=args.expire_time,
         ttl=args.ttl,
         topics=topics,

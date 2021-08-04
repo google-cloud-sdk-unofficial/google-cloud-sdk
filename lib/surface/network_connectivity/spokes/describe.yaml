@@ -1,9 +1,10 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Describe a spoke.
-    description: Show details of a spoke.
-    examples: Following command prints the spoke in region ``us-central1'' with name ``spoke-1''.
+    description: Show details about a spoke.
+    examples: |
+      To show details about the spoke named ``spoke-1'' in region ``us-central1'', run:
 
         $ {command} spoke-1 --region=us-central1
 
@@ -13,5 +14,8 @@
       help_text: Name of the spoke you want to describe.
 
   request: &request
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
     collection: networkconnectivity.projects.locations.spokes

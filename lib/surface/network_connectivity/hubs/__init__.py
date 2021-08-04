@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Network Connectivity Hubs."""
+"""Command group for Network Connectivity Center hubs."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -21,6 +21,5 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Hubs(base.Group):
-  """Manage Network Connectivity Hubs."""
+  """Manage Network Connectivity Center hubs."""

@@ -1,17 +1,15 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: List hubs.
     description: List all hubs in the specified project.
-      You can specify the maximum number of hubs to list using the ``--limit'' flag.
-
-    examples: |
-      To list maximum of five hubs.
-
-          $ {command} --limit=5
+      You can specify the maximum number of hubs to list by using the ``--limit'' flag.
 
   request: &request
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
     collection: networkconnectivity.projects.locations.global.hubs
     modify_request_hooks:
     - googlecloudsdk.command_lib.network_connectivity.util:AppendLocationsGlobalToParent
@@ -19,7 +17,7 @@
   arguments:
     resource:
       spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:project
-      help_text: P:roject of the hubs to display.
+      help_text: Project of the hubs to display.
 
   output:
-    format: json
+    format: table(name.basename(), description)

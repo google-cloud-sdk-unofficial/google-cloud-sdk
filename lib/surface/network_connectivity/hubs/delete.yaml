@@ -1,11 +1,11 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Delete a hub.
     description: Delete the specified hub.
 
     examples: |
-      Deletes a hub named ``my-hub''.
+      To delete a hub named ``my-hub'', run:
 
         $ {command} my-hub
 
@@ -18,5 +18,8 @@
     collection: networkconnectivity.projects.locations.operations
 
   request: &request
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
     collection: networkconnectivity.projects.locations.global.hubs

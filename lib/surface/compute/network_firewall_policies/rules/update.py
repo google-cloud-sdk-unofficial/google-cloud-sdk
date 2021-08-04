@@ -21,8 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import firewall_policy_rule_utils as rule_utils
 from googlecloudsdk.api_lib.compute.network_firewall_policies import client
+from googlecloudsdk.api_lib.compute.network_firewall_policies import region_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
+from googlecloudsdk.command_lib.compute.network_firewall_policies import secure_tags_utils
 
 
 class Update(base.UpdateCommand):
@@ -39,7 +41,7 @@ class Update(base.UpdateCommand):
         required=True, operation='update')
     cls.NETWORK_FIREWALL_POLICY_ARG.AddArgument(parser)
     flags.AddAction(parser, required=False)
-    flags.AddFirewallPolicy(parser, operation='updated')
+    flags.AddRulePriority(parser, operation='updated')
     flags.AddSrcIpRanges(parser)
     flags.AddDestIpRanges(parser)
     flags.AddLayer4Configs(parser)
@@ -57,9 +59,13 @@ class Update(base.UpdateCommand):
     ref = self.NETWORK_FIREWALL_POLICY_ARG.ResolveAsResource(
         args, holder.resources)
     network_firewall_policy_rule_client = client.NetworkFirewallPolicyRule(
-        ref=ref,
-        compute_client=holder.client)
-    priority = rule_utils.ConvertPriorityToInt(ref.Name())
+        ref=ref, compute_client=holder.client)
+    if hasattr(ref, 'region'):
+      network_firewall_policy_rule_client = (
+          region_client.RegionNetworkFirewallPolicyRule(
+              ref, compute_client=holder.client))
+
+    priority = rule_utils.ConvertPriorityToInt(args.priority)
     src_ip_ranges = []
     dest_ip_ranges = []
     layer4_config_list = []
@@ -92,15 +98,11 @@ class Update(base.UpdateCommand):
     else:
       new_priority = priority
     if args.IsSpecified('src_secure_tags'):
-      src_secure_tags = [
-          holder.client.messages.FirewallPolicyRuleSecureTag(name=tag)
-          for tag in args.src_secure_tags
-      ]
+      src_secure_tags = secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
+          holder.client, args.src_secure_tags)
     if args.IsSpecified('target_secure_tags'):
-      target_secure_tags = [
-          holder.client.messages.FirewallPolicyRuleSecureTag(name=tag)
-          for tag in args.target_secure_tags
-      ]
+      target_secure_tags = secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
+          holder.client, args.target_secure_tags)
     # If need to construct a new matcher.
     if should_setup_match:
       matcher = holder.client.messages.FirewallPolicyRuleMatcher(
@@ -110,11 +112,13 @@ class Update(base.UpdateCommand):
           srcSecureTags=src_secure_tags)
     if args.IsSpecified('direction'):
       if args.direction == 'INGRESS':
-        traffic_direct = (holder.client.messages.FirewallPolicyRule
-                          .DirectionValueValuesEnum.INGRESS)
+        traffic_direct = (
+            holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum
+            .INGRESS)
       else:
-        traffic_direct = (holder.client.messages.FirewallPolicyRule
-                          .DirectionValueValuesEnum.EGRESS)
+        traffic_direct = (
+            holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum
+            .EGRESS)
 
     firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
         priority=new_priority,
@@ -137,13 +141,10 @@ class Update(base.UpdateCommand):
 Update.detailed_help = {
     'EXAMPLES':
         """\
-    To update a rule with priority ``10'' in an network firewall policy
+    To update a rule with priority ``10'' in a global network firewall policy
     with name ``my-policy'' to change the action to ``allow'' and description to
     ``new example rule'', run:
 
-      $ {command} 10
-          --firewall-policy=my-policy
-          --action=allow
-          --description="new example rule"
+      $ {command} 10 --firewall-policy=my-policy --action=allow --description="new example rule"
     """,
 }

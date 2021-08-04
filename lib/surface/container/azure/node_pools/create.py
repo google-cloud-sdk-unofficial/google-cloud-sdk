@@ -55,7 +55,6 @@ class Create(base.CreateCommand):
   def Run(self, args):
     """Run the create command."""
 
-    nodepool_ref = args.CONCEPTS.nodepool.Parse()
     node_version = flags.GetNodeVersion(args)
     subnet_id = flags.GetSubnetID(args)
     vm_size = flags.GetVMSize(args)
@@ -70,9 +69,11 @@ class Create(base.CreateCommand):
 
     async_ = args.async_
 
-    with endpoint_util.GkemulticloudEndpointOverride(nodepool_ref.locationsId,
-                                                     self.ReleaseTrack()):
-
+    with endpoint_util.GkemulticloudEndpointOverride(
+        resource_args.ParseAzureNodePoolResourceArg(args).locationsId,
+        self.ReleaseTrack()):
+      # Parsing again after endpoint override is set.
+      nodepool_ref = resource_args.ParseAzureNodePoolResourceArg(args)
       api_client = azure_api_util.NodePoolsClient(track=self.ReleaseTrack())
       op = api_client.Create(
           nodepool_ref=nodepool_ref,
@@ -89,11 +90,12 @@ class Create(base.CreateCommand):
           taints=taints,
           labels=labels)
 
-      op_ref = resource_args.GetOperationResource(op)
-
       if validate_only:
         args.format = 'disable'
         return
+
+      op_ref = resource_args.GetOperationResource(op)
+      log.CreatedResource(op_ref, kind=constants.LRO_KIND)
 
       if not async_:
         waiter.WaitFor(
@@ -103,5 +105,6 @@ class Create(base.CreateCommand):
             'Creating node pool {}'.format(nodepool_ref.azureNodePoolsId),
             wait_ceiling_ms=constants.MAX_LRO_POLL_INTERVAL_MS)
 
-      log.CreatedResource(nodepool_ref)
+      log.CreatedResource(
+          nodepool_ref, kind=constants.AZURE_NODEPOOL_KIND, is_async=async_)
       return api_client.Get(nodepool_ref)

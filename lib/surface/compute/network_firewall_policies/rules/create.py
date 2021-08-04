@@ -21,8 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import firewall_policy_rule_utils as rule_utils
 from googlecloudsdk.api_lib.compute.network_firewall_policies import client
+from googlecloudsdk.api_lib.compute.network_firewall_policies import region_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
+from googlecloudsdk.command_lib.compute.network_firewall_policies import secure_tags_utils
 
 
 class Create(base.CreateCommand):
@@ -39,7 +41,7 @@ class Create(base.CreateCommand):
         required=True, operation='create')
     cls.NETWORK_FIREWALL_POLICY_ARG.AddArgument(parser, operation_type='create')
     flags.AddAction(parser)
-    flags.AddFirewallPolicy(parser, operation='inserted')
+    flags.AddRulePriority(parser, operation='inserted')
     flags.AddSrcIpRanges(parser)
     flags.AddDestIpRanges(parser)
     flags.AddLayer4Configs(parser)
@@ -57,8 +59,10 @@ class Create(base.CreateCommand):
     ref = self.NETWORK_FIREWALL_POLICY_ARG.ResolveAsResource(
         args, holder.resources)
     network_firewall_policy_rule_client = client.NetworkFirewallPolicyRule(
-        ref=ref,
-        compute_client=holder.client)
+        ref=ref, compute_client=holder.client)
+    if hasattr(ref, 'region'):
+      network_firewall_policy_rule_client = region_client.RegionNetworkFirewallPolicyRule(
+          ref, compute_client=holder.client)
 
     src_ip_ranges = []
     dest_ip_ranges = []
@@ -81,15 +85,11 @@ class Create(base.CreateCommand):
     if args.IsSpecified('disabled'):
       disabled = args.disabled
     if args.IsSpecified('src_secure_tags'):
-      src_secure_tags = [
-          holder.client.messages.FirewallPolicyRuleSecureTag(name=tag)
-          for tag in args.src_secure_tags
-      ]
+      src_secure_tags = secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
+          holder.client, args.src_secure_tags)
     if args.IsSpecified('target_secure_tags'):
-      target_secure_tags = [
-          holder.client.messages.FirewallPolicyRuleSecureTag(name=tag)
-          for tag in args.target_secure_tags
-      ]
+      target_secure_tags = secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
+          holder.client, args.target_secure_tags)
     layer4_config_list = rule_utils.ParseLayer4Configs(layer4_configs,
                                                        holder.client.messages)
     matcher = holder.client.messages.FirewallPolicyRuleMatcher(
@@ -97,18 +97,21 @@ class Create(base.CreateCommand):
         destIpRanges=dest_ip_ranges,
         layer4Configs=layer4_config_list,
         srcSecureTags=src_secure_tags)
-    traffic_direct = (holder.client.messages.FirewallPolicyRule
-                      .DirectionValueValuesEnum.INGRESS)
+    traffic_direct = (
+        holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum
+        .INGRESS)
     if args.IsSpecified('direction'):
       if args.direction == 'INGRESS':
-        traffic_direct = (holder.client.messages.FirewallPolicyRule
-                          .DirectionValueValuesEnum.INGRESS)
+        traffic_direct = (
+            holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum
+            .INGRESS)
       else:
-        traffic_direct = (holder.client.messages.FirewallPolicyRule
-                          .DirectionValueValuesEnum.EGRESS)
+        traffic_direct = (
+            holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum
+            .EGRESS)
 
     firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
-        priority=rule_utils.ConvertPriorityToInt(ref.Name()),
+        priority=rule_utils.ConvertPriorityToInt(args.priority),
         action=args.action,
         match=matcher,
         direction=traffic_direct,
@@ -126,12 +129,15 @@ class Create(base.CreateCommand):
 Create.detailed_help = {
     'EXAMPLES':
         """\
-    To create a rule with priority ``10'' in a network firewall policy with name
-    ``my-policy'' and description ``example rule'', run:
+    To create a rule with priority ``10'' in a global network firewall policy
+    with name ``my-policy'' and description ``example rule'', run:
 
-        $ {command} 10
-            --firewall-policy=my-policy
-            --action=allow
-            --description="example rule"
+        $ {command} 10 --firewall-policy=my-policy --action=allow --description="example rule" --global-firewall-policy
+
+    To create a rule with priority ``10'' in a regional network firewall policy
+    with name ``my-region-policy'' and description ``example rule'', in
+    region ``region-a'', run:
+
+        $ {command} 10 --firewall-policy=my-policy --action=allow --description="example rule"
     """,
 }

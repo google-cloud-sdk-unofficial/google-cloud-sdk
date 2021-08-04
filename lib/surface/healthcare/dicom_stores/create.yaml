@@ -30,7 +30,7 @@
     params:
     - api_field: dicomStore.notificationConfig.pubsubTopic
       arg_name: pubsub-topic
-      release_tracks: [BETA, GA]
+      release_tracks: [GA]
       help_text: |
         Google Cloud Pub/Sub topic to send updates to.
 
@@ -38,7 +38,7 @@
         on creating topics, refer to: https://cloud.google.com/pubsub/docs/admin#create_a_topic
 
     - group:
-        release_tracks: [ALPHA]
+        release_tracks: [ALPHA, BETA]
         params:
         - arg_name: pubsub-topic
           api_field: dicomStore.notificationConfig.pubsubTopic

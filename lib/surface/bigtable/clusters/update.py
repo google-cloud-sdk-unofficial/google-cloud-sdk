@@ -57,7 +57,9 @@ class UpdateCluster(base.UpdateCommand):
       None
     """
     cluster_ref = args.CONCEPTS.cluster.Parse()
-    operation = clusters.Update(cluster_ref, args.num_nodes)
+    operation = clusters.PartialUpdate(
+        cluster_ref,
+        nodes=args.num_nodes)
     if not args.async_:
       operation_ref = util.GetOperationRef(operation)
       return util.AwaitCluster(

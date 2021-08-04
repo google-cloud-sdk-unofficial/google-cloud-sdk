@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.network_firewall_policies import client
 from googlecloudsdk.api_lib.compute.network_firewall_policies import region_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
 
 
@@ -47,15 +48,20 @@ class CloneRules(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.NETWORK_FIREWALL_POLICY_ARG.ResolveAsResource(
         args, holder.resources)
-
+    scope = compute_scope.ScopeEnum.GLOBAL
     network_firewall_policy = client.NetworkFirewallPolicy(
         ref, compute_client=holder.client)
     if hasattr(ref, 'region'):
       network_firewall_policy = region_client.RegionNetworkFirewallPolicy(
           ref, compute_client=holder.client)
+      scope = compute_scope.ScopeEnum.REGION
+
+    src_firewall_policy_ref = flags.NetworkSrcFirewallPolicyRuleArgument(
+    ).ResolveAsResource(
+        args, holder.resources, default_scope=scope)
 
     return network_firewall_policy.CloneRules(
-        source_firewall_policy=args.source_firewall_policy,
+        source_firewall_policy=src_firewall_policy_ref.SelfLink(),
         only_generate_request=False)
 
 CloneRules.detailed_help = {

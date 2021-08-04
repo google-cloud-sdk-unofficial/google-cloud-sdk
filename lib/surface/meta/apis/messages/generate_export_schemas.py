@@ -58,9 +58,9 @@ class GenerateExportSchemas(base.SilentCommand):
   ## EXAMPLES
 
   To generate the WorkflowTemplate schemas in the current directory from the
-  dataproc v1beta2 API:
+  dataproc v1 API:
 
-    $ {command} WorkflowTemplate --api=dataproc --api-version=v1beta2
+    $ {command} WorkflowTemplate --api=dataproc --api-version=v1
   """
 
   @staticmethod

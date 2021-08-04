@@ -37,6 +37,10 @@ class Destroy(base.DeleteCommand):
   Destroy version '123' of the secret named 'my-secret':
 
     $ {command} 123 --secret=my-secret
+
+  Destroy version '123' of the secret named 'my-secret' using etag:
+
+    $ {command} 123 --secret=my-secret --etag=\"123\"
   """
 
   CONFIRM_DESTROY_MESSAGE = (
@@ -47,6 +51,7 @@ class Destroy(base.DeleteCommand):
   def Args(parser):
     secrets_args.AddVersion(
         parser, purpose='to destroy', positional=True, required=True)
+    secrets_args.AddVersionEtag(parser)
 
   def Run(self, args):
     version_ref = args.CONCEPTS.version.Parse()
@@ -58,7 +63,7 @@ class Destroy(base.DeleteCommand):
         throw_if_unattended=True,
         cancel_on_no=True)
 
-    result = secrets_api.Versions().Destroy(version_ref)
+    result = secrets_api.Versions().Destroy(version_ref, etag=args.etag)
     secrets_log.Versions().Destroyed(version_ref)
     return result
 
@@ -76,7 +81,7 @@ class DestroyBeta(Destroy):
 
     $ {command} 123 --secret=my-secret
 
-  Destroy version '123' of the secret named 'my-secret' using etag:
+  Destroy version '123' of the secret named 'my-secret' using an etag:
 
     $ {command} 123 --secret=my-secret --etag=\"123\"
   """

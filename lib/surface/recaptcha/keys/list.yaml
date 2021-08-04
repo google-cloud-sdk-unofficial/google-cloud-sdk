@@ -1,8 +1,12 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
-    brief: Lists reCAPTCHA Keys.
-    description: Lists all of the reCAPTCHA Keys that exist in a given project.
+    brief: List reCAPTCHA Keys.
+    description: List all of the reCAPTCHA Keys that exist in a given project.
+    examples: |
+        To list all the reCAPTCHA keys existing for your project, run:
+
+          $ {command}
 
   request:
     collection: recaptchaenterprise.projects.keys

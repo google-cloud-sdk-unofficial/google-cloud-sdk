@@ -1,8 +1,12 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
-    description: Gets the details of a reCAPTCHA Key.
-    brief: Describes reCAPTCHA Key.
+    description: Get the details of a reCAPTCHA Key.
+    brief: Describe reCAPTCHA Key.
+    examples: |
+        To get details on a reCAPTCHA key, run:
+
+          $ {command} test-key
 
   request:
     collection: recaptchaenterprise.projects.keys

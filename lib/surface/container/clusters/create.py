@@ -596,6 +596,8 @@ flags_to_add = {
             flags.AddDiskTypeFlag,
         'gcfs':
             flags.AddEnableGcfsFlag,
+        'imagestreaming':
+            flags.AddEnableImageStreamingFlag,
         'imageflags':
             flags.AddImageFlagsCreate,
         'intranodevisibility':
@@ -739,6 +741,7 @@ flags_to_add = {
         'disksize': flags.AddDiskSizeFlag,
         'disktype': flags.AddDiskTypeFlag,
         'gcfs': flags.AddEnableGcfsFlag,
+        'imagestreaming': flags.AddEnableImageStreamingFlag,
         'gkeoidc': flags.AddGkeOidcFlag,
         'gvnic': flags.AddEnableGvnicFlag,
         'identityservice': flags.AddIdentityServiceFlag,
@@ -1014,6 +1017,7 @@ class CreateBeta(Create):
     ops.kubernetes_objects_snapshots_target = \
         getattr(args, 'kubernetes_objects_snapshots_target', None)
     ops.enable_gcfs = get_default('enable_gcfs')
+    ops.enable_image_streaming = get_default('enable_image_streaming')
     ops.enable_workload_certificates = getattr(args,
                                                'enable_workload_certificates',
                                                None)
@@ -1094,6 +1098,7 @@ class CreateAlpha(Create):
     ops.kubernetes_objects_snapshots_target = \
         getattr(args, 'kubernetes_objects_snapshots_target', None)
     ops.enable_gcfs = get_default('enable_gcfs')
+    ops.enable_image_streaming = get_default('enable_image_streaming')
     ops.enable_workload_certificates = getattr(args,
                                                'enable_workload_certificates',
                                                None)

@@ -53,7 +53,7 @@ def _Args(parser,
     instances_flags.AddLocalSsdArgsWithSize(parser)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddContainerMountDiskFlag(parser)
-  instances_flags.AddAddressArgs(parser, instances=False)
+  instances_flags.AddAddressArgs(parser, instances=False, containers=True)
   instances_flags.AddMachineTypeArgs(parser)
   deprecate_maintenance_policy = release_track in [base.ReleaseTrack.ALPHA]
   instances_flags.AddMaintenancePolicyArgs(parser, deprecate_maintenance_policy)

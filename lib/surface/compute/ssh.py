@@ -376,11 +376,11 @@ class Ssh(base.Command):
           ssh_helper.env,
           force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
     except ssh.CommandError as e:
-      log.status.Print(RECOMMEND_MESSAGE)
+      if hasattr(args, 'troubleshoot'):
+        log.status.Print(RECOMMEND_MESSAGE)
       raise e
 
     if return_code:
-      log.status.Print(RECOMMEND_MESSAGE)
       # This is the return code of the remote command.  Problems with SSH itself
       # will result in ssh.CommandError being raised above.
       sys.exit(return_code)

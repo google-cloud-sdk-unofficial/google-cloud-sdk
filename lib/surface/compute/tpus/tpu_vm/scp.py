@@ -114,9 +114,8 @@ class Scp(base.Command):
           '--worker', 'cannot target multiple workers while copying files to '
           'client.')
 
-    guest_attributes_response = tpu.GetGuestAttributes(tpu_name, args.zone)
-    host_key_suffixes = tpu_ssh_utils.ParseHostKeySuffixes(
-        guest_attributes_response)
+    host_key_suffixes = tpu_ssh_utils.GetHostKeySuffixes(
+        tpu, tpu_name, worker_ips, len(node.networkEndpoints), args.zone)
 
     # Generate the public key.
     ssh_helper = ssh_utils.BaseSSHCLIHelper()

@@ -151,7 +151,8 @@ class CreateInstanceAlpha(CreateInstanceBetaAndGA):
   def _ValidateStatefulFlagsForInstanceConfigs(self, args):
     super(CreateInstanceAlpha,
           self)._ValidateStatefulFlagsForInstanceConfigs(args)
-    instance_groups_flags.ValidateMigStatefulIPFlagsForInstanceConfigs(args)
+    instance_groups_flags.ValidateMigStatefulIPFlagsForInstanceConfigs(
+        args, current_internal_addresses=[], current_external_addresses=[])
 
   def _CreatePerInstanceConfgMessage(self, holder, instance_ref, args):
     return instance_configs_messages.CreatePerInstanceConfigMessageWithIPs(

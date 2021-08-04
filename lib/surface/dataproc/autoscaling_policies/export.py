@@ -61,7 +61,7 @@ class Export(base.Command):
     policy = dataproc.client.projects_regions_autoscalingPolicies.Get(request)
 
     # Filter out OUTPUT_ONLY fields and resource identifying fields. Note this
-    # needs to be kept in sync with v1/v1beta2 autoscaling_policies.proto.
+    # needs to be kept in sync with v1 autoscaling_policies.proto.
     policy.id = None
     policy.name = None
 

@@ -27,11 +27,11 @@ from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Upload(base.Command):
-  """Upload a yum package to an artifact repository."""
+  """Upload an RPM package to an artifact repository."""
 
-  api_version = 'v1alpha1'
+  api_version = 'v1beta2'
 
   @staticmethod
   def Args(parser):
@@ -49,6 +49,49 @@ class Upload(base.Command):
         required=True,
         help="""\
             The path of a package to upload.""")
+
+  def Run(self, args):
+    """Run package import command."""
+    client = apis.GetClientInstance('artifactregistry', self.api_version)
+    messages = client.MESSAGES_MODULE
+
+    client.additional_http_headers['X-Goog-Upload-Protocol'] = 'multipart'
+
+    repo_ref = args.CONCEPTS.repository.Parse()
+
+    upload_req = messages.UploadYumArtifactRequest
+    upload_request = upload_req()
+
+    request = messages.ArtifactregistryProjectsLocationsRepositoriesYumartifactsUploadRequest(
+        uploadYumArtifactRequest=upload_request,
+        parent=repo_ref.RelativeName())
+
+    upload = transfer.Upload.FromFile(
+        args.source, mime_type='application/x-rpm')
+
+    op_obj = client.projects_locations_repositories_yumartifacts.Upload(
+        request, upload=upload)
+
+    op = op_obj.operation
+    op_ref = resources.REGISTRY.ParseRelativeName(
+        op.name, collection='artifactregistry.projects.locations.operations')
+
+    if args.async_:
+      return op_ref
+    else:
+      result = waiter.WaitFor(
+          waiter.CloudOperationPollerNoResources(
+              client.projects_locations_operations),
+          op_ref, 'Uploading package')
+
+      return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UploadAlpha(Upload):
+  """Upload an RPM package to an artifact repository."""
+
+  api_version = 'v1alpha1'
 
   def Run(self, args):
     """Run package import command."""
@@ -89,9 +132,9 @@ class Upload(base.Command):
 
 
 Upload.detailed_help = {
-    'brief': 'Upload a Yum package to an artifact repository.',
+    'brief': 'Upload an RPM package to an artifact repository.',
     'DESCRIPTION': """
-      *{command}* uploads a Yum package to the specified artifact repository.
+      *{command}* uploads an RPM package to the specified artifact repository.
       """,
     'EXAMPLES': """
       To upload the package `my-package.rpm` to `my-repo`, run:

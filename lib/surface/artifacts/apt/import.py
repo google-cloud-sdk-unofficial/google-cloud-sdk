@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Implements the command to import apt packages into a repository."""
+"""Implements the command to import Debian packages into a repository."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,11 +28,11 @@ from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Import(base.Command):
-  """Import one or more apt packages into an artifact repository."""
+  """Import one or more Debian packages into an artifact repository."""
 
-  api_version = 'v1alpha1'
+  api_version = 'v1beta2'
 
   @staticmethod
   def Args(parser):
@@ -56,7 +56,50 @@ class Import(base.Command):
   def Run(self, args):
     """Run package import command."""
     client = apis.GetClientInstance('artifactregistry', self.api_version)
-    betaclient = apis.GetClientInstance('artifactregistry', 'v1beta2')
+    messages = client.MESSAGES_MODULE
+
+    for gcs_source in args.gcs_source:
+      if '*' in gcs_source and not gcs_source.endswith('*'):
+        raise exceptions.InvalidArgumentException(
+            'GCS_SOURCE', 'Wildcards must be at the end of the GCS path.')
+
+    repo_ref = args.CONCEPTS.repository.Parse()
+    gcs_source = messages.ImportAptArtifactsGcsSource(
+        uris=args.gcs_source,
+        useWildcards=True)
+    import_request = messages.ImportAptArtifactsRequest(
+        gcsSource=gcs_source)
+
+    request = messages.ArtifactregistryProjectsLocationsRepositoriesAptArtifactsImportRequest(
+        importAptArtifactsRequest=import_request,
+        parent=repo_ref.RelativeName())
+
+    op = client.projects_locations_repositories_aptArtifacts.Import(request)
+
+    op_ref = resources.REGISTRY.ParseRelativeName(
+        op.name, collection='artifactregistry.projects.locations.operations')
+
+    if args.async_:
+      return op_ref
+    else:
+      result = waiter.WaitFor(
+          waiter.CloudOperationPollerNoResources(
+              client.projects_locations_operations),
+          op_ref, 'Importing package(s)')
+
+      return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ImportAlpha(Import):
+  """Import one or more Debian packages into an artifact repository."""
+
+  api_version = 'v1alpha1'
+
+  def Run(self, args):
+    """Run package import command."""
+    client = apis.GetClientInstance('artifactregistry', self.api_version)
+    beta2client = apis.GetClientInstance('artifactregistry', 'v1beta2')
     messages = client.MESSAGES_MODULE
 
     for gcs_source in args.gcs_source:
@@ -85,16 +128,16 @@ class Import(base.Command):
     else:
       result = waiter.WaitFor(
           waiter.CloudOperationPollerNoResources(
-              betaclient.projects_locations_operations),
+              beta2client.projects_locations_operations),
           op_ref, 'Importing package(s)')
 
       return result
 
 
 Import.detailed_help = {
-    'brief': 'Import one or more APT packages into an artifact repository.',
+    'brief': 'Import one or more Debian packages into an artifact repository.',
     'DESCRIPTION': """
-      *{command}* imports APT packages from Google Cloud Storage into the specified
+      *{command}* imports Debian packages from Google Cloud Storage into the specified
       artifact repository.
       """,
     'EXAMPLES': """

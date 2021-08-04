@@ -31,11 +31,6 @@ class Snapshots(base.Group):
   with the normal function of the service.
   """
 
-  detailed_help = {
-      # TODO(b/36056503) Add some examples
-      # 'EXAMPLES': ''
-  }
-
   @staticmethod
   def Args(parser):
     flags.AddTargetOption(parser)

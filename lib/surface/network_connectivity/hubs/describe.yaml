@@ -1,11 +1,11 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Describe a hub.
-    description: Show details of a hub.
+    description: Show details about a hub.
 
     examples: |
-      Show details about a hub named ``my-hub''.
+      To show details about a hub named ``my-hub'', run:
 
         $ {command} my-hub
 
@@ -15,5 +15,8 @@
       help_text: Name of the hub to be described.
 
   request: &request
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
     collection: networkconnectivity.projects.locations.global.hubs

@@ -48,7 +48,7 @@ To create a cluster from a YAML file, run:
         The path to a YAML file containing a Dataproc Cluster resource.
 
         For more information, see:
-        https://cloud.google.com/dataproc/docs/reference/rest/v1beta2/projects.regions.clusters#Cluster.
+        https://cloud.google.com/dataproc/docs/reference/rest/v1/projects.regions.clusters#Cluster.
         """,
         required=True)
     # TODO(b/80197067): Move defaults to a common location.

@@ -28,6 +28,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scopes
+from googlecloudsdk.command_lib.compute import secure_tags_utils
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 from googlecloudsdk.command_lib.compute.resource_policies import flags as maintenance_flags
 from googlecloudsdk.command_lib.compute.resource_policies import util as maintenance_util
@@ -387,7 +388,8 @@ class Create(base.Command):
         advancedMachineFeatures=advanced_machine_features)
 
     if self._support_secure_tags and args.secure_tags:
-      instance_properties.secureTags = args.secure_tags
+      instance_properties.secureTags = secure_tags_utils.GetSecureTags(
+          args.secure_tags)
     if self._support_display_device and display_device:
       instance_properties.displayDevice = display_device
 

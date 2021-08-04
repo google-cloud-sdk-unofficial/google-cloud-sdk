@@ -1,10 +1,10 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Create a new hub.
     description: Create a new hub with the given name.
     examples: |
-      Create a hub with the name ``my-hub'' and the description ``optional description''.
+      To create a hub with the name ``my-hub'' and the description ``optional description'', run:
 
         $ {command} my-hub --description="optional description"
 
@@ -16,23 +16,17 @@
     - arg_name: description
       api_field: hub.description
       help_text: Description of the hub.
-    - arg_name: labels
-      api_field: hub.labels.additionalProperties
-      metavar: KEY=VALUE
-      help_text: |
-        List of label KEY=VALUE pairs to add.
-      type:
-        arg_dict:
-          flatten: true
-          spec:
-          - api_field: key
-          - api_field: value
+    labels:
+      api_field: hub.labels
 
   async:
     collection: networkconnectivity.projects.locations.operations
 
   request: &request
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
     collection: networkconnectivity.projects.locations.global.hubs
     method: create
     modify_request_hooks:

@@ -25,7 +25,8 @@ from googlecloudsdk.core import log
 
 
 NOT_RUNNING_MSG = """\
-cluster {0} is not running. The kubernetes API may not be available."""
+cluster {0} is not RUNNING. The kubernetes API may or may not be available. \
+Check the cluster status for more information."""
 
 
 def _BaseRun(args, context):

@@ -1,0 +1,27 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Get the IAM policy for a restore.
+    description: |
+      Display the IAM policy associated with a restore.
+
+      ## EXAMPLES
+
+      To display the IAM policy associated with a restore ``my-restore'' in project ``my-project'' in location ``us-central1'', run:
+
+        $ {command} my-restore --project=my-project --location=us-central1
+
+  request:
+    collection: gkebackup.projects.locations.restores
+    ALPHA:
+      api_version: v1alpha1
+
+  arguments:
+    resource:
+      help_text: |
+        Name of the restore for which to display IAM policy. The name may be provided either as a relative name,
+        e.g.
+        `projects/<project>/locations/<location>/restores/<restore>`
+        or as a single ID name (with the parent resources provided via options or through
+        properties), e.g.
+        `RESTORE --project=<project> --location=<location>`
+      spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:restore

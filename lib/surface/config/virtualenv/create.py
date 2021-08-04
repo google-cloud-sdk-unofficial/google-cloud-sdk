@@ -38,18 +38,28 @@ class Create(base.Command):
   `{parent_command} enable` to do so.
   """
 
+  @staticmethod
+  def Args(parser):
+    """Adds args for this command."""
+    parser.add_argument(
+        '--python-to-use',
+        help='Absolute path to python to use to create virtual env.')
+
   def Run(self, args):
-    if util.IsPy2():
+    if util.IsPy2() and not args.IsSpecified('python_to_use'):
       log.error('Virtual env support requires Python 3.')
       raise exceptions.ExitCodeNoError(exit_code=3)
     if util.IsWindows():
       log.error('Virtual env support not enabled on Windows.')
       raise exceptions.ExitCodeNoError(exit_code=4)
-    try:
-      python = execution_utils.GetPythonExecutable()
-    except ValueError:
-      log.error('Failed to resolve python to use for virtual env.')
-      raise exceptions.ExitCodeNoError(exit_code=5)
+    if args.IsSpecified('python_to_use'):
+      python = args.python_to_use
+    else:
+      try:
+        python = execution_utils.GetPythonExecutable()
+      except ValueError:
+        log.error('Failed to resolve python to use for virtual env.')
+        raise exceptions.ExitCodeNoError(exit_code=5)
 
     ve_dir = config.Paths().virtualenv_dir
     if util.VirtualEnvExists(ve_dir):

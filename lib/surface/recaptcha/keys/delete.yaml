@@ -1,8 +1,12 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
-    description: Deletes one or more reCAPTCHA Keys from a given cloud project.
-    brief: Deletes one or more reCAPTCHA Keys.
+    description: Delete one or more reCAPTCHA Keys from a given cloud project.
+    brief: Delete one or more reCAPTCHA Keys.
+    examples: |
+        To delete a reCAPTCHA key, run:
+
+          $ {command} test-key
 
   request:
     collection: recaptchaenterprise.projects.keys

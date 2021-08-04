@@ -52,9 +52,7 @@ To export a cluster to standard output, run:
   @classmethod
   def GetApiVersion(cls):
     """Returns the API version based on the release track."""
-    if cls.ReleaseTrack() == base.ReleaseTrack.GA:
-      return 'v1'
-    return 'v1beta2'
+    return 'v1'
 
   @classmethod
   def Args(cls, parser):
@@ -87,7 +85,7 @@ To export a cluster to standard output, run:
       export_util.Export(message=cluster, stream=sys.stdout)
 
 
-# Note that this needs to be kept in sync with v1/v1beta2 clusters.proto.
+# Note that this needs to be kept in sync with v1 clusters.proto.
 def RemoveNonImportableFields(cluster):
   """Modifies cluster to exclude OUTPUT_ONLY and resource-identifying fields."""
 

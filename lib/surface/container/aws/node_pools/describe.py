@@ -34,10 +34,12 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     release_track = self.ReleaseTrack()
-    node_pool_ref = args.CONCEPTS.node_pool.Parse()
 
-    with endpoint_util.GkemulticloudEndpointOverride(node_pool_ref.locationsId,
-                                                     release_track):
+    with endpoint_util.GkemulticloudEndpointOverride(
+        resource_args.ParseAwsNodePoolResourceArg(args).locationsId,
+        release_track):
+      # Parsing again after endpoint override is set.
+      node_pool_ref = resource_args.ParseAwsNodePoolResourceArg(args)
       node_pool_client = node_pools.NodePoolsClient(track=release_track)
 
       return node_pool_client.Get(node_pool_ref)

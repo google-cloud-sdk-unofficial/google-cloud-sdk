@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.azure import util as azure_api_util
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -28,6 +27,7 @@ from googlecloudsdk.command_lib.container.azure import util as command_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
+from googlecloudsdk.command_lib.container.gkemulticloud import operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
@@ -90,9 +90,6 @@ class Create(base.CreateCommand):
   def Run(self, args):
     """Run the create command."""
 
-    cluster_ref = resource_args.ParseAzureClusterResourceArg(args)
-    client_ref = resource_args.ParseAzureClientResourceArg(args)
-
     azure_region = getattr(args, "azure_region", None)
     if not azure_region:
       try:
@@ -117,8 +114,12 @@ class Create(base.CreateCommand):
     admin_users = [properties.VALUES.core.account.Get()]
     async_ = getattr(args, "async_", False)
 
-    with endpoint_util.GkemulticloudEndpointOverride(cluster_ref.locationsId,
-                                                     self.ReleaseTrack()):
+    with endpoint_util.GkemulticloudEndpointOverride(
+        resource_args.ParseAzureClusterResourceArg(args).locationsId,
+        self.ReleaseTrack()):
+      # Parsing again after endpoint override is set.
+      cluster_ref = resource_args.ParseAzureClusterResourceArg(args)
+      client_ref = resource_args.ParseAzureClientResourceArg(args)
       cluster_client = azure_api_util.ClustersClient(track=self.ReleaseTrack())
       op = cluster_client.Create(
           cluster_ref=cluster_ref,
@@ -140,20 +141,19 @@ class Create(base.CreateCommand):
           db_resource_group_id=db_resource_group_id,
           db_kms_key_id=db_kms_key_id)
 
-      op_ref = resource_args.GetOperationResource(op)
-
       if validate_only:
         args.format = "disable"
         return
 
-      if not async_:
-        waiter.WaitFor(
-            waiter.CloudOperationPollerNoResources(
-                cluster_client.client.projects_locations_operations),
-            op_ref,
-            "Creating cluster {} in Azure region {}".format(
-                cluster_ref.azureClustersId, azure_region),
-            wait_ceiling_ms=constants.MAX_LRO_POLL_INTERVAL_MS)
+      op_ref = resource_args.GetOperationResource(op)
+      log.CreatedResource(op_ref, kind=constants.LRO_KIND)
 
-      log.CreatedResource(cluster_ref)
+      if not async_:
+        op_client = operations.Client(track=self.ReleaseTrack())
+        op_client.Wait(
+            op_ref, "Creating cluster {} in Azure region {}".format(
+                cluster_ref.azureClustersId, azure_region))
+
+      log.CreatedResource(
+          cluster_ref, kind=constants.AZURE_CLUSTER_KIND, is_async=async_)
       return cluster_client.Get(cluster_ref)

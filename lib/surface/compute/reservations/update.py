@@ -39,31 +39,25 @@ def _ValidateArgs(args, support_share_with):
   # Check the vesrion and share-with option.
   share_with = False
   parameter_names = ['--share-with', '--vm-count']
+  parameter_names_ga = ['--vm-count']
   one_option_exception_message = (
-      'Please provide one of these options: 1- specify '
-      'share-with to update the project list. 2- specify '
+      'Please provide one of these options: 1- Specify '
+      'share-with to update the project list. 2- Specify '
       'reservation vm-count to resize. ')
-  all_options_exception_message = ('Please provide only one of these options: '
-                                   '1- specify share-with to update the project'
-                                   ' list. 2- specify reservation vm-count to '
-                                   'resize. ')
+  vm_count_missed_message = 'Please specify reservation with vm-count to resize'
+
   if support_share_with:
     if args.IsSpecified('share_with'):
       share_with = True
   # For GA only check the size.
   if not support_share_with and not args.IsSpecified('vm_count'):
-    raise exceptions.MinimumArgumentException(parameter_names,
-                                              one_option_exception_message)
+    raise exceptions.MinimumArgumentException(parameter_names_ga,
+                                              vm_count_missed_message)
 
   # For Beta and alpha check both.
   if not share_with and not args.IsSpecified('vm_count'):
     raise exceptions.MinimumArgumentException(parameter_names,
                                               one_option_exception_message)
-
-  if share_with and args.IsSpecified('vm_count'):
-    parameter_names = ['--share-with', '--vm-count']
-    raise exceptions.OneOfArgumentsRequiredException(
-        parameter_names, all_options_exception_message)
 
 
 def _GetShareSettingUpdateRequest(args, reservation_ref, holder):
@@ -122,48 +116,6 @@ def _GetResizeRequest(args, reservation_ref, holder):
       zone=reservation_ref.zone)
 
   return r_resize_request
-
-
-def _RunUpdate(holder, args, support_share_with=False):
-  """Common routine for updating reservation."""
-  resources = holder.resources
-  service = holder.client.apitools_client.reservations
-
-  # Validate the command.
-  _ValidateArgs(args, support_share_with)
-  reservation_ref = resource_args.GetReservationResourceArg().ResolveAsResource(
-      args,
-      resources,
-      scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
-
-  result = list()
-  errors = []
-  share_with = False
-  if support_share_with:
-    if args.IsSpecified('share_with'):
-      share_with = True
-
-  if support_share_with and share_with:
-    r_update_request = _GetShareSettingUpdateRequest(args, reservation_ref,
-                                                     holder)
-    # Invoke Reservation.update API.
-    result.append(
-        list(
-            request_helper.MakeRequests(
-                requests=[(service, 'Update', r_update_request)],
-                http=holder.client.apitools_client.http,
-                batch_url=holder.client.batch_url,
-                errors=errors)))
-    if errors:
-      utils.RaiseToolException(errors)
-
-  if args.IsSpecified('vm_count'):
-    r_resize_request = _GetResizeRequest(args, reservation_ref, holder)
-    # Invoke Reservation.resize API.
-    result.append(
-        holder.client.MakeRequests(([(service, 'Resize', r_resize_request)])))
-
-  return result
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

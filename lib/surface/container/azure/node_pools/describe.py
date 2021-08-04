@@ -36,8 +36,10 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     """Run the describe command."""
 
-    nodepool_ref = resource_args.ParseAzureNodePoolResourceArg(args)
-    with endpoint_util.GkemulticloudEndpointOverride(nodepool_ref.locationsId,
-                                                     self.ReleaseTrack()):
+    with endpoint_util.GkemulticloudEndpointOverride(
+        resource_args.ParseAzureNodePoolResourceArg(args).locationsId,
+        self.ReleaseTrack()):
+      # Parsing again after endpoint override is set.
+      nodepool_ref = resource_args.ParseAzureNodePoolResourceArg(args)
       client = azure_api_util.NodePoolsClient(track=self.ReleaseTrack())
       return client.Get(nodepool_ref)

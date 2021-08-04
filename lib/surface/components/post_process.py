@@ -27,7 +27,14 @@ from googlecloudsdk.core.updater import local_state
 class PostProcess(base.SilentCommand):
   """Performs any necessary post installation steps."""
 
+  @staticmethod
+  def Args(parser):
+    parser.add_argument('--force-recompile', action='store_true',
+                        required=False,
+                        hidden=True,
+                        default='False', help='THIS ARGUMENT NEEDS HELP TEXT.')
+
   def Run(self, args):
     # Re-compile python files.
     state = local_state.InstallationState.ForCurrent()
-    state.CompilePythonFiles()
+    state.CompilePythonFiles(force=args.force_recompile)

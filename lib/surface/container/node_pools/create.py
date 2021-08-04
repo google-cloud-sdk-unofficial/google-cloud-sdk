@@ -271,6 +271,7 @@ class CreateBeta(Create):
     flags.AddSystemConfigFlag(parser, hidden=False)
     flags.AddNodeGroupFlag(parser)
     flags.AddEnableGcfsFlag(parser, for_node_pool=True)
+    flags.AddEnableImageStreamingFlag(parser, for_node_pool=True)
     flags.AddNetworkConfigFlags(parser)
     flags.AddNodePoolEnablePrivateNodes(parser, hidden=True)
     flags.AddThreadsPerCore(parser)
@@ -285,6 +286,7 @@ class CreateBeta(Create):
     ops.node_locations = args.node_locations
     ops.system_config_from_file = args.system_config_from_file
     ops.enable_gcfs = args.enable_gcfs
+    ops.enable_image_streaming = args.enable_image_streaming
     ops.ephemeral_storage = args.ephemeral_storage
     ops.pod_ipv4_range = args.pod_ipv4_range
     ops.create_pod_ipv4_range = args.create_pod_ipv4_range
@@ -309,6 +311,7 @@ class CreateAlpha(Create):
     ops.node_locations = args.node_locations
     ops.system_config_from_file = args.system_config_from_file
     ops.enable_gcfs = args.enable_gcfs
+    ops.enable_image_streaming = args.enable_image_streaming
     ops.pod_ipv4_range = args.pod_ipv4_range
     ops.create_pod_ipv4_range = args.create_pod_ipv4_range
     ops.enable_private_nodes = args.enable_private_nodes
@@ -340,6 +343,7 @@ class CreateAlpha(Create):
     flags.AddSystemConfigFlag(parser, hidden=False)
     flags.AddReservationAffinityFlags(parser, for_node_pool=True)
     flags.AddEnableGcfsFlag(parser, for_node_pool=True)
+    flags.AddEnableImageStreamingFlag(parser, for_node_pool=True)
     flags.AddNetworkConfigFlags(parser)
     flags.AddNodePoolEnablePrivateNodes(parser, hidden=True)
     flags.AddThreadsPerCore(parser)

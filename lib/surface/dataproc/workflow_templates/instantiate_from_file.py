@@ -68,12 +68,7 @@ class InstantiateFromFile(base.CreateCommand):
           parent=regions_ref.RelativeName(),
           workflowTemplate=template)
 
-    if dataproc.api_version == 'v1':
-      # Deprecated field in v1beta2
-      request.requestId = instance_id
-    else:
-      # new field not in v1
-      request.instanceId = instance_id
+    request.requestId = instance_id
 
     operation = \
       dataproc.client.projects_regions_workflowTemplates.InstantiateInline(

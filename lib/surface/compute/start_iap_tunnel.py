@@ -38,32 +38,60 @@ _CreateTargetArgs = collections.namedtuple('_TargetArgs', [
     'ip'
 ])
 
+_ON_PREM_EXTRA_DESCRIPTION = """
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+If the `--region` and `--network` flags are provided, then an IP address must be
+supplied instead of an instance name. This is most useful for connecting to
+on-prem resources.
+"""
+
+_ON_PREM_EXTRA_EXAMPLES = """
+
+To use the IP address of your remote VM (eg, for on-prem), you must also specify
+the `--region` and `--network` flags:
+
+  $ {command} 10.1.2.3 3389 --region=us-central1 --network=default
+"""
+
+
+def _DetailedHelp(version):
+  """Construct help text based on the command release track."""
+  detailed_help = {
+      'brief': 'Starts an IAP TCP forwarding tunnel.',
+      'DESCRIPTION': """\
+Starts a tunnel to Cloud Identity-Aware Proxy for TCP forwarding through which
+another process can create a connection (eg. SSH, RDP) to a Google Compute
+Engine instance.
+
+To learn more, see the
+[IAP for TCP forwarding documentation](https://cloud.google.com/iap/docs/tcp-forwarding-overview).
+""",
+      'EXAMPLES': """\
+To open a tunnel to the instances's RDP port on an arbitrary local port, run:
+
+  $ {command} my-instance 3389
+
+To open a tunnel to the instance's RDP port on a specific local port, run:
+
+  $ {command} my-instance 3389 --local-host-port=localhost:3333
+"""
+  }
+
+  if version == 'ALPHA':
+    detailed_help['DESCRIPTION'] += _ON_PREM_EXTRA_DESCRIPTION
+    detailed_help['EXAMPLES'] += _ON_PREM_EXTRA_EXAMPLES
+
+  return detailed_help
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class StartIapTunnel(base.Command):
-  # pylint: disable=line-too-long
-  """Starts an IAP TCP forwarding tunnel.
+  """Starts an IAP TCP forwarding tunnel."""
 
-  Starts a tunnel to Cloud Identity-Aware Proxy for TCP forwarding through which
-  another process can create a connection (eg. SSH, RDP) to a Google Compute
-  Engine instance.
+  enable_ip_based_flags = False
 
-  To learn more, see the
-  [IAP for TCP forwarding documentation](https://cloud.google.com/iap/docs/tcp-forwarding-overview).
-
-  ## EXAMPLES
-
-  To open a tunnel to the instances's RDP port on an arbitrary local port, run:
-
-    $ {command} my-instance 3389
-
-  To open a tunnel to the instance's RDP port on a specific local port, run:
-
-    $ {command} my-instance 3389 --local-host-port=localhost:3333
-  """
-
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     iap_tunnel.AddProxyServerHelperArgs(parser)
     flags.INSTANCE_ARG.AddArgument(parser)
     parser.add_argument(
@@ -102,6 +130,9 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
         default=False,
         action='store_true',
         help='Disables the immediate check of the connection.')
+
+    if cls.enable_ip_based_flags:
+      iap_tunnel.AddIpBasedTunnelArgs(parser)
 
   def Run(self, args):
     if args.listen_on_stdin and args.IsSpecified('local_host_port'):
@@ -172,34 +203,18 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
     return local_host_arg, local_port
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class StartIapTunnelBeta(StartIapTunnel):
+  """Starts an IAP TCP forwarding tunnel (Beta)."""
+  enable_ip_based_flags = False
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class StartIapTunnelAlpha(StartIapTunnel):
-  # pylint: disable=line-too-long
-  """Starts an IAP TCP forwarding tunnel.
+class StartIapTunnelAlpha(StartIapTunnelBeta):
+  """Starts an IAP TCP forwarding tunnel (Alpha)."""
+  enable_ip_based_flags = True
 
-  Starts a tunnel to Cloud Identity-Aware Proxy for TCP forwarding through which
-  another process can create a connection (eg. SSH, RDP) to a Google Compute
-  Engine instance or IPv4 address.
 
-  To learn more, see the
-  [IAP for TCP forwarding documentation](https://cloud.google.com/iap/docs/tcp-forwarding-overview).
-
-  ## EXAMPLES
-
-  To open a tunnel to the instances's RDP port on an arbitrary local port, run:
-
-    $ {command} my-instance 3389
-
-  To open a tunnel to the instance's RDP port on a specific local port, run:
-
-    $ {command} my-instance 3389 --local-host-port=localhost:3333
-
-  To open a tunnel to the IP's RDP port on an arbitrary local port, run:
-
-    $ {command} my-instance 10.1.2.3 3389 --network=default --region=us-central1
-  """
-
-  @staticmethod
-  def Args(parser):
-    StartIapTunnel.Args(parser)
-    iap_tunnel.AddIpBasedTunnelArgs(parser)
+StartIapTunnelAlpha.detailed_help = _DetailedHelp('ALPHA')
+StartIapTunnelBeta.detailed_help = _DetailedHelp('BETA')
+StartIapTunnel.detailed_help = _DetailedHelp('GA')

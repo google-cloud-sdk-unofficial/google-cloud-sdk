@@ -80,7 +80,7 @@
              clusterState.agonesVersionInstalled:label=AGONES_VERSION,
              clusterState.kubernetesVersionInstalled:label=KUBERNETES_VERSION,
              clusterState.provider:label=PROVIDER,
-             clusterState.versionInstalledErrorMessage:label=VERSION_ERROR
+             clusterState.versionInstalledErrorMessage:label=VERSION_WARNING
            )"
         )
     BETA:

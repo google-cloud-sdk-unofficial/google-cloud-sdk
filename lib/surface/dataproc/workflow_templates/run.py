@@ -49,7 +49,7 @@ class Run(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddTemplateResourceArg(parser, 'run', api_version='v1beta2')
+    flags.AddTemplateResourceArg(parser, 'run', api_version='v1')
     flags.AddTimeoutFlag(parser, default='24h')
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -60,7 +60,7 @@ class Run(base.CreateCommand):
     template_ref = args.CONCEPTS.template.Parse()
 
     instantiate_request = dataproc.messages.InstantiateWorkflowTemplateRequest()
-    instantiate_request.instanceId = uuid.uuid4().hex  # request UUID
+    instantiate_request.requestId = uuid.uuid4().hex  # request UUID
 
     request = msgs.DataprocProjectsRegionsWorkflowTemplatesInstantiateRequest(
         instantiateWorkflowTemplateRequest=instantiate_request,

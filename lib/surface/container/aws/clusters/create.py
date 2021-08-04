@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.aws import clusters
@@ -27,6 +26,7 @@ from googlecloudsdk.command_lib.container.aws import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
+from googlecloudsdk.command_lib.container.gkemulticloud import operations
 from googlecloudsdk.core import log
 
 
@@ -80,10 +80,12 @@ class Create(base.CreateCommand):
   def Run(self, args):
     """Run the create command."""
     release_track = self.ReleaseTrack()
-    cluster_ref = args.CONCEPTS.cluster.Parse()
 
-    with endpoint_util.GkemulticloudEndpointOverride(cluster_ref.locationsId,
-                                                     release_track):
+    with endpoint_util.GkemulticloudEndpointOverride(
+        resource_args.ParseAwsClusterResourceArg(args).locationsId,
+        release_track):
+      # Parsing again after endpoint override is set.
+      cluster_ref = resource_args.ParseAwsClusterResourceArg(args)
       cluster_client = clusters.Client(track=release_track)
       args.root_volume_size = flags.GetRootVolumeSize(args)
       args.root_volume_type = aws_flags.GetRootVolumeType(args)
@@ -97,15 +99,15 @@ class Create(base.CreateCommand):
         args.format = 'disable'
         return
 
+      log.CreatedResource(op_ref, kind=constants.LRO_KIND)
+
       async_ = getattr(args, 'async_', False)
       if not async_:
-        waiter.WaitFor(
-            waiter.CloudOperationPollerNoResources(
-                cluster_client.client.projects_locations_operations),
-            op_ref,
-            'Creating cluster {} in AWS region {}'.format(
-                cluster_ref.awsClustersId, args.aws_region),
-            wait_ceiling_ms=constants.MAX_LRO_POLL_INTERVAL_MS)
+        op_client = operations.Client(track=release_track)
+        op_client.Wait(
+            op_ref, 'Creating cluster {} in AWS region {}'.format(
+                cluster_ref.awsClustersId, args.aws_region))
 
-      log.CreatedResource(cluster_ref)
+      log.CreatedResource(
+          cluster_ref, kind=constants.AWS_CLUSTER_KIND, is_async=async_)
       return cluster_client.Get(cluster_ref)

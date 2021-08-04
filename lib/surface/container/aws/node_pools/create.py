@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.aws import flags as aws_flags
 from googlecloudsdk.command_lib.container.aws import node_pools
@@ -26,6 +25,7 @@ from googlecloudsdk.command_lib.container.aws import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
+from googlecloudsdk.command_lib.container.gkemulticloud import operations
 from googlecloudsdk.core import log
 
 
@@ -61,10 +61,13 @@ class Create(base.CreateCommand):
   def Run(self, args):
     """Run the create command."""
     release_track = self.ReleaseTrack()
-    node_pool_ref = args.CONCEPTS.node_pool.Parse()
+    node_pool_ref = resource_args.ParseAwsNodePoolResourceArg(args)
 
-    with endpoint_util.GkemulticloudEndpointOverride(node_pool_ref.locationsId,
-                                                     release_track):
+    with endpoint_util.GkemulticloudEndpointOverride(
+        resource_args.ParseAwsNodePoolResourceArg(args).locationsId,
+        release_track):
+      # Parsing again after endpoint override is set.
+      node_pool_ref = resource_args.ParseAwsNodePoolResourceArg(args)
       node_pool_client = node_pools.NodePoolsClient(track=release_track)
       args.root_volume_size = flags.GetRootVolumeSize(args)
       args.root_volume_type = aws_flags.GetRootVolumeType(args)
@@ -78,14 +81,15 @@ class Create(base.CreateCommand):
         args.format = 'disable'
         return
 
+      log.CreatedResource(op_ref, kind=constants.LRO_KIND)
+
       async_ = getattr(args, 'async_', False)
       if not async_:
-        waiter.WaitFor(
-            waiter.CloudOperationPollerNoResources(
-                node_pool_client.client.projects_locations_operations),
+        op_client = operations.Client(track=release_track)
+        op_client.Wait(
             op_ref,
-            'Creating node pool {}'.format(node_pool_ref.awsNodePoolsId),
-            wait_ceiling_ms=constants.MAX_LRO_POLL_INTERVAL_MS)
+            'Creating node pool {}'.format(node_pool_ref.awsNodePoolsId))
 
-      log.CreatedResource(node_pool_ref)
+      log.CreatedResource(
+          node_pool_ref, kind=constants.AWS_NODEPOOL_KIND, is_async=async_)
       return node_pool_client.Get(node_pool_ref)

@@ -37,10 +37,12 @@ class GetKubeconfig(base.DescribeCommand):
 
   def Run(self, args):
     """Run the get-kubeconfig command."""
-    cluster_ref = args.CONCEPTS.cluster.Parse()
 
-    with endpoint_util.GkemulticloudEndpointOverride(cluster_ref.locationsId,
-                                                     self.ReleaseTrack()):
+    with endpoint_util.GkemulticloudEndpointOverride(
+        resource_args.ParseAzureClusterResourceArg(args).locationsId,
+        self.ReleaseTrack()):
+      # Parsing again after endpoint override is set.
+      cluster_ref = resource_args.ParseAzureClusterResourceArg(args)
       api_client = azure_api_util.ClustersClient(track=self.ReleaseTrack())
       resp = api_client.GetKubeConfig(cluster_ref)
       log.WriteToFileOrStdout(

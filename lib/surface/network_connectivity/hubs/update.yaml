@@ -1,11 +1,11 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Update a hub.
-    description: Update the detail of a hub.
+    description: Update the details of a hub.
 
     examples: |
-      Update description of the hub named ``my-hub'' with description 'the new description of my-hub'.
+      To update the description of a hub named ``my-hub'', run:
 
         $ {command} my-hub --description="The new description of my-hub".
 
@@ -18,6 +18,7 @@
       api_field: hub.description
       help_text: New description of the hub.
     - arg_name: labels
+      release_tracks: [ALPHA]
       api_field: hub.labels.additionalProperties
       metavar: KEY=VALUE
       help_text: |
@@ -28,11 +29,20 @@
           spec:
           - api_field: key
           - api_field: value
+    GA:
+      labels:
+        api_field: hub.labels
+
+  update:
+    read_modify_update: true
 
   async:
     collection: networkconnectivity.projects.locations.operations
 
   request:
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    GA:
+      api_version: v1
     collection: networkconnectivity.projects.locations.global.hubs
     method: patch

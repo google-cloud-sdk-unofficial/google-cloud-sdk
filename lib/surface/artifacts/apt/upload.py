@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Implements the command to upload apt packages to a repository."""
+"""Implements the command to upload Debian packages to a repository."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,11 +27,11 @@ from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Upload(base.Command):
-  """Upload an apt package to an artifact repository."""
+  """Upload a Debian package to an artifact repository."""
 
-  api_version = 'v1alpha1'
+  api_version = 'v1beta2'
 
   @staticmethod
   def Args(parser):
@@ -53,7 +53,50 @@ class Upload(base.Command):
   def Run(self, args):
     """Run package import command."""
     client = apis.GetClientInstance('artifactregistry', self.api_version)
-    betaclient = apis.GetClientInstance('artifactregistry', 'v1beta2')
+    messages = client.MESSAGES_MODULE
+
+    client.additional_http_headers['X-Goog-Upload-Protocol'] = 'multipart'
+
+    repo_ref = args.CONCEPTS.repository.Parse()
+
+    upload_req = messages.UploadAptArtifactRequest
+    upload_request = upload_req()
+
+    request = messages.ArtifactregistryProjectsLocationsRepositoriesAptartifactsUploadRequest(
+        uploadAptArtifactRequest=upload_request,
+        parent=repo_ref.RelativeName())
+
+    upload = transfer.Upload.FromFile(
+        args.source, mime_type='application/vnd.debian.binary-package')
+
+    op_obj = client.projects_locations_repositories_aptartifacts.Upload(
+        request, upload=upload)
+
+    op = op_obj.operation
+    op_ref = resources.REGISTRY.ParseRelativeName(
+        op.name, collection='artifactregistry.projects.locations.operations')
+
+    if args.async_:
+      return op_ref
+    else:
+      result = waiter.WaitFor(
+          waiter.CloudOperationPollerNoResources(
+              client.projects_locations_operations),
+          op_ref, 'Uploading package')
+
+      return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UploadAlpha(Upload):
+  """Upload a Debian package to an artifact repository."""
+
+  api_version = 'v1alpha1'
+
+  def Run(self, args):
+    """Run package import command."""
+    client = apis.GetClientInstance('artifactregistry', self.api_version)
+    beta2client = apis.GetClientInstance('artifactregistry', 'v1beta2')
     messages = client.MESSAGES_MODULE
 
     client.additional_http_headers['X-Goog-Upload-Protocol'] = 'multipart'
@@ -82,16 +125,16 @@ class Upload(base.Command):
     else:
       result = waiter.WaitFor(
           waiter.CloudOperationPollerNoResources(
-              betaclient.projects_locations_operations),
+              beta2client.projects_locations_operations),
           op_ref, 'Uploading package')
 
       return result
 
 
 Upload.detailed_help = {
-    'brief': 'Upload an Apt package to an artifact repository.',
+    'brief': 'Upload a Debian package to an artifact repository.',
     'DESCRIPTION': """
-      *{command}* uploads an Apt package to the specified artifact repository.
+      *{command}* uploads a Debian package to the specified artifact repository.
       """,
     'EXAMPLES': """
       To upload the package `my-package.deb` to `my-repo`, run:
