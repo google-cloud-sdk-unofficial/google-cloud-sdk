@@ -58,33 +58,32 @@ class Update(base.Command):
         '--discovery-enabled',
         action=arg_parsers.StoreTrueFalseAction,
         help='Whether discovery is enabled.')
+    discovery_spec.add_argument(
+        '--include-patterns',
+        default=[],
+        type=arg_parsers.ArgList(),
+        metavar='INCLUDE_PATTERNS',
+        help="""The list of patterns to apply for selecting data to include
+        during discovery if only a subset of the data should considered. For
+        Cloud Storage bucket assets, these are interpreted as glob patterns
+        used to match object names. For BigQuery dataset assets, these are
+        interpreted as patterns to match table names.""")
+    discovery_spec.add_argument(
+        '--exclude-patterns',
+        default=[],
+        type=arg_parsers.ArgList(),
+        metavar='EXCLUDE_PATTERNS',
+        help="""The list of patterns to apply for selecting data to exclude
+        during discovery. For Cloud Storage bucket assets, these are interpreted
+        as glob patterns used to match object names. For BigQuery dataset
+        assets, these are interpreted as patterns to match table names.""")
     trigger = discovery_spec.add_group(
         help='Determines when discovery jobs are triggered.')
     trigger.add_argument(
         '--discovery-schedule',
         help="""Cron schedule (https://en.wikipedia.org/wiki/Cron) for running
-         discovery jobs periodically. Discovery jobs must be scheduled at least
-         30 minutes apart.
-         To explicitly set a timezone to the cron tab, apply a prefix in the
-         cron tab: "CRON_TZ=${IANA_TIME_ZONE}" or "RON_TZ=${IANA_TIME_ZONE}".
-         The ${IANA_TIME_ZONE} may only be a valid string from IANA time zone
-         database. For example, "CRON_TZ=America/New_York 1 * * * *", or
-         "TZ=America/New_York 1 * * * *""")
-    publishing = discovery_spec.add_group(
-        help='Settings to manage metadata publishing from a zone.')
-    metastore = publishing.add_group(
-        help='Settings to manage metadata publishing to a Hive Metastore from a zone.'
-    )
-    metastore.add_argument(
-        '--metastore-enabled',
-        action=arg_parsers.StoreTrueFalseAction,
-        help='Whether to publish metadata to metastore.')
-    bigquery = publishing.add_group(
-        help='Settings to manage metadata publishing to BigQuery from a zone.')
-    bigquery.add_argument(
-        '--bigquery-enabled',
-        action=arg_parsers.StoreTrueFalseAction,
-        help='Whether to publish metadata to BigQuery.')
+                discovery jobs periodically. Discovery jobs must be scheduled at
+                least 30 minutes apart.""")
     base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
@@ -98,12 +97,12 @@ class Update(base.Command):
       update_mask.append('labels')
     if args.IsSpecified('discovery_enabled'):
       update_mask.append('discoverySpec.enabled')
+    if args.IsSpecified('include_patterns'):
+      update_mask.append('discoverySpec.includePatterns')
+    if args.IsSpecified('exclude_patterns'):
+      update_mask.append('discoverySpec.excludePatterns')
     if args.IsSpecified('discovery_schedule'):
       update_mask.append('discoverySpec.schedule')
-    if args.IsSpecified('metastore_enabled'):
-      update_mask.append('discoverySpec.publishing.metastore.enabled')
-    if args.IsSpecified('bigquery_enabled'):
-      update_mask.append('discoverySpec.publishing.bigquery.enabled')
     zone_ref = args.CONCEPTS.zone.Parse()
     dataplex_client = dataplex_util.GetClientInstance()
     create_req_op = dataplex_client.projects_locations_lakes_zones.Patch(
@@ -114,8 +113,8 @@ class Update(base.Command):
             updateMask=u','.join(update_mask),
             googleCloudDataplexV1Zone=zone.GenerateZoneForUpdateRequest(
                 args.description, args.display_name, args.labels,
-                args.discovery_enabled, args.discovery_schedule,
-                args.bigquery_enabled, args.metastore_enabled)))
+                args.discovery_enabled, args.include_patterns,
+                args.exclude_patterns, args.discovery_schedule)))
     validate_only = getattr(args, 'validate_only', False)
     if validate_only:
       log.status.Print('Validation complete with errors:')

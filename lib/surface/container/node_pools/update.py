@@ -195,6 +195,7 @@ class UpdateBeta(Update):
     flags.AddTagsNodePoolUpdate(group)
     flags.AddNodePoolEnablePrivateNodes(group, for_update=True, hidden=True)
     flags.AddEnableGcfsFlag(group, for_node_pool=True)
+    flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -215,7 +216,8 @@ class UpdateBeta(Update):
         node_taints=args.node_taints,
         tags=args.tags,
         enable_private_nodes=args.enable_private_nodes,
-        enable_gcfs=args.enable_gcfs)
+        enable_gcfs=args.enable_gcfs,
+        enable_image_streaming=args.enable_image_streaming)
     return ops
 
 
@@ -252,6 +254,7 @@ class UpdateAlpha(Update):
     flags.AddTagsNodePoolUpdate(group)
     flags.AddNodePoolEnablePrivateNodes(group, for_update=True, hidden=True)
     flags.AddEnableGcfsFlag(group, for_node_pool=True)
+    flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -272,7 +275,8 @@ class UpdateAlpha(Update):
         node_taints=args.node_taints,
         tags=args.tags,
         enable_private_nodes=args.enable_private_nodes,
-        enable_gcfs=args.enable_gcfs)
+        enable_gcfs=args.enable_gcfs,
+        enable_image_streaming=args.enable_image_streaming)
     return ops
 
 

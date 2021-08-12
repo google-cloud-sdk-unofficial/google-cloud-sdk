@@ -25,6 +25,7 @@
     modify_request_hooks:
     - googlecloudsdk.command_lib.metastore.services.util:SetServiceRequestUpdateHiveMetastoreConfigs
     - googlecloudsdk.command_lib.metastore.services.util:UpdateServiceMaskHook
+    - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfig
 
   arguments:
     resource:
@@ -43,6 +44,7 @@
       help_text: |
         A boolean flag to determine whether Dataproc Metastore metadata sync
         to Data Catalog should be enabled.
+        Cannot be updated if the service uses customer-managed encryption keys.
     - arg_name: tier
       api_field: service.tier
       help_text: |

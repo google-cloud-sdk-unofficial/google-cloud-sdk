@@ -26,6 +26,8 @@ auto_flags = [
     'args',
     'clusterversion',
     'ipalias_additional',
+    'logging',
+    'monitoring',
     'masterauth',
     'nodeidentity',
     'privatecluster',

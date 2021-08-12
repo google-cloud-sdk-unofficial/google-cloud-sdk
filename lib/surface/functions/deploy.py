@@ -88,6 +88,9 @@ class DeployBeta(base.Command):
     """Register flags for this command."""
     Deploy.Args(parser, track)
 
+    # Configure flags for secrets
+    secrets_config.ConfigureFlags(parser)
+
   def Run(self, args):
     return command_v1.Run(args, track=self.ReleaseTrack())
 
@@ -104,7 +107,7 @@ class DeployAlpha(base.Command):
     # Add additional args for this release track
     flags.AddMinInstancesFlag(parser)
 
-    # Add flags for secrets
+    # Configure flags for secrets
     secrets_config.ConfigureFlags(parser)
 
     # Add additional flags for GCFv2

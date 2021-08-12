@@ -61,6 +61,7 @@ class CreateAlpha(base.CreateCommand):
     flags.AddAsyncFlag(parser)
     flags.AddSourceFlag(parser)
     flags.AddIgnoreFileFlag(parser)
+    flags.AddTimeoutFlag(parser)
     resource_args.AddDeploymentResourceArg(
         parser,
         'the deployment to create or update.')
@@ -81,13 +82,7 @@ class CreateAlpha(base.CreateCommand):
     deployment_full_name = deployment_ref.RelativeName()
     location = deployment_ref.Parent().Name()
 
-    return deploy_util.Apply(
-        args.source,
-        deployment_full_name,
-        args.stage_bucket,
-        args.labels,
-        messages,
-        location,
-        args.ignore_file,
-        args.async_,
-        args.source_git_subdir)
+    return deploy_util.Apply(args.source, deployment_full_name,
+                             args.stage_bucket, args.labels, messages, location,
+                             args.ignore_file, args.async_,
+                             args.reconcile_timeout, args.source_git_subdir)

@@ -305,6 +305,9 @@ class Update(base.UpdateCommand):
     group_logging_monitoring = group.add_group()
     flags.AddLoggingServiceFlag(group_logging_monitoring)
     flags.AddMonitoringServiceFlag(group_logging_monitoring)
+    group_logging_monitoring_config = group.add_group(hidden=True)
+    flags.AddLoggingFlag(group_logging_monitoring_config)
+    flags.AddMonitoringFlag(group_logging_monitoring_config)
     flags.AddEnableBinAuthzFlag(group)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
@@ -318,6 +321,7 @@ class Update(base.UpdateCommand):
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
     flags.AddVerticalPodAutoscalingFlags(group)
     flags.AddAutoprovisioningFlags(group)
+    flags.AddAutoscalingProfilesFlag(group)
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddMasterGlobalAccessFlag(group, is_update=True)
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1', group, hidden=False)
@@ -347,6 +351,7 @@ class Update(base.UpdateCommand):
     opts.enable_master_global_access = args.enable_master_global_access
     opts.enable_shielded_nodes = args.enable_shielded_nodes
     opts.release_channel = args.release_channel
+    opts.autoscaling_profile = args.autoscaling_profile
     opts.disable_autopilot = args.disable_autopilot
     opts.cloud_run_config = flags.GetLegacyCloudRunFlag('{}_config', args,
                                                         get_default)
@@ -677,6 +682,9 @@ class UpdateBeta(Update):
     group_logging_monitoring = group.add_group()
     flags.AddLoggingServiceFlag(group_logging_monitoring)
     flags.AddMonitoringServiceFlag(group_logging_monitoring)
+    group_logging_monitoring_config = group.add_group(hidden=True)
+    flags.AddLoggingFlag(group_logging_monitoring_config)
+    flags.AddMonitoringFlag(group_logging_monitoring_config)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
     flags.AddEnableWorkloadMonitoringEapFlag(group)
@@ -726,6 +734,7 @@ class UpdateBeta(Update):
     flags.AddEnableServiceExternalIPs(group)
     flags.AddAuthenticatorSecurityGroupFlags(group)
     flags.AddEnableGcfsFlag(group)
+    flags.AddEnableImageStreamingFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -808,6 +817,7 @@ class UpdateBeta(Update):
     opts.enable_service_externalips = args.enable_service_externalips
     opts.security_group = args.security_group
     opts.enable_gcfs = args.enable_gcfs
+    opts.enable_image_streaming = args.enable_image_streaming
     return opts
 
 
@@ -827,6 +837,9 @@ class UpdateAlpha(Update):
     group_logging_monitoring = group.add_group()
     flags.AddLoggingServiceFlag(group_logging_monitoring)
     flags.AddMonitoringServiceFlag(group_logging_monitoring)
+    group_logging_monitoring_config = group.add_group(hidden=True)
+    flags.AddLoggingFlag(group_logging_monitoring_config)
+    flags.AddMonitoringFlag(group_logging_monitoring_config)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
     flags.AddEnableWorkloadMonitoringEapFlag(group)
@@ -878,6 +891,7 @@ class UpdateAlpha(Update):
     flags.AddEnableServiceExternalIPs(group)
     flags.AddAuthenticatorSecurityGroupFlags(group)
     flags.AddEnableGcfsFlag(group)
+    flags.AddEnableImageStreamingFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -956,5 +970,6 @@ class UpdateAlpha(Update):
     opts.enable_service_externalips = args.enable_service_externalips
     opts.security_group = args.security_group
     opts.enable_gcfs = args.enable_gcfs
+    opts.enable_image_streaming = args.enable_image_streaming
 
     return opts

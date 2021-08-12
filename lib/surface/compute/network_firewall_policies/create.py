@@ -48,7 +48,7 @@ class Create(base.CreateCommand):
 
     network_firewall_policy = client.NetworkFirewallPolicy(
         ref, compute_client=holder.client)
-    if args.IsSpecified('region'):
+    if hasattr(ref, 'region'):
       network_firewall_policy = region_client.RegionNetworkFirewallPolicy(
           ref, compute_client=holder.client)
 

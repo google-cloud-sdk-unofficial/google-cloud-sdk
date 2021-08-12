@@ -270,31 +270,30 @@ class Register(base.CreateCommand):
             Mutually exclusive with --public-issuer-url.
             """),
       )
-    if cls.ReleaseTrack() is not base.ReleaseTrack.GA:
-      workload_identity_mutex.add_argument(
-          '--has-private-issuer',
-          hidden=True,
-          action='store_true',
-          help=textwrap.dedent("""\
-            Set to true for clusters where no publicly-routable OIDC discovery
-            endpoint for the Kubernetes service account token issuer exists.
 
-            When set to true, the gcloud command-line tool will read the
-            private issuer URL and JSON Web Key Set (JWKS) (public keys) for
-            validating service account tokens from the cluster's API server
-            and upload both when creating the Membership. GCP will then use
-            the JWKS, instead of a public OIDC endpoint, to validate service
-            account tokens issued by this cluster. Note the JWKS establishes
-            the uniqueness of issuers in this configuration, but issuer claims
-            in tokens are still compared to the issuer URL associated with the
-            Membership when validating tokens.
+    workload_identity_mutex.add_argument(
+        '--has-private-issuer',
+        action='store_true',
+        help=textwrap.dedent("""\
+          Set to true for clusters where no publicly-routable OIDC discovery
+          endpoint for the Kubernetes service account token issuer exists.
 
-            Note the cluster's OIDC discovery endpoints
-            (https://[KUBE-API-ADDRESS]/.well-known/openid-configuration and
-            https://[KUBE-API-ADDRESS]/openid/v1/jwks) must still be
-            network-accessible to the gcloud client running this command.
-            """),
-      )
+          When set to true, the gcloud command-line tool will read the
+          private issuer URL and JSON Web Key Set (JWKS) (public keys) for
+          validating service account tokens from the cluster's API server
+          and upload both when creating the Membership. Google Cloud Platform
+          will then use the JWKS, instead of a public OIDC endpoint,
+          to validate service account tokens issued by this cluster.
+          Note the JWKS establishes the uniqueness of issuers in this
+          configuration, but issuer claims in tokens are still compared to the
+          issuer URL associated with the Membership when validating tokens.
+
+          Note the cluster's OIDC discovery endpoints
+          (https://[KUBE-API-ADDRESS]/.well-known/openid-configuration and
+          https://[KUBE-API-ADDRESS]/openid/v1/jwks) must still be
+          network-accessible to the gcloud client running this command.
+          """),
+    )
 
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
@@ -318,8 +317,8 @@ class Register(base.CreateCommand):
       # Service Account key file is required if Workload Identity is not
       # enabled.
       # If Workload Identity is enabled, then the Connect Agent uses
-      # a Kubernetes Service Account token instead and hence a GCP Service
-      # Account key is not required.
+      # a Kubernetes Service Account token instead and hence a Google Cloud
+      # Platform Service Account key is not required.
       service_account_key_data = ''
       if args.service_account_key_file:
         try:
@@ -378,15 +377,14 @@ class Register(base.CreateCommand):
             api_util.CreateWorkloadIdentityBucket(project, issuer_url,
                                                   openid_config_json,
                                                   kube_client.GetOpenIDKeyset())
-        # In the private issuer case(which is supported on ALPHA & BETA),
-        # we set private_keyset_json, which is used later to upload the JWKS
+        # In the private issuer case, we set private_keyset_json,
+        # which is used later to upload the JWKS
         # in the Hub Membership. For ALPHA only one of
         # manage_workload_identity_bucket and has_private_issuer will be set,
         # since they are mutually exclusive, marked as mutex flags in
         # surface spec.
-        if self.ReleaseTrack() is not base.ReleaseTrack.GA:
-          if args.has_private_issuer:
-            private_keyset_json = kube_client.GetOpenIDKeyset()
+        if args.has_private_issuer:
+          private_keyset_json = kube_client.GetOpenIDKeyset()
 
       # Attempt to create a membership.
       already_exists = False

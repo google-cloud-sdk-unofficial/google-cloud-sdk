@@ -75,7 +75,7 @@ class Create(base.CreateCommand):
 
   To create a managed-zone, run:
 
-    $ {command} my_zone --dns-name my.zone.com. --description "My zone!"
+    $ {command} my-zone --dns-name my.zone.com. --description "My zone!"
   """
 
   @staticmethod
@@ -197,11 +197,11 @@ class CreateBeta(base.CreateCommand):
 
   To create a managed-zone, run:
 
-    $ {command} my_zone --dns-name my.zone.com. --description "My zone!"
+    $ {command} my-zone --dns-name my.zone.com. --description "My zone!"
 
   To create a managed-zone with DNSSEC, run:
 
-    $ {command} my_zone_2 --description "Signed Zone"
+    $ {command} my-zone-2 --description "Signed Zone"
         --dns-name myzone.example
         --dnssec-state=on
   """
@@ -340,11 +340,11 @@ class CreateAlpha(CreateBeta):
 
   To create a managed-zone, run:
 
-    $ {command} my_zone --dns-name=my.zone.com. --description="My zone!"
+    $ {command} my-zone --dns-name=my.zone.com. --description="My zone!"
 
   To create a managed-zone with DNSSEC, run:
 
-    $ {command} my_zone_2 --description="Signed Zone" \
+    $ {command} my-zone-2 --description="Signed Zone" \
         --dns-name=myzone.example \
         --dnssec-state=on
   """

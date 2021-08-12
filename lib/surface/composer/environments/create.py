@@ -231,6 +231,10 @@ class Create(base.Command):
                                                         self.image_version,
                                                         self.ReleaseTrack())
     self.ParseWebServerAccessControlConfigOptions(args, self.image_version)
+    self.ValidateFlagsAddedInComposer2(
+        args,
+        image_versions_util.IsImageVersionStringComposerV1(self.image_version),
+        self.ReleaseTrack())
 
     flags.ValidateDiskSize('--disk-size', args.disk_size)
     self.env_ref = args.CONCEPTS.environment.Parse()
@@ -314,8 +318,11 @@ class Create(base.Command):
               prerequisite='enable-ip-alias',
               opt='services-secondary-range-name'))
     if (self._support_max_pods_per_node and args.max_pods_per_node and
-        not args.enable_ip_alias and
-        image_versions_util.IsImageVersionStringComposerV1(image_version)):
+        not image_versions_util.IsImageVersionStringComposerV1(image_version)):
+      raise command_util.InvalidUserInputError(
+          INVALID_OPTION_FOR_V2_ERROR_MSG.format(opt='max-pods-per-node'))
+    if (self._support_max_pods_per_node and args.max_pods_per_node and
+        not args.enable_ip_alias):
       raise command_util.InvalidUserInputError(
           PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-ip-alias', opt='max-pods-per-node'))
@@ -384,10 +391,10 @@ class Create(base.Command):
           '--web-server-allow-ip, --web-server-allow-all ' +
           'or --web-server-deny-all')
 
-    if (args.enable_private_environment and
-        not image_versions_util.IsImageVersionStringComposerV1(image_version)
-        and (args.web_server_allow_ip or args.web_server_allow_all or
-             args.web_server_deny_all)):
+    if (
+        args.web_server_allow_ip or args.web_server_allow_all or
+        args.web_server_deny_all
+    ) and not image_versions_util.IsImageVersionStringComposerV1(image_version):
       raise command_util.InvalidUserInputError(
           'Cannot specify --web-server-allow-ip, --web-server-allow-all ' +
           'or --web-server-deny-all with Composer 2.X or greater.')
@@ -401,6 +408,25 @@ class Create(base.Command):
               not args.web_server_allow_ip, args.web_server_deny_all))
       flags.ValidateIpRanges(
           [acl['ip_range'] for acl in self.web_server_access_control])
+
+  def ValidateFlagsAddedInComposer2(self, args, is_composer_v1, release_track):
+    """Raises InputError if flags from Composer v2 are used when creating v1."""
+    # Composer 2 flags are currently unavailable in GA release track.
+    if release_track == base.ReleaseTrack.GA:
+      return
+
+    if args.environment_size and is_composer_v1:
+      raise command_util.InvalidUserInputError(
+          INVALID_OPTION_FOR_V1_ERROR_MSG.format(opt='environment-size'))
+    composer_v2_flag_used = (
+        args.scheduler_cpu or args.worker_cpu or args.web_server_cpu or
+        args.scheduler_memory or args.worker_memory or args.web_server_memory or
+        args.scheduler_storage or args.worker_storage or
+        args.web_server_storage or args.min_workers or args.max_workers)
+    if composer_v2_flag_used and is_composer_v1:
+      raise command_util.InvalidUserInputError(
+          'You cannot use Workloads Config flags introduced in Composer 2.X'
+          ' when creating Composer 1.X environments.')
 
   def GetOperationMessage(self, args, is_composer_v1):
     """Constructs Create message."""

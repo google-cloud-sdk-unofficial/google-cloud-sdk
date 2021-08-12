@@ -197,6 +197,11 @@ class Delete(base.DeleteCommand):
     formatted_deletion_time = times.ParseDateTime(ca.deleteTime).astimezone(
         tz.tzutc()).strftime('%Y-%m-%dT%H:%MZ')
 
-    log.status.Print(
-        'Deleted Subordinate CA [{}]. CA can be undeleted until {}.'.format(
-            ca_name, formatted_deletion_time))
+    if current_ca.state == messages.CertificateAuthority.StateValueValuesEnum.AWAITING_USER_ACTIVATION:
+      log.status.Print(
+          'Deleted Subordinate CA [{}]. This CA was never activated and cannot be recovered using `subordinates undelete`.'
+          .format(ca_name))
+    else:
+      log.status.Print(
+          'Deleted Subordinate CA [{}]. CA can be undeleted until {}.'.format(
+              ca_name, formatted_deletion_time))

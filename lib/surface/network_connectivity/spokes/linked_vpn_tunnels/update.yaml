@@ -1,11 +1,11 @@
 - release_tracks: [GA]
 
   help_text:
-    brief: Update a high-availability (HA) VPN spoke.
-    description: Update the details of an HA VPN spoke.
+    brief: Update a VPN spoke.
+    description: Update the details of a VPN spoke.
 
     examples: |
-      To update the description of the HA VPN spoke named ``my-spoke'', run:
+      To update the description of a VPN spoke named ``my-spoke'', run:
 
         $ {command} my-spoke --region=us-central1 --description="new spoke description"
 

@@ -47,9 +47,7 @@ class CreateAlpha(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     flags.AddAsyncFlag(parser)
-    resource_args.AddDeploymentResourceArg(
-        parser,
-        'the deployment to delete.')
+    resource_args.AddDeploymentResourceArg(parser, 'the deployment to delete.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -79,14 +77,13 @@ class CreateAlpha(base.DeleteCommand):
       log.status.Print('Check operation [{0}] for status.'.format(op.name))
       return op
 
-    op_response = blueprints_util.WaitForDeploymentOperation(
-        op, False, 'Deleting the deployment')
+    op_response = blueprints_util.WaitForDeleteDeploymentOperation(op)
 
     # Check if the deletion failed so that we can print helpful troubleshooting
     # information.
     response_dict = encoding.MessageToPyValue(op_response)
-    if response_dict[
-        'state'] == str(messages.Deployment.StateValueValuesEnum.FAILED):
+    if response_dict['state'] == str(
+        messages.Deployment.StateValueValuesEnum.FAILED):
       try:
         deployment_resource = blueprints_util.GetDeployment(
             deployment_full_name)

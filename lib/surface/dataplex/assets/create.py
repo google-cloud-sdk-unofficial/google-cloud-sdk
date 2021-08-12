@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataplex import asset
 from googlecloudsdk.api_lib.dataplex import util as dataplex_util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.util.apis import arg_utils
@@ -97,7 +98,39 @@ class Create(base.Command):
         help='Settings to manage the metadata discovery and publishing for an asset.'
     )
     discovery_spec.add_argument(
-        '--discovery-enabled', help='Whether discovery is enable')
+        '--discovery-enabled',
+        action=arg_parsers.StoreTrueFalseAction,
+        help='Whether discovery is enabled')
+    discovery_spec.add_argument(
+        '--include-patterns',
+        default=[],
+        type=arg_parsers.ArgList(),
+        metavar='INCLUDE_PATTERNS',
+        help="""The list of patterns to apply for selecting data to include
+        during discovery if only a subset of the data should considered. For
+        Cloud Storage bucket assets, these are interpreted as glob patterns
+        used to match object names. For BigQuery dataset assets, these are
+        interpreted as patterns to match table names.""")
+    discovery_spec.add_argument(
+        '--exclude-patterns',
+        default=[],
+        type=arg_parsers.ArgList(),
+        metavar='EXCLUDE_PATTERNS',
+        help="""The list of patterns to apply for selecting data to exclude
+        during discovery. For Cloud Storage bucket assets, these are interpreted
+        as glob patterns used to match object names. For BigQuery dataset
+        assets, these are interpreted as patterns to match table names.""")
+    discovery_spec.add_argument(
+        '--inheritance-mode',
+        choices={
+            'OVERRIDE': 'override',
+            'INHERIT': 'inherit',
+            'INHERITANCE_MODE_UNSPECIFIED': 'inheritance mode unspecified'
+        },
+        type=arg_utils.ChoiceToEnumName,
+        default='INHERITANCE_MODE_UNSPECIFIED',
+        help='Options for how fields within this configuration can be inherited.'
+    )
     trigger = discovery_spec.add_group(
         help='Determines when discovery jobs are triggered.')
     trigger.add_argument(
@@ -119,10 +152,18 @@ class Create(base.Command):
             parent=asset_ref.Parent().RelativeName(),
             validateOnly=args.validate_only,
             googleCloudDataplexV1Asset=asset.GenerateAssetForCreateRequest(
-                args.description, args.display_name, args.labels,
-                args.resource_name, args.resource_type, args.creation_policy,
-                args.deletion_policy, args.discovery_enabled,
-                args.discovery_schedule)))
+                args.description,
+                args.display_name,
+                args.labels,
+                args.resource_name,
+                args.resource_type,
+                args.creation_policy,
+                args.deletion_policy,
+                args.discovery_enabled,
+                args.include_patterns,
+                args.exclude_patterns,
+                args.inheritance_mode,
+                schedule=args.discovery_schedule)))
     validate_only = getattr(args, 'validate_only', False)
     if validate_only:
       log.status.Print('Validation complete with errors:')

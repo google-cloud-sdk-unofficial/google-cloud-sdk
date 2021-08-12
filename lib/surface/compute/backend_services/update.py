@@ -513,7 +513,7 @@ class UpdateBeta(UpdateGA):
   _support_grpc_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = False
-  _support_edge_policies = False
+  _support_edge_policies = True
   _support_connection_tracking = True
 
 

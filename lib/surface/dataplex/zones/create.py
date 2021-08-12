@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataplex import util as dataplex_util
 from googlecloudsdk.api_lib.dataplex import zone
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.util.apis import arg_utils
@@ -64,48 +65,35 @@ class Create(base.Command):
         help='Settings to manage the metadata discovery and publishing in a zone.'
     )
     discovery_spec.add_argument(
-        '--discovery-enabled', help='Whether discovery is enabled.')
+        '--discovery-enabled',
+        action=arg_parsers.StoreTrueFalseAction,
+        help='Whether discovery is enabled.')
+    discovery_spec.add_argument(
+        '--include-patterns',
+        default=[],
+        type=arg_parsers.ArgList(),
+        metavar='INCLUDE_PATTERNS',
+        help="""The list of patterns to apply for selecting data to include
+        during discovery if only a subset of the data should considered. For
+        Cloud Storage bucket assets, these are interpreted as glob patterns
+        used to match object names. For BigQuery dataset assets, these are
+        interpreted as patterns to match table names.""")
+    discovery_spec.add_argument(
+        '--exclude-patterns',
+        default=[],
+        type=arg_parsers.ArgList(),
+        metavar='EXCLUDE_PATTERNS',
+        help="""The list of patterns to apply for selecting data to exclude
+        during discovery. For Cloud Storage bucket assets, these are interpreted
+        as glob patterns used to match object names. For BigQuery dataset
+        assets, these are interpreted as patterns to match table names.""")
     trigger = discovery_spec.add_group(
         help='Determines when discovery jobs are triggered.')
     trigger.add_argument(
-        '--schedule',
-        help="""Cron schedule (https://en.wikipedia.org/wiki/Cron)
-         for running discovery jobs periodically. Discovery jobs must be
-         scheduled at least 30 minutes apart. To explicitly set a timezone to
-         the cron tab, apply a prefix in the cron tab: "CRON_TZ=${IANA_TIME_ZONE}"
-         or "RON_TZ=${IANA_TIME_ZONE}". The ${IANA_TIME_ZONE} may only be a
-         valid string from IANA time zone database. For example,
-         "CRON_TZ=America/New_York 1 * * * *", or "TZ=America/New_York 1 * * * *"."""
-    )
-    publishing = discovery_spec.add_group(
-        help='Settings to manage metadata publishing from a zone.')
-    metastore = publishing.add_group(
-        help='Settings to manage metadata publishing to a Hive Metastore from a zone.'
-    )
-    metastore.add_argument(
-        '--metastore-enabled', help='Whether to publish metadata to metastore.')
-    metastore.add_argument(
-        '--database-name',
-        help="""The name of the metastore database associated with the zone. The
-           specified value is interpreted as a name template that can refer to
-           ${lake_id} and ${zone_id} placeholders. If unspecified, this defaults
-           to "${lake_id}_${zone_id}". The database is created in the metastore
-           instance associated with the parent lake. The specified name must not
-           already be in use. Upon creation, this field is updated to reflect
-           the actual database name. Maximum length is 128.""")
-    bigquery = publishing.add_group(
-        help='Settings to manage metadata publishing to BigQuery from a zone.')
-    bigquery.add_argument(
-        '--bigquery-enabled', help='Whether to publish metadata to BigQuery.')
-    bigquery.add_argument(
-        '--dataset-name',
-        help="""The name of the BigQuery dataset associated with the zone. The
-           specified value is interpreted as a name template that can refer to
-           ${lake_id} and ${zone_id} placeholders. If unspecified, this defaults
-           to "${lake_id}_${zone_id}". The dataset is created in the project
-           associated with the parent lake. The specified name must not already
-           be in use. Upon creation, this field is updated to reflect the actual
-           dataset name.""")
+        '--discovery-schedule',
+        help="""Cron schedule (https://en.wikipedia.org/wiki/Cron) for running
+                discovery jobs periodically. Discovery jobs must be scheduled at
+                least 30 minutes apart.""")
     resource_spec = parser.add_group(
         help='Settings for resources attached as assets within a zone.')
     resource_spec.add_argument(
@@ -131,10 +119,9 @@ class Create(base.Command):
             validateOnly=args.validate_only,
             googleCloudDataplexV1Zone=zone.GenerateZoneForCreateRequest(
                 args.description, args.display_name, args.labels, args.type,
-                args.discovery_enabled, args.schedule,
-                args.bigquery_enabled, args.dataset_name,
-                args.metastore_enabled, args.database_name,
-                args.location_type)))
+                args.discovery_enabled, args.include_patterns,
+                args.exclude_patterns, args.location_type,
+                args.discovery_schedule)))
 
     validate_only = getattr(args, 'validate_only', False)
     if validate_only:

@@ -19,6 +19,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import itertools
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.meta.apis import flags
 from googlecloudsdk.command_lib.util.apis import registry
@@ -31,9 +33,13 @@ class List(base.ListCommand):
   def Args(parser):
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
-
+    collection_flag = base.Argument(
+        '--collection',
+        completer=flags.CollectionCompleter,
+        help='The name of the collection for which to list methods.\n'
+             'If left blank, returns methods from all collections.')
+    collection_flag.AddToParser(parser)
     flags.API_VERSION_FLAG.AddToParser(parser)
-    flags.COLLECTION_FLAG.AddToParser(parser)
     parser.display_info.AddFormat("""
       table(
         name:sort=1,
@@ -45,4 +51,14 @@ class List(base.ListCommand):
     """)
 
   def Run(self, args):
+    if not args.collection:
+      collections = [registry.GetAPICollections(api.name, api.version)
+                     for api in registry.GetAllAPIs()]
+      collections = list(itertools.chain.from_iterable(collections))
+      methods = [registry.GetMethods(collection.full_name,
+                                     api_version=collection.api_version)
+                 for collection in collections]
+      methods = list(itertools.chain.from_iterable(methods))
+      return methods
+
     return registry.GetMethods(args.collection, api_version=args.api_version)

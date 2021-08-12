@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Enable a public key related to an IAM service account.
+    description: Enable a public key related to an IAM service account.
+    examples: |
+      To enable a key with ID `b4f1037aeef9ab37deee9` for the service
+      account `my-iam-account@my-project.iam.gserviceaccount.com`, run:
+
+        {command} b4f1037aeef9ab37deee9
+          --iam-account=my-iam-account@my-project.iam.gserviceaccount.com
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.iam.resources:iam_key
+      is_positional: true
+      help_text: |
+        The id of the key to disable.
+
+  request:
+    collection: iam.projects.serviceAccounts.keys
+    method: enable

@@ -1,10 +1,10 @@
 - release_tracks: [GA]
 
   help_text:
-    brief: Create a new high-availability (HA) VPN spoke.
-    description: Create a new HA VPN spoke with the specified properties.
+    brief: Create a new VPN spoke.
+    description: Create a new VPN spoke with the specified properties.
     examples: |
-      To create an HA VPN spoke that uses two VPN tunnels in region ``us-central1'', run:
+      To create a VPN spoke that uses two tunnels in region ``us-central1'', run:
 
         $ {command} my-spoke --hub="https://www.googleapis.com/networkconnectivity/v1/projects/my-project/locations/global/hubs/my-hub" --region=us-central1 --vpn-tunnels=https://www.googleapis.com/compute/v1/projects/my-project/regions/us-central1/vpnTunnels/vpn-tunnel1,https://www.googleapis.com/compute/v1/projects/my-project/regions/us-central1/vpnTunnels/vpn-tunnel2 --site-to-site-data-transfer
 
@@ -28,8 +28,9 @@
     - arg_name: site-to-site-data-transfer
       api_field: spoke.linkedVpnTunnels.siteToSiteDataTransfer
       help_text: |
-        Whether to enable site-to-site data transfer for this spoke. This flag must always be set
-        to true. Note that data transfer is available only in supported locations.
+        Whether to enable site-to-site data transfer for this spoke. This flag is set to false by
+        default, but you must always set it to true. Note that data transfer is available only in
+        supported locations.
     labels:
       api_field: spoke.labels
 

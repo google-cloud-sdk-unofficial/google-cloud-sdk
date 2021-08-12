@@ -163,7 +163,7 @@ class CreateBeta(base.CreateCommand):
   SECURITY_POLICY_ARG = None
 
   _support_redirect = True
-  _support_rate_limit = False
+  _support_rate_limit = True
   _support_header_action = True
 
   @classmethod

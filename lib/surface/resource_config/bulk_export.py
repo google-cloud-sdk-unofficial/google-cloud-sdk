@@ -38,6 +38,11 @@ _DETAILED_HELP = {
 
       $ {command} --folder=12345 --resource-format=terraform
 
+    To export all resources in a project to stdout, using a custom Google Storage bucket for interim results,
+    run:
+
+      $ {command} --project=my-project --storage-path='gs://your-bucket-name/your/prefix/path'
+
     To export all Storage Bucket and Compute Instances resources in project my-project to stdout,
     run:
 

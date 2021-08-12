@@ -73,6 +73,10 @@ class Cp(base.Command):
         action='store_true',
         help='Recursively copy the contents of any directories that match the'
         ' source path expression.')
+    parser.add_argument(
+        '--do-not-decompress',
+        action='store_true',
+        help='Do not automatically decompress downloaded gzip files.')
     flags.add_precondition_flags(parser)
     flags.add_object_metadata_flags(parser)
 
@@ -86,6 +90,7 @@ class Cp(base.Command):
         source_expansion_iterator,
         args.destination,
         custom_md5_digest=args.content_md5,
+        do_not_decompress=args.do_not_decompress,
         task_status_queue=task_status_queue,
         user_request_args=user_request_args,
     )

@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 import textwrap
 
+from googlecloudsdk.api_lib.bigtable import clusters
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -28,8 +29,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class CreateInstance(base.CreateCommand):
   """Create a new Bigtable instance."""
 
@@ -63,7 +63,7 @@ class CreateInstance(base.CreateCommand):
     parser.display_info.AddCacheUpdater(arguments.InstanceCompleter)
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
+    """Executes the instances create command.
 
     Args:
       args: an argparse namespace. All the arguments that were provided to this
@@ -72,6 +72,12 @@ class CreateInstance(base.CreateCommand):
     Returns:
       Some value that we want to have printed later.
     """
+
+    return self._Run(args)
+
+  def _Run(self, args, add_autoscaling=False):
+    """Implements Run() with different possible features flags."""
+
     cli = util.GetAdminClient()
     ref = args.CONCEPTS.instance.Parse()
     # TODO(b/153576330): This is a workaround for inconsistent collection names.
@@ -80,9 +86,9 @@ class CreateInstance(base.CreateCommand):
     msgs = util.GetAdminMessages()
     instance_type = msgs.Instance.TypeValueValuesEnum(args.instance_type)
 
-    clusters = self._Clusters(args)
+    new_clusters = self._Clusters(args, add_autoscaling=add_autoscaling)
     clusters_properties = []
-    for cluster_id, cluster in sorted(clusters.items()):
+    for cluster_id, cluster in sorted(new_clusters.items()):
       clusters_properties.append(
           msgs.CreateInstanceRequest.ClustersValue.AdditionalProperty(
               key=cluster_id, value=cluster))
@@ -107,11 +113,12 @@ class CreateInstance(base.CreateCommand):
     return util.AwaitInstance(
         operation_ref, 'Creating bigtable instance {0}'.format(ref.Name()))
 
-  def _Clusters(self, args):
+  def _Clusters(self, args, add_autoscaling=False):
     """Get the clusters configs from command arguments.
 
     Args:
       args: the argparse namespace from Run().
+      add_autoscaling: flag to add the autoscaling feature.
 
     Returns:
       A dict mapping from cluster id to msg.Cluster.
@@ -131,9 +138,11 @@ class CreateInstance(base.CreateCommand):
             '--cluster-zone and --cluster-num-nodes to specify cluster(s), not '
             'both.')
 
-      clusters = {}
+      if add_autoscaling:
+        self._ValidateClusterConfigArgs(args.cluster_config)
+      new_clusters = {}
       for cluster_dict in args.cluster_config:
-        nodes = cluster_dict['nodes'] if 'nodes' in cluster_dict else 1
+        nodes = cluster_dict.get('nodes', 1)
         cluster = msgs.Cluster(
             serveNodes=nodes,
             defaultStorageType=storage_type,
@@ -143,8 +152,21 @@ class CreateInstance(base.CreateCommand):
         if 'kms-key' in cluster_dict:
           cluster.encryptionConfig = msgs.EncryptionConfig(
               kmsKeyName=cluster_dict['kms-key'])
-        clusters[cluster_dict['id']] = cluster
-      return clusters
+
+        if add_autoscaling:
+          if ('autoscaling-min-nodes' in cluster_dict or
+              'autoscaling-max-nodes' in cluster_dict or
+              'autoscaling-cpu-target' in cluster_dict):
+            cluster.clusterConfig = clusters.BuildClusterConfig(
+                autoscaling_min=cluster_dict['autoscaling-min-nodes'],
+                autoscaling_max=cluster_dict['autoscaling-max-nodes'],
+                autoscaling_cpu_target=cluster_dict['autoscaling-cpu-target'])
+            # serveNodes must be set to None or 0 to enable Autoscaling.
+            # go/cbt-autoscaler-api
+            cluster.serveNodes = None
+
+        new_clusters[cluster_dict['id']] = cluster
+      return new_clusters
     elif args.cluster is not None:
       if args.cluster_zone is None:
         raise exceptions.InvalidArgumentException(
@@ -159,5 +181,47 @@ class CreateInstance(base.CreateCommand):
     else:
       raise exceptions.InvalidArgumentException(
           '--cluster --cluster-config',
-          'Use --cluster-config to specify cluster(s).'
-      )
+          'Use --cluster-config to specify cluster(s).')
+
+  def _ValidateClusterConfigArgs(self, cluster_config):
+    """Validates arguments in cluster-config as a repeated dict."""
+    # Validate cluster-config of each cluster.
+    for cluster_dict in cluster_config:
+      if ('autoscaling-min-nodes' in cluster_dict or
+          'autoscaling-max-nodes' in cluster_dict or
+          'autoscaling-cpu-target' in cluster_dict):
+        # nodes and autoscaling args are mutual exclusive.
+        if 'nodes' in cluster_dict:
+          raise exceptions.InvalidArgumentException(
+              '--autoscaling-min-nodes --autoscaling-max-nodes '
+              '--autoscaling-cpu-target',
+              'At most one of nodes | autoscaling-cpu-target '
+              'autoscaling-max-nodes autoscaling-min-nodes may be specified '
+              'in --cluster-config')
+        # To enable autoscaling, all related args must be set.
+        if ('autoscaling-min-nodes' not in cluster_dict or
+            'autoscaling-max-nodes' not in cluster_dict or
+            'autoscaling-cpu-target' not in cluster_dict):
+          raise exceptions.InvalidArgumentException(
+              '--autoscaling-min-nodes --autoscaling-max-nodes '
+              '--autoscaling-cpu-target', 'All of --autoscaling-min-nodes '
+              '--autoscaling-max-nodes --autoscaling-cpu-target must be set to '
+              'enable Autoscaling.')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateInstanceAlpha(CreateInstance):
+  """Create a new Bigtable instance."""
+
+  def Run(self, args):
+    """Executes the instances create command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+
+    return self._Run(args, add_autoscaling=True)

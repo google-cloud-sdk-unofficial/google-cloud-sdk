@@ -96,7 +96,7 @@ class UpdateGA(base.UpdateCommand):
 
   To change the description of a managed-zone, run:
 
-    $ {command} my_zone --description="Hello, world!"
+    $ {command} my-zone --description="Hello, world!"
 
   """
 
@@ -171,7 +171,7 @@ class UpdateBeta(base.UpdateCommand):
 
   To change the description of a managed-zone, run:
 
-    $ {command} my_zone --description="Hello, world!"
+    $ {command} my-zone --description="Hello, world!"
 
   """
 
@@ -254,7 +254,7 @@ class UpdateAlpha(UpdateBeta):
 
   To change the description of a managed-zone, run:
 
-    $ {command} my_zone --description="Hello, world!"
+    $ {command} my-zone --description="Hello, world!"
 
   """
 

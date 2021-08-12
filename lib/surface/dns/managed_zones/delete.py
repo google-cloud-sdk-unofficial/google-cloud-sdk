@@ -39,7 +39,7 @@ class Delete(base.DeleteCommand):
 
   To delete an empty managed-zone, run:
 
-    $ {command} my_zone
+    $ {command} my-zone
   """
 
   @staticmethod
@@ -78,7 +78,7 @@ class DeleteBeta(base.DeleteCommand):
 
   To delete an empty managed-zone, run:
 
-    $ {command} my_zone
+    $ {command} my-zone
   """
 
   @staticmethod
@@ -117,7 +117,7 @@ class DeleteAlpha(base.DeleteCommand):
 
   To delete an empty managed-zone, run:
 
-    $ {command} my_zone
+    $ {command} my-zone
   """
 
   @staticmethod

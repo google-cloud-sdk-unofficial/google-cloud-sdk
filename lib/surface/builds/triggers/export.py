@@ -24,20 +24,21 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.util import files
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Export(base.Command):
   """Export a build trigger."""
 
   detailed_help = {
-      'EXAMPLES':
-          """\
-          To export a trigger to a file called trigger.yaml:
+      'EXAMPLES': ("""
+        To export a build trigger to a file called trigger.yaml, run:
 
-            $ {command} my-trigger --destination=trigger.yaml
-          """,
+          $ {command} MY-TRIGGER --destination=trigger.yaml
+      """),
   }
 
   @staticmethod
@@ -64,7 +65,7 @@ File path where trigger should be exported.
         """)
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
+    """Exports a build trigger.
 
     Args:
       args: an argparse namespace. All the arguments that were provided to this
@@ -74,8 +75,19 @@ File path where trigger should be exported.
     messages = cloudbuild_util.GetMessagesModule()
 
     project = properties.VALUES.core.project.Get(required=True)
-    trigger = client.projects_triggers.Get(
-        messages.CloudbuildProjectsTriggersGetRequest(
-            projectId=project, triggerId=args.TRIGGER))
+    location = args.region or cloudbuild_util.DEFAULT_REGION
+    trigger = args.TRIGGER
+
+    name = resources.REGISTRY.Parse(
+        trigger,
+        params={
+            'projectsId': project,
+            'locationsId': location,
+            'triggersId': trigger,
+        },
+        collection='cloudbuild.projects.locations.triggers').RelativeName()
+
+    got_trigger = client.projects_locations_triggers.Get(
+        messages.CloudbuildProjectsLocationsTriggersGetRequest(name=name))
     with files.FileWriter(args.destination) as out:
-      yaml.dump(encoding.MessageToDict(trigger), stream=out)
+      yaml.dump(encoding.MessageToDict(got_trigger), stream=out)

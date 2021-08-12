@@ -168,14 +168,17 @@ class CreateHelper(object):
             'Can only be specified for regional forwarding rules or Private Service Connect forwarding rules targeting a Google APIs bundle.'
         )
       # Parse projects/../locations/..
-      match = re.match(r'^projects/([^/]+)/locations/([^/]+)$',
-                       args.service_directory_registration)
+      match = re.match(
+          r'^projects/([^/]+)/locations/([^/]+)(?:/namespaces/([^/]+))?$',
+          args.service_directory_registration)
       if not match:
         raise exceptions.InvalidArgumentException(
             '--service-directory-registration',
-            'Must be of the form projects/PROJECT/locations/REGION')
+            'Must be of the form projects/PROJECT/locations/REGION or projects/PROJECT/locations/REGION/namespaces/NAMESPACE'
+        )
       project = match.group(1)
       region = match.group(2)
+      namespace = match.group(3)
 
       if project != forwarding_rule_ref.project:
         raise exceptions.InvalidArgumentException(
@@ -183,7 +186,8 @@ class CreateHelper(object):
             'Must be in the same project as the forwarding rule.')
 
       sd_registration = client.messages.ForwardingRuleServiceDirectoryRegistration(
-          serviceDirectoryRegion=region)
+          serviceDirectoryRegion=region,
+          namespace=namespace)
 
     ports_all_specified, range_list = _ExtractPortsAndAll(args.ports)
     port_range = _ResolvePortRange(args.port_range, range_list)

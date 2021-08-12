@@ -69,6 +69,9 @@ class AddKey(base.UpdateCommand):
     interconnect = client.Interconnect(ref, compute_client=holder.client)
 
     macsec = interconnect.Describe().macsec
+    if macsec is None:
+      macsec = holder.client.messages.InterconnectMacsec()
+
     if all(key.name != args.key_name for key in macsec.preSharedKeys):
       macsec.preSharedKeys.append(
           holder.client.messages.InterconnectMacsecPreSharedKey(

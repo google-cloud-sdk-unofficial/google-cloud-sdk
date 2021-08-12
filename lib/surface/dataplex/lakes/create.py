@@ -49,7 +49,6 @@ class Create(base.Command):
         default=False,
         help='Validate the create action, but don\'t actually perform it.')
     metastore = parser.add_group(
-        required=True,
         help='Settings to manage metadata publishing to a Hive Metastore from a lake.'
     )
     metastore.add_argument(
@@ -58,7 +57,7 @@ class Create(base.Command):
         (https://cloud.google.com/dataproc-metastore/docs) service instance into
         which metadata will be published. This is of the form:
         projects/{project_number}/locations/{location_id}/services/{service_id}
-        where the location matches the location of the lake.""", required=True)
+        where the location matches the location of the lake.""")
     parser.add_argument('--description', help='Description of the Lake')
     parser.add_argument('--display-name', help='Display Name')
     base.ASYNC_FLAG.AddToParser(parser)

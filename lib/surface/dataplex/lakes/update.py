@@ -50,6 +50,16 @@ class Update(base.Command):
         help='Validate the update action, but don\'t actually perform it.')
     parser.add_argument('--description', help='Description of the Lake')
     parser.add_argument('--display-name', help='Display Name')
+    metastore = parser.add_group(
+        help='Settings to manage metadata publishing to a Hive Metastore from a lake.'
+    )
+    metastore.add_argument(
+        '--metastore-service',
+        help=""" A relative reference to the Dataproc Metastore
+        (https://cloud.google.com/dataproc-metastore/docs) service instance into
+        which metadata will be published. This is of the form:
+        projects/{project_number}/locations/{location_id}/services/{service_id}
+        where the location matches the location of the lake.""")
     base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
@@ -61,6 +71,8 @@ class Update(base.Command):
       update_mask.append('displayName')
     if args.IsSpecified('labels'):
       update_mask.append('labels')
+    if args.IsSpecified('metastore_service'):
+      update_mask.append('metastore.service')
     lake_ref = args.CONCEPTS.lake.Parse()
     dataplex_client = dataplex_util.GetClientInstance()
     update_req_op = dataplex_client.projects_locations_lakes.Patch(
@@ -73,6 +85,9 @@ class Update(base.Command):
             .GoogleCloudDataplexV1Lake(
                 description=args.description,
                 displayName=args.display_name,
+                metastore=dataplex_util.GetMessageModule()
+                .GoogleCloudDataplexV1LakeMetastore(
+                    service=args.metastore_service),
                 labels=args.labels)))
     validate_only = getattr(args, 'validate_only', False)
     if validate_only:

@@ -84,14 +84,15 @@ class UpdateHelper(object):
       modified_fields.extend([
           args.rate_limit_threshold_count,
           args.rate_limit_threshold_interval_sec, args.conform_action,
-          args.exceed_action, args.enforce_on_key, args.ban_threshold_count,
-          args.ban_threshold_interval_sec, args.ban_duration_sec
+          args.exceed_action, args.enforce_on_key, args.enforce_on_key_name,
+          args.ban_threshold_count, args.ban_threshold_interval_sec,
+          args.ban_duration_sec
       ])
       min_args.extend([
           '--rate-limit-threshold-count', '--rate-limit-threshold-interval-sec',
           '--conform-action', '--exceed-action', '--enforce-on-key',
-          '--ban-threshold-count', '--ban-threshold-interval-sec',
-          '--ban-duration-sec'
+          '--enforce-on-key-name', '--ban-threshold-count',
+          '--ban-threshold-interval-sec', '--ban-duration-sec'
       ])
     if not any(modified_fields):
       raise exceptions.MinimumArgumentException(
@@ -185,7 +186,7 @@ class UpdateBeta(base.UpdateCommand):
   SECURITY_POLICY_ARG = None
 
   _support_redirect = True
-  _support_rate_limit = False
+  _support_rate_limit = True
   _support_header_action = True
 
   @classmethod

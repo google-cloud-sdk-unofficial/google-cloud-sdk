@@ -51,7 +51,7 @@
         enum_value: PYPI
         help_text: (DEPRECATED) Python package format. Use PYTHON instead.
       - arg_value: PYTHON
-        enum_value: PYPI
+        enum_value: PYTHON
         help_text: Python package format.
       - arg_value: GOOGET
         enum_value: GOOGET

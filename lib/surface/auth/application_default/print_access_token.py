@@ -63,7 +63,7 @@ class PrintAccessToken(base.Command):
 
     $ curl -H "X-Goog-User-Project: your-project" \
         -H \
-        "Authorization: Bearer $(gcloud auth application-default\
+        "Authorization: Bearer $(gcloud auth application-default \
      print-access-token)" foo.googleapis.com
 
   The identity that granted the token must have the serviceusage.services.use

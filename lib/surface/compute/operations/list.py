@@ -40,8 +40,7 @@ def AddFlags(parser, is_ga):
       )""")
   if is_ga:
     lister.AddMultiScopeListerFlags(
-        parser, zonal=True, regional=True, global_=True,
-        zonal_deprecated=False, regional_deprecated=False)
+        parser, zonal=True, regional=True, global_=True)
   else:
     lister.AddBaseListerArgs(parser)
     parser.add_argument(

@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class UpdateCluster(base.UpdateCommand):
   """Update a Bigtable cluster's number of nodes."""
 
@@ -56,10 +57,22 @@ class UpdateCluster(base.UpdateCommand):
     Returns:
       None
     """
+    return self._Run(args)
+
+  def _Run(self, args, add_autoscaling=False):
     cluster_ref = args.CONCEPTS.cluster.Parse()
-    operation = clusters.PartialUpdate(
-        cluster_ref,
-        nodes=args.num_nodes)
+    if add_autoscaling:
+      operation = clusters.PartialUpdate(
+          cluster_ref,
+          nodes=args.num_nodes,
+          autoscaling_min=args.autoscaling_min_nodes,
+          autoscaling_max=args.autoscaling_max_nodes,
+          autoscaling_cpu_target=args.autoscaling_cpu_target,
+          disable_autoscaling=args.disable_autoscaling)
+    else:
+      operation = clusters.PartialUpdate(
+          cluster_ref,
+          nodes=args.num_nodes)
     if not args.async_:
       operation_ref = util.GetOperationRef(operation)
       return util.AwaitCluster(
@@ -69,3 +82,26 @@ class UpdateCluster(base.UpdateCommand):
     log.UpdatedResource(
         cluster_ref.Name(), kind='cluster', is_async=args.async_)
     return None
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateClusterAlpha(UpdateCluster):
+  """Update a Bigtable cluster's number of nodes."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    arguments.AddClusterResourceArg(parser, 'to update')
+    (arguments.ArgAdder(parser).AddAsync().AddScalingArgsForClusterUpdate())
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      None
+    """
+    return self._Run(args, add_autoscaling=True)

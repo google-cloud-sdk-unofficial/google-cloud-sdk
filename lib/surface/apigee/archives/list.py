@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib import apigee
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.apigee import archives as archive_helper
 from googlecloudsdk.command_lib.apigee import defaults
 from googlecloudsdk.command_lib.apigee import resource_args
 
@@ -78,7 +79,12 @@ class List(base.ListCommand):
     # The labels field is a list of key/value pairs so it is flattened to
     # display in the table.
     labels_col = "archiveDeployments.labels.flatten()"
-    cols = ", ".join([archive_id_col, env_id_col, created_col, labels_col])
+
+    # The status column uses operation metadata and timestamps to determine
+    # the current status of the archive deployment.
+    status_col = ("archiveDeployments.operationStatus:label='OPERATION STATUS'")
+    cols = ", ".join(
+        [archive_id_col, env_id_col, created_col, labels_col, status_col])
     # Format the column definitions into a table.
     table_fmt = "table({})".format(cols)
     parser.display_info.AddFormat(table_fmt)
@@ -86,4 +92,14 @@ class List(base.ListCommand):
   def Run(self, args):
     """Run the list command."""
     identifiers = args.CONCEPTS.environment.Parse().AsDict()
-    return apigee.ArchivesClient.List(identifiers)
+    org = identifiers["organizationsId"]
+
+    archive_response = apigee.ArchivesClient.List(identifiers)
+    if "archiveDeployments" not in archive_response or not archive_response[
+        "archiveDeployments"]:
+      return archive_response
+
+    extended_archives = archive_helper.ListArchives(org).ExtendedArchives(
+        archive_response["archiveDeployments"])
+
+    return {"archiveDeployments": extended_archives}

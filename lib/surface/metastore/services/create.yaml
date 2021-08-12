@@ -24,8 +24,12 @@
   request:
     ALPHA:
       api_version: v1alpha
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfig
     BETA:
       api_version: v1beta
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfig
     GA:
       api_version: v1
     collection: metastore.projects.locations.services
@@ -84,6 +88,7 @@
       help_text: |
         A boolean flag to determine whether Dataproc Metastore metadata sync
         to Data Catalog should be enabled, false if unspecified.
+        Mutually exclusive with flag `--encryption-kms-key`.
     - arg_name: release-channel
       help_text: |
         The release channel of the service.
@@ -198,6 +203,16 @@
           processor: googlecloudsdk.command_lib.metastore.validators:ValidateHourOfDay
           help_text: |
             The hour of day (0-23) when the window starts.
+    - arg_name: encryption-kms-key
+      api_field: service.encryptionConfig.kmsKey
+      release_tracks: [ALPHA, BETA]
+      processor: googlecloudsdk.command_lib.metastore.parsers:ParseCloudKmsKey
+      help_text: |
+        The name of the Cloud KMS key to use for customer data encryption.
+        Cannot be changed once the service is created.
+        Mutually exclusive with flag `--data-catalog-sync`.
+        This can be provided as a fully-qualified URL, or a relative name in
+        the form `projects/{project_id}/locations/{location}/keyRings/{key_ring_id}/cryptoKeys/{crypto_key_id}`.
     labels:
       api_field: service.labels
 

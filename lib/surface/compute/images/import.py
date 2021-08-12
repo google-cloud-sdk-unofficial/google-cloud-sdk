@@ -457,7 +457,10 @@ class ImportFromImageStager(BaseImportStager):
     import_args = []
 
     daisy_utils.AppendArg(import_args, 'source_image', self.args.source_image)
-    _AppendTranslateWorkflowArg(self.args, import_args)
+    if self.args.data_disk:
+      daisy_utils.AppendBoolArg(import_args, 'data_disk', self.args.data_disk)
+    else:
+      _AppendTranslateWorkflowArg(self.args, import_args)
 
     import_args.extend(super(ImportFromImageStager, self).Stage())
     return import_args

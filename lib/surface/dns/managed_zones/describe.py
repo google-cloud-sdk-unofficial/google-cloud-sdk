@@ -36,7 +36,7 @@ class Describe(base.DescribeCommand):
 
   To display the details of your managed-zone, run:
 
-    $ {command} my_zone
+    $ {command} my-zone
   """
 
   @staticmethod
@@ -64,7 +64,7 @@ class DescribeBeta(base.DescribeCommand):
 
   To display the details of your managed-zone, run:
 
-    $ {command} my_zone
+    $ {command} my-zone
   """
 
   @staticmethod
@@ -89,5 +89,5 @@ class DescribeAlpha(DescribeBeta):
 
   To display the details of your managed-zone, run:
 
-    $ {command} my_zone
+    $ {command} my-zone
   """

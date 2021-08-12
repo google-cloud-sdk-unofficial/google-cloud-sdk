@@ -212,7 +212,7 @@ class UpdateBeta(Update):
 
   *{command}* is used to update backend buckets.
   """
-  _support_edge_policies = False
+  _support_edge_policies = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

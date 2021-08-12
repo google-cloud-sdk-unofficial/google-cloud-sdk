@@ -47,7 +47,7 @@ class Deploy(base.CacheCommand):
 
           To specify a service account as the workflow identity:
 
-            $ {command} my-workflow --source=myWorkflow.yaml --service-account=my-service-account@my-project-id.iam.gserviceaccount.com
+            $ {command} my-workflow --source=myWorkflow.yaml --service-account=my-account@my-project.iam.gserviceaccount.com
           """,
   }
 

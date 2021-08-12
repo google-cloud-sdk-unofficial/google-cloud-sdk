@@ -258,6 +258,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_cloud_logging=args.enable_cloud_logging if (hasattr(args, 'enable_cloud_logging') and args.IsSpecified('enable_cloud_logging')) else None,
       enable_cloud_monitoring=args.enable_cloud_monitoring if (hasattr(args, 'enable_cloud_monitoring') and args.IsSpecified('enable_cloud_monitoring')) else None,
       enable_workload_monitoring_eap=get_default('enable_workload_monitoring_eap'),
+      logging=get_default('logging'),
+      monitoring=get_default('monitoring'),
       enable_l4_ilb_subsetting=get_default('enable_l4_ilb_subsetting'),
       enable_ip_alias=enable_ip_alias,
       enable_intra_node_visibility=get_default('enable_intra_node_visibility'),
@@ -296,6 +298,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       node_machine_type=get_default('machine_type'),
       node_taints=get_default('node_taints'),
       notification_config=get_default('notification_config'),
+      autoscaling_profile=getattr(args, 'autoscaling_profile', None),
       num_nodes=get_default('num_nodes'),
       password=get_default('password'),
       preemptible=get_default('preemptible'),
@@ -418,6 +421,8 @@ flags_to_add = {
             AddAutoRepair,
         'autoprovisioning':
             AddAutoprovisioning,
+        'autoscalingprofiles':
+            flags.AddAutoscalingProfilesFlag,
         'autoupgrade':
             AddEnableAutoUpgradeWithDefault,
         'authenticatorsecurity':
@@ -474,6 +479,8 @@ flags_to_add = {
             flags.AddEnableLegacyAuthorizationFlag,
         'localssd':
             flags.AddLocalSSDFlag,
+        'logging':
+            flags.AddLoggingFlag,
         'machinetype':
             flags.AddMachineTypeFlag,
         'maintenancewindow':
@@ -492,6 +499,8 @@ flags_to_add = {
             flags.AddMetadataFlags,
         'mincpu':
             flags.AddMinCpuPlatformFlag,
+        'monitoring':
+            flags.AddMonitoringFlag,
         'networkpolicy':
             flags.AddNetworkPolicyFlags,
         'nodeidentity':
@@ -626,6 +635,8 @@ flags_to_add = {
             flags.AddLocalSSDsBetaFlags,
         'loggingmonitoring':
             flags.AddEnableLoggingMonitoringSystemOnlyFlag,
+        'logging':
+            flags.AddLoggingFlag,
         'labels':
             flags.AddLabelsFlag,
         'legacyauth':
@@ -650,6 +661,8 @@ flags_to_add = {
             flags.AddMetadataFlags,
         'mincpu':
             flags.AddMinCpuPlatformFlag,
+        'monitoring':
+            flags.AddMonitoringFlag,
         'networkpolicy':
             flags.AddNetworkPolicyFlags,
         'nodetaints':
@@ -757,6 +770,7 @@ flags_to_add = {
         'legacyauth': flags.AddEnableLegacyAuthorizationFlag,
         'linuxsysctl': flags.AddLinuxSysctlFlags,
         'localssds': flags.AddLocalSSDsAlphaFlags,
+        'logging': flags.AddLoggingFlag,
         'loggingmonitoring': flags.AddEnableLoggingMonitoringSystemOnlyFlag,
         'machinetype': flags.AddMachineTypeFlag,
         'kubernetesobjectsexport': AddKubernetesObjectsExportFlag,
@@ -771,6 +785,7 @@ flags_to_add = {
         'mastersignals': AddMasterSignalsFlag,
         'metadata': flags.AddMetadataFlags,
         'mincpu': flags.AddMinCpuPlatformFlag,
+        'monitoring': flags.AddMonitoringFlag,
         'networkpolicy': flags.AddNetworkPolicyFlags,
         'nodetaints': flags.AddNodeTaintsFlag,
         'nodeidentity': flags.AddClusterNodeIdentityFlags,

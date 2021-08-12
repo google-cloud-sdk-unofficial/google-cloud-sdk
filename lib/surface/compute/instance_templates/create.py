@@ -405,7 +405,6 @@ def AddServiceProxyArgsToMetadata(args):
     args.metadata['gce-service-proxy'] = json.dumps(service_proxy_config)
 
 
-# TODO(b/186187191): Add e2e test for the --mesh flag.
 def ConfigureMeshTemplate(args, instance_template_ref, network_interfaces):
   """Adds Anthos Service Mesh configuration into the instance template.
 

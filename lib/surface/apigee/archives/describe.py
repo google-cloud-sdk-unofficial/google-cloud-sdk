@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib import apigee
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.apigee import archives as archive_helper
 from googlecloudsdk.command_lib.apigee import defaults
 from googlecloudsdk.command_lib.apigee import resource_args
 
@@ -64,4 +65,20 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     """Run the describe command."""
     identifiers = args.CONCEPTS.archive_deployment.Parse().AsDict()
+    org = identifiers["organizationsId"]
+    archive_name = (
+        "organizations/{}/environments/{}/archiveDeployments/{}".format(
+            org, identifiers["environmentsId"],
+            identifiers["archiveDeploymentsId"]))
+
+    archive_list_response = apigee.ArchivesClient.List(identifiers)
+    if "archiveDeployments" not in archive_list_response or not archive_list_response[
+        "archiveDeployments"]:
+      return apigee.ArchivesClient.Describe(identifiers)
+
+    extended_archives = archive_helper.ListArchives(org).ExtendedArchives(
+        archive_list_response["archiveDeployments"])
+    for a in extended_archives:
+      if a["name"] == archive_name:
+        return a
     return apigee.ArchivesClient.Describe(identifiers)

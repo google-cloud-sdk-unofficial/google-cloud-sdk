@@ -109,6 +109,50 @@
       hidden: true
       help_text: |
         Hour of day (0 to 23) for maintenance window, in UTC time zone.
+    - arg_name: persistence-mode
+      api_field: instance.persistenceConfig.persistenceMode
+      release_tracks: [ALPHA]
+      hidden: true
+      help_text: |
+        Operation mode for automated persistence.
+      choices:
+      - enum_value: DISABLED
+        arg_value: disabled
+        help_text: disabled
+      - enum_value: RDB
+        arg_value: RDB
+        help_text: Automatic RDB persistence
+    - arg_name: rdb-snapshot-period
+      api_field: instance.persistenceConfig.rdbSnapshotPeriod
+      release_tracks: [ALPHA]
+      hidden: true
+      help_text: |
+        Attempted period between RDB snapshots.
+      choices:
+      - enum_value: FIFTEEN_MINUTES
+        arg_value: 15m
+        help_text: 15 minutes
+      - enum_value: THIRTY_MINUTES
+        arg_value: 30m
+        help_text: 30 minutes
+      - enum_value: ONE_HOUR
+        arg_value: 1h
+        help_text: 1 hour
+      - enum_value: SIX_HOURS
+        arg_value: 6h
+        help_text: 6 hours
+      - enum_value: TWELVE_HOURS
+        arg_value: 12h
+        help_text: 12 hours
+      - enum_value: TWENTY_FOUR_HOURS
+        arg_value: 24h
+        help_text: 24 hours
+    - arg_name: rdb-snapshot-start-time
+      api_field: instance.persistenceConfig.rdbSnapshotStartTime
+      release_tracks: [ALPHA]
+      hidden: true
+      help_text: |
+        Date and time of the first snapshot, and alignment time for future snapshots.
     - arg_name: redis-version
       api_field: instance.redisVersion
       metavar: VERSION

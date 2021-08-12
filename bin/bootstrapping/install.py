@@ -85,9 +85,9 @@ def ParseArgs():
                       'raised')
   parser.add_argument(
       '--install-python',
-      default=False,
-      action='store_true',
-      help='Attempt to install Python. MacOs only.')
+      default=True,
+      type=Bool,
+      help='(true/false) Attempt to install Python. MacOs only.')
 
   return parser.parse_args(bootstrapping.GetDecodedArgv()[1:])
 

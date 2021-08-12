@@ -71,9 +71,10 @@ class AddIamPolicyBinding(base.Command):
       iam_policy = datafusion.client.projects_locations_instances_namespaces.GetIamPolicy(
           get_request)
 
-    for binding in iam_policy.bindings:
-      if binding.role == args.role:
-        binding.members.append(args.member)
+    iam_util.AddBindingToIamPolicy(datafusion.messages.Binding,
+                                   iam_policy,
+                                   args.member,
+                                   args.role)
 
     results = data_fusion_iam_util.DoSetIamPolicy(instance_ref, args.namespace,
                                                   iam_policy,

@@ -32,15 +32,15 @@ class ManagedZones(base.Group):
 
   To create a managed-zone, run:
 
-    $ {command} create my_zone --description="My Zone" --dns-name="my.zone.com."
+    $ {command} create my-zone --description="My Zone" --dns-name="my.zone.com."
 
   To delete a managed-zone, run:
 
-    $ {command} delete my_zone
+    $ {command} delete my-zone
 
   To view the details of a managed-zone, run:
 
-    $ {command} describe my_zone
+    $ {command} describe my-zone
 
   To see the list of all managed-zones, run:
 

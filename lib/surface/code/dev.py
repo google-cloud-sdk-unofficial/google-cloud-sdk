@@ -44,6 +44,27 @@ class RuntimeMissingDependencyError(exceptions.Error):
   """A runtime dependency is missing."""
 
 
+def _IsDebug():
+  """Return true if the verbosity is equal to debug."""
+  return properties.VALUES.core.verbosity.Get() == 'debug'
+
+
+def _SkaffoldTempFile(skaffold_config):
+  return cross_platform_temp_file.NamedTempFile(
+      skaffold_config,
+      prefix='skaffold_',
+      suffix='.yaml',
+      delete=not _IsDebug())
+
+
+def _DeployTempFile(kubernetes_config):
+  return cross_platform_temp_file.NamedTempFile(
+      kubernetes_config,
+      prefix='deploy_',
+      suffix='.yaml',
+      delete=not _IsDebug())
+
+
 @contextlib.contextmanager
 def _SetImagePush(skaffold_file, shared_docker):
   """Set build.local.push value in skaffold file.
@@ -66,14 +87,8 @@ def _SetImagePush(skaffold_file, shared_docker):
     skaffold_yaml = yaml.load_path(skaffold_file.name)
     local_block = yaml_helper.GetOrCreate(skaffold_yaml, ('build', 'local'))
     local_block['push'] = False
-    with cross_platform_temp_file.NamedTempFile(
-        yaml.dump(skaffold_yaml)) as patched_skaffold_file:
+    with _SkaffoldTempFile(yaml.dump(skaffold_yaml)) as patched_skaffold_file:
       yield patched_skaffold_file
-
-
-def _IsDebug():
-  """Return true if the verbosity is equal to debug."""
-  return properties.VALUES.core.verbosity.Get() == 'debug'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -160,23 +175,31 @@ class Dev(base.Command):
     local_file_generator = local_files.LocalRuntimeFiles(settings)
 
     kubernetes_config = six.ensure_text(local_file_generator.KubernetesConfig())
+    namespace = getattr(args, 'namespace', None)
 
     _EnsureDockerRunning()
-    with cross_platform_temp_file.NamedTempFile(
-        kubernetes_config) as kubernetes_file:
+    with _DeployTempFile(kubernetes_config) as kubernetes_file:
       skaffold_config = six.ensure_text(
           local_file_generator.SkaffoldConfig(kubernetes_file.name))
       skaffold_event_port = (
           args.skaffold_events_port or portpicker.pick_unused_port())
-      with cross_platform_temp_file.NamedTempFile(skaffold_config) as skaffold_file, \
+      with _SkaffoldTempFile(skaffold_config) as skaffold_file, \
            self._GetKubernetesEngine(args) as kube_context, \
-           self._WithKubeNamespace(getattr(args, 'namespace', None), kube_context.context_name), \
-           _SetImagePush(skaffold_file, kube_context.shared_docker) as patched_skaffold_file, \
-           skaffold.Skaffold(patched_skaffold_file.name, kube_context.context_name,
-                             getattr(args, 'namespace', None), kube_context.env_vars,
-                             _IsDebug(), skaffold_event_port) as running_process, \
-           skaffold.PrintUrlThreadContext(settings.service_name, skaffold_event_port):
+           self._WithKubeNamespace(namespace, kube_context.context_name), \
+           _SetImagePush(skaffold_file,
+                         kube_context.shared_docker) as patched_skaffold_file, \
+           self._SkaffoldProcess(patched_skaffold_file, kube_context, namespace,
+                                 skaffold_event_port) as running_process, \
+           skaffold.PrintUrlThreadContext(settings.service_name,
+                                          skaffold_event_port):
         running_process.wait()
+
+  def _SkaffoldProcess(self, patched_skaffold_file, kube_context, namespace,
+                       skaffold_event_port):
+    return skaffold.Skaffold(patched_skaffold_file.name,
+                             kube_context.context_name, namespace,
+                             kube_context.env_vars, _IsDebug(),
+                             skaffold_event_port)
 
   @staticmethod
   def _GetKubernetesEngine(args):

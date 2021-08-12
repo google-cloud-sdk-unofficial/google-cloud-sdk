@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: List workforce pool providers.
     description: List workforce pool providers.
