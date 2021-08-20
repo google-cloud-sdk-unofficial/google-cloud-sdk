@@ -48,8 +48,8 @@ class List(base.ListCommand):
     # backend.
     # Filter is not supported yet.
     base.FILTER_FLAG.RemoveFromParser(parser)
-    # Temporary add a dummy hidden implementation so that no parsing logic need
-    # to be changed.
+    # Temporarily add a fake hidden implementation so that no parsing logic
+    # needs to be changed.
     parser.add_argument(
         '--filter',
         hidden=True,

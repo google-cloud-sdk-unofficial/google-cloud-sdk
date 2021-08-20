@@ -79,6 +79,9 @@
         installed_packages.qfePackage:format=
           "table[box,title='Installed Packages (Quick Fix Engineering)']
             (caption:sort=1,description,hot_fix_id,install_time)",
+        installed_packages.windowsApplication:format=
+          "table[box,title='Installed Packages (Windows Application)']
+            (displayName:sort=1,displayVersion,publisher,installDate.date('%Y-%m-%d'))",
         updatedable_packages.yumPackage:format=
           "table[box,title='Package Updates Available (Yum)']
             (package_name:sort=1,architecture,version)",

@@ -43,7 +43,7 @@ class Export(base.Command):
   @classmethod
   def Args(cls, parser):
     common = flags.CommonFlags()
-    common.AddBetaFlags()
+    common.AddAlphaAndBetaFlags(cls.ReleaseTrack())
 
     common.AddServiceName()
     common.AddImage()
@@ -53,9 +53,6 @@ class Export(base.Command):
     common.EnvVarsGroup().AddEnvVarsFile()
 
     common.BuildersGroup().AddBuilder()
-
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      common.AddAlphaFlags()
 
     common.ConfigureParser(parser)
 

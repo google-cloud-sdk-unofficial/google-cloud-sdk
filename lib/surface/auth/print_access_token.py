@@ -29,12 +29,12 @@ from oauth2client import client
 from google.auth import exceptions as google_auth_exceptions
 
 
-class DummyCredentials(object):
+class FakeCredentials(object):
   """An access token container.
 
   oauth2client and google-auth are both supported by gcloud as the auth library.
   credentials in oauth2client store the access token in the "access_token"
-  filed. google-auth stores it in the "token" filed. We use this dummy
+  filed. google-auth stores it in the "token" filed. We use this fake
   credentials class to unify them.
   """
 
@@ -96,4 +96,4 @@ class AccessToken(base.Command):
     if not token:
       raise auth_exceptions.InvalidCredentialsError(
           'No access token could be obtained from the current credentials.')
-    return DummyCredentials(token)
+    return FakeCredentials(token)

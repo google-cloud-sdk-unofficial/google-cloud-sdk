@@ -63,14 +63,8 @@ class List(base.ListCommand):
         '--type', required=False,
         help='Only list records of this type. If present, the --name parameter '
         'must also be present.')
-    parser.display_info.AddFormat("""
-        table(
-              name,
-              type,
-              ttl,
-              rrdatas.list():label=DATA
-            )
-        """)
+    parser.display_info.AddTransforms(flags.RESOURCERECORDSETS_TRANSFORMS)
+    parser.display_info.AddFormat(flags.RESOURCERECORDSETS_FORMAT)
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):

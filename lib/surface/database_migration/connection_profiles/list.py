@@ -35,13 +35,21 @@ def _GetUri(release_track, connection_profile_info):
 class _ConnectionProfileInfo(object):
   """Container for connection profile data using in list display."""
 
-  def __init__(self, message, host):
+  def __init__(self, message, host, engine):
     self.display_name = message.displayName
     self.name = message.name
     self.state = message.state
-    self.provider = message.provider
+    self.provider_display = message.provider
     self.host = host
     self.create_time = message.createTime
+    self.engine = engine
+
+    if message.cloudsql:
+      # In old connection profiles the "provider" field isn't populated
+      if not message.provider:
+        self.provider_display = 'CLOUDSQL'
+      # If the connection profile's "oneof" = cloudsql --> read only replica
+      self.provider_display = '{}_{}'.format(self.provider_display, 'REPLICA')
 
 
 class _List(object):
@@ -59,9 +67,12 @@ class _List(object):
 
     parser.display_info.AddFormat("""
           table(
+            name.basename():label=CONNECTION_PROFILE_ID,
             display_name,
+            name.scope('locations').segment(0):label=REGION,
             state,
-            provider:label=ENGINE,
+            provider_display:label=PROVIDER,
+            engine,
             host:label=HOSTNAME/IP,
             create_time.date():label=CREATED
           )
@@ -82,7 +93,8 @@ class _List(object):
     project_id = properties.VALUES.core.project.Get(required=True)
     profiles = cp_client.List(project_id, args)
 
-    return [_ConnectionProfileInfo(profile, self._GetHost(profile))
+    return [_ConnectionProfileInfo(profile, self._GetHost(profile),
+                                   cp_client.GetEngineName(profile))
             for profile in profiles]
 
 
@@ -139,6 +151,7 @@ class ListGA(_List, base.ListCommand):
   """
 
   def _GetHost(self, profile):
+    # TODO(b/178304949): Add SQL SERVER case once supported.
     if profile.mysql:
       return profile.mysql.host
     elif profile.postgresql:

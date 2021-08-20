@@ -42,7 +42,8 @@ class Subscribe(base.Command):
   """Stream messages from a Pub/Sub Lite subscription."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           Streams messages from a Pub/Sub Lite subscription. This command
           requires Python 3.6 or greater, and requires the grpcio Python package
           to be installed.
@@ -53,15 +54,16 @@ class Subscribe(base.Command):
             $ sudo pip3 install grpcio
             $ export CLOUDSDK_PYTHON_SITEPACKAGES=1
       """,
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           To subscribe to a Pub/Sub Lite subscription and automatically
           acknowledge messages, run:
 
-            $ {command} mysubscription --zone=us-central1-a --auto-ack
+            $ {command} mysubscription --location=us-central1-a --auto-ack
 
           To subscribe to specific partitions in a subscription, run:
 
-            $ {command} mysubscription --zone=us-central1-a --partitions=0,1,2
+            $ {command} mysubscription --location=us-central1-a --partitions=0,1,2
       """
   }
 

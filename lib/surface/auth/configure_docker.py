@@ -51,6 +51,9 @@ class ConfigureDocker(base.Command):
   `docker` snap package does not currently provide an interface for credential
   helpers.
 
+  For more details on Docker registries, see
+  [](https://docs.docker.com/registry/).
+
   For more details on Docker credential helpers, see
   [](https://docs.docker.com/engine/reference/commandline/login/#credential-helpers).
 

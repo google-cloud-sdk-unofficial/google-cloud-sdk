@@ -75,17 +75,14 @@ class Create(base.Command):
               ' the bucket. If not specified, the default storage class'
               ' used by Cloud Storage is "Standard".'))
     parser.add_argument(
-        '--retention-period',
-        '-retention',
-        '-r',
-        type=str,
-        help=('Minimum [retention period](https://cloud.google.com'
-              '/storage/docs/bucket-lock#retention-periods)'
-              ' for objects stored in the bucket, for example'
-              ' ``--retention-period=1Y1M1D5S\'\'. Objects added to the bucket'
-              ' cannot be deleted until they\'ve been stored for the specified'
-              ' length of time. Default is no retention period. Only available'
-              ' for Cloud Storage using the JSON API.'))
+        '--retention',
+        help='Minimum [retention period](https://cloud.google.com'
+        '/storage/docs/bucket-lock#retention-periods)'
+        ' for objects stored in the bucket, for example'
+        ' ``--retention-period=1Y1M1D5S\'\'. Objects added to the bucket'
+        ' cannot be deleted until they\'ve been stored for the specified'
+        ' length of time. Default is no retention period. Only available'
+        ' for Cloud Storage using the JSON API.')
 
   def Run(self, args):
     resource = resource_reference.BucketResource(
@@ -96,8 +93,8 @@ class Create(base.Command):
       resource.uniform_bucket_level_access = True
     if args.storage_class:
       resource.storage_class = args.storage_class
-    if args.retention_period:
+    if args.retention:
       resource.retention_period = int(iso_duration.Duration().Parse(
-          args.retention_period).total_seconds)
+          args.retention).total_seconds)
 
     create_bucket_task.CreateBucketTask(resource).execute()

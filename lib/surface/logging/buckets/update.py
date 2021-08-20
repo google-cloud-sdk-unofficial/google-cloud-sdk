@@ -61,6 +61,11 @@ class Update(base.UpdateCommand):
         action='store_true',
         help=('Lock the bucket and prevent it from being modified or deleted '
               '(unless it is empty).'))
+    parser.add_argument(
+        '--restricted-fields',
+        help='A new set of restricted fields for the bucket.',
+        type=arg_parsers.ArgList(),
+        metavar='RESTRICTED_FIELD')
 
   def GetBucket(self, args):
     """Returns a bucket specified by the arguments."""
@@ -89,14 +94,13 @@ class Update(base.UpdateCommand):
             'WARNING: Locking a bucket cannot be undone.',
             default=False,
             cancel_on_no=True)
+    if args.IsSpecified('restricted_fields'):
+      bucket_data['restrictedFields'] = args.restricted_fields
+      update_mask.append('restricted_fields')
 
     if is_alpha and args.enable_loglink is not None:
       bucket_data['logLink'] = {'enabled': args.enable_loglink}
       update_mask.append('log_link.enabled')
-
-    if is_alpha and args.IsSpecified('restricted_fields'):
-      bucket_data['restrictedFields'] = args.restricted_fields
-      update_mask.append('restricted_fields')
 
     if is_alpha and (args.IsSpecified('clear_indexes') or
                      args.IsSpecified('remove_indexes') or
@@ -184,11 +188,6 @@ class UpdateAlpha(Update):
         which give a ready-only access to logs in BigQuery. This option can
         only be enabled in a log bucket with advanced log analytics enabled.
         Use --no-enable-loglink to disable the linked dataset.""")
-    parser.add_argument(
-        '--restricted-fields',
-        help='A new set of restricted fields for the bucket',
-        type=arg_parsers.ArgList(),
-        metavar='RESTRICTED_FIELD')
     parser.add_argument(
         '--clear-indexes',
         action='store_true',

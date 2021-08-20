@@ -56,7 +56,7 @@ class List(base.ListCommand):
 
     client = cloudbuild_util.GetClientInstance()
 
-    project = properties.VALUES.core.project.GetOrFail
+    project = properties.VALUES.core.project.Get(required=True)
     location = args.region or cloudbuild_util.DEFAULT_REGION
 
     parent = resources.REGISTRY.Create(

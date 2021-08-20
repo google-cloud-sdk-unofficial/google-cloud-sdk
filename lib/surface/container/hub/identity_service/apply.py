@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command to update Config Management Feature."""
+"""The command to update Identity Service Feature."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.container.hub.features import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+import urllib3
 
 # Pull out the example text so the example command can be one line without the
 # py linter complaining. The docgen tool properly breaks it into multiple lines.
@@ -185,6 +186,9 @@ def _provision_oidc_config(auth_method, msg):
   auth_method_proto.oidcConfig.issuerUri = oidc_config['issuerURI']
   auth_method_proto.oidcConfig.clientId = oidc_config['clientID']
 
+  _validate_issuer_uri(auth_method_proto.oidcConfig.issuerUri,
+                       auth_method['name'])
+
   # Optional Auth Method Fields.
   if 'proxy' in auth_method:
     auth_method_proto.proxy = auth_method['proxy']
@@ -202,6 +206,13 @@ def _provision_oidc_config(auth_method, msg):
     auth_method_proto.oidcConfig.groupPrefix = oidc_config['groupPrefix']
   if 'groupsClaim' in oidc_config:
     auth_method_proto.oidcConfig.groupsClaim = oidc_config['groupsClaim']
+
+  # If groupClaim is empty, then groupPrefix should be empty
+  if not auth_method_proto.oidcConfig.groupsClaim and auth_method_proto.oidcConfig.groupPrefix:
+    raise exceptions.Error(
+        'groupPrefix should be empty for method [{}] because groupsClaim is empty.'
+        .format(auth_method['name']))
+
   if 'kubectlRedirectURI' in oidc_config:
     auth_method_proto.oidcConfig.kubectlRedirectUri = oidc_config[
         'kubectlRedirectURI']
@@ -218,3 +229,21 @@ def _provision_oidc_config(auth_method, msg):
         .format(auth_method['name']))
 
   return auth_method_proto
+
+
+def _validate_issuer_uri(issuer_uri, auth_method_name):
+  """Validates Issuer URI field of OIDC config.
+
+  Args:
+    issuer_uri: issuer uri to be validated
+    auth_method_name: auth method name that has this field
+  """
+  url = urllib3.util.parse_url(issuer_uri)
+  if url.scheme != 'https':
+    raise exceptions.Error(
+        'issuerURI is invalid for method [{}]. Scheme is not https.'.format(
+            auth_method_name))
+  if url.path is not None and '.well-known/openid-configuration' in url.path:
+    raise exceptions.Error(
+        'issuerURI is invalid for method [{}]. issuerURI should not contain [{}].'
+        .format(auth_method_name, '.well-known/openid-configuration'))

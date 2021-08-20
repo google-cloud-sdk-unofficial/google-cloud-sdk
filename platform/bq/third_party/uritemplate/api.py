@@ -7,6 +7,8 @@ uritemplate.api
 This module contains the very simple API provided by uritemplate.
 
 """
+
+from uritemplate.orderedset import OrderedSet
 from uritemplate.template import URITemplate
 
 
@@ -69,4 +71,4 @@ def variables(uri):
         # => {'username', 'repository'}
 
     """
-    return set(URITemplate(uri).variable_names)
+    return OrderedSet(URITemplate(uri).variable_names)

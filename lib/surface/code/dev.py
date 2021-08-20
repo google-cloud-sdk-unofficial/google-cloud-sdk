@@ -127,10 +127,7 @@ class Dev(base.Command):
   @classmethod
   def Args(cls, parser):
     common = flags.CommonFlags()
-    common.AddBetaFlags()
-
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      common.AddAlphaFlags()
+    common.AddAlphaAndBetaFlags(cls.ReleaseTrack())
 
     common.ConfigureParser(parser)
 

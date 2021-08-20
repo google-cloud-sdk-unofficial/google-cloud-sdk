@@ -5,7 +5,7 @@ help_text:
   examples: |
     To list Pub/Sub Lite topics, run:
 
-        $ {command} --zone=us-central1-a \
+        $ {command} --location=us-central1-a \
             --limit=5
 
 request:
@@ -18,3 +18,8 @@ arguments:
   resource:
     help_text: Zone to list topics for.
     spec: !REF googlecloudsdk.command_lib.pubsub.resources:location
+    command_level_fallthroughs:
+      location:
+      - arg_name: 'zone'
+  params:
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:zone

@@ -42,7 +42,6 @@ class SetIamPolicy(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    # TODO(b/77985971): Make this a resource.
     parser.add_argument(
         'attestor_name',
         help=('The name of the attestor '

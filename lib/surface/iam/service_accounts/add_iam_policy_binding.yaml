@@ -20,16 +20,12 @@ help_text:
     To add an IAM policy binding for the role of 'roles/editor' to the service
     account 'test-proj1@example.domain.com', run:
 
-      $ {command} test-proj1@example.domain.com \
-          --member='serviceAccount:test-proj1@example.domain.com' \
-          --role='roles/editor'
+      $ {command} test-proj1@example.domain.com --member='serviceAccount:test-proj1@example.domain.com' --role='roles/editor'
 
-    To add an IAM policy binding for the role of 'roles/editor' for all
-    authenticated users on a service account with identifier
-    'my-iam-account@my-project.iam.gserviceaccount.com', run:
+    To add an IAM policy binding for the role of 'roles/editor' for all authenticated users on a
+    service account with identifier 'my-iam-account@my-project.iam.gserviceaccount.com', run:
 
-      $ {command} my-iam-account@my-project.iam.gserviceaccount.com --member='allAuthenticatedUsers' \
-          --role='roles/editor'
+      $ {command} my-iam-account@my-project.iam.gserviceaccount.com --member='allAuthenticatedUsers' --role='roles/editor'
 
     To add an IAM policy binding which expires at the end of the year 2018 for the role of
     'roles/iam.serviceAccountAdmin' and the user 'test-user@gmail.com' on a service account with identifier 'my-iam-account@my-project.iam.gserviceaccount.com', run:

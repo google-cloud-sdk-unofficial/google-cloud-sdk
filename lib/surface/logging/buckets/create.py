@@ -51,6 +51,15 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--description', help='A textual description for the bucket.')
     parser.add_argument(
+        '--restricted-fields',
+        help='Comma-separated list of field paths that require permission '
+        'checks in this bucket. The following fields and their children are '
+        'eligible: textPayload, jsonPayload, protoPayload, httpRequest, labels,'
+        ' sourceLocation.',
+        type=arg_parsers.ArgList(),
+        metavar='RESTRICTED_FIELD',
+    )
+    parser.add_argument(
         '--retention-days',
         type=int,
         help='The period logs will be retained, after which logs will '
@@ -66,12 +75,11 @@ class Create(base.CreateCommand):
       bucket_data['retentionDays'] = args.retention_days
     if args.IsSpecified('description'):
       bucket_data['description'] = args.description
+    if args.IsSpecified('restricted_fields'):
+      bucket_data['restrictedFields'] = args.restricted_fields
 
     if is_alpha and args.IsSpecified('enable_analytics'):
       bucket_data['analyticsEnabled'] = args.enable_analytics
-
-    if is_alpha and args.IsSpecified('restricted_fields'):
-      bucket_data['restrictedFields'] = args.restricted_fields
 
     if is_alpha and args.IsSpecified('index'):
       bucket_data['indexConfigs'] = args.index
@@ -111,15 +119,6 @@ class CreateAlpha(Create):
         default=None,
         help='Whether to opt the bucket into advanced log analytics. This '
         'field may only be set at bucket creation and cannot be changed later.')
-    parser.add_argument(
-        '--restricted-fields',
-        help='Comma separated list of field paths that require permission '
-        'checks in this bucket. The following fields and their children are '
-        'eligible: textPayload, jsonPayload, protoPayload, httpRequest, labels,'
-        ' sourceLocation.',
-        type=arg_parsers.ArgList(),
-        metavar='RESTRICTED_FIELD',
-    )
     parser.add_argument(
         '--index',
         action='append',

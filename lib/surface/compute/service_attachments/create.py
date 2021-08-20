@@ -113,7 +113,8 @@ class Create(base.CreateCommand):
         natSubnets=nat_subnetworks,
         connectionPreference=connection_preference,
         enableProxyProtocol=enable_proxy_protocol,
-        producerForwardingRule=producer_forwarding_rule_ref.SelfLink())
+        producerForwardingRule=producer_forwarding_rule_ref.SelfLink(),
+        targetService=producer_forwarding_rule_ref.SelfLink())
 
     if args.IsSpecified('consumer_reject_list'):
       service_attachment.consumerRejectLists = args.consumer_reject_list

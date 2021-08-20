@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.asset import utils as asset_utils
 from googlecloudsdk.command_lib.util.args import repeated
 
 
-class Create(base.Command):
+class Update(base.Command):
   """Update an existing Cloud Asset Inventory Feed."""
 
   detailed_help = {
@@ -69,6 +69,15 @@ class Create(base.Command):
         additional_help=('See https://cloud.google.com/resource-manager/docs/'
                          'cloud-asset-inventory/overview for all supported '
                          'asset types.'),
+        include_set=False)
+    repeated.AddPrimitiveArgs(
+        parser,
+        'Feed',
+        'relationship-types',
+        'relationshipTypes',
+        additional_help=('See https://cloud.google.com/resource-manager/docs/'
+                         'cloud-asset-inventory/overview for all supported '
+                         'relationship types.'),
         include_set=False)
     flags.AddUpdateFeedContentTypeArgs(parser)
     flags.AddFeedPubSubTopicArgs(parser, False)

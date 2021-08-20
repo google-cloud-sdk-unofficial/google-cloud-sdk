@@ -53,15 +53,18 @@ class Delete(base.DeleteCommand):
     flags.AddEndpointResource(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
+    flags.AddMaxWait(parser, '60m')  # default to 60 minutes wait.
 
   def Run(self, args):
     endpoint = args.CONCEPTS.endpoint.Parse()
+    is_async = args.async_
+    max_wait = datetime.timedelta(seconds=args.max_wait)
 
     client = ids_api.Client(self.ReleaseTrack())
     operation = client.DeleteEndpoint(endpoint.RelativeName())
 
     # Return the in-progress operation if async is requested.
-    if args.async_:
+    if is_async:
       # Delete operations have no format by default,
       # but here we want the operation metadata to be printed.
       if not args.IsSpecified('format'):
@@ -72,7 +75,7 @@ class Delete(base.DeleteCommand):
         message='waiting for endpoint [{}] to be deleted'.format(
             endpoint.RelativeName()),
         has_result=False,
-        max_wait=datetime.timedelta(minutes=15))
+        max_wait=max_wait)
 
 
 Delete.detailed_help = DETAILED_HELP

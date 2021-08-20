@@ -34,11 +34,10 @@ class Describe(base.DescribeCommand):
     resource_args.AddAzureClientResourceArg(parser, "to describe")
 
   def Run(self, args):
-    """Run the describe command."""
-    client_ref = args.CONCEPTS.client.Parse()
-
-    track = self.ReleaseTrack()
-    with endpoint_util.GkemulticloudEndpointOverride(client_ref.locationsId,
-                                                     track):
-      api_client = azure_api_util.ClientsClient(track=track)
+    """Runs the describe command."""
+    with endpoint_util.GkemulticloudEndpointOverride(
+        resource_args.ParseAzureClientResourceArg(args).locationsId,
+        self.ReleaseTrack()):
+      client_ref = resource_args.ParseAzureClientResourceArg(args)
+      api_client = azure_api_util.ClientsClient(track=self.ReleaseTrack())
       return api_client.Get(client_ref)

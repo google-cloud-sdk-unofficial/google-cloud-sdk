@@ -6,7 +6,7 @@ help_text:
     To update a Pub/Sub Lite topic, run:
 
         $ {command} mytopic \
-            --zone=us-central1-a \
+            --location=us-central1-a \
             --per-partition-publish-mib=10
 
 request:
@@ -15,13 +15,18 @@ request:
   modify_request_hooks:
   - googlecloudsdk.command_lib.pubsub.lite_util:UpdateAdminRequest
   - googlecloudsdk.command_lib.pubsub.lite_util:ConfirmPartitionsUpdate
+  - googlecloudsdk.command_lib.pubsub.lite_util:AddTopicReservationResource
 
 arguments:
   resource:
     help_text: Topic to update.
     spec: !REF googlecloudsdk.command_lib.pubsub.resources:lite_topic
+    command_level_fallthroughs:
+      location:
+      - arg_name: 'zone'
 
   params:
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:zone
   - group:
       required: true
       params:

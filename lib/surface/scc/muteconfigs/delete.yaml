@@ -1,0 +1,60 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Delete a Cloud Security Command Center mute config.
+    description: Delete a Cloud Security Command Center mute config.
+    examples: |
+      To delete a mute config given organization ``123'' with id ``111'', run:
+
+        $ {command} 111 --organization=organizations/123
+        $ {command} 111 --organization=123
+
+      To delete a mute config given folder ``456'' with id ``111'', run:
+
+        $ {command} 111 --folder=folders/456
+        $ {command} 111 --folder=456
+
+      To delete a mute config given project ``789'' with id ``111'', run:
+
+        $ {command} 111 --project=projects/789
+        $ {command} 111 --project=789
+
+  request:
+    collection: securitycenter.organizations.muteConfigs
+    disable_resource_check: true
+    api_version: v1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.scc.muteconfigs.request_hooks:DeleteMuteConfigReqHook
+
+  arguments:
+
+    params:
+    - arg_name: muteConfigId
+      api_field: name
+      is_positional: true
+      required: true
+      help_text: |
+        ID of the mute config.
+
+    - group:
+        required: true
+        mutex: true
+        params:
+        - arg_name: organization
+          api_field: name
+          help_text: |
+            Organization where the mute config resides. Formatted as ``organizations/123'' or just ``123''.
+
+        - arg_name: folder
+          api_field: name
+          help_text: |
+            Folder where the mute config resides. Formatted as ``folders/456'' or just ``456''.
+
+        - arg_name: project
+          api_field: name
+          help_text: |
+            Project (id or number) where the mute config resides. Formatted as ``projects/789'' or just ``789''.
+
+  input:
+    confirmation_prompt: |
+      Are you sure you want to delete a mute config?

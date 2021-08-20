@@ -98,8 +98,8 @@ class Run(base.Command):
     """Bypasses confirmations with "yes" responses.
 
     Prevents certain Airflow CLI subcommands from presenting a confirmation
-    prompting (which can hang the gcloud CLI). When necessary, bypass
-    confirmations with a "yes" response.
+    prompting (which can make the gcloud CLI stop responding). When necessary,
+    bypass confirmations with a "yes" response.
 
     Args:
       args: argparse.Namespace, An object that contains the values for the

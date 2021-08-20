@@ -61,7 +61,7 @@ class Describe(base.DescribeCommand):
 
     client = cloudbuild_util.GetClientInstance()
 
-    project = properties.VALUES.core.project.GetOrFail
+    project = properties.VALUES.core.project.Get(required=True)
     location = args.region or cloudbuild_util.DEFAULT_REGION
     trigger = args.TRIGGER
 
@@ -76,4 +76,4 @@ class Describe(base.DescribeCommand):
 
     return client.projects_locations_triggers.Get(
         client.MESSAGES_MODULE.CloudbuildProjectsLocationsTriggersGetRequest(
-            name=name))
+            name=name, triggerId=trigger))

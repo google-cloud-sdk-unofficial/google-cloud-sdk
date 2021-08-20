@@ -67,7 +67,7 @@ class Run(base.Command):
     client = cloudbuild_util.GetClientInstance()
     messages = cloudbuild_util.GetMessagesModule()
 
-    project = properties.VALUES.core.project.GetOrFail
+    project = properties.VALUES.core.project.Get(required=True)
     location = args.region or cloudbuild_util.DEFAULT_REGION
     trigger = args.TRIGGER
 
@@ -80,16 +80,14 @@ class Run(base.Command):
         },
         collection='cloudbuild.projects.locations.triggers').RelativeName()
 
-    request = None
+    request = messages.RunBuildTriggerRequest(triggerId=trigger)
+
     if args.branch:
-      request = messages.RunBuildTriggerRequest(
-          source=messages.RepoSource(branchName=args.branch))
+      request.source = messages.RepoSource(branchName=args.branch)
     elif args.tag:
-      request = messages.RunBuildTriggerRequest(
-          source=messages.RepoSource(tagName=args.tag))
+      request.source = messages.RepoSource(tagName=args.tag)
     elif args.sha:
-      request = messages.RunBuildTriggerRequest(
-          source=messages.RepoSource(commitSha=args.sha))
+      request.source = messages.RepoSource(commitSha=args.sha)
 
     return client.projects_locations_triggers.Run(
         client.MESSAGES_MODULE.CloudbuildProjectsLocationsTriggersRunRequest(

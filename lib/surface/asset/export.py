@@ -29,7 +29,8 @@ OPERATION_DESCRIBE_COMMAND = 'gcloud asset operations describe'
 
 
 # pylint: disable=line-too-long
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Export(base.Command):
   """Export the cloud assets to Google Cloud Storage/BigQuery."""
 
@@ -60,8 +61,8 @@ class Export(base.Command):
   }
   # pylint: enable=line-too-long
 
-  @classmethod
-  def Args(cls, parser):
+  @staticmethod
+  def Args(parser):
     flags.AddParentArgs(parser, 'The project which is the root asset.',
                         'The ID of the organization which is the root asset.',
                         'The ID of the folder which is the root asset.')
@@ -69,60 +70,14 @@ class Export(base.Command):
     flags.AddAssetTypesArgs(parser)
     flags.AddContentTypeArgs(parser, required=False)
     flags.AddDestinationArgs(parser)
+    flags.AddRelationshipTypesArgs(parser)
 
   def Run(self, args):
     parent = asset_utils.GetParentNameForExport(args.organization, args.project,
                                                 args.folder)
-    if args.content_type == 'relationship':
-      client = client_util.AssetExportClient(
-          parent, api_version=client_util.V1P7BETA1_API_VERSION)
-    else:
-      client = client_util.AssetExportClient(parent)
+    client = client_util.AssetExportClient(parent)
     operation = client.Export(args)
 
     log.ExportResource(parent, is_async=True, kind='root asset')
     log.status.Print('Use [{} {}] to check the status of the operation.'.format(
         OPERATION_DESCRIBE_COMMAND, operation.name))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class ExportNonGA(Export):
-  """Export the cloud assets to Google Cloud Storage or BigQuery."""
-
-  detailed_help = {
-      'DESCRIPTION':
-          """\
-      Export the cloud assets to Google Cloud Storage or BigQuery. Use gcloud
-      asset operations describe to get the latest status of the operation. Note
-      that to export a project different from the project you want to bill, you
-      can use  --billing-project or authenticate with a service account.
-      See https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/gcloud-asset
-      for examples of using a service account.
-      """,
-      'EXAMPLES':
-          """\
-      To export a snapshot of assets of type 'compute.googleapis.com/Disk' in
-      project 'test-project' at '2019-03-05T00:00:00Z' to
-      'gs://bucket-name/object-name' and only export the asset metadata, run:
-
-        $ {command} --project='test-project' --asset-types='compute.googleapis.com/Disk' --snapshot-time='2019-03-05T00:00:00Z' --output-path='gs://bucket-name/object-name' --content-type='resource'
-      To export a snapshot of relationship of type INSTANCE_TO_INSTANCEGROUP in
-      project 'test-project' at '2019-03-05T00:00:00Z' to
-      'projects/projectId/datasets/datasetId/tables/table_name', overwrite the table
-      if existed, run:
-
-        $ {command} --project='test-project' --relationship-types='INSTANCE_TO_INSTANCEGROUP' --snapshot-time='2019-03-05T00:00:00Z' --bigquery-table='projects/projectId/datasets/datasetId/tables/table_name' --output-bigquery-force --content-type='relationship'
-      """
-  }
-  # pylint: enable=line-too-long
-
-  @classmethod
-  def Args(cls, parser):
-    flags.AddParentArgs(parser, 'The project which is the root asset.',
-                        'The ID of the organization which is the root asset.',
-                        'The ID of the folder which is the root asset.')
-    flags.AddSnapshotTimeArgs(parser)
-    flags.AddAssetTypesArgs(parser)
-    flags.AddContentTypeArgs(parser, required=False, track=cls.ReleaseTrack())
-    flags.AddDestinationArgs(parser)
-    flags.AddRelationshipTypesArgs(parser)

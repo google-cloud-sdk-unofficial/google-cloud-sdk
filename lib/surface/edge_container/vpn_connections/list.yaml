@@ -25,6 +25,8 @@
     format: |
       table(
         name.basename():label=NAME,
+        cluster.basename():label=CLUSTER,
+        vpc.basename():label=VPC,
         labels:label=LABELS,
         createTime.date():label=CREATED
       )

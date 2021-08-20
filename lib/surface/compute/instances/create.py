@@ -103,7 +103,8 @@ def _CommonArgs(parser,
                 support_replica_zones=False,
                 support_image_family_scope=False,
                 support_subinterface=False,
-                support_node_project=False):
+                support_node_project=False,
+                support_provisioning_model=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
@@ -193,6 +194,9 @@ def _CommonArgs(parser,
   if support_node_project:
     instances_flags.AddNodeProjectArgs(parser)
 
+  if support_provisioning_model:
+    instances_flags.AddProvisioningModelVmArgs(parser)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
@@ -220,6 +224,7 @@ class Create(base.CreateCommand):
   _support_subinterface = False
   _support_secure_tag = False
   _support_node_project = False
+  _support_provisioning_model = False
 
   @classmethod
   def Args(cls, parser):
@@ -275,7 +280,8 @@ class Create(base.CreateCommand):
         skip_defaults,
         support_node_affinity=True,
         support_location_hint=self._support_location_hint,
-        support_node_project=self._support_node_project)
+        support_node_project=self._support_node_project,
+        support_provisioning_model=self._support_provisioning_model)
     tags = instance_utils.GetTags(args, compute_client)
     labels = instance_utils.GetLabels(args, compute_client)
     metadata = instance_utils.GetMetadata(args, compute_client, skip_defaults)
@@ -646,6 +652,7 @@ class CreateAlpha(CreateBeta):
   _support_subinterface = True
   _support_secure_tag = True
   _support_node_project = True
+  _support_provisioning_model = True
 
   @classmethod
   def Args(cls, parser):
@@ -662,7 +669,8 @@ class CreateAlpha(CreateBeta):
         support_multi_writer=cls._support_multi_writer,
         support_image_family_scope=cls._support_image_family_scope,
         support_subinterface=cls._support_subinterface,
-        support_node_project=cls._support_node_project)
+        support_node_project=cls._support_node_project,
+        support_provisioning_model=cls._support_provisioning_model)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)

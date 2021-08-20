@@ -6,7 +6,7 @@ help_text:
     To delete a Pub/Sub Lite topic, run:
 
         $ {command} mytopic \
-            --zone=us-central1-a
+            --location=us-central1-a
 
 request:
   collection: pubsublite.admin.projects.locations.topics
@@ -18,3 +18,9 @@ arguments:
   resource:
     help_text: Topic to delete.
     spec: !REF googlecloudsdk.command_lib.pubsub.resources:lite_topic
+    command_level_fallthroughs:
+      location:
+      - arg_name: 'zone'
+
+  params:
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:zone

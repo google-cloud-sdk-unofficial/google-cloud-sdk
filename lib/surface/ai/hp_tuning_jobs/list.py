@@ -23,6 +23,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
+from googlecloudsdk.command_lib.ai import region_util
+from googlecloudsdk.command_lib.ai import validation
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
@@ -40,11 +42,18 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddRegionResourceArg(parser, 'to list hyperparameter tuning jobs')
+    flags.AddRegionResourceArg(
+        parser,
+        'to list hyperparameter tuning jobs',
+        prompt_func=region_util.GetPromptForRegionFunc(
+            constants.SUPPORTED_TRAINING_REGIONS))
 
   def Run(self, args):
     region_ref = args.CONCEPTS.region.Parse()
     region = region_ref.AsDict()['locationsId']
+    validation.ValidateRegion(
+        region, available_regions=constants.SUPPORTED_TRAINING_REGIONS)
+
     version = constants.GA_VERSION if self.ReleaseTrack(
     ) == base.ReleaseTrack.GA else constants.BETA_VERSION
     with endpoint_util.AiplatformEndpointOverrides(

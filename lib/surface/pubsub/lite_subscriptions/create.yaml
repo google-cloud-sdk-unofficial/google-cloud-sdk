@@ -6,13 +6,13 @@ help_text:
     To create a Pub/Sub Lite subscription, run:
 
         $ {command} mysubscription \
-            --zone=us-central1-a \
+            --location=us-central1-a \
             --topic=mytopic
 
     To create a Pub/Sub Lite subscription at the offset of the oldest retained message, run:
 
         $ {command} mysubscription \
-            --zone=us-central1-a \
+            --location=us-central1-a \
             --topic=mytopic \
             --starting-offset=beginning
 
@@ -30,8 +30,12 @@ arguments:
     spec: !REF googlecloudsdk.command_lib.pubsub.resources:location
     is_parent_resource: true
     is_positional: false
+    command_level_fallthroughs:
+      location:
+      - arg_name: 'zone'
 
   params:
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:zone
   - _REF_: googlecloudsdk.command_lib.pubsub.flags:subscription-name
     required: true
   - _REF_: googlecloudsdk.command_lib.pubsub.flags:subscription-topic-name

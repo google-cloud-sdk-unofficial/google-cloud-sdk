@@ -25,6 +25,27 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.networks.subnets import flags
 
 
+def _DetailedHelp():
+  return {
+      'brief':
+          'Updates properties of an existing Compute Engine subnetwork.',
+      'DESCRIPTION':
+          """\
+          *{command}* is used to update properties of an existing Compute Engine
+          subnetwork.
+      """,
+      'EXAMPLES':
+          """\
+        To enable external IPv6 addresses on the subnetwork example-subnet-1 in
+        network-1, run
+
+        $ {command} example-subnet-1 --stack-type=IPV4_IPV6 \
+--ipv6-access-type=EXTERNAL \
+--region=REGION
+      """
+  }
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Updates properties of an existing Compute Engine subnetwork."""
@@ -35,6 +56,7 @@ class Update(base.UpdateCommand):
   _include_regional_managed_proxy = False
   _include_internal_ipv6_access_type = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
+  detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):

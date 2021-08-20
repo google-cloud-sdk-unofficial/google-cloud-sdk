@@ -48,8 +48,8 @@ class List(base.ListCommand):
         'locations will be listed')
     parser.display_info.AddFormat(
         'table(name.segment(-3):label=LOCATION, '
-        'name.segment(-1):label=BUCKET_ID, retentionDays, lifecycle_state, '
-        'locked, create_time, update_time)')
+        'name.segment(-1):label=BUCKET_ID, retentionDays, restrictedFields, '
+        'lifecycle_state, locked, create_time, update_time)')
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):

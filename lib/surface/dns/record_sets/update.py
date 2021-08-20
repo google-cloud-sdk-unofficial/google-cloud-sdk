@@ -51,6 +51,7 @@ class Update(base.UpdateCommand):
     flags.GetResourceRecordSetsTtlArg(False).AddToParser(parser)
     flags.GetResourceRecordSetsRrdatasArg(False).AddToParser(parser)
     parser.display_info.AddCacheUpdater(None)
+    parser.display_info.AddTransforms(flags.RESOURCERECORDSETS_TRANSFORMS)
     parser.display_info.AddFormat(flags.RESOURCERECORDSETS_FORMAT)
 
   def Run(self, args):
@@ -105,4 +106,5 @@ class UpdateBeta(Update):
     flags.GetResourceRecordSetsTtlArg(False).AddToParser(parser)
     flags.GetResourceRecordSetsRrdatasArgGroup().AddToParser(parser)
     parser.display_info.AddCacheUpdater(None)
+    parser.display_info.AddTransforms(flags.RESOURCERECORDSETS_TRANSFORMS)
     parser.display_info.AddFormat(flags.RESOURCERECORDSETS_FORMAT)

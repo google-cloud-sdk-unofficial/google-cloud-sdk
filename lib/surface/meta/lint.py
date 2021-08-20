@@ -179,8 +179,8 @@ class BadListsChecker(Checker):
     return self._issues
 
 
-def _GetWhitelistedCommandVocabulary():
-  """Returns whitelisted set of gcloud commands."""
+def _GetAllowlistedCommandVocabulary():
+  """Returns allowlisted set of gcloud commands."""
 
   vocabulary_file = os.path.join(os.path.dirname(__file__),
                                  'gcloud_command_vocabulary.txt')
@@ -190,25 +190,25 @@ def _GetWhitelistedCommandVocabulary():
 
 
 class VocabularyChecker(Checker):
-  """Checks that command is the list of whitelisted names."""
+  """Checks that command is the list of allowlisted names."""
 
-  name = 'WhitelistedNameCheck'
-  description = 'Verifies that every command is whitelisted.'
+  name = 'AllowlistedNameCheck'
+  description = 'Verifies that every command is allowlisted.'
 
   def __init__(self):
     super(VocabularyChecker, self).__init__()
-    self._whitelist = _GetWhitelistedCommandVocabulary()
+    self._allowlist = _GetAllowlistedCommandVocabulary()
     self._issues = []
 
   def ForEveryGroup(self, group):
     pass
 
   def ForEveryCommand(self, command):
-    if command.cli_name not in self._whitelist:
+    if command.cli_name not in self._allowlist:
       self._issues.append(LintError(
           name=self.name,
           command=command,
-          error_message='command name [{0}] is not whitelisted'.format(
+          error_message='command name [{0}] is not allowlisted'.format(
               command.cli_name)))
 
   def End(self):

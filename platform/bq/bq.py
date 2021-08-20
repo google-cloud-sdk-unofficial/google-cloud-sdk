@@ -99,6 +99,7 @@ JobIdGeneratorRandom = bigquery_client.JobIdGeneratorRandom
 JobIdGeneratorFingerprint = bigquery_client.JobIdGeneratorFingerprint
 ReservationReference = bigquery_client.ApiClientHelper.ReservationReference
 AutoscaleAlphaReservationReference = bigquery_client.ApiClientHelper.AutoscaleAlphaReservationReference
+AutoscalePreviewReservationReference = bigquery_client.ApiClientHelper.AutoscalePreviewReservationReference
 BetaReservationReference = bigquery_client.ApiClientHelper.BetaReservationReference
 CapacityCommitmentReference = bigquery_client.ApiClientHelper.CapacityCommitmentReference  # pylint: disable=line-too-long
 ReservationAssignmentReference = bigquery_client.ApiClientHelper.ReservationAssignmentReference  # pylint: disable=line-too-long
@@ -2766,6 +2767,8 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       response = []
       if FLAGS.api_version == 'autoscale_alpha':
         object_type = AutoscaleAlphaReservationReference
+      elif FLAGS.api_version == 'autoscale_preview':
+        object_type = AutoscalePreviewReservationReference
       elif FLAGS.api_version == 'v1beta1':
         object_type = BetaReservationReference
       else:
@@ -4057,6 +4060,7 @@ class _Make(BigqueryCmd):
         labels = _ParseLabels(self.label)
 
 
+
       client.CreateDataset(
           reference,
           ignore_existing=True,
@@ -4766,6 +4770,8 @@ class _Update(BigqueryCmd):
         None,
         '[Experimental] Federated identity.',
         flag_values=fv)
+    flags.DEFINE_string(
+        'tenant_id', None, '[Experimental] Tenant id.', flag_values=fv)
     flags.DEFINE_string(
         'range_partitioning',
         None, 'Enables range partitioning on the table. The format should be '

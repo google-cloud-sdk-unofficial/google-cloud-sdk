@@ -84,7 +84,7 @@ File path where trigger should be imported from.
 
     return client.projects_locations_triggers.Patch(
         messages.CloudbuildProjectsLocationsTriggersPatchRequest(
-            buildTrigger=trigger))
+            resourceName=name, triggerId=trigger_id, buildTrigger=trigger))
 
   def _CreateTrigger(self, client, messages, project, location, trigger):
     parent = resources.REGISTRY.Create(

@@ -29,12 +29,12 @@ from googlecloudsdk.api_lib.compute.instance_groups.managed import stateful_poli
 from googlecloudsdk.api_lib.compute.managed_instance_groups_utils import ValueOrNone
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as managed_flags
 from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_healing_utils
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 
 
@@ -77,8 +77,8 @@ def _IsZonalGroup(ref):
   return ref.Collection() == 'compute.instanceGroupManagers'
 
 
-def ValidateAndFixUpdatePolicyAgainstStateful(update_policy, group_ref,
-                                              stateful_policy, client):
+def ValidateUpdatePolicyAgainstStateful(update_policy, group_ref,
+                                        stateful_policy, client):
   """Validates and fixed update policy for stateful MIG.
 
   Sets default values in update_policy for stateful IGMs or throws exception
@@ -90,19 +90,17 @@ def ValidateAndFixUpdatePolicyAgainstStateful(update_policy, group_ref,
     stateful_policy: Stateful policy to check if the group is stateful
     client: The compute API client
   """
-  if stateful_policy is None or update_policy is None:
-    return
-  if _IsZonalGroup(group_ref):
+  if stateful_policy is None or _IsZonalGroup(group_ref):
     return
   redistribution_type_none = (
       client.messages.InstanceGroupManagerUpdatePolicy
       .InstanceRedistributionTypeValueValuesEnum.NONE)
-  if update_policy.instanceRedistributionType is None:
-    update_policy.instanceRedistributionType = redistribution_type_none
-  elif update_policy.instanceRedistributionType != redistribution_type_none:
-    raise exceptions.Error(
-        'Stateful regional IGMs cannot use proactive instance redistribution. '
-        'Use --instance-redistribution-type=NONE')
+  if (not update_policy or
+      update_policy.instanceRedistributionType != redistribution_type_none):
+    raise exceptions.RequiredArgumentException(
+        '--instance-redistribution-type',
+        'Stateful regional IGMs need to have instance redistribution type '
+        'set to \'NONE\'. Use \'--instance-redistribution-type=NONE\'.')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -266,9 +264,10 @@ class CreateGA(base.CreateCommand):
     self._HandleStatefulArgs(instance_group_manager, args, client)
 
     # Validate updatePolicy + statefulPolicy combination
-    ValidateAndFixUpdatePolicyAgainstStateful(
-        instance_group_manager.updatePolicy, group_ref,
-        instance_group_manager.statefulPolicy, client)
+    ValidateUpdatePolicyAgainstStateful(instance_group_manager.updatePolicy,
+                                        group_ref,
+                                        instance_group_manager.statefulPolicy,
+                                        client)
 
     return instance_group_manager
 

@@ -24,5 +24,5 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
-class LiteTopics(base.Group):
+class LiteSubscriptions(base.Group):
   """Manage Pub/Sub Lite subscriptions."""

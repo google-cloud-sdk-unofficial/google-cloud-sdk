@@ -7,7 +7,7 @@
       currency ('USD'), to receive notifications when 50% of the current budget or 75% of the
       forecasted budget is spent in the account '123', run:
 
-        $ {command} --billing-account=123 --display-name="BUDGET1" --budget-amount=100.75USD --threshold-rule=percent=50 --threshold-rule=percent=75,basis=forecasted-spend
+        $ {command} --billing-account=123 --display-name="BUDGET1" --budget-amount=100.75USD --threshold-rule=percent=0.50 --threshold-rule=percent=0.75,basis=forecasted-spend
   request:
     collection: billingbudgets.billingAccounts.budgets
     ALPHA:
@@ -85,7 +85,8 @@
         exceeds the specified percentages of the budget. This flag can be repeated to provide
         multiple thresholds above which an alert is sent.
 
-        *percent*::: Integer between 0 and 100 above which an alert is sent.
+        *percent*::: Number between 0.0 and 1.0. This is a 1.0-based percentage; for example 0.5
+        equals 50 percent. An alert is sent for anything above the value set.
 
         *basis*::: Type of basis used to determine if spend has passed the threshold. Must be
         one of: 'current-spend' or 'forecasted-spend'. Behavior defaults to 'current-spend' if not

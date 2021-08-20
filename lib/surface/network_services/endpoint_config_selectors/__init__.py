@@ -21,6 +21,11 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command has been deprecated. '
+        'Please use `gcloud network-services endpoint-policies` instead.'))
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class EndpointConfigSelectors(base.Group):
   """Manage Network Services EndpointConfigSelectors."""

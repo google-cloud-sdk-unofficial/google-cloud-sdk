@@ -37,11 +37,11 @@ class GetPublicCert(base.DescribeCommand):
     flags.AddOutputFile(parser, "to store PEM")
 
   def Run(self, args):
-    """Run the get-public-cert command."""
-    client_ref = args.CONCEPTS.client.Parse()
-
-    with endpoint_util.GkemulticloudEndpointOverride(client_ref.locationsId,
-                                                     self.ReleaseTrack()):
+    """Runs the get-public-cert command."""
+    with endpoint_util.GkemulticloudEndpointOverride(
+        resource_args.ParseAzureClientResourceArg(args).locationsId,
+        self.ReleaseTrack()):
+      client_ref = resource_args.ParseAzureClientResourceArg(args)
       api_client = azure_api_util.ClientsClient(track=self.ReleaseTrack())
       client = api_client.Get(client_ref)
       log.WriteToFileOrStdout(

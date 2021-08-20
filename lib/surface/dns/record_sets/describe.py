@@ -46,6 +46,7 @@ class Describe(base.DescribeCommand):
     flags.GetResourceRecordSetsNameArg().AddToParser(parser)
     flags.GetResourceRecordSetsTypeArg(True).AddToParser(parser)
     parser.display_info.AddCacheUpdater(None)
+    parser.display_info.AddTransforms(flags.RESOURCERECORDSETS_TRANSFORMS)
     parser.display_info.AddFormat(flags.RESOURCERECORDSETS_FORMAT)
 
   def Run(self, args):

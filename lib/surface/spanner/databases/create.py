@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a Cloud Spanner database."""
 
@@ -81,6 +82,61 @@ class Create(base.CreateCommand):
     kms_key = resource_args.GetAndValidateKmsKeyName(args)
     op = databases.Create(instance_ref, args.database,
                           flags.SplitDdlIntoStatements(args), kms_key)
+    if args.async_:
+      return op
+    return database_operations.Await(op, 'Creating database')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaCreate(Create):
+  """Create a Cloud Spanner database with ALPHA features."""
+  __doc__ = Create.__doc__
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+        To create an empty Cloud Spanner database, run:
+
+          $ {command} testdb --instance=my-instance-id
+
+        To create a Cloud Spanner database with populated schema, run:
+
+          $ {command} testdb --instance=my-instance-id
+              --ddl='CREATE TABLE mytable (a INT64, b INT64) PRIMARY KEY(a)'
+
+        To create a Cloud Spanner database with the PostgreSQL dialect, run:
+
+          $ {command} testdb --instance=my-instance-id
+              --database-dialect=POSTGRESQL
+              --ddl='CREATE TABLE mytable (a BIGINT PRIMARY KEY, b BIGINT)'
+
+        """),
+  }
+
+  @staticmethod
+  def Args(parser):
+    Create.Args(parser)
+    flags.DatabaseDialect(
+        help_text='The SQL dialect of the Cloud Spanner Database. '
+        'Available options: GOOGLE_STANDARD_SQL (default) and POSTGRESQL.'
+    ).AddToParser(parser)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+    database_ref = args.CONCEPTS.database.Parse()
+    instance_ref = database_ref.Parent()
+    kms_key = resource_args.GetAndValidateKmsKeyName(args)
+    op = databases.Create(instance_ref, args.database,
+                          flags.SplitDdlIntoStatements(args), kms_key,
+                          args.database_dialect)
     if args.async_:
       return op
     return database_operations.Await(op, 'Creating database')

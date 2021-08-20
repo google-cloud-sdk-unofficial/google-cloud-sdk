@@ -51,7 +51,6 @@ class Describe(base.DescribeCommand):
         parser, action='to describe')
 
   def Run(self, args):
-    # TODO(b/25212870): use resource parsing.
     client, messages = util.GetClientAndMessages()
     return client.projects_serviceAccounts.Get(
         messages.IamProjectsServiceAccountsGetRequest(

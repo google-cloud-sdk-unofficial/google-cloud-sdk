@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.container.azure import util as azure_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.azure import util as command_util
+from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
 from googlecloudsdk.core import log
@@ -38,26 +39,26 @@ class Create(base.CreateCommand):
     parser.add_argument(
         "--tenant-id",
         required=True,
-        help="The Azure Active Directory (AAD) tenant ID (GUID) to associate with the client."
+        help="Azure Active Directory (AAD) tenant ID (GUID) to associate with the client."
     )
     parser.add_argument(
         "--application-id",
         required=True,
         dest="app_id",
-        help="The Azure Active Directory (AAD) Application/Client ID (GUID).")
+        help="Azure Active Directory (AAD) Application/Client ID (GUID).")
     flags.AddValidateOnly(parser, "creation of the client")
     parser.display_info.AddFormat(command_util.CLIENT_FORMAT)
 
   def Run(self, args):
-    """Run the create command."""
-    client_ref = args.CONCEPTS.client.Parse()
+    """Runs the create command."""
     tenant_id = args.tenant_id
     app_id = args.app_id
     validate_only = args.validate_only
 
     track = base.ReleaseTrack.ALPHA
-    with endpoint_util.GkemulticloudEndpointOverride(client_ref.locationsId,
-                                                     track):
+    with endpoint_util.GkemulticloudEndpointOverride(
+        resource_args.ParseAzureClientResourceArg(args).locationsId, track):
+      client_ref = resource_args.ParseAzureClientResourceArg(args)
       api_client = azure_api_util.ClientsClient(track=track)
       api_client.Create(
           client_ref=client_ref,
@@ -65,4 +66,4 @@ class Create(base.CreateCommand):
           application_id=app_id,
           validate_only=validate_only)
 
-      log.CreatedResource(client_ref, "Azure Client")
+      log.CreatedResource(client_ref, kind=constants.AZURE_CLIENT_KIND)

@@ -8,17 +8,17 @@ help_text:
     a user, group, or service account.
 
   examples: |
-    To add an IAM policy binding for the role of 'roles/servicemanagement.serviceConsumer' for the user 'test-user@gmail.com'
-    with service 'my-service', run:
+    To add an IAM policy binding with the role of 'roles/servicemanagement.serviceConsumer' for the
+    user 'test-user@example.com' on the service 'my-service', run:
 
-      $ {command} my-service --member='user:test-user@gmail.com' --role='roles/servicemanagement.serviceConsumer'
+      $ {command} my-service --member='user:test-user@example.com' --role='roles/servicemanagement.serviceConsumer'
 
-    To add an IAM policy binding for the role of
-    'roles/servicemanagement.serviceConsumer' to the service account
-    'test-proj1@example.domain.com', run:
+    To add an IAM policy binding with the role of
+    'roles/servicemanagement.serviceConsumer' for the service account
+    'my-iam-account@my-project.iam.gserviceaccount.com' on the service 'my-service', run:
 
-      $ {command} test-proj1@example.domain.com \
-          --member='serviceAccount:test-proj1@example.domain.com' \
+      $ {command} my-service \
+          --member='serviceAccount:my-iam-account@my-project.iam.gserviceaccount.com' \
           --role='roles/servicemanagement.serviceConsumer'
 
     See https://cloud.google.com/iam/docs/managing-policies for details of
@@ -44,23 +44,23 @@ ALPHA:
       a user, group, or service account.
 
     examples: |
-      To add an IAM policy binding for the role of 'roles/servicemanagement.serviceConsumer'
-      for the user 'test-user@gmail.com' with service 'my-service', run:
+      To add an IAM policy binding with the role of 'roles/servicemanagement.serviceConsumer'
+      for the user 'test-user@example.com' on the service 'my-service', run:
 
-        $ {command} my-service --member='user:test-user@gmail.com' --role='roles/servicemanagement.serviceConsumer'
+        $ {command} my-service --member='user:test-user@example.com' --role='roles/servicemanagement.serviceConsumer'
 
-      To add an IAM policy binding for the role of
-      'roles/servicemanagement.serviceConsumer' to the service account
-      'test-proj1@example.domain.com', run:
+      To add an IAM policy binding with the role of
+      'roles/servicemanagement.serviceConsumer' for the service account
+      'my-iam-account@my-project.iam.gserviceaccount.com' on the service 'my-service', run:
 
-        $ {command} test-proj1@example.domain.com \
-            --member='serviceAccount:test-proj1@example.domain.com' \
+        $ {command} my-service \
+            --member='serviceAccount:my-iam-account@my-project.iam.gserviceaccount.com' \
             --role='roles/servicemanagement.serviceConsumer'
 
       To add an IAM policy binding which expires at the end of the year 2018 for the role of
-      'roles/servicemanagement.quotaAdmin' and the user 'test-user@gmail.com' with service 'my-service', run:
+      'roles/servicemanagement.quotaAdmin' and the user 'test-user@example.com' with service 'my-service', run:
 
-        $ {command} my-service --member='user:test-user@gmail.com' --role='roles/servicemanagement.quotaAdmin' --condition='expression=request.time < timestamp("2019-01-01T00:00:00Z"),title=expires_end_of_2018,description=Expires at midnight on 2018-12-31'
+        $ {command} my-service --member='user:test-user@example.com' --role='roles/servicemanagement.quotaAdmin' --condition='expression=request.time < timestamp("2019-01-01T00:00:00Z"),title=expires_end_of_2018,description=Expires at midnight on 2018-12-31'
 
       See https://cloud.google.com/iam/docs/managing-policies for details of
       policy role and member types.

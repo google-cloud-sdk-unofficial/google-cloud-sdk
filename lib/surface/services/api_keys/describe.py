@@ -22,10 +22,40 @@ from googlecloudsdk.api_lib.services import apikeys
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
 
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """Describe an API key's metadata.""",
+    'EXAMPLES':
+        """\
+        To describe an API key:
+
+          $ {command} projects/myproject/locations/global/keys/1234
+                OR
+          $ {command} 1234
+                OR
+          $ {command} 1234 --project=myproject
+                OR
+          $ {command} 1234 --project=myproject --location=global
+        """,
+}
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe an API key's metadata."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+        To describe an API key:
+
+          $ {command} projects/myproject/locations/global/keys/1234
+                OR
+          $ {command} 1234
+                OR
+          $ {command} 1234 --project=myproject
+        """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -49,3 +79,33 @@ class Describe(base.DescribeCommand):
     request = messages.ApikeysProjectsKeysGetRequest(
         name=key_ref.RelativeName())
     return client.projects_keys.Get(request)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DescribeGa(base.DescribeCommand):
+  """Describe an API key's metadata."""
+
+  detailed_help = DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    common_flags.key_flag(parser=parser, suffix='to describe', api_version='v2')
+
+  def Run(self, args):
+    """Run command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      The metadata of API key.
+    """
+
+    client = apikeys.GetClientInstance(self.ReleaseTrack())
+    messages = client.MESSAGES_MODULE
+
+    key_ref = args.CONCEPTS.key.Parse()
+    request = messages.ApikeysProjectsLocationsKeysGetRequest(
+        name=key_ref.RelativeName())
+    return client.projects_locations_keys.Get(request)

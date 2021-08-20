@@ -30,8 +30,7 @@ _NETWORK_ARG = network_flags.NetworkArgumentForOtherResource("""\
   """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a new Compute Engine Highly Available VPN gateway.
 
@@ -63,7 +62,7 @@ class Create(base.CreateCommand):
     flags.GetInterconnectAttachmentsFlag().AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.VpnGatewaysCompleter)
 
-  def Run(self, args):
+  def _Run(self, args, support_havpn_ipv6=False):
     """Issues the request to create a new VPN gateway."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     helper = vpn_gateways_utils.VpnGatewayHelper(holder)
@@ -74,12 +73,15 @@ class Create(base.CreateCommand):
       vpn_interfaces_with_interconnect_attachments = self._mapInterconnectAttachments(
           args, holder.resources, vpn_gateway_ref.region,
           vpn_gateway_ref.project)
+    stack_type = None
+    if support_havpn_ipv6:
+      stack_type = args.stack_type
     vpn_gateway_to_insert = helper.GetVpnGatewayForInsert(
         name=vpn_gateway_ref.Name(),
         description=args.description,
         network=network_ref.SelfLink(),
-        vpn_interfaces_with_interconnect_attachments=vpn_interfaces_with_interconnect_attachments
-    )
+        vpn_interfaces_with_interconnect_attachments=vpn_interfaces_with_interconnect_attachments,
+        stack_type=stack_type)
     operation_ref = helper.Create(vpn_gateway_ref, vpn_gateway_to_insert)
     return helper.WaitForOperation(vpn_gateway_ref, operation_ref,
                                    'Creating VPN Gateway')
@@ -103,3 +105,35 @@ class Create(base.CreateCommand):
                                                region, project).SelfLink()
     }
     return result
+
+  def Run(self, args):
+    """See base.CreateCommand."""
+    return self._Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a new Compute Engine Highly Available VPN gateway.
+
+  *{command}* creates a new Highly Available VPN gateway.
+
+  Highly Available VPN Gateway provides a means to create a VPN solution with a
+  higher availability SLA compared to Classic Target VPN Gateway.
+  Highly Available VPN gateways are simply referred to as VPN gateways in the
+  API documentation and gcloud commands.
+  A VPN Gateway can reference one or more VPN tunnels that connect it to
+  external VPN gateways or Cloud VPN Gateways.
+  """
+
+  ROUTER_ARG = None
+  INSTANCE_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    """Set up arguments for this command."""
+    super(CreateAlpha, cls).Args(parser)
+    flags.GetStackType().AddToParser(parser)
+
+  def Run(self, args):
+    """See base.CreateCommand."""
+    return self._Run(args, support_havpn_ipv6=True)

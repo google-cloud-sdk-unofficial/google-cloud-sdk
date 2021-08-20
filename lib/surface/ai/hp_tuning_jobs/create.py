@@ -22,39 +22,55 @@ from googlecloudsdk.api_lib.ai.hp_tuning_jobs import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
-from googlecloudsdk.command_lib.ai import flags
-from googlecloudsdk.command_lib.ai import hp_tuning_jobs_util
 from googlecloudsdk.command_lib.ai import validation
+from googlecloudsdk.command_lib.ai.hp_tuning_jobs import flags
+from googlecloudsdk.command_lib.ai.hp_tuning_jobs import hp_tuning_jobs_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
+
+_HPTUNING_JOB_CREATION_DISPLAY_MESSAGE = """\
+Hyperparameter tuning job [{id}] submitted successfully.
+
+Your job is still active. You may view the status of your job with the command
+
+  $ gcloud{command_version} ai hp-tuning-jobs describe {id} --region={region}
+
+Job State: {state}\
+"""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGa(base.CreateCommand):
-  """Create a hyperparameter tuning job.
+  """Create a hyperparameter tuning job."""
 
-  ## EXAMPLES
+  _api_version = constants.GA_VERSION
 
-  To create a job under project ``example'' in region
-  ``us-central1'', run:
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To create a job named ``test'' under project ``example'' in region
+          ``us-central1'', run:
 
-    $ {command} --region=us-central1 --project=example
-    --config=config.yaml
-    --display-name=test
-  """
+            $ {command} --region=us-central1 --project=example --config=config.yaml --display-name=test
+          """
+  }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.AddCreateHpTuningJobFlags(
-        parser, client.GetAlgorithmEnum(version=constants.GA_VERSION))
+        parser, client.GetAlgorithmEnum(version=cls._api_version))
 
-  def _Run(self, args, region_ref):
+  def Run(self, args):
+    region_ref = args.CONCEPTS.region.Parse()
     region = region_ref.AsDict()['locationsId']
+    validation.ValidateRegion(
+        region, available_regions=constants.SUPPORTED_TRAINING_REGIONS)
+
     with endpoint_util.AiplatformEndpointOverrides(
-        version=constants.GA_VERSION, region=region):
+        version=self._api_version, region=region):
       algorithm = arg_utils.ChoiceToEnum(
-          args.algorithm, client.GetAlgorithmEnum(version=constants.GA_VERSION))
-      response = client.HpTuningJobsClient(version=constants.GA_VERSION).Create(
+          args.algorithm, client.GetAlgorithmEnum(version=self._api_version))
+      response = client.HpTuningJobsClient(version=self._api_version).Create(
           parent=region_ref.RelativeName(),
           config_path=args.config,
           display_name=args.display_name,
@@ -64,50 +80,19 @@ class CreateGa(base.CreateCommand):
           kms_key_name=validation.GetAndValidateKmsKey(args),
           network=args.network,
           service_account=args.service_account)
+
       log.status.Print(
-          constants.HPTUNING_JOB_CREATION_DISPLAY_MESSAGE.format(
+          _HPTUNING_JOB_CREATION_DISPLAY_MESSAGE.format(
               id=hp_tuning_jobs_util.ParseJobName(response.name),
-              version=hp_tuning_jobs_util.OutputCommandVersion(
+              command_version=hp_tuning_jobs_util.OutputCommandVersion(
                   self.ReleaseTrack()),
+              region=region,
               state=response.state))
       return response
-
-  def Run(self, args):
-    region_ref = args.CONCEPTS.region.Parse()
-    return self._Run(args, region_ref)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreatePreGa(CreateGa):
   """Create a hyperparameter tuning job."""
 
-  @staticmethod
-  def Args(parser):
-    flags.AddCreateHpTuningJobFlags(
-        parser, client.GetAlgorithmEnum(version=constants.BETA_VERSION))
-
-  def _Run(self, args, region_ref):
-    region = region_ref.AsDict()['locationsId']
-    with endpoint_util.AiplatformEndpointOverrides(
-        version=constants.BETA_VERSION, region=region):
-      algorithm = arg_utils.ChoiceToEnum(
-          args.algorithm,
-          client.GetAlgorithmEnum(version=constants.BETA_VERSION))
-      response = client.HpTuningJobsClient(
-          version=constants.BETA_VERSION).Create(
-              parent=region_ref.RelativeName(),
-              config_path=args.config,
-              display_name=args.display_name,
-              max_trial_count=args.max_trial_count,
-              parallel_trial_count=args.parallel_trial_count,
-              algorithm=algorithm,
-              kms_key_name=validation.GetAndValidateKmsKey(args),
-              network=args.network,
-              service_account=args.service_account)
-      log.status.Print(
-          constants.HPTUNING_JOB_CREATION_DISPLAY_MESSAGE.format(
-              id=hp_tuning_jobs_util.ParseJobName(response.name),
-              version=hp_tuning_jobs_util.OutputCommandVersion(
-                  self.ReleaseTrack()),
-              state=response.state))
-      return response
+  _api_version = constants.BETA_VERSION

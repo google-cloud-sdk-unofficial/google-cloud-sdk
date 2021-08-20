@@ -12,28 +12,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Constants used for Vertex AI Custom Job."""
-
+"""Errors for GKE Hub memberships commands."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-CUSTOM_JOB_COLLECTION = 'aiplatform.projects.locations.customJobs'
+from googlecloudsdk.core import exceptions
 
-# Different from what's defined in command_lib/ai/constants.py for all Vertex AI
-# product in general, below are available regions specifically for custom jobs.
-REGIONS = (
-    'asia-east1',
-    'asia-northeast1',
-    'asia-northeast3',
-    'asia-southeast1',
-    'australia-southeast1',
-    'europe-west1',
-    'europe-west2',
-    'europe-west4',
-    'northamerica-northeast1',
-    'us-central1',
-    'us-east1',
-    'us-east4',
-    'us-west1',
-)
+
+class InsufficientPermissionsError(exceptions.Error):
+  """An error raised when the caller does not have sufficient permissions."""
+
+  def __init__(self):
+    message = "Caller doesn't have sufficient permissions."
+    super(InsufficientPermissionsError, self).__init__(message)
+
+
+class UnknownApiEndpointOverrideError(exceptions.Error):
+  """An error raised for an invalid value for `api_endpoint_overrides`."""
+
+  def __init__(self, api_name):
+    message = 'Unknown api_endpoint_overrides value for {}'.format(api_name)
+    super(UnknownApiEndpointOverrideError, self).__init__(message)

@@ -88,6 +88,9 @@ class DeployBeta(base.Command):
     """Register flags for this command."""
     Deploy.Args(parser, track)
 
+    # Add additional args for this release track
+    flags.AddMinInstancesFlag(parser)
+
     # Configure flags for secrets
     secrets_config.ConfigureFlags(parser)
 

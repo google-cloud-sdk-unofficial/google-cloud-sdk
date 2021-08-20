@@ -282,7 +282,10 @@ def RunBaseCreateCommand(args, release_track):
 
   operation_ref = None
   try:
-    result_operation = sql_client.instances.Insert(instance_resource)
+    result_operation = sql_client.instances.Insert(
+        sql_messages.SqlInstancesInsertRequest(
+            databaseInstance=instance_resource,
+            project=instance_ref.project))
 
     operation_ref = client.resource_parser.Create(
         'sql.operations',

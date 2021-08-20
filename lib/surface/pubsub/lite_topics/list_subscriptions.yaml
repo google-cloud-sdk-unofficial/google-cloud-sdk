@@ -7,7 +7,7 @@ help_text:
     To list Pub/Sub Lite subscriptions for a given Lite topic, run:
 
         $ {command} mytopic \
-            --zone=us-central1-a
+            --location=us-central1-a
 
 request:
   collection: pubsublite.admin.projects.locations.topics.subscriptions
@@ -21,6 +21,11 @@ arguments:
     spec: !REF googlecloudsdk.command_lib.pubsub.resources:lite_topic
     is_parent_resource: true
     is_positional: true
+    command_level_fallthroughs:
+      location:
+      - arg_name: 'zone'
+  params:
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:zone
 
 response:
   result_attribute: subscriptions

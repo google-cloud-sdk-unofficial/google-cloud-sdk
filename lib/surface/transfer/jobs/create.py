@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.transfer import jobs_apitools_util
 from googlecloudsdk.command_lib.transfer import jobs_flag_util
+from googlecloudsdk.core import log
 
 
 class Create(base.Command):
@@ -54,7 +55,7 @@ class Create(base.Command):
       start with prefixes "baz" and "qux"; and objects modified in the 24 hours
       before the transfer started, run:
 
-        $ {command} gs://foo gs://bar/ --include-prefixes=foo,bar --include-modified-after-relative=1d
+        $ {command} gs://foo gs://bar/ --include-prefixes=baz,qux --include-modified-after-relative=1d
 
       """
   }
@@ -72,6 +73,7 @@ class Create(base.Command):
         jobs_apitools_util.generate_transfer_job_message(args, messages))
 
     if args.no_async:
+      log.status.Print('Created job: {}'.format(result.name))
       operations_util.block_until_done(job_name=result.name)
 
     return result

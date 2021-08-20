@@ -36,7 +36,7 @@ class Delete(base.DeleteCommand):
 
   When you delete a cluster, the following resources are deleted:
 
-  - The master resources
+  - The control plane resources
   - All of the node instances in the cluster
   - Any Pods that are running on those instances
   - Any firewalls and routes created by Kubernetes Engine at the time of cluster

@@ -6,7 +6,7 @@ help_text:
     To update a Cloud Pub/Sub lite-subscription, run:
 
         $ {command} mysubscription \
-            --zone=us-central1-a \
+            --location=us-central1-a \
             --delivery-requirement=DELIVER_IMMEDIATELY
 
 request:
@@ -19,8 +19,12 @@ arguments:
   resource:
     help_text: Subscription to update.
     spec: !REF googlecloudsdk.command_lib.pubsub.resources:lite_subscription
+    command_level_fallthroughs:
+      location:
+      - arg_name: 'zone'
 
   params:
+  - _REF_: googlecloudsdk.command_lib.pubsub.flags:zone
   - group:
       required: true
       params:

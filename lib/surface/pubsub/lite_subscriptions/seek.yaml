@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA, GA]
 help_text:
   brief: Seek a Pub/Sub Lite subscription.
   description: |
@@ -13,14 +13,14 @@ help_text:
     To seek a Pub/Sub Lite subscription to the beginning of the message backlog, run:
 
         $ {command} mysubscription \
-            --zone=us-central1-a \
+            --location=us-central1-a \
             --starting-offset=beginning
 
     To seek a Pub/Sub Lite subscription to a publish time without waiting for the operation to
     complete, run:
 
         $ {command} mysubscription \
-            --zone=us-central1-a \
+            --location=us-central1-a \
             --publish-time="2021-01-01T12:00:00Z"
             --async
 

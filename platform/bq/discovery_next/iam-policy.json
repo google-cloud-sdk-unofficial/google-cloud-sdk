@@ -102,25 +102,25 @@
     "oauth2": {
       "scopes": {
         "https://www.googleapis.com/auth/bigquery": {
-          "description": "View and manage your data in Google BigQuery"
+          "description": "View and manage your data in Google BigQuery and see the email address for your Google Account"
         },
         "https://www.googleapis.com/auth/bigquery.insertdata": {
           "description": "Insert data into Google BigQuery"
         },
         "https://www.googleapis.com/auth/cloud-platform": {
-          "description": "See, edit, configure, and delete your Google Cloud Platform data"
+          "description": "See, edit, configure, and delete your Google Cloud data and see the email address for your Google Account."
         },
         "https://www.googleapis.com/auth/cloud-platform.read-only": {
-          "description": "View your data across Google Cloud Platform services"
+          "description": "View your data across Google Cloud services and see the email address of your Google Account"
         },
         "https://www.googleapis.com/auth/devstorage.full_control": {
-          "description": "Manage your data and permissions in Google Cloud Storage"
+          "description": "Manage your data and permissions in Cloud Storage and see the email address for your Google Account"
         },
         "https://www.googleapis.com/auth/devstorage.read_only": {
           "description": "View your data in Google Cloud Storage"
         },
         "https://www.googleapis.com/auth/devstorage.read_write": {
-          "description": "Manage your data in Google Cloud Storage"
+          "description": "Manage your data in Cloud Storage and see the email address of your Google Account"
         }
       }
     }
@@ -258,6 +258,10 @@
         "linkedDatasetSource": {
           "description": "Optional. The source when the dataset is of type LINKED.",
           "$ref": "LinkedDatasetSource"
+        },
+        "defaultCollationSpec": {
+          "description": "Optional. Defines the default collation specification of future tables created in the dataset. If a table is created in this dataset without table-level default collation, it inherits the dataset default collation, which is applied to the string fields that do not have explicit collation specified. A change of this field affects only tables created afterwards, not the existing tables. The valid values are: * 'und:ci': undetermined locale, case insensitive. * 'binary': unicode code point order. * '': empty string. Default to 'binary' behavior.",
+          "type": "string"
         }
       }
     },
@@ -486,8 +490,8 @@
             "Boosted tree regressor model.",
             "Boosted tree classifier model.",
             "ARIMA model.",
-            "[Beta] AutoML Tables regression model.",
-            "[Beta] AutoML Tables classification model.",
+            "AutoML Tables regression model.",
+            "AutoML Tables classification model.",
             "New name for the ARIMA model."
           ],
           "enum": [
@@ -2239,6 +2243,10 @@
             ]
           }
         },
+        "avroOptions": {
+          "description": "Optional. Additional properties to set if sourceFormat is set to AVRO.",
+          "$ref": "AvroOptions"
+        },
         "jsonExtension": {
           "description": "Optional. [Optional] Load option to be used together with source_format newline-delimited JSON to indicate that a variant of JSON is being loaded. To load newline-delimited GeoJSON, specify GEOJSON (and source_format must be set to NEWLINE_DELIMITED_JSON).",
           "type": "string",
@@ -2326,6 +2334,10 @@
           "description": "Optional. See documentation for precision.",
           "type": "string",
           "format": "int64"
+        },
+        "collationSpec": {
+          "description": "Optional. Field collation can be set only when the type of field is STRING. The valid values are: * 'und:ci': undetermined locale, case insensitive. * 'binary': unicode code point order. * '': empty string. Default to 'binary' behavior.",
+          "type": "string"
         }
       }
     },
@@ -2480,6 +2492,17 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "AvroOptions": {
+      "id": "AvroOptions",
+      "description": "Options for external data sources.",
+      "type": "object",
+      "properties": {
+        "useAvroLogicalTypes": {
+          "description": "[Optional] If set to true will enable interpreting logical types into their corresponding types (ie. TIMESTAMP), instead of only using their raw types (ie. INTEGER).",
+          "type": "boolean"
         }
       }
     },
@@ -4438,11 +4461,11 @@
           "type": "string"
         },
         "description": {
-          "description": "Optional. [Experimental] The description of the routine if defined.",
+          "description": "Optional. The description of the routine, if defined.",
           "type": "string"
         },
         "determinismLevel": {
-          "description": "Optional. [Experimental] The determinism level of the JavaScript UDF if defined.",
+          "description": "Optional. The determinism level of the JavaScript UDF, if defined.",
           "type": "string",
           "enumDescriptions": [
             "The determinism of the UDF is unspecified.",
@@ -4722,6 +4745,10 @@
           "description": "Output only. Contains information about the snapshot. This value is set via snapshot creation.",
           "readOnly": true,
           "$ref": "SnapshotDefinition"
+        },
+        "defaultCollationSpec": {
+          "description": "Optional. Defines the default collation specification of new STRING fields in the table. During table creation or update, if a STRING field is added to this table without explicit collation specified, it inherits the table default collation. A change of this field affects only fields added afterwards, not the existing fields. The valid values are: * 'und:ci': undetermined locale, case insensitive. * 'binary': unicode code point order. * '': empty string. Default to 'binary' behavior.",
+          "type": "string"
         }
       }
     },
@@ -4996,7 +5023,7 @@
     },
     "Policy": {
       "id": "Policy",
-      "description": "An Identity and Access Management (IAM) policy, which specifies access controls for Google Cloud resources. A `Policy` is a collection of `bindings`. A `binding` binds one or more `members` to a single `role`. Members can be user accounts, service accounts, Google groups, and domains (such as G Suite). A `role` is a named list of permissions; each `role` can be an IAM predefined role or a user-created custom role. For some types of Google Cloud resources, a `binding` can also specify a `condition`, which is a logical expression that allows access to a resource only if the expression evaluates to `true`. A condition can add constraints based on attributes of the request, the resource, or both. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https:\/\/cloud.google.com\/iam\/help\/conditions\/resource-policies). **JSON example:** { \"bindings\": [ { \"role\": \"roles\/resourcemanager.organizationAdmin\", \"members\": [ \"user:mike@example.com\", \"group:admins@example.com\", \"domain:google.com\", \"serviceAccount:my-project-id@appspot.gserviceaccount.com\" ] }, { \"role\": \"roles\/resourcemanager.organizationViewer\", \"members\": [ \"user:eve@example.com\" ], \"condition\": { \"title\": \"expirable access\", \"description\": \"Does not grant access after Sep 2020\", \"expression\": \"request.time < timestamp('2020-10-01T00:00:00.000Z')\", } } ], \"etag\": \"BwWWja0YfJA=\", \"version\": 3 } **YAML example:** bindings: - members: - user:mike@example.com - group:admins@example.com - domain:google.com - serviceAccount:my-project-id@appspot.gserviceaccount.com role: roles\/resourcemanager.organizationAdmin - members: - user:eve@example.com role: roles\/resourcemanager.organizationViewer condition: title: expirable access description: Does not grant access after Sep 2020 expression: request.time < timestamp('2020-10-01T00:00:00.000Z') - etag: BwWWja0YfJA= - version: 3 For a description of IAM and its features, see the [IAM documentation](https:\/\/cloud.google.com\/iam\/docs\/).",
+      "description": "An Identity and Access Management (IAM) policy, which specifies access controls for Google Cloud resources. A `Policy` is a collection of `bindings`. A `binding` binds one or more `members` to a single `role`. Members can be user accounts, service accounts, Google groups, and domains (such as G Suite). A `role` is a named list of permissions; each `role` can be an IAM predefined role or a user-created custom role. For some types of Google Cloud resources, a `binding` can also specify a `condition`, which is a logical expression that allows access to a resource only if the expression evaluates to `true`. A condition can add constraints based on attributes of the request, the resource, or both. To learn which resources support conditions in their IAM policies, see the [IAM documentation](https:\/\/cloud.google.com\/iam\/help\/conditions\/resource-policies). **JSON example:** { \"bindings\": [ { \"role\": \"roles\/resourcemanager.organizationAdmin\", \"members\": [ \"user:mike@example.com\", \"group:admins@example.com\", \"domain:google.com\", \"serviceAccount:my-project-id@appspot.gserviceaccount.com\" ] }, { \"role\": \"roles\/resourcemanager.organizationViewer\", \"members\": [ \"user:eve@example.com\" ], \"condition\": { \"title\": \"expirable access\", \"description\": \"Does not grant access after Sep 2020\", \"expression\": \"request.time < timestamp('2020-10-01T00:00:00.000Z')\", } } ], \"etag\": \"BwWWja0YfJA=\", \"version\": 3 } **YAML example:** bindings: - members: - user:mike@example.com - group:admins@example.com - domain:google.com - serviceAccount:my-project-id@appspot.gserviceaccount.com role: roles\/resourcemanager.organizationAdmin - members: - user:eve@example.com role: roles\/resourcemanager.organizationViewer condition: title: expirable access description: Does not grant access after Sep 2020 expression: request.time < timestamp('2020-10-01T00:00:00.000Z') etag: BwWWja0YfJA= version: 3 For a description of IAM and its features, see the [IAM documentation](https:\/\/cloud.google.com\/iam\/docs\/).",
       "type": "object",
       "properties": {
         "version": {

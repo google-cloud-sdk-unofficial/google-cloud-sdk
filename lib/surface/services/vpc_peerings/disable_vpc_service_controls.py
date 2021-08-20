@@ -36,18 +36,24 @@ OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
     base.ReleaseTrack.GA,
 )
 class DisableVpcServiceControls(base.SilentCommand):
-  """Disable VPC Service Controls for a connection."""
+  """Disable VPC Service Controls for the peering connection."""
 
   detailed_help = {
       'DESCRIPTION':
           """\
-          This command  disables VPC service controls for a connection.
+          This command disables VPC Service Controls for the peering connection.
+
+          The local default route (destination 0.0.0.0/0, next hop default
+          internet gateway) is recreated in the service producer VPC network.
+          After the route is recreated, the service producer VPC network cannot
+          import a custom default route from the peering connection to the
+          customer VPC network.
           """,
       'EXAMPLES':
           """\
-          To disable VPC service controls for a connection peering a network
-          called `my-network`  on the current project to a service called
-          `your-service` , run:
+          To disable VPC Service Controls for a connection peering a network
+          called `my-network` on the current project to a service called
+          `your-service`, run:
 
             $ {command} --network=my-network --service=your-service
 

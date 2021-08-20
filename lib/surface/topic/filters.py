@@ -202,7 +202,7 @@ class Filters(base.TopicCommand):
           Using this data, one way of filtering projects is by their parent's ID
           by specifying ``parent.id'' as the _key_.
 
-          ### Filter on a custom list in response
+          ### Filter on a custom or nested list in response
 
           By default the filter exprespression operates on root level resources.
           In order to filter on a nested list(not at the root level of the json)

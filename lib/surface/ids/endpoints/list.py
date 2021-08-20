@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 from googlecloudsdk.api_lib.ids import ids_api
 from googlecloudsdk.command_lib.ids import flags
 from googlecloudsdk.command_lib.util.args import common_args
@@ -58,7 +59,9 @@ class List(base.ListCommand):
     common_args.ProjectArgument().AddToParser(parser)
 
   def Run(self, args):
-    parent = 'projects/{}/locations/-'.format(args.project)
+    project = args.project or properties.VALUES.core.project.GetOrFail()
+    print(project)
+    parent = 'projects/{}/locations/-'.format(project)
 
     client = ids_api.Client(self.ReleaseTrack())
     return client.ListEndpoints(parent, args.limit, args.page_size)

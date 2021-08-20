@@ -35,7 +35,8 @@ class Delete(base.DeleteCommand):
 
   Delete can only be called on registrations in state EXPORTED with expire_time
   in the past.
-  It also works for registrations in state REGISTRATION_FAILED.
+  It also works for registrations in state REGISTRATION_FAILED, TRANSFER_FAILED,
+  and TRANSFER_PENDING.
 
   ## EXAMPLES
 

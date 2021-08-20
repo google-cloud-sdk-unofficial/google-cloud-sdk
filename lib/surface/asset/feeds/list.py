@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.asset import flags
 from googlecloudsdk.command_lib.asset import utils as asset_utils
 
 
-class Describe(base.Command):
+class List(base.Command):
   """List Cloud Asset Inventory Feeds."""
 
   detailed_help = {

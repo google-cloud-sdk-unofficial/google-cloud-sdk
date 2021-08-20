@@ -31,13 +31,13 @@ START_IAP_TUNNEL_COMMAND = 'gcloud compute start-iap-tunnel'
 
 def _GenerateMtlsWhitelistedServices():
   """Generates the table for services which support client certificate."""
-  whitelist = []
+  allowlist = []
   for service, versions in apis_map.MAP.items():
     for version, api_def in versions.items():
       if api_def.enable_mtls:
-        whitelist.append((service, version))
+        allowlist.append((service, version))
 
-  whitelist.sort()
+  allowlist.sort()
   table_out = io.StringIO()
 
   table_out.write("""
@@ -45,7 +45,7 @@ SERVICE | VERSION | NOTES
  --- | --- | ---
  --- | --- | ---
 """)
-  for service, version in whitelist:
+  for service, version in allowlist:
     table_out.write('{} | {} |\n'.format(service, version))
   table_out.write('--- | --- | ---\n')
 
@@ -98,7 +98,7 @@ be ignored.
 The following is the list of services which support client certificate
 authorization in the installed version of the gcloud CLI.
 
-{whitelist}
+{allowlist}
 
 See https://cloud.google.com/sdk/gcloud/reference/topic/client-certificate
 for the support list for the latest version of the gcloud CLI. Please upgrade
@@ -109,7 +109,7 @@ IAP tunnel. For example, ``{start_iap_tunnel_command}'' can start a tunnel to
 Cloud Identity-Aware Proxy through which another process can create a connection
 (e.g. SSH, RDP) to a Google Compute Engine instance. Client certificate
 authorization is supported in tunnel creation.""".format(
-    whitelist=_GenerateMtlsWhitelistedServices(),
+    allowlist=_GenerateMtlsWhitelistedServices(),
     iap_tunnel_service=IAP_TUNNEL_SERVICE,
     start_iap_tunnel_command=START_IAP_TUNNEL_COMMAND)
   }

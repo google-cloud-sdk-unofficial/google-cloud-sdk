@@ -30,10 +30,5 @@ class FutureReservations(base.Group):
       'DESCRIPTION':
           """
         Manage Compute Engine future reservations.
-
-        For more information about future reservations, see the
-        [future reservations documentation](https://cloud.google.com/compute/docs/instances/reserving-zonal-resources).
-
-        See also: [Future Reservations API](https://cloud.google.com/compute/docs/reference/rest/v1/future-reservations).
     """,
   }

@@ -22,9 +22,18 @@ from googlecloudsdk.api_lib.ai.hp_tuning_jobs import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
-from googlecloudsdk.command_lib.ai import flags
-from googlecloudsdk.command_lib.ai import hp_tuning_jobs_util
+from googlecloudsdk.command_lib.ai import validation
+from googlecloudsdk.command_lib.ai.hp_tuning_jobs import flags
+from googlecloudsdk.command_lib.ai.hp_tuning_jobs import hp_tuning_jobs_util
 from googlecloudsdk.core import log
+
+_HPTUNING_JOB_CANCEL_DISPLAY_MESSAGE = """\
+Request to cancel hyperparameter tuning job [{id}] has been sent.
+
+You may view the status of your job with the command
+
+  $ gcloud{command_version} ai hp-tuning-jobs describe {id} --region={region}
+"""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
@@ -48,17 +57,21 @@ class Cancel(base.SilentCommand):
 
   def Run(self, args):
     hptuning_job_ref = args.CONCEPTS.hptuning_job.Parse()
-    name = hptuning_job_ref.Name()
     region = hptuning_job_ref.AsDict()['locationsId']
+    validation.ValidateRegion(
+        region, available_regions=constants.SUPPORTED_TRAINING_REGIONS)
+
     version = constants.GA_VERSION if self.ReleaseTrack(
     ) == base.ReleaseTrack.GA else constants.BETA_VERSION
     with endpoint_util.AiplatformEndpointOverrides(
         version=version, region=region):
       response = client.HpTuningJobsClient(version=version).Cancel(
           hptuning_job_ref.RelativeName())
+
       log.status.Print(
-          constants.HPTUNING_JOB_CANCEL_DISPLAY_MESSAGE.format(
-              id=name,
-              version=hp_tuning_jobs_util.OutputCommandVersion(
-                  self.ReleaseTrack())))
+          _HPTUNING_JOB_CANCEL_DISPLAY_MESSAGE.format(
+              id=hptuning_job_ref.Name(),
+              command_version=hp_tuning_jobs_util.OutputCommandVersion(
+                  self.ReleaseTrack()),
+              region=region))
       return response

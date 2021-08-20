@@ -35,8 +35,8 @@ class PublicKeys(base.Group):
   ## PGP KEY STRUCTURE
 
   An important feature of PGP keys is that they are hierarchical: Every "PGP
-  key" is composed of a "master" key pair and zero or more "subkey" pairs
-  certified by the master. These key pairs are collectively known as the "PGP
+  key" is composed of a "primary" key pair and zero or more "subkey" pairs
+  certified by the primary. These key pairs are collectively known as the "PGP
   key." The "public" part of this PGP key contains the public keys of all the
   constituent keys as well as all associated metadata (e.g. an email address).
   And, as might be expected, the "private" part of the PGP key contains all
@@ -45,11 +45,11 @@ class PublicKeys(base.Group):
   One property of subkeys is that they may be marked as "revoked" if they are
   compromised or otherwise need to be retired. This does not remove the subkey
   from the PGP key but simply adds metadata indicating this revocation. The
-  master key pair cannot be revoked by this same mechanism.
+  primary key pair cannot be revoked by this same mechanism.
 
   ### COMMON KEY STRUCTURE
 
-  The most common key structure is to have the master key pair only used to
+  The most common key structure is to have the primary key pair only used to
   certify subkey pairs while the subkeys are used to encrypt and sign as
   necessary. This allows the PGP key as a whole to act as a durable identity
   even if an encryption key is used improperly or a signing key is compromised.

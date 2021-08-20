@@ -91,6 +91,13 @@ except ImportError:
     except ImportError:
         _OrderedDict = None
 
+# Needed for remaining Python 2.7 projects.
+# TODO(b/194669453): Remove by EOY 2021.
+try:
+    import collections.abc as collections_abc
+except ImportError:
+    import collections as collections_abc
+
 #~ sys.stderr.write( "testing pyparsing module, version %s, %s\n" % (__version__,__versionTime__ ) )
 
 __all__ = [
@@ -941,7 +948,7 @@ class ParseResults(object):
     def __dir__(self):
         return (dir(type(self)) + list(self.keys()))
 
-collections.MutableMapping.register(ParseResults)
+collections_abc.MutableMapping.register(ParseResults)
 
 def col (loc,strg):
     """Returns current column within a string, counting newlines as line separators.
@@ -3248,7 +3255,7 @@ class ParseExpression(ParserElement):
 
         if isinstance( exprs, basestring ):
             self.exprs = [ ParserElement._literalStringClass( exprs ) ]
-        elif isinstance( exprs, collections.Iterable ):
+        elif isinstance( exprs, collections_abc.Iterable ):
             exprs = list(exprs)
             # if sequence of strings provided, wrap with Literal
             if all(isinstance(expr, basestring) for expr in exprs):
@@ -4589,7 +4596,7 @@ def oneOf( strs, caseless=False, useRegex=True ):
     symbols = []
     if isinstance(strs,basestring):
         symbols = strs.split()
-    elif isinstance(strs, collections.Iterable):
+    elif isinstance(strs, collections_abc.Iterable):
         symbols = list(strs)
     else:
         warnings.warn("Invalid argument to oneOf, expected string or iterable",

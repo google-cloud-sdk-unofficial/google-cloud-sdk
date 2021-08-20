@@ -56,7 +56,15 @@ Modifications made by Anorov (https://github.com/Anorov)
 """
 
 from base64 import b64encode
-from collections import Callable
+import six
+# pylint: disable=g-import-not-at-top
+if six.PY2:
+  import collections as collections_abc
+else:
+  # In Python 3.7+ raises DeprecationWarnings when using ABCs from collections
+  # module, and they will be removed in Python 3.9.
+  import collections.abc as collections_abc
+# pylint: enable=g-import-not-at-top
 from errno import EOPNOTSUPP, EINVAL, EAGAIN
 import functools
 from io import BytesIO
@@ -291,7 +299,7 @@ for name in ("sendto", "send", "recvfrom", "recv"):
     # as a function in the class.
     # Python 2 uses __slots__, so there are descriptors for each method,
     # but they are not functions.
-    if not isinstance(method, Callable):
+    if not isinstance(method, collections_abc.Callable):
         _BaseSocket._savenames.append(name)
         setattr(_BaseSocket, name, _makemethod(name))
 

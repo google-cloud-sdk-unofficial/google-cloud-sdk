@@ -25,8 +25,8 @@ from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.hub import api_util as hubapi_util
 from googlecloudsdk.command_lib.container.hub import gwkubeconfig_util as kconfig
+from googlecloudsdk.command_lib.container.hub.memberships import errors as memberships_errors
 from googlecloudsdk.command_lib.projects import util as project_util
-from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -71,15 +71,7 @@ class GetCredentials(base.Command):
 
   def Run(self, args):
     util.CheckKubectlInstalled()
-    # Parse Args: get project_id from flag or default
-    project_id = arg_utils.GetFromNamespace(
-        args, '--project', use_defaults=True)
-    if project_id is None:
-      msg = """\
-The required property [project] is not currently set.
-You may set it for your current workspace by running: \n
-      $ gcloud config set project VALUE"""
-      raise Exception(msg)
+    project_id = properties.VALUES.core.project.GetOrFail()
     log.status.Print('Starting to build Gateway kubeconfig...')
     log.status.Print('Current project_id: ' + project_id)
 
@@ -98,7 +90,7 @@ You may set it for your current workspace by running: \n
     granted_permissions = result.permissions
 
     if set(REQUIRED_PERMISSIONS) != set(granted_permissions):
-      raise Exception("caller doesn't have sufficient permission.")
+      raise memberships_errors.InsufficientPermissionsError()
 
   def ReadClusterMembership(self, project_id, membership):
     resource_name = hubapi_util.MembershipRef(project_id, 'global', membership)
@@ -159,7 +151,7 @@ You may set it for your current workspace by running: \n
     elif 'staging-gkehub' in hub_endpoint_override:
       return 'staging-connectgateway.sandbox.googleapis.com'
     else:
-      raise Exception('Unknown api_endpoint_overrides for gkehub.')
+      raise memberships_errors.UnknownApiEndpointOverrideError('gkehub')
 
   @classmethod
   def GetVersion(cls):

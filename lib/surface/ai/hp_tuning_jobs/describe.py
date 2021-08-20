@@ -22,7 +22,8 @@ from googlecloudsdk.api_lib.ai.hp_tuning_jobs import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
-from googlecloudsdk.command_lib.ai import flags
+from googlecloudsdk.command_lib.ai import validation
+from googlecloudsdk.command_lib.ai.hp_tuning_jobs import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
@@ -45,6 +46,9 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     hptuning_job_ref = args.CONCEPTS.hptuning_job.Parse()
     region = hptuning_job_ref.AsDict()['locationsId']
+    validation.ValidateRegion(
+        region, available_regions=constants.SUPPORTED_TRAINING_REGIONS)
+
     version = constants.GA_VERSION if self.ReleaseTrack(
     ) == base.ReleaseTrack.GA else constants.BETA_VERSION
     with endpoint_util.AiplatformEndpointOverrides(

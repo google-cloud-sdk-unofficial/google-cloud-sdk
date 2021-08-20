@@ -37,7 +37,10 @@ def _Run(args, version):
     endpoints_client = client.EndpointsClient(version=version)
 
     instances_json = endpoints_util.ReadInstancesFromArgs(args.json_request)
-    results = endpoints_client.ExplainBeta(endpoint_ref, instances_json, args)
+    if version == constants.GA_VERSION:
+      results = endpoints_client.Explain(endpoint_ref, instances_json, args)
+    else:
+      results = endpoints_client.ExplainBeta(endpoint_ref, instances_json, args)
 
     if getattr(results, 'deployedModelId') is not None:
       log.status.Print(
@@ -50,8 +53,8 @@ def _Run(args, version):
     return results
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class ExplainBeta(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ExplainGa(base.Command):
   """Request an online explanation from an Vertex AI endpoint.
 
      `{command}` sends an explanation request to the Vertex AI endpoint for
@@ -75,6 +78,27 @@ class ExplainBeta(base.Command):
         prompt_func=region_util.PromptForOpRegion)
     flags.AddPredictInstanceArg(parser)
     flags.GetDeployedModelId(required=False).AddToParser(parser)
+
+  def Run(self, args):
+    return _Run(args, constants.GA_VERSION)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class ExplainBeta(ExplainGa):
+  """Request an online explanation from an Vertex AI endpoint.
+
+     `{command}` sends an explanation request to the Vertex AI endpoint for
+     the given instances. This command reads up to 100 instances, though the
+     service itself accepts instances up to the payload limit size
+     (currently, 1.5MB).
+
+     ## EXAMPLES
+
+     To send an explanation request to the endpoint for the json file,
+     input.json, run:
+
+     $ {command} ENDPOINT_ID --region=us-central1 --json-request=input.json
+  """
 
   def Run(self, args):
     return _Run(args, constants.BETA_VERSION)

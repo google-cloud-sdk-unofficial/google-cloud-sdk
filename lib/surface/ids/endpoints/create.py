@@ -60,6 +60,7 @@ class Create(base.CreateCommand):
     flags.AddDescriptionArg(parser)
     flags.AddSeverityArg(parser)
     flags.AddTrafficLogsArg(parser)
+    flags.AddMaxWait(parser, '60m')  # default to 60 minutes wait.
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddCreateLabelsFlags(parser)
@@ -71,6 +72,7 @@ class Create(base.CreateCommand):
     description = args.description
     enable_traffic_logs = args.enable_traffic_logs
     is_async = args.async_
+    max_wait = datetime.timedelta(seconds=args.max_wait)
 
     client = ids_api.Client(self.ReleaseTrack())
     operation = client.CreateEndpoint(endpoint.Name(),
@@ -88,7 +90,7 @@ class Create(base.CreateCommand):
         operation_ref=client.GetOperationRef(operation, endpoint),
         message='waiting for endpoint [{}] to be created'.format(
             endpoint.RelativeName()),
-        max_wait=datetime.timedelta(hours=1))
+        max_wait=max_wait)
 
 
 Create.detailed_help = DETAILED_HELP

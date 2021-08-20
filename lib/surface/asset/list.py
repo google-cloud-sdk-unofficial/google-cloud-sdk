@@ -63,6 +63,7 @@ class List(base.ListCommand):
     flags.AddSnapshotTimeArgs(parser)
     flags.AddAssetTypesArgs(parser)
     flags.AddListContentTypeArgs(parser)
+    flags.AddRelationshipTypesArgs(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):

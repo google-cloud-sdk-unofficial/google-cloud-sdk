@@ -88,6 +88,7 @@ File path where trigger should be exported.
         collection='cloudbuild.projects.locations.triggers').RelativeName()
 
     got_trigger = client.projects_locations_triggers.Get(
-        messages.CloudbuildProjectsLocationsTriggersGetRequest(name=name))
+        messages.CloudbuildProjectsLocationsTriggersGetRequest(
+            name=name, triggerId=trigger))
     with files.FileWriter(args.destination) as out:
       yaml.dump(encoding.MessageToDict(got_trigger), stream=out)

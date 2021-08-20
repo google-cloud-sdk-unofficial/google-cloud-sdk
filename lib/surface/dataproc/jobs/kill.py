@@ -54,8 +54,6 @@ class Kill(base.Command):
         jobId=job_ref.jobId,
         cancelJobRequest=dataproc.messages.CancelJobRequest())
 
-    # TODO(b/36049788) Check if Job is still running and fail or handle 401.
-
     console_io.PromptContinue(
         message="The job '{0}' will be killed.".format(args.job),
         cancel_on_no=True,

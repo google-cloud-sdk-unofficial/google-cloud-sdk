@@ -335,7 +335,7 @@ class EnablePersonalAuthSession(base.Command):
 
     cluster_key = None
     if cluster_key_type == 'ECIES':
-      # Try to fetch ECIES keys from cluster's master nodes metadata.
+      # Try to fetch ECIES keys from cluster control plane node's metadata.
       # If ECIES keys are not available then again fallback to RSA keys.
       cluster_key = clusters.ClusterKey(cluster, cluster_key_type)
       if not cluster_key:

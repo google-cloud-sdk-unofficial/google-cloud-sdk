@@ -28,7 +28,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class InstallGatewayRbac(base.Command):
+class GenerateGatewayRbac(base.Command):
   # pylint: disable=line-too-long
   r"""Generate RBAC policy files for connected clusters.
 
@@ -41,7 +41,7 @@ class InstallGatewayRbac(base.Command):
 
     Dry run mode to generate the RBAC policy file, and write to local directory:
 
-      $ {command} my-cluster --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com --role=clusterrole/cluster-reader --output=./rbac.yaml
+      $ {command} my-cluster --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com --role=clusterrole/cluster-reader --rbac-output-file=./rbac.yaml
   """
 
   @classmethod
@@ -49,27 +49,27 @@ class InstallGatewayRbac(base.Command):
     parser.add_argument(
         'MEMBERSHIP',
         type=str,
-        help=textwrap.dedent('The membership name to assign RBAC policy with.'),
+        help=textwrap.dedent('Membership name to assign RBAC policy with.'),
     )
     parser.add_argument(
         '--users',
         type=str,
         help=textwrap.dedent("""\
-          The user's email address or service account email address.
+          User's email address or service account email address.
         """),
         required=True)
     parser.add_argument(
         '--role',
         type=str,
         help=textwrap.dedent("""\
-          The namespace scoped role or cluster role.
+          Namespace scoped role or cluster role.
         """),
         required=True)
     parser.add_argument(
-        '--output',
+        '--rbac-output-file',
         type=str,
         help=textwrap.dedent("""\
-          When have this flag enabled, this command will be in dry run mode: the
+          If specified, this command will execute in dry run mode: the
           generated RBAC policy will not be applied to Kubernetes clusters,
           instead it will be written to the designated local file.
         """))
@@ -90,9 +90,9 @@ class InstallGatewayRbac(base.Command):
       raise exceptions.Error(
           'The required field [role] was not provided. Please specify the cluster role or namespace role in this field.'
       )
-    if len(args.output) < 1:
+    if len(args.rbac_output_file) < 1:
       raise exceptions.Error(
-          'The required field [output] was not provided. Please specify the output path in this field.'
+          'The required field [rbac-output-file] was not provided. Please specify the output path in this field.'
       )
     project_id = arg_utils.GetFromNamespace(
         args, '--project', use_defaults=True)

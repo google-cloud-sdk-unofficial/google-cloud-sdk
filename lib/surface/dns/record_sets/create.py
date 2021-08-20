@@ -56,6 +56,7 @@ class Create(base.CreateCommand):
     flags.GetResourceRecordSetsTtlArg(False).AddToParser(parser)
     flags.GetResourceRecordSetsRrdatasArg(True).AddToParser(parser)
     parser.display_info.AddCacheUpdater(None)
+    parser.display_info.AddTransforms(flags.RESOURCERECORDSETS_TRANSFORMS)
     parser.display_info.AddFormat(flags.RESOURCERECORDSETS_FORMAT)
 
   def Run(self, args):
@@ -94,4 +95,5 @@ class CreateBeta(Create):
     flags.GetResourceRecordSetsTtlArg(False).AddToParser(parser)
     flags.GetResourceRecordSetsRrdatasArgGroup().AddToParser(parser)
     parser.display_info.AddCacheUpdater(None)
+    parser.display_info.AddTransforms(flags.RESOURCERECORDSETS_TRANSFORMS)
     parser.display_info.AddFormat(flags.RESOURCERECORDSETS_FORMAT)

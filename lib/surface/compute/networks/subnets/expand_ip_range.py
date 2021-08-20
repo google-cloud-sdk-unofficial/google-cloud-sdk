@@ -132,7 +132,14 @@ class ExpandIpRange(base.SilentCommand):
 ExpandIpRange.detailed_help = {
     'brief': 'Expand the IP range of a Compute Engine subnetwork',
     'DESCRIPTION': """
-*{command}* is used to expand the IP range of a subnetwork.
+*{command}* expands the IP range of a VPC subnetwork.
+
+For more information about expanding a subnet, see [Expanding a primary IP
+range](https://cloud.google.com/vpc/docs/using-vpc#expand-subnet).
+
+This command doesn't work for secondary subnets or for subnets that are used
+exclusively for load balancer proxies. For more information, see [Proxy-only
+subnets for load balancers](https://cloud.google.com/load-balancing/docs/l7-internal/proxy-only-subnets).
 """,
     'EXAMPLES': """
 To expand the IP range of ``SUBNET'' to /16, run:

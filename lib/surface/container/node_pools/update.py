@@ -85,6 +85,8 @@ class Update(base.UpdateCommand):
 
     flags.AddSystemConfigFlag(group, hidden=False)
 
+    flags.AddEnableGvnicFlag(group)
+
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
     return api_adapter.UpdateNodePoolOptions(
@@ -99,7 +101,8 @@ class Update(base.UpdateCommand):
         enable_autoprovisioning=args.enable_autoprovisioning,
         max_surge_upgrade=args.max_surge_upgrade,
         max_unavailable_upgrade=args.max_unavailable_upgrade,
-        system_config_from_file=args.system_config_from_file)
+        system_config_from_file=args.system_config_from_file,
+        gvnic=args.enable_gvnic)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -195,6 +198,7 @@ class UpdateBeta(Update):
     flags.AddTagsNodePoolUpdate(group)
     flags.AddNodePoolEnablePrivateNodes(group, for_update=True, hidden=True)
     flags.AddEnableGcfsFlag(group, for_node_pool=True)
+    flags.AddEnableGvnicFlag(group)
     flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
 
   def ParseUpdateNodePoolOptions(self, args):
@@ -217,6 +221,7 @@ class UpdateBeta(Update):
         tags=args.tags,
         enable_private_nodes=args.enable_private_nodes,
         enable_gcfs=args.enable_gcfs,
+        gvnic=args.enable_gvnic,
         enable_image_streaming=args.enable_image_streaming)
     return ops
 
@@ -254,6 +259,7 @@ class UpdateAlpha(Update):
     flags.AddTagsNodePoolUpdate(group)
     flags.AddNodePoolEnablePrivateNodes(group, for_update=True, hidden=True)
     flags.AddEnableGcfsFlag(group, for_node_pool=True)
+    flags.AddEnableGvnicFlag(group)
     flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
 
   def ParseUpdateNodePoolOptions(self, args):
@@ -276,6 +282,7 @@ class UpdateAlpha(Update):
         tags=args.tags,
         enable_private_nodes=args.enable_private_nodes,
         enable_gcfs=args.enable_gcfs,
+        gvnic=args.enable_gvnic,
         enable_image_streaming=args.enable_image_streaming)
     return ops
 

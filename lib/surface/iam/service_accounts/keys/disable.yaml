@@ -20,3 +20,7 @@
   request:
     collection: iam.projects.serviceAccounts.keys
     method: disable
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.iam.hooks:DisableIamKeyConfirmation

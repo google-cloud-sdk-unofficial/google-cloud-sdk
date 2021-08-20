@@ -31,7 +31,8 @@ class Publish(base.Command):
   """Publish Pub/Sub Lite messages."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           Publishes a message to the specified Pub/Sub Lite topic. This command
           requires Python 3.6 or greater, and requires the grpcio Python package
           to be installed.
@@ -42,15 +43,16 @@ class Publish(base.Command):
             $ sudo pip3 install grpcio
             $ export CLOUDSDK_PYTHON_SITEPACKAGES=1
       """,
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           To publish a message to a Pub/Sub Lite topic, run:
 
-            $ {command} mytopic --zone=us-central1-a --message="Hello World!"
+            $ {command} mytopic --location=us-central1-a --message="Hello World!"
 
           To publish a message to a Pub/Sub Lite topic with an ordering key and
           attributes, run:
 
-            $ {command} mytopic --zone=us-central1-a --message="Hello World!" --ordering-key="key" --attributes=KEY1=VAL1,KEY2=VAL2
+            $ {command} mytopic --location=us-central1-a --message="Hello World!" --ordering-key="key" --attributes=KEY1=VAL1,KEY2=VAL2
       """
   }
 

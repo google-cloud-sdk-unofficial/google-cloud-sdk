@@ -65,7 +65,7 @@ class Failover(base.Command):
 
     console_io.PromptContinue(
         message='Failover will be initiated. Existing connections to the '
-        'master instance will break and no new connection can be established '
+        'primary instance will break and no new connection can be established '
         'during the failover.',
         default=True,
         cancel_on_no=True)

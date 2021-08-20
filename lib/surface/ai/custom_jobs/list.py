@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import region_util
-from googlecloudsdk.command_lib.ai.custom_jobs import constants as custom_job_constants
 from googlecloudsdk.command_lib.ai.custom_jobs import validation
 
 
@@ -47,7 +46,7 @@ class ListGA(base.ListCommand):
         parser,
         'to list custom jobs',
         prompt_func=region_util.GetPromptForRegionFunc(
-            custom_job_constants.REGIONS))
+            constants.SUPPORTED_TRAINING_REGIONS))
 
   def Run(self, args):
     region_ref = args.CONCEPTS.region.Parse()

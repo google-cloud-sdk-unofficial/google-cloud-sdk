@@ -190,6 +190,8 @@ def _Typecheck(obj, types, message=None, method=None):
     raise TypeError(message)
 
 
+
+
 def _ToLowerCamel(name):
   """Convert a name with underscores to camelcase."""
   return re.sub('_[a-z]', lambda match: match.group(0)[1].upper(), name)
@@ -1361,7 +1363,9 @@ class BigqueryClient(object):
     """Return the apiclient that supports reservation operations."""
     path = reservationserver_address
     # Alpha feature actually is hosted in beta endpoint.
-    if (self.api_version == 'v1beta1' or self.api_version == 'autoscale_alpha'):
+    if (self.api_version == 'v1beta1' or
+        self.api_version == 'autoscale_alpha' or
+        self.api_version == 'autoscale_preview'):
       reservation_version = 'v1beta1'
     else:
       reservation_version = 'v1'
@@ -1384,6 +1388,7 @@ class BigqueryClient(object):
       self._op_connection_service_client = self.BuildApiClient(
       discovery_url=discovery_url)
     return self._op_connection_service_client
+
 
 
   #################################
@@ -1720,6 +1725,10 @@ class BigqueryClient(object):
        ):
       return ApiClientHelper.AutoscaleAlphaReservationReference(
           projectId=project_id, location=location, reservationId=reservation_id)
+    elif (self.api_version == 'autoscale_preview'
+         ):
+      return ApiClientHelper.AutoscalePreviewReservationReference(
+          projectId=project_id, location=location, reservationId=reservation_id)
     elif (self.api_version == 'v1beta1'
          ):
       return ApiClientHelper.BetaReservationReference(
@@ -1962,25 +1971,23 @@ class BigqueryClient(object):
       reservation['enable_queuing_and_priorities'][
           'value'] = enable_queuing_and_priorities
 
-    if (autoscale_max_slots is not None
-        or autoscale_budget_slot_hours is not None
-       ):
+    if autoscale_max_slots is not None:
       if (self.api_version != 'autoscale_alpha'
          ):
         raise BigqueryError(
-            'Autoscale is only supported in autoscale_alpha. Please '
+            'autoscale_max_slots is only supported in autoscale_alpha. Please '
             'specify \'--api_version=autoscale_alpha\' and retry.')
-      if (autoscale_max_slots is not None and
-          autoscale_budget_slot_hours is not None):
-        raise BigqueryError(
-            '--autoscale_max_slots and --autoscale_budget_slot_hours can not '
-            'be specified at the same time.')
       reservation['autoscale'] = {}
-      if autoscale_max_slots is not None:
-        reservation['autoscale']['max_slots'] = autoscale_max_slots
-      if autoscale_budget_slot_hours is not None:
-        reservation['autoscale'][
-            'budget_slot_hours'] = autoscale_budget_slot_hours
+      reservation['autoscale']['max_slots'] = autoscale_max_slots
+    if autoscale_budget_slot_hours is not None:
+      if (self.api_version != 'autoscale_preview'
+         ):
+        raise BigqueryError('autoscale_budget_slot_hours is only supported in '
+                            'autoscale_preview. Please specify \'--api_version='
+                            'autoscale_preview\' and retry.')
+      reservation['autoscale'] = {}
+      reservation['autoscale'][
+          'budget_slot_hours'] = autoscale_budget_slot_hours
 
     return reservation
 
@@ -2181,36 +2188,33 @@ class BigqueryClient(object):
           'value'] = enable_queuing_and_priorities
       update_mask += 'enable_queuing_and_priorities.value,'
 
-    if (autoscale_max_slots is not None
-        or autoscale_budget_slot_hours is not None
-       ):
+    if autoscale_max_slots is not None:
       if (self.api_version != 'autoscale_alpha'
          ):
         raise BigqueryError(
-            'Autoscale is only supported in autoscale_alpha. Please '
+            'autoscale_max_slots is only supported in autoscale_alpha. Please '
             'specify \'--api_version=autoscale_alpha\' and retry.')
-      if (autoscale_max_slots is not None and
-          autoscale_budget_slot_hours is not None):
-        raise BigqueryError(
-            '--autoscale_max_slots and --autoscale_budget_slot_hours can not '
-            'be specified at the same time.')
-      if autoscale_max_slots is not None:
-        if autoscale_max_slots != 0:
-          reservation['autoscale'] = {}
-          reservation['autoscale']['max_slots'] = autoscale_max_slots
-          update_mask += 'autoscale.max_slots,'
-        else:
-          # Disable autoscale.
-          update_mask += 'autoscale,'
-      if autoscale_budget_slot_hours is not None:
-        if autoscale_budget_slot_hours != 0:
-          reservation['autoscale'] = {}
-          reservation['autoscale'][
-              'budget_slot_hours'] = autoscale_budget_slot_hours
-          update_mask += 'autoscale.budget_slot_hours,'
-        else:
-          # Disable autoscale.
-          update_mask += 'autoscale,'
+      if autoscale_max_slots != 0:
+        reservation['autoscale'] = {}
+        reservation['autoscale']['max_slots'] = autoscale_max_slots
+        update_mask += 'autoscale.max_slots,'
+      else:
+        # Disable autoscale.
+        update_mask += 'autoscale,'
+    if autoscale_budget_slot_hours is not None:
+      if (self.api_version != 'autoscale_preview'
+         ):
+        raise BigqueryError('autoscale_budget_slot_hours is only supported in '
+                            'autoscale_preview. Please specify \'--api_version='
+                            'autoscale_preview\' and retry.')
+      if autoscale_budget_slot_hours != 0:
+        reservation['autoscale'] = {}
+        reservation['autoscale'][
+            'budget_slot_hours'] = autoscale_budget_slot_hours
+        update_mask += 'autoscale.budget_slot_hours,'
+      else:
+        # Disable autoscale.
+        update_mask += 'autoscale,'
 
     return reservation, update_mask
 
@@ -2705,6 +2709,12 @@ class BigqueryClient(object):
         connection['aws']['credential'] = json.loads(connection_credential)
       update_mask.append('aws.credential')
 
+    elif connection_type == 'Azure':
+      if properties:
+        azure_properties = json.loads(properties)
+        connection['azure'] = azure_properties
+        update_mask.append('azure.customerTenantId')
+
     elif connection_type == 'SQL_DATA_SOURCE':
       if properties:
         sql_data_source_properties = json.loads(properties)
@@ -2979,16 +2989,14 @@ class BigqueryClient(object):
           'creationTime',
           'updateTime'))
     elif reference_type == ApiClientHelper.AutoscaleAlphaReservationReference:
-      formatter.AddColumns((
-          'name',
-          'slotCapacity',
-          'ignoreIdleSlots',
-          'autoscaleMaxSlots',
-          'autoscaleCurrentSlots',
-          'autoscaleBudgetSlotHours',
-          'autoscaleUsedBudgetSlotHours',
-          'creationTime',
-          'updateTime'))
+      formatter.AddColumns(
+          ('name', 'slotCapacity', 'ignoreIdleSlots', 'autoscaleMaxSlots',
+           'autoscaleCurrentSlots', 'creationTime', 'updateTime'))
+    elif reference_type == ApiClientHelper.AutoscalePreviewReservationReference:
+      formatter.AddColumns(
+          ('name', 'slotCapacity', 'ignoreIdleSlots',
+           'autoscaleBudgetSlotHours', 'autoscaleUsedBudgetSlotHours',
+           'creationTime', 'updateTime'))
     elif reference_type == ApiClientHelper.CapacityCommitmentReference:
       formatter.AddColumns(('name', 'slotCount', 'plan', 'renewalPlan', 'state',
                             'commitmentStartTime', 'commitmentEndTime'))
@@ -3639,11 +3647,15 @@ class BigqueryClient(object):
       result['enableQueuingAndPriorities'] = 'False'
     if (reference_type == ApiClientHelper.AutoscaleAlphaReservationReference and
         'autoscale' in list(result.keys())):
-      if 'maxSlots' in list(result['autoscale'].keys()):
+      if 'maxSlots' in result['autoscale']:
         result['autoscaleMaxSlots'] = result['autoscale']['maxSlots']
         result['autoscaleCurrentSlots'] = '0'
         if 'currentSlots' in result['autoscale']:
           result['autoscaleCurrentSlots'] = result['autoscale']['currentSlots']
+      # The original 'autoscale' fields is not needed anymore now.
+      result.pop('autoscale', None)
+    if (reference_type == ApiClientHelper.AutoscalePreviewReservationReference
+        and 'autoscale' in list(result.keys())):
       if 'budgetSlotHours' in result['autoscale']:
         result['autoscaleBudgetSlotHours'] = result['autoscale'][
             'budgetSlotHours']
@@ -4597,6 +4609,7 @@ class BigqueryClient(object):
       body['labels'] = {}
       for label_key, label_value in labels.items():
         body['labels'][label_key] = label_value
+
     try:
       self.apiclient.datasets().insert(
           body=body, **dict(reference.GetProjectReference())).execute()
@@ -6761,6 +6774,7 @@ class ApiClientHelper(object):
       return ApiClientHelper.TableReference.Create(
           projectId=self.projectId, datasetId=self.datasetId, tableId=table_id)
 
+
   class TableReference(Reference):
     _required_fields = frozenset(('projectId', 'datasetId', 'tableId'))
     _format_str = '%(projectId)s:%(datasetId)s.%(tableId)s'
@@ -6831,6 +6845,10 @@ class ApiClientHelper(object):
 
   class AutoscaleAlphaReservationReference(ReservationReference):
     """Reference for autoscale_alpha, which has more features than stable versions."""
+    pass
+
+  class AutoscalePreviewReservationReference(ReservationReference):
+    """Reference for autoscale_preview, which has more features than stable versions."""
     pass
 
   class CapacityCommitmentReference(Reference):

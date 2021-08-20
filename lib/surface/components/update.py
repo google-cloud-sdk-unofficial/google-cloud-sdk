@@ -92,6 +92,13 @@ class Update(base.SilentCommand):
         action='store_true',
         hidden=True,
         help='THIS ARGUMENT NEEDS HELP TEXT.')
+    parser.add_argument(
+        '--compile-python',
+        required=False,
+        hidden=True,
+        default='True',
+        action='store_true',
+        help='THIS ARGUMENT NEEDS HELP TEXT.')
 
   def Run(self, args):
     """Runs the list command."""

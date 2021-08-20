@@ -305,7 +305,7 @@ class Update(base.UpdateCommand):
     group_logging_monitoring = group.add_group()
     flags.AddLoggingServiceFlag(group_logging_monitoring)
     flags.AddMonitoringServiceFlag(group_logging_monitoring)
-    group_logging_monitoring_config = group.add_group(hidden=True)
+    group_logging_monitoring_config = group.add_group()
     flags.AddLoggingFlag(group_logging_monitoring_config)
     flags.AddMonitoringFlag(group_logging_monitoring_config)
     flags.AddEnableBinAuthzFlag(group)
@@ -682,7 +682,7 @@ class UpdateBeta(Update):
     group_logging_monitoring = group.add_group()
     flags.AddLoggingServiceFlag(group_logging_monitoring)
     flags.AddMonitoringServiceFlag(group_logging_monitoring)
-    group_logging_monitoring_config = group.add_group(hidden=True)
+    group_logging_monitoring_config = group.add_group()
     flags.AddLoggingFlag(group_logging_monitoring_config)
     flags.AddMonitoringFlag(group_logging_monitoring_config)
     flags.AddEnableStackdriverKubernetesFlag(group)
@@ -722,7 +722,6 @@ class UpdateBeta(Update):
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddTpuFlags(group, enable_tpu_service_networking=True)
     flags.AddMasterGlobalAccessFlag(group, is_update=True)
-    flags.AddEnableGvnicFlag(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
     flags.AddNotificationConfigFlag(group)
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1beta1', group, hidden=False)
@@ -787,7 +786,6 @@ class UpdateBeta(Update):
     opts.tpu_ipv4_cidr = args.tpu_ipv4_cidr
     opts.enable_tpu_service_networking = args.enable_tpu_service_networking
     opts.enable_master_global_access = args.enable_master_global_access
-    opts.enable_gvnic = args.enable_gvnic
     opts.disable_default_snat = args.disable_default_snat
     opts.notification_config = args.notification_config
     opts.kubernetes_objects_changes_target = args.kubernetes_objects_changes_target
@@ -837,7 +835,7 @@ class UpdateAlpha(Update):
     group_logging_monitoring = group.add_group()
     flags.AddLoggingServiceFlag(group_logging_monitoring)
     flags.AddMonitoringServiceFlag(group_logging_monitoring)
-    group_logging_monitoring_config = group.add_group(hidden=True)
+    group_logging_monitoring_config = group.add_group()
     flags.AddLoggingFlag(group_logging_monitoring_config)
     flags.AddMonitoringFlag(group_logging_monitoring_config)
     flags.AddEnableStackdriverKubernetesFlag(group)
@@ -880,7 +878,6 @@ class UpdateAlpha(Update):
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddTpuFlags(group, enable_tpu_service_networking=True)
     flags.AddMasterGlobalAccessFlag(group, is_update=True)
-    flags.AddEnableGvnicFlag(group)
     flags.AddNotificationConfigFlag(group)
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1alpha1', group, hidden=False)
     flags.AddKubernetesObjectsExportConfig(group)
@@ -941,7 +938,6 @@ class UpdateAlpha(Update):
     opts.disable_default_snat = args.disable_default_snat
     opts.enable_cost_management = args.enable_cost_management
     opts.enable_master_global_access = args.enable_master_global_access
-    opts.enable_gvnic = args.enable_gvnic
     opts.notification_config = args.notification_config
     opts.kubernetes_objects_changes_target = args.kubernetes_objects_changes_target
     opts.kubernetes_objects_snapshots_target = args.kubernetes_objects_snapshots_target

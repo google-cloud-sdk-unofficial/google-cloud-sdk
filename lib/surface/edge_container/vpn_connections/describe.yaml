@@ -16,3 +16,7 @@
     resource:
       help_text: VPN connection you want to describe.
       spec: !REF googlecloudsdk.command_lib.edge_container.resources:vpnConnection
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.edge_container.vpn:CreateDescribeVPNTableViewResponseHook

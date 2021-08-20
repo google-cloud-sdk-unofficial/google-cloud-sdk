@@ -25,7 +25,9 @@
   output:
     format: |
       table(
-        displayName:label=NAME,
+        name.basename():label=MIGRATION_JOB_ID,
+        displayName,
+        name.scope('locations').segment(0):label=REGION,
         state:label=STATUS,
         source.scope("connectionProfiles"),
         destination.scope("connectionProfiles")

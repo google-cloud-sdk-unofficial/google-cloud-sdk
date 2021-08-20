@@ -71,16 +71,131 @@ class UploadV1(base.CreateCommand):
       operation = client.ModelsClient(
           client=client_instance,
           messages=client_instance.MESSAGES_MODULE).UploadV1(
-              region_ref, args.display_name, args.description,
-              args.artifact_uri, args.container_image_uri,
-              args.container_command, args.container_args,
-              args.container_env_vars, args.container_ports,
-              args.container_predict_route, args.container_health_route)
+              region_ref,
+              args.display_name,
+              args.description,
+              args.artifact_uri,
+              args.container_image_uri,
+              args.container_command,
+              args.container_args,
+              args.container_env_vars,
+              args.container_ports,
+              args.container_predict_route,
+              args.container_health_route,
+              explanation_spec=self._BuildExplanationSpec(args))
       return operations_util.WaitForOpMaybe(
           operations_client=operations.OperationsClient(
               client=client_instance, messages=client_instance.MESSAGES_MODULE),
           op=operation,
           op_ref=models_util.ParseModelOperation(operation.name))
+
+  def _BuildExplanationSpec(self, args):
+    """Generate explanation configs if anything related to XAI is specified.
+
+    Args:
+      args: argparse.Namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      An object of GoogleCloudAiplatformV1ExplanationSpec.
+
+    Raises:
+      BadArgumentException: An error if the explanation method provided can not
+        be recognized.
+    """
+    parameters = None
+    method = args.explanation_method
+    if not method:
+      return None
+    if method.lower() == 'integrated-gradients':
+      parameters = (
+          self.messages.GoogleCloudAiplatformV1ExplanationParameters(
+              integratedGradientsAttribution=self.messages
+              .GoogleCloudAiplatformV1IntegratedGradientsAttribution(
+                  stepCount=args.explanation_step_count,
+                  smoothGradConfig=self._BuildSmoothGradConfig(args))))
+    elif method.lower() == 'xrai':
+      parameters = (
+          self.messages.GoogleCloudAiplatformV1ExplanationParameters(
+              xraiAttribution=self.messages
+              .GoogleCloudAiplatformV1XraiAttribution(
+                  stepCount=args.explanation_step_count,
+                  smoothGradConfig=self._BuildSmoothGradConfig(args))))
+    elif method.lower() == 'sampled-shapley':
+      parameters = (
+          self.messages.GoogleCloudAiplatformV1ExplanationParameters(
+              sampledShapleyAttribution=self.messages
+              .GoogleCloudAiplatformV1SampledShapleyAttribution(
+                  pathCount=args.explanation_path_count)))
+    else:
+      raise gcloud_exceptions.BadArgumentException(
+          '--explanation-method',
+          'Explanation method must be one of `integrated-gradients`, '
+          '`xrai` and `sampled-shapley`.')
+    return self.messages.GoogleCloudAiplatformV1ExplanationSpec(
+        metadata=self._ReadExplanationMetadata(args.explanation_metadata_file),
+        parameters=parameters)
+
+  def _BuildSmoothGradConfig(self, args):
+    """Generate smooth grad configs from the arguments specified.
+
+    Args:
+      args: argparse.Namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      An object of GoogleCloudAiplatformV1SmoothGradConfig.
+
+    Raises:
+      BadArgumentException: An error if both smooth-grad-noise-sigma and
+        smooth-grad-noise-sigma-by-feature are set.
+    """
+    if (args.smooth_grad_noise_sigma is None and
+        args.smooth_grad_noisy_sample_count is None and
+        args.smooth_grad_noise_sigma_by_feature is None):
+      return None
+    if (args.smooth_grad_noise_sigma is not None and
+        args.smooth_grad_noise_sigma_by_feature is not None):
+      raise gcloud_exceptions.BadArgumentException(
+          '--smooth-grad-noise-sigma', 'Only one of smooth-grad-noise-sigma '
+          'and smooth-grad-noise-sigma-by-feature can be set.')
+    smooth_grad_config = (
+        self.messages.GoogleCloudAiplatformV1SmoothGradConfig(
+            noiseSigma=args.smooth_grad_noise_sigma,
+            noisySampleCount=args.smooth_grad_noisy_sample_count))
+    sigmas = args.smooth_grad_noise_sigma_by_feature
+    if sigmas:
+      smooth_grad_config.featureNoiseSigma = (
+          self.messages.GoogleCloudAiplatformV1FeatureNoiseSigma(noiseSigma=[
+              self.messages
+              .GoogleCloudAiplatformV1FeatureNoiseSigmaNoiseSigmaForFeature(
+                  name=k, sigma=float(sigmas[k])) for k in sigmas
+          ]))
+    return smooth_grad_config
+
+  def _ReadExplanationMetadata(self, explanation_metadata_file):
+    """Read local explanation metadadta file provided.
+
+    Args:
+      explanation_metadata_file: str. A local file for explanation metadata.
+
+    Returns:
+      An object of GoogleCloudAiplatformV1ExplanationMetadata.
+
+    Raises:
+      BadArgumentException: An error if explanation_metadata_file is None.
+    """
+    explanation_metadata = None
+    if not explanation_metadata_file:
+      raise gcloud_exceptions.BadArgumentException(
+          '--explanation-metadata-file',
+          'Explanation metadata file must be specified.')
+    # Yaml is a superset of json, so parse json file as yaml.
+    data = yaml.load_path(explanation_metadata_file)
+    if data:
+      explanation_metadata = messages_util.DictToMessageWithErrorCheck(
+          data, self.messages.GoogleCloudAiplatformV1ExplanationMetadata)
+    return explanation_metadata
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -100,11 +215,6 @@ class UploadV1Beta1(UploadV1):
   def __init__(self, *args, **kwargs):
     super(UploadV1Beta1, self).__init__(*args, **kwargs)
     self.messages = client.ModelsClient().messages
-
-  @staticmethod
-  def Args(parser):
-    flags.AddUploadModelFlags(parser, region_util.PromptForOpRegion)
-    flags.AddUploadModelBetaFlags(parser)
 
   def Run(self, args):
     region_ref = args.CONCEPTS.region.Parse()
