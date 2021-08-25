@@ -25,13 +25,23 @@ from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 
 
+_EXAMPLES = """
+To describe an Azure client named ``my-client'' in
+location ``us-west1'', run:
+
+$ {command} my-client --location=us-west1
+"""
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe an Azure client."""
 
+  detailed_help = {'EXAMPLES': _EXAMPLES}
+
   @staticmethod
   def Args(parser):
-    resource_args.AddAzureClientResourceArg(parser, "to describe")
+    resource_args.AddAzureClientResourceArg(parser, 'to describe')
 
   def Run(self, args):
     """Runs the describe command."""

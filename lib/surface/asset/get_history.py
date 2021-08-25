@@ -55,6 +55,7 @@ class GetHistory(base.Command):
     ).AddToParser(parent_group)
     flags.AddAssetNamesArgs(parser)
     flags.AddContentTypeArgs(parser, required=True)
+    flags.AddRelationshipTypesArgs(parser)
     flags.AddStartTimeArgs(parser)
     flags.AddEndTimeArgs(parser)
 

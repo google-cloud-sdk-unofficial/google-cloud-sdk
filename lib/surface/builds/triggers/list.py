@@ -66,4 +66,4 @@ class List(base.ListCommand):
 
     return client.projects_locations_triggers.List(
         client.MESSAGES_MODULE.CloudbuildProjectsLocationsTriggersListRequest(
-            parent=parent))
+            parent=parent)).triggers

@@ -63,7 +63,8 @@ def _CommonArgs(parser,
                 support_kms=False,
                 support_location_hint=False,
                 support_multi_writer=False,
-                support_mesh=False):
+                support_mesh=False,
+                support_host_error_timeout_seconds=False):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
@@ -165,6 +166,8 @@ The type of reservation for instances created from this template.
 """)
 
   parser.display_info.AddCacheUpdater(completers.InstanceTemplatesCompleter)
+  if support_host_error_timeout_seconds:
+    instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
 
 
 def _ValidateInstancesFlags(
@@ -462,7 +465,9 @@ def _RunCreate(compute_api,
                support_location_hint=False,
                support_post_key_revocation_action_type=False,
                support_multi_writer=False,
-               support_mesh=False):
+               support_mesh=False,
+               support_provisioning_model=False,
+               support_host_error_timeout_seconds=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -479,6 +484,10 @@ def _RunCreate(compute_api,
       support_multi_writer: Indicates whether a disk can have multiple writers.
       support_mesh: Indicates whether adding VM to a Anthos Service Mesh is
         supported.
+      support_provisioning_model: Indicates whether provisioning_model is
+        supported.
+      support_host_error_timeout_seconds: Indicate the timeout in seconds for
+        host error detection.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -553,6 +562,16 @@ def _RunCreate(compute_api,
   if support_location_hint and args.IsSpecified('location_hint'):
     location_hint = args.location_hint
 
+  provisioning_model = None
+  if (support_provisioning_model and hasattr(args, 'provisioning_model') and
+      args.IsSpecified('provisioning_model')):
+    provisioning_model = args.provisioning_model
+
+  host_error_timeout_seconds = None
+  if support_host_error_timeout_seconds and args.IsSpecified(
+      'host_error_timeout_seconds'):
+    host_error_timeout_seconds = args.host_error_timeout_seconds
+
   scheduling = instance_utils.CreateSchedulingMessage(
       messages=client.messages,
       maintenance_policy=args.maintenance_policy,
@@ -560,7 +579,9 @@ def _RunCreate(compute_api,
       restart_on_failure=args.restart_on_failure,
       node_affinities=node_affinities,
       min_node_cpu=args.min_node_cpu,
-      location_hint=location_hint)
+      location_hint=location_hint,
+      provisioning_model=provisioning_model,
+      host_error_timeout_seconds=host_error_timeout_seconds)
 
   if args.no_service_account:
     service_account = None
@@ -743,6 +764,7 @@ class Create(base.CreateCommand):
   _support_post_key_revocation_action_type = False
   _support_multi_writer = False
   _support_mesh = False
+  _support_provisioning_model = False
 
   @classmethod
   def Args(cls, parser):
@@ -778,7 +800,8 @@ class Create(base.CreateCommand):
         support_post_key_revocation_action_type=self
         ._support_post_key_revocation_action_type,
         support_multi_writer=self._support_multi_writer,
-        support_mesh=self._support_mesh)
+        support_mesh=self._support_mesh,
+        support_provisioning_model=self._support_provisioning_model)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -801,6 +824,7 @@ class CreateBeta(Create):
   _support_post_key_revocation_action_type = True
   _support_multi_writer = True
   _support_mesh = True
+  _support_host_error_timeout_seconds = True
 
   @classmethod
   def Args(cls, parser):
@@ -812,7 +836,9 @@ class CreateBeta(Create):
         support_kms=cls._support_kms,
         support_location_hint=cls._support_location_hint,
         support_multi_writer=cls._support_multi_writer,
-        support_mesh=cls._support_mesh)
+        support_mesh=cls._support_mesh,
+        support_host_error_timeout_seconds=cls
+        ._support_host_error_timeout_seconds)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)
@@ -838,7 +864,10 @@ class CreateBeta(Create):
         support_post_key_revocation_action_type=self
         ._support_post_key_revocation_action_type,
         support_multi_writer=self._support_multi_writer,
-        support_mesh=self._support_mesh)
+        support_mesh=self._support_mesh,
+        support_provisioning_model=self._support_provisioning_model,
+        support_host_error_timeout_seconds=self
+        ._support_host_error_timeout_seconds)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -861,6 +890,8 @@ class CreateAlpha(Create):
   _support_post_key_revocation_action_type = True
   _support_multi_writer = True
   _support_mesh = True
+  _support_provisioning_model = True
+  _support_host_error_timeout_seconds = True
 
   @classmethod
   def Args(cls, parser):
@@ -872,13 +903,16 @@ class CreateAlpha(Create):
         support_kms=cls._support_kms,
         support_location_hint=cls._support_location_hint,
         support_multi_writer=cls._support_multi_writer,
-        support_mesh=cls._support_mesh)
+        support_mesh=cls._support_mesh,
+        support_host_error_timeout_seconds=cls
+        ._support_host_error_timeout_seconds)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
+    instances_flags.AddProvisioningModelVmArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.
@@ -899,7 +933,10 @@ class CreateAlpha(Create):
         support_post_key_revocation_action_type=self
         ._support_post_key_revocation_action_type,
         support_multi_writer=self._support_multi_writer,
-        support_mesh=self._support_mesh)
+        support_mesh=self._support_mesh,
+        support_provisioning_model=self._support_provisioning_model,
+        support_host_error_timeout_seconds=self
+        ._support_host_error_timeout_seconds)
 
 
 DETAILED_HELP = {

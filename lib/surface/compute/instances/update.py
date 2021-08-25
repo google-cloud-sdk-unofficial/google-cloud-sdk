@@ -24,6 +24,8 @@ from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags
+from googlecloudsdk.command_lib.compute.sole_tenancy import flags as sole_tenancy_flags
+from googlecloudsdk.command_lib.compute.sole_tenancy import util as sole_tenancy_util
 from googlecloudsdk.command_lib.util.args import labels_util
 
 DETAILED_HELP = {
@@ -69,7 +71,7 @@ class Update(base.UpdateCommand):
   def Run(self, args):
     return self._Run(args)
 
-  def _Run(self, args):
+  def _Run(self, args, supports_manual_rescheduling=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
@@ -134,15 +136,52 @@ class Update(base.UpdateCommand):
 
     if args.IsSpecified('enable_display_device'):
       display_device_ref = self._GetDisplayDeviceOperationRef(
-          args.enable_display_device,
-          instance_ref,
-          holder)
-      result = self._WaitForResult(
-          operation_poller, display_device_ref,
-          'Updating display device of instance [{0}]',
-          instance_ref.Name()) or result
+          args.enable_display_device, instance_ref, holder)
+      result = self._WaitForResult(operation_poller, display_device_ref,
+                                   'Updating display device of instance [{0}]',
+                                   instance_ref.Name()) or result
+
+    if supports_manual_rescheduling:
+      if instance_utils.IsAnySpecified(args, 'node', 'node_affinity_file',
+                                       'node_group', 'clear_node_affinities'):
+        update_scheduling_ref = self._GetUpdateInstanceSchedulingRef(
+            instance_ref, args, holder)
+        result = self._WaitForResult(
+            operation_poller,
+            update_scheduling_ref, 'Updating the scheduling of instance [{0}]',
+            instance_ref.Name()) or result
 
     return result
+
+  def _GetUpdateInstanceSchedulingRef(self, instance_ref, args, holder):
+    client = holder.client.apitools_client
+    messages = holder.client.messages
+    if instance_utils.IsAnySpecified(args, 'node', 'node_affinity_file',
+                                     'node_group'):
+      affinities = sole_tenancy_util.GetSchedulingNodeAffinityListFromArgs(
+          args, messages)
+    elif args.IsSpecified('clear_node_affinities'):
+      affinities = []
+    else:
+      # No relevant args were specified. We shouldn't have called this function.
+      return None
+    instance = client.instances.Get(
+        messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
+    instance.scheduling.nodeAffinities = affinities
+
+    request = messages.ComputeInstancesUpdateRequest(
+        instance=instance_ref.Name(),
+        project=instance_ref.project,
+        zone=instance_ref.zone,
+        instanceResource=instance,
+        minimalAction=messages.ComputeInstancesUpdateRequest
+        .MinimalActionValueValuesEnum.NO_EFFECT,
+        mostDisruptiveAllowedAction=messages.ComputeInstancesUpdateRequest
+        .MostDisruptiveAllowedActionValueValuesEnum.REFRESH)
+
+    operation = client.instances.Update(request)
+    return holder.resources.Parse(
+        operation.selfLink, collection='compute.zoneOperations')
 
   def _GetShieldedInstanceConfigRef(self, instance_ref, args, holder):
     client = holder.client.apitools_client
@@ -270,9 +309,10 @@ class UpdateBeta(Update):
         parser, use_default_value=False, for_update=True)
     flags.AddShieldedInstanceIntegrityPolicyArgs(parser)
     flags.AddDisplayDeviceArg(parser, is_update=True)
+    sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
 
   def Run(self, args):
-    return self._Run(args)
+    return self._Run(args, supports_manual_rescheduling=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -289,6 +329,7 @@ class UpdateAlpha(UpdateBeta):
         parser, use_default_value=False, for_update=True)
     flags.AddShieldedInstanceIntegrityPolicyArgs(parser)
     flags.AddDisplayDeviceArg(parser, is_update=True)
+    sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
 
 
 Update.detailed_help = DETAILED_HELP

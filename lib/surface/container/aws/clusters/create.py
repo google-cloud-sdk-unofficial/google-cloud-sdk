@@ -30,9 +30,20 @@ from googlecloudsdk.command_lib.container.gkemulticloud import operations
 from googlecloudsdk.core import log
 
 
+# Command needs to be in one line for the docgen tool to format properly.
+_EXAMPLES = """
+To create a cluster named ``my-cluster'' managed in location ``us-west1'',
+run:
+
+$ {command} my-cluster --location=us-west1 --aws-region=AWS_REGION --cluster-version=CLUSTER_VERSION --database-encryption-kms-key-arn=KMS_KEY_ARN --iam-instance-profile=IAM_INSTANCE_PROFILE --pod-address-cidr-blocks=POD_ADDRESS_CIDR_BLOCKS --role-arn=ROLE_ARN --service-address-cidr-blocks=SERVICE_ADDRESS_CIDR_BLOCKS --service-load-balancer-subnet-ids=SUBNET_ID --subnet-ids=SUBNET_ID --vpc-id=VPC_ID
+"""
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a GKE cluster on AWS."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
   def Args(parser):

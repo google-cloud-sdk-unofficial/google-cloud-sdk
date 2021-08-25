@@ -1,0 +1,42 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: Describe a Cloud Filestore snapshot.
+    description: |
+      Displays all data associated with a Cloud Filestore snapshot given a
+      valid snapshot name, as well as instance name and instance region.
+
+      This command can fail for the following reasons:
+        * The snapshot or instance specified does not exist.
+        * The active account does not have permission to access the given
+          snapshot.
+    examples: |
+      To display all data associated with a snapshot of the name 'my-snapshot'
+      for the instance 'my-instance' from 'us-central1', run:
+
+        $ {command} my-snapshot --instance=my-instance --instance-region=us-central1
+
+  arguments:
+    params:
+    - arg_name: snapshot
+      required: true
+      is_positional: true
+      help_text: |
+        Name of the Filestore snapshot to be displayed.
+    - arg_name: instance
+      required: true
+      help_text: |
+        Name of the Filestore instance the snapshot belongs to.
+    - arg_name: instance-region
+      required: true
+      help_text: |
+        Region of the Filestore instance.
+
+  request:
+    BETA:
+      api_version: v1beta1
+    collection: file.projects.locations.instances.snapshots
+    # Disable validating that a snapshot resource arg is specified (as we are using the
+    # file.projects.locations.instances.snapshots collection). This collection is populated manually.
+    disable_resource_check: true
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.filestore.instances.snapshots.util:FormatSnapshotAccessRequest

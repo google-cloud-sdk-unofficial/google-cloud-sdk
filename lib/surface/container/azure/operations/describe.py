@@ -23,9 +23,17 @@ from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import operations
 
+_EXAMPLES = """
+To describe an operation in location ``us-west1'', run:
+
+$ {command} OPERATION_ID --location=us-west1
+"""
+
 
 class Describe(base.DescribeCommand):
   """Describe an operation."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
   def Args(parser):

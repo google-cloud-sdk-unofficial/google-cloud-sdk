@@ -25,7 +25,8 @@ from googlecloudsdk.command_lib.essential_contacts import flags
 from googlecloudsdk.command_lib.essential_contacts import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update an essential contact.
 

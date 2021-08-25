@@ -64,5 +64,6 @@
             locations:label=REGIONS,
             labels:label=LABELS,
             admin:label=ADMIN_NAME,
+            auditLogsEnabled:label=AUDIT_LOGS_ENABLED,
             createTime.date():sort=1
           )

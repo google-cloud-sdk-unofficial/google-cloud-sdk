@@ -15,12 +15,16 @@ What do you do?
 
 """
 
-import collections
 import sys
 
-if (2, 5) <= sys.version_info < (2, 8):
+try:
+    import collections.abc as collections_abc
+except ImportError:
+    import collections as collections_abc
+
+if sys.version_info.major == 2:
     import urllib
-elif (3, 3) <= sys.version_info < (4, 0):
+elif sys.version_info.major == 3:
     import urllib.parse as urllib
 
 
@@ -149,11 +153,11 @@ class URIVariable(object):
                 return None
             if explode:
                 return self.join_str.join(
-                    '%s=%s' % (name, quote(v, safe)) for v in value
+                    '{}={}'.format(name, quote(v, safe)) for v in value
                 )
             else:
                 value = ','.join(quote(v, safe) for v in value)
-                return '%s=%s' % (name, value)
+                return '{}={}'.format(name, value)
 
         if dict_test(value) or tuples:
             if not value:
@@ -161,21 +165,21 @@ class URIVariable(object):
             items = items or sorted(value.items())
             if explode:
                 return self.join_str.join(
-                    '%s=%s' % (
+                    '{}={}'.format(
                         quote(k, safe), quote(v, safe)
                     ) for k, v in items
                 )
             else:
                 value = ','.join(
-                    '%s,%s' % (
+                    '{},{}'.format(
                         quote(k, safe), quote(v, safe)
                     ) for k, v in items
                 )
-                return '%s=%s' % (name, value)
+                return '{}={}'.format(name, value)
 
         if value:
             value = value[:prefix] if prefix else value
-            return '%s=%s' % (name, quote(value, safe))
+            return '{}={}'.format(name, quote(value, safe))
         return name + '='
 
     def _label_path_expansion(self, name, value, explode, prefix):
@@ -196,10 +200,8 @@ class URIVariable(object):
             if not explode:
                 join_str = ','
 
-            expanded = join_str.join(
-                quote(v, safe) for v in value if value is not None
-            )
-            return expanded if expanded else None
+            fragments = [quote(v, safe) for v in value if v is not None]
+            return join_str.join(fragments) if fragments else None
 
         if dict_test(value) or tuples:
             items = items or sorted(value.items())
@@ -234,35 +236,35 @@ class URIVariable(object):
         if list_test(value) and not tuples:
             if explode:
                 expanded = join_str.join(
-                    '%s=%s' % (
+                    '{}={}'.format(
                         name, quote(v, safe)
                     ) for v in value if v is not None
                 )
                 return expanded if expanded else None
             else:
                 value = ','.join(quote(v, safe) for v in value)
-                return '%s=%s' % (name, value)
+                return '{}={}'.format(name, value)
 
         if dict_test(value) or tuples:
             items = items or sorted(value.items())
 
             if explode:
                 return join_str.join(
-                    '%s=%s' % (
+                    '{}={}'.format(
                         quote(k, safe), quote(v, safe)
                     ) for k, v in items if v is not None
                 )
             else:
                 expanded = ','.join(
-                    '%s,%s' % (
+                    '{},{}'.format(
                         quote(k, safe), quote(v, safe)
                     ) for k, v in items if v is not None
                 )
-                return '%s=%s' % (name, expanded)
+                return '{}={}'.format(name, expanded)
 
         value = value[:prefix] if prefix else value
         if value:
-            return '%s=%s' % (name, quote(value, safe))
+            return '{}={}'.format(name, quote(value, safe))
 
         return name
 
@@ -359,14 +361,8 @@ def list_test(value):
     return isinstance(value, (list, tuple))
 
 
-try:
-  dictlikes = (dict, collections.MutableMapping)
-except AttributeError:  # Python 2.5
-  dictlikes = (dict,)
-
-
 def dict_test(value):
-    return isinstance(value, dictlikes)
+    return isinstance(value, (dict, collections_abc.MutableMapping))
 
 
 try:
@@ -374,10 +370,7 @@ try:
 except NameError:  # Python 3
     texttype = str
 
-try:
-  stringlikes = (texttype, bytes)
-except NameError:  # Python 2.5
-  stringlikes = (texttype,)
+stringlikes = (texttype, bytes)
 
 
 def _encode(value, encoding='utf-8'):

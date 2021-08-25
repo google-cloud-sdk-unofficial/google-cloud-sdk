@@ -42,7 +42,8 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class SendDiagnosticInterrupt(base.SilentCommand):
   """Send a diagnostic interrupt to a virtual machine instance."""
 

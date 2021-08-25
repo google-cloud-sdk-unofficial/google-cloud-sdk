@@ -82,6 +82,12 @@ class Filters(base.TopicCommand):
           use _'...'_ shell quotes then use _"..."_ filter string literal quotes
           and vice versa.
 
+          Quoted literals will be interpreted as string values, even when the
+          value could also be a valid number. For example, 'key:1e9' will be
+          interpreted as a key named 'key' with the string value '1e9', rather
+          than with the float value of one billion expressed in scientific
+          notation.
+
           *Operator Terms*::
 
           _key_ *:* _simple-pattern_:::
@@ -259,6 +265,15 @@ class Filters(base.TopicCommand):
           value:
 
             $ gcloud compute instances list --filter="labels.my-label:*"
+
+          List Container Registry images that have a tag with the value
+          '30e5504145':
+
+            $ gcloud container images list-tags --filter="'tags:30e5504145'"
+
+          The last example encloses the filter expression in single quotes
+          because the value '30e5504145' could be interpreted as a number in
+          scientific notation.
 
           List in JSON format those projects where the labels match specific
           values (e.g. label.env is 'test' and label.version is alpha):

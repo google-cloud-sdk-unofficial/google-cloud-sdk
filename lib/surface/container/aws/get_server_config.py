@@ -25,9 +25,18 @@ from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.core import log
 
 
+_EXAMPLES = """
+To return supported AWS regions and valid versions in location ``us-west1'', run:
+
+$ {command} --location=us-west1
+"""
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetServerConfig(base.Command):
   """Get Google Kubernetes Engine server configuration for AWS."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
   def Args(parser):

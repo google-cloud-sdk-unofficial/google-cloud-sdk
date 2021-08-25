@@ -52,7 +52,8 @@ class Update(base.UpdateCommand):
         required=False, default=None).AddToParser(parser)
     flags.GetMonitoringFrequencyArg(
         required=False, default=None).AddToParser(parser)
-    flags.GetAnalysisInstanceSchemaArg(required=False).AddToParser(parser)
+    flags.GetAnalysisInstanceSchemaArg(
+        required=False, hidden=True).AddToParser(parser)
     flags.GetMonitoringLogTtlArg(required=False).AddToParser(parser)
     flags.AddObjectiveConfigGroupForUpdate(parser, required=False)
     labels_util.AddUpdateLabelsFlags(parser)

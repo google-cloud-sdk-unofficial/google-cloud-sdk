@@ -81,7 +81,7 @@ class Rollback(base.CreateCommand):
 
     console_io.PromptContinue(cancel_on_no=True)
 
-    promote_util.Promote(release_ref, release_obj, target_ref.Name(),
+    promote_util.Promote(release_ref, release_obj, target_ref.Name(), False,
                          args.rollout_id)
 
 

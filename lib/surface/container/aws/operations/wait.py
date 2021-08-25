@@ -23,9 +23,16 @@ from googlecloudsdk.command_lib.container.aws import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import operations
 
+_EXAMPLES = """
+To wait for an operation in location ``us-west1'' to complete, run:
+
+$ {command} OPERATION_ID --location=us-west1
+"""
+
 
 class Describe(base.DescribeCommand):
   """Wait for an operation to complete."""
+  detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
   def Args(parser):

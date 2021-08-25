@@ -57,7 +57,7 @@ class Deploy(base.Command):
     flags.AddEntryPointFlag(parser)
 
     # Add args for specifying the function trigger
-    flags.AddTriggerFlagGroup(parser)
+    flags.AddTriggerFlagGroup(parser, track)
 
     # Add args for specifying environment variables
     env_vars_util.AddUpdateEnvVarsFlags(parser)
@@ -113,10 +113,13 @@ class DeployAlpha(base.Command):
     # Configure flags for secrets
     secrets_config.ConfigureFlags(parser)
 
+    # Configure flags for CMEK
+    flags.AddKMSKeyFlags(parser)
+    flags.AddDockerRepositoryFlags(parser)
+
     # Add additional flags for GCFv2
     flags.AddRunServiceAccountFlag(parser)
     flags.AddSignatureTypeFlag(parser)
-    flags.AddTriggerEventFiltersFlag(parser)
     flags.AddTriggerLocationFlag(parser)
     flags.AddTriggerServiceAccountFlag(parser)
     flags.AddV2Flag(parser)

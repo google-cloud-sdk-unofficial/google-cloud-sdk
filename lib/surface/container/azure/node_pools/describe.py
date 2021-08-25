@@ -24,10 +24,19 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 
+_EXAMPLES = """
+To describe a node pool named ``my-node-pool'' in a cluster named
+``my-cluster'' managed in location ``us-west1'', run:
+
+$ {command} my-node-pool --cluster=my-cluster --location=us-west1
+"""
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe an Azure node pool."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
   def Args(parser):

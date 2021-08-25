@@ -91,6 +91,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_match_container_mount_disks = True
   _support_nvdimm = False
   _support_network_performance_configs = False
+  _support_host_error_timeout_seconds = False
 
   @staticmethod
   def Args(parser):
@@ -180,7 +181,12 @@ class CreateWithContainer(base.CreateCommand):
         args, resource_parser, self.SOURCE_INSTANCE_TEMPLATE)
     skip_defaults = instance_utils.GetSkipDefaults(source_instance_template)
     scheduling = instance_utils.GetScheduling(
-        args, compute_client, skip_defaults, support_min_node_cpu=False)
+        args,
+        compute_client,
+        skip_defaults,
+        support_min_node_cpu=False,
+        support_host_error_timeout_seconds=self
+        ._support_host_error_timeout_seconds)
     service_accounts = instance_utils.GetServiceAccounts(
         args, compute_client, skip_defaults)
     user_metadata = instance_utils.GetValidatedMetadata(args, compute_client)
@@ -310,6 +316,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_match_container_mount_disks = True
   _support_nvdimm = False
   _support_network_performance_configs = True
+  _support_host_error_timeout_seconds = True
 
   @staticmethod
   def Args(parser):
@@ -321,6 +328,7 @@ class CreateWithContainerBeta(CreateWithContainer):
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_BETA_API_VERSION)
     instances_flags.AddNetworkPerformanceConfigsArgs(parser)
+    instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
 
   def _ValidateTrackSpecificArgs(self, args):
     instances_flags.ValidateLocalSsdFlags(args)
@@ -336,6 +344,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_match_container_mount_disks = True
   _support_nvdimm = True
   _support_network_performance_configs = True
+  _support_host_error_timeout_seconds = True
 
   @staticmethod
   def Args(parser):
@@ -352,6 +361,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddNetworkPerformanceConfigsArgs(parser)
     instances_flags.AddStackTypeArgs(parser)
     instances_flags.AddIpv6NetworkTierArgs(parser)
+    instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
 
   def _ValidateTrackSpecificArgs(self, args):
     instances_flags.ValidateLocalSsdFlags(args)

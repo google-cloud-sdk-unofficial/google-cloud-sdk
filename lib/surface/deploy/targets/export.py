@@ -22,7 +22,6 @@ import textwrap
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deploy import export_util
-from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import manifest_util
 from googlecloudsdk.command_lib.deploy import resource_args
 from googlecloudsdk.command_lib.deploy import target_util
@@ -54,7 +53,6 @@ class Export(base.ExportCommand):
   def Args(parser):
     resource_args.AddTargetResourceArg(parser, positional=True)
     core_export_util.AddExportFlags(parser)
-    flags.AddDeliveryPipeline(parser, False)
 
   def Run(self, args):
     """Entry point of the export command.
@@ -64,14 +62,8 @@ class Export(base.ExportCommand):
         arguments specified in the .Args() method.
     """
     target_ref = args.CONCEPTS.target.Parse()
-    target_dict = target_ref.AsDict()
-    final_ref = target_util.TargetReference(target_ref.Name(),
-                                            target_dict['projectsId'],
-                                            target_dict['locationsId'],
-                                            args.delivery_pipeline)
-    target_obj = target_util.GetTarget(final_ref)
-
-    manifest = manifest_util.ProtoToManifest(target_obj, final_ref,
+    target_obj = target_util.GetTarget(target_ref)
+    manifest = manifest_util.ProtoToManifest(target_obj, target_ref,
                                              manifest_util.TARGET_KIND_V1BETA1,
                                              manifest_util.TARGET_FIELDS)
 

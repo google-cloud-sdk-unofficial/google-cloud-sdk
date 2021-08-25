@@ -46,17 +46,12 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     flags.AddTriggerResourceArg(parser, 'The trigger to update.', required=True)
     flags.AddEventFiltersArg(parser, cls.ReleaseTrack())
-    flags.AddDestinationRunServiceArg(parser)
-    flags.AddDestinationRunRegionArg(parser)
+    flags.AddUpdateDestinationArgs(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
     service_account_group = parser.add_mutually_exclusive_group()
     flags.AddServiceAccountArg(service_account_group)
     flags.AddClearServiceAccountArg(service_account_group)
-
-    destination_run_path_group = parser.add_mutually_exclusive_group()
-    flags.AddDestinationRunPathArg(destination_run_path_group)
-    flags.AddClearDestinationRunPathArg(destination_run_path_group)
 
   def Run(self, args):
     """Run the update command."""

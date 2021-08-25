@@ -34,9 +34,19 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
+# Command needs to be in one line for the docgen tool to format properly.
+_EXAMPLES = """
+To create a cluster named ``my-cluster'' managed in location ``us-west1'', run:
+
+$ {command} my-cluster --location=us-west1 --azure-region=AZURE_REGION --cluster-version=CLUSTER_VERSION --client=CLIENT --pod-address-cidr-blocks=POD_ADDRESS_CIDR_BLOCKS --resource-group-id=RESOURCE_GROUP_ID --ssh-public-key=SSH_PUBLIC_KEY --subnet-id=SUBNET_ID --vnet-id=VNET_ID
+"""
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a GKE cluster on Azure."""
+
+  detailed_help = {"EXAMPLES": _EXAMPLES}
 
   @staticmethod
   def Args(parser):

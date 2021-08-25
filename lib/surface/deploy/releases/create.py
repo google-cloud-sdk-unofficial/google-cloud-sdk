@@ -96,4 +96,4 @@ class Create(base.CreateCommand):
         release_ref.Name()))
 
     release_obj = release.ReleaseClient().Get(release_ref.RelativeName())
-    promote_util.Promote(release_ref, release_obj, args.to_target)
+    promote_util.Promote(release_ref, release_obj, args.to_target, True)

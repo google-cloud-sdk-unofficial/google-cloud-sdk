@@ -22,9 +22,9 @@ from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.util.apis import arg_utils
-from googlecloudsdk.core import exceptions
+from googlecloudsdk.command_lib.container.hub import rbac_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -79,25 +79,27 @@ class GenerateGatewayRbac(base.Command):
 
     # Check the required field's values are not empty.
     if len(args.MEMBERSHIP) < 1:
-      raise exceptions.Error(
-          'The required property [membership] was not provided. Please specify the cluster name in this field.'
+      raise rbac_util.InvalidArgsError(
+          'The required property [membership] was not provided. Please specify '
+          'the cluster name in this field.'
       )
     if len(args.users) < 1:
-      raise exceptions.Error(
-          'The required field [users] was not provided. Please specify the users or service account in this field.'
+      raise rbac_util.InvalidArgsError(
+          'The required field [users] was not provided. Please specify the '
+          'users or service account in this field.'
       )
     if len(args.role) < 1:
-      raise exceptions.Error(
-          'The required field [role] was not provided. Please specify the cluster role or namespace role in this field.'
+      raise rbac_util.InvalidArgsError(
+          'The required field [role] was not provided. Please specify the '
+          'cluster role or namespace role in this field.'
       )
-    if len(args.rbac_output_file) < 1:
-      raise exceptions.Error(
-          'The required field [rbac-output-file] was not provided. Please specify the output path in this field.'
-      )
-    project_id = arg_utils.GetFromNamespace(
-        args, '--project', use_defaults=True)
-    if len(project_id) < 1:
-      raise exceptions.Error(
-          'The required field [project] was not provided. It should be your project ID'
-      )
-    return True
+    project_id = properties.VALUES.core.project.GetOrFail()
+
+    # Validate the args value before generate the RBAC policy file.
+    rbac_util.ValidateArgs(args)
+
+    # Generate the RBAC policy file from args.
+    generated_rbac = rbac_util.GenerateRBAC(args, project_id)
+
+    # Write the generated RBAC policy file to the file provided.
+    log.WriteToFileOrStdout(args.rbac_output_file if args.rbac_output_file else '-', generated_rbac, overwrite=True, binary=False, private=True)

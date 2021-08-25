@@ -25,9 +25,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deploy import describe
 from googlecloudsdk.command_lib.deploy import resource_args
 from googlecloudsdk.command_lib.deploy import target_util
-from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 _DETAILED_HELP = {
     'DESCRIPTION':
@@ -93,19 +91,20 @@ class Describe(base.DescribeCommand):
     targets = []
     # output the deployment status of the targets in the pipeline.
     for stage in pipeline.serialPipeline.stages:
+      target_ref = target_util.TargetReference(
+          stage.targetId,
+          pipeline_ref.AsDict()['projectsId'], region)
       try:
-        target_ref, deploy_target = target_util.GetTargetReferenceInUnknownCollection(
-            stage.targetId, properties.VALUES.core.project.GetOrFail(), region,
-            pipeline_ref.Name())
-      except core_exceptions.Error as error:
+        target_obj = target_util.GetTarget(target_ref)
+      except apitools_exceptions.HttpError as error:
         log.debug('Failed to get target {}: {}'.format(stage.targetId, error))
         log.status.Print('Unable to get target {}'.format(stage.targetId))
         continue
-      detail = {'Target': target_ref.Name()}
+      detail = {'Target': target_ref.RelativeName()}
       releases, current_rollout = target_util.GetReleasesAndCurrentRollout(
           target_ref, pipeline_ref.Name())
       detail = describe.SetCurrentReleaseAndRollout(current_rollout, detail)
-      if deploy_target.requireApproval:
+      if target_obj.requireApproval:
         detail = describe.ListPendingApprovals(releases, target_ref, detail)
       targets.append(detail)
 

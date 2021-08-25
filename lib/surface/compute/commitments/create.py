@@ -34,9 +34,11 @@ from googlecloudsdk.core import properties
 _MISSING_COMMITMENTS_QUOTA_REGEX = r'Quota .COMMITMENTS. exceeded.+'
 
 
-def _CommonArgsAlphaBeta(track, parser):
+def _CommonArgsAlphaBeta(track, parser, support_auto_renew=False):
   """Add common flags for Alpha, Beta track."""
   flags.MakeCommitmentArg(False).AddArgument(parser, operation_type='create')
+  if support_auto_renew:
+    flags.AddAutoRenew(parser)
   messages = apis.GetMessagesModule('compute', track)
   flags.GetTypeMapperFlag(messages).choice_arg.AddToParser(parser)
 
@@ -147,6 +149,25 @@ class CreateAlpha(CreateBeta):
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgsAlphaBeta('alpha', parser)
+    _CommonArgsAlphaBeta('alpha', parser, support_auto_renew=True)
     flags.AddCreateFlags(
         parser, support_share_setting=cls._support_share_setting)
+
+  def _MakeCreateRequest(self, args, messages, project, region, commitment_ref,
+                         holder):
+    commitment_type_flag = flags.GetTypeMapperFlag(messages)
+    commitment_type = commitment_type_flag.GetEnumForChoice(args.type)
+    commitment = messages.Commitment(
+        reservations=reservation_helper.MakeReservations(
+            args, messages, holder),
+        name=commitment_ref.Name(),
+        plan=flags.TranslatePlanArg(messages, args.plan),
+        resources=flags.TranslateResourcesArgGroup(messages, args),
+        type=commitment_type,
+        autoRenew=flags.TranslateAutoRenewArg(args))
+    return messages.ComputeRegionCommitmentsInsertRequest(
+        commitment=commitment,
+        project=project,
+        region=commitment_ref.region,
+    )
+

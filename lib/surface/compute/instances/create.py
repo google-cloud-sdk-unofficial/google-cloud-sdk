@@ -104,7 +104,8 @@ def _CommonArgs(parser,
                 support_image_family_scope=False,
                 support_subinterface=False,
                 support_node_project=False,
-                support_provisioning_model=False):
+                support_provisioning_model=False,
+                support_host_error_timeout_seconds=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
@@ -197,6 +198,9 @@ def _CommonArgs(parser,
   if support_provisioning_model:
     instances_flags.AddProvisioningModelVmArgs(parser)
 
+  if support_host_error_timeout_seconds:
+    instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
@@ -225,6 +229,7 @@ class Create(base.CreateCommand):
   _support_secure_tag = False
   _support_node_project = False
   _support_provisioning_model = False
+  _support_host_error_timeout_seconds = False
 
   @classmethod
   def Args(cls, parser):
@@ -236,7 +241,9 @@ class Create(base.CreateCommand):
         enable_regional=cls._support_regional,
         support_image_family_scope=cls._support_image_family_scope,
         support_subinterface=cls._support_subinterface,
-        support_node_project=cls._support_node_project)
+        support_node_project=cls._support_node_project,
+        support_host_error_timeout_seconds=cls
+        ._support_host_error_timeout_seconds)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -281,7 +288,9 @@ class Create(base.CreateCommand):
         support_node_affinity=True,
         support_location_hint=self._support_location_hint,
         support_node_project=self._support_node_project,
-        support_provisioning_model=self._support_provisioning_model)
+        support_provisioning_model=self._support_provisioning_model,
+        support_host_error_timeout_seconds=self
+        ._support_host_error_timeout_seconds)
     tags = instance_utils.GetTags(args, compute_client)
     labels = instance_utils.GetLabels(args, compute_client)
     metadata = instance_utils.GetMetadata(args, compute_client, skip_defaults)
@@ -582,6 +591,7 @@ class CreateBeta(Create):
   _support_subinterface = False
   _support_secure_tag = False
   _support_node_project = False
+  _support_host_error_timeout_seconds = True
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -610,7 +620,9 @@ class CreateBeta(Create):
         support_multi_writer=cls._support_multi_writer,
         support_image_family_scope=cls._support_image_family_scope,
         support_subinterface=cls._support_subinterface,
-        support_node_project=cls._support_node_project)
+        support_node_project=cls._support_node_project,
+        support_host_error_timeout_seconds=cls
+        ._support_host_error_timeout_seconds)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -653,6 +665,7 @@ class CreateAlpha(CreateBeta):
   _support_secure_tag = True
   _support_node_project = True
   _support_provisioning_model = True
+  _support_host_error_timeout_seconds = True
 
   @classmethod
   def Args(cls, parser):
@@ -670,7 +683,10 @@ class CreateAlpha(CreateBeta):
         support_image_family_scope=cls._support_image_family_scope,
         support_subinterface=cls._support_subinterface,
         support_node_project=cls._support_node_project,
-        support_provisioning_model=cls._support_provisioning_model)
+        support_provisioning_model=cls._support_provisioning_model,
+        support_host_error_timeout_seconds=cls
+        ._support_host_error_timeout_seconds)
+
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)

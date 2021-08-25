@@ -23,10 +23,19 @@ from googlecloudsdk.command_lib.container.aws import node_pools
 from googlecloudsdk.command_lib.container.aws import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 
+_EXAMPLES = """
+To list all node pools in a cluster named ``my-cluster''
+managed in location ``us-west1'', run:
+
+$ {command} --cluster=my-cluster --location=us-west1
+"""
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.ListCommand):
   """List GKE node pools on AWS."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
   def Args(parser):

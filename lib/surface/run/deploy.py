@@ -148,6 +148,7 @@ class Deploy(base.Command):
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddIngressFlag(parser)
     flags.AddHttp2Flag(parser)
+    flags.AddSourceAndImageFlags(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
@@ -156,8 +157,6 @@ class Deploy(base.Command):
   def Args(parser):
     Deploy.CommonArgs(parser)
 
-    flags.AddImageArg(parser, required=False)
-
   def Run(self, args):
     """Deploy a container to Cloud Run."""
     platform = flags.GetAndValidatePlatform(
@@ -165,7 +164,7 @@ class Deploy(base.Command):
 
     include_build = flags.FlagIsExplicitlySet(args, 'source')
     if not include_build and not args.IsSpecified('image'):
-      if console_io.CanPrompt() and self.ReleaseTrack() != base.ReleaseTrack.GA:
+      if console_io.CanPrompt():
         args.source = flags.PromptForDefaultSource()
         include_build = True
       else:
@@ -294,9 +293,6 @@ class BetaDeploy(Deploy):
     flags.AddBinAuthzBreakglassFlag(managed_group)
     flags.AddCmekKeyFlag(managed_group)
 
-    # Flags indicating whether to deploy source or an existing image
-    flags.AddSourceAndImageFlags(parser)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaDeploy(Deploy):
@@ -315,9 +311,6 @@ class AlphaDeploy(Deploy):
     flags.AddCpuThrottlingFlag(managed_group)
     flags.AddConfidentialFlag(managed_group)
     flags.AddCmekKeyRevocationActionTypeFlag(managed_group)
-
-    # Flags indicating whether to deploy source or an existing image
-    flags.AddSourceAndImageFlags(parser)
 
 
 AlphaDeploy.__doc__ = Deploy.__doc__

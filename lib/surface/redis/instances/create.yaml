@@ -153,6 +153,34 @@
       hidden: true
       help_text: |
         Date and time of the first snapshot, and alignment time for future snapshots.
+    - arg_name: read-replicas-mode
+      api_field: instance.readReplicasMode
+      release_tracks: [ALPHA]
+      hidden: true
+      help_text: |
+          Read replicas mode used by the instance. Only work against standard tier instances with
+          5GB and above provisioned capacity.
+      choices:  # Enum is mapped to keep READ-REPLICAS-MODE-UNSPECIFIED invisible from users.
+      - enum_value: READ-REPLICAS-DISABLED
+        arg_value: READ-REPLICAS-DISABLED
+        help_text: |
+            Read replica is disabled for the instance. Read endpoint will not
+            be provided and the instance cannot scale up or down the number of
+            replicas.
+      - enum_value: READ-REPLICAS-ENABLED
+        arg_value: READ-REPLICAS-ENABLED
+        help_text: |
+            Read replica is enabled for the instance. Read endpoint will be
+            provided and the instance can scale up and down the number of
+            replicas.
+    - arg_name: replica-count
+      api_field: instance.replicaCount
+      type: long
+      release_tracks: [ALPHA]
+      hidden: true
+      help_text: |
+        The replcia count of the instance. Valid from 1 to 5. Only work against standard tier
+        instances.
     - arg_name: redis-version
       api_field: instance.redisVersion
       metavar: VERSION

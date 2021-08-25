@@ -29,9 +29,20 @@ from googlecloudsdk.command_lib.container.gkemulticloud import flags
 from googlecloudsdk.core import log
 
 
+# Command needs to be in one line for the docgen tool to format properly.
+_EXAMPLES = """
+To create an Azure client named ``my-client'' in
+location ``us-west1'', run:
+
+$ {command} my-client --location=us-west1 --application-id=APP_ID --tenant-id=TENANT_ID
+"""
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create an Azure client."""
+
+  detailed_help = {"EXAMPLES": _EXAMPLES}
 
   @staticmethod
   def Args(parser):

@@ -29,9 +29,20 @@ from googlecloudsdk.command_lib.container.gkemulticloud import operations
 from googlecloudsdk.core import log
 
 
+# Command needs to be in one line for the docgen tool to format properly.
+_EXAMPLES = """
+To create a node pool named ``my-node-pool'' in a cluster named ``my-cluster''
+managed in location ``us-west1'', run:
+
+$ {command} my-node-pool --cluster=my-cluster --location=us-west1 --iam-instance-profile=IAM_INSTANCE_PROFILE --node-version=NODE_VERSION --subnet-id=SUBNET_ID
+"""
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a GKE node pool on AWS."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
   def Args(parser):

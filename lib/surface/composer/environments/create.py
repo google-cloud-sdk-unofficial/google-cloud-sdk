@@ -36,11 +36,11 @@ PREREQUISITE_OPTION_ERROR_MSG = """\
 Cannot specify --{opt} without --{prerequisite}.
 """
 
-INVALID_OPTION_FOR_V2_ERROR_MSG = """\
+_INVALID_OPTION_FOR_V2_ERROR_MSG = """\
 Cannot specify --{opt} with Composer 2.X or greater.
 """
 
-INVALID_OPTION_FOR_V1_ERROR_MSG = """\
+_INVALID_OPTION_FOR_V1_ERROR_MSG = """\
 Cannot specify --{opt} with Composer 1.X.
 """
 
@@ -88,7 +88,8 @@ def _CommonArgs(parser, support_max_pods_per_node, release_track):
       'size is 20GB, and the maximum is 64TB. Specified value must be an '
       'integer multiple of gigabytes. Cannot be updated after the '
       'environment has been created. If units are not provided, defaults to '
-      'GB.')
+      'GB.',
+      action=flags.V1ExclusiveStoreAction)
   networking_group = parser.add_group(help='Virtual Private Cloud networking')
   networking_group.add_argument(
       '--network',
@@ -146,6 +147,7 @@ information on how to structure KEYs and VALUEs, run
           '2': 'Created environment will use Python 2',
           '3': 'Created environment will use Python 3'
       },
+      action=flags.V1ExclusiveStoreAction,
       help='The Python version to be used within the created environment. '
       'Supplied value should represent the desired major Python version. '
       'Cannot be updated.')
@@ -235,6 +237,10 @@ class Create(base.Command):
         args,
         image_versions_util.IsImageVersionStringComposerV1(self.image_version),
         self.ReleaseTrack())
+    self.ValidateComposer1ExclusiveFlags(
+        args,
+        image_versions_util.IsImageVersionStringComposerV1(self.image_version),
+        self.ReleaseTrack())
 
     flags.ValidateDiskSize('--disk-size', args.disk_size)
     self.env_ref = args.CONCEPTS.environment.Parse()
@@ -294,7 +300,7 @@ class Create(base.Command):
     if (args.enable_ip_alias and
         not image_versions_util.IsImageVersionStringComposerV1(image_version)):
       raise command_util.InvalidUserInputError(
-          INVALID_OPTION_FOR_V2_ERROR_MSG.format(opt='enable-ip-alias'))
+          _INVALID_OPTION_FOR_V2_ERROR_MSG.format(opt='enable-ip-alias'))
     if (args.cluster_ipv4_cidr and not args.enable_ip_alias and
         image_versions_util.IsImageVersionStringComposerV1(image_version)):
       raise command_util.InvalidUserInputError(
@@ -320,7 +326,7 @@ class Create(base.Command):
     if (self._support_max_pods_per_node and args.max_pods_per_node and
         not image_versions_util.IsImageVersionStringComposerV1(image_version)):
       raise command_util.InvalidUserInputError(
-          INVALID_OPTION_FOR_V2_ERROR_MSG.format(opt='max-pods-per-node'))
+          _INVALID_OPTION_FOR_V2_ERROR_MSG.format(opt='max-pods-per-node'))
     if (self._support_max_pods_per_node and args.max_pods_per_node and
         not args.enable_ip_alias):
       raise command_util.InvalidUserInputError(
@@ -352,7 +358,7 @@ class Create(base.Command):
     if (args.web_server_ipv4_cidr and
         not image_versions_util.IsImageVersionStringComposerV1(image_version)):
       raise command_util.InvalidUserInputError(
-          INVALID_OPTION_FOR_V2_ERROR_MSG.format(opt='web-server-ipv4-cidr'))
+          _INVALID_OPTION_FOR_V2_ERROR_MSG.format(opt='web-server-ipv4-cidr'))
 
     if args.web_server_ipv4_cidr and not args.enable_private_environment:
       raise command_util.InvalidUserInputError(
@@ -370,7 +376,7 @@ class Create(base.Command):
         args.composer_network_ipv4_cidr and
         image_versions_util.IsImageVersionStringComposerV1(image_version)):
       raise command_util.InvalidUserInputError(
-          INVALID_OPTION_FOR_V1_ERROR_MSG.format(
+          _INVALID_OPTION_FOR_V1_ERROR_MSG.format(
               opt='composer-network-ipv4-cidr'))
 
     if (release_track != base.ReleaseTrack.GA and
@@ -417,7 +423,7 @@ class Create(base.Command):
 
     if args.environment_size and is_composer_v1:
       raise command_util.InvalidUserInputError(
-          INVALID_OPTION_FOR_V1_ERROR_MSG.format(opt='environment-size'))
+          _INVALID_OPTION_FOR_V1_ERROR_MSG.format(opt='environment-size'))
     composer_v2_flag_used = (
         args.scheduler_cpu or args.worker_cpu or args.web_server_cpu or
         args.scheduler_memory or args.worker_memory or args.web_server_memory or
@@ -427,6 +433,23 @@ class Create(base.Command):
       raise command_util.InvalidUserInputError(
           'You cannot use Workloads Config flags introduced in Composer 2.X'
           ' when creating Composer 1.X environments.')
+
+  def ValidateComposer1ExclusiveFlags(self, args, is_composer_v1,
+                                      release_track):
+    """Raises InputError if flags from Composer v2 are used when creating v1."""
+    # Composer 2 flags are currently unavailable in GA release track.
+    if args.python_version and not is_composer_v1:
+      raise command_util.InvalidUserInputError(
+          _INVALID_OPTION_FOR_V2_ERROR_MSG.format(opt='python-version'))
+    if args.disk_size and not is_composer_v1:
+      raise command_util.InvalidUserInputError(
+          _INVALID_OPTION_FOR_V2_ERROR_MSG.format(opt='disk-size'))
+    if args.machine_type and not is_composer_v1:
+      raise command_util.InvalidUserInputError(
+          _INVALID_OPTION_FOR_V2_ERROR_MSG.format(opt='machine-type'))
+    if args.kms_key and not is_composer_v1:
+      raise command_util.InvalidUserInputError(
+          _INVALID_OPTION_FOR_V2_ERROR_MSG.format(opt='kms-key'))
 
   def GetOperationMessage(self, args, is_composer_v1):
     """Constructs Create message."""

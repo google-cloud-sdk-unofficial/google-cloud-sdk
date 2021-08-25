@@ -29,10 +29,19 @@ from googlecloudsdk.command_lib.container.gkemulticloud import operations
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
+_EXAMPLES = """
+To delete a cluster named ``my-cluster'' managed in location ``us-west1'',
+run:
+
+$ {command} my-cluster --location=us-west1
+"""
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Delete a GKE cluster on AWS."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
   def Args(parser):

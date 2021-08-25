@@ -24,9 +24,18 @@ from googlecloudsdk.command_lib.container.aws import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 
 
+_EXAMPLES = """
+To lists all clusters managed in location ``us-west1'', run:
+
+$ {command} --location=us-west1
+"""
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.ListCommand):
   """List GKE clusters on AWS."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
   def Args(parser):

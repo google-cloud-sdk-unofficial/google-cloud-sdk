@@ -1,0 +1,44 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: |
+      List Cloud Filestore snapshots.
+    description: |
+      List all Cloud Filestore snapshots for the specified instance.
+
+      To specify the maximum number of snapshots to list, use the --limit flag.
+    examples: |
+      To list up to five snapshots for the instance 'my-instance' from
+      'us-central1', run:
+
+          $ {command} --instance=my-instance --instance-region=us-central1 --limit=5
+
+  arguments:
+    params:
+    - arg_name: instance
+      required: true
+      help_text: |
+        Name of the Filestore instance the snapshot belongs to.
+    - arg_name: instance-region
+      required: true
+      help_text: |
+        Region of the Filestore instance.
+
+  request:
+    BETA:
+      api_version: v1beta1
+    collection: file.projects.locations.instances.snapshots
+    # Disable validating that a snapshot resource arg is specified (as we are using the
+    # file.projects.locations.instances.snapshots collection). This collection is populated manually.
+    disable_resource_check: true
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.filestore.instances.snapshots.util:FormatSnapshotsListRequest
+
+  response:
+    id_field: name
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME:sort=1,
+        state
+      )

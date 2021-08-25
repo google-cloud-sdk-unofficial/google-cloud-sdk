@@ -26,10 +26,11 @@ from googlecloudsdk.core.console import console_io
 
 # Pull out the example text so the example command can be one line without the
 # py linter complaining. The docgen tool properly breaks it into multiple lines.
-EXAMPLES = """\
-    To apply a YAML config file to a membership, run:
+EXAMPLES = r"""
+    To apply a YAML config file to a membership, prepare
+    [apply-spec.yaml](https://cloud.google.com/anthos-config-management/docs/reference/gcloud-apply-fields#example_gcloud_apply_spec) then run:
 
-      $ {command} --membership=CLUSTER_NAME --config=/path/to/config-management.yaml
+      $ {command} --membership=CLUSTER_NAME --config=APPLY-SPEC.YAML
 """
 
 
@@ -37,7 +38,8 @@ class Apply(base.UpdateCommand):
   """Update a Config Management Feature Spec.
 
   Update a user-specified config file to a ConfigManagement Custom Resource.
-  The config file should be a yaml file.
+  The config file should be a .yaml file, all eligible fields are listed in
+  https://cloud.google.com/anthos-config-management/docs/reference/gcloud-apply-fields
   """
 
   detailed_help = {'EXAMPLES': EXAMPLES}

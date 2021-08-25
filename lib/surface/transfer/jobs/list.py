@@ -94,10 +94,10 @@ class List(base.ListCommand):
       # Remove "s" from repeatInterval seconds and make ISO duration string.
       format_string = """table(
           transferJobs.name.map().slice(13:).map().join(sep='').join(sep='\n'),
-          transferJobs.transferSpec.firstof(
+          transferJobs.transferSpec.map().firstof(
             gcsDataSource, awsS3DataSource, httpDataSource,
             azureBlobStorageDataSource
-            ).firstof(bucketName, listUrl, container
+            ).map().firstof(bucketName, listUrl, container
             ).join(sep='\n'):label=SOURCE,
           transferJobs.transferSpec.gcsDataSink.bucketName.join(
             sep='\n'):label=DESTINATION,

@@ -43,9 +43,11 @@ class Delete(base.DeleteCommand):
     creation
   - Data stored in host hostPath and emptyDir volumes
 
-  The following resources are not deleted:
+  GKE will attempt to delete the following resources. Deletion of these
+  resources is not always guaranteed:
 
   - External load balancers created by the cluster
+  - Internal load balancers created by the cluster
   - Persistent disk volumes
   """
 

@@ -21,7 +21,6 @@ import textwrap
 
 from googlecloudsdk.api_lib.clouddeploy import client_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import resource_args
 from googlecloudsdk.command_lib.deploy import target_util
 
@@ -45,7 +44,6 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddTargetResourceArg(parser, positional=True)
-    flags.AddDeliveryPipeline(parser, False)
 
   def Run(self, args):
     """Entry point of the export command.
@@ -55,12 +53,6 @@ class Delete(base.DeleteCommand):
         arguments specified in the .Args() method.
     """
     target_ref = args.CONCEPTS.target.Parse()
-    target_dict = target_ref.AsDict()
-    final_ref = target_util.TargetReference(target_ref.Name(),
-                                            target_dict['projectsId'],
-                                            target_dict['locationsId'],
-                                            args.delivery_pipeline)
-
-    op = target_util.DeleteTarget(final_ref.RelativeName())
+    op = target_util.DeleteTarget(target_ref.RelativeName())
     client_util.OperationsClient().CheckOperationStatus(
-        {final_ref.RelativeName(): op}, 'Deleted Cloud Deploy target: {}.')
+        {target_ref.RelativeName(): op}, 'Deleted Cloud Deploy target: {}.')

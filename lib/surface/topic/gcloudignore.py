@@ -43,7 +43,7 @@ class GcloudignoreHelp(base.TopicCommand):
   * `gcloud builds submit`
   * `gcloud composer environments storage {dags, data, plugins} import`
   * `gcloud container builds submit`
-  * `gcloud beta run deploy`
+  * `gcloud run deploy`
   *  gcloud alpha deploy releases create
   * `gcloud alpha blueprints apply`
 

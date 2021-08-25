@@ -183,6 +183,7 @@ class Create(base.Command):
   _support_display_device = False
   _support_local_ssd_size = False
   _support_secure_tags = False
+  _support_host_error_timeout_seconds = False
 
   _log_async = False
 
@@ -265,7 +266,9 @@ class Create(base.Command):
         skip_defaults,
         support_node_affinity=False,
         support_min_node_cpu=self._support_min_node_cpu,
-        support_location_hint=self._support_location_hint)
+        support_location_hint=self._support_location_hint,
+        support_host_error_timeout_seconds=self
+        ._support_host_error_timeout_seconds)
     tags = instance_utils.GetTags(args, compute_client)
     labels = instance_utils.GetLabels(
         args, compute_client, instance_properties=True)
@@ -533,6 +536,7 @@ class CreateBeta(Create):
 
   _support_display_device = True
   _support_secure_tags = False
+  _support_host_error_timeout_seconds = True
 
   @classmethod
   def Args(cls, parser):
@@ -554,6 +558,7 @@ class CreateBeta(Create):
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddBulkCreateArgs(parser)
+    instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -563,6 +568,7 @@ class CreateAlpha(Create):
   _support_display_device = True
   _support_local_ssd_size = True
   _support_secure_tags = True
+  _support_host_error_timeout_seconds = True
 
   @classmethod
   def Args(cls, parser):
@@ -585,6 +591,7 @@ class CreateAlpha(Create):
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddBulkCreateArgs(parser)
     instances_flags.AddSecureTagsArgs(parser)
+    instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

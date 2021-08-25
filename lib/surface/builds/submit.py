@@ -64,6 +64,7 @@ def _CommonArgs(parser):
 
   flags.AddNoCacheFlag(parser)
   flags.AddAsyncFlag(parser)
+  flags.AddSuppressLogsFlag(parser)
   parser.display_info.AddFormat("""
         table(
           id,
@@ -160,7 +161,8 @@ class Submit(base.CreateCommand):
         args.async_,
         build_config,
         build_region=build_region,
-        support_gcl=self._support_gcl)
+        support_gcl=self._support_gcl,
+        suppress_logs=args.suppress_logs)
     return build
 
 

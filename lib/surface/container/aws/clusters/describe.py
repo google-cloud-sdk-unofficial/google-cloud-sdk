@@ -23,6 +23,13 @@ from googlecloudsdk.command_lib.container.aws import clusters
 from googlecloudsdk.command_lib.container.aws import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 
+_EXAMPLES = """
+To describe a cluster named ``my-cluster'' managed in location ``us-west1'',
+run:
+
+$ {command} my-cluster --location=us-west1
+"""
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):

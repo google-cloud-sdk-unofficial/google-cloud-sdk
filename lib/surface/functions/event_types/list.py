@@ -18,10 +18,28 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.functions.v1 import triggers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.functions import flags
+from googlecloudsdk.command_lib.functions.v1.event_types.list import command as command_v1
+from googlecloudsdk.command_lib.functions.v2.event_types.list import command as command_v2
+
+_DISPLAY_INFO_V1_FORMAT = """
+    table(provider.label:label="EVENT_PROVIDER":sort=1,
+          label:label="EVENT_TYPE":sort=2,
+          event_is_optional.yesno('Yes'):label="EVENT_TYPE_DEFAULT",
+          resource_type.value.name:label="RESOURCE_TYPE",
+          resource_is_optional.yesno('Yes'):label="RESOURCE_OPTIONAL"
+    )
+ """
+
+_DISPLAY_INFO_V2_FORMAT = """
+   table(name:sort=1,
+         description
+   )
+"""
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.Command):
   """List types of events that can be a trigger for a Google Cloud Function.
 
@@ -37,16 +55,38 @@ class List(base.Command):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat("""
-        table(provider.label:label="EVENT_PROVIDER":sort=1,
-              label:label="EVENT_TYPE":sort=2,
-              event_is_optional.yesno('Yes'):label="EVENT_TYPE_DEFAULT",
-              resource_type.value.name:label="RESOURCE_TYPE",
-              resource_is_optional.yesno('Yes'):label="RESOURCE_OPTIONAL"
-        )
-     """)
+    del parser
 
   def Run(self, args):
-    for provider in triggers.TRIGGER_PROVIDER_REGISTRY.providers:
-      for event in provider.events:
-        yield event
+    if not args.IsSpecified('format'):
+      args.format = _DISPLAY_INFO_V1_FORMAT
+    return command_v1.Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(base.Command):
+  """List types of events that can be a trigger for a Google Cloud Function.
+
+  `{command}` displays types of events that can be a trigger for a Google Cloud
+  Function.
+
+  * For an event type, `EVENT_TYPE_DEFAULT` marks whether the given event type
+    is the default (in which case the `--trigger-event` flag may be omitted).
+  * For a resource, `RESOURCE_OPTIONAL` marks whether the resource has a
+    corresponding default value (in which case the `--trigger-resource` flag
+    may be omitted).
+  """
+
+  @staticmethod
+  def Args(parser):
+    flags.AddV2Flag(parser)
+
+  def Run(self, args):
+    if flags.ShouldUseV2(args):
+      if not args.IsSpecified('format'):
+        args.format = _DISPLAY_INFO_V2_FORMAT
+      return command_v2.Run(args, self.ReleaseTrack())
+    else:
+      if not args.IsSpecified('format'):
+        args.format = _DISPLAY_INFO_V1_FORMAT
+      return command_v1.Run(args)

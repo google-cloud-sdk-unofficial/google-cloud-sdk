@@ -27,6 +27,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dataproc import clusters
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
@@ -53,6 +54,20 @@ class Create(base.CreateCommand):
         cls.BETA,
         include_ttl_config=True,
         include_gke_platform_args=cls.BETA)
+    # Add arguments for failure action for primary workers
+    if not cls.BETA:
+      parser.add_argument(
+          '--action-on-failed-primary-workers',
+          choices={
+              'NO_ACTION': 'take no action',
+              'DELETE': 'delete the failed primary workers',
+              'FAILURE_ACTION_UNSPECIFIED': 'failure action is not specified'
+          },
+          type=arg_utils.ChoiceToEnumName,
+          hidden=True,
+          help="""\\
+        Failure action to take when primary workers fail during cluster creation
+        """)
     # Add gce-pd-kms-key args
     kms_flag_overrides = {
         'kms-key': '--gce-pd-kms-key',
@@ -93,6 +108,13 @@ class Create(base.CreateCommand):
         include_ttl_config=True,
         include_gke_platform_args=self.BETA)
 
+    action_on_failed_primary_workers = None
+    if not self.BETA:
+      action_on_failed_primary_workers = arg_utils.ChoiceToEnum(
+          args.action_on_failed_primary_workers,
+          dataproc.messages.DataprocProjectsRegionsClustersCreateRequest
+          .ActionOnFailedPrimaryWorkersValueValuesEnum)
+
     cluster = dataproc.messages.Cluster(
         config=cluster_config,
         clusterName=cluster_ref.clusterName,
@@ -106,7 +128,8 @@ class Create(base.CreateCommand):
         cluster,
         args.async_,
         args.timeout,
-        enable_create_on_gke=self.BETA)
+        enable_create_on_gke=self.BETA,
+        action_on_failed_primary_workers=action_on_failed_primary_workers)
 
   @staticmethod
   def ConfigureCluster(messages, args, cluster):

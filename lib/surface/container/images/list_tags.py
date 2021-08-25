@@ -87,6 +87,14 @@ class ListTagsGA(base.ListCommand):
 
             $ {command} gcr.io/myproject/myimage --filter="NOT tags:*"
 
+          To list images that have a tag with the value '30e5504145':
+
+            $ gcloud container images list-tags --filter="'tags:30e5504145'"
+
+          The last example encloses the filter expression in single quotes
+          because the value '30e5504145' could be interpreted as a number in
+          scientific notation.
+
       """,
   }
 

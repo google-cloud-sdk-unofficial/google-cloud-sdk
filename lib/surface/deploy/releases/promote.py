@@ -82,7 +82,7 @@ class Promote(base.CreateCommand):
     # Get the to_target id if the argument is not specified.
     to_target_id = args.to_target
     if not to_target_id:
-      to_target_id = promote_util.GetToTargetID(release_obj)
+      to_target_id = promote_util.GetToTargetID(release_obj, False)
 
     release_util.PrintDiff(release_ref, release_obj, args.to_target)
 
@@ -91,5 +91,5 @@ class Promote(base.CreateCommand):
                                                     to_target_id),
         cancel_on_no=True)
 
-    promote_util.Promote(release_ref, release_obj, to_target_id,
+    promote_util.Promote(release_ref, release_obj, to_target_id, False,
                          args.rollout_id, args.annotations, args.labels)

@@ -26,9 +26,23 @@ from googlecloudsdk.command_lib.container.gkemulticloud import flags
 from googlecloudsdk.core import log
 
 
+_EXAMPLES = """
+To get the public certificate of an Azure client named ``my-client'' in
+location ``us-west1'', run:
+
+$ {command} my-client --location=us-west1
+
+To store the certificate in a file named ``client.crt'', run:
+
+$ {command} my-client --location=us-west1 --output-file=client.crt
+"""
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetPublicCert(base.DescribeCommand):
   """Get the public certificate of an Azure client."""
+
+  detailed_help = {"EXAMPLES": _EXAMPLES}
 
   @staticmethod
   def Args(parser):

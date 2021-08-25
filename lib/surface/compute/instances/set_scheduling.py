@@ -44,6 +44,8 @@ class SetSchedulingInstances(base.SilentCommand):
   """
   }
 
+  _support_host_error_timeout_seconds = False
+
   @classmethod
   def Args(cls, parser):
     parser.add_argument(
@@ -77,6 +79,10 @@ class SetSchedulingInstances(base.SilentCommand):
 
     if args.IsSpecified('preemptible'):
       scheduling_options.preemptible = args.preemptible
+
+    if self._support_host_error_timeout_seconds and hasattr(
+        args, 'host_error_timeout_seconds'):
+      scheduling_options.hostErrorTimeoutSeconds = args.host_error_timeout_seconds
 
     cleared_fields = []
 
@@ -121,6 +127,7 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
     *${command}* is used to configure scheduling options for
   Compute Engine virtual machines.
   """
+  _support_host_error_timeout_seconds = True
 
   @classmethod
   def Args(cls, parser):
@@ -138,6 +145,7 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
     flags.INSTANCE_ARG.AddArgument(parser)
     flags.AddMinNodeCpuArg(parser, is_update=True)
+    flags.AddHostErrorTimeoutSecondsArgs(parser)
 
   def Run(self, args):
     return self._Run(args)
@@ -150,6 +158,7 @@ class SetSchedulingInstancesAlpha(SetSchedulingInstancesBeta):
     *${command}* is used to configure scheduling options for
   Compute Engine virtual machines.
   """
+  _support_host_error_timeout_seconds = True
 
   @classmethod
   def Args(cls, parser):
@@ -168,3 +177,4 @@ class SetSchedulingInstancesAlpha(SetSchedulingInstancesBeta):
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
     flags.INSTANCE_ARG.AddArgument(parser)
     flags.AddMinNodeCpuArg(parser, is_update=True)
+    flags.AddHostErrorTimeoutSecondsArgs(parser)

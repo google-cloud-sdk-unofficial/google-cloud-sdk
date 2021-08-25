@@ -25,10 +25,19 @@ from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.azure import util as command_util
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 
+_EXAMPLES = """
+To list all node pools in a cluster named ``my-cluster''
+managed in location ``us-west1'', run:
+
+$ {command} --cluster=my-cluster --location=us-west1
+"""
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List Azure node pools."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
   def Args(parser):

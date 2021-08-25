@@ -56,6 +56,7 @@
       - googlecloudsdk.command_lib.active_directory.domains_update_util:CheckFieldsSpecified
       - googlecloudsdk.command_lib.active_directory.domains_update_util:UpdatePatchRequest
       - googlecloudsdk.command_lib.active_directory.domains_update_util:UpdateLabels
+      - googlecloudsdk.command_lib.active_directory.flags:UpdateAuditLogsEnabled
       - googlecloudsdk.command_lib.active_directory.flags:AddRegionFlag
       - googlecloudsdk.command_lib.active_directory.flags:RemoveRegionFlag
       - googlecloudsdk.command_lib.active_directory.flags:AddAuthorizedNetworksFlag
@@ -73,6 +74,6 @@
     - arg_name: enable-audit-logs
       type: bool
       action: store_true
-      release_tracks: [ALPHA, BETA]
+      api_field: domain.auditLogsEnabled
       help_text: |
         If specified, Active Directory data audit logs are enabled for the domain.

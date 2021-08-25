@@ -21,10 +21,8 @@ from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import resource_args
 from googlecloudsdk.command_lib.deploy import target_util
-from googlecloudsdk.core import resources
 
 _DETAILED_HELP = {
     'DESCRIPTION':
@@ -48,7 +46,6 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddLocationResourceArg(parser)
-    flags.AddDeliveryPipeline(parser, False)
 
   def Run(self, args):
     """Entry point of the export command.
@@ -61,16 +58,5 @@ class List(base.ListCommand):
        A list of target messages.
     """
     loc_ref = args.CONCEPTS.region.Parse()
-    name = loc_ref.RelativeName()
-    if args.delivery_pipeline:
-      loc_dict = loc_ref.AsDict()
-      name = resources.REGISTRY.Parse(
-          None,
-          collection='clouddeploy.projects.locations.deliveryPipelines',
-          params={
-              'projectsId': loc_dict['projectsId'],
-              'locationsId': loc_dict['locationsId'],
-              'deliveryPipelinesId': args.delivery_pipeline,
-          }).RelativeName()
 
-    return target_util.ListTarget(name)
+    return target_util.ListTarget(loc_ref.RelativeName())

@@ -23,12 +23,12 @@ from googlecloudsdk.calliope import base
 
 @base.Hidden
 class Describe(base.ListCommand):
-  """Describes Cloud Storage objects."""
+  """Describe a Cloud Storage object."""
 
   detailed_help = {
       'DESCRIPTION':
           """
-      Describe a Cloud Storage objects.
+      Describe a Cloud Storage object.
       """,
       'EXAMPLES':
           """

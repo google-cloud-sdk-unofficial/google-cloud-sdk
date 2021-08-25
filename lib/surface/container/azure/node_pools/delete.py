@@ -30,9 +30,19 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+_EXAMPLES = """
+To delete a node pool named ``my-node-pool'' in a cluster named ``my-cluster''
+managed in location ``us-west1'', run:
+
+$ {command} my-node-pool --cluster=my-cluster --location=us-west1
+"""
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Delete an Azure node pool."""
+
+  detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
   def Args(parser):
