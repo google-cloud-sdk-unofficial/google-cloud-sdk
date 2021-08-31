@@ -34,7 +34,7 @@ class SetIamPolicy(base.Command):
           """\
           To Set an IAM policy binding to a lake, run:
 
-            $ {command} set-iam-policy projects/{project_id}/locations/{location}/lakes/{lake_id} policy.json
+            $ {command} projects/{project_id}/locations/{location}/lakes/{lake_id} policy.json
 
             policy.json is the relative path to the json file.
           """,

@@ -23,6 +23,7 @@ datalab: google-cloud-sdk-datalab
 docker-credential-gcr: unavailable
 emulator-reverse-proxy: unavailable
 gcloud: google-cloud-sdk
+gke-gcloud-auth-plugin: google-cloud-sdk-gke-gcloud-auth-plugin
 gsutil: google-cloud-sdk
 kpt: google-cloud-sdk-kpt
 kubectl: kubectl

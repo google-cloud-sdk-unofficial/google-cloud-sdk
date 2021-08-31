@@ -37,6 +37,14 @@ DETAILED_HELP = {
         """
 }
 
+_INVALID_OPTION_FOR_V2_ERROR_MSG = """\
+Cannot specify --{opt} with Composer 2.X or greater.
+"""
+
+_INVALID_OPTION_FOR_V1_ERROR_MSG = """\
+Cannot specify --{opt} with Composer 1.X.
+"""
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
@@ -103,9 +111,19 @@ class Update(base.Command):
             args.update_web_server_allow_ip, args.web_server_allow_all,
             args.web_server_deny_all))
 
+    if (args.cloud_sql_machine_type and not is_composer_v1):
+      raise command_util.InvalidUserInputError(
+          _INVALID_OPTION_FOR_V2_ERROR_MSG.format(opt='cloud-sql-machine-type'))
+    if (args.web_server_machine_type and not is_composer_v1):
+      raise command_util.InvalidUserInputError(
+          _INVALID_OPTION_FOR_V2_ERROR_MSG.format(
+              opt='web-server-machine-type'))
     params['cloud_sql_machine_type'] = args.cloud_sql_machine_type
     params['web_server_machine_type'] = args.web_server_machine_type
     if self._support_environment_size:
+      if (args.environment_size and is_composer_v1):
+        raise command_util.InvalidUserInputError(
+            _INVALID_OPTION_FOR_V1_ERROR_MSG.format(opt='environment-size'))
       if self.ReleaseTrack() == base.ReleaseTrack.BETA:
         params[
             'environment_size'] = flags.ENVIRONMENT_SIZE_BETA.GetEnumForChoice(
@@ -115,6 +133,14 @@ class Update(base.Command):
             'environment_size'] = flags.ENVIRONMENT_SIZE_ALPHA.GetEnumForChoice(
                 args.environment_size)
     if self._support_autoscaling:
+      if (is_composer_v1 and
+          (args.scheduler_cpu or args.worker_cpu or args.web_server_cpu or
+           args.scheduler_memory or args.worker_memory or args.web_server_memory
+           or args.scheduler_storage or args.worker_storage or
+           args.web_server_storage or args.min_workers or args.max_workers)):
+        raise command_util.InvalidUserInputError(
+            'Workloads Config flags introduced in Composer 2.X'
+            ' cannot be used when creating Composer 1.X environments.')
       params['scheduler_cpu'] = args.scheduler_cpu
       params['worker_cpu'] = args.worker_cpu
       params['web_server_cpu'] = args.web_server_cpu

@@ -36,7 +36,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update an Eventarc trigger."""
 
@@ -46,7 +46,7 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     flags.AddTriggerResourceArg(parser, 'The trigger to update.', required=True)
     flags.AddEventFiltersArg(parser, cls.ReleaseTrack())
-    flags.AddUpdateDestinationArgs(parser)
+    flags.AddUpdateDestinationArgs(parser, cls.ReleaseTrack())
     base.ASYNC_FLAG.AddToParser(parser)
 
     service_account_group = parser.add_mutually_exclusive_group()
@@ -65,20 +65,33 @@ class Update(base.UpdateCommand):
         destination_run_service=args.IsSpecified('destination_run_service'),
         destination_run_path=args.IsSpecified('destination_run_path') or
         args.clear_destination_run_path,
-        destination_run_region=args.IsSpecified('destination_run_region'))
+        destination_run_region=args.IsSpecified('destination_run_region'),
+        destination_gke_namespace=args.IsSpecified('destination_gke_namespace'),
+        destination_gke_service=args.IsSpecified('destination_gke_service'),
+        destination_gke_path=args.IsSpecified('destination_gke_path') or
+        args.clear_destination_gke_path)
     old_trigger = client.Get(trigger_ref)
     # The type can't be updated, so it's safe to use the old trigger's type.
     # In the async case, this is the only way to get the type.
     self._event_type = client.GetEventType(old_trigger)
-    trigger_message = client.BuildCloudRunTriggerMessage(
-        trigger_ref,
-        event_filters,
-        args.service_account,
-        args.destination_run_service,
-        args.destination_run_path,
-        args.destination_run_region,
-        None,
-    )
+    destination_message = None
+    if (args.IsSpecified('destination_run_service') or
+        args.IsSpecified('destination_run_region') or
+        args.IsSpecified('destination_run_path') or
+        args.clear_destination_run_path):
+      destination_message = client.BuildCloudRunDestinationMessage(
+          args.destination_run_service, args.destination_run_path,
+          args.destination_run_region)
+    elif (args.IsSpecified('destination_gke_namespace') or
+          args.IsSpecified('destination_gke_service') or
+          args.IsSpecified('destination_gke_path') or
+          args.clear_destination_gke_path):
+      destination_message = client.BuildGKEDestinationMessage(
+          None, None, args.destination_gke_namespace,
+          args.destination_gke_service, args.destination_gke_path)
+    trigger_message = client.BuildTriggerMessage(trigger_ref, event_filters,
+                                                 args.service_account,
+                                                 destination_message, None)
     operation = client.Patch(trigger_ref, trigger_message, update_mask)
     if args.async_:
       return operation
@@ -89,3 +102,36 @@ class Update(base.UpdateCommand):
       log.warning(
           'It may take up to {} minutes for the update to take full effect.'
           .format(triggers.MAX_ACTIVE_DELAY_MINUTES))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update an Eventarc trigger."""
+
+  def Run(self, args):
+    """Run the update command."""
+    client = triggers.CreateTriggersClient(self.ReleaseTrack())
+    trigger_ref = args.CONCEPTS.trigger.Parse()
+    event_filters = flags.GetEventFiltersArg(args, self.ReleaseTrack())
+    update_mask = client.BuildUpdateMask(
+        event_filters=event_filters is not None,
+        service_account=args.IsSpecified('service_account') or
+        args.clear_service_account,
+        destination_run_service=args.IsSpecified('destination_run_service'),
+        destination_run_path=args.IsSpecified('destination_run_path') or
+        args.clear_destination_run_path,
+        destination_run_region=args.IsSpecified('destination_run_region'))
+    old_trigger = client.Get(trigger_ref)
+    # The type can't be updated, so it's safe to use the old trigger's type.
+    # In the async case, this is the only way to get the type.
+    self._event_type = client.GetEventType(old_trigger)
+    destination_message = client.BuildCloudRunDestinationMessage(
+        args.destination_run_service, args.destination_run_path,
+        args.destination_run_region)
+    trigger_message = client.BuildTriggerMessage(trigger_ref, event_filters,
+                                                 args.service_account,
+                                                 destination_message, None)
+    operation = client.Patch(trigger_ref, trigger_message, update_mask)
+    if args.async_:
+      return operation
+    return client.WaitFor(operation, 'Updating', trigger_ref)

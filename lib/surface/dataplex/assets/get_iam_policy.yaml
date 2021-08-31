@@ -6,9 +6,9 @@
     description: |
       Get a Dataplex Asset IAM Policy based on project_id, location, lake_id, zone_id, and asset_id.
 
-      {top_command} dataplex lake get-iam-policy projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id}/assets/{asset_id}
+      {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id}/assets/{asset_id}
     examples: |
-      {top_command} dataplex lake get-iam-policy projects/test-project/locations/us-central1/lakes/test-lake/zones/{zone_id}/assets/{asset_id}
+      {command} projects/test-project/locations/us-central1/lakes/test-lake/zones/{zone_id}/assets/{asset_id}
 
   request:
     ALPHA:

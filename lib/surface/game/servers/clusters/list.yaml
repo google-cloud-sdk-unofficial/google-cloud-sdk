@@ -34,10 +34,9 @@
       spec: !REF googlecloudsdk.command_lib.game.resources:default_realm
     params:
     - arg_name: view
-      release_tracks: [ALPHA]
       api_field: view
       help_text: |
-        There are two possible views, 'basic' and 'full', default is 'basic'
+        There are two possible views, 'basic' and 'full'. The default view is 'basic'.
       choices:
       - enum_value: BASIC
         arg_value: basic
@@ -109,7 +108,8 @@
              labels,
              clusterState.agonesVersionInstalled:label=AGONES_VERSION,
              clusterState.kubernetesVersionInstalled:label=KUBERNETES_VERSION,
-             clusterState.provider:label=PROVIDER
+             clusterState.provider:label=PROVIDER,
+             clusterState.versionInstalledErrorMessage:label=VERSION_WARNING
            )"
         )
     GA:
@@ -138,6 +138,7 @@
              labels,
              clusterState.agonesVersionInstalled:label=AGONES_VERSION,
              clusterState.kubernetesVersionInstalled:label=KUBERNETES_VERSION,
-             clusterState.provider:label=PROVIDER
+             clusterState.provider:label=PROVIDER,
+             clusterState.versionInstalledErrorMessage:label=VERSION_WARNING
            )"
         )

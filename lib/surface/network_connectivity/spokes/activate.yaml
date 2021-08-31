@@ -3,7 +3,7 @@
   help_text:
     brief: Activate a spoke.
     description: |
-      *{command}* activates a previously deactivated spoke. By activating a spoke, you permit
+      Activate a previously deactivated spoke. By activating a spoke, you permit
       connectivity through the spoke's linked resources to the Google Cloud network.
     examples: |
       To activate a spoke with name ``myspoke'' in region ``us-central1'', run:

@@ -2,7 +2,7 @@
 
   help_text:
     brief: List spokes.
-    description: List all spokes in the specified project.
+    description: Retrieve and display a list of all spokes in the specified project.
     examples: |
       To list all spokes in region ``us-central1'', run:
 

@@ -65,7 +65,6 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
     res = responses[0]
     org_firewall = []
     network_firewall = []
-    org_firewall_policy = []
     all_firewall_policy = []
 
     if hasattr(res, 'firewalls'):
@@ -76,15 +75,11 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
       for fp in res.firewallPolicys:
         firewall_policy_rule = firewalls_utils.SortFirewallPolicyRules(
             client, fp.rules)
-        if (fp.type == client.messages
-            .NetworksGetEffectiveFirewallsResponseEffectiveFirewallPolicy
-            .TypeValueValuesEnum.HIERARCHY):
-          fp_response = (
-              client.messages
-              .NetworksGetEffectiveFirewallsResponseEffectiveFirewallPolicy(
-                  name=fp.name, rules=firewall_policy_rule))
-          org_firewall_policy.append(fp_response)
-          all_firewall_policy.append(fp_response)
+        fp_response = (
+            client.messages
+            .NetworksGetEffectiveFirewallsResponseEffectiveFirewallPolicy(
+                name=fp.name, rules=firewall_policy_rule, type=fp.type))
+        all_firewall_policy.append(fp_response)
     elif hasattr(res, 'organizationFirewalls'):
       for sp in res.organizationFirewalls:
         org_firewall_rule = firewalls_utils.SortOrgFirewallRules(
@@ -105,9 +100,10 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
             firewalls=network_firewall, firewallPolicys=all_firewall_policy)
 
     result = []
-    for fp in org_firewall_policy:
+    for fp in all_firewall_policy:
       result.extend(
-          firewalls_utils.ConvertFirewallPolicyRulesToEffectiveFwRules(fp))
+          firewalls_utils.ConvertFirewallPolicyRulesToEffectiveFwRules(
+              client, fp))
     for sp in org_firewall:
       result.extend(
           firewalls_utils.ConvertOrgSecurityPolicyRulesToEffectiveFwRules(sp))

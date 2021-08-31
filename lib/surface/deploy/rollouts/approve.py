@@ -41,7 +41,7 @@ $ {command} test-rollout --delivery-pipeline=test-pipeline --release=test-releas
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Approve(base.CreateCommand):
   """Approves a rollout having an Approval state of "Required"."""
   detailed_help = _DETAILED_HELP

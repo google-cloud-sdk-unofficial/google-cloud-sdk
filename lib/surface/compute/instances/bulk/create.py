@@ -69,7 +69,8 @@ def _CommonArgs(parser,
                 snapshot_csek=False,
                 image_csek=False,
                 supports_display_device=False,
-                support_local_ssd_size=False):
+                support_local_ssd_size=False,
+                support_numa_node_count=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddCreateDiskArgs(
@@ -108,6 +109,8 @@ def _CommonArgs(parser,
   instances_flags.AddShieldedInstanceConfigArgs(parser)
   instances_flags.AddNestedVirtualizationArgs(parser)
   instances_flags.AddThreadsPerCoreArgs(parser)
+  if support_numa_node_count:
+    instances_flags.AddNumaNodeCountArgs(parser)
   instances_flags.AddBootDiskArgs(parser, enable_kms=True)
 
   if supports_display_device:
@@ -184,6 +187,7 @@ class Create(base.Command):
   _support_local_ssd_size = False
   _support_secure_tags = False
   _support_host_error_timeout_seconds = False
+  _support_numa_node_count = False
 
   _log_async = False
 
@@ -198,7 +202,8 @@ class Create(base.Command):
         snapshot_csek=cls._support_source_snapshot_csek,
         image_csek=cls._support_image_csek,
         supports_display_device=cls._support_display_device,
-        support_local_ssd_size=cls._support_local_ssd_size)
+        support_local_ssd_size=cls._support_local_ssd_size,
+        support_numa_node_count=cls._support_numa_node_count)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeBulkSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -341,15 +346,17 @@ class Create(base.Command):
     guest_accelerators = create_utils.GetAcceleratorsForInstanceProperties(
         args=args, compute_client=compute_client)
 
-    # If either nested or threads_per_core are given, make an
+    # If either nested, threads_per_core or numa_node_count are given, make an
     # AdvancedMachineFeatures message.
     advanced_machine_features = None
     if (args.enable_nested_virtualization is not None or
-        args.threads_per_core is not None):
+        args.threads_per_core is not None or
+        (self._support_numa_node_count and args.numa_node_count is not None)):
       advanced_machine_features = (
           instance_utils.CreateAdvancedMachineFeaturesMessage(
               compute_client.messages, args.enable_nested_virtualization,
-              args.threads_per_core))
+              args.threads_per_core, args.numa_node_count
+              if self._support_numa_node_count else None))
 
     parsed_resource_policies = []
     resource_policies = getattr(args, 'resource_policies', None)
@@ -537,6 +544,7 @@ class CreateBeta(Create):
   _support_display_device = True
   _support_secure_tags = False
   _support_host_error_timeout_seconds = True
+  _support_numa_node_count = False
 
   @classmethod
   def Args(cls, parser):
@@ -549,7 +557,8 @@ class CreateBeta(Create):
         snapshot_csek=cls._support_source_snapshot_csek,
         image_csek=cls._support_image_csek,
         supports_display_device=cls._support_display_device,
-        support_local_ssd_size=cls._support_local_ssd_size)
+        support_local_ssd_size=cls._support_local_ssd_size,
+        support_numa_node_count=cls._support_numa_node_count)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeBulkSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -569,6 +578,7 @@ class CreateAlpha(Create):
   _support_local_ssd_size = True
   _support_secure_tags = True
   _support_host_error_timeout_seconds = True
+  _support_numa_node_count = True
 
   @classmethod
   def Args(cls, parser):
@@ -581,7 +591,8 @@ class CreateAlpha(Create):
         snapshot_csek=cls._support_source_snapshot_csek,
         image_csek=cls._support_image_csek,
         supports_display_device=cls._support_display_device,
-        support_local_ssd_size=cls._support_local_ssd_size)
+        support_local_ssd_size=cls._support_local_ssd_size,
+        support_numa_node_count=cls._support_numa_node_count)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeBulkSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)

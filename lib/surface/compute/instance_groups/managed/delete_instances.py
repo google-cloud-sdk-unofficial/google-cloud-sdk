@@ -40,9 +40,11 @@ def _AddCommonDeleteInstancesArgs(parser):
       help='Names of instances to delete.')
   instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
       parser)
+  mig_flags.AddGracefulValidationArg(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class DeleteInstances(base.Command):
   """Delete instances managed by managed instance group."""
 
@@ -84,60 +86,31 @@ class DeleteInstances(base.Command):
         instances_holder_field=instances_holder_field,
         igm_ref=igm_ref,
         instances=args.instances,
-        per_instance_status_enabled=self._IsPerInstanceStatusEnabled(args))
+        per_instance_status_enabled=True)
 
   def _CreateZonalIgmDeleteInstancesRequest(self, messages, igm_ref, args):
-    return messages.ComputeInstanceGroupManagersDeleteInstancesRequest(
+    request = messages.ComputeInstanceGroupManagersDeleteInstancesRequest(
         instanceGroupManager=igm_ref.Name(),
         instanceGroupManagersDeleteInstancesRequest=messages
         .InstanceGroupManagersDeleteInstancesRequest(instances=[]),
         project=igm_ref.project,
         zone=igm_ref.zone)
-
-  def _CreateRegionalIgmDeleteInstancesRequest(self, messages, igm_ref, args):
-    return messages.ComputeRegionInstanceGroupManagersDeleteInstancesRequest(
-        instanceGroupManager=igm_ref.Name(),
-        regionInstanceGroupManagersDeleteInstancesRequest=messages
-        .RegionInstanceGroupManagersDeleteInstancesRequest(instances=[]),
-        project=igm_ref.project,
-        region=igm_ref.region)
-
-  def _IsPerInstanceStatusEnabled(self, args):
-    return False
-
-  def _UpdateDefaultOutputFormatForGracefulValidation(self, args):
-    pass
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteInstancesAlpha(DeleteInstances):
-  """Delete instances managed by managed instance group."""
-
-  @staticmethod
-  def Args(parser):
-    _AddCommonDeleteInstancesArgs(parser)
-    mig_flags.AddGracefulValidationArg(parser)
-
-  def _CreateZonalIgmDeleteInstancesRequest(self, messages, igm_ref, args):
-    request = super(DeleteInstancesAlpha,
-                    self)._CreateZonalIgmDeleteInstancesRequest(
-                        messages, igm_ref, args)
     if args.IsSpecified('skip_instances_on_validation_error'):
       (request.instanceGroupManagersDeleteInstancesRequest.
        skipInstancesOnValidationError) = args.skip_instances_on_validation_error
     return request
 
   def _CreateRegionalIgmDeleteInstancesRequest(self, messages, igm_ref, args):
-    request = super(DeleteInstancesAlpha,
-                    self)._CreateRegionalIgmDeleteInstancesRequest(
-                        messages, igm_ref, args)
+    request = messages.ComputeRegionInstanceGroupManagersDeleteInstancesRequest(
+        instanceGroupManager=igm_ref.Name(),
+        regionInstanceGroupManagersDeleteInstancesRequest=messages
+        .RegionInstanceGroupManagersDeleteInstancesRequest(instances=[]),
+        project=igm_ref.project,
+        region=igm_ref.region)
     if args.IsSpecified('skip_instances_on_validation_error'):
       (request.regionInstanceGroupManagersDeleteInstancesRequest.
        skipInstancesOnValidationError) = args.skip_instances_on_validation_error
     return request
-
-  def _IsPerInstanceStatusEnabled(self, args):
-    return True
 
   def _UpdateDefaultOutputFormatForGracefulValidation(self, args):
     # Do not override output format if specified by user.
@@ -150,25 +123,6 @@ class DeleteInstancesAlpha(DeleteInstances):
 
 
 DeleteInstances.detailed_help = {
-    'brief':
-        'Delete instances that are managed by a managed instance group.',
-    'DESCRIPTION':
-        """
-        *{command}* is used to delete one or more instances from a managed
-instance group. Once the instances are deleted, the size of the group is
-automatically reduced to reflect the changes.
-
-The command returns the operation status per instance, which might be ``FAIL'',
-``SUCCESS'', or ``MEMBER_NOT_FOUND''. ``MEMBER_NOT_FOUND'' is returned only for
-regional groups when the gcloud command-line tool wasn't able to resolve the
-zone from the instance name.
-
-If you want to keep the underlying virtual machines but still remove them
-from the managed instance group, use the abandon-instances command instead.
-""",
-}
-
-DeleteInstancesAlpha.detailed_help = {
     'brief':
         'Delete instances that are managed by a managed instance group.',
     'DESCRIPTION':

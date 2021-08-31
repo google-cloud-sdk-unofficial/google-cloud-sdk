@@ -37,7 +37,7 @@ class DeauthorizeLake(base.Command):
           """\
           To deauthorize a lake from managing a given resource, run:
 
-            $ {command} de-authorize --namespace=my-namespace --location=us-east1 --project=testproject --{secondary-resource}={resource}
+            $ {command} --location=us-east1 --project=testproject --{secondary-resource}={resource}
 
             Secondary-resource is defined as project-resource, bigquery-dataset-resource, or storage-bucket-resource.
           """,

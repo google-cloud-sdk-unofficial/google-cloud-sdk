@@ -40,48 +40,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(base.DescribeCommand):
-  """Describe an API key's metadata."""
-
-  detailed_help = {
-      'EXAMPLES':
-          """\
-        To describe an API key:
-
-          $ {command} projects/myproject/locations/global/keys/1234
-                OR
-          $ {command} 1234
-                OR
-          $ {command} 1234 --project=myproject
-        """,
-  }
-
-  @staticmethod
-  def Args(parser):
-    common_flags.key_flag(parser=parser, suffix='to describe')
-
-  def Run(self, args):
-    """Run command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The metadata of API key.
-    """
-
-    client = apikeys.GetClientInstance()
-    messages = client.MESSAGES_MODULE
-
-    key_ref = args.CONCEPTS.key.Parse()
-    request = messages.ApikeysProjectsKeysGetRequest(
-        name=key_ref.RelativeName())
-    return client.projects_keys.Get(request)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class DescribeGa(base.DescribeCommand):
   """Describe an API key's metadata."""
 

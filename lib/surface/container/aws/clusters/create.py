@@ -29,7 +29,6 @@ from googlecloudsdk.command_lib.container.gkemulticloud import flags
 from googlecloudsdk.command_lib.container.gkemulticloud import operations
 from googlecloudsdk.core import log
 
-
 # Command needs to be in one line for the docgen tool to format properly.
 _EXAMPLES = """
 To create a cluster named ``my-cluster'' managed in location ``us-west1'',
@@ -64,8 +63,7 @@ class Create(base.CreateCommand):
     flags.AddRootVolumeSize(parser)
     flags.AddMainVolumeSize(parser)
     flags.AddValidateOnly(parser, 'cluster to create')
-    flags.AddTags(
-        parser, 'cluster')
+    flags.AddTags(parser, 'cluster')
 
     aws_flags.AddAwsRegion(parser)
     aws_flags.AddServiceLoadBalancerSubnetIDs(parser)
@@ -83,6 +81,7 @@ class Create(base.CreateCommand):
     aws_flags.AddMainVolumeType(parser)
     aws_flags.AddMainVolumeIops(parser)
     aws_flags.AddMainVolumeKmsKeyArn(parser)
+    aws_flags.AddProxyConfig(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 

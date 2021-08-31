@@ -31,6 +31,7 @@ auto_flags = [
     'nodeidentity',
     'privatecluster',
     'releasechannel',
+    'authenticatorsecurity',
 ]
 
 # Change default flag values in create-auto

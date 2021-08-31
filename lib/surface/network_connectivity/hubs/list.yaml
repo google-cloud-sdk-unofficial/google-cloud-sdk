@@ -2,8 +2,7 @@
 
   help_text:
     brief: List hubs.
-    description: List all hubs in the specified project.
-      You can specify the maximum number of hubs to list by using the ``--limit'' flag.
+    description: Retrieve and display a list of all hubs in the specified project.
 
   request: &request
     ALPHA:

@@ -27,8 +27,6 @@ from googlecloudsdk.core import resources
 def _GetUriFunction(api_version):
   """Returns a Uri function for list."""
   collection = 'apikeys.projects.locations.keys'
-  if api_version == 'v2alpha1':
-    collection = 'apikeys.projects.keys'
 
   def UriFunc(resource):
     return resources.REGISTRY.ParseRelativeName(
@@ -53,47 +51,7 @@ def _ListArgs(parser):
         """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
-  """Lists API keys.
-
-  Lists all of the API keys that are active in a given project.
-  You can add the state filter `state:DELETED` to list api keys that were
-  deleted within past 30 days.
-
-  ## EXAMPLES
-
-   List active keys:
-
-    $ {command}
-
-   List keys that were deleted in past 30 days of a given project.:
-
-    $ {command} --deleted --project=my_project
-  """
-
-  @staticmethod
-  def Args(parser):
-    _ListArgs(parser)
-    parser.display_info.AddUriFunc(_GetUriFunction(api_version='v2alpha1'))
-
-  def Run(self, args):
-    """Run command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The list of api keys.
-    """
-
-    project_id = properties.VALUES.core.project.GetOrFail()
-    return apikeys.ListKeys(project_id, args.deleted, args.page_size,
-                            args.limit)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """Lists API keys.
 
@@ -129,5 +87,5 @@ class List(base.ListCommand):
     """
 
     project_id = properties.VALUES.core.project.GetOrFail()
-    return apikeys.ListKeysGa(project_id, args.deleted, args.page_size,
-                              args.limit)
+    return apikeys.ListKeys(project_id, args.deleted, args.page_size,
+                            args.limit)

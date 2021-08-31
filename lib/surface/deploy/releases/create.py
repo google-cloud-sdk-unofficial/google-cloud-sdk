@@ -66,7 +66,7 @@ def _CommonArgs(parser):
   flags.AddLabelsFlag(parser, _RELEASE)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Creates a new release, delivery pipeline qualified."""
 

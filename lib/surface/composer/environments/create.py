@@ -431,8 +431,8 @@ class Create(base.Command):
         args.web_server_storage or args.min_workers or args.max_workers)
     if composer_v2_flag_used and is_composer_v1:
       raise command_util.InvalidUserInputError(
-          'You cannot use Workloads Config flags introduced in Composer 2.X'
-          ' when creating Composer 1.X environments.')
+          'Workloads Config flags introduced in Composer 2.X'
+          ' cannot be used when creating Composer 1.X environments.')
 
   def ValidateComposer1ExclusiveFlags(self, args, is_composer_v1,
                                       release_track):

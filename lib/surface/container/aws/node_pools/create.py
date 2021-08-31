@@ -28,7 +28,6 @@ from googlecloudsdk.command_lib.container.gkemulticloud import flags
 from googlecloudsdk.command_lib.container.gkemulticloud import operations
 from googlecloudsdk.core import log
 
-
 # Command needs to be in one line for the docgen tool to format properly.
 _EXAMPLES = """
 To create a node pool named ``my-node-pool'' in a cluster named ``my-cluster''
@@ -64,6 +63,7 @@ class Create(base.CreateCommand):
     aws_flags.AddRootVolumeType(parser)
     aws_flags.AddRootVolumeIops(parser)
     aws_flags.AddRootVolumeKmsKeyArn(parser)
+    aws_flags.AddProxyConfig(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 

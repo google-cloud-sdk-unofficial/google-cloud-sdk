@@ -6,9 +6,9 @@
     description: |
       Get a Dataplex Zone resource based on project, location, lake, and zone.
 
-      {top_command} dataplex zone describe projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id}
+      {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id}
     examples: |
-      $ {command} dataplex zone describe projects/project_id/locations/us-central1/lakes/test-lake/zones/test-zone
+      $ {command} projects/project_id/locations/us-central1/lakes/test-lake/zones/test-zone
   request:
     ALPHA:
       api_version: v1

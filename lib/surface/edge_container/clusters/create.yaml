@@ -15,6 +15,7 @@
     api_version: v1alpha
     modify_request_hooks:
     - googlecloudsdk.command_lib.edge_container.hub:SetHubMembershipPath
+    - googlecloudsdk.command_lib.edge_container.admin_users:SetAdminUsers
 
   arguments:
     resource:
@@ -46,6 +47,13 @@
         All services in the cluster are assigned an RFC1918 IPv4 address from this
         block. This field cannot be changed after creation.
       default: "10.96.0.0/12"
+    - arg_name: admin-users
+      api_field: cluster.authorization.adminUsers.username
+      repeated: false
+      help_text: |
+        Username (Google email address) of the user who should be granted
+        cluster-admin initially. This currently supports exactly one admin. If not
+        set, the account issuing the creation request will be used by default.
 
     labels:
       api_field: cluster.labels

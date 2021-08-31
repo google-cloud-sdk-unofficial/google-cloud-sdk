@@ -25,6 +25,26 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.networks.subnets import flags
 
 
+def _DetailedHelp():
+  return {
+      'brief':
+          'Delete Google Cloud subnetworks.',
+      'DESCRIPTION':
+      """\
+          *{command}* deletes one or more Google Cloud subnetworks.
+          Subnetworks can only be deleted when no other resources,
+          such as VM instances, refer to them.".
+      """,
+      'EXAMPLES':
+          """\
+        To delete the subnetwork subnet-1 in the us-central1,
+        run:
+
+        $ {command} subnet-1 --region=us-central1
+      """
+  }
+
+
 class Delete(base.DeleteCommand):
   """Delete Compute Engine subnetworks.
 
@@ -34,6 +54,7 @@ class Delete(base.DeleteCommand):
   """
 
   SUBNET_ARG = None
+  detailed_help = _DetailedHelp()
 
   @staticmethod
   def Args(parser):

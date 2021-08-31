@@ -266,6 +266,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_kubernetes_alpha=get_default('enable_kubernetes_alpha'),
       enable_cloud_run_alpha=flags.GetLegacyCloudRunFlag('enable_{}_alpha', args, get_default),
       enable_legacy_authorization=get_default('enable_legacy_authorization'),
+      enable_managed_prometheus=get_default('enable_managed_prometheus'),
       enable_master_authorized_networks=\
         get_default('enable_master_authorized_networks'),
       enable_master_global_access=get_default('enable_master_global_access'),
@@ -413,7 +414,7 @@ def AttrValue(args, flagname, flag_defaults):
 flags_to_add = {
     GA: {
         'accelerator':
-            (lambda p: flags.AddAcceleratorArgs(p, enable_gpu_partition=False)),
+            (lambda p: flags.AddAcceleratorArgs(p, enable_gpu_partition=True)),
         'additionalzones':
             _AddAdditionalZonesFlag,
         'addons':
@@ -648,6 +649,8 @@ flags_to_add = {
             flags.AddMachineTypeFlag,
         'maintenancewindow':
             flags.AddMaintenanceWindowGroup,
+        'managedprometheus':
+            flags.AddManagedPrometheusFlag,
         'masterglobalaccess':
             flags.AddMasterGlobalAccessFlag,
         'masterauth':
@@ -837,6 +840,8 @@ flags_to_add = {
             flags.AddMaxPodsPerNodeFlag,
         'maintenancewindow':
             flags.AddMaintenanceWindowGroup,
+        'managedprometheus':
+            flags.AddManagedPrometheusFlag,
         'masterauth':
             flags.AddMasterAuthorizedNetworksFlags,
         'mastersignals':
@@ -1133,6 +1138,7 @@ class CreateBeta(Create):
     ops.cross_connect_subnetworks = \
         get_default('cross_connect_subnetworks')
     ops.enable_service_externalips = get_default('enable_service_externalips')
+    ops.enable_managed_prometheus = get_default('enable_managed_prometheus')
     return ops
 
 
@@ -1213,4 +1219,5 @@ class CreateAlpha(Create):
     ops.cross_connect_subnetworks = \
         get_default('cross_connect_subnetworks')
     ops.enable_service_externalips = get_default('enable_service_externalips')
+    ops.enable_managed_prometheus = get_default('enable_managed_prometheus')
     return ops

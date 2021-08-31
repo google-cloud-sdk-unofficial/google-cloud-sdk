@@ -37,25 +37,25 @@ class Update(base.SilentCommand):
 
     $ {command} --service=example.googleapis.com --consumer=projects/12321
         --metric=example.googleapis.com/default_requests
-        --unit=1/min/{project} --override-id=hello123 --value=360
+        --unit=1/min/{project} --value=360
 
   To update a quota override for project with project ID, run:
 
     $ {command} --service=example.googleapis.com --consumer=projects/hello
         --metric=example.googleapis.com/default_requests
-        --unit=1/min/{project} --override-id=hello123 --value=360
+        --unit=1/min/{project} --value=360
 
   To update a quota override for an organization, run:
 
     $ {command} --service=example.googleapis.com --consumer=organizations/555
         --metric=example.googleapis.com/default_requests
-        --unit=1/min/{project} --override-id=hello123 --value=360
+        --unit=1/min/{project} --value=360
 
   To force the update of a quota override, run:
 
     $ {command} --service=example.googleapis.com --consumer=projects/12321
         --metric=example.googleapis.com/default_requests
-        --unit=1/min/{project}  --override-id=hello123
+        --unit=1/min/{project}
         --dimensions=regions=us-central1
         --dimensions=zones=us-central1-c --value=360 --force
   """

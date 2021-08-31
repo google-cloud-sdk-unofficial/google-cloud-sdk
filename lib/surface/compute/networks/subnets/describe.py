@@ -25,6 +25,24 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.networks.subnets import flags
 
 
+def _DetailedHelp():
+  return {
+      'brief':
+          'Describe a Compute Engine subnetwork.',
+      'DESCRIPTION':
+      """\
+          *{command}* displays all data associated with a Compute Engine
+          subnetwork.
+      """,
+      'EXAMPLES':
+      """\
+        To display all data associated with subnetwork subnet-1, run:
+
+        $ {command} subnet-1
+      """
+  }
+
+
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine subnetwork.
 
@@ -33,6 +51,7 @@ class Describe(base.DescribeCommand):
   """
 
   SUBNETWORK_ARG = None
+  detailed_help = _DetailedHelp()
 
   @staticmethod
   def Args(parser):

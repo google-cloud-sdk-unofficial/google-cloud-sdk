@@ -36,7 +36,7 @@ class Update(base.Command):
           """\
           To update a Dataplex Lake, run:
 
-            $ {command} update projects/{project_id}/locations/{location}/lakes/{lake_id}
+            $ {command} projects/{project_id}/locations/{location}/lakes/{lake_id}
           """,
   }
 

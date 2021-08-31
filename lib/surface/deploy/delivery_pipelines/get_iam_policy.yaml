@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Get the IAM policy for a Cloud Deploy delivery pipeline.
@@ -22,3 +22,8 @@
     resource:
       help_text: The delivery pipeline for which to display the IAM policy.
       spec: !REF googlecloudsdk.command_lib.deploy.resources:delivery_pipeline_positional
+
+  iam:
+    enable_condition: true
+    policy_version: 3
+    get_iam_policy_version_path: options_requestedPolicyVersion

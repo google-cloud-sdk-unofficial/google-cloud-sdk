@@ -4,11 +4,11 @@
     brief: |
       List Dataplex Zone Resources.
     description: |
-      List Dataplex Zone resource based on project, location, and lake.
+      List Dataplex Zone resource based on project, location, and lake. Currently list does not support project/{project_id}/.../ notation.
 
-      {top_command} dataplex zone list projects/{project_id}/locations/{location}/lakes/{lake_id}
+      {command} --project={project_id} --location={location} --lake={lake_id}
     examples: |
-      {top_command} list --projects="test-project" --locations=us-central1 --lakes=test-lake
+      {command} --projects="test-project" --locations=us-central1 --lakes=test-lake
 
   request:
     ALPHA:

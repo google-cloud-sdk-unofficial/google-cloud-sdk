@@ -34,7 +34,7 @@ class RemoveIamPolicyBinding(base.Command):
           """\
           To Remove an IAM policy binding from a lake, run:
 
-            $ {command} remove-iam-policy-binding projects/{project_id}/locations/{location}/lakes/{lake_id} --role=roles/dataplex.viewer --member=user:foo@gmail.com
+            $ {command} projects/{project_id}/locations/{location}/lakes/{lake_id} --role=roles/dataplex.viewer --member=user:foo@gmail.com
           """,
   }
 

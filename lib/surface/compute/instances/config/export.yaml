@@ -1,31 +1,35 @@
 release_tracks: [ALPHA]
 command_type: CONFIG_EXPORT
 help_text:
-  brief: Export the configuration for a Compute Engine virtual machine.
+  brief: Export the configuration for a Compute instance.
   description: |
-    *{command}* exports the configuration for a Compute Engine virtual machine.
+    *{command}* exports the configuration for a Compute instance.
 
-    Virtual machine configurations can be exported in Kubernetes Resource Model (krm) or Terraform HCL formats. The
+    Instance configurations can be exported in
+    Kubernetes Resource Model (krm) or Terraform HCL formats. The
     default format is `krm`.
 
-    Specifying `--all` allows you to export the configurations for all virtual machines within the
-    project.
+    Specifying `--all` allows you to export the configurations for all
+    instances within the project.
 
-    Specifying `--path` allows you to export the configuration(s) to a local directory.
+    Specifying `--path` allows you to export the configuration(s) to
+    a local directory.
   examples: |
-    To export the configuration for a virtual machine, run:
+    To export the configuration for an instance, run:
 
-      $ {command} my-address
+      $ {command} my-instance
 
-    To export the configuration for a virtual machine to a file, run:
+    To export the configuration for an instance to a file, run:
 
-      $ {command} my-address --path=/path/to/dir/
+      $ {command} my-instance --path=/path/to/dir/
 
-    To export the configuration for a virtual machine in Terraform HCL format, run:
+    To export the configuration for an instance in Terraform
+    HCL format, run:
 
-      $ {command} my-address --resource-format=terraform
+      $ {command} my-instance --resource-format=terraform
 
-    To export the configurations for all virtual machines within a project, run:
+    To export the configurations for all instances within a
+    project, run:
 
       $ {command} --all
 arguments:

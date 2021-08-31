@@ -3,7 +3,7 @@
   help_text:
     brief: Deactivate a spoke.
     description: |
-      *{command}* deactivates the specified spoke. A deactivated spoke can't be used to connect to the Google Cloud network.
+      Deactivate the specified spoke. A deactivated spoke can't be used to connect to the Google Cloud network.
 
       When you deactivate a spoke, Network Connectivity Center retains details about the spoke so that you can reactivate it later.
     examples: |

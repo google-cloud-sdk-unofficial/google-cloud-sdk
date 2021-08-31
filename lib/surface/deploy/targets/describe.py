@@ -47,7 +47,7 @@ def _CommonArgs(parser):
   flags.AddDeliveryPipeline(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describes details specific to the individual target, delivery pipeline qualified.
 

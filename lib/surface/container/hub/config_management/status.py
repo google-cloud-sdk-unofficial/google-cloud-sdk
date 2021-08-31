@@ -152,16 +152,25 @@ class ConfigmanagementFeatureState(object):
       feature_spec_mc: MembershipConfig
       feature_state_mc: MembershipConfig
     """
+    feature_state_pending = (
+        feature_state_mc is None and feature_spec_mc is not None)
+    if feature_state_pending:
+      self.last_synced_token = 'PENDING'
+      self.last_synced = 'PENDING'
+      self.sync_branch = 'PENDING'
     if self.config_sync.__str__() in [
         'SYNCED', 'NOT_CONFIGURED', 'NOT_INSTALLED', NA
-    ] and feature_spec_mc.configSync != feature_state_mc.configSync:
+    ] and (feature_state_pending or
+           feature_spec_mc.configSync != feature_state_mc.configSync):
       self.config_sync = 'PENDING'
     if self.policy_controller_state.__str__() in [
         'INSTALLED', 'GatekeeperAudit NOT_INSTALLED', NA
-    ] and feature_spec_mc.policyController != feature_state_mc.policyController:
+    ] and (feature_state_pending or feature_spec_mc.policyController !=
+           feature_state_mc.policyController):
       self.policy_controller_state = 'PENDING'
-    if self.hierarchy_controller_state.__str__() != 'ERROR' and \
-        feature_spec_mc.hierarchyController != feature_state_mc.hierarchyController:
+    if (self.hierarchy_controller_state.__str__() != 'ERROR' and
+        feature_state_pending or feature_spec_mc.hierarchyController !=
+        feature_state_mc.hierarchyController):
       self.hierarchy_controller_state = 'PENDING'
 
 
@@ -204,6 +213,10 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
     for name in memberships:
       cluster = ConfigmanagementFeatureState(name)
       if name not in feature_state_memberships:
+        if name in feature_spec_memberships:
+          # (b/187846229) Show PENDING if feature spec is aware of
+          # this membership name but feature state is not
+          cluster.update_pending_state(feature_spec_memberships[name], None)
         acm_status.append(cluster)
         continue
       md = feature_state_memberships[name]

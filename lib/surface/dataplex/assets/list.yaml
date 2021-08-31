@@ -4,11 +4,11 @@
     brief: |
       List Dataplex Asset Resources.
     description: |
-      List Dataplex Asset resource based on project, location, lake, and zone.
+      List Dataplex Asset resource based on project, location, lake, and zone. Currently list does not support project/{project_id}/.../ notation.
 
-      {top_command} dataplex asset list projects/{project_id}/locations/{location}/lakes/{test-lake}/zones/{test-zone}
+      {command} --project={project_id} --location={location} --lake={test-lake} --zone={test-zone}
     examples: |
-      {top_command} list projects/test-project/locations/us-central1/lakes/test-lake/zones/test-zone
+      {command} --project=test-project --location=us-central1 --lake=test-lake --zone=test-zone
 
   request:
     ALPHA:

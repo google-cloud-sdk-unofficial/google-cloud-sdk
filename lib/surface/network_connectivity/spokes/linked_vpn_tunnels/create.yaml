@@ -2,7 +2,7 @@
 
   help_text:
     brief: Create a new VPN spoke.
-    description: Create a new VPN spoke with the specified properties.
+    description: Create a new [VPN spoke](https://cloud.google.com/network-connectivity/docs/network-connectivity-center/how-to/working-with-hubs-spokes#create-vpn-spoke) with the specified properties.
     examples: |
       To create a VPN spoke that uses two tunnels in region ``us-central1'', run:
 
@@ -29,7 +29,7 @@
       api_field: spoke.linkedVpnTunnels.siteToSiteDataTransfer
       help_text: |
         Whether to enable site-to-site data transfer for this spoke. This flag is set to false by
-        default, but you must always set it to true. Note that data transfer is available only in
+        default, but you must set it to true. Note that data transfer is available only in
         supported locations.
     labels:
       api_field: spoke.labels

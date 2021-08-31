@@ -79,15 +79,15 @@ class Create(base.CreateCommand):
     transport_topic_ref = args.CONCEPTS.transport_topic.Parse()
     event_filters = flags.GetEventFiltersArg(args, self.ReleaseTrack())
 
+    destination_message = None
     # destination Cloud Run service
     if args.IsSpecified('destination_run_service'):
       destination_run_region = self.GetDestinationLocation(
           args, trigger_ref, 'destination_run_region', 'Cloud Run service')
 
-      trigger_message = client.BuildCloudRunTriggerMessage(
-          trigger_ref, event_filters, args.service_account,
+      destination_message = client.BuildCloudRunDestinationMessage(
           args.destination_run_service, args.destination_run_path,
-          destination_run_region, transport_topic_ref)
+          destination_run_region)
       dest_str = 'Cloud Run service [{}]'.format(args.destination_run_service)
       loading_msg = ''
     # destination GKE service
@@ -96,17 +96,29 @@ class Create(base.CreateCommand):
           args, trigger_ref, 'destination_gke_location', 'GKE service')
       destination_gke_namespace = args.destination_gke_namespace or 'default'
 
-      trigger_message = client.BuildGKETriggerMessage(
-          trigger_ref, event_filters, args.service_account,
+      destination_message = client.BuildGKEDestinationMessage(
           args.destination_gke_cluster, destination_gke_location,
           destination_gke_namespace, args.destination_gke_service,
-          args.destination_gke_path, transport_topic_ref)
+          args.destination_gke_path)
       dest_str = 'GKE service [{}] in cluster [{}]'.format(
           args.destination_gke_service, args.destination_gke_cluster)
       loading_msg = 'this operation may take several minutes'
+    # destination Workflow
+    elif args.IsSpecified('destination_workflow'):
+      destination_workflow_location = self.GetDestinationLocation(
+          args, trigger_ref, 'destination_workflow_location', 'Workflow')
+
+      destination_message = client.BuildWorkflowDestinationMessage(
+          trigger_ref.Parent().Parent().Name(), args.destination_workflow,
+          destination_workflow_location)
+      dest_str = 'Workflow [{}]'.format(args.destination_workflow)
+      loading_msg = ''
     else:
       raise UnsupportedDestinationError('Must specify a valid destination.')
-
+    trigger_message = client.BuildTriggerMessage(trigger_ref, event_filters,
+                                                 args.service_account,
+                                                 destination_message,
+                                                 transport_topic_ref)
     operation = client.Create(trigger_ref, trigger_message)
     self._event_type = event_filters['type']
     if args.async_:

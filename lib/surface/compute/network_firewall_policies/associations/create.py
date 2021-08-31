@@ -58,8 +58,12 @@ class Create(base.CreateCommand):
         'The network to which the firewall policy attaches.').ResolveAsResource(
             args, holder.resources)
 
-    name = args.name
-    replace_existing_association = False
+    name = None
+    if args.IsSpecified('name'):
+      name = args.name
+    else:
+      name = 'network-' + network_ref.Name()
+
     attachment_target = network_ref.SelfLink()
 
     replace_existing_association = False

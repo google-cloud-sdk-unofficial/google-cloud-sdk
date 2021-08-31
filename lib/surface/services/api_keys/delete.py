@@ -53,9 +53,9 @@ class Delete(base.DeleteCommand):
     messages = client.MESSAGES_MODULE
 
     key_ref = args.CONCEPTS.key.Parse()
-    request = messages.ApikeysProjectsKeysDeleteRequest(
+    request = messages.ApikeysProjectsLocationsKeysDeleteRequest(
         name=key_ref.RelativeName())
-    op = client.projects_keys.Delete(request)
+    op = client.projects_locations_keys.Delete(request)
 
     if not op.done:
       if args.async_:
@@ -65,4 +65,4 @@ class Delete(base.DeleteCommand):
                          'completion:\n {0}'.format(cmd))
         return op
       op = services_util.WaitOperation(op.name, apikeys.GetOperation)
-    services_util.PrintOperation(op)
+    services_util.PrintOperationWithResponse(op)

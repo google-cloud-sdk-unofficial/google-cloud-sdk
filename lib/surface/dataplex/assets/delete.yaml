@@ -6,9 +6,9 @@
     description: |
       Delete a Dataplex Asset resource based on project, location, lake, zone, asset.
 
-      {top_command} dataplex asset delete projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id}/assets/{asset_id}
+      {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id}/assets/{asset_id}
     examples: |
-     $ {command} delete projects/test-project/locations/us-central1/lakes/test-lake/zones/test-zone/assets/test-asset
+     $ {command} projects/test-project/locations/us-central1/lakes/test-lake/zones/test-zone/assets/test-asset
 
 
   request:
@@ -20,3 +20,5 @@
       help_text: |
         Arguments and flags that define the Dataplex Asset you want to delete.
       spec: !REF googlecloudsdk.command_lib.dataplex.resources:asset
+  async:
+    collection: dataplex.projects.locations.operations

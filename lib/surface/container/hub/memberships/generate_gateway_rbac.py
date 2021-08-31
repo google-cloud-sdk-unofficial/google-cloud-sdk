@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import sys
 import textwrap
 
 from googlecloudsdk.calliope import base
@@ -38,18 +39,29 @@ class GenerateGatewayRbac(base.Command):
   local file in dry run mode.
 
   ## EXAMPLES
+    The current implementation supports multiple modes:
 
     Dry run mode to generate the RBAC policy file, and write to local directory:
 
-      $ {command} my-cluster --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com --role=clusterrole/cluster-reader --rbac-output-file=./rbac.yaml
+      $ {command} --membership=my-cluster --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com --role=clusterrole/cluster-reader --rbac-output-file=./rbac.yaml
+
+    Dry run mode to generate the RBAC policy, and print on screen:
+
+      $ {command} --membership=my-cluster --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com --role=clusterrole/cluster-reader
+
+    Anthos support mode, generate the RBAC policy file with read-only permission for TSE/Eng to debug customers' clusters:
+
+      $ {command} --membership=my-cluster --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com --anthos-support
   """
 
   @classmethod
   def Args(cls, parser):
     parser.add_argument(
-        'MEMBERSHIP',
+        '--membership',
         type=str,
-        help=textwrap.dedent('Membership name to assign RBAC policy with.'),
+        help=textwrap.dedent("""\
+          Membership name to assign RBAC policy with.
+        """),
     )
     parser.add_argument(
         '--users',
@@ -64,34 +76,31 @@ class GenerateGatewayRbac(base.Command):
         help=textwrap.dedent("""\
           Namespace scoped role or cluster role.
         """),
-        required=True)
+    )
     parser.add_argument(
         '--rbac-output-file',
         type=str,
         help=textwrap.dedent("""\
-          If specified, this command will execute in dry run mode: the
-          generated RBAC policy will not be applied to Kubernetes clusters,
-          instead it will be written to the designated local file.
+          If specified, this command will execute in dry run mode and write to
+          the file specified with this flag: the generated RBAC policy will not
+          be applied to Kubernetes clusters,instead it will be written to the
+          designated local file.
         """))
+    parser.add_argument(
+        '--anthos-support',
+        action='store_true',
+        help=textwrap.dedent("""\
+          If specified, this command will generate RBAC policy
+          file for anthos support.
+        """),
+    )
 
   def Run(self, args):
     log.status.Print('Validating input arguments.')
-
-    # Check the required field's values are not empty.
-    if len(args.MEMBERSHIP) < 1:
-      raise rbac_util.InvalidArgsError(
-          'The required property [membership] was not provided. Please specify '
-          'the cluster name in this field.'
-      )
     if len(args.users) < 1:
       raise rbac_util.InvalidArgsError(
           'The required field [users] was not provided. Please specify the '
           'users or service account in this field.'
-      )
-    if len(args.role) < 1:
-      raise rbac_util.InvalidArgsError(
-          'The required field [role] was not provided. Please specify the '
-          'cluster role or namespace role in this field.'
       )
     project_id = properties.VALUES.core.project.GetOrFail()
 
@@ -101,5 +110,14 @@ class GenerateGatewayRbac(base.Command):
     # Generate the RBAC policy file from args.
     generated_rbac = rbac_util.GenerateRBAC(args, project_id)
 
-    # Write the generated RBAC policy file to the file provided.
-    log.WriteToFileOrStdout(args.rbac_output_file if args.rbac_output_file else '-', generated_rbac, overwrite=True, binary=False, private=True)
+    sys.stdout.write('--------------------------------------------')
+    sys.stdout.write('Generated RBAC policy file is: ')
+
+    # Write the generated RBAC policy file to the file provided with
+    # "--rbac-output-file" specified or print on the screen.
+    log.WriteToFileOrStdout(
+        args.rbac_output_file if args.rbac_output_file else '-',
+        generated_rbac,
+        overwrite=True,
+        binary=False,
+        private=True)

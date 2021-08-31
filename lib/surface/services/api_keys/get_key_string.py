@@ -46,6 +46,6 @@ class GetKeyString(base.DescribeCommand):
     messages = client.MESSAGES_MODULE
 
     key_ref = args.CONCEPTS.key.Parse()
-    request = messages.ApikeysProjectsKeysGetKeyStringRequest(
+    request = messages.ApikeysProjectsLocationsKeysGetKeyStringRequest(
         name=key_ref.RelativeName())
-    return client.projects_keys.GetKeyString(request)
+    return client.projects_locations_keys.GetKeyString(request)

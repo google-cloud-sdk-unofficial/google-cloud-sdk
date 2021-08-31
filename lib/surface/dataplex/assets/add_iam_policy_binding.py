@@ -34,7 +34,7 @@ class AddIamPolicyBinding(base.Command):
           """\
           To add an IAM policy binding to an asset, run:
 
-            $ {command} add-iam-policy-binding projects/project_id/locations/location/lakes/{lake_id}/zones/{zone_id}/assets/{asset_id} --role=roles/dataplex.viewer --member=user:foo@gmail.com
+            $ {command} projects/project_id/locations/location/lakes/{lake_id}/zones/{zone_id}/assets/{asset_id} --role=roles/dataplex.viewer --member=user:foo@gmail.com
           """,
   }
 

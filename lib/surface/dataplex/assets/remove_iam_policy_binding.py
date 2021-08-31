@@ -34,7 +34,7 @@ class RemoveIamPolicyBinding(base.Command):
           """\
           To remove an IAM policy binding from an asset, run:
 
-            $ {command} remove-iam-policy-binding projects/project_id/locations/location/lakes/lake/zones/zone/assets/asset --role=roles/owner --member=user:foo@gmail.com
+            $ {command} projects/project_id/locations/location/lakes/lake/zones/zone/assets/asset --role=roles/owner --member=user:foo@gmail.com
           """,
   }
 

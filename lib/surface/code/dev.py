@@ -167,7 +167,7 @@ class Dev(base.Command):
     if _IsDebug():
       _PrintDependencyVersions(args)
 
-    settings = local.AssembleSettings(args)
+    settings = local.AssembleSettings(args, self.ReleaseTrack())
 
     local_file_generator = local_files.LocalRuntimeFiles(settings)
 

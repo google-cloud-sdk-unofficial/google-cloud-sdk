@@ -36,7 +36,7 @@ class Create(base.Command):
           """\
           To create a Dataplex Lake, run:
 
-            $ {command} create projects/{project_id}/locations/{location}/lakes/{lake_id}
+            $ {command} projects/{project_id}/locations/{location}/lakes/{lake_id}
           """,
   }
 

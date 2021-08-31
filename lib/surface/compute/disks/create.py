@@ -81,8 +81,7 @@ DETAILED_HELP = {
 }
 
 
-def _SourceArgs(parser, source_instant_snapshot_enabled=False,
-                support_image_family_scope=False):
+def _SourceArgs(parser, source_instant_snapshot_enabled=False):
   """Add mutually exclusive source args."""
   source_parent_group = parser.add_group()
   source_group = source_parent_group.add_mutually_exclusive_group()
@@ -114,8 +113,7 @@ def _SourceArgs(parser, source_instant_snapshot_enabled=False,
         used. It is best practice to use --image-family when the latest
         version of an image is needed.
         """)
-  if support_image_family_scope:
-    image_utils.AddImageFamilyScopeFlag(source_parent_group)
+  image_utils.AddImageFamilyScopeFlag(source_parent_group)
 
   disks_flags.SOURCE_SNAPSHOT_ARG.AddArgument(source_group)
   if source_instant_snapshot_enabled:
@@ -128,8 +126,7 @@ def _CommonArgs(parser,
                 vss_erase_enabled=False,
                 source_instant_snapshot_enabled=False,
                 support_pd_interface=False,
-                support_user_licenses=False,
-                support_image_family_scope=False):
+                support_user_licenses=False):
   """Add arguments used for parsing in all command tracks."""
   Create.disks_arg.AddArgument(parser, operation_type='create')
   parser.add_argument(
@@ -186,8 +183,7 @@ def _CommonArgs(parser,
             'be added onto the created disks to indicate the licensing and '
             'billing policies.'))
 
-  _SourceArgs(parser, source_instant_snapshot_enabled,
-              support_image_family_scope=support_image_family_scope)
+  _SourceArgs(parser, source_instant_snapshot_enabled)
 
   disks_flags.AddProvisionedIopsFlag(parser, arg_parsers, constants)
 
@@ -247,7 +243,6 @@ class Create(base.Command):
   """Create Compute Engine persistent disks."""
 
   source_instant_snapshot_enabled = False
-  support_image_family_scope = False
 
   @classmethod
   def Args(cls, parser):
@@ -314,9 +309,6 @@ class Create(base.Command):
     image_expander = image_utils.ImageExpander(compute_holder.client,
                                                compute_holder.resources)
 
-    image_family_scope = (args.image_family_scope
-                          if self.support_image_family_scope else None)
-
     for disk_ref in disk_refs:
       if from_image:
         if disk_ref.project not in project_to_source_image:
@@ -326,8 +318,8 @@ class Create(base.Command):
               image_family=args.image_family,
               image_project=args.image_project,
               return_image_resource=False,
-              image_family_scope=image_family_scope,
-              support_image_family_scope=self.support_image_family_scope)
+              image_family_scope=args.image_family_scope,
+              support_image_family_scope=True)
           project_to_source_image[disk_ref.project] = argparse.Namespace()
           project_to_source_image[disk_ref.project].uri = source_image_uri
       else:
@@ -597,7 +589,6 @@ class CreateBeta(Create):
   """Create Compute Engine persistent disks."""
 
   source_instant_snapshot_enabled = False
-  support_image_family_scope = True
 
   @classmethod
   def Args(cls, parser):
@@ -607,8 +598,7 @@ class CreateBeta(Create):
         parser,
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
-        support_pd_interface=True,
-        support_image_family_scope=cls.support_image_family_scope)
+        support_pd_interface=True)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
@@ -630,7 +620,6 @@ class CreateAlpha(CreateBeta):
   """Create Compute Engine persistent disks."""
 
   source_instant_snapshot_enabled = True
-  support_image_family_scope = True
 
   @classmethod
   def Args(cls, parser):
@@ -642,8 +631,7 @@ class CreateAlpha(CreateBeta):
         vss_erase_enabled=True,
         source_instant_snapshot_enabled=True,
         support_pd_interface=True,
-        support_user_licenses=True,
-        support_image_family_scope=cls.support_image_family_scope)
+        support_user_licenses=True)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(

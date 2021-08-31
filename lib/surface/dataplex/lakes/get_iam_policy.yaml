@@ -6,9 +6,9 @@
     description: |
       Get a Dataplex Lake Iam Policy based on project_id, location, and lake_id.
 
-      {top_command} dataplex lake get-iam-policy projects/{project_id}/locations/{location}/lakes/{lake_id}
+      {command} projects/{project_id}/locations/{location}/lakes/{lake_id}
     examples: |
-      {top_command} dataplex lake get-iam-policy projects/test-project/locations/us-central1/lakes/test-lake
+      {command} projects/test-project/locations/us-central1/lakes/test-lake
   request:
     collection: dataplex.projects.locations.lakes
   arguments:

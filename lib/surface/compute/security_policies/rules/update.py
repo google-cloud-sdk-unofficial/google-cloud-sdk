@@ -80,6 +80,9 @@ class UpdateHelper(object):
     if support_redirect:
       modified_fields.extend([args.redirect_type, args.redirect_target])
       min_args.extend(['--redirect-type', '--redirect-target'])
+    if support_header_action:
+      modified_fields.extend([args.request_headers_to_add])
+      min_args.extend(['--request-headers-to-add'])
     if support_rate_limit:
       modified_fields.extend([
           args.rate_limit_threshold_count,

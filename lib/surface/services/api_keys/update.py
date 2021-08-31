@@ -101,9 +101,8 @@ class Update(base.UpdateCommand):
 
     key_ref = args.CONCEPTS.key.Parse()
     update_mask = []
-    key_proto = messages.V2alpha1ApiKey(
-        name=key_ref.RelativeName(),
-        restrictions=messages.V2alpha1Restrictions())
+    key_proto = messages.V2Key(
+        name=key_ref.RelativeName(), restrictions=messages.V2Restrictions())
     if args.IsSpecified('display_name'):
       update_mask.append('display_name')
       key_proto.displayName = args.display_name
@@ -112,30 +111,30 @@ class Update(base.UpdateCommand):
     else:
       if args.IsSpecified('allowed_referrers'):
         update_mask.append('restrictions.browser_key_restrictions')
-        key_proto.restrictions.browserKeyRestrictions = messages.V2alpha1BrowserKeyRestrictions(
+        key_proto.restrictions.browserKeyRestrictions = messages.V2BrowserKeyRestrictions(
             allowedReferrers=args.allowed_referrers)
       elif args.IsSpecified('allowed_ips'):
         update_mask.append('restrictions.server_key_restrictions')
-        key_proto.restrictions.serverKeyRestrictions = messages.V2alpha1ServerKeyRestrictions(
+        key_proto.restrictions.serverKeyRestrictions = messages.V2ServerKeyRestrictions(
             allowedIps=args.allowed_ips)
       elif args.IsSpecified('allowed_bundle_ids'):
         update_mask.append('restrictions.ios_key_restrictions')
-        key_proto.restrictions.iosKeyRestrictions = messages.V2alpha1IosKeyRestrictions(
+        key_proto.restrictions.iosKeyRestrictions = messages.V2IosKeyRestrictions(
             allowedBundleIds=args.allowed_bundle_ids)
       elif args.IsSpecified('allowed_application'):
         update_mask.append('restrictions.android_key_restrictions')
-        key_proto.restrictions.androidKeyRestrictions = messages.V2alpha1AndroidKeyRestrictions(
+        key_proto.restrictions.androidKeyRestrictions = messages.V2AndroidKeyRestrictions(
             allowedApplications=apikeys.GetAllowedAndroidApplications(
                 args, messages))
       if args.IsSpecified('api_target'):
         update_mask.append('restrictions.api_targets')
         key_proto.restrictions.apiTargets = apikeys.GetApiTargets(
             args, messages)
-    request = messages.ApikeysProjectsKeysPatchRequest(
+    request = messages.ApikeysProjectsLocationsKeysPatchRequest(
         name=key_ref.RelativeName(),
         updateMask=','.join(update_mask),
-        v2alpha1ApiKey=key_proto)
-    op = client.projects_keys.Patch(request)
+        v2Key=key_proto)
+    op = client.projects_locations_keys.Patch(request)
     if not op.done:
       if args.async_:
         cmd = OP_WAIT_CMD.format(op.name)

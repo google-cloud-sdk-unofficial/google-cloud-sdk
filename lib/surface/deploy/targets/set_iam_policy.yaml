@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Set the IAM policy for a Cloud Deploy target.
@@ -26,3 +26,8 @@
       spec: !REF googlecloudsdk.command_lib.deploy.resources:target
       help_text: |
         The target for which to set the IAM policy.
+
+  iam:
+    enable_condition: true
+    policy_version: 3
+    get_iam_policy_version_path: options_requestedPolicyVersion

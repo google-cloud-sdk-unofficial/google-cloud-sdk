@@ -6,10 +6,10 @@
     description: |
       Delete a Dataplex Lake resource based on project, location, and lake.
 
-      {top_command} dataplex lake delete projects/{project_id}/locations/{location}/lakes/{lake_id}
+      {command} projects/{project_id}/locations/{location}/lakes/{lake_id}
 
     examples: |
-     $ {command} delete --projects/test-project/locations/us-central1/lakes/test-lake
+     $ {command} --projects/test-project/locations/us-central1/lakes/test-lake
 
   request:
     ALPHA:
@@ -20,3 +20,5 @@
       help_text: |
         Arguments and flags that define the Dataplex Lake you want to delete.
       spec: !REF googlecloudsdk.command_lib.dataplex.resources:lake
+  async:
+    collection: dataplex.projects.locations.operations

@@ -141,6 +141,7 @@ class Create(base.CreateCommand):
                  _GetTopicPresentationSpec()])
     flags.AddSchemaSettingsFlags(parser)
     labels_util.AddCreateLabelsFlags(parser)
+    flags.AddTopicMessageRetentionFlags(parser, is_update=False)
 
     parser.add_argument(
         '--message-storage-policy-allowed-regions',
@@ -157,21 +158,6 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Creates one or more Cloud Pub/Sub topics."""
 
-  @staticmethod
-  def Args(parser):
-    resource_args.AddResourceArgs(
-        parser, [_GetKmsKeyPresentationSpec(),
-                 _GetTopicPresentationSpec()])
-    flags.AddSchemaSettingsFlags(parser)
-    labels_util.AddCreateLabelsFlags(parser)
-
-    parser.add_argument(
-        '--message-storage-policy-allowed-regions',
-        metavar='REGION',
-        type=arg_parsers.ArgList(),
-        help='A list of one or more Cloud regions where messages are allowed to'
-        ' be stored at rest.')
-
   def Run(self, args):
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
     return _Run(args, legacy_output=legacy_output)
@@ -180,19 +166,3 @@ class CreateBeta(Create):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Creates one or more Cloud Pub/Sub topics."""
-
-  @staticmethod
-  def Args(parser):
-    resource_args.AddResourceArgs(
-        parser, [_GetKmsKeyPresentationSpec(),
-                 _GetTopicPresentationSpec()])
-    flags.AddSchemaSettingsFlags(parser)
-    labels_util.AddCreateLabelsFlags(parser)
-    flags.AddTopicMessageRetentionFlags(parser, is_update=False)
-
-    parser.add_argument(
-        '--message-storage-policy-allowed-regions',
-        metavar='REGION',
-        type=arg_parsers.ArgList(),
-        help='A list of one or more Cloud regions where messages are allowed to'
-        ' be stored at rest.')

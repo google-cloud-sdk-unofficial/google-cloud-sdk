@@ -6,9 +6,9 @@
     description: |
       Get a new Dataplex Zone Iam Policy based on project_id, location, lake_id, and zone_id.
 
-      {top_command} dataplex lake get-iam-policy projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id}
+      {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id}
     examples: |
-      {top_command} dataplex lake get-iam-policy projects/test-project/locations/us-central1/lakes/test-lake/zones/test-zone
+      {command} projects/test-project/locations/us-central1/lakes/test-lake/zones/test-zone
 
   request:
     ALPHA:

@@ -2,9 +2,9 @@
 
   help_text:
     brief: Describe a spoke.
-    description: Show details about a spoke.
+    description: Retrieve and display details about a spoke.
     examples: |
-      To show details about the spoke named ``spoke-1'' in region ``us-central1'', run:
+      To display details about the spoke named ``spoke-1'' in region ``us-central1'', run:
 
         $ {command} spoke-1 --region=us-central1
 

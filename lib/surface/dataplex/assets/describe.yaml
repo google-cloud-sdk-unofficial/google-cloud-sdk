@@ -6,9 +6,9 @@
     description: |
       Get a Dataplex Asset resource based on project, location, lake, zone, and asset.
 
-      {top_command} dataplex asset describe projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id}/assets/{asset_id}
+      {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id}/assets/{asset_id}
     examples: |
-      $ {command} describe projects/project_id/locations/us-central1/lakes/test-lake/zones/test-zone/assets/test-asset
+      $ {command} projects/project_id/locations/us-central1/lakes/test-lake/zones/test-zone/assets/test-asset
 
   request:
     ALPHA:

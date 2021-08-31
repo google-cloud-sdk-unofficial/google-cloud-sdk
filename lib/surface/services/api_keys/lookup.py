@@ -44,5 +44,5 @@ class Lookup(base.Command):
     client = apikeys.GetClientInstance()
     messages = client.MESSAGES_MODULE
 
-    request = messages.ApikeysGetKeyStringNameRequest(keyString=args.key_string)
-    return client.v2alpha1.GetKeyStringName(request)
+    request = messages.ApikeysKeysLookupKeyRequest(keyString=args.key_string)
+    return client.keys.LookupKey(request)

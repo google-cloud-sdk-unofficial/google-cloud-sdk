@@ -48,7 +48,7 @@ def _CommonArgs(parser):
   resource_args.AddLocationResourceArg(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Apply(base.UpdateCommand):
   """Applies a yaml configuration containing Deliver Pipeline(s), Target(s) declarative definitions."""
 

@@ -34,7 +34,7 @@ class SetIamPolicy(base.Command):
           """\
           To set an IAM policy of an asset, run:
 
-            $ {command} set-iam-policy projects/test-project/locations/us-central1/lakes/test-lake/zones/test-zone/assets/test-asset policy.json
+            $ {command} projects/test-project/locations/us-central1/lakes/test-lake/zones/test-zone/assets/test-asset policy.json
 
             policy.json is the relative path to the json file.
           """,

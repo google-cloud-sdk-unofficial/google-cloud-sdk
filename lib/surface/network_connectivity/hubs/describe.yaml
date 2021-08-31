@@ -2,10 +2,10 @@
 
   help_text:
     brief: Describe a hub.
-    description: Show details about a hub.
+    description: Retrieve and display details about a hub.
 
     examples: |
-      To show details about a hub named ``my-hub'', run:
+      To display details about a hub named ``my-hub'', run:
 
         $ {command} my-hub
 

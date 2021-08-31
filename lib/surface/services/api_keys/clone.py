@@ -52,9 +52,9 @@ class Clone(base.CreateCommand):
     messages = client.MESSAGES_MODULE
 
     key_ref = args.CONCEPTS.key.Parse()
-    request = messages.ApikeysProjectsKeysCloneRequest(
+    request = messages.ApikeysProjectsLocationsKeysCloneRequest(
         name=key_ref.RelativeName())
-    op = client.projects_keys.Clone(request)
+    op = client.projects_locations_keys.Clone(request)
     if not op.done:
       if args.async_:
         cmd = OP_WAIT_CMD.format(op.name)

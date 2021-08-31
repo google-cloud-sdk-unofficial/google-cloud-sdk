@@ -97,29 +97,27 @@ class Create(base.CreateCommand):
     client = apikeys.GetClientInstance()
     messages = client.MESSAGES_MODULE
 
-    key_proto = messages.V2alpha1ApiKey(
-        restrictions=messages.V2alpha1Restrictions())
+    key_proto = messages.V2Key(restrictions=messages.V2Restrictions())
     if args.IsSpecified('display_name'):
       key_proto.displayName = args.display_name
     if args.IsSpecified('allowed_referrers'):
-      key_proto.restrictions.browserKeyRestrictions = messages.V2alpha1BrowserKeyRestrictions(
+      key_proto.restrictions.browserKeyRestrictions = messages.V2BrowserKeyRestrictions(
           allowedReferrers=args.allowed_referrers)
     elif args.IsSpecified('allowed_ips'):
-      key_proto.restrictions.serverKeyRestrictions = messages.V2alpha1ServerKeyRestrictions(
+      key_proto.restrictions.serverKeyRestrictions = messages.V2ServerKeyRestrictions(
           allowedIps=args.allowed_ips)
     elif args.IsSpecified('allowed_bundle_ids'):
-      key_proto.restrictions.iosKeyRestrictions = messages.V2alpha1IosKeyRestrictions(
+      key_proto.restrictions.iosKeyRestrictions = messages.V2IosKeyRestrictions(
           allowedBundleIds=args.allowed_bundle_ids)
     elif args.IsSpecified('allowed_application'):
-      key_proto.restrictions.androidKeyRestrictions = messages.V2alpha1AndroidKeyRestrictions(
+      key_proto.restrictions.androidKeyRestrictions = messages.V2AndroidKeyRestrictions(
           allowedApplications=apikeys.GetAllowedAndroidApplications(
               args, messages))
     if args.IsSpecified('api_target'):
       key_proto.restrictions.apiTargets = apikeys.GetApiTargets(args, messages)
-    request = messages.ApikeysProjectsKeysCreateRequest(
-        parent=apikeys.GetParentResourceName(project_id),
-        v2alpha1ApiKey=key_proto)
-    op = client.projects_keys.Create(request)
+    request = messages.ApikeysProjectsLocationsKeysCreateRequest(
+        parent=apikeys.GetParentResourceName(project_id), v2Key=key_proto)
+    op = client.projects_locations_keys.Create(request)
     if not op.done:
       if args.async_:
         cmd = OP_WAIT_CMD.format(op.name)

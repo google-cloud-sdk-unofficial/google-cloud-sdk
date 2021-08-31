@@ -64,7 +64,8 @@ def _CommonArgs(parser,
                 support_location_hint=False,
                 support_multi_writer=False,
                 support_mesh=False,
-                support_host_error_timeout_seconds=False):
+                support_host_error_timeout_seconds=False,
+                support_numa_node_count=False):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
@@ -98,6 +99,8 @@ def _CommonArgs(parser,
   instances_flags.AddMinNodeCpuArg(parser)
   instances_flags.AddNestedVirtualizationArgs(parser)
   instances_flags.AddThreadsPerCoreArgs(parser)
+  if support_numa_node_count:
+    instances_flags.AddNumaNodeCountArgs(parser)
   instances_flags.AddStackTypeArgs(parser)
   instances_flags.AddIpv6NetworkTierArgs(parser)
   maintenance_flags.AddResourcePoliciesArgs(parser, 'added to',
@@ -467,7 +470,8 @@ def _RunCreate(compute_api,
                support_multi_writer=False,
                support_mesh=False,
                support_provisioning_model=False,
-               support_host_error_timeout_seconds=False):
+               support_host_error_timeout_seconds=False,
+               support_numa_node_count=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -488,6 +492,8 @@ def _RunCreate(compute_api,
         supported.
       support_host_error_timeout_seconds: Indicate the timeout in seconds for
         host error detection.
+      support_numa_node_count: Indicates whether setting NUMA node count is
+        supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -722,14 +728,16 @@ def _RunCreate(compute_api,
             client.messages).GetEnumForChoice(
                 args.private_ipv6_google_access_type))
 
-  # If either enable-nested-virtualization or threads-per-core are specified,
-  # make an AdvancedMachineFeatures message.
+  # If either enable-nested-virtualization, threads-per-core
+  # or numa_node_count are specified, make an AdvancedMachineFeatures message.
   if (args.enable_nested_virtualization is not None or
-      args.threads_per_core is not None):
+      args.threads_per_core is not None or
+      (support_numa_node_count and args.numa_node_count is not None)):
     instance_template.properties.advancedMachineFeatures = (
         instance_utils.CreateAdvancedMachineFeaturesMessage(
             client.messages, args.enable_nested_virtualization,
-            args.threads_per_core))
+            args.threads_per_core,
+            args.numa_node_count if support_numa_node_count else None))
 
   request = client.messages.ComputeInstanceTemplatesInsertRequest(
       instanceTemplate=instance_template, project=instance_template_ref.project)
@@ -765,6 +773,7 @@ class Create(base.CreateCommand):
   _support_multi_writer = False
   _support_mesh = False
   _support_provisioning_model = False
+  _support_numa_node_count = False
 
   @classmethod
   def Args(cls, parser):
@@ -775,7 +784,8 @@ class Create(base.CreateCommand):
         support_kms=cls._support_kms,
         support_location_hint=cls._support_location_hint,
         support_multi_writer=cls._support_multi_writer,
-        support_mesh=cls._support_mesh)
+        support_mesh=cls._support_mesh,
+        support_numa_node_count=cls._support_numa_node_count)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_GA_API_VERSION)
@@ -801,7 +811,8 @@ class Create(base.CreateCommand):
         ._support_post_key_revocation_action_type,
         support_multi_writer=self._support_multi_writer,
         support_mesh=self._support_mesh,
-        support_provisioning_model=self._support_provisioning_model)
+        support_provisioning_model=self._support_provisioning_model,
+        support_numa_node_count=self._support_numa_node_count)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -825,6 +836,7 @@ class CreateBeta(Create):
   _support_multi_writer = True
   _support_mesh = True
   _support_host_error_timeout_seconds = True
+  _support_numa_node_count = False
 
   @classmethod
   def Args(cls, parser):
@@ -867,7 +879,8 @@ class CreateBeta(Create):
         support_mesh=self._support_mesh,
         support_provisioning_model=self._support_provisioning_model,
         support_host_error_timeout_seconds=self
-        ._support_host_error_timeout_seconds)
+        ._support_host_error_timeout_seconds,
+        support_numa_node_count=self._support_numa_node_count)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -892,6 +905,7 @@ class CreateAlpha(Create):
   _support_mesh = True
   _support_provisioning_model = True
   _support_host_error_timeout_seconds = True
+  _support_numa_node_count = True
 
   @classmethod
   def Args(cls, parser):
@@ -905,7 +919,8 @@ class CreateAlpha(Create):
         support_multi_writer=cls._support_multi_writer,
         support_mesh=cls._support_mesh,
         support_host_error_timeout_seconds=cls
-        ._support_host_error_timeout_seconds)
+        ._support_host_error_timeout_seconds,
+        support_numa_node_count=cls._support_numa_node_count)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddConfidentialComputeArgs(parser)
@@ -936,7 +951,8 @@ class CreateAlpha(Create):
         support_mesh=self._support_mesh,
         support_provisioning_model=self._support_provisioning_model,
         support_host_error_timeout_seconds=self
-        ._support_host_error_timeout_seconds)
+        ._support_host_error_timeout_seconds,
+        support_numa_node_count=self._support_numa_node_count)
 
 
 DETAILED_HELP = {

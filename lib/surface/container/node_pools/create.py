@@ -172,7 +172,7 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddAcceleratorArgs(parser, enable_gpu_partition=False)
+    flags.AddAcceleratorArgs(parser, enable_gpu_partition=True)
     flags.AddBootDiskKmsKeyFlag(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)

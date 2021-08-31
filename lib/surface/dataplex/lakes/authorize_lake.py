@@ -38,7 +38,7 @@ class AuthorizeLake(base.Command):
           """\
           To authorize a lake to manage a given resource, run:
 
-            $ {command} authorize-lake --namespace=my-namespace --location=us-east1 --project=testproject --{secondary-resource}={resource}
+            $ {command} --location=us-east1 --project=testproject --{secondary-resource}={resource}
 
             Secondary-resource is defined as project-resource, bigquery-dataset-resource, or storage-bucket-resource.
           """,

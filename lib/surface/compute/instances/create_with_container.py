@@ -92,6 +92,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_nvdimm = False
   _support_network_performance_configs = False
   _support_host_error_timeout_seconds = False
+  _support_numa_node_count = False
 
   @staticmethod
   def Args(parser):
@@ -279,11 +280,13 @@ class CreateWithContainer(base.CreateCommand):
         instance.confidentialInstanceConfig = confidential_instance_config
 
       if (args.enable_nested_virtualization is not None or
-          args.threads_per_core is not None):
+          args.threads_per_core is not None or
+          (self._support_numa_node_count and args.numa_node_count is not None)):
         instance.advancedMachineFeatures = (
             instance_utils.CreateAdvancedMachineFeaturesMessage(
                 compute_client.messages, args.enable_nested_virtualization,
-                args.threads_per_core))
+                args.threads_per_core, args.numa_node_count
+                if self._support_numa_node_count else None))
 
       shielded_instance_config = create_utils.BuildShieldedInstanceConfigMessage(
           messages=compute_client.messages, args=args)
@@ -317,6 +320,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_nvdimm = False
   _support_network_performance_configs = True
   _support_host_error_timeout_seconds = True
+  _support_numa_node_count = False
 
   @staticmethod
   def Args(parser):
@@ -345,6 +349,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_nvdimm = True
   _support_network_performance_configs = True
   _support_host_error_timeout_seconds = True
+  _support_numa_node_count = True
 
   @staticmethod
   def Args(parser):
@@ -362,6 +367,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddStackTypeArgs(parser)
     instances_flags.AddIpv6NetworkTierArgs(parser)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
+    instances_flags.AddNumaNodeCountArgs(parser)
 
   def _ValidateTrackSpecificArgs(self, args):
     instances_flags.ValidateLocalSsdFlags(args)

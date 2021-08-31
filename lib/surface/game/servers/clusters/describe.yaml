@@ -26,10 +26,9 @@
       spec: !REF googlecloudsdk.command_lib.game.resources:cluster
     params:
     - arg_name: view
-      release_tracks: [ALPHA]
       api_field: view
       help_text: |
-        There are two possible views, 'basic' and 'full', default is 'basic'
+        There are two possible views, 'basic' and 'full'. The default view is 'basic'.
       choices:
       - enum_value: BASIC
         arg_value: basic

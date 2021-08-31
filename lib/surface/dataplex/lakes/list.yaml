@@ -4,11 +4,11 @@
     brief: |
       List Dataplex Lake Resources.
     description: |
-      List Dataplex Lake resource based on project and location.
+      List Dataplex Lake resource based on project and location. Currently list does not support project/{project_id}/.../ notation.
 
-      {top_command} dataplex lake list projects/{project_id}/locations/{location}
+      {command} --project={project_id} --location={location}
     examples: |
-      {top_command} list projects/test-project/locations/us-central1
+      {command} --project=test-project --location=us-central1
 
   request:
     ALPHA:

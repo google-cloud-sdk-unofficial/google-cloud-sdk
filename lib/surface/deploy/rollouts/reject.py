@@ -36,7 +36,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Reject(base.CreateCommand):
   """Rejects a rollout having an Approval state of "Required"."""
   detailed_help = _DETAILED_HELP

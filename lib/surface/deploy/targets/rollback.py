@@ -45,7 +45,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Rollback(base.CreateCommand):
   """Rollbacks a target to a prior rollout.
 

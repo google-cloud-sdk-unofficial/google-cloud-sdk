@@ -38,7 +38,7 @@ class Create(base.Command):
           """\
           To create a Dataplex Asset, run:
 
-            $ {command} create projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id}/assets/{asset_id}
+            $ {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id}/assets/{asset_id}
           """,
   }
 

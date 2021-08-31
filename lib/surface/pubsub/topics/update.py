@@ -94,6 +94,14 @@ class Update(base.UpdateCommand):
 
               $ {command} mytopic --topic-encryption-key=projects/PROJECT_ID/locations/KMS_LOCATION/keyRings/KEYRING/cryptoKeys/KEY
 
+          To enable or update retention on a Cloud Pub/Sub topic, run:
+
+              $ {command} mytopic --message-retention-duration=MESSAGE_RETENTION_DURATION
+
+          To disable retention on a Cloud Pub/Sub topic, run:
+
+              $ {command} mytopic --clear-message-retention-duration
+
           To update a Cloud Pub/Sub topic's message storage policy, run:
 
               $ {command} mytopic --message-storage-policy-allowed-regions=some-cloud-region1,some-cloud-region2
@@ -115,6 +123,7 @@ class Update(base.UpdateCommand):
             flag_overrides=_KMS_FLAG_OVERRIDES,
             permission_info=_KMS_PERMISSION_INFO)
     ])
+    flags.AddTopicMessageRetentionFlags(parser, is_update=True)
 
     msp_group = parser.add_group(
         mutex=True, help='Message storage policy options.')
@@ -191,68 +200,3 @@ class UpdateBeta(Update):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
   """Updates an existing Cloud Pub/Sub topic."""
-
-  detailed_help = {
-      'EXAMPLES':
-          """\
-          To update existing labels on a Cloud Pub/Sub topic, run:
-
-              $ {command} mytopic --update-labels=KEY1=VAL1,KEY2=VAL2
-
-          To clear all labels on a Cloud Pub/Sub topic, run:
-
-              $ {command} mytopic --clear-labels
-
-          To remove an existing label on a Cloud Pub/Sub topic, run:
-
-              $ {command} mytopic --remove-labels=KEY1,KEY2
-
-          To enable customer-managed encryption for a Cloud Pub/Sub topic by protecting message data with a Cloud KMS CryptoKey, run:
-
-              $ {command} mytopic --topic-encryption-key=projects/PROJECT_ID/locations/KMS_LOCATION/keyRings/KEYRING/cryptoKeys/KEY
-
-          To enable or update retention on a Cloud Pub/Sub topic, run:
-
-              $ {command} mytopic --message-retention-duration=MESSAGE_RETENTION_DURATION
-
-          To disable retention on a Cloud Pub/Sub topic, run:
-
-              $ {command} mytopic --clear-message-retention-duration
-
-          To update a Cloud Pub/Sub topic's message storage policy, run:
-
-              $ {command} mytopic --message-storage-policy-allowed-regions=some-cloud-region1,some-cloud-region2
-
-          To recompute a Cloud Pub/Sub topic's message storage policy based on your organization's "Resource Location Restriction" policy, run:
-
-              $ {command} mytopic --recompute-message-storage-policy
-          """
-  }
-
-  @staticmethod
-  def Args(parser):
-    """Registers flags for this command."""
-    resource_args.AddTopicResourceArg(parser, 'to update.')
-    labels_util.AddUpdateLabelsFlags(parser)
-    resource_args.AddResourceArgs(parser, [
-        kms_resource_args.GetKmsKeyPresentationSpec(
-            'topic',
-            flag_overrides=_KMS_FLAG_OVERRIDES,
-            permission_info=_KMS_PERMISSION_INFO)
-    ])
-    flags.AddTopicMessageRetentionFlags(parser, is_update=True)
-
-    msp_group = parser.add_group(
-        mutex=True, help='Message storage policy options.')
-    msp_group.add_argument(
-        '--recompute-message-storage-policy',
-        action='store_true',
-        help='If given, Cloud Pub/Sub will recompute the regions where messages'
-        ' can be stored at rest, based on your organization\'s "Resource '
-        ' Location Restriction" policy.')
-    msp_group.add_argument(
-        '--message-storage-policy-allowed-regions',
-        metavar='REGION',
-        type=arg_parsers.ArgList(),
-        help='A list of one or more Cloud regions where messages are allowed to'
-        ' be stored at rest.')

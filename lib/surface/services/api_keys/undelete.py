@@ -58,9 +58,9 @@ class Undelete(base.RestoreCommand):
     messages = client.MESSAGES_MODULE
 
     key_ref = args.CONCEPTS.key.Parse()
-    request = messages.ApikeysProjectsKeysUndeleteRequest(
+    request = messages.ApikeysProjectsLocationsKeysUndeleteRequest(
         name=key_ref.RelativeName())
-    op = client.projects_keys.Undelete(request)
+    op = client.projects_locations_keys.Undelete(request)
     if not op.done:
       if args.async_:
         cmd = OP_WAIT_CMD.format(op.name)

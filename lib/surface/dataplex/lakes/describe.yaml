@@ -6,9 +6,9 @@
     description: |
       Get a Dataplex Lake resource based on project, location, and lake.
 
-      {top_command} dataplex lake describe projects/{project_id}/locations/{location}/lakes/{lake_id}
+      {command} projects/{project_id}/locations/{location}/lakes/{lake_id}
     examples: |
-      $ {command} describe projects/{project_id}/locations/{us-central1}/lakes/test-lake
+      $ {command} projects/{project_id}/locations/{us-central1}/lakes/test-lake
   request:
     ALPHA:
       api_version: v1
