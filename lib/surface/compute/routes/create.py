@@ -151,18 +151,18 @@ class Create(base.CreateCommand):
 
   Routes match packets by destination IP address, preferring
   smaller or more specific ranges over larger ones (see
-  ``--destination-range''). If there is a tie, the system selects
+  `--destination-range`). If there is a tie, the system selects
   the route with the smallest priority value. If there is still
   a tie, it uses the layer 3 and 4 packet headers to
   select just one of the remaining matching routes. The packet
-  is then forwarded as specified by ``--next-hop-address'',
-  ``--next-hop-instance'', ``--next-hop-vpn-tunnel'', or
-  ``--next-hop-gateway'' of the winning route. Packets that do
+  is then forwarded as specified by `--next-hop-address`,
+  `--next-hop-instance`, `--next-hop-vpn-tunnel`, or
+  `--next-hop-gateway` of the winning route. Packets that do
   not match any route in the sending virtual machine routing
   table will be dropped.
 
-  Exactly one of ``--next-hop-address'', ``--next-hop-gateway'',
-  ``--next-hop-vpn-tunnel'', or ``--next-hop-instance'' must be
+  Exactly one of `--next-hop-address`, `--next-hop-gateway`,
+  `--next-hop-vpn-tunnel`, or `--next-hop-instance` must be
   provided with this command.
 
   ## EXAMPLES

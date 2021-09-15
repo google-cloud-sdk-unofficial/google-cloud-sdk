@@ -39,7 +39,7 @@
 
   input:
     confirmation_prompt: |
-      You are about to delete Cloud Filestore snapshot. Are you sure?
+      You are about to delete Filestore snapshot. Are you sure?
 
   request:
     BETA:

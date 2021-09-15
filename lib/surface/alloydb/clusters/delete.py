@@ -41,6 +41,7 @@ class Delete(base.DeleteCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddRegion(parser)
     flags.AddCluster(parser)
+    flags.AddForce(parser)
 
   def Run(self, args):
     """Constructs and sends request.
@@ -60,7 +61,7 @@ class Delete(base.DeleteCommand):
         projectsId=properties.VALUES.core.project.GetOrFail,
         locationsId=args.region, clustersId=args.cluster)
     req = alloydb_messages.AlloydbProjectsLocationsClustersDeleteRequest(
-        name=cluster_ref.RelativeName())
+        name=cluster_ref.RelativeName(), force=args.force)
     op = alloydb_client.projects_locations_clusters.Delete(req)
     if not args.async_:
       cluster_operations.Await(op, 'Deleting cluster', False)

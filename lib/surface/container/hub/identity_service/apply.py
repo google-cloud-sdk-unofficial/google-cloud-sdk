@@ -38,8 +38,11 @@ EXAMPLES = """\
 class Apply(base.UpdateCommand):
   """Update an Identity Service Feature Spec.
 
-  This command applies the IdentityService CR from a user-specified config YAML
-  file.
+  Applies the authentication configuration to the Identity Service feature spec
+  for this membership. This configuration is now the "source of truth" for the
+  cluster and can only be updated by using this command or the Cloud Console.
+  Any local authentication configuration on the cluster is overwritten by this
+  configuration, including any local updates made after you run this command.
   """
 
   detailed_help = {'EXAMPLES': EXAMPLES}

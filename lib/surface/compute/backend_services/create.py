@@ -88,7 +88,8 @@ class CreateHelper(object):
            support_l7_rxlb, support_failover, support_logging, support_multinic,
            support_client_only, support_grpc_protocol,
            support_unspecified_protocol, support_subsetting,
-           support_subsetting_subset_size, support_connection_tracking):
+           support_subsetting_subset_size, support_connection_tracking,
+           support_strong_session_affinity):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -151,10 +152,14 @@ class CreateHelper(object):
     if support_connection_tracking:
       flags.AddConnectionTrackingPolicy(parser)
 
+    if support_strong_session_affinity:
+      flags.AddStrongSessionAffinity(parser)
+
   def __init__(self, support_l7_internal_load_balancer, support_gfe3,
                support_l7_rxlb, support_failover, support_logging,
                support_multinic, support_subsetting,
-               support_subsetting_subset_size, support_connection_tracking):
+               support_subsetting_subset_size, support_connection_tracking,
+               support_strong_session_affinity):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_gfe3 = support_gfe3
     self._support_l7_rxlb = support_l7_rxlb
@@ -164,6 +169,7 @@ class CreateHelper(object):
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_connection_tracking = support_connection_tracking
+    self._support_strong_session_affinity = support_strong_session_affinity
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
     """Returns a global backend service create request."""
@@ -268,7 +274,10 @@ class CreateHelper(object):
 
     if self._support_connection_tracking:
       backend_services_utils.ApplyConnectionTrackingPolicyArgs(
-          client, args, backend_service)
+          client,
+          args,
+          backend_service,
+          support_strong_session_affinity=self._support_strong_session_affinity)
 
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
@@ -373,6 +382,7 @@ class CreateGA(base.CreateCommand):
   _support_subsetting = False
   _support_subsetting_subset_size = False
   _support_connection_tracking = False
+  _support_strong_session_affinity = False
 
   @classmethod
   def Args(cls, parser):
@@ -390,7 +400,8 @@ class CreateGA(base.CreateCommand):
         support_unspecified_protocol=cls._support_unspecified_protocol,
         support_subsetting=cls._support_subsetting,
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
-        support_connection_tracking=cls._support_connection_tracking)
+        support_connection_tracking=cls._support_connection_tracking,
+        support_strong_session_affinity=cls._support_strong_session_affinity)
 
   def Run(self, args):
     """Issues request necessary to create Backend Service."""
@@ -406,8 +417,9 @@ class CreateGA(base.CreateCommand):
         support_multinic=self._support_multinic,
         support_subsetting=self._support_subsetting,
         support_subsetting_subset_size=self._support_subsetting_subset_size,
-        support_connection_tracking=self._support_connection_tracking).Run(
-            args, holder)
+        support_connection_tracking=self._support_connection_tracking,
+        support_strong_session_affinity=self._support_strong_session_affinity
+    ).Run(args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -435,6 +447,7 @@ class CreateBeta(CreateGA):
   _support_subsetting = True
   _support_subsetting_subset_size = False
   _support_connection_tracking = True
+  _support_strong_session_affinity = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -463,3 +476,4 @@ class CreateAlpha(CreateBeta):
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_connection_tracking = True
+  _support_strong_session_affinity = True

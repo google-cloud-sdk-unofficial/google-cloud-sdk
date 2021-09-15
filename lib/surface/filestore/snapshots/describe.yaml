@@ -1,8 +1,8 @@
 - help_text:
     brief: |
-      Describe a Cloud Filestore snapshot.
+      Describe a Filestore snapshot.
     description: |
-      Displays all data associated with a Cloud Filestore snapshot given a valid snapshot name.
+      Displays all data associated with a Filestore snapshot given a valid snapshot name.
 
       This command can fail for the following reasons:
         * The snapshot specified does not exist.

@@ -1,9 +1,9 @@
 - release_tracks: [GA, BETA, ALPHA]
   help_text:
     brief: |
-      List Cloud Filestore backups.
+      List Filestore backups.
     description: |
-      List all Cloud Filestore backups in a project for either a specified region or for all region.
+      List all Filestore backups in a project for either a specified region or for all region.
 
       To specify the maximum number of backups to list, use the --limit flag.
     examples: |

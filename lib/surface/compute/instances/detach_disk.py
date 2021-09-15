@@ -110,8 +110,9 @@ class DetachDisk(base.UpdateCommand):
       disk_ref = self.ParseDiskRef(resources, args, instance_ref)
 
       replacement.disks = [
-          disk for disk in existing.disks if resources.ParseURL(
-              disk.source).RelativeName() != disk_ref.RelativeName()
+          disk for disk in existing.disks
+          if not disk.source or resources.ParseURL(disk.source).RelativeName()
+          != disk_ref.RelativeName()
       ]
 
       if len(existing.disks) == len(replacement.disks):

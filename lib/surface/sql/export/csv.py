@@ -53,6 +53,10 @@ class Csv(base.Command):
         required=True,
         help='A SQL SELECT query (e.g., SELECT * FROM table) that specifies '
              'the data to export.')
+    flags.AddQuoteArgument(parser)
+    flags.AddEscapeArgument(parser)
+    flags.AddFieldsDelimiterArgument(parser)
+    flags.AddLinesDelimiterArgument(parser)
 
   def Run(self, args):
     """Runs the command to export the Cloud SQL instance."""

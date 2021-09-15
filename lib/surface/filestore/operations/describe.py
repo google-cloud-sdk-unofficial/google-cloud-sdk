@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Describe a Cloud Filestore operation."""
+  """Describe a Filestore operation."""
 
   _API_VERSION = filestore_client.V1_API_VERSION
 
@@ -47,23 +47,23 @@ class Describe(base.DescribeCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DescribeBeta(Describe):
-  """Describe a Cloud Filestore operation."""
+  """Describe a Filestore operation."""
 
   _API_VERSION = filestore_client.BETA_API_VERSION
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(Describe):
-  """Describe a Cloud Filestore operation."""
+  """Describe a Filestore operation."""
 
   _API_VERSION = filestore_client.ALPHA_API_VERSION
 
 
 Describe.detailed_help = {
-    'DESCRIPTION': 'Describe a Cloud Filestore operation.',
+    'DESCRIPTION': 'Describe a Filestore operation.',
     'EXAMPLES': """\
-The following command shows the details for the Cloud Filestore operation
-named NAME in us-central1-c.
+The following command shows the details for the Filestore operation named NAME
+in us-central1-c.
 
   $ {command} NAME --location=us-central1-c
 """

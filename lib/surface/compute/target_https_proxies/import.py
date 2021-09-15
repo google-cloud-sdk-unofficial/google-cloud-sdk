@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import operation_utils
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.target_https_proxies import flags
 from googlecloudsdk.command_lib.compute.target_https_proxies import target_https_proxies_utils
@@ -66,38 +67,66 @@ def _GetSchemaPath(release_track, for_help=False):
       for_help=for_help)
 
 
-def _SendInsertRequest(client, target_https_proxy_ref, target_https_proxy):
+def _SendInsertRequest(client, resources, target_https_proxy_ref,
+                       target_https_proxy):
   """Sends Target HTTPS Proxy insert request."""
-  if target_https_proxy_ref.Collection() == 'compute.regionTargetHttpsProxies':
-    return client.apitools_client.regionTargetHttpsProxies.Insert(
+  if target_https_proxies_utils.IsRegionalTargetHttpsProxiesRef(
+      target_https_proxy_ref):
+    service = client.apitools_client.regionTargetHttpsProxies
+    operation = service.Insert(
         client.messages.ComputeRegionTargetHttpsProxiesInsertRequest(
             project=target_https_proxy_ref.project,
             region=target_https_proxy_ref.region,
             targetHttpsProxy=target_https_proxy))
+  else:
+    service = client.apitools_client.targetHttpsProxies
+    operation = service.Insert(
+        client.messages.ComputeTargetHttpsProxiesInsertRequest(
+            project=target_https_proxy_ref.project,
+            targetHttpsProxy=target_https_proxy))
 
-  return client.apitools_client.targetHttpsProxies.Insert(
-      client.messages.ComputeTargetHttpsProxiesInsertRequest(
-          project=target_https_proxy_ref.project,
-          targetHttpsProxy=target_https_proxy))
+  return _WaitForOperation(resources, service, operation,
+                           target_https_proxy_ref, 'Inserting TargetHttpsProxy')
 
 
-def _SendPatchRequest(client, target_https_proxy_ref, target_https_proxy):
+def _SendPatchRequest(client, resources, target_https_proxy_ref,
+                      target_https_proxy):
   """Make target HTTP proxy patch request."""
-  if target_https_proxy_ref.Collection() == 'compute.regionTargetHttpsProxies':
+  if target_https_proxies_utils.IsRegionalTargetHttpsProxiesRef(
+      target_https_proxy_ref):
     console_message = ('Target HTTPS Proxy [{0}] cannot be updated'.format(
         target_https_proxy_ref.Name()))
     raise NotImplementedError(console_message)
 
-  return client.apitools_client.targetHttpsProxies.Patch(
+  service = client.apitools_client.targetHttpsProxies
+  operation = service.Patch(
       client.messages.ComputeTargetHttpsProxiesPatchRequest(
           project=target_https_proxy_ref.project,
           targetHttpsProxy=target_https_proxy_ref.Name(),
           targetHttpsProxyResource=target_https_proxy))
 
+  return _WaitForOperation(resources, service, operation,
+                           target_https_proxy_ref, 'Updating TargetHttpsProxy')
+
+
+def _WaitForOperation(resources, service, operation, target_https_proxy_ref,
+                      message):
+  """Waits for the TargetHttpsProxy operation to finish."""
+  if target_https_proxies_utils.IsRegionalTargetHttpsProxiesRef(
+      target_https_proxy_ref):
+    collection = operation_utils.GetRegionalOperationsCollection()
+  else:
+    collection = operation_utils.GetGlobalOperationsCollection()
+
+  return operation_utils.WaitForOperation(resources, service, operation,
+                                          collection, target_https_proxy_ref,
+                                          message)
+
 
 def _Run(args, holder, target_https_proxy_arg, release_track):
   """Issues requests necessary to import target HTTPS proxies."""
   client = holder.client
+  resources = holder.resources
 
   target_https_proxy_ref = target_https_proxy_arg.ResolveAsResource(
       args,
@@ -123,7 +152,7 @@ def _Run(args, holder, target_https_proxy_arg, release_track):
     if error.status_code != 404:
       raise error
     # Target HTTPS proxy does not exist, create a new one.
-    return _SendInsertRequest(client, target_https_proxy_ref,
+    return _SendInsertRequest(client, resources, target_https_proxy_ref,
                               target_https_proxy)
 
   if old_target_https_proxy == target_https_proxy:
@@ -167,7 +196,8 @@ def _Run(args, holder, target_https_proxy_arg, release_track):
     cleared_fields.append('urlMap')
 
   with client.apitools_client.IncludeFields(cleared_fields):
-    return _SendPatchRequest(client, target_https_proxy_ref, target_https_proxy)
+    return _SendPatchRequest(client, resources, target_https_proxy_ref,
+                             target_https_proxy)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,

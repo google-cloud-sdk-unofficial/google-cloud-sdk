@@ -43,6 +43,7 @@ def _AddSubmitTrainingArgs(parser):
   flags.RUNTIME_VERSION.AddToParser(parser)
   flags.AddPythonVersionFlag(parser, 'during training')
   flags.TRAINING_SERVICE_ACCOUNT.AddToParser(parser)
+  flags.ENABLE_WEB_ACCESS.AddToParser(parser)
 
   sync_group = parser.add_mutually_exclusive_group()
   # TODO(b/36195821): Use the flag deprecation machinery when it supports the
@@ -119,7 +120,8 @@ class Train(base.Command):
         stream_logs=stream_logs,
         user_args=args.user_args,
         kms_key=_GetAndValidateKmsKey(args),
-        custom_train_server_config=custom_container_config)
+        custom_train_server_config=custom_container_config,
+        enable_web_access=args.enable_web_access)
     # If the job itself failed, we will return a failure status.
     if stream_logs and job.state is not job.StateValueValuesEnum.SUCCEEDED:
       self.exit_code = 1

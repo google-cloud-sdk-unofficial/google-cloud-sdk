@@ -338,6 +338,7 @@ class Update(base.UpdateCommand):
     flags.AddDisableAutopilotFlag(group)
     flags.AddAuthenticatorSecurityGroupFlags(group)
     flags.AddILBSubsettingFlags(group, hidden=False)
+    flags.AddMeshCertificatesFlags(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -722,6 +723,7 @@ class UpdateBeta(Update):
     flags.AddEnableIntraNodeVisibilityFlag(group)
     flags.AddWorkloadAltsFlags(group)
     flags.AddWorkloadCertificatesFlags(group)
+    flags.AddMeshCertificatesFlags(group)
     flags.AddWorkloadIdentityFlags(group, use_identity_provider=True)
     flags.AddWorkloadIdentityUpdateFlags(group)
     flags.AddGkeOidcFlag(group)
@@ -878,6 +880,7 @@ class UpdateAlpha(Update):
     flags.AddEnableIntraNodeVisibilityFlag(group)
     flags.AddWorkloadAltsFlags(group)
     flags.AddWorkloadCertificatesFlags(group)
+    flags.AddMeshCertificatesFlags(group)
     flags.AddWorkloadIdentityFlags(group, use_identity_provider=True)
     flags.AddWorkloadIdentityUpdateFlags(group)
     flags.AddGkeOidcFlag(group)

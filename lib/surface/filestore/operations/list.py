@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for listing Cloud Filestore operations."""
+"""Command for listing Filestore operations."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,7 +29,7 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List all Cloud Filestore operations."""
+  """List all Filestore operations."""
 
   _API_VERSION = filestore_client.V1_API_VERSION
 
@@ -66,7 +66,7 @@ class List(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(List):
-  """List all Cloud Filestore operations."""
+  """List all Filestore operations."""
 
   _API_VERSION = filestore_client.BETA_API_VERSION
 
@@ -92,7 +92,7 @@ class ListBeta(List):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(List):
-  """List all Cloud Filestore operations."""
+  """List all Filestore operations."""
 
   _API_VERSION = filestore_client.ALPHA_API_VERSION
 
@@ -117,10 +117,10 @@ class ListAlpha(List):
 
 
 List.detailed_help = {
-    'DESCRIPTION': 'List all Cloud Filestore operations.',
+    'DESCRIPTION': 'List all Filestore operations.',
     'EXAMPLES': """\
-The following command lists a maximum of five Cloud Filestore operations
-sorted alphabetically by name in descending order:
+The following command lists a maximum of five Filestore operations sorted
+alphabetically by name in descending order:
 
   $ {command} --limit=5 --sort-by=~name
 """

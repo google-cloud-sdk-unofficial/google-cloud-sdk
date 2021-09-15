@@ -72,7 +72,7 @@ class UpdateHelper(object):
            support_logging, support_client_only, support_grpc_protocol,
            support_subsetting, support_subsetting_subset_size,
            support_unspecified_protocol, support_edge_policies,
-           support_connection_tracking):
+           support_connection_tracking, support_strong_session_affinity):
     """Add all arguments for updating a backend service."""
 
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
@@ -137,6 +137,9 @@ class UpdateHelper(object):
     if support_connection_tracking:
       flags.AddConnectionTrackingPolicy(parser)
 
+    if support_strong_session_affinity:
+      flags.AddStrongSessionAffinity(parser)
+
   def __init__(self,
                support_l7_internal_load_balancer,
                support_failover,
@@ -144,7 +147,8 @@ class UpdateHelper(object):
                support_subsetting,
                support_subsetting_subset_size,
                support_edge_policies=False,
-               support_connection_tracking=False):
+               support_connection_tracking=False,
+               support_strong_session_affinity=False):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
@@ -152,6 +156,7 @@ class UpdateHelper(object):
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_edge_policies = support_edge_policies
     self._support_connection_tracking = support_connection_tracking
+    self._support_strong_session_affinity = support_strong_session_affinity
 
   def Modify(self, client, resources, args, existing):
     """Modify Backend Service."""
@@ -225,7 +230,10 @@ class UpdateHelper(object):
 
     if self._support_connection_tracking:
       backend_services_utils.ApplyConnectionTrackingPolicyArgs(
-          client, args, replacement)
+          client,
+          args,
+          replacement,
+          support_strong_session_affinity=self._support_strong_session_affinity)
 
     self._ApplyIapArgs(client, args.iap, existing, replacement)
 
@@ -304,7 +312,9 @@ class UpdateHelper(object):
         args.IsSpecified('tracking_mode')
         if self._support_connection_tracking else False,
         args.IsSpecified('idle_timeout_sec')
-        if self._support_connection_tracking else False
+        if self._support_connection_tracking else False,
+        args.IsSpecified('enable_strong_affinity')
+        if self._support_strong_session_affinity else False
     ]):
       raise compute_exceptions.UpdatePropertyError(
           'At least one property must be modified.')
@@ -473,6 +483,7 @@ class UpdateGA(base.UpdateCommand):
   _support_subsetting_subset_size = False
   _support_edge_policies = False
   _support_connection_tracking = False
+  _support_strong_session_affinity = False
 
   @classmethod
   def Args(cls, parser):
@@ -488,17 +499,18 @@ class UpdateGA(base.UpdateCommand):
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_unspecified_protocol=cls._support_unspecified_protocol,
         support_edge_policies=cls._support_edge_policies,
-        support_connection_tracking=cls._support_connection_tracking)
+        support_connection_tracking=cls._support_connection_tracking,
+        support_strong_session_affinity=cls._support_strong_session_affinity)
 
   def Run(self, args):
     """Issues requests necessary to update the Backend Services."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return UpdateHelper(self._support_l7_internal_load_balancer,
-                        self._support_failover, self._support_logging,
-                        self._support_subsetting,
-                        self._support_subsetting_subset_size,
-                        self._support_edge_policies,
-                        self._support_connection_tracking).Run(args, holder)
+    return UpdateHelper(
+        self._support_l7_internal_load_balancer, self._support_failover,
+        self._support_logging, self._support_subsetting,
+        self._support_subsetting_subset_size, self._support_edge_policies,
+        self._support_connection_tracking,
+        self._support_strong_session_affinity).Run(args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -515,6 +527,7 @@ class UpdateBeta(UpdateGA):
   _support_subsetting_subset_size = False
   _support_edge_policies = True
   _support_connection_tracking = True
+  _support_strong_session_affinity = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -531,3 +544,4 @@ class UpdateAlpha(UpdateBeta):
   _support_subsetting_subset_size = True
   _support_edge_policies = True
   _support_connection_tracking = True
+  _support_strong_session_affinity = True

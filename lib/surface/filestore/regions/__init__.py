@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Cloud Filestore regions."""
+"""Command group for Filestore regions."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,4 +22,4 @@ from googlecloudsdk.calliope import base
 
 
 class Regions(base.Group):
-  """List regions where Cloud Filestore is available."""
+  """List regions where Filestore is available."""

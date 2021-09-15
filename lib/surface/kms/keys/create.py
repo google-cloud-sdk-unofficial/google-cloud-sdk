@@ -35,8 +35,9 @@ class Create(base.CreateCommand):
   Creates a new key within the given keyring.
 
   The flag `--purpose` is always required when creating a key.
-  The flag `--default-algorithm` is required when creating an asymmetric key,
-  or when creating an external key. Algorithm and purpose should be compatible.
+  The flag `--default-algorithm` is required when creating a symmetric signing
+  key, an asymmetric key, or an external key. Algorithm and purpose should be
+  compatible.
 
   The optional flags `--rotation-period` and `--next-rotation-time` define a
   rotation schedule for the key. A schedule can also be defined
@@ -60,6 +61,13 @@ class Create(base.CreateCommand):
   `--set-primary-version` command. You must include
   ``--skip-initial-version-creation`` when creating a CryptoKey with protection
   level ``external''.
+
+  The optional flag `--import-only` restricts the key to imported key versions
+  only. To do so, the flag `--skip-initial-version-creation` must also be set.
+
+  The optional flag `--destroy-scheduled-duration` defines the destroy schedule
+  for the key, and must be in the form INTEGER[UNIT], where units can be one of
+  seconds (s), minutes (m), hours (h) or days (d).
 
   ## EXAMPLES
 
@@ -139,15 +147,17 @@ class Create(base.CreateCommand):
     parser.display_info.AddCacheUpdater(flags.KeyRingCompleter)
     flags.AddProtectionLevelFlag(parser)
     flags.AddDefaultAlgorithmFlag(parser)
+    flags.AddImportOnlyFlag(parser)
+    flags.AddDestroyScheduledDurationFlag(parser)
 
   def _CreateRequest(self, args):
     messages = cloudkms_base.GetMessagesModule()
     purpose = maps.PURPOSE_MAP[args.purpose]
     valid_algorithms = maps.VALID_ALGORITHMS_MAP[purpose]
 
-    # Check default algorithm has been specified for asymmetric keys. For
-    # backward compatibility, the algorithm is google-symmetric-encryption by
-    # default if the purpose is encryption.
+    # Check default algorithm has been specified for non-symmetric-encryption
+    # keys. For backward compatibility, the algorithm is
+    # google-symmetric-encryption by default if the purpose is encryption.
     if not args.default_algorithm:
       if args.purpose != 'encryption':
         raise kms_exceptions.ArgumentError(
@@ -176,11 +186,13 @@ class Create(base.CreateCommand):
                 algorithm=maps.ALGORITHM_MAPPER.GetEnumForChoice(
                     args.default_algorithm)),
             labels=labels_util.ParseCreateArgs(args,
-                                               messages.CryptoKey.LabelsValue)),
+                                               messages.CryptoKey.LabelsValue),
+            importOnly=args.import_only),
         skipInitialVersionCreation=args.skip_initial_version_creation)
 
     flags.SetNextRotationTime(args, req.cryptoKey)
     flags.SetRotationPeriod(args, req.cryptoKey)
+    flags.SetDestroyScheduledDuration(args, req.cryptoKey)
 
     return req
 

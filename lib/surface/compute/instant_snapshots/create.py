@@ -68,16 +68,16 @@ class Create(base.Command):
 
     ips_ref = Create.IPS_ARG.ResolveAsResource(args, compute_holder.resources)
     requests = []
-    if ips_ref.Collection() == 'compute.zoneInstantSnapshots':
+    if ips_ref.Collection() == 'compute.instantSnapshots':
       instant_snapshot = messages.InstantSnapshot(
           name=ips_ref.Name(),
           sourceDisk=self._GetSourceDiskUri(args, compute_holder,
                                             compute_scope.ScopeEnum.ZONE))
-      request = messages.ComputeZoneInstantSnapshotsInsertRequest(
+      request = messages.ComputeInstantSnapshotsInsertRequest(
           instantSnapshot=instant_snapshot,
           project=ips_ref.project,
           zone=ips_ref.zone)
-      request = (client.apitools_client.zoneInstantSnapshots, 'Insert', request)
+      request = (client.apitools_client.instantSnapshots, 'Insert', request)
     elif ips_ref.Collection() == 'compute.regionInstantSnapshots':
       instant_snapshot = messages.InstantSnapshot(
           name=ips_ref.Name(),

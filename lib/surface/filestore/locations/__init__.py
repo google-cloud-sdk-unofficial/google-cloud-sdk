@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The sub-group for the Cloud Filestore locations."""
+"""The sub-group for the Filestore locations."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,4 +28,4 @@ _DEPRECATION_WARNING = (
 
 @base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
 class Locations(base.Group):
-  """List locations where Cloud Filestore is available."""
+  """List locations where Filestore is available."""

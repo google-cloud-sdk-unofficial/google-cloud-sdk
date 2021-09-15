@@ -114,6 +114,9 @@ class Scp(base.Command):
           '--worker', 'cannot target multiple workers while copying files to '
           'client.')
 
+    tpu_ssh_utils.ValidateTPUState(node.state,
+                                   tpu.messages.Node.StateValueValuesEnum)
+
     host_key_suffixes = tpu_ssh_utils.GetHostKeySuffixes(
         tpu, tpu_name, worker_ips, len(node.networkEndpoints), args.zone)
 

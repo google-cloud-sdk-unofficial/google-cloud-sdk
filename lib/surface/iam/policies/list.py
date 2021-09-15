@@ -42,19 +42,21 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
+    flags.GetPageTokenFlag().AddToParser(parser)
     flags.GetAttachmentPointFlag().AddToParser(parser)
     flags.GetKindFlag().AddToParser(parser)
 
   def Run(self, args):
-    client = apis.GetClientInstance()
-    messages = apis.GetMessagesModule()
+    client = apis.GetClientInstance('v2alpha')
+    messages = apis.GetMessagesModule('v2alpha')
 
     attachment_point = args.attachment_point.replace('/', '%2F')
 
     result = client.policies.ListPolicies(
         messages.IamPoliciesListPoliciesRequest(
-            parent='policies/{}/{}'.format(attachment_point, args.kind)))
+            parent='policies/{}/{}'.format(attachment_point, args.kind),
+            pageSize=args.page_size,
+            pageToken=args.page_token))
     return result

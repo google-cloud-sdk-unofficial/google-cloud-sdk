@@ -66,7 +66,6 @@ class Update(base.Command):
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddEndpointVisibilityEnum(cluster_group)
-    flags.AddSecretsFlags(cluster_group)
     flags.AddConfigMapsFlags(cluster_group)
 
     # Flags not specific to any platform
@@ -96,6 +95,7 @@ class Update(base.Command):
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddIngressFlag(parser)
     flags.AddHttp2Flag(parser)
+    flags.AddSecretsFlags(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
@@ -194,6 +194,8 @@ class AlphaUpdate(Update):
     flags.AddCpuThrottlingFlag(managed_group)
     flags.AddConfidentialFlag(managed_group)
     flags.AddCmekKeyRevocationActionTypeFlag(managed_group)
+    flags.AddCustomAudiencesFlag(managed_group)
+    flags.AddSessionAffinityFlag(managed_group)
 
 
 AlphaUpdate.__doc__ = Update.__doc__

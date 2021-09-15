@@ -75,6 +75,7 @@ class Create(base.CreateCommand):
     flags.GetSamplingPredictRequestArg(required=False).AddToParser(parser)
     flags.GetMonitoringLogTtlArg(required=False).AddToParser(parser)
     flags.AddObjectiveConfigGroupForCreate(parser, required=False)
+    flags.AddKmsKeyResourceArg(parser, 'model deployment monitoring job')
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):

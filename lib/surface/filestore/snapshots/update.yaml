@@ -1,15 +1,15 @@
 - help_text:
     brief: |
-      Update a Cloud Filestore snapshot.
+      Update a Filestore snapshot.
     description: |
-      Update the metadata of a Cloud Filestore snapshot.
+      Update the metadata of a Filestore snapshot.
 
       This command can fail for the following reasons:
         * The snapshot specified does not exist.
         * The active account does not have permission to update the given
           snapshot.
     examples: |
-      The following command updates the Cloud Filestore Snapshot named 'my-snapshot' in region
+      The following command updates the Filestore Snapshot named 'my-snapshot' in region
       us-central1 to change the description to 'A new description.'
 
        $ {command} my-snapshot --region=us-central1 --description="A new description."

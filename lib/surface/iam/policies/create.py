@@ -50,8 +50,8 @@ class Create(base.CreateCommand):
     flags.GetPolicyFileFlag().AddToParser(parser)
 
   def Run(self, args):
-    client = apis.GetClientInstance()
-    messages = apis.GetMessagesModule()
+    client = apis.GetClientInstance('v2alpha1')
+    messages = apis.GetMessagesModule('v2alpha1')
 
     attachment_point = args.attachment_point.replace('/', '%2F')
 

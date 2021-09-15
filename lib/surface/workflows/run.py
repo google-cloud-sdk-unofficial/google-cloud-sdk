@@ -28,8 +28,7 @@ from googlecloudsdk.core import resources
 EXECUTION_COLLECTION = 'workflowexecutions.projects.locations.workflows.executions'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Run(base.DescribeCommand):
   """Execute a workflow and wait for the execution to complete."""
 
@@ -45,9 +44,17 @@ class Run(base.DescribeCommand):
   }
 
   @staticmethod
-  def Args(parser):
+  def CommonArgs(parser):
     flags.AddWorkflowResourceArg(parser, verb='to execute')
     flags.AddDataArg(parser)
+
+  @staticmethod
+  def Args(parser):
+    Run.CommonArgs(parser)
+    flags.AddLoggingArg(parser)
+
+  def CallLogLevel(self, args):
+    return args.call_log_level
 
   def Run(self, args):
     """Execute a workflow and wait for the completion of the execution."""
@@ -55,8 +62,20 @@ class Run(base.DescribeCommand):
     api_version = workflows.ReleaseTrackToApiVersion(self.ReleaseTrack())
     workflow_ref = flags.ParseWorkflow(args)
     client = workflows.WorkflowExecutionClient(api_version)
-    execution = client.Create(workflow_ref, args.data)
+    execution = client.Create(workflow_ref, args.data, self.CallLogLevel(args))
     cache.cache_execution_id(execution.name)
     execution_ref = resources.REGISTRY.Parse(
         execution.name, collection=EXECUTION_COLLECTION)
     return client.WaitForExecution(execution_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaRun(Run):
+  """Execute a workflow and wait for the execution to complete."""
+
+  @staticmethod
+  def Args(parser):
+    Run.CommonArgs(parser)
+
+  def CallLogLevel(self, args):
+    return None

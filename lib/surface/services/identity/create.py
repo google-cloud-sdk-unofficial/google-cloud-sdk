@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -63,9 +62,11 @@ class Create(base.CreateCommand):
     """
     project = properties.VALUES.core.project.Get(required=True)
     response = serviceusage.GenerateServiceIdentity(project, args.service)
-    email = response['email']
-    if not email:
-      raise exceptions.Error('Service identity not created successfully')
+    if 'email' not in response:
+      # Print generic message when email not provided in response.
+      # Error in GenerateServiceIdentity indicated by thrown exception.
+      log.status.Print('Service identity created')
     else:
-      log.status.Print('Service identity created: {0}'.format(email))
+      log.status.Print('Service identity created: {0}'.format(
+          response['email']))
     return response

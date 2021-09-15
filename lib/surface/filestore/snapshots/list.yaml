@@ -1,8 +1,8 @@
 - help_text:
     brief: |
-      List Cloud Filestore snapshots.
+      List Filestore snapshots.
     description: |
-      List all Cloud Filestore snapshots under the specified project and region.
+      List all Filestore snapshots under the specified project and region.
 
       To specify the maximum number of snapshots to list, use the --limit flag.
     examples: |

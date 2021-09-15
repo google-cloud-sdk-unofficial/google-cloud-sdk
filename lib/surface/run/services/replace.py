@@ -43,7 +43,8 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import progress_tracker
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Replace(base.Command):
   """Creates or replaces a service from a YAML Service specification."""
 

@@ -31,7 +31,6 @@ class Create(base.CreateCommand):
   """Create a Compute Engine packet mirroring policy."""
 
   PACKET_MIRRORING_ARG = None
-  enable_filter_direction = True
 
   @classmethod
   def Args(cls, parser):
@@ -40,8 +39,7 @@ class Create(base.CreateCommand):
     cls.PACKET_MIRRORING_ARG = flags.PacketMirroringArgument()
     cls.PACKET_MIRRORING_ARG.AddArgument(parser, operation_type='create')
 
-    flags.AddCreateArgs(
-        parser, enable_filter_direction=cls.enable_filter_direction)
+    flags.AddCreateArgs(parser)
 
   def Collection(self):
     return 'compute.packetMirrorings'
@@ -77,7 +75,7 @@ class Create(base.CreateCommand):
       if args.filter_protocols:
         pm_filter.IPProtocols.extend(args.filter_protocols)
 
-    if self.enable_filter_direction and args.filter_direction:
+    if args.filter_direction:
       pm_filter.direction = messages.PacketMirroringFilter.DirectionValueValuesEnum(
           args.filter_direction.upper())
 

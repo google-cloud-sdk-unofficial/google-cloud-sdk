@@ -45,8 +45,8 @@ class List(base.ListCommand):
 
     list_implementation = lister.MultiScopeLister(
         client,
-        zonal_service=client.apitools_client.zoneInstantSnapshots,
+        zonal_service=client.apitools_client.instantSnapshots,
         regional_service=client.apitools_client.regionInstantSnapshots,
-        aggregation_service=client.apitools_client.zoneInstantSnapshots)
+        aggregation_service=client.apitools_client.instantSnapshots)
 
     return lister.Invoke(request_data, list_implementation)

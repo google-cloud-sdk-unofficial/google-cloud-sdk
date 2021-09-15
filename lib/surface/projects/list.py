@@ -28,9 +28,10 @@ from googlecloudsdk.core import log
 class List(base.ListCommand):
   """List projects accessible by the active account.
 
-  Lists all active projects, where the active account has Owner, Editor or
-  Viewer permissions. Projects are listed in alphabetical order by project name.
-  Projects that have been deleted or are pending deletion are not included.
+  Lists all active projects, where the active account has Owner, Editor, Browser
+  or Viewer permissions. Projects are listed in alphabetical order by project
+  name. Projects that have been deleted or are pending deletion are not
+  included.
 
   You can specify the maximum number of projects to list using the `--limit`
   flag.

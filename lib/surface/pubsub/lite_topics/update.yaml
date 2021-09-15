@@ -35,3 +35,4 @@ arguments:
       - _REF_: googlecloudsdk.command_lib.pubsub.flags:per-partition-bytes
       - _REF_: googlecloudsdk.command_lib.pubsub.flags:message-retention-period
       - _REF_: googlecloudsdk.command_lib.pubsub.flags:partitions
+      - _REF_: googlecloudsdk.command_lib.pubsub.flags:topic-throughput-reservation-name

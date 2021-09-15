@@ -24,15 +24,18 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListUsableSubnets(base.ListCommand):
   """List subnetworks which the current user has permission to use."""
+
+  enable_service_project = False
 
   @staticmethod
   def _EnableComputeApi():
     return properties.VALUES.compute.use_new_list_usable_subnets_api.GetBool()
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.display_info.AddFormat("""\
         table(
           subnetwork.segment(-5):label=PROJECT,
@@ -42,6 +45,16 @@ class ListUsableSubnets(base.ListCommand):
           ipCidrRange:label=RANGE,
           secondaryIpRanges.map().format("{0} {1}", rangeName, ipCidrRange).list(separator="\n"):label=SECONDARY_RANGES
         )""")
+
+    if cls.enable_service_project:
+      parser.add_argument(
+          '--service-project',
+          required=False,
+          help="""\
+          The project id or project number in which the subnetwork is intended to be
+          used. Only applied for Shared VPC.
+          See [Shared VPC documentation](https://cloud.google.com/vpc/docs/shared-vpc/).
+          """)
 
   def Collection(self):
     return 'compute.subnetworks'
@@ -61,6 +74,10 @@ class ListUsableSubnets(base.ListCommand):
     messages = holder.client.messages
     request = messages.ComputeSubnetworksListUsableRequest(
         project=properties.VALUES.core.project.Get(required=True))
+
+    if self.enable_service_project and args.service_project:
+      request.serviceProject = args.service_project
+
     return list_pager.YieldFromList(
         client.apitools_client.subnetworks,
         request,
@@ -68,6 +85,13 @@ class ListUsableSubnets(base.ListCommand):
         batch_size_attribute='maxResults',
         batch_size=500,
         field='items')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ListUsableSubnetsAlphaBeta(ListUsableSubnets):
+  """List subnetworks which the current user has permission to use."""
+
+  enable_service_project = True
 
 
 ListUsableSubnets.detailed_help = {
@@ -92,10 +116,45 @@ ListUsableSubnets.detailed_help = {
 
             $ {command}
 
-          To list all subnetworks in a specific project that are usable by a
-          specific user:
+          To list all subnetworks in the project ``PROJECT_ID'' that are usable
+          by the user ``ACCOUNT'':
 
-            $ {command} \
-                --project=PROJECT_ID --account=ACCOUNT
+            $ {command} --project=PROJECT_ID --account=ACCOUNT
+        """,
+}
+
+ListUsableSubnetsAlphaBeta.detailed_help = {
+    'brief':
+        """\
+        List Compute Engine subnetworks permitted for use.
+        """,
+    'DESCRIPTION':
+        """\
+        *{command}* is used to list Compute Engine subnetworks in a
+        project that the user has permission to use.
+
+        By default, usable subnetworks are listed for the default Google Cloud
+        project and user account. These values can be overridden by
+        setting the global flags: `--project=PROJECT_ID` and/or
+        `--account=ACCOUNT`.
+        """,
+    'EXAMPLES':
+        """\
+          To list all subnetworks in the default project that are usable by the
+          default user:
+
+            $ {command}
+
+          To list all subnetworks in the host project ``HOST_PROJECT_ID'' of
+          Shared VPC that are usable in the service project ``SERVICE_PROJECT_ID''
+          (see [Shared VPC documentation](https://cloud.google.com/vpc/docs/shared-vpc/))
+          by the default user:
+
+            $ {command} --project=HOST_PROJECT_ID --service-project=SERVICE_PROJECT_ID
+
+          To list all subnetworks in the project ``PROJECT_ID'' that are usable
+          by the user ``ACCOUNT'':
+
+            $ {command} --project=PROJECT_ID --account=ACCOUNT
         """,
 }

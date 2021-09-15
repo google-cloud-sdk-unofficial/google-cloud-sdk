@@ -154,12 +154,12 @@ def AddBetaArgs(parser):
   flags.AddExternalMasterGroup(parser)
   flags.AddInstanceResizeLimit(parser)
   flags.AddNetwork(parser)
+  flags.AddAllocatedIpRangeName(parser)
   labels_util.AddCreateLabelsFlags(parser)
 
 
 def AddAlphaArgs(parser):
   """Declare alpha flags for this command parser."""
-  flags.AddAllocatedIpRangeName(parser)
   flags.AddSqlServerAuditBucketPath(parser)
 
 

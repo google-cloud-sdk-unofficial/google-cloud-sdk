@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Deletes a Cloud Filestore instance."""
+"""Deletes a Filestore instance."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -31,7 +31,7 @@ from googlecloudsdk.core.console import console_io
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
-  """Delete a Cloud Filestore instance."""
+  """Delete a Filestore instance."""
 
   _API_VERSION = filestore_client.V1_API_VERSION
 
@@ -43,15 +43,18 @@ class Delete(base.DeleteCommand):
     instances_flags.AddAsyncFlag(parser)
 
   def Run(self, args):
-    """Delete a Cloud Filestore instance."""
+    """Delete a Filestore instance."""
     instance_ref = args.CONCEPTS.instance.Parse()
-    delete_warning = ('You are about to delete Cloud Filestore instance {}.\n'
+    delete_warning = ('You are about to delete Filestore instance {}.\n'
                       'Are you sure?'.format(instance_ref.RelativeName()))
+
     if not console_io.PromptContinue(message=delete_warning):
       return None
     client = filestore_client.FilestoreClient(version=self._API_VERSION)
+
     result = client.DeleteInstance(
         instance_ref, args.async_)
+
     if args.async_:
       command = properties.VALUES.metrics.command_name.Get().split('.')
       if command:
@@ -64,7 +67,7 @@ class Delete(base.DeleteCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DeleteBeta(Delete):
-  """Delete a Cloud Filestore instance."""
+  """Delete a Filestore instance."""
 
   _API_VERSION = filestore_client.BETA_API_VERSION
 
@@ -75,21 +78,51 @@ class DeleteBeta(Delete):
     instances_flags.AddLocationArg(parser)
     instances_flags.AddRegionArg(parser)
     instances_flags.AddAsyncFlag(parser)
+    instances_flags.AddForceArg(parser)
+
+  def Run(self, args):
+    """Deletes a Cloud Filestore instance."""
+    instance_ref = args.CONCEPTS.instance.Parse()
+    delete_warning = ('You are about to delete Cloud Filestore instance {}.\n'
+                      'Are you sure?'.format(instance_ref.RelativeName()))
+
+    if not console_io.PromptContinue(message=delete_warning):
+      return None
+    client = filestore_client.FilestoreClient(version=self._API_VERSION)
+
+    result = client.DeleteInstanceBeta(
+        instance_ref, args.async_, args.force)
+
+    if args.async_:
+      command = properties.VALUES.metrics.command_name.Get().split('.')
+      if command:
+        command[-1] = 'list'
+      log.status.Print(
+          'Check the status of the deletion by listing all instances:\n  '
+          '$ {} '.format(' '.join(command)))
+    return result
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(DeleteBeta):
-  """Delete a Cloud Filestore instance."""
+class DeleteAlpha(Delete):
+  """Delete a Filestore instance."""
 
   _API_VERSION = filestore_client.ALPHA_API_VERSION
 
+  @staticmethod
+  def Args(parser):
+    concept_parsers.ConceptParser([flags.GetInstancePresentationSpec(
+        'The instance to delete.')]).AddToParser(parser)
+    instances_flags.AddLocationArg(parser)
+    instances_flags.AddRegionArg(parser)
+    instances_flags.AddAsyncFlag(parser)
 
 Delete.detailed_help = {
     'DESCRIPTION':
-        'Delete a Cloud Filestore instance.',
+        'Delete a Filestore instance.',
     'EXAMPLES':
         """\
-To delete a Cloud Filestore instance named NAME in us-central1-c:
+To delete a Filestore instance named NAME in us-central1-c:
 
   $ {command} NAME --zone=us-central1-c
 """

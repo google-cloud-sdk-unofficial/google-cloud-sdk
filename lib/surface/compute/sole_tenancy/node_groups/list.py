@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -55,15 +56,51 @@ class ListAlpha(List):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat("""\
-        table(
-          name,
-          zone.basename(),
-          description,
-          nodeTemplate.basename(),
-          size:label=NODES,
-          shareSettings.yesno(yes="true", no="false"):label=SHARED
-        )""")
+    flags.AddListingShareSettingsArgToParser(parser)
+
+  def Run(self, args):
+    args.GetDisplayInfo().AddTransforms({
+        'description': _TransformShareSettings,
+    })
+    if args.share_settings:
+      args.GetDisplayInfo().AddFormat("""\
+          table(
+            name,
+            zone.basename(),
+            description,
+            nodeTemplate.basename(),
+            size:label=NODES,
+            shareSettings.description()
+          )""")
+    else:
+      args.GetDisplayInfo().AddFormat("""\
+          table(
+            name,
+            zone.basename(),
+            description,
+            nodeTemplate.basename(),
+            size:label=NODES,
+            shareSettings.yesno(yes="true", no="false"):label=SHARED
+          )""")
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
+    list_implementation = lister.MultiScopeLister(
+        client, aggregation_service=client.apitools_client.nodeGroups)
+
+    return lister.Invoke(request_data, list_implementation)
+
+
+def _TransformShareSettings(share_setting):
+  """"Transforms share settings to detailed share settings information."""
+  if not share_setting:
+    return 'none'
+  elif share_setting['shareType'] == 'SPECIFIC_PROJECTS':
+    return 'specific_project:' + ','.join(share_setting['projects'])
+  elif share_setting['shareType'] == 'ORGANIZATION':
+    return 'org'
+  return ''
 
 
 List.detailed_help = base_classes.GetRegionalListerHelp('node groups')

@@ -64,8 +64,7 @@ class Create(base.CreateCommand):
               'FAILURE_ACTION_UNSPECIFIED': 'failure action is not specified'
           },
           type=arg_utils.ChoiceToEnumName,
-          hidden=True,
-          help="""\\
+          help="""
         Failure action to take when primary workers fail during cluster creation
         """)
     # Add gce-pd-kms-key args

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to show metadata for a Cloud Filestore instance."""
+"""Command to show metadata for a Filestore instance."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Show metadata for a Cloud Filestore instance."""
+  """Show metadata for a Filestore instance."""
 
   _API_VERSION = filestore_client.V1_API_VERSION
 
@@ -46,7 +46,7 @@ class Describe(base.DescribeCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DescribeBeta(Describe):
-  """Show metadata for a Cloud Filestore instance."""
+  """Show metadata for a Filestore instance."""
 
   _API_VERSION = filestore_client.BETA_API_VERSION
 
@@ -60,7 +60,7 @@ class DescribeBeta(Describe):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(Describe):
-  """Show metadata for a Cloud Filestore instance."""
+  """Show metadata for a Filestore instance."""
 
   _API_VERSION = filestore_client.ALPHA_API_VERSION
 
@@ -74,11 +74,11 @@ class DescribeAlpha(Describe):
 
 Describe.detailed_help = {
     'DESCRIPTION':
-        'Show metadata for a Cloud Filestore instance.',
+        'Show metadata for a Filestore instance.',
     'EXAMPLES':
         """\
-The following command shows the metadata for the Cloud Filestore instance
-named NAME in us-central1-c.
+The following command shows the metadata for the Filestore instance named NAME
+in us-central1-c.
 
   $ {command} NAME --location=us-central1-c
 """

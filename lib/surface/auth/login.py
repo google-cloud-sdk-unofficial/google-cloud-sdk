@@ -129,8 +129,9 @@ class Login(base.Command):
     parser.add_argument(
         '--cred-file',
         hidden=True,
-        help='Path to the external account configuration file or service '
-        'account credential key file.')
+        help='Path to the external account configuration file (workload '
+        'identity pool or workforce pool) or service account credential key '
+        'file.')
     parser.display_info.AddFormat('none')
 
   def Run(self, args):
@@ -261,7 +262,7 @@ def LoginWithCredFileConfig(cred_config, scopes, project, activate, brief,
         '[--add-quota-project-to-adc] cannot be specified with --cred-file')
   if auth_external_account.IsExternalAccountConfig(cred_config):
     creds = auth_external_account.CredentialsFromAdcDictGoogleAuth(cred_config)
-    account = creds.service_account_email
+    account = auth_external_account.GetExternalAccountId(creds)
   elif auth_service_account.IsServiceAccountConfig(cred_config):
     creds = auth_service_account.CredentialsFromAdcDictGoogleAuth(cred_config)
     account = creds.service_account_email
@@ -312,6 +313,10 @@ def LoginAs(account, creds, project, activate, brief, update_adc,
       confirmation_msg = (
           'Authenticated with external account credentials for: [{0}].'.format(
               account))
+    elif c_creds.IsExternalAccountUserCredentials(creds):
+      confirmation_msg = (
+          'Authenticated with external account user credentials for: '
+          '[{0}].'.format(account))
     elif c_creds.IsServiceAccountCredentials(creds):
       confirmation_msg = (
           'Authenticated with service account credentials for: [{0}].'.format(

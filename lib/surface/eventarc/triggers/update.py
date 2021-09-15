@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.eventarc import triggers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.eventarc import flags
 from googlecloudsdk.command_lib.eventarc import types
 from googlecloudsdk.core import log
@@ -69,7 +70,10 @@ class Update(base.UpdateCommand):
         destination_gke_namespace=args.IsSpecified('destination_gke_namespace'),
         destination_gke_service=args.IsSpecified('destination_gke_service'),
         destination_gke_path=args.IsSpecified('destination_gke_path') or
-        args.clear_destination_gke_path)
+        args.clear_destination_gke_path,
+        destination_workflow=args.IsSpecified('destination_workflow'),
+        destination_workflow_location=args.IsSpecified(
+            'destination_workflow_location'))
     old_trigger = client.Get(trigger_ref)
     # The type can't be updated, so it's safe to use the old trigger's type.
     # In the async case, this is the only way to get the type.
@@ -89,6 +93,12 @@ class Update(base.UpdateCommand):
       destination_message = client.BuildGKEDestinationMessage(
           None, None, args.destination_gke_namespace,
           args.destination_gke_service, args.destination_gke_path)
+    elif (args.IsSpecified('destination_workflow') or
+          args.IsSpecified('destination_workflow_location')):
+      location = self.GetWorkflowDestinationLocation(args, old_trigger)
+      workflow = self.GetWorkflowDestination(args, old_trigger)
+      destination_message = client.BuildWorkflowDestinationMessage(
+          trigger_ref.Parent().Parent().Name(), workflow, location)
     trigger_message = client.BuildTriggerMessage(trigger_ref, event_filters,
                                                  args.service_account,
                                                  destination_message, None)
@@ -102,6 +112,24 @@ class Update(base.UpdateCommand):
       log.warning(
           'It may take up to {} minutes for the update to take full effect.'
           .format(triggers.MAX_ACTIVE_DELAY_MINUTES))
+
+  def GetWorkflowDestinationLocation(self, args, old_trigger):
+    if args.IsSpecified('destination_workflow_location'):
+      return args.destination_workflow_location
+    if old_trigger.destination.workflow:
+      return old_trigger.destination.workflow.split('/')[3]
+    raise exceptions.InvalidArgumentException(
+        '--destination-workflow',
+        'The specified trigger is not for a workflow destination.')
+
+  def GetWorkflowDestination(self, args, old_trigger):
+    if args.IsSpecified('destination_workflow'):
+      return args.destination_workflow
+    if old_trigger.destination.workflow:
+      return old_trigger.destination.workflow.split('/')[5]
+    raise exceptions.InvalidArgumentException(
+        '--destination-workflow-location',
+        'The specified trigger is not for a workflow destination.')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

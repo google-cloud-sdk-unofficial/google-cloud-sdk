@@ -32,21 +32,24 @@
     - _REF_: googlecloudsdk.command_lib.scheduler.flags:pubsub_topic
       required: true
     - group:
-        mutex: true
+        mutex: false
         required: true
         help_text: |
           Body of the message to publish to the given topic name. Information on
           message formatting and size limits can be found at:
           https://cloud.google.com/pubsub/docs/publisher#publish
         params:
-        - arg_name: message-body
-          help_text: Body of the message.
-        - arg_name: message-body-from-file
-          type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
-          help_text: Path to a file containing the body of the message.
-    - arg_name: attributes
-      api_field: job.pubsubTarget.attributes
-      type: googlecloudsdk.command_lib.scheduler.util:ParseAttributes
-      help_text: |
-        Comma-separated list of attributes. Each attribute has the form
-        "NAME=VALUE". You can specify up to 100 attributes.
+        - arg_name: attributes
+          api_field: job.pubsubTarget.attributes
+          type: googlecloudsdk.command_lib.scheduler.util:ParseAttributes
+          help_text: |
+            Comma-separated list of attributes. Each attribute has the form
+            "NAME=VALUE". You can specify up to 100 attributes.
+        - group:
+            mutex: true
+            params:
+            - arg_name: message-body
+              help_text: Body of the message.
+            - arg_name: message-body-from-file
+              type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+              help_text: Path to a file containing the body of the message.

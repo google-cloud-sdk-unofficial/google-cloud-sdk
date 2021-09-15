@@ -2,9 +2,9 @@
   help_text:
     ALPHA:
       brief: |
-        Restore a Cloud Filestore instance from a snapshot or backup.
+        Restore a Filestore instance from a snapshot or backup.
       description: |
-        Restore an existing Cloud Filestore instance from an existing snapshot
+        Restore an existing Filestore instance from an existing snapshot
         or backup.
       examples: |
         The following command restores an instance named 'my-instance' with a
@@ -18,9 +18,9 @@
             --source-backup-region=europe-west3
     BETA:
       brief: |
-        Restore a Cloud Filestore instance from a backup.
+        Restore a Filestore instance from a backup.
       description: |
-        Restore an existing Cloud Filestore instance from an existing backup.
+        Restore an existing Filestore instance from an existing backup.
       examples: |
         The following command restores an instance named 'my-instance' with a
         fileshare named 'vol1' in the zone europe-west3-a from a backup named
@@ -33,9 +33,9 @@
             --source-backup-region=europe-west3
     GA:
       brief: |
-        Restore a Cloud Filestore instance from a backup.
+        Restore a Filestore instance from a backup.
       description: |
-        Restore an existing Cloud Filestore instance from an existing backup.
+        Restore an existing Filestore instance from an existing backup.
       examples: |
         The following command restores an instance named 'my-instance' with a
         fileshare named 'vol1' in the zone europe-west3-a from a backup named

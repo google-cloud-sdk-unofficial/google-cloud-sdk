@@ -1,8 +1,8 @@
 - help_text:
     brief: |
-      Delete a Cloud Filestore snapshot.
+      Delete a Filestore snapshot.
     description: |
-      Delete a Cloud Filestore snapshot.
+      Delete a Filestore snapshot.
 
       This command can fail for the following reasons:
         * The snapshot specified does not exist.

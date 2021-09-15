@@ -112,7 +112,9 @@ def AddSSHArgs(parser):
 def SSHRunCmd(env, cmd, output_file_writer):
   """Returns a function to run."""
   return cmd.Run(
-      env, force_connect=True, explicit_output_file=output_file_writer,
+      env,
+      force_connect=True,
+      explicit_output_file=output_file_writer,
       explicit_error_file=output_file_writer)
 
 
@@ -163,8 +165,12 @@ class Ssh(base.Command):
           'this node, please see '
           'https://cloud.google.com/tpu/docs/creating-deleting-tpus.')
 
-    worker_ips = tpu_ssh_utils.ParseWorkerFlag(
-        args.worker, node.networkEndpoints, args.internal_ip)
+    tpu_ssh_utils.ValidateTPUState(node.state,
+                                   tpu.messages.Node.StateValueValuesEnum)
+
+    worker_ips = tpu_ssh_utils.ParseWorkerFlag(args.worker,
+                                               node.networkEndpoints,
+                                               args.internal_ip)
 
     if len(worker_ips) > 1 and not args.command:
       raise exceptions.InvalidArgumentException(
@@ -187,16 +193,21 @@ class Ssh(base.Command):
       username_requested = '@' in args.user_tpu
       _, expiration_micros = ssh_utils.GetSSHKeyExpirationFromArgs(args)
       user, _ = ssh.CheckForOsloginAndGetUser(
-          None, project, user, public_key, expiration_micros,
-          self.ReleaseTrack(), username_requested=username_requested,
+          None,
+          project,
+          user,
+          public_key,
+          expiration_micros,
+          self.ReleaseTrack(),
+          username_requested=username_requested,
           instance_enable_oslogin=tpu_ssh_utils.TpuHasOsLoginEnabled(node))
 
     # Format the key correctly.
     public_key = '{1}:{0} {1}'.format(public_key, user)
 
     if not args.plain and not args.dry_run:
-      tpu_ssh_utils.AddSSHKeyIfNeeded(
-          project, tpu, node, tpu_name, args.zone, public_key)
+      tpu_ssh_utils.AddSSHKeyIfNeeded(project, tpu, node, tpu_name, args.zone,
+                                      public_key)
 
     command_list = args.command.split(' ') if args.command else None
 
@@ -219,11 +230,15 @@ class Ssh(base.Command):
             args.strict_host_key_checking, None)
 
       remote = ssh.Remote(ips.ip_address, user)
-      extra_flags = ssh.ParseAndSubstituteSSHFlags(
-          args, remote, ips.ip_address, ips.internal_address)
-      cmd = ssh.SSHCommand(remote=remote, identity_file=identity_file,
-                           remote_command=command_list, extra_flags=extra_flags,
-                           options=options, remainder=remainder)
+      extra_flags = ssh.ParseAndSubstituteSSHFlags(args, remote, ips.ip_address,
+                                                   ips.internal_address)
+      cmd = ssh.SSHCommand(
+          remote=remote,
+          identity_file=identity_file,
+          remote_command=command_list,
+          extra_flags=extra_flags,
+          options=options,
+          remainder=remainder)
 
       if args.dry_run:
         log.out.Print(' '.join(cmd.Build(ssh_helper.env)))
@@ -237,14 +252,13 @@ class Ssh(base.Command):
       if len(worker_ips) > 1:
         # Run the command on multiple workers concurrently.
         ssh_threads.append(
-            threading.Thread(target=tpu_ssh_utils.AttemptRunWithRetries,
-                             args=('SSH', worker, cmd, ssh_helper.env,
-                                   output_file_writer, True, SSHRunCmd)))
+            threading.Thread(
+                target=tpu_ssh_utils.AttemptRunWithRetries,
+                args=('SSH', worker, cmd, ssh_helper.env, output_file_writer,
+                      True, SSHRunCmd)))
         ssh_threads[-1].start()
       else:
         # Run on a single worker.
-        tpu_ssh_utils.AttemptRunWithRetries(
-            'SSH', worker, cmd, ssh_helper.env, output_file_writer, False,
-            SSHRunCmd)
-
-
+        tpu_ssh_utils.AttemptRunWithRetries('SSH', worker, cmd, ssh_helper.env,
+                                            output_file_writer, False,
+                                            SSHRunCmd)

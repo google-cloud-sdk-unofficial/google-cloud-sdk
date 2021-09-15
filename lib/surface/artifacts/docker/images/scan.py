@@ -251,6 +251,11 @@ class ScanGA(ScanBeta):
       IMAGE[:tag]
   """
 
+  @staticmethod
+  def Args(parser):
+    super(ScanGA, ScanGA).Args(parser)
+    flags.GetOnDemandIncludeOSVDataFlag().AddToParser(parser)
+
   def AnalyzePackages(self, project, location, resource_uri, pkgs):
     return api_util.AnalyzePackagesGA(project, location, resource_uri, pkgs)
 

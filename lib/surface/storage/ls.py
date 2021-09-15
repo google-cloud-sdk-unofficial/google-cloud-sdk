@@ -128,26 +128,30 @@ class Ls(base.Command):
         help='When used with `--long`, print object sizes in human'
         ' readable format, such as 1 KiB, 234 MiB, or 2 GiB.')
     parser.add_argument(
-        '-L',
-        '--full',
+        '-R',
+        '-r',
+        '--recursive',
         action='store_true',
-        help='List all available metadata about items in rows.')
-    parser.add_argument(
-        '-j',
-        '--json',
-        action='store_true',
-        help='List all available metadata about items as a JSON dump.')
-    parser.add_argument(
+        help='Recursively list the contents of any directories that match the'
+        ' path expression.')
+
+    output_styles = parser.add_group(mutex='True')
+    output_styles.add_argument(
         '-l',
         '--long',
         action='store_true',
         help='For objects only. List size in bytes, creation time, and URL.'
         ' Note: Creation time not available for S3.')
-    parser.add_argument(
-        '-R', '-r', '--recursive',
+    output_styles.add_argument(
+        '-L',
+        '--full',
         action='store_true',
-        help='Recursively list the contents of any directories that match the'
-             ' path expression.')
+        help='List all available metadata about items in rows.')
+    output_styles.add_argument(
+        '-j',
+        '--json',
+        action='store_true',
+        help='List all available metadata about items as a JSON dump.')
 
   def Run(self, args):
     """Command execution logic."""

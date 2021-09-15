@@ -64,6 +64,10 @@ class Sql(base.Command):
         help='The columns to import from csv file. These correspond to actual '
         'database columns to import. If not set, all columns from csv file '
         'are imported to corresponding database columns.')
+    flags.AddQuoteArgument(parser)
+    flags.AddEscapeArgument(parser)
+    flags.AddFieldsDelimiterArgument(parser)
+    flags.AddLinesDelimiterArgument(parser)
 
   def Run(self, args):
     """Runs the command to import into the Cloud SQL instance."""

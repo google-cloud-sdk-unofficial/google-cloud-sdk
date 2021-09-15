@@ -1,8 +1,8 @@
 - help_text:
     brief: |
-      Create a Cloud Filestore snapshot.
+      Create a Filestore snapshot.
     description: |
-      Take a Cloud Filestore snapshot of an instance file share.
+      Take a Filestore snapshot of an instance file share.
 
       This command can fail for the following reasons:
         * An instance with the same name already exists.

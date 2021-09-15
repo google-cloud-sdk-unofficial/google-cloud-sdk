@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA, GA]
 help_text:
   brief: Delete a Pub/Sub Lite reservation.
   description: Delete a Pub/Sub Lite reservation.

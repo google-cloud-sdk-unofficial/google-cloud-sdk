@@ -33,8 +33,6 @@ class Update(base.UpdateCommand):
 
   PACKET_MIRRORING_ARG = None
 
-  enable_filter_direction = True
-
   @classmethod
   def Args(cls, parser):
     base.ASYNC_FLAG.AddToParser(parser)
@@ -42,8 +40,7 @@ class Update(base.UpdateCommand):
     cls.PACKET_MIRRORING_ARG = flags.PacketMirroringArgument()
     cls.PACKET_MIRRORING_ARG.AddArgument(parser, operation_type='update')
 
-    flags.AddUpdateArgs(
-        parser, enable_filter_direction=cls.enable_filter_direction)
+    flags.AddUpdateArgs(parser)
 
   def Collection(self):
     return 'compute.packetMirrorings'
@@ -193,7 +190,7 @@ class Update(base.UpdateCommand):
           if x not in args.remove_filter_cidr_ranges
       ]
 
-    if self.enable_filter_direction and args.filter_direction:
+    if args.filter_direction:
       resource.filter.direction = messages.PacketMirroringFilter.DirectionValueValuesEnum(
           args.filter_direction.upper())
 

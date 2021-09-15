@@ -47,8 +47,8 @@ class Get(base.DescribeCommand):
     flags.GetPolicyIDFlag().AddToParser(parser)
 
   def Run(self, args):
-    client = apis.GetClientInstance()
-    messages = apis.GetMessagesModule()
+    client = apis.GetClientInstance('v2alpha')
+    messages = apis.GetMessagesModule('v2alpha')
 
     attachment_point = args.attachment_point.replace('/', '%2F')
 

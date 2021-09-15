@@ -56,6 +56,8 @@ class Import(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddKeyResourceFlags(parser, 'The containing key to import into.')
+    flags.AddCryptoKeyVersionFlag(
+        parser, 'to re-import into. Omit this field for first-time import')
     flags.AddRsaAesWrappedKeyFileFlag(parser, 'to import')
     flags.AddImportedVersionAlgorithmFlag(parser)
     flags.AddRequiredImportJobArgument(parser, 'to import from')
@@ -173,6 +175,10 @@ class Import(base.Command):
             args.algorithm),
         importJob=import_job_name,
         rsaAesWrappedKey=rsa_aes_wrapped_key_bytes)
+
+    if args.version:
+      req.importCryptoKeyVersionRequest.cryptoKeyVersion = flags.ParseCryptoKeyVersionName(
+          args).RelativeName()
 
     return client.projects_locations_keyRings_cryptoKeys_cryptoKeyVersions.Import(
         req)

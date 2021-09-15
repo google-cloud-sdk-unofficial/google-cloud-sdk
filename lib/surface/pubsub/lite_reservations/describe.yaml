@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA, GA]
 help_text:
   brief: Describe a Pub/Sub Lite reservation.
   description: Describe a Pub/Sub Lite reservation.

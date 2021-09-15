@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for listing Cloud Filestore locations."""
+"""Command for listing Filestore locations."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,7 +27,7 @@ from googlecloudsdk.core import resources
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List all Cloud Filestore locations."""
+  """List all Filestore locations."""
 
   _API_VERSION = filestore_client.V1_API_VERSION
 
@@ -53,7 +53,7 @@ class List(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(List):
-  """List all Cloud Filestore locations."""
+  """List all Filestore locations."""
 
   _API_VERSION = filestore_client.BETA_API_VERSION
 
@@ -73,7 +73,7 @@ class ListBeta(List):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(List):
-  """List all Cloud Filestore locations."""
+  """List all Filestore locations."""
 
   _API_VERSION = filestore_client.ALPHA_API_VERSION
 
@@ -93,11 +93,11 @@ class ListAlpha(List):
 
 List.detailed_help = {
     'DESCRIPTION':
-        'List all Cloud Filestore locations.',
+        'List all Filestore locations.',
     'EXAMPLES':
         """\
-The following command lists a maximum of five Cloud Filestore locations
-sorted alphabetically by name in descending order:
+The following command lists a maximum of five Filestore locations sorted
+alphabetically by name in descending order:
 
   $ {command} --limit=5 --sort-by=~name
 """

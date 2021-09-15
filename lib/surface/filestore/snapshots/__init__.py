@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Cloud Filestore snapshots."""
+"""Command group for Filestore snapshots."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Snapshots(base.Group):
-  """Create and manage Cloud Filestore snapshots.
+  """Create and manage Filestore snapshots.
 
   ## EXAMPLES
 

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Update a Cloud Filestore instance."""
+"""Update a Filestore instance."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -34,7 +34,7 @@ def _CommonArgs(parser, api_version=filestore_client.V1_API_VERSION):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.CreateCommand):
-  """Update a Cloud Filestore instance."""
+  """Update a Filestore instance."""
 
   _API_VERSION = filestore_client.V1_API_VERSION
 
@@ -103,7 +103,7 @@ class Update(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(Update):
-  """Update a Cloud Filestore instance."""
+  """Update a Filestore instance."""
 
   _API_VERSION = filestore_client.ALPHA_API_VERSION
 
@@ -114,7 +114,7 @@ class UpdateAlpha(Update):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
-  """Update a Cloud Filestore instance."""
+  """Update a Filestore instance."""
 
   _API_VERSION = filestore_client.BETA_API_VERSION
 
@@ -125,16 +125,16 @@ class UpdateBeta(Update):
 
 Update.detailed_help = {
     'DESCRIPTION':
-        'Update a Cloud Filestore instance.',
+        'Update a Filestore instance.',
     'EXAMPLES':
         """\
-The following command updates the Cloud Filestore instance NAME to change the
+The following command updates the Filestore instance NAME to change the
 description to "A new description."
 
   $ {command} NAME --description="A new description."
 
-The following command updates a Cloud Filestore instance named NAME to add the
-label "key1=value1" and remove any metadata with the label "key2".
+The following command updates a Filestore instance named NAME to add the label
+"key1=value1" and remove any metadata with the label "key2".
 
   $ {command} NAME --update-labels=key1=value1 --remove-labels=key2
 
@@ -162,7 +162,7 @@ Example json configuration file:
   }
 
 
-The following command updates a Cloud Filestore instance named NAME to change the
+The following command updates a Filestore instance named NAME to change the
 capacity to CAPACITY.
 
   $ {command} NAME --project=PROJECT_ID --zone=ZONE\

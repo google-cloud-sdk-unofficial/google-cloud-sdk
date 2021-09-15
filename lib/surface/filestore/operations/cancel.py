@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Cancel(base.Command):
-  """Cancel a Cloud Filestore operation."""
+  """Cancel a Filestore operation."""
 
   _API_VERSION = filestore_client.V1_API_VERSION
 
@@ -48,14 +48,14 @@ class Cancel(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CancelBeta(Cancel):
-  """Cancel a Cloud Filestore operation."""
+  """Cancel a Filestore operation."""
 
   _API_VERSION = filestore_client.BETA_API_VERSION
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CancelAlpha(Cancel):
-  """Cancel a Cloud Filestore operation."""
+  """Cancel a Filestore operation."""
 
   _API_VERSION = filestore_client.ALPHA_API_VERSION
 
@@ -63,20 +63,18 @@ class CancelAlpha(Cancel):
 Cancel.detailed_help = {
     'DESCRIPTION':
         """\
-        Cancels a Cloud Filestore operation. The server makes a best effort to
-        cancel the operation, but success is not guaranteed. Clients can use
-        the `filestore operations describe` command to check whether the
+        Cancels a Filestore operation. The server makes a best effort to cancel
+        the operation, but success is not guaranteed. Clients can use the
+        `filestore operations describe` command to check whether the
         cancellation succeeded or not.
 """,
     'EXAMPLES':
         """\
-To cancel a Cloud Filestore operation named ``NAME" in the ``us-central1-c"
-zone, run:
+To cancel a Filestore operation named ``NAME" in the ``us-central1-c" zone, run:
 
   $ {command} NAME --zone=us-central1-c
 
-To cancel a Cloud Filestore operation named ``NAME" in the ``us-central1"
-region, run:
+To cancel a Filestore operation named ``NAME" in the ``us-central1" region, run:
 
   $ {command} NAME --location=us-central1
 

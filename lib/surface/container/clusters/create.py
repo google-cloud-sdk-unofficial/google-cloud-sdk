@@ -270,6 +270,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_master_authorized_networks=\
         get_default('enable_master_authorized_networks'),
       enable_master_global_access=get_default('enable_master_global_access'),
+      enable_mesh_certificates=get_default('enable_mesh_certificates'),
       enable_network_policy=get_default('enable_network_policy'),
       enable_private_nodes=get_default('enable_private_nodes'),
       enable_private_endpoint=get_default('enable_private_endpoint'),
@@ -499,6 +500,8 @@ flags_to_add = {
             flags.AddMaxPodsPerNodeFlag,
         'maxunavailable':
             flags.AddMaxUnavailableUpgradeFlag,
+        'meshcertificates':
+            flags.AddMeshCertificatesFlags,
         'metadata':
             flags.AddMetadataFlags,
         'mincpu':
@@ -663,6 +666,8 @@ flags_to_add = {
             flags.AddMaxPodsPerNodeFlag,
         'maxunavailable':
             (lambda p: flags.AddMaxUnavailableUpgradeFlag(p, is_create=True)),
+        'meshcertificates':
+            flags.AddMeshCertificatesFlags,
         'metadata':
             flags.AddMetadataFlags,
         'mincpu':
@@ -848,6 +853,8 @@ flags_to_add = {
             flags.AddMasterAuthorizedNetworksFlags,
         'mastersignals':
             AddMasterSignalsFlag,
+        'meshcertificates':
+            flags.AddMeshCertificatesFlags,
         'metadata':
             flags.AddMetadataFlags,
         'mincpu':

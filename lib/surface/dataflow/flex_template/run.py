@@ -69,7 +69,15 @@ class Run(base.Command):
 
     parser.add_argument(
         '--staging-location',
-        help=('Google Cloud Storage location to stage temporary files. '
+        help=('Default Google Cloud Storage location to stage local files.'
+              "(Must be a URL beginning with 'gs://'.)"),
+        type=arg_parsers.RegexpValidator(r'^gs://.*',
+                                         'Must begin with \'gs://\''))
+
+    parser.add_argument(
+        '--temp-location',
+        help=('Default Google Cloud Storage location to stage temporary files. '
+              'If not set, defaults to the value for --staging-location.'
               "(Must be a URL beginning with 'gs://'.)"),
         type=arg_parsers.RegexpValidator(r'^gs://.*',
                                          'Must begin with \'gs://\''))
@@ -130,6 +138,7 @@ class Run(base.Command):
         '--additional-experiments',
         metavar='ADDITIONAL_EXPERIMENTS',
         type=arg_parsers.ArgList(),
+        action=arg_parsers.UpdateAction,
         help=
         ('Additional experiments to pass to the job.'))
 
@@ -189,6 +198,7 @@ class Run(base.Command):
         worker_machine_type=args.worker_machine_type,
         kms_key_name=args.dataflow_kms_key,
         staging_location=args.staging_location,
+        temp_location=args.temp_location,
         disable_public_ips=
         properties.VALUES.dataflow.disable_public_ips.GetBool(),
         service_account_email=args.service_account_email,

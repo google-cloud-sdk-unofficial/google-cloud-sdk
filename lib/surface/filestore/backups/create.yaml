@@ -1,8 +1,8 @@
 - release_tracks: [GA, BETA, ALPHA]
   help_text:
-    brief:  Create a Cloud Filestore backup.
+    brief:  Create a Filestore backup.
     description: |
-      Create a Cloud Filestore backup of an instance file share.
+      Create a Filestore backup of an instance file share.
 
       This command can fail for the following reasons:
         * A backup with the same name already exists.

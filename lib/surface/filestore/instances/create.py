@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Creates a Cloud Filestore instance."""
+"""Creates a Filestore instance."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -35,16 +35,16 @@ def _CommonArgs(parser, api_version=filestore_client.V1_API_VERSION):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a Cloud Filestore instance."""
+  """Create a Filestore instance."""
 
   _API_VERSION = filestore_client.V1_API_VERSION
 
   detailed_help = {
       'DESCRIPTION':
-          'Create a Cloud Filestore instance.',
+          'Create a Filestore instance.',
       'EXAMPLES':
           """\
-    The following command creates a Cloud Filestore instance named NAME with a single volume.
+    The following command creates a Filestore instance named NAME with a single volume.
 
       $ {command} NAME \
       --description=DESCRIPTION --tier=TIER \
@@ -88,7 +88,7 @@ class Create(base.CreateCommand):
     _CommonArgs(parser, Create._API_VERSION)
 
   def Run(self, args):
-    """Create a Cloud Filestore instance in the current project."""
+    """Create a Filestore instance in the current project."""
     instance_ref = args.CONCEPTS.instance.Parse()
     client = filestore_client.FilestoreClient(self._API_VERSION)
     tier = instances_flags.GetTierArg(
@@ -123,16 +123,16 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
-  """Create a Cloud Filestore instance."""
+  """Create a Filestore instance."""
 
   _API_VERSION = filestore_client.BETA_API_VERSION
 
   detailed_help = {
       'DESCRIPTION':
-          'Create a Cloud Filestore instance.',
+          'Create a Filestore instance.',
       'EXAMPLES':
           """\
-    The following command creates a Cloud Filestore instance named NAME with a single volume.
+    The following command creates a Filestore instance named NAME with a single volume.
 
       $ {command} NAME \
       --description=DESCRIPTION --tier=TIER \
@@ -178,16 +178,16 @@ class CreateBeta(Create):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
-  """Create a Cloud Filestore instance."""
+  """Create a Filestore instance."""
 
   _API_VERSION = filestore_client.ALPHA_API_VERSION
 
   detailed_help = {
       'DESCRIPTION':
-          'Create a Cloud Filestore instance.',
+          'Create a Filestore instance.',
       'EXAMPLES':
           """\
-    The following command creates a Cloud Filestore instance named NAME with a single volume.
+    The following command creates a Filestore instance named NAME with a single volume.
 
       $ {command} NAME \
       --description=DESCRIPTION --tier=TIER \
