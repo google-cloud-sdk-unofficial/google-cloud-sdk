@@ -216,7 +216,7 @@ class UpdateBeta(UpdateGA):
   _support_global_access = True
   _support_network_tier = False
   _support_labels = True
-  _support_source_ip_range = False
+  _support_source_ip_range = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

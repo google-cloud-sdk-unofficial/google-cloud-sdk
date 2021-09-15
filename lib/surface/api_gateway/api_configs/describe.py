@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """`gcloud api-gateway api-configs describe` command."""
 
 from __future__ import absolute_import
@@ -42,9 +41,18 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
+    parser.add_argument(
+        '--view',
+        default='BASIC',
+        choices=['BASIC', 'FULL'],
+        help="""\
+      The API Configuration view to return. If \
+      'FULL' is specified, the base64 encoded API Configuration's source file \
+      conent will be included in the response.
+      """)
     resource_args.AddApiConfigResourceArg(parser, 'created', positional=True)
 
   def Run(self, args):
     config_ref = args.CONCEPTS.api_config.Parse()
 
-    return api_configs.ApiConfigClient().Get(config_ref)
+    return api_configs.ApiConfigClient().Get(config_ref, args.view)

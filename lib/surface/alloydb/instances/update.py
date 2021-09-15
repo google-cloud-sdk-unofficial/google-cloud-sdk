@@ -47,7 +47,7 @@ class Update(base.UpdateCommand):
     flags.AddCluster(parser, False)
     flags.AddDatabaseFlags(parser)
     flags.AddInstance(parser)
-    flags.AddInstanceType(parser, True)
+    flags.AddInstanceType(parser)
     flags.AddMemory(parser)
     flags.AddReadPoolSize(parser)
     flags.AddRegion(parser)

@@ -232,6 +232,7 @@ class Create(base.CreateCommand):
   _support_provisioning_model = False
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
+  _support_visible_core_count = False
 
   @classmethod
   def Args(cls, parser):
@@ -414,14 +415,20 @@ class Create(base.CreateCommand):
                 compute_client.messages).GetEnumForChoice(
                     args.private_ipv6_google_access_type))
 
+      has_visible_core_count = (
+          self._support_visible_core_count and
+          args.visible_core_count is not None)
       if (args.enable_nested_virtualization is not None or
           args.threads_per_core is not None or
-          (self._support_numa_node_count and args.numa_node_count is not None)):
+          (self._support_numa_node_count and
+           args.numa_node_count is not None) or has_visible_core_count):
+        visible_core_count = args.visible_core_count if has_visible_core_count else None
         instance.advancedMachineFeatures = (
             instance_utils.CreateAdvancedMachineFeaturesMessage(
                 compute_client.messages, args.enable_nested_virtualization,
-                args.threads_per_core, args.numa_node_count
-                if self._support_numa_node_count else None))
+                args.threads_per_core,
+                args.numa_node_count if self._support_numa_node_count else None,
+                visible_core_count))
 
       resource_policies = getattr(args, 'resource_policies', None)
       if resource_policies:
@@ -667,6 +674,7 @@ class CreateAlpha(CreateBeta):
   _support_provisioning_model = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = True
+  _support_visible_core_count = True
 
   @classmethod
   def Args(cls, parser):
@@ -705,6 +713,7 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddStableFleetArgs(parser)
     instances_flags.AddNetworkPerformanceConfigsArgs(parser)
     instances_flags.AddSecureTagsArgs(parser)
+    instances_flags.AddVisibleCoreCountArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

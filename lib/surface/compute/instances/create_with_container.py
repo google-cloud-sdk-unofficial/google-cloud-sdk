@@ -93,6 +93,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_network_performance_configs = False
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
+  _support_visible_core_count = False
 
   @staticmethod
   def Args(parser):
@@ -279,14 +280,20 @@ class CreateWithContainer(base.CreateCommand):
       if confidential_instance_config:
         instance.confidentialInstanceConfig = confidential_instance_config
 
+      has_visible_core_count = (
+          self._support_visible_core_count and
+          args.visible_core_count is not None)
       if (args.enable_nested_virtualization is not None or
           args.threads_per_core is not None or
-          (self._support_numa_node_count and args.numa_node_count is not None)):
+          (self._support_numa_node_count and
+           args.numa_node_count is not None) or has_visible_core_count):
+        visible_core_count = args.visible_core_count if has_visible_core_count else None
         instance.advancedMachineFeatures = (
             instance_utils.CreateAdvancedMachineFeaturesMessage(
                 compute_client.messages, args.enable_nested_virtualization,
-                args.threads_per_core, args.numa_node_count
-                if self._support_numa_node_count else None))
+                args.threads_per_core,
+                args.numa_node_count if self._support_numa_node_count else None,
+                visible_core_count))
 
       shielded_instance_config = create_utils.BuildShieldedInstanceConfigMessage(
           messages=compute_client.messages, args=args)
@@ -318,6 +325,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_create_boot_disk = True
   _support_match_container_mount_disks = True
   _support_nvdimm = False
+  _support_visible_core_count = False
   _support_network_performance_configs = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
@@ -350,6 +358,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_network_performance_configs = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = True
+  _support_visible_core_count = True
 
   @staticmethod
   def Args(parser):
@@ -368,6 +377,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddIpv6NetworkTierArgs(parser)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
     instances_flags.AddNumaNodeCountArgs(parser)
+    instances_flags.AddVisibleCoreCountArgs(parser)
 
   def _ValidateTrackSpecificArgs(self, args):
     instances_flags.ValidateLocalSsdFlags(args)

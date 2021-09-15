@@ -529,7 +529,7 @@ class CreateBeta(Create):
   _support_target_service_attachment = True
   _support_sd_registration_for_regional = True
   _support_l3_default = True
-  _support_source_ip_range = False
+  _support_source_ip_range = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

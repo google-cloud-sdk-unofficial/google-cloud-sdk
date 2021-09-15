@@ -68,7 +68,7 @@ class GenerateHelpDocs(base.Command):
               'generated. index.html contains manpage tree navigation in the '
               'left pane. The active command branch and its immediate children '
               'are visible and clickable. Hover to navigate the tree. Run '
-              '`python -m SimpleHTTPServer 8888 &` in DIRECTORY and point '
+              '`python -m http.server 8888 &` in DIRECTORY and point '
               'your browser at [](http://localhost:8888) to view the manpage '
               'tree. If not specified then the HTML manpage site will not be '
               'generated.'))

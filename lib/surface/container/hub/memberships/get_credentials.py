@@ -22,6 +22,8 @@ import textwrap
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.api_lib.container import util
+from googlecloudsdk.api_lib.services import enable_api
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.hub import api_util as hubapi_util
 from googlecloudsdk.command_lib.container.hub import gwkubeconfig_util as kconfig
@@ -35,6 +37,7 @@ SERVER_FORMAT = 'https://{service_name}/{version}/projects/{project_number}/memb
 REQUIRED_PERMISSIONS = [
     'gkehub.memberships.get',
     'gkehub.gateway.get',
+    'serviceusage.services.get',
 ]
 
 
@@ -76,6 +79,7 @@ class GetCredentials(base.Command):
     log.status.Print('Current project_id: ' + project_id)
 
     self.RunIamCheck(project_id)
+    self.CheckGatewayApiEnablement(project_id)
     self.ReadClusterMembership(project_id, args.MEMBERSHIP)
     self.GenerateKubeconfig(project_id, args.MEMBERSHIP)
     msg = 'A new kubeconfig entry \"' + KUBECONTEXT_FORMAT.format(
@@ -152,6 +156,38 @@ class GetCredentials(base.Command):
       return 'staging-connectgateway.sandbox.googleapis.com'
     else:
       raise memberships_errors.UnknownApiEndpointOverrideError('gkehub')
+
+  def CheckGatewayApiEnablement(self, project_id):
+    """Checks if the Connect Gateway API is enabled for a given project.
+
+    Prompts the user to enable the API if the API is not enabled. Defaults to
+    "No". Throws an error if the user declines to enable the API.
+
+    Args:
+      project_id: The ID of the project on which to check/enable the API.
+
+    Raises:
+      memberships_errors.ServiceNotEnabledError: if the user declines to attempt
+        to enable the API.
+      exceptions.GetServicesPermissionDeniedException: if a 403 or 404 error is
+        returned by the Get request.
+      apitools_exceptions.HttpError: Another miscellaneous error with the
+        listing service.
+      api_exceptions.HttpException: API not enabled error if the user chooses to
+        not enable the API.
+    """
+
+    service_name = self.get_service_name()
+    if not enable_api.IsServiceEnabled(project_id, service_name):
+      try:
+        apis.PromptToEnableApi(
+            project_id, service_name,
+            memberships_errors.ServiceNotEnabledError('Connect Gateway API',
+                                                      service_name, project_id))
+      except apis.apitools_exceptions.RequestError:
+        # Since we are not actually calling the API, there is nothing to retry,
+        # so this signal to retry can be ignored
+        pass
 
   @classmethod
   def GetVersion(cls):

@@ -174,6 +174,7 @@ class BetaUpdate(Update):
     flags.AddBinAuthzPolicyFlags(managed_group)
     flags.AddBinAuthzBreakglassFlag(managed_group)
     flags.AddCmekKeyFlag(managed_group)
+    flags.AddCpuThrottlingFlag(managed_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

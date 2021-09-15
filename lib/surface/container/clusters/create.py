@@ -700,6 +700,8 @@ flags_to_add = {
             flags.AddShieldedInstanceFlags,
         'shieldednodes':
             flags.AddEnableShieldedNodesFlags,
+        'spot':
+            flags.AddSpotFlag,
         'stackdriver':
             flags.AddEnableStackdriverKubernetesFlag,
         'surgeupgrade': (lambda p: flags.AddSurgeUpgradeFlag(p, default=1)),
@@ -885,6 +887,8 @@ flags_to_add = {
             flags.AddShieldedInstanceFlags,
         'shieldednodes':
             flags.AddEnableShieldedNodesFlags,
+        'spot':
+            flags.AddSpotFlag,
         'stackdriver':
             flags.AddEnableStackdriverKubernetesFlag,
         'securityprofile':
@@ -1139,6 +1143,7 @@ class CreateBeta(Create):
         get_default('cross_connect_subnetworks')
     ops.enable_service_externalips = get_default('enable_service_externalips')
     ops.enable_managed_prometheus = get_default('enable_managed_prometheus')
+    ops.spot = get_default('spot')
     return ops
 
 
@@ -1220,4 +1225,5 @@ class CreateAlpha(Create):
         get_default('cross_connect_subnetworks')
     ops.enable_service_externalips = get_default('enable_service_externalips')
     ops.enable_managed_prometheus = get_default('enable_managed_prometheus')
+    ops.spot = get_default('spot')
     return ops

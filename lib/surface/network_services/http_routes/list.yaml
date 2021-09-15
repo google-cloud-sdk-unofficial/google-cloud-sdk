@@ -1,0 +1,26 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    List http routes.
+  description: |
+    List all http routes in the specified location of the current project.
+
+request: &request
+  api_version: v1alpha1
+  collection: networkservices.projects.locations.httpRoutes
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:location
+    help_text: |
+      The project of the http routes to display.
+
+response:
+  id_field: name
+
+output:
+  format: |
+     table(
+        name.basename():label=NAME
+      )

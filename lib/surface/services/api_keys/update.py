@@ -144,4 +144,5 @@ class Update(base.UpdateCommand):
         return op
       op = services_util.WaitOperation(op.name, apikeys.GetOperation)
     services_util.PrintOperationWithResponse(op)
+    return op
   detailed_help = DETAILED_HELP

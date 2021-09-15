@@ -44,7 +44,7 @@ class UpdateHelper(object):
 
   @classmethod
   def Args(cls, parser, support_redirect, support_rate_limit,
-           support_header_action):
+           support_header_action, support_tcp_ssl):
     """Generates the flagset for an Update command."""
     flags.AddPriority(parser, 'update')
     cls.SECURITY_POLICY_ARG = (
@@ -55,13 +55,14 @@ class UpdateHelper(object):
         parser,
         required=False,
         support_redirect=support_redirect,
-        support_rate_limit=support_rate_limit)
+        support_rate_limit=support_rate_limit,
+        support_tcp_ssl=support_tcp_ssl)
     flags.AddDescription(parser)
     flags.AddPreview(parser, default=None)
     if support_redirect:
       flags.AddRedirectOptions(parser)
     if support_rate_limit:
-      flags.AddRateLimitOptions(parser)
+      flags.AddRateLimitOptions(parser, support_tcp_ssl=support_tcp_ssl)
     if support_header_action:
       flags.AddRequestHeadersToAdd(parser)
 
@@ -156,6 +157,7 @@ class UpdateGA(base.UpdateCommand):
   _support_redirect = False
   _support_rate_limit = False
   _support_header_action = False
+  _support_tcl_ssl = False
 
   @classmethod
   def Args(cls, parser):
@@ -163,7 +165,8 @@ class UpdateGA(base.UpdateCommand):
         parser,
         support_redirect=cls._support_redirect,
         support_rate_limit=cls._support_rate_limit,
-        support_header_action=cls._support_header_action)
+        support_header_action=cls._support_header_action,
+        support_tcp_ssl=cls._support_tcl_ssl)
 
   def Run(self, args):
     return UpdateHelper.Run(self.ReleaseTrack(), args, self._support_redirect,
@@ -191,6 +194,7 @@ class UpdateBeta(base.UpdateCommand):
   _support_redirect = True
   _support_rate_limit = True
   _support_header_action = True
+  _support_tcl_ssl = False
 
   @classmethod
   def Args(cls, parser):
@@ -198,7 +202,8 @@ class UpdateBeta(base.UpdateCommand):
         parser,
         support_redirect=cls._support_redirect,
         support_rate_limit=cls._support_rate_limit,
-        support_header_action=cls._support_header_action)
+        support_header_action=cls._support_header_action,
+        support_tcp_ssl=cls._support_tcl_ssl)
 
   def Run(self, args):
     return UpdateHelper.Run(self.ReleaseTrack(), args, self._support_redirect,
@@ -226,6 +231,7 @@ class UpdateAlpha(base.UpdateCommand):
   _support_redirect = True
   _support_rate_limit = True
   _support_header_action = True
+  _support_tcl_ssl = True
 
   @classmethod
   def Args(cls, parser):
@@ -233,7 +239,8 @@ class UpdateAlpha(base.UpdateCommand):
         parser,
         support_redirect=cls._support_redirect,
         support_rate_limit=cls._support_rate_limit,
-        support_header_action=cls._support_header_action)
+        support_header_action=cls._support_header_action,
+        support_tcp_ssl=cls._support_tcl_ssl)
 
   def Run(self, args):
     return UpdateHelper.Run(self.ReleaseTrack(), args, self._support_redirect,

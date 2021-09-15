@@ -110,8 +110,12 @@ class GenerateGatewayRbac(base.Command):
     # Generate the RBAC policy file from args.
     generated_rbac = rbac_util.GenerateRBAC(args, project_id)
 
-    sys.stdout.write('--------------------------------------------')
-    sys.stdout.write('Generated RBAC policy file is: ')
+    if args.rbac_output_file:
+      sys.stdout.write('Generated RBAC policy is written to file: {} \n'.format(
+          args.rbac_output_file))
+    else:
+      sys.stdout.write('Generated RBAC policy is: \n')
+      sys.stdout.write('--------------------------------------------\n')
 
     # Write the generated RBAC policy file to the file provided with
     # "--rbac-output-file" specified or print on the screen.

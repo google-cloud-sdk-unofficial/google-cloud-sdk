@@ -1,0 +1,26 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    List tcp routes.
+  description: |
+    List all tcp routes in the specified location of the current project.
+
+request: &request
+  api_version: v1alpha1
+  collection: networkservices.projects.locations.tcpRoutes
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:location
+    help_text: |
+      The project of the tcp routes to display.
+
+response:
+  id_field: name
+
+output:
+  format: |
+     table(
+        name.basename():label=NAME
+      )

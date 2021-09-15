@@ -70,3 +70,4 @@ class Undelete(base.RestoreCommand):
         return op
       op = services_util.WaitOperation(op.name, apikeys.GetOperation)
     services_util.PrintOperationWithResponse(op)
+    return op

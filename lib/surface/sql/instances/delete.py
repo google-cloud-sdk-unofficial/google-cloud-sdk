@@ -74,8 +74,7 @@ class Delete(base.Command):
         collection='sql.instances')
 
     if not console_io.PromptContinue(
-        'All of the instance data will be lost when the instance is deleted.',
-        default=False):
+        'All of the instance data will be lost when the instance is deleted.'):
       return None
     try:
       result = sql_client.instances.Delete(

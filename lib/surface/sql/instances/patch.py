@@ -240,9 +240,9 @@ def AddBetaArgs(parser):
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
 
 
-def AddAlphaArgs(unused_parser):
+def AddAlphaArgs(parser):
   """Adds alpha args and flags to the parser."""
-  pass
+  flags.AddSqlServerAuditBucketPath(parser)
 
 
 def RunBasePatchCommand(args, release_track):

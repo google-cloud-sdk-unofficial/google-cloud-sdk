@@ -40,11 +40,11 @@ _DETAILED_HELP = {
 
     To list all exportable resource types in yaml format, run:
 
-      $ {command} --output-format=yaml
+      $ {command} --format=yaml
 
     To list all exportable resource types in project `my-project` in json format, run:
 
-      $ {command} --output-format=json --project=my-project
+      $ {command} --format=json --project=my-project
     """
 }
 
@@ -62,13 +62,7 @@ class ListResources(base.DeclarativeCommand):
 
   def Run(self, args):
     client = kcc_client.KccClient()
-    if not (args.IsSpecified('project') or args.IsSpecified('folder') or
-            args.IsSpecified('organization')):
-      args.format = 'default'
-    elif args.output_format != 'table':
-      args.format = args.output_format
-    output = client.ListResources(output_format=args.output_format,
-                                  project=args.project,
+    output = client.ListResources(project=args.project,
                                   organization=args.organization,
                                   folder=args.folder)
     return output

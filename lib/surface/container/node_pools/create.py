@@ -280,6 +280,7 @@ class CreateBeta(Create):
     flags.AddNodePoolEnablePrivateNodes(parser, hidden=True)
     flags.AddThreadsPerCore(parser)
     flags.AddEnableGvnicFlag(parser)
+    flags.AddSpotFlag(parser, for_node_pool=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -294,6 +295,7 @@ class CreateBeta(Create):
     ops.enable_image_streaming = args.enable_image_streaming
     ops.ephemeral_storage = args.ephemeral_storage
     ops.enable_private_nodes = args.enable_private_nodes
+    ops.spot = args.spot
     return ops
 
 
@@ -316,6 +318,7 @@ class CreateAlpha(Create):
     ops.enable_gcfs = args.enable_gcfs
     ops.enable_image_streaming = args.enable_image_streaming
     ops.enable_private_nodes = args.enable_private_nodes
+    ops.spot = args.spot
     return ops
 
   @staticmethod
@@ -348,6 +351,7 @@ class CreateAlpha(Create):
     flags.AddNodePoolEnablePrivateNodes(parser, hidden=True)
     flags.AddThreadsPerCore(parser)
     flags.AddEnableGvnicFlag(parser)
+    flags.AddSpotFlag(parser, for_node_pool=True, hidden=True)
 
 
 Create.detailed_help = DETAILED_HELP

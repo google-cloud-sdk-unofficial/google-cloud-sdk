@@ -1,17 +1,17 @@
 - release_tracks: [BETA]
   help_text:
-    brief: Describe a Cloud Filestore snapshot.
+    brief: Display information about a Filestore snapshot.
     description: |
-      Displays all data associated with a Cloud Filestore snapshot given a
-      valid snapshot name, as well as instance name and instance region.
+      Displays information about a Filestore snapshot given a valid snapshot
+      name, as well as instance name and instance region.
 
       This command can fail for the following reasons:
         * The snapshot or instance specified does not exist.
         * The active account does not have permission to access the given
           snapshot.
     examples: |
-      To display all data associated with a snapshot of the name 'my-snapshot'
-      for the instance 'my-instance' from 'us-central1', run:
+      To display all information associated with a snapshot of the name
+      ``my-snapshot'' for the instance ``my-instance'' from ``us-central1'', run:
 
         $ {command} my-snapshot --instance=my-instance --instance-region=us-central1
 
@@ -21,7 +21,7 @@
       required: true
       is_positional: true
       help_text: |
-        Name of the Filestore snapshot to be displayed.
+        Name of the Filestore snapshot to display information about.
     - arg_name: instance
       required: true
       help_text: |

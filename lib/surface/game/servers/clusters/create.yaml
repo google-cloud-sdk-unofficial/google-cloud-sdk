@@ -47,7 +47,8 @@
           api_field: gameServerCluster.connectionInfo.gkeClusterReference.cluster
           help_text: |
             Full or partial name of a cluster in Google Kubernetes Engine (GKE) where the game server
-            cluster is installed, using the format: 'projects/*/locations/*/clusters/*'.
+            cluster is installed, using the format:
+            'projects/{project_id}/locations/{location_id}/clusters/{cluster_id}'.
             Note, the location of the GKE cluster can be either a region or a zone.
             Example: 'projects/my-project/locations/us-central1/clusters/test'. If project and location
             are not specified, the project and location of the Game Server Cluster resource are used to
@@ -68,7 +69,8 @@
           api_field: gameServerCluster.connectionInfo.gkeClusterReference.cluster
           help_text: |
             Full or partial name of a cluster in Google Kubernetes Engine (GKE) where the game server
-            cluster is installed, using the format: 'projects/*/locations/*/clusters/*'.
+            cluster is installed, using the format:
+            'projects/{project_id}/locations/{location_id}/clusters/{cluster_id}'.
             Note, the location of the GKE cluster can be either a region or a zone.
             Example: 'projects/my-project/locations/us-central1/clusters/test'. If project and location
             are not specified, the project and location of the Game Server Cluster resource are used to
@@ -87,7 +89,8 @@
       required: true
       help_text: |
         Full or partial name of a cluster in Google Kubernetes Engine (GKE) where the game server
-        cluster is installed, using the format: 'projects/*/locations/*/clusters/*'.
+        cluster is installed, using the format:
+        'projects/{project_id}/locations/{location_id}/clusters/{cluster_id}'.
         Note, the location of the GKE cluster can be either a region or a zone.
         Example: 'projects/my-project/locations/us-central1/clusters/test'. If project and location
         are not specified, the project and location of the Game Server Cluster resource are used to

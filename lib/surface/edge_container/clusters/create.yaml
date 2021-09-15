@@ -6,7 +6,7 @@
       Create an Edge Container cluster.
     # TODO(b/176452774) Fill in the example command for all methods and resources.
     examples: |
-      To create a cluster called 'test-cluster', run:
+      To create a cluster called 'my-cluster', run:
 
         $ {command} my-cluster
 

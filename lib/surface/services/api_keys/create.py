@@ -127,4 +127,5 @@ class Create(base.CreateCommand):
         return op
       op = services_util.WaitOperation(op.name, apikeys.GetOperation)
     services_util.PrintOperationWithResponse(op)
+    return op
   detailed_help = DETAILED_HELP

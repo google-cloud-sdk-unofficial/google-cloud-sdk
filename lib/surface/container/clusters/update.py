@@ -98,6 +98,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.CLOUDBUILD: _ParseAddonDisabled,
                     api_adapter.NODELOCALDNS: _ParseAddonDisabled,
                     api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
+                    api_adapter.GCPFILESTORECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS
@@ -116,7 +117,8 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {cloudbuild}=ENABLED|DISABLED
 {configconnector}=ENABLED|DISABLED
 {nodelocaldns}=ENABLED|DISABLED
-{gcepdcsidriver}=ENABLED|DISABLED""".format(
+{gcepdcsidriver}=ENABLED|DISABLED
+{gcpfilestoredriver}=ENABLED|DISABLED""".format(
     hpa=api_adapter.HPA,
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD,
@@ -129,6 +131,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     configconnector=api_adapter.CONFIGCONNECTOR,
     nodelocaldns=api_adapter.NODELOCALDNS,
     gcepdcsidriver=api_adapter.GCEPDCSIDRIVER,
+    gcpfilestoredriver=api_adapter.GCPFILESTORECSIDRIVER,
     ))
 
   elif release_track == base.ReleaseTrack.BETA:
@@ -146,6 +149,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.BACKUPRESTORE: _ParseAddonDisabled,
                     api_adapter.NODELOCALDNS: _ParseAddonDisabled,
                     api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
+                    api_adapter.GCPFILESTORECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS
@@ -163,7 +167,8 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {cloudrun}=ENABLED|DISABLED
 {configconnector}=ENABLED|DISABLED
 {nodelocaldns}=ENABLED|DISABLED
-{gcepdcsidriver}=ENABLED|DISABLED""".format(
+{gcepdcsidriver}=ENABLED|DISABLED
+{gcpfilestoredriver}=ENABLED|DISABLED""".format(
     hpa=api_adapter.HPA,
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD,
@@ -175,6 +180,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     configconnector=api_adapter.CONFIGCONNECTOR,
     nodelocaldns=api_adapter.NODELOCALDNS,
     gcepdcsidriver=api_adapter.GCEPDCSIDRIVER,
+    gcpfilestoredriver=api_adapter.GCPFILESTORECSIDRIVER,
     ))
 
   else:
@@ -190,6 +196,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.NODELOCALDNS: _ParseAddonDisabled,
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
                     api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
+                    api_adapter.GCPFILESTORECSIDRIVER: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS
                   }),),
@@ -203,7 +210,8 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {cloudrun}=ENABLED|DISABLED
 {configconnector}=ENABLED|DISABLED
 {nodelocaldns}=ENABLED|DISABLED
-{gcepdcsidriver}=ENABLED|DISABLED""".format(
+{gcepdcsidriver}=ENABLED|DISABLED
+{gcpfilestoredriver}=ENABLED|DISABLED""".format(
     hpa=api_adapter.HPA,
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD,
@@ -212,6 +220,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     configconnector=api_adapter.CONFIGCONNECTOR,
     nodelocaldns=api_adapter.NODELOCALDNS,
     gcepdcsidriver=api_adapter.GCEPDCSIDRIVER,
+    gcpfilestoredriver=api_adapter.GCPFILESTORECSIDRIVER,
     ))
 
   mutex_group.add_argument(

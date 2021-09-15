@@ -1,0 +1,16 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Export http route.
+  description: |
+    Export a http route.
+
+request:
+  collection: networkservices.projects.locations.httpRoutes
+  api_version: v1alpha1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:httpRoute
+    help_text: |
+      Name of the http route to export.

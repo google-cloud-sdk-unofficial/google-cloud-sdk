@@ -84,6 +84,11 @@ class Promote(base.CreateCommand):
     if not to_target_id:
       to_target_id = promote_util.GetToTargetID(release_obj, False)
 
+      # If there are any rollouts in progress for the given release, and no
+      # to-target was given throw an exception.
+      promote_util.CheckIfInProgressRollout(release_ref, release_obj,
+                                            to_target_id)
+
     release_util.PrintDiff(release_ref, release_obj, args.to_target)
 
     console_io.PromptContinue(

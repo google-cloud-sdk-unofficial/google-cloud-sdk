@@ -19,7 +19,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.run import global_methods
 from googlecloudsdk.api_lib.run import service
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import messages as messages_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -69,8 +71,8 @@ class Replace(base.Command):
         'Namespace to replace service.',
         required=True,
         prefixes=False)
-    concept_parsers.ConceptParser(
-        [namespace_presentation]).AddToParser(cluster_group)
+    concept_parsers.ConceptParser([namespace_presentation
+                                  ]).AddToParser(cluster_group)
 
     # Flags not specific to any platform
     flags.AddAsyncFlag(parser)
@@ -87,51 +89,56 @@ class Replace(base.Command):
 
   def Run(self, args):
     """Create or Update service from YAML."""
+    run_messages = apis.GetMessagesModule(global_methods.SERVERLESS_API_NAME,
+                                          global_methods.SERVERLESS_API_VERSION)
+    try:
+      new_service = service.Service(
+          messages_util.DictToMessageWithErrorCheck(args.FILE,
+                                                    run_messages.Service),
+          run_messages)
+    except messages_util.ScalarTypeMismatchError as e:
+      exceptions.MaybeRaiseCustomFieldMismatch(
+          e,
+          help_text='Please make sure that the YAML file matches the Knative '
+          'service definition spec in https://kubernetes.io/docs/'
+          'reference/kubernetes-api/services-resources/service-v1/'
+          '#Service.')
+
+    # If managed, namespace must match project (or will default to project if
+    # not specified).
+    # If not managed, namespace simply must not conflict if specified in
+    # multiple places (or will default to "default" if not specified).
+    namespace = args.CONCEPTS.namespace.Parse().Name()  # From flag or default
+    if new_service.metadata.namespace is not None:
+      if (args.IsSpecified('namespace') and
+          namespace != new_service.metadata.namespace):
+        raise exceptions.ConfigurationError(
+            'Namespace specified in file does not match passed flag.')
+      namespace = new_service.metadata.namespace
+      if platforms.GetPlatform() == platforms.PLATFORM_MANAGED:
+        project = properties.VALUES.core.project.Get()
+        project_number = projects_util.GetProjectNumber(project)
+        if namespace != project and namespace != str(project_number):
+          raise exceptions.ConfigurationError(
+              'Namespace must be project ID [{}] or quoted number [{}] for '
+              'Cloud Run (fully managed).'.format(project, project_number))
+    new_service.metadata.namespace = namespace
+
+    changes = [
+        config_changes.ReplaceServiceChange(new_service),
+        config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
+    ]
+    service_ref = resources.REGISTRY.Parse(
+        new_service.metadata.name,
+        params={'namespacesId': new_service.metadata.namespace},
+        collection='run.namespaces.services')
+
+    region_label = new_service.region if new_service.is_managed else None
+
     conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack())
+        args, flags.Product.RUN, self.ReleaseTrack(), region_label=region_label)
 
     with serverless_operations.Connect(conn_context) as client:
-      try:
-        new_service = service.Service(
-            messages_util.DictToMessageWithErrorCheck(
-                args.FILE, client.messages_module.Service),
-            client.messages_module)
-      except messages_util.ScalarTypeMismatchError as e:
-        exceptions.MaybeRaiseCustomFieldMismatch(
-            e,
-            help_text='Please make sure that the YAML file matches the Knative '
-                      'service definition spec in https://kubernetes.io/docs/'
-                      'reference/kubernetes-api/services-resources/service-v1/'
-                      '#Service.')
-
-      # If managed, namespace must match project (or will default to project if
-      # not specified).
-      # If not managed, namespace simply must not conflict if specified in
-      # multiple places (or will default to "default" if not specified).
-      namespace = args.CONCEPTS.namespace.Parse().Name()  # From flag or default
-      if new_service.metadata.namespace is not None:
-        if (args.IsSpecified('namespace') and
-            namespace != new_service.metadata.namespace):
-          raise exceptions.ConfigurationError(
-              'Namespace specified in file does not match passed flag.')
-        namespace = new_service.metadata.namespace
-        if platforms.GetPlatform() == platforms.PLATFORM_MANAGED:
-          project = properties.VALUES.core.project.Get()
-          project_number = projects_util.GetProjectNumber(project)
-          if namespace != project and namespace != str(project_number):
-            raise exceptions.ConfigurationError(
-                'Namespace must be project ID [{}] or quoted number [{}] for '
-                'Cloud Run (fully managed).'.format(project, project_number))
-      new_service.metadata.namespace = namespace
-
-      changes = [
-          config_changes.ReplaceServiceChange(new_service),
-          config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
-      ]
-      service_ref = resources.REGISTRY.Parse(
-          new_service.metadata.name,
-          params={'namespacesId': new_service.metadata.namespace},
-          collection='run.namespaces.services')
       service_obj = client.GetService(service_ref)
 
       pretty_print.Info(
@@ -141,8 +148,7 @@ class Replace(base.Command):
               operation='Applying new configuration to'))
 
       deployment_stages = stages.ServiceStages()
-      header = (
-          'Deploying...' if service_obj else 'Deploying new service...')
+      header = ('Deploying...' if service_obj else 'Deploying new service...')
       with progress_tracker.StagedProgressTracker(
           header,
           deployment_stages,

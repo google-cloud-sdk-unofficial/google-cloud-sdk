@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.bms.bms_client import BmsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bms import flags
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.resource import resource_projector
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -63,15 +64,48 @@ class List(base.ListCommand):
     parser.display_info.AddFormat(
         'table(name.segment(-1):label=NAME,name.segment(-5):label=PROJECT,'
         'name.segment(-3):label=REGION,machineType,'
-        'networks[].ipAddress.notnull().list():label=IP_ADDRESSES,state)')
+        'clientNetworks[].ipAddress.notnull().list():label=CLIENT_IPS,'
+        'privateNetworks[].ipAddress.notnull().list():label=PRIVATE_IPS,'
+        'state)')
 
   def Run(self, args):
     region = args.CONCEPTS.region.Parse()
     client = BmsClient()
     if region is None:
       project = properties.VALUES.core.project.Get(required=True)
-      return client.AggregateList(project, limit=args.limit)
-    return client.List(region, limit=args.limit)
+      for instance in client.AggregateList(project, limit=args.limit):
+        synthesized_instance = self.synthesizedInstance(instance, client)
+        yield synthesized_instance
+    else:
+      for instance in client.List(region, limit=args.limit):
+        synthesized_instance = self.synthesizedInstance(instance, client)
+        yield synthesized_instance
+
+  def synthesizedInstance(self, instance, client):
+    """Returns a synthesized Instance resource.
+
+    Synthesized Instance has additional lists of networks for client and
+    private.
+
+    Args:
+      instance: protorpc.messages.Message, The BMS instance.
+      client: BmsClient, BMS API client.
+
+    Returns:
+      Synthesized Instance resource.
+
+    """
+    synthesized_instance = resource_projector.MakeSerializable(instance)
+    client_networks = []
+    private_networks = []
+    for network in instance.networks:
+      if client.IsClientNetwork(network):
+        client_networks.append(network)
+      elif client.IsPrivateNetwork(network):
+        private_networks.append(network)
+    synthesized_instance['clientNetworks'] = client_networks
+    synthesized_instance['privateNetworks'] = private_networks
+    return synthesized_instance
 
 
 List.detailed_help = DETAILED_HELP

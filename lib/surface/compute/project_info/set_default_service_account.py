@@ -49,6 +49,15 @@ class SetDefaultServiceAccount(base.SilentCommand):
 
     $ gcloud compute project-info set-default-service-account \
         --no-service-account
+
+  The required permission to execute this command is
+  `compute.projects.setDefaultServiceAccount`. If needed, you can include this
+  permission, or choose any of the following preexisting IAM roles that contain
+  this particular permission:
+
+    * Owner
+    * Editor
+    * Compute Admin
   """
 
   @staticmethod

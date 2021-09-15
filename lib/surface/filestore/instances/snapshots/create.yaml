@@ -1,22 +1,19 @@
 - release_tracks: [BETA]
   help_text:
-    brief:  Create a Cloud Filestore snapshot.
+    brief:  Create a Filestore snapshot.
     description: |
-      Create a Cloud Filestore snapshot of an instance.
+      Create a Filestore snapshot of an instance.
 
       This command can fail for the following reasons:
         * A snapshot with the same name already exists.
         * The active account does not have permission to create snapshots.
-        * Maximum amount of snapshots for the instance has been reached.
+        * Maximum number of snapshots for the instance has been reached.
+        * The service tier of the instance does not support snapshots.
     examples: |
-      To create a snapshot with the name 'my-snapshot' and description 'My snapshot description' for
-      a particular instance like 'my-instance' from 'us-central1', run:
+      To create a snapshot with the name ``my-snapshot'' for an instance named
+      ``my-instance'' that's located in ``us-central1'', run:
 
-        $ {command} my-snapshot \
-          --instance=my-instance \
-          --instance-region=us-central1 \
-          --description="My snapshot description" \
-          --labels "name1=value1,name2=value2"
+        $ {command} my-snapshot --instance=my-instance --instance-region=us-central1
 
   arguments:
     params:
@@ -28,7 +25,7 @@
     - arg_name: instance
       required: true
       help_text: |
-        Name of the Filestore instance you want to snapshot.
+        Name of the Filestore instance that you want to create a snapshot of.
     - arg_name: instance-region
       required: true
       help_text: |
@@ -37,7 +34,7 @@
       arg_name: description
       required: false
       help_text: |
-        Description for the snapshot. Limit: 2048 characters.
+        Description of the snapshot. Limit: 2048 characters.
     - api_field: snapshot.labels.additionalProperties
       arg_name: labels
       metavar: KEY=VALUE

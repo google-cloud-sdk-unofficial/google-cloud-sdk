@@ -1,14 +1,20 @@
 - release_tracks: [BETA]
   help_text:
     brief: |
-      List Cloud Filestore snapshots.
+      List Filestore snapshots.
     description: |
-      List all Cloud Filestore snapshots for the specified instance.
+      List all Filestore snapshots for the specified instance.
 
-      To specify the maximum number of snapshots to list, use the --limit flag.
+      To limit the number of snapshots to list, use the `--limit` flag.
+
+      This command can fail for the following reasons:
+        * Specified instance does not exist.
+        * The active account does not have permission to list snapshots for the
+          given instance.
+        * The service tier of the instance does not support snapshots.
     examples: |
-      To list up to five snapshots for the instance 'my-instance' from
-      'us-central1', run:
+      To list up to five snapshots for the instance ``my-instance'' from
+      ``us-central1'', run:
 
           $ {command} --instance=my-instance --instance-region=us-central1 --limit=5
 

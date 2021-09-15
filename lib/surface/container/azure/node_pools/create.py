@@ -61,6 +61,7 @@ class Create(base.CreateCommand):
     flags.AddNodeLabels(parser)
     flags.AddNodeTaints(parser)
     flags.AddAzureAvailabilityZone(parser)
+    flags.AddProxyConfig(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(command_util.NODE_POOL_FORMAT)
 
@@ -77,6 +78,8 @@ class Create(base.CreateCommand):
     max_pods_per_node = flags.GetMaxPodsPerNode(args)
     azure_availability_zone = flags.GetAzureAvailabilityZone(args)
     min_nodes, max_nodes = flags.GetAutoscalingParams(args)
+    proxy_resource_group_id = args.proxy_resource_group_id
+    proxy_secret_id = args.proxy_secret_id
     taints = flags.GetNodeTaints(args)
     labels = flags.GetNodeLabels(args)
 
@@ -94,6 +97,8 @@ class Create(base.CreateCommand):
           subnet_id=subnet_id,
           vm_size=vm_size,
           ssh_public_key=ssh_key,
+          proxy_resource_group_id=proxy_resource_group_id,
+          proxy_secret_id=proxy_secret_id,
           root_volume_size=root_volume_size,
           tags=tags,
           validate_only=validate_only,

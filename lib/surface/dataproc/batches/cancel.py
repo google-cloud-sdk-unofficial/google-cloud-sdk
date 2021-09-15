@@ -58,7 +58,7 @@ class Cancel(base.Command):
         dataproc.messages.DataprocProjectsLocationsBatchesGetRequest(
             name=batch_id.RelativeName()))
 
-    log.status.Print('Cancling batch [{}].'.format(batch_id.Name()))
+    log.status.Print('Canceling batch [{}].'.format(batch_id.Name()))
 
     dataproc.client.projects_regions_operations.Cancel(
         dataproc.messages.DataprocProjectsRegionsOperationsCancelRequest(

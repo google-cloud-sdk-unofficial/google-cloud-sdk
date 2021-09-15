@@ -44,7 +44,7 @@ class CreateHelper(object):
 
   @classmethod
   def Args(cls, parser, support_redirect, support_rate_limit,
-           support_header_action):
+           support_header_action, support_tcp_ssl):
     """Generates the flagset for a Create command."""
     flags.AddPriority(parser, 'add')
     cls.SECURITY_POLICY_ARG = (
@@ -54,13 +54,14 @@ class CreateHelper(object):
     flags.AddAction(
         parser,
         support_redirect=support_redirect,
-        support_rate_limit=support_rate_limit)
+        support_rate_limit=support_rate_limit,
+        support_tcp_ssl=support_tcp_ssl)
     flags.AddDescription(parser)
     flags.AddPreview(parser, default=None)
     if support_redirect:
       flags.AddRedirectOptions(parser)
     if support_rate_limit:
-      flags.AddRateLimitOptions(parser)
+      flags.AddRateLimitOptions(parser, support_tcp_ssl=support_tcp_ssl)
     if support_header_action:
       flags.AddRequestHeadersToAdd(parser)
     parser.display_info.AddCacheUpdater(
@@ -126,6 +127,7 @@ class CreateGA(base.CreateCommand):
   _support_redirect = False
   _support_rate_limit = False
   _support_header_action = False
+  _support_tcl_ssl = False
 
   @classmethod
   def Args(cls, parser):
@@ -133,7 +135,8 @@ class CreateGA(base.CreateCommand):
         parser,
         support_redirect=cls._support_redirect,
         support_rate_limit=cls._support_rate_limit,
-        support_header_action=cls._support_header_action)
+        support_header_action=cls._support_header_action,
+        support_tcp_ssl=cls._support_tcl_ssl)
 
   def Run(self, args):
     return CreateHelper.Run(
@@ -165,6 +168,7 @@ class CreateBeta(base.CreateCommand):
   _support_redirect = True
   _support_rate_limit = True
   _support_header_action = True
+  _support_tcl_ssl = False
 
   @classmethod
   def Args(cls, parser):
@@ -172,7 +176,8 @@ class CreateBeta(base.CreateCommand):
         parser,
         support_redirect=cls._support_redirect,
         support_rate_limit=cls._support_rate_limit,
-        support_header_action=cls._support_header_action)
+        support_header_action=cls._support_header_action,
+        support_tcp_ssl=cls._support_tcl_ssl)
 
   def Run(self, args):
     return CreateHelper.Run(
@@ -204,6 +209,7 @@ class CreateAlpha(base.CreateCommand):
   _support_redirect = True
   _support_rate_limit = True
   _support_header_action = True
+  _support_tcl_ssl = True
 
   @classmethod
   def Args(cls, parser):
@@ -211,7 +217,8 @@ class CreateAlpha(base.CreateCommand):
         parser,
         support_redirect=cls._support_redirect,
         support_rate_limit=cls._support_rate_limit,
-        support_header_action=cls._support_header_action)
+        support_header_action=cls._support_header_action,
+        support_tcp_ssl=cls._support_tcl_ssl)
 
   def Run(self, args):
     return CreateHelper.Run(

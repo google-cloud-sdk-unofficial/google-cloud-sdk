@@ -1,17 +1,17 @@
 - release_tracks: [BETA]
   help_text:
     brief: |
-      Delete a Cloud Filestore snapshot.
+      Delete a Filestore snapshot.
     description: |
-      Delete a Cloud Filestore snapshot.
+      Delete a Filestore snapshot.
 
       This command can fail for the following reasons:
         * The snapshot or instance specified does not exist.
         * The active account does not have permission to delete the given
           snapshot.
     examples: |
-      To delete a snapshot of the name 'my-snapshot' for the instance
-      'my-instance' from 'us-central1', run:
+      To delete a snapshot named ``my-snapshot'' for the instance ``my-instance''
+      from ``us-central1'', run:
 
         $ {command} my-snapshot --instance=my-instance --instance-region=us-central1
 

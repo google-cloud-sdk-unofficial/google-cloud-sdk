@@ -91,9 +91,11 @@ class Create(base.CreateCommand):
     flags.AddSSHPublicKey(parser)
     flags.AddRootVolumeSize(parser)
     flags.AddMainVolumeSize(parser)
+    flags.AddReplicaPlacements(parser)
     flags.AddTags(parser, "cluster")
     flags.AddValidateOnly(parser, "creation of the cluster")
     flags.AddDatabaseEncryption(parser, hidden=True)
+    flags.AddProxyConfig(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(command_util.CLUSTERS_FORMAT)
 
@@ -112,10 +114,13 @@ class Create(base.CreateCommand):
     vnet_id = args.vnet_id
     pod_address_cidr_blocks = args.pod_address_cidr_blocks
     service_address_cidr_blocks = args. service_address_cidr_blocks
+    replica_placements = args.replica_placements
     cluster_version = flags.GetClusterVersion(args)
     subnet_id = flags.GetSubnetID(args)
     vm_size = flags.GetVMSize(args)
     ssh_public_key = flags.GetSSHPublicKey(args)
+    proxy_resource_group_id = args.proxy_resource_group_id
+    proxy_secret_id = args.proxy_secret_id
     root_volume_size = flags.GetRootVolumeSize(args)
     main_volume_size = flags.GetMainVolumeSize(args)
     validate_only = flags.GetValidateOnly(args)
@@ -143,13 +148,16 @@ class Create(base.CreateCommand):
           subnet_id=subnet_id,
           vm_size=vm_size,
           ssh_public_key=ssh_public_key,
+          proxy_resource_group_id=proxy_resource_group_id,
+          proxy_secret_id=proxy_secret_id,
           root_volume_size=root_volume_size,
           main_volume_size=main_volume_size,
           validate_only=validate_only,
           tags=tags,
           admin_users=admin_users,
           db_resource_group_id=db_resource_group_id,
-          db_kms_key_id=db_kms_key_id)
+          db_kms_key_id=db_kms_key_id,
+          replica_placements=replica_placements)
 
       if validate_only:
         args.format = "disable"

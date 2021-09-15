@@ -35,13 +35,15 @@ $ {command} my-cluster --location=us-west1
 class Describe(base.DescribeCommand):
   """Describe GKE cluster on AWS."""
 
+  detailed_help = {'EXAMPLES': _EXAMPLES}
+
   @staticmethod
   def Args(parser):
-    """Register flags for this command."""
-    resource_args.AddAwsClusterResourceArg(parser, "to describe")
+    """Registers flags for this command."""
+    resource_args.AddAwsClusterResourceArg(parser, 'to describe')
 
   def Run(self, args):
-    """Run the describe command."""
+    """Runs the describe command."""
 
     with endpoint_util.GkemulticloudEndpointOverride(
         resource_args.ParseAwsClusterResourceArg(args).locationsId,
