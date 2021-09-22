@@ -141,6 +141,22 @@ def MaybeLogDataplaneV2ScaleWarning(cluster):
         'https://cloud.google.com/kubernetes-engine/docs/concepts/dataplane-v2')
 
 
+def MaybeLog122UpgradeWarning(cluster):
+  """Logs deprecation warning for GKE v1.22 upgrades."""
+  if cluster is not None:
+    cmv = SemVer(cluster.currentMasterVersion)
+    if cmv >= SemVer('1.22.0-gke.0'):
+      return
+
+  log.warning("""
+Starting with v1.22, Kubernetes has removed several v1beta1 APIs for more
+stable v1 APIs. Read more about this change -
+https://cloud.google.com/kubernetes-engine/docs/deprecations/apis-1-22.
+Please ensure that your cluster is not using any deprecated v1beta1 APIs prior
+to upgrading to GKE 1.22.
+""")
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Upgrade(base.Command):
   """Upgrade the Kubernetes version of an existing container cluster."""
@@ -194,6 +210,9 @@ class Upgrade(base.Command):
         master=args.master,
         node_pool_name=args.node_pool,
         new_version=args.cluster_version)
+
+    if args.master:
+      MaybeLog122UpgradeWarning(cluster)
 
     console_io.PromptContinue(
         message=upgrade_message, throw_if_unattended=True, cancel_on_no=True)

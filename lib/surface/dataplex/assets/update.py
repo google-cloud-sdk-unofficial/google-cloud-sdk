@@ -68,7 +68,9 @@ class Update(base.Command):
         help='Settings to manage the metadata discovery and publishing for an asset.'
     )
     discovery_spec.add_argument(
-        '--discovery-enabled', help='Whether discovery is enable')
+        '--discovery-enabled',
+        action=arg_parsers.StoreTrueFalseAction,
+        help='Whether discovery is enable')
     discovery_spec.add_argument(
         '--include-patterns',
         default=[],
@@ -132,29 +134,27 @@ class Update(base.Command):
       update_mask.append('discoverySpec.schedule')
     asset_ref = args.CONCEPTS.asset.Parse()
     dataplex_client = dataplex_util.GetClientInstance()
+    message = dataplex_util.GetMessageModule()
     create_req_op = dataplex_client.projects_locations_lakes_zones_assets.Patch(
-        dataplex_util.GetMessageModule(
-        ).DataplexProjectsLocationsLakesZonesAssetsPatchRequest(
+        message.DataplexProjectsLocationsLakesZonesAssetsPatchRequest(
             name=asset_ref.RelativeName(),
             validateOnly=args.validate_only,
             updateMask=u','.join(update_mask),
-            googleCloudDataplexV1Asset=dataplex_util.GetMessageModule()
-            .GoogleCloudDataplexV1Asset(
+            googleCloudDataplexV1Asset=message.GoogleCloudDataplexV1Asset(
                 description=args.description,
                 displayName=args.display_name,
-                labels=args.labels,
-                resourceSpec=dataplex_util.GetMessageModule(
-                ).GoogleCloudDataplexV1AssetResourceSpec(
-                    deletionPolicy=dataplex_util.GetMessageModule(
-                    ).GoogleCloudDataplexV1AssetResourceSpec
+                labels=dataplex_util.CreateLabels(
+                    message.GoogleCloudDataplexV1Asset, args),
+                resourceSpec=message.GoogleCloudDataplexV1AssetResourceSpec(
+                    deletionPolicy=message
+                    .GoogleCloudDataplexV1AssetResourceSpec
                     .DeletionPolicyValueValuesEnum(args.deletion_policy)),
-                discoverySpec=dataplex_util.GetMessageModule()
-                .GoogleCloudDataplexV1AssetDiscoverySpec(
+                discoverySpec=message.GoogleCloudDataplexV1AssetDiscoverySpec(
                     enabled=args.discovery_enabled,
                     includePatterns=args.include_patterns,
                     excludePatterns=args.exclude_patterns,
-                    inheritanceMode=dataplex_util.GetMessageModule(
-                    ).GoogleCloudDataplexV1AssetDiscoverySpec
+                    inheritanceMode=message
+                    .GoogleCloudDataplexV1AssetDiscoverySpec
                     .InheritanceModeValueValuesEnum(args.inheritance_mode),
                     schedule=args.discovery_schedule))))
     validate_only = getattr(args, 'validate_only', False)

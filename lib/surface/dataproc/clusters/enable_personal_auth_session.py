@@ -324,7 +324,7 @@ class EnablePersonalAuthSession(base.Command):
     cluster_uuid = cluster.clusterUuid
 
     if args.access_boundary:
-      with files.FileReader(args.access_boundary, mode='r') as abf:
+      with files.FileReader(args.access_boundary) as abf:
         access_boundary_json = abf.read()
     else:
       access_boundary_json = flags.ProjectGcsObjectsAccessBoundary(project)

@@ -36,6 +36,40 @@ DETAILED_HELP = {
 }
 
 
+def _Run(args, version, release_prefix):
+  """Run method for resume command."""
+  model_monitoring_job_ref = args.CONCEPTS.monitoring_job.Parse()
+  region = model_monitoring_job_ref.AsDict()['locationsId']
+  model_monitoring_job_id = model_monitoring_job_ref.AsDict(
+  )['modelDeploymentMonitoringJobsId']
+  with endpoint_util.AiplatformEndpointOverrides(version, region=region):
+    console_io.PromptContinue(
+        'This will resume model deployment monitoring job [{}]...'.format(
+            model_monitoring_job_id),
+        cancel_on_no=True)
+    response = client.ModelMonitoringJobsClient(
+        version=version).Resume(model_monitoring_job_ref)
+    cmd_prefix = 'gcloud'
+    if release_prefix:
+      cmd_prefix += ' ' + release_prefix
+    log.status.Print(
+        constants.MODEL_MONITORING_JOB_RESUME_DISPLAY_MESSAGE.format(
+            id=model_monitoring_job_ref.Name(), cmd_prefix=cmd_prefix))
+    return response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ResumeGa(base.SilentCommand):
+  """Resume a paused Vertex AI model deployment monitoring job."""
+
+  @staticmethod
+  def Args(parser):
+    flags.AddModelMonitoringJobResourceArg(parser, 'to resume')
+
+  def Run(self, args):
+    return _Run(args, constants.GA_VERSION, self.ReleaseTrack().prefix)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Resume(base.SilentCommand):
   """Resume a paused Vertex AI model deployment monitoring job."""
@@ -44,25 +78,9 @@ class Resume(base.SilentCommand):
   def Args(parser):
     flags.AddModelMonitoringJobResourceArg(parser, 'to resume')
 
-  def _Run(self, args, version):
-    model_monitoring_job_ref = args.CONCEPTS.monitoring_job.Parse()
-    region = model_monitoring_job_ref.AsDict()['locationsId']
-    model_monitoring_job_id = model_monitoring_job_ref.AsDict(
-    )['modelDeploymentMonitoringJobsId']
-    with endpoint_util.AiplatformEndpointOverrides(version, region=region):
-      console_io.PromptContinue(
-          'This will resume model deployment monitoring job [{}]...'.format(
-              model_monitoring_job_id),
-          cancel_on_no=True)
-      response = client.ModelMonitoringJobsClient(
-          version=version).Resume(model_monitoring_job_ref)
-      log.status.Print(
-          constants.MODEL_MONITORING_JOB_RESUME_DISPLAY_MESSAGE.format(
-              id=model_monitoring_job_ref.Name()))
-      return response
-
   def Run(self, args):
-    return self._Run(args, constants.BETA_VERSION)
+    return _Run(args, constants.BETA_VERSION, self.ReleaseTrack().prefix)
 
 
 Resume.detailed_help = DETAILED_HELP
+ResumeGa.detailed_help = DETAILED_HELP

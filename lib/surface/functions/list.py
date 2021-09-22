@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.functions.v1.list import command as command_v1
 from googlecloudsdk.command_lib.functions.v2.list import command as command_v2
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Google Cloud Functions."""
 
@@ -48,12 +48,12 @@ class List(base.ListCommand):
     return command_v1.Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
   """List Google Cloud Functions."""
 
   @staticmethod
-  def Args(parser):
+  def CommonArgs(parser, track):
     """Register flags for this command."""
     parser.add_argument(
         '--regions',
@@ -77,10 +77,23 @@ class ListAlpha(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
 
     # Add additional flags for GCFv2
-    flags.AddV2Flag(parser)
+    flags.AddGen2Flag(parser, track)
+
+  @staticmethod
+  def Args(parser):
+    ListBeta.CommonArgs(parser, base.ReleaseTrack.BETA)
 
   def Run(self, args):
-    if flags.ShouldUseV2(args):
+    if flags.ShouldUseGen2():
       return command_v2.Run(args, self.ReleaseTrack())
     else:
       return command_v1.Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+  """List Google Cloud Functions."""
+
+  @staticmethod
+  def Args(parser):
+    ListBeta.CommonArgs(parser, base.ReleaseTrack.ALPHA)

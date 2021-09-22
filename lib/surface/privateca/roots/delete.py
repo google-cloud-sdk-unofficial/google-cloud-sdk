@@ -155,8 +155,7 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    resource_args.AddCertAuthorityPositionalResourceArg(
-        parser, 'to delete')
+    resource_args.AddCertAuthorityPositionalResourceArg(parser, 'to delete')
     flags_v1.AddIgnoreActiveCertificatesFlag(parser)
 
   def Run(self, args):
@@ -194,9 +193,9 @@ class Delete(base.DeleteCommand):
     ca = operations.GetMessageFromResponse(ca_response,
                                            messages.CertificateAuthority)
 
-    formatted_deletion_time = times.ParseDateTime(ca.deleteTime).astimezone(
+    formatted_expire_time = times.ParseDateTime(ca.expireTime).astimezone(
         tz.tzutc()).strftime('%Y-%m-%dT%H:%MZ')
 
     log.status.Print(
         'Deleted Root CA [{}]. CA can be undeleted until {}.'.format(
-            ca_ref.RelativeName(), formatted_deletion_time))
+            ca_ref.RelativeName(), formatted_expire_time))

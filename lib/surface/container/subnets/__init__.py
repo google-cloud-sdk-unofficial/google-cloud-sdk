@@ -35,3 +35,8 @@ class Subnets(base.Group):
         which you can register arguments.  See the public argparse documentation
         for its capabilities.
     """
+
+  def Filter(self, context, args):
+    """See base class."""
+    base.RequireProjectID(args)
+    return context

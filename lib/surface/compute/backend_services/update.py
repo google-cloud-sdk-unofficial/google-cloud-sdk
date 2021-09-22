@@ -31,6 +31,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import cdn_flags_utils as cdn_flags
 from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import reference_utils
 from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_services_utils
 from googlecloudsdk.command_lib.compute.backend_services import flags
@@ -72,7 +73,9 @@ class UpdateHelper(object):
            support_logging, support_client_only, support_grpc_protocol,
            support_subsetting, support_subsetting_subset_size,
            support_unspecified_protocol, support_edge_policies,
-           support_connection_tracking, support_strong_session_affinity):
+           support_connection_tracking, support_strong_session_affinity,
+           support_advanced_load_balancing, support_service_bindings,
+           support_extended_caching):
     """Add all arguments for updating a backend service."""
 
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
@@ -111,6 +114,8 @@ class UpdateHelper(object):
     flags.AddCacheKeyIncludeHost(parser, default=None)
     flags.AddCacheKeyIncludeQueryString(parser, default=None)
     flags.AddCacheKeyQueryStringList(parser)
+    if support_extended_caching:
+      flags.AddCacheKeyExtendedCachingArgs(parser)
     flags.AddSessionAffinity(parser, support_client_only=support_client_only)
     flags.AddAffinityCookieTtl(parser)
     signed_url_flags.AddSignedUrlCacheMaxAge(
@@ -140,6 +145,13 @@ class UpdateHelper(object):
     if support_strong_session_affinity:
       flags.AddStrongSessionAffinity(parser)
 
+    if support_advanced_load_balancing:
+      flags.AddServiceLoadBalancingPolicy(
+          parser, required=False, is_update=True)
+
+    if support_service_bindings:
+      flags.AddServiceBindings(parser, required=False, is_update=True)
+
   def __init__(self,
                support_l7_internal_load_balancer,
                support_failover,
@@ -148,7 +160,10 @@ class UpdateHelper(object):
                support_subsetting_subset_size,
                support_edge_policies=False,
                support_connection_tracking=False,
-               support_strong_session_affinity=False):
+               support_strong_session_affinity=False,
+               support_advanced_load_balancing=False,
+               support_service_bindings=False,
+               support_extended_caching=False):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
@@ -157,8 +172,11 @@ class UpdateHelper(object):
     self._support_edge_policies = support_edge_policies
     self._support_connection_tracking = support_connection_tracking
     self._support_strong_session_affinity = support_strong_session_affinity
+    self._support_advanced_load_balancing = support_advanced_load_balancing
+    self._support_service_bindings = support_service_bindings
+    self._support_extended_caching = support_extended_caching
 
-  def Modify(self, client, resources, args, existing):
+  def Modify(self, client, resources, args, existing, backend_service_ref):
     """Modify Backend Service."""
     replacement = encoding.CopyProtoMessage(existing)
     cleared_fields = []
@@ -222,7 +240,8 @@ class UpdateHelper(object):
         replacement,
         is_update=True,
         apply_signed_url_cache_max_age=True,
-        cleared_fields=cleared_fields)
+        cleared_fields=cleared_fields,
+        support_extended_caching=self._support_extended_caching)
 
     if (replacement.cdnPolicy is not None and
         replacement.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
@@ -249,6 +268,30 @@ class UpdateHelper(object):
         replacement,
         support_logging=self._support_logging)
 
+    if self._support_advanced_load_balancing:
+      if args.service_lb_policy is not None:
+        location = (
+            backend_service_ref.region if backend_service_ref.Collection()
+            == 'compute.regionBackendServices' else 'global')
+        replacement.serviceLbPolicy = reference_utils.BuildServiceLbPolicyUrl(
+            project_name=backend_service_ref.project,
+            location=location,
+            policy_name=args.service_lb_policy)
+      if args.no_service_lb_policy is not None:
+        replacement.serviceLbPolicy = None
+        cleared_fields.append('serviceLbPolicy')
+
+    if self._support_service_bindings:
+      if args.service_bindings is not None:
+        replacement.serviceBindings = [
+            reference_utils.BuildServiceBindingUrl(backend_service_ref.project,
+                                                   'global', binding_name)
+            for binding_name in args.service_bindings
+        ]
+      if args.no_service_bindings is not None:
+        replacement.serviceBindings = []
+        cleared_fields.append('serviceBindings')
+
     return replacement, cleared_fields
 
   def ValidateArgs(self, args):
@@ -265,6 +308,10 @@ class UpdateHelper(object):
         args.IsSpecified('cache_key_include_query_string'),
         args.IsSpecified('cache_key_query_string_whitelist'),
         args.IsSpecified('cache_key_query_string_blacklist'),
+        args.IsSpecified('cache_key_include_http_header')
+        if self._support_extended_caching else False,
+        args.IsSpecified('cache_key_include_named_cookie')
+        if self._support_extended_caching else False,
         args.IsSpecified('signed_url_cache_max_age'),
         args.IsSpecified('http_health_checks'),
         args.IsSpecified('iap'),
@@ -314,7 +361,15 @@ class UpdateHelper(object):
         args.IsSpecified('idle_timeout_sec')
         if self._support_connection_tracking else False,
         args.IsSpecified('enable_strong_affinity')
-        if self._support_strong_session_affinity else False
+        if self._support_strong_session_affinity else False,
+        args.IsSpecified('service_lb_policy')
+        if self._support_advanced_load_balancing else False,
+        args.IsSpecified('no_service_lb_policy')
+        if self._support_advanced_load_balancing else False,
+        args.IsSpecified('service_bindings')
+        if self._support_service_bindings else False,
+        args.IsSpecified('no_service_bindings')
+        if self._support_service_bindings else False
     ]):
       raise compute_exceptions.UpdatePropertyError(
           'At least one property must be modified.')
@@ -410,7 +465,7 @@ class UpdateHelper(object):
     objects = client.MakeRequests([get_request])
 
     new_object, cleared_fields = self.Modify(client, holder.resources, args,
-                                             objects[0])
+                                             objects[0], backend_service_ref)
 
     # If existing object is equal to the proposed object or if
     # Modify() returns None, then there is no work to be done, so we
@@ -484,6 +539,9 @@ class UpdateGA(base.UpdateCommand):
   _support_edge_policies = False
   _support_connection_tracking = False
   _support_strong_session_affinity = False
+  _support_advanced_load_balancing = False
+  _support_service_bindings = False
+  _support_extended_caching = False
 
   @classmethod
   def Args(cls, parser):
@@ -500,7 +558,10 @@ class UpdateGA(base.UpdateCommand):
         support_unspecified_protocol=cls._support_unspecified_protocol,
         support_edge_policies=cls._support_edge_policies,
         support_connection_tracking=cls._support_connection_tracking,
-        support_strong_session_affinity=cls._support_strong_session_affinity)
+        support_strong_session_affinity=cls._support_strong_session_affinity,
+        support_advanced_load_balancing=cls._support_advanced_load_balancing,
+        support_service_bindings=cls._support_service_bindings,
+        support_extended_caching=cls._support_extended_caching)
 
   def Run(self, args):
     """Issues requests necessary to update the Backend Services."""
@@ -510,7 +571,9 @@ class UpdateGA(base.UpdateCommand):
         self._support_logging, self._support_subsetting,
         self._support_subsetting_subset_size, self._support_edge_policies,
         self._support_connection_tracking,
-        self._support_strong_session_affinity).Run(args, holder)
+        self._support_strong_session_affinity,
+        self._support_advanced_load_balancing, self._support_service_bindings,
+        self._support_extended_caching).Run(args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -528,6 +591,9 @@ class UpdateBeta(UpdateGA):
   _support_edge_policies = True
   _support_connection_tracking = True
   _support_strong_session_affinity = True
+  _support_advanced_load_balancing = False
+  _support_service_bindings = False
+  _support_extended_caching = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -545,3 +611,6 @@ class UpdateAlpha(UpdateBeta):
   _support_edge_policies = True
   _support_connection_tracking = True
   _support_strong_session_affinity = True
+  _support_advanced_load_balancing = True
+  _support_service_bindings = True
+  _support_extended_caching = True

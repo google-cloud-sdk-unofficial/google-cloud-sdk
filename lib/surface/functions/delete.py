@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.functions.v1.delete import command as command_v1
 from googlecloudsdk.command_lib.functions.v2.delete import command as command_v2
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete a Google Cloud Function."""
 
@@ -53,21 +53,34 @@ class Delete(base.DeleteCommand):
     return command_v1.Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(base.DeleteCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(base.DeleteCommand):
   """Delete a Google Cloud Function."""
 
   @staticmethod
-  def Args(parser):
+  def CommonArgs(parser, track):
     """Register flags for this command."""
     Delete.Args(parser)
 
     # Add additional flags for GCFv2
-    flags.AddV2Flag(parser)
+    flags.AddGen2Flag(parser, track)
+
+  @staticmethod
+  def Args(parser):
+    DeleteBeta.CommonArgs(parser, base.ReleaseTrack.BETA)
 
   @util.CatchHTTPErrorRaiseHTTPException
   def Run(self, args):
-    if flags.ShouldUseV2(args):
+    if flags.ShouldUseGen2():
       return command_v2.Run(args, self.ReleaseTrack())
     else:
       return command_v1.Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(DeleteBeta):
+  """Delete a Google Cloud Function."""
+
+  @staticmethod
+  def Args(parser):
+    DeleteBeta.CommonArgs(parser, base.ReleaseTrack.ALPHA)

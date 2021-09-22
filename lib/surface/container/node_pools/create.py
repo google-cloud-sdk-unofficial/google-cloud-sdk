@@ -88,7 +88,7 @@ def _Args(parser):
   parser.add_argument(
       '--disk-size',
       type=arg_parsers.BinarySize(lower_bound='10GB'),
-      help='Size for node VM boot disks. Defaults to 100GB.')
+      help='Size for node VM boot disks in GB. Defaults to 100GB.')
   flags.AddImageTypeFlag(parser, 'node pool')
   flags.AddImageFlag(parser, hidden=True)
   flags.AddImageProjectFlag(parser, hidden=True)

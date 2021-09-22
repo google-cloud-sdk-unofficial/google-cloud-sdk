@@ -39,7 +39,6 @@ class AddBgpPeer(base.UpdateCommand):
   @classmethod
   def _Args(cls,
             parser,
-            support_bfd=False,
             support_enable_ipv6=False,
             support_havpn_ipv6=False):
     cls.ROUTER_ARG = flags.RouterArgument()
@@ -48,7 +47,6 @@ class AddBgpPeer(base.UpdateCommand):
     flags.AddBgpPeerArgs(
         parser,
         for_add_bgp_peer=True,
-        support_bfd=support_bfd,
         support_enable_ipv6=support_enable_ipv6,
         support_havpn_ipv6=support_havpn_ipv6)
     flags.AddReplaceCustomAdvertisementArgs(parser, 'peer')
@@ -59,7 +57,6 @@ class AddBgpPeer(base.UpdateCommand):
 
   def _Run(self,
            args,
-           support_bfd=False,
            support_bfd_mode=False,
            support_enable_ipv6=False,
            support_havpn_ipv6=False,
@@ -76,7 +73,6 @@ class AddBgpPeer(base.UpdateCommand):
     peer = _CreateBgpPeerMessage(
         messages,
         args,
-        support_bfd=support_bfd,
         support_bfd_mode=support_bfd_mode,
         support_enable_ipv6=support_enable_ipv6,
         support_havpn_ipv6=support_havpn_ipv6,
@@ -153,7 +149,7 @@ class AddBgpPeerBeta(AddBgpPeer):
   def Args(cls, parser):
     cls.INSTANCE_ARG = instance_flags.InstanceArgumentForRouter()
     cls.INSTANCE_ARG.AddArgument(parser)
-    cls._Args(parser, support_bfd=True)
+    cls._Args(parser)
 
   def Run(self, args):
     """See base.UpdateCommand."""
@@ -167,7 +163,6 @@ class AddBgpPeerBeta(AddBgpPeer):
           scope_lister=instance_flags.GetInstanceZoneScopeLister(holder.client))
     return self._Run(
         args,
-        support_bfd=True,
         support_bfd_mode=False,
         support_enable_ipv6=False,
         support_havpn_ipv6=False,
@@ -187,7 +182,6 @@ class AddBgpPeerAlpha(AddBgpPeerBeta):
     cls.INSTANCE_ARG.AddArgument(parser)
     cls._Args(
         parser,
-        support_bfd=True,
         support_enable_ipv6=True,
         support_havpn_ipv6=True)
 
@@ -203,7 +197,6 @@ class AddBgpPeerAlpha(AddBgpPeerBeta):
           scope_lister=instance_flags.GetInstanceZoneScopeLister(holder.client))
     return self._Run(
         args,
-        support_bfd=True,
         support_bfd_mode=True,
         support_enable_ipv6=True,
         support_havpn_ipv6=True,
@@ -212,18 +205,16 @@ class AddBgpPeerAlpha(AddBgpPeerBeta):
 
 def _CreateBgpPeerMessage(messages,
                           args,
-                          support_bfd=False,
                           support_bfd_mode=False,
                           support_enable_ipv6=False,
                           support_havpn_ipv6=False,
                           instance_ref=None):
   """Creates a BGP peer with base attributes based on flag arguments."""
   bfd = None
-  if support_bfd:
-    if support_bfd_mode:
-      bfd = _CreateBgpPeerBfdMessageMode(messages, args)
-    else:
-      bfd = _CreateBgpPeerBfdMessage(messages, args)
+  if support_bfd_mode:
+    bfd = _CreateBgpPeerBfdMessageMode(messages, args)
+  else:
+    bfd = _CreateBgpPeerBfdMessage(messages, args)
   enable = None
   if args.enabled is not None:
     if args.enabled:
@@ -275,7 +266,7 @@ def _CreateBgpPeerMessage(messages,
         enable=enable,
         bfd=bfd,
         enableIpv6=enable_ipv6)
-  elif support_bfd:
+  else:
     return messages.RouterBgpPeer(
         name=args.peer_name,
         interfaceName=args.interface,
@@ -284,14 +275,6 @@ def _CreateBgpPeerMessage(messages,
         advertisedRoutePriority=args.advertised_route_priority,
         enable=enable,
         bfd=bfd)
-  else:
-    return messages.RouterBgpPeer(
-        name=args.peer_name,
-        interfaceName=args.interface,
-        peerIpAddress=args.peer_ip_address,
-        peerAsn=args.peer_asn,
-        advertisedRoutePriority=args.advertised_route_priority,
-        enable=enable)
 
 
 def _CreateBgpPeerBfdMessage(messages, args):

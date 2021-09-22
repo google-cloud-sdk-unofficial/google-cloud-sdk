@@ -283,16 +283,17 @@ class Ssh(base.Command):
       expiration, expiration_micros = ssh_utils.GetSSHKeyExpirationFromArgs(
           args)
       if args.plain:
-        use_oslogin = False
+        oslogin_state = ssh.OsloginState()
       else:
         public_key = ssh_helper.keys.GetPublicKey().ToEntry(
             include_comment=True)
         # If there is an '@' symbol in the user_host arg, the user is requesting
         # to connect as a specific user. This may get overridden by OS Login.
         username_requested = '@' in args.user_host
-        user, use_oslogin = ssh.CheckForOsloginAndGetUser(
+        oslogin_state = ssh.GetOsloginState(
             instance, project, user, public_key, expiration_micros,
             self.ReleaseTrack(), username_requested=username_requested)
+        user = oslogin_state.user
 
       if iap_tunnel_args:
         # IAP Tunnel only uses instance_address for the purpose of --ssh-flag
@@ -347,7 +348,7 @@ class Ssh(base.Command):
       log.out.Print(' '.join(cmd.Build(ssh_helper.env)))
       return
 
-    if args.plain or use_oslogin:
+    if args.plain or oslogin_state.oslogin_enabled:
       keys_newly_added = False
     else:
       keys_newly_added = ssh_helper.EnsureSSHKeyExists(

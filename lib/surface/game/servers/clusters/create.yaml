@@ -104,6 +104,13 @@
       required: true
       help_text: |
         Namespace for Kubernetes API server endpoint.
+    - arg_name: install-agones
+      release_tracks: [ALPHA]
+      api_field: gameServerCluster.agonesOptions.install
+      type: bool
+      required: false
+      help_text: |
+        The latest Agones version that supports your Kubernetes version will be installed on the new game server cluster.
     - arg_name: dry-run
       type: bool
       required: true

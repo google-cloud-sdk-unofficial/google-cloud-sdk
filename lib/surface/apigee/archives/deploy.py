@@ -29,8 +29,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Deploy(base.DescribeCommand):
   """Deploy an Apigee archive deployment to an environment."""
 

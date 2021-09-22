@@ -79,10 +79,10 @@ class ListAlpha(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddV2Flag(parser)
+    flags.AddGen2Flag(parser, base.ReleaseTrack.ALPHA)
 
   def Run(self, args):
-    if flags.ShouldUseV2(args):
+    if flags.ShouldUseGen2():
       if not args.IsSpecified('format'):
         args.format = _DISPLAY_INFO_V2_FORMAT
       return command_v2.Run(args, self.ReleaseTrack())

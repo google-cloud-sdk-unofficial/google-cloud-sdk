@@ -46,6 +46,7 @@ class GcloudignoreHelp(base.TopicCommand):
   * `gcloud run deploy`
   *  gcloud alpha deploy releases create
   * `gcloud alpha blueprints apply`
+  * `gcloud alpha blueprints preview`
 
   To globally disable `.gcloudignore` parsing (including default file-ignore
   behavior), run:

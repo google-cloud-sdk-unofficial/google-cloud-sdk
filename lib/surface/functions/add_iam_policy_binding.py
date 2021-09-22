@@ -91,7 +91,7 @@ class AddIamPolicyBindingAlpha(base.Command):
     iam_util.AddArgsForAddIamPolicyBinding(parser)
 
     # Add additional flags for GCFv2.
-    flags.AddV2Flag(parser)
+    flags.AddGen2Flag(parser, base.ReleaseTrack.ALPHA)
 
   def Run(self, args):
     """Runs the command.
@@ -103,7 +103,7 @@ class AddIamPolicyBindingAlpha(base.Command):
     Returns:
       The updated IAM policy.
     """
-    if flags.ShouldUseV2(args):
+    if flags.ShouldUseGen2():
       return command_v2.Run(args, self.ReleaseTrack())
     else:
       return command_v1.Run(args)

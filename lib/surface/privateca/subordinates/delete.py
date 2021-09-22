@@ -194,7 +194,7 @@ class Delete(base.DeleteCommand):
     ca = operations.GetMessageFromResponse(ca_response,
                                            messages.CertificateAuthority)
 
-    formatted_deletion_time = times.ParseDateTime(ca.deleteTime).astimezone(
+    formatted_expire_time = times.ParseDateTime(ca.expireTime).astimezone(
         tz.tzutc()).strftime('%Y-%m-%dT%H:%MZ')
 
     if current_ca.state == messages.CertificateAuthority.StateValueValuesEnum.AWAITING_USER_ACTIVATION:
@@ -204,4 +204,4 @@ class Delete(base.DeleteCommand):
     else:
       log.status.Print(
           'Deleted Subordinate CA [{}]. CA can be undeleted until {}.'.format(
-              ca_name, formatted_deletion_time))
+              ca_name, formatted_expire_time))

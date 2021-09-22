@@ -195,9 +195,10 @@ class ConnectToSerialPort(base.Command):
     project = ssh_helper.GetProject(client, instance_ref.project)
     expiration, expiration_micros = ssh_utils.GetSSHKeyExpirationFromArgs(args)
 
-    remote.user, use_os_login = ssh.CheckForOsloginAndGetUser(
+    oslogin_state = ssh.GetOsloginState(
         instance, project, remote.user, public_key, expiration_micros,
         self.ReleaseTrack())
+    remote.user = oslogin_state.user
 
     # Determine the serial user, host tuple (remote)
     port = 'port={0}'.format(args.port)
@@ -219,7 +220,7 @@ class ConnectToSerialPort(base.Command):
     if args.dry_run:
       log.out.Print(' '.join(cmd.Build(ssh_helper.env)))
       return
-    if not use_os_login:
+    if not oslogin_state.oslogin_enabled:
       ssh_helper.EnsureSSHKeyExists(
           client, remote.user, instance, project, expiration)
 

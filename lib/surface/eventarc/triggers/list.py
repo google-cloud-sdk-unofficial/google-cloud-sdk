@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import re
+
 from googlecloudsdk.api_lib.eventarc import triggers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.eventarc import flags
@@ -38,8 +40,7 @@ _FORMAT = """ \
 table(
     name.scope("triggers"):label=NAME,
     eventFilters.type():label=TYPE,
-    destination.cloudRun.service:label=DESTINATION_RUN_SERVICE,
-    destination.cloudRun.path:label=DESTINATION_RUN_PATH,
+    destination():label=DESTINATION,
     active_status():label=ACTIVE
 )
 """
@@ -62,6 +63,49 @@ def _ActiveStatus(trigger):
   return 'By {}'.format(active_time) if active_time else 'Yes'
 
 
+def _Destination(trigger):
+  """Generate a destination string for the trigger.
+
+  Based on different destination types, this function returns a destination
+  string accordingly:
+
+    * Cloud Run trigger: "Cloud Run: {cloud run service}"
+    * GKE trigger: "GKE: {gke service}"
+    * Workflows trigger: "Workflows: {workflow name}"
+    * Cloud Functions trigger: "Cloud Functions: {cloud function name}"
+
+  For unknown destination (e.g. new types of destination and corrupted
+  destination), this function returns an empty string.
+
+  Args:
+    trigger: eventarc trigger proto in python map format.
+
+  Returns:
+    A string representing the destination for the trigger.
+  """
+  destination = trigger.get('destination')
+
+  if 'cloudRun' in destination:
+    dest = destination.get('cloudRun')
+    return 'Cloud Run: {}'.format(dest.get('service'))
+  elif 'gke' in destination:
+    dest = destination.get('gke')
+    return 'GKE: {}'.format(dest.get('service'))
+  elif 'cloudFunction' in destination:
+    cloud_function_str_pattern = '^projects/.*/locations/.*/functions/(.*)$'
+    dest = destination.get('cloudFunction')
+    match = re.search(cloud_function_str_pattern, dest)
+    return 'Cloud Functions: {}'.format(match.group(1)) if match else ''
+  elif 'workflow' in destination:
+    workflows_str_pattern = '^projects/.*/locations/.*/workflows/(.*)$'
+    dest = destination.get('workflow')
+    match = re.search(workflows_str_pattern, dest)
+    return 'Workflows: {}'.format(match.group(1)) if match else  ''
+  else:
+    # For new types of triggers, return empty string for now.
+    return ''
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Eventarc triggers."""
@@ -79,7 +123,8 @@ class List(base.ListCommand):
     parser.display_info.AddUriFunc(triggers.GetTriggerURI)
     parser.display_info.AddTransforms({
         'active_status': _ActiveStatus,
-        'type': types.EventFiltersDictToType
+        'destination': _Destination,
+        'type': types.EventFiltersDictToType,
     })
 
   def Run(self, args):

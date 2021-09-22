@@ -44,6 +44,7 @@ class Update(base.UpdateCommand):
   BACKEND_BUCKET_ARG = None
   EDGE_SECURITY_POLICY_ARG = None
   _support_edge_policies = False
+  _support_extended_caching = False
 
   @classmethod
   def Args(cls, parser):
@@ -61,13 +62,20 @@ class Update(base.UpdateCommand):
               resource='backend bucket'))
       cls.EDGE_SECURITY_POLICY_ARG.AddArgument(parser)
 
+    if cls._support_extended_caching:
+      backend_buckets_flags.AddCacheKeyExtendedCachingArgs(parser)
+
   def AnyArgsSpecified(self, args):
     """Returns true if any args for updating backend bucket were specified."""
     return (args.IsSpecified('description') or
             args.IsSpecified('gcs_bucket_name') or
             args.IsSpecified('enable_cdn') or
             (self._support_edge_policies and
-             args.IsSpecified('edge_security_policy')))
+             args.IsSpecified('edge_security_policy')) or
+            (self._support_extended_caching and
+             args.IsSpecified('cache_key_include_http_header')) or
+            (self._support_extended_caching and
+             args.IsSpecified('cache_key_query_string_whitelist')))
 
   def AnyFlexibleCacheArgsSpecified(self, args):
     """Returns true if any Flexible Cache args for updating backend bucket were specified."""
@@ -132,7 +140,8 @@ class Update(base.UpdateCommand):
         args,
         replacement,
         is_update=True,
-        cleared_fields=cleared_fields)
+        cleared_fields=cleared_fields,
+        support_extended_caching=self._support_extended_caching)
 
     if args.custom_response_header is not None:
       replacement.customResponseHeaders = args.custom_response_header
@@ -213,6 +222,7 @@ class UpdateBeta(Update):
   *{command}* is used to update backend buckets.
   """
   _support_edge_policies = True
+  _support_extended_caching = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -222,3 +232,4 @@ class UpdateAlpha(UpdateBeta):
   *{command}* is used to update backend buckets.
   """
   _support_edge_policies = True
+  _support_extended_caching = True

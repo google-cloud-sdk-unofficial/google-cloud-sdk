@@ -66,20 +66,20 @@ class Create(base.Command):
   def Run(self, args):
     lake_ref = args.CONCEPTS.lake.Parse()
     dataplex_client = dataplex_util.GetClientInstance()
+    message = dataplex_util.GetMessageModule()
     create_req_op = dataplex_client.projects_locations_lakes.Create(
-        dataplex_util.GetMessageModule(
-        ).DataplexProjectsLocationsLakesCreateRequest(
+        message.DataplexProjectsLocationsLakesCreateRequest(
             lakeId=lake_ref.Name(),
             parent=lake_ref.Parent().RelativeName(),
             validateOnly=args.validate_only,
-            googleCloudDataplexV1Lake=dataplex_util.GetMessageModule()
-            .GoogleCloudDataplexV1Lake(
+            googleCloudDataplexV1Lake=message.GoogleCloudDataplexV1Lake(
                 description=args.description,
                 displayName=args.display_name,
-                labels=args.labels,
-                metastore=dataplex_util.GetMessageModule()
-                .GoogleCloudDataplexV1LakeMetastore(
+                labels=dataplex_util.CreateLabels(
+                    message.GoogleCloudDataplexV1Lake, args),
+                metastore=message.GoogleCloudDataplexV1LakeMetastore(
                     service=args.metastore_service))))
+
     validate_only = getattr(args, 'validate_only', False)
     if validate_only:
       log.status.Print('Validation complete with errors:')

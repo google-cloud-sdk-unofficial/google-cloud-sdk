@@ -26,71 +26,8 @@ from googlecloudsdk.command_lib.compute.security_policies import flags
 from googlecloudsdk.command_lib.compute.security_policies import security_policies_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Update(base.UpdateCommand):
-  """Update a Compute Engine security policy.
-
-  *{command}* is used to update security policies.
-
-  ## EXAMPLES
-
-  To update the description run this:
-
-    $ {command} SECURITY_POLICY --description='new description'
-  """
-
-  SECURITY_POLICY_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    cls.SECURITY_POLICY_ARG = flags.SecurityPolicyArgument()
-    cls.SECURITY_POLICY_ARG.AddArgument(parser, operation_type='update')
-    parser.add_argument(
-        '--description',
-        help=('An optional, textual description for the security policy.'))
-
-    flags.AddAdvancedOptions(parser)
-
-  def _ValidateArgs(self, args):
-    """Validates that at least one field to update is specified.
-
-    Args:
-      args: The arguments given to the update command.
-    """
-
-    if not (args.IsSpecified('description') or
-            args.IsSpecified('json_parsing') or args.IsSpecified('log_level')):
-      parameter_names = ['--description', '--json-parsing', '--log-level']
-      raise exceptions.MinimumArgumentException(
-          parameter_names, 'Please specify at least one property to update')
-
-  def Run(self, args):
-    self._ValidateArgs(args)
-
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)
-    security_policy = client.SecurityPolicy(
-        ref=ref, compute_client=holder.client)
-    existing_security_policy = security_policy.Describe()[0]
-    description = existing_security_policy.description
-    advanced_options_config = existing_security_policy.advancedOptionsConfig
-    if args.description is not None:
-      description = args.description
-    if (args.IsSpecified('json_parsing') or args.IsSpecified('log_level')):
-      advanced_options_config = (
-          security_policies_utils.CreateAdvancedOptionsConfig(
-              holder.client, args, advanced_options_config))
-
-    updated_security_policy = holder.client.messages.SecurityPolicy(
-        description=description,
-        advancedOptionsConfig=advanced_options_config,
-        fingerprint=existing_security_policy.fingerprint)
-
-    return security_policy.Patch(security_policy=updated_security_policy)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class UpdateBetaGa(base.UpdateCommand):
   """Update a Compute Engine security policy.
 
   *{command}* is used to update security policies.
@@ -168,7 +105,7 @@ class UpdateBeta(Update):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
+class UpdateAlpha(UpdateBetaGa):
   """Update a Compute Engine security policy.
 
   *{command}* is used to update security policies.
@@ -184,7 +121,7 @@ class UpdateAlpha(Update):
 
   @classmethod
   def Args(cls, parser):
-    cls.SECURITY_POLICY_ARG = flags.SecurityPolicyArgument()
+    cls.SECURITY_POLICY_ARG = flags.SecurityPolicyMultiScopeArgument()
     cls.SECURITY_POLICY_ARG.AddArgument(parser, operation_type='update')
     parser.add_argument(
         '--description',
@@ -192,6 +129,7 @@ class UpdateAlpha(Update):
 
     flags.AddCloudArmorAdaptiveProtection(parser)
     flags.AddAdvancedOptions(parser)
+    flags.AddDdosProtectionConfig(parser)
 
     parser.add_argument(
         '--enable-ml',
@@ -209,11 +147,12 @@ class UpdateAlpha(Update):
     if not (args.IsSpecified('description') or args.IsSpecified('enable_ml') or
             args.IsSpecified('enable_layer7_ddos_defense') or
             args.IsSpecified('layer7_ddos_defense_rule_visibility') or
-            args.IsSpecified('json_parsing') or args.IsSpecified('log_level')):
+            args.IsSpecified('json_parsing') or args.IsSpecified('log_level') or
+            args.IsSpecified('ddos_protection')):
       parameter_names = [
           '--description', '--enable-ml', '--enable-layer7-ddos-defense',
           '--layer7-ddos-defense-rule-visibility', '--json-parsing',
-          '--log-level'
+          '--log-level', '--ddos-protection'
       ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update')
@@ -231,6 +170,7 @@ class UpdateAlpha(Update):
     adaptive_protection_config = (
         existing_security_policy.adaptiveProtectionConfig)
     advanced_options_config = existing_security_policy.advancedOptionsConfig
+    ddos_protection_config = existing_security_policy.ddosProtectionConfig
     if args.description is not None:
       description = args.description
     if args.enable_ml is not None:
@@ -245,12 +185,17 @@ class UpdateAlpha(Update):
       advanced_options_config = (
           security_policies_utils.CreateAdvancedOptionsConfig(
               holder.client, args, advanced_options_config))
+    if args.IsSpecified('ddos_protection'):
+      ddos_protection_config = (
+          security_policies_utils.CreateDdosProtectionConfig(
+              holder.client, args, ddos_protection_config))
 
     updated_security_policy = holder.client.messages.SecurityPolicy(
         description=description,
         cloudArmorConfig=cloud_armor_config,
         adaptiveProtectionConfig=adaptive_protection_config,
         advancedOptionsConfig=advanced_options_config,
+        ddosProtectionConfig=ddos_protection_config,
         fingerprint=existing_security_policy.fingerprint)
 
     return security_policy.Patch(security_policy=updated_security_policy)

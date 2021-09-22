@@ -51,9 +51,59 @@ DETAILED_HELP = {
 
       $ {command} --project=example --region=us-central1 --display-name=my_monitoring_job --emails=a@gmail.com,b@gmail.com --endpoint=123 --prediction-sampling-rate=0.2 --monitoring-config-from-file=your_objective_config.yaml
 
-    After creating the monitoring job, be sure to send some predict requests. We will use that to generate some metadata for analysis purpose, like predict and analysis instance schema.
+    After creating the monitoring job, be sure to send some predict requests. It will be used to generate some metadata for analysis purpose, like predict and analysis instance schema.
     """,
 }
+
+
+def _Args(parser):
+  """Add flags for create command."""
+  flags.AddRegionResourceArg(parser,
+                             'to create model deployment monitoring job')
+  flags.GetDisplayNameArg('model deployment monitoring job').AddToParser(parser)
+  flags.GetEndpointIdArg(required=True).AddToParser(parser)
+  flags.GetEmailsArg(required=True).AddToParser(parser)
+  flags.GetPredictionSamplingRateArg(required=True).AddToParser(parser)
+  flags.GetMonitoringFrequencyArg(required=False).AddToParser(parser)
+  flags.GetPredictInstanceSchemaArg(required=False).AddToParser(parser)
+  flags.GetAnalysisInstanceSchemaArg(required=False).AddToParser(parser)
+  flags.GetSamplingPredictRequestArg(required=False).AddToParser(parser)
+  flags.GetMonitoringLogTtlArg(required=False).AddToParser(parser)
+  flags.AddObjectiveConfigGroupForCreate(parser, required=False)
+  flags.AddKmsKeyResourceArg(parser, 'model deployment monitoring job')
+  labels_util.AddCreateLabelsFlags(parser)
+
+
+def _Run(args, version, release_prefix):
+  """Run method for create command."""
+  validation.ValidateDisplayName(args.display_name)
+  region_ref = args.CONCEPTS.region.Parse()
+  region = region_ref.AsDict()['locationsId']
+  with endpoint_util.AiplatformEndpointOverrides(
+      version=version, region=region):
+    response = client.ModelMonitoringJobsClient(version=version).Create(
+        region_ref, args)
+    cmd_prefix = 'gcloud'
+    if release_prefix:
+      cmd_prefix += ' ' + release_prefix
+    log.status.Print(
+        constants.MODEL_MONITORING_JOB_CREATION_DISPLAY_MESSAGE.format(
+            id=model_monitoring_jobs_util.ParseJobName(response.name),
+            cmd_prefix=cmd_prefix,
+            state=response.state))
+    return response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateGa(base.CreateCommand):
+  """Create a new Vertex AI model monitoring job."""
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser)
+
+  def Run(self, args):
+    return _Run(args, constants.GA_VERSION, self.ReleaseTrack().prefix)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -62,35 +112,11 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddRegionResourceArg(parser,
-                               'to create model deployment monitoring job')
-    flags.GetDisplayNameArg('model deployment monitoring job').AddToParser(
-        parser)
-    flags.GetEndpointIdArg(required=True).AddToParser(parser)
-    flags.GetEmailsArg(required=True).AddToParser(parser)
-    flags.GetPredictionSamplingRateArg(required=True).AddToParser(parser)
-    flags.GetMonitoringFrequencyArg(required=False).AddToParser(parser)
-    flags.GetPredictInstanceSchemaArg(required=False).AddToParser(parser)
-    flags.GetAnalysisInstanceSchemaArg(required=False).AddToParser(parser)
-    flags.GetSamplingPredictRequestArg(required=False).AddToParser(parser)
-    flags.GetMonitoringLogTtlArg(required=False).AddToParser(parser)
-    flags.AddObjectiveConfigGroupForCreate(parser, required=False)
-    flags.AddKmsKeyResourceArg(parser, 'model deployment monitoring job')
-    labels_util.AddCreateLabelsFlags(parser)
+    _Args(parser)
 
   def Run(self, args):
-    validation.ValidateDisplayName(args.display_name)
-    region_ref = args.CONCEPTS.region.Parse()
-    region = region_ref.AsDict()['locationsId']
-    with endpoint_util.AiplatformEndpointOverrides(
-        version=constants.BETA_VERSION, region=region):
-      response = client.ModelMonitoringJobsClient(
-          version=constants.BETA_VERSION).Create(region_ref, args)
-      log.status.Print(
-          constants.MODEL_MONITORING_JOB_CREATION_DISPLAY_MESSAGE.format(
-              id=model_monitoring_jobs_util.ParseJobName(response.name),
-              state=response.state))
-      return response
+    return _Run(args, constants.BETA_VERSION, self.ReleaseTrack().prefix)
 
 
 Create.detailed_help = DETAILED_HELP
+CreateGa.detailed_help = DETAILED_HELP

@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.Hidden
 class Snapshots(base.Group):
   """Create and manage Filestore snapshots."""
 

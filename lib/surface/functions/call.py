@@ -81,7 +81,7 @@ class CallAlpha(base.Command):
   def Args(parser):
     """Register flags for this command."""
     flags.AddFunctionResourceArg(parser, 'to execute')
-    flags.AddV2Flag(parser)
+    flags.AddGen2Flag(parser, base.ReleaseTrack.ALPHA)
 
     # Add additional flags for GCFv2
     data_flag_group = parser.add_mutually_exclusive_group()
@@ -89,7 +89,7 @@ class CallAlpha(base.Command):
     flags.AddCloudEventsFlag(data_flag_group)
 
   def Run(self, args):
-    if flags.ShouldUseV2(args):
+    if flags.ShouldUseGen2():
       return command_v2.Run(args, self.ReleaseTrack())
     else:
       return command_v1.Run(args)

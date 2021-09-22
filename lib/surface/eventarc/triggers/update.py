@@ -101,7 +101,8 @@ class Update(base.UpdateCommand):
           trigger_ref.Parent().Parent().Name(), workflow, location)
     trigger_message = client.BuildTriggerMessage(trigger_ref, event_filters,
                                                  args.service_account,
-                                                 destination_message, None)
+                                                 destination_message, None,
+                                                 None)
     operation = client.Patch(trigger_ref, trigger_message, update_mask)
     if args.async_:
       return operation
@@ -158,7 +159,8 @@ class UpdateBeta(Update):
         args.destination_run_region)
     trigger_message = client.BuildTriggerMessage(trigger_ref, event_filters,
                                                  args.service_account,
-                                                 destination_message, None)
+                                                 destination_message, None,
+                                                 None)
     operation = client.Patch(trigger_ref, trigger_message, update_mask)
     if args.async_:
       return operation

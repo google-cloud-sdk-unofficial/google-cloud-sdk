@@ -103,7 +103,7 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
     for fp in all_firewall_policy:
       result.extend(
           firewalls_utils.ConvertFirewallPolicyRulesToEffectiveFwRules(
-              client, fp))
+              client, fp, True))
     for sp in org_firewall:
       result.extend(
           firewalls_utils.ConvertOrgSecurityPolicyRulesToEffectiveFwRules(sp))

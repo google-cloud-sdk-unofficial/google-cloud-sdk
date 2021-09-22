@@ -104,6 +104,7 @@ def _CommonArgs(parser,
                 support_subinterface=False,
                 support_node_project=False,
                 support_provisioning_model=False,
+                support_termination_action=False,
                 support_host_error_timeout_seconds=False,
                 support_numa_node_count=False):
   """Register parser args common to all tracks."""
@@ -200,6 +201,9 @@ def _CommonArgs(parser,
   if support_provisioning_model:
     instances_flags.AddProvisioningModelVmArgs(parser)
 
+  if support_termination_action:
+    instances_flags.AddInstanceTerminationActionVmArgs(parser)
+
   if support_host_error_timeout_seconds:
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
 
@@ -230,6 +234,7 @@ class Create(base.CreateCommand):
   _support_secure_tag = False
   _support_node_project = False
   _support_provisioning_model = False
+  _support_termination_action = False
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
   _support_visible_core_count = False
@@ -292,6 +297,7 @@ class Create(base.CreateCommand):
         support_location_hint=self._support_location_hint,
         support_node_project=self._support_node_project,
         support_provisioning_model=self._support_provisioning_model,
+        support_termination_action=self._support_termination_action,
         support_host_error_timeout_seconds=self
         ._support_host_error_timeout_seconds)
     tags = instance_utils.GetTags(args, compute_client)
@@ -515,6 +521,9 @@ class Create(base.CreateCommand):
     if self._support_network_performance_configs:
       instances_flags.ValidateNetworkPerformanceConfigsArgs(args)
 
+    if self._support_termination_action:
+      instances_flags.ValidateInstanceScheduling(args)
+
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     compute_client = holder.client
     resource_parser = holder.resources
@@ -672,6 +681,7 @@ class CreateAlpha(CreateBeta):
   _support_secure_tag = True
   _support_node_project = True
   _support_provisioning_model = True
+  _support_termination_action = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = True
   _support_visible_core_count = True
@@ -692,6 +702,7 @@ class CreateAlpha(CreateBeta):
         support_subinterface=cls._support_subinterface,
         support_node_project=cls._support_node_project,
         support_provisioning_model=cls._support_provisioning_model,
+        support_termination_action=cls._support_termination_action,
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count)

@@ -38,7 +38,6 @@ class UpdateBgpPeer(base.UpdateCommand):
   @classmethod
   def _Args(cls,
             parser,
-            support_bfd=False,
             support_enable_ipv6=False,
             support_havpn_ipv6=False):
     cls.ROUTER_ARG = flags.RouterArgument()
@@ -47,7 +46,6 @@ class UpdateBgpPeer(base.UpdateCommand):
     flags.AddBgpPeerArgs(
         parser,
         for_add_bgp_peer=False,
-        support_bfd=support_bfd,
         support_enable_ipv6=support_enable_ipv6,
         support_havpn_ipv6=support_havpn_ipv6,
         is_update=True)
@@ -59,7 +57,6 @@ class UpdateBgpPeer(base.UpdateCommand):
 
   def _Run(self,
            args,
-           support_bfd=False,
            support_bfd_mode=False,
            support_enable_ipv6=False,
            support_havpn_ipv6=False):
@@ -80,7 +77,6 @@ class UpdateBgpPeer(base.UpdateCommand):
         messages,
         replacement,
         args,
-        support_bfd=support_bfd,
         support_bfd_mode=support_bfd_mode,
         support_enable_ipv6=support_enable_ipv6,
         support_havpn_ipv6=support_havpn_ipv6)
@@ -194,11 +190,11 @@ class UpdateBgpPeerBeta(UpdateBgpPeer):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser, support_bfd=True)
+    cls._Args(parser)
 
   def Run(self, args):
     return self._Run(
-        args, support_bfd=True, support_bfd_mode=False)
+        args, support_bfd_mode=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -211,14 +207,12 @@ class UpdateBgpPeerAlpha(UpdateBgpPeerBeta):
   def Args(cls, parser):
     cls._Args(
         parser,
-        support_bfd=True,
         support_enable_ipv6=True,
         support_havpn_ipv6=True)
 
   def Run(self, args):
     return self._Run(
         args,
-        support_bfd=True,
         support_bfd_mode=True,
         support_enable_ipv6=True,
         support_havpn_ipv6=True)
@@ -227,7 +221,6 @@ class UpdateBgpPeerAlpha(UpdateBgpPeerBeta):
 def _UpdateBgpPeerMessage(messages,
                           router_message,
                           args,
-                          support_bfd=False,
                           support_bfd_mode=False,
                           support_enable_ipv6=False,
                           support_havpn_ipv6=False):
@@ -258,14 +251,13 @@ def _UpdateBgpPeerMessage(messages,
   for attr, value in attrs.items():
     if value is not None:
       setattr(peer, attr, value)
-  if support_bfd:
-    bfd = None
-    if support_bfd_mode:
-      bfd = _UpdateBgpPeerBfdMessageMode(messages, peer, args)
-    else:
-      bfd = _UpdateBgpPeerBfdMessage(messages, peer, args)
-    if bfd is not None:
-      setattr(peer, 'bfd', bfd)
+  bfd = None
+  if support_bfd_mode:
+    bfd = _UpdateBgpPeerBfdMessageMode(messages, peer, args)
+  else:
+    bfd = _UpdateBgpPeerBfdMessage(messages, peer, args)
+  if bfd is not None:
+    setattr(peer, 'bfd', bfd)
   return peer
 
 

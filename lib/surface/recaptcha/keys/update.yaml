@@ -84,13 +84,21 @@
               type: bool
               help_text: |
                 Creates a Key configured for iOS devices.
-            - arg_name: bundle-ids
-              api_field: googleCloudRecaptchaenterpriseV1Key.iosSettings.allowedBundleIds
-              help_text: |
-                iOS bundle ids of apps allowed to use the key.
+            - group:
+                mutex: true
+                required: true
+                params:
+                - arg_name: allow-all-bundle-ids
+                  api_field: googleCloudRecaptchaenterpriseV1Key.iosSettings.allowAllBundleIds
+                  help_text: |
+                    If set, bundle id enforcement will NOT be enabled on this key.
+                - arg_name: bundle-ids
+                  api_field: googleCloudRecaptchaenterpriseV1Key.iosSettings.allowedBundleIds
+                  help_text: |
+                    iOS bundle ids of apps allowed to use the key.
 
-                Examples of valid bundle ids:
-                   'com.companyname.productname.appname'
+                    Example of a valid bundle id:
+                       'com.companyname.productname.appname'
 
         - group:
             help_text: |
@@ -101,12 +109,20 @@
               type: bool
               help_text: |
                 Creates a Key configured for Android devices.
-            - arg_name: package-names
-              api_field: googleCloudRecaptchaenterpriseV1Key.androidSettings.allowedPackageNames
-              help_text: |
-                Android package names of apps allowed to use the key.
+            - group:
+                mutex: true
+                required: true
+                params:
+                - arg_name: allow-all-package-names
+                  api_field: googleCloudRecaptchaenterpriseV1Key.androidSettings.allowAllPackageNames
+                  help_text: |
+                    If set, package name enforcement will NOT be enabled on this key.
+                - arg_name: package-names
+                  api_field: googleCloudRecaptchaenterpriseV1Key.androidSettings.allowedPackageNames
+                  help_text: |
+                    Android package names of apps allowed to use the key.
 
-                Examples of valid package names:
-                     'com.companyname.appname'
+                    Example of a valid package name:
+                         'com.companyname.appname'
   output:
     format: none

@@ -89,6 +89,7 @@ class CreateGA(base.CreateCommand):
         worker_pool_specs=worker_pool_specs,
         network=args.network,
         service_account=args.service_account,
+        enable_web_access=args.enable_web_access,
         python_package_uri=args.python_package_uris,
         args=args.args,
         command=args.command)

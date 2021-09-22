@@ -34,6 +34,27 @@ DETAILED_HELP = {
 }
 
 
+def _Run(args, version):
+  """Run method for describe command."""
+  model_monitoring_job_ref = args.CONCEPTS.monitoring_job.Parse()
+  region = model_monitoring_job_ref.AsDict()['locationsId']
+  with endpoint_util.AiplatformEndpointOverrides(version, region=region):
+    return client.ModelMonitoringJobsClient(
+        version=version).Get(model_monitoring_job_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DescribeGa(base.DescribeCommand):
+  """Get detailed model deployment monitoring job information about the given job id."""
+
+  @staticmethod
+  def Args(parser):
+    flags.AddModelMonitoringJobResourceArg(parser, 'to describe')
+
+  def Run(self, args):
+    return _Run(args, constants.GA_VERSION)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Get detailed model deployment monitoring job information about the given job id."""
@@ -42,15 +63,9 @@ class Describe(base.DescribeCommand):
   def Args(parser):
     flags.AddModelMonitoringJobResourceArg(parser, 'to describe')
 
-  def _Run(self, args, version):
-    model_monitoring_job_ref = args.CONCEPTS.monitoring_job.Parse()
-    region = model_monitoring_job_ref.AsDict()['locationsId']
-    with endpoint_util.AiplatformEndpointOverrides(version, region=region):
-      return client.ModelMonitoringJobsClient(
-          version=version).Get(model_monitoring_job_ref)
-
   def Run(self, args):
-    return self._Run(args, constants.BETA_VERSION)
+    return _Run(args, constants.BETA_VERSION)
 
 
 Describe.detailed_help = DETAILED_HELP
+DescribeGa.detailed_help = DETAILED_HELP

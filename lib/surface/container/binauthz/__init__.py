@@ -141,6 +141,8 @@ class Binauthz(base.Group):
   """
 
   def Filter(self, context, args):
+    """See base class."""
+    base.RequireProjectID(args)
     # Explicitly override container group's LEGACY billing configuration.
     properties.VALUES.billing.quota_project.Set(
         properties.VALUES.billing.CURRENT_PROJECT)

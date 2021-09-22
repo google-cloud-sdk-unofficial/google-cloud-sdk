@@ -42,6 +42,7 @@ class Create(base.CreateCommand):
     flags.AddRegion(parser)
     flags.AddCluster(parser)
     flags.AddNetwork(parser)
+    flags.AddPassword(parser)
 
   def Run(self, args):
     """Constructs and sends request.
@@ -62,6 +63,8 @@ class Create(base.CreateCommand):
         locationsId=args.region)
     cluster_resource = alloydb_messages.Cluster()
     cluster_resource.network = args.network
+    cluster_resource.initialUser = client.alloydb_messages.UserPassword(
+        password=args.password, user='postgres')
     req = alloydb_messages.AlloydbProjectsLocationsClustersCreateRequest(
         cluster=cluster_resource,
         clusterId=args.cluster,

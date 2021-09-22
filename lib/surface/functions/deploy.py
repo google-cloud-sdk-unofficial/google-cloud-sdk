@@ -28,6 +28,51 @@ from googlecloudsdk.command_lib.functions.v2.deploy import env_vars_util
 from googlecloudsdk.command_lib.util.args import labels_util as args_labels_util
 
 
+def _Args(parser, track=base.ReleaseTrack.GA):
+  """Register flags for this command."""
+  # Add a positional "resource argument" for the name of the function
+  flags.AddFunctionResourceArg(parser, 'to deploy')
+
+  # Add `args.memory` as str. Converted at runtime to int for v1.
+  flags.AddFunctionMemoryFlag(parser, track)
+
+  # Add args for function properties
+  flags.AddAllowUnauthenticatedFlag(parser)
+  flags.AddFunctionRetryFlag(parser)
+  flags.AddFunctionTimeoutFlag(parser, track)
+  flags.AddMaxInstancesFlag(parser)
+  flags.AddRuntimeFlag(parser)
+  flags.AddServiceAccountFlag(parser)
+  args_labels_util.AddUpdateLabelsFlags(
+      parser,
+      extra_update_message=labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE,
+      extra_remove_message=labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE)
+
+  # Add args for specifying the function source code
+  flags.AddSourceFlag(parser)
+  flags.AddStageBucketFlag(parser)
+  flags.AddEntryPointFlag(parser)
+
+  # Add args for specifying the function trigger
+  flags.AddTriggerFlagGroup(parser, track)
+
+  # Add args for specifying environment variables
+  env_vars_util.AddUpdateEnvVarsFlags(parser)
+
+  # Add flags for specifying build environment variables
+  env_vars_util.AddBuildEnvVarsFlags(parser)
+
+  # Add args for specifying ignore files to upload source
+  flags.AddIgnoreFileFlag(parser)
+
+  # Add flags for network settings
+  flags.AddVPCConnectorMutexGroup(parser)
+  flags.AddEgressSettingsFlag(parser)
+  flags.AddIngressSettingsFlag(parser)
+  flags.AddSecurityLevelFlag(parser)
+  flags.AddBuildWorkerPoolMutexGroup(parser)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Deploy(base.Command):
   """Create or update a Google Cloud Function."""
@@ -35,47 +80,11 @@ class Deploy(base.Command):
   @staticmethod
   def Args(parser, track=base.ReleaseTrack.GA):
     """Register flags for this command."""
-    # Add a positional "resource argument" for the name of the function
-    flags.AddFunctionResourceArg(parser, 'to deploy')
-
-    # Add args for function properties
-    flags.AddAllowUnauthenticatedFlag(parser)
-    flags.AddFunctionMemoryFlag(parser)
-    flags.AddFunctionRetryFlag(parser)
-    flags.AddFunctionTimeoutFlag(parser, track)
-    flags.AddMaxInstancesFlag(parser)
-    flags.AddRuntimeFlag(parser)
-    flags.AddServiceAccountFlag(parser)
-    args_labels_util.AddUpdateLabelsFlags(
-        parser,
-        extra_update_message=labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE,
-        extra_remove_message=labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE)
-
-    # Add args for specifying the function source code
-    flags.AddSourceFlag(parser)
-    flags.AddStageBucketFlag(parser)
-    flags.AddEntryPointFlag(parser)
-
-    # Add args for specifying the function trigger
-    flags.AddTriggerFlagGroup(parser, track)
-
-    # Add args for specifying environment variables
-    env_vars_util.AddUpdateEnvVarsFlags(parser)
-
-    # Add flags for specifying build environment variables
-    env_vars_util.AddBuildEnvVarsFlags(parser)
-
-    # Add args for specifying ignore files to upload source
-    flags.AddIgnoreFileFlag(parser)
-
-    # Add flags for network settings
-    flags.AddVPCConnectorMutexGroup(parser)
-    flags.AddEgressSettingsFlag(parser)
-    flags.AddIngressSettingsFlag(parser)
-    flags.AddSecurityLevelFlag(parser)
-    flags.AddBuildWorkerPoolMutexGroup(parser)
+    _Args(parser, track)
 
   def Run(self, args):
+    # For v1 convert args.memory from str to number of bytes in int
+    args.memory = flags.ParseMemoryStrToNumBytes(args.memory)
     return command_v1.Run(args, track=self.ReleaseTrack())
 
 
@@ -86,7 +95,7 @@ class DeployBeta(base.Command):
   @staticmethod
   def Args(parser, track=base.ReleaseTrack.BETA):
     """Register flags for this command."""
-    Deploy.Args(parser, track)
+    _Args(parser, track)
 
     # Add additional args for this release track
     flags.AddMinInstancesFlag(parser)
@@ -95,6 +104,8 @@ class DeployBeta(base.Command):
     secrets_config.ConfigureFlags(parser)
 
   def Run(self, args):
+    # For v1 convert args.memory from str to number of bytes in int
+    args.memory = flags.ParseMemoryStrToNumBytes(args.memory)
     return command_v1.Run(args, track=self.ReleaseTrack())
 
 
@@ -105,7 +116,8 @@ class DeployAlpha(base.Command):
   @staticmethod
   def Args(parser, track=base.ReleaseTrack.ALPHA):
     """Register flags for this command."""
-    Deploy.Args(parser, track)
+    # Deploy.Args(parser, track)
+    _Args(parser, track)
 
     # Add additional args for this release track
     flags.AddMinInstancesFlag(parser)
@@ -122,12 +134,14 @@ class DeployAlpha(base.Command):
     flags.AddSignatureTypeFlag(parser)
     flags.AddTriggerLocationFlag(parser)
     flags.AddTriggerServiceAccountFlag(parser)
-    flags.AddV2Flag(parser)
+    flags.AddGen2Flag(parser, track)
 
   def Run(self, args):
-    if flags.ShouldUseV2(args):
+    if flags.ShouldUseGen2():
       return command_v2.Run(args, self.ReleaseTrack())
     else:
+      # Convert args.memory from str to number of bytes in int
+      args.memory = flags.ParseMemoryStrToNumBytes(args.memory)
       return command_v1.Run(args, track=self.ReleaseTrack())
 
 

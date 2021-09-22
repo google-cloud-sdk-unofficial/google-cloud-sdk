@@ -24,10 +24,12 @@ from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.command_lib.auth import auth_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.credentials import creds as c_creds
 from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.resource import resource_printer
 
 
+# TODO(b/200196748): Update documentation to cover external accounts on launch.
 class Revoke(base.Command):
   """Revoke access credentials for an account.
 
@@ -83,6 +85,20 @@ class Revoke(base.Command):
     for account in accounts:
       if active_account == account:
         properties.PersistProperty(properties.VALUES.core.account, None)
+      # External account and external account user credentials cannot be
+      # revoked.
+      # Detect these type of credentials to show a more user friendly message
+      # on revocation calls.
+      # Note that impersonated external account credentials will appear like
+      # service accounts. These will end with gserviceaccount.com and will be
+      # handled the same way service account credentials are handled.
+      try:
+        creds = c_store.Load(
+            account, prevent_refresh=True, use_google_auth=True)
+      except c_store.Error:
+        # Ignore all errors. These will be properly handled in the subsequent
+        # Revoke call.
+        creds = None
       if not c_store.Revoke(account):
         if account.endswith('.gserviceaccount.com'):
           log.warning(
@@ -91,6 +107,16 @@ class Revoke(base.Command):
               'prevent use of the service account token earlier than the '
               'expiration, delete or disable the parent service account.'
               .format(account))
+        elif c_creds.IsExternalAccountCredentials(creds):
+          log.warning(
+              '[{}] appears to be an external account. External account '
+              'tokens cannot be revoked, but they will expire automatically.'
+              .format(account))
+        elif c_creds.IsExternalAccountUserCredentials(creds):
+          log.warning(
+              '[{}] appears to be an external account user. External account '
+              'user tokens cannot be revoked, but they will expire '
+              'automatically.'.format(account))
         else:
           log.warning(
               '[{}] already inactive (previously revoked?)'.format(account))

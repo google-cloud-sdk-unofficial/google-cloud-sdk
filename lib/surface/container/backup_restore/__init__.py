@@ -24,3 +24,8 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GKEBackup(base.Group):
   """Backup for GKE Services."""
+
+  def Filter(self, context, args):
+    """See base class."""
+    base.RequireProjectID(args)
+    return context

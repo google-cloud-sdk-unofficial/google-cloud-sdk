@@ -60,7 +60,6 @@ class List(base.ListCommand):
 
   def Run(self, args):
     project = args.project or properties.VALUES.core.project.GetOrFail()
-    print(project)
     parent = 'projects/{}/locations/-'.format(project)
 
     client = ids_api.Client(self.ReleaseTrack())

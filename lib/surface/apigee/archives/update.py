@@ -28,8 +28,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 # opposed to the base.UpdateCommand) to get the print functionality of the
 # return value (the base.UpdateCommand is silent) in order to print the updated
 # archive deployment after the command is run.
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.DescribeCommand):
   """Update an existing Apigee archive deployment."""
 
@@ -45,19 +44,19 @@ class Update(base.DescribeCommand):
   ``abcdef01234'' in the Apigee environment called ``my-env'' using the active
   Cloud Platform project, run:
 
-      $ {command} abcdef01234 --environmment=my-env --update-labels=tag=my-tag,rev=1234
+      $ {command} abcdef01234 --environment=my-env --update-labels=tag=my-tag,rev=1234
 
   To remove the ``dev'' label on an archive deployment with the id
   ``uvwxyz56789'', in the Apigee environment called ``my-env'', in an
   organization called ``my-org'', run:
 
-      $ {command} uvwxyz56789 --environemnt=my-env --organization=my-org --remove-labels=dev
+      $ {command} uvwxyz56789 --environment=my-env --organization=my-org --remove-labels=dev
 
   To clear all labels on an archive deployment with the id ``mnop4321'', in
   the Apigee environment called ``my-env'', in an organization called
   ``my-org'', and return the updated archive deployment as a JSON object, run:
 
-      $ {command} mnop4321 --environemnt=my-env --organization=my-org --clear-labels --format=json
+      $ {command} mnop4321 --environment=my-env --organization=my-org --clear-labels --format=json
   """
   }
 

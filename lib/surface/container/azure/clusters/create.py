@@ -28,8 +28,6 @@ from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
 from googlecloudsdk.command_lib.container.gkemulticloud import operations
-from googlecloudsdk.command_lib.util.concepts import concept_parsers
-from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -50,22 +48,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    arg_parser = concept_parsers.ConceptParser(
-        [
-            presentation_specs.ResourcePresentationSpec(
-                "cluster",
-                resource_args.GetAzureClusterResourceSpec(),
-                "Azure cluster to create.",
-                required=True),
-            presentation_specs.ResourcePresentationSpec(
-                "--client",
-                resource_args.GetAzureClientResourceSpec(),
-                "Azure client to use for cluster creation.",
-                required=True,
-                flag_name_overrides={"location": ""})
-        ],
-        command_level_fallthroughs={"--client.location": ["cluster.location"]})
-    arg_parser.AddToParser(parser)
+    resource_args.AddAzureClusterAndClientResourceArgs(parser)
 
     parser.add_argument(
         "--azure-region",

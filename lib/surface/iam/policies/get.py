@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.iam import policies_flags as flags
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Get(base.DescribeCommand):
   """Get a policy on the given attachment point with the given name."""
 
@@ -47,8 +47,13 @@ class Get(base.DescribeCommand):
     flags.GetPolicyIDFlag().AddToParser(parser)
 
   def Run(self, args):
-    client = apis.GetClientInstance('v2alpha')
-    messages = apis.GetMessagesModule('v2alpha')
+    track = args.calliope_command.ReleaseTrack()
+    if track == base.ReleaseTrack.ALPHA:
+      client = apis.GetClientInstance('v2alpha')
+      messages = apis.GetMessagesModule('v2alpha')
+    else:
+      client = apis.GetClientInstance('v2beta')
+      messages = apis.GetMessagesModule('v2beta')
 
     attachment_point = args.attachment_point.replace('/', '%2F')
 

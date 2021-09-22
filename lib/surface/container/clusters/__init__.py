@@ -60,5 +60,6 @@ class Clusters(base.Group):
     Returns:
       The refined command context.
     """
+    base.RequireProjectID(args)
     context['location_get'] = container_command_util.GetZoneOrRegion
     return context

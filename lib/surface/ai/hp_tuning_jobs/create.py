@@ -79,7 +79,8 @@ class CreateGa(base.CreateCommand):
           algorithm=algorithm,
           kms_key_name=validation.GetAndValidateKmsKey(args),
           network=args.network,
-          service_account=args.service_account)
+          service_account=args.service_account,
+          enable_web_access=args.enable_web_access)
 
       log.status.Print(
           _HPTUNING_JOB_CREATION_DISPLAY_MESSAGE.format(

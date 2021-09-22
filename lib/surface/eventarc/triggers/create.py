@@ -65,7 +65,7 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    flags.AddTriggerResourceArg(parser, 'The trigger to create.', required=True)
+    flags.AddCreateTrigerResourceArgs(parser, cls.ReleaseTrack())
     flags.AddEventFiltersArg(parser, cls.ReleaseTrack(), required=True)
     flags.AddServiceAccountArg(parser)
     flags.AddCreateDestinationArgs(parser, cls.ReleaseTrack(), required=True)
@@ -76,6 +76,7 @@ class Create(base.CreateCommand):
     """Run the create command."""
     client = triggers.CreateTriggersClient(self.ReleaseTrack())
     trigger_ref = args.CONCEPTS.trigger.Parse()
+    channel_ref = flags.GetChannelArg(args, self.ReleaseTrack())
     transport_topic_ref = args.CONCEPTS.transport_topic.Parse()
     event_filters = flags.GetEventFiltersArg(args, self.ReleaseTrack())
 
@@ -118,7 +119,8 @@ class Create(base.CreateCommand):
     trigger_message = client.BuildTriggerMessage(trigger_ref, event_filters,
                                                  args.service_account,
                                                  destination_message,
-                                                 transport_topic_ref)
+                                                 transport_topic_ref,
+                                                 channel_ref)
     operation = client.Create(trigger_ref, trigger_message)
     self._event_type = event_filters['type']
     if args.async_:

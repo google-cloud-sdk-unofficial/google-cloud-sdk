@@ -65,7 +65,7 @@ class CreateHelper(object):
     if support_header_action:
       flags.AddRequestHeadersToAdd(parser)
     parser.display_info.AddCacheUpdater(
-        security_policies_flags.SecurityPoliciesCompleter)
+        security_policies_flags.GlobalSecurityPoliciesCompleter)
 
   @classmethod
   def Run(cls, release_track, args, support_redirect, support_rate_limit,

@@ -98,16 +98,8 @@ class ActivateServiceAccount(base.SilentCommand):
 
     file_content, is_json = _IsJsonFile(args.key_file)
     if is_json:
-      if _UseGoogleAuth():
-        cred = auth_service_account.CredentialsFromAdcDictGoogleAuth(
-            file_content)
-      else:
-        # TODO(b/161992086): Remove the flow of activating via oauth2client once
-        # this legacy auth lib is deprecated. Leave this option for now so that
-        # the users are able to fall back to the old flow of if any issues
-        # related to google-auth comes up. The users can do this by setting
-        # property auth/disable_activate_service_account_google_auth to True.
-        cred = auth_service_account.CredentialsFromAdcDict(file_content)
+      cred = auth_service_account.CredentialsFromAdcDictGoogleAuth(
+          file_content)
       if args.password_file or args.prompt_for_password:
         raise c_exc.InvalidArgumentException(
             '--password-file',
@@ -159,16 +151,3 @@ def _IsJsonFile(filename):
       raise auth_service_account.BadCredentialFileException(
           'Could not read json file {0}: {1}'.format(filename, e))
   return content, False
-
-
-# TODO(b/161992086): Remove this method once oauth2client is deprecated.
-def _UseGoogleAuth():
-  """Whether to use google-auth for activating service account.
-
-  Returns:
-    True if property auth/disable_activate_service_account_google_auth is False.
-  """
-  google_auth_disabled = (
-      properties.VALUES.auth.disable_activate_service_account_google_auth
-      .GetBool())
-  return not google_auth_disabled

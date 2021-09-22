@@ -142,7 +142,7 @@ class Scp(base.Command):
       # If there is an '@' symbol in the user_host arg, the user is requesting
       # to connect as a specific user. This may get overridden by OS Login.
       _, expiration_micros = ssh_utils.GetSSHKeyExpirationFromArgs(args)
-      remote.user, _ = ssh.CheckForOsloginAndGetUser(
+      oslogin_state = ssh.GetOsloginState(
           None,
           project,
           remote.user,
@@ -151,6 +151,7 @@ class Scp(base.Command):
           self.ReleaseTrack(),
           username_requested=username_requested,
           instance_enable_oslogin=tpu_ssh_utils.TpuHasOsLoginEnabled(node))
+      remote.user = oslogin_state.user
 
     # Format the key correctly.
     public_key = '{1}:{0} {1}'.format(public_key, remote.user)

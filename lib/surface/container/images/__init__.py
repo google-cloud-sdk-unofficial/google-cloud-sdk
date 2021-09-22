@@ -49,4 +49,5 @@ class Images(base.Group):
     Returns:
       The refined command context.
     """
+    base.RequireProjectID(args)
     return context

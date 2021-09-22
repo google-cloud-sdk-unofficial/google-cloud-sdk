@@ -24,8 +24,7 @@ from googlecloudsdk.command_lib.apigee import defaults
 from googlecloudsdk.command_lib.apigee import resource_args
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe an Apigee archive deployment."""
 
@@ -40,13 +39,13 @@ class Describe(base.DescribeCommand):
   To describe an archive deployment with the id ``abcdef1234'' in the Apigee
   environment called ``my-env'' using the active Cloud Platform project, run:
 
-      $ {command} abcdef1234 --environmment=my-env
+      $ {command} abcdef1234 --environment=my-env
 
   To describe an archive deployment with the id ``1234abcdef'', in the Apigee
   environment called ``my-env'', in an organization called ``my-org'', as a JSON
   object, run:
 
-      $ {command} 1234abcdef --environemnt=my-env --organization=my-org --format=json
+      $ {command} 1234abcdef --environment=my-env --organization=my-org --format=json
   """
   }
 

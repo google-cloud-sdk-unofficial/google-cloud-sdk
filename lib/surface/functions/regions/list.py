@@ -62,7 +62,7 @@ class ListAlpha(base.ListCommand):
   def Args(parser):
     """Registers flags for this command."""
     List.Args(parser)
-    flags.AddV2Flag(parser)
+    flags.AddGen2Flag(parser, base.ReleaseTrack.ALPHA)
 
   @util.CatchHTTPErrorRaiseHTTPException
   def Run(self, args):
@@ -79,7 +79,7 @@ class ListAlpha(base.ListCommand):
     Raises:
       FunctionsError: If the user doesn't confirm on prompt.
     """
-    if flags.ShouldUseV2(args):
+    if flags.ShouldUseGen2():
       return command_v2.Run(args, self.ReleaseTrack())
     else:
       return command_v1.Run(args)

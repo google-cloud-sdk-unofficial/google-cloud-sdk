@@ -80,7 +80,7 @@ class SetIamPolicyAlpha(base.Command):
     flags.AddIAMPolicyFileArg(parser)
 
     # Add additional flags for GCFv2
-    flags.AddV2Flag(parser)
+    flags.AddGen2Flag(parser, base.ReleaseTrack.ALPHA)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -92,7 +92,7 @@ class SetIamPolicyAlpha(base.Command):
     Returns:
       The specified function with its description and configured filter.
     """
-    if flags.ShouldUseV2(args):
+    if flags.ShouldUseGen2():
       return command_v2.Run(args, self.ReleaseTrack())
     else:
       return command_v1.Run(args)

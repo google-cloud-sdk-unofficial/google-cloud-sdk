@@ -202,9 +202,7 @@ class ScanBeta(base.Command):
 
       # Stage 2) Make the RPC to the On-Demand Scanning API.
       tracker.StartStage('rpc')
-      op = self.AnalyzePackages(
-          properties.VALUES.core.project.Get(required=True), args.location,
-          args.RESOURCE_URI, pkgs)
+      op = self.AnalyzePackages(args, pkgs)
       tracker.CompleteStage('rpc')
 
       # Stage 3) Poll the operation if requested.
@@ -220,8 +218,12 @@ class ScanBeta(base.Command):
       return op
     return response
 
-  def AnalyzePackages(self, project, location, resource_uri, pkgs):
-    return api_util.AnalyzePackagesBeta(project, location, resource_uri, pkgs)
+  def AnalyzePackages(self, args, pkgs):
+    return api_util.AnalyzePackagesBeta(
+        properties.VALUES.core.project.Get(required=True),
+        args.location,
+        args.RESOURCE_URI,
+        pkgs)
 
   def GetMessages(self):
     return api_util.GetMessages('v1beta1')
@@ -256,8 +258,13 @@ class ScanGA(ScanBeta):
     super(ScanGA, ScanGA).Args(parser)
     flags.GetOnDemandIncludeOSVDataFlag().AddToParser(parser)
 
-  def AnalyzePackages(self, project, location, resource_uri, pkgs):
-    return api_util.AnalyzePackagesGA(project, location, resource_uri, pkgs)
+  def AnalyzePackages(self, args, pkgs):
+    return api_util.AnalyzePackagesGA(
+        properties.VALUES.core.project.Get(required=True),
+        args.location,
+        args.RESOURCE_URI,
+        pkgs,
+        args.include_osv_data)
 
   def GetMessages(self):
     return api_util.GetMessages('v1')

@@ -64,6 +64,7 @@ class Describe(base.DescribeCommand):
     flags.GetShowPackageVulnerabilityFlag().AddToParser(parser)
     flags.GetShowImageBasisFlag().AddToParser(parser)
     flags.GetShowDeploymentFlag().AddToParser(parser)
+    flags.GetShowProvenanceFlag().AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

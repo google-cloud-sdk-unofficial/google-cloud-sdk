@@ -23,9 +23,12 @@ import sys
 import textwrap
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.hub import kube_util
 from googlecloudsdk.command_lib.container.hub import rbac_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import files as file_utils
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -49,9 +52,14 @@ class GenerateGatewayRbac(base.Command):
 
       $ {command} --membership=my-cluster --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com --role=clusterrole/cluster-reader
 
-    Anthos support mode, generate the RBAC policy file with read-only permission for TSE/Eng to debug customers' clusters:
+    Anthos support mode, generate the RBAC policy file with read-only permission
+    for TSE/Eng to debug customers' clusters:
 
       $ {command} --membership=my-cluster --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com --anthos-support
+
+    Apply mode, generate the RBAC policy and apply it to the specified cluster:
+
+      $ {command} --membership=my-cluster --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com --role=clusterrole/cluster-reader --context=my-cluster-contex --kubeconfig=/home/user/custom_kubeconfig --apply
   """
 
   @classmethod
@@ -94,14 +102,39 @@ class GenerateGatewayRbac(base.Command):
           file for anthos support.
         """),
     )
+    parser.add_argument(
+        '--apply',
+        action='store_true',
+        help=textwrap.dedent("""\
+          If specified, this command will generate RBAC policy and apply to the
+          specified cluster.
+        """),
+    )
+    parser.add_argument(
+        '--context',
+        type=str,
+        help=textwrap.dedent("""\
+          The cluster context as it appears in the kubeconfig file. You can get
+        this value from the command line by running command:
+        `kubectl config current-context`.
+        """),
+    )
+    parser.add_argument(
+        '--kubeconfig',
+        type=str,
+        help=textwrap.dedent("""\
+            The kubeconfig file containing an entry for the cluster. Defaults to
+            $KUBECONFIG if it is set in the environment, otherwise defaults to
+            $HOME/.kube/config.
+          """),
+    )
 
   def Run(self, args):
     log.status.Print('Validating input arguments.')
     if len(args.users) < 1:
       raise rbac_util.InvalidArgsError(
           'The required field [users] was not provided. Please specify the '
-          'users or service account in this field.'
-      )
+          'users or service account in this field.')
     project_id = properties.VALUES.core.project.GetOrFail()
 
     # Validate the args value before generate the RBAC policy file.
@@ -125,3 +158,38 @@ class GenerateGatewayRbac(base.Command):
         overwrite=True,
         binary=False,
         private=True)
+
+    # Apply generated RBAC policy to cluster.
+    if args.apply:
+      sys.stdout.write(
+          'Applying the generate RBAC policy to cluster with kubeconfig: {}, context: {}\n'
+          .format(args.kubeconfig, args.context))
+
+      with file_utils.TemporaryDirectory() as tmp_dir:
+        file = tmp_dir + '/rbac.yaml'
+        file_utils.WriteFileContents(file, generated_rbac)
+        with kube_util.KubernetesClient(
+            kubeconfig=getattr(args, 'kubeconfig', None),
+            context=getattr(args, 'context', None),
+        ) as kube_client:
+          # Check Admin permissions.
+          kube_client.CheckClusterAdminPermissions()
+          # Get previous RBAC policy from cluster.
+          prev_rbac_name, rbac_policy_type, prev_rbac_policy = kube_client.GetRbacPolicy(
+              args.membership, args.role, project_id,
+              True if args.anthos_support else False)
+          # Check to override the existing RBAC policy or not.
+          if prev_rbac_policy:
+            message = ('A RBAC policy: {}/{} already exist. Do you want to override the current RBAC policy file?\n'.format(
+                rbac_policy_type, prev_rbac_name))
+            console_io.PromptContinue(
+                message=message,
+                cancel_on_no=True)
+
+          try:
+            kube_client.ApplyRbacPolicy(file)
+          except Exception as e:
+            log.status.Print(
+                'Error in applying the RBAC policy to cluster: {}\n'.format(e))
+            raise
+          log.status.Print('Successfully applied the RBAC policy to cluster.\n')

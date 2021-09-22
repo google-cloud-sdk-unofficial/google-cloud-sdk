@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [GA, ALPHA]
 
   help_text:
     brief: Describe the inventory data for a Compute Engine VM instance.
@@ -19,7 +19,10 @@
     #
     # Without this, a presubmit check will block this yaml file.
     disable_resource_check: true
-    api_version: v1alpha
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
     modify_request_hooks:
     - googlecloudsdk.command_lib.compute.os_config.inventories.declarative:SetNameOnDescribeRequestHook
 

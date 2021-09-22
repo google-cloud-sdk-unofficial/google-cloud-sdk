@@ -56,3 +56,8 @@ class Hub(base.Group):
 
     $ {command} cloudrun --help
   """
+
+  def Filter(self, context, args):
+    """See base class."""
+    base.RequireProjectID(args)
+    return context

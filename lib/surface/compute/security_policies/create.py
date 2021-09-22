@@ -64,7 +64,7 @@ class Create(base.CreateCommand):
             'Specify either yaml or json. Defaults to yaml if not specified. '
             'Will be ignored if --file-name is not specified.'))
 
-    parser.display_info.AddCacheUpdater(flags.SecurityPoliciesCompleter)
+    parser.display_info.AddCacheUpdater(flags.GlobalSecurityPoliciesCompleter)
 
   def Collection(self):
     return 'compute.securityPolicies'
@@ -104,8 +104,8 @@ class Create(base.CreateCommand):
     return security_policy.Create(template)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateAlphaBeta(Create):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
   """Create a Compute Engine security policy.
 
   *{command}* is used to create security policies. A security policy policy is a
@@ -124,6 +124,71 @@ class CreateAlphaBeta(Create):
     group.add_argument(
         '--type',
         choices=['CLOUD_ARMOR', 'CLOUD_ARMOR_EDGE'],
+        type=lambda x: x.upper(),
+        metavar='SECURITY_POLICY_TYPE',
+        help=('The type indicates the intended use of the security policy.'))
+
+    group.add_argument(
+        '--file-name',
+        help=('The name of the JSON or YAML file to create a security policy '
+              'config from.'))
+
+    parser.add_argument(
+        '--file-format',
+        choices=['json', 'yaml'],
+        help=(
+            'The format of the file to create the security policy config from. '
+            'Specify either yaml or json. Defaults to yaml if not specified. '
+            'Will be ignored if --file-name is not specified.'))
+
+    parser.add_argument(
+        '--description',
+        help=('An optional, textual description for the security policy.'))
+
+    parser.display_info.AddCacheUpdater(flags.GlobalSecurityPoliciesCompleter)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)
+    security_policy = client.SecurityPolicy(ref, compute_client=holder.client)
+
+    if args.file_name:
+      template = self._GetTemplateFromFile(args, holder.client.messages)
+      template.name = ref.Name()
+    else:
+      if args.type is not None:
+        template = holder.client.messages.SecurityPolicy(
+            name=ref.Name(),
+            description=args.description,
+            type=holder.client.messages.SecurityPolicy
+            .TypeValueValuesEnum(args.type))
+      else:
+        template = holder.client.messages.SecurityPolicy(
+            name=ref.Name(), description=args.description)
+
+    return security_policy.Create(template)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a Compute Engine security policy.
+
+  *{command}* is used to create security policies. A security policy policy is a
+  set of rules that controls access to various resources.
+  """
+
+  SECURITY_POLICY_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.SECURITY_POLICY_ARG = flags.SecurityPolicyMultiScopeArgument()
+    cls.SECURITY_POLICY_ARG.AddArgument(parser, operation_type='create')
+
+    group = parser.add_group(mutex=True, help='Creation options.')
+
+    group.add_argument(
+        '--type',
+        choices=['CLOUD_ARMOR', 'CLOUD_ARMOR_EDGE', 'CLOUD_ARMOR_NETWORK'],
         type=lambda x: x.upper(),
         metavar='SECURITY_POLICY_TYPE',
         help=('The type indicates the intended use of the security policy.'))

@@ -27,6 +27,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import cdn_flags_utils as cdn_flags
 from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import reference_utils
 from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_services_utils
 from googlecloudsdk.command_lib.compute.backend_services import flags
@@ -57,8 +58,8 @@ def _ResolveProtocol(messages, args, default='HTTP'):
   if args.protocol and args.protocol not in valid_options:
     raise ValueError('{} is not a supported option. See the help text of '
                      '--protocol for supported options.'.format(args.protocol))
-  return messages.BackendService.ProtocolValueValuesEnum(
-      args.protocol or default)
+  return messages.BackendService.ProtocolValueValuesEnum(args.protocol or
+                                                         default)
 
 
 def AddIapFlag(parser):
@@ -89,7 +90,8 @@ class CreateHelper(object):
            support_client_only, support_grpc_protocol,
            support_unspecified_protocol, support_subsetting,
            support_subsetting_subset_size, support_connection_tracking,
-           support_strong_session_affinity):
+           support_strong_session_affinity, support_advanced_load_balancing,
+           support_service_bindings, support_extended_caching):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -105,6 +107,10 @@ class CreateHelper(object):
     cls.HTTPS_HEALTH_CHECK_ARG = flags.HttpsHealthCheckArgument()
     cls.HTTPS_HEALTH_CHECK_ARG.AddArgument(
         parser, cust_metavar='HTTPS_HEALTH_CHECK')
+    if support_advanced_load_balancing:
+      flags.AddServiceLoadBalancingPolicy(parser)
+    if support_service_bindings:
+      flags.AddServiceBindings(parser)
     flags.AddTimeout(parser)
     flags.AddPortName(parser)
     flags.AddProtocol(
@@ -126,6 +132,8 @@ class CreateHelper(object):
     flags.AddCacheKeyIncludeHost(parser, default=True)
     flags.AddCacheKeyIncludeQueryString(parser, default=True)
     flags.AddCacheKeyQueryStringList(parser)
+    if support_extended_caching:
+      flags.AddCacheKeyExtendedCachingArgs(parser)
     AddIapFlag(parser)
     parser.display_info.AddCacheUpdater(flags.BackendServicesCompleter)
     signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
@@ -159,7 +167,8 @@ class CreateHelper(object):
                support_l7_rxlb, support_failover, support_logging,
                support_multinic, support_subsetting,
                support_subsetting_subset_size, support_connection_tracking,
-               support_strong_session_affinity):
+               support_strong_session_affinity, support_advanced_load_balancing,
+               support_service_bindings, support_extended_caching):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_gfe3 = support_gfe3
     self._support_l7_rxlb = support_l7_rxlb
@@ -170,6 +179,9 @@ class CreateHelper(object):
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_connection_tracking = support_connection_tracking
     self._support_strong_session_affinity = support_strong_session_affinity
+    self._support_advanced_load_balancing = support_advanced_load_balancing
+    self._support_service_bindings = support_service_bindings
+    self._support_extended_caching = support_extended_caching
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
     """Returns a global backend service create request."""
@@ -201,8 +213,21 @@ class CreateHelper(object):
         args,
         backend_service,
         is_update=False,
-        apply_signed_url_cache_max_age=True)
+        apply_signed_url_cache_max_age=True,
+        support_extended_caching=self._support_extended_caching)
 
+    if (self._support_advanced_load_balancing and
+        args.service_lb_policy is not None):
+      backend_service.serviceLbPolicy = reference_utils.BuildServiceLbPolicyUrl(
+          project_name=backend_services_ref.project,
+          location='global',
+          policy_name=args.service_lb_policy)
+    if self._support_service_bindings and args.service_bindings is not None:
+      backend_service.serviceBindings = [
+          reference_utils.BuildServiceBindingUrl(backend_services_ref.project,
+                                                 'global', binding_name)
+          for binding_name in args.service_bindings
+      ]
     if self._support_subsetting:
       backend_services_utils.ApplySubsettingArgs(
           client, args, backend_service, self._support_subsetting_subset_size)
@@ -268,6 +293,18 @@ class CreateHelper(object):
     backend_services_utils.ApplyFailoverPolicyArgs(client.messages, args,
                                                    backend_service,
                                                    self._support_failover)
+    if (self._support_advanced_load_balancing and
+        args.service_lb_policy is not None):
+      backend_service.serviceLbPolicy = reference_utils.BuildServiceLbPolicyUrl(
+          project_name=backend_services_ref.project,
+          location=backend_services_ref.region,
+          policy_name=args.service_lb_policy)
+
+    if self._support_service_bindings and args.service_bindings is not None:
+      raise exceptions.InvalidArgumentException(
+          '--service-bindings',
+          'Service bindings are allowed only for global backend services.')
+
     if self._support_subsetting:
       backend_services_utils.ApplySubsettingArgs(
           client, args, backend_service, self._support_subsetting_subset_size)
@@ -332,8 +369,8 @@ class CreateHelper(object):
       backend_service.iap = backend_services_utils.GetIAP(iap_arg, messages)
       if backend_service.iap.enabled:
         log.warning(backend_services_utils.IapBestPracticesNotice())
-      if (backend_service.iap.enabled and backend_service.protocol is
-          not messages.BackendService.ProtocolValueValuesEnum.HTTPS):
+      if (backend_service.iap.enabled and backend_service.protocol
+          is not messages.BackendService.ProtocolValueValuesEnum.HTTPS):
         log.warning(backend_services_utils.IapHttpWarning())
 
   def Run(self, args, holder):
@@ -383,6 +420,9 @@ class CreateGA(base.CreateCommand):
   _support_subsetting_subset_size = False
   _support_connection_tracking = False
   _support_strong_session_affinity = False
+  _support_advanced_load_balancing = False
+  _support_service_bindings = False
+  _support_extended_caching = False
 
   @classmethod
   def Args(cls, parser):
@@ -401,7 +441,10 @@ class CreateGA(base.CreateCommand):
         support_subsetting=cls._support_subsetting,
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_connection_tracking=cls._support_connection_tracking,
-        support_strong_session_affinity=cls._support_strong_session_affinity)
+        support_strong_session_affinity=cls._support_strong_session_affinity,
+        support_advanced_load_balancing=cls._support_advanced_load_balancing,
+        support_service_bindings=cls._support_service_bindings,
+        support_extended_caching=cls._support_extended_caching)
 
   def Run(self, args):
     """Issues request necessary to create Backend Service."""
@@ -418,8 +461,11 @@ class CreateGA(base.CreateCommand):
         support_subsetting=self._support_subsetting,
         support_subsetting_subset_size=self._support_subsetting_subset_size,
         support_connection_tracking=self._support_connection_tracking,
-        support_strong_session_affinity=self._support_strong_session_affinity
-    ).Run(args, holder)
+        support_strong_session_affinity=self._support_strong_session_affinity,
+        support_advanced_load_balancing=self._support_advanced_load_balancing,
+        support_service_bindings=self._support_service_bindings,
+        support_extended_caching=self._support_extended_caching).Run(
+            args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -448,6 +494,9 @@ class CreateBeta(CreateGA):
   _support_subsetting_subset_size = False
   _support_connection_tracking = True
   _support_strong_session_affinity = True
+  _support_advanced_load_balancing = False
+  _support_service_bindings = False
+  _support_extended_caching = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -477,3 +526,6 @@ class CreateAlpha(CreateBeta):
   _support_subsetting_subset_size = True
   _support_connection_tracking = True
   _support_strong_session_affinity = True
+  _support_advanced_load_balancing = True
+  _support_service_bindings = True
+  _support_extended_caching = True

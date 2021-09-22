@@ -112,8 +112,10 @@ class Update(base.Command):
             validateOnly=args.validate_only,
             updateMask=u','.join(update_mask),
             googleCloudDataplexV1Zone=zone.GenerateZoneForUpdateRequest(
-                args.description, args.display_name, args.labels,
-                args.discovery_enabled, args.include_patterns,
+                args.description, args.display_name,
+                dataplex_util.CreateLabels(
+                    dataplex_util.GetMessageModule().GoogleCloudDataplexV1Zone,
+                    args), args.discovery_enabled, args.include_patterns,
                 args.exclude_patterns, args.discovery_schedule)))
     validate_only = getattr(args, 'validate_only', False)
     if validate_only:

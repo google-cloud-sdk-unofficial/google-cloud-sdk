@@ -192,7 +192,7 @@ class Ssh(base.Command):
       # to connect as a specific user. This may get overridden by OS Login.
       username_requested = '@' in args.user_tpu
       _, expiration_micros = ssh_utils.GetSSHKeyExpirationFromArgs(args)
-      user, _ = ssh.CheckForOsloginAndGetUser(
+      oslogin_state = ssh.GetOsloginState(
           None,
           project,
           user,
@@ -201,6 +201,7 @@ class Ssh(base.Command):
           self.ReleaseTrack(),
           username_requested=username_requested,
           instance_enable_oslogin=tpu_ssh_utils.TpuHasOsLoginEnabled(node))
+      user = oslogin_state.user
 
     # Format the key correctly.
     public_key = '{1}:{0} {1}'.format(public_key, user)

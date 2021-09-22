@@ -24,8 +24,7 @@ from googlecloudsdk.command_lib.apigee import defaults
 from googlecloudsdk.command_lib.apigee import resource_args
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List Apigee archive deployments."""
 

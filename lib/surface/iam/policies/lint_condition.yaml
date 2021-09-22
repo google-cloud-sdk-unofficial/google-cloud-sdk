@@ -1,4 +1,5 @@
-- help_text:
+- release_tracks: [ALPHA]
+  help_text:
     brief: Lint an IAM condition.
     description: |
       Lint an IAM condition. The problems found by linter will not be fixed.

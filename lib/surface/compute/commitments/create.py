@@ -116,7 +116,7 @@ class Create(base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create Compute Engine commitments."""
-  _support_share_setting = False
+  _support_share_setting = True
 
   @classmethod
   def Args(cls, parser):
@@ -170,4 +170,3 @@ class CreateAlpha(CreateBeta):
         project=project,
         region=commitment_ref.region,
     )
-

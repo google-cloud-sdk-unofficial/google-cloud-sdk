@@ -154,7 +154,9 @@ class Create(base.Command):
             googleCloudDataplexV1Asset=asset.GenerateAssetForCreateRequest(
                 args.description,
                 args.display_name,
-                args.labels,
+                dataplex_util.CreateLabels(
+                    dataplex_util.GetMessageModule().GoogleCloudDataplexV1Asset,
+                    args),
                 args.resource_name,
                 args.resource_type,
                 args.creation_policy,

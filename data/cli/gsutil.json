@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "4.67",
+  "CLI_VERSION": "4.68",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -2375,7 +2375,36 @@
         "authorize": {
           "capsule": "Configure Cloud KMS encryption",
           "commands": {},
-          "flags": {},
+          "flags": {
+            "-k": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "<key> The path to the KMS key to use. The path has\nthe following form:\n``projects/[project-id]/locations/[location]/keyRings/[key-ring]/cryptoKeys/[my-key]``",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-k",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-p": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "<project> The project being authorized to use the Cloud\nKMS key. If this flag is not included, your\ndefault project is authorized.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-p",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            }
+          },
           "groups": {},
           "is_group": false,
           "is_hidden": false,
@@ -2387,8 +2416,8 @@
           "positionals": [],
           "release": "GA",
           "sections": {
-            "DESCRIPTION": "The authorize sub-command checks that the default (or supplied) project has a\nCloud Storage-owned service account created for it, and if not, it creates\none. It then adds appropriate encrypt/decrypt permissions to Cloud KMS\nresources such that the Cloud Storage service account can write and read Cloud\nKMS-encrypted objects in buckets associated with the specified project.",
-            "EXAMPLES": "Authorize your default project to use a Cloud KMS key:\n\n  gsutil kms authorize \\\n      -k projects/key-project/locations/us-east1/keyRings/key-ring/cryptoKeys/my-key\n\nAuthorize \"my-project\" to use a Cloud KMS key:\n\n  gsutil kms authorize -p my-project \\\n      -k projects/key-project/locations/us-east1/keyRings/key-ring/cryptoKeys/my-key"
+            "DESCRIPTION": "The authorize sub-command checks that the default (or supplied) project has a\nCloud Storage service agent created for it, and if not, it creates one. It then\nadds appropriate encrypt/decrypt permissions to Cloud KMS resources such that the\nservice agent can write and read Cloud KMS-encrypted objects in buckets associated\nwith the service agent's project.",
+            "EXAMPLES": "Authorize \"my-project\" to use a Cloud KMS key:\n\n  gsutil kms authorize -p my-project \\\n      -k projects/key-project/locations/us-east1/keyRings/key-ring/cryptoKeys/my-key"
           }
         },
         "encryption": {
@@ -2413,7 +2442,7 @@
               "attr": {},
               "category": "",
               "default": "",
-              "description": "<key> Set the default KMS key for my-bucket using the\nfull path to the key\n``projects/[project-id]/locations/[location]/keyRings/[key-ring]/cryptoKeys/[my-key]``",
+              "description": "<key> Set the default KMS key for my-bucket using the\nfull path to the key, which has the following\nform:\n``projects/[project-id]/locations/[location]/keyRings/[key-ring]/cryptoKeys/[my-key]``",
               "group": "",
               "is_global": false,
               "is_hidden": false,
@@ -2450,13 +2479,28 @@
           "release": "GA",
           "sections": {
             "DESCRIPTION": "The encryption sub-command is used to set, display, or clear a bucket's\ndefault KMS key, which is used to encrypt newly-written objects if no other\nkey is specified.",
-            "EXAMPLES": "Set the default KMS key for my-bucket:\n\n  gsutil kms encryption \\\n      -k projects/key-project/locations/us-east1/keyRings/key-ring/cryptoKeys/my-key \\\n      gs://my-bucket\n\nSet the default KMS key for my-bucket, but display a warning rather than failing if\ngsutil is unable to verify that the specified key contains the correct IAM bindings\nfor encryption/decryption. This is useful for users that do not have getIamPolicy\npermission but know that the key has the correct IAM policy for encryption in the\nuser's project:\n\n  gsutil kms encryption \\\n      -k projects/key-project/locations/us-east1/keyRings/key-ring/cryptoKeys/my-key \\\n      -w gs://my-bucket\n\nShow the default KMS key for my-bucket, if one is set:\n\n  gsutil kms encryption gs://my-bucket\n\nClear the default KMS key so newly-written objects are not encrypted using it:\n\n  gsutil kms encryption -d gs://my-bucket\n\nOnce you clear the default KMS key, newly-written objects are encrypted with\nGoogle-managed encryption keys by default."
+            "EXAMPLES": "Set the default KMS key for my-bucket:\n\n  gsutil kms encryption \\\n      -k projects/key-project/locations/us-east1/keyRings/key-ring/cryptoKeys/my-key \\\n      gs://my-bucket\n\nShow the default KMS key for my-bucket, if one is set:\n\n  gsutil kms encryption gs://my-bucket\n\nClear the default KMS key so newly-written objects are not encrypted using it:\n\n  gsutil kms encryption -d gs://my-bucket\n\nOnce you clear the default KMS key, newly-written objects are encrypted with\nGoogle-managed encryption keys by default."
           }
         },
         "serviceaccount": {
           "capsule": "Configure Cloud KMS encryption",
           "commands": {},
-          "flags": {},
+          "flags": {
+            "-p": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "<project> The project whose Cloud Storage service agent\nis being requested. If this flag is not\nincluded, your default project is used.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-p",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            }
+          },
           "groups": {},
           "is_group": false,
           "is_hidden": false,
@@ -2468,8 +2512,8 @@
           "positionals": [],
           "release": "GA",
           "sections": {
-            "DESCRIPTION": "The serviceaccount sub-command displays the Cloud Storage-owned service\naccount that is used to perform Cloud KMS operations against your default\nproject (or a supplied project).",
-            "EXAMPLES": "Show the service account for your default project:\n\n  gsutil kms serviceaccount\n\nShow the service account for my-project:\n\n  gsutil kms serviceaccount -p my-project"
+            "DESCRIPTION": "The serviceaccount sub-command displays the Cloud Storage service agent\nthat is used to perform Cloud KMS operations against your default project\n(or a supplied project).",
+            "EXAMPLES": "Show the service account for my-project:\n\n  gsutil kms serviceaccount -p my-project"
           }
         }
       },
@@ -2492,12 +2536,26 @@
           "attr": {},
           "category": "",
           "default": "",
-          "description": "<key> Set the default KMS key for my-bucket using the\nfull path to the key\n``projects/[project-id]/locations/[location]/keyRings/[key-ring]/cryptoKeys/[my-key]``",
+          "description": "<key> Set the default KMS key for my-bucket using the\nfull path to the key, which has the following\nform:\n``projects/[project-id]/locations/[location]/keyRings/[key-ring]/cryptoKeys/[my-key]``",
           "group": "",
           "is_global": false,
           "is_hidden": false,
           "is_required": false,
           "name": "-k",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-p": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "<project> The project whose Cloud Storage service agent\nis being requested. If this flag is not\nincluded, your default project is used.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-p",
           "nargs": "0",
           "type": "bool",
           "value": ""
@@ -2527,11 +2585,11 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "AUTHORIZE": "The authorize sub-command checks that the default (or supplied) project has a\nCloud Storage-owned service account created for it, and if not, it creates\none. It then adds appropriate encrypt/decrypt permissions to Cloud KMS\nresources such that the Cloud Storage service account can write and read Cloud\nKMS-encrypted objects in buckets associated with the specified project.",
+        "AUTHORIZE": "The authorize sub-command checks that the default (or supplied) project has a\nCloud Storage service agent created for it, and if not, it creates one. It then\nadds appropriate encrypt/decrypt permissions to Cloud KMS resources such that the\nservice agent can write and read Cloud KMS-encrypted objects in buckets associated\nwith the service agent's project.",
         "DESCRIPTION": "The kms command is used to configure Google Cloud Storage and Cloud KMS\nresources to support encryption of Cloud Storage objects with\n`Cloud KMS keys\n<https://cloud.google.com/storage/docs/encryption/customer-managed-keys>`_.\n\nThe kms command has three sub-commands that deal with configuring Cloud\nStorage's integration with Cloud KMS: ``authorize``, ``encryption``,\nand ``serviceaccount``.",
         "ENCRYPTION": "The encryption sub-command is used to set, display, or clear a bucket's\ndefault KMS key, which is used to encrypt newly-written objects if no other\nkey is specified.",
-        "EXAMPLES": "Show the service account for your default project:\n\n  gsutil kms serviceaccount\n\nShow the service account for my-project:\n\n  gsutil kms serviceaccount -p my-project",
-        "SERVICEACCOUNT": "The serviceaccount sub-command displays the Cloud Storage-owned service\naccount that is used to perform Cloud KMS operations against your default\nproject (or a supplied project)."
+        "EXAMPLES": "Show the service account for my-project:\n\n  gsutil kms serviceaccount -p my-project",
+        "SERVICEACCOUNT": "The serviceaccount sub-command displays the Cloud Storage service agent\nthat is used to perform Cloud KMS operations against your default project\n(or a supplied project)."
       }
     },
     "label": {
@@ -2907,7 +2965,7 @@
           "attr": {},
           "category": "",
           "default": "",
-          "description": "Requests a recursive listing, performing at least one listing\neration per subdirectory. If you have a large number of\nbdirectories and do not require recursive-style output ordering,\nu may be able to instead use wildcards to perform a flat\nsting, e.g. `gsutil ls gs://mybucket/**`, which generally\nrforms fewer listing operations.",
+          "description": "Requests a recursive listing, performing at least one listing\neration per subdirectory. If you have a large number of\nbdirectories and do not require recursive-style output ordering,\nu may be able to instead use wildcards to perform a flat\nsting, e.g. ``gsutil ls gs://mybucket/**``, which generally\nrforms fewer listing operations.",
           "group": "",
           "is_global": false,
           "is_hidden": false,
@@ -2930,7 +2988,7 @@
       "sections": {
         "BUCKET DETAILS": "If you want to see information about the bucket itself, use the -b\noption. For example:\n\n  gsutil ls -L -b gs://bucket\n\nprints something like:\n\n  gs://bucket/ :\n          Storage class:                STANDARD\n          Location constraint:          US\n          Versioning enabled:           False\n          Logging configuration:        None\n          Website configuration:        None\n          CORS configuration:           None\n          Lifecycle configuration:      None\n          Requester Pays enabled:       True\n          Labels:                       None\n          Default KMS key:              None\n          Time created:                 Thu, 14 Jan 2016 19:25:17 GMT\n          Time updated:                 Thu, 08 Jun 2017 21:17:59 GMT\n          Metageneration:               1\n          Bucket Policy Only enabled:   False\n          ACL:\n            [\n              {\n                \"entity\": \"project-owners-867489160491\",\n                \"projectTeam\": {\n                  \"projectNumber\": \"867489160491\",\n                  \"team\": \"owners\"\n                },\n                \"role\": \"OWNER\"\n              }\n            ]\n          Default ACL:\n            [\n              {\n                \"entity\": \"project-owners-867489160491\",\n                \"projectTeam\": {\n                  \"projectNumber\": \"867489160491\",\n                  \"team\": \"owners\"\n                },\n                \"role\": \"OWNER\"\n              }\n            ]\n\nNote that some fields above (time created, time updated, metageneration) are\nnot available with the (non-default) XML API.",
         "OBJECT DETAILS": "If you specify the -l option, gsutil outputs additional information about\neach matching provider, bucket, subdirectory, or object. For example:\n\n  gsutil ls -l gs://bucket/*.html gs://bucket/*.txt\n\nprints the object size, creation time stamp, and name of each matching\nobject, along with the total count and sum of sizes of all matching objects:\n\n     2276224  2020-03-02T19:25:17Z  gs://bucket/obj1.html\n     3914624  2020-03-02T19:30:27Z  gs://bucket/obj2.html\n         131  2020-03-02T19:37:45Z  gs://bucket/obj3.txt\n  TOTAL: 3 objects, 6190979 bytes (5.9 MiB)\n\nNote that the total listed in parentheses above is in mebibytes (or gibibytes,\ntebibytes, etc.), which corresponds to the unit of billing measurement for\nGoogle Cloud Storage.\n\nYou can get a listing of all the objects in the top-level bucket directory\n(along with the total count and sum of sizes) using a command like:\n\n  gsutil ls -l gs://bucket\n\nTo print additional detail about objects and buckets use the gsutil ls -L\noption. For example:\n\n  gsutil ls -L gs://bucket/obj1\n\nprints something like:\n\n  gs://bucket/obj1:\n          Creation time:                    Fri, 26 May 2017 22:55:44 GMT\n          Update time:                      Tue, 18 Jul 2017 12:31:18 GMT\n          Storage class:                    STANDARD\n          Content-Length:                   60183\n          Content-Type:                     image/jpeg\n          Hash (crc32c):                    zlUhtg==\n          Hash (md5):                       Bv86IAzFzrD1Z2io/c7yqA==\n          ETag:                             5ca67960a586723b7344afffc81\n          Generation:                       1378862725952000\n          Metageneration:                   1\n          ACL:                              [\n    {\n      \"entity\": \"project-owners-867484910061\",\n      \"projectTeam\": {\n        \"projectNumber\": \"867484910061\",\n        \"team\": \"owners\"\n      },\n      \"role\": \"OWNER\"\n    },\n    {\n      \"email\": \"jane@gmail.com\",\n      \"entity\": \"user-jane@gmail.com\",\n      \"role\": \"OWNER\"\n    }\n  ]\n  TOTAL: 1 objects, 60183 bytes (58.77 KiB)\n\nNote that results may contain additional fields, such as custom metadata or\na storage class update time, if they are applicable to the object.\n\nAlso note that some fields, such as update time, are not available with the\n(non-default) XML API.\n\nSee also \"gsutil help acl\" for getting a more readable version of the ACL.",
-        "PROVIDERS, BUCKETS, SUBDIRECTORIES, AND OBJECTS": "If you run gsutil ls without URLs, it lists all of the Google Cloud Storage\nbuckets under your default project ID (or all of the Cloud Storage buckets\nunder the project you specify with the -p flag):\n\n  gsutil ls\n\nIf you specify one or more provider URLs, gsutil ls lists buckets at each\nlisted provider:\n\n  gsutil ls gs://\n\nIf you specify bucket URLs, gsutil ls lists objects at the top level of\neach bucket, along with the names of each subdirectory. For example:\n\n  gsutil ls gs://bucket\n\nmight produce output like:\n\n  gs://bucket/obj1.htm\n  gs://bucket/obj2.htm\n  gs://bucket/images1/\n  gs://bucket/images2/\n\nThe \"/\" at the end of the last 2 URLs tells you they are subdirectories,\nwhich you can list using:\n\n  gsutil ls gs://bucket/images*\n\nIf you specify object URLs, gsutil ls lists the specified objects. For\nexample:\n\n  gsutil ls gs://bucket/*.txt\n\nlists all files whose name matches the above wildcard at the top level of\nthe bucket.\n\nSee \"gsutil help wildcards\" for more details on working with wildcards."
+        "PROVIDERS, BUCKETS, SUBDIRECTORIES, AND OBJECTS": "If you run gsutil ls without URLs, it lists all of the Google Cloud Storage\nbuckets under your default project ID (or all of the Cloud Storage buckets\nunder the project you specify with the -p flag):\n\n  gsutil ls\n\nIf you specify one or more provider URLs, gsutil ls lists buckets at each\nlisted provider:\n\n  gsutil ls gs://\n\ngsutil currently supports ``gs://`` and ``s3://`` as valid providers\n\nIf you specify bucket URLs, gsutil ls lists objects at the top level of\neach bucket, along with the names of each subdirectory. For example:\n\n  gsutil ls gs://bucket\n\nmight produce output like:\n\n  gs://bucket/obj1.htm\n  gs://bucket/obj2.htm\n  gs://bucket/images1/\n  gs://bucket/images2/\n\nThe \"/\" at the end of the last 2 URLs tells you they are subdirectories,\nwhich you can list using:\n\n  gsutil ls gs://bucket/images*\n\nIf you specify object URLs, gsutil ls lists the specified objects. For\nexample:\n\n  gsutil ls gs://bucket/*.txt\n\nlists all files whose name matches the above wildcard at the top level of\nthe bucket.\n\nSee \"gsutil help wildcards\" for more details on working with wildcards."
       }
     },
     "mb": {

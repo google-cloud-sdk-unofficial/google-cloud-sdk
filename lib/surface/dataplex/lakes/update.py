@@ -75,20 +75,19 @@ class Update(base.Command):
       update_mask.append('metastore.service')
     lake_ref = args.CONCEPTS.lake.Parse()
     dataplex_client = dataplex_util.GetClientInstance()
+    message = dataplex_util.GetMessageModule()
     update_req_op = dataplex_client.projects_locations_lakes.Patch(
-        dataplex_util.GetMessageModule(
-        ).DataplexProjectsLocationsLakesPatchRequest(
+        message.DataplexProjectsLocationsLakesPatchRequest(
             name=lake_ref.RelativeName(),
             validateOnly=args.validate_only,
             updateMask=u','.join(update_mask),
-            googleCloudDataplexV1Lake=dataplex_util.GetMessageModule()
-            .GoogleCloudDataplexV1Lake(
+            googleCloudDataplexV1Lake=message.GoogleCloudDataplexV1Lake(
                 description=args.description,
                 displayName=args.display_name,
-                metastore=dataplex_util.GetMessageModule()
-                .GoogleCloudDataplexV1LakeMetastore(
+                metastore=message.GoogleCloudDataplexV1LakeMetastore(
                     service=args.metastore_service),
-                labels=args.labels)))
+                labels=dataplex_util.CreateLabels(
+                    message.GoogleCloudDataplexV1Lake, args))))
     validate_only = getattr(args, 'validate_only', False)
     if validate_only:
       log.status.Print('Validation complete with errors:')

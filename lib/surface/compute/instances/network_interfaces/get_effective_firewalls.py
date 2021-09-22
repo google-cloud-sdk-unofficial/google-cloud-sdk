@@ -28,11 +28,9 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
   r"""Get the effective firewalls for a Compute Engine virtual machine network interface.
-
-  *{command}* is used to get the effective firewalls applied to the network
-  interfaces of a Compute Engine virtual machine.
 
   ## EXAMPLES
 
@@ -44,6 +42,7 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
   Compute Engine virtual machine "example-instance" in zone
   us-central1-a
   """
+  _support_network_firewall_policy = False
 
   @staticmethod
   def Args(parser):
@@ -126,7 +125,7 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
     for fp in all_firewall_policy:
       result.extend(
           firewalls_utils.ConvertFirewallPolicyRulesToEffectiveFwRules(
-              client, fp))
+              client, fp, self._support_network_firewall_policy))
     for sp in org_firewall:
       result.extend(
           firewalls_utils.ConvertOrgSecurityPolicyRulesToEffectiveFwRules(sp))
@@ -140,7 +139,18 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
     log.status.Print('\n' + firewalls_utils.LIST_NOTICE)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class GetEffectiveFirewallsAlpha(GetEffectiveFirewalls):
+  r"""Get the effective firewalls for a Compute Engine virtual machine network interface."""
+
+  _support_network_firewall_policy = True
+
+
 GetEffectiveFirewalls.detailed_help = {
+    'DESCRIPTION': """
+        *{command}* is used to get the effective firewalls applied to the
+         network interfaces of a Compute Engine virtual machine.
+    """,
     'EXAMPLES':
         """\
     To get the effective firewalls of instance with name example-instance, run:

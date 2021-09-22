@@ -50,8 +50,8 @@ class Create(base.CreateCommand):
     flags.GetPolicyFileFlag().AddToParser(parser)
 
   def Run(self, args):
-    client = apis.GetClientInstance('v2alpha1')
-    messages = apis.GetMessagesModule('v2alpha1')
+    client = apis.GetClientInstance('v2alpha')
+    messages = apis.GetMessagesModule('v2alpha')
 
     attachment_point = args.attachment_point.replace('/', '%2F')
 
@@ -59,6 +59,6 @@ class Create(base.CreateCommand):
         messages.IamPoliciesCreatePolicyRequest(
             parent='policies/{}/{}'.format(attachment_point, args.kind),
             policyId=args.policy_id,
-            googleIamV2alpha1Policy=apis.ParseYamlOrJsonPolicyFile(
-                args.policy_file, messages.GoogleIamV2alpha1Policy)))
+            googleIamV2alphaPolicy=apis.ParseYamlOrJsonPolicyFile(
+                args.policy_file, messages.GoogleIamV2alphaPolicy)))
     return result

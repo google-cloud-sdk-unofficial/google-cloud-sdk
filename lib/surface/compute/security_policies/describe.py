@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.security_policies import flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine security policy.
 
@@ -41,6 +42,29 @@ class Describe(base.DescribeCommand):
 
   def Collection(self):
     return 'compute.securityPolicies'
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    ref = self.SECURITY_POLICY_ARG.ResolveAsResource(args, holder.resources)
+    security_policy = client.SecurityPolicy(ref, compute_client=holder.client)
+
+    return security_policy.Describe()
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(base.DescribeCommand):
+  """Describe a Compute Engine security policy.
+
+    *{command}* displays all data associated with Compute Engine security
+    policy in a project.
+  """
+
+  SECURITY_POLICY_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.SECURITY_POLICY_ARG = flags.SecurityPolicyMultiScopeArgument()
+    cls.SECURITY_POLICY_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

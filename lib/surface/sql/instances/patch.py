@@ -237,12 +237,14 @@ def AddBetaArgs(parser):
   """Adds beta args and flags to the parser."""
   flags.AddInstanceResizeLimit(parser)
   flags.AddNetwork(parser)
+  flags.AddAllocatedIpRangeName(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
 
 
 def AddAlphaArgs(parser):
   """Adds alpha args and flags to the parser."""
   flags.AddSqlServerAuditBucketPath(parser)
+  flags.AddDatabaseVersion(parser, hidden=True)
 
 
 def RunBasePatchCommand(args, release_track):

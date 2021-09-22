@@ -140,7 +140,7 @@ class Rm(base.Command):
             user_request_args=user_request_args))
 
     log.status.Print('Removing objects:')
-    task_executor.execute_tasks(
+    object_exit_code = task_executor.execute_tasks(
         task_iterator_factory.object_iterator(),
         parallelizable=True,
         task_status_queue=task_status_queue,
@@ -152,8 +152,11 @@ class Rm(base.Command):
     # We perform the is_empty check to avoid printing unneccesary status lines.
     if args.recursive and not bucket_iterator.is_empty():
       log.status.Print('Removing Buckets:')
-      task_executor.execute_tasks(
+      bucket_exit_code = task_executor.execute_tasks(
           bucket_iterator,
           parallelizable=True,
           task_status_queue=task_status_queue,
           progress_type=task_status.ProgressType.COUNT)
+    else:
+      bucket_exit_code = 0
+    self.exit_code = max(object_exit_code, bucket_exit_code)

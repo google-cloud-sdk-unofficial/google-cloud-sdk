@@ -52,8 +52,8 @@ class Delete(base.DeleteCommand):
     flags.GetEtagFlag().AddToParser(parser)
 
   def Run(self, args):
-    client = apis.GetClientInstance('v2alpha1')
-    messages = apis.GetMessagesModule('v2alpha1')
+    client = apis.GetClientInstance('v2alpha')
+    messages = apis.GetMessagesModule('v2alpha')
 
     attachment_point = args.attachment_point.replace('/', '%2F')
 
@@ -63,7 +63,7 @@ class Delete(base.DeleteCommand):
       get_result = client.policies.Get(
           messages.IamPoliciesGetRequest(name='policies/{}/{}/{}'.format(
               attachment_point, args.kind, args.policy_id)))
-      if isinstance(get_result, messages.GoogleIamV2alpha1Policy):
+      if isinstance(get_result, messages.GoogleIamV2alphaPolicy):
         etag = get_result.etag
       else:
         raise Exception('Unexpected response from policies client.')

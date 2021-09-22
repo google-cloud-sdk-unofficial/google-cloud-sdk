@@ -34,6 +34,28 @@ DETAILED_HELP = {
 }
 
 
+def _Run(args, version):
+  """Run method for delete command."""
+  region_ref = args.CONCEPTS.region.Parse()
+  region = region_ref.AsDict()['locationsId']
+  with endpoint_util.AiplatformEndpointOverrides(version, region=region):
+    return client.ModelMonitoringJobsClient(version=version).List(
+        region_ref=region_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ListGa(base.ListCommand):
+  """List the model deployment monitoring jobs of the given project and region."""
+
+  @staticmethod
+  def Args(parser):
+    flags.AddRegionResourceArg(parser,
+                               'to list model deployment monitoring jobs')
+
+  def Run(self, args):
+    return _Run(args, constants.GA_VERSION)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List the model deployment monitoring jobs of the given project and region."""
@@ -43,15 +65,9 @@ class List(base.ListCommand):
     flags.AddRegionResourceArg(parser,
                                'to list model deployment monitoring jobs')
 
-  def _Run(self, args, version):
-    region_ref = args.CONCEPTS.region.Parse()
-    region = region_ref.AsDict()['locationsId']
-    with endpoint_util.AiplatformEndpointOverrides(version, region=region):
-      return client.ModelMonitoringJobsClient(version=version).List(
-          region_ref=region_ref)
-
   def Run(self, args):
-    return self._Run(args, constants.BETA_VERSION)
+    return _Run(args, constants.BETA_VERSION)
 
 
 List.detailed_help = DETAILED_HELP
+ListGa.detailed_help = DETAILED_HELP

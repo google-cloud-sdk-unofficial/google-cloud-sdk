@@ -38,6 +38,38 @@ DETAILED_HELP = {
 }
 
 
+def _Run(args, version):
+  """Run method for delete command."""
+  model_monitoring_job_ref = args.CONCEPTS.monitoring_job.Parse()
+  region = model_monitoring_job_ref.AsDict()['locationsId']
+  model_monitoring_job_id = model_monitoring_job_ref.AsDict(
+  )['modelDeploymentMonitoringJobsId']
+  with endpoint_util.AiplatformEndpointOverrides(version, region=region):
+    console_io.PromptContinue(
+        'This will delete model deployment monitoring job [{}]...'.format(
+            model_monitoring_job_id),
+        cancel_on_no=True)
+    operation = client.ModelMonitoringJobsClient(
+        version=version).Delete(model_monitoring_job_ref)
+    return operations_util.WaitForOpMaybe(
+        operations_client=operations.OperationsClient(),
+        op=operation,
+        op_ref=model_monitoring_jobs_util.ParseMonitoringJobOperation(
+            operation.name))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DeleteGa(base.DeleteCommand):
+  """Delete an existing Vertex AI model deployment monitoring job."""
+
+  @staticmethod
+  def Args(parser):
+    flags.AddModelMonitoringJobResourceArg(parser, 'to delete')
+
+  def Run(self, args):
+    return _Run(args, constants.GA_VERSION)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete an existing Vertex AI model deployment monitoring job."""
@@ -46,26 +78,9 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     flags.AddModelMonitoringJobResourceArg(parser, 'to delete')
 
-  def _Run(self, args, version):
-    model_monitoring_job_ref = args.CONCEPTS.monitoring_job.Parse()
-    region = model_monitoring_job_ref.AsDict()['locationsId']
-    model_monitoring_job_id = model_monitoring_job_ref.AsDict(
-    )['modelDeploymentMonitoringJobsId']
-    with endpoint_util.AiplatformEndpointOverrides(version, region=region):
-      console_io.PromptContinue(
-          'This will delete model deployment monitoring job [{}]...'.format(
-              model_monitoring_job_id),
-          cancel_on_no=True)
-      operation = client.ModelMonitoringJobsClient(
-          version=version).Delete(model_monitoring_job_ref)
-      return operations_util.WaitForOpMaybe(
-          operations_client=operations.OperationsClient(),
-          op=operation,
-          op_ref=model_monitoring_jobs_util.ParseMonitoringJobOperation(
-              operation.name))
-
   def Run(self, args):
-    return self._Run(args, constants.BETA_VERSION)
+    return _Run(args, constants.BETA_VERSION)
 
 
 Delete.detailed_help = DETAILED_HELP
+DeleteGa.detailed_help = DETAILED_HELP

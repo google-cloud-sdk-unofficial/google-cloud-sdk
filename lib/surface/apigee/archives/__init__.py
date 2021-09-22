@@ -22,8 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import util
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Archives(base.Group):
   """Manage Apigee archive deployments."""
   detailed_help = {

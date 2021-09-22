@@ -53,8 +53,6 @@ class Container(base.Group):
     Returns:
       The refined command context.
     """
-    # TODO(b/190529039):  Determine if command group works with project number
-    base.RequireProjectID(args)
     base.DisableUserProjectQuota()
     base.OptOutRequests()  # TODO(b/169085077): Remove to migrate to requests.
     context['api_adapter'] = api_adapter.NewAPIAdapter('v1')
@@ -77,8 +75,6 @@ class ContainerBeta(Container):
     Returns:
       The refined command context.
     """
-    # TODO(b/190529039):  Determine if command group works with project number
-    base.RequireProjectID(args)
     base.DisableUserProjectQuota()
     base.OptOutRequests()  # TODO(b/169085077): Remove to migrate to requests.
     context['api_adapter'] = api_adapter.NewAPIAdapter('v1beta1')
@@ -101,8 +97,6 @@ class ContainerAlpha(Container):
     Returns:
       The refined command context.
     """
-    # TODO(b/190529039):  Determine if command group works with project number
-    base.RequireProjectID(args)
     base.DisableUserProjectQuota()
     base.OptOutRequests()  # TODO(b/169085077): Remove to migrate to requests.
     context['api_adapter'] = api_adapter.NewAPIAdapter('v1alpha1')

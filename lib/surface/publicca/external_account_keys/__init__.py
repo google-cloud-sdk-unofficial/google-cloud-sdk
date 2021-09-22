@@ -26,7 +26,7 @@ class ExternalAccountKeys(base.Group):
   """Create ACME external account binding keys.
 
   {command} lets you create an external account key associated with
-  Google Trust Service's publicly trusted certificate authority.
+  Google Trust Services' publicly trusted certificate authority.
 
   The external account key will be associated with the Cloud project and
   it may be bound to an Automatic Certificate Management Environment (ACME)

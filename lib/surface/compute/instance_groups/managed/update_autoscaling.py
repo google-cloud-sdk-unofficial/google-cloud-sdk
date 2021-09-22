@@ -44,6 +44,8 @@ class NoMatchingAutoscalerFoundError(exceptions.Error):
 class UpdateAutoscaling(base.Command):
   """Update autoscaling parameters of a managed instance group."""
 
+  clear_scale_down = False
+
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
@@ -79,6 +81,9 @@ class UpdateAutoscaling(base.Command):
       new_autoscaler.autoscalingPolicy.scaleInControl = \
         mig_utils.BuildScaleIn(args, client.messages)
 
+    if self.clear_scale_down and args.IsSpecified('clear_scale_down_control'):
+      new_autoscaler.autoscalingPolicy.scaleDownControl = None
+
     if args.IsSpecified('cpu_utilization_predictive_method'):
       cpu_predictive_enum = client.messages.AutoscalingPolicyCpuUtilization.PredictiveMethodValueValuesEnum
       new_autoscaler.autoscalingPolicy.cpuUtilization = client.messages.AutoscalingPolicyCpuUtilization(
@@ -105,6 +110,10 @@ class UpdateAutoscaling(base.Command):
       with client.apitools_client.IncludeFields(
           ['autoscalingPolicy.scaleInControl']):
         return autoscalers_client.Patch(igm_ref, new_autoscaler)
+    elif self.clear_scale_down and args.IsSpecified('clear_scale_down_control'):
+      with client.apitools_client.IncludeFields(
+          ['autoscalingPolicy.scaleDownControl']):
+        return autoscalers_client.Patch(igm_ref, new_autoscaler)
     else:
       return autoscalers_client.Patch(igm_ref, new_autoscaler)
 
@@ -113,20 +122,26 @@ class UpdateAutoscaling(base.Command):
 class UpdateAutoscalingBeta(UpdateAutoscaling):
   """Update autoscaling parameters of a managed instance group."""
 
+  clear_scale_down = True
+
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
     mig_utils.AddPredictiveAutoscaling(parser, standard=False)
+    mig_utils.AddClearScaleDownControlFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAutoscalingAlpha(UpdateAutoscalingBeta):
   """Update autoscaling parameters of a managed instance group."""
 
+  clear_scale_down = True
+
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
     mig_utils.AddPredictiveAutoscaling(parser)
+    mig_utils.AddClearScaleDownControlFlag(parser)
 
 UpdateAutoscaling.detailed_help = {
     'brief': 'Update autoscaling parameters of a managed instance group',
