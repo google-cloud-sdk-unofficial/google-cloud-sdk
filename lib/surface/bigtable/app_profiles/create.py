@@ -70,6 +70,7 @@ class CreateAppProfile(base.CreateCommand):
       ConflictingArgumentsException:
           If both cluster and multi_cluster are present.
           If both multi_cluster and transactional_writes are present.
+          If both cluster and restrict_to are present.
       OneOfArgumentsRequiredException: If neither cluster or multi_cluster are
           present.
 
@@ -81,6 +82,7 @@ class CreateAppProfile(base.CreateCommand):
         cluster=args.route_to,
         description=args.description,
         multi_cluster=args.route_any,
+        restrict_to=args.restrict_to,
         transactional_writes=args.transactional_writes,
         force=args.force)
 
@@ -120,15 +122,15 @@ class CreateAppProfileAlpha(CreateAppProfile):
     arguments.AddAppProfileResourceArg(parser, 'to create')
     (arguments.ArgAdder(parser).AddDescription(
         'app profile', required=False).AddForce('create').AddAppProfileRouting(
-            allow_restrict_to=True, allow_failover_radius=True))
+            allow_failover_radius=True))
 
   def _CreateAppProfile(self, app_profile_ref, args):
-    """Creates an AppProfile with the given arguments, including restrict_to.
+    """Creates an AppProfile with the given arguments.
 
     Args:
       app_profile_ref: A resource reference of the new app profile.
       args: an argparse namespace. All the arguments that were provided to this
-          command invocation.
+        command invocation.
 
     Raises:
       ConflictingArgumentsException:

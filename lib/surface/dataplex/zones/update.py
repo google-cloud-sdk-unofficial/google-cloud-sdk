@@ -20,8 +20,8 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataplex import util as dataplex_util
 from googlecloudsdk.api_lib.dataplex import zone
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataplex import flags
 from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
@@ -51,39 +51,7 @@ class Update(base.Command):
         help='Validate the create action, but don\'t actually perform it.')
     parser.add_argument('--description', help='Description of the Zone')
     parser.add_argument('--display-name', help='Display Name')
-    discovery_spec = parser.add_group(
-        help='Settings to manage the metadata discovery and publishing in a zone.'
-    )
-    discovery_spec.add_argument(
-        '--discovery-enabled',
-        action=arg_parsers.StoreTrueFalseAction,
-        help='Whether discovery is enabled.')
-    discovery_spec.add_argument(
-        '--include-patterns',
-        default=[],
-        type=arg_parsers.ArgList(),
-        metavar='INCLUDE_PATTERNS',
-        help="""The list of patterns to apply for selecting data to include
-        during discovery if only a subset of the data should considered. For
-        Cloud Storage bucket assets, these are interpreted as glob patterns
-        used to match object names. For BigQuery dataset assets, these are
-        interpreted as patterns to match table names.""")
-    discovery_spec.add_argument(
-        '--exclude-patterns',
-        default=[],
-        type=arg_parsers.ArgList(),
-        metavar='EXCLUDE_PATTERNS',
-        help="""The list of patterns to apply for selecting data to exclude
-        during discovery. For Cloud Storage bucket assets, these are interpreted
-        as glob patterns used to match object names. For BigQuery dataset
-        assets, these are interpreted as patterns to match table names.""")
-    trigger = discovery_spec.add_group(
-        help='Determines when discovery jobs are triggered.')
-    trigger.add_argument(
-        '--discovery-schedule',
-        help="""Cron schedule (https://en.wikipedia.org/wiki/Cron) for running
-                discovery jobs periodically. Discovery jobs must be scheduled at
-                least 30 minutes apart.""")
+    flags.AddDiscoveryArgs(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
@@ -97,9 +65,9 @@ class Update(base.Command):
       update_mask.append('labels')
     if args.IsSpecified('discovery_enabled'):
       update_mask.append('discoverySpec.enabled')
-    if args.IsSpecified('include_patterns'):
+    if args.IsSpecified('discovery_include_patterns'):
       update_mask.append('discoverySpec.includePatterns')
-    if args.IsSpecified('exclude_patterns'):
+    if args.IsSpecified('discovery_exclude_patterns'):
       update_mask.append('discoverySpec.excludePatterns')
     if args.IsSpecified('discovery_schedule'):
       update_mask.append('discoverySpec.schedule')
@@ -115,8 +83,9 @@ class Update(base.Command):
                 args.description, args.display_name,
                 dataplex_util.CreateLabels(
                     dataplex_util.GetMessageModule().GoogleCloudDataplexV1Zone,
-                    args), args.discovery_enabled, args.include_patterns,
-                args.exclude_patterns, args.discovery_schedule)))
+                    args), args.discovery_enabled,
+                args.discovery_include_patterns,
+                args.discovery_exclude_patterns, args.discovery_schedule)))
     validate_only = getattr(args, 'validate_only', False)
     if validate_only:
       log.status.Print('Validation complete with errors:')

@@ -51,7 +51,8 @@ class UpdateGa(base.UpdateCommand):
   def Run(self, args):
     update_util.PatchApplication(
         self.ReleaseTrack(),
-        split_health_checks=args.split_health_checks)
+        split_health_checks=args.split_health_checks,
+        service_account=args.service_account)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -67,4 +68,5 @@ class UpdateAlphaAndBeta(base.UpdateCommand):
   def Run(self, args):
     update_util.PatchApplication(
         self.ReleaseTrack(),
-        split_health_checks=args.split_health_checks)
+        split_health_checks=args.split_health_checks,
+        service_account=args.service_account)

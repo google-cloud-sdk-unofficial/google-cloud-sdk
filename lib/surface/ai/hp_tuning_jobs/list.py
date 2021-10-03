@@ -25,38 +25,63 @@ from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import region_util
 from googlecloudsdk.command_lib.ai import validation
+from googlecloudsdk.command_lib.ai.hp_tuning_jobs import hp_tuning_jobs_util
+
+_DETAILED_HELP = {
+    'EXAMPLES':
+        """ \
+        To list the jobs of project ``example'' in region
+        ``us-central1'', run:
+
+          $ {command} --project=example --region=us-central1
+        """,
+}
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
-class List(base.ListCommand):
-  """List existing hyperparameter tuning jobs.
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ListGA(base.ListCommand):
+  """List existing hyperparameter tuning jobs."""
+  detailed_help = _DETAILED_HELP
+  _version = constants.GA_VERSION
 
-  ## EXAMPLES
+  @classmethod
+  def Args(cls, parser):
+    """Method called by Calliope to set up arguments for this command.
 
-  To list the jobs of project ``example'' in region
-  ``us-central1'', run:
-
-    $ {command} --project=example --region=us-central1
-  """
-
-  @staticmethod
-  def Args(parser):
+    Args:
+      parser: A argparse.Parser to register accepted arguments in command input.
+    """
     flags.AddRegionResourceArg(
         parser,
         'to list hyperparameter tuning jobs',
         prompt_func=region_util.GetPromptForRegionFunc(
             constants.SUPPORTED_TRAINING_REGIONS))
+    flags.AddUriFlags(parser, hp_tuning_jobs_util.HPTUNING_JOB_COLLECTION,
+                      constants.AI_PLATFORM_API_VERSION[cls._version])
 
   def Run(self, args):
+    """Executes the list command.
+
+    Args:
+      args: an argparse.Namespace, it contains all arguments that this command
+        was invoked with.
+
+    Returns:
+      The list of resources
+    """
+
     region_ref = args.CONCEPTS.region.Parse()
     region = region_ref.AsDict()['locationsId']
     validation.ValidateRegion(
         region, available_regions=constants.SUPPORTED_TRAINING_REGIONS)
 
-    version = constants.GA_VERSION if self.ReleaseTrack(
-    ) == base.ReleaseTrack.GA else constants.BETA_VERSION
     with endpoint_util.AiplatformEndpointOverrides(
-        version=version, region=region):
-      return client.HpTuningJobsClient(version=version).List(
+        version=self._version, region=region):
+      return client.HpTuningJobsClient(version=self._version).List(
           region=region_ref.RelativeName())
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class ListPreGA(ListGA):
+  """List existing hyperparameter tuning jobs."""
+  _version = constants.BETA_VERSION

@@ -20,8 +20,8 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataplex import asset
 from googlecloudsdk.api_lib.dataplex import util as dataplex_util
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataplex import flags
 from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -53,6 +53,7 @@ class Create(base.Command):
     parser.add_argument('--description', help='Description of the Asset')
     parser.add_argument('--display-name', help='Display Name of the Asset')
     resource_spec = parser.add_group(
+        required=True,
         help='Specification of the resource that is referenced by this asset.')
     resource_spec.add_argument(
         '--resource-name',
@@ -66,16 +67,15 @@ class Create(base.Command):
         choices={
             'STORAGE_BUCKET': 'Cloud Storage Bucket',
             'BIGQUERY_DATASET': 'BigQuery Dataset',
-            'TYPE_UNSPECIFIED': 'type_unspecified'
         },
         type=arg_utils.ChoiceToEnumName,
         help='Type')
     resource_spec.add_argument(
         '--creation-policy',
+        required=True,
         choices={
             'ATTACH_RESOURCE': 'attach resource',
             'CREATE_RESOURCE': 'create resource',
-            'CREATION_POLICY_UNSPECIFIED': 'creation policy unspecified'
         },
         type=arg_utils.ChoiceToEnumName,
         help="""If the creation policy indicates ATTACH behavior, then an
@@ -86,58 +86,24 @@ class Create(base.Command):
                 referenced resource must always match that of the asset.""")
     resource_spec.add_argument(
         '--deletion-policy',
+        required=False,
         choices={
             'DETACH_RESOURCE': 'detach resource',
             'DELETE_RESOURCE': 'delete resource',
-            'DELETION_POLICY_UNSPECIFIED': 'deletion policy unspecified'
         },
         type=arg_utils.ChoiceToEnumName,
         default='DELETION_POLICY_UNSPECIFIED',
         help='Deletion policy of the attached resource.')
-    discovery_spec = parser.add_group(
-        help='Settings to manage the metadata discovery and publishing for an asset.'
-    )
-    discovery_spec.add_argument(
-        '--discovery-enabled',
-        action=arg_parsers.StoreTrueFalseAction,
-        help='Whether discovery is enabled')
-    discovery_spec.add_argument(
-        '--include-patterns',
-        default=[],
-        type=arg_parsers.ArgList(),
-        metavar='INCLUDE_PATTERNS',
-        help="""The list of patterns to apply for selecting data to include
-        during discovery if only a subset of the data should considered. For
-        Cloud Storage bucket assets, these are interpreted as glob patterns
-        used to match object names. For BigQuery dataset assets, these are
-        interpreted as patterns to match table names.""")
-    discovery_spec.add_argument(
-        '--exclude-patterns',
-        default=[],
-        type=arg_parsers.ArgList(),
-        metavar='EXCLUDE_PATTERNS',
-        help="""The list of patterns to apply for selecting data to exclude
-        during discovery. For Cloud Storage bucket assets, these are interpreted
-        as glob patterns used to match object names. For BigQuery dataset
-        assets, these are interpreted as patterns to match table names.""")
+    discovery_spec = flags.AddDiscoveryArgs(parser)
     discovery_spec.add_argument(
         '--inheritance-mode',
         choices={
             'OVERRIDE': 'override',
             'INHERIT': 'inherit',
-            'INHERITANCE_MODE_UNSPECIFIED': 'inheritance mode unspecified'
         },
         type=arg_utils.ChoiceToEnumName,
         default='INHERITANCE_MODE_UNSPECIFIED',
         help='Options for how fields within this configuration can be inherited.'
-    )
-    trigger = discovery_spec.add_group(
-        help='Determines when discovery jobs are triggered.')
-    trigger.add_argument(
-        '--discovery-schedule',
-        help="""Cron schedule (https://en.wikipedia.org/wiki/Cron) for running
-                discovery jobs periodically. Discovery jobs must be scheduled at
-                least 30 minutes apart."""
     )
     base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
@@ -162,8 +128,8 @@ class Create(base.Command):
                 args.creation_policy,
                 args.deletion_policy,
                 args.discovery_enabled,
-                args.include_patterns,
-                args.exclude_patterns,
+                args.discovery_include_patterns,
+                args.discovery_exclude_patterns,
                 args.inheritance_mode,
                 schedule=args.discovery_schedule)))
     validate_only = getattr(args, 'validate_only', False)

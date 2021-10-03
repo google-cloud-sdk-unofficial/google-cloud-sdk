@@ -38,7 +38,8 @@ from gslib.utils.text_util import NormalizeStorageClass
 
 _SYNOPSIS = """
   gsutil mb [-b (on|off)] [-c <class>] [-l <location>] [-p <proj_id>]
-            [--retention <time>] [--pap <setting>] gs://<bucket_name>...
+            [--retention <time>] [--pap <setting>]
+            gs://<bucket_name>...
 """
 
 _DETAILED_HELP_TEXT = ("""
@@ -184,7 +185,7 @@ class MbCommand(Command):
       min_args=1,
       max_args=NO_MAX,
       supported_sub_args='b:c:l:p:s:',
-      supported_private_args=['retention=', 'pap='],
+      supported_private_args=['retention=', 'pap=', 'rpo='],
       file_url_ok=False,
       provider_url_ok=False,
       urls_start_arg=0,
@@ -227,6 +228,7 @@ class MbCommand(Command):
     storage_class = None
     seconds = None
     public_access_prevention = None
+    rpo = None
     if self.sub_opts:
       for o, a in self.sub_opts:
         if o == '-l':
@@ -249,7 +251,8 @@ class MbCommand(Command):
           public_access_prevention = a
 
     bucket_metadata = apitools_messages.Bucket(location=location,
-                                               storageClass=storage_class)
+                                               storageClass=storage_class,
+                                               rpo=rpo)
     if bucket_policy_only or public_access_prevention:
       bucket_metadata.iamConfiguration = IamConfigurationValue()
       iam_config = bucket_metadata.iamConfiguration

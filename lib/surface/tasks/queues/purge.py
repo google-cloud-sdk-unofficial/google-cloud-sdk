@@ -53,9 +53,10 @@ class Purge(base.Command):
   def Run(self, args):
     queues_client = GetApiAdapter(self.ReleaseTrack()).queues
     queue_ref = parsers.ParseQueue(args.queue, args.location)
+    queue_short = parsers.GetConsolePromptString(queue_ref.RelativeName())
     console_io.PromptContinue(
         cancel_on_no=True,
         prompt_string='Are you sure you want to purge: [{}]'.format(
-            queue_ref.RelativeName()))
+            queue_short))
     queues_client.Purge(queue_ref)
-    log.status.Print('Purged queue [{}].'.format(queue_ref.Name()))
+    log.status.Print('Purged queue [{}].'.format(queue_short))

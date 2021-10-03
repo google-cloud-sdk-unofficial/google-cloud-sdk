@@ -73,7 +73,6 @@ class CreateAppEngine(base.CreateCommand):
     queue_config = parsers.ParseCreateOrUpdateQueueArgs(
         args, constants.PUSH_QUEUE, api.messages,
         release_track=self.ReleaseTrack())
-    log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     if not self.is_alpha:
       create_response = queues_client.Create(
           location_ref,
@@ -89,7 +88,8 @@ class CreateAppEngine(base.CreateCommand):
           retry_config=queue_config.retryConfig,
           rate_limits=queue_config.rateLimits,
           app_engine_http_target=queue_config.appEngineHttpTarget)
-    log.CreatedResource(queue_ref.Name(), 'queue')
+    log.CreatedResource(
+        parsers.GetConsolePromptString(queue_ref.RelativeName()), 'queue')
     return create_response
 
 

@@ -60,8 +60,8 @@ class UpdatePull(base.UpdateCommand):
         release_track=self.ReleaseTrack())
     updated_fields = parsers.GetSpecifiedFieldsMask(
         args, constants.PULL_QUEUE, release_track=self.ReleaseTrack())
-    log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     update_response = queues_client.Patch(
         queue_ref, updated_fields, retry_config=queue_config.retryConfig)
-    log.status.Print('Updated queue [{}].'.format(queue_ref.Name()))
+    log.status.Print('Updated queue [{}].'.format(
+        parsers.GetConsolePromptString(queue_ref.RelativeName())))
     return update_response

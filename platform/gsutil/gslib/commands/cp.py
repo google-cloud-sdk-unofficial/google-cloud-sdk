@@ -91,6 +91,12 @@ _DESCRIPTION_TEXT = """
   all text files from a bucket to your current directory:
 
     gsutil cp gs://my-bucket/*.txt .
+  
+  You can use the ``-n`` option to prevent overwriting the content of
+  existing files. The following example downloads text files from a bucket
+  without clobbering the data in your directory:
+  
+    gsutil cp -n gs://my-bucket/*.txt .
 
   Use the ``-r`` option to copy an entire directory tree.
   For example, to upload the directory tree ``dir``:
@@ -679,6 +685,9 @@ _OPTIONS_TEXT = """
                  CAUTION: If some of the source files don't compress well, such
                  as binary data, using this option may result in files taking up
                  more space in the cloud than they would if left uncompressed.
+
+  --stet         If the STET binary can be found in boto or PATH, cp will
+                 use the split-trust encryption tool for end-to-end encryption.
 """
 
 _DETAILED_HELP_TEXT = '\n\n'.join([
@@ -756,7 +765,7 @@ class CpCommand(Command):
       gs_default_api=ApiSelector.JSON,
       # Unfortunately, "private" args are the only way to support non-single
       # character flags.
-      supported_private_args=['testcallbackfile='],
+      supported_private_args=['stet', 'testcallbackfile='],
       argparse_arguments=[
           CommandArgument.MakeZeroOrMoreCloudOrFileURLsArgument(),
       ],
@@ -1256,6 +1265,8 @@ class CpCommand(Command):
         elif o == '-Z':
           gzip_local = True
           gzip_arg_all = GZIP_ALL_FILES
+        elif o == '--stet':
+          self.use_stet = True
 
     if preserve_acl and canned_acl:
       raise CommandException(

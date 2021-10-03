@@ -69,7 +69,6 @@ class CreatePull(base.CreateCommand):
         constants.PULL_QUEUE,
         api.messages,
         release_track=self.ReleaseTrack())
-    log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
       create_response = queues_client.Create(
           location_ref,
@@ -84,5 +83,6 @@ class CreatePull(base.CreateCommand):
           retry_config=queue_config.retryConfig,
           rate_limits=queue_config.rateLimits,
           queue_type=queue_config.type)
-    log.CreatedResource(queue_ref.Name(), 'queue')
+    log.CreatedResource(
+        parsers.GetConsolePromptString(queue_ref.RelativeName()), 'queue')
     return create_response

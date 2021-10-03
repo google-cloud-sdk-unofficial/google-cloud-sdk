@@ -23,7 +23,9 @@ from googlecloudsdk.api_lib.alloydb import api_util
 from googlecloudsdk.api_lib.alloydb import cluster_operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.alloydb import flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 @base.Hidden
@@ -70,6 +72,9 @@ class Create(base.CreateCommand):
         clusterId=args.cluster,
         parent=location_ref.RelativeName())
     op = alloydb_client.projects_locations_clusters.Create(req)
+    op_ref = resources.REGISTRY.ParseRelativeName(
+        op.name, collection='alloydb.projects.locations.operations')
+    log.status.Print('Operation ID: {}'.format(op_ref.Name()))
     if not args.async_:
-      cluster_operations.Await(op, 'Creating cluster')
+      cluster_operations.Await(op_ref, 'Creating cluster')
     return op

@@ -28,3 +28,8 @@
     GA:
       api_version: v1
     collection: memcache.projects.locations.instances
+
+  response:
+    ALPHA:
+      modify_response_hooks:
+      - googlecloudsdk.command_lib.memcache.instances_describe_util:FormatResponse

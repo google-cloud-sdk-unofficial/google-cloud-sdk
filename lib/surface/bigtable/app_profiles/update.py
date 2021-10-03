@@ -71,6 +71,7 @@ class UpdateAppProfile(base.CreateCommand):
       ConflictingArgumentsException:
           If both cluster and multi_cluster are present.
           If both multi_cluster and transactional_writes are present.
+          If both cluster and restrict_to are present.
       OneOfArgumentsRequiredException: If neither cluster or multi_cluster are
           present.
 
@@ -82,6 +83,7 @@ class UpdateAppProfile(base.CreateCommand):
         cluster=args.route_to,
         description=args.description,
         multi_cluster=args.route_any,
+        restrict_to=args.restrict_to,
         transactional_writes=args.transactional_writes,
         force=args.force)
 
@@ -131,16 +133,16 @@ class UpdateAppProfileAlpha(UpdateAppProfile):
     arguments.AddAppProfileResourceArg(parser, 'to update')
     (arguments.ArgAdder(parser).AddDescription(
         'app profile', required=False).AddAppProfileRouting(
-            required=False, allow_restrict_to=True,
+            required=False,
             allow_failover_radius=True).AddForce('update').AddAsync())
 
   def _UpdateAppProfile(self, app_profile_ref, args):
-    """Updates an AppProfile with the given arguments, including restrict_to.
+    """Updates an AppProfile with the given arguments.
 
     Args:
       app_profile_ref: A resource reference of the new app profile.
       args: an argparse namespace. All the arguments that were provided to this
-          command invocation.
+        command invocation.
 
     Raises:
       ConflictingArgumentsException:

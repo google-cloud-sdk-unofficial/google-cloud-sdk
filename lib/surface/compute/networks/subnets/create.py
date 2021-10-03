@@ -36,9 +36,15 @@ def _DetailedHelp():
           'Define a subnet for a network in custom subnet mode.',
       'DESCRIPTION':
           """\
-      Define a subnet for a network in custom subnet mode. Subnets must be
-      uniquely named per region.
+      *{command}* define a subnetwork for a network in custom subnet mode.
+      Subnets must be uniquely named per region.
       """,
+      'EXAMPLES':
+          """\
+        To create the subnetwork ``subnet-1'' with address range ``10.10.0.0/24'' in the network ``network-0'', run:
+
+        $ {command} subnet-1 --network=network-0 --range=10.10.0.0/24 --region=us-central1
+      """
   }
 
 
@@ -173,14 +179,9 @@ def _AddArgs(parser, include_alpha_logging, include_regional_managed_proxy,
 
   if include_l7_internal_load_balancing:
     if include_regional_managed_proxy:
-      help_text = (
-          'The role of subnetwork. This field is required when the '
-          'purpose is set to REGIONAL_MANAGED_PROXY or '
-          'INTERNAL_HTTPS_LOAD_BALANCER. The value can be set to '
-          'ACTIVE or BACKUP. An ACTIVE subnetwork is one that is currently '
-          'being used for Internal HTTP(S) Load Balancing. A BACKUP '
-          'subnetwork is one that is ready to be promoted to ACTIVE or is '
-          'currently draining.')
+      help_text = ('The role of subnetwork. This field is required when the '
+                   'purpose is set to REGIONAL_MANAGED_PROXY or '
+                   'INTERNAL_HTTPS_LOAD_BALANCER.')
     else:
       help_text = (
           'The role of subnetwork. This field is required when '
@@ -462,6 +463,7 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
 
   _include_private_service_connect = True
+  _include_regional_managed_proxy = True
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
 
 
@@ -473,5 +475,4 @@ class CreateAlpha(CreateBeta):
   _include_private_service_connect = True
   _include_l2 = True
   _include_internal_ipv6_access_type = True
-  _include_regional_managed_proxy = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION

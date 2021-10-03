@@ -2,13 +2,13 @@ release_tracks: [ALPHA, BETA, GA]
 help_text:
   brief: Troubleshoot the IAM Policy.
   description: |
-   Performs a check on whether a member is granted a
+   Performs a check on whether a principal is granted a
    permission on a resource and how that access is determined according to
    the resource's effective IAM policy interpretation.
 
   ALPHA:
     examples: |
-      To troubleshoot a permission of a member on a resource, run:
+      To troubleshoot a permission of a principal on a resource, run:
 
         $ {command} //cloudresourcemanager.googleapis.com/projects/project-id
         --principal-email=my-iam-account@somedomain.com
@@ -17,7 +17,7 @@ help_text:
       See https://cloud.google.com/iam/docs/policies for more information about
       IAM policies.
 
-      To troubleshoot a permission of a member on a resource with conditional binding, run:
+      To troubleshoot a permission of a principal on a resource with conditional binding, run:
 
         $ {command} //cloudresourcemanager.googleapis.com/projects/project-id \
         --principal-email=my-iam-account@somedomain.com \
@@ -31,7 +31,7 @@ help_text:
       IAM policies.
 
   examples: |
-    To troubleshoot a permission of a member on a resource, run:
+    To troubleshoot a permission of a principal on a resource, run:
 
       $ {command} //cloudresourcemanager.googleapis.com/projects/project-id \
       --principal-email=my-iam-account@somedomain.com \
@@ -63,7 +63,7 @@ arguments:
     api_field: accessTuple.principal
     required: true
     help_text: |
-      Email address that identifies the member to check. Only Google Accounts and
+      Email address that identifies the principal to check. Only Google Accounts and
       service accounts are supported.
   - arg_name: permission
     api_field: accessTuple.permission

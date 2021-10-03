@@ -55,7 +55,7 @@ class GenerateGatewayRbac(base.Command):
     Anthos support mode, generate the RBAC policy file with read-only permission
     for TSE/Eng to debug customers' clusters:
 
-      $ {command} --membership=my-cluster --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com --anthos-support
+      $ {command} --membership=my-cluster --anthos-support
 
     Apply mode, generate the RBAC policy and apply it to the specified cluster:
 
@@ -77,7 +77,7 @@ class GenerateGatewayRbac(base.Command):
         help=textwrap.dedent("""\
           User's email address or service account email address.
         """),
-        required=True)
+    )
     parser.add_argument(
         '--role',
         type=str,
@@ -131,10 +131,6 @@ class GenerateGatewayRbac(base.Command):
 
   def Run(self, args):
     log.status.Print('Validating input arguments.')
-    if len(args.users) < 1:
-      raise rbac_util.InvalidArgsError(
-          'The required field [users] was not provided. Please specify the '
-          'users or service account in this field.')
     project_id = properties.VALUES.core.project.GetOrFail()
 
     # Validate the args value before generate the RBAC policy file.

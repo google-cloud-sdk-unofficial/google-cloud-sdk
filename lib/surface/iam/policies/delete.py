@@ -34,8 +34,8 @@ class Delete(base.DeleteCommand):
       'EXAMPLES':
           textwrap.dedent("""\
           The following command deletes the IAM policy defined at the resource
-          project "123" of kind "denypolicies" and id "my-deny-policy", with
-          etag "abc":
+          project ``123" of kind ``denypolicies" and id ``my-deny-policy", with
+          etag ``abc":
 
             $ {command} my-deny-policy --resource=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies --etag=abc
 

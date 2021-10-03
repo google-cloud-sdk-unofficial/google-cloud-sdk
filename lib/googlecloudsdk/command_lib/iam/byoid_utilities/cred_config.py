@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2020 Google LLC. All Rights Reserved.
+# Copyright 2021 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,15 +20,60 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import abc
+import enum
+import json
+
+from googlecloudsdk.core import log
+from googlecloudsdk.core.util import files
 import six
 
 
-def get_generator(args):
+class ConfigType(enum.Enum):
+  WORKLOAD_IDENTITY_POOLS = 1
+  WORKFORCE_POOLS = 2
+
+
+RESOURCE_TYPE = 'credential configuration file'
+
+
+def create_credential_config(args, config_type):
+  """Creates the byoid credential config based on CLI arguments."""
+  try:
+    generator = get_generator(args, config_type)
+    output = {
+        'type':
+            'external_account',
+        'audience':
+            '//iam.googleapis.com/' + args.audience,
+        'subject_token_type':
+            generator.get_token_type(args.subject_token_type),
+        'token_url':
+            'https://sts.googleapis.com/v1/token',
+        'credential_source':
+            generator.get_source(args.credential_source_type,
+                                 args.credential_source_field_name),
+    }
+
+    if config_type is ConfigType.WORKFORCE_POOLS:
+      output['workforce_pool_user_project'] = args.workforce_pool_user_project
+
+    if args.service_account:
+      output['service_account_impersonation_url'] = ''.join((
+          'https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/',
+          args.service_account, ':generateAccessToken'))
+
+    files.WriteFileContents(args.output_file, json.dumps(output, indent=2))
+    log.CreatedResource(args.output_file, RESOURCE_TYPE)
+  except GeneratorError as cce:
+    log.CreatedResource(args.output_file, RESOURCE_TYPE, failed=cce.message)
+
+
+def get_generator(args, config_type):
   """Determines the type of credential output based on CLI arguments."""
   if args.credential_source_file:
-    return FileCredConfigGenerator(args.credential_source_file)
+    return FileCredConfigGenerator(config_type, args.credential_source_file)
   if args.credential_source_url:
-    return UrlCredConfigGenerator(args.credential_source_url,
+    return UrlCredConfigGenerator(config_type, args.credential_source_url,
                                   args.credential_source_headers)
   if args.aws:
     return AwsCredConfigGenerator()
@@ -39,9 +84,17 @@ def get_generator(args):
 class CredConfigGenerator(six.with_metaclass(abc.ABCMeta, object)):
   """Base class for generating Credential Config files."""
 
+  def __init__(self, config_type):
+    self.config_type = config_type
+
   def get_token_type(self, subject_token_type):
     """Returns the type of token that this credential config uses."""
-    return subject_token_type or 'urn:ietf:params:oauth:token-type:jwt'
+
+    default_token_type = 'urn:ietf:params:oauth:token-type:jwt'
+    if self.config_type is ConfigType.WORKFORCE_POOLS:
+      default_token_type = 'urn:ietf:params:oauth:token-type:id_token'
+
+    return subject_token_type or default_token_type
 
   def _get_format(self, credential_source_type, credential_source_field_name):
     """Returns an optional dictionary indicating the format of the token.
@@ -89,8 +142,8 @@ class CredConfigGenerator(six.with_metaclass(abc.ABCMeta, object)):
 class FileCredConfigGenerator(CredConfigGenerator):
   """The generator for File-based credential configs."""
 
-  def __init__(self, credential_source_file):
-    super(FileCredConfigGenerator, self).__init__()
+  def __init__(self, config_type, credential_source_file):
+    super(FileCredConfigGenerator, self).__init__(config_type)
     self.credential_source_file = credential_source_file
 
   def get_source(self, credential_source_type, credential_source_field_name):
@@ -105,8 +158,9 @@ class FileCredConfigGenerator(CredConfigGenerator):
 class UrlCredConfigGenerator(CredConfigGenerator):
   """The generator for Url-based credential configs."""
 
-  def __init__(self, credential_source_url, credential_source_headers):
-    super(UrlCredConfigGenerator, self).__init__()
+  def __init__(self, config_type, credential_source_url,
+               credential_source_headers):
+    super(UrlCredConfigGenerator, self).__init__(config_type)
     self.credential_source_url = credential_source_url
     self.credential_source_headers = credential_source_headers
 
@@ -123,6 +177,10 @@ class UrlCredConfigGenerator(CredConfigGenerator):
 
 class AwsCredConfigGenerator(CredConfigGenerator):
   """The generator for AWS-based credential configs."""
+
+  def __init__(self):
+    super(AwsCredConfigGenerator,
+          self).__init__(ConfigType.WORKLOAD_IDENTITY_POOLS)
 
   def get_token_type(self, subject_token_type):
     return 'urn:ietf:params:aws:token-type:aws4_request'
@@ -145,7 +203,8 @@ class AzureCredConfigGenerator(CredConfigGenerator):
   """The generator for Azure-based credential configs."""
 
   def __init__(self, app_id_uri, audience):
-    super(AzureCredConfigGenerator, self).__init__()
+    super(AzureCredConfigGenerator,
+          self).__init__(ConfigType.WORKLOAD_IDENTITY_POOLS)
     self.app_id_uri = app_id_uri
     self.audience = audience
 

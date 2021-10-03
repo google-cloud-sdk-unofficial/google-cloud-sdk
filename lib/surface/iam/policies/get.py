@@ -34,7 +34,7 @@ class Get(base.DescribeCommand):
       'EXAMPLES':
           textwrap.dedent("""\
           The following command gets the IAM policy defined at the resource
-          project "123" of kind "denypolicies" and id "my-deny-policy:
+          project ``123" of kind ``denypolicies" and id ``my-deny-policy:
 
             $ {command} my-deny-policy --resource=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies
           """),

@@ -486,6 +486,7 @@ class CreateBeta(CreateGA):
   For more information about the available settings, see
   https://cloud.google.com/load-balancing/docs/backend-service.
   """
+  _support_l7_rxlb = True
   _support_multinic = True
   _support_client_only = False
   _support_grpc_protocol = True
@@ -518,7 +519,6 @@ class CreateAlpha(CreateBeta):
   https://cloud.google.com/load-balancing/docs/backend-service.
   """
   _support_gfe3 = True
-  _support_l7_rxlb = True
   _support_client_only = True
   _support_grpc_protocol = True
   _support_unspecified_protocol = True

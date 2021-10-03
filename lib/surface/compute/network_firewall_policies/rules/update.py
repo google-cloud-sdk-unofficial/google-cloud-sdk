@@ -53,6 +53,8 @@ class Update(base.UpdateCommand):
     flags.AddNewPriority(parser, operation='update')
     flags.AddSrcSecureTags(parser)
     flags.AddTargetSecureTags(parser)
+    flags.AddSrcAddressGroups(parser)
+    flags.AddDestAddressGroups(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -77,6 +79,8 @@ class Update(base.UpdateCommand):
     matcher = None
     src_secure_tags = []
     target_secure_tags = []
+    src_address_groups = []
+    dest_address_groups = []
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
       should_setup_match = True
@@ -103,13 +107,21 @@ class Update(base.UpdateCommand):
     if args.IsSpecified('target_secure_tags'):
       target_secure_tags = secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
           holder.client, args.target_secure_tags)
+    if args.IsSpecified('src_address_groups'):
+      src_address_groups = args.src_address_groups
+      should_setup_match = True
+    if args.IsSpecified('dest_address_groups'):
+      dest_address_groups = args.dest_address_groups
+      should_setup_match = True
     # If need to construct a new matcher.
     if should_setup_match:
       matcher = holder.client.messages.FirewallPolicyRuleMatcher(
           srcIpRanges=src_ip_ranges,
           destIpRanges=dest_ip_ranges,
           layer4Configs=layer4_config_list,
-          srcSecureTags=src_secure_tags)
+          srcSecureTags=src_secure_tags,
+          srcAddressGroups=src_address_groups,
+          destAddressGroups=dest_address_groups)
     if args.IsSpecified('direction'):
       if args.direction == 'INGRESS':
         traffic_direct = (

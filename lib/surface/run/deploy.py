@@ -115,6 +115,8 @@ class Deploy(base.Command):
     flags.AddRevisionSuffixArg(managed_group)
     flags.AddVpcConnectorArgs(managed_group)
     flags.AddEgressSettingsFlag(managed_group)
+    flags.AddCmekKeyFlag(managed_group)
+    flags.AddCmekKeyRevocationActionTypeFlag(managed_group)
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -291,7 +293,6 @@ class BetaDeploy(Deploy):
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddCmekKeyFlag(managed_group)
     flags.AddCpuThrottlingFlag(managed_group)
 
 
@@ -306,10 +307,8 @@ class AlphaDeploy(Deploy):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddSandboxArg(managed_group)
-    flags.AddCmekKeyFlag(managed_group)
     flags.AddCpuThrottlingFlag(managed_group)
     flags.AddConfidentialFlag(managed_group)
-    flags.AddCmekKeyRevocationActionTypeFlag(managed_group)
     flags.AddCustomAudiencesFlag(managed_group)
     flags.AddSessionAffinityFlag(managed_group)
 

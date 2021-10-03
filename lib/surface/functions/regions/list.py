@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.functions.v1.regions.list import command as comm
 from googlecloudsdk.command_lib.functions.v2.regions.list import command as command_v2
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List regions available to Google Cloud Functions."""
 
@@ -54,15 +54,15 @@ class List(base.ListCommand):
     return command_v1.Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
   """List regions available to Google Cloud Functions."""
 
   @staticmethod
-  def Args(parser):
+  def Args(parser, track=base.ReleaseTrack.BETA):
     """Registers flags for this command."""
     List.Args(parser)
-    flags.AddGen2Flag(parser, base.ReleaseTrack.ALPHA)
+    flags.AddGen2Flag(parser, track)
 
   @util.CatchHTTPErrorRaiseHTTPException
   def Run(self, args):
@@ -83,3 +83,13 @@ class ListAlpha(base.ListCommand):
       return command_v2.Run(args, self.ReleaseTrack())
     else:
       return command_v1.Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+  """List regions available to Google Cloud Functions."""
+
+  @staticmethod
+  def Args(parser, track=base.ReleaseTrack.ALPHA):
+    """Registers flags for this command."""
+    ListBeta.Args(parser, track)

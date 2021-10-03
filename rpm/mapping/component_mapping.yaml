@@ -35,4 +35,4 @@ pubsub-emulator: google-cloud-sdk-pubsub-emulator
 skaffold: google-cloud-sdk-skaffold
 kustomize: unavailable
 config-connector: google-cloud-sdk-config-connector
-terraform-validator: unavailable
+terraform-validator: google-cloud-sdk-terraform-validator

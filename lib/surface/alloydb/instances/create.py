@@ -25,7 +25,9 @@ from googlecloudsdk.api_lib.alloydb import instance_operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.alloydb import flags
 from googlecloudsdk.command_lib.alloydb import instance_helper
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 @base.Hidden
@@ -77,6 +79,9 @@ class Create(base.CreateCommand):
     req = instance_helper.ConstructCreateRequestFromArgs(
         client, alloydb_messages, cluster_ref, args)
     op = alloydb_client.projects_locations_clusters_instances.Create(req)
+    op_ref = resources.REGISTRY.ParseRelativeName(
+        op.name, collection='alloydb.projects.locations.operations')
+    log.status.Print('Operation ID: {}'.format(op_ref.Name()))
     if not args.async_:
-      instance_operations.Await(op, 'Creating instance')
+      instance_operations.Await(op_ref, 'Creating instance')
     return op

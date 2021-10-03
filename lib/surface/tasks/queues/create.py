@@ -69,7 +69,6 @@ class Create(base.CreateCommand):
     queue_config = parsers.ParseCreateOrUpdateQueueArgs(
         args, queue_type, api.messages,
         release_track=self.ReleaseTrack())
-    log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
       create_response = queues_client.Create(
           location_ref,
@@ -94,7 +93,8 @@ class Create(base.CreateCommand):
           rate_limits=queue_config.rateLimits,
           app_engine_routing_override=queue_config.appEngineRoutingOverride,
           stackdriver_logging_config=queue_config.stackdriverLoggingConfig)
-    log.CreatedResource(queue_ref.Name(), 'queue')
+    log.CreatedResource(
+        parsers.GetConsolePromptString(queue_ref.RelativeName()), 'queue')
     return create_response
 
 

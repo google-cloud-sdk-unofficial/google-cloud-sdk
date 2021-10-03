@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Parse feature flag config file and store data into python objects."""
+"""Feature flag config file loading and parsing."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import functools
 import hashlib
 
 from googlecloudsdk.core import config
@@ -49,11 +50,39 @@ class Property:
       self.weights.append(attribute['weight'])
 
 
+_FEATURE_FLAG_YAML_URL = 'http://www.gstatic.com/cloudsdk/feature_flag_config_file.yaml'
+
+
+def Cache(func):
+  """Caches the result of a function."""
+  cached_results = {}
+  @functools.wraps(func)
+  def ReturnCachedOrCallFunc(*args):
+    try:
+      return cached_results[args]
+    except KeyError:
+      result = func(*args)
+      cached_results[args] = result
+      return result
+  ReturnCachedOrCallFunc.__wrapped__ = func
+  return ReturnCachedOrCallFunc
+
+
+@Cache
+def GetFeatureFlagsConfig():
+  # pylint: disable=g-import-not-at-top
+  from googlecloudsdk.core import requests
+  yaml_request = requests.GetSession()
+  yaml_data = yaml_request.get(_FEATURE_FLAG_YAML_URL)
+
+  return FeatureFlagsConfig(yaml_data)
+
+
 class FeatureFlagsConfig:
   """Stores all Property Objects for a given FeatureFlagsConfig."""
 
-  def __init__(self, path):
-    self.properties = _ParseFeatureFlagsConfig(path)
+  def __init__(self, feature_flags_config_yaml):
+    self.properties = _ParseFeatureFlagsConfig(feature_flags_config_yaml)
 
   def Get(self, prop):
     """Returns the value for the given property."""
@@ -77,17 +106,17 @@ class FeatureFlagsConfig:
         return self.properties[prop].values[i]
 
 
-def _ParseFeatureFlagsConfig(path):
+def _ParseFeatureFlagsConfig(feature_flags_config_yaml):
   """Converts feature flag config file into a dictionary of Property objects.
 
   Args:
-   path: str, The absolute path to the feature flag config file.
+   feature_flags_config_yaml: str, feature flag config.
 
   Returns:
    property_dict: A dictionary of Property objects.
   """
   property_dict = {}
-  yaml_dict = yaml.load(path)
+  yaml_dict = yaml.load(feature_flags_config_yaml)
   for prop in yaml_dict:
     yaml_prop = yaml_dict[prop]
     property_dict[prop] = Property(yaml_prop)

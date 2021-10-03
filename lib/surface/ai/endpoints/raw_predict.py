@@ -73,8 +73,8 @@ def _Run(args, version):
                                   six.text_type(response))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RawPredictAlpha(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class RawPredict(base.Command):
   """Run Vertex AI online raw prediction.
 
   `{command}` sends a raw prediction request to a Vertex AI endpoint. The
@@ -107,4 +107,37 @@ class RawPredictAlpha(base.Command):
     _AddArgs(parser)
 
   def Run(self, args):
-    return _Run(args, constants.ALPHA_VERSION)
+    return _Run(args, constants.GA_VERSION)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class RawPredictBeta(RawPredict):
+  """Run Vertex AI online raw prediction.
+
+  `{command}` sends a raw prediction request to a Vertex AI endpoint. The
+  request can be given on the command line or read from a file or stdin.
+
+  ## EXAMPLES
+
+  To predict against an endpoint ``123'' under project ``example'' in region
+  ``us-central1'', reading the request from the command line, run:
+
+    $ {command} 123 --project=example --region=us-central1 --request='{
+        "instances": [
+          { "values": [1, 2, 3, 4], "key": 1 },
+          { "values": [5, 6, 7, 8], "key": 2 }
+        ]
+      }'
+
+  If the request body was in the file ``input.json'', run:
+
+    $ {command} 123 --project=example --region=us-central1 --request=@input.json
+
+  To send the image file ``image.jpeg'' and set the *content type*, run:
+
+    $ {command} 123 --project=example --region=us-central1
+    --http-headers=Content-Type=image/jpeg --request=@image.jpeg
+  """
+
+  def Run(self, args):
+    return _Run(args, constants.BETA_VERSION)

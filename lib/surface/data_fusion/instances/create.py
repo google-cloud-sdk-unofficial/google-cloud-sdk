@@ -82,6 +82,10 @@ class Create(base.Command):
         '--enable_stackdriver_monitoring',
         action='store_true',
         help='Enable Stackdriver monitoring for this Data Fusion instance.')
+    parser.add_argument(
+        '--enable_rbac',
+        action='store_true',
+        help='Enable granular role-based access control for this Data Fusion instance.')
 
   def Run(self, args):
     datafusion = df.Datafusion()
@@ -106,6 +110,9 @@ class Create(base.Command):
     enable_stackdriver_monitoring = args.enable_stackdriver_monitoring
     if not enable_stackdriver_monitoring:
       enable_stackdriver_monitoring = False
+    enable_rbac = args.enable_rbac
+    if not enable_rbac:
+      enable_rbac = False
     edition_mapper = arg_utils.ChoiceEnumMapper(
         'edition_enum', df.Datafusion().messages.Instance.TypeValueValuesEnum)
     edition = edition_mapper.GetEnumForChoice(args.edition)
@@ -115,6 +122,7 @@ class Create(base.Command):
         version=version,
         enableStackdriverLogging=enable_stackdriver_logging,
         enableStackdriverMonitoring=enable_stackdriver_monitoring,
+        enableRbac=enable_rbac,
         options=encoding.DictToAdditionalPropertyMessage(
             options, datafusion.messages.Instance.OptionsValue, True),
         labels=encoding.DictToAdditionalPropertyMessage(

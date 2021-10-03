@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.tasks import GetApiAdapter
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.tasks import constants
 from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
@@ -51,6 +50,6 @@ class Pause(base.Command):
   def Run(self, args):
     queues_client = GetApiAdapter(self.ReleaseTrack()).queues
     queue_ref = parsers.ParseQueue(args.queue, args.location)
-    log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     queues_client.Pause(queue_ref)
-    log.status.Print('Paused queue [{}].'.format(queue_ref.Name()))
+    log.status.Print('Paused queue [{}].'.format(
+        parsers.GetConsolePromptString(queue_ref.RelativeName())))

@@ -334,9 +334,8 @@ class CreateHelper(object):
             self._support_l7_internal_load_balancing,
             self._support_l7_rxlb).ResolveAsResource(args,
                                                      resources).SelfLink()
-    elif (target_ref.Collection() == 'compute.regionBackendServices') or (
-        target_ref.Collection() == 'compute.targetInstances' and
-        args.load_balancing_scheme == 'INTERNAL'):
+    elif (target_ref.Collection() == 'compute.regionBackendServices' or
+          target_ref.Collection() == 'compute.targetInstances'):
       forwarding_rule.portRange = (
           six.text_type(args.port_range) if args.port_range else None)
       if target_ref.Collection() == 'compute.regionBackendServices':
@@ -524,7 +523,7 @@ class CreateBeta(Create):
   _support_global_access = True
   _support_l7_internal_load_balancing = True
   _support_gfe3 = False
-  _support_l7_rxlb = False
+  _support_l7_rxlb = True
   _support_all_protocol = False
   _support_target_service_attachment = True
   _support_sd_registration_for_regional = True
@@ -538,7 +537,6 @@ class CreateAlpha(CreateBeta):
   _support_global_access = True
   _support_l7_internal_load_balancing = True
   _support_gfe3 = True
-  _support_l7_rxlb = True
   _support_all_protocol = True
   _support_target_service_attachment = True
   _support_sd_registration_for_regional = True

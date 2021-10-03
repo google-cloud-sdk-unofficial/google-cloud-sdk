@@ -121,12 +121,13 @@ def _Args(parser):
   next_hop.add_argument(
       '--next-hop-ilb',
       help="""\
-      Specifies a forwarding rule for an internal TCP/UDP load balancer. The
-      forwarding rule's `--load-balancing-scheme` must be `INTERNAL`. You can
-      use any `--destination-range` that doesn't exactly match the destination
-      of a subnet route and isn't more specific (has a longer subnet mask) than
-      the destination of a subnet route. Also, the forwarding rule's IP address
-      can't be in the `--destination-range`. For more information, see
+      Specifies the name or IP address of a forwarding rule for an internal TCP/UDP
+      load balancer. The forwarding rule's `--load-balancing-scheme` must be
+      `INTERNAL`. You can use any `--destination-range` that doesn't exactly
+      match the destination of a subnet route and isn't more specific (has a
+      longer subnet mask) than the destination of a subnet route. Also, the
+      forwarding rule's IP address can't be in the `--destination-range`. For
+      more information, see
       https://cloud.google.com/load-balancing/docs/internal/ilb-next-hop-overview#destination_range.
       """)
   parser.add_argument(

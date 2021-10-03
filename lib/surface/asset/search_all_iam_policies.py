@@ -33,7 +33,7 @@ DETAILED_HELP = {
       scope.
 
       Note: The query is compared against each IAM policy binding, including its
-      members, roles and conditions. The returned IAM policies, will only
+      principals, roles and conditions. The returned IAM policies, will only
       contain the bindings that match your query. To learn more about the IAM
       policy structure, see [IAM policy doc](https://cloud.google.com/iam/docs/policies#structure).
       """,
@@ -83,7 +83,7 @@ def AddQueryArgument(parser):
         for more information. If not specified or empty, it will search all the
         IAM policies within the specified ```scope```. Note that the query
         string is compared against each Cloud IAM policy binding, including its
-        members, roles, and Cloud IAM conditions. The returned Cloud IAM
+        principals, roles, and Cloud IAM conditions. The returned Cloud IAM
         policies will only contain the bindings that match your query. To learn
         more about the IAM policy structure, see [IAM policy doc](https://cloud.google.com/iam/docs/policies#structure).
 
@@ -121,7 +121,7 @@ def AddQueryArgument(parser):
         * ```roles:roles/compute.admin``` to find IAM policy bindings that
           specify the Compute Admin role.
         * ```memberTypes:user``` to find IAM policy bindings that contain the
-          ``user'' member type.
+          ``user'' principal type.
         """))
 
 

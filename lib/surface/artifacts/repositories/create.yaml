@@ -149,7 +149,7 @@
       default: false
       api_field: repository.mavenConfig.allowSnapshotOverwrites
       help_text: |
-        Allow repository users to publish a snapshot that overwrites the same snapshot version in the repository.
+        (Maven only) Allow repository users to publish a snapshot that overwrites the same snapshot version in the repository.
     - arg_name: version-policy
       api_field: repository.mavenConfig.versionPolicy
       default: NONE
@@ -161,10 +161,10 @@
         help_text: (Maven only) The repository doesn't validate the version type.
       - arg_value: RELEASE
         enum_value: RELEASE
-        help_text: (Maven only) The repository accepts Release versions only.
+        help_text: (Maven only) The repository accepts release versions only.
       - arg_value: SNAPSHOT
         enum_value: SNAPSHOT
-        help_text: (Maven only) The repository accepts release versions only.
+        help_text: (Maven only) The repository accepts snapshot versions only.
     labels:
       api_field: repository.labels
 

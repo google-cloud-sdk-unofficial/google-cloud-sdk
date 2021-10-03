@@ -70,7 +70,7 @@ class ListBeta(base.ListCommand):
           state():label=STATE,
           trigger():label=TRIGGER,
           name.scope("locations").segment(0):label=REGION,
-          versionId():label=PRODUCT_VERSION
+          generation():label=ENVIRONMENT
         )
     """)
 

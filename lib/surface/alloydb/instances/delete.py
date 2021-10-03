@@ -24,7 +24,9 @@ from googlecloudsdk.api_lib.alloydb import api_util
 from googlecloudsdk.api_lib.alloydb import instance_operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.alloydb import flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 @base.Hidden
@@ -66,6 +68,9 @@ class Delete(base.DeleteCommand):
     req = alloydb_messages.AlloydbProjectsLocationsClustersInstancesDeleteRequest(
         name=instance_ref.RelativeName())
     op = alloydb_client.projects_locations_clusters_instances.Delete(req)
+    op_ref = resources.REGISTRY.ParseRelativeName(
+        op.name, collection='alloydb.projects.locations.operations')
+    log.status.Print('Operation ID: {}'.format(op_ref.Name()))
     if not args.async_:
-      instance_operations.Await(op, 'Deleting instance', False)
+      instance_operations.Await(op_ref, 'Deleting instance', False)
     return op

@@ -136,6 +136,7 @@ class Update(base.UpdateCommand):
 class UpdateBeta(Update):
   """Updates properties of an existing Compute Engine subnetwork."""
 
+  _include_regional_managed_proxy = True
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
 
 
@@ -145,5 +146,4 @@ class UpdateAlpha(UpdateBeta):
 
   _include_alpha_logging = True
   _include_internal_ipv6_access_type = True
-  _include_regional_managed_proxy = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION

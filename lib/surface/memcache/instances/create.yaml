@@ -77,6 +77,40 @@
       - arg_value: '1.5'
         enum_value: MEMCACHE_1_5
         help_text: Memcached major version 1.5
+    - arg_name: maintenance-window-day
+      api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.day
+      release_tracks: [ALPHA]
+      hidden: true
+      choices:
+      - arg_value: mon
+        enum_value: MONDAY
+      - arg_value: tue
+        enum_value: TUESDAY
+      - arg_value: wed
+        enum_value: WEDNESDAY
+      - arg_value: thu
+        enum_value: THURSDAY
+      - arg_value: fri
+        enum_value: FRIDAY
+      - arg_value: sat
+        enum_value: SATURDAY
+      - arg_value: sun
+        enum_value: SUNDAY
+      help_text: |
+        The day of week when the window starts, e.g. 'sun'.
+    - arg_name: maintenance-window-start-time
+      api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.startTime.hours
+      release_tracks: [ALPHA]
+      hidden: true
+      help_text: |
+        Hour of day (0 to 23) for the start of maintenance window, in UTC time zone.
+      processor: googlecloudsdk.command_lib.memcache.instances_create_util:check_maintenance_window_start_time_field
+    - arg_name: maintenance-window-duration
+      api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.duration
+      release_tracks: [ALPHA]
+      hidden: true
+      help_text: |
+        Duration of the maintenance window in seconds, e.g. '10800s'.
     - arg_name: parameters
       api_field: instance.parameters.params
       metavar: KEY=VALUE

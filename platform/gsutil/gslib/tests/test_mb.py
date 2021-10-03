@@ -107,7 +107,7 @@ class TestMb(testcase.GsUtilIntegrationTestCase):
     self.assertRegexpMatches(
         stderr, r'Retention policy can only be specified for GCS buckets.')
 
-  @SkipForXML('Public access prevention only runs on GCS JSON API')
+  @SkipForXML('Public access prevention only runs on GCS JSON API.')
   def test_create_with_pap_enforced(self):
     bucket_name = self.MakeTempName('bucket')
     bucket_uri = boto.storage_uri('gs://%s' % (bucket_name.lower()),
@@ -115,7 +115,7 @@ class TestMb(testcase.GsUtilIntegrationTestCase):
     self.RunGsUtil(['mb', '--pap', 'enforced', suri(bucket_uri)])
     self.VerifyPublicAccessPreventionValue(bucket_uri, 'enforced')
 
-  @SkipForXML('Public access prevention only runs on GCS JSON API')
+  @SkipForXML('Public access prevention only runs on GCS JSON API.')
   def test_create_with_pap_unspecified(self):
     bucket_name = self.MakeTempName('bucket')
     bucket_uri = boto.storage_uri('gs://%s' % (bucket_name.lower()),
@@ -123,7 +123,7 @@ class TestMb(testcase.GsUtilIntegrationTestCase):
     self.RunGsUtil(['mb', '--pap', 'unspecified', suri(bucket_uri)])
     self.VerifyPublicAccessPreventionValue(bucket_uri, 'unspecified')
 
-  @SkipForXML('Public access prevention only runs on GCS JSON API')
+  @SkipForXML('Public access prevention only runs on GCS JSON API.')
   def test_create_with_pap_invalid_arg(self):
     bucket_name = self.MakeTempName('bucket')
     bucket_uri = boto.storage_uri('gs://%s' % (bucket_name.lower()),

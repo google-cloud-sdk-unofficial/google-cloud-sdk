@@ -52,6 +52,8 @@ class Create(base.CreateCommand):
     flags.AddDescription(parser)
     flags.AddSrcSecureTags(parser)
     flags.AddTargetSecureTags(parser)
+    flags.AddSrcAddressGroups(parser)
+    flags.AddDestAddressGroups(parser)
     parser.display_info.AddCacheUpdater(flags.NetworkFirewallPoliciesCompleter)
 
   def Run(self, args):
@@ -72,6 +74,8 @@ class Create(base.CreateCommand):
     disabled = False
     src_secure_tags = []
     target_secure_tags = []
+    src_address_groups = []
+    dest_address_groups = []
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
     if args.IsSpecified('dest_ip_ranges'):
@@ -90,13 +94,19 @@ class Create(base.CreateCommand):
     if args.IsSpecified('target_secure_tags'):
       target_secure_tags = secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
           holder.client, args.target_secure_tags)
+    if args.IsSpecified('src_address_groups'):
+      src_address_groups = args.src_address_groups
+    if args.IsSpecified('dest_address_groups'):
+      dest_address_groups = args.dest_address_groups
     layer4_config_list = rule_utils.ParseLayer4Configs(layer4_configs,
                                                        holder.client.messages)
     matcher = holder.client.messages.FirewallPolicyRuleMatcher(
         srcIpRanges=src_ip_ranges,
         destIpRanges=dest_ip_ranges,
         layer4Configs=layer4_config_list,
-        srcSecureTags=src_secure_tags)
+        srcSecureTags=src_secure_tags,
+        srcAddressGroups=src_address_groups,
+        destAddressGroups=dest_address_groups)
     traffic_direct = (
         holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum
         .INGRESS)

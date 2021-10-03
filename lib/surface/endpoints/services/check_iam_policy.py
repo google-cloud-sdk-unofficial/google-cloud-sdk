@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.endpoints import common_flags
 
 
 class CheckIamPolicy(base.Command):
-  """Returns information about a member's permissions on a service.
+  """Returns information about a principal's permissions on a service.
 
   This command lists the permissions that the current authenticated
   gcloud user has for a service. For example, if the authenticated user is

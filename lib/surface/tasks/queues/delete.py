@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.tasks import GetApiAdapter
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.tasks import constants
 from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
@@ -48,10 +47,11 @@ class Delete(base.DeleteCommand):
   def Run(self, args):
     queues_client = GetApiAdapter(self.ReleaseTrack()).queues
     queue_ref = parsers.ParseQueue(args.queue, args.location)
-    log.warning(constants.QUEUE_MANAGEMENT_WARNING)
+    queue_short = parsers.GetConsolePromptString(queue_ref.RelativeName())
     console_io.PromptContinue(
         cancel_on_no=True,
-        prompt_string='Are you sure you want to delete: [{}]'.format(
-            queue_ref.RelativeName()))
+        prompt_string=(
+            'Deleted queues can not be re-created for a duration of up to 7 '
+            'days. Are you sure you want to delete: [{}]'.format(queue_short)))
     queues_client.Delete(queue_ref)
-    log.DeletedResource(queue_ref.Name(), 'queue')
+    log.DeletedResource(queue_short, 'queue')

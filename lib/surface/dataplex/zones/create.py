@@ -20,8 +20,8 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataplex import util as dataplex_util
 from googlecloudsdk.api_lib.dataplex import zone
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataplex import flags
 from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -57,54 +57,22 @@ class Create(base.Command):
         choices={
             'RAW': 'raw.',
             'CURATED': 'curated.',
-            'TYPE_UNSPECIFIED': 'type_unspecified'
         },
         type=arg_utils.ChoiceToEnumName,
         help='Type', required=True)
-    discovery_spec = parser.add_group(
-        help='Settings to manage the metadata discovery and publishing in a zone.'
-    )
-    discovery_spec.add_argument(
-        '--discovery-enabled',
-        action=arg_parsers.StoreTrueFalseAction,
-        help='Whether discovery is enabled.')
-    discovery_spec.add_argument(
-        '--include-patterns',
-        default=[],
-        type=arg_parsers.ArgList(),
-        metavar='INCLUDE_PATTERNS',
-        help="""The list of patterns to apply for selecting data to include
-        during discovery if only a subset of the data should considered. For
-        Cloud Storage bucket assets, these are interpreted as glob patterns
-        used to match object names. For BigQuery dataset assets, these are
-        interpreted as patterns to match table names.""")
-    discovery_spec.add_argument(
-        '--exclude-patterns',
-        default=[],
-        type=arg_parsers.ArgList(),
-        metavar='EXCLUDE_PATTERNS',
-        help="""The list of patterns to apply for selecting data to exclude
-        during discovery. For Cloud Storage bucket assets, these are interpreted
-        as glob patterns used to match object names. For BigQuery dataset
-        assets, these are interpreted as patterns to match table names.""")
-    trigger = discovery_spec.add_group(
-        help='Determines when discovery jobs are triggered.')
-    trigger.add_argument(
-        '--discovery-schedule',
-        help="""Cron schedule (https://en.wikipedia.org/wiki/Cron) for running
-                discovery jobs periodically. Discovery jobs must be scheduled at
-                least 30 minutes apart.""")
+    flags.AddDiscoveryArgs(parser)
     resource_spec = parser.add_group(
+        required=True,
         help='Settings for resources attached as assets within a zone.')
     resource_spec.add_argument(
-        '--location-type',
+        '--resource-location-type',
         choices={
-            'LOCATION_TYPE_UNSPECIFIED': 'LOCATION_TYPE_UNSPECIFIED',
             'SINGLE_REGION': 'single_region',
             'MULTI_REGION': 'multi_region'
         },
         type=arg_utils.ChoiceToEnumName,
-        help='location type', required=True)
+        help='resource location type',
+        required=True)
     base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
@@ -122,8 +90,9 @@ class Create(base.Command):
                 dataplex_util.CreateLabels(
                     dataplex_util.GetMessageModule().GoogleCloudDataplexV1Zone,
                     args), args.type, args.discovery_enabled,
-                args.include_patterns, args.exclude_patterns,
-                args.location_type, args.discovery_schedule)))
+                args.discovery_include_patterns,
+                args.discovery_exclude_patterns, args.resource_location_type,
+                args.discovery_schedule)))
 
     validate_only = getattr(args, 'validate_only', False)
     if validate_only:

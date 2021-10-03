@@ -23,7 +23,9 @@ from googlecloudsdk.api_lib.alloydb import api_util
 from googlecloudsdk.api_lib.alloydb import cluster_operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.alloydb import flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 @base.Hidden
@@ -67,7 +69,10 @@ class Update(base.UpdateCommand):
         cluster=cluster_resource,
         name=cluster_ref.RelativeName())
     op = alloydb_client.projects_locations_clusters.Patch(req)
+    op_ref = resources.REGISTRY.ParseRelativeName(
+        op.name, collection='alloydb.projects.locations.operations')
+    log.status.Print('Operation ID: {}'.format(op_ref.Name()))
     if not args.async_:
-      cluster_operations.Await(op, 'Updating cluster', False)
+      cluster_operations.Await(op_ref, 'Updating cluster', False)
     return op
 

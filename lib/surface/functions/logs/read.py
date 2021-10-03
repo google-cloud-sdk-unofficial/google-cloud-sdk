@@ -28,12 +28,12 @@ from googlecloudsdk.command_lib.functions.v2.logs.read import command as command
 _DEFAULT_TABLE_FORMAT = 'table(level,name,execution_id,time_utc,log)'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetLogs(base.ListCommand):
   """Display log entries produced by Google Cloud Functions."""
 
   @staticmethod
-  def Args(parser):
+  def Args(parser, track=base.ReleaseTrack.GA):
     """Register flags for this command."""
     flags.AddRegionFlag(
         parser,
@@ -90,17 +90,17 @@ class GetLogs(base.ListCommand):
     return command_v1.Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class GetLogsAlpha(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class GetLogsBeta(GetLogs):
   """Display log entries produced by Google Cloud Functions."""
 
   @staticmethod
-  def Args(parser):
+  def Args(parser, track=base.ReleaseTrack.BETA):
     """Register flags for this command."""
     GetLogs.Args(parser)
 
     # Add additional flags for GCFv2
-    flags.AddGen2Flag(parser, base.ReleaseTrack.ALPHA)
+    flags.AddGen2Flag(parser, track)
 
   @util.CatchHTTPErrorRaiseHTTPException
   def Run(self, args):
@@ -108,3 +108,13 @@ class GetLogsAlpha(base.ListCommand):
       return command_v2.Run(args, self.ReleaseTrack())
     else:
       return command_v1.Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class GetLogsAlpha(GetLogsBeta):
+  """Display log entries produced by Google Cloud Functions."""
+
+  @staticmethod
+  def Args(parser, track=base.ReleaseTrack.ALPHA):
+    """Register flags for this command."""
+    GetLogsBeta.Args(parser, track)

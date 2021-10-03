@@ -18,17 +18,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import json
 import textwrap
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iam.workload_identity_pools import cred_config
-from googlecloudsdk.core import log
-from googlecloudsdk.core.util import files
-
-OAUTH_URL = 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource='
-RESOURCE_TYPE = 'credential configuration file'
+from googlecloudsdk.command_lib.iam.byoid_utilities import cred_config
 
 
 class CreateCredConfig(base.CreateCommand):
@@ -104,27 +98,5 @@ class CreateCredConfig(base.CreateCommand):
         help='The type of token being used for authorization.')
 
   def Run(self, args):
-    try:
-      generator = cred_config.get_generator(args)
-
-      output = {
-          'type': 'external_account',
-          'audience': '//iam.googleapis.com/' + args.audience,
-          'subject_token_type':
-              generator.get_token_type(args.subject_token_type),
-          'token_url':
-              'https://sts.googleapis.com/v1/token',
-          'credential_source':
-              generator.get_source(args.credential_source_type,
-                                   args.credential_source_field_name),
-      }
-
-      if args.service_account:
-        output['service_account_impersonation_url'] = ''.join((
-            'https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/',
-            args.service_account, ':generateAccessToken'))
-
-      files.WriteFileContents(args.output_file, json.dumps(output, indent=2))
-      log.CreatedResource(args.output_file, RESOURCE_TYPE)
-    except cred_config.GeneratorError as cce:
-      log.CreatedResource(args.output_file, RESOURCE_TYPE, failed=cce.message)
+    cred_config.create_credential_config(
+        args, cred_config.ConfigType.WORKLOAD_IDENTITY_POOLS)

@@ -692,6 +692,14 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--region": "dynamic"
               }
             },
+            "raw-predict": {
+              "commands": {},
+              "flags": {
+                "--http-headers": "value",
+                "--region": "dynamic",
+                "--request": "value"
+              }
+            },
             "undeploy-model": {
               "commands": {},
               "flags": {
@@ -7617,6 +7625,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--resources": "value",
                     "--resources-accelerator": "value",
                     "--share-setting": [
+                      "local",
                       "projects"
                     ],
                     "--share-with": "value",
@@ -7679,6 +7688,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--dest-local-ssd": "value",
                     "--dest-reservation": "value",
                     "--dest-share-setting": [
+                      "local",
                       "projects"
                     ],
                     "--dest-share-with": "value",
@@ -7688,6 +7698,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--source-local-ssd": "value",
                     "--source-reservation": "value",
                     "--source-share-setting": [
+                      "local",
                       "projects"
                     ],
                     "--source-share-with": "value"
@@ -8514,6 +8525,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--min-cpu-platform": "value",
                     "--name-prefix": "value",
                     "--share-setting": [
+                      "local",
                       "projects"
                     ],
                     "--share-with": "value",
@@ -9995,6 +10007,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--min-node-cpu": "value",
                     "--network": "value",
                     "--network-interface": "value",
+                    "--network-performance-configs": "value",
                     "--network-tier": "value",
                     "--no-address": "bool",
                     "--no-scopes": "bool",
@@ -10886,6 +10899,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     }
                   },
                   "flags": {}
+                },
+                "perform-maintenance": {
+                  "commands": {},
+                  "flags": {
+                    "--zone": "dynamic"
+                  }
                 },
                 "remove-iam-policy-binding": {
                   "commands": {},
@@ -11803,6 +11822,19 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--global": "bool",
                     "--region": "dynamic"
+                  }
+                },
+                "get-effective-firewalls": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--network": "value",
+                    "--page-size": "value",
+                    "--regexp": "value",
+                    "--region": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
                   }
                 },
                 "list": {
@@ -13144,6 +13176,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--min-cpu-platform": "value",
                     "--require-specific-reservation": "bool",
                     "--share-setting": [
+                      "local",
                       "projects"
                     ],
                     "--share-with": "value",
@@ -17191,7 +17224,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--complete-credential-rotation": "bool",
                     "--complete-ip-rotation": "bool",
                     "--database-encryption-key": "value",
-                    "--disable-autopilot": "bool",
                     "--disable-database-encryption": "bool",
                     "--disable-default-snat": "bool",
                     "--disable-workload-identity": "bool",
@@ -29349,6 +29381,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--attributes": "value",
+                    "--event-time": "value",
                     "--location": "value",
                     "--message": "value",
                     "--ordering-key": "value"
@@ -30686,6 +30719,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--clear-env-vars": "bool",
                 "--clear-key": "bool",
                 "--clear-labels": "bool",
+                "--clear-post-key-revocation-action-type": "bool",
                 "--clear-secrets": "bool",
                 "--clear-vpc-connector": "bool",
                 "--cluster": "value",
@@ -30724,6 +30758,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "managed"
                 ],
                 "--port": "value",
+                "--post-key-revocation-action-type": [
+                  "prevent-new",
+                  "shut-down"
+                ],
                 "--region": "value",
                 "--remove-cloudsql-instances": "value",
                 "--remove-config-maps": "value",
@@ -31258,6 +31296,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--clear-env-vars": "bool",
                     "--clear-key": "bool",
                     "--clear-labels": "bool",
+                    "--clear-post-key-revocation-action-type": "bool",
                     "--clear-secrets": "bool",
                     "--clear-vpc-connector": "bool",
                     "--cluster": "value",
@@ -31296,6 +31335,10 @@ STATIC_COMPLETION_CLI_TREE = {
                       "managed"
                     ],
                     "--port": "value",
+                    "--post-key-revocation-action-type": [
+                      "prevent-new",
+                      "shut-down"
+                    ],
                     "--region": "value",
                     "--remove-cloudsql-instances": "value",
                     "--remove-config-maps": "value",
@@ -36933,6 +36976,14 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "dynamic"
                   }
                 },
+                "raw-predict": {
+                  "commands": {},
+                  "flags": {
+                    "--http-headers": "value",
+                    "--region": "dynamic",
+                    "--request": "value"
+                  }
+                },
                 "undeploy-model": {
                   "commands": {},
                   "flags": {
@@ -40061,6 +40112,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--description": "value",
                     "--force": "bool",
                     "--instance": "dynamic",
+                    "--restrict-to": "value",
                     "--route-any": "bool",
                     "--route-to": "dynamic",
                     "--transactional-writes": "bool"
@@ -40097,6 +40149,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--description": "value",
                     "--force": "bool",
                     "--instance": "dynamic",
+                    "--restrict-to": "value",
                     "--route-any": "bool",
                     "--route-to": "dynamic",
                     "--transactional-writes": "bool"
@@ -41493,6 +41546,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--idle-timeout-sec": "value",
                     "--load-balancing-scheme": [
                       "EXTERNAL",
+                      "EXTERNAL_MANAGED",
                       "INTERNAL",
                       "INTERNAL_MANAGED",
                       "INTERNAL_SELF_MANAGED"
@@ -41744,6 +41798,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--resources": "value",
                     "--resources-accelerator": "value",
                     "--share-setting": [
+                      "local",
                       "projects"
                     ],
                     "--share-with": "value",
@@ -41798,6 +41853,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--dest-local-ssd": "value",
                     "--dest-reservation": "value",
                     "--dest-share-setting": [
+                      "local",
                       "projects"
                     ],
                     "--dest-share-with": "value",
@@ -41807,6 +41863,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--source-local-ssd": "value",
                     "--source-reservation": "value",
                     "--source-share-setting": [
+                      "local",
                       "projects"
                     ],
                     "--source-share-with": "value"
@@ -42421,6 +42478,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--is-mirroring-collector": "bool",
                     "--load-balancing-scheme": [
                       "EXTERNAL",
+                      "EXTERNAL_MANAGED",
                       "INTERNAL",
                       "INTERNAL_MANAGED",
                       "INTERNAL_SELF_MANAGED"
@@ -42507,6 +42565,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--global-target-https-proxy": "bool",
                     "--load-balancing-scheme": [
                       "EXTERNAL",
+                      "EXTERNAL_MANAGED",
                       "INTERNAL",
                       "INTERNAL_MANAGED",
                       "INTERNAL_SELF_MANAGED"
@@ -43835,6 +43894,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--min-node-cpu": "value",
                     "--network": "value",
                     "--network-interface": "value",
+                    "--network-performance-configs": "value",
                     "--network-tier": "value",
                     "--no-address": "bool",
                     "--no-scopes": "bool",
@@ -45490,7 +45550,8 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--purpose": [
                           "INTERNAL_HTTPS_LOAD_BALANCER",
                           "PRIVATE",
-                          "PRIVATE_SERVICE_CONNECT"
+                          "PRIVATE_SERVICE_CONNECT",
+                          "REGIONAL_MANAGED_PROXY"
                         ],
                         "--range": "value",
                         "--region": "dynamic",
@@ -45602,6 +45663,9 @@ STATIC_COMPLETION_CLI_TREE = {
                           "disable",
                           "enable-bidirectional-access",
                           "enable-outbound-vm-access"
+                        ],
+                        "--purpose": [
+                          "REGIONAL_MANAGED_PROXY"
                         ],
                         "--region": "dynamic",
                         "--remove-secondary-ranges": "value",
@@ -46419,6 +46483,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--min-cpu-platform": "value",
                     "--require-specific-reservation": "bool",
                     "--share-setting": [
+                      "local",
                       "projects"
                     ],
                     "--share-with": "value",
@@ -49233,7 +49298,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--complete-credential-rotation": "bool",
                     "--complete-ip-rotation": "bool",
                     "--database-encryption-key": "value",
-                    "--disable-autopilot": "bool",
                     "--disable-database-encryption": "bool",
                     "--disable-default-snat": "bool",
                     "--disable-workload-identity": "bool",
@@ -50319,6 +50383,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "developer",
                       "enterprise"
                     ],
+                    "--enable_rbac": "bool",
                     "--enable_stackdriver_logging": "bool",
                     "--enable_stackdriver_monitoring": "bool",
                     "--labels": "value",
@@ -61297,6 +61362,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--attributes": "value",
+                    "--event-time": "value",
                     "--location": "value",
                     "--message": "value",
                     "--ordering-key": "value"
@@ -62188,6 +62254,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--clear-env-vars": "bool",
                 "--clear-key": "bool",
                 "--clear-labels": "bool",
+                "--clear-post-key-revocation-action-type": "bool",
                 "--clear-secrets": "bool",
                 "--clear-vpc-connector": "bool",
                 "--cluster": "value",
@@ -62221,6 +62288,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "managed"
                 ],
                 "--port": "value",
+                "--post-key-revocation-action-type": [
+                  "prevent-new",
+                  "shut-down"
+                ],
                 "--region": "value",
                 "--remove-cloudsql-instances": "value",
                 "--remove-config-maps": "value",
@@ -62597,6 +62668,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--clear-env-vars": "bool",
                     "--clear-key": "bool",
                     "--clear-labels": "bool",
+                    "--clear-post-key-revocation-action-type": "bool",
                     "--clear-secrets": "bool",
                     "--clear-vpc-connector": "bool",
                     "--cluster": "value",
@@ -62630,6 +62702,10 @@ STATIC_COMPLETION_CLI_TREE = {
                       "managed"
                     ],
                     "--port": "value",
+                    "--post-key-revocation-action-type": [
+                      "prevent-new",
+                      "shut-down"
+                    ],
                     "--region": "value",
                     "--remove-cloudsql-instances": "value",
                     "--remove-config-maps": "value",
@@ -65503,6 +65579,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--description": "value",
                 "--force": "bool",
                 "--instance": "dynamic",
+                "--restrict-to": "value",
                 "--route-any": "bool",
                 "--route-to": "dynamic",
                 "--transactional-writes": "bool"
@@ -65539,6 +65616,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--description": "value",
                 "--force": "bool",
                 "--instance": "dynamic",
+                "--restrict-to": "value",
                 "--route-any": "bool",
                 "--route-to": "dynamic",
                 "--transactional-writes": "bool"
@@ -65964,6 +66042,29 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--notifications-rule-pubsub-topic": "value",
                 "--start-date": "value",
                 "--threshold-rules-from-file": "value"
+              }
+            }
+          },
+          "flags": {}
+        }
+      },
+      "flags": {}
+    },
+    "bms": {
+      "commands": {
+        "instances": {
+          "commands": {
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--region": "dynamic"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--limit": "value",
+                "--region": "dynamic"
               }
             }
           },
@@ -73656,7 +73757,6 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--complete-credential-rotation": "bool",
                 "--complete-ip-rotation": "bool",
                 "--database-encryption-key": "value",
-                "--disable-autopilot": "bool",
                 "--disable-database-encryption": "bool",
                 "--disable-default-snat": "bool",
                 "--disable-workload-identity": "bool",
@@ -84381,7 +84481,9 @@ STATIC_COMPLETION_CLI_TREE = {
             "--clear-cloudsql-instances": "bool",
             "--clear-config-maps": "bool",
             "--clear-env-vars": "bool",
+            "--clear-key": "bool",
             "--clear-labels": "bool",
+            "--clear-post-key-revocation-action-type": "bool",
             "--clear-secrets": "bool",
             "--clear-vpc-connector": "bool",
             "--cluster": "value",
@@ -84400,6 +84502,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "internal",
               "internal-and-cloud-load-balancing"
             ],
+            "--key": "value",
             "--kubeconfig": "value",
             "--labels": "value",
             "--max-instances": "value",
@@ -84413,6 +84516,10 @@ STATIC_COMPLETION_CLI_TREE = {
               "managed"
             ],
             "--port": "value",
+            "--post-key-revocation-action-type": [
+              "prevent-new",
+              "shut-down"
+            ],
             "--region": "value",
             "--remove-cloudsql-instances": "value",
             "--remove-config-maps": "value",
@@ -84782,7 +84889,9 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--clear-cloudsql-instances": "bool",
                 "--clear-config-maps": "bool",
                 "--clear-env-vars": "bool",
+                "--clear-key": "bool",
                 "--clear-labels": "bool",
+                "--clear-post-key-revocation-action-type": "bool",
                 "--clear-secrets": "bool",
                 "--clear-vpc-connector": "bool",
                 "--cluster": "value",
@@ -84801,6 +84910,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "internal",
                   "internal-and-cloud-load-balancing"
                 ],
+                "--key": "value",
                 "--kubeconfig": "value",
                 "--labels": "value",
                 "--max-instances": "value",
@@ -84814,6 +84924,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "managed"
                 ],
                 "--port": "value",
+                "--post-key-revocation-action-type": [
+                  "prevent-new",
+                  "shut-down"
+                ],
                 "--region": "value",
                 "--remove-cloudsql-instances": "value",
                 "--remove-config-maps": "value",
@@ -85334,6 +85448,25 @@ STATIC_COMPLETION_CLI_TREE = {
                 }
               },
               "flags": {}
+            }
+          },
+          "flags": {}
+        },
+        "locations": {
+          "commands": {
+            "describe": {
+              "commands": {},
+              "flags": {}
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
+              }
             }
           },
           "flags": {}

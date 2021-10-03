@@ -38,20 +38,26 @@ _DISPLAY_INFO_V2_FORMAT = """
    )
 """
 
+_DETAILED_HELP = {
+    'DESCRIPTION':
+        """
+        `{command}` displays types of events that can be a trigger for a Google Cloud
+        Function.
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+        * For an event type, `EVENT_TYPE_DEFAULT` marks whether the given event type
+          is the default (in which case the `--trigger-event` flag may be omitted).
+        * For a resource, `RESOURCE_OPTIONAL` marks whether the resource has a
+          corresponding default value (in which case the `--trigger-resource` flag
+          may be omitted).
+        """,
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.Command):
-  """List types of events that can be a trigger for a Google Cloud Function.
+  """List types of events that can be a trigger for a Google Cloud Function."""
 
-  `{command}` displays types of events that can be a trigger for a Google Cloud
-  Function.
-
-  * For an event type, `EVENT_TYPE_DEFAULT` marks whether the given event type
-    is the default (in which case the `--trigger-event` flag may be omitted).
-  * For a resource, `RESOURCE_OPTIONAL` marks whether the resource has a
-    corresponding default value (in which case the `--trigger-resource` flag
-    may be omitted).
-  """
+  detailed_help = _DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -63,23 +69,15 @@ class List(base.Command):
     return command_v1.Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.Command):
-  """List types of events that can be a trigger for a Google Cloud Function.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.Command):
+  """List types of events that can be a trigger for a Google Cloud Function."""
 
-  `{command}` displays types of events that can be a trigger for a Google Cloud
-  Function.
-
-  * For an event type, `EVENT_TYPE_DEFAULT` marks whether the given event type
-    is the default (in which case the `--trigger-event` flag may be omitted).
-  * For a resource, `RESOURCE_OPTIONAL` marks whether the resource has a
-    corresponding default value (in which case the `--trigger-resource` flag
-    may be omitted).
-  """
+  detailed_help = _DETAILED_HELP
 
   @staticmethod
-  def Args(parser):
-    flags.AddGen2Flag(parser, base.ReleaseTrack.ALPHA)
+  def Args(parser, track=base.ReleaseTrack.BETA):
+    flags.AddGen2Flag(parser, track)
 
   def Run(self, args):
     if flags.ShouldUseGen2():
@@ -90,3 +88,14 @@ class ListAlpha(base.Command):
       if not args.IsSpecified('format'):
         args.format = _DISPLAY_INFO_V1_FORMAT
       return command_v1.Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+  """List types of events that can be a trigger for a Google Cloud Function."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser, track=base.ReleaseTrack.ALPHA):
+    ListBeta.Args(parser, track)

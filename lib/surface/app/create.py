@@ -53,15 +53,28 @@ class Create(base.CreateCommand):
         help=('The region to create the app within.  '
               'Use `gcloud app regions list` to list available regions.  '
               'If not provided, select region interactively.'))
+    parser.add_argument(
+        '--service-account',
+        hidden=True,
+        help=(
+            'The app-level default service account to create the app with.  '
+            'Note that you can specify a distinct service account for each App Engine version with `gcloud app deploy --service-account`. However if you do not specify a version-level service account, this default will be used. '
+            'If this parameter is not provided for app creation, the app-level default will be set to be the out-of-box App Engine Default Service Account, https://cloud.google.com/appengine/docs/standard/python3/service-account outlines the limitation of that service account.'
+        ))
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)
     api_client = appengine_api_client.GetApiClientForTrack(self.ReleaseTrack())
     if args.region:
-      create_util.CreateApp(api_client, project, args.region)
+      create_util.CreateApp(
+          api_client,
+          project,
+          args.region,
+          service_account=args.service_account)
     elif console_io.CanPrompt():
       create_util.CheckAppNotExists(api_client, project)
-      create_util.CreateAppInteractively(api_client, project)
+      create_util.CreateAppInteractively(
+          api_client, project, service_account=args.service_account)
     else:
       raise create_util.UnspecifiedRegionError(
           'Prompts are disabled. Region must be specified either by the '

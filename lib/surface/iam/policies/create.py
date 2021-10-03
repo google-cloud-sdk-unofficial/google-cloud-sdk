@@ -34,8 +34,8 @@ class Create(base.CreateCommand):
       'EXAMPLES':
           textwrap.dedent("""\
           The following command creates the IAM policy defined at the resource
-          project "123" of kind "denypolicies" and id "my-deny-policy" from the
-          file "policy.json" :
+          project ``123" of kind ``denypolicies" and id ``my-deny-policy" from the
+          file ``policy.json" :
 
 
             $ {command} my-deny-policy --resource=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies --policy_file=policy.json

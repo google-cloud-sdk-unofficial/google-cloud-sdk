@@ -79,7 +79,6 @@ class UpdateAppEngine(base.UpdateCommand):
         release_track=self.ReleaseTrack())
     updated_fields = parsers.GetSpecifiedFieldsMask(
         args, constants.PUSH_QUEUE, release_track=self.ReleaseTrack())
-    log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     if not self.is_alpha:
       app_engine_routing_override = (
           queue_config.appEngineHttpQueue.appEngineRoutingOverride
@@ -101,7 +100,8 @@ class UpdateAppEngine(base.UpdateCommand):
           retry_config=queue_config.retryConfig,
           rate_limits=queue_config.rateLimits,
           app_engine_routing_override=app_engine_routing_override)
-    log.status.Print('Updated queue [{}].'.format(queue_ref.Name()))
+    log.status.Print('Updated queue [{}].'.format(
+        parsers.GetConsolePromptString(queue_ref.RelativeName())))
     return update_response
 
 

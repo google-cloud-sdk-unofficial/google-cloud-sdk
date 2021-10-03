@@ -34,7 +34,7 @@ class List(base.ListCommand):
       'EXAMPLES':
           textwrap.dedent("""\
           The following command lists the IAM policy defined at the resource
-          project "123" of kind "denypolicies":
+          project ``123" of kind ``denypolicies":
 
             $ {command} --resource=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies
           """),
