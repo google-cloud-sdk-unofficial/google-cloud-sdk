@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Remove an invoker binding from the IAM policy of a Google Cloud Function."""
+"""Removes an invoker binding from the IAM policy of a Google Cloud Function."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,21 +24,55 @@ from googlecloudsdk.command_lib.functions.v2.remove_invoker_policy_binding impor
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RemoveInvokerPolicyBinding(base.Command):
-  """Remove an invoker binding from the IAM policy of a Google Cloud Function.
+def _CommonArgs(parser, track):
+  """Registers flags for this command."""
+  del track
+  flags.AddFunctionResourceArg(parser, 'to remove the invoker binding from')
+  iam_util.AddMemberFlag(parser, 'to remove from the IAM policy', False)
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class RemoveInvokerPolicyBindingBeta(base.Command):
+  """Removes an invoker binding from the IAM policy of a Google Cloud Function.
 
   This command applies to Cloud Functions V2 only.
   """
 
   @staticmethod
   def Args(parser):
-    """Register flags for this command."""
-    flags.AddFunctionResourceArg(parser, 'to remove the invoker binding from')
-    iam_util.AddMemberFlag(parser, 'to remove from the IAM policy', False)
+    """Registers flags for this command."""
+    _CommonArgs(parser, base.ReleaseTrack.BETA)
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
+    """Runs the command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      The updated IAM policy for the service.
+    """
+    return command.Run(args, self.ReleaseTrack())
+
+
+# Note: does not inherit from RemoveInvokerPolicyBindingBeta to avoid inheriting
+# _is_hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RemoveInvokerPolicyBindingAlpha(base.Command):
+  """Removes an invoker binding from the IAM policy of a Google Cloud Function.
+
+  This command applies to Cloud Functions V2 only.
+  """
+
+  @staticmethod
+  def Args(parser):
+    """Registers flags for this command."""
+    _CommonArgs(parser, base.ReleaseTrack.ALPHA)
+
+  def Run(self, args):
+    """Runs the command.
 
     Args:
       args: an argparse namespace. All the arguments that were provided to this

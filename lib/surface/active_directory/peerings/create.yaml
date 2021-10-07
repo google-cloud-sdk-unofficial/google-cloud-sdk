@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [GA, BETA, ALPHA]
 
   help_text:
     brief: |
@@ -13,11 +13,10 @@
         * There is an overlap between the provided CIDR range and authorized network's CIDR.
     examples: |
       The following command creates an AD domain peering with the name
-      `my-peering`, network `my-network` and domain
-      `projects/domain-project/locations/global/domains/domain.com`
+      ``my-peering'', network ``my-network'' and domain
+      ``projects/domain-project/locations/global/domains/domain.com''
 
-        $ {command} my-peering --domain=projects/domain-project/locations/global/domains/domain.com
-        --authorized-networks=projects/network-project/global/networks/my-network
+        $ {command} my-peering --domain=projects/domain-project/locations/global/domains/domain.com --authorized-network=projects/network-project/global/networks/my-network
 
   async:
     collection: managedidentities.projects.locations.global.operations
@@ -31,6 +30,8 @@
       api_version: v1alpha1
     BETA:
       api_version: v1beta1
+    GA:
+      api_version: v1
 
   arguments:
     resource:

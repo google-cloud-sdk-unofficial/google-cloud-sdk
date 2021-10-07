@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Gets IAM policy for a Google Cloud Function."""
 
 from __future__ import absolute_import
@@ -25,40 +24,8 @@ from googlecloudsdk.command_lib.functions.v1.get_iam_policy import command as co
 from googlecloudsdk.command_lib.functions.v2.get_iam_policy import command as command_v2
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetIamPolicy(base.ListCommand):
-  """Get IAM policy for a Google Cloud Function."""
-
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES':
-          """\
-          To get the iam policy for `FUNCTION-1` run:
-
-            $ {command} FUNCTION-1
-          """,
-  }
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.AddFunctionResourceArg(parser, 'to get IAM policy for')
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The specified function with its description and configured filter.
-    """
-    return command_v1.Run(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class GetIamPolicyAlpha(base.ListCommand):
   """Get IAM policy for a Google Cloud Function."""
 
   detailed_help = {
@@ -74,14 +41,47 @@ class GetIamPolicyAlpha(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    """Register flags for this command."""
+    """Registers flags for this command."""
+    flags.AddFunctionResourceArg(parser, 'to get IAM policy for')
+
+  def Run(self, args):
+    """Runs the command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      The specified function with its description and configured filter.
+    """
+    return command_v1.Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class GetIamPolicyBeta(base.ListCommand):
+  """Gets IAM policy for a Google Cloud Function."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To get the iam policy for `FUNCTION-1` run:
+
+            $ {command} FUNCTION-1
+          """,
+  }
+
+  @staticmethod
+  def Args(parser, track=base.ReleaseTrack.BETA):
+    """Registers flags for this command."""
     flags.AddFunctionResourceArg(parser, 'to get IAM policy for')
 
     # Add additional flags for GCFv2
-    flags.AddGen2Flag(parser, base.ReleaseTrack.ALPHA)
+    flags.AddGen2Flag(parser, track)
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
+    """Runs the command.
 
     Args:
       args: an argparse namespace. All the arguments that were provided to this
@@ -94,3 +94,12 @@ class GetIamPolicyAlpha(base.ListCommand):
       return command_v2.Run(args, self.ReleaseTrack())
     else:
       return command_v1.Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class GetIamPolicyAlpha(GetIamPolicyBeta):
+  """Gets IAM policy for a Google Cloud Function."""
+
+  @staticmethod
+  def Args(parser, track=base.ReleaseTrack.ALPHA):
+    GetIamPolicyBeta.Args(parser, track)

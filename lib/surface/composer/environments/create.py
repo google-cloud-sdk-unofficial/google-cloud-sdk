@@ -201,6 +201,12 @@ information on how to structure KEYs and VALUEs, run
   kms_resource_args.AddKmsKeyResourceArg(
       parser, 'environment', permission_info=permission_info)
 
+  if release_track == base.ReleaseTrack.GA:
+    # Note: this flag is available for creation of both Composer 1.*.* and 2.*.*
+    # environments, although it is currently invalid for Composer 2.*.* in
+    # gcloud GA.
+    flags.NUM_SCHEDULERS.AddToParser(parser)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
@@ -270,6 +276,11 @@ class Create(base.Command):
     self.kms_key = None
     if args.kms_key:
       self.kms_key = flags.GetAndValidateKmsEncryptionKey(args)
+
+    flags.ValidateSchedulerCountFlag(
+        args.scheduler_count,
+        image_versions_util.IsImageVersionStringComposerV1(self.image_version),
+        self.ReleaseTrack())
 
     operation = self.GetOperationMessage(
         args,
@@ -483,6 +494,7 @@ class Create(base.Command):
         web_server_access_control=self.web_server_access_control,
         cloud_sql_machine_type=args.cloud_sql_machine_type,
         web_server_machine_type=args.web_server_machine_type,
+        scheduler_count=args.scheduler_count,
         release_track=self.ReleaseTrack())
     return environments_api_util.Create(self.env_ref, create_flags,
                                         is_composer_v1)
@@ -526,6 +538,8 @@ class CreateBeta(Create):
     # environments.
     flags.NUM_SCHEDULERS.AddToParser(autoscaling_group_parser)
 
+    flags.ENABLE_IP_MASQ_AGENT_FLAG.AddToParser(parser)
+
   def GetOperationMessage(self, args, is_composer_v1):
     """See base class."""
     create_flags = environments_api_util.CreateEnvironmentFlags(
@@ -552,10 +566,12 @@ class CreateBeta(Create):
         kms_key=self.kms_key,
         private_environment=args.enable_private_environment,
         private_endpoint=args.enable_private_endpoint,
+        privately_used_public_ips=args.enable_privately_used_public_ips,
         master_ipv4_cidr=args.master_ipv4_cidr,
         web_server_ipv4_cidr=args.web_server_ipv4_cidr,
         cloud_sql_ipv4_cidr=args.cloud_sql_ipv4_cidr,
         composer_network_ipv4_cidr=args.composer_network_ipv4_cidr,
+        enable_ip_masq_agent=args.enable_ip_masq_agent,
         web_server_access_control=self.web_server_access_control,
         cloud_sql_machine_type=args.cloud_sql_machine_type,
         web_server_machine_type=args.web_server_machine_type,
@@ -612,11 +628,6 @@ class CreateAlpha(CreateBeta):
         help="""The type of executor by which task instances are run on Airflow;
         currently supported executor types are CELERY and KUBERNETES.
         Defaults to CELERY. Cannot be updated.""")
-
-    composer_alpha_group = parser.add_argument_group(hidden=True)
-    flags.ENABLE_PRIVATELY_USED_PUBLIC_IPS_FLAG.AddToParser(
-        composer_alpha_group)
-    flags.ENABLE_IP_MASQ_AGENT_FLAG.AddToParser(composer_alpha_group)
 
   def GetOperationMessage(self, args, is_composer_v1):
     """See base class."""

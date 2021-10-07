@@ -609,6 +609,8 @@ class CreateBeta(Create):
   _support_node_project = False
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
+  _support_provisioning_model = True
+  _support_termination_action = True
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -637,6 +639,8 @@ class CreateBeta(Create):
         support_multi_writer=cls._support_multi_writer,
         support_subinterface=cls._support_subinterface,
         support_node_project=cls._support_node_project,
+        support_provisioning_model=cls._support_provisioning_model,
+        support_termination_action=cls._support_termination_action,
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count)

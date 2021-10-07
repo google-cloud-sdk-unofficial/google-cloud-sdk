@@ -35,6 +35,7 @@ class AddBgpPeer(base.UpdateCommand):
   """Add a BGP peer to a Compute Engine router."""
 
   ROUTER_ARG = None
+  INSTANCE_ARG = None
 
   @classmethod
   def _Args(cls,
@@ -43,6 +44,8 @@ class AddBgpPeer(base.UpdateCommand):
             support_havpn_ipv6=False):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser)
+    cls.INSTANCE_ARG = instance_flags.InstanceArgumentForRouter()
+    cls.INSTANCE_ARG.AddArgument(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddBgpPeerArgs(
         parser,
@@ -59,8 +62,7 @@ class AddBgpPeer(base.UpdateCommand):
            args,
            support_bfd_mode=False,
            support_enable_ipv6=False,
-           support_havpn_ipv6=False,
-           instance_ref=None):
+           support_havpn_ipv6=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     messages = holder.client.messages
     service = holder.client.apitools_client.routers
@@ -69,6 +71,13 @@ class AddBgpPeer(base.UpdateCommand):
 
     request_type = messages.ComputeRoutersGetRequest
     replacement = service.Get(request_type(**router_ref.AsDict()))
+
+    instance_ref = None
+    if args.instance is not None:
+      instance_ref = self.INSTANCE_ARG.ResolveAsResource(
+          args,
+          holder.resources,
+          scope_lister=instance_flags.GetInstanceZoneScopeLister(holder.client))
 
     peer = _CreateBgpPeerMessage(
         messages,
@@ -147,26 +156,15 @@ class AddBgpPeerBeta(AddBgpPeer):
 
   @classmethod
   def Args(cls, parser):
-    cls.INSTANCE_ARG = instance_flags.InstanceArgumentForRouter()
-    cls.INSTANCE_ARG.AddArgument(parser)
     cls._Args(parser)
 
   def Run(self, args):
     """See base.UpdateCommand."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-
-    instance_ref = None
-    if args.instance is not None:
-      instance_ref = self.INSTANCE_ARG.ResolveAsResource(
-          args,
-          holder.resources,
-          scope_lister=instance_flags.GetInstanceZoneScopeLister(holder.client))
     return self._Run(
         args,
         support_bfd_mode=False,
         support_enable_ipv6=False,
-        support_havpn_ipv6=False,
-        instance_ref=instance_ref)
+        support_havpn_ipv6=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -178,8 +176,6 @@ class AddBgpPeerAlpha(AddBgpPeerBeta):
 
   @classmethod
   def Args(cls, parser):
-    cls.INSTANCE_ARG = instance_flags.InstanceArgumentForRouter()
-    cls.INSTANCE_ARG.AddArgument(parser)
     cls._Args(
         parser,
         support_enable_ipv6=True,
@@ -187,20 +183,11 @@ class AddBgpPeerAlpha(AddBgpPeerBeta):
 
   def Run(self, args):
     """See base.UpdateCommand."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-
-    instance_ref = None
-    if args.instance is not None:
-      instance_ref = self.INSTANCE_ARG.ResolveAsResource(
-          args,
-          holder.resources,
-          scope_lister=instance_flags.GetInstanceZoneScopeLister(holder.client))
     return self._Run(
         args,
         support_bfd_mode=True,
         support_enable_ipv6=True,
-        support_havpn_ipv6=True,
-        instance_ref=instance_ref)
+        support_havpn_ipv6=True)
 
 
 def _CreateBgpPeerMessage(messages,

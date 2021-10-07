@@ -29,23 +29,28 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-class Update(base.DescribeCommand):
+class Update(base.UpdateCommand):
   # pylint:disable=line-too-long
   r"""Updates a Cloud Data Fusion instance."""
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
        If run asynchronously with `--async`, exits after printing an operation
        that can be used to poll the status of the creation operation via:
 
          {command} operations list
           """,
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
         To update instance 'my-instance' in project 'my-project' and location
         'my-location' to version `6.1.0.0`, run:
 
           $ {command} --project=my-project --location=my-location --version=6.1.0.0 my-instance
           """,
   }
+
+  # REST API Field Names for the updateMask
+  ENABLE_RBAC_FIELD = 'enableRbac'
 
   @staticmethod
   def Args(parser):
@@ -61,8 +66,11 @@ class Update(base.DescribeCommand):
         action='store_true',
         help='Enable Stackdriver monitoring for this Data Fusion instance.')
     parser.add_argument(
-        '--version',
-        help='Version of Datafusion to update to.')
+        '--enable_rbac',
+        action='store_true',
+        help='Enable granular role-based access control for this Data Fusion instance.'
+    )
+    parser.add_argument('--version', help='Version of Datafusion to update to.')
 
   def Run(self, args):
     datafusion = df.Datafusion()
@@ -71,16 +79,23 @@ class Update(base.DescribeCommand):
     labels = args.labels or {}
     enable_stackdriver_logging = args.enable_stackdriver_logging or False
     enable_stackdriver_monitoring = args.enable_stackdriver_monitoring or False
+    fields_to_update = []
+    enable_rbac = None
+    if args.IsSpecified('enable_rbac'):
+      fields_to_update.append(self.ENABLE_RBAC_FIELD)
+      enable_rbac = args.enable_rbac
     version = args.version
     instance = datafusion.messages.Instance(
         name=instance_ref.RelativeName(),
         version=version,
         enableStackdriverLogging=enable_stackdriver_logging,
         enableStackdriverMonitoring=enable_stackdriver_monitoring,
+        enableRbac=enable_rbac,
         labels=encoding.DictToAdditionalPropertyMessage(
             labels, datafusion.messages.Instance.LabelsValue, True))
     request = datafusion.messages.DatafusionProjectsLocationsInstancesPatchRequest(
         instance=instance,
+        updateMask=','.join(fields_to_update),
         name=instance_ref.RelativeName())
 
     operation = datafusion.client.projects_locations_instances.Patch(request)

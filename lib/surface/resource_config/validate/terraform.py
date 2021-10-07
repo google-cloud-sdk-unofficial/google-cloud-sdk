@@ -45,13 +45,16 @@ class TerraformValidatorStreamingOperation(
         check_hidden=True,
         install_if_missing=True,
         custom_errors=custom_errors,
+        structured_output=True,
         **kwargs)
 
   def _ParseArgsForCommand(self, command, terraform_plan_json, policy_library,
-                           project, **kwargs):
+                           project, verbosity, **kwargs):
     args = [
         command,
         terraform_plan_json,
+        '--verbosity',
+        verbosity,
         '--policy-path',
         os.path.expanduser(policy_library),
     ]
@@ -95,8 +98,7 @@ class Terraform(base.BinaryBackedCommand):
     env_vars = {
         'GOOGLE_OAUTH_ACCESS_TOKEN':
             GetFreshAccessToken(account=properties.VALUES.core.account.Get()),
-        'COBRA_SILENCE_USAGE':
-            'true',
+        'USE_STRUCTURED_LOGGING': 'true',
     }
 
     response = operation(
@@ -104,5 +106,6 @@ class Terraform(base.BinaryBackedCommand):
         policy_library=args.policy_library,
         project=args.project,
         terraform_plan_json=args.terraform_plan_json,
+        verbosity=args.verbosity,
         env=env_vars)
     return self._DefaultOperationResponseHandler(response)

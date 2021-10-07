@@ -124,6 +124,12 @@ class tzutc(datetime.tzinfo):
     __reduce__ = object.__reduce__
 
 
+#: Convenience constant providing a :class:`tzutc()` instance
+#:
+#: .. versionadded:: 2.7.0
+UTC = tzutc()
+
+
 @six.add_metaclass(_TzOffsetFactory)
 class tzoffset(datetime.tzinfo):
     """
@@ -380,7 +386,7 @@ class _tzfile(object):
 
 class tzfile(_tzinfo):
     """
-    This is a ``tzinfo`` subclass thant allows one to use the ``tzfile(5)``
+    This is a ``tzinfo`` subclass that allows one to use the ``tzfile(5)``
     format timezone files to extract current and historical zone information.
 
     :param fileobj:
@@ -1591,7 +1597,7 @@ def __get_gettz():
                     name = os.environ["TZ"]
                 except KeyError:
                     pass
-            if name is None or name == ":":
+            if name is None or name in ("", ":"):
                 for filepath in TZFILES:
                     if not os.path.isabs(filepath):
                         filename = filepath
@@ -1610,8 +1616,15 @@ def __get_gettz():
                 else:
                     tz = tzlocal()
             else:
-                if name.startswith(":"):
-                    name = name[1:]
+                try:
+                    if name.startswith(":"):
+                        name = name[1:]
+                except TypeError as e:
+                    if isinstance(name, bytes):
+                        new_msg = "gettz argument should be str, not bytes"
+                        six.raise_from(TypeError(new_msg), e)
+                    else:
+                        raise
                 if os.path.isabs(name):
                     if os.path.isfile(name):
                         tz = tzfile(name)
@@ -1662,7 +1675,7 @@ def __get_gettz():
                                     break
                             else:
                                 if name in ("GMT", "UTC"):
-                                    tz = tzutc()
+                                    tz = UTC
                                 elif name in time.tzname:
                                     tz = tzlocal()
             return tz
@@ -1702,7 +1715,7 @@ def datetime_exists(dt, tz=None):
 
     # This is essentially a test of whether or not the datetime can survive
     # a round trip to UTC.
-    dt_rt = dt.replace(tzinfo=tz).astimezone(tzutc()).astimezone(tz)
+    dt_rt = dt.replace(tzinfo=tz).astimezone(UTC).astimezone(tz)
     dt_rt = dt_rt.replace(tzinfo=None)
 
     return dt == dt_rt
@@ -1824,7 +1837,7 @@ else:
 
 try:
     # Python 3.7 feature
-    from contextmanager import nullcontext as _nullcontext
+    from contextlib import nullcontext as _nullcontext
 except ImportError:
     class _nullcontext(object):
         """

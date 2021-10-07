@@ -52,12 +52,11 @@ class Update(base.Command):
 
   detailed_help = DETAILED_HELP
   _support_autoscaling = False
-  _support_ha_scheduler = False
   _support_maintenance_window = False
   _support_environment_size = False
 
   @staticmethod
-  def Args(parser):
+  def Args(parser, release_track=base.ReleaseTrack.GA):
     resource_args.AddEnvironmentResourceArg(parser, 'to update')
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -76,6 +75,12 @@ class Update(base.Command):
 
     flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(Update.update_type_group)
     flags.WEB_SERVER_MACHINE_TYPE.AddToParser(Update.update_type_group)
+
+    # Note: this flag is available for patching of both Composer 1.*.* and 2.*.*
+    # environments, although it is currently invalid for Composer 2.*.* in
+    # gcloud GA.
+    if release_track == base.ReleaseTrack.GA:
+      flags.NUM_SCHEDULERS.AddToParser(Update.update_type_group)
 
   def _ConstructPatch(self, env_ref, args, support_environment_upgrades=False):
     env_obj = environments_api_util.Get(
@@ -120,6 +125,11 @@ class Update(base.Command):
               opt='web-server-machine-type'))
     params['cloud_sql_machine_type'] = args.cloud_sql_machine_type
     params['web_server_machine_type'] = args.web_server_machine_type
+
+    flags.ValidateSchedulerCountFlag(args.scheduler_count, is_composer_v1,
+                                     self.ReleaseTrack())
+    params['scheduler_count'] = args.scheduler_count
+
     if self._support_environment_size:
       if (args.environment_size and is_composer_v1):
         raise command_util.InvalidUserInputError(
@@ -161,14 +171,11 @@ class Update(base.Command):
               args.web_server_storage)
       params['min_workers'] = args.min_workers
       params['max_workers'] = args.max_workers
-      params['scheduler_count'] = args.scheduler_count
     if self._support_maintenance_window:
       params['maintenance_window_start'] = args.maintenance_window_start
       params['maintenance_window_end'] = args.maintenance_window_end
       params[
           'maintenance_window_recurrence'] = args.maintenance_window_recurrence
-    if self._support_ha_scheduler:
-      params['scheduler_count'] = args.scheduler_count
 
     return patch_util.ConstructPatch(**params)
 
@@ -188,14 +195,13 @@ class UpdateBeta(Update):
   """Update properties of a Cloud Composer environment."""
 
   _support_autoscaling = True
-  _support_ha_scheduler = True
   _support_maintenance_window = True
   _support_environment_size = True
 
   @staticmethod
   def AlphaAndBetaArgs(parser, release_track=base.ReleaseTrack.BETA):
     """Arguments available only in both alpha and beta."""
-    Update.Args(parser)
+    Update.Args(parser, release_track=release_track)
 
     # Environment upgrade arguments
     UpdateBeta.support_environment_upgrades = True

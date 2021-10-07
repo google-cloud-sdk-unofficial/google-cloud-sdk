@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Triggers execution of a Google Cloud Function."""
 
 from __future__ import absolute_import
@@ -24,7 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.command_lib.functions.v1.call import command as command_v1
 from googlecloudsdk.command_lib.functions.v2.call import command as command_v2
-
 
 _DETAILED_HELP = {
     'EXAMPLES':
@@ -45,21 +43,21 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Call(base.Command):
-  """Trigger execution of a Google Cloud Function."""
+  """Triggers execution of a Google Cloud Function."""
 
   detailed_help = _DETAILED_HELP
 
   @staticmethod
   def Args(parser):
-    """Register flags for this command."""
+    """Registers flags for this command."""
     flags.AddFunctionResourceArg(parser, 'to execute')
     flags.AddDataFlag(parser)
 
   @util.CatchHTTPErrorRaiseHTTPException
   def Run(self, args):
-    """This is what gets called when the user runs this command.
+    """Runs the command.
 
     Args:
       args: an argparse namespace. All the arguments that were provided to this
@@ -71,25 +69,34 @@ class Call(base.Command):
     return command_v1.Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CallAlpha(base.Command):
-  """Trigger execution of a Google Cloud Function."""
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CallBeta(base.Command):
+  """Triggers execution of a Google Cloud Function."""
 
   detailed_help = _DETAILED_HELP
 
   @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
+  def Args(parser, track=base.ReleaseTrack.BETA):
+    """Registers flags for this command."""
     flags.AddFunctionResourceArg(parser, 'to execute')
-    flags.AddGen2Flag(parser, base.ReleaseTrack.ALPHA)
+    flags.AddGen2Flag(parser, track)
 
     # Add additional flags for GCFv2
     data_flag_group = parser.add_mutually_exclusive_group()
     flags.AddDataFlag(data_flag_group)
-    flags.AddCloudEventsFlag(data_flag_group)
+    flags.AddCloudEventsFlag(data_flag_group, track)
 
   def Run(self, args):
     if flags.ShouldUseGen2():
       return command_v2.Run(args, self.ReleaseTrack())
     else:
       return command_v1.Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CallAlpha(CallBeta):
+  """Triggers execution of a Google Cloud Function."""
+
+  @staticmethod
+  def Args(parser, track=base.ReleaseTrack.ALPHA):
+    CallBeta.Args(parser, track)

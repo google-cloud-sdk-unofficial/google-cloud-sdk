@@ -21,3 +21,14 @@
         Arguments and flags that define the Dataplex Asset Actions you want to list.
       override_resource_collection: true
       spec: !REF googlecloudsdk.command_lib.dataplex.resources:asset
+
+  response:
+    id_field: name
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        data_locations:label=DATA_LOCATION,
+        category: label=CATEGORY,
+        issue:label=ISSUE
+      )

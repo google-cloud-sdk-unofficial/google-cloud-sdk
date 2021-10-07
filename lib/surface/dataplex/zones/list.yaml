@@ -19,3 +19,19 @@
       help_text: |
         Arguments and flags that define the Dataplex Zone you want to list.
       spec: !REF googlecloudsdk.command_lib.dataplex.resources:lake
+
+  response:
+    id_field: name
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        displayName:label=DISPLAY_NAME,
+        state:label=ZONE_STATUS,
+        type:label=ZONE_TYPE,
+        resourceSpec.locationType:label=RESOURCE_LOCATION_TYPE,
+        discoverySpec.enabled:label=DISCOVERY_ENABLED,
+        securityStatus.state:label=SECURITY_STATUS,
+        assetStatus.activeAssets:label=ACTIVE_ASSETS,
+        labels:label=LABELS
+      )

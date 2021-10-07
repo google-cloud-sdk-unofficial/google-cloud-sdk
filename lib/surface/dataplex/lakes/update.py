@@ -64,15 +64,7 @@ class Update(base.Command):
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
-    update_mask = []
-    if args.IsSpecified('description'):
-      update_mask.append('description')
-    if args.IsSpecified('display_name'):
-      update_mask.append('displayName')
-    if args.IsSpecified('labels'):
-      update_mask.append('labels')
-    if args.IsSpecified('metastore_service'):
-      update_mask.append('metastore.service')
+    update_mask = lake.GenerateUpdateMask(args)
     lake_ref = args.CONCEPTS.lake.Parse()
     dataplex_client = dataplex_util.GetClientInstance()
     message = dataplex_util.GetMessageModule()

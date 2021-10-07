@@ -53,6 +53,7 @@ class GetCredentials(base.Command):
       cluster_ref = resource_args.ParseAwsClusterResourceArg(args)
       cluster_client = clusters.Client(track=self.ReleaseTrack())
       resp = cluster_client.Get(cluster_ref)
+      kubeconfig.ValidateClusterVersion(resp)
       context = kubeconfig.GenerateContext('aws', cluster_ref.projectsId,
                                            cluster_ref.locationsId,
                                            cluster_ref.awsClustersId)

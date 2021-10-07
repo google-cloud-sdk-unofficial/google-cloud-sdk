@@ -351,7 +351,7 @@ class CreateAlpha(Create):
     flags.AddNodePoolEnablePrivateNodes(parser, hidden=True)
     flags.AddThreadsPerCore(parser)
     flags.AddEnableGvnicFlag(parser)
-    flags.AddSpotFlag(parser, for_node_pool=True, hidden=True)
+    flags.AddSpotFlag(parser, for_node_pool=True)
 
 
 Create.detailed_help = DETAILED_HELP

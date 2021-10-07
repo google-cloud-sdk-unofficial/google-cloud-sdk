@@ -32,7 +32,6 @@ from googlecloudsdk.command_lib.compute.vpn_tunnels import (flags as
                                                             vpn_tunnel_flags)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddInterface(base.UpdateCommand):
   """Add an interface to a Compute Engine router.
 
@@ -46,7 +45,7 @@ class AddInterface(base.UpdateCommand):
   SUBNETWORK_ARG = None
 
   @classmethod
-  def _Args(cls, parser, support_router_appliance=False):
+  def _Args(cls, parser):
     cls.ROUTER_ARG = router_flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
 
@@ -62,13 +61,12 @@ class AddInterface(base.UpdateCommand):
     cls.INTERCONNECT_ATTACHMENT_ARG = (
         attachment_flags.InterconnectAttachmentArgumentForRouter())
     cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(interconnect_attachment_group)
-    if support_router_appliance:
-      subnetwork_group = link_parser.add_argument_group('Subnetwork')
-      cls.SUBNETWORK_ARG = (subnet_flags.SubnetworkArgumentForRouter())
-      cls.SUBNETWORK_ARG.AddArgument(subnetwork_group)
 
-    router_flags.AddInterfaceArgs(
-        parser, support_router_appliance=support_router_appliance)
+    subnetwork_group = link_parser.add_argument_group('Subnetwork')
+    cls.SUBNETWORK_ARG = (subnet_flags.SubnetworkArgumentForRouter())
+    cls.SUBNETWORK_ARG.AddArgument(subnetwork_group)
+
+    router_flags.AddInterfaceArgs(parser)
 
   @classmethod
   def Args(cls, parser):
@@ -89,33 +87,20 @@ class AddInterface(base.UpdateCommand):
                 region=router_ref.region,
                 project=router_ref.project))
 
-  def Modify(self,
-             client,
-             resources,
-             args,
-             existing,
-             support_router_appliance=False):
+  def Modify(self, client, resources, args, existing):
     replacement = encoding.CopyProtoMessage(existing)
     mask = None
     interface_name = args.interface_name
 
-    if support_router_appliance:
-      if args.ip_address is not None:
-        if args.subnetwork is None and args.mask_length is not None:
-          mask = '{0}/{1}'.format(args.ip_address, args.mask_length)
-        elif args.subnetwork is None:
-          raise parser_errors.ArgumentException(
-              '--mask-length must be set if --ip-address is set')
-        elif args.subnetwork is not None and args.mask_length is not None:
-          raise parser_errors.ArgumentException(
-              '--mask-length cannot be set if --subnetwork is set')
-    else:
-      if args.ip_address is not None:
-        if args.mask_length is not None:
-          mask = '{0}/{1}'.format(args.ip_address, args.mask_length)
-        else:
-          raise parser_errors.ArgumentException(
-              '--mask-length must be set if --ip-address is set')
+    if args.ip_address is not None:
+      if args.subnetwork is None and args.mask_length is not None:
+        mask = '{0}/{1}'.format(args.ip_address, args.mask_length)
+      elif args.subnetwork is None:
+        raise parser_errors.ArgumentException(
+            '--mask-length must be set if --ip-address is set')
+      elif args.mask_length is not None:
+        raise parser_errors.ArgumentException(
+            '--mask-length cannot be set if --subnetwork is set')
 
     if args.mask_length is not None:
       if args.mask_length < 0 or args.mask_length > 31:
@@ -141,28 +126,20 @@ class AddInterface(base.UpdateCommand):
     subnetwork_ref = None
     private_ip_address = None
     redundant_interface = None
-    if support_router_appliance and args.subnetwork is not None:
+    if args.subnetwork is not None:
       subnetwork_ref = self.SUBNETWORK_ARG.ResolveAsResource(args, resources)
       private_ip_address = args.ip_address
       redundant_interface = args.redundant_interface
 
-    if support_router_appliance:
-      interface = client.messages.RouterInterface(
-          name=interface_name,
-          linkedVpnTunnel=(vpn_ref.SelfLink() if vpn_ref else None),
-          linkedInterconnectAttachment=(attachment_ref.SelfLink()
-                                        if attachment_ref else None),
-          subnetwork=(subnetwork_ref.SelfLink() if subnetwork_ref else None),
-          ipRange=mask,
-          privateIpAddress=private_ip_address,
-          redundantInterface=redundant_interface)
-    else:
-      interface = client.messages.RouterInterface(
-          name=interface_name,
-          linkedVpnTunnel=(vpn_ref.SelfLink() if vpn_ref else None),
-          linkedInterconnectAttachment=(attachment_ref.SelfLink()
-                                        if attachment_ref else None),
-          ipRange=mask)
+    interface = client.messages.RouterInterface(
+        name=interface_name,
+        linkedVpnTunnel=(vpn_ref.SelfLink() if vpn_ref else None),
+        linkedInterconnectAttachment=(attachment_ref.SelfLink()
+                                      if attachment_ref else None),
+        subnetwork=(subnetwork_ref.SelfLink() if subnetwork_ref else None),
+        ipRange=mask,
+        privateIpAddress=private_ip_address,
+        redundantInterface=redundant_interface)
 
     replacement.interfaces.append(interface)
 
@@ -178,43 +155,6 @@ class AddInterface(base.UpdateCommand):
     objects = client.MakeRequests([get_request])
 
     new_object = self.Modify(client, holder.resources, args, objects[0])
-
-    return client.MakeRequests(
-        [self._GetSetRequest(client, router_ref, new_object)])
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class AddInterfaceAlphaBeta(AddInterface):
-  """Add an interface to a Compute Engine router.
-
-  *{command}* is used to add an interface to a Compute Engine
-  router.
-  """
-
-  ROUTER_ARG = None
-  VPN_TUNNEL_ARG = None
-  INTERCONNECT_ATTACHMENT_ARG = None
-  SUBNETWORK_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    cls._Args(parser, support_router_appliance=True)
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    router_ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
-    get_request = self._GetGetRequest(client, router_ref)
-
-    objects = client.MakeRequests([get_request])
-
-    new_object = self.Modify(
-        client,
-        holder.resources,
-        args,
-        objects[0],
-        support_router_appliance=True)
 
     return client.MakeRequests(
         [self._GetSetRequest(client, router_ref, new_object)])

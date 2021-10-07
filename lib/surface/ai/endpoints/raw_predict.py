@@ -66,7 +66,7 @@ def _Run(args, version):
 
     # If user asked for formatting, assume it's a JSON object.
     try:
-      return json.loads(response)
+      return json.loads(response.decode('utf-8'))
     except ValueError:
       raise core_exceptions.Error('No JSON object could be decoded from the '
                                   'HTTP response body:\n' +

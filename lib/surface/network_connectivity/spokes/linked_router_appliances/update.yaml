@@ -11,7 +11,7 @@
 
       To replace the router appliance instances linked to a spoke with two new instances, run:
 
-        $ {command} my-spoke --region us-central1 --router-appliance=instance=https://www.googleapis.com/compute/v1/projects/my-project/zones/us-central1-a/instances/vm1,ip=10.10.0.1 --router-appliance=instance=https://www.googleapis.com/compute/v1/projects/my-project/zones/us-central1-a/instances/vm2,ip=10.10.0.2
+        $ {command} my-spoke --region=us-central1 --router-appliance=instance=https://www.googleapis.com/compute/v1/projects/my-project/zones/us-central1-a/instances/vm1,ip=10.10.0.1 --router-appliance=instance=https://www.googleapis.com/compute/v1/projects/my-project/zones/us-central1-a/instances/vm2,ip=10.10.0.2
 
   arguments:
     resource:

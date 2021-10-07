@@ -71,6 +71,7 @@ class Create(base.CreateCommand):
   """
 
   NETWORK_ARG = None
+  _support_firewall_order = False
 
   @classmethod
   def Args(cls, parser):
@@ -96,7 +97,10 @@ class Create(base.CreateCommand):
     network_ref = self.NETWORK_ARG.ResolveAsResource(args, holder.resources)
     self._network_name = network_ref.Name()
     network_resource = networks_utils.CreateNetworkResourceFromArgs(
-        messages=messages, network_ref=network_ref, network_args=args)
+        messages=messages,
+        network_ref=network_ref,
+        network_args=args,
+        support_firewall_order=self._support_firewall_order)
 
     request = (client.apitools_client.networks, 'Insert',
                client.messages.ComputeNetworksInsertRequest(
@@ -121,6 +125,7 @@ class CreateAlpha(Create):
   as a gateway between instances and callers outside the
   network.
   """
+  _support_firewall_order = True
 
   @classmethod
   def Args(cls, parser):
@@ -132,5 +137,6 @@ class CreateAlpha(Create):
     network_utils.AddCreateSubnetModeArg(parser)
     network_utils.AddCreateBgpRoutingModeArg(parser)
     network_utils.AddMtuArg(parser)
+    network_utils.AddNetworkFirewallPolicyEnforcementOrderArg(parser)
 
     parser.display_info.AddCacheUpdater(flags.NetworksCompleter)

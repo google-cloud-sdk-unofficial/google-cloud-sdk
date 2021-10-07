@@ -53,6 +53,7 @@ class GetCredentials(base.Command):
       cluster_ref = resource_args.ParseAzureClusterResourceArg(args)
       client = azure_api_util.ClustersClient(track=self.ReleaseTrack())
       resp = client.Get(cluster_ref)
+      kubeconfig.ValidateClusterVersion(resp)
       context = kubeconfig.GenerateContext(
           'azure',
           cluster_ref.projectsId,

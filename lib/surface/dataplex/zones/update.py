@@ -56,21 +56,7 @@ class Update(base.Command):
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
-    update_mask = []
-    if args.IsSpecified('description'):
-      update_mask.append('description')
-    if args.IsSpecified('display_name'):
-      update_mask.append('displayName')
-    if args.IsSpecified('labels'):
-      update_mask.append('labels')
-    if args.IsSpecified('discovery_enabled'):
-      update_mask.append('discoverySpec.enabled')
-    if args.IsSpecified('discovery_include_patterns'):
-      update_mask.append('discoverySpec.includePatterns')
-    if args.IsSpecified('discovery_exclude_patterns'):
-      update_mask.append('discoverySpec.excludePatterns')
-    if args.IsSpecified('discovery_schedule'):
-      update_mask.append('discoverySpec.schedule')
+    update_mask = zone.GenerateUpdateMask(args)
     zone_ref = args.CONCEPTS.zone.Parse()
     dataplex_client = dataplex_util.GetClientInstance()
     create_req_op = dataplex_client.projects_locations_lakes_zones.Patch(
@@ -79,13 +65,7 @@ class Update(base.Command):
             name=zone_ref.RelativeName(),
             validateOnly=args.validate_only,
             updateMask=u','.join(update_mask),
-            googleCloudDataplexV1Zone=zone.GenerateZoneForUpdateRequest(
-                args.description, args.display_name,
-                dataplex_util.CreateLabels(
-                    dataplex_util.GetMessageModule().GoogleCloudDataplexV1Zone,
-                    args), args.discovery_enabled,
-                args.discovery_include_patterns,
-                args.discovery_exclude_patterns, args.discovery_schedule)))
+            googleCloudDataplexV1Zone=zone.GenerateZoneForUpdateRequest(args)))
     validate_only = getattr(args, 'validate_only', False)
     if validate_only:
       log.status.Print('Validation complete with errors:')

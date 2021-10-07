@@ -42,7 +42,14 @@ import hmac
 import io
 import json
 import os
+import posixpath
 import re
+
+try:
+    from urllib.parse import urljoin
+# Python 2.7 compatibility
+except ImportError:  # pragma: NO COVER
+    from urlparse import urljoin
 
 from six.moves import http_client
 from six.moves import urllib
@@ -113,13 +120,19 @@ class RequestSigner(object):
         additional_headers = additional_headers or {}
 
         uri = urllib.parse.urlparse(url)
+        # Normalize the URL path. This is needed for the canonical_uri.
+        # os.path.normpath can't be used since it normalizes "/" paths
+        # to "\\" in Windows OS.
+        normalized_uri = urllib.parse.urlparse(
+            urljoin(url, posixpath.normpath(uri.path))
+        )
         # Validate provided URL.
         if not uri.hostname or uri.scheme != "https":
             raise ValueError("Invalid AWS service URL")
 
         header_map = _generate_authentication_header_map(
             host=uri.hostname,
-            canonical_uri=os.path.normpath(uri.path or "/"),
+            canonical_uri=normalized_uri.path or "/",
             canonical_querystring=_get_canonical_querystring(uri.query),
             method=method,
             region=self._region_name,

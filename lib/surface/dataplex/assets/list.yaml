@@ -19,3 +19,20 @@
       help_text: |
         Arguments and flags that define the Dataplex Asset you want to list.
       spec: !REF googlecloudsdk.command_lib.dataplex.resources:zone
+
+  response:
+    id_field: name
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        displayName:label=DISPLAY_NAME,
+        state:label=ASSET_STATUS,
+        discoverySpec.enabled:label=DISCOVERY_ENABLED,
+        discoveryStatus.state:label=DISCOVERY_STATUS,
+        resourceSpec.name:label=RESOURCE_NAME,
+        resourceSpec.type:label=RESOURCE_TYPE,
+        resourceStatus.state:label=RESOURCE_STATE,
+        securityStatus.state:label=SECURITY_STATUS,
+        labels:label=LABELS
+      )

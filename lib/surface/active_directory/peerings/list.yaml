@@ -1,4 +1,4 @@
-- release_tracks: [BETA, ALPHA]
+- release_tracks: [GA, BETA, ALPHA]
 
   help_text:
     brief: |
@@ -12,7 +12,7 @@
         * The active account does not have permission to access the given
           domain.
     examples: |
-      The following command lists all an AD domain peerings in the project.
+      The following command lists five AD domain peerings in the project.
 
         $ {command} --limit=5
 
@@ -24,6 +24,8 @@
       api_version: v1alpha1
     BETA:
       api_version: v1beta1
+    GA:
+      api_version: v1
 
   arguments:
     resource:

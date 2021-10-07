@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Removes an IAM policy binding from a Google Cloud Function."""
 
 from __future__ import absolute_import
@@ -38,15 +37,15 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveIamPolicyBinding(base.Command):
   """Removes an IAM policy binding from a Google Cloud Function."""
 
   detailed_help = _DETAILED_HELP
 
   @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
+  def Args(parser, track=base.ReleaseTrack.GA):
+    """Registers flags for this command."""
     flags.AddFunctionResourceArg(parser, 'to remove IAM policy binding from')
     iam_util.AddArgsForRemoveIamPolicyBinding(parser)
 
@@ -63,20 +62,17 @@ class RemoveIamPolicyBinding(base.Command):
     return command_v1.Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RemoveIamPolicyBindingAlpha(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class RemoveIamPolicyBindingBeta(RemoveIamPolicyBinding):
   """Removes an IAM policy binding from a Google Cloud Function."""
 
-  detailed_help = _DETAILED_HELP
-
   @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.AddFunctionResourceArg(parser, 'to remove IAM policy binding from')
-    iam_util.AddArgsForRemoveIamPolicyBinding(parser)
+  def Args(parser, track=base.ReleaseTrack.BETA):
+    """Registers flags for this command."""
+    RemoveIamPolicyBinding.Args(parser, track)
 
     # Add additional flags for GCFv2.
-    flags.AddGen2Flag(parser, base.ReleaseTrack.ALPHA)
+    flags.AddGen2Flag(parser, track)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -92,3 +88,13 @@ class RemoveIamPolicyBindingAlpha(base.Command):
       return command_v2.Run(args, self.ReleaseTrack())
     else:
       return command_v1.Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RemoveIamPolicyBindingAlpha(RemoveIamPolicyBindingBeta):
+  """Removes an IAM policy binding from a Google Cloud Function."""
+
+  @staticmethod
+  def Args(parser, track=base.ReleaseTrack.ALPHA):
+    """Registers flags for this command."""
+    RemoveIamPolicyBindingBeta.Args(parser, track)

@@ -1,4 +1,4 @@
-- release_tracks: [BETA, ALPHA]
+- release_tracks: [GA, BETA, ALPHA]
 
   help_text:
     brief: |
@@ -10,7 +10,7 @@
         * The active account does not have permission to access the given
           AD domain.
     examples: |
-      The following command updates an AD domain peering `my-peering` with the label `l1` and `l2`
+      The following command updates an AD domain peering ``my-peering'' with the label ``l1'' and ``l2''
 
         $ {command} my-peering --update-labels=l1=1,l2=2
 
@@ -30,6 +30,13 @@
       modify_request_hooks:
       - googlecloudsdk.command_lib.active_directory.peering_util:UpdatePatchRequest
       - googlecloudsdk.command_lib.active_directory.peering_util:UpdateLabels
+
+    GA:
+      api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.active_directory.peering_util:UpdatePatchRequest
+      - googlecloudsdk.command_lib.active_directory.peering_util:UpdateLabels
+
     method: patch
 
   arguments:

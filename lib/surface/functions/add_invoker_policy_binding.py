@@ -24,8 +24,43 @@ from googlecloudsdk.command_lib.functions.v2.add_invoker_policy_binding import c
 from googlecloudsdk.command_lib.iam import iam_util
 
 
+def _CommonArgs(parser, track):
+  """Registers flags for this command."""
+  del track
+  flags.AddFunctionResourceArg(parser, 'to add the invoker binding to')
+  iam_util.AddMemberFlag(parser, 'to add to the IAM policy', False)
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class AddInvokerPolicyBindingBeta(base.Command):
+  """Adds an invoker binding to the IAM policy of a Google Cloud Function.
+
+  This command applies to Cloud Functions V2 only.
+  """
+
+  @staticmethod
+  def Args(parser):
+    """Registers flags for this command."""
+    _CommonArgs(parser, base.ReleaseTrack.BETA)
+
+  def Run(self, args):
+    """Runs the command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      The updated IAM policy for the service.
+    """
+    return command.Run(args, self.ReleaseTrack())
+
+
+# Note: does not inherit from AddInvokerPolicyBindingBeta to avoid inheriting
+# _is_hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AddInvokerPolicyBinding(base.Command):
+class AddInvokerPolicyBindingAlpha(base.Command):
   """Add an invoker binding to the IAM policy of a Google Cloud Function.
 
   This command applies to Cloud Functions V2 only.
@@ -33,12 +68,10 @@ class AddInvokerPolicyBinding(base.Command):
 
   @staticmethod
   def Args(parser):
-    """Register flags for this command."""
-    flags.AddFunctionResourceArg(parser, 'to add the invoker binding to')
-    iam_util.AddMemberFlag(parser, 'to add to the IAM policy', False)
+    _CommonArgs(parser, base.ReleaseTrack.ALPHA)
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
+    """Runs the command.
 
     Args:
       args: an argparse namespace. All the arguments that were provided to this

@@ -32,6 +32,8 @@ auto_flags = [
     'privatecluster',
     'releasechannel',
     'authenticatorsecurity',
+    'databaseencryption',
+    'bootdiskkms',
 ]
 
 # Change default flag values in create-auto
@@ -44,8 +46,8 @@ flag_overrides = {
     },
 }
 
-auto_flag_defaults = dict(list(create.base_flag_defaults.items()) + \
-                          list(flag_overrides.items()))
+auto_flag_defaults = dict(
+    list(create.base_flag_defaults.items()) + list(flag_overrides.items()))
 
 
 def AddAutoFlags(parser):

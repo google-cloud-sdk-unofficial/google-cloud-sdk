@@ -60,6 +60,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
+    parser.SetSortArgs(False)
     parser.add_argument(
         '--job-names',
         type=arg_parsers.ArgList(),

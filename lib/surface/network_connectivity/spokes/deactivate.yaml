@@ -1,4 +1,5 @@
 - release_tracks: [GA]
+  hidden: true
 
   help_text:
     brief: Deactivate a spoke.

@@ -47,13 +47,8 @@ class Get(base.DescribeCommand):
     flags.GetPolicyIDFlag().AddToParser(parser)
 
   def Run(self, args):
-    track = args.calliope_command.ReleaseTrack()
-    if track == base.ReleaseTrack.ALPHA:
-      client = apis.GetClientInstance('v2alpha')
-      messages = apis.GetMessagesModule('v2alpha')
-    else:
-      client = apis.GetClientInstance('v2beta')
-      messages = apis.GetMessagesModule('v2beta')
+    client = apis.GetClientInstance(args.calliope_command.ReleaseTrack())
+    messages = apis.GetMessagesModule(args.calliope_command.ReleaseTrack())
 
     attachment_point = args.attachment_point.replace('/', '%2F')
 

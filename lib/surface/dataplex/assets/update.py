@@ -61,42 +61,13 @@ class Update(base.Command):
             'DELETE_RESOURCE': 'delete resource',
         },
         type=arg_utils.ChoiceToEnumName,
-        help='Deletion policy of the attached resource.',
-        default='DELETION_POLICY_UNSPECIFIED')
-    discovery_spec = flags.AddDiscoveryArgs(parser)
-    discovery_spec.add_argument(
-        '--inheritance-mode',
-        choices={
-            'OVERRIDE': 'override',
-            'INHERIT': 'inherit',
-        },
-        type=arg_utils.ChoiceToEnumName,
-        default='INHERITANCE_MODE_UNSPECIFIED',
-        help='Options for how fields within this configuration can be inherited.'
-    )
+        help='Deletion policy of the attached resource.')
+    flags.AddDiscoveryArgs(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
-    update_mask = []
-    if args.IsSpecified('description'):
-      update_mask.append('description')
-    if args.IsSpecified('display_name'):
-      update_mask.append('displayName')
-    if args.IsSpecified('labels'):
-      update_mask.append('labels')
-    if args.IsSpecified('discovery_enabled'):
-      update_mask.append('discoverySpec.enabled')
-    if args.IsSpecified('discovery_include_patterns'):
-      update_mask.append('discoverySpec.includePatterns')
-    if args.IsSpecified('discovery_exclude_patterns'):
-      update_mask.append('discoverySpec.excludePatterns')
-    if args.IsSpecified('inheritance_mode'):
-      update_mask.append('discoverySpec.inheritanceMode')
-    if args.IsSpecified('deletion_policy'):
-      update_mask.append('resourceSpec.deletion_policy')
-    if args.IsSpecified('discovery_schedule'):
-      update_mask.append('discoverySpec.schedule')
+    update_mask = asset.GenerateUpdateMask(args)
     asset_ref = args.CONCEPTS.asset.Parse()
     dataplex_client = dataplex_util.GetClientInstance()
     message = dataplex_util.GetMessageModule()
@@ -105,23 +76,8 @@ class Update(base.Command):
             name=asset_ref.RelativeName(),
             validateOnly=args.validate_only,
             updateMask=u','.join(update_mask),
-            googleCloudDataplexV1Asset=message.GoogleCloudDataplexV1Asset(
-                description=args.description,
-                displayName=args.display_name,
-                labels=dataplex_util.CreateLabels(
-                    message.GoogleCloudDataplexV1Asset, args),
-                resourceSpec=message.GoogleCloudDataplexV1AssetResourceSpec(
-                    deletionPolicy=message
-                    .GoogleCloudDataplexV1AssetResourceSpec
-                    .DeletionPolicyValueValuesEnum(args.deletion_policy)),
-                discoverySpec=message.GoogleCloudDataplexV1AssetDiscoverySpec(
-                    enabled=args.discovery_enabled,
-                    includePatterns=args.discovery_include_patterns,
-                    excludePatterns=args.discovery_exclude_patterns,
-                    inheritanceMode=message
-                    .GoogleCloudDataplexV1AssetDiscoverySpec
-                    .InheritanceModeValueValuesEnum(args.inheritance_mode),
-                    schedule=args.discovery_schedule))))
+            googleCloudDataplexV1Asset=asset.GenerateAssetForUpdateRequest(
+                args)))
     validate_only = getattr(args, 'validate_only', False)
     if validate_only:
       log.status.Print('Validation complete with errors:')

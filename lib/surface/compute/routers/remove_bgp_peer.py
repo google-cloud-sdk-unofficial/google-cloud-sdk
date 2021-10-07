@@ -37,7 +37,6 @@ class PeerNotFoundError(exceptions.Error):
     super(PeerNotFoundError, self).__init__(error_msg)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveBgpPeer(base.UpdateCommand):
   """Remove a BGP peer from a Compute Engine router.
 
@@ -47,26 +46,19 @@ class RemoveBgpPeer(base.UpdateCommand):
   ROUTER_ARG = None
 
   @classmethod
-  def _Args(cls, parser, support_remove_list=False):
+  def _Args(cls, parser):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
 
-    if support_remove_list:
-      bgp_peer_parser = parser.add_mutually_exclusive_group(required=True)
-      # TODO(b/170227243): deprecate --peer-name after --peer-names hit GA
-      bgp_peer_parser.add_argument(
-          '--peer-name',
-          help='The name of the peer being removed.')
-      bgp_peer_parser.add_argument(
-          '--peer-names',
-          type=arg_parsers.ArgList(),
-          metavar='PEER_NAME',
-          help='The list of names for peers being removed.')
-    else:
-      parser.add_argument(
-          '--peer-name',
-          required=True,
-          help='The name of the peer being removed.')
+    bgp_peer_parser = parser.add_mutually_exclusive_group(required=True)
+    # TODO(b/170227243): deprecate --peer-name after --peer-names hit GA
+    bgp_peer_parser.add_argument(
+        '--peer-name', help='The name of the peer being removed.')
+    bgp_peer_parser.add_argument(
+        '--peer-names',
+        type=arg_parsers.ArgList(),
+        metavar='PEER_NAME',
+        help='The list of names for peers being removed.')
 
   @classmethod
   def Args(cls, parser):
@@ -89,19 +81,16 @@ class RemoveBgpPeer(base.UpdateCommand):
                 region=router_ref.region,
                 project=router_ref.project))
 
-  def Modify(self, args, existing, cleared_fields, support_remove_list=False):
+  def Modify(self, args, existing, cleared_fields):
     """Mutate the router and record any cleared_fields for Patch request."""
     replacement = encoding.CopyProtoMessage(existing)
 
-    input_remove_list = []
-    if support_remove_list:
-      input_remove_list = args.peer_names if args.peer_names else []
+    input_remove_list = args.peer_names if args.peer_names else []
 
     input_remove_list = input_remove_list + ([args.peer_name]
                                              if args.peer_name else [])
 
-    peer = None
-    acutal_remove_list = []
+    actual_remove_list = []
     replacement = encoding.CopyProtoMessage(existing)
     existing_router = encoding.CopyProtoMessage(existing)
     # remove peer if exists
@@ -111,15 +100,15 @@ class RemoveBgpPeer(base.UpdateCommand):
         replacement.bgpPeers.remove(peer)
         if not replacement.bgpPeers:
           cleared_fields.append('bgpPeers')
-        acutal_remove_list.append(peer.name)
+        actual_remove_list.append(peer.name)
 
-    not_found_peers = list(set(input_remove_list) - set(acutal_remove_list))
+    not_found_peers = list(set(input_remove_list) - set(actual_remove_list))
     if not_found_peers:
       raise PeerNotFoundError(not_found_peers)
 
     return replacement
 
-  def _Run(self, args, support_remove_list=False):
+  def _Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
@@ -130,11 +119,7 @@ class RemoveBgpPeer(base.UpdateCommand):
 
     # Cleared list fields need to be explicitly identified for Patch API.
     cleared_fields = []
-    new_object = self.Modify(
-        args,
-        objects[0],
-        cleared_fields,
-        support_remove_list=support_remove_list)
+    new_object = self.Modify(args, objects[0], cleared_fields)
 
     with client.apitools_client.IncludeFields(cleared_fields):
       # There is only one response because one request is made above
@@ -144,19 +129,3 @@ class RemoveBgpPeer(base.UpdateCommand):
 
   def Run(self, args):
     return self._Run(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class RemoveBgpPeerAlphaBeta(RemoveBgpPeer):
-  """Remove a BGP peer from a Compute Engine router.
-
-  *{command}* removes a BGP peer from a Compute Engine router.
-  """
-  ROUTER_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    cls._Args(parser, support_remove_list=True)
-
-  def Run(self, args):
-    return self._Run(args, support_remove_list=True)

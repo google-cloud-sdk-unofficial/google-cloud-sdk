@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "5.2",
+  "CLI_VERSION": "5.3",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -1343,7 +1343,7 @@
           "attr": {},
           "category": "",
           "default": "",
-          "description": "Calculate a CRC32c hash for the file.",
+          "description": "Calculate a CRC32c hash for the specified files.",
           "group": "",
           "is_global": false,
           "is_hidden": false,
@@ -1371,7 +1371,7 @@
           "attr": {},
           "category": "",
           "default": "",
-          "description": "Calculate a MD5 hash for the file.",
+          "description": "Calculate a MD5 hash for the specified files.",
           "group": "",
           "is_global": false,
           "is_hidden": false,
@@ -1392,7 +1392,7 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "DESCRIPTION": "The hash command calculates hashes on a local file that can be used to compare\nwith gsutil ls -L output. If a specific hash option is not provided, this\ncommand calculates all gsutil-supported hashes for the file.\n\nNote that gsutil automatically performs hash validation when uploading or\ndownloading files, so this command is only needed if you want to write a\nscript that separately checks the hash for some reason.\n\nIf you calculate a CRC32c hash for the file without a precompiled crcmod\ninstallation, hashing will be very slow. See \"gsutil help crcmod\" for details."
+        "DESCRIPTION": "Calculate hashes on local files, which can be used to compare with\n``gsutil ls -L`` output. If a specific hash option is not provided, this\ncommand calculates all gsutil-supported hashes for the files.\n\nNote that gsutil automatically performs hash validation when uploading or\ndownloading files, so this command is only needed if you want to write a\nscript that separately checks the hash.\n\nIf you calculate a CRC32c hash for files without a precompiled crcmod\ninstallation, hashing will be very slow. See \"gsutil help crcmod\" for details."
       }
     },
     "help": {
@@ -1438,7 +1438,7 @@
           "sections": {
             "CONFIGURATION": "To determine if the compiled version of crcmod is available in your Python\nenvironment, you can inspect the output of the ``gsutil version`` command for\nthe \"compiled crcmod\" entry:\n\n  $ gsutil version -l\n  ...\n  compiled crcmod: True\n  ...\n\nIf your crcmod library is compiled to a native binary, this value will be\nTrue. If using the pure-Python version, the value will be False.\n\nTo control gsutil's behavior in response to crcmod's status, you can set the\n\"check_hashes\" configuration variable. For details on this variable, see the\nsurrounding comments in your boto configuration file. If \"check_hashes\"\nis not present in your configuration file, rerun ``gsutil config`` to\nregenerate the file.",
             "DESCRIPTION": "Google Cloud Storage provides a cyclic redundancy check (CRC) header that\nallows clients to verify the integrity of object contents. For non-composite\nobjects Google Cloud Storage also provides an MD5 header to allow clients to\nverify object integrity, but for composite objects only the CRC is available.\ngsutil automatically performs integrity checks on all uploads and downloads.\nAdditionally, you can use the ``gsutil hash`` command to calculate a CRC for\nany local file.\n\nThe CRC variant used by Google Cloud Storage is called CRC32C (Castagnoli),\nwhich is not available in the standard Python distribution. The implementation\nof CRC32C used by gsutil is provided by a third-party Python module called\n`crcmod <https://pypi.python.org/pypi/crcmod>`_.\n\nThe crcmod module contains a pure-Python implementation of CRC32C, but using\nit results in very poor performance. A Python C extension is also provided by\ncrcmod, which requires compiling into a binary module for use. gsutil ships\nwith a precompiled crcmod C extension for macOS; for other platforms, see\nthe installation instructions below.\n\nAt the end of each copy operation, the ``gsutil cp`` and ``gsutil rsync``\ncommands validate that the checksum of the source file/object matches the\nchecksum of the destination file/object. If the checksums do not match,\ngsutil will delete the invalid copy and print a warning message. This very\nrarely happens, but if it does, please contact gs-team@google.com.",
-            "INSTALLATION": "These installation instructions assume that:\n\n-  You have ``pip`` installed. Consult the `pip installation instructions\n   <https://pip.pypa.io/en/stable/installing/>`_ for details on how\n   to install ``pip``.\n-  Your installation of ``pip`` can be found in your ``PATH`` environment\n   variable. If it cannot, you may need to replace ``pip3`` in the commands\n   below with the full path to the executable.\n-  You are installing the crcmod package for use with your system installation\n   of Python, and thus use the ``sudo`` command. If installing crcmod for a\n   different Python environment (e.g. in a virtualenv), you should omit\n   ``sudo`` from the commands below.\n-  You are using a Python 3 version with gsutil. You can determine which\n   Python version gsutil is using by running ``gsutil version -l`` and looking\n   for the ``python version: 2.x.x`` or ``python version: 3.x.x`` line.\n\nCentOS, RHEL, and Fedora\n------------------------\n\nTo compile and install crcmod:\n\n  yum install gcc python3-devel python3-setuptools redhat-rpm-config\n  sudo pip3 uninstall crcmod\n  sudo pip3 install --no-cache-dir -U crcmod\n\nDebian and Ubuntu\n-----------------\n\nTo compile and install crcmod:\n\n  sudo apt-get install gcc python3-dev python3-setuptools\n  sudo pip3 uninstall crcmod\n  sudo pip3 install --no-cache-dir -U crcmod\n\nEnterprise SUSE\n-----------------\n\nTo compile and install crcmod:\n\n  sudo zypper install gcc python-devel\n  sudo pip uninstall crcmod\n  sudo pip install --no-cache-dir -U crcmod\n\nmacOS\n-----\n\ngsutil distributes a pre-compiled version of crcmod for macOS, so you shouldn't\nneed to compile and install it yourself. If for some reason the pre-compiled\nversion is not being detected, please let the Google Cloud Storage team know\n(see ``gsutil help support``).\n\nTo compile manually on macOS, you will first need to install\n`XCode <https://developer.apple.com/xcode/>`_ and then run:\n\n  pip3 install -U crcmod\n\nWindows\n-------\n\nAn installer is available for the compiled version of crcmod from the Python\nPackage Index (PyPi) at the following URL:\n\nhttps://pypi.python.org/pypi/crcmod/1.7\n\nNOTE: If you have installed crcmod and gsutil hasn't detected it, it may have\nbeen installed to the wrong directory. It should be located at\n<python_dir>\\files\\Lib\\site-packages\\crcmod\\\n\nIn some cases the installer will incorrectly install to\n<python_dir>\\Lib\\site-packages\\crcmod\\\n\nManually copying the crcmod directory to the correct location should resolve\nthe issue."
+            "INSTALLATION": "These installation instructions assume that:\n\n-  You have ``pip`` installed. Consult the `pip installation instructions\n   <https://pip.pypa.io/en/stable/installing/>`_ for details on how\n   to install ``pip``.\n-  Your installation of ``pip`` can be found in your ``PATH`` environment\n   variable. If it cannot, you may need to replace ``pip3`` in the commands\n   below with the full path to the executable.\n-  You are installing the crcmod package for use with your system installation\n   of Python, and thus use the ``sudo`` command. If installing crcmod for a\n   different Python environment (e.g. in a virtualenv), you should omit\n   ``sudo`` from the commands below.\n-  You are using a Python 3 version with gsutil. You can determine which\n   Python version gsutil is using by running ``gsutil version -l`` and looking\n   for the ``python version: 2.x.x`` or ``python version: 3.x.x`` line.\n\nCentOS, RHEL, and Fedora\n------------------------\n\nTo compile and install crcmod:\n\n  yum install gcc python3-devel python3-setuptools redhat-rpm-config\n  sudo pip3 uninstall crcmod\n  sudo pip3 install --no-cache-dir -U crcmod\n\nDebian and Ubuntu\n-----------------\n\nTo compile and install crcmod:\n\n  sudo apt-get install gcc python3-dev python3-setuptools\n  sudo pip3 uninstall crcmod\n  sudo pip3 install --no-cache-dir -U crcmod\n\nEnterprise SUSE\n-----------------\n\nTo compile and install crcmod when using Enterprise SUSE for SAP 12:\n\n  sudo zypper install gcc python-devel\n  sudo pip uninstall crcmod\n  sudo pip install --no-cache-dir -U crcmod\n\nTo compile and install crcmod when using Enterprise SUSE for SAP 15:\n\n  sudo zypper install gcc python3-devel\n  sudo pip uninstall crcmod\n  sudo pip install --no-cache-dir -U crcmod\n\nmacOS\n-----\n\ngsutil distributes a pre-compiled version of crcmod for macOS, so you shouldn't\nneed to compile and install it yourself. If for some reason the pre-compiled\nversion is not being detected, please let the Google Cloud Storage team know\n(see ``gsutil help support``).\n\nTo compile manually on macOS, you will first need to install\n`XCode <https://developer.apple.com/xcode/>`_ and then run:\n\n  pip3 install -U crcmod\n\nWindows\n-------\n\nAn installer is available for the compiled version of crcmod from the Python\nPackage Index (PyPi) at the following URL:\n\nhttps://pypi.python.org/pypi/crcmod/1.7\n\nNOTE: If you have installed crcmod and gsutil hasn't detected it, it may have\nbeen installed to the wrong directory. It should be located at\n<python_dir>\\files\\Lib\\site-packages\\crcmod\\\n\nIn some cases the installer will incorrectly install to\n<python_dir>\\Lib\\site-packages\\crcmod\\\n\nManually copying the crcmod directory to the correct location should resolve\nthe issue."
           }
         },
         "creds": {
@@ -1645,7 +1645,7 @@
               "attr": {},
               "category": "",
               "default": "",
-              "description": "Allows you to specify a user project to be billed for the request.\nr example:\ngsutil -u \"bill-this-project\" cp ...",
+              "description": "Allows you to specify the ID or number of a user project to be\nlled for the request. For example:\ngsutil -u \"bill-this-project\" cp ...",
               "group": "",
               "is_global": false,
               "is_hidden": false,
@@ -1803,7 +1803,7 @@
               "attr": {},
               "category": "",
               "default": "",
-              "description": "<project_id> Specify a project in which to create a key.",
+              "description": "<project> Specify the ID or number of the project in which\n to create a key.",
               "group": "",
               "is_global": false,
               "is_hidden": false,
@@ -1836,7 +1836,7 @@
               "attr": {},
               "category": "",
               "default": "",
-              "description": "<project_id> Specify a project from which to delete a key.",
+              "description": "<project>. Specify the ID or number of the project from which to\n delete a key.",
               "group": "",
               "is_global": false,
               "is_hidden": false,
@@ -1869,7 +1869,7 @@
               "attr": {},
               "category": "",
               "default": "",
-              "description": "<project_id> Specify a project from which to get a key.",
+              "description": "<project> Specify the ID or number of the project from which to\n get a key.",
               "group": "",
               "is_global": false,
               "is_hidden": false,
@@ -1930,7 +1930,7 @@
               "attr": {},
               "category": "",
               "default": "",
-              "description": "<project_id> Specify a project from which to list keys.",
+              "description": "<project> Specify the ID or number of the project from\n which to list keys.",
               "group": "",
               "is_global": false,
               "is_hidden": false,
@@ -1991,7 +1991,7 @@
               "attr": {},
               "category": "",
               "default": "",
-              "description": "<project_id> Specify a project in which to update a key.",
+              "description": "<project> Specify ther ID or number of the project in\n which to update a key.",
               "group": "",
               "is_global": false,
               "is_hidden": false,
@@ -2078,7 +2078,7 @@
           "attr": {},
           "category": "",
           "default": "",
-          "description": "<project_id> Specify a project in which to update a key.",
+          "description": "<project> Specify ther ID or number of the project in\n which to update a key.",
           "group": "",
           "is_global": false,
           "is_hidden": false,
@@ -2408,7 +2408,7 @@
               "attr": {},
               "category": "",
               "default": "",
-              "description": "<project> The project being authorized to use the Cloud\nKMS key. If this flag is not included, your\ndefault project is authorized.",
+              "description": "<project> The ID or number of the project being authorized to use the Cloud\nKMS key. If this flag is not included, your\ndefault project is authorized.",
               "group": "",
               "is_global": false,
               "is_hidden": false,
@@ -2504,7 +2504,7 @@
               "attr": {},
               "category": "",
               "default": "",
-              "description": "<project> The project whose Cloud Storage service agent\nis being requested. If this flag is not\nincluded, your default project is used.",
+              "description": "<project> The ID or number of the project whose Cloud Storage service\nagent is being requested. If this flag is not\nincluded, your default project is used.",
               "group": "",
               "is_global": false,
               "is_hidden": false,
@@ -2564,7 +2564,7 @@
           "attr": {},
           "category": "",
           "default": "",
-          "description": "<project> The project whose Cloud Storage service agent\nis being requested. If this flag is not\nincluded, your default project is used.",
+          "description": "<project> The ID or number of the project whose Cloud Storage service\nagent is being requested. If this flag is not\nincluded, your default project is used.",
           "group": "",
           "is_global": false,
           "is_hidden": false,
@@ -3013,7 +3013,7 @@
           "attr": {},
           "category": "",
           "default": "",
-          "description": "setting Specifies the public access prevention setting.\n Valid values are \"enforced\" or \"unspecified\".\n Default is \"unspecified\".",
+          "description": "setting Specifies the public access prevention setting. Valid\n values are \"enforced\" or \"unspecified\". When\n \"enforced\", objects in this bucket cannot be made\n publicly accessible. Default is \"unspecified\".",
           "group": "",
           "is_global": false,
           "is_hidden": false,
@@ -3027,7 +3027,7 @@
           "attr": {},
           "category": "",
           "default": "",
-          "description": "time Specifies the retention policy. Default is no retention\n policy. This can only be set on gs:// buckets and\n requires using the JSON API.",
+          "description": "time Specifies the retention policy. Default is no retention\n policy. This can only be set on gs:// buckets and\n requires using the JSON API. For more details about\n retention policy see \"gsutil help retention\"",
           "group": "",
           "is_global": false,
           "is_hidden": false,
@@ -3037,11 +3037,25 @@
           "type": "bool",
           "value": ""
         },
+        "--rpo": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "setting Specifies the `replication setting <https://cloud.google.com/storage/docs/turbo-replication>`_.\n This flag is not valid for single-region buckets,\n and multi-region buckets only accept a value of\n DEFAULT. Valid values for dual region buckets\n are (ASYNC_TURBO|DEFAULT). If unspecified, DEFAULT is applied\n for dual-region and multi-region buckets.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "--rpo",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
         "-b": {
           "attr": {},
           "category": "",
           "default": "",
-          "description": "<on|off> Specifies the uniform bucket-level access setting.\n Default is \"off\"",
+          "description": "<on|off> Specifies the uniform bucket-level access setting.\n When \"on\", ACLs assigned to objects in the bucket are\n not evaluated. Consequently, only IAM policies grant\n access to objects in these buckets. Default is \"off\".",
           "group": "",
           "is_global": false,
           "is_hidden": false,
@@ -3083,7 +3097,7 @@
           "attr": {},
           "category": "",
           "default": "",
-          "description": "proj_id Specifies the project ID or project number to create\n the bucket under.",
+          "description": "project Specifies the project ID or project number to create\n the bucket under.",
           "group": "",
           "is_global": false,
           "is_hidden": false,
@@ -3118,8 +3132,7 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "BUCKET-LEVEL ACCESS": "You can enable or disable uniform bucket-level access for a bucket\nwith the -b option.\n\nExamples:\n\n  gsutil mb -b off gs://bucket-with-acls\n\n  gsutil mb -b on gs://bucket-with-no-acls",
-        "DESCRIPTION": "The mb command creates a new bucket. Google Cloud Storage has a single\nnamespace, so you are not allowed to create a bucket with a name already\nin use by another user. You can, however, carve out parts of the bucket name\nspace corresponding to your company's domain name (see \"gsutil help naming\").\n\nIf you don't specify a project ID using the -p option, the bucket is created\nusing the default project ID specified in your `gsutil configuration file\n<https://cloud.google.com/storage/docs/boto-gsutil>`_.\n\nThe -c and -l options specify the storage class and location, respectively,\nfor the bucket. Once a bucket is created in a given location and with a\ngiven storage class, it cannot be moved to a different location, and the\nstorage class cannot be changed. Instead, you would need to create a new\nbucket and move the data over and then delete the original bucket.\n\nThe --retention option specifies the retention period for the bucket. For more\ndetails about retention policy see \"gsutil help retention\".\n\nThe -b option specifies the uniform bucket-level access setting of the bucket.\nACLs assigned to objects are not evaluated in buckets with uniform bucket-\nlevel access enabled. Consequently, only IAM policies grant access to objects\nin these buckets.\n\nThe --pap option specifies the public access prevention setting of the bucket.\nWhen enforced, objects in this bucket cannot be made publicly accessible.",
+        "DESCRIPTION": "Create one or more new buckets. Google Cloud Storage has a single namespace,\nso you are not allowed to create a bucket with a name already in use by\nanother user. You can, however, carve out parts of the bucket name space\ncorresponding to your company's domain name (see \"gsutil help naming\").\n\nIf you don't specify a project ID or project number using the -p option, the\nbuckets are created using the default project ID specified in your `gsutil\nconfiguration file<https://cloud.google.com/storage/docs/boto-gsutil>`_.\n\nThe -l option specifies the location for the buckets. Once a bucket is created\nin a given location, it cannot be moved to a different location. Instead, you\nneed to create a new bucket, move the data over, and then delete the original\nbucket.",
         "LOCATIONS": "You can specify one of the `available locations\n<https://cloud.google.com/storage/docs/locations>`_ for a bucket\nwith the -l option.\n\nExamples:\n\n  gsutil mb -l asia gs://some-bucket\n\n  gsutil mb -c standard -l us-east1 gs://some-bucket\n\nIf you don't specify a -l option, the bucket is created in the default\nlocation (US).",
         "STORAGE CLASSES": "You can specify one of the `storage classes\n<https://cloud.google.com/storage/docs/storage-classes>`_ for a bucket\nwith the -c option.\n\nExample:\n\n  gsutil mb -c nearline gs://some-bucket\n\nSee online documentation for\n`pricing <https://cloud.google.com/storage/pricing>`_ and\n`SLA <https://cloud.google.com/storage/sla>`_ details.\n\nIf you don't specify a -c option, the bucket is created with the\ndefault storage class Standard Storage."
       }
@@ -3676,7 +3689,7 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "DESCRIPTION": "The rb command deletes a bucket. Buckets must be empty before you can delete\nthem.\n\nBe certain you want to delete a bucket before you do so, as once it is\ndeleted the name becomes available and another user may create a bucket with\nthat name. (But see also \"DOMAIN NAMED BUCKETS\" under \"gsutil help naming\"\nfor help carving out parts of the bucket name space.)"
+        "DESCRIPTION": "Delete one or more buckets. Buckets must be empty before you can delete them.\n\nBe certain you want to delete a bucket before you do so, as once it is\ndeleted the name becomes available and another user may create a bucket with\nthat name. (But see also \"DOMAIN NAMED BUCKETS\" under \"gsutil help naming\"\nfor help carving out parts of the bucket name space.)"
       }
     },
     "requesterpays": {
@@ -3935,6 +3948,65 @@
       "release": "GA",
       "sections": {
         "DESCRIPTION": "NOTE: As part of verifying the existence of objects prior to deletion,\n``gsutil rm`` makes ``GET`` requests to Cloud Storage for object metadata.\nThese requests incur `network and operations charges\n<https://cloud.google.com/storage/pricing>`_.\n\nThe gsutil rm command removes objects and/or buckets.\nFor example, the command:\n\n  gsutil rm gs://bucket/subdir/*\n\nwill remove all objects in gs://bucket/subdir, but not in any of its\nsub-directories. In contrast:\n\n  gsutil rm gs://bucket/subdir/**\n\nwill remove all objects under gs://bucket/subdir or any of its\nsubdirectories.\n\nYou can also use the -r option to specify recursive object deletion. Thus, for\nexample, either of the following two commands will remove gs://bucket/subdir\nand all objects and subdirectories under it:\n\n  gsutil rm gs://bucket/subdir**\n  gsutil rm -r gs://bucket/subdir\n\nThe -r option will also delete all object versions in the subdirectory for\nversioning-enabled buckets, whereas the ** command will only delete the live\nversion of each object in the subdirectory.\n\nRunning gsutil rm -r on a bucket will delete all versions of all objects in\nthe bucket, and then delete the bucket:\n\n  gsutil rm -r gs://bucket\n\nIf you want to delete all objects in the bucket, but not the bucket itself,\nthis command will work:\n\n  gsutil rm gs://bucket/**\n\nIf you have a large number of objects to remove you might want to use the\ngsutil -m option, to perform parallel (multi-threaded/multi-processing)\nremoves:\n\n  gsutil -m rm -r gs://my_bucket/subdir\n\nYou can pass a list of URLs (one per line) to remove on stdin instead of as\ncommand line arguments by using the -I option. This allows you to use gsutil\nin a pipeline to remove objects identified by a program, such as:\n\n  some_program | gsutil -m rm -I\n\nThe contents of stdin can name cloud URLs and wildcards of cloud URLs.\n\nNote that gsutil rm will refuse to remove files from the local\nfile system. For example this will fail:\n\n  gsutil rm *.txt\n\nWARNING: Object removal cannot be undone. Cloud Storage is designed to give\ndevelopers a high amount of flexibility and control over their data, and\nGoogle maintains strict controls over the processing and purging of deleted\ndata. If you have concerns that your application software or your users may\nat some point erroneously delete or replace data, see\n`Best practices for deleting data\n<https://cloud.google.com/storage/docs/best-practices#deleting>`_ for ways to\nprotect your data from accidental data deletion."
+      }
+    },
+    "rpo": {
+      "capsule": "Configure replication",
+      "commands": {
+        "get": {
+          "capsule": "Configure replication",
+          "commands": {},
+          "flags": {},
+          "groups": {},
+          "is_group": false,
+          "is_hidden": false,
+          "path": [
+            "gsutil",
+            "rpo",
+            "get"
+          ],
+          "positionals": [],
+          "release": "GA",
+          "sections": {
+            "DESCRIPTION": "The ``rpo get`` command returns the replication setting\nfor the specified Cloud Storage buckets.",
+            "EXAMPLES": "Check if your buckets are using turbo replication:\n\n  gsutil rpo get gs://redbucket gs://bluebucket"
+          }
+        },
+        "set": {
+          "capsule": "Configure replication",
+          "commands": {},
+          "flags": {},
+          "groups": {},
+          "is_group": false,
+          "is_hidden": false,
+          "path": [
+            "gsutil",
+            "rpo",
+            "set"
+          ],
+          "positionals": [],
+          "release": "GA",
+          "sections": {
+            "DESCRIPTION": "The ``rpo set`` command configures turbo replication\nfor dual-region Google Cloud Storage buckets.",
+            "EXAMPLES": "Configure your buckets to use turbo replication:\n\n  gsutil rpo set ASYNC_TURBO gs://redbucket gs://bluebucket\n\nConfigure your buckets to NOT use turbo replication:\n\n  gsutil rpo set DEFAULT gs://redbucket gs://bluebucket"
+          }
+        }
+      },
+      "flags": {},
+      "groups": {},
+      "is_group": true,
+      "is_hidden": false,
+      "path": [
+        "gsutil",
+        "rpo"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "The ``rpo`` command is used to retrieve or configure the\n`replication setting\n<https://cloud.google.com/storage/docs/turbo-replication>`_ of\ndual-region Cloud Storage buckets.\nThis command has two sub-commands: ``get`` and ``set``.",
+        "EXAMPLES": "Configure your buckets to use turbo replication:\n\n  gsutil rpo set ASYNC_TURBO gs://redbucket gs://bluebucket\n\nConfigure your buckets to NOT use turbo replication:\n\n  gsutil rpo set DEFAULT gs://redbucket gs://bluebucket",
+        "GET": "The ``rpo get`` command returns the replication setting\nfor the specified Cloud Storage buckets.",
+        "SET": "The ``rpo set`` command configures turbo replication\nfor dual-region Google Cloud Storage buckets."
       }
     },
     "rsync": {
@@ -4819,7 +4891,7 @@
       "attr": {},
       "category": "",
       "default": "",
-      "description": "Allows you to specify a user project to be billed for the request.\nr example:\ngsutil -u \"bill-this-project\" cp ...",
+      "description": "Allows you to specify the ID or number of a user project to be\nlled for the request. For example:\ngsutil -u \"bill-this-project\" cp ...",
       "group": "",
       "is_global": true,
       "is_hidden": false,

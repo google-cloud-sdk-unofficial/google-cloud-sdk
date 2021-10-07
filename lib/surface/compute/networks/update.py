@@ -55,6 +55,7 @@ class Update(base.UpdateCommand):
   """
 
   NETWORK_ARG = None
+  _support_firewall_order = False
 
   MIGRATION_STAGES = dict(
       VALIDATING_NETWORK='Validating Network',
@@ -129,6 +130,12 @@ class Update(base.UpdateCommand):
           messages.NetworkRoutingConfig.RoutingModeValueValuesEnum(
               args.bgp_routing_mode.upper()))
 
+    if self._support_firewall_order and args.network_firewall_policy_enforcement_order:
+      should_patch = True
+      network_resource.networkFirewallPolicyEnforcementOrder = (
+          messages.Network.NetworkFirewallPolicyEnforcementOrderValueValuesEnum(
+              args.network_firewall_policy_enforcement_order))
+
     if should_patch:
       resource = service.Patch(
           messages.ComputeNetworksPatchRequest(
@@ -179,6 +186,7 @@ class Update(base.UpdateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(Update):
   """Update a Compute Engine Network."""
+  _support_firewall_order = True
 
   @classmethod
   def Args(cls, parser):

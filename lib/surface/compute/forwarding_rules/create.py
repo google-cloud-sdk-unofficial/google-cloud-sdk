@@ -186,8 +186,7 @@ class CreateHelper(object):
             'Must be in the same project as the forwarding rule.')
 
       sd_registration = client.messages.ForwardingRuleServiceDirectoryRegistration(
-          serviceDirectoryRegion=region,
-          namespace=namespace)
+          serviceDirectoryRegion=region, namespace=namespace)
 
     ports_all_specified, range_list = _ExtractPortsAndAll(args.ports)
     port_range = _ResolvePortRange(args.port_range, range_list)
@@ -419,35 +418,58 @@ class CreateHelper(object):
 
     if hasattr(args, 'service_directory_registration'
               ) and args.service_directory_registration:
-      if not self._support_sd_registration_for_regional:
-        raise exceptions.InvalidArgumentException(
-            '--service-directory-registration',
-            """flag is available in one or more alternate release tracks. Try:
+      if is_psc_ilb:
+        # Parse projects/../locations/../namespaces/..
+        match = re.match(
+            r'^projects/([^/]+)/locations/([^/]+)/namespaces/([^/]+)$',
+            args.service_directory_registration)
+        if not match:
+          raise exceptions.InvalidArgumentException(
+              '--service-directory-registration',
+              'If set, must be of the form projects/PROJECT/locations/REGION/namespaces/NAMESPACE'
+          )
+        project = match.group(1)
+        region = match.group(2)
+
+        if project != forwarding_rule_ref.project or region != forwarding_rule_ref.region:
+          raise exceptions.InvalidArgumentException(
+              '--service-directory-registration',
+              'Service Directory registration must be in the same project and region as the forwarding rule.'
+          )
+
+        sd_registration = client.messages.ForwardingRuleServiceDirectoryRegistration(
+            namespace=match.group(3))
+        forwarding_rule.serviceDirectoryRegistrations.append(sd_registration)
+      else:
+        if not self._support_sd_registration_for_regional:
+          raise exceptions.InvalidArgumentException(
+              '--service-directory-registration',
+              """flag is available in one or more alternate release tracks. Try:
 
   gcloud alpha compute forwarding-rules create --service-directory-registration
   gcloud beta compute forwarding-rules create --service-directory-registration"""
-        )
-      # Parse projects/../locations/../namespaces/../services/..
-      match = re.match(
-          r'^projects/([^/]+)/locations/([^/]+)/namespaces/([^/]+)/services/([^/]+)$',
-          args.service_directory_registration)
-      if not match:
-        raise exceptions.InvalidArgumentException(
-            '--service-directory-registration',
-            'Must be of the form projects/PROJECT/locations/REGION/namespaces/NAMESPACE/services/SERVICE'
-        )
-      project = match.group(1)
-      region = match.group(2)
+          )
+        # Parse projects/../locations/../namespaces/../services/..
+        match = re.match(
+            r'^projects/([^/]+)/locations/([^/]+)/namespaces/([^/]+)/services/([^/]+)$',
+            args.service_directory_registration)
+        if not match:
+          raise exceptions.InvalidArgumentException(
+              '--service-directory-registration',
+              'Must be of the form projects/PROJECT/locations/REGION/namespaces/NAMESPACE/services/SERVICE'
+          )
+        project = match.group(1)
+        region = match.group(2)
 
-      if project != forwarding_rule_ref.project or region != forwarding_rule_ref.region:
-        raise exceptions.InvalidArgumentException(
-            '--service-directory-registration',
-            'Service Directory registration must be in the same project and region as the forwarding rule.'
-        )
+        if project != forwarding_rule_ref.project or region != forwarding_rule_ref.region:
+          raise exceptions.InvalidArgumentException(
+              '--service-directory-registration',
+              'Service Directory registration must be in the same project and region as the forwarding rule.'
+          )
 
-      sd_registration = client.messages.ForwardingRuleServiceDirectoryRegistration(
-          namespace=match.group(3), service=match.group(4))
-      forwarding_rule.serviceDirectoryRegistrations.append(sd_registration)
+        sd_registration = client.messages.ForwardingRuleServiceDirectoryRegistration(
+            namespace=match.group(3), service=match.group(4))
+        forwarding_rule.serviceDirectoryRegistrations.append(sd_registration)
 
     request = client.messages.ComputeForwardingRulesInsertRequest(
         forwardingRule=forwarding_rule,

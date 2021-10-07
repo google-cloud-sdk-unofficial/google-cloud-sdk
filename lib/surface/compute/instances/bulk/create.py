@@ -63,15 +63,17 @@ DETAILED_HELP = {
 
 def _CommonArgs(parser,
                 deprecate_maintenance_policy=False,
-                supports_min_node_cpu=False,
-                supports_location_hint=False,
-                supports_erase_vss=False,
+                support_min_node_cpu=False,
+                support_location_hint=False,
+                support_erase_vss=False,
                 snapshot_csek=False,
                 image_csek=False,
-                supports_display_device=False,
+                support_display_device=False,
                 support_local_ssd_size=False,
                 support_numa_node_count=False,
-                supports_visible_core_count=False):
+                support_visible_core_count=False,
+                support_provisioning_model=False,
+                support_termination_action=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddCreateDiskArgs(
@@ -114,7 +116,7 @@ def _CommonArgs(parser,
     instances_flags.AddNumaNodeCountArgs(parser)
   instances_flags.AddBootDiskArgs(parser, enable_kms=True)
 
-  if supports_display_device:
+  if support_display_device:
     instances_flags.AddDisplayDeviceArg(parser)
 
   instances_flags.AddReservationAffinityGroup(
@@ -124,13 +126,13 @@ def _CommonArgs(parser,
 
   maintenance_flags.AddResourcePoliciesArgs(parser, 'added to', 'instance')
 
-  if supports_min_node_cpu:
+  if support_min_node_cpu:
     instances_flags.AddMinNodeCpuArg(parser)
 
-  if supports_location_hint:
+  if support_location_hint:
     instances_flags.AddLocationHintArg(parser)
 
-  if supports_erase_vss:
+  if support_erase_vss:
     flags.AddEraseVssSignature(parser, 'source snapshots or source machine'
                                ' image')
 
@@ -141,13 +143,19 @@ def _CommonArgs(parser,
 
   base.ASYNC_FLAG.AddToParser(parser)
 
-  if supports_visible_core_count:
+  if support_visible_core_count:
     instances_flags.AddVisibleCoreCountArgs(parser)
 
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
   else:
     instances_flags.AddLocalSsdArgs(parser)
+
+  if support_provisioning_model:
+    instances_flags.AddProvisioningModelVmArgs(parser)
+
+  if support_termination_action:
+    instances_flags.AddInstanceTerminationActionVmArgs(parser)
 
 
 def _GetOperations(compute_client, project, operation_group_id):
@@ -193,6 +201,8 @@ class Create(base.Command):
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
   _support_visible_core_count = False
+  _support_provisioning_model = False
+  _support_termination_action = False
 
   _log_async = False
 
@@ -201,15 +211,15 @@ class Create(base.Command):
     _CommonArgs(
         parser,
         deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
-        supports_min_node_cpu=cls._support_min_node_cpu,
-        supports_location_hint=cls._support_location_hint,
-        supports_erase_vss=cls._support_erase_vss,
+        support_min_node_cpu=cls._support_min_node_cpu,
+        support_location_hint=cls._support_location_hint,
+        support_erase_vss=cls._support_erase_vss,
         snapshot_csek=cls._support_source_snapshot_csek,
         image_csek=cls._support_image_csek,
-        supports_display_device=cls._support_display_device,
+        support_display_device=cls._support_display_device,
         support_local_ssd_size=cls._support_local_ssd_size,
         support_numa_node_count=cls._support_numa_node_count,
-        supports_visible_core_count=cls._support_visible_core_count)
+        support_visible_core_count=cls._support_visible_core_count)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeBulkSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -279,7 +289,9 @@ class Create(base.Command):
         support_min_node_cpu=self._support_min_node_cpu,
         support_location_hint=self._support_location_hint,
         support_host_error_timeout_seconds=self
-        ._support_host_error_timeout_seconds)
+        ._support_host_error_timeout_seconds,
+        support_provisioning_model=self._support_provisioning_model,
+        support_termination_action=self._support_termination_action)
     tags = instance_utils.GetTags(args, compute_client)
     labels = instance_utils.GetLabels(
         args, compute_client, instance_properties=True)
@@ -556,21 +568,25 @@ class CreateBeta(Create):
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_visible_core_count = False
+  _support_provisioning_model = True
+  _support_termination_action = True
 
   @classmethod
   def Args(cls, parser):
     _CommonArgs(
         parser,
         deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
-        supports_min_node_cpu=cls._support_min_node_cpu,
-        supports_location_hint=cls._support_location_hint,
-        supports_erase_vss=cls._support_erase_vss,
+        support_min_node_cpu=cls._support_min_node_cpu,
+        support_location_hint=cls._support_location_hint,
+        support_erase_vss=cls._support_erase_vss,
         snapshot_csek=cls._support_source_snapshot_csek,
         image_csek=cls._support_image_csek,
-        supports_display_device=cls._support_display_device,
+        support_display_device=cls._support_display_device,
         support_local_ssd_size=cls._support_local_ssd_size,
         support_numa_node_count=cls._support_numa_node_count,
-        supports_visible_core_count=cls._support_visible_core_count)
+        support_visible_core_count=cls._support_visible_core_count,
+        support_provisioning_model=cls._support_provisioning_model,
+        support_termination_action=cls._support_termination_action)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeBulkSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -592,21 +608,26 @@ class CreateAlpha(Create):
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = True
   _support_visible_core_count = True
+  _support_provisioning_model = True
+  _support_termination_action = True
 
   @classmethod
   def Args(cls, parser):
     _CommonArgs(
         parser,
         deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
-        supports_min_node_cpu=cls._support_min_node_cpu,
-        supports_location_hint=cls._support_location_hint,
-        supports_erase_vss=cls._support_erase_vss,
+        support_min_node_cpu=cls._support_min_node_cpu,
+        support_location_hint=cls._support_location_hint,
+        support_erase_vss=cls._support_erase_vss,
         snapshot_csek=cls._support_source_snapshot_csek,
         image_csek=cls._support_image_csek,
-        supports_display_device=cls._support_display_device,
+        support_display_device=cls._support_display_device,
         support_local_ssd_size=cls._support_local_ssd_size,
         support_numa_node_count=cls._support_numa_node_count,
-        supports_visible_core_count=cls._support_visible_core_count)
+        support_visible_core_count=cls._support_visible_core_count,
+        support_provisioning_model=cls._support_provisioning_model,
+        support_termination_action=cls._support_termination_action)
+
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeBulkSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)

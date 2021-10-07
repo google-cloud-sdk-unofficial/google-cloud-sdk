@@ -4,6 +4,11 @@
     brief: List hubs.
     description: Retrieve and display a list of all hubs in the specified project.
 
+    examples: |
+      To list all hubs, run:
+
+        $ {command}
+
   request: &request
     ALPHA:
       api_version: v1alpha1

@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.iam import policies_flags as flags
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a policy on the given attachment point with the given name."""
 
@@ -50,15 +50,23 @@ class Create(base.CreateCommand):
     flags.GetPolicyFileFlag().AddToParser(parser)
 
   def Run(self, args):
-    client = apis.GetClientInstance('v2alpha')
-    messages = apis.GetMessagesModule('v2alpha')
+    release_track = args.calliope_command.ReleaseTrack()
+    client = apis.GetClientInstance(release_track)
+    messages = apis.GetMessagesModule(release_track)
 
     attachment_point = args.attachment_point.replace('/', '%2F')
 
-    result = client.policies.CreatePolicy(
-        messages.IamPoliciesCreatePolicyRequest(
-            parent='policies/{}/{}'.format(attachment_point, args.kind),
-            policyId=args.policy_id,
-            googleIamV2alphaPolicy=apis.ParseYamlOrJsonPolicyFile(
-                args.policy_file, messages.GoogleIamV2alphaPolicy)))
-    return result
+    if release_track == base.ReleaseTrack.ALPHA:
+      return client.policies.CreatePolicy(
+          messages.IamPoliciesCreatePolicyRequest(
+              parent='policies/{}/{}'.format(attachment_point, args.kind),
+              policyId=args.policy_id,
+              googleIamV2alphaPolicy=apis.ParseYamlOrJsonPolicyFile(
+                  args.policy_file, messages.GoogleIamV2alphaPolicy)))
+    else:
+      return client.policies.CreatePolicy(
+          messages.IamPoliciesCreatePolicyRequest(
+              parent='policies/{}/{}'.format(attachment_point, args.kind),
+              policyId=args.policy_id,
+              googleIamV2betaPolicy=apis.ParseYamlOrJsonPolicyFile(
+                  args.policy_file, messages.GoogleIamV2betaPolicy)))

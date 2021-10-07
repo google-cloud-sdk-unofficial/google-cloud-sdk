@@ -64,5 +64,4 @@ class Maven(base.Command):
     Returns:
       A maven pom snippet.
     """
-
     return {"mvn": settings_util.GetMavenSnippet(args)}

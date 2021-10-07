@@ -85,14 +85,7 @@ class Create(base.Command):
             zoneId=zone_ref.Name(),
             parent=zone_ref.Parent().RelativeName(),
             validateOnly=args.validate_only,
-            googleCloudDataplexV1Zone=zone.GenerateZoneForCreateRequest(
-                args.description, args.display_name,
-                dataplex_util.CreateLabels(
-                    dataplex_util.GetMessageModule().GoogleCloudDataplexV1Zone,
-                    args), args.type, args.discovery_enabled,
-                args.discovery_include_patterns,
-                args.discovery_exclude_patterns, args.resource_location_type,
-                args.discovery_schedule)))
+            googleCloudDataplexV1Zone=zone.GenerateZoneForCreateRequest(args)))
 
     validate_only = getattr(args, 'validate_only', False)
     if validate_only:

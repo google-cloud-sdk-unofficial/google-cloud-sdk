@@ -19,3 +19,18 @@
       help_text: |
         Arguments and flags that define the Dataplex Lake you want to list.
       spec: !REF googlecloudsdk.command_lib.dataplex.resources:location
+
+  response:
+    id_field: name
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        displayName:label=DISPLAY_NAME,
+        state:label=LAKE_STATUS,
+        metastoreStatus.state:label=METASTORE_STATUS,
+        metastore.service.basename():label=METASTORE,
+        securityStatus.state:label=SECURITY_STATUS,
+        assetStatus.activeAssets:label=ACTIVE_ASSETS,
+        labels:label=LABELS
+      )

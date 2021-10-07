@@ -877,6 +877,8 @@ class CreateBeta(Create):
   _support_post_key_revocation_action_type = True
   _support_multi_writer = True
   _support_mesh = True
+  _support_provisioning_model = True
+  _support_termination_action = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_visible_core_count = False
@@ -902,6 +904,8 @@ class CreateBeta(Create):
         parser, utils.COMPUTE_BETA_API_VERSION)
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
+    instances_flags.AddProvisioningModelVmArgs(parser)
+    instances_flags.AddInstanceTerminationActionVmArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.

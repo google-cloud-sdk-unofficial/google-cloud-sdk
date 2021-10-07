@@ -56,9 +56,6 @@ _DETAILED_HELP = {
         """
 }
 
-_API_VERSION_V1BETA1 = 'v1beta1'
-_API_VERSION_V1 = 'v1'
-
 
 def _Args(parser):
   """Parses arguments for the commands."""
@@ -97,9 +94,8 @@ def _Args(parser):
   )
 
 
-def _Run(release_track, args):
-  policy_analyzer_client, messages = policy_analyzer.GetClientAndMessages(
-      release_track)
+def _Run(args):
+  policy_analyzer_client, messages = policy_analyzer.GetClientAndMessages()
   query_activity_parent = 'projects/{0}/locations/global/activityTypes/{1}'.format(
       args.project, args.activity_type)
   query_activity_request = messages.PolicyanalyzerProjectsLocationsActivityTypesActivitiesQueryRequest(
@@ -129,7 +125,7 @@ class QueryActivityBeta(base.Command):
     _Args(parser)
 
   def Run(self, args):
-    return _Run(self.ReleaseTrack(), args)
+    return _Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -144,4 +140,4 @@ class QueryActivityGA(base.Command):
     _Args(parser)
 
   def Run(self, args):
-    return _Run(self.ReleaseTrack(), args)
+    return _Run(args)
