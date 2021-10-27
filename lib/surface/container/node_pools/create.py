@@ -112,6 +112,7 @@ for examples.
   flags.AddMetadataFlags(parser)
   flags.AddShieldedInstanceFlags(parser)
   flags.AddNetworkConfigFlags(parser)
+  flags.AddThreadsPerCore(parser)
 
 
 def ParseCreateNodePoolOptionsBase(args):
@@ -131,6 +132,7 @@ def ParseCreateNodePoolOptionsBase(args):
       num_nodes=args.num_nodes,
       local_ssd_count=args.local_ssd_count,
       tags=args.tags,
+      threads_per_core=args.threads_per_core,
       node_labels=args.node_labels,
       node_taints=args.node_taints,
       enable_autoscaling=args.enable_autoscaling,
@@ -278,13 +280,11 @@ class CreateBeta(Create):
     flags.AddEnableGcfsFlag(parser, for_node_pool=True)
     flags.AddEnableImageStreamingFlag(parser, for_node_pool=True)
     flags.AddNodePoolEnablePrivateNodes(parser, hidden=True)
-    flags.AddThreadsPerCore(parser)
     flags.AddEnableGvnicFlag(parser)
     flags.AddSpotFlag(parser, for_node_pool=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
-    ops.threads_per_core = args.threads_per_core
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
     ops.boot_disk_kms_key = args.boot_disk_kms_key
@@ -305,7 +305,6 @@ class CreateAlpha(Create):
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
-    ops.threads_per_core = args.threads_per_core
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
     ops.local_ssd_volume_configs = args.local_ssd_volumes
@@ -349,7 +348,6 @@ class CreateAlpha(Create):
     flags.AddEnableGcfsFlag(parser, for_node_pool=True)
     flags.AddEnableImageStreamingFlag(parser, for_node_pool=True)
     flags.AddNodePoolEnablePrivateNodes(parser, hidden=True)
-    flags.AddThreadsPerCore(parser)
     flags.AddEnableGvnicFlag(parser)
     flags.AddSpotFlag(parser, for_node_pool=True)
 

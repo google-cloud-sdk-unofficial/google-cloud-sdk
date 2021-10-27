@@ -160,5 +160,15 @@ Update.detailed_help = {
             --clear-udp-mapping-idle-timeout --clear-icmp-mapping-idle-timeout
             --clear-tcp-established-connection-idle-timeout
             --clear-tcp-transitory-connection-idle-timeout
-        """
+        """,
+    'API REFERENCE':
+    """\
+    This command, when specified without alpha or beta, uses the compute/v1/routers API. The full documentation
+    for this API can be found at: https://cloud.google.com/compute/docs/reference/rest/v1/routers/
+
+    The beta command uses the compute/beta/routers API. The full documentation
+    for this API can be found at: https://cloud.google.com/compute/docs/reference/rest/beta/routers/
+
+    The alpha command uses the compute/alpha/routers API. Full documentation is not available for the alpha API.
+    """
 }

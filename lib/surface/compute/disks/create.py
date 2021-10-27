@@ -126,7 +126,8 @@ def _CommonArgs(parser,
                 vss_erase_enabled=False,
                 source_instant_snapshot_enabled=False,
                 support_pd_interface=False,
-                support_user_licenses=False):
+                support_user_licenses=False,
+                support_architecture=False):
   """Add arguments used for parsing in all command tracks."""
   Create.disks_arg.AddArgument(parser, operation_type='create')
   parser.add_argument(
@@ -194,6 +195,9 @@ def _CommonArgs(parser,
         metavar='LICENSE',
         help=('List of URIs to license resources. User-provided licenses '
               'can be edited after disk is created.'))
+
+  if support_architecture:
+    disks_flags.AddArchitectureFlag(parser)
 
   csek_utils.AddCsekKeyArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
@@ -429,7 +433,8 @@ class Create(base.Command):
            support_multiwriter_disk=False,
            support_vss_erase=False,
            support_pd_interface=False,
-           support_user_licenses=False):
+           support_user_licenses=False,
+           support_architecture=False):
     compute_holder = self._GetApiHolder()
     client = compute_holder.client
 
@@ -549,6 +554,10 @@ class Create(base.Command):
           raise exceptions.InvalidArgumentException(
               '--provisioned-iops',
               '--provisioned-iops can be used only with pd-extreme disk type.')
+
+      if support_architecture and args.IsSpecified('architecture'):
+        disk.architecture = disk.ArchitectureValueValuesEnum(args.architecture)
+
       if support_user_licenses and args.IsSpecified('user_licenses'):
         disk.userLicenses = args.user_licenses
 
@@ -631,7 +640,8 @@ class CreateAlpha(CreateBeta):
         vss_erase_enabled=True,
         source_instant_snapshot_enabled=True,
         support_pd_interface=True,
-        support_user_licenses=True)
+        support_user_licenses=True,
+        support_architecture=True)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
@@ -646,7 +656,8 @@ class CreateAlpha(CreateBeta):
         support_multiwriter_disk=True,
         support_vss_erase=True,
         support_pd_interface=True,
-        support_user_licenses=True)
+        support_user_licenses=True,
+        support_architecture=True)
 
 
 def _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder):

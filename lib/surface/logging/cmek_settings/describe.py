@@ -22,7 +22,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.resource_manager import completers
 
 
 class Describe(base.DescribeCommand):
@@ -30,33 +29,30 @@ class Describe(base.DescribeCommand):
   """Displays the CMEK settings for the Cloud Logging Logs Router.
 
   If *kmsKeyName* is present in the output, then CMEK is enabled for your
-  organization.  You can also find the Logs Router service account using this
-  command.
-
-  Customer-managed encryption keys (CMEK) for the Logs Router can currently
-  only be configured at the organization-level and will apply to all projects
-  in the organization.
+  project, folder, organization or billing-account. You can also find the Logs
+  Router service account using this command.
 
   ## EXAMPLE
+
+  To describe the Logs Router CMEK settings for a project, run:
+
+    $ {command} --project=[PROJECT_ID]
 
   To describe the Logs Router CMEK settings for an organization, run:
 
     $ {command} --organization=[ORGANIZATION_ID]
 
-    kmsKeyName: 'projects/my-project/locations/my-location/keyRings/my-keyring/cryptoKeys/key'
+    kmsKeyName:
+    'projects/my-project/locations/my-location/keyRings/my-keyring/cryptoKeys/key'
     name: 'organizations/[ORGANIZATION_ID]/cmekSettings'
-    serviceAccountId: '[SERVICE_ACCOUNT_ID]@gcp-sa-logging.iam.gserviceaccount.com'
+    serviceAccountId:
+    '[SERVICE_ACCOUNT_ID]@gcp-sa-logging.iam.gserviceaccount.com'
   """
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    parser.add_argument(
-        '--organization',
-        required=True,
-        metavar='ORGANIZATION_ID',
-        completer=completers.OrganizationCompleter,
-        help='Organization to show CMEK settings for.')
+    util.AddParentArgs(parser, 'Describe CMEK settings')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -66,9 +62,9 @@ class Describe(base.DescribeCommand):
         command invocation.
 
     Returns:
-      The CMEK settings for the specified organization.
+      The CMEK settings for the specified project, folder, organizations
+      or billing-account.
     """
     parent_name = util.GetParentFromArgs(args)
-    return util.GetClient().organizations.GetCmekSettings(
-        util.GetMessages().LoggingOrganizationsGetCmekSettingsRequest(
-            name=parent_name))
+    return util.GetClient().v2.GetCmekSettings(
+        util.GetMessages().LoggingGetCmekSettingsRequest(name=parent_name))

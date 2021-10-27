@@ -51,23 +51,6 @@
       help_text: |
         This attribute is only relevant for preview (--dry-run). It is used to validate
         the state for a future time.
-    - arg_name: allocation-priority
-      release_tracks: [ALPHA]
-      api_field: gameServerCluster.allocationPriority
-      help_text: |
-        Allocation priority assigned to the game server cluster. Game server clusters receive new
-        game server allocations based on the relative allocation priorities set for each cluster
-        within a realm where multicluster allocation is configured. Ordering is based on the
-        priority; 'p1' has the highest priority and 'priority-unspecified' has the lowest priority.
-    - arg_name: allocation-priority
-      release_tracks: [BETA]
-      api_field: gameServerCluster.allocationPriority
-      hidden: true
-      help_text: |
-        Allocation priority assigned to the game server cluster. Game server clusters receive new
-        game server allocations based on the relative allocation priorities set for each cluster
-        within a realm where multicluster allocation is configured. Ordering is based on the
-        priority; 'p1' has the highest priority and 'priority-unspecified' has the lowest priority.
     - arg_name: allocation-weight
       release_tracks: [ALPHA]
       api_field: gameServerCluster.allocationWeight

@@ -99,6 +99,7 @@ class Replace(base.Command):
     # status is ignored by the server.
     if 'status' in service_dict:
       del service_dict['status']
+    new_service = None
     try:
       raw_service = messages_util.DictToMessageWithErrorCheck(
           service_dict, run_messages.Service)

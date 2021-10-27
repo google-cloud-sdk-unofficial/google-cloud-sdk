@@ -22,10 +22,13 @@ from googlecloudsdk.api_lib.storage import request_config_factory
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import name_expansion
+from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage.tasks import task_executor
 from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
 from googlecloudsdk.command_lib.storage.tasks import task_status
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_task_iterator
+from googlecloudsdk.core import log
+from googlecloudsdk.core.util import files
 
 
 class Cp(base.Command):
@@ -77,27 +80,50 @@ class Cp(base.Command):
         '--do-not-decompress',
         action='store_true',
         help='Do not automatically decompress downloaded gzip files.')
+    parser.add_argument(
+        '--ignore-symlinks',
+        action='store_true',
+        help='Ignore file symlinks instead of copying what they point to.'
+        ' Symlinks pointing to directories will always be ignored.')
     flags.add_precondition_flags(parser)
     flags.add_object_metadata_flags(parser)
     flags.add_encryption_flags(parser)
 
   def Run(self, args):
     source_expansion_iterator = name_expansion.NameExpansionIterator(
-        args.source, recursion_requested=args.recursive)
+        args.source,
+        recursion_requested=args.recursive,
+        ignore_symlinks=args.ignore_symlinks)
     task_status_queue = task_graph_executor.multiprocessing_context.Queue()
     user_request_args = (
         request_config_factory.get_user_request_args_from_command_args(args))
+
+    raw_destination_url = storage_url.storage_url_from_string(args.destination)
+    if (isinstance(raw_destination_url, storage_url.FileUrl) and
+        raw_destination_url.is_pipe):
+      log.warning('Downloading to a pipe.'
+                  ' This command may stall until the pipe is read.')
+      shared_stream = files.BinaryFileWriter(args.destination)
+      parallelizable = False
+    else:
+      shared_stream = None
+      parallelizable = True
+
     task_iterator = copy_task_iterator.CopyTaskIterator(
         source_expansion_iterator,
         args.destination,
         custom_md5_digest=args.content_md5,
         do_not_decompress=args.do_not_decompress,
+        shared_stream=shared_stream,
         task_status_queue=task_status_queue,
         user_request_args=user_request_args,
     )
     self.exit_code = task_executor.execute_tasks(
         task_iterator,
-        parallelizable=True,
+        parallelizable=parallelizable,
         task_status_queue=task_status_queue,
         progress_type=task_status.ProgressType.FILES_AND_BYTES,
     )
+
+    if shared_stream:
+      shared_stream.close()

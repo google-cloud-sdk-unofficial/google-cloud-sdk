@@ -1,0 +1,41 @@
+- release_tracks: [BETA, ALPHA]
+
+  help_text:
+    brief: |
+      Update a managed Microsoft Active Directory domain backup.
+    description: |
+      Update a managed Microsoft Active Directory domain backup.
+        * The backup specified does not exist.
+        * The active account does not have permission to access the given domain.
+        * The active account does not have permission to access the given backup.
+
+    examples: |
+      The following command updates an AD domain backup my-backup under domain
+        projects/my-proj/locations/global/domains/my-domain.com with the labels l1 and l2
+
+        $ {command} projects/my-proj/locations/global/domains/my-domain.com/backups/my-backup \
+          --update-labels=l1=1,l2=2
+
+  async:
+    collection: managedidentities.projects.locations.global.operations
+
+  request: &request
+    collection: managedidentities.projects.locations.global.domains.backups
+    ALPHA:
+      api_version: v1alpha1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.active_directory.backup_util:UpdatePatchRequest
+      - googlecloudsdk.command_lib.active_directory.backup_util:UpdateLabels
+    BETA:
+      api_version: v1beta1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.active_directory.backup_util:UpdatePatchRequest
+      - googlecloudsdk.command_lib.active_directory.backup_util:UpdateLabels
+    method: patch
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.active_directory.resources:backup
+      help_text: |
+        Name of the Managed Microsoft AD domain backup you want to update.
+    additional_arguments_hook: googlecloudsdk.command_lib.active_directory.flags:BackupUpdateLabelsFlags

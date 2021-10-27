@@ -176,6 +176,7 @@ class BetaUpdate(Update):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddCpuThrottlingFlag(managed_group)
+    flags.AddSandboxArg(managed_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

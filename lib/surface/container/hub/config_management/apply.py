@@ -30,7 +30,7 @@ EXAMPLES = r"""
     To apply a YAML config file to a membership, prepare
     [apply-spec.yaml](https://cloud.google.com/anthos-config-management/docs/reference/gcloud-apply-fields#example_gcloud_apply_spec) then run:
 
-      $ {command} --membership=CLUSTER_NAME --config=APPLY-SPEC.YAML
+      $ {command} --membership=CLUSTER_NAME --config=APPLY-SPEC.YAML --version=VERSION
 """
 
 
@@ -58,6 +58,11 @@ class Apply(base.UpdateCommand):
         type=str,
         help='The path to config-management.yaml.',
         required=True)
+    parser.add_argument(
+        '--version',
+        type=str,
+        help='The version of ACM to install.'
+    )
 
   def Run(self, args):
     # check static yaml fields before query membership
@@ -90,10 +95,11 @@ class Apply(base.UpdateCommand):
     policy_controller = _parse_policy_controller(loaded_cm, self.messages)
     hierarchy_controller_config = _parse_hierarchy_controller_config(
         loaded_cm, self.messages)
-
+    version = self._get_backfill_version(
+        membership) if not args.version else args.version
     spec = self.messages.MembershipFeatureSpec(
         configmanagement=self.messages.ConfigManagementMembershipSpec(
-            version=self._get_backfill_version(membership),
+            version=version,
             configSync=config_sync,
             policyController=policy_controller,
             hierarchyController=hierarchy_controller_config))
@@ -120,16 +126,8 @@ class Apply(base.UpdateCommand):
 
     if spec_version:
       return spec_version
-
-    if state_version > utils.LATEST_VERSION:
-      # If the version on the cluster is later than the latest supported
-      # version in the Hub API, we do not want to write this version to
-      # spec. If we did, this would result in an error updating spec,
-      # rendering this gcloud command unusable.
-      return ''
-
-    # If Spec/State did not contain version, return default (latest version)
-    return state_version or utils.LATEST_VERSION
+    # backfill non-specified spec version with current state_version
+    return state_version
 
 
 def _validate_meta(configmanagement):
@@ -185,23 +183,11 @@ def _parse_config_sync(configmanagement, msg):
   if 'enabled' not in spec_git:
     raise exceptions.Error('Missing required field [{}.enabled]'.format(
         utils.CONFIG_SYNC))
-  if not spec_git['enabled']:
-    return config_sync
-  # https://cloud.google.com/anthos-config-management/docs/how-to/installing#configuring-git-repo
-  # Required field
+  config_sync.enabled = spec_git['enabled']
+  if config_sync.enabled:
+    _validate_config_sync(spec_git)
   git_config = msg.ConfigManagementGitConfig()
   config_sync.git = git_config
-  for field in ['syncRepo', 'secretType']:
-    if field not in spec_git:
-      raise exceptions.Error('Missing required field [{}.{}].'.format(
-          utils.CONFIG_SYNC, field))
-  # TODO(b/189131417) remove git validation, catch the CLH result instead.
-  valid_sf = ['hierarchy', 'unstructured']
-  if 'sourceFormat' in spec_git and spec_git['sourceFormat'] not in valid_sf:
-    raise exceptions.Error(
-        'Please fix unrecognized value of '
-        '.spec.{}.sourceFormat, only [{}] are supported'.format(
-            utils.CONFIG_SYNC, ','.join(valid_sf)))
   for field in [
       'policyDir', 'secretType', 'syncBranch', 'syncRepo', 'syncRev',
       'httpsProxy', 'gcpServiceAccountEmail'
@@ -214,6 +200,23 @@ def _parse_config_sync(configmanagement, msg):
   if 'sourceFormat' in spec_git:
     config_sync.sourceFormat = spec_git['sourceFormat']
   return config_sync
+
+
+def _validate_config_sync(spec_git):
+  """validating config sync fields."""
+  # https://cloud.google.com/anthos-config-management/docs/how-to/installing#configuring-git-repo
+  # Required field
+  for field in ['syncRepo', 'secretType']:
+    if field not in spec_git:
+      raise exceptions.Error('Missing required field [{}.{}].'.format(
+          utils.CONFIG_SYNC, field))
+  # TODO(b/189131417) remove git validation, catch the CLH result instead.
+  valid_sf = ['hierarchy', 'unstructured']
+  if 'sourceFormat' in spec_git and spec_git['sourceFormat'] not in valid_sf:
+    raise exceptions.Error(
+        'Please fix unrecognized value of '
+        '.spec.{}.sourceFormat, only [{}] are supported'.format(
+            utils.CONFIG_SYNC, ','.join(valid_sf)))
 
 
 def _parse_policy_controller(configmanagement, msg):

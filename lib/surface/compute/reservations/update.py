@@ -29,25 +29,26 @@ from googlecloudsdk.command_lib.compute.reservations import resource_args
 from googlecloudsdk.command_lib.compute.reservations import util
 
 
-def _ValidateArgs(args, support_share_with):
+def _ValidateArgs(args, support_share_with, support_share_with_flag):
   """Validates that both share settings arguments are mentioned.
 
   Args:
     args: The arguments given to the update command.
     support_share_with: Check the version.
+    support_share_with_flag: Check if share_with is supported.
   """
   # Check the vesrion and share-with option.
   share_with = False
   parameter_names = ['--share-with', '--vm-count']
-  parameter_names_ga = ['--vm-count']
   one_option_exception_message = (
       'Please provide one of these options: 1- Specify share-with or '
       'add-share-with or remove-share-with to update the project list. 2- '
       'Specify reservation vm-count to resize. ')
-  vm_count_missed_message = 'Please specify reservation with vm-count to resize'
 
   if support_share_with:
-    has_share_with = args.IsSpecified('share_with')
+    has_share_with = False
+    if support_share_with_flag:
+      has_share_with = args.IsSpecified('share_with')
     has_add_share_with = args.IsSpecified('add_share_with')
     has_remove_share_with = args.IsSpecified('remove_share_with')
     if has_share_with or has_add_share_with or has_remove_share_with:
@@ -65,18 +66,14 @@ def _ValidateArgs(args, support_share_with):
               '--remove-share-with',
               'Please specify project number (not project id/name).')
 
-  # For GA only check the size.
-  if not support_share_with and not args.IsSpecified('vm_count'):
-    raise exceptions.MinimumArgumentException(parameter_names_ga,
-                                              vm_count_missed_message)
-
-  # For Beta and alpha check both.
+  # Check parameters (add_share_with and remove_share_with are on GA).
   if not share_with and not args.IsSpecified('vm_count'):
     raise exceptions.MinimumArgumentException(parameter_names,
                                               one_option_exception_message)
 
 
-def _GetShareSettingUpdateRequest(args, reservation_ref, holder):
+def _GetShareSettingUpdateRequest(
+    args, reservation_ref, holder, support_share_with_flag):
   """Create Update Request for share-with.
 
   Returns:
@@ -85,19 +82,21 @@ def _GetShareSettingUpdateRequest(args, reservation_ref, holder):
    args: The arguments given to the update command.
    reservation_ref: reservation refrence.
    holder: base_classes.ComputeApiHolder.
+   support_share_with_flag: Check if share_with is supported.
   """
   messages = holder.client.messages
   # Set updated properties and build update mask.
   share_settings = None
   setting_configs = 'projects'  # Only updating projects is supported now.
-  if args.IsSpecified('share_with'):
-    share_settings = util.MakeShareSettingsWithArgs(
-        messages, args, setting_configs, share_with='share_with')
-    update_mask = [
-        'shareSettings.projectMap.' + project
-        for project in getattr(args, 'share_with', [])
-    ]
-  elif args.IsSpecified('add_share_with'):
+  if support_share_with_flag:
+    if args.IsSpecified('share_with'):
+      share_settings = util.MakeShareSettingsWithArgs(
+          messages, args, setting_configs, share_with='share_with')
+      update_mask = [
+          'shareSettings.projectMap.' + project
+          for project in getattr(args, 'share_with', [])
+      ]
+  if args.IsSpecified('add_share_with'):
     share_settings = util.MakeShareSettingsWithArgs(
         messages, args, setting_configs, share_with='add_share_with')
     update_mask = [
@@ -157,12 +156,15 @@ def _GetResizeRequest(args, reservation_ref, holder):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update Compute Engine reservations."""
-  _support_share_with = False
+  _support_share_with = True
+  _support_share_with_flag = False
 
   @classmethod
   def Args(cls, parser):
     resource_args.GetReservationResourceArg().AddArgument(
         parser, operation_type='update')
+    r_flags.GetAddShareWithFlag().AddToParser(parser)
+    r_flags.GetRemoveShareWithFlag().AddToParser(parser)
     r_flags.GetVmCountFlag(False).AddToParser(parser)
 
   def Run(self, args):
@@ -172,7 +174,7 @@ class Update(base.UpdateCommand):
     service = holder.client.apitools_client.reservations
 
     # Validate the command.
-    _ValidateArgs(args, self._support_share_with)
+    _ValidateArgs(args, self._support_share_with, self._support_share_with_flag)
     reservation_ref = resource_args.GetReservationResourceArg(
     ).ResolveAsResource(
         args,
@@ -183,13 +185,16 @@ class Update(base.UpdateCommand):
     errors = []
     share_with = False
     if self._support_share_with:
-      if args.IsSpecified('share_with') or args.IsSpecified(
-          'add_share_with') or args.IsSpecified('remove_share_with'):
+      if args.IsSpecified('add_share_with') or args.IsSpecified(
+          'remove_share_with'):
         share_with = True
+      if self._support_share_with_flag:
+        if args.IsSpecified('share_with'):
+          share_with = True
 
     if self._support_share_with and share_with:
-      r_update_request = _GetShareSettingUpdateRequest(args, reservation_ref,
-                                                       holder)
+      r_update_request = _GetShareSettingUpdateRequest(
+          args, reservation_ref, holder, self._support_share_with_flag)
       # Invoke Reservation.update API.
       result.append(
           list(
@@ -214,6 +219,7 @@ class Update(base.UpdateCommand):
 class UpdateBeta(Update):
   """Update Compute Engine reservations."""
   _support_share_with = True
+  _support_share_with_flag = True
 
   @classmethod
   def Args(cls, parser):
@@ -228,21 +234,37 @@ class UpdateBeta(Update):
 Update.detailed_help = {
     'EXAMPLES':
         """
-        To update a given Compute Enginer reservation with 500 VM instances, run:
+        To add `my-project` to the list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
 
-            $ {command} my-reservation --zone=ZONE --vm-count=500
+            $ {command} my-reservation --add-share-with=my-project --zone=us-central1-a
+
+        To remove `my-project` from the list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
+
+            $ {command} my-reservation --remove-share-with=my-project --zone=us-central1-a
+
+        To update the number of reserved VM instances to 500 for a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
+
+            $ {command} my-reservation --zone=us-central1-a --vm-count=500
         """
 }
 
 UpdateBeta.detailed_help = {
     'EXAMPLES':
         """
-        To update project list of a Compute Engine reservation ``my-reservation''  in Zone: ``us-central1-a'', run:
+        To add `my-project` to the list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
 
-            $ {command} my-reservation --share-with=123 --zone=us-central1-a
+            $ {command} my-reservation --add-share-with=my-project --zone=us-central1-a
 
-        To update a given Compute Enginer reservation with 500 VM instances, run:
+        To remove `my-project` from the list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
 
-            $ {command} my-reservation --zone=ZONE --vm-count=500
+            $ {command} my-reservation --remove-share-with=my-project --zone=us-central1-a
+
+        To update the entire list of projects that are shared with a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
+
+            $ {command} my-reservation --share-with=my-project --zone=us-central1-a
+
+        To update the number of reserved VM instances to 500 for a Compute Engine reservation, `my-reservation` in zone: `us-central1-a`, run:
+
+            $ {command} my-reservation --zone=us-central1-a --vm-count=500
         """
 }

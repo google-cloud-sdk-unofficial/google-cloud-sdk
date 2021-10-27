@@ -31,5 +31,7 @@ Nats.detailed_help = {
 
         For more information about Cloud NAT, see the
         [Cloud NAT documentation](https://cloud.google.com/nat/docs/using-nat).
+
+        See also: [Routers API](https://cloud.google.com/compute/docs/reference/rest/v1/routers).
     """,
 }

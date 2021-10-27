@@ -222,6 +222,8 @@
   request:
     ALPHA:
       api_version: v1alpha1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.redis.instances_create_util:AddDefaultReplicaCount
     BETA:
       api_version: v1beta1
     GA:

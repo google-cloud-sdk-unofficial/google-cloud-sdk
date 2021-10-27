@@ -108,7 +108,8 @@ def _CommonArgs(parser,
   maintenance_flags.AddResourcePoliciesArgs(parser, 'added to',
                                             'instance-template')
 
-  instance_templates_flags.AddServiceProxyConfigArgs(parser)
+  instance_templates_flags.AddServiceProxyConfigArgs(
+      parser, release_track=release_track)
   if support_mesh:
     instance_templates_flags.AddMeshArgs(parser)
 
@@ -377,6 +378,17 @@ def AddServiceProxyArgsToMetadata(args):
       proxy_spec['network'] = args.service_proxy['network']
     else:
       proxy_spec['network'] = ''
+
+    if 'intercept-all-outbound-traffic' in args.service_proxy:
+      traffic_interception = collections.OrderedDict()
+      traffic_interception['intercept-all-outbound'] = True
+      if 'exclude-outbound-ip-ranges' in args.service_proxy:
+        traffic_interception['exclude-outbound-ip-ranges'] = (
+            args.service_proxy['exclude-outbound-ip-ranges'].split(';'))
+      if 'exclude-outbound-port-ranges' in args.service_proxy:
+        traffic_interception['exclude-outbound-port-ranges'] = (
+            args.service_proxy['exclude-outbound-port-ranges'].split(';'))
+      service_proxy_config['traffic-interception'] = traffic_interception
 
     if getattr(args, 'service_proxy_xds_version', False):
       proxy_spec['xds-version'] = args.service_proxy_xds_version

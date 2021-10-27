@@ -313,6 +313,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       system_config_from_file=get_default('system_config_from_file'),
       private_ipv6_google_access_type=get_default('private_ipv6_google_access_type'),
       tags=get_default('tags'),
+      threads_per_core=get_default('threads_per_core'),
       user=get_default('username'),
       metadata=metadata,
       default_max_pods_per_node=get_default('default_max_pods_per_node'),
@@ -547,6 +548,8 @@ flags_to_add = {
             flags.AddEnableStackdriverKubernetesFlag,
         'tags':
             flags.AddTagsCreate,
+        'threads_per_core':
+            flags.AddThreadsPerCore,
         'tpu':
             flags.AddTpuFlags,
         'verticalpodautoscaling':
@@ -1099,7 +1102,6 @@ class CreateBeta(Create):
     MaybeLogDataplaneV2ScaleWarning(args)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
-    ops.threads_per_core = get_default('threads_per_core')
     ops.boot_disk_kms_key = get_default('boot_disk_kms_key')
     ops.min_cpu_platform = get_default('min_cpu_platform')
     ops.enable_pod_security_policy = get_default('enable_pod_security_policy')
@@ -1166,7 +1168,6 @@ class CreateAlpha(Create):
     get_default = lambda key: AttrValue(args, key, self.default_flag_values)
     ops = ParseCreateOptionsBase(args, self.autopilot, get_default, location,
                                  project_id)
-    ops.threads_per_core = get_default('threads_per_core')
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
     ops.boot_disk_kms_key = get_default('boot_disk_kms_key')

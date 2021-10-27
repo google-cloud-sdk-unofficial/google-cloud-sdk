@@ -42,6 +42,7 @@ class Create(base.CreateCommand):
   To create a bucket in cloud region 'us-central1', run:
 
     $ {command} my-bucket --location=us-central1
+
   """
 
   @staticmethod
@@ -83,6 +84,11 @@ class Create(base.CreateCommand):
 
     if is_alpha and args.IsSpecified('index'):
       bucket_data['indexConfigs'] = args.index
+
+    if is_alpha and args.IsSpecified('cmek_kms_key_name'):
+      cmek_settings = util.GetMessages().CmekSettings(
+          kmsKeyName=args.cmek_kms_key_name)
+      bucket_data['cmekSettings'] = cmek_settings
 
     return util.GetClient().projects_locations_buckets.Create(
         util.GetMessages().LoggingProjectsLocationsBucketsCreateRequest(
@@ -143,6 +149,9 @@ class CreateAlpha(Create):
             'For example: INDEX_TYPE_STRING '
             'Supported types are INDEX_TYPE_STRING and '
             'INDEX_TYPE_INTEGER. \n\n '))
+    parser.add_argument(
+        '--cmek-kms-key-name',
+        help='A valid `kms_key_name` will enable CMEK for the bucket.')
 
   def Run(self, args):
     return self._Run(args, is_alpha=True)

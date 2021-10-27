@@ -142,6 +142,12 @@ class Update(base.UpdateCommand):
       if args.IsSpecified('add_index'):
         bucket_data['indexConfigs'] += args.add_index
 
+    if is_alpha and args.IsSpecified('cmek_kms_key_name'):
+      cmek_settings = util.GetMessages().CmekSettings(
+          kmsKeyName=args.cmek_kms_key_name)
+      bucket_data['cmekSettings'] = cmek_settings
+      update_mask.append('cmek_settings')
+
     if not update_mask:
       raise calliope_exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update')
@@ -246,6 +252,9 @@ class UpdateAlpha(Update):
             'For example: INDEX_TYPE_STRING '
             'Supported types are Strings and Integers. '
             ))
+    parser.add_argument(
+        '--cmek-kms-key-name',
+        help='A valid `kms_key_name` will enable CMEK for the bucket.')
 
   def Run(self, args):
     return self._Run(args, is_alpha=True)

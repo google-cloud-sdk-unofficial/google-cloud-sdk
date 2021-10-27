@@ -1,0 +1,36 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: |
+      Delete a Managed Microsoft Active Directory domain backup.
+    description: |
+      Delete a Managed Microsoft AD domain backup with the given name using Google Cloud's
+      Managed Service for Microsoft Active Directory.
+
+      This command can fail for the following reasons:
+        * TThe backup specified does not exist.
+        * The active account does not have permission to access the given domain.
+        * The active account does not have permission to access the given AD backup.
+
+    examples: |
+      The following command deletes an AD domain backup my-backup under domain
+        projects/my-proj/locations/global/domains/my-domain.com
+
+        $ {command} projects/my-proj/locations/global/domains/my-domain.com/backups/my-backup \
+          --async
+
+  async:
+    collection: managedidentities.projects.locations.global.operations
+
+  request: &request
+    collection: managedidentities.projects.locations.global.domains.backups
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.active_directory.resources:backup
+      help_text: |
+        Name of the Managed Microsoft AD domain backup you want to delete.

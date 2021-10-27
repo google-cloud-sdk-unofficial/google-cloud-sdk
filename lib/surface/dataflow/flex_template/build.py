@@ -137,6 +137,14 @@ def _CommonArgs(parser):
       help='Enable Streaming Engine for the streaming job by default.')
 
   parser.add_argument(
+      '--gcs-log-dir',
+      help=('Google Cloud Storage directory to save build logs.'
+            "(Must be a URL beginning with 'gs://'.)"),
+      type=arg_parsers.RegexpValidator(r'^gs://.*',
+                                       'Must begin with \'gs://\''),
+      default=None)
+
+  parser.add_argument(
       '--additional-experiments',
       metavar='ADDITIONAL_EXPERIMENTS',
       type=arg_parsers.ArgList(),
@@ -256,7 +264,8 @@ def _CommonRun(args):
     apis.Templates.BuildAndStoreFlexTemplateImage(args.image_gcr_path,
                                                   args.flex_template_base_image,
                                                   args.jar, args.py_path,
-                                                  args.env, args.sdk_language)
+                                                  args.env, args.sdk_language,
+                                                  args.gcs_log_dir)
 
   return apis.Templates.BuildAndStoreFlexTemplateFile(
       args.template_file_gcs_path, image_path,

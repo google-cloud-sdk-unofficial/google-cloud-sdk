@@ -103,5 +103,15 @@ AlphaDelete.detailed_help = {
     To delete NAT 'n1' in router 'r1', run:
 
       $ {command} n1 --router=r1 --region=us-central1
+    """,
+    'API REFERENCE':
+    """\
+    This command, when specified without alpha or beta, uses the compute/v1/routers API. The full documentation
+    for this API can be found at: https://cloud.google.com/compute/docs/reference/rest/v1/routers/
+
+    The beta command uses the compute/beta/routers API. The full documentation
+    for this API can be found at: https://cloud.google.com/compute/docs/reference/rest/beta/routers/
+
+    The alpha command uses the compute/alpha/routers API. Full documentation is not available for the alpha API.
     """
 }

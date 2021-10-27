@@ -102,12 +102,17 @@ def merge_config_sync(spec, config):
   if not spec or not spec.configSync:
     return
   git = spec.configSync.git
-  if not spec.configSync.git or not git.syncRepo:
-    return
   cs = config[utils.CONFIG_SYNC]
-  cs['enabled'] = True
+  if spec.configSync.enabled is not None:
+    cs['enabled'] = spec.configSync.enabled
+  else:
+    # when enabled is no set in feature spec, it's determined by syncRepo
+    if spec.configSync.git and git.syncRepo:
+      cs['enabled'] = True
   if spec.configSync.sourceFormat:
     cs['sourceFormat'] = spec.configSync.sourceFormat
+  if not git:
+    return
   if git.syncWaitSecs:
     cs['syncWait'] = git.syncWaitSecs
   for field in [

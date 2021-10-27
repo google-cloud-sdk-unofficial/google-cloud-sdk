@@ -29,8 +29,8 @@ from googlecloudsdk.core.console import console_io
 class Upgrade(base.UpdateCommand):
   """Upgrade the version of the Config Management Feature.
 
-  Upgrade a specified membership to the latest version of the Config Management
-  Feature.
+  Upgrade a specified membership to any supported version of the Config
+  Management Feature.
 
   ## EXAMPLES
 

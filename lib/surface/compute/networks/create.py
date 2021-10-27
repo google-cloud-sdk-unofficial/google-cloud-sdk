@@ -72,6 +72,8 @@ class Create(base.CreateCommand):
 
   NETWORK_ARG = None
   _support_firewall_order = False
+  _support_enable_ula_internal_ipv6 = False
+  _support_internal_ipv6_range = False
 
   @classmethod
   def Args(cls, parser):
@@ -100,7 +102,9 @@ class Create(base.CreateCommand):
         messages=messages,
         network_ref=network_ref,
         network_args=args,
-        support_firewall_order=self._support_firewall_order)
+        support_firewall_order=self._support_firewall_order,
+        support_enable_ula_internal_ipv6=self._support_enable_ula_internal_ipv6,
+        support_internal_ipv6_range=self._support_internal_ipv6_range)
 
     request = (client.apitools_client.networks, 'Insert',
                client.messages.ComputeNetworksInsertRequest(
@@ -126,6 +130,8 @@ class CreateAlpha(Create):
   network.
   """
   _support_firewall_order = True
+  _support_enable_ula_internal_ipv6 = True
+  _support_internal_ipv6_range = True
 
   @classmethod
   def Args(cls, parser):
@@ -137,6 +143,8 @@ class CreateAlpha(Create):
     network_utils.AddCreateSubnetModeArg(parser)
     network_utils.AddCreateBgpRoutingModeArg(parser)
     network_utils.AddMtuArg(parser)
+    network_utils.AddInternalIpv6RangeArg(parser)
+    network_utils.AddEnableUlaInternalIpv6Arg(parser)
     network_utils.AddNetworkFirewallPolicyEnforcementOrderArg(parser)
 
     parser.display_info.AddCacheUpdater(flags.NetworksCompleter)

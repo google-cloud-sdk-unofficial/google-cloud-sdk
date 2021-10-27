@@ -108,6 +108,10 @@
           help_text: |
             The set of auth scopes and permissions granted to the service account.
             By default, the CLOUD_PLATFORM auth scope is enabled.
+        - arg_name: max-job-execution-lifetime
+          api_field: googleCloudDataplexV1Task.executionSpec.maxJobExecutionLifetime
+          help_text: |
+            The maximum duration before the job execution expires.
     - group:  # spark_task_config
         help_text: |
           Config related to running custom Spark tasks.
