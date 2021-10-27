@@ -25,6 +25,7 @@ import textwrap
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.hub import kube_util
 from googlecloudsdk.command_lib.container.hub import rbac_util
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
@@ -34,12 +35,16 @@ from googlecloudsdk.core.util import files as file_utils
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GenerateGatewayRbac(base.Command):
   # pylint: disable=line-too-long
-  r"""Generate RBAC policy files for connected clusters.
+  r"""Generate RBAC policy files for connected clusters by the user.
 
   {command} generates RBAC policies to be used by Connect Gateway API.
 
   Upon success, this command will write the output RBAC policy to the designated
   local file in dry run mode.
+
+  Override RBAC policy: Y to override previous RBAC policy, N to stop. If
+  overriding the --role, Y will clean up the previous RBAC policy and then apply
+  the new one.
 
   ## EXAMPLES
     The current implementation supports multiple modes:
@@ -58,6 +63,10 @@ class GenerateGatewayRbac(base.Command):
       $ {command} --membership=my-cluster --anthos-support
 
     Apply mode, generate the RBAC policy and apply it to the specified cluster:
+
+      $ {command} --membership=my-cluster --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com --role=clusterrole/cluster-reader --context=my-cluster-contex --kubeconfig=/home/user/custom_kubeconfig --apply
+
+    Revoke mode, revoke the RBAC policy for the specified users:
 
       $ {command} --membership=my-cluster --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com --role=clusterrole/cluster-reader --context=my-cluster-contex --kubeconfig=/home/user/custom_kubeconfig --apply
   """
@@ -128,6 +137,14 @@ class GenerateGatewayRbac(base.Command):
             $HOME/.kube/config.
           """),
     )
+    parser.add_argument(
+        '--revoke',
+        action='store_true',
+        help=textwrap.dedent("""\
+          If specified, this command will revoke the RBAC policy for the
+          specified users.
+        """),
+    )
 
   def Run(self, args):
     log.status.Print('Validating input arguments.')
@@ -135,6 +152,38 @@ class GenerateGatewayRbac(base.Command):
 
     # Validate the args value before generate the RBAC policy file.
     rbac_util.ValidateArgs(args)
+
+    # Revoke RBAC policy for specified user from cluster.
+    if args.revoke:
+      sys.stdout.write(
+          'Revoking the RBAC policy from cluster with kubeconfig: {}, context: {}\n'
+          .format(args.kubeconfig, args.context))
+
+      with kube_util.KubernetesClient(
+          kubeconfig=getattr(args, 'kubeconfig', None),
+          context=getattr(args, 'context', None),
+      ) as kube_client:
+        # Check Admin permissions.
+        kube_client.CheckClusterAdminPermissions()
+        users_list = list()
+        if args.users:
+          users_list = args.users.split(',')
+        elif args.anthos_support:
+          users_list.append(rbac_util.GetAnthosSupportUser(project_id))
+        for user in users_list:
+          message = (
+              'The RBAC policy for user: {} will be clean up.'.format(user))
+          console_io.PromptContinue(message=message, cancel_on_no=True)
+          log.status.Print('--------------------------------------------')
+          log.status.Print('Start cleaning up RBAC policy for: {}'.format(user))
+
+          if kube_client.CleanUpRbacPolicy(args.membership, args.role,
+                                           project_id, user,
+                                           args.anthos_support):
+            log.status.Print(
+                'Finish clean up the previous RBAC policy for: {}'.format(
+                    user))
+        return
 
     # Generate the RBAC policy file from args.
     generated_rbac = rbac_util.GenerateRBAC(args, project_id)
@@ -148,9 +197,12 @@ class GenerateGatewayRbac(base.Command):
 
     # Write the generated RBAC policy file to the file provided with
     # "--rbac-output-file" specified or print on the screen.
+    final_rbac_policy = ''
+    for user in sorted(generated_rbac.keys()):
+      final_rbac_policy += generated_rbac.get(user)
     log.WriteToFileOrStdout(
         args.rbac_output_file if args.rbac_output_file else '-',
-        generated_rbac,
+        final_rbac_policy,
         overwrite=True,
         binary=False,
         private=True)
@@ -161,31 +213,79 @@ class GenerateGatewayRbac(base.Command):
           'Applying the generate RBAC policy to cluster with kubeconfig: {}, context: {}\n'
           .format(args.kubeconfig, args.context))
 
-      with file_utils.TemporaryDirectory() as tmp_dir:
-        file = tmp_dir + '/rbac.yaml'
-        file_utils.WriteFileContents(file, generated_rbac)
-        with kube_util.KubernetesClient(
-            kubeconfig=getattr(args, 'kubeconfig', None),
-            context=getattr(args, 'context', None),
-        ) as kube_client:
-          # Check Admin permissions.
-          kube_client.CheckClusterAdminPermissions()
-          # Get previous RBAC policy from cluster.
-          prev_rbac_name, rbac_policy_type, prev_rbac_policy = kube_client.GetRbacPolicy(
-              args.membership, args.role, project_id,
-              True if args.anthos_support else False)
-          # Check to override the existing RBAC policy or not.
-          if prev_rbac_policy:
-            message = ('A RBAC policy: {}/{} already exist. Do you want to override the current RBAC policy file?\n'.format(
-                rbac_policy_type, prev_rbac_name))
-            console_io.PromptContinue(
-                message=message,
-                cancel_on_no=True)
+      with kube_util.KubernetesClient(
+          kubeconfig=getattr(args, 'kubeconfig', None),
+          context=getattr(args, 'context', None),
+      ) as kube_client:
+        # Check Admin permissions.
+        kube_client.CheckClusterAdminPermissions()
+        for user in generated_rbac.keys():
+          with file_utils.TemporaryDirectory() as tmp_dir:
+            file = tmp_dir + '/rbac.yaml'
+            current_rbac_policy = generated_rbac.get(user)
+            file_utils.WriteFileContents(file, current_rbac_policy)
 
-          try:
-            kube_client.ApplyRbacPolicy(file)
-          except Exception as e:
-            log.status.Print(
-                'Error in applying the RBAC policy to cluster: {}\n'.format(e))
-            raise
-          log.status.Print('Successfully applied the RBAC policy to cluster.\n')
+            # Check whether there are existing RBAC policy for this user, if not,
+            # will directly apply the new RBAC policy.
+            if not kube_client.GetRbacPolicy(args.membership, args.role,
+                                             project_id, user,
+                                             args.anthos_support):
+              # Check whether there are role confliction, which required clean up.
+              need_clean_up = False
+              # Override when proposed RBAC policy has diff with existing one.
+              override_check = False
+              # Checking RBAC policy diff, return None, None if there are no diff.
+              diff, err = kube_client.GetRbacPolicyDiff(file)
+
+              if diff is not None:
+                override_check = True
+                log.status.Print(
+                    'The new RBAC policy has diff with previous: \n {}'.format(
+                        diff))
+
+              if err is not None:
+                # 'Invalid value' means the clusterrole/role permission has been
+                # changed. This need to clean up old RBAC policy and then apply
+                # the new one.
+                if 'Invalid value' in err:
+                  rbac_policy_name = kube_client.RbacPolicyName(
+                      'permission', project_id, args.membership, user)
+
+                  rbac_permission_policy = kube_client.GetRbacPermissionPolicy(
+                      rbac_policy_name, args.role)
+
+                  log.status.Print(
+                      'The existing RBAC policy has conflict with proposed one:\n{}'
+                      .format(rbac_permission_policy))
+                  need_clean_up = True
+                  override_check = True
+                else:
+                  raise exceptions.Error(
+                      'Error when get diff for RBAC policy files for user: {}, with error: {}'
+                      .format(user, err))
+
+              if override_check:
+                message = (
+                    'The RBAC file will be overridden.')
+                console_io.PromptContinue(message=message, cancel_on_no=True)
+
+              if need_clean_up:
+                log.status.Print('--------------------------------------------')
+                log.status.Print('Start cleaning up previous RBAC policy for: {}'.format(user))
+                if kube_client.CleanUpRbacPolicy(args.membership, args.role,
+                                                 project_id, user,
+                                                 args.anthos_support):
+                  log.status.Print(
+                      'Finish clean up the previous RBAC policy for: {}'.format(
+                          user))
+
+            try:
+              log.status.Print(
+                  'Writing RBAC policy for user: {} to cluster.'.format(user))
+              kube_client.ApplyRbacPolicy(file)
+            except Exception as e:
+              log.status.Print(
+                  'Error in applying the RBAC policy to cluster: {}'.format(
+                      e))
+              raise
+          log.status.Print('Successfully applied the RBAC policy to cluster.')

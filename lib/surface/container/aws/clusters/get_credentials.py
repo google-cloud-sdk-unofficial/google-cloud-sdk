@@ -42,6 +42,7 @@ class GetCredentials(base.Command):
   def Args(parser):
     resource_args.AddAwsClusterResourceArg(parser, 'to get credentials')
     flags.AddAuthProviderCmdPath(parser)
+    flags.AddPrivateEndpoint(parser)
 
   def Run(self, args):
     """Runs the get-credentials command."""
@@ -61,4 +62,4 @@ class GetCredentials(base.Command):
           six.text_type(self.ReleaseTrack()).lower(), 'aws',
           cluster_ref.awsClustersId, cluster_ref.locationsId)
       kubeconfig.GenerateKubeconfig(resp, context, args.auth_provider_cmd_path,
-                                    cmd_args)
+                                    cmd_args, args.private_endpoint)

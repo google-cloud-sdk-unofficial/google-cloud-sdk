@@ -18,13 +18,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as apitools_exceptions
+
 from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.iam.workforce_pools import flags
 from googlecloudsdk.command_lib.util.apis import yaml_data
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.core import log
 
 
 class Create(base.CreateCommand):
@@ -90,8 +94,15 @@ class Create(base.CreateCommand):
         description=args.description,
         disabled=args.disabled,
         sessionDuration=args.session_duration)
-    return client.locations_workforcePools.Create(
-        messages.IamLocationsWorkforcePoolsCreateRequest(
-            location=flags.ParseLocation(args),
-            workforcePoolId=workforce_pool_ref.workforcePoolsId,
-            workforcePool=new_workforce_pool))
+    try:
+      lro_ref = client.locations_workforcePools.Create(
+          messages.IamLocationsWorkforcePoolsCreateRequest(
+              location=flags.ParseLocation(args),
+              workforcePoolId=workforce_pool_ref.workforcePoolsId,
+              workforcePool=new_workforce_pool))
+      log.status.Print('Create request issued for: [{}]'.format(
+          workforce_pool_ref.workforcePoolsId))
+      log.status.Print('Check operation [{}] for status.'.format(lro_ref.name))
+      return lro_ref
+    except apitools_exceptions.HttpError as error:
+      raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)

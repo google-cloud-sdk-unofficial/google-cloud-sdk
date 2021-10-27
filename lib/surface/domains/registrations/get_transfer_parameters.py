@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.domains import util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetTransferParameters(base.DescribeCommand):
   """Get transfer parameters of a specific domain.
 

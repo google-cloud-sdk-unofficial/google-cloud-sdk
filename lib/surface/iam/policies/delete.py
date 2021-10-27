@@ -23,6 +23,7 @@ import textwrap
 from googlecloudsdk.api_lib.iam import policies as apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import policies_flags as flags
+from googlecloudsdk.core import log
 
 
 @base.Hidden
@@ -37,7 +38,7 @@ class Delete(base.DeleteCommand):
           project ``123" of kind ``denypolicies" and id ``my-deny-policy", with
           etag ``abc":
 
-            $ {command} my-deny-policy --resource=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies --etag=abc
+            $ {command} my-deny-policy --attachment-point=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies --etag=abc
 
           If etag isn't provided, the command will try to get the etag using the
           calling user permissions.
@@ -77,4 +78,5 @@ class Delete(base.DeleteCommand):
             name='policies/{}/{}/{}'.format(attachment_point, args.kind,
                                             args.policy_id),
             etag=etag))
+    log.DeletedResource(result.name, 'denyPolicy', is_async=True)
     return result

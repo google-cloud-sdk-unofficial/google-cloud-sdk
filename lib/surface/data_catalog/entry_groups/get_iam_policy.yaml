@@ -1,9 +1,9 @@
 - release_tracks: [GA]
 
   help_text:
-    brief: Get the IAM policy for a Cloud Data Catalog entry group.
+    brief: Get the IAM policy for a Data Catalog entry group.
     description: |
-      *{command}* displays the IAM policy associated with a Cloud Data Catalog entry group.  If
+      *{command}* displays the IAM policy associated with a Data Catalog entry group.  If
       formatted as JSON, the output can be edited and used as a policy file for *set-iam-policy*.
       The output includes an "etag" field identifying the version emitted and allowing detection of
       concurrent policy updates; see $ {parent_command} set-iam-policy for additional details.
@@ -24,9 +24,9 @@
 - release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: Get the IAM policy for a Cloud Data Catalog entry group.
+    brief: Get the IAM policy for a Data Catalog entry group.
     description: |
-      *{command}* displays the IAM policy associated with a Cloud Data Catalog entry group.  If
+      *{command}* displays the IAM policy associated with a Data Catalog entry group.  If
       formatted as JSON, the output can be edited and used as a policy file for *set-iam-policy*.
       The output includes an "etag" field identifying the version emitted and allowing detection of
       concurrent policy updates; see $ {parent_command} set-iam-policy for additional details.

@@ -1,8 +1,8 @@
 - release_tracks: [GA]
 
   help_text:
-    brief: Rename a Cloud Data Catalog tag template field.
-    description: Rename a Cloud Data Catalog tag template field.
+    brief: Rename a Data Catalog tag template field.
+    description: Rename a Data Catalog tag template field.
 
     examples: |
       Update the ID of a tag template field:
@@ -28,8 +28,8 @@
 - release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: Rename a Cloud Data Catalog tag template field.
-    description: Rename a Cloud Data Catalog tag template field.
+    brief: Rename a Data Catalog tag template field.
+    description: Rename a Data Catalog tag template field.
 
     examples: |
       Update the ID of a tag template field:

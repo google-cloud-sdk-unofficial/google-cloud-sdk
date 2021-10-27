@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.compute.routers.nats import nats_utils
 from googlecloudsdk.command_lib.compute.routers.nats.rules import flags as rules_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.DescribeCommand):
   """Lists the NATs on a Compute Engine router."""
 
@@ -60,13 +60,14 @@ class List(base.DescribeCommand):
 
     return nat.rules
 
+
 List.detailed_help = {
     'DESCRIPTION':
         textwrap.dedent("""\
         *{command}* is used to list the Rule on a Compute Engine NAT.
      """),
     'EXAMPLES':
-    """\
+        """\
     To list all Rules in Nat ``n1'' in router ``r1'' in region ``us-central1'',
     run:
 

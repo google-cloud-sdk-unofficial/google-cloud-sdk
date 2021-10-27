@@ -1,7 +1,7 @@
 - release_tracks: [ALPHA]
   help_text:
-    brief: List Cloud Data Catalog crawler runs.
-    description: List Cloud Data Catalog crawler runs.
+    brief: List Data Catalog crawler runs.
+    description: List Data Catalog crawler runs.
 
   request:
     collection: datacatalog.projects.crawlers.crawlerRuns

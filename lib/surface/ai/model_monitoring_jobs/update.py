@@ -48,8 +48,7 @@ def _Args(parser):
       required=False, default=None).AddToParser(parser)
   flags.GetMonitoringFrequencyArg(
       required=False, default=None).AddToParser(parser)
-  flags.GetAnalysisInstanceSchemaArg(
-      required=False, hidden=True).AddToParser(parser)
+  flags.GetAnalysisInstanceSchemaArg(required=False).AddToParser(parser)
   flags.GetMonitoringLogTtlArg(required=False).AddToParser(parser)
   flags.AddObjectiveConfigGroupForUpdate(parser, required=False)
   labels_util.AddUpdateLabelsFlags(parser)
@@ -62,8 +61,8 @@ def _Run(args, version):
   region = model_monitoring_job_ref.AsDict()['locationsId']
   with endpoint_util.AiplatformEndpointOverrides(version, region=region):
     try:
-      result = client.ModelMonitoringJobsClient(
-          version=version).Patch(model_monitoring_job_ref, args)
+      result = client.ModelMonitoringJobsClient(version=version).Patch(
+          model_monitoring_job_ref, args)
     except errors.NoFieldsSpecifiedError:
       available_update_args = [
           'display_name',

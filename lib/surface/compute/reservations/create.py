@@ -54,7 +54,7 @@ def _RunCreate(compute_api, args):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine reservation."""
-  _support_share_setting = False
+  _support_share_setting = True
   _support_location_hint = False
 
   @classmethod

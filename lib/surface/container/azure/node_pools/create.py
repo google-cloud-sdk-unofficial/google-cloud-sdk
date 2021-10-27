@@ -62,6 +62,7 @@ class Create(base.CreateCommand):
     flags.AddNodeTaints(parser)
     flags.AddAzureAvailabilityZone(parser)
     flags.AddProxyConfig(parser)
+    flags.AddConfigEncryption(parser, hidden=True)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(command_util.NODE_POOL_FORMAT)
 
@@ -80,6 +81,8 @@ class Create(base.CreateCommand):
     min_nodes, max_nodes = flags.GetAutoscalingParams(args)
     proxy_resource_group_id = args.proxy_resource_group_id
     proxy_secret_id = args.proxy_secret_id
+    config_encryption_key_id = args.config_encryption_key_id
+    config_encryption_public_key = args.config_encryption_public_key
     taints = flags.GetNodeTaints(args)
     labels = flags.GetNodeLabels(args)
 
@@ -107,7 +110,9 @@ class Create(base.CreateCommand):
           max_pods_per_node=max_pods_per_node,
           taints=taints,
           labels=labels,
-          azure_availability_zone=azure_availability_zone)
+          azure_availability_zone=azure_availability_zone,
+          config_encryption_key_id=config_encryption_key_id,
+          config_encryption_public_key=config_encryption_public_key)
 
       if validate_only:
         args.format = 'disable'

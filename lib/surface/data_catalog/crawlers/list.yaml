@@ -1,7 +1,7 @@
 - release_tracks: [ALPHA]
   help_text:
-    brief: List Cloud Data Catalog crawlers.
-    description: List Cloud Data Catalog crawlers.
+    brief: List Data Catalog crawlers.
+    description: List Data Catalog crawlers.
 
   request:
     collection: datacatalog.projects.crawlers

@@ -6,9 +6,9 @@ help_text:
   description: |
     Create a new address group with the given name.
   examples: |
-    Create an address group with the name ``my-address-group'', type ``IP_V4'' and the description ``optional description''.
+    Create an address group with the name ``my-address-group'', type ``IPV4'', capacity ``100'' and the description ``optional description''.
 
-      $ {command} my-address-group --type=IP_V4 --description="optional description"
+      $ {command} my-address-group --type=IPV4 --capacity 100 --description="optional description"
 
 arguments:
   resource:

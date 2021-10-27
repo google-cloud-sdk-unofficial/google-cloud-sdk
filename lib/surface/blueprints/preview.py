@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.blueprints import deploy_util
 from googlecloudsdk.command_lib.blueprints import flags
 from googlecloudsdk.command_lib.blueprints import resource_args
+from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -63,7 +64,21 @@ class CreateAlpha(base.CreateCommand):
     flags.AddPreviewFlags(parser)
     flags.AddPreviewFormatFlag(parser)
     flags.AddIgnoreFileFlag(parser)
-    resource_args.AddDeploymentResourceArg(parser, 'the deployment to preview.')
+    concept_parsers.ConceptParser(
+        [
+            # Note: The order of these arguments is important. The Deployment
+            # spec must come first, to be treated as the "anchor" resource.
+            resource_args.GetDeploymentResourceArgSpec(
+                'the deployment to preview.'),
+            resource_args.GetConfigControllerResourceFlagSpec(
+                'the Config Controller instance to preview with.'),
+        ],
+        # Set the location of the config-controller instance to fall back on the
+        # value of the default --location flag.
+        command_level_fallthroughs={
+            '--config-controller.location': ['DEPLOYMENT.location'],
+        },
+    ).AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -80,11 +95,17 @@ class CreateAlpha(base.CreateCommand):
     deployment_full_name = deployment_ref.RelativeName()
     location = deployment_ref.Parent().Name()
 
+    config_controller_ref = args.CONCEPTS.config_controller.Parse()
+    config_controller_full_name = (
+        config_controller_ref.RelativeName() if config_controller_ref else None)
+
     if args.delete:
       return deploy_util.PreviewDelete(deployment_full_name, messages, location,
-                                       args.preview_format)
+                                       args.preview_format,
+                                       config_controller_full_name)
     else:
       return deploy_util.PreviewApply(args.source, deployment_full_name,
                                       args.stage_bucket, messages, location,
                                       args.ignore_file, args.source_git_subdir,
-                                      args.preview_format)
+                                      args.preview_format,
+                                      config_controller_full_name)

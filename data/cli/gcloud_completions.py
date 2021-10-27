@@ -894,6 +894,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "update": {
               "commands": {},
               "flags": {
+                "--analysis-instance-schema": "value",
                 "--clear-labels": "bool",
                 "--display-name": "value",
                 "--emails": "value",
@@ -2322,16 +2323,16 @@ STATIC_COMPLETION_CLI_TREE = {
                 "local-run": {
                   "commands": {},
                   "flags": {
-                    "--base-image": "value",
+                    "--executor-image-uri": "value",
                     "--extra-dirs": "value",
                     "--extra-packages": "value",
                     "--gpu": "bool",
+                    "--local-package-path": "value",
                     "--output-image-uri": "value",
                     "--python-module": "value",
                     "--requirements": "value",
                     "--script": "value",
-                    "--service-account-key-file": "value",
-                    "--work-dir": "value"
+                    "--service-account-key-file": "value"
                   }
                 },
                 "stream-logs": {
@@ -2691,6 +2692,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update": {
                   "commands": {},
                   "flags": {
+                    "--analysis-instance-schema": "value",
                     "--clear-labels": "bool",
                     "--display-name": "value",
                     "--emails": "value",
@@ -4567,7 +4569,8 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--show-build-details": "bool",
                         "--show-deployment": "bool",
                         "--show-image-basis": "bool",
-                        "--show-package-vulnerability": "bool"
+                        "--show-package-vulnerability": "bool",
+                        "--show-provenance": "bool"
                       }
                     },
                     "list": {
@@ -5063,6 +5066,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 }
               },
               "flags": {}
+            },
+            "query": {
+              "commands": {},
+              "flags": {
+                "--folder": "value",
+                "--job-reference": "value",
+                "--organization": "value",
+                "--page-size": "value",
+                "--page-token": "value",
+                "--statement": "value",
+                "--timeout": "value"
+              }
             }
           },
           "flags": {}
@@ -12203,6 +12218,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         ],
                         "--purpose": [
                           "AGGREGATE",
+                          "GLOBAL_MANAGED_PROXY",
                           "INTERNAL_HTTPS_LOAD_BALANCER",
                           "PRIVATE",
                           "PRIVATE_SERVICE_CONNECT",
@@ -13311,6 +13327,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update": {
                   "commands": {},
                   "flags": {
+                    "--add-share-with": "value",
+                    "--remove-share-with": "value",
                     "--share-with": "value",
                     "--vm-count": "value",
                     "--zone": "dynamic"
@@ -14175,6 +14193,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--consumer-accept-list": "value",
                     "--consumer-reject-list": "value",
+                    "--description": "value",
                     "--enable-proxy-protocol": "bool",
                     "--nat-subnets": "dynamic",
                     "--nat-subnets-region": "dynamic",
@@ -14387,7 +14406,10 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--max-nodes": "value",
                         "--min-nodes": "value",
                         "--node-template": "value",
-                        "--share-setting": "value",
+                        "--share-setting": [
+                          "projects"
+                        ],
+                        "--share-with": "value",
                         "--target-size": "value",
                         "--zone": "dynamic"
                       }
@@ -14465,7 +14487,10 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--max-nodes": "value",
                         "--min-nodes": "value",
                         "--node-template": "value",
-                        "--share-setting": "value",
+                        "--share-setting": [
+                          "projects"
+                        ],
+                        "--share-with": "value",
                         "--zone": "dynamic"
                       }
                     }
@@ -17613,6 +17638,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--kubeconfig": "value",
                         "--membership": "value",
                         "--rbac-output-file": "value",
+                        "--revoke": "bool",
                         "--role": "value",
                         "--users": "value"
                       }
@@ -25347,8 +25373,11 @@ STATIC_COMPLETION_CLI_TREE = {
                       "external-symmetric-encryption",
                       "google-symmetric-encryption",
                       "hmac-sha256",
+                      "rsa-decrypt-oaep-2048-sha1",
                       "rsa-decrypt-oaep-2048-sha256",
+                      "rsa-decrypt-oaep-3072-sha1",
                       "rsa-decrypt-oaep-3072-sha256",
+                      "rsa-decrypt-oaep-4096-sha1",
                       "rsa-decrypt-oaep-4096-sha256",
                       "rsa-decrypt-oaep-4096-sha512",
                       "rsa-sign-pkcs1-2048-sha256",
@@ -25464,8 +25493,11 @@ STATIC_COMPLETION_CLI_TREE = {
                       "external-symmetric-encryption",
                       "google-symmetric-encryption",
                       "hmac-sha256",
+                      "rsa-decrypt-oaep-2048-sha1",
                       "rsa-decrypt-oaep-2048-sha256",
+                      "rsa-decrypt-oaep-3072-sha1",
                       "rsa-decrypt-oaep-3072-sha256",
+                      "rsa-decrypt-oaep-4096-sha1",
                       "rsa-decrypt-oaep-4096-sha256",
                       "rsa-decrypt-oaep-4096-sha512",
                       "rsa-sign-pkcs1-2048-sha256",
@@ -25565,8 +25597,11 @@ STATIC_COMPLETION_CLI_TREE = {
                           "ec-sign-secp256k1-sha256",
                           "google-symmetric-encryption",
                           "hmac-sha256",
+                          "rsa-decrypt-oaep-2048-sha1",
                           "rsa-decrypt-oaep-2048-sha256",
+                          "rsa-decrypt-oaep-3072-sha1",
                           "rsa-decrypt-oaep-3072-sha256",
+                          "rsa-decrypt-oaep-4096-sha1",
                           "rsa-decrypt-oaep-4096-sha256",
                           "rsa-decrypt-oaep-4096-sha512",
                           "rsa-sign-pkcs1-2048-sha256",
@@ -26212,6 +26247,19 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "dynamic",
                     "--sort-by": "value",
                     "--uri": "bool"
+                  }
+                },
+                "reschedule-maintenance": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--region": "dynamic",
+                    "--reschedule-type": [
+                      "immediate",
+                      "next-available-window",
+                      "specific-time"
+                    ],
+                    "--schedule-time": "value"
                   }
                 },
                 "update": {
@@ -28388,6 +28436,49 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
+            "policy-based-routes": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--destination-range": "value",
+                    "--interconnect-attachment-region": "value",
+                    "--ip-protocol": "value",
+                    "--labels": "value",
+                    "--network": "value",
+                    "--next-hop-ilb-vip": "value",
+                    "--priority": "value",
+                    "--protocol-version": [
+                      "ipv4",
+                      "protocol-version-unspecified"
+                    ],
+                    "--source-range": "value",
+                    "--tags": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "spokes": {
               "commands": {
                 "create": {
@@ -28775,6 +28866,47 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--async": "bool",
                     "--location": "value",
                     "--source": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "service-bindings": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--description": "value",
+                    "--location": "value",
+                    "--service-directory-filter": "value",
+                    "--service-directory-namespace": "value",
+                    "--service-directory-region": "value",
+                    "--service-directory-service": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
                   }
                 },
                 "list": {
@@ -31903,6 +32035,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "post",
                           "put"
                         ],
+                        "--location": "value",
                         "--max-backoff": "value",
                         "--max-doublings": "value",
                         "--max-retry-attempts": "value",
@@ -31929,6 +32062,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "post",
                           "put"
                         ],
+                        "--location": "value",
                         "--max-backoff": "value",
                         "--max-doublings": "value",
                         "--max-retry-attempts": "value",
@@ -31950,6 +32084,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--attributes": "value",
                         "--description": "value",
+                        "--location": "value",
                         "--max-backoff": "value",
                         "--max-doublings": "value",
                         "--max-retry-attempts": "value",
@@ -31967,17 +32102,22 @@ STATIC_COMPLETION_CLI_TREE = {
                 },
                 "delete": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "describe": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "list": {
                   "commands": {},
                   "flags": {
                     "--filter": "value",
                     "--limit": "value",
+                    "--location": "value",
                     "--page-size": "value",
                     "--sort-by": "value",
                     "--uri": "bool"
@@ -31985,15 +32125,21 @@ STATIC_COMPLETION_CLI_TREE = {
                 },
                 "pause": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "resume": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "run": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "update": {
                   "commands": {
@@ -32019,6 +32165,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "post",
                           "put"
                         ],
+                        "--location": "value",
                         "--max-backoff": "value",
                         "--max-doublings": "value",
                         "--max-retry-attempts": "value",
@@ -32055,6 +32202,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "post",
                           "put"
                         ],
+                        "--location": "value",
                         "--max-backoff": "value",
                         "--max-doublings": "value",
                         "--max-retry-attempts": "value",
@@ -32084,6 +32232,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--clear-min-backoff": "bool",
                         "--clear-time-zone": "bool",
                         "--description": "value",
+                        "--location": "value",
                         "--max-backoff": "value",
                         "--max-doublings": "value",
                         "--max-retry-attempts": "value",
@@ -32851,6 +33000,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--async": "bool",
+                    "--database-dialect": [
+                      "GOOGLE_STANDARD_SQL",
+                      "POSTGRESQL"
+                    ],
                     "--ddl": "value",
                     "--ddl-file": "dynamic",
                     "--instance": "value",
@@ -33432,6 +33585,14 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--master-username": "value",
                     "--memory": "value",
                     "--network": "value",
+                    "--password-policy-complexity": [
+                      "COMPLEXITY_DEFAULT",
+                      "COMPLEXITY_UNSPECIFIED"
+                    ],
+                    "--password-policy-disallow-username-substring": "bool",
+                    "--password-policy-min-length": "value",
+                    "--password-policy-password-change-interval": "value",
+                    "--password-policy-reuse-interval": "value",
                     "--prompt-for-master-password": "bool",
                     "--region": "value",
                     "--replica-type": [
@@ -33525,6 +33686,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--clear-database-flags": "bool",
                     "--clear-gae-apps": "bool",
                     "--clear-labels": "bool",
+                    "--clear-password-policy": "bool",
                     "--cpu": "value",
                     "--database-flags": "value",
                     "--deny-maintenance-period-end-date": "value",
@@ -33558,6 +33720,14 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--memory": "value",
                     "--network": "value",
                     "--no-backup": "bool",
+                    "--password-policy-complexity": [
+                      "COMPLEXITY_DEFAULT",
+                      "COMPLEXITY_UNSPECIFIED"
+                    ],
+                    "--password-policy-disallow-username-substring": "bool",
+                    "--password-policy-min-length": "value",
+                    "--password-policy-password-change-interval": "value",
+                    "--password-policy-reuse-interval": "value",
                     "--pricing-plan": [
                       "PACKAGE",
                       "PER_USE"
@@ -33874,6 +34044,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "acknowledge": {
               "commands": {},
               "flags": {
+                "--location": "value",
                 "--queue": "value",
                 "--schedule-time": "value"
               }
@@ -33881,6 +34052,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "cancel-lease": {
               "commands": {},
               "flags": {
+                "--location": "value",
                 "--queue": "value",
                 "--schedule-time": "value"
               }
@@ -33889,6 +34061,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--header": "value",
+                "--location": "value",
                 "--method": "value",
                 "--payload-content": "value",
                 "--payload-file": "value",
@@ -33904,6 +34077,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--body-content": "value",
                 "--body-file": "value",
                 "--header": "value",
+                "--location": "value",
                 "--method": "value",
                 "--oauth-service-account-email": "value",
                 "--oauth-token-scope": "value",
@@ -33917,6 +34091,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "create-pull-task": {
               "commands": {},
               "flags": {
+                "--location": "value",
                 "--payload-content": "value",
                 "--payload-file": "value",
                 "--queue": "value",
@@ -33927,12 +34102,14 @@ STATIC_COMPLETION_CLI_TREE = {
             "delete": {
               "commands": {},
               "flags": {
+                "--location": "value",
                 "--queue": "value"
               }
             },
             "describe": {
               "commands": {},
               "flags": {
+                "--location": "value",
                 "--queue": "value",
                 "--response-view": [
                   "basic",
@@ -33947,6 +34124,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--filter": "value",
                 "--lease-duration": "value",
                 "--limit": "value",
+                "--location": "value",
                 "--oldest-tag": "bool",
                 "--queue": "value",
                 "--sort-by": "value",
@@ -33959,6 +34137,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--filter": "value",
                 "--limit": "value",
+                "--location": "value",
                 "--page-size": "value",
                 "--queue": "value",
                 "--sort-by": "value",
@@ -33999,6 +34178,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create": {
                   "commands": {},
                   "flags": {
+                    "--location": "value",
                     "--max-attempts": "value",
                     "--max-backoff": "value",
                     "--max-concurrent-tasks": "value",
@@ -34012,6 +34192,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create-app-engine-queue": {
                   "commands": {},
                   "flags": {
+                    "--location": "value",
                     "--max-attempts": "value",
                     "--max-backoff": "value",
                     "--max-concurrent-tasks": "value",
@@ -34025,17 +34206,22 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create-pull-queue": {
                   "commands": {},
                   "flags": {
+                    "--location": "value",
                     "--max-attempts": "value",
                     "--max-retry-duration": "value"
                   }
                 },
                 "delete": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "describe": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "get-iam-policy": {
                   "commands": {},
@@ -34052,6 +34238,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--filter": "value",
                     "--limit": "value",
+                    "--location": "value",
                     "--page-size": "value",
                     "--sort-by": "value",
                     "--uri": "bool"
@@ -34059,11 +34246,15 @@ STATIC_COMPLETION_CLI_TREE = {
                 },
                 "pause": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "purge": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "remove-iam-policy-binding": {
                   "commands": {},
@@ -34078,7 +34269,9 @@ STATIC_COMPLETION_CLI_TREE = {
                 },
                 "resume": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "set-iam-policy": {
                   "commands": {},
@@ -34097,6 +34290,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--clear-max-tasks-dispatched-per-second": "bool",
                     "--clear-min-backoff": "bool",
                     "--clear-routing-override": "bool",
+                    "--location": "value",
                     "--max-attempts": "value",
                     "--max-backoff": "value",
                     "--max-concurrent-tasks": "value",
@@ -34118,6 +34312,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--clear-max-tasks-dispatched-per-second": "bool",
                     "--clear-min-backoff": "bool",
                     "--clear-routing-override": "bool",
+                    "--location": "value",
                     "--max-attempts": "value",
                     "--max-backoff": "value",
                     "--max-concurrent-tasks": "value",
@@ -34133,6 +34328,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--clear-max-attempts": "bool",
                     "--clear-max-retry-duration": "bool",
+                    "--location": "value",
                     "--max-attempts": "value",
                     "--max-retry-duration": "value"
                   }
@@ -34144,6 +34340,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--lease-duration": "value",
+                "--location": "value",
                 "--queue": "value",
                 "--schedule-time": "value"
               }
@@ -34151,6 +34348,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "run": {
               "commands": {},
               "flags": {
+                "--location": "value",
                 "--queue": "value"
               }
             }
@@ -34652,6 +34850,80 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--set-preferred-auth": "bool",
                 "--user": "value"
               }
+            }
+          },
+          "flags": {}
+        },
+        "config": {
+          "commands": {
+            "controller": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--cluster-ipv4-cidr-block": "value",
+                    "--cluster-named-range": "value",
+                    "--location": "dynamic",
+                    "--man-block": "value",
+                    "--master-ipv4-cidr-block": "value",
+                    "--network": "value",
+                    "--services-ipv4-cidr-block": "value",
+                    "--services-named-range": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "dynamic"
+                  }
+                },
+                "get-credentials": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "operations": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value"
+                  }
+                }
+              },
+              "flags": {}
             }
           },
           "flags": {}
@@ -35579,7 +35851,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--show-build-details": "bool",
                     "--show-deployment": "bool",
                     "--show-image-basis": "bool",
-                    "--show-package-vulnerability": "bool"
+                    "--show-package-vulnerability": "bool",
+                    "--show-provenance": "bool"
                   }
                 },
                 "get-operation": {
@@ -36969,16 +37242,16 @@ STATIC_COMPLETION_CLI_TREE = {
                 "local-run": {
                   "commands": {},
                   "flags": {
-                    "--base-image": "value",
+                    "--executor-image-uri": "value",
                     "--extra-dirs": "value",
                     "--extra-packages": "value",
                     "--gpu": "bool",
+                    "--local-package-path": "value",
                     "--output-image-uri": "value",
                     "--python-module": "value",
                     "--requirements": "value",
                     "--script": "value",
-                    "--service-account-key-file": "value",
-                    "--work-dir": "value"
+                    "--service-account-key-file": "value"
                   }
                 },
                 "stream-logs": {
@@ -37338,6 +37611,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update": {
                   "commands": {},
                   "flags": {
+                    "--analysis-instance-schema": "value",
                     "--clear-labels": "bool",
                     "--display-name": "value",
                     "--emails": "value",
@@ -39415,7 +39689,8 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--show-build-details": "bool",
                         "--show-deployment": "bool",
                         "--show-image-basis": "bool",
-                        "--show-package-vulnerability": "bool"
+                        "--show-package-vulnerability": "bool",
+                        "--show-provenance": "bool"
                       }
                     },
                     "get-operation": {
@@ -41014,6 +41289,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--allow-secret-manager": "bool",
                 "--application-default-credential": "bool",
+                "--builder": "value",
                 "--dockerfile": "value",
                 "--kube-context": "value",
                 "--local-port": "value",
@@ -46659,6 +46935,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update": {
                   "commands": {},
                   "flags": {
+                    "--add-share-with": "value",
+                    "--remove-share-with": "value",
                     "--share-with": "value",
                     "--vm-count": "value",
                     "--zone": "dynamic"
@@ -46929,7 +47207,9 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--nat-primary-subnet-ip-ranges": "bool",
                         "--region": "dynamic",
                         "--router": "dynamic",
+                        "--rules": "value",
                         "--tcp-established-idle-timeout": "value",
+                        "--tcp-time-wait-timeout": "value",
                         "--tcp-transitory-idle-timeout": "value",
                         "--udp-idle-timeout": "value"
                       }
@@ -46955,6 +47235,59 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--router": "dynamic"
                       }
                     },
+                    "rules": {
+                      "commands": {
+                        "create": {
+                          "commands": {},
+                          "flags": {
+                            "--async": "bool",
+                            "--match": "value",
+                            "--nat": "value",
+                            "--region": "dynamic",
+                            "--router": "dynamic",
+                            "--source-nat-active-ips": "value"
+                          }
+                        },
+                        "delete": {
+                          "commands": {},
+                          "flags": {
+                            "--nat": "value",
+                            "--region": "dynamic",
+                            "--router": "dynamic"
+                          }
+                        },
+                        "describe": {
+                          "commands": {},
+                          "flags": {
+                            "--nat": "value",
+                            "--region": "dynamic",
+                            "--router": "dynamic"
+                          }
+                        },
+                        "list": {
+                          "commands": {},
+                          "flags": {
+                            "--nat": "value",
+                            "--region": "dynamic",
+                            "--router": "dynamic"
+                          }
+                        },
+                        "update": {
+                          "commands": {},
+                          "flags": {
+                            "--async": "bool",
+                            "--clear-source-nat-drain-ips": "bool",
+                            "--match": "value",
+                            "--nat": "value",
+                            "--region": "dynamic",
+                            "--router": "dynamic",
+                            "--source-nat-active-ips": "value",
+                            "--source-nat-drain-ips": "value"
+                          }
+                        }
+                      },
+                      "flags": {}
+                    },
                     "update": {
                       "commands": {},
                       "flags": {
@@ -46964,6 +47297,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--clear-min-ports-per-vm": "bool",
                         "--clear-nat-external-drain-ip-pool": "bool",
                         "--clear-tcp-established-idle-timeout": "bool",
+                        "--clear-tcp-time-wait-timeout": "bool",
                         "--clear-tcp-transitory-idle-timeout": "bool",
                         "--clear-udp-idle-timeout": "bool",
                         "--enable-endpoint-independent-mapping": "bool",
@@ -46982,7 +47316,9 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--nat-primary-subnet-ip-ranges": "bool",
                         "--region": "dynamic",
                         "--router": "dynamic",
+                        "--rules": "value",
                         "--tcp-established-idle-timeout": "value",
+                        "--tcp-time-wait-timeout": "value",
                         "--tcp-transitory-idle-timeout": "value",
                         "--udp-idle-timeout": "value"
                       }
@@ -47388,6 +47724,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--consumer-accept-list": "value",
                     "--consumer-reject-list": "value",
+                    "--description": "value",
                     "--enable-proxy-protocol": "bool",
                     "--nat-subnets": "dynamic",
                     "--nat-subnets-region": "dynamic",
@@ -53340,6 +53677,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {}
                 },
+                "get-transfer-parameters": {
+                  "commands": {},
+                  "flags": {}
+                },
                 "list": {
                   "commands": {},
                   "flags": {
@@ -53396,6 +53737,26 @@ STATIC_COMPLETION_CLI_TREE = {
                 "search-domains": {
                   "commands": {},
                   "flags": {}
+                },
+                "transfer": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--authorization-code-from-file": "value",
+                    "--cloud-dns-zone": "value",
+                    "--contact-data-from-file": "value",
+                    "--contact-privacy": [
+                      "private-contact-data",
+                      "public-contact-data",
+                      "redacted-contact-data"
+                    ],
+                    "--keep-dns-settings": "bool",
+                    "--labels": "value",
+                    "--notices": "value",
+                    "--use-google-domains-dns": "bool",
+                    "--validate-only": "bool",
+                    "--yearly-price": "value"
+                  }
                 },
                 "update": {
                   "commands": {},
@@ -57482,8 +57843,11 @@ STATIC_COMPLETION_CLI_TREE = {
                       "external-symmetric-encryption",
                       "google-symmetric-encryption",
                       "hmac-sha256",
+                      "rsa-decrypt-oaep-2048-sha1",
                       "rsa-decrypt-oaep-2048-sha256",
+                      "rsa-decrypt-oaep-3072-sha1",
                       "rsa-decrypt-oaep-3072-sha256",
+                      "rsa-decrypt-oaep-4096-sha1",
                       "rsa-decrypt-oaep-4096-sha256",
                       "rsa-decrypt-oaep-4096-sha512",
                       "rsa-sign-pkcs1-2048-sha256",
@@ -57599,8 +57963,11 @@ STATIC_COMPLETION_CLI_TREE = {
                       "external-symmetric-encryption",
                       "google-symmetric-encryption",
                       "hmac-sha256",
+                      "rsa-decrypt-oaep-2048-sha1",
                       "rsa-decrypt-oaep-2048-sha256",
+                      "rsa-decrypt-oaep-3072-sha1",
                       "rsa-decrypt-oaep-3072-sha256",
+                      "rsa-decrypt-oaep-4096-sha1",
                       "rsa-decrypt-oaep-4096-sha256",
                       "rsa-decrypt-oaep-4096-sha512",
                       "rsa-sign-pkcs1-2048-sha256",
@@ -57700,8 +58067,11 @@ STATIC_COMPLETION_CLI_TREE = {
                           "ec-sign-secp256k1-sha256",
                           "google-symmetric-encryption",
                           "hmac-sha256",
+                          "rsa-decrypt-oaep-2048-sha1",
                           "rsa-decrypt-oaep-2048-sha256",
+                          "rsa-decrypt-oaep-3072-sha1",
                           "rsa-decrypt-oaep-3072-sha256",
+                          "rsa-decrypt-oaep-4096-sha1",
                           "rsa-decrypt-oaep-4096-sha256",
                           "rsa-decrypt-oaep-4096-sha512",
                           "rsa-sign-pkcs1-2048-sha256",
@@ -63290,6 +63660,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "post",
                           "put"
                         ],
+                        "--location": "value",
                         "--max-backoff": "value",
                         "--max-doublings": "value",
                         "--max-retry-attempts": "value",
@@ -63316,6 +63687,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "post",
                           "put"
                         ],
+                        "--location": "value",
                         "--max-backoff": "value",
                         "--max-doublings": "value",
                         "--max-retry-attempts": "value",
@@ -63337,6 +63709,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--attributes": "value",
                         "--description": "value",
+                        "--location": "value",
                         "--max-backoff": "value",
                         "--max-doublings": "value",
                         "--max-retry-attempts": "value",
@@ -63354,17 +63727,22 @@ STATIC_COMPLETION_CLI_TREE = {
                 },
                 "delete": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "describe": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "list": {
                   "commands": {},
                   "flags": {
                     "--filter": "value",
                     "--limit": "value",
+                    "--location": "value",
                     "--page-size": "value",
                     "--sort-by": "value",
                     "--uri": "bool"
@@ -63372,15 +63750,21 @@ STATIC_COMPLETION_CLI_TREE = {
                 },
                 "pause": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "resume": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "run": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "update": {
                   "commands": {
@@ -63406,6 +63790,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "post",
                           "put"
                         ],
+                        "--location": "value",
                         "--max-backoff": "value",
                         "--max-doublings": "value",
                         "--max-retry-attempts": "value",
@@ -63442,6 +63827,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "post",
                           "put"
                         ],
+                        "--location": "value",
                         "--max-backoff": "value",
                         "--max-doublings": "value",
                         "--max-retry-attempts": "value",
@@ -63471,6 +63857,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--clear-min-backoff": "bool",
                         "--clear-time-zone": "bool",
                         "--description": "value",
+                        "--location": "value",
                         "--max-backoff": "value",
                         "--max-doublings": "value",
                         "--max-retry-attempts": "value",
@@ -64867,6 +65254,14 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--master-username": "value",
                     "--memory": "value",
                     "--network": "value",
+                    "--password-policy-complexity": [
+                      "COMPLEXITY_DEFAULT",
+                      "COMPLEXITY_UNSPECIFIED"
+                    ],
+                    "--password-policy-disallow-username-substring": "bool",
+                    "--password-policy-min-length": "value",
+                    "--password-policy-password-change-interval": "value",
+                    "--password-policy-reuse-interval": "value",
                     "--prompt-for-master-password": "bool",
                     "--region": "value",
                     "--replica-type": [
@@ -64960,6 +65355,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--clear-database-flags": "bool",
                     "--clear-gae-apps": "bool",
                     "--clear-labels": "bool",
+                    "--clear-password-policy": "bool",
                     "--cpu": "value",
                     "--database-flags": "value",
                     "--deny-maintenance-period-end-date": "value",
@@ -64993,6 +65389,14 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--memory": "value",
                     "--network": "value",
                     "--no-backup": "bool",
+                    "--password-policy-complexity": [
+                      "COMPLEXITY_DEFAULT",
+                      "COMPLEXITY_UNSPECIFIED"
+                    ],
+                    "--password-policy-disallow-username-substring": "bool",
+                    "--password-policy-min-length": "value",
+                    "--password-policy-password-change-interval": "value",
+                    "--password-policy-reuse-interval": "value",
                     "--pricing-plan": [
                       "PACKAGE",
                       "PER_USE"
@@ -65267,6 +65671,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--body-content": "value",
                 "--body-file": "value",
                 "--header": "value",
+                "--location": "value",
                 "--method": "value",
                 "--queue": "value",
                 "--relative-uri": "value",
@@ -65280,6 +65685,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--body-content": "value",
                 "--body-file": "value",
                 "--header": "value",
+                "--location": "value",
                 "--method": "value",
                 "--oauth-service-account-email": "value",
                 "--oauth-token-scope": "value",
@@ -65293,12 +65699,14 @@ STATIC_COMPLETION_CLI_TREE = {
             "delete": {
               "commands": {},
               "flags": {
+                "--location": "value",
                 "--queue": "value"
               }
             },
             "describe": {
               "commands": {},
               "flags": {
+                "--location": "value",
                 "--queue": "value",
                 "--response-view": [
                   "basic",
@@ -65312,6 +65720,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--filter": "value",
                 "--limit": "value",
+                "--location": "value",
                 "--page-size": "value",
                 "--queue": "value",
                 "--sort-by": "value",
@@ -65350,6 +65759,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create": {
                   "commands": {},
                   "flags": {
+                    "--location": "value",
                     "--log-sampling-ratio": "value",
                     "--max-attempts": "value",
                     "--max-backoff": "value",
@@ -65365,6 +65775,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create-app-engine-queue": {
                   "commands": {},
                   "flags": {
+                    "--location": "value",
                     "--log-sampling-ratio": "value",
                     "--max-attempts": "value",
                     "--max-backoff": "value",
@@ -65379,17 +65790,22 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create-pull-queue": {
                   "commands": {},
                   "flags": {
+                    "--location": "value",
                     "--max-attempts": "value",
                     "--max-retry-duration": "value"
                   }
                 },
                 "delete": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "describe": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "get-iam-policy": {
                   "commands": {},
@@ -65406,6 +65822,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--filter": "value",
                     "--limit": "value",
+                    "--location": "value",
                     "--page-size": "value",
                     "--sort-by": "value",
                     "--uri": "bool"
@@ -65413,11 +65830,15 @@ STATIC_COMPLETION_CLI_TREE = {
                 },
                 "pause": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "purge": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "remove-iam-policy-binding": {
                   "commands": {},
@@ -65429,7 +65850,9 @@ STATIC_COMPLETION_CLI_TREE = {
                 },
                 "resume": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 },
                 "set-iam-policy": {
                   "commands": {},
@@ -65449,6 +65872,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--clear-max-retry-duration": "bool",
                     "--clear-min-backoff": "bool",
                     "--clear-routing-override": "bool",
+                    "--location": "value",
                     "--log-sampling-ratio": "value",
                     "--max-attempts": "value",
                     "--max-backoff": "value",
@@ -65473,6 +65897,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--clear-max-retry-duration": "bool",
                     "--clear-min-backoff": "bool",
                     "--clear-routing-override": "bool",
+                    "--location": "value",
                     "--log-sampling-ratio": "value",
                     "--max-attempts": "value",
                     "--max-backoff": "value",
@@ -65490,6 +65915,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "run": {
               "commands": {},
               "flags": {
+                "--location": "value",
                 "--queue": "value"
               }
             }
@@ -66936,6 +67362,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "NONE"
                 ],
                 "--signed-url-cache-max-age": "value",
+                "--subsetting-policy": [
+                  "CONSISTENT_HASH_SUBSETTING",
+                  "NONE"
+                ],
                 "--timeout": "value"
               }
             },
@@ -67083,6 +67513,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "NONE"
                 ],
                 "--signed-url-cache-max-age": "value",
+                "--subsetting-policy": [
+                  "CONSISTENT_HASH_SUBSETTING",
+                  "NONE"
+                ],
                 "--timeout": "value"
               }
             },
@@ -67136,6 +67570,21 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--reservations-from-file": "value",
                 "--resources": "value",
                 "--resources-accelerator": "value",
+                "--share-setting": [
+                  "local",
+                  "projects"
+                ],
+                "--share-with": "value",
+                "--type": [
+                  "accelerator-optimized",
+                  "compute-optimized",
+                  "general-purpose",
+                  "general-purpose-e2",
+                  "general-purpose-n2",
+                  "general-purpose-n2d",
+                  "general-purpose-t2d",
+                  "memory-optimized"
+                ],
                 "--vm-count": "value"
               }
             },
@@ -70818,6 +71267,81 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
+            "os-policy-assignments": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--file": "value",
+                    "--location": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "list-revisions": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "operations": {
+                  "commands": {
+                    "cancel": {
+                      "commands": {},
+                      "flags": {
+                        "--location": "value",
+                        "--os-policy-assignment": "value"
+                      }
+                    },
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--location": "value",
+                        "--os-policy-assignment": "value"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--file": "value",
+                    "--location": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "patch-deployments": {
               "commands": {
                 "create": {
@@ -71280,6 +71804,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--machine-type": "value",
                 "--min-cpu-platform": "value",
                 "--require-specific-reservation": "bool",
+                "--share-setting": [
+                  "local",
+                  "projects"
+                ],
+                "--share-with": "value",
                 "--vm-count": "value",
                 "--zone": "dynamic"
               }
@@ -71973,6 +72502,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 ],
                 "--consumer-accept-list": "value",
                 "--consumer-reject-list": "value",
+                "--description": "value",
                 "--enable-proxy-protocol": "bool",
                 "--nat-subnets": "dynamic",
                 "--nat-subnets-region": "dynamic",
@@ -72687,6 +73217,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--description": "value",
                 "--instance": "dynamic",
                 "--instance-zone": "dynamic",
+                "--network": "value",
                 "--zone": "dynamic"
               }
             },
@@ -76926,6 +77457,176 @@ STATIC_COMPLETION_CLI_TREE = {
           "commands": {},
           "flags": {}
         },
+        "registrations": {
+          "commands": {
+            "authorization-code": {
+              "commands": {
+                "get": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "reset": {
+                  "commands": {},
+                  "flags": {}
+                }
+              },
+              "flags": {}
+            },
+            "configure": {
+              "commands": {
+                "contacts": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--contact-data-from-file": "value",
+                    "--contact-privacy": [
+                      "private-contact-data",
+                      "public-contact-data",
+                      "redacted-contact-data"
+                    ],
+                    "--notices": "value",
+                    "--validate-only": "bool"
+                  }
+                },
+                "dns": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--cloud-dns-zone": "value",
+                    "--disable-dnssec": "bool",
+                    "--dns-settings-from-file": "value",
+                    "--name-servers": "value",
+                    "--unsafe-dns-update": "bool",
+                    "--use-google-domains-dns": "bool",
+                    "--validate-only": "bool"
+                  }
+                },
+                "management": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--transfer-lock-state": [
+                      "locked",
+                      "unlocked"
+                    ]
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "delete": {
+              "commands": {},
+              "flags": {
+                "--async": "bool"
+              }
+            },
+            "describe": {
+              "commands": {},
+              "flags": {}
+            },
+            "export": {
+              "commands": {},
+              "flags": {
+                "--async": "bool"
+              }
+            },
+            "get-register-parameters": {
+              "commands": {},
+              "flags": {}
+            },
+            "get-transfer-parameters": {
+              "commands": {},
+              "flags": {}
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
+              }
+            },
+            "operations": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "wait": {
+                  "commands": {},
+                  "flags": {}
+                }
+              },
+              "flags": {}
+            },
+            "register": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--cloud-dns-zone": "value",
+                "--contact-data-from-file": "value",
+                "--contact-privacy": [
+                  "private-contact-data",
+                  "public-contact-data",
+                  "redacted-contact-data"
+                ],
+                "--disable-dnssec": "bool",
+                "--labels": "value",
+                "--name-servers": "value",
+                "--notices": "value",
+                "--use-google-domains-dns": "bool",
+                "--validate-only": "bool",
+                "--yearly-price": "value"
+              }
+            },
+            "search-domains": {
+              "commands": {},
+              "flags": {}
+            },
+            "transfer": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--authorization-code-from-file": "value",
+                "--cloud-dns-zone": "value",
+                "--contact-data-from-file": "value",
+                "--contact-privacy": [
+                  "private-contact-data",
+                  "public-contact-data",
+                  "redacted-contact-data"
+                ],
+                "--keep-dns-settings": "bool",
+                "--labels": "value",
+                "--notices": "value",
+                "--use-google-domains-dns": "bool",
+                "--validate-only": "bool",
+                "--yearly-price": "value"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--clear-labels": "bool",
+                "--remove-labels": "value",
+                "--update-labels": "value"
+              }
+            }
+          },
+          "flags": {}
+        },
         "verify": {
           "commands": {},
           "flags": {}
@@ -78768,6 +79469,29 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--location": "value"
               }
             },
+            "export": {
+              "commands": {
+                "gcs": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--dataset": "value",
+                    "--end-time": "value",
+                    "--gcs-uri": "value",
+                    "--location": "value",
+                    "--message-view": [
+                      "basic",
+                      "full",
+                      "parsed-only",
+                      "raw-only",
+                      "schematized-only"
+                    ],
+                    "--start-time": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "get-iam-policy": {
               "commands": {},
               "flags": {
@@ -78778,6 +79502,20 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--page-size": "value",
                 "--sort-by": "value"
               }
+            },
+            "import": {
+              "commands": {
+                "gcs": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--dataset": "value",
+                    "--gcs-uri": "value",
+                    "--location": "value"
+                  }
+                }
+              },
+              "flags": {}
             },
             "list": {
               "commands": {},
@@ -80161,8 +80899,11 @@ STATIC_COMPLETION_CLI_TREE = {
                   "external-symmetric-encryption",
                   "google-symmetric-encryption",
                   "hmac-sha256",
+                  "rsa-decrypt-oaep-2048-sha1",
                   "rsa-decrypt-oaep-2048-sha256",
+                  "rsa-decrypt-oaep-3072-sha1",
                   "rsa-decrypt-oaep-3072-sha256",
+                  "rsa-decrypt-oaep-4096-sha1",
                   "rsa-decrypt-oaep-4096-sha256",
                   "rsa-decrypt-oaep-4096-sha512",
                   "rsa-sign-pkcs1-2048-sha256",
@@ -80278,8 +81019,11 @@ STATIC_COMPLETION_CLI_TREE = {
                   "external-symmetric-encryption",
                   "google-symmetric-encryption",
                   "hmac-sha256",
+                  "rsa-decrypt-oaep-2048-sha1",
                   "rsa-decrypt-oaep-2048-sha256",
+                  "rsa-decrypt-oaep-3072-sha1",
                   "rsa-decrypt-oaep-3072-sha256",
+                  "rsa-decrypt-oaep-4096-sha1",
                   "rsa-decrypt-oaep-4096-sha256",
                   "rsa-decrypt-oaep-4096-sha512",
                   "rsa-sign-pkcs1-2048-sha256",
@@ -80379,8 +81123,11 @@ STATIC_COMPLETION_CLI_TREE = {
                       "ec-sign-secp256k1-sha256",
                       "google-symmetric-encryption",
                       "hmac-sha256",
+                      "rsa-decrypt-oaep-2048-sha1",
                       "rsa-decrypt-oaep-2048-sha256",
+                      "rsa-decrypt-oaep-3072-sha1",
                       "rsa-decrypt-oaep-3072-sha256",
+                      "rsa-decrypt-oaep-4096-sha1",
                       "rsa-decrypt-oaep-4096-sha256",
                       "rsa-decrypt-oaep-4096-sha512",
                       "rsa-sign-pkcs1-2048-sha256",
@@ -81353,7 +82100,8 @@ STATIC_COMPLETION_CLI_TREE = {
                   "linear16",
                   "mulaw",
                   "ogg-opus",
-                  "speex-with-header-byte"
+                  "speex-with-header-byte",
+                  "webm-opus"
                 ],
                 "--filter-profanity": "bool",
                 "--hints": "value",
@@ -81377,7 +82125,8 @@ STATIC_COMPLETION_CLI_TREE = {
                   "linear16",
                   "mulaw",
                   "ogg-opus",
-                  "speex-with-header-byte"
+                  "speex-with-header-byte",
+                  "webm-opus"
                 ],
                 "--filter-profanity": "bool",
                 "--hints": "value",
@@ -85628,6 +86377,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "post",
                       "put"
                     ],
+                    "--location": "value",
                     "--max-backoff": "value",
                     "--max-doublings": "value",
                     "--max-retry-attempts": "value",
@@ -85654,6 +86404,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "post",
                       "put"
                     ],
+                    "--location": "value",
                     "--max-backoff": "value",
                     "--max-doublings": "value",
                     "--max-retry-attempts": "value",
@@ -85675,6 +86426,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--attributes": "value",
                     "--description": "value",
+                    "--location": "value",
                     "--max-backoff": "value",
                     "--max-doublings": "value",
                     "--max-retry-attempts": "value",
@@ -85692,17 +86444,22 @@ STATIC_COMPLETION_CLI_TREE = {
             },
             "delete": {
               "commands": {},
-              "flags": {}
+              "flags": {
+                "--location": "value"
+              }
             },
             "describe": {
               "commands": {},
-              "flags": {}
+              "flags": {
+                "--location": "value"
+              }
             },
             "list": {
               "commands": {},
               "flags": {
                 "--filter": "value",
                 "--limit": "value",
+                "--location": "value",
                 "--page-size": "value",
                 "--sort-by": "value",
                 "--uri": "bool"
@@ -85710,15 +86467,21 @@ STATIC_COMPLETION_CLI_TREE = {
             },
             "pause": {
               "commands": {},
-              "flags": {}
+              "flags": {
+                "--location": "value"
+              }
             },
             "resume": {
               "commands": {},
-              "flags": {}
+              "flags": {
+                "--location": "value"
+              }
             },
             "run": {
               "commands": {},
-              "flags": {}
+              "flags": {
+                "--location": "value"
+              }
             },
             "update": {
               "commands": {
@@ -85744,6 +86507,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "post",
                       "put"
                     ],
+                    "--location": "value",
                     "--max-backoff": "value",
                     "--max-doublings": "value",
                     "--max-retry-attempts": "value",
@@ -85780,6 +86544,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "post",
                       "put"
                     ],
+                    "--location": "value",
                     "--max-backoff": "value",
                     "--max-doublings": "value",
                     "--max-retry-attempts": "value",
@@ -85809,6 +86574,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--clear-min-backoff": "bool",
                     "--clear-time-zone": "bool",
                     "--description": "value",
+                    "--location": "value",
                     "--max-backoff": "value",
                     "--max-doublings": "value",
                     "--max-retry-attempts": "value",
@@ -87231,6 +87997,14 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--maintenance-window-hour": "value",
                 "--master-instance-name": "value",
                 "--memory": "value",
+                "--password-policy-complexity": [
+                  "COMPLEXITY_DEFAULT",
+                  "COMPLEXITY_UNSPECIFIED"
+                ],
+                "--password-policy-disallow-username-substring": "bool",
+                "--password-policy-min-length": "value",
+                "--password-policy-password-change-interval": "value",
+                "--password-policy-reuse-interval": "value",
                 "--region": "value",
                 "--replica-type": [
                   "FAILOVER",
@@ -87318,6 +88092,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--clear-authorized-networks": "bool",
                 "--clear-database-flags": "bool",
                 "--clear-gae-apps": "bool",
+                "--clear-password-policy": "bool",
                 "--cpu": "value",
                 "--database-flags": "value",
                 "--deny-maintenance-period-end-date": "value",
@@ -87350,6 +88125,14 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--maintenance-window-hour": "value",
                 "--memory": "value",
                 "--no-backup": "bool",
+                "--password-policy-complexity": [
+                  "COMPLEXITY_DEFAULT",
+                  "COMPLEXITY_UNSPECIFIED"
+                ],
+                "--password-policy-disallow-username-substring": "bool",
+                "--password-policy-min-length": "value",
+                "--password-policy-password-change-interval": "value",
+                "--password-policy-reuse-interval": "value",
                 "--pricing-plan": [
                   "PACKAGE",
                   "PER_USE"
@@ -87584,6 +88367,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "--body-content": "value",
             "--body-file": "value",
             "--header": "value",
+            "--location": "value",
             "--method": "value",
             "--queue": "value",
             "--relative-uri": "value",
@@ -87597,6 +88381,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "--body-content": "value",
             "--body-file": "value",
             "--header": "value",
+            "--location": "value",
             "--method": "value",
             "--oauth-service-account-email": "value",
             "--oauth-token-scope": "value",
@@ -87610,12 +88395,14 @@ STATIC_COMPLETION_CLI_TREE = {
         "delete": {
           "commands": {},
           "flags": {
+            "--location": "value",
             "--queue": "value"
           }
         },
         "describe": {
           "commands": {},
           "flags": {
+            "--location": "value",
             "--queue": "value",
             "--response-view": [
               "basic",
@@ -87629,6 +88416,7 @@ STATIC_COMPLETION_CLI_TREE = {
           "flags": {
             "--filter": "value",
             "--limit": "value",
+            "--location": "value",
             "--page-size": "value",
             "--queue": "value",
             "--sort-by": "value",
@@ -87667,6 +88455,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "create": {
               "commands": {},
               "flags": {
+                "--location": "value",
                 "--log-sampling-ratio": "value",
                 "--max-attempts": "value",
                 "--max-backoff": "value",
@@ -87680,11 +88469,15 @@ STATIC_COMPLETION_CLI_TREE = {
             },
             "delete": {
               "commands": {},
-              "flags": {}
+              "flags": {
+                "--location": "value"
+              }
             },
             "describe": {
               "commands": {},
-              "flags": {}
+              "flags": {
+                "--location": "value"
+              }
             },
             "get-iam-policy": {
               "commands": {},
@@ -87701,6 +88494,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--filter": "value",
                 "--limit": "value",
+                "--location": "value",
                 "--page-size": "value",
                 "--sort-by": "value",
                 "--uri": "bool"
@@ -87708,11 +88502,15 @@ STATIC_COMPLETION_CLI_TREE = {
             },
             "pause": {
               "commands": {},
-              "flags": {}
+              "flags": {
+                "--location": "value"
+              }
             },
             "purge": {
               "commands": {},
-              "flags": {}
+              "flags": {
+                "--location": "value"
+              }
             },
             "remove-iam-policy-binding": {
               "commands": {},
@@ -87724,7 +88522,9 @@ STATIC_COMPLETION_CLI_TREE = {
             },
             "resume": {
               "commands": {},
-              "flags": {}
+              "flags": {
+                "--location": "value"
+              }
             },
             "set-iam-policy": {
               "commands": {},
@@ -87744,6 +88544,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--clear-max-retry-duration": "bool",
                 "--clear-min-backoff": "bool",
                 "--clear-routing-override": "bool",
+                "--location": "value",
                 "--log-sampling-ratio": "value",
                 "--max-attempts": "value",
                 "--max-backoff": "value",
@@ -87761,6 +88562,7 @@ STATIC_COMPLETION_CLI_TREE = {
         "run": {
           "commands": {},
           "flags": {
+            "--location": "value",
             "--queue": "value"
           }
         }
@@ -88016,6 +88818,7 @@ STATIC_COMPLETION_CLI_TREE = {
     }
   },
   "flags": {
+    "--access-token-file": "value",
     "--account": "value",
     "--billing-project": "value",
     "--configuration": "value",

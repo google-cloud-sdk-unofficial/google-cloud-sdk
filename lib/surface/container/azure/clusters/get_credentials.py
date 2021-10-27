@@ -42,6 +42,7 @@ class GetCredentials(base.Command):
   def Args(parser):
     resource_args.AddAzureClusterResourceArg(parser, 'to get credentials')
     flags.AddAuthProviderCmdPath(parser)
+    flags.AddPrivateEndpoint(parser)
 
   def Run(self, args):
     """Runs the get-credentials command."""
@@ -64,8 +65,5 @@ class GetCredentials(base.Command):
           'azure',
           cluster_ref.azureClustersId,
           cluster_ref.locationsId)
-      kubeconfig.GenerateKubeconfig(
-          resp,
-          context,
-          args.auth_provider_cmd_path,
-          cmd_args)
+      kubeconfig.GenerateKubeconfig(resp, context, args.auth_provider_cmd_path,
+                                    cmd_args, args.private_endpoint)

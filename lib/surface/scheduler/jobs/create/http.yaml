@@ -18,7 +18,7 @@
     resource:
       help_text: Job to create.
       spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
-      removed_flags: [location]
+
     params:
     - _REF_: googlecloudsdk.command_lib.scheduler.flags:schedule
       required: true

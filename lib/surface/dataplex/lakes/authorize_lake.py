@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.dataplex import lake
 from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.projects import util as project_util
@@ -62,6 +63,8 @@ class AuthorizeLake(base.Command):
     dataset_group.add_argument(
         '--secondary-project', help='Project Name of BigQuery dataset.')
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      'Status code: {status_code}. {status_message}.')
   def Run(self, args):
     lake_ref = args.CONCEPTS.lake.Parse()
     service_account = 'service-' + str(

@@ -70,6 +70,7 @@ class Update(base.UpdateCommand):
         required=False)
     cls.NAT_SUBNETWORK_ARG.AddArgument(parser)
 
+    flags.AddDescription(parser)
     flags.AddConnectionPreference(parser, is_update=True)
     flags.AddEnableProxyProtocolForUpdate(parser)
     flags.AddConsumerRejectList(parser)
@@ -108,6 +109,11 @@ class Update(base.UpdateCommand):
     """Returns the updated service attachment."""
     replacement = encoding.CopyProtoMessage(old_resource)
     is_updated = False
+
+    if args.IsSpecified('description'):
+      if args.description != old_resource.description:
+        replacement.description = args.description
+        is_updated = True
 
     if args.IsSpecified('connection_preference'):
       new_connection_preference = service_attachments_utils.GetConnectionPreference(

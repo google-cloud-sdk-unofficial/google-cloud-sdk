@@ -534,7 +534,7 @@ class UpdateGA(base.UpdateCommand):
   _support_client_only = False
   _support_unspecified_protocol = False
   _support_grpc_protocol = True
-  _support_subsetting = False
+  _support_subsetting = True
   _support_subsetting_subset_size = False
   _support_edge_policies = False
   _support_connection_tracking = False

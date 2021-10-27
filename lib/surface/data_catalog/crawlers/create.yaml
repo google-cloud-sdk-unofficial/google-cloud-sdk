@@ -1,7 +1,7 @@
 - release_tracks: [ALPHA]
   help_text:
-    brief: Create a new Cloud Data Catalog crawler.
-    description: Create a new Cloud Data Catalog crawler.
+    brief: Create a new Data Catalog crawler.
+    description: Create a new Data Catalog crawler.
     examples: |
       Create a project-scoped crawler:
 

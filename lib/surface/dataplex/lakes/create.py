@@ -18,12 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import exceptions as apitools_exceptions
-
 from googlecloudsdk.api_lib.dataplex import lake
 from googlecloudsdk.api_lib.dataplex import util as dataplex_util
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
@@ -66,33 +64,38 @@ class Create(base.Command):
     base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      'Status code: {status_code}. {status_message}.')
   def Run(self, args):
-    try:
-      lake_ref = args.CONCEPTS.lake.Parse()
-      dataplex_client = dataplex_util.GetClientInstance()
-      message = dataplex_util.GetMessageModule()
-      create_req_op = dataplex_client.projects_locations_lakes.Create(
-          message.DataplexProjectsLocationsLakesCreateRequest(
-              lakeId=lake_ref.Name(),
-              parent=lake_ref.Parent().RelativeName(),
-              validateOnly=args.validate_only,
-              googleCloudDataplexV1Lake=message.GoogleCloudDataplexV1Lake(
-                  description=args.description,
-                  displayName=args.display_name,
-                  labels=dataplex_util.CreateLabels(
-                      message.GoogleCloudDataplexV1Lake, args),
-                  metastore=message.GoogleCloudDataplexV1LakeMetastore(
-                      service=args.metastore_service))))
+    lake_ref = args.CONCEPTS.lake.Parse()
+    dataplex_client = dataplex_util.GetClientInstance()
+    message = dataplex_util.GetMessageModule()
+    create_req_op = dataplex_client.projects_locations_lakes.Create(
+        message.DataplexProjectsLocationsLakesCreateRequest(
+            lakeId=lake_ref.Name(),
+            parent=lake_ref.Parent().RelativeName(),
+            validateOnly=args.validate_only,
+            googleCloudDataplexV1Lake=message.GoogleCloudDataplexV1Lake(
+                description=args.description,
+                displayName=args.display_name,
+                labels=dataplex_util.CreateLabels(
+                    message.GoogleCloudDataplexV1Lake, args),
+                metastore=message.GoogleCloudDataplexV1LakeMetastore(
+                    service=args.metastore_service))))
 
-      validate_only = getattr(args, 'validate_only', False)
-      if validate_only:
-        log.status.Print('Validation complete with errors:')
-        return create_req_op
+    validate_only = getattr(args, 'validate_only', False)
+    if validate_only:
+      log.status.Print('Validation complete.')
+      return
 
-      async_ = getattr(args, 'async_', False)
-      if not async_:
-        return lake.WaitForOperation(create_req_op)
-      return create_req_op
-    except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(
-          error, error_format='{status_code}.')
+    async_ = getattr(args, 'async_', False)
+    if not async_:
+      lake.WaitForOperation(create_req_op)
+      log.CreatedResource(
+          lake_ref.Name(),
+          details='Lake created in project [{0}] with location [{1}]'.format(
+              lake_ref.projectsId, lake_ref.locationsId))
+      return
+
+    log.status.Print('Creating [{0}] with operation [{1}].'.format(
+        lake_ref, create_req_op.name))

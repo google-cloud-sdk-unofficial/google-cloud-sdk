@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataplex import util as dataplex_util
 from googlecloudsdk.api_lib.dataplex import zone
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataplex import flags
 from googlecloudsdk.command_lib.dataplex import resource_args
@@ -76,6 +77,8 @@ class Create(base.Command):
     base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      'Status code: {status_code}. {status_message}.')
   def Run(self, args):
     zone_ref = args.CONCEPTS.zone.Parse()
     dataplex_client = dataplex_util.GetClientInstance()
@@ -89,10 +92,17 @@ class Create(base.Command):
 
     validate_only = getattr(args, 'validate_only', False)
     if validate_only:
-      log.status.Print('Validation complete with errors:')
-      return create_req_op
+      log.status.Print('Validation complete.')
+      return
 
     async_ = getattr(args, 'async_', False)
     if not async_:
-      return zone.WaitForOperation(create_req_op)
-    return create_req_op
+      zone.WaitForOperation(create_req_op)
+      log.CreatedResource(
+          zone_ref.Name(),
+          details='Zone created in lake [{0}] in project [{1}] with location [{2}]'
+          .format(zone_ref.lakesId, zone_ref.projectsId, zone_ref.locationsId))
+      return
+
+    log.status.Print('Creating [{0}] with operation [{1}].'.format(
+        zone_ref, create_req_op.name))

@@ -1,7 +1,7 @@
 - release_tracks: [GA]
   help_text:
-    brief: Remove an IAM policy binding from a Cloud Data Catalog entry group.
-    description: Remove an IAM policy binding from a Cloud Data Catalog entry group.
+    brief: Remove an IAM policy binding from a Data Catalog entry group.
+    description: Remove an IAM policy binding from a Data Catalog entry group.
     examples: |
       To remove an IAM policy binding for the role of 'roles/editor' for the
       user 'test-user@gmail.com' on entry group 'group1' with location
@@ -29,8 +29,8 @@
 
 - release_tracks: [ALPHA, BETA]
   help_text:
-    brief: Remove an IAM policy binding from a Cloud Data Catalog entry group.
-    description: Remove an IAM policy binding from a Cloud Data Catalog entry group.
+    brief: Remove an IAM policy binding from a Data Catalog entry group.
+    description: Remove an IAM policy binding from a Data Catalog entry group.
     examples: |
       To remove an IAM policy binding for the role of 'roles/editor' for the
       user 'test-user@gmail.com' on entry group 'group1' with location

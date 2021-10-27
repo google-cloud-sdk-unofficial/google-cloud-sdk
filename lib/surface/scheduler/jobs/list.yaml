@@ -14,9 +14,8 @@
 
   arguments:
     resource:
-      help_text: The location you want to list the devices for.
+      help_text: The location where you want to list the jobs.
       spec: !REF googlecloudsdk.command_lib.scheduler.resources:location
-      removed_flags: [location]
 
   output:
     format: |

@@ -72,8 +72,8 @@ class ActivateServiceAccount(base.SilentCommand):
   To authorize `gcloud` to access Google Cloud Platform using an existing
   service account while also specifying a project, run:
 
-            $ {command} test-service-account@google.com \
-                --key-file=/path/key.json --project=testproject
+            $ {command} SERVICE_ACCOUNT@DOMAIN.COM \
+                --key-file=/path/key.json --project=PROJECT_ID
   """
 
   @staticmethod

@@ -1,7 +1,7 @@
 - release_tracks: [ALPHA, BETA, GA]
   help_text:
-    brief: Add an IAM policy binding to a Cloud Data Catalog policy tag.
-    description: Add an IAM policy binding to a Cloud Data Catalog policy tag.
+    brief: Add an IAM policy binding to a Data Catalog policy tag.
+    description: Add an IAM policy binding to a Data Catalog policy tag.
 
     examples: |
       To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'

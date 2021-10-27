@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to create a new GKE cluster on Azure."""
+"""Command to create an Anthos cluster on Azure."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -66,10 +66,22 @@ class Create(base.CreateCommand):
         required=True,
         help=("ID of the Azure Virtual Network "
               "to associate with the cluster."))
+    parser.add_argument(
+        "--service-load-balancer-subnet-id",
+        hidden=True,
+        help=("ARM ID of the subnet where Kubernetes private service type "
+              "load balancers are deployed, when the Service lacks a subnet "
+              "annotation."))
+    parser.add_argument(
+        "--endpoint-subnet-id",
+        hidden=True,
+        help=("ARM ID of the subnet where the control plane load balancer "
+              "is deployed. When unspecified, it defaults to the control "
+              "plane subnet ID."))
     flags.AddPodAddressCidrBlocks(parser)
     flags.AddServiceAddressCidrBlocks(parser)
     flags.AddClusterVersion(parser)
-    flags.AddSubnetID(parser, "the cluster control plane")
+    flags.AddSubnetID(parser, "the cluster control plane", required=False)
     flags.AddVMSize(parser)
     flags.AddSSHPublicKey(parser)
     flags.AddRootVolumeSize(parser)
@@ -78,12 +90,14 @@ class Create(base.CreateCommand):
     flags.AddTags(parser, "cluster")
     flags.AddValidateOnly(parser, "creation of the cluster")
     flags.AddDatabaseEncryption(parser, hidden=True)
+    flags.AddConfigEncryption(parser, hidden=True)
     flags.AddProxyConfig(parser)
+    flags.AddFleetProject(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(command_util.CLUSTERS_FORMAT)
 
   def Run(self, args):
-    """Run the create command."""
+    """Runs the create command."""
 
     azure_region = getattr(args, "azure_region", None)
     if not azure_region:
@@ -108,9 +122,14 @@ class Create(base.CreateCommand):
     main_volume_size = flags.GetMainVolumeSize(args)
     validate_only = flags.GetValidateOnly(args)
     tags = flags.GetTags(args)
-    db_resource_group_id, db_kms_key_id = flags.GetDatabaseEncryption(args)
     admin_users = [properties.VALUES.core.account.Get()]
     async_ = getattr(args, "async_", False)
+    fleet_project = flags.GetFleetProject(args)
+    service_load_balancer_subnet_id = args.service_load_balancer_subnet_id
+    endpoint_subnet_id = args.endpoint_subnet_id
+    database_encryption_key_id = args.database_encryption_key_id
+    config_encryption_key_id = args.config_encryption_key_id
+    config_encryption_public_key = args.config_encryption_public_key
 
     with endpoint_util.GkemulticloudEndpointOverride(
         resource_args.ParseAzureClusterResourceArg(args).locationsId,
@@ -138,9 +157,13 @@ class Create(base.CreateCommand):
           validate_only=validate_only,
           tags=tags,
           admin_users=admin_users,
-          db_resource_group_id=db_resource_group_id,
-          db_kms_key_id=db_kms_key_id,
-          replica_placements=replica_placements)
+          replica_placements=replica_placements,
+          fleet_project=fleet_project,
+          service_load_balancer_subnet_id=service_load_balancer_subnet_id,
+          endpoint_subnet_id=endpoint_subnet_id,
+          database_encryption_key_id=database_encryption_key_id,
+          config_encryption_key_id=config_encryption_key_id,
+          config_encryption_public_key=config_encryption_public_key)
 
       if validate_only:
         args.format = "disable"

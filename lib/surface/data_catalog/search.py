@@ -29,19 +29,19 @@ from googlecloudsdk.command_lib.data_catalog import search
 
 
 class Search(base.Command):
-  """Search Cloud Data Catalog for resources that match a query."""
+  """Search Data Catalog for resources that match a query."""
 
   detailed_help = {
       'DESCRIPTION': """\
-          Search Cloud Data Catalog for resources that match a query.
+          Search Data Catalog for resources that match a query.
       """,
       'EXAMPLES': """\
-          To search project 'my-project' for Cloud Data Catalog resources that
+          To search project 'my-project' for Data Catalog resources that
           match the simple predicate 'foo':
 
             $ {command} 'foo' --include-project-ids=my-project
 
-          To search organization '1234' for Cloud Data Catalog resources that
+          To search organization '1234' for Data Catalog resources that
           match entities whose names match the predicate 'foo':
 
             $ {command} 'name:foo' --include-organization-ids=1234
@@ -53,7 +53,7 @@ class Search(base.Command):
     parser.add_argument(
         'query',
         help="""\
-            Query string in search query syntax in Cloud Data Catalog. For more
+            Query string in search query syntax in Data Catalog. For more
             information, see:
             https://cloud.google.com/data-catalog/docs/how-to/search-reference
         """)

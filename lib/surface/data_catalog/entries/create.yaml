@@ -1,7 +1,7 @@
 - release_tracks: [GA]
   help_text:
-    brief: Create a Cloud Data Catalog entry.
-    description: Create a Cloud Data Catalog entry.
+    brief: Create a Data Catalog entry.
+    description: Create a Data Catalog entry.
     examples: |-
       To create an entry for a Google Cloud Storage fileset, run:
 
@@ -126,8 +126,8 @@
 
 - release_tracks: [ALPHA, BETA]
   help_text:
-    brief: Create a Cloud Data Catalog entry.
-    description: Create a Cloud Data Catalog entry.
+    brief: Create a Data Catalog entry.
+    description: Create a Data Catalog entry.
     examples: |-
       To create an entry for a Google Cloud Storage fileset, run:
 

@@ -214,6 +214,12 @@ def AddBaseArgs(parser):
       parser, show_negated_in_help=True)
   flags.AddInsightsConfigRecordClientAddress(parser, show_negated_in_help=True)
   flags.AddMemory(parser)
+  flags.AddPasswordPolicyMinLength(parser)
+  flags.AddPasswordPolicyComplexity(parser)
+  flags.AddPasswordPolicyReuseInterval(parser)
+  flags.AddPasswordPolicyDisallowUsernameSubstring(parser)
+  flags.AddPasswordPolicyPasswordChangeInterval(parser)
+  flags.AddPasswordPolicyClearPasswordPolicy(parser)
   parser.add_argument(
       '--pricing-plan',
       '-p',

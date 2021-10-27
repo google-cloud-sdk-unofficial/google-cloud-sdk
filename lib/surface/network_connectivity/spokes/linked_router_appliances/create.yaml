@@ -36,8 +36,8 @@
       help_text: |
         Router appliance instance(s) to which this spoke links.
 
-        For example, use `--router-appliance=instance=ins_1,ip=10.10.0.1` to add a single router appliance instance,
-        or `--router-appliance=instance=ins_1,ip=10.10.0.1 --router-appliance=instance=ins_2,ip=10.10.0.1 ...`
+        For example, use `--router-appliance=instance=ins_uri_1,ip=10.10.0.1` to add a single router appliance instance,
+        or `--router-appliance=instance=ins_uri_1,ip=10.10.0.1 --router-appliance=instance=ins_uri_2,ip=10.10.0.2 ...`
         to add multiple instances.
     - arg_name: site-to-site-data-transfer
       api_field: spoke.linkedRouterApplianceInstances.siteToSiteDataTransfer

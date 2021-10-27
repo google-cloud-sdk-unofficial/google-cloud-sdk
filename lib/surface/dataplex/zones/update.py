@@ -20,7 +20,9 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataplex import util as dataplex_util
 from googlecloudsdk.api_lib.dataplex import zone
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dataplex import flags
 from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -55,11 +57,18 @@ class Update(base.Command):
     base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      'Status code: {status_code}. {status_message}.')
   def Run(self, args):
     update_mask = zone.GenerateUpdateMask(args)
+    if len(update_mask) < 1:
+      raise exceptions.HttpException(
+          'Update commands must specify at least one additional parameter to change.'
+      )
+
     zone_ref = args.CONCEPTS.zone.Parse()
     dataplex_client = dataplex_util.GetClientInstance()
-    create_req_op = dataplex_client.projects_locations_lakes_zones.Patch(
+    update_req_op = dataplex_client.projects_locations_lakes_zones.Patch(
         dataplex_util.GetMessageModule(
         ).DataplexProjectsLocationsLakesZonesPatchRequest(
             name=zone_ref.RelativeName(),
@@ -68,10 +77,14 @@ class Update(base.Command):
             googleCloudDataplexV1Zone=zone.GenerateZoneForUpdateRequest(args)))
     validate_only = getattr(args, 'validate_only', False)
     if validate_only:
-      log.status.Print('Validation complete with errors:')
-      return create_req_op
+      log.status.Print('Validation complete.')
+      return
 
     async_ = getattr(args, 'async_', False)
     if not async_:
-      return zone.WaitForOperation(create_req_op)
-    return create_req_op
+      zone.WaitForOperation(update_req_op)
+      log.UpdatedResource(zone_ref, details='Operation was sucessful.')
+      return
+
+    log.status.Print('Updating [{0}] with operation [{1}].'.format(
+        zone_ref, update_req_op.name))

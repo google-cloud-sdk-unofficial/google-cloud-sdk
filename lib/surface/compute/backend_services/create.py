@@ -40,14 +40,19 @@ def _ResolvePortName(args):
   if args.port_name:
     return args.port_name
 
+  def _LogAndReturn(port_name):
+    log.status.Print('Backend-services\' port_name automatically resolved to '
+                     '{} based on the service protocol.'.format(port_name))
+    return port_name
+
   if args.protocol == 'HTTPS':
-    return 'https'
+    return _LogAndReturn('https')
   if args.protocol == 'HTTP2':
-    return 'http2'
+    return _LogAndReturn('http2')
   if args.protocol == 'SSL':
-    return 'ssl'
+    return _LogAndReturn('ssl')
   if args.protocol == 'TCP':
-    return 'tcp'
+    return _LogAndReturn('tcp')
 
   return 'http'
 
@@ -416,7 +421,7 @@ class CreateGA(base.CreateCommand):
   _support_client_only = False
   _support_grpc_protocol = True
   _support_unspecified_protocol = False
-  _support_subsetting = False
+  _support_subsetting = True
   _support_subsetting_subset_size = False
   _support_connection_tracking = False
   _support_strong_session_affinity = False

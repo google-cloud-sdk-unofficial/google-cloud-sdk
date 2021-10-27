@@ -18,6 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import base64
+
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.container.azure import util as azure_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
@@ -42,13 +45,13 @@ $ {command} my-client --location=us-west1 --output-file=client.crt
 class GetPublicCert(base.DescribeCommand):
   """Get the public certificate of an Azure client."""
 
-  detailed_help = {"EXAMPLES": _EXAMPLES}
+  detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
   def Args(parser):
     resource_args.AddAzureClientResourceArg(parser,
-                                            "to get the public certificate")
-    flags.AddOutputFile(parser, "to store PEM")
+                                            'to get the public certificate')
+    flags.AddOutputFile(parser, 'to store PEM')
 
   def Run(self, args):
     """Runs the get-public-cert command."""
@@ -58,9 +61,20 @@ class GetPublicCert(base.DescribeCommand):
       client_ref = resource_args.ParseAzureClientResourceArg(args)
       api_client = azure_api_util.ClientsClient(track=self.ReleaseTrack())
       client = api_client.Get(client_ref)
+      cert = self._GetCert(client)
       log.WriteToFileOrStdout(
-          args.output_file if args.output_file else "-",
-          client.certificate,
+          args.output_file if args.output_file else '-',
+          cert,
           overwrite=True,
           binary=False,
           private=True)
+
+  def _GetCert(self, client):
+    if client.pemCertificate:
+      return client.pemCertificate
+    # Support older versions with certificate instead of pemCertificate.
+    # This is needed because "certificate" was removed from the proto so
+    # the apigen tool doesn't generate it in the AzureClient class.
+    client_dict = encoding.MessageToPyValue(client)
+    if 'certificate' in client_dict:
+      return base64.b64decode(client_dict['certificate'].encode('utf-8'))

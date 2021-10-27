@@ -129,12 +129,6 @@
       help_text: |
         Attempted period between RDB snapshots.
       choices:
-      - enum_value: FIFTEEN_MINUTES
-        arg_value: 15m
-        help_text: 15 minutes
-      - enum_value: THIRTY_MINUTES
-        arg_value: 30m
-        help_text: 30 minutes
       - enum_value: ONE_HOUR
         arg_value: 1h
         help_text: 1 hour

@@ -46,7 +46,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    """Register flags for this command."""
+    """Registers flags for this command."""
     resource_args.AddAwsClusterResourceArg(parser, 'to create')
 
     parser.add_argument(
@@ -63,6 +63,7 @@ class Create(base.CreateCommand):
     flags.AddRootVolumeSize(parser)
     flags.AddMainVolumeSize(parser)
     flags.AddValidateOnly(parser, 'cluster to create')
+    flags.AddFleetProject(parser)
     flags.AddTags(parser, 'cluster')
 
     aws_flags.AddAwsRegion(parser)
@@ -70,6 +71,7 @@ class Create(base.CreateCommand):
     aws_flags.AddIamInstanceProfile(parser)
     aws_flags.AddInstanceType(parser)
     aws_flags.AddSshEC2KeyPair(parser)
+    aws_flags.AddConfigEncryptionKmsKeyArn(parser)
     aws_flags.AddDatabaseEncryptionKmsKeyArn(parser)
     aws_flags.AddRoleArn(parser)
     aws_flags.AddRoleSessionName(parser)
@@ -88,7 +90,7 @@ class Create(base.CreateCommand):
     parser.display_info.AddFormat(clusters.CLUSTERS_FORMAT)
 
   def Run(self, args):
-    """Run the create command."""
+    """Runs the create command."""
     release_track = self.ReleaseTrack()
 
     with endpoint_util.GkemulticloudEndpointOverride(
@@ -101,6 +103,7 @@ class Create(base.CreateCommand):
       args.root_volume_type = aws_flags.GetRootVolumeType(args)
       args.main_volume_size = flags.GetMainVolumeSize(args)
       args.main_volume_type = aws_flags.GetMainVolumeType(args)
+      args.fleet_project = flags.GetFleetProject(args)
       op = cluster_client.Create(cluster_ref, args)
       op_ref = resource_args.GetOperationResource(op)
 

@@ -1,10 +1,10 @@
 - release_tracks: [GA]
   help_text:
-    brief: Delete a Cloud Data Catalog entry tag.
-    description: Delete a Cloud Data Catalog entry tag.
+    brief: Delete a Data Catalog entry tag.
+    description: Delete a Data Catalog entry tag.
 
     examples: |
-      Delete a Cloud Data Catalog entry tag:
+      Delete a Data Catalog entry tag:
 
         $ {command} TAG
 
@@ -19,11 +19,11 @@
 
 - release_tracks: [ALPHA, BETA]
   help_text:
-    brief: Delete a Cloud Data Catalog entry tag.
-    description: Delete a Cloud Data Catalog entry tag.
+    brief: Delete a Data Catalog entry tag.
+    description: Delete a Data Catalog entry tag.
 
     examples: |
-      Delete a Cloud Data Catalog entry tag:
+      Delete a Data Catalog entry tag:
 
         $ {command} TAG
 

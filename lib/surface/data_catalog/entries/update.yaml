@@ -1,8 +1,8 @@
 - release_tracks: [GA]
   help_text:
-    brief: Update a Cloud Data Catalog entry.
+    brief: Update a Data Catalog entry.
     description: |-
-      Update a Cloud Data Catalog entry. The entry to update can either be specified directly, or
+      Update a Data Catalog entry. The entry to update can either be specified directly, or
       the `--lookup-entry` flag may be used to update the entry corresponding to the lookup of the
       given resource.
     examples: |-
@@ -108,9 +108,9 @@
 
 - release_tracks: [ALPHA, BETA]
   help_text:
-    brief: Update a Cloud Data Catalog entry.
+    brief: Update a Data Catalog entry.
     description: |-
-      Update a Cloud Data Catalog entry. The entry to update can either be specified directly, or
+      Update a Data Catalog entry. The entry to update can either be specified directly, or
       the `--lookup-entry` flag may be used to update the entry corresponding to the lookup of the
       given resource.
     examples: |-

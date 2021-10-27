@@ -1,9 +1,9 @@
 - release_tracks: [GA]
 
   help_text:
-    brief: Set the IAM policy for a Cloud Data Catalog tag template.
+    brief: Set the IAM policy for a Data Catalog tag template.
     description: |
-      Sets the IAM policy for the given Cloud Data Catalog tag template as
+      Sets the IAM policy for the given Data Catalog tag template as
       defined in a JSON or YAML file.
 
     examples: |
@@ -28,9 +28,9 @@
 - release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: Set the IAM policy for a Cloud Data Catalog tag template.
+    brief: Set the IAM policy for a Data Catalog tag template.
     description: |
-      Sets the IAM policy for the given Cloud Data Catalog tag template as
+      Sets the IAM policy for the given Data Catalog tag template as
       defined in a JSON or YAML file.
 
     examples: |

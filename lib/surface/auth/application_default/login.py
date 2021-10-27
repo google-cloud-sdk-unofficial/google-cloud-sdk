@@ -110,6 +110,13 @@ class Login(base.Command):
 
   def Run(self, args):
     """Run the authentication command."""
+    # TODO(b/203102970): Remove this condition check after the bug is resolved
+    if properties.VALUES.auth.access_token_file.Get():
+      raise c_store.FlowError(
+          'auth/access_token_file or --access-token-file was set which is not '
+          'compatible with this command. Please unset the property and rerun '
+          'this command.'
+      )
 
     if c_gce.Metadata().connected:
       message = textwrap.dedent("""

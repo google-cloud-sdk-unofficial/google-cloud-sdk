@@ -82,3 +82,21 @@ class ListAlpha(List):
   @staticmethod
   def Args(parser):
     List.ArgsPerVersion(registrations.ALPHA_API_VERSION, parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ListGa(List):
+  """List Cloud Domains registrations.
+
+  List Cloud Domains registrations in the project.
+
+  ## EXAMPLES
+
+  To list all registrations in the project, run:
+
+    $ {command}
+  """
+
+  @staticmethod
+  def Args(parser):
+    List.ArgsPerVersion(registrations.GA_API_VERSION, parser)

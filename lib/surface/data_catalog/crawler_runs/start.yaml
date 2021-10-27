@@ -1,7 +1,7 @@
 - release_tracks: [ALPHA]
   help_text:
-    brief: Start a Cloud Data Catalog crawler run.
-    description: Start a Cloud Data Catalog crawler run.
+    brief: Start a Data Catalog crawler run.
+    description: Start a Data Catalog crawler run.
 
   request:
     collection: datacatalog.projects.crawlers

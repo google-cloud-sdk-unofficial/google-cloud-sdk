@@ -1,7 +1,7 @@
 - release_tracks: [GA]
   help_text:
-    brief: Lookup a Cloud Data Catalog entry by its target name.
-    description: Lookup a Cloud Data Catalog entry by its target name.
+    brief: Lookup a Data Catalog entry by its target name.
+    description: Lookup a Data Catalog entry by its target name.
     examples: |-
       To lookup the entry for a Cloud Pub/Sub topic by its Google Cloud Platform resource name, run:
 
@@ -33,8 +33,8 @@
 
 - release_tracks: [ALPHA, BETA]
   help_text:
-    brief: Lookup a Cloud Data Catalog entry by its target name.
-    description: Lookup a Cloud Data Catalog entry by its target name.
+    brief: Lookup a Data Catalog entry by its target name.
+    description: Lookup a Data Catalog entry by its target name.
     examples: |-
       To lookup the entry for a Cloud Pub/Sub topic by its Google Cloud Platform resource name, run:
 

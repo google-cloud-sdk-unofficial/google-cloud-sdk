@@ -653,7 +653,7 @@ flags_to_add = {
         'maintenancewindow':
             flags.AddMaintenanceWindowGroup,
         'managedprometheus':
-            flags.AddManagedPrometheusFlag,
+            (lambda p: flags.AddManagedPrometheusFlags(p, for_create=True)),
         'masterglobalaccess':
             flags.AddMasterGlobalAccessFlag,
         'masterauth':
@@ -848,7 +848,7 @@ flags_to_add = {
         'maintenancewindow':
             flags.AddMaintenanceWindowGroup,
         'managedprometheus':
-            flags.AddManagedPrometheusFlag,
+            (lambda p: flags.AddManagedPrometheusFlags(p, for_create=True)),
         'masterauth':
             flags.AddMasterAuthorizedNetworksFlags,
         'mastersignals':

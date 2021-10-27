@@ -46,7 +46,7 @@ def _BaseRun(args):
   return cluster, cluster_ref
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class GetCredentialsAlpha(base.Command):
   """Fetch credentials for a running Anthos Config Controller.
 

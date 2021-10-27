@@ -61,14 +61,17 @@ class Update(base.UpdateCommand):
                          (hasattr(args, 'min_nodes') and args.IsSpecified('min_nodes')) or \
                          (hasattr(args, 'max_nodes') and args.IsSpecified('max_nodes'))
 
+    share_setting = hasattr(args, 'share_setting') and hasattr(
+        args, 'share_with') and (args.IsSpecified('share_setting') or
+                                 args.IsSpecified('share_with'))
+
     return groups_client.Update(
         node_group_ref,
         node_template=args.node_template,
         additional_node_count=args.add_nodes,
         delete_nodes=args.delete_nodes,
         autoscaling_policy_args=args if autoscaling_policy else None,
-        share_setting=args.share_setting
-        if hasattr(args, 'share_setting') else None)
+        share_setting_args=args if share_setting else None)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -80,4 +83,4 @@ class UpdateAlpha(Update):
     flags.MakeNodeGroupArg().AddArgument(parser)
     flags.AddUpdateArgsToParser(parser)
     flags.AddAutoscalingPolicyArgToParser(parser)
-    flags.AddShareSettingsArgToParser(parser)
+    flags.AddShareSettingArgToParser(parser)

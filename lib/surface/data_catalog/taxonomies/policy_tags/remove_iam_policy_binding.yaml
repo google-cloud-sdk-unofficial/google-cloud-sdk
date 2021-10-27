@@ -1,7 +1,7 @@
 - release_tracks: [ALPHA, BETA, GA]
   help_text:
-    brief: Remove an IAM policy binding from a Cloud Data Catalog policy tag.
-    description: Remove an IAM policy binding from a Cloud Data Catalog policy tag.
+    brief: Remove an IAM policy binding from a Data Catalog policy tag.
+    description: Remove an IAM policy binding from a Data Catalog policy tag.
     examples: |
       To remove an IAM policy binding for the role of 'roles/editor' for the
       user 'test-user@gmail.com' on policy tag 'POLICY_TAG' in location 'LOCATION'

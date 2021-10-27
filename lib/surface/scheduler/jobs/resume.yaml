@@ -16,7 +16,6 @@
     resource:
       help_text: The job to resume.
       spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
-      removed_flags: [location]
 
   response:
     modify_response_hooks:

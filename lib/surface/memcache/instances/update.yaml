@@ -115,7 +115,7 @@
     collection: memcache.projects.locations.instances
     method: patch
     # --parameters flag uses the method `updateParameters`, all other flags use method `patch`
-    modify_method_hook: googlecloudsdk.command_lib.memcache.instances_util:ChooseUpdateMethod
+    modify_method_hook: googlecloudsdk.command_lib.memcache.instances_update_util:ChooseUpdateMethod
     # The two update methods uses different API calls with incompatible fields so we must create the
     # requests
-    create_request_hook: googlecloudsdk.command_lib.memcache.instances_util:CreateUpdateRequest
+    create_request_hook: googlecloudsdk.command_lib.memcache.instances_update_util:CreateUpdateRequest

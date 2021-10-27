@@ -36,8 +36,8 @@
       help_text: |
         Router appliance instance(s) with which to replace the set of instances already
         linked to this spoke. Pass this flag multiple times to replace with multiple instances.
-        For example, use `--router-appliance=instance=new_instance,ip=10.10.10.1` for a single router appliance instance,
-        or `--router-appliance=instance=new_instance_1,ip=10.10.10.11 --router-appliance=instance=new_instance_2,ip=10.10.10.12 ...`
+        For example, use `--router-appliance=instance=new_ins_uri,ip=10.10.0.1` for a single router appliance instance,
+        or `--router-appliance=instance=new_ins_uri_1,ip=10.10.0.1 --router-appliance=instance=new_ins_uri_2,ip=10.10.0.2 ...`
         for multiple instances.
     labels:
       api_field: spoke.labels

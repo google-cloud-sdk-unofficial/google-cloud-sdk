@@ -1,10 +1,10 @@
 - release_tracks: [GA]
   help_text:
-    brief: List Cloud Data Catalog entry tags.
-    description: List Cloud Data Catalog entry tags.
+    brief: List Data Catalog entry tags.
+    description: List Data Catalog entry tags.
 
     examples: |
-      List the tags for a Cloud Data Catalog entry:
+      List the tags for a Data Catalog entry:
 
         $ {command} --entry=ENTRY
 
@@ -17,16 +17,16 @@
 
   arguments:
     resource:
-      help_text: Cloud Data Catalog entry in which to list tags. The arguments in this group can be used to specify the attributes of this resource.
+      help_text: Data Catalog entry in which to list tags. The arguments in this group can be used to specify the attributes of this resource.
       spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry
 
 - release_tracks: [ALPHA, BETA]
   help_text:
-    brief: List Cloud Data Catalog entry tags.
-    description: List Cloud Data Catalog entry tags.
+    brief: List Data Catalog entry tags.
+    description: List Data Catalog entry tags.
 
     examples: |
-      List the tags for a Cloud Data Catalog entry:
+      List the tags for a Data Catalog entry:
 
         $ {command} --entry=ENTRY
 
@@ -38,5 +38,5 @@
 
   arguments:
     resource:
-      help_text: Cloud Data Catalog entry in which to list tags. The arguments in this group can be used to specify the attributes of this resource.
+      help_text: Data Catalog entry in which to list tags. The arguments in this group can be used to specify the attributes of this resource.
       spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry

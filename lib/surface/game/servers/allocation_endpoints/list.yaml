@@ -1,0 +1,34 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List Allocation Endpoints.
+    description: List Allocation Endpoints.
+    examples: |
+      To list all Allocation Endpoint run:
+
+        $ {command}
+
+  request:
+    collection: gameservices.projects.locations.global.allocationEndpoints
+    ALPHA:
+      api_version: v1alpha
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.game.servers.allocation_endpoints.hooks:AddDefaultLocationToAllocationEndpointRequest
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Project to list Allocation Endpoints for
+      spec: !REF googlecloudsdk.command_lib.game.resources:project
+
+  output:
+    format: |
+      table(
+         name.basename():label=NAME,
+         endpoint,
+         createTime,
+         updateTime,
+         labels
+       )

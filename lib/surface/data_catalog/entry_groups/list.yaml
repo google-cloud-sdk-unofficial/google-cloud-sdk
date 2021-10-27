@@ -1,7 +1,7 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
-    brief: List all entry groups in a Cloud Data Catalog location.
-    description: List all entries in a Cloud Data Catalog location.
+    brief: List all entry groups in a Data Catalog location.
+    description: List all entries in a Data Catalog location.
     examples: |-
       To list all entry groups in us-central1, run:
 
@@ -20,8 +20,8 @@
 
 - release_tracks: [GA]
   help_text:
-    brief: List all entry groups in a Cloud Data Catalog location.
-    description: List all entries in a Cloud Data Catalog location.
+    brief: List all entry groups in a Data Catalog location.
+    description: List all entries in a Data Catalog location.
     examples: |-
       To list all entry groups in us-central1, run:
 

@@ -1,9 +1,9 @@
 - release_tracks: [ALPHA, BETA, GA]
 
   help_text:
-    brief: Set the IAM policy for a Cloud Data Catalog Policy Tag.
+    brief: Set the IAM policy for a Data Catalog Policy Tag.
     description: |
-      Set the IAM policy for the given Cloud Data Catalog Policy Tag as
+      Set the IAM policy for the given Data Catalog Policy Tag as
       defined in a JSON or YAML file.
 
     examples: |

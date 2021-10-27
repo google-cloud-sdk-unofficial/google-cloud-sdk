@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.compute.routers.nats.rules import flags as rules
 from googlecloudsdk.command_lib.compute.routers.nats.rules import rules_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete a Rule in a Compute Engine NAT."""
 

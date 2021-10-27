@@ -79,6 +79,7 @@ class Cp(base.Command):
         help='Do not automatically decompress downloaded gzip files.')
     flags.add_precondition_flags(parser)
     flags.add_object_metadata_flags(parser)
+    flags.add_encryption_flags(parser)
 
   def Run(self, args):
     source_expansion_iterator = name_expansion.NameExpansionIterator(

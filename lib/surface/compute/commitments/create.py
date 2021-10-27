@@ -34,8 +34,8 @@ from googlecloudsdk.core import properties
 _MISSING_COMMITMENTS_QUOTA_REGEX = r'Quota .COMMITMENTS. exceeded.+'
 
 
-def _CommonArgsAlphaBeta(track, parser, support_auto_renew=False):
-  """Add common flags for Alpha, Beta track."""
+def _CommonArgs(track, parser, support_auto_renew=False):
+  """Add common flags."""
   flags.MakeCommitmentArg(False).AddArgument(parser, operation_type='create')
   if support_auto_renew:
     flags.AddAutoRenew(parser)
@@ -46,7 +46,7 @@ def _CommonArgsAlphaBeta(track, parser, support_auto_renew=False):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create Compute Engine commitments."""
-  _support_share_setting = False
+  _support_share_setting = True
   detailed_help = {
       'EXAMPLES': '''
         To create a commitment called ``commitment-1'' in the ``us-central1''
@@ -59,18 +59,21 @@ class Create(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    flags.MakeCommitmentArg(False).AddArgument(parser, operation_type='create')
+    _CommonArgs('v1', parser)
     flags.AddCreateFlags(
         parser, support_share_setting=cls._support_share_setting)
 
   def _MakeCreateRequest(
       self, args, messages, project, region, commitment_ref, holder):
+    commitment_type_flag = flags.GetTypeMapperFlag(messages)
+    commitment_type = commitment_type_flag.GetEnumForChoice(args.type)
     commitment = messages.Commitment(
         reservations=reservation_helper.MakeReservations(
             args, messages, holder),
         name=commitment_ref.Name(),
         plan=flags.TranslatePlanArg(messages, args.plan),
-        resources=flags.TranslateResourcesArgGroup(messages, args)
+        resources=flags.TranslateResourcesArgGroup(messages, args),
+        type=commitment_type
     )
     return messages.ComputeRegionCommitmentsInsertRequest(
         commitment=commitment,
@@ -120,7 +123,7 @@ class CreateBeta(Create):
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgsAlphaBeta('beta', parser)
+    _CommonArgs('beta', parser)
     flags.AddCreateFlags(
         parser, support_share_setting=cls._support_share_setting)
 
@@ -149,7 +152,7 @@ class CreateAlpha(CreateBeta):
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgsAlphaBeta('alpha', parser, support_auto_renew=True)
+    _CommonArgs('alpha', parser, support_auto_renew=True)
     flags.AddCreateFlags(
         parser, support_share_setting=cls._support_share_setting)
 

@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: |
+      Cancel a Dataplex Job running a particular Task.
+    description: |
+      Cancel the operation that the given Dataplex Job is running the Task based on project, location, lake, task and job.
+
+      {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/tasks/{task_id}/jobs/{job_id}
+    examples: |
+      $ {command} projects/project_id/locations/us-central1/lakes/test-lake/tasks/test-task/jobs/test-job
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.lakes.tasks.jobs
+    method: cancel
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Job running a particular Task you want to cancel.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:job

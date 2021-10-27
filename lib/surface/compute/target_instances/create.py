@@ -34,7 +34,7 @@ class CreateHelper(object):
   TARGET_INSTANCE_ARG = None
 
   @classmethod
-  def Args(cls, parser, support_network):
+  def Args(cls, parser):
     """Add flags to create a target instance to the parser."""
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.INSTANCE_ARG = instance_flags.InstanceArgumentForTargetInstance()
@@ -42,8 +42,7 @@ class CreateHelper(object):
     cls.TARGET_INSTANCE_ARG = flags.TargetInstanceArgument()
     cls.TARGET_INSTANCE_ARG.AddArgument(parser)
 
-    if support_network:
-      flags.AddNetwork(parser)
+    flags.AddNetwork(parser)
 
     parser.add_argument(
         '--description',
@@ -51,8 +50,8 @@ class CreateHelper(object):
 
     parser.display_info.AddCacheUpdater(flags.TargetInstancesCompleter)
 
-  def __init__(self, support_network):
-    self._support_network = support_network
+  def __init__(self):
+    pass
 
   def Run(self, args, holder):
     """Issues request necessary to create a target instance."""
@@ -77,7 +76,7 @@ class CreateHelper(object):
         name=target_instance_ref.Name(),
         instance=instance_ref.SelfLink())
 
-    if self._support_network and args.IsSpecified('network'):
+    if args.IsSpecified('network'):
       target_instance.network = flags.NETWORK_ARG.ResolveAsResource(
           args, holder.resources).SelfLink()
 
@@ -100,15 +99,14 @@ class CreateGA(base.CreateCommand):
   source. For more information on target instances, see
   [](https://cloud.google.com/compute/docs/protocol-forwarding/#targetinstances)
   """
-  _support_network = False
 
   @classmethod
   def Args(cls, parser):
-    CreateHelper.Args(parser, support_network=cls._support_network)
+    CreateHelper.Args(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return CreateHelper(support_network=self._support_network).Run(args, holder)
+    return CreateHelper().Run(args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -121,7 +119,6 @@ class CreateBeta(CreateGA):
   source. For more information on target instances, see
   [](https://cloud.google.com/compute/docs/protocol-forwarding/#targetinstances)
   """
-  _support_network = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -134,4 +131,3 @@ class CreateAlpha(CreateBeta):
   source. For more information on target instances, see
   [](https://cloud.google.com/compute/docs/protocol-forwarding/#targetinstances)
   """
-  _support_network = True

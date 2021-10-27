@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Manage policy tags in Cloud Data Catalog."""
+"""Manage policy tags in Data Catalog."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,5 +24,5 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA,
                     base.ReleaseTrack.GA)
 class PolicyTags(base.Group):
-  """Manage policy tags in Cloud Data Catalog."""
+  """Manage policy tags in Data Catalog."""
   pass

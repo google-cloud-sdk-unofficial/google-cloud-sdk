@@ -36,7 +36,7 @@ class List(base.ListCommand):
           The following command lists the IAM policy defined at the resource
           project ``123" of kind ``denypolicies":
 
-            $ {command} --resource=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies
+            $ {command} --attachment-point=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies
           """),
   }
 

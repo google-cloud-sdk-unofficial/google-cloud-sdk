@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.dataplex import asset
 from googlecloudsdk.api_lib.dataplex import util as dataplex_util
 from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dataplex import flags
@@ -107,6 +108,8 @@ class Create(base.Command):
     base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      'Status code: {status_code}. {status_message}.')
   def Run(self, args):
     asset_ref = args.CONCEPTS.asset.Parse()
     dataplex_client = dataplex_util.GetClientInstance()
@@ -117,10 +120,12 @@ class Create(base.Command):
       if args.IsSpecified('resource_name'):
         resource_path = args.resource_name.split('/')
         if args.resource_type == 'BIGQUERY_DATASET':
-          apis.GetClientInstance('bigquery', 'v2').datasets.Get(
-              operation_detail=apis.GetMessagesModule('bigquery', 'v2')
-              .BigqueryDatasetsGetRequest(
-                  datasetId=resource_path[-1], projectId=asset_ref.projectsId))
+          operation_detail = apis.GetClientInstance(
+              'bigquery', 'v2').datasets.Get(
+                  apis.GetMessagesModule('bigquery',
+                                         'v2').BigqueryDatasetsGetRequest(
+                                             datasetId=resource_path[-1],
+                                             projectId=asset_ref.projectsId))
         elif args.resource_type == 'STORAGE_BUCKET':
           operation_detail = storage_api.StorageClient().GetBucket(
               resource_path[-1])
@@ -146,10 +151,18 @@ class Create(base.Command):
                 args)))
     validate_only = getattr(args, 'validate_only', False)
     if validate_only:
-      log.status.Print('Validation complete with errors:')
-      return create_req_op
+      log.status.Print('Validation complete.')
+      return
 
     async_ = getattr(args, 'async_', False)
     if not async_:
-      return asset.WaitForOperation(create_req_op)
-    return create_req_op
+      asset.WaitForOperation(create_req_op)
+      log.CreatedResource(
+          asset_ref.Name(),
+          details='Asset created in zone [{0}] in lake [{1}] in project [{2}] with location [{3}]'
+          .format(asset_ref.zonesId, asset_ref.lakesId, asset_ref.projectsId,
+                  asset_ref.locationsId))
+      return
+
+    log.status.Print('Creating [{0}] with operation [{1}].'.format(
+        asset_ref, create_req_op.name))

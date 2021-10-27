@@ -30,7 +30,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Add a NAT to a Compute Engine router."""
 
@@ -110,17 +110,23 @@ class Create(base.CreateCommand):
 
     operation_poller = poller.Poller(service, target_router_ref)
     return waiter.WaitFor(
-        operation_poller,
-        operation_ref, 'Creating NAT [{0}] in router [{1}]'.format(
-            nat.name, router_ref.Name()))
+        operation_poller, operation_ref,
+        'Creating NAT [{0}] in router [{1}]'.format(nat.name,
+                                                    router_ref.Name()))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
   """Add a NAT to a Compute Engine router."""
 
   with_rules = True
   with_tcp_time_wait_timeout = True
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Add a NAT to a Compute Engine router."""
+
   with_dynamic_port_allocation = True
 
 

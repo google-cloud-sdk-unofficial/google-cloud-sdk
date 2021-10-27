@@ -4,20 +4,20 @@
     brief: Delete a Cloud Security Command Center mute config.
     description: Delete a Cloud Security Command Center mute config.
     examples: |
-      To delete a mute config given organization ``123'' with id ``111'', run:
+      To delete a mute config given organization ``123'' with id ``my-test-mute-config'', run:
 
-        $ {command} 111 --organization=organizations/123
-        $ {command} 111 --organization=123
+        $ {command} my-test-mute-config --organization=organizations/123
+        $ {command} my-test-mute-config --organization=123
 
-      To delete a mute config given folder ``456'' with id ``111'', run:
+      To delete a mute config given folder ``456'' with id ``my-test-mute-config'', run:
 
-        $ {command} 111 --folder=folders/456
-        $ {command} 111 --folder=456
+        $ {command} my-test-mute-config --folder=folders/456
+        $ {command} my-test-mute-config --folder=456
 
-      To delete a mute config given project ``789'' with id ``111'', run:
+      To delete a mute config given project ``789'' with id ``my-test-mute-config'', run:
 
-        $ {command} 111 --project=projects/789
-        $ {command} 111 --project=789
+        $ {command} my-test-mute-config --project=projects/789
+        $ {command} my-test-mute-config --project=789
 
   request:
     collection: securitycenter.organizations.muteConfigs
@@ -29,7 +29,7 @@
   arguments:
 
     params:
-    - arg_name: muteConfigId
+    - arg_name: mute_config_id
       api_field: name
       is_positional: true
       required: true

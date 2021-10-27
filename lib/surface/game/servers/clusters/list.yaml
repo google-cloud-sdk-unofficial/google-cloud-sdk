@@ -63,6 +63,7 @@
              connectionInfo.namespace:label=NAMPESPACE,
              firstof(connectionInfo.gkeClusterReference.cluster,connectionInfo.gkeHubClusterReference.membership):label=CLUSTER_REFERENCE,
              allocationPriority:label=ALLOCATION_PRIORITY,
+             allocationWeight:label=ALLOCATION_WEIGHT,
              labels
            )",
           full:format="table(
@@ -75,6 +76,7 @@
              connectionInfo.namespace:label=NAMPESPACE,
              firstof(connectionInfo.gkeClusterReference.cluster,connectionInfo.gkeHubClusterReference.membership):label=CLUSTER_REFERENCE,
              allocationPriority:label=ALLOCATION_PRIORITY,
+             allocationWeight:label=ALLOCATION_WEIGHT,
              labels,
              clusterState.agonesVersionInstalled:label=AGONES_VERSION,
              clusterState.kubernetesVersionInstalled:label=KUBERNETES_VERSION,

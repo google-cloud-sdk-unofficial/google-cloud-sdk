@@ -65,8 +65,6 @@ class Apply(base.CreateCommand):
         public_issuer_url=getattr(args, 'public_issuer_url', None),
         enable_workload_identity=getattr(args, 'enable_workload_identity',
                                          False),
-        manage_workload_identity_bucket=getattr(
-            args, 'manage_workload_identity_bucket', False),
     )
     kube_util.ValidateClusterIdentifierFlags(kube_client, args)
 

@@ -92,11 +92,17 @@ class Replace(base.Command):
     """Create or Update service from YAML."""
     run_messages = apis.GetMessagesModule(global_methods.SERVERLESS_API_NAME,
                                           global_methods.SERVERLESS_API_VERSION)
+    service_dict = dict(args.FILE)
+    # Clear the status to make migration from k8s deployments easier.
+    # Since a Deployment status will have several fields that Cloud Run doesn't
+    # support, trying to convert it to a message as-is will fail even though
+    # status is ignored by the server.
+    if 'status' in service_dict:
+      del service_dict['status']
     try:
-      new_service = service.Service(
-          messages_util.DictToMessageWithErrorCheck(args.FILE,
-                                                    run_messages.Service),
-          run_messages)
+      raw_service = messages_util.DictToMessageWithErrorCheck(
+          service_dict, run_messages.Service)
+      new_service = service.Service(raw_service, run_messages)
     except messages_util.ScalarTypeMismatchError as e:
       exceptions.MaybeRaiseCustomFieldMismatch(
           e,

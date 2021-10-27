@@ -275,11 +275,8 @@ class Ssh(base.Command):
         return
 
       if not host_keys and host_keys is not None:
-        # Only display this message if there was an attempt to retrieve
-        # host keys but it was unsuccessful. If Guest Attributes is disabled,
-        # there is no attempt to retrieve host keys.
-        log.status.Print('Unable to retrieve host keys from instance metadata. '
-                         'Continuing.')
+        log.debug('Unable to retrieve host keys from instance metadata. '
+                  'Continuing.')
       expiration, expiration_micros = ssh_utils.GetSSHKeyExpirationFromArgs(
           args)
       if args.plain:

@@ -1,7 +1,7 @@
 - release_tracks: [GA]
   help_text:
-    brief: Describe a Cloud Data Catalog entry.
-    description: Describe a Cloud Data Catalog entry.
+    brief: Describe a Data Catalog entry.
+    description: Describe a Data Catalog entry.
     examples: |-
       To describe the entry 'entry1' in the group 'group1', run:
 
@@ -19,8 +19,8 @@
 
 - release_tracks: [ALPHA, BETA]
   help_text:
-    brief: Describe a Cloud Data Catalog entry.
-    description: Describe a Cloud Data Catalog entry.
+    brief: Describe a Data Catalog entry.
+    description: Describe a Data Catalog entry.
     examples: |-
       To describe the entry 'entry1' in the group 'group1', run:
 

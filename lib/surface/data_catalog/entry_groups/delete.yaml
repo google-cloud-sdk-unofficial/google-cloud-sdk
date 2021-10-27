@@ -1,7 +1,7 @@
 - release_tracks: [GA]
   help_text:
-    brief: Delete a Cloud Data Catalog entry group.
-    description: Delete a Cloud Data Catalog entry group.
+    brief: Delete a Data Catalog entry group.
+    description: Delete a Data Catalog entry group.
     examples: |-
       To delete an entry group for some data, run:
 
@@ -18,8 +18,8 @@
 
 - release_tracks: [ALPHA, BETA]
   help_text:
-    brief: Delete a Cloud Data Catalog entry group.
-    description: Delete a Cloud Data Catalog entry group.
+    brief: Delete a Data Catalog entry group.
+    description: Delete a Data Catalog entry group.
     examples: |-
       To delete an entry group for some data, run:
 

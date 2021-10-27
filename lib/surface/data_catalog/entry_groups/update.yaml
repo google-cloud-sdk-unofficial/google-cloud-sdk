@@ -1,8 +1,8 @@
 - release_tracks: [GA]
   help_text:
-    brief: Update a Cloud Data Catalog entry group.
+    brief: Update a Data Catalog entry group.
     description: |-
-      Update a Cloud Data Catalog entry group.
+      Update a Data Catalog entry group.
     examples: |-
       To update the description of entry group 'group1' , run:
 
@@ -23,9 +23,9 @@
 
 - release_tracks: [ALPHA, BETA]
   help_text:
-    brief: Update a Cloud Data Catalog entry group.
+    brief: Update a Data Catalog entry group.
     description: |-
-      Update a Cloud Data Catalog entry group.
+      Update a Data Catalog entry group.
     examples: |-
       To update the description of entry group 'group1' , run:
 

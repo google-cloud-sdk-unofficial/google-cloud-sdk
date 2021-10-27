@@ -41,6 +41,7 @@ from gslib.utils.text_util import NormalizeStorageClass
 _SYNOPSIS = """
   gsutil mb [-b (on|off)] [-c <class>] [-l <location>] [-p <project>]
             [--retention <time>] [--pap <setting>]
+            [--placement <region1>,<region2>]
             [--rpo {}] gs://<bucket_name>...
 """.format(VALID_RPO_VALUES_STRING)
 
@@ -57,7 +58,7 @@ _DETAILED_HELP_TEXT = ("""
 
   If you don't specify a project ID or project number using the -p option, the
   buckets are created using the default project ID specified in your `gsutil
-  configuration file<https://cloud.google.com/storage/docs/boto-gsutil>`_.
+  configuration file <https://cloud.google.com/storage/docs/boto-gsutil>`_.
 
   The -l option specifies the location for the buckets. Once a bucket is created
   in a given location, it cannot be moved to a different location. Instead, you
@@ -119,6 +120,9 @@ _DETAILED_HELP_TEXT = ("""
   retention policy.
 
 <B>OPTIONS</B>
+  --autoclass            Enables the Autoclass feature that automatically
+                         sets object storage classes.
+
   -b <on|off>            Specifies the uniform bucket-level access setting.
                          When "on", ACLs assigned to objects in the bucket are
                          not evaluated. Consequently, only IAM policies grant
@@ -146,6 +150,12 @@ _DETAILED_HELP_TEXT = ("""
                          values are "enforced" or "unspecified". When
                          "enforced", objects in this bucket cannot be made
                          publicly accessible. Default is "unspecified".
+
+  --placement reg1,reg2  Two regions that form the cutom dual-region.
+                         Only regions within the same continent are or will ever
+                         be valid. Invalid location pairs (such as
+                         mixed-continent, or with unsupported regions)
+                         will return an error.
 
   --rpo setting          Specifies the `replication setting <https://cloud.google.com/storage/docs/turbo-replication>`_.
                          This flag is not valid for single-region buckets,
@@ -176,7 +186,9 @@ class MbCommand(Command):
       min_args=1,
       max_args=NO_MAX,
       supported_sub_args='b:c:l:p:s:',
-      supported_private_args=['retention=', 'pap=', 'rpo='],
+      supported_private_args=[
+          'autoclass', 'retention=', 'pap=', 'placement=', 'rpo='
+      ],
       file_url_ok=False,
       provider_url_ok=False,
       urls_start_arg=0,
@@ -214,15 +226,21 @@ class MbCommand(Command):
 
   def RunCommand(self):
     """Command entry point for the mb command."""
+    autoclass = False
     bucket_policy_only = None
     location = None
     storage_class = None
     seconds = None
     public_access_prevention = None
     rpo = None
+    json_only_flags_in_command = []
+    placements = None
     if self.sub_opts:
       for o, a in self.sub_opts:
-        if o == '-l':
+        if o == '--autoclass':
+          autoclass = True
+          json_only_flags_in_command.append(o)
+        elif o == '-l':
           location = a
         elif o == '-p':
           # Project IDs are sent as header values when using gs and s3 XML APIs.
@@ -238,18 +256,28 @@ class MbCommand(Command):
             raise CommandException(
                 'Invalid value for --rpo. Must be one of: {},'
                 ' provided: {}'.format(VALID_RPO_VALUES_STRING, a))
+          json_only_flags_in_command.append(o)
         elif o == '-b':
-          if self.gsutil_api.GetApiSelector('gs') != ApiSelector.JSON:
-            raise CommandException('The -b <on|off> option '
-                                   'can only be used with the JSON API')
           InsistOnOrOff(a, 'Only on and off values allowed for -b option')
           bucket_policy_only = (a == 'on')
+          json_only_flags_in_command.append(o)
         elif o == '--pap':
           public_access_prevention = a
+          json_only_flags_in_command.append(o)
+        elif o == '--placement':
+          placements = a.split(',')
+          if len(placements) != 2:
+            raise CommandException(
+                'Please specify two regions separated by comma without space.'
+                ' Specified: {}'.format(a))
+          json_only_flags_in_command.append(o)
 
     bucket_metadata = apitools_messages.Bucket(location=location,
-                                               storageClass=storage_class,
-                                               rpo=rpo)
+                                               rpo=rpo,
+                                               storageClass=storage_class)
+    if autoclass:
+      bucket_metadata.autoclass = apitools_messages.Bucket.AutoclassValue(
+          enabled=autoclass)
     if bucket_policy_only or public_access_prevention:
       bucket_metadata.iamConfiguration = IamConfigurationValue()
       iam_config = bucket_metadata.iamConfiguration
@@ -258,6 +286,11 @@ class MbCommand(Command):
         iam_config.bucketPolicyOnly.enabled = bucket_policy_only
       if public_access_prevention:
         iam_config.publicAccessPrevention = public_access_prevention
+
+    if placements:
+      placement_config = apitools_messages.Bucket.CustomPlacementConfigValue()
+      placement_config.dataLocations = placements
+      bucket_metadata.customPlacementConfig = placement_config
 
     for bucket_url_str in self.args:
       bucket_url = StorageUrlFromString(bucket_url_str)
@@ -269,11 +302,12 @@ class MbCommand(Command):
             retentionPeriod=seconds))
         bucket_metadata.retentionPolicy = retention_policy
 
-      if public_access_prevention and self.gsutil_api.GetApiSelector(
+      if json_only_flags_in_command and self.gsutil_api.GetApiSelector(
           bucket_url.scheme) != ApiSelector.JSON:
-        raise CommandException(
-            'The --pap option can only be used for GCS Buckets with the JSON API'
-        )
+        raise CommandException('The {} option(s) can only be used for GCS'
+                               ' Buckets with the JSON API'.format(
+                                   ', '.join(json_only_flags_in_command)))
+
       if not bucket_url.IsBucket():
         raise CommandException('The mb command requires a URL that specifies a '
                                'bucket.\n"%s" is not valid.' % bucket_url)

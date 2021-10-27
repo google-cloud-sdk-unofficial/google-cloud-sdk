@@ -113,13 +113,13 @@ class Create(base.CreateCommand):
 
     with files.ChDir(args.work_dir):
       log.status.Print('Working directory is set to {}.'.format(args.work_dir))
-      executable_image = args.base_image
+      executable_image = args.executor_image_uri or args.base_image
 
       if args.script:
         # TODO(b/176214485): Consider including the image id in build result.
         built_image = docker_builder.BuildImage(
-            base_image=args.base_image,
-            host_workdir=args.work_dir,
+            base_image=executable_image,
+            host_workdir=args.local_package_path or args.work_dir,
             main_script=args.script,
             python_module=args.python_module,
             requirements=args.requirements,

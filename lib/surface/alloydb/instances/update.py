@@ -45,15 +45,13 @@ class Update(base.UpdateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddAssignIp(parser)
     flags.AddAvailabilityType(parser)
-    flags.AddCPU(parser)
     flags.AddCluster(parser, False)
     flags.AddDatabaseFlags(parser)
     flags.AddInstance(parser)
     flags.AddInstanceType(parser)
-    flags.AddMemory(parser)
-    flags.AddReadPoolSize(parser)
+    flags.AddMachineCPU(parser)
+    flags.AddReadPoolNodeCount(parser)
     flags.AddRegion(parser)
-    flags.AddTier(parser)
     flags.AddZone(parser)
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases

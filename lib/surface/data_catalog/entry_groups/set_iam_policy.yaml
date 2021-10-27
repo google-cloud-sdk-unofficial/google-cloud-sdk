@@ -1,9 +1,9 @@
 - release_tracks: [GA]
 
   help_text:
-    brief: Set the IAM policy for a Cloud Data Catalog entry group.
+    brief: Set the IAM policy for a Data Catalog entry group.
     description: |
-      Set the IAM policy for the given Cloud Data Catalog entry group as
+      Set the IAM policy for the given Data Catalog entry group as
       defined in a JSON or YAML file.
 
     examples: |
@@ -28,9 +28,9 @@
 - release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: Set the IAM policy for a Cloud Data Catalog entry group.
+    brief: Set the IAM policy for a Data Catalog entry group.
     description: |
-      Set the IAM policy for the given Cloud Data Catalog entry group as
+      Set the IAM policy for the given Data Catalog entry group as
       defined in a JSON or YAML file.
 
     examples: |

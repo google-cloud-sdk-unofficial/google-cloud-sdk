@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Revoke credentials being used by Application Default Credentials."""
 
 from __future__ import absolute_import
@@ -21,14 +20,16 @@ from __future__ import unicode_literals
 
 import os
 
+from google.oauth2 import credentials as google_auth_creds
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import config
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.credentials import creds as c_creds
+from googlecloudsdk.core.credentials import google_auth_credentials as c_google_auth
 from googlecloudsdk.core.credentials import store as c_store
-
-from oauth2client import client
 
 
 class Revoke(base.SilentCommand):
@@ -56,17 +57,31 @@ class Revoke(base.SilentCommand):
                        'nothing to revoke.')
       return
 
-    creds = client.GoogleCredentials.from_stream(cred_file)
-    if creds.serialization_data['type'] != 'authorized_user':
+    creds, _ = c_creds.GetGoogleAuthDefault().load_credentials_from_file(
+        cred_file)
+    if not (c_creds.IsUserAccountCredentials(creds) or
+            c_creds.IsExternalAccountCredentials(creds) or
+            c_creds.IsExternalAccountUserCredentials(creds)):
       raise c_exc.BadFileException(
           'The given credential file is a service account credential, and '
           'cannot be revoked.')
+    if isinstance(creds, google_auth_creds.Credentials):
+      creds = c_google_auth.UserCredWithReauth.FromGoogleAuthUserCredentials(
+          creds)
 
     console_io.PromptContinue(
-        'You are about to revoke the credentials stored in: [{file}]'
-        .format(file=cred_file),
-        throw_if_unattended=True, cancel_on_no=True)
+        'You are about to revoke the credentials stored in: [{file}]'.format(
+            file=cred_file),
+        throw_if_unattended=True,
+        cancel_on_no=True)
 
-    c_store.RevokeCredentials(creds)
-    os.remove(cred_file)
-    log.status.Print('Credentials revoked.')
+    try:
+      c_store.RevokeCredentials(creds)
+      os.remove(cred_file)
+      log.status.Print('Credentials revoked.')
+    except c_store.RevokeError:
+      os.remove(cred_file)
+      log.warning(
+          'The credentials stored in: [{file}] are not revocable from the '
+          'server but have been deleted from the file system.'.format(
+              file=cred_file))

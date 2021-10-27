@@ -1,0 +1,19 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Describe an Allocation Endpoint.
+    description: Describe an Allocation Endpoint.
+    examples: |
+      To describe an Allocation Endpoint name `my-endpoint` run:
+
+        $ {command} my-endpoint
+
+  request:
+    collection: gameservices.projects.locations.global.allocationEndpoints
+    ALPHA:
+      api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: Allocation Endpoint to describe.
+      spec: !REF googlecloudsdk.command_lib.game.resources:endpoint

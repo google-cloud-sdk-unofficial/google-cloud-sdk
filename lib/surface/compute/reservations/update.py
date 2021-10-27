@@ -41,14 +41,30 @@ def _ValidateArgs(args, support_share_with):
   parameter_names = ['--share-with', '--vm-count']
   parameter_names_ga = ['--vm-count']
   one_option_exception_message = (
-      'Please provide one of these options: 1- Specify '
-      'share-with to update the project list. 2- Specify '
-      'reservation vm-count to resize. ')
+      'Please provide one of these options: 1- Specify share-with or '
+      'add-share-with or remove-share-with to update the project list. 2- '
+      'Specify reservation vm-count to resize. ')
   vm_count_missed_message = 'Please specify reservation with vm-count to resize'
 
   if support_share_with:
-    if args.IsSpecified('share_with'):
+    has_share_with = args.IsSpecified('share_with')
+    has_add_share_with = args.IsSpecified('add_share_with')
+    has_remove_share_with = args.IsSpecified('remove_share_with')
+    if has_share_with or has_add_share_with or has_remove_share_with:
       share_with = True
+    if (has_share_with and has_add_share_with) or (
+        has_share_with and has_remove_share_with) or (has_add_share_with and
+                                                      has_remove_share_with):
+      raise exceptions.ConflictingArgumentsException('--share-with',
+                                                     '--add-share-with',
+                                                     '--remove-share-with')
+    if has_remove_share_with:
+      for project in getattr(args, 'remove_share_with', []):
+        if not project.isnumeric():
+          raise exceptions.InvalidArgumentException(
+              '--remove-share-with',
+              'Please specify project number (not project id/name).')
+
   # For GA only check the size.
   if not support_share_with and not args.IsSpecified('vm_count'):
     raise exceptions.MinimumArgumentException(parameter_names_ga,
@@ -72,10 +88,30 @@ def _GetShareSettingUpdateRequest(args, reservation_ref, holder):
   """
   messages = holder.client.messages
   # Set updated properties and build update mask.
-  update_mask = []
   share_settings = None
-  share_settings = util.MakeShareSettingsWithArgs(messages, args, 'projects')
-  update_mask.append('shareSettings.projects')
+  setting_configs = 'projects'  # Only updating projects is supported now.
+  if args.IsSpecified('share_with'):
+    share_settings = util.MakeShareSettingsWithArgs(
+        messages, args, setting_configs, share_with='share_with')
+    update_mask = [
+        'shareSettings.projectMap.' + project
+        for project in getattr(args, 'share_with', [])
+    ]
+  elif args.IsSpecified('add_share_with'):
+    share_settings = util.MakeShareSettingsWithArgs(
+        messages, args, setting_configs, share_with='add_share_with')
+    update_mask = [
+        'shareSettings.projectMap.' + project
+        for project in getattr(args, 'add_share_with', [])
+    ]
+  elif args.IsSpecified('remove_share_with'):
+    share_settings = messages.ShareSettings(
+        shareType=messages.ShareSettings.ShareTypeValueValuesEnum
+        .SPECIFIC_PROJECTS)
+    update_mask = [
+        'shareSettings.projectMap.' + project
+        for project in getattr(args, 'remove_share_with', [])
+    ]
 
   # Build reservation object using new share-settings.
   r_resource = util.MakeReservationMessage(messages, reservation_ref.Name(),
@@ -147,7 +183,8 @@ class Update(base.UpdateCommand):
     errors = []
     share_with = False
     if self._support_share_with:
-      if args.IsSpecified('share_with'):
+      if args.IsSpecified('share_with') or args.IsSpecified(
+          'add_share_with') or args.IsSpecified('remove_share_with'):
         share_with = True
 
     if self._support_share_with and share_with:
@@ -183,6 +220,8 @@ class UpdateBeta(Update):
     resource_args.GetReservationResourceArg().AddArgument(
         parser, operation_type='update')
     r_flags.GetShareWithFlag().AddToParser(parser)
+    r_flags.GetAddShareWithFlag().AddToParser(parser)
+    r_flags.GetRemoveShareWithFlag().AddToParser(parser)
     r_flags.GetVmCountFlag(False).AddToParser(parser)
 
 

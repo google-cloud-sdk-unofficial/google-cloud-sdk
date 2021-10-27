@@ -698,7 +698,7 @@ class UpdateBeta(Update):
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
     flags.AddEnableWorkloadMonitoringEapFlag(group)
-    flags.AddManagedPrometheusFlag(group)
+    flags.AddManagedPrometheusFlags(group)
     flags.AddEnableMasterSignalsFlags(group)
     flags.AddMasterAuthorizedNetworksFlags(
         parser, enable_group_for_update=group)
@@ -806,6 +806,7 @@ class UpdateBeta(Update):
     opts.enable_identity_service = args.enable_identity_service
     opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
     opts.enable_managed_prometheus = args.enable_managed_prometheus
+    opts.disable_managed_prometheus = args.disable_managed_prometheus
     opts.disable_autopilot = args.disable_autopilot
     opts.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting
     if opts.enable_l4_ilb_subsetting:
@@ -854,7 +855,7 @@ class UpdateAlpha(Update):
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
     flags.AddEnableWorkloadMonitoringEapFlag(group)
-    flags.AddManagedPrometheusFlag(group)
+    flags.AddManagedPrometheusFlags(group)
     flags.AddEnableMasterSignalsFlags(group)
     flags.AddMasterAuthorizedNetworksFlags(
         parser, enable_group_for_update=group)
@@ -960,6 +961,7 @@ class UpdateAlpha(Update):
     opts.enable_identity_service = args.enable_identity_service
     opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
     opts.enable_managed_prometheus = args.enable_managed_prometheus
+    opts.disable_managed_prometheus = args.disable_managed_prometheus
     opts.disable_autopilot = args.disable_autopilot
     opts.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting
     if opts.enable_l4_ilb_subsetting:

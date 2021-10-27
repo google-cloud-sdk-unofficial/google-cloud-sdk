@@ -29,7 +29,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create Anthos Config Controller instances."""
 
@@ -54,15 +54,15 @@ class Create(base.CreateCommand):
     flags.AddServicesIPv4CIDRBlack(parser)
     flags.AddClusterNamedRangeFlag(parser)
     flags.AddServicesNamedRange(parser)
-    flags.AddFullManagement(parser)
 
   def Run(self, args):
     client = krmapihosting_api.GetClientInstance()
 
     instance_ref = args.CONCEPTS.name.Parse()
 
+    release_track = args.calliope_command.ReleaseTrack()
     op_ref = client.projects_locations_krmApiHosts.Create(
-        create_utils.CreateUpdateRequest(instance_ref, args))
+        create_utils.CreateUpdateRequest(release_track, instance_ref, args))
     log.status.Print("Create request issued for: [{}]".format(
         instance_ref.krmApiHostsId))
     if args.async_:
@@ -85,3 +85,21 @@ class Create(base.CreateCommand):
     container_util.ClusterConfig.Persist(cluster, cluster_ref.projectId)
 
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create Anthos Config Controller instances."""
+
+  @staticmethod
+  def Args(parser):
+    utils.AddInstanceResourceArg(parser)
+    flags.AddAsyncFlag(parser)
+    flags.AddMasterIPv4CIDRBlock(parser)
+    flags.AddNetworkFlag(parser)
+    flags.AddManBlockFlag(parser)
+    flags.AddClusterIPv4CIDRBlock(parser)
+    flags.AddServicesIPv4CIDRBlack(parser)
+    flags.AddClusterNamedRangeFlag(parser)
+    flags.AddServicesNamedRange(parser)
+    flags.AddFullManagement(parser)

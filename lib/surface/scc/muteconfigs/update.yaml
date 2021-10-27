@@ -4,20 +4,20 @@
     brief: Update a Cloud Security Command Center mute config.
     description: Update a Cloud Security Command Center mute config.
     examples: |
-      Update a mute config with id ``111'' under organization ``123'' with a filter on category that equals to XSS_SCRIPTING:
+      Update a mute config with id ``my-test-mute-config'' under organization ``123'' with a filter on category that equals to XSS_SCRIPTING:
 
-        $ {command} 111 --organization=organizations/123 --display-name="test-mute-config" --description="This is a test mute config" --filter="category=\"XSS_SCRIPTING\""
-        $ {command} 111 --organization=123 --display-name="test-mute-config" --description="This is a test mute config" --filter="category=\"XSS_SCRIPTING\""
+        $ {command} my-test-mute-config --organization=organizations/123 --description="This is a test mute config" --filter="category=\"XSS_SCRIPTING\""
+        $ {command} my-test-mute-config --organization=123 --description="This is a test mute config" --filter="category=\"XSS_SCRIPTING\""
 
-      Update a mute config with id ``111'' under folder ``456'' with a filter on category that equals to XSS_SCRIPTING:
+      Update a mute config with id ``my-test-mute-config'' under folder ``456'' with a filter on category that equals to XSS_SCRIPTING:
 
-        $ {command} 111 --folder=folders/456 --display-name="test-mute-config" --description="This is a test mute config" --filter="category=\"XSS_SCRIPTING\""
-        $ {command} 111 --folder=456 --display-name="test-mute-config" --description="This is a test mute config" --filter="category=\"XSS_SCRIPTING\""
+        $ {command} my-test-mute-config --folder=folders/456 --description="This is a test mute config" --filter="category=\"XSS_SCRIPTING\""
+        $ {command} my-test-mute-config --folder=456 --description="This is a test mute config" --filter="category=\"XSS_SCRIPTING\""
 
-      Update a mute config with id ``111'' under project ``789'' with a filter on category that equals to XSS_SCRIPTING:
+      Update a mute config with id ``my-test-mute-config'' under project ``789'' with a filter on category that equals to XSS_SCRIPTING:
 
-        $ {command} 111 --project=projects/789 --display-name="test-mute-config" --description="This is a test mute config" --filter="category=\"XSS_SCRIPTING\""
-        $ {command} 111 --project=789 --display-name="test-mute-config" --description="This is a test mute config" --filter="category=\"XSS_SCRIPTING\""
+        $ {command} my-test-mute-config --project=projects/789 --description="This is a test mute config" --filter="category=\"XSS_SCRIPTING\""
+        $ {command} my-test-mute-config --project=789 --description="This is a test mute config" --filter="category=\"XSS_SCRIPTING\""
 
   request:
     collection: securitycenter.organizations.muteConfigs
@@ -29,7 +29,7 @@
   arguments:
 
     params:
-    - arg_name: muteConfigId
+    - arg_name: mute_config_id
       api_field: name
       is_positional: true
       required: true
@@ -55,7 +55,6 @@
           help_text: |
             Project (id or number) where the mute config resides. Formatted as ``projects/789'' or just ``789''.
 
-    - !REF googlecloudsdk.command_lib.scc.muteconfigs.flags:display_name
     - !REF googlecloudsdk.command_lib.scc.muteconfigs.flags:description
     - !REF googlecloudsdk.command_lib.scc.muteconfigs.flags:filter
     - arg_name: update-mask

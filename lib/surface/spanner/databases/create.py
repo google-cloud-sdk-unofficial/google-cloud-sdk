@@ -103,6 +103,16 @@ class AlphaCreate(Create):
 
           $ {command} testdb --instance=my-instance-id
               --ddl='CREATE TABLE mytable (a INT64, b INT64) PRIMARY KEY(a)'
+
+        To create a Cloud Spanner database with the PostgreSQL dialect, run:
+
+          $ {command} testdb --instance=my-instance-id
+              --database-dialect=POSTGRESQL
+
+        Currently, only a subset of Cloud Spanner regions support creating
+        PostgreSQL databases in the preview release of the PostgreSQL interface
+        feature. Consult your preview invitation for details.
+
         """),
   }
 

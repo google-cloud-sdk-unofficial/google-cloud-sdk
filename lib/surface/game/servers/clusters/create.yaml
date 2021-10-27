@@ -138,6 +138,20 @@
         game server allocations based on the relative allocation priorities set for each cluster
         within a realm where multicluster allocation is configured. Ordering is based on the
         priority; 'p1' has the highest priority and 'priority-unspecified' has the lowest priority.
+    - arg_name: allocation-weight
+      release_tracks: [ALPHA]
+      api_field: gameServerCluster.allocationWeight
+      hidden: true
+      help_text: |
+        The Allocation weight assigned to the game server cluster.
+        Allocation weight is used to control a single cluster's allocation load
+        ratio, from 0 (allocation disabled) to 100 (its full expected load).
+
+        For example, if there are two clusters in a realm where each expects to
+        receive 500 units of allocations eventually. The ratio does not represent
+        the load ratio across the realm (1000), but the percentage of traffic of
+        the cluster (500). Any overflow is load balanced across the clusters
+        according to the weight.
     labels:
       api_field: gameServerCluster.labels
 

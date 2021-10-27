@@ -70,23 +70,20 @@ class CreateAlpha(base.CreateCommand):
     flags.AddSourceFlag(parser)
     flags.AddIgnoreFileFlag(parser)
     flags.AddTimeoutFlag(parser)
-    concept_parsers.ConceptParser(
-        [
-            # Note: The order of these arguments is important. The Deployment
-            # spec must come first, to be treated as the "anchor" resource.
-            resource_args.GetDeploymentResourceArgSpec(
-                'the deployment to create or update.'),
-            resource_args.GetConfigControllerResourceFlagSpec(
-                'the Config Controller instance to deploy to, for example: '
-                '[projects/my-project/locations/us-central1/krmApiHosts/'
-                'my-cluster].'),
-        ],
-        # Set the location of the config-controller instance to fall back on the
-        # value of the default --location flag.
-        command_level_fallthroughs={
-            '--config-controller.location': ['DEPLOYMENT.location'],
-        },
-    ).AddToParser(parser)
+
+    target_group = parser.add_mutually_exclusive_group()
+    flags.AddGitTargetFlag(target_group)
+    concept_parsers.ConceptParser([
+        resource_args.GetConfigControllerResourceFlagSpec(
+            'the Config Controller instance to deploy to, for example: '
+            '[projects/my-project/locations/us-central1/krmApiHosts/'
+            'my-cluster].')
+    ]).AddToParser(target_group)
+
+    concept_parsers.ConceptParser([
+        resource_args.GetDeploymentResourceArgSpec(
+            'the deployment to create or update.')
+    ]).AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -102,14 +99,14 @@ class CreateAlpha(base.CreateCommand):
     messages = blueprints_util.GetMessagesModule()
     deployment_ref = args.CONCEPTS.deployment.Parse()
     deployment_full_name = deployment_ref.RelativeName()
-    location = deployment_ref.Parent().Name()
 
     config_controller_ref = args.CONCEPTS.config_controller.Parse()
     config_controller_full_name = (
         config_controller_ref.RelativeName() if config_controller_ref else None)
 
     return deploy_util.Apply(args.source, deployment_full_name,
-                             args.stage_bucket, args.labels, messages, location,
+                             args.stage_bucket, args.labels, messages,
                              args.ignore_file, args.async_,
                              args.reconcile_timeout, args.source_git_subdir,
-                             config_controller_full_name)
+                             config_controller_full_name, args.target_git,
+                             args.target_git_subdir)

@@ -20,7 +20,9 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataplex import lake
 from googlecloudsdk.api_lib.dataplex import util as dataplex_util
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
@@ -63,8 +65,15 @@ class Update(base.Command):
     base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      'Status code: {status_code}. {status_message}.')
   def Run(self, args):
     update_mask = lake.GenerateUpdateMask(args)
+    if len(update_mask) < 1:
+      raise exceptions.HttpException(
+          'Update commands must specify at least one additional parameter to change.'
+      )
+
     lake_ref = args.CONCEPTS.lake.Parse()
     dataplex_client = dataplex_util.GetClientInstance()
     message = dataplex_util.GetMessageModule()
@@ -87,5 +96,9 @@ class Update(base.Command):
 
     async_ = getattr(args, 'async_', False)
     if not async_:
-      return lake.WaitForOperation(update_req_op)
-    return update_req_op
+      lake.WaitForOperation(update_req_op)
+      log.UpdatedResource(lake_ref, details='Operation was sucessful.')
+      return
+
+    log.status.Print('Updating [{0}] with operation [{1}].'.format(
+        lake_ref, update_req_op.name))

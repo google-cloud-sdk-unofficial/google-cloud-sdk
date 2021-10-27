@@ -181,7 +181,10 @@ class Import(base.CreateCommand):
           '--source-file',
           help=("""A local file, or the Cloud Storage URI of the virtual
               disk file to import. For example: ``gs://my-bucket/my-image.vmdk''
-              or ``./my-local-image.vmdk''"""),
+              or ``./my-local-image.vmdk''. For more information about Cloud
+              Storage URIs, see
+              https://cloud.google.com/storage/docs/request-endpoints#json-api.
+              """),
       )
       flags.SOURCE_IMAGE_ARG.AddArgument(source, operation_type='import')
     else:
@@ -194,7 +197,10 @@ class Import(base.CreateCommand):
           '--source-file',
           help=("""A local file, or the Cloud Storage URI of the virtual
                 disk file to import. For example: ``gs://my-bucket/my-image.vmdk''
-                or ``./my-local-image.vmdk''"""),
+                or ``./my-local-image.vmdk''. For more information about Cloud
+              Storage URIs, see
+              https://cloud.google.com/storage/docs/request-endpoints#json-api.
+              """),
       )
       flags.SOURCE_IMAGE_ARG.AddArgument(
           import_from_local_or_gcs, operation_type='import')
@@ -315,8 +321,6 @@ class Import(base.CreateCommand):
     stager = self._CreateImportStager(args, compute_holder)
     import_metadata = stager.Stage()
 
-    # TODO(b/79591894): Once we've cleaned up the Argo output, replace this
-    # warning message with a ProgressTracker spinner.
     log.warning('Importing image. This may take up to 2 hours.')
 
     tags = ['gce-daisy-image-import']

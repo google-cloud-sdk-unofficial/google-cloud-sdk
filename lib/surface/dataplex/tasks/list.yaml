@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: |
+      List Dataplex Task Resources.
+    description: |
+      List Dataplex Task resources based on project, location, and lake. Currently list does not support project/{project_id}/.../ notation.
+
+      {command} --project={project_id} --location={location} --lake={lake_id}
+    examples: |
+      {command} --projects="test-project" --locations=us-central1 --lakes=test-lake
+
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.lakes.tasks
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Lake to list Tasks under it.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:lake

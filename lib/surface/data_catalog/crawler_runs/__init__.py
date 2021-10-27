@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Manage crawler runs in Cloud Data Catalog."""
+"""Manage crawler runs in Data Catalog."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,5 +23,5 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CrawlerRuns(base.Group):
-  """Manage crawler runs in Cloud Data Catalog."""
+  """Manage crawler runs in Data Catalog."""
   pass

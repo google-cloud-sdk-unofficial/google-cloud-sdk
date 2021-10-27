@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [GA, ALPHA]
 
   help_text:
     brief: Cancel an OS policy assignment operation
@@ -19,6 +19,8 @@
     method: cancel
     ALPHA:
       api_version: v1alpha
+    GA:
+      api_version: v1
 
   arguments:
     resource:

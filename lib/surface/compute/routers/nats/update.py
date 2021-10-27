@@ -30,7 +30,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a NAT on a Compute Engine router."""
 
@@ -110,17 +110,22 @@ class Update(base.UpdateCommand):
 
     operation_poller = poller.Poller(service, target_router_ref)
     return waiter.WaitFor(
-        operation_poller,
-        operation_ref, 'Updating nat [{0}] in router [{1}]'.format(
-            nat.name, router_ref.Name()))
+        operation_poller, operation_ref,
+        'Updating nat [{0}] in router [{1}]'.format(nat.name,
+                                                    router_ref.Name()))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a NAT on a Compute Engine router."""
+  with_rules = True
+  with_tcp_time_wait_timeout = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
+class UpdateAlpha(UpdateBeta):
   """Update a NAT on a Compute Engine router."""
 
-  with_rules = True
-  with_tcp_time_wait_timeout = True
   with_dynamic_port_allocation = True
 
 

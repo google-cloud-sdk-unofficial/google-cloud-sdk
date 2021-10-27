@@ -1,11 +1,11 @@
 - release_tracks: [GA]
 
   help_text:
-    brief: Create a Cloud Data Catalog entry tag.
-    description: Create a Cloud Data Catalog entry tag.
+    brief: Create a Data Catalog entry tag.
+    description: Create a Data Catalog entry tag.
 
     examples: |
-      Create a Cloud Data Catalog entry tag:
+      Create a Data Catalog entry tag:
 
         $ {command} --entry=ENTRY --tag-template=TAG_TEMPLATE --tag-file=TAG_FILE
 
@@ -54,11 +54,11 @@
 - release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: Create a Cloud Data Catalog entry tag.
-    description: Create a Cloud Data Catalog entry tag.
+    brief: Create a Data Catalog entry tag.
+    description: Create a Data Catalog entry tag.
 
     examples: |
-      Create a Cloud Data Catalog entry tag:
+      Create a Data Catalog entry tag:
 
         $ {command} --entry=ENTRY --tag-template=TAG_TEMPLATE --tag-file=TAG_FILE
 

@@ -1,7 +1,7 @@
 - release_tracks: [ALPHA]
   help_text:
-    brief: Update a Cloud Data Catalog crawler.
-    description: Update a Cloud Data Catalog crawler.
+    brief: Update a Data Catalog crawler.
+    description: Update a Data Catalog crawler.
     examples: |
       Update the display name of a crawler:
 

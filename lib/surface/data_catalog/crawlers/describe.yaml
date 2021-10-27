@@ -1,7 +1,7 @@
 - release_tracks: [ALPHA]
   help_text:
-    brief: Describe a Cloud Data Catalog crawler.
-    description: Describe a Cloud Data Catalog crawler.
+    brief: Describe a Data Catalog crawler.
+    description: Describe a Data Catalog crawler.
 
   request:
     collection: datacatalog.projects.crawlers

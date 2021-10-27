@@ -79,6 +79,14 @@ class Gcloud(base.Group):
              'account and sv1@developer.gserviceaccount.com is the delegate.',
         action=actions.StoreProperty(
             properties.VALUES.auth.impersonate_service_account))
+    parser.add_argument(
+        '--access-token-file',
+        metavar='ACCESS_TOKEN_FILE',
+        help='A file path to read the access token. Use this flag to '
+        'authenticate gcloud with an access token. The credentials of '
+        'the active account (if exists) will be ignored. The file should '
+        'only contain an access token with no other information.',
+        action=actions.StoreProperty(properties.VALUES.auth.access_token_file))
     common_args.ProjectArgument().AddToParser(parser)
     parser.add_argument(
         '--billing-project',

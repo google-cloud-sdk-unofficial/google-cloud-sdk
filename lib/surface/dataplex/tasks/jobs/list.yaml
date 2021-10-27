@@ -1,0 +1,30 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: |
+      List Jobs runs of a Task.
+    description: |
+      List Jobs runs of a Task based on project, location, lake and task. Currently list does not support project/{project_id}/.../ notation.
+
+      {command} --project={project_id} --location={location} --lake={lake_id} --task={task_id}
+    examples: |
+      {command} --projects="test-project" --locations=us-central1 --lakes=test-lake --task=test-task
+
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.lakes.tasks.jobs
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Task to list the Jobs running the Task.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:task
+  output:
+    format: |
+      table(
+        name.basename():label=JOB_ID,
+        state:label=JOB_STATUS,
+        service:label=SERVICE,
+        startTime:label=START_TIME,
+        endTime:label=END_TIME
+      )

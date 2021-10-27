@@ -1,8 +1,8 @@
 - release_tracks: [GA]
 
   help_text:
-    brief: Create a Cloud Data Catalog tag template.
-    description: Create a Cloud Data Catalog tag template.
+    brief: Create a Data Catalog tag template.
+    description: Create a Data Catalog tag template.
 
     examples: |
       Create a string tag template with a required string field:
@@ -40,8 +40,8 @@
 - release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: Create a Cloud Data Catalog tag template.
-    description: Create a Cloud Data Catalog tag template.
+    brief: Create a Data Catalog tag template.
+    description: Create a Data Catalog tag template.
 
     examples: |
       Create a string tag template with a required string field:

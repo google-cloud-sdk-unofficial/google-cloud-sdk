@@ -252,24 +252,6 @@ class Register(base.CreateCommand):
           Requires --enable-workload-identity.
           """),
     )
-    # Keep this hidden as it is not used for user-facing workflows and is
-    # eliminated in beta.
-    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
-      workload_identity_mutex.add_argument(
-          '--manage-workload-identity-bucket',
-          hidden=True,
-          action='store_true',
-          help=textwrap.dedent("""\
-            Create the GCS bucket for serving OIDC discovery information when
-            registering the cluster with Hub. The cluster must already be
-            configured with an issuer URL of the format:
-            https://storage.googleapis.com/gke-issuer-{UUID}. The cluster must
-            also serve the built-in OIDC discovery endpoints by enabling and
-            correctly configuring the ServiceAccountIssuerDiscovery feature.
-            Requires gcloud alpha and --enable-workload-identity.
-            Mutually exclusive with --public-issuer-url.
-            """),
-      )
 
     workload_identity_mutex.add_argument(
         '--has-private-issuer',
@@ -306,8 +288,6 @@ class Register(base.CreateCommand):
         public_issuer_url=getattr(args, 'public_issuer_url', None),
         enable_workload_identity=getattr(args, 'enable_workload_identity',
                                          False),
-        manage_workload_identity_bucket=getattr(
-            args, 'manage_workload_identity_bucket', False),
     ) as kube_client:
       kube_client.CheckClusterAdminPermissions()
       kube_util.ValidateClusterIdentifierFlags(kube_client, args)
@@ -370,19 +350,9 @@ class Register(base.CreateCommand):
                                  'returned in discovery doc: {}'.format(
                                      public_issuer_url, issuer_url))
 
-        # Request the JWKS from the cluster if we need it (either for setting
-        # up the GCS bucket or getting public keys for private issuers).
-        if self.ReleaseTrack() is base.ReleaseTrack.ALPHA:
-          if args.manage_workload_identity_bucket:
-            api_util.CreateWorkloadIdentityBucket(project, issuer_url,
-                                                  openid_config_json,
-                                                  kube_client.GetOpenIDKeyset())
         # In the private issuer case, we set private_keyset_json,
         # which is used later to upload the JWKS
-        # in the Hub Membership. For ALPHA only one of
-        # manage_workload_identity_bucket and has_private_issuer will be set,
-        # since they are mutually exclusive, marked as mutex flags in
-        # surface spec.
+        # in the Hub Membership.
         if args.has_private_issuer:
           private_keyset_json = kube_client.GetOpenIDKeyset()
 

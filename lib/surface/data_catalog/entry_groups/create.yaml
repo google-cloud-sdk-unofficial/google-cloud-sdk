@@ -1,7 +1,7 @@
 - release_tracks: [GA]
   help_text:
-    brief: Create a Cloud Data Catalog entry group.
-    description: Create a Cloud Data Catalog entry group.
+    brief: Create a Data Catalog entry group.
+    description: Create a Data Catalog entry group.
     examples: |-
       To create an entry group for some data, run:
 
@@ -23,8 +23,8 @@
 
 - release_tracks: [ALPHA, BETA]
   help_text:
-    brief: Create a Cloud Data Catalog entry group.
-    description: Create a Cloud Data Catalog entry group.
+    brief: Create a Data Catalog entry group.
+    description: Create a Data Catalog entry group.
     examples: |-
       To create an entry group for some data, run:
 

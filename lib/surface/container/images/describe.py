@@ -176,10 +176,12 @@ class DescribeAlphaAndBeta(Describe):
       f = filter_util.ContainerAnalysisFilter()
       f.WithKinds(filter_kinds)
       f.WithCustomFilter(args.metadata_filter)
-      f.WithResources(['https://{}'.format(args.image_name)])
 
       with util.WrapExpectedDockerlessErrors(args.image_name):
         img_name = util.GetDigestFromName(args.image_name)
+        # The filter needs the image name with the digest, because that's
+        # what it matches against in the API.
+        f.WithResources(['https://{}'.format(img_name)])
         data = util.TransformContainerAnalysisData(img_name, f)
         # Clear out fields that weren't asked for and have no data.
         if (not data.build_details_summary.build_details and

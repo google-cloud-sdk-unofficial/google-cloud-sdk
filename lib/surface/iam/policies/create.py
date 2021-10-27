@@ -23,6 +23,7 @@ import textwrap
 from googlecloudsdk.api_lib.iam import policies as apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import policies_flags as flags
+from googlecloudsdk.core import log
 
 
 @base.Hidden
@@ -38,7 +39,7 @@ class Create(base.CreateCommand):
           file ``policy.json" :
 
 
-            $ {command} my-deny-policy --resource=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies --policy_file=policy.json
+            $ {command} my-deny-policy --attachment-point=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies --policy-file=policy.json
           """),
   }
 
@@ -57,16 +58,18 @@ class Create(base.CreateCommand):
     attachment_point = args.attachment_point.replace('/', '%2F')
 
     if release_track == base.ReleaseTrack.ALPHA:
-      return client.policies.CreatePolicy(
+      result = client.policies.CreatePolicy(
           messages.IamPoliciesCreatePolicyRequest(
               parent='policies/{}/{}'.format(attachment_point, args.kind),
               policyId=args.policy_id,
               googleIamV2alphaPolicy=apis.ParseYamlOrJsonPolicyFile(
                   args.policy_file, messages.GoogleIamV2alphaPolicy)))
     else:
-      return client.policies.CreatePolicy(
+      result = client.policies.CreatePolicy(
           messages.IamPoliciesCreatePolicyRequest(
               parent='policies/{}/{}'.format(attachment_point, args.kind),
               policyId=args.policy_id,
               googleIamV2betaPolicy=apis.ParseYamlOrJsonPolicyFile(
                   args.policy_file, messages.GoogleIamV2betaPolicy)))
+    log.CreatedResource(result.name, 'denyPolicy', is_async=True)
+    return result

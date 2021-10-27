@@ -1,0 +1,52 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: |
+      Update an internal range.
+    description: |
+      Update the detail of an internal range.
+    examples: |
+      Update ip-cidr-range of an internal range named ``my-range'' in project ``my-project'' and
+      region ``global'':
+
+        $ {command} my-range
+          --ip-cidr-range="192.168.0.0/24"
+          --project my-project
+          --region global
+
+      Extend an internal range named ``my-range'' in project ``my-project'' and
+      region ``global'' to an address block of /24:
+
+        $ {command} my-range
+          --prefix-length=24
+          --project my-project
+          --region global
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:internalRange
+      help_text: |
+        Name of the internal range to be created.
+    params:
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: ip-cidr-range
+          api_field: internalRange.ipCidrRange
+          help_text: |
+            IP range that this internal range defines.
+        - arg_name: prefix-length
+          api_field: internalRange.prefixLength
+          help_text: |
+            An alternative to ip-cidr-range.
+            Can be set when trying to create a reservation that automatically finds a free range of
+            the given size.
+
+  async:
+    collection: networkconnectivity.projects.locations.operations
+
+  request:
+    api_version: v1alpha1
+    collection: networkconnectivity.projects.locations.internalRanges
+    method: patch

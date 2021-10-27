@@ -1,13 +1,13 @@
 - release_tracks: [GA]
 
   help_text:
-    brief: Update a Cloud Data Catalog entry tag.
+    brief: Update a Data Catalog entry tag.
     description: |
-      Update a Cloud Data Catalog entry tag. This will overwrite the
+      Update a Data Catalog entry tag. This will overwrite the
       current values of the tag.
 
     examples: |
-      Update a Cloud Data Catalog entry tag:
+      Update a Data Catalog entry tag:
 
         $ {command} TAG --tag-template=TAG_TEMPLATE --tag-file=TAG_FILE
 
@@ -46,13 +46,13 @@
 - release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: Update a Cloud Data Catalog entry tag.
+    brief: Update a Data Catalog entry tag.
     description: |
-      Update a Cloud Data Catalog entry tag. This will overwrite the
+      Update a Data Catalog entry tag. This will overwrite the
       current values of the tag.
 
     examples: |
-      Update a Cloud Data Catalog entry tag:
+      Update a Data Catalog entry tag:
 
         $ {command} TAG --tag-template=TAG_TEMPLATE --tag-file=TAG_FILE
 

@@ -56,7 +56,7 @@
       api_field: instance.nodeConfig.cpuCount
       help_text: |
         Number of cpus per node in this instance. Valid values are 1 or even
-        number between 2-16.
+        number between 2-32. Value of 1 is not supported in all regions.
       required: true
     # Check the range on this flag and then set it in the parser
     - arg_name: node-memory
@@ -104,13 +104,15 @@
       hidden: true
       help_text: |
         Hour of day (0 to 23) for the start of maintenance window, in UTC time zone.
-      processor: googlecloudsdk.command_lib.memcache.instances_create_util:check_maintenance_window_start_time_field
+      processor: googlecloudsdk.command_lib.memcache.instances_util:CheckMaintenanceWindowStartTimeField
     - arg_name: maintenance-window-duration
       api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.duration
       release_tracks: [ALPHA]
       hidden: true
+      type: int
       help_text: |
-        Duration of the maintenance window in seconds, e.g. '10800s'.
+        Duration of the maintenance window in integer hours, e.g '4'.
+      processor: googlecloudsdk.command_lib.memcache.instances_util:ConvertDurationToJsonFormat
     - arg_name: parameters
       api_field: instance.parameters.params
       metavar: KEY=VALUE

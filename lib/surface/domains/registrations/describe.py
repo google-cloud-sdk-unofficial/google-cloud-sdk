@@ -27,7 +27,6 @@ from googlecloudsdk.core.resource import resource_printer
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe an existing Cloud Domains registration.
 
@@ -58,14 +57,14 @@ class Describe(base.DescribeCommand):
 
     registration = client.Get(args.CONCEPTS.registration.Parse())
 
-    if api_version == registrations.ALPHA_API_VERSION:
-      transfer_pending_enum = client.messages.Registration.StateValueValuesEnum.TRANSFER_PENDING
-      transfer_failed_enum = client.messages.Registration.StateValueValuesEnum.TRANSFER_FAILED
-      if (registration.state == transfer_pending_enum or
-          registration.state == transfer_failed_enum):
-        # We would prefer to print this after the resource but Epilog() doesn't
-        # accept other method arguments.
-        log.status.Print(
-            'For more details on the status of the domain transfer, sign into '
-            'Google Domains by visiting https://domains.google.com/registrar.')
+    transfer_pending_enum = client.messages.Registration.StateValueValuesEnum.TRANSFER_PENDING
+    transfer_failed_enum = client.messages.Registration.StateValueValuesEnum.TRANSFER_FAILED
+    if (registration.state == transfer_pending_enum or
+        registration.state == transfer_failed_enum):
+      # We would prefer to print this after the resource but Epilog() doesn't
+      # accept other method arguments.
+      log.status.Print(
+          'For more details on the status of the domain transfer, sign into '
+          'Google Domains by visiting https://domains.google.com/registrar.')
+
     return registration

@@ -33,8 +33,8 @@ DETAILED_HELP = {
         databases.
 
         Cloud SQL is a fully-managed database service that makes it easy to set
-        up, maintain, manage, and administer your relational MySQL databases in
-        the cloud.
+        up, maintain, manage, and administer your relational databases in the
+        cloud.
 
         More information on Cloud SQL can be found here:
         https://cloud.google.com/sql and detailed documentation can be found

@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.domains import util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ConfigureManagement(base.UpdateCommand):
   """Configure management settings of a Cloud Domains registration.
 

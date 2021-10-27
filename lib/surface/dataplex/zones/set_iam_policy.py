@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataplex import zone
+from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.iam import iam_util
@@ -45,6 +46,8 @@ class SetIamPolicy(base.Command):
     resource_args.AddZoneResourceArg(parser, 'to set IAM policy to.')
     iam_util.AddArgForPolicyFile(parser)
 
+  @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
+      'Status code: {status_code}. {status_message}.')
   def Run(self, args):
     zone_ref = args.CONCEPTS.zone.Parse()
     result = zone.SetIamPolicyFromFile(zone_ref, args.policy_file)

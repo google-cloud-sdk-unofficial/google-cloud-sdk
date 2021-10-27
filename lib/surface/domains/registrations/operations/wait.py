@@ -24,7 +24,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.domains import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Wait(base.SilentCommand):
   """Wait for asynchronous operation to complete.
 

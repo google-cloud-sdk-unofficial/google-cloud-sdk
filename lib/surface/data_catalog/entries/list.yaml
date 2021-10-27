@@ -1,7 +1,7 @@
 - release_tracks: [GA]
   help_text:
-    brief: List all entries in a Cloud Data Catalog entry group.
-    description: List all entries in a Cloud Data Catalog entry group.
+    brief: List all entries in a Data Catalog entry group.
+    description: List all entries in a Data Catalog entry group.
     examples: |-
       To list all entry in the group 'group1', run:
 
@@ -21,8 +21,8 @@
 
 - release_tracks: [ALPHA, BETA]
   help_text:
-    brief: List all entries in a Cloud Data Catalog entry group.
-    description: List all entries in a Cloud Data Catalog entry group.
+    brief: List all entries in a Data Catalog entry group.
+    description: List all entries in a Data Catalog entry group.
     examples: |-
       To list all entry in the group 'group1', run:
 

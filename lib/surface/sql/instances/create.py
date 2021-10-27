@@ -115,6 +115,11 @@ def AddBaseArgs(parser):
             'replication setup. The newly created instance will be a read '
             'replica of the specified master instance.'))
   flags.AddMemory(parser)
+  flags.AddPasswordPolicyMinLength(parser)
+  flags.AddPasswordPolicyComplexity(parser)
+  flags.AddPasswordPolicyReuseInterval(parser)
+  flags.AddPasswordPolicyDisallowUsernameSubstring(parser)
+  flags.AddPasswordPolicyPasswordChangeInterval(parser)
   parser.add_argument(
       '--replica-type',
       choices=['READ', 'FAILOVER'],

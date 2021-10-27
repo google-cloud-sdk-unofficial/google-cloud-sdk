@@ -1,9 +1,9 @@
 - release_tracks: [GA]
 
   help_text:
-    brief: Get the IAM policy for a Cloud Data Catalog tag template.
+    brief: Get the IAM policy for a Data Catalog tag template.
     description: |
-      *{command}* displays the IAM policy associated with a Cloud Data Catalog.
+      *{command}* displays the IAM policy associated with a Data Catalog.
       If formatted as JSON, the output can be edited and used as
       a policy file for *set-iam-policy*. The output includes an "etag"
       field identifying the version emitted and allowing detection of
@@ -26,9 +26,9 @@
 - release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: Get the IAM policy for a Cloud Data Catalog tag template.
+    brief: Get the IAM policy for a Data Catalog tag template.
     description: |
-      *{command}* displays the IAM policy associated with a Cloud Data Catalog.
+      *{command}* displays the IAM policy associated with a Data Catalog.
       If formatted as JSON, the output can be edited and used as
       a policy file for *set-iam-policy*. The output includes an "etag"
       field identifying the version emitted and allowing detection of

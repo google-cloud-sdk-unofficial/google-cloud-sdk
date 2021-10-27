@@ -23,6 +23,7 @@ import textwrap
 from googlecloudsdk.api_lib.iam import policies as apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import policies_flags as flags
+from googlecloudsdk.core import log
 
 
 @base.Hidden
@@ -37,7 +38,7 @@ class Update(base.UpdateCommand):
           project ``123" of kind ``denypolicies" and id ``my-deny-policy", with
           etag ``abc":
 
-            $ {command} my-deny-policy --resource=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies --policy_file=policy.json --etag=abc
+            $ {command} my-deny-policy --attachment-point=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies --policy-file=policy.json --etag=abc
 
           If etag isn't provided, the command will try to get the etag using the
           calling user permissions.
@@ -85,4 +86,5 @@ class Update(base.UpdateCommand):
     policy.etag = etag
 
     result = client.policies.Update(policy)
+    log.UpdatedResource(result.name, 'denyPolicy', is_async=True)
     return result
