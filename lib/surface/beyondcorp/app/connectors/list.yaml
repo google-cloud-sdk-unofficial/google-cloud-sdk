@@ -6,12 +6,12 @@
       List Beyondcorp connector resources based on project and location.
 
     examples: |
-      To list all connectors in a project for region us-central1 in table form, run:
+      To list all connectors in a project for location us-central1 in table form, run:
 
         $ {command} --project=projectId \
             --location=us-central1
 
-      To list all connectors in a project for region us-central1 in json form, run:
+      To list all connectors in a project for location us-central1 in json form, run:
 
         $ {command} --project=projectId \
             --location=us-central1 \
@@ -32,7 +32,7 @@
           displayName:label=DISPLAY_NAME,
           state:label=CONNECTOR_STATE,
           principalInfo.serviceAccount.email:label=MEMBER,
-          createTime:label=CREATE_TIME,
-          updateTime:label=UPDATE_TIME,
+          createTime.date():label=CREATE_TIME,
+          updateTime.date():label=UPDATE_TIME,
           labels.list():label=LABELS
         )

@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
+from googlecloudsdk.api_lib.sql import user_prop_reducers as reducers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.command_lib.sql import users
@@ -36,6 +37,9 @@ def AddBaseArgs(parser):
   flags.AddHost(parser)
   flags.AddPassword(parser)
   flags.AddType(parser)
+  flags.AddPasswordPolicyAllowedFailedAttempts(parser)
+  flags.AddPasswordPolicyPasswordExpirationDuration(parser)
+  flags.AddPasswordPolicyEnableFailedAttemptsCheck(parser)
 
 
 def AddBetaArgs(parser):
@@ -74,6 +78,10 @@ def RunBaseCreateCommand(args):
       name=args.username,
       host=args.host,
       password=args.password,
+      passwordPolicy=reducers.ParsePasswordPolicy(
+          sql_messages, args.password_policy_allowed_failed_attempts,
+          args.password_policy_password_expiration_duration,
+          args.password_policy_enable_failed_attempts_check),
       type=user_type)
 
   result_operation = sql_client.users.Insert(new_user)

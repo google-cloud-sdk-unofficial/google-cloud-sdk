@@ -121,7 +121,8 @@ def _SourceArgs(parser, source_instant_snapshot_enabled=False):
   disks_flags.SOURCE_DISK_ARG.AddArgument(parser, mutex_group=source_group)
 
 
-def _CommonArgs(parser,
+def _CommonArgs(messages,
+                parser,
                 include_physical_block_size_support=False,
                 vss_erase_enabled=False,
                 source_instant_snapshot_enabled=False,
@@ -197,7 +198,7 @@ def _CommonArgs(parser,
               'can be edited after disk is created.'))
 
   if support_architecture:
-    disks_flags.AddArchitectureFlag(parser)
+    disks_flags.AddArchitectureFlag(parser, messages)
 
   csek_utils.AddCsekKeyArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
@@ -252,7 +253,7 @@ class Create(base.Command):
   def Args(cls, parser):
     messages = cls._GetApiHolder(no_http=True).client.messages
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
-    _CommonArgs(parser)
+    _CommonArgs(messages, parser)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
@@ -604,6 +605,7 @@ class CreateBeta(Create):
     messages = cls._GetApiHolder(no_http=True).client.messages
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(
+        messages,
         parser,
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
@@ -635,6 +637,7 @@ class CreateAlpha(CreateBeta):
     messages = cls._GetApiHolder(no_http=True).client.messages
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(
+        messages,
         parser,
         include_physical_block_size_support=True,
         vss_erase_enabled=True,

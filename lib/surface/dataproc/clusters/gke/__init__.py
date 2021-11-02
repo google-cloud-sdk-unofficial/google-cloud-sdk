@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Gke(base.Group):
-  """Create Cloud Dataproc GKE-based virtual clusters.
+  """Create Dataproc GKE-based virtual clusters.
 
   All interactions other than creation should be handled by
   "gcloud dataproc clusters" commands.

@@ -110,7 +110,7 @@ class Scp(base.Command):
   """Copy files to and from Google Compute Engine virtual machines via scp."""
 
   category = base.TOOLS_CATEGORY
-  enable_ip_based_flags = False
+  enable_host_based_flags = False
 
   @classmethod
   def Args(cls, parser):
@@ -159,8 +159,8 @@ class Scp(base.Command):
 
     iap_tunnel.AddSshTunnelArgs(parser, routing_group)
     # TODO(b/190426150): Move this to Beta and then GA.
-    if cls.enable_ip_based_flags:
-      iap_tunnel.AddIpBasedTunnelArgs(parser)
+    if cls.enable_host_based_flags:
+      iap_tunnel.AddHostBasedTunnelArgs(parser)
 
   def Run(self, args):
     """See scp_utils.BaseScpCommand.Run."""
@@ -200,13 +200,13 @@ class Scp(base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ScpBeta(Scp):
   """Copy files to and from Google Compute Engine virtual machines via scp (Beta)."""
-  enable_ip_based_flags = False
+  enable_host_based_flags = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ScpAlpha(ScpBeta):
   """Copy files to and from Google Compute Engine virtual machines via scp (Alpha)."""
-  enable_ip_based_flags = True
+  enable_host_based_flags = True
 
 
 ScpAlpha.detailed_help = _DetailedHelp('ALPHA')

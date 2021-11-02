@@ -43,6 +43,13 @@ class StopInstances(base.Command):
                         metavar='INSTANCE',
                         required=True,
                         help='Names of instances to stop.')
+    parser.add_argument(
+        '--force',
+        default=False,
+        action='store_true',
+        help="""
+          Immediately stop the specified instances, skipping the initial
+          delay, if one is specified in the standby policy.""")
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
@@ -79,6 +86,12 @@ class StopInstances(base.Command):
     else:
       raise ValueError('Unknown reference type {0}'.format(
           igm_ref.Collection()))
+
+    if args.IsSpecified('force'):
+      if igm_ref.Collection() == 'compute.instanceGroupManagers':
+        request.instanceGroupManagersStopInstancesRequest.forceStop = args.force
+      else:
+        request.regionInstanceGroupManagersStopInstancesRequest.forceStop = args.force
 
     return instance_groups_utils.SendInstancesRequestsAndPostProcessOutputs(
         api_holder=holder,

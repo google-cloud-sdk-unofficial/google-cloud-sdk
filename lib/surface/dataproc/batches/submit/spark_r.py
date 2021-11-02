@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.dataproc.batches import batch_submitter
 from googlecloudsdk.command_lib.dataproc.batches import sparkr_batch_factory
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class SparkR(base.Command):
   """Submit a Spark R batch job."""
   detailed_help = {

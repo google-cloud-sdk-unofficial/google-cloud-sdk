@@ -24,12 +24,12 @@ from googlecloudsdk.command_lib.functions.v2.runtimes.list import command as com
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
   """List runtimes available to Google Cloud Functions."""
 
   @staticmethod
-  def Args(parser, track=base.ReleaseTrack.ALPHA):
+  def Args(parser, track=base.ReleaseTrack.BETA):
     """Registers flags for this command."""
     parser.display_info.AddFormat('table(name, stage)')
     parser.display_info.AddUriFunc(flags.GetLocationsUri)
@@ -40,10 +40,19 @@ class ListAlpha(base.ListCommand):
     flags.AddGen2Flag(parser, track)
 
   def Run(self, args):
-    release_track = base.ReleaseTrack.ALPHA
-
     if flags.ShouldUseGen2():
-      return command_v2.Run(args, release_track)
+      return command_v2.Run(args, self.ReleaseTrack())
     else:
-      raise NotImplementedError('The `list runtimes` command is only available '
+      raise NotImplementedError('The `runtimes list` command is only available '
                                 'for GCF (2nd Gen).')
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+  """List runtimes available to Google Cloud Functions."""
+
+  @staticmethod
+  def Args(parser):
+    """Registers flags for this command."""
+    ListBeta.Args(parser, base.ReleaseTrack.ALPHA)

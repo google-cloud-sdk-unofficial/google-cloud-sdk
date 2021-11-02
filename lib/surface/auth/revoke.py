@@ -29,11 +29,11 @@ from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.resource import resource_printer
 
 
-# TODO(b/200196748): Update documentation to cover external accounts on launch.
 class Revoke(base.Command):
   """Revoke access credentials for an account.
 
-  Revokes credentials for the specified user accounts or service accounts.
+  Revokes credentials for the specified user accounts, service accounts or
+  external accounts (workload identity pools).
 
   When given a user account, this command revokes the user account token on the
   server. If the revocation is successful, or if the token has already been
@@ -42,6 +42,13 @@ class Revoke(base.Command):
   When given a service account, this command does not revoke the service account
   token on the server because service account tokens are not revocable. Instead,
   it will print a warning and remove the credential from the local machine.
+
+  When given an external account (workload identity pool), whether impersonated
+  or not, the command does not revoke the corresponding token on the server
+  because these tokens are not revocable. The underlying external credentials
+  (OIDC, AWS, etc.) used to generate these access tokens have to be revoked too,
+  but gcloud has no control over that. Instead, it will print a warning and
+  remove the credential from the local machine.
 
   If no account is specified, this command revokes credentials for the currently
   active account, effectively logging out of that account. If --all is given,

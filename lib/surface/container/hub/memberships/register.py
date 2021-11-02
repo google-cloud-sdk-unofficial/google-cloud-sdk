@@ -381,6 +381,8 @@ class Register(base.CreateCommand):
                                           gke_cluster_self_link, uuid,
                                           self.ReleaseTrack(),
                                           issuer_url, private_keyset_json)
+          # Generate CRD Manifest should only be called afer create/update.
+          self._InstallOrUpdateExclusivityArtifacts(kube_client, resource_name)
         except apitools_exceptions.HttpConflictError as e:
           # If the error is not due to the object already existing, re-raise.
           error = core_api_exceptions.HttpErrorPayload(e)
@@ -440,10 +442,16 @@ class Register(base.CreateCommand):
                   obj, issuer_url, resource_name, args.CLUSTER_NAME),
               cancel_on_no=True)
           try:
-            api_util.UpdateMembership(resource_name, obj, 'authority',
-                                      self.ReleaseTrack(),
-                                      issuer_url=issuer_url,
-                                      oidc_jwks=private_keyset_json)
+            api_util.UpdateMembership(
+                resource_name,
+                obj,
+                'authority',
+                self.ReleaseTrack(),
+                issuer_url=issuer_url,
+                oidc_jwks=private_keyset_json)
+            # Generate CRD Manifest should only be called afer create/update.
+            self._InstallOrUpdateExclusivityArtifacts(kube_client,
+                                                      resource_name)
             log.status.Print(
                 'Updated the membership [{}] for the cluster [{}]'.format(
                     resource_name, args.CLUSTER_NAME))
@@ -466,7 +474,6 @@ class Register(base.CreateCommand):
       # Attempt to update the existing agent deployment, or install a new agent
       # if necessary.
       try:
-        self._InstallOrUpdateExclusivityArtifacts(kube_client, resource_name)
         agent_util.DeployConnectAgent(kube_client, args,
                                       service_account_key_data,
                                       docker_credential_data, resource_name,

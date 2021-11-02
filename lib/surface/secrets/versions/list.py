@@ -51,8 +51,13 @@ class List(base.ListCommand):
 
   def Run(self, args):
     secret_ref = args.CONCEPTS.secret.Parse()
+    server_filter = None
+    if args.filter:
+      rewriter = resource_expr_rewrite.Backend()
+      _, server_filter = rewriter.Rewrite(args.filter)
+
     return secrets_api.Versions().ListWithPager(
-        secret_ref=secret_ref, limit=args.limit)
+        secret_ref=secret_ref, limit=args.limit, request_filter=server_filter)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -81,9 +86,9 @@ class ListBeta(List):
 
   def Run(self, args):
     secret_ref = args.CONCEPTS.secret.Parse()
-    rewriter = resource_expr_rewrite.Backend()
     server_filter = None
     if args.filter:
+      rewriter = resource_expr_rewrite.Backend()
       _, server_filter = rewriter.Rewrite(args.filter)
 
     return secrets_api.Versions().ListWithPager(

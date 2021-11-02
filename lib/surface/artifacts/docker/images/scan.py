@@ -253,18 +253,12 @@ class ScanGA(ScanBeta):
       IMAGE[:tag]
   """
 
-  @staticmethod
-  def Args(parser):
-    super(ScanGA, ScanGA).Args(parser)
-    flags.GetOnDemandIncludeOSVDataFlag().AddToParser(parser)
-
   def AnalyzePackages(self, args, pkgs):
     return api_util.AnalyzePackagesGA(
         properties.VALUES.core.project.Get(required=True),
         args.location,
         args.RESOURCE_URI,
-        pkgs,
-        args.include_osv_data)
+        pkgs)
 
   def GetMessages(self):
     return api_util.GetMessages('v1')

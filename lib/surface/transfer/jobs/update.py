@@ -32,6 +32,7 @@ def _clear_fields(args, job):
   if args.clear_source_creds_file:
     if getattr(job.transferSpec, 'awsS3DataSource', None):
       job.transferSpec.awsS3DataSource.awsAccessKey = None
+      job.transferSpec.awsS3DataSource.roleArn = None
     if getattr(job.transferSpec, 'azureBlobStorageDataSource', None):
       job.transferSpec.azureBlobStorageDataSource.azureCredentials = None
   if args.clear_schedule:

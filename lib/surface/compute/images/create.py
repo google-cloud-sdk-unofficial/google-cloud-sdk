@@ -37,7 +37,8 @@ POLL_TIMEOUT = 36000  # 10 hours is recommended by PD team b/131850402#comment20
 def _Args(parser,
           messages,
           supports_force_create=False,
-          support_user_licenses=False):
+          support_user_licenses=False,
+          support_disk_architecture=False):
   """Set Args based on Release Track."""
   # GA Args
   parser.display_info.AddFormat(flags.LIST_FORMAT)
@@ -61,6 +62,9 @@ def _Args(parser,
   flags.AddSourceDiskProjectFlag(parser)
 
   # Alpha and Beta Args
+  if support_disk_architecture:
+    image_utils.AddArchitectureArg(parser, messages)
+
   if supports_force_create:
     # Deprecated as of Aug 2017.
     flags.MakeForceCreateArg().AddToParser(parser)
@@ -112,7 +116,10 @@ class Create(base.CreateCommand):
   def Run(self, args):
     return self._Run(args)
 
-  def _Run(self, args, support_user_licenses=False):
+  def _Run(self,
+           args,
+           support_user_licenses=False,
+           support_disk_architecture=False):
     """Returns a list of requests necessary for adding images."""
     holder = self._GetApiHolder()
     client = holder.client
@@ -125,6 +132,10 @@ class Create(base.CreateCommand):
         description=args.description,
         sourceType=messages.Image.SourceTypeValueValuesEnum.RAW,
         family=args.family)
+
+    if support_disk_architecture and args.IsSpecified('architecture'):
+      image.architecture = messages.Image.ArchitectureValueValuesEnum(
+          args.architecture)
 
     if support_user_licenses and args.IsSpecified('user_licenses'):
       image.userLicenses = args.user_licenses
@@ -247,11 +258,13 @@ class CreateBeta(Create):
         parser,
         messages,
         supports_force_create=True,
-        support_user_licenses=True)
+        support_user_licenses=True,
+        support_disk_architecture=False)
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
-    return self._Run(args, support_user_licenses=True)
+    return self._Run(
+        args, support_user_licenses=True, support_disk_architecture=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -265,11 +278,13 @@ class CreateAlpha(Create):
         parser,
         messages,
         supports_force_create=True,
-        support_user_licenses=True)
+        support_user_licenses=True,
+        support_disk_architecture=True)
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
-    return self._Run(args, support_user_licenses=True)
+    return self._Run(
+        args, support_user_licenses=True, support_disk_architecture=True)
 
 
 Create.detailed_help = {

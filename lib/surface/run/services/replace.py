@@ -99,7 +99,13 @@ class Replace(base.Command):
     # status is ignored by the server.
     if 'status' in service_dict:
       del service_dict['status']
-    new_service = None
+
+    # For cases where YAML contains the project number as metadata.namespace,
+    # preemptively convert them to a string to avoid validation failures.
+    namespace = service_dict.get('metadata', {}).get('namespace', None)
+    if namespace is not None and not isinstance(namespace, str):
+      service_dict['metadata']['namespace'] = str(namespace)
+
     try:
       raw_service = messages_util.DictToMessageWithErrorCheck(
           service_dict, run_messages.Service)

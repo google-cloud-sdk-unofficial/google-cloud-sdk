@@ -49,8 +49,8 @@ DETAILED_HELP = {
 }
 
 
-def _Args(cls, parser):
-  """Set Args based on Release Track."""
+def _CommonArgs(messages, cls, parser, support_update_architecture=False):
+  """Add arguments used for parsing in all command tracks."""
   cls.DISK_IMAGE_ARG = images_flags.MakeDiskImageArg(plural=False)
   cls.DISK_IMAGE_ARG.AddArgument(parser, operation_type='update')
   labels_util.AddUpdateLabelsFlags(parser)
@@ -66,7 +66,21 @@ def _Args(cls, parser):
             'non-deprecated image in the family is used.')
   )
 
+  if support_update_architecture:
+    architecture_enum_type = messages.Image.ArchitectureValueValuesEnum
+    excluded_enums = [
+        'ARCHITECTURE_UNSPECIFIED',
+    ]
+    architecture_choices = sorted(
+        [e for e in architecture_enum_type.names() if e not in excluded_enums])
+    parser.add_argument(
+        '--architecture',
+        choices=architecture_choices,
+        help=('Image resources can be used to create boot disks compatible '
+              'with different machine architectures.'))
 
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine image."""
 
@@ -75,12 +89,13 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    _Args(cls, parser)
+    messages = cls._GetApiHolder(no_http=True).client.messages
+    _CommonArgs(messages, cls, parser, support_update_architecture=False)
 
   def Run(self, args):
-    return self._Run(args)
+    return self._Run(args, support_update_architecture=False)
 
-  def _Run(self, args):
+  def _Run(self, args, support_update_architecture=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     messages = holder.client.messages
@@ -123,6 +138,11 @@ class Update(base.UpdateCommand):
       image_resource.description = args.description
       should_patch = True
 
+    if support_update_architecture and args.IsSpecified('architecture'):
+      image_resource.architecture = messages.Image.ArchitectureValueValuesEnum(
+          args.architecture)
+      should_patch = True
+
     if should_patch:
       request = messages.ComputeImagesPatchRequest(
           project=image_ref.project,
@@ -139,3 +159,38 @@ class Update(base.UpdateCommand):
 
     return result
 
+  @classmethod
+  def _GetApiHolder(cls, no_http=False):
+    return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a Compute Engine image."""
+
+  DISK_IMAGE_ARG = None
+  detailed_help = DETAILED_HELP
+
+  @classmethod
+  def Args(cls, parser):
+    messages = messages = cls._GetApiHolder(no_http=True).client.messages
+    _CommonArgs(messages, cls, parser, support_update_architecture=False)
+
+  def Run(self, args, support_update_architecture=False):
+    return self._Run(args, support_update_architecture)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Update a Compute Engine image."""
+
+  DISK_IMAGE_ARG = None
+  detailed_help = DETAILED_HELP
+
+  @classmethod
+  def Args(cls, parser):
+    messages = messages = cls._GetApiHolder(no_http=True).client.messages
+    _CommonArgs(messages, cls, parser, support_update_architecture=True)
+
+  def Run(self, args, support_update_architecture=True):
+    return self._Run(args, support_update_architecture)

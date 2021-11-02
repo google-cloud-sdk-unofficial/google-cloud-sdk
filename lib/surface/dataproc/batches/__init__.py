@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden  # Hidden until fully implemented and released.
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Batches(base.Group):
   """Submit and manage Dataproc batch jobs.
 

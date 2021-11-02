@@ -1,0 +1,27 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Import mesh.
+  description: |
+    Import a mesh.
+
+request:
+  collection: networkservices.projects.locations.meshes
+  api_version: v1alpha1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:mesh
+    help_text: |
+      Name of the mesh to import.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+import:
+  abort_if_equivalent: true
+  create_if_not_exists: true
+  create_request:
+    collection: networkservices.projects.locations.meshes
+    api_version: v1alpha1
+    method: create

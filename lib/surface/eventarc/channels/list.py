@@ -37,6 +37,7 @@ _FORMAT = """ \
 table(
     name.scope("channels"):label=NAME,
     provider:label=PROVIDER,
+    state:label=STATE,
     pubsubTopic.scope("topics"):label=PUBSUB_TOPIC
 )
 """

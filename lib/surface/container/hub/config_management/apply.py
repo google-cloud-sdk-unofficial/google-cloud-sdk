@@ -184,8 +184,6 @@ def _parse_config_sync(configmanagement, msg):
     raise exceptions.Error('Missing required field [{}.enabled]'.format(
         utils.CONFIG_SYNC))
   config_sync.enabled = spec_git['enabled']
-  if config_sync.enabled:
-    _validate_config_sync(spec_git)
   git_config = msg.ConfigManagementGitConfig()
   config_sync.git = git_config
   for field in [
@@ -200,23 +198,6 @@ def _parse_config_sync(configmanagement, msg):
   if 'sourceFormat' in spec_git:
     config_sync.sourceFormat = spec_git['sourceFormat']
   return config_sync
-
-
-def _validate_config_sync(spec_git):
-  """validating config sync fields."""
-  # https://cloud.google.com/anthos-config-management/docs/how-to/installing#configuring-git-repo
-  # Required field
-  for field in ['syncRepo', 'secretType']:
-    if field not in spec_git:
-      raise exceptions.Error('Missing required field [{}.{}].'.format(
-          utils.CONFIG_SYNC, field))
-  # TODO(b/189131417) remove git validation, catch the CLH result instead.
-  valid_sf = ['hierarchy', 'unstructured']
-  if 'sourceFormat' in spec_git and spec_git['sourceFormat'] not in valid_sf:
-    raise exceptions.Error(
-        'Please fix unrecognized value of '
-        '.spec.{}.sourceFormat, only [{}] are supported'.format(
-            utils.CONFIG_SYNC, ','.join(valid_sf)))
 
 
 def _parse_policy_controller(configmanagement, msg):

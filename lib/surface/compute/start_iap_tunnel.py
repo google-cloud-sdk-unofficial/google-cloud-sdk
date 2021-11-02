@@ -35,20 +35,20 @@ from googlecloudsdk.core import properties
 
 _CreateTargetArgs = collections.namedtuple('_TargetArgs', [
     'project', 'zone', 'instance', 'interface', 'port', 'region', 'network',
-    'ip'
+    'host'
 ])
 
 _ON_PREM_EXTRA_DESCRIPTION = """
 
-If the `--region` and `--network` flags are provided, then an IP address must be
-supplied instead of an instance name. This is most useful for connecting to
-on-prem resources.
+If the `--region` and `--network` flags are provided, then an IP address or FQDN
+must be supplied instead of an instance name. This is most useful for connecting
+to on-prem resources.
 """
 
 _ON_PREM_EXTRA_EXAMPLES = """
 
-To use the IP address of your remote VM (eg, for on-prem), you must also specify
-the `--region` and `--network` flags:
+To use the IP address or FQDN of your remote VM (eg, for on-prem), you must also
+specify the `--region` and `--network` flags:
 
   $ {command} 10.1.2.3 3389 --region=us-central1 --network=default
 """
@@ -88,7 +88,7 @@ To open a tunnel to the instance's RDP port on a specific local port, run:
 class StartIapTunnel(base.Command):
   """Starts an IAP TCP forwarding tunnel."""
 
-  enable_ip_based_flags = False
+  enable_host_based_flags = False
 
   @classmethod
   def Args(cls, parser):
@@ -131,8 +131,8 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
         action='store_true',
         help='Disables the immediate check of the connection.')
 
-    if cls.enable_ip_based_flags:
-      iap_tunnel.AddIpBasedTunnelArgs(parser)
+    if cls.enable_host_based_flags:
+      iap_tunnel.AddHostBasedTunnelArgs(parser)
 
   def Run(self, args):
     if args.listen_on_stdin and args.IsSpecified('local_host_port'):
@@ -150,9 +150,9 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
       iap_tunnel_helper = iap_tunnel.IapTunnelProxyServerHelper(
           args, target.project, local_host, local_port, check_connection)
 
-    if target.ip:
-      iap_tunnel_helper.ConfigureForIP(target.region, target.network, target.ip,
-                                       target.port)
+    if target.host:
+      iap_tunnel_helper.ConfigureForHost(target.region, target.network,
+                                         target.host, target.port)
     else:
       iap_tunnel_helper.ConfigureForInstance(target.zone, target.instance,
                                              target.interface, target.port)
@@ -167,8 +167,7 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
           project=properties.VALUES.core.project.GetOrFail(),
           region=args.region,
           network=args.network,
-          # TODO(b/190426150): validate IPv4 format
-          ip=args.instance_name,
+          host=args.instance_name,
           port=args.instance_port,
           zone=None,
           instance=None,
@@ -191,7 +190,7 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
         port=args.instance_port,
         region=None,
         network=None,
-        ip=None)
+        host=None)
 
   def _GetLocalHostPort(self, args):
     local_host_arg = args.local_host_port.host or 'localhost'
@@ -206,13 +205,13 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class StartIapTunnelBeta(StartIapTunnel):
   """Starts an IAP TCP forwarding tunnel (Beta)."""
-  enable_ip_based_flags = False
+  enable_host_based_flags = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class StartIapTunnelAlpha(StartIapTunnelBeta):
   """Starts an IAP TCP forwarding tunnel (Alpha)."""
-  enable_ip_based_flags = True
+  enable_host_based_flags = True
 
 
 StartIapTunnelAlpha.detailed_help = _DetailedHelp('ALPHA')

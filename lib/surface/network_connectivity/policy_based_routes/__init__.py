@@ -23,4 +23,4 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class PolicyBasedRoutes(base.Group):
-  """Manage Network Connectivity Policy Based Routes."""
+  """Manage Policy Based Routes."""

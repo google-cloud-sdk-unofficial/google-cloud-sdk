@@ -24,9 +24,9 @@ from googlecloudsdk.command_lib.dataproc import flags
 
 
 class Submit(base.Group):
-  """Submit Google Cloud Dataproc jobs to execute on a cluster.
+  """Submit Dataproc jobs to execute on a cluster.
 
-  Submit Google Cloud Dataproc jobs to execute on a cluster.
+  Submit Dataproc jobs to execute on a cluster.
 
   ## EXAMPLES
 

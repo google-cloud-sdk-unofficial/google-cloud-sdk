@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.container.gkemulticloud import flags
 from googlecloudsdk.core import log
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetKubeconfig(base.Command):
   """Get kubeconfig of a GKE cluster on AWS."""

@@ -3839,7 +3839,8 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--master-ipv4-cidr-block": "value",
                         "--network": "value",
                         "--services-ipv4-cidr-block": "value",
-                        "--services-named-range": "value"
+                        "--services-named-range": "value",
+                        "--subnet": "value"
                       }
                     },
                     "delete": {
@@ -5262,6 +5263,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--activate": "bool",
                 "--brief": "bool",
+                "--cred-file": "value",
                 "--enable-gdrive-access": "bool",
                 "--force": "bool",
                 "--launch-browser": "bool",
@@ -5917,6 +5919,80 @@ STATIC_COMPLETION_CLI_TREE = {
                 }
               },
               "flags": {}
+            },
+            "networks": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--region": "dynamic"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "snapshot-schedule-policies": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "volumes": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--limit": "value",
+                    "--region": "dynamic"
+                  }
+                },
+                "luns": {
+                  "commands": {
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--region": "dynamic",
+                        "--volume": "dynamic"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--region": "dynamic",
+                        "--volume": "dynamic"
+                      }
+                    }
+                  },
+                  "flags": {}
+                }
+              },
+              "flags": {}
             }
           },
           "flags": {}
@@ -6153,13 +6229,13 @@ STATIC_COMPLETION_CLI_TREE = {
                     "create": {
                       "commands": {},
                       "flags": {
-                        "--admin-access-token-name": "value",
+                        "--admin-access-token-secret-version": "value",
                         "--api-key": "value",
                         "--host-uri": "value",
                         "--peered-network": "value",
-                        "--read-access-token-name": "value",
+                        "--read-access-token-secret-version": "value",
                         "--user-name": "value",
-                        "--webhook-secret-name": "value"
+                        "--webhook-secret-secret-version": "value"
                       }
                     },
                     "delete": {
@@ -6183,12 +6259,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "update": {
                       "commands": {},
                       "flags": {
-                        "--admin-access-token-name": "value",
+                        "--admin-access-token-secret-version": "value",
                         "--api-key": "value",
                         "--host-uri": "value",
-                        "--read-access-token-name": "value",
+                        "--read-access-token-secret-version": "value",
                         "--user-name": "value",
-                        "--webhook-secret-name": "value"
+                        "--webhook-secret-secret-version": "value"
                       }
                     }
                   },
@@ -7991,7 +8067,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create": {
                   "commands": {},
                   "flags": {
-                    "--architecture": "value",
+                    "--architecture": [
+                      "ARM64",
+                      "X86_64"
+                    ],
                     "--csek-key-file": "value",
                     "--description": "value",
                     "--erase-windows-vss-signature": "bool",
@@ -9152,6 +9231,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create": {
                   "commands": {},
                   "flags": {
+                    "--architecture": [
+                      "ARM64",
+                      "X86_64"
+                    ],
                     "--csek-key-file": "value",
                     "--description": "value",
                     "--family": "value",
@@ -9382,6 +9465,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update": {
                   "commands": {},
                   "flags": {
+                    "--architecture": [
+                      "ARM64",
+                      "X86_64"
+                    ],
                     "--clear-labels": "bool",
                     "--description": "value",
                     "--family": "value",
@@ -9870,6 +9957,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "stop-instances": {
                       "commands": {},
                       "flags": {
+                        "--force": "bool",
                         "--instances": "value",
                         "--region": "dynamic",
                         "--zone": "dynamic"
@@ -9878,6 +9966,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "suspend-instances": {
                       "commands": {},
                       "flags": {
+                        "--force": "bool",
                         "--instances": "value",
                         "--region": "dynamic",
                         "--zone": "dynamic"
@@ -12745,6 +12834,30 @@ STATIC_COMPLETION_CLI_TREE = {
                           "basic",
                           "full"
                         ]
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
+                "os-policy-assignment-reports": {
+                  "commands": {
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--instance": "value",
+                        "--location": "value"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--assignment-id": "value",
+                        "--filter": "value",
+                        "--instance": "value",
+                        "--limit": "value",
+                        "--location": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value"
                       }
                     }
                   },
@@ -16149,13 +16262,6 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--location": "value"
                       }
                     },
-                    "get-kubeconfig": {
-                      "commands": {},
-                      "flags": {
-                        "--location": "value",
-                        "--output-file": "value"
-                      }
-                    },
                     "list": {
                       "commands": {},
                       "flags": {
@@ -16359,13 +16465,6 @@ STATIC_COMPLETION_CLI_TREE = {
                       "commands": {},
                       "flags": {
                         "--location": "value"
-                      }
-                    },
-                    "get-kubeconfig": {
-                      "commands": {},
-                      "flags": {
-                        "--location": "value",
-                        "--output-file": "value"
                       }
                     },
                     "list": {
@@ -17163,6 +17262,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-gke-oidc": "bool",
                     "--enable-gvnic": "bool",
                     "--enable-identity-service": "bool",
+                    "--enable-image-streaming": "bool",
                     "--enable-intra-node-visibility": "bool",
                     "--enable-ip-alias": "bool",
                     "--enable-kubernetes-alpha": "bool",
@@ -17395,6 +17495,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-cost-management": "bool",
                     "--enable-gke-oidc": "bool",
                     "--enable-identity-service": "bool",
+                    "--enable-image-streaming": "bool",
                     "--enable-intra-node-visibility": "bool",
                     "--enable-l4-ilb-subsetting": "bool",
                     "--enable-legacy-authorization": "bool",
@@ -17884,6 +17985,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-autoscaling": "bool",
                     "--enable-autoupgrade": "bool",
                     "--enable-gvnic": "bool",
+                    "--enable-image-streaming": "bool",
                     "--ephemeral-storage": "value",
                     "--image-type": "value",
                     "--linux-sysctls": "value",
@@ -17980,6 +18082,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-autoscaling": "bool",
                     "--enable-autoupgrade": "bool",
                     "--enable-gvnic": "bool",
+                    "--enable-image-streaming": "bool",
                     "--max-nodes": "value",
                     "--max-surge-upgrade": "value",
                     "--max-unavailable-upgrade": "value",
@@ -28486,12 +28589,13 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--async": "bool",
+                    "--description": "value",
                     "--destination-range": "value",
                     "--interconnect-attachment-region": "value",
                     "--ip-protocol": "value",
                     "--labels": "value",
                     "--network": "value",
-                    "--next-hop-ilb-vip": "value",
+                    "--next-hop-ilb-ip": "value",
                     "--priority": "value",
                     "--protocol-version": [
                       "ipv4",
@@ -28813,6 +28917,44 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {}
             },
             "http-routes": {
+              "commands": {
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "value"
+                  }
+                },
+                "export": {
+                  "commands": {},
+                  "flags": {
+                    "--destination": "value",
+                    "--location": "value"
+                  }
+                },
+                "import": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "value",
+                    "--source": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "meshes": {
               "commands": {
                 "delete": {
                   "commands": {},
@@ -33996,6 +34138,9 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--host": "value",
                     "--instance": "dynamic",
                     "--password": "value",
+                    "--password-policy-allowed-failed-attempts": "value",
+                    "--password-policy-enable-failed-attempts-check": "bool",
+                    "--password-policy-password-expiration-duration": "value",
                     "--type": "value"
                   }
                 },
@@ -34026,6 +34171,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--instance": "dynamic",
                     "--password": "value",
                     "--prompt-for-password": "bool"
+                  }
+                },
+                "set-password-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--clear-password-policy": "bool",
+                    "--host": "value",
+                    "--instance": "dynamic",
+                    "--password-policy-allowed-failed-attempts": "value",
+                    "--password-policy-enable-failed-attempts-check": "bool",
+                    "--password-policy-password-expiration-duration": "value"
                   }
                 }
               },
@@ -34914,7 +35071,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--master-ipv4-cidr-block": "value",
                     "--network": "value",
                     "--services-ipv4-cidr-block": "value",
-                    "--services-named-range": "value"
+                    "--services-named-range": "value",
+                    "--subnet": "value"
                   }
                 },
                 "delete": {
@@ -36622,6 +36780,7 @@ STATIC_COMPLETION_CLI_TREE = {
           "flags": {
             "--activate": "bool",
             "--brief": "bool",
+            "--cred-file": "value",
             "--enable-gdrive-access": "bool",
             "--force": "bool",
             "--launch-browser": "bool",
@@ -40529,6 +40688,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--activate": "bool",
                 "--brief": "bool",
+                "--cred-file": "value",
                 "--enable-gdrive-access": "bool",
                 "--force": "bool",
                 "--launch-browser": "bool",
@@ -49638,6 +49798,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-gke-oidc": "bool",
                     "--enable-gvnic": "bool",
                     "--enable-identity-service": "bool",
+                    "--enable-image-streaming": "bool",
                     "--enable-intra-node-visibility": "bool",
                     "--enable-ip-alias": "bool",
                     "--enable-kubernetes-alpha": "bool",
@@ -49864,6 +50025,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-binauthz": "bool",
                     "--enable-gke-oidc": "bool",
                     "--enable-identity-service": "bool",
+                    "--enable-image-streaming": "bool",
                     "--enable-intra-node-visibility": "bool",
                     "--enable-l4-ilb-subsetting": "bool",
                     "--enable-legacy-authorization": "bool",
@@ -49961,6 +50123,35 @@ STATIC_COMPLETION_CLI_TREE = {
             },
             "hub": {
               "commands": {
+                "cloudrun": {
+                  "commands": {
+                    "apply": {
+                      "commands": {},
+                      "flags": {
+                        "--config": "value",
+                        "--context": "value",
+                        "--gke-cluster": "value",
+                        "--gke-uri": "value",
+                        "--kubeconfig": "value"
+                      }
+                    },
+                    "describe": {
+                      "commands": {},
+                      "flags": {}
+                    },
+                    "disable": {
+                      "commands": {},
+                      "flags": {
+                        "--force": "bool"
+                      }
+                    },
+                    "enable": {
+                      "commands": {},
+                      "flags": {}
+                    }
+                  },
+                  "flags": {}
+                },
                 "config-management": {
                   "commands": {
                     "apply": {
@@ -50276,6 +50467,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-autoscaling": "bool",
                     "--enable-autoupgrade": "bool",
                     "--enable-gvnic": "bool",
+                    "--enable-image-streaming": "bool",
                     "--ephemeral-storage": "value",
                     "--image-type": "value",
                     "--local-ssd-count": "value",
@@ -50370,6 +50562,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-autoscaling": "bool",
                     "--enable-autoupgrade": "bool",
                     "--enable-gvnic": "bool",
+                    "--enable-image-streaming": "bool",
                     "--max-nodes": "value",
                     "--max-surge-upgrade": "value",
                     "--max-unavailable-upgrade": "value",
@@ -65730,6 +65923,9 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--host": "value",
                     "--instance": "dynamic",
                     "--password": "value",
+                    "--password-policy-allowed-failed-attempts": "value",
+                    "--password-policy-enable-failed-attempts-check": "bool",
+                    "--password-policy-password-expiration-duration": "value",
                     "--type": "value"
                   }
                 },
@@ -65760,6 +65956,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--instance": "dynamic",
                     "--password": "value",
                     "--prompt-for-password": "bool"
+                  }
+                },
+                "set-password-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--clear-password-policy": "bool",
+                    "--host": "value",
+                    "--instance": "dynamic",
+                    "--password-policy-allowed-failed-attempts": "value",
+                    "--password-policy-enable-failed-attempts-check": "bool",
+                    "--password-policy-password-expiration-duration": "value"
                   }
                 }
               },
@@ -68924,7 +69132,9 @@ STATIC_COMPLETION_CLI_TREE = {
             },
             "describe-from-family": {
               "commands": {},
-              "flags": {}
+              "flags": {
+                "--zone": "dynamic"
+              }
             },
             "export": {
               "commands": {},
@@ -74343,6 +74553,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--enable-cloud-run-alpha": "bool",
                 "--enable-dataplane-v2": "bool",
                 "--enable-gvnic": "bool",
+                "--enable-image-streaming": "bool",
                 "--enable-intra-node-visibility": "bool",
                 "--enable-ip-alias": "bool",
                 "--enable-kubernetes-alpha": "bool",
@@ -74545,6 +74756,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--enable-autoscaling": "bool",
                 "--enable-basic-auth": "bool",
                 "--enable-binauthz": "bool",
+                "--enable-image-streaming": "bool",
                 "--enable-intra-node-visibility": "bool",
                 "--enable-l4-ilb-subsetting": "bool",
                 "--enable-legacy-authorization": "bool",
@@ -74634,6 +74846,35 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "hub": {
           "commands": {
+            "cloudrun": {
+              "commands": {
+                "apply": {
+                  "commands": {},
+                  "flags": {
+                    "--config": "value",
+                    "--context": "value",
+                    "--gke-cluster": "value",
+                    "--gke-uri": "value",
+                    "--kubeconfig": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "disable": {
+                  "commands": {},
+                  "flags": {
+                    "--force": "bool"
+                  }
+                },
+                "enable": {
+                  "commands": {},
+                  "flags": {}
+                }
+              },
+              "flags": {}
+            },
             "features": {
               "commands": {
                 "list": {
@@ -74828,6 +75069,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--enable-autoscaling": "bool",
                 "--enable-autoupgrade": "bool",
                 "--enable-gvnic": "bool",
+                "--enable-image-streaming": "bool",
                 "--image-type": "value",
                 "--local-ssd-count": "value",
                 "--machine-type": "value",
@@ -74917,6 +75159,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--enable-autoscaling": "bool",
                 "--enable-autoupgrade": "bool",
                 "--enable-gvnic": "bool",
+                "--enable-image-streaming": "bool",
                 "--max-nodes": "value",
                 "--max-surge-upgrade": "value",
                 "--max-unavailable-upgrade": "value",
@@ -77972,6 +78215,11 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--async": "bool",
+                "--destination-gke-cluster": "value",
+                "--destination-gke-location": "value",
+                "--destination-gke-namespace": "value",
+                "--destination-gke-path": "value",
+                "--destination-gke-service": "value",
                 "--destination-run-path": "value",
                 "--destination-run-region": "value",
                 "--destination-run-service": "value",
@@ -78009,8 +78257,12 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--async": "bool",
+                "--clear-destination-gke-path": "bool",
                 "--clear-destination-run-path": "bool",
                 "--clear-service-account": "bool",
+                "--destination-gke-namespace": "value",
+                "--destination-gke-path": "value",
+                "--destination-gke-service": "value",
                 "--destination-run-path": "value",
                 "--destination-run-region": "value",
                 "--destination-run-service": "value",
@@ -88432,6 +88684,9 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--host": "value",
                 "--instance": "dynamic",
                 "--password": "value",
+                "--password-policy-allowed-failed-attempts": "value",
+                "--password-policy-enable-failed-attempts-check": "bool",
+                "--password-policy-password-expiration-duration": "value",
                 "--type": "value"
               }
             },
@@ -88462,6 +88717,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--instance": "dynamic",
                 "--password": "value",
                 "--prompt-for-password": "bool"
+              }
+            },
+            "set-password-policy": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--clear-password-policy": "bool",
+                "--host": "value",
+                "--instance": "dynamic",
+                "--password-policy-allowed-failed-attempts": "value",
+                "--password-policy-enable-failed-attempts-check": "bool",
+                "--password-policy-password-expiration-duration": "value"
               }
             }
           },

@@ -164,7 +164,8 @@ def ParseCreateNodePoolOptionsBase(args):
       system_config_from_file=args.system_config_from_file,
       pod_ipv4_range=args.pod_ipv4_range,
       create_pod_ipv4_range=args.create_pod_ipv4_range,
-      gvnic=args.enable_gvnic)
+      gvnic=args.enable_gvnic,
+      enable_image_streaming=args.enable_image_streaming)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -196,6 +197,7 @@ class Create(base.CreateCommand):
     flags.AddSystemConfigFlag(parser, hidden=False)
     flags.AddNodeGroupFlag(parser)
     flags.AddEnableGvnicFlag(parser)
+    flags.AddEnableImageStreamingFlag(parser, for_node_pool=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -282,6 +284,7 @@ class CreateBeta(Create):
     flags.AddNodePoolEnablePrivateNodes(parser, hidden=True)
     flags.AddEnableGvnicFlag(parser)
     flags.AddSpotFlag(parser, for_node_pool=True)
+    flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -296,6 +299,7 @@ class CreateBeta(Create):
     ops.ephemeral_storage = args.ephemeral_storage
     ops.enable_private_nodes = args.enable_private_nodes
     ops.spot = args.spot
+    ops.placement_type = args.placement_type
     return ops
 
 
@@ -318,6 +322,7 @@ class CreateAlpha(Create):
     ops.enable_image_streaming = args.enable_image_streaming
     ops.enable_private_nodes = args.enable_private_nodes
     ops.spot = args.spot
+    ops.placement_type = args.placement_type
     return ops
 
   @staticmethod
@@ -350,6 +355,7 @@ class CreateAlpha(Create):
     flags.AddNodePoolEnablePrivateNodes(parser, hidden=True)
     flags.AddEnableGvnicFlag(parser)
     flags.AddSpotFlag(parser, for_node_pool=True)
+    flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=True)
 
 
 Create.detailed_help = DETAILED_HELP

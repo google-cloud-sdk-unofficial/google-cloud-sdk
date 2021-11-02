@@ -142,32 +142,34 @@ class Docker(base.Command):
                   'To set the account in the gcloud config, run '
                   '`gcloud config set account <account_name>`.')
 
-    base.DisableUserProjectQuota()
-    force_refresh = True
-    for server in args.server:
-      if server not in _DEFAULT_REGISTRIES:
-        log.warning('Authenticating to a non-default server: {server}.'.format(
-            server=server))
-      docker.UpdateDockerCredentials(server, refresh=force_refresh)
-      # Only force a refresh for the first server we authorize
-      force_refresh = False
+    with base.WithLegacyQuota():
+      force_refresh = True
+      for server in args.server:
+        if server not in _DEFAULT_REGISTRIES:
+          log.warning(
+              'Authenticating to a non-default server: {server}.'.format(
+                  server=server))
+        docker.UpdateDockerCredentials(server, refresh=force_refresh)
+        # Only force a refresh for the first server we authorize
+        force_refresh = False
 
-    if args.authorize_only:
-      # NOTE: We don't know at this point how long the access token we have
-      # placed in the docker configuration will last.  More information needs
-      # to be exposed from all credential kinds in order for us to have an
-      # accurate awareness of lifetime here.
-      log.err.Print('Short-lived access for {server} configured.'.format(
-          server=args.server))
+      if args.authorize_only:
+        # NOTE: We don't know at this point how long the access token we have
+        # placed in the docker configuration will last.  More information needs
+        # to be exposed from all credential kinds in order for us to have an
+        # accurate awareness of lifetime here.
+        log.err.Print('Short-lived access for {server} configured.'.format(
+            server=args.server))
+        return
+
+      docker_args = args.docker_args or []
+      docker_args = (
+          docker_args if not args.docker_host else ['-H', args.docker_host] +
+          docker_args)
+
+      result = docker_client_utils.Execute(docker_args)
+      # Explicitly avoid displaying an error message that might
+      # distract from the docker error message already displayed.
+      if result:
+        raise exceptions.ExitCodeNoError(exit_code=result)
       return
-
-    docker_args = args.docker_args or []
-    docker_args = (docker_args if not args.docker_host else
-                   ['-H', args.docker_host] + docker_args)
-
-    result = docker_client_utils.Execute(docker_args)
-    # Explicitly avoid displaying an error message that might
-    # distract from the docker error message already displayed.
-    if result:
-      raise exceptions.ExitCodeNoError(exit_code=result)
-    return

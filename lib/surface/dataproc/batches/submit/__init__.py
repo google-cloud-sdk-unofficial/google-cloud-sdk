@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.dataproc.batches import (
     batches_create_request_factory)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Submit(base.Group):
   """Submit a Dataproc batch job."""
   detailed_help = {

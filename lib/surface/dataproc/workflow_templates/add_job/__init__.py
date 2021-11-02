@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 class AddJob(base.Group):
-  r"""Add Google Cloud Dataproc jobs to workflow template.
+  r"""Add Dataproc jobs to workflow template.
 
   ## EXAMPLES
 

@@ -201,7 +201,8 @@ class Ssh(base.Command):
 
   category = base.TOOLS_CATEGORY
   enable_troubleshoot_flag = False
-  enable_ip_based_flags = False
+  enable_host_based_flags = False
+  enable_security_keys = False
 
   @classmethod
   def Args(cls, parser):
@@ -217,8 +218,8 @@ class Ssh(base.Command):
     if cls.enable_troubleshoot_flag:
       AddTroubleshootArg(parser)
     # TODO(b/190426150): Move this to Beta and then GA.
-    if cls.enable_ip_based_flags:
-      iap_tunnel.AddIpBasedTunnelArgs(parser)
+    if cls.enable_host_based_flags:
+      iap_tunnel.AddHostBasedTunnelArgs(parser)
 
     flags.AddZoneFlag(
         parser, resource_type='instance', operation_type='connect to')
@@ -244,6 +245,7 @@ class Ssh(base.Command):
 
     ssh_helper = ssh_utils.BaseSSHCLIHelper()
     ssh_helper.Run(args)
+    oslogin_state = ssh.OsloginState()
 
     if on_prem:
       user, ip = ssh_utils.GetUserAndInstance(args.user_host)
@@ -280,7 +282,7 @@ class Ssh(base.Command):
       expiration, expiration_micros = ssh_utils.GetSSHKeyExpirationFromArgs(
           args)
       if args.plain:
-        oslogin_state = ssh.OsloginState()
+        oslogin_state.oslogin_enabled = False
       else:
         public_key = ssh_helper.keys.GetPublicKey().ToEntry(
             include_comment=True)
@@ -291,6 +293,8 @@ class Ssh(base.Command):
             instance, project, user, public_key, expiration_micros,
             self.ReleaseTrack(), username_requested=username_requested)
         user = oslogin_state.user
+
+      log.debug(oslogin_state)
 
       if iap_tunnel_args:
         # IAP Tunnel only uses instance_address for the purpose of --ssh-flag
@@ -308,10 +312,13 @@ class Ssh(base.Command):
         dest_addr = instance_address
       remote = ssh.Remote(dest_addr, user)
 
+    # identity_file_list will be None if security keys are not enabled.
+    identity_file_list = ssh.WriteSecurityKeys(oslogin_state)
     identity_file = None
     options = None
     if not args.plain:
-      identity_file = ssh_helper.keys.key_file
+      if not identity_file_list:
+        identity_file = ssh_helper.keys.key_file
       options = ssh_helper.GetConfig(ssh_utils.HostKeyAlias(instance),
                                      args.strict_host_key_checking,
                                      host_keys_to_add=host_keys)
@@ -337,13 +344,20 @@ class Ssh(base.Command):
                     'remote_command': remote_command,
                     'tty': tty,
                     'iap_tunnel_args': iap_tunnel_args,
-                    'remainder': remainder}
+                    'remainder': remainder,
+                    'identity_list': identity_file_list}
 
     cmd = ssh.SSHCommand(**ssh_cmd_args)
 
     if args.dry_run:
       log.out.Print(' '.join(cmd.Build(ssh_helper.env)))
       return
+
+    # Raise errors if instance requires a security key but the local
+    # envionment doesn't support them. This is after the 'dry-run' because
+    # we want to allow printing the command regardless.
+    if self.enable_security_keys:
+      ssh_utils.ConfirmSecurityKeyStatus(oslogin_state)
 
     if args.plain or oslogin_state.oslogin_enabled:
       keys_newly_added = False
@@ -388,14 +402,16 @@ class Ssh(base.Command):
 class SshBeta(Ssh):
   """SSH into a virtual machine instance (Beta)."""
   enable_troubleshoot_flag = False
-  enable_ip_based_flags = False
+  enable_host_based_flags = False
+  enable_security_keys = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SshAlpha(SshBeta):
   """SSH into a virtual machine instance (Alpha)."""
   enable_troubleshoot_flag = True
-  enable_ip_based_flags = True
+  enable_host_based_flags = True
+  enable_security_keys = True
 
 
 _ON_PREM_EXTRA_DESCRIPTION = """

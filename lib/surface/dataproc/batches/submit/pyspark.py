@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.dataproc.batches import batch_submitter
 from googlecloudsdk.command_lib.dataproc.batches import pyspark_batch_factory
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class PySpark(base.Command):
   """Submit a PySpark batch job."""
   detailed_help = {

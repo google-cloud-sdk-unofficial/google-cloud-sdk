@@ -1,0 +1,20 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Delete mesh.
+  description: |
+    Delete the specified mesh.
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:mesh
+    help_text: |
+      Name of the mesh you want to delete.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+request: &request
+  api_version: v1alpha1
+  collection: networkservices.projects.locations.meshes

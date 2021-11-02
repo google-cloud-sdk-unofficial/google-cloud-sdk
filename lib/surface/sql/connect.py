@@ -32,6 +32,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.sql import flags as sql_flags
 from googlecloudsdk.command_lib.sql import instances as instances_command_util
+from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import iso_duration
 from googlecloudsdk.core.util import retry
@@ -142,6 +143,12 @@ def _AllowlistClientIP(instance_ref,
         instance=instance_ref.instance)
     result = sql_client.instances.Patch(patch_request)
   except apitools_exceptions.HttpError as error:
+    log.warning(
+        "If you're connecting from an IPv6 address, or are "
+        "constrained by certain organization policies (restrictPublicIP, "
+        "restrictAuthorizedNetworks), consider running the beta version of this "
+        "command by connecting through the Cloud SQL proxy: "
+        "gcloud beta sql connect")
     raise calliope_exceptions.HttpException(error)
 
   operation_ref = resources.Create(

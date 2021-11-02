@@ -22,9 +22,9 @@ from googlecloudsdk.calliope import base
 
 
 class WorkflowTemplates(base.Group):
-  r"""Create and manage Google Cloud Dataproc workflow templates.
+  r"""Create and manage Dataproc workflow templates.
 
-  Create and manage Google Cloud Dataproc workflow templates.
+  Create and manage Dataproc workflow templates.
 
   ## EXAMPLES
 

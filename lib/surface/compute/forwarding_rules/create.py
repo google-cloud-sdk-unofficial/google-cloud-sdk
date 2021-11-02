@@ -333,8 +333,9 @@ class CreateHelper(object):
             self._support_l7_internal_load_balancing,
             self._support_l7_rxlb).ResolveAsResource(args,
                                                      resources).SelfLink()
-    elif (target_ref.Collection() == 'compute.regionBackendServices' or
-          target_ref.Collection() == 'compute.targetInstances'):
+    elif (target_ref.Collection() == 'compute.regionBackendServices') or (
+        target_ref.Collection() == 'compute.targetInstances' and
+        args.load_balancing_scheme == 'INTERNAL'):
       forwarding_rule.portRange = (
           six.text_type(args.port_range) if args.port_range else None)
       if target_ref.Collection() == 'compute.regionBackendServices':

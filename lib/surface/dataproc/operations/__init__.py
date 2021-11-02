@@ -25,9 +25,9 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Operations(base.Group):
-  """View and manage Google Cloud Dataproc operations.
+  """View and manage Dataproc operations.
 
-  View and manage Google Cloud Dataproc operations.
+  View and manage Dataproc operations.
 
   ## EXAMPLES
 

@@ -149,11 +149,11 @@
         Date and time of the first snapshot, and alignment time for future snapshots.
     - arg_name: read-replicas-mode
       api_field: instance.readReplicasMode
-      release_tracks: [ALPHA]
+      release_tracks: [BETA, ALPHA]
       hidden: true
       help_text: |
-          Read replicas mode used by the instance. Only work against standard tier instances with
-          5GB and above provisioned capacity.
+        Read replicas mode used by the instance. Only work against standard tier instances with 5GB
+        and above provisioned capacity.
       choices:  # Enum is mapped to keep READ-REPLICAS-MODE-UNSPECIFIED invisible from users.
       - enum_value: READ-REPLICAS-DISABLED
         arg_value: READ-REPLICAS-DISABLED
@@ -170,7 +170,7 @@
     - arg_name: replica-count
       api_field: instance.replicaCount
       type: long
-      release_tracks: [ALPHA]
+      release_tracks: [BETA, ALPHA]
       hidden: true
       help_text: |
         The replcia count of the instance. Valid from 1 to 5. Only work against standard tier
@@ -226,6 +226,8 @@
       - googlecloudsdk.command_lib.redis.instances_create_util:AddDefaultReplicaCount
     BETA:
       api_version: v1beta1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.redis.instances_create_util:AddDefaultReplicaCount
     GA:
       api_version: v1
     collection: redis.projects.locations.instances

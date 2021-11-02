@@ -106,7 +106,8 @@ def _CommonArgs(parser,
                 support_provisioning_model=False,
                 support_termination_action=False,
                 support_host_error_timeout_seconds=False,
-                support_numa_node_count=False):
+                support_numa_node_count=False,
+                support_disk_architecture=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
@@ -118,7 +119,8 @@ def _CommonArgs(parser,
       image_csek=image_csek,
       support_boot=True,
       support_multi_writer=support_multi_writer,
-      support_replica_zones=support_replica_zones)
+      support_replica_zones=support_replica_zones,
+      support_disk_architecture=support_disk_architecture)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(
       parser,
@@ -238,6 +240,7 @@ class Create(base.CreateCommand):
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
   _support_visible_core_count = False
+  _support_disk_architecture = False
 
   @classmethod
   def Args(cls, parser):
@@ -251,7 +254,8 @@ class Create(base.CreateCommand):
         support_node_project=cls._support_node_project,
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
-        support_numa_node_count=cls._support_numa_node_count)
+        support_numa_node_count=cls._support_numa_node_count,
+        support_disk_architecture=cls._support_disk_architecture)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -373,7 +377,8 @@ class Create(base.CreateCommand):
             support_image_csek=self._support_image_csek,
             support_create_disk_snapshots=self._support_create_disk_snapshots,
             support_replica_zones=self._support_replica_zones,
-            support_multi_writer=self._support_multi_writer)
+            support_multi_writer=self._support_multi_writer,
+            support_disk_architecture=self._support_disk_architecture)
 
       machine_type_uri = None
       if instance_utils.CheckSpecifiedMachineTypeArgs(args, skip_defaults):
@@ -611,6 +616,7 @@ class CreateBeta(Create):
   _support_numa_node_count = False
   _support_provisioning_model = True
   _support_termination_action = True
+  _support_disk_architecture = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -643,7 +649,8 @@ class CreateBeta(Create):
         support_termination_action=cls._support_termination_action,
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
-        support_numa_node_count=cls._support_numa_node_count)
+        support_numa_node_count=cls._support_numa_node_count,
+        support_disk_architecture=cls._support_disk_architecture)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -689,6 +696,7 @@ class CreateAlpha(CreateBeta):
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = True
   _support_visible_core_count = True
+  _support_disk_architecture = True
 
   @classmethod
   def Args(cls, parser):
@@ -709,7 +717,8 @@ class CreateAlpha(CreateBeta):
         support_termination_action=cls._support_termination_action,
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
-        support_numa_node_count=cls._support_numa_node_count)
+        support_numa_node_count=cls._support_numa_node_count,
+        support_disk_architecture=cls._support_disk_architecture)
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())

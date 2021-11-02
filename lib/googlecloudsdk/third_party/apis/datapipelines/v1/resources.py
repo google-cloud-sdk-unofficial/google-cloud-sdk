@@ -17,18 +17,18 @@
 import enum
 
 
-BASE_URL = 'https://recommender.googleapis.com/v1alpha1/'
-DOCS_URL = 'https://cloud.google.com/recommender/docs/'
+BASE_URL = 'https://datapipelines.googleapis.com/v1/'
+DOCS_URL = 'https://cloud.google.com/dataflow/docs/guides/data-pipelines'
 
 
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
-  OPERATIONS = (
-      'operations',
-      'operations/{+operationId}',
+  PROJECTS = (
+      'projects',
+      'projects/{projectsId}',
       {},
-      ['operationId'],
+      ['projectsId'],
       True
   )
   PROJECTS_LOCATIONS = (
@@ -36,23 +36,18 @@ class Collections(enum.Enum):
       'projects/{projectsId}/locations/{locationsId}',
       {},
       ['projectsId', 'locationsId'],
-      False
+      True
   )
-  PROJECTS_LOCATIONS_RECOMMENDERS = (
-      'projects.locations.recommenders',
-      'projects/{projectsId}/locations/{locationsId}/recommenders/'
-      '{recommendersId}',
-      {},
-      ['projectsId', 'locationsId', 'recommendersId'],
-      False
-  )
-  PROJECTS_LOCATIONS_RECOMMENDERS_RECOMMENDATIONS = (
-      'projects.locations.recommenders.recommendations',
-      'projects/{projectsId}/locations/{locationsId}/recommenders/'
-      '{recommendersId}/recommendations/{recommendationsId}',
-      {},
-      ['projectsId', 'locationsId', 'recommendersId', 'recommendationsId'],
-      False
+  PROJECTS_LOCATIONS_PIPELINES = (
+      'projects.locations.pipelines',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/pipelines/'
+              '{pipelinesId}',
+      },
+      ['name'],
+      True
   )
 
   def __init__(self, collection_name, path, flat_paths, params,

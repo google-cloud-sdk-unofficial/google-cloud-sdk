@@ -84,8 +84,8 @@ class Update(base.UpdateCommand):
     flags.AddMaxUnavailableUpgradeFlag(surge_upgrade_group, for_node_pool=True)
 
     flags.AddSystemConfigFlag(group, hidden=False)
-
     flags.AddEnableGvnicFlag(group)
+    flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -102,7 +102,8 @@ class Update(base.UpdateCommand):
         max_surge_upgrade=args.max_surge_upgrade,
         max_unavailable_upgrade=args.max_unavailable_upgrade,
         system_config_from_file=args.system_config_from_file,
-        gvnic=args.enable_gvnic)
+        gvnic=args.enable_gvnic,
+        enable_image_streaming=args.enable_image_streaming)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

@@ -24,9 +24,9 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class AutoscalingPolicies(base.Group):
-  """Create and manage Google Cloud Dataproc autoscaling policies.
+  """Create and manage Dataproc autoscaling policies.
 
-  Create and manage Google Cloud Dataproc autoscaling policies.
+  Create and manage Dataproc autoscaling policies.
 
   ## EXAMPLES
 

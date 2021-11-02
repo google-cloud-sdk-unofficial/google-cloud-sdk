@@ -129,6 +129,11 @@ remaining instances. If your pods are not managed by a workload controller,
 they will not be restarted.
 Note that when resizing down, instances running pods and instances without pods
 are not differentiated. Resize will pick instances to remove at random.
+
+When you resize a node pool that spans multiple zones, the new size represents
+the number of nodes in the node pool per zone. For example, if you have a node
+pool of size 2 spanning two zones, the total node count is 4. If you resize the
+node pool with `--num-nodes=4`, the total node count becomes 8.
 """,
     'EXAMPLES':
         """\

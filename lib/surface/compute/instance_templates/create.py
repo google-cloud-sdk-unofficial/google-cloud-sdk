@@ -67,7 +67,8 @@ def _CommonArgs(parser,
                 support_host_error_timeout_seconds=False,
                 support_numa_node_count=False,
                 support_visible_core_count=False,
-                support_network_perf_configs=False):
+                support_network_perf_configs=False,
+                support_disk_architecture=False):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
@@ -76,7 +77,8 @@ def _CommonArgs(parser,
       parser,
       enable_kms=support_kms,
       support_boot=True,
-      support_multi_writer=support_multi_writer)
+      support_multi_writer=support_multi_writer,
+      support_disk_architecture=support_disk_architecture)
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
   else:
@@ -494,7 +496,8 @@ def _RunCreate(compute_api,
                support_host_error_timeout_seconds=False,
                support_numa_node_count=False,
                support_visible_core_count=False,
-               support_network_perf_configs=False):
+               support_network_perf_configs=False,
+               support_disk_architecture=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -521,8 +524,11 @@ def _RunCreate(compute_api,
         supported.
       support_visible_core_count: Indicates whether setting a custom visible
       support_network_perf_configs: Indicates whether advanced networking tiers
-        are supported.
-        core count is supported.
+        are supported. core count is supported.
+      support_disk_architecture: Storage resources can be used to create boot
+        disks compatible with ARM64 or X86_64 machine architectures. If this
+        field is not specified, the default is ARCHITECTURE_UNSPECIFIED.
+
   Returns:
       A resource object dispatched by display.Displayer().
   """
@@ -677,7 +683,8 @@ def _RunCreate(compute_api,
           instance_template_ref.project,
           getattr(args, 'create_disk', []),
           support_kms=support_kms,
-          support_multi_writer=support_multi_writer))
+          support_multi_writer=support_multi_writer,
+          support_disk_architecture=support_disk_architecture))
 
   if create_boot_disk:
     boot_disk_list = [
@@ -823,6 +830,7 @@ class Create(base.CreateCommand):
   _support_numa_node_count = False
   _support_visible_core_count = False
   _support_network_perf_configs = False
+  _support_disk_architecture = False
 
   @classmethod
   def Args(cls, parser):
@@ -836,7 +844,8 @@ class Create(base.CreateCommand):
         support_mesh=cls._support_mesh,
         support_numa_node_count=cls._support_numa_node_count,
         support_visible_core_count=cls._support_visible_core_count,
-        support_network_perf_configs=cls._support_network_perf_configs)
+        support_network_perf_configs=cls._support_network_perf_configs,
+        support_disk_architecture=cls._support_disk_architecture)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_GA_API_VERSION)
@@ -866,7 +875,8 @@ class Create(base.CreateCommand):
         support_termination_action=self._support_termination_action,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_network_perf_configs=self._support_network_perf_configs)
+        support_network_perf_configs=self._support_network_perf_configs,
+        support_disk_architecture=self._support_disk_architecture)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -895,6 +905,7 @@ class CreateBeta(Create):
   _support_numa_node_count = False
   _support_visible_core_count = False
   _support_network_perf_configs = True
+  _support_disk_architecture = False
 
   @classmethod
   def Args(cls, parser):
@@ -910,7 +921,8 @@ class CreateBeta(Create):
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
         support_visible_core_count=cls._support_visible_core_count,
-        support_network_perf_configs=cls._support_network_perf_configs)
+        support_network_perf_configs=cls._support_network_perf_configs,
+        support_disk_architecture=cls._support_disk_architecture)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)
@@ -945,7 +957,8 @@ class CreateBeta(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_network_perf_configs=self._support_network_perf_configs)
+        support_network_perf_configs=self._support_network_perf_configs,
+        support_disk_architecture=self._support_disk_architecture)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -974,6 +987,7 @@ class CreateAlpha(Create):
   _support_numa_node_count = True
   _support_visible_core_count = True
   _support_network_perf_configs = True
+  _support_disk_architecture = True
 
   @classmethod
   def Args(cls, parser):
@@ -990,7 +1004,8 @@ class CreateAlpha(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
         support_visible_core_count=cls._support_visible_core_count,
-        support_network_perf_configs=cls._support_network_perf_configs)
+        support_network_perf_configs=cls._support_network_perf_configs,
+        support_disk_architecture=cls._support_disk_architecture)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddConfidentialComputeArgs(parser)
@@ -1026,7 +1041,8 @@ class CreateAlpha(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_network_perf_configs=self._support_network_perf_configs)
+        support_network_perf_configs=self._support_network_perf_configs,
+        support_disk_architecture=self._support_disk_architecture)
 
 
 DETAILED_HELP = {

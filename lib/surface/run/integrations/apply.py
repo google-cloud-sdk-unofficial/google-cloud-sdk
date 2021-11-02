@@ -19,7 +19,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.run.integrations import api_utils
+from googlecloudsdk.api_lib.util import messages as messages_util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import exceptions
+from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 
 
 @base.Hidden
@@ -41,10 +48,35 @@ class Apply(base.Command):
          """,
   }
 
-  @staticmethod
-  def Args(parser):
-    # TODO(b/202218255): Add flags here
-    pass
+  @classmethod
+  def Args(cls, parser):
+    parser.add_argument(
+        'FILE',
+        type=arg_parsers.YAMLFileContents(),
+        help='The absolute path to the YAML file with an application '
+        'definition to update or deploy.')
+
+  def _ValidateAppConfigFile(self, file_content):
+    if 'name' not in file_content:
+      raise exceptions.FieldMismatchError("'name' is missing.")
 
   def Run(self, args):
     """Create or Update application from YAML."""
+
+    messages = api_utils.GetMessages()
+    self._ValidateAppConfigFile(args.FILE)
+    app_dict = dict(args.FILE)
+    name = app_dict.pop('name')
+    try:
+      appconfig = messages_util.DictToMessageWithErrorCheck(
+          app_dict, messages.Config)
+    except messages_util.ScalarTypeMismatchError as e:
+      raise exceptions.FieldMismatchError(
+          e,
+          help_text='Please make sure that the YAML file matches the Cloud Run '
+          'Integrations definition spec.')
+
+    conn_context = connection_context.GetConnectionContext(
+        args, flags.Product.RUN_APPS, self.ReleaseTrack())
+    with run_apps_operations.Connect(conn_context) as client:
+      return client.ApplyAppConfig(name, appconfig)

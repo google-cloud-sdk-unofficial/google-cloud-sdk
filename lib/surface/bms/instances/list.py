@@ -31,7 +31,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To list private clouds in the region within the project ``us-central1'', run:
+          To list instances in the region within the project ``us-central1'', run:
 
             $ {command} --region=us-central1
 
@@ -59,7 +59,7 @@ class List(base.ListCommand):
 
     flags.AddRegionArgToParser(parser)
     # The default format picks out the components of the relative name:
-    # given projects/myproject/locations/us-central1/clusterGroups/my-test
+    # given projects/myproject/locations/us-central1/instances/my-test
     # it takes -1 (my-test), -3 (us-central1), and -5 (myproject).
     parser.display_info.AddFormat(
         'table(name.segment(-1):label=NAME,name.segment(-5):label=PROJECT,'
@@ -73,7 +73,7 @@ class List(base.ListCommand):
     client = BmsClient()
     if region is None:
       project = properties.VALUES.core.project.Get(required=True)
-      for instance in client.AggregateList(project, limit=args.limit):
+      for instance in client.AggregateListInstances(project, limit=args.limit):
         synthesized_instance = self.synthesizedInstance(instance, client)
         yield synthesized_instance
     else:

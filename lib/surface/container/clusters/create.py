@@ -357,7 +357,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       max_unavailable_upgrade=get_default('max_unavailable_upgrade'),
       autopilot=is_autopilot,
       gvnic=get_default('enable_gvnic'),
-      enable_confidential_nodes=get_default('enable_confidential_nodes'))
+      enable_confidential_nodes=get_default('enable_confidential_nodes'),
+      enable_image_streaming=get_default('enable_image_streaming'))
 
 
 GA = 'ga'
@@ -463,6 +464,8 @@ flags_to_add = {
             flags.AddDiskSizeFlag,
         'disktype':
             flags.AddDiskTypeFlag,
+        'imagestreaming':
+            flags.AddEnableImageStreamingFlag,
         'ilbsubsetting':
             flags.AddILBSubsettingFlags,
         'imageflags':
@@ -600,6 +603,8 @@ flags_to_add = {
             flags.AddClusterDNSFlags,
         'clusterversion':
             flags.AddClusterVersionFlag,
+        'placementtype':
+            flags.AddPlacementTypeFlag,
         'confidentialnodes':
             flags.AddEnableConfidentialNodesFlag,
         'databaseencryption':
@@ -780,6 +785,8 @@ flags_to_add = {
             flags.AddClusterAutoscalingFlags,
         'clusterdns':
             flags.AddClusterDNSFlags,
+        'placementtype':
+            flags.AddPlacementTypeFlag,
         'confidentialnodes':
             flags.AddEnableConfidentialNodesFlag,
         'costmanagementconfig':
@@ -1153,6 +1160,7 @@ class CreateBeta(Create):
     ops.enable_service_externalips = get_default('enable_service_externalips')
     ops.enable_managed_prometheus = get_default('enable_managed_prometheus')
     ops.spot = get_default('spot')
+    ops.placement_type = get_default('placement_type')
     return ops
 
 
@@ -1234,4 +1242,5 @@ class CreateAlpha(Create):
     ops.enable_service_externalips = get_default('enable_service_externalips')
     ops.enable_managed_prometheus = get_default('enable_managed_prometheus')
     ops.spot = get_default('spot')
+    ops.placement_type = get_default('placement_type')
     return ops

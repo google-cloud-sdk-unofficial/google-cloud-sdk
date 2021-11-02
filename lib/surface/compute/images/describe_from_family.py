@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.images import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class DescribeFromFamily(base.DescribeCommand):
   """Describe the latest image from an image family.
 
@@ -39,6 +38,14 @@ class DescribeFromFamily(base.DescribeCommand):
     DescribeFromFamily.DiskImageArg = flags.MakeDiskImageArg()
     DescribeFromFamily.DiskImageArg.AddArgument(
         parser, operation_type='describe')
+    # Do not use compute_flags.AddZoneFlag() because there should be no
+    # interaction with the compute/zone property.
+    parser.add_argument(
+        '--zone',
+        completer=completers.ZonesCompleter,
+        help=('Zone to query. Returns the latest image available in the image '
+              'family for the specified zone. If not specified, returns the '
+              'latest globally available image.'))
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -66,30 +73,6 @@ class DescribeFromFamily(base.DescribeCommand):
 
       return client.MakeRequests([(client.apitools_client.images,
                                    'GetFromFamily', request)])[0]
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeFromFamilyBeta(DescribeFromFamily):
-  """Describe the latest image from an image family."""
-
-  @staticmethod
-  def Args(parser):
-    DescribeFromFamily.DiskImageArg = flags.MakeDiskImageArg()
-    DescribeFromFamily.DiskImageArg.AddArgument(
-        parser, operation_type='describe')
-    # Do not use compute_flags.AddZoneFlag() because there should be no
-    # interaction with the compute/zone property.
-    parser.add_argument(
-        '--zone',
-        completer=completers.ZonesCompleter,
-        help=('Zone to query. Returns the latest image available in the image '
-              'family for the specified zone. If not specified, returns the '
-              'latest globally available image.'))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeFromFamilyAlpha(DescribeFromFamilyBeta):
-  """Describe the latest image from an image family."""
 
 
 DescribeFromFamily.detailed_help = {

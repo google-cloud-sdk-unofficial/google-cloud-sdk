@@ -97,18 +97,19 @@ Move.detailed_help = {
     'brief': ('Move an instance and its attached persistent disks between '
               'zones.'),
     'DESCRIPTION': """
-        *{command}* facilitates moving a Compute Engine virtual machine
-        from one zone to another. Moving a virtual machine may incur downtime
-        if the guest OS must be shutdown in order to quiesce disk volumes
+        *{command}* moves a Compute Engine virtual machine
+        from one zone to another. Moving a virtual machine might incur downtime
+        if the guest OS must be shut down in order to quiesce disk volumes
         prior to snapshotting.
 
-        For example, running:
+        For example, running the following command moves the instance
+        called `example-instance-1` with its attached persistent disks,
+        currently running in `us-central1-b`, to `us-central1-f`.
 
-           $ gcloud compute instances move example-instance-1 --zone us-central1-b --destination-zone us-central1-f
+           $ gcloud compute instances move example-instance-1 --zone=us-central1-b --destination-zone=us-central1-f
 
-        will move the instance called 'example-instance-1' with its all attached
-        persistent disks, currently running in 'us-central1-b', to
-        'us-central1-f'.
+        Note: Moving VMs or disks by using the `{command}` command might
+        cause unexpected behavior. For more information, see https://cloud.google.com/compute/docs/troubleshooting/known-issues#moving_vms_or_disks_using_the_moveinstance_api_or_the_causes_unexpected_behavior.
 
         Please note that gcloud compute instances move does not yet support
         instances which have regional persistent disks attached. Please see
@@ -116,7 +117,7 @@ Move.detailed_help = {
         more details.
     """,
     'EXAMPLES': """
-    To move 'instance-1' from 'us-central-a' to 'europe-west1-d', run:
+    To move `instance-1` from `us-central-a` to `europe-west1-d`, run:
 
       $ {command} instance-1 --zone=us-central1-a --destination-zone=europe-west1-d
     """}

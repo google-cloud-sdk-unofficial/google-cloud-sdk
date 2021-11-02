@@ -54,8 +54,13 @@ class List(base.ListCommand):
           'project',
           'Please set a project with "--project" flag or "gcloud config set project <project_id>".'
       )
+    server_filter = None
+    if args.filter:
+      rewriter = resource_expr_rewrite.Backend()
+      _, server_filter = rewriter.Rewrite(args.filter)
+
     return secrets_api.Secrets().ListWithPager(
-        project_ref=project_ref, limit=args.limit)
+        project_ref=project_ref, limit=args.limit, request_filter=server_filter)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -86,9 +91,9 @@ class ListBeta(List):
           'project',
           'Please set a project with "--project" flag or "gcloud config set project <project_id>".'
       )
-    rewriter = resource_expr_rewrite.Backend()
     server_filter = None
     if args.filter:
+      rewriter = resource_expr_rewrite.Backend()
       _, server_filter = rewriter.Rewrite(args.filter)
 
     return secrets_api.Secrets().ListWithPager(

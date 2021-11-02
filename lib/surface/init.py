@@ -139,22 +139,19 @@ class Init(base.Command):
           return
 
     # User project quota is now the global default, but this command calls
-    # legacy APIs where it should be disabled. It must happen after the config
-    # settings are persisted so this temporary value doesn't get persisted as
-    # well.
-    base.DisableUserProjectQuota()
+    # legacy APIs where it should be disabled.
+    with base.WithLegacyQuota():
+      if not self._PickAccount(args.console_only, preselected=args.account):
+        return
 
-    if not self._PickAccount(args.console_only, preselected=args.account):
-      return
+      if not self._PickProject(preselected=args.project):
+        return
 
-    if not self._PickProject(preselected=args.project):
-      return
+      self._PickDefaultRegionAndZone()
 
-    self._PickDefaultRegionAndZone()
+      self._CreateBotoConfig()
 
-    self._CreateBotoConfig()
-
-    self._Summarize(configuration_name)
+      self._Summarize(configuration_name)
 
   def _PickAccount(self, console_only, preselected=None):
     """Checks if current credentials are valid, if not runs auth login.

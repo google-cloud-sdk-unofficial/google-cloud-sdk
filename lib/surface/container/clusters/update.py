@@ -339,6 +339,7 @@ class Update(base.UpdateCommand):
     flags.AddAuthenticatorSecurityGroupFlags(group)
     flags.AddILBSubsettingFlags(group, hidden=False)
     flags.AddMeshCertificatesFlags(group)
+    flags.AddEnableImageStreamingFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -379,6 +380,7 @@ class Update(base.UpdateCommand):
     opts.disable_default_snat = args.disable_default_snat
     opts.notification_config = args.notification_config
     opts.security_group = args.security_group
+    opts.enable_image_streaming = args.enable_image_streaming
     return opts
 
   def Run(self, args):
@@ -589,7 +591,8 @@ to completion."""
             cluster_ref, cluster.maintenancePolicy,
             args.add_maintenance_exclusion_name,
             args.add_maintenance_exclusion_start,
-            args.add_maintenance_exclusion_end)
+            args.add_maintenance_exclusion_end,
+            args.add_maintenance_exclusion_scope)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif getattr(args, 'remove_maintenance_exclusion', None) is not None:
