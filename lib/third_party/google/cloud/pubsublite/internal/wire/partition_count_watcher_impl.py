@@ -32,7 +32,7 @@ class PartitionCountWatcherImpl(PartitionCountWatcher, PermanentFailable):
     _any_success: bool
     _thread: ThreadPoolExecutor
     _queue: asyncio.Queue
-    _poll_partition_loop: asyncio.Future
+    _partition_loop_poller: asyncio.Future
 
     def __init__(
         self, admin: AdminClientInterface, topic_path: TopicPath, duration: float
@@ -46,13 +46,13 @@ class PartitionCountWatcherImpl(PartitionCountWatcher, PermanentFailable):
     async def __aenter__(self):
         self._thread = ThreadPoolExecutor(max_workers=1)
         self._queue = asyncio.Queue(maxsize=1)
-        self._poll_partition_loop = asyncio.ensure_future(
+        self._partition_loop_poller = asyncio.ensure_future(
             self.run_poller(self._poll_partition_loop)
         )
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        self._poll_partition_loop.cancel()
-        await wait_ignore_cancelled(self._poll_partition_loop)
+        self._partition_loop_poller.cancel()
+        await wait_ignore_cancelled(self._partition_loop_poller)
         self._thread.shutdown(wait=False)
 
     def _get_partition_count_sync(self) -> int:

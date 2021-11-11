@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 from collections import OrderedDict
 from distutils import util
 import os
@@ -23,10 +21,10 @@ from typing import Callable, Dict, Optional, Sequence, Tuple, Type, Union
 import pkg_resources
 
 from google.api_core import client_options as client_options_lib  # type: ignore
-from google.api_core import exceptions  # type: ignore
+from google.api_core import exceptions as core_exceptions  # type: ignore
 from google.api_core import gapic_v1  # type: ignore
 from google.api_core import retry as retries  # type: ignore
-from google.auth import credentials  # type: ignore
+from google.auth import credentials as ga_credentials  # type: ignore
 from google.auth.transport import mtls  # type: ignore
 from google.auth.transport.grpc import SslCredentials  # type: ignore
 from google.auth.exceptions import MutualTLSChannelError  # type: ignore
@@ -34,8 +32,7 @@ from google.oauth2 import service_account  # type: ignore
 
 from google.cloud.pubsublite_v1.types import common
 from google.cloud.pubsublite_v1.types import topic_stats
-from google.protobuf import timestamp_pb2 as timestamp  # type: ignore
-
+from google.protobuf import timestamp_pb2  # type: ignore
 from .transports.base import TopicStatsServiceTransport, DEFAULT_CLIENT_INFO
 from .transports.grpc import TopicStatsServiceGrpcTransport
 from .transports.grpc_asyncio import TopicStatsServiceGrpcAsyncIOTransport
@@ -58,7 +55,7 @@ class TopicStatsServiceClientMeta(type):
     def get_transport_class(
         cls, label: str = None,
     ) -> Type[TopicStatsServiceTransport]:
-        """Return an appropriate transport class.
+        """Returns an appropriate transport class.
 
         Args:
             label: The name of the desired transport. If none is
@@ -83,7 +80,8 @@ class TopicStatsServiceClient(metaclass=TopicStatsServiceClientMeta):
 
     @staticmethod
     def _get_default_mtls_endpoint(api_endpoint):
-        """Convert api endpoint to mTLS endpoint.
+        """Converts api endpoint to mTLS endpoint.
+
         Convert "*.sandbox.googleapis.com" and "*.googleapis.com" to
         "*.mtls.sandbox.googleapis.com" and "*.mtls.googleapis.com" respectively.
         Args:
@@ -117,7 +115,8 @@ class TopicStatsServiceClient(metaclass=TopicStatsServiceClientMeta):
 
     @classmethod
     def from_service_account_info(cls, info: dict, *args, **kwargs):
-        """Creates an instance of this client using the provided credentials info.
+        """Creates an instance of this client using the provided credentials
+            info.
 
         Args:
             info (dict): The service account private key info.
@@ -134,7 +133,7 @@ class TopicStatsServiceClient(metaclass=TopicStatsServiceClientMeta):
     @classmethod
     def from_service_account_file(cls, filename: str, *args, **kwargs):
         """Creates an instance of this client using the provided credentials
-        file.
+            file.
 
         Args:
             filename (str): The path to the service account private key json
@@ -153,23 +152,24 @@ class TopicStatsServiceClient(metaclass=TopicStatsServiceClientMeta):
 
     @property
     def transport(self) -> TopicStatsServiceTransport:
-        """Return the transport used by the client instance.
+        """Returns the transport used by the client instance.
 
         Returns:
-            TopicStatsServiceTransport: The transport used by the client instance.
+            TopicStatsServiceTransport: The transport used by the client
+                instance.
         """
         return self._transport
 
     @staticmethod
     def topic_path(project: str, location: str, topic: str,) -> str:
-        """Return a fully-qualified topic string."""
+        """Returns a fully-qualified topic string."""
         return "projects/{project}/locations/{location}/topics/{topic}".format(
             project=project, location=location, topic=topic,
         )
 
     @staticmethod
     def parse_topic_path(path: str) -> Dict[str, str]:
-        """Parse a topic path into its component segments."""
+        """Parses a topic path into its component segments."""
         m = re.match(
             r"^projects/(?P<project>.+?)/locations/(?P<location>.+?)/topics/(?P<topic>.+?)$",
             path,
@@ -178,7 +178,7 @@ class TopicStatsServiceClient(metaclass=TopicStatsServiceClientMeta):
 
     @staticmethod
     def common_billing_account_path(billing_account: str,) -> str:
-        """Return a fully-qualified billing_account string."""
+        """Returns a fully-qualified billing_account string."""
         return "billingAccounts/{billing_account}".format(
             billing_account=billing_account,
         )
@@ -191,7 +191,7 @@ class TopicStatsServiceClient(metaclass=TopicStatsServiceClientMeta):
 
     @staticmethod
     def common_folder_path(folder: str,) -> str:
-        """Return a fully-qualified folder string."""
+        """Returns a fully-qualified folder string."""
         return "folders/{folder}".format(folder=folder,)
 
     @staticmethod
@@ -202,7 +202,7 @@ class TopicStatsServiceClient(metaclass=TopicStatsServiceClientMeta):
 
     @staticmethod
     def common_organization_path(organization: str,) -> str:
-        """Return a fully-qualified organization string."""
+        """Returns a fully-qualified organization string."""
         return "organizations/{organization}".format(organization=organization,)
 
     @staticmethod
@@ -213,7 +213,7 @@ class TopicStatsServiceClient(metaclass=TopicStatsServiceClientMeta):
 
     @staticmethod
     def common_project_path(project: str,) -> str:
-        """Return a fully-qualified project string."""
+        """Returns a fully-qualified project string."""
         return "projects/{project}".format(project=project,)
 
     @staticmethod
@@ -224,7 +224,7 @@ class TopicStatsServiceClient(metaclass=TopicStatsServiceClientMeta):
 
     @staticmethod
     def common_location_path(project: str, location: str,) -> str:
-        """Return a fully-qualified location string."""
+        """Returns a fully-qualified location string."""
         return "projects/{project}/locations/{location}".format(
             project=project, location=location,
         )
@@ -238,12 +238,12 @@ class TopicStatsServiceClient(metaclass=TopicStatsServiceClientMeta):
     def __init__(
         self,
         *,
-        credentials: Optional[credentials.Credentials] = None,
+        credentials: Optional[ga_credentials.Credentials] = None,
         transport: Union[str, TopicStatsServiceTransport, None] = None,
         client_options: Optional[client_options_lib.ClientOptions] = None,
         client_info: gapic_v1.client_info.ClientInfo = DEFAULT_CLIENT_INFO,
     ) -> None:
-        """Instantiate the topic stats service client.
+        """Instantiates the topic stats service client.
 
         Args:
             credentials (Optional[google.auth.credentials.Credentials]): The
@@ -298,9 +298,10 @@ class TopicStatsServiceClient(metaclass=TopicStatsServiceClientMeta):
                 client_cert_source_func = client_options.client_cert_source
             else:
                 is_mtls = mtls.has_default_client_cert_source()
-                client_cert_source_func = (
-                    mtls.default_client_cert_source() if is_mtls else None
-                )
+                if is_mtls:
+                    client_cert_source_func = mtls.default_client_cert_source()
+                else:
+                    client_cert_source_func = None
 
         # Figure out which api endpoint to use.
         if client_options.api_endpoint is not None:
@@ -312,12 +313,14 @@ class TopicStatsServiceClient(metaclass=TopicStatsServiceClientMeta):
             elif use_mtls_env == "always":
                 api_endpoint = self.DEFAULT_MTLS_ENDPOINT
             elif use_mtls_env == "auto":
-                api_endpoint = (
-                    self.DEFAULT_MTLS_ENDPOINT if is_mtls else self.DEFAULT_ENDPOINT
-                )
+                if is_mtls:
+                    api_endpoint = self.DEFAULT_MTLS_ENDPOINT
+                else:
+                    api_endpoint = self.DEFAULT_ENDPOINT
             else:
                 raise MutualTLSChannelError(
-                    "Unsupported GOOGLE_API_USE_MTLS_ENDPOINT value. Accepted values: never, auto, always"
+                    "Unsupported GOOGLE_API_USE_MTLS_ENDPOINT value. Accepted "
+                    "values: never, auto, always"
                 )
 
         # Save or instantiate the transport.
@@ -332,8 +335,8 @@ class TopicStatsServiceClient(metaclass=TopicStatsServiceClientMeta):
                 )
             if client_options.scopes:
                 raise ValueError(
-                    "When providing a transport instance, "
-                    "provide its scopes directly."
+                    "When providing a transport instance, provide its scopes "
+                    "directly."
                 )
             self._transport = transport
         else:
@@ -346,6 +349,10 @@ class TopicStatsServiceClient(metaclass=TopicStatsServiceClientMeta):
                 client_cert_source_for_mtls=client_cert_source_func,
                 quota_project_id=client_options.quota_project_id,
                 client_info=client_info,
+                always_use_jwt_access=(
+                    Transport == type(self).get_transport_class("grpc")
+                    or Transport == type(self).get_transport_class("grpc_asyncio")
+                ),
             )
 
     def compute_message_stats(
@@ -363,7 +370,6 @@ class TopicStatsServiceClient(metaclass=TopicStatsServiceClientMeta):
             request (google.cloud.pubsublite_v1.types.ComputeMessageStatsRequest):
                 The request object. Compute statistics about a range of
                 messages in a given topic and partition.
-
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
@@ -378,7 +384,6 @@ class TopicStatsServiceClient(metaclass=TopicStatsServiceClientMeta):
 
         """
         # Create or coerce a protobuf request object.
-
         # Minor optimization to avoid making a copy if the user passes
         # in a topic_stats.ComputeMessageStatsRequest.
         # There's no risk of modifying the input as we've already verified
@@ -422,7 +427,6 @@ class TopicStatsServiceClient(metaclass=TopicStatsServiceClientMeta):
             request (google.cloud.pubsublite_v1.types.ComputeHeadCursorRequest):
                 The request object. Compute the current head cursor for
                 a partition.
-
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
@@ -436,7 +440,6 @@ class TopicStatsServiceClient(metaclass=TopicStatsServiceClientMeta):
 
         """
         # Create or coerce a protobuf request object.
-
         # Minor optimization to avoid making a copy if the user passes
         # in a topic_stats.ComputeHeadCursorRequest.
         # There's no risk of modifying the input as we've already verified
@@ -447,6 +450,58 @@ class TopicStatsServiceClient(metaclass=TopicStatsServiceClientMeta):
         # Wrap the RPC method; this adds retry and timeout information,
         # and friendly error handling.
         rpc = self._transport._wrapped_methods[self._transport.compute_head_cursor]
+
+        # Certain fields should be provided within the metadata header;
+        # add these here.
+        metadata = tuple(metadata) + (
+            gapic_v1.routing_header.to_grpc_metadata((("topic", request.topic),)),
+        )
+
+        # Send the request.
+        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+
+        # Done; return the response.
+        return response
+
+    def compute_time_cursor(
+        self,
+        request: topic_stats.ComputeTimeCursorRequest = None,
+        *,
+        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        timeout: float = None,
+        metadata: Sequence[Tuple[str, str]] = (),
+    ) -> topic_stats.ComputeTimeCursorResponse:
+        r"""Compute the corresponding cursor for a publish or
+        event time in a topic partition.
+
+        Args:
+            request (google.cloud.pubsublite_v1.types.ComputeTimeCursorRequest):
+                The request object. Compute the corresponding cursor for
+                a publish or event time in a topic partition.
+            retry (google.api_core.retry.Retry): Designation of what errors, if any,
+                should be retried.
+            timeout (float): The timeout for this request.
+            metadata (Sequence[Tuple[str, str]]): Strings which should be
+                sent along with the request as metadata.
+
+        Returns:
+            google.cloud.pubsublite_v1.types.ComputeTimeCursorResponse:
+                Response containing the cursor
+                corresponding to a publish or event time
+                in a topic partition.
+
+        """
+        # Create or coerce a protobuf request object.
+        # Minor optimization to avoid making a copy if the user passes
+        # in a topic_stats.ComputeTimeCursorRequest.
+        # There's no risk of modifying the input as we've already verified
+        # there are no flattened fields.
+        if not isinstance(request, topic_stats.ComputeTimeCursorRequest):
+            request = topic_stats.ComputeTimeCursorRequest(request)
+
+        # Wrap the RPC method; this adds retry and timeout information,
+        # and friendly error handling.
+        rpc = self._transport._wrapped_methods[self._transport.compute_time_cursor]
 
         # Certain fields should be provided within the metadata header;
         # add these here.

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import proto  # type: ignore
-
 
 from google.cloud.pubsublite_v1.types import common
 
@@ -53,16 +50,20 @@ class InitialSubscribeRequest(proto.Message):
             The partition from which to receive messages. Partitions are
             zero indexed, so ``partition`` must be in the range [0,
             topic.num_partitions).
+        initial_location (google.cloud.pubsublite_v1.types.SeekRequest):
+            Optional. Initial target location within the
+            message backlog. If not set, messages will be
+            delivered from the commit cursor for the given
+            subscription and partition.
     """
 
-    subscription = proto.Field(proto.STRING, number=1)
-
-    partition = proto.Field(proto.INT64, number=2)
+    subscription = proto.Field(proto.STRING, number=1,)
+    partition = proto.Field(proto.INT64, number=2,)
+    initial_location = proto.Field(proto.MESSAGE, number=4, message="SeekRequest",)
 
 
 class InitialSubscribeResponse(proto.Message):
     r"""Response to an InitialSubscribeRequest.
-
     Attributes:
         cursor (google.cloud.pubsublite_v1.types.Cursor):
             The cursor from which the subscriber will
@@ -76,9 +77,11 @@ class InitialSubscribeResponse(proto.Message):
 class SeekRequest(proto.Message):
     r"""Request to update the stream's delivery cursor based on the
     given target. Resets the server available tokens to 0.
+    SeekRequests past head result in stream breakage.
+
     SeekRequests may not be sent while another SeekRequest is
     outstanding (i.e., has not received a SeekResponse) on the same
-    stream. SeekRequests past head result in stream breakage.
+    stream.
 
     Attributes:
         named_target (google.cloud.pubsublite_v1.types.SeekRequest.NamedTarget):
@@ -97,7 +100,6 @@ class SeekRequest(proto.Message):
         COMMITTED_CURSOR = 2
 
     named_target = proto.Field(proto.ENUM, number=1, oneof="target", enum=NamedTarget,)
-
     cursor = proto.Field(
         proto.MESSAGE, number=2, oneof="target", message=common.Cursor,
     )
@@ -105,7 +107,6 @@ class SeekRequest(proto.Message):
 
 class SeekResponse(proto.Message):
     r"""Response to a SeekRequest.
-
     Attributes:
         cursor (google.cloud.pubsublite_v1.types.Cursor):
             The new delivery cursor for the current
@@ -128,14 +129,12 @@ class FlowControlRequest(proto.Message):
             greater than or equal to 0.
     """
 
-    allowed_messages = proto.Field(proto.INT64, number=1)
-
-    allowed_bytes = proto.Field(proto.INT64, number=2)
+    allowed_messages = proto.Field(proto.INT64, number=1,)
+    allowed_bytes = proto.Field(proto.INT64, number=2,)
 
 
 class SubscribeRequest(proto.Message):
     r"""A request sent from the client to the server on a stream.
-
     Attributes:
         initial (google.cloud.pubsublite_v1.types.InitialSubscribeRequest):
             Initial request on the stream.
@@ -149,9 +148,7 @@ class SubscribeRequest(proto.Message):
     initial = proto.Field(
         proto.MESSAGE, number=1, oneof="request", message="InitialSubscribeRequest",
     )
-
     seek = proto.Field(proto.MESSAGE, number=2, oneof="request", message="SeekRequest",)
-
     flow_control = proto.Field(
         proto.MESSAGE, number=3, oneof="request", message="FlowControlRequest",
     )
@@ -178,7 +175,6 @@ class MessageResponse(proto.Message):
 
 class SubscribeResponse(proto.Message):
     r"""Response to SubscribeRequest.
-
     Attributes:
         initial (google.cloud.pubsublite_v1.types.InitialSubscribeResponse):
             Initial response on the stream.
@@ -192,11 +188,9 @@ class SubscribeResponse(proto.Message):
     initial = proto.Field(
         proto.MESSAGE, number=1, oneof="response", message="InitialSubscribeResponse",
     )
-
     seek = proto.Field(
         proto.MESSAGE, number=2, oneof="response", message="SeekResponse",
     )
-
     messages = proto.Field(
         proto.MESSAGE, number=3, oneof="response", message="MessageResponse",
     )
@@ -226,9 +220,8 @@ class InitialPartitionAssignmentRequest(proto.Message):
             disconnections with retryable stream errors.
     """
 
-    subscription = proto.Field(proto.STRING, number=1)
-
-    client_id = proto.Field(proto.BYTES, number=2)
+    subscription = proto.Field(proto.STRING, number=1,)
+    client_id = proto.Field(proto.BYTES, number=2,)
 
 
 class PartitionAssignment(proto.Message):
@@ -242,7 +235,7 @@ class PartitionAssignment(proto.Message):
             is assigned to.
     """
 
-    partitions = proto.RepeatedField(proto.INT64, number=1)
+    partitions = proto.RepeatedField(proto.INT64, number=1,)
 
 
 class PartitionAssignmentAck(proto.Message):
@@ -251,12 +244,11 @@ class PartitionAssignmentAck(proto.Message):
     assignment, partitions may remain unassigned for a period of
     time until the client is known to be inactive, after which time
     the server will break the stream.
-    """
+        """
 
 
 class PartitionAssignmentRequest(proto.Message):
     r"""A request on the PartitionAssignment stream.
-
     Attributes:
         initial (google.cloud.pubsublite_v1.types.InitialPartitionAssignmentRequest):
             Initial request on the stream.
@@ -270,7 +262,6 @@ class PartitionAssignmentRequest(proto.Message):
         oneof="request",
         message="InitialPartitionAssignmentRequest",
     )
-
     ack = proto.Field(
         proto.MESSAGE, number=2, oneof="request", message="PartitionAssignmentAck",
     )

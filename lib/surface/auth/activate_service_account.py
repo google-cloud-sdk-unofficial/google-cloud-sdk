@@ -33,7 +33,7 @@ from googlecloudsdk.core.util import files
 
 
 class ActivateServiceAccount(base.SilentCommand):
-  r"""Authorize access to Google Cloud Platform with a service account.
+  r"""Authorize access to Google Cloud with a service account.
 
   To allow `gcloud` (and other tools in Cloud SDK) to use service account
   credentials to make requests, use this command to import these credentials
@@ -47,7 +47,7 @@ class ActivateServiceAccount(base.SilentCommand):
   _Key File_
 
   To obtain the key file for this command, use either the [Google Cloud
-  Platform Console](https://console.cloud.google.com) or `gcloud iam
+  Console](https://console.cloud.google.com) or `gcloud iam
   service-accounts keys create`. The key file can be .json (preferred) or
   .p12 (legacy) format. In the case of legacy .p12 files, a separate password
   might be required and is displayed in the Console when you create the key.
@@ -69,7 +69,7 @@ class ActivateServiceAccount(base.SilentCommand):
 
   ## EXAMPLES
 
-  To authorize `gcloud` to access Google Cloud Platform using an existing
+  To authorize `gcloud` to access Google Cloud using an existing
   service account while also specifying a project, run:
 
             $ {command} SERVICE_ACCOUNT@DOMAIN.COM \

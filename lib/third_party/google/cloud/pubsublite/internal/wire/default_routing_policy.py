@@ -16,15 +16,15 @@ import hashlib
 import random
 
 from google.cloud.pubsublite.internal.wire.routing_policy import RoutingPolicy
-from google.cloud.pubsublite.types import Partition
+from google.cloud.pubsublite.types.partition import Partition
 from google.cloud.pubsublite_v1.types import PubSubMessage
 
 
 class DefaultRoutingPolicy(RoutingPolicy):
     """
-  The default routing policy which routes based on sha256 % num_partitions using the key if set or round robin if
-  unset.
-  """
+    The default routing policy which routes based on sha256 % num_partitions using the key if set or round robin if
+    unset.
+    """
 
     _num_partitions: int
     _current_round_robin: Partition

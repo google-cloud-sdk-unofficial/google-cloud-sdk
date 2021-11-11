@@ -22,9 +22,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Aws(base.Group):
-  """Create and manage clusters of machines on AWS for running containers."""
+  """Deploy and manage clusters of machines on AWS for running containers."""
 
   def Filter(self, context, args):
     del context, args

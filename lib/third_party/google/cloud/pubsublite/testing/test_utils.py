@@ -14,7 +14,7 @@
 
 import asyncio
 import threading
-from typing import List, Union, Any, TypeVar, Generic, Optional, Callable
+from typing import List, Union, Any, TypeVar, Generic, Optional, Callable, Awaitable
 
 from asynctest import CoroutineMock
 
@@ -30,11 +30,11 @@ async def async_iterable(elts: List[Union[Any, Exception]]):
 
 def make_queue_waiter(
     started_q: "asyncio.Queue[None]", result_q: "asyncio.Queue[Union[T, Exception]]"
-):
+) -> Callable[[], Awaitable[T]]:
     """
-  Given a queue to notify when started and a queue to get results from, return a waiter which
-  notifies started_q when started and returns from result_q when done.
-  """
+    Given a queue to notify when started and a queue to get results from, return a waiter which
+    notifies started_q when started and returns from result_q when done.
+    """
 
     async def waiter(*args, **kwargs):
         await started_q.put(None)

@@ -42,6 +42,7 @@ class PartitionCountWatchingPublisher(Publisher):
         self._publisher_factory = publisher_factory
         self._policy_factory = policy_factory
         self._watcher = watcher
+        self._partition_count_poller = None
 
     async def __aenter__(self):
         try:
@@ -56,9 +57,10 @@ class PartitionCountWatchingPublisher(Publisher):
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        self._partition_count_poller.cancel()
-        await wait_ignore_cancelled(self._partition_count_poller)
-        await self._watcher.__aexit__(exc_type, exc_val, exc_tb)
+        if self._partition_count_poller is not None:
+            self._partition_count_poller.cancel()
+            await wait_ignore_cancelled(self._partition_count_poller)
+            await self._watcher.__aexit__(exc_type, exc_val, exc_tb)
         for publisher in self._publishers.values():
             await publisher.__aexit__(exc_type, exc_val, exc_tb)
 

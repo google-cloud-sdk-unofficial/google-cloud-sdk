@@ -30,6 +30,7 @@ $ {command} --location=us-west1
 """
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List operations."""
 

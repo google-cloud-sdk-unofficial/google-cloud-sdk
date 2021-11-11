@@ -38,7 +38,7 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1 --node-version
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a node pool in an Azure cluster."""
 
@@ -62,7 +62,7 @@ class Create(base.CreateCommand):
     flags.AddNodeTaints(parser)
     flags.AddAzureAvailabilityZone(parser)
     flags.AddProxyConfig(parser)
-    flags.AddConfigEncryption(parser, hidden=True)
+    flags.AddConfigEncryption(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(command_util.NODE_POOL_FORMAT)
 

@@ -38,7 +38,14 @@ class MultiplexedAsyncPublisherClient(AsyncPublisherClientInterface):
 
     def __init__(self, publisher_factory: AsyncPublisherFactory):
         self._publisher_factory = publisher_factory
-        self._multiplexer = AsyncClientMultiplexer()
+        self._multiplexer = AsyncClientMultiplexer(
+            lambda topic: self._create_and_open(topic)
+        )
+
+    async def _create_and_open(self, topic: TopicPath):
+        client = self._publisher_factory(topic)
+        await client.__aenter__()
+        return client
 
     @overrides
     async def publish(
@@ -51,12 +58,7 @@ class MultiplexedAsyncPublisherClient(AsyncPublisherClientInterface):
         if isinstance(topic, str):
             topic = TopicPath.parse(topic)
 
-        async def create_and_open():
-            client = self._publisher_factory(topic)
-            await client.__aenter__()
-            return client
-
-        publisher = await self._multiplexer.get_or_create(topic, create_and_open)
+        publisher = await self._multiplexer.get_or_create(topic)
         try:
             return await publisher.publish(
                 data=data, ordering_key=ordering_key, **attrs

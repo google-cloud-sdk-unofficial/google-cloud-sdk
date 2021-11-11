@@ -26,10 +26,8 @@ from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
 from googlecloudsdk.command_lib.container.gkemulticloud import kubeconfig
 
-import six
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class GetCredentials(base.Command):
   """Get credentials of a GKE cluster on AWS."""
 
@@ -59,7 +57,6 @@ class GetCredentials(base.Command):
                                            cluster_ref.locationsId,
                                            cluster_ref.awsClustersId)
       cmd_args = kubeconfig.GenerateAuthProviderCmdArgs(
-          six.text_type(self.ReleaseTrack()).lower(), 'aws',
-          cluster_ref.awsClustersId, cluster_ref.locationsId)
+          'aws', cluster_ref.awsClustersId, cluster_ref.locationsId)
       kubeconfig.GenerateKubeconfig(resp, context, args.auth_provider_cmd_path,
                                     cmd_args, args.private_endpoint)

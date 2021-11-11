@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-# This groupd is marked as hidden until APIs are rolled out in prod.
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class OsconfigPolicyAssignmentsReports(base.Group):
   """Manage OS policy asssignment reports."""

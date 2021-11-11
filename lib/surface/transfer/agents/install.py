@@ -89,12 +89,12 @@ https://docs.docker.com/engine/install/binaries/ and re-run
 """))
 
 CHECK_AGENT_CONNECTED_HELP_TEXT_FORMAT = """
-To confirm your agents are connected, go to the following link in your browser
+To confirm your agents are connected, go to the following link in your browser,
 and check that agent status is 'Connected' (it can take a moment for the status
 to update and may require a page refresh):
 
-https://console.cloud.google.com/transfer/on-premises/connection-settings\
-?project={project}
+https://console.cloud.google.com/transfer/on-premises/agent-pools/pool/\
+{pool}/agents?project={project}
 """
 
 
@@ -153,6 +153,7 @@ def _execute_and_return_docker_command(args, project, creds_file_path):
       '--project-id={}'.format(project),
       '--creds-file={}'.format(creds_file_path),
       '--hostname={}'.format(socket.gethostname()),
+      '--agent-pool={}'.format(args.pool),
   ]
   if args.id_prefix:
     if args.count is not None:
@@ -233,6 +234,11 @@ class Install(base.Command):
         ' (default) or higher is required to ensure that agent versions'
         ' 1.14 or later have enough locked memory to be able to start.')
     parser.add_argument('--proxy', help=PROXY_FLAG_HELP_TEXT)
+    parser.add_argument(
+        '--pool',
+        default='transfer_service_default',
+        help='The agent pool associated with the filesystem for'
+        ' which this agent will handle transfer work.')
 
   def Run(self, args):
     if args.count is not None and args.count < 1:
@@ -254,4 +260,5 @@ class Install(base.Command):
       _create_additional_agents(args.count, args.id_prefix, docker_command)
     log.status.Print('[3/3] Agent installation complete! ✓')
     log.status.Print(
-        CHECK_AGENT_CONNECTED_HELP_TEXT_FORMAT.format(project=project))
+        CHECK_AGENT_CONNECTED_HELP_TEXT_FORMAT.format(
+            pool=args.pool, project=project))

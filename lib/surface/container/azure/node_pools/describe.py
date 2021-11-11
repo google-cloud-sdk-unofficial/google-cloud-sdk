@@ -32,7 +32,7 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe an Azure node pool."""
 

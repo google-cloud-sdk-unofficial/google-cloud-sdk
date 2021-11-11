@@ -22,6 +22,14 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command group is deprecated. '
+        'Please use the `gcloud alpha resource-manager tags` group instead.'),
+    error=('This command group has been removed. '
+           'Please use the `gcloud alpha resource-manager tags` group instead.')
+)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Labelmanager(base.Group):
   """Create and manipulate label keys, values and bindings.

@@ -1,8 +1,8 @@
 - release_tracks: [ALPHA]
 
   help_text:
-    brief: Describes a single Connection
-    description: Describes a single Connection.
+    brief: Describe a single Connection
+    description: Describe a single Connection.
     examples: |
       To describe a connection ``my-connection'' run:
 

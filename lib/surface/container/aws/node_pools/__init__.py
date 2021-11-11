@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.projects import util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class NodePools(base.Group):
   """Create and manage Google Kubernetes Engine node pools on AWS."""
 

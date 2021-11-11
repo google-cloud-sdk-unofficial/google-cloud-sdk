@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.alloydb import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+from googlecloudsdk.core.console import console_io
 
 
 @base.Hidden
@@ -65,6 +66,12 @@ class Delete(base.DeleteCommand):
         locationsId=args.region,
         clustersId=args.cluster,
         instancesId=args.instance)
+
+    prompt_message = (
+        'Instance settings and IPs will be deleted on upon deletion.')
+    if not console_io.PromptContinue(message=prompt_message):
+      return None
+
     req = alloydb_messages.AlloydbProjectsLocationsClustersInstancesDeleteRequest(
         name=instance_ref.RelativeName())
     op = alloydb_client.projects_locations_clusters_instances.Delete(req)

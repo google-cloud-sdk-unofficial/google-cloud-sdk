@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import itertools
-import re
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.compute import base_classes
@@ -39,7 +38,7 @@ class List(base.ListCommand):
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    lister.AddBaseListerArgs(parser)
+    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
     parser.display_info.AddCacheUpdater(flags.NetworkFirewallPoliciesCompleter)
 
   def Run(self, args):
@@ -52,54 +51,54 @@ class List(base.ListCommand):
     else:
       project = properties.VALUES.core.project.GetOrFail()
 
-    if args.filter:
-      regions = self.GetRegions(args.filter)
-      if not regions:
-        # The filter is not a list of regions: continue as global request
-        # and retain the filter.
-        pass
-      else:
-        # The filter is a list of regions: clear the filter since its value
-        # is not meaningful to list_pager.
-        args.filter = None
-        region_generators = []
-        for region in regions:
-          region_generators.append(
-              list_pager.YieldFromList(
-                  client.regionNetworkFirewallPolicies,
-                  messages.ComputeRegionNetworkFirewallPoliciesListRequest(
-                      project=project, region=region),
-                  field='items',
-                  limit=args.limit,
-                  batch_size=None))
-        return itertools.chain.from_iterable(region_generators)
+    # List RNFPs in given regions
+    if args.regions:
+      regional_generators = []
+      for region in args.regions:
+        regional_generators.append(
+            list_pager.YieldFromList(
+                client.regionNetworkFirewallPolicies,
+                messages.ComputeRegionNetworkFirewallPoliciesListRequest(
+                    project=project, region=region.strip()),
+                field='items',
+                limit=args.limit,
+                batch_size=None))
+      return itertools.chain.from_iterable(regional_generators)
 
-    request = messages.ComputeNetworkFirewallPoliciesListRequest(
-        project=project)
-    return list_pager.YieldFromList(
-        client.networkFirewallPolicies,
+    # List global NFPs
+    if getattr(args, 'global', None):
+      return list_pager.YieldFromList(
+          client.networkFirewallPolicies,
+          messages.ComputeNetworkFirewallPoliciesListRequest(project=project),
+          field='items',
+          limit=args.limit,
+          batch_size=None)
+
+    # Aggregated global NFPs and RNFPs for all regions defined in project
+    request = messages.ComputeRegionsListRequest(project=project)
+    regions = list_pager.YieldFromList(
+        client.regions,
         request,
         field='items',
-        limit=args.limit,
         batch_size=None)
-
-  @staticmethod
-  def GetRegions(pattern):
-    """Validate and return matched pattern for a list of regions.
-
-    Args:
-      pattern: The string input
-
-    Returns:
-      - The list of regions, where pattern is in the following pattern:
-        region: (region-1 region-2 ...)
-      - None if pattern does not match.
-    """
-    matcher = re.compile(r'[^\S]*(\bregion[^\S]*\:)[^\S]*\((.+)\)[^\S]*')
-    matches = matcher.match(pattern.strip())
-    if not matches:
-      return None
-    return matches.group(2).split()
+    aggregated_generators = []
+    aggregated_generators.append(
+        list_pager.YieldFromList(
+            client.networkFirewallPolicies,
+            messages.ComputeNetworkFirewallPoliciesListRequest(project=project),
+            field='items',
+            limit=args.limit,
+            batch_size=None))
+    for region in regions:
+      aggregated_generators.append(
+          list_pager.YieldFromList(
+              client.regionNetworkFirewallPolicies,
+              messages.ComputeRegionNetworkFirewallPoliciesListRequest(
+                  project=project, region=region.name),
+              field='items',
+              limit=args.limit,
+              batch_size=None))
+    return itertools.chain.from_iterable(aggregated_generators)
 
 
 List.detailed_help = {
@@ -108,13 +107,19 @@ List.detailed_help = {
     To list global network firewall policies under project
     ``my-project'', run:
 
-      $ {command} --project=my-project
+      $ {command} --project=my-project --global
 
     To list regional network firewall policies under project
-    ``my-project'', specify a list of regions with ``--filter'':
+    ``my-project'', specify a list of regions with ``--regions'':
 
       $ {command} \
           --project=my-project \
-          --filter="region: (region-a region-b)"
+          --regions="region-a, region-b"
+
+    To list all global and regional network firewall policies under project
+    ``my-project'', omit ``--global'' and ``--regions'':
+
+      $ {command} \
+          --project=my-project
     """,
 }

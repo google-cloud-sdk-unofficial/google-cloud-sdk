@@ -401,7 +401,7 @@ class Ssh(base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SshBeta(Ssh):
   """SSH into a virtual machine instance (Beta)."""
-  enable_troubleshoot_flag = False
+  enable_troubleshoot_flag = True
   enable_host_based_flags = False
   enable_security_keys = True
 

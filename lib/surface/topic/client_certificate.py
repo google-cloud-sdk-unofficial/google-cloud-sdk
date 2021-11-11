@@ -59,13 +59,13 @@ Client certificate authorization supplementary help.
 
 Device Certificate Authorization (DCA) enables Context-aware access to
 identify devices by their X.509 certificates. DCA for Google Cloud
-Platform APIs is the second in a series of releases that provides
+APIs is the second in a series of releases that provides
 administrators the capability to protect access to their Google
-Cloud Platform resources with device certificates. This feature builds
+Cloud resources with device certificates. This feature builds
 on top of the existing Context-aware access suite (Endpoint
 Verification, Access Context Manager, and VPC Service Controls) and
 ensures that only users on trusted devices with a Google-generated
-certificate are able to access Google Cloud Platform APIs. This
+certificate are able to access Google Cloud APIs. This
 provides a stronger signal of device identity (device certificate
 verification), and protects users from credential theft to accidental
 loss by only granting access when credentials and the original device

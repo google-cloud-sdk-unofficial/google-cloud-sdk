@@ -41,6 +41,7 @@ def _CommonArgs(parser, messages):
   flags.GetDnsPeeringArgs().AddToParser(parser)
   flags.GetPrivateForwardingTargetsArg().AddToParser(parser)
   flags.GetReverseLookupArg().AddToParser(parser)
+  flags.GetManagedZoneLoggingArg().AddToParser(parser)
 
 
 def _Update(zones_client,
@@ -48,7 +49,8 @@ def _Update(zones_client,
             private_visibility_config=None,
             forwarding_config=None,
             peering_config=None,
-            reverse_lookup_config=None):
+            reverse_lookup_config=None,
+            cloud_logging_config=None):
   """Helper function to perform the update."""
   zone_ref = args.CONCEPTS.zone.Parse()
 
@@ -73,6 +75,8 @@ def _Update(zones_client,
     kwargs['peering_config'] = peering_config
   if reverse_lookup_config:
     kwargs['reverse_lookup_config'] = reverse_lookup_config
+  if cloud_logging_config:
+    kwargs['cloud_logging_config'] = cloud_logging_config
 
   if dnssec_config or args.description or kwargs:
     update_results.append(zones_client.Patch(
@@ -152,13 +156,19 @@ class UpdateGA(base.UpdateCommand):
         'managed_reverse_lookup') and args.managed_reverse_lookup:
       reverse_lookup_config = messages.ManagedZoneReverseLookupConfig()
 
+    cloud_logging_config = None
+    if args.IsSpecified('log_dns_queries'):
+      cloud_logging_config = messages.ManagedZoneCloudLoggingConfig()
+      cloud_logging_config.enableLogging = args.log_dns_queries
+
     return _Update(
         zones_client,
         args,
         private_visibility_config=visibility_config,
         forwarding_config=forwarding_config,
         peering_config=peering_config,
-        reverse_lookup_config=reverse_lookup_config)
+        reverse_lookup_config=reverse_lookup_config,
+        cloud_logging_config=cloud_logging_config)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -235,13 +245,19 @@ class UpdateBeta(base.UpdateCommand):
         'managed_reverse_lookup') and args.managed_reverse_lookup:
       reverse_lookup_config = messages.ManagedZoneReverseLookupConfig()
 
+    cloud_logging_config = None
+    if args.IsSpecified('log_dns_queries'):
+      cloud_logging_config = messages.ManagedZoneCloudLoggingConfig()
+      cloud_logging_config.enableLogging = args.log_dns_queries
+
     return _Update(
         zones_client,
         args,
         private_visibility_config=visibility_config,
         forwarding_config=forwarding_config,
         peering_config=peering_config,
-        reverse_lookup_config=reverse_lookup_config)
+        reverse_lookup_config=reverse_lookup_config,
+        cloud_logging_config=cloud_logging_config)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

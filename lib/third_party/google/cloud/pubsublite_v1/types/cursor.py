@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import proto  # type: ignore
-
 
 from google.cloud.pubsublite_v1.types import common
 
@@ -54,13 +51,12 @@ class InitialCommitCursorRequest(proto.Message):
             range [0, topic.num_partitions).
     """
 
-    subscription = proto.Field(proto.STRING, number=1)
-
-    partition = proto.Field(proto.INT64, number=2)
+    subscription = proto.Field(proto.STRING, number=1,)
+    partition = proto.Field(proto.INT64, number=2,)
 
 
 class InitialCommitCursorResponse(proto.Message):
-    r"""Response to an InitialCommitCursorRequest."""
+    r"""Response to an InitialCommitCursorRequest.    """
 
 
 class SequencedCommitCursorRequest(proto.Message):
@@ -77,7 +73,6 @@ class SequencedCommitCursorRequest(proto.Message):
 
 class SequencedCommitCursorResponse(proto.Message):
     r"""Response to a SequencedCommitCursorRequest.
-
     Attributes:
         acknowledged_commits (int):
             The number of outstanding
@@ -87,12 +82,11 @@ class SequencedCommitCursorResponse(proto.Message):
             in the order that they are received.
     """
 
-    acknowledged_commits = proto.Field(proto.INT64, number=1)
+    acknowledged_commits = proto.Field(proto.INT64, number=1,)
 
 
 class StreamingCommitCursorRequest(proto.Message):
     r"""A request sent from the client to the server on a stream.
-
     Attributes:
         initial (google.cloud.pubsublite_v1.types.InitialCommitCursorRequest):
             Initial request on the stream.
@@ -103,7 +97,6 @@ class StreamingCommitCursorRequest(proto.Message):
     initial = proto.Field(
         proto.MESSAGE, number=1, oneof="request", message="InitialCommitCursorRequest",
     )
-
     commit = proto.Field(
         proto.MESSAGE,
         number=2,
@@ -114,7 +107,6 @@ class StreamingCommitCursorRequest(proto.Message):
 
 class StreamingCommitCursorResponse(proto.Message):
     r"""Response to a StreamingCommitCursorRequest.
-
     Attributes:
         initial (google.cloud.pubsublite_v1.types.InitialCommitCursorResponse):
             Initial response on the stream.
@@ -125,7 +117,6 @@ class StreamingCommitCursorResponse(proto.Message):
     initial = proto.Field(
         proto.MESSAGE, number=1, oneof="request", message="InitialCommitCursorResponse",
     )
-
     commit = proto.Field(
         proto.MESSAGE,
         number=2,
@@ -136,7 +127,6 @@ class StreamingCommitCursorResponse(proto.Message):
 
 class CommitCursorRequest(proto.Message):
     r"""Request for CommitCursor.
-
     Attributes:
         subscription (str):
             The subscription for which to update the
@@ -149,20 +139,17 @@ class CommitCursorRequest(proto.Message):
             The new value for the committed cursor.
     """
 
-    subscription = proto.Field(proto.STRING, number=1)
-
-    partition = proto.Field(proto.INT64, number=2)
-
+    subscription = proto.Field(proto.STRING, number=1,)
+    partition = proto.Field(proto.INT64, number=2,)
     cursor = proto.Field(proto.MESSAGE, number=3, message=common.Cursor,)
 
 
 class CommitCursorResponse(proto.Message):
-    r"""Response for CommitCursor."""
+    r"""Response for CommitCursor.    """
 
 
 class ListPartitionCursorsRequest(proto.Message):
     r"""Request for ListPartitionCursors.
-
     Attributes:
         parent (str):
             Required. The subscription for which to retrieve cursors.
@@ -183,16 +170,13 @@ class ListPartitionCursorsRequest(proto.Message):
             the page token.
     """
 
-    parent = proto.Field(proto.STRING, number=1)
-
-    page_size = proto.Field(proto.INT32, number=2)
-
-    page_token = proto.Field(proto.STRING, number=3)
+    parent = proto.Field(proto.STRING, number=1,)
+    page_size = proto.Field(proto.INT32, number=2,)
+    page_token = proto.Field(proto.STRING, number=3,)
 
 
 class PartitionCursor(proto.Message):
     r"""A pair of a Cursor and the partition it is for.
-
     Attributes:
         partition (int):
             The partition this is for.
@@ -200,14 +184,12 @@ class PartitionCursor(proto.Message):
             The value of the cursor.
     """
 
-    partition = proto.Field(proto.INT64, number=1)
-
+    partition = proto.Field(proto.INT64, number=1,)
     cursor = proto.Field(proto.MESSAGE, number=2, message=common.Cursor,)
 
 
 class ListPartitionCursorsResponse(proto.Message):
     r"""Response for ListPartitionCursors
-
     Attributes:
         partition_cursors (Sequence[google.cloud.pubsublite_v1.types.PartitionCursor]):
             The partition cursors from this request.
@@ -224,8 +206,7 @@ class ListPartitionCursorsResponse(proto.Message):
     partition_cursors = proto.RepeatedField(
         proto.MESSAGE, number=1, message="PartitionCursor",
     )
-
-    next_page_token = proto.Field(proto.STRING, number=2)
+    next_page_token = proto.Field(proto.STRING, number=2,)
 
 
 __all__ = tuple(sorted(__protobuf__.manifest))

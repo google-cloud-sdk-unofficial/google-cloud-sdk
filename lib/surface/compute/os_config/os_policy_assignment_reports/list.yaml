@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [GA, ALPHA]
 
   help_text:
     brief: List OS policy assignment reports.
@@ -38,9 +38,8 @@
     exclude: ['uri']
     params:
     - arg_name: location
-      required: true
       help_text: |
-          Location of the OS policy assignment reports to list.
+          Location of the OS policy assignment reports to list, will default to the user's compute/zone property if not specified.
     - group:
         help_text: Specify which instance or OS policy assignment to list reports for.
         mutex: true

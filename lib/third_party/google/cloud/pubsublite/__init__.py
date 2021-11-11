@@ -62,6 +62,9 @@ from google.cloud.pubsublite_v1.types.admin import ListTopicSubscriptionsRequest
 from google.cloud.pubsublite_v1.types.admin import ListTopicSubscriptionsResponse
 from google.cloud.pubsublite_v1.types.admin import ListTopicsRequest
 from google.cloud.pubsublite_v1.types.admin import ListTopicsResponse
+from google.cloud.pubsublite_v1.types.admin import OperationMetadata
+from google.cloud.pubsublite_v1.types.admin import SeekSubscriptionRequest
+from google.cloud.pubsublite_v1.types.admin import SeekSubscriptionResponse
 from google.cloud.pubsublite_v1.types.admin import TopicPartitions
 from google.cloud.pubsublite_v1.types.admin import UpdateSubscriptionRequest
 from google.cloud.pubsublite_v1.types.admin import UpdateTopicRequest
@@ -70,6 +73,7 @@ from google.cloud.pubsublite_v1.types.common import Cursor
 from google.cloud.pubsublite_v1.types.common import PubSubMessage
 from google.cloud.pubsublite_v1.types.common import SequencedMessage
 from google.cloud.pubsublite_v1.types.common import Subscription
+from google.cloud.pubsublite_v1.types.common import TimeTarget
 from google.cloud.pubsublite_v1.types.common import Topic
 from google.cloud.pubsublite_v1.types.cursor import CommitCursorRequest
 from google.cloud.pubsublite_v1.types.cursor import CommitCursorResponse
@@ -148,6 +152,7 @@ __all__ = (
     "MessagePublishRequest",
     "MessagePublishResponse",
     "MessageResponse",
+    "OperationMetadata",
     "PartitionAssignment",
     "PartitionAssignmentAck",
     "PartitionAssignmentRequest",
@@ -159,6 +164,8 @@ __all__ = (
     "PublishResponse",
     "PublisherServiceAsyncClient",
     "PublisherServiceClient",
+    "SeekSubscriptionRequest",
+    "SeekSubscriptionResponse",
     "SeekRequest",
     "SeekResponse",
     "SequencedCommitCursorRequest",
@@ -171,6 +178,7 @@ __all__ = (
     "SubscriberServiceAsyncClient",
     "SubscriberServiceClient",
     "Subscription",
+    "TimeTarget",
     "Topic",
     "TopicPartitions",
     "TopicStatsServiceAsyncClient",

@@ -33,8 +33,8 @@ from google.cloud.pubsublite.cloudpubsub.message_transformer import MessageTrans
 from google.cloud.pubsublite.cloudpubsub.nack_handler import NackHandler
 from google.cloud.pubsublite.cloudpubsub.subscriber_client_interface import (
     SubscriberClientInterface,
-    MessageCallback,
     AsyncSubscriberClientInterface,
+    MessageCallback,
 )
 from google.cloud.pubsublite.internal.constructable_from_service_account import (
     ConstructableFromServiceAccount,

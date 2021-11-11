@@ -58,7 +58,7 @@ class Login(base.Command):
   the command line, use the `--no-launch-browser` flag. To authorize without
   a web browser and non-interactively, create a service account with the
   appropriate scopes using the
-  [Google Cloud Platform Console](https://console.cloud.google.com) and use
+  [Google Cloud Console](https://console.cloud.google.com) and use
   `gcloud auth activate-service-account` with the corresponding JSON key file.
 
   In addition to Google user credentials, authorization using workload identity

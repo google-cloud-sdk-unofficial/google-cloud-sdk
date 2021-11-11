@@ -37,7 +37,7 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1 --iam-instance
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a GKE node pool on AWS."""
 

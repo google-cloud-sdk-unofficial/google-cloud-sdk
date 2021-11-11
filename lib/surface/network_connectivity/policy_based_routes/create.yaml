@@ -25,7 +25,7 @@
       help_text: List of VM instance tags to which this route applies to. Note if both --tags and --interconnect-attachment-region are not set, then the policy based route will be installed in all endpoints, including VMs, VPNs, and Interconnects, in the network.
     - arg_name: interconnect-attachment-region
       api_field: policyBasedRoute.interconnectAttachment.region
-      help_text: Cloud region to intall this policy based route on interconnect attachment. Use `global` to install it on all interconnect attachments. Note if both --tags and --interconnect-attachment-region are not set, then the policy based route will be installed in all network endpoints, including VMs, VPNs, and Interconnects, in the network.
+      help_text: Cloud region to install this policy based route on interconnect attachment. Use `global` to install it on all interconnect attachments. Note if both --tags and --interconnect-attachment-region are not set, then the policy based route will be installed in all network endpoints, including VMs, VPNs, and Interconnects, in the network.
     - arg_name: priority
       api_field: policyBasedRoute.priority
       help_text: Priority of this policy based route. Priority is used to break ties in cases where there are more than one matching policy based routes found. In cases where multiple policy based routes are matched, the one with the lowest-numbered priority value wins. The default value is 1000. The priority value must be from 1 to 65535, inclusive. Note the priority of policy based route is always higher than other types of route (e.g. static routes/advanced routes)

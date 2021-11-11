@@ -50,7 +50,7 @@ class Init(base.Command):
   command-line tool.
   It performs the following setup steps:
 
-  - Authorizes gcloud and other SDK tools to access Google Cloud Platform using
+  - Authorizes gcloud and other SDK tools to access Google Cloud using
     your user account credentials, or from an account of your choosing whose
     credentials are already available.
   - Sets up a new or existing configuration.

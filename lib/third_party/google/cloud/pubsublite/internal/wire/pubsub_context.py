@@ -17,7 +17,7 @@ from typing import Mapping, Optional, NamedTuple
 
 import logging
 import pkg_resources
-from google.protobuf import struct_pb2
+from google.protobuf import struct_pb2  # pytype: disable=pyi-error
 
 
 _LOGGER = logging.getLogger(__name__)

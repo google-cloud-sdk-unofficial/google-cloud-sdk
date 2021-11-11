@@ -32,7 +32,7 @@ $ {command} --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class GetServerConfig(base.Command):
   """Get Google Kubernetes Engine server configuration for Azure."""
 

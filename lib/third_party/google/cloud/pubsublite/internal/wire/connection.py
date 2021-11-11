@@ -13,13 +13,15 @@
 # limitations under the License.
 
 from typing import Generic, TypeVar, AsyncContextManager
-from abc import abstractmethod
+from abc import abstractmethod, ABCMeta
 
 Request = TypeVar("Request")
 Response = TypeVar("Response")
 
 
-class Connection(Generic[Request, Response], AsyncContextManager["Connection"]):
+class Connection(
+    AsyncContextManager["Connection"], Generic[Request, Response], metaclass=ABCMeta
+):
     """
     A connection to an underlying stream. Only one call to 'read' may be outstanding at a time.
     """
@@ -45,8 +47,9 @@ class Connection(Generic[Request, Response], AsyncContextManager["Connection"]):
         raise NotImplementedError()
 
 
-class ConnectionFactory(Generic[Request, Response]):
+class ConnectionFactory(Generic[Request, Response], metaclass=ABCMeta):
     """A factory for producing Connections."""
 
+    @abstractmethod
     async def new(self) -> Connection[Request, Response]:
         raise NotImplementedError()

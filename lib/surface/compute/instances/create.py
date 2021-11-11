@@ -241,6 +241,7 @@ class Create(base.CreateCommand):
   _support_numa_node_count = False
   _support_visible_core_count = False
   _support_disk_architecture = False
+  _support_enable_uefi_networking = False
 
   @classmethod
   def Args(cls, parser):
@@ -432,14 +433,17 @@ class Create(base.CreateCommand):
       if (args.enable_nested_virtualization is not None or
           args.threads_per_core is not None or
           (self._support_numa_node_count and
-           args.numa_node_count is not None) or has_visible_core_count):
+           args.numa_node_count is not None) or has_visible_core_count or
+          (self._support_enable_uefi_networking and
+           args.enable_uefi_networking is not None)):
         visible_core_count = args.visible_core_count if has_visible_core_count else None
         instance.advancedMachineFeatures = (
             instance_utils.CreateAdvancedMachineFeaturesMessage(
                 compute_client.messages, args.enable_nested_virtualization,
                 args.threads_per_core,
                 args.numa_node_count if self._support_numa_node_count else None,
-                visible_core_count))
+                visible_core_count, args.enable_uefi_networking
+                if self._support_enable_uefi_networking else None))
 
       resource_policies = getattr(args, 'resource_policies', None)
       if resource_policies:
@@ -459,8 +463,8 @@ class Create(base.CreateCommand):
       if confidential_instance_config:
         instance.confidentialInstanceConfig = confidential_instance_config
 
-      if self._support_erase_vss and \
-        args.IsSpecified('erase_windows_vss_signature'):
+      if self._support_erase_vss and args.IsSpecified(
+          'erase_windows_vss_signature'):
         instance.eraseWindowsVssSignature = args.erase_windows_vss_signature
 
       if self._support_post_key_revocation_action_type and args.IsSpecified(
@@ -469,10 +473,10 @@ class Create(base.CreateCommand):
             args.post_key_revocation_action_type, compute_client.messages
             .Instance.PostKeyRevocationActionTypeValueValuesEnum)
 
-      if self._support_network_performance_configs and \
-          args.IsSpecified('network_performance_configs'):
-        instance.networkPerformanceConfig = \
-            instance_utils.GetNetworkPerformanceConfig(args, compute_client)
+      if self._support_network_performance_configs and args.IsSpecified(
+          'network_performance_configs'):
+        instance.networkPerformanceConfig = instance_utils.GetNetworkPerformanceConfig(
+            args, compute_client)
 
       request = compute_client.messages.ComputeInstancesInsertRequest(
           instance=instance,
@@ -489,8 +493,8 @@ class Create(base.CreateCommand):
               args, self.SOURCE_MACHINE_IMAGE, compute_client, holder)
           request.instance.sourceMachineImageEncryptionKey = key
 
-      if self._support_machine_image_key and \
-          args.IsSpecified('source_machine_image_csek_key_file'):
+      if self._support_machine_image_key and args.IsSpecified(
+          'source_machine_image_csek_key_file'):
         if not args.IsSpecified('source_machine_image'):
           raise exceptions.RequiredArgumentException(
               '`--source-machine-image`',
@@ -617,6 +621,7 @@ class CreateBeta(Create):
   _support_provisioning_model = True
   _support_termination_action = True
   _support_disk_architecture = False
+  _support_enable_uefi_networking = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -697,6 +702,7 @@ class CreateAlpha(CreateBeta):
   _support_numa_node_count = True
   _support_visible_core_count = True
   _support_disk_architecture = True
+  _support_enable_uefi_networking = True
 
   @classmethod
   def Args(cls, parser):
@@ -738,6 +744,7 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddNetworkPerformanceConfigsArgs(parser)
     instances_flags.AddSecureTagsArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
+    instances_flags.AddEnableUefiNetworkingArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

@@ -18,6 +18,7 @@ from google.cloud.pubsub_v1.types import BatchSettings
 
 from google.cloud.pubsublite.admin_client import AdminClient
 from google.cloud.pubsublite.internal.endpoints import regional_endpoint
+from google.cloud.pubsublite.internal.wire.client_cache import ClientCache
 from google.cloud.pubsublite.internal.wire.default_routing_policy import (
     DefaultRoutingPolicy,
 )
@@ -61,22 +62,22 @@ def make_publisher(
     metadata: Optional[Mapping[str, str]] = None,
 ) -> Publisher:
     """
-  Make a new publisher for the given topic.
+    Make a new publisher for the given topic.
 
-  Args:
-    topic: The topic to publish to.
-    transport: The transport type to use.
-    per_partition_batching_settings: Settings for batching messages on each partition. The default is reasonable for most cases.
-    credentials: The credentials to use to connect. GOOGLE_DEFAULT_CREDENTIALS is used if None.
-    client_options: Other options to pass to the client. Note that if you pass any you must set api_endpoint.
-    metadata: Additional metadata to send with the RPC.
+    Args:
+      topic: The topic to publish to.
+      transport: The transport type to use.
+      per_partition_batching_settings: Settings for batching messages on each partition. The default is reasonable for most cases.
+      credentials: The credentials to use to connect. GOOGLE_DEFAULT_CREDENTIALS is used if None.
+      client_options: Other options to pass to the client. Note that if you pass any you must set api_endpoint.
+      metadata: Additional metadata to send with the RPC.
 
-  Returns:
-    A new Publisher.
+    Returns:
+      A new Publisher.
 
-  Throws:
-    GoogleApiCallException on any error determining topic structure.
-  """
+    Throws:
+      GoogleApiCallException on any error determining topic structure.
+    """
     if per_partition_batching_settings is None:
         per_partition_batching_settings = DEFAULT_BATCHING_SETTINGS
     admin_client = AdminClient(
@@ -88,16 +89,20 @@ def make_publisher(
         client_options = ClientOptions(
             api_endpoint=regional_endpoint(topic.location.region)
         )
-    client = async_client.PublisherServiceAsyncClient(
-        credentials=credentials, transport=transport, client_options=client_options
-    )  # type: ignore
+    client_cache = ClientCache(
+        lambda: async_client.PublisherServiceAsyncClient(
+            credentials=credentials, transport=transport, client_options=client_options
+        )
+    )
 
     def publisher_factory(partition: Partition):
         def connection_factory(requests: AsyncIterator[PublishRequest]):
             final_metadata = merge_metadata(
                 metadata, topic_routing_metadata(topic, partition)
             )
-            return client.publish(requests, metadata=list(final_metadata.items()))
+            return client_cache.get().publish(
+                requests, metadata=list(final_metadata.items())
+            )
 
         return SinglePartitionPublisher(
             InitialPublishRequest(topic=str(topic), partition=partition.value),

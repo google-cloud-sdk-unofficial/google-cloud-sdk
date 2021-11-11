@@ -21,29 +21,35 @@ _MAX_INT64 = 0x7FFFFFFFFFFFFFFF
 
 
 class _AggregateRequest:
-    request: FlowControlRequest
+    _request: FlowControlRequest.meta.pb
 
     def __init__(self):
-        self.request = FlowControlRequest()
+        self._request = FlowControlRequest.meta.pb()
 
     def __add__(self, other: FlowControlRequest):
-        self.request.allowed_bytes += other.allowed_bytes
-        self.request.allowed_bytes = min(self.request.allowed_bytes, _MAX_INT64)
-        self.request.allowed_messages += other.allowed_messages
-        self.request.allowed_messages = min(self.request.allowed_messages, _MAX_INT64)
+        other_pb = other._pb
+        self._request.allowed_bytes = (
+            self._request.allowed_bytes + other_pb.allowed_bytes
+        )
+        self._request.allowed_bytes = min(self._request.allowed_bytes, _MAX_INT64)
+        self._request.allowed_messages = (
+            self._request.allowed_messages + other_pb.allowed_messages
+        )
+        self._request.allowed_messages = min(self._request.allowed_messages, _MAX_INT64)
         return self
+
+    def to_optional(self) -> Optional[FlowControlRequest]:
+        if self._request.allowed_messages == 0 and self._request.allowed_bytes == 0:
+            return None
+        request = FlowControlRequest()
+        request._pb = self._request
+        return request
 
 
 def _exceeds_expedite_ratio(pending: int, client: int):
     if client <= 0:
         return False
     return (pending / client) >= _EXPEDITE_BATCH_REQUEST_RATIO
-
-
-def _to_optional(req: FlowControlRequest) -> Optional[FlowControlRequest]:
-    if req.allowed_messages == 0 and req.allowed_bytes == 0:
-        return None
-    return req
 
 
 class FlowControlBatcher:
@@ -59,29 +65,18 @@ class FlowControlBatcher:
         self._pending_tokens += request
 
     def on_messages(self, messages: List[SequencedMessage]):
-        byte_size = sum(message.size_bytes for message in messages)
+        byte_size = 0
+        for message in messages:
+            byte_size += message.size_bytes
         self._client_tokens += FlowControlRequest(
             allowed_bytes=-byte_size, allowed_messages=-len(messages)
         )
 
     def request_for_restart(self) -> Optional[FlowControlRequest]:
         self._pending_tokens = _AggregateRequest()
-        return _to_optional(self._client_tokens.request)
+        return self._client_tokens.to_optional()
 
     def release_pending_request(self) -> Optional[FlowControlRequest]:
-        request = self._pending_tokens.request
+        request = self._pending_tokens
         self._pending_tokens = _AggregateRequest()
-        return _to_optional(request)
-
-    def should_expedite(self):
-        pending_request = self._pending_tokens.request
-        client_request = self._client_tokens.request
-        if _exceeds_expedite_ratio(
-            pending_request.allowed_bytes, client_request.allowed_bytes
-        ):
-            return True
-        if _exceeds_expedite_ratio(
-            pending_request.allowed_messages, client_request.allowed_messages
-        ):
-            return True
-        return False
+        return request.to_optional()

@@ -24,11 +24,10 @@ from googlecloudsdk.command_lib.projects import util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Clients(base.Group):
   """Create and manage Azure clients."""
 
   @staticmethod
   def Args(parser):
     pass
-

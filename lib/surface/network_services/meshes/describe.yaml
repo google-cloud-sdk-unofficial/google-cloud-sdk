@@ -1,0 +1,20 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Describe a mesh.
+  description: Show details of a mesh.
+
+  examples: |
+    Show details about a mesh named 'my-mesh'.
+
+      $ {command} my-mesh --location=global
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:mesh
+    help_text: Name of the mesh to be described.
+
+request: &request
+  api_version: v1alpha1
+  collection: networkservices.projects.locations.meshes

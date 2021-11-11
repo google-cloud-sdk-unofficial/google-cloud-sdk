@@ -115,17 +115,11 @@ class Update(base.UpdateCommand):
                                                     router_ref.Name()))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateAlphaBeta(Update):
   """Update a NAT on a Compute Engine router."""
   with_rules = True
   with_tcp_time_wait_timeout = True
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
-  """Update a NAT on a Compute Engine router."""
-
   with_dynamic_port_allocation = True
 
 

@@ -203,6 +203,7 @@ class Create(base.Command):
   _support_visible_core_count = False
   _support_provisioning_model = False
   _support_termination_action = False
+  _support_enable_uefi_networking = False
 
   _log_async = False
 
@@ -371,14 +372,17 @@ class Create(base.Command):
         args.threads_per_core is not None or
         (self._support_numa_node_count and args.numa_node_count is not None) or
         (self._support_visible_core_count and
-         args.visible_core_count is not None)):
+         args.visible_core_count is not None) or
+        (self._support_enable_uefi_networking and
+         args.enable_uefi_networking is not None)):
       visible_core_count = args.visible_core_count if self._support_visible_core_count else None
       advanced_machine_features = (
           instance_utils.CreateAdvancedMachineFeaturesMessage(
               compute_client.messages, args.enable_nested_virtualization,
               args.threads_per_core,
               args.numa_node_count if self._support_numa_node_count else None,
-              visible_core_count))
+              visible_core_count, args.enable_uefi_networking
+              if self._support_enable_uefi_networking else None))
 
     parsed_resource_policies = []
     resource_policies = getattr(args, 'resource_policies', None)
@@ -428,8 +432,8 @@ class Create(base.Command):
     if self._support_confidential_compute and confidential_instance_config:
       instance_properties.confidentialInstanceConfig = confidential_instance_config
 
-    if self._support_erase_vss and \
-      args.IsSpecified('erase_windows_vss_signature'):
+    if self._support_erase_vss and args.IsSpecified(
+        'erase_windows_vss_signature'):
       instance_properties.eraseWindowsVssSignature = args.erase_windows_vss_signature
 
     if self._support_post_key_revocation_action_type and args.IsSpecified(
@@ -570,6 +574,7 @@ class CreateBeta(Create):
   _support_visible_core_count = False
   _support_provisioning_model = True
   _support_termination_action = True
+  _support_enable_uefi_networking = False
 
   @classmethod
   def Args(cls, parser):
@@ -610,6 +615,7 @@ class CreateAlpha(Create):
   _support_visible_core_count = True
   _support_provisioning_model = True
   _support_termination_action = True
+  _support_enable_uefi_networking = True
 
   @classmethod
   def Args(cls, parser):
@@ -638,6 +644,7 @@ class CreateAlpha(Create):
     instances_flags.AddBulkCreateArgs(parser)
     instances_flags.AddSecureTagsArgs(parser)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
+    instances_flags.AddEnableUefiNetworkingArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,20 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import warnings
-from typing import Callable, Dict, Optional, Sequence, Tuple
+from typing import Callable, Dict, Optional, Sequence, Tuple, Union
 
 from google.api_core import grpc_helpers  # type: ignore
 from google.api_core import gapic_v1  # type: ignore
-from google import auth  # type: ignore
-from google.auth import credentials  # type: ignore
+import google.auth  # type: ignore
+from google.auth import credentials as ga_credentials  # type: ignore
 from google.auth.transport.grpc import SslCredentials  # type: ignore
 
 import grpc  # type: ignore
 
 from google.cloud.pubsublite_v1.types import topic_stats
-
 from .base import TopicStatsServiceTransport, DEFAULT_CLIENT_INFO
 
 
@@ -51,7 +48,7 @@ class TopicStatsServiceGrpcTransport(TopicStatsServiceTransport):
         self,
         *,
         host: str = "pubsublite.googleapis.com",
-        credentials: credentials.Credentials = None,
+        credentials: ga_credentials.Credentials = None,
         credentials_file: str = None,
         scopes: Sequence[str] = None,
         channel: grpc.Channel = None,
@@ -61,11 +58,13 @@ class TopicStatsServiceGrpcTransport(TopicStatsServiceTransport):
         client_cert_source_for_mtls: Callable[[], Tuple[bytes, bytes]] = None,
         quota_project_id: Optional[str] = None,
         client_info: gapic_v1.client_info.ClientInfo = DEFAULT_CLIENT_INFO,
+        always_use_jwt_access: Optional[bool] = False,
     ) -> None:
         """Instantiate the transport.
 
         Args:
-            host (Optional[str]): The hostname to connect to.
+            host (Optional[str]):
+                 The hostname to connect to.
             credentials (Optional[google.auth.credentials.Credentials]): The
                 authorization credentials to attach to requests. These
                 credentials identify the application to the service; if none
@@ -100,6 +99,8 @@ class TopicStatsServiceGrpcTransport(TopicStatsServiceTransport):
                 API requests. If ``None``, then default info will be used.
                 Generally, you only need to set this if you're developing
                 your own client library.
+            always_use_jwt_access (Optional[bool]): Whether self signed JWT should
+                be used for service account credentials.
 
         Raises:
           google.auth.exceptions.MutualTLSChannelError: If mutual TLS transport
@@ -152,6 +153,7 @@ class TopicStatsServiceGrpcTransport(TopicStatsServiceTransport):
             scopes=scopes,
             quota_project_id=quota_project_id,
             client_info=client_info,
+            always_use_jwt_access=always_use_jwt_access,
         )
 
         if not self._grpc_channel:
@@ -175,7 +177,7 @@ class TopicStatsServiceGrpcTransport(TopicStatsServiceTransport):
     def create_channel(
         cls,
         host: str = "pubsublite.googleapis.com",
-        credentials: credentials.Credentials = None,
+        credentials: ga_credentials.Credentials = None,
         credentials_file: str = None,
         scopes: Optional[Sequence[str]] = None,
         quota_project_id: Optional[str] = None,
@@ -206,13 +208,15 @@ class TopicStatsServiceGrpcTransport(TopicStatsServiceTransport):
             google.api_core.exceptions.DuplicateCredentialArgs: If both ``credentials``
               and ``credentials_file`` are passed.
         """
-        scopes = scopes or cls.AUTH_SCOPES
+
         return grpc_helpers.create_channel(
             host,
             credentials=credentials,
             credentials_file=credentials_file,
-            scopes=scopes,
             quota_project_id=quota_project_id,
+            default_scopes=cls.AUTH_SCOPES,
+            scopes=scopes,
+            default_host=cls.DEFAULT_HOST,
             **kwargs,
         )
 
@@ -285,6 +289,35 @@ class TopicStatsServiceGrpcTransport(TopicStatsServiceTransport):
                 response_deserializer=topic_stats.ComputeHeadCursorResponse.deserialize,
             )
         return self._stubs["compute_head_cursor"]
+
+    @property
+    def compute_time_cursor(
+        self,
+    ) -> Callable[
+        [topic_stats.ComputeTimeCursorRequest], topic_stats.ComputeTimeCursorResponse
+    ]:
+        r"""Return a callable for the compute time cursor method over gRPC.
+
+        Compute the corresponding cursor for a publish or
+        event time in a topic partition.
+
+        Returns:
+            Callable[[~.ComputeTimeCursorRequest],
+                    ~.ComputeTimeCursorResponse]:
+                A function that, when called, will call the underlying RPC
+                on the server.
+        """
+        # Generate a "stub function" on-the-fly which will actually make
+        # the request.
+        # gRPC handles serialization and deserialization, so we just need
+        # to pass in the functions for each.
+        if "compute_time_cursor" not in self._stubs:
+            self._stubs["compute_time_cursor"] = self.grpc_channel.unary_unary(
+                "/google.cloud.pubsublite.v1.TopicStatsService/ComputeTimeCursor",
+                request_serializer=topic_stats.ComputeTimeCursorRequest.serialize,
+                response_deserializer=topic_stats.ComputeTimeCursorResponse.deserialize,
+            )
+        return self._stubs["compute_time_cursor"]
 
 
 __all__ = ("TopicStatsServiceGrpcTransport",)

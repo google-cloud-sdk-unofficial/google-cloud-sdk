@@ -42,7 +42,7 @@ class Info(base.Command):
   detailed_help = {
       'EXAMPLES': """
           To display information about the current gcloud environment including
-          the Google Cloud Platform account, project and directory paths for
+          the Google Cloud account, project and directory paths for
           logs, run:
 
             $ {command}

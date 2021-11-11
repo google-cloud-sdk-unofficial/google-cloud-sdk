@@ -38,8 +38,7 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1 --node-version
 """
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a node pool in an Anthos cluster on Azure."""
 
@@ -51,6 +50,7 @@ class Update(base.UpdateCommand):
         parser, 'to update', positional=True)
 
     flags.AddNodeVersion(parser, required=False)
+    flags.AddAutoscaling(parser, required=False)
     flags.AddValidateOnly(parser, 'update of the node pool')
 
     base.ASYNC_FLAG.AddToParser(parser)
@@ -61,6 +61,7 @@ class Update(base.UpdateCommand):
 
     node_version = flags.GetNodeVersion(args)
     validate_only = flags.GetValidateOnly(args)
+    min_nodes, max_nodes = flags.GetAutoscalingParams(args)
     async_ = args.async_
 
     with endpoint_util.GkemulticloudEndpointOverride(
@@ -71,6 +72,8 @@ class Update(base.UpdateCommand):
       op = api_client.Update(
           nodepool_ref=nodepool_ref,
           node_version=node_version,
+          min_nodes=min_nodes,
+          max_nodes=max_nodes,
           validate_only=validate_only)
 
       if validate_only:

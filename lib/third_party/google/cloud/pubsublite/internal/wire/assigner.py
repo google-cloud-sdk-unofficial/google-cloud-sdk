@@ -12,17 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from abc import abstractmethod
+from abc import abstractmethod, ABCMeta
 from typing import AsyncContextManager, Set
 
-from google.cloud.pubsublite.types import Partition
+from google.cloud.pubsublite.types.partition import Partition
 
 
-class Assigner(AsyncContextManager):
+class Assigner(AsyncContextManager, metaclass=ABCMeta):
     """
-  An assigner will deliver a continuous stream of assignments when called into. Perform all necessary work with the
-  assignment before attempting to get the next one.
-  """
+    An assigner will deliver a continuous stream of assignments when called into. Perform all necessary work with the
+    assignment before attempting to get the next one.
+    """
 
     @abstractmethod
     async def get_assignment(self) -> Set[Partition]:

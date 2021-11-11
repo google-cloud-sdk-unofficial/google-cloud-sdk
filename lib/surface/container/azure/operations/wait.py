@@ -31,6 +31,7 @@ $ {command} OPERATION_ID --location=us-west1
 """
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Wait for an operation to complete."""
 

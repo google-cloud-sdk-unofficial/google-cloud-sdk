@@ -4,7 +4,7 @@
     description: |
       *{command}* displays the ancestors for a project. Projects may be grouped under folders and an organization. This comand will print the folder and organization hierarchy for the given project.
     examples: |
-      To print the ancestors for a given project, run:
+      To print the ancestors for a project with ID `my-project`, run:
 
         $ {command} my-project
 

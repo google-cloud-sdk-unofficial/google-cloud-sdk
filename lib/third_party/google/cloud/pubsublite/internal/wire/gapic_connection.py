@@ -12,7 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import AsyncIterator, TypeVar, Optional, Callable, AsyncIterable, Awaitable
+from typing import (
+    cast,
+    AsyncIterator,
+    TypeVar,
+    Optional,
+    Callable,
+    AsyncIterable,
+    Awaitable,
+)
 import asyncio
 
 from google.api_core.exceptions import GoogleAPICallError, FailedPrecondition
@@ -34,7 +42,7 @@ class GapicConnection(
 ):
     """A Connection wrapping a gapic AsyncIterator[Request/Response] pair."""
 
-    _write_queue: "asyncio.Queue[WorkItem[Request]]"
+    _write_queue: "asyncio.Queue[WorkItem[Request, None]]"
     _response_it: Optional[AsyncIterator[Response]]
 
     def __init__(self):
@@ -50,8 +58,12 @@ class GapicConnection(
         await self.await_unless_failed(item.response_future)
 
     async def read(self) -> Response:
+        if self._response_it is None:
+            self.fail(FailedPrecondition("GapicConnection not initialized."))
+            raise self.error()
         try:
-            return await self.await_unless_failed(self._response_it.__anext__())
+            response_it = cast(AsyncIterator[Response], self._response_it)
+            return await self.await_unless_failed(response_it.__anext__())
         except StopAsyncIteration:
             self.fail(FailedPrecondition("Server sent unprompted half close."))
         except GoogleAPICallError as e:
@@ -65,7 +77,7 @@ class GapicConnection(
         pass
 
     async def __anext__(self) -> Request:
-        item: WorkItem[Request] = await self.await_unless_failed(
+        item: WorkItem[Request, None] = await self.await_unless_failed(
             self._write_queue.get()
         )
         item.response_future.set_result(None)

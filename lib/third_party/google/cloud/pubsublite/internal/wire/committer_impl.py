@@ -13,9 +13,11 @@
 # limitations under the License.
 
 import asyncio
-from typing import Optional, List, Iterable
+from typing import Optional, List
 
 import logging
+
+from overrides import overrides
 
 from google.cloud.pubsublite.internal.wait_ignore_cancelled import wait_ignore_errors
 from google.cloud.pubsublite.internal.wire.committer import Committer
@@ -28,17 +30,12 @@ from google.cloud.pubsublite.internal.wire.connection_reinitializer import (
     ConnectionReinitializer,
 )
 from google.cloud.pubsublite.internal.wire.connection import Connection
-from google.cloud.pubsublite.internal.wire.serial_batcher import (
-    SerialBatcher,
-    BatchTester,
-)
 from google.cloud.pubsublite_v1 import Cursor
 from google.cloud.pubsublite_v1.types import (
     StreamingCommitCursorRequest,
     StreamingCommitCursorResponse,
     InitialCommitCursorRequest,
 )
-from google.cloud.pubsublite.internal.wire.work_item import WorkItem
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -49,7 +46,6 @@ class CommitterImpl(
     ConnectionReinitializer[
         StreamingCommitCursorRequest, StreamingCommitCursorResponse
     ],
-    BatchTester[Cursor],
 ):
     _initial: InitialCommitCursorRequest
     _flush_seconds: float
@@ -57,12 +53,12 @@ class CommitterImpl(
         StreamingCommitCursorRequest, StreamingCommitCursorResponse
     ]
 
-    _batcher: SerialBatcher[Cursor, None]
-
-    _outstanding_commits: List[List[WorkItem[Cursor, None]]]
+    _next_to_commit: Optional[Cursor]
+    _outstanding_commits: List[Cursor]
 
     _receiver: Optional[asyncio.Future]
     _flusher: Optional[asyncio.Future]
+    _empty: asyncio.Event
 
     def __init__(
         self,
@@ -75,10 +71,12 @@ class CommitterImpl(
         self._initial = initial
         self._flush_seconds = flush_seconds
         self._connection = RetryingConnection(factory, self)
-        self._batcher = SerialBatcher(self)
+        self._next_to_commit = None
         self._outstanding_commits = []
         self._receiver = None
         self._flusher = None
+        self._empty = asyncio.Event()
+        self._empty.set()
 
     async def __aenter__(self):
         await self._connection.__aenter__()
@@ -114,9 +112,9 @@ class CommitterImpl(
                 )
             )
         for _ in range(response.commit.acknowledged_commits):
-            batch = self._outstanding_commits.pop(0)
-            for item in batch:
-                item.response_future.set_result(None)
+            self._outstanding_commits.pop(0)
+        if len(self._outstanding_commits) == 0:
+            self._empty.set()
 
     async def _receive_loop(self):
         while True:
@@ -130,45 +128,43 @@ class CommitterImpl(
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self._stop_loopers()
-        if self._connection.error():
-            self._fail_if_retrying_failed()
-        else:
+        if not self._connection.error():
             await self._flush()
         await self._connection.__aexit__(exc_type, exc_val, exc_tb)
 
-    def _fail_if_retrying_failed(self):
-        if self._connection.error():
-            for batch in self._outstanding_commits:
-                for item in batch:
-                    item.response_future.set_exception(self._connection.error())
-
     async def _flush(self):
-        batch = self._batcher.flush()
-        if not batch:
+        if self._next_to_commit is None:
             return
-        self._outstanding_commits.append(batch)
         req = StreamingCommitCursorRequest()
-        req.commit.cursor = batch[-1].request
+        req.commit.cursor = self._next_to_commit
+        self._outstanding_commits.append(self._next_to_commit)
+        self._next_to_commit = None
+        self._empty.clear()
         try:
             await self._connection.write(req)
         except GoogleAPICallError as e:
             _LOGGER.debug(f"Failed commit on stream: {e}")
-            self._fail_if_retrying_failed()
 
-    async def commit(self, cursor: Cursor) -> None:
-        future = self._batcher.add(cursor)
-        if self._batcher.should_flush():
-            # always returns false currently, here in case this changes in the future.
-            await self._flush()
-        await future
+    async def wait_until_empty(self):
+        await self._flush()
+        await self._connection.await_unless_failed(self._empty.wait())
 
+    def commit(self, cursor: Cursor) -> None:
+        if self._connection.error():
+            raise self._connection.error()
+        self._next_to_commit = cursor
+
+    @overrides
+    async def stop_processing(self, error: GoogleAPICallError):
+        await self._stop_loopers()
+
+    @overrides
     async def reinitialize(
         self,
         connection: Connection[
             StreamingCommitCursorRequest, StreamingCommitCursorResponse
         ],
     ):
-        await self._stop_loopers()
         await connection.write(StreamingCommitCursorRequest(initial=self._initial))
         response = await connection.read()
         if "initial" not in response:
@@ -177,18 +173,8 @@ class CommitterImpl(
                     "Received an invalid initial response on the publish stream."
                 )
             )
-        if self._outstanding_commits:
-            # Roll up outstanding commits
-            rollup: List[WorkItem[Cursor, None]] = []
-            for batch in self._outstanding_commits:
-                for item in batch:
-                    rollup.append(item)
-            self._outstanding_commits = [rollup]
-            req = StreamingCommitCursorRequest()
-            req.commit.cursor = rollup[-1].request
-            await connection.write(req)
+        if self._next_to_commit is None:
+            if self._outstanding_commits:
+                self._next_to_commit = self._outstanding_commits[-1]
+        self._outstanding_commits = []
         self._start_loopers()
-
-    def test(self, requests: Iterable[Cursor]) -> bool:
-        # There is no bound on the number of outstanding cursors.
-        return False

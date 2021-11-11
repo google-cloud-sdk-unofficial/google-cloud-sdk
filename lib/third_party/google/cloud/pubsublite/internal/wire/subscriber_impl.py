@@ -13,9 +13,11 @@
 # limitations under the License.
 
 import asyncio
-from typing import Optional
+from copy import deepcopy
+from typing import Optional, List
 
 from google.api_core.exceptions import GoogleAPICallError, FailedPrecondition
+from overrides import overrides
 
 from google.cloud.pubsublite.internal.wait_ignore_cancelled import wait_ignore_errors
 from google.cloud.pubsublite.internal.wire.connection import (
@@ -28,6 +30,7 @@ from google.cloud.pubsublite.internal.wire.connection_reinitializer import (
 from google.cloud.pubsublite.internal.wire.flow_control_batcher import (
     FlowControlBatcher,
 )
+from google.cloud.pubsublite.internal.wire.reset_signal import is_reset_signal
 from google.cloud.pubsublite.internal.wire.retrying_connection import RetryingConnection
 from google.cloud.pubsublite.internal.wire.subscriber import Subscriber
 from google.cloud.pubsublite_v1 import (
@@ -39,34 +42,39 @@ from google.cloud.pubsublite_v1 import (
     SeekRequest,
     Cursor,
 )
+from google.cloud.pubsublite.internal.wire.subscriber_reset_handler import (
+    SubscriberResetHandler,
+)
 
 
 class SubscriberImpl(
     Subscriber, ConnectionReinitializer[SubscribeRequest, SubscribeResponse]
 ):
-    _initial: InitialSubscribeRequest
+    _base_initial: InitialSubscribeRequest
     _token_flush_seconds: float
     _connection: RetryingConnection[SubscribeRequest, SubscribeResponse]
+    _reset_handler: SubscriberResetHandler
 
     _outstanding_flow_control: FlowControlBatcher
 
-    _reinitializing: bool
     _last_received_offset: Optional[int]
 
-    _message_queue: "asyncio.Queue[SequencedMessage]"
+    _message_queue: "asyncio.Queue[List[SequencedMessage.meta.pb]]"
 
     _receiver: Optional[asyncio.Future]
     _flusher: Optional[asyncio.Future]
 
     def __init__(
         self,
-        initial: InitialSubscribeRequest,
+        base_initial: InitialSubscribeRequest,
         token_flush_seconds: float,
         factory: ConnectionFactory[SubscribeRequest, SubscribeResponse],
+        reset_handler: SubscriberResetHandler,
     ):
-        self._initial = initial
+        self._base_initial = base_initial
         self._token_flush_seconds = token_flush_seconds
         self._connection = RetryingConnection(factory, self)
+        self._reset_handler = reset_handler
         self._outstanding_flow_control = FlowControlBatcher()
         self._reinitializing = False
         self._last_received_offset = None
@@ -102,8 +110,10 @@ class SubscriberImpl(
                 )
             )
             return
-        self._outstanding_flow_control.on_messages(response.messages.messages)
-        for message in response.messages.messages:
+        # Workaround for incredibly slow proto-plus-python accesses
+        messages = list(response.messages.messages._pb)
+        self._outstanding_flow_control.on_messages(messages)
+        for message in messages:
             if (
                 self._last_received_offset is not None
                 and message.cursor.offset <= self._last_received_offset
@@ -117,9 +127,8 @@ class SubscriberImpl(
                 )
                 return
             self._last_received_offset = message.cursor.offset
-        for message in response.messages.messages:
-            # queue is unbounded.
-            self._message_queue.put_nowait(message)
+        # queue is unbounded.
+        self._message_queue.put_nowait(messages)
 
     async def _receive_loop(self):
         while True:
@@ -145,12 +154,37 @@ class SubscriberImpl(
         await self._stop_loopers()
         await self._connection.__aexit__(exc_type, exc_val, exc_tb)
 
+    @overrides
+    async def stop_processing(self, error: GoogleAPICallError):
+        await self._stop_loopers()
+        if is_reset_signal(error):
+            # Discard undelivered messages and refill flow control tokens.
+            while not self._message_queue.empty():
+                batch: List[SequencedMessage.meta.pb] = self._message_queue.get_nowait()
+                allowed_bytes = sum(message.size_bytes for message in batch)
+                self._outstanding_flow_control.add(
+                    FlowControlRequest(
+                        allowed_messages=len(batch), allowed_bytes=allowed_bytes,
+                    )
+                )
+
+            await self._reset_handler.handle_reset()
+            self._last_received_offset = None
+
+    @overrides
     async def reinitialize(
         self, connection: Connection[SubscribeRequest, SubscribeResponse]
     ):
-        self._reinitializing = True
-        await self._stop_loopers()
-        await connection.write(SubscribeRequest(initial=self._initial))
+        initial = deepcopy(self._base_initial)
+        if self._last_received_offset is not None:
+            initial.initial_location = SeekRequest(
+                cursor=Cursor(offset=self._last_received_offset + 1)
+            )
+        else:
+            initial.initial_location = SeekRequest(
+                named_target=SeekRequest.NamedTarget.COMMITTED_CURSOR
+            )
+        await connection.write(SubscribeRequest(initial=initial))
         response = await connection.read()
         if "initial" not in response:
             self._connection.fail(
@@ -159,36 +193,13 @@ class SubscriberImpl(
                 )
             )
             return
-        if self._last_received_offset is not None:
-            # Perform a seek to get the next message after the one we received.
-            await connection.write(
-                SubscribeRequest(
-                    seek=SeekRequest(
-                        cursor=Cursor(offset=self._last_received_offset + 1)
-                    )
-                )
-            )
-            seek_response = await connection.read()
-            if "seek" not in seek_response:
-                self._connection.fail(
-                    FailedPrecondition(
-                        "Received an invalid seek response on the subscribe stream."
-                    )
-                )
-                return
         tokens = self._outstanding_flow_control.request_for_restart()
         if tokens is not None:
             await connection.write(SubscribeRequest(flow_control=tokens))
-        self._reinitializing = False
         self._start_loopers()
 
-    async def read(self) -> SequencedMessage:
+    async def read(self) -> List[SequencedMessage.meta.pb]:
         return await self._connection.await_unless_failed(self._message_queue.get())
 
-    async def allow_flow(self, request: FlowControlRequest):
+    def allow_flow(self, request: FlowControlRequest):
         self._outstanding_flow_control.add(request)
-        if (
-            not self._reinitializing
-            and self._outstanding_flow_control.should_expedite()
-        ):
-            await self._try_send_tokens()

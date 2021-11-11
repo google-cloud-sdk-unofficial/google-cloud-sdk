@@ -30,7 +30,7 @@ class SinglePublisherImpl(SinglePublisher):
 
     def __init__(self, underlying: AsyncSinglePublisher):
         super().__init__()
-        self._managed_loop = ManagedEventLoop()
+        self._managed_loop = ManagedEventLoop("PublisherLoopThread")
         self._underlying = underlying
 
     def publish(

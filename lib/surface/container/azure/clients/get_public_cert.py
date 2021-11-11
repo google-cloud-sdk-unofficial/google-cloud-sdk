@@ -41,7 +41,7 @@ $ {command} my-client --location=us-west1 --output-file=client.crt
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class GetPublicCert(base.DescribeCommand):
   """Get the public certificate of an Azure client."""
 

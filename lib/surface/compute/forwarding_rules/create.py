@@ -189,17 +189,11 @@ class CreateHelper(object):
           serviceDirectoryRegion=region, namespace=namespace)
 
     ports_all_specified, range_list = _ExtractPortsAndAll(args.ports)
-    port_range = _ResolvePortRange(args.port_range, range_list)
+    port_range = _MakeSingleUnifiedPortRange(args.port_range, range_list)
+    # All global forwarding rules must use EXTERNAL or INTERNAL_SELF_MANAGED
+    # schemes presently.
     load_balancing_scheme = _GetLoadBalancingScheme(args, client.messages,
                                                     is_psc_google_apis)
-
-    if ports_all_specified and not is_psc_google_apis:
-      raise exceptions.InvalidArgumentException(
-          '--ports',
-          '[--ports] can not be specified to all for global forwarding rules.')
-    if not is_psc_google_apis and not port_range:
-      raise exceptions.InvalidArgumentException(
-          '--ports', '[--ports] is required for global forwarding rules.')
 
     if is_psc_google_apis:
       rule_name = forwarding_rule_ref.Name()
@@ -228,8 +222,18 @@ class CreateHelper(object):
             'The valid values for target-google-apis-bundle are: ' +
             bundles_list)
     else:
+      # L7XLB in Premium Tier.
       target_ref = utils.GetGlobalTarget(resources, args)
       target_as_str = target_ref.SelfLink()
+
+      if ports_all_specified:
+        raise exceptions.InvalidArgumentException(
+            '--ports',
+            '[--ports] cannot be set to ALL for global forwarding rules.')
+      if not port_range:
+        raise exceptions.InvalidArgumentException(
+            '--ports', '[--ports] is required for global forwarding rules.')
+
     protocol = self.ConstructProtocol(client.messages, args)
 
     if args.address is None or args.ip_version:
@@ -291,15 +295,19 @@ class CreateHelper(object):
         include_l7_rxlb=self._support_l7_rxlb,
         include_target_service_attachment=self
         ._support_target_service_attachment)
+
     if not args.region and region_ref:
       args.region = region_ref
+
     protocol = self.ConstructProtocol(client.messages, args)
 
     address = self._ResolveAddress(resources, args,
                                    compute_flags.compute_scope.ScopeEnum.REGION,
                                    forwarding_rule_ref)
+
     load_balancing_scheme = _GetLoadBalancingScheme(args, client.messages,
                                                     is_psc_ilb)
+
     if is_psc_ilb and load_balancing_scheme:
       raise exceptions.InvalidArgumentException(
           '--load-balancing-scheme',
@@ -325,89 +333,119 @@ class CreateHelper(object):
     if self._support_source_ip_range and args.source_ip_ranges:
       forwarding_rule.sourceIpRanges = args.source_ip_ranges
 
+    if args.subnet is not None:
+      # Subnet arg needed for:
+      # - L4ILB and internal protocol forwarding (scheme INTERNAL, target BES
+      # or target instance)
+      # - L7ILB (scheme INTERNAL_MANAGED)
+      # - NetLB or external protocol forwarding when using IPv6 (scheme
+      # EXTERNAL target BES or target instance)
+      if not args.subnet_region:
+        args.subnet_region = forwarding_rule_ref.region
+      forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
+          args, resources).SelfLink()
+    if args.network is not None:
+      # Network arg needed for:
+      # - L4ILB and internal protocol forwarding (scheme INTERNAL, target BES
+      # or target instance)
+      # - L7ILB (scheme INTERNAL_MANAGED)
+      # - PSC forwarding rules (no scheme)
+      forwarding_rule.network = flags.NetworkArg(
+          self._support_l7_internal_load_balancing,
+          self._support_l7_rxlb).ResolveAsResource(args,
+                                                   resources).SelfLink()
+
     ports_all_specified, range_list = _ExtractPortsAndAll(args.ports)
-    if target_ref.Collection() == 'compute.serviceAttachments':
+
+    if target_ref.Collection() == 'compute.regionBackendServices':
+      # A FR pointing to a BES has no target attribute.
+      forwarding_rule.backendService = target_ref.SelfLink()
+      forwarding_rule.target = None
+    else:
+      # A FR pointing to anything not a BES has a target attribute.
+      forwarding_rule.backendService = None
       forwarding_rule.target = target_ref.SelfLink()
-      if args.network is not None:
-        forwarding_rule.network = flags.NetworkArg(
-            self._support_l7_internal_load_balancing,
-            self._support_l7_rxlb).ResolveAsResource(args,
-                                                     resources).SelfLink()
-    elif (target_ref.Collection() == 'compute.regionBackendServices') or (
-        target_ref.Collection() == 'compute.targetInstances' and
+
+    if ((target_ref.Collection() == 'compute.regionBackendServices' or
+         target_ref.Collection() == 'compute.targetInstances') and
         args.load_balancing_scheme == 'INTERNAL'):
-      forwarding_rule.portRange = (
-          six.text_type(args.port_range) if args.port_range else None)
-      if target_ref.Collection() == 'compute.regionBackendServices':
-        forwarding_rule.backendService = target_ref.SelfLink()
-      else:
-        forwarding_rule.target = target_ref.SelfLink()
+      # This is for L4ILB and internal protocol forwarding.
+      # API fields allPorts, ports, and portRange are mutually exclusive.
+      # API field portRange is not valid for this case.
+      # Use of L3_DEFAULT implies all ports even if allPorts is unset.
       if ports_all_specified:
         forwarding_rule.allPorts = True
-      if range_list:
-        forwarding_rule.portRange = None
+      elif range_list:
         forwarding_rule.ports = [
             six.text_type(p) for p in _GetPortList(range_list)
         ]
-      if args.subnet is not None:
-        if not args.subnet_region:
-          args.subnet_region = forwarding_rule_ref.region
-        forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
-            args, resources).SelfLink()
-      if args.network is not None:
-        forwarding_rule.network = flags.NetworkArg(
-            self._support_l7_internal_load_balancing,
-            self._support_l7_rxlb).ResolveAsResource(args,
-                                                     resources).SelfLink()
     elif ((target_ref.Collection() == 'compute.regionTargetHttpProxies' or
            target_ref.Collection() == 'compute.regionTargetHttpsProxies') and
           args.load_balancing_scheme == 'INTERNAL'):
+      # This is a legacy configuration for L7ILB.
       forwarding_rule.ports = [
           six.text_type(p) for p in _GetPortList(range_list)
       ]
-      if args.subnet is not None:
-        if not args.subnet_region:
-          args.subnet_region = forwarding_rule_ref.region
-        forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
-            args, resources).SelfLink()
-      if args.network is not None:
-        forwarding_rule.network = flags.NetworkArg(
-            self._support_l7_internal_load_balancing,
-            self._support_l7_rxlb).ResolveAsResource(args,
-                                                     resources).SelfLink()
-      forwarding_rule.target = target_ref.SelfLink()
     elif args.load_balancing_scheme == 'INTERNAL':
+      # There are currently no other valid combinations of targets with scheme
+      # internal. With scheme internal, targets must presently be a regional
+      # backend service (L4ILB) or a target instance (protocol forwarding).
       raise exceptions.InvalidArgumentException(
           '--load-balancing-scheme',
           'Only target instances and backend services should be specified as '
           'a target for internal load balancing.')
     elif args.load_balancing_scheme == 'INTERNAL_MANAGED':
-      forwarding_rule.portRange = (
-          _ResolvePortRange(args.port_range, range_list))
-      if args.subnet is not None:
-        if not args.subnet_region:
-          args.subnet_region = forwarding_rule_ref.region
-        forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
-            args, resources).SelfLink()
-      if args.network is not None:
-        forwarding_rule.network = flags.NetworkArg(
-            self._support_l7_internal_load_balancing,
-            self._support_l7_rxlb).ResolveAsResource(args,
-                                                     resources).SelfLink()
-      forwarding_rule.target = target_ref.SelfLink()
+      # This is L7ILB.
+      forwarding_rule.portRange = _MakeSingleUnifiedPortRange(args.port_range,
+                                                              range_list)
     elif args.load_balancing_scheme == 'EXTERNAL_MANAGED':
-      forwarding_rule.portRange = (
-          _ResolvePortRange(args.port_range, range_list))
-      if args.network is not None:
-        forwarding_rule.network = flags.NetworkArg(
-            self._support_l7_internal_load_balancing,
-            self._support_l7_rxlb).ResolveAsResource(args,
-                                                     resources).SelfLink()
-      forwarding_rule.target = target_ref.SelfLink()
+      # This regional L7XLB.
+      forwarding_rule.portRange = _MakeSingleUnifiedPortRange(args.port_range,
+                                                              range_list)
+    elif ((target_ref.Collection() == 'compute.regionBackendServices') and
+          ((args.load_balancing_scheme == 'EXTERNAL') or
+           (not args.load_balancing_scheme))):
+      # This is NetLB using a backend service. Scheme is either explicitly
+      # EXTERNAL or not supplied (EXTERNAL is the default scheme).
+      # API fields allPorts, ports, and portRange are mutually exclusive.
+      # All three API fields are valid for this case.
+      # Use of L3_DEFAULT implies all ports even if allPorts is unset.
+      if ports_all_specified:
+        forwarding_rule.allPorts = True
+      elif range_list:
+        if len(range_list) > 1:
+          # More than one port, potentially discontiguous, from --ports= flag.
+          forwarding_rule.ports = [
+              six.text_type(p) for p in _GetPortList(range_list)
+          ]
+        else:
+          # Exactly one value from --ports= flag. Might be a single port (80);
+          # might be a range (80-90). Since it might be a range, the portRange
+          # API attribute is more appropriate.
+          forwarding_rule.portRange = six.text_type(range_list[0])
+      elif args.port_range:
+        forwarding_rule.portRange = _MakeSingleUnifiedPortRange(args.port_range,
+                                                                range_list)
+    elif ((target_ref.Collection() == 'compute.targetPool' or
+           target_ref.Collection() == 'compute.targetInstances') and
+          ((args.load_balancing_scheme == 'EXTERNAL') or
+           (not args.load_balancing_scheme))):
+      # This is NetLB using a target pool or external protocol forwarding.
+      # Scheme is either explicitly EXTERNAL or not supplied (EXTERNAL is the
+      # default scheme).
+      # API fields allPorts, ports, and portRange are mutually exclusive.
+      # API field ports is not valid for this case.
+      # Use of L3_DEFAULT implies all ports by definition.
+      if ports_all_specified:
+        forwarding_rule.allPorts = True
+      else:
+        forwarding_rule.portRange = _MakeSingleUnifiedPortRange(args.port_range,
+                                                                range_list)
     else:
-      forwarding_rule.portRange = (
-          _ResolvePortRange(args.port_range, range_list))
-      forwarding_rule.target = target_ref.SelfLink()
+      # All other regional forwarding rules with load balancing scheme EXTERNAL.
+      forwarding_rule.portRange = _MakeSingleUnifiedPortRange(args.port_range,
+                                                              range_list)
+
     if hasattr(args, 'service_label'):
       forwarding_rule.serviceLabel = args.service_label
 
@@ -595,8 +633,8 @@ CreateBeta.detailed_help = Create.detailed_help
 CreateAlpha.detailed_help = CreateBeta.detailed_help
 
 
-def _GetPortRange(ports_range_list):
-  """Return single range by combining the ranges."""
+def _UnifyPortRangeFromListOfRanges(ports_range_list):
+  """Return a single port range by combining a list of port ranges."""
   if not ports_range_list:
     return None, None
   ports = sorted(ports_range_list)
@@ -617,18 +655,20 @@ def _ExtractPortsAndAll(ports_with_all):
     return False, []
 
 
-def _ResolvePortRange(port_range, port_range_list):
-  """Reconciles deprecated port_range value and list of port ranges."""
-  if port_range:
+def _MakeSingleUnifiedPortRange(arg_port_range, range_list_from_arg_ports):
+  """Reconciles the deprecated --port-range arg with ranges from --ports arg."""
+  if arg_port_range:
     log.warning(
         'The --port-range flag is deprecated. Use equivalent --ports=%s'
-        ' flag.', port_range)
-  elif port_range_list:
-    port_range = _GetPortRange(port_range_list)
-  return six.text_type(port_range) if port_range else None
+        ' flag.', arg_port_range)
+    return six.text_type(arg_port_range)
+  elif range_list_from_arg_ports:
+    range_list = _UnifyPortRangeFromListOfRanges(range_list_from_arg_ports)
+    return six.text_type(range_list) if range_list else None
 
 
 def _GetPortList(range_list):
+  """Creates list of singleton port numbers from list of ports and ranges."""
   ports = []
   for port_range in range_list:
     ports.extend(list(range(port_range.start, port_range.end + 1)))

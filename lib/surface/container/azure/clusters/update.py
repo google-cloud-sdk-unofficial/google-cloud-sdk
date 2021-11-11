@@ -37,8 +37,7 @@ $ {command} my-cluster --location=us-west1 --cluster-version=CLUSTER_VERSION --c
 """
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update an Anthos cluster on Azure."""
 

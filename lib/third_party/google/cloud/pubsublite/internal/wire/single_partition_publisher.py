@@ -13,8 +13,9 @@
 # limitations under the License.
 
 import asyncio
-from typing import Optional, List, Iterable
+from typing import Optional, List
 
+from overrides import overrides
 import logging
 from google.cloud.pubsub_v1.types import BatchSettings
 
@@ -31,7 +32,8 @@ from google.cloud.pubsublite.internal.wire.connection_reinitializer import (
 from google.cloud.pubsublite.internal.wire.connection import Connection
 from google.cloud.pubsublite.internal.wire.serial_batcher import (
     SerialBatcher,
-    BatchTester,
+    RequestSizer,
+    BatchSize,
 )
 from google.cloud.pubsublite.types import Partition, MessageMetadata
 from google.cloud.pubsublite_v1.types import (
@@ -55,7 +57,7 @@ _MAX_MESSAGES = 1000
 class SinglePartitionPublisher(
     Publisher,
     ConnectionReinitializer[PublishRequest, PublishResponse],
-    BatchTester[PubSubMessage],
+    RequestSizer[PubSubMessage],
 ):
     _initial: InitialPublishRequest
     _batching_settings: BatchSettings
@@ -162,15 +164,19 @@ class SinglePartitionPublisher(
             self._fail_if_retrying_failed()
 
     async def publish(self, message: PubSubMessage) -> MessageMetadata:
-        cursor_future = self._batcher.add(message)
-        if self._batcher.should_flush():
+        future = self._batcher.add(message)
+        if self._should_flush():
             await self._flush()
-        return MessageMetadata(self._partition, await cursor_future)
+        return MessageMetadata(self._partition, await future)
 
-    async def reinitialize(
-        self, connection: Connection[PublishRequest, PublishResponse]
-    ):
+    @overrides
+    async def stop_processing(self, error: GoogleAPICallError):
         await self._stop_loopers()
+
+    @overrides
+    async def reinitialize(
+        self, connection: Connection[PublishRequest, PublishResponse],
+    ):
         await connection.write(PublishRequest(initial_request=self._initial))
         response = await connection.read()
         if "initial_response" not in response:
@@ -187,10 +193,14 @@ class SinglePartitionPublisher(
             await connection.write(aggregate)
         self._start_loopers()
 
-    def test(self, requests: Iterable[PubSubMessage]) -> bool:
-        request_count = 0
-        byte_count = 0
-        for req in requests:
-            request_count += 1
-            byte_count += PubSubMessage.pb(req).ByteSize()
-        return (request_count >= _MAX_MESSAGES) or (byte_count >= _MAX_BYTES)
+    @overrides
+    def get_size(self, request: PubSubMessage) -> BatchSize:
+        return BatchSize(
+            element_count=1, byte_count=PubSubMessage.pb(request).ByteSize()
+        )
+
+    def _should_flush(self) -> bool:
+        size = self._batcher.size()
+        return (size.element_count >= self._batching_settings.max_messages) or (
+            size.byte_count >= self._batching_settings.max_bytes
+        )

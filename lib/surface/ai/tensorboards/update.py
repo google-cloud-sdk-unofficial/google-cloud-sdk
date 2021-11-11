@@ -62,6 +62,27 @@ def _Run(args, version):
       return op
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateGa(base.UpdateCommand):
+  """Update an existing Vertex AI Tensorboard."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To update a Tensorboard `12345`, in region `us-central1` and project `my-project`, with the display name `updated display name`:
+
+              $ {command} projects/my-project/locations/us-central1/tensorboards/12345 --display-name="updated display name"
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser)
+
+  def Run(self, args):
+    return _Run(args, constants.GA_VERSION)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(base.UpdateCommand):
   """Update an existing Vertex AI Tensorboard."""

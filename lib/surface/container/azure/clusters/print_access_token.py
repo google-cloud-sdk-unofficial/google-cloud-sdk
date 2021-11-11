@@ -24,8 +24,8 @@ from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class PrintAccessToken(base.Command):
   """Generate an access token for a GKE cluster on Azure."""
 

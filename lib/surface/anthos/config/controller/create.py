@@ -67,7 +67,12 @@ class Create(base.CreateCommand):
     log.status.Print("Create request issued for: [{}]".format(
         instance_ref.krmApiHostsId))
     if args.async_:
-      log.status.Print("Check operation [{}] for status.".format(op_ref.name))
+      ops = op_ref.name.split("/")
+      log.status.Print("Check operation [{}] for status.\n"
+                       "To describe the operation, run:\n\n"
+                       "$ gcloud anthos config operations describe {} "
+                       "--location {}"
+                       .format(op_ref.name, ops[-1], args.location))
       return op_ref
 
     op_resource = resources.REGISTRY.ParseRelativeName(

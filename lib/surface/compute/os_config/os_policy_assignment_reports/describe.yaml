@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [GA, ALPHA]
 
   help_text:
     brief: Describe an OS policy assignment report

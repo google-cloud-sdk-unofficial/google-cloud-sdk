@@ -13,8 +13,8 @@
 # limitations under the License.
 
 from typing import NamedTuple
-import json
 
+from google.cloud.pubsublite.internal import fast_serialize
 from google.cloud.pubsublite_v1.types.common import Cursor
 from google.cloud.pubsublite.types.partition import Partition
 
@@ -24,14 +24,15 @@ class MessageMetadata(NamedTuple):
     cursor: Cursor
 
     def encode(self) -> str:
-        return json.dumps(
-            {"partition": self.partition.value, "offset": self.cursor.offset}
-        )
+        return self._encode_parts(self.partition.value, self.cursor._pb.offset)
+
+    @staticmethod
+    def _encode_parts(partition: int, offset: int) -> str:
+        return fast_serialize.dump([partition, offset])
 
     @staticmethod
     def decode(source: str) -> "MessageMetadata":
-        loaded = json.loads(source)
-        return MessageMetadata(
-            partition=Partition(loaded["partition"]),
-            cursor=Cursor(offset=loaded["offset"]),
-        )
+        loaded = fast_serialize.load(source)
+        cursor = Cursor()
+        cursor._pb.offset = loaded[1]
+        return MessageMetadata(partition=Partition(loaded[0]), cursor=cursor)

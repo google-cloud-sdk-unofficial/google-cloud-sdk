@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Update a Cloud Security Command Center finding's mute state.
@@ -8,21 +8,25 @@
 
         $ {command} 789 --organization=organizations/123 --source=456 --mute=MUTED
         $ {command} 789 --organization=123 --source=456 --mute=MUTED
+        $ {command} organizations/123/sources/456/findings/789 --mute=MUTED
 
       To update finding's mute state to ``UNMUTED'', given finding organizations/123/sources/456/findings/789, run:
 
         $ {command} 789 --organization=organizations/123 --source=456 --mute=UNMUTED
         $ {command} 789 --organization=123 --source=456 --mute=UNMUTED
+        $ {command} organizations/123/sources/456/findings/789 --mute=UNMUTED
 
       To update finding's mute state to ``MUTED'', given finding folders/123/sources/456/findings/789, run:
 
         $ {command} 789 --folder=folders/123 --source=456 --mute=MUTED
         $ {command} 789 --folder=123 --source=456 --mute=MUTED
+        $ {command} folders/123/sources/456/findings/789 --mute=MUTED
 
       To update finding's mute state to ``MUTED'', given finding projects/123/sources/456/findings/789, run:
 
         $ {command} 789 --project=projects/123 --source=456 --mute=MUTED
         $ {command} 789 --project=123 --source=456 --mute=MUTED
+        $ {command} projects/123/sources/456/findings/789 --mute=MUTED
 
   request:
     collection: securitycenter.organizations.sources.findings
@@ -34,15 +38,14 @@
 
   arguments:
     params:
-    - arg_name: findingId
+    - arg_name: finding
       api_field: name
       is_positional: true
       required: true
       help_text: |
-        ID of the finding.
+        ID of the finding or the full resource name of the finding.
 
     - group:
-        required: true
         mutex: true
         params:
         - arg_name: organization
@@ -62,7 +65,6 @@
 
     - arg_name: source
       api_field: name
-      required: true
       help_text: |
         ID of the source.
 

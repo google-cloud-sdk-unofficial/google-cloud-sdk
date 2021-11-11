@@ -42,17 +42,17 @@ class List(base.ListCommand):
           Lists all of the Cloud Pub/Sub topics that exist in a given project that
           match the given topic name filter.""",
       'EXAMPLES': """\
-          To filter results by topic name (ie. only show topic 'mytopic'), run:
+          To filter results by topic name (ie. only show topic 'my-topic'), run:
 
-            $ {command} --filter=topicId:mytopic
+            $ {command} --filter="name.scope(topic):'my-topic'"
 
           To combine multiple filters (with AND or OR), run:
 
-            $ {command} --filter="topicId:mytopic AND topicId:myothertopic"
+            $ {command} --filter="name.scope(topic):'my-topic' OR name.scope(topic):'my-other-topic'"
 
           To filter topics that match an expression:
 
-            $ {command} --filter="topicId:mytopic_*"
+            $ {command} --filter="name.scope(topic):'my-topic_*'"
           """,
   }
 

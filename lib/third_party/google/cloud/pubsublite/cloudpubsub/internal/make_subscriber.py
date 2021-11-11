@@ -22,6 +22,7 @@ from google.cloud.pubsublite.cloudpubsub.message_transforms import (
     to_cps_subscribe_message,
     add_id_to_cps_subscribe_transformer,
 )
+from google.cloud.pubsublite.internal.wire.client_cache import ClientCache
 from google.cloud.pubsublite.types import FlowControlSettings
 from google.cloud.pubsublite.cloudpubsub.internal.ack_set_tracker_impl import (
     AckSetTrackerImpl,
@@ -52,6 +53,9 @@ from google.cloud.pubsublite.internal.wire.gapic_connection import (
 from google.cloud.pubsublite.internal.wire.merge_metadata import merge_metadata
 from google.cloud.pubsublite.internal.wire.pubsub_context import pubsub_context
 import google.cloud.pubsublite.internal.wire.subscriber_impl as wire_subscriber
+from google.cloud.pubsublite.internal.wire.subscriber_reset_handler import (
+    SubscriberResetHandler,
+)
 from google.cloud.pubsublite.types import Partition, SubscriptionPath
 from google.cloud.pubsublite.internal.routing_metadata import (
     subscription_routing_metadata,
@@ -84,6 +88,9 @@ def _make_dynamic_assigner(
     credentials: Optional[Credentials],
     base_metadata: Optional[Mapping[str, str]],
 ) -> Assigner:
+    if base_metadata is None:
+        base_metadata = {}
+
     def assignment_connection_factory(
         requests: AsyncIterator[PartitionAssignmentRequest],
     ):
@@ -110,34 +117,44 @@ def _make_partition_subscriber_factory(
     nack_handler: NackHandler,
     message_transformer: MessageTransformer,
 ) -> PartitionSubscriberFactory:
+    subscribe_client_cache = ClientCache(
+        lambda: SubscriberServiceAsyncClient(
+            credentials=credentials, transport=transport, client_options=client_options
+        )
+    )
+    cursor_client_cache = ClientCache(
+        lambda: CursorServiceAsyncClient(
+            credentials=credentials, transport=transport, client_options=client_options
+        )
+    )
+
     def factory(partition: Partition) -> AsyncSingleSubscriber:
-        subscribe_client = SubscriberServiceAsyncClient(
-            credentials=credentials, client_options=client_options, transport=transport
-        )  # type: ignore
-        cursor_client = CursorServiceAsyncClient(credentials=credentials, client_options=client_options, transport=transport)  # type: ignore
         final_metadata = merge_metadata(
             base_metadata, subscription_routing_metadata(subscription, partition)
         )
 
         def subscribe_connection_factory(requests: AsyncIterator[SubscribeRequest]):
-            return subscribe_client.subscribe(
+            return subscribe_client_cache.get().subscribe(
                 requests, metadata=list(final_metadata.items())
             )
 
         def cursor_connection_factory(
             requests: AsyncIterator[StreamingCommitCursorRequest],
         ):
-            return cursor_client.streaming_commit_cursor(
+            return cursor_client_cache.get().streaming_commit_cursor(
                 requests, metadata=list(final_metadata.items())
             )
 
-        subscriber = wire_subscriber.SubscriberImpl(
-            InitialSubscribeRequest(
-                subscription=str(subscription), partition=partition.value
-            ),
-            _DEFAULT_FLUSH_SECONDS,
-            GapicConnectionFactory(subscribe_connection_factory),
-        )
+        def subscriber_factory(reset_handler: SubscriberResetHandler):
+            return wire_subscriber.SubscriberImpl(
+                InitialSubscribeRequest(
+                    subscription=str(subscription), partition=partition.value
+                ),
+                _DEFAULT_FLUSH_SECONDS,
+                GapicConnectionFactory(subscribe_connection_factory),
+                reset_handler,
+            )
+
         committer = CommitterImpl(
             InitialCommitCursorRequest(
                 subscription=str(subscription), partition=partition.value
@@ -147,7 +164,7 @@ def _make_partition_subscriber_factory(
         )
         ack_set_tracker = AckSetTrackerImpl(committer)
         return SinglePartitionSingleSubscriber(
-            subscriber,
+            subscriber_factory,
             flow_control_settings,
             ack_set_tracker,
             nack_handler,
@@ -169,23 +186,23 @@ def make_async_subscriber(
     metadata: Optional[Mapping[str, str]] = None,
 ) -> AsyncSingleSubscriber:
     """
-  Make a Pub/Sub Lite AsyncSubscriber.
+    Make a Pub/Sub Lite AsyncSubscriber.
 
-  Args:
-    subscription: The subscription to subscribe to.
-    transport: The transport type to use.
-    per_partition_flow_control_settings: The flow control settings for each partition subscribed to. Note that these
-      settings apply to each partition individually, not in aggregate.
-    nack_handler: An optional handler for when nack() is called on a Message. The default will fail the client.
-    message_transformer: An optional transformer from Pub/Sub Lite messages to Cloud Pub/Sub messages.
-    fixed_partitions: A fixed set of partitions to subscribe to. If not present, will instead use auto-assignment.
-    credentials: The credentials to use to connect. GOOGLE_DEFAULT_CREDENTIALS is used if None.
-    client_options: Other options to pass to the client. Note that if you pass any you must set api_endpoint.
-    metadata: Additional metadata to send with the RPC.
+    Args:
+      subscription: The subscription to subscribe to.
+      transport: The transport type to use.
+      per_partition_flow_control_settings: The flow control settings for each partition subscribed to. Note that these
+        settings apply to each partition individually, not in aggregate.
+      nack_handler: An optional handler for when nack() is called on a Message. The default will fail the client.
+      message_transformer: An optional transformer from Pub/Sub Lite messages to Cloud Pub/Sub messages.
+      fixed_partitions: A fixed set of partitions to subscribe to. If not present, will instead use auto-assignment.
+      credentials: The credentials to use to connect. GOOGLE_DEFAULT_CREDENTIALS is used if None.
+      client_options: Other options to pass to the client. Note that if you pass any you must set api_endpoint.
+      metadata: Additional metadata to send with the RPC.
 
-  Returns:
-    A new AsyncSubscriber.
-  """
+    Returns:
+      A new AsyncSubscriber.
+    """
     metadata = merge_metadata(pubsub_context(framework="CLOUD_PUBSUB_SHIM"), metadata)
     if client_options is None:
         client_options = ClientOptions(

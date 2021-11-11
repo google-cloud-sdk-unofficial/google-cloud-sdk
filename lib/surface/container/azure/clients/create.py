@@ -38,7 +38,7 @@ $ {command} my-client --location=us-west1 --application-id=APP_ID --tenant-id=TE
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create an Azure client."""
 

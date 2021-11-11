@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import proto  # type: ignore
-
 
 from google.cloud.pubsublite_v1.types import common
 
@@ -36,7 +33,6 @@ __protobuf__ = proto.module(
 
 class InitialPublishRequest(proto.Message):
     r"""The first request that must be sent on a newly-opened stream.
-
     Attributes:
         topic (str):
             The topic to which messages will be written.
@@ -46,18 +42,16 @@ class InitialPublishRequest(proto.Message):
             be in the range [0, topic.num_partitions).
     """
 
-    topic = proto.Field(proto.STRING, number=1)
-
-    partition = proto.Field(proto.INT64, number=2)
+    topic = proto.Field(proto.STRING, number=1,)
+    partition = proto.Field(proto.INT64, number=2,)
 
 
 class InitialPublishResponse(proto.Message):
-    r"""Response to an InitialPublishRequest."""
+    r"""Response to an InitialPublishRequest.    """
 
 
 class MessagePublishRequest(proto.Message):
     r"""Request to publish messages to the topic.
-
     Attributes:
         messages (Sequence[google.cloud.pubsublite_v1.types.PubSubMessage]):
             The messages to publish.
@@ -70,7 +64,6 @@ class MessagePublishRequest(proto.Message):
 
 class MessagePublishResponse(proto.Message):
     r"""Response to a MessagePublishRequest.
-
     Attributes:
         start_cursor (google.cloud.pubsublite_v1.types.Cursor):
             The cursor of the first published message in
@@ -84,7 +77,6 @@ class MessagePublishResponse(proto.Message):
 
 class PublishRequest(proto.Message):
     r"""Request sent from the client to the server on a stream.
-
     Attributes:
         initial_request (google.cloud.pubsublite_v1.types.InitialPublishRequest):
             Initial request on the stream.
@@ -95,7 +87,6 @@ class PublishRequest(proto.Message):
     initial_request = proto.Field(
         proto.MESSAGE, number=1, oneof="request_type", message="InitialPublishRequest",
     )
-
     message_publish_request = proto.Field(
         proto.MESSAGE, number=2, oneof="request_type", message="MessagePublishRequest",
     )
@@ -103,7 +94,6 @@ class PublishRequest(proto.Message):
 
 class PublishResponse(proto.Message):
     r"""Response to a PublishRequest.
-
     Attributes:
         initial_response (google.cloud.pubsublite_v1.types.InitialPublishResponse):
             Initial response on the stream.
@@ -117,7 +107,6 @@ class PublishResponse(proto.Message):
         oneof="response_type",
         message="InitialPublishResponse",
     )
-
     message_response = proto.Field(
         proto.MESSAGE,
         number=2,

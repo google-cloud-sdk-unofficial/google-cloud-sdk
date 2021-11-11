@@ -25,7 +25,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dataplex import flags
 from googlecloudsdk.command_lib.dataplex import resource_args
-from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
@@ -54,16 +53,6 @@ class Update(base.Command):
         help='Validate the update action, but don\'t actually perform it.')
     parser.add_argument('--description', help='Description of the Asset')
     parser.add_argument('--display-name', help='Display Name')
-    resource_spec = parser.add_group(
-        help='Specification of the resource that is referenced by this asset.')
-    resource_spec.add_argument(
-        '--deletion-policy',
-        choices={
-            'DETACH_RESOURCE': 'detach resource',
-            'DELETE_RESOURCE': 'delete resource',
-        },
-        type=arg_utils.ChoiceToEnumName,
-        help='Deletion policy of the attached resource.')
     flags.AddDiscoveryArgs(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)

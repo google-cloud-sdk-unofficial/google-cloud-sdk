@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,23 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import warnings
-from typing import Awaitable, Callable, Dict, Optional, Sequence, Tuple
+from typing import Awaitable, Callable, Dict, Optional, Sequence, Tuple, Union
 
 from google.api_core import gapic_v1  # type: ignore
 from google.api_core import grpc_helpers_async  # type: ignore
-from google import auth  # type: ignore
-from google.auth import credentials  # type: ignore
+from google.api_core import operations_v1  # type: ignore
+from google.auth import credentials as ga_credentials  # type: ignore
 from google.auth.transport.grpc import SslCredentials  # type: ignore
+import packaging.version
 
 import grpc  # type: ignore
 from grpc.experimental import aio  # type: ignore
 
 from google.cloud.pubsublite_v1.types import admin
 from google.cloud.pubsublite_v1.types import common
-from google.protobuf import empty_pb2 as empty  # type: ignore
-
+from google.longrunning import operations_pb2  # type: ignore
+from google.protobuf import empty_pb2  # type: ignore
 from .base import AdminServiceTransport, DEFAULT_CLIENT_INFO
 from .grpc import AdminServiceGrpcTransport
 
@@ -57,7 +56,7 @@ class AdminServiceGrpcAsyncIOTransport(AdminServiceTransport):
     def create_channel(
         cls,
         host: str = "pubsublite.googleapis.com",
-        credentials: credentials.Credentials = None,
+        credentials: ga_credentials.Credentials = None,
         credentials_file: Optional[str] = None,
         scopes: Optional[Sequence[str]] = None,
         quota_project_id: Optional[str] = None,
@@ -84,13 +83,15 @@ class AdminServiceGrpcAsyncIOTransport(AdminServiceTransport):
         Returns:
             aio.Channel: A gRPC AsyncIO channel object.
         """
-        scopes = scopes or cls.AUTH_SCOPES
+
         return grpc_helpers_async.create_channel(
             host,
             credentials=credentials,
             credentials_file=credentials_file,
-            scopes=scopes,
             quota_project_id=quota_project_id,
+            default_scopes=cls.AUTH_SCOPES,
+            scopes=scopes,
+            default_host=cls.DEFAULT_HOST,
             **kwargs,
         )
 
@@ -98,7 +99,7 @@ class AdminServiceGrpcAsyncIOTransport(AdminServiceTransport):
         self,
         *,
         host: str = "pubsublite.googleapis.com",
-        credentials: credentials.Credentials = None,
+        credentials: ga_credentials.Credentials = None,
         credentials_file: Optional[str] = None,
         scopes: Optional[Sequence[str]] = None,
         channel: aio.Channel = None,
@@ -108,11 +109,13 @@ class AdminServiceGrpcAsyncIOTransport(AdminServiceTransport):
         client_cert_source_for_mtls: Callable[[], Tuple[bytes, bytes]] = None,
         quota_project_id=None,
         client_info: gapic_v1.client_info.ClientInfo = DEFAULT_CLIENT_INFO,
+        always_use_jwt_access: Optional[bool] = False,
     ) -> None:
         """Instantiate the transport.
 
         Args:
-            host (Optional[str]): The hostname to connect to.
+            host (Optional[str]):
+                 The hostname to connect to.
             credentials (Optional[google.auth.credentials.Credentials]): The
                 authorization credentials to attach to requests. These
                 credentials identify the application to the service; if none
@@ -148,6 +151,8 @@ class AdminServiceGrpcAsyncIOTransport(AdminServiceTransport):
                 API requests. If ``None``, then default info will be used.
                 Generally, you only need to set this if you're developing
                 your own client library.
+            always_use_jwt_access (Optional[bool]): Whether self signed JWT should
+                be used for service account credentials.
 
         Raises:
             google.auth.exceptions.MutualTlsChannelError: If mutual TLS transport
@@ -158,6 +163,7 @@ class AdminServiceGrpcAsyncIOTransport(AdminServiceTransport):
         self._grpc_channel = None
         self._ssl_channel_credentials = ssl_channel_credentials
         self._stubs: Dict[str, Callable] = {}
+        self._operations_client = None
 
         if api_mtls_endpoint:
             warnings.warn("api_mtls_endpoint is deprecated", DeprecationWarning)
@@ -170,7 +176,6 @@ class AdminServiceGrpcAsyncIOTransport(AdminServiceTransport):
             # If a channel was explicitly provided, set it.
             self._grpc_channel = channel
             self._ssl_channel_credentials = None
-
         else:
             if api_mtls_endpoint:
                 host = api_mtls_endpoint
@@ -200,6 +205,7 @@ class AdminServiceGrpcAsyncIOTransport(AdminServiceTransport):
             scopes=scopes,
             quota_project_id=quota_project_id,
             client_info=client_info,
+            always_use_jwt_access=always_use_jwt_access,
         )
 
         if not self._grpc_channel:
@@ -228,6 +234,22 @@ class AdminServiceGrpcAsyncIOTransport(AdminServiceTransport):
         """
         # Return the channel from cache.
         return self._grpc_channel
+
+    @property
+    def operations_client(self) -> operations_v1.OperationsAsyncClient:
+        """Create the client designed to process long-running operations.
+
+        This property caches on the instance; repeated calls return the same
+        client.
+        """
+        # Sanity check: Only create a new client if we do not already have one.
+        if self._operations_client is None:
+            self._operations_client = operations_v1.OperationsAsyncClient(
+                self.grpc_channel
+            )
+
+        # Return the client from cache.
+        return self._operations_client
 
     @property
     def create_topic(
@@ -361,7 +383,7 @@ class AdminServiceGrpcAsyncIOTransport(AdminServiceTransport):
     @property
     def delete_topic(
         self,
-    ) -> Callable[[admin.DeleteTopicRequest], Awaitable[empty.Empty]]:
+    ) -> Callable[[admin.DeleteTopicRequest], Awaitable[empty_pb2.Empty]]:
         r"""Return a callable for the delete topic method over gRPC.
 
         Deletes the specified topic.
@@ -380,7 +402,7 @@ class AdminServiceGrpcAsyncIOTransport(AdminServiceTransport):
             self._stubs["delete_topic"] = self.grpc_channel.unary_unary(
                 "/google.cloud.pubsublite.v1.AdminService/DeleteTopic",
                 request_serializer=admin.DeleteTopicRequest.serialize,
-                response_deserializer=empty.Empty.FromString,
+                response_deserializer=empty_pb2.Empty.FromString,
             )
         return self._stubs["delete_topic"]
 
@@ -524,7 +546,7 @@ class AdminServiceGrpcAsyncIOTransport(AdminServiceTransport):
     @property
     def delete_subscription(
         self,
-    ) -> Callable[[admin.DeleteSubscriptionRequest], Awaitable[empty.Empty]]:
+    ) -> Callable[[admin.DeleteSubscriptionRequest], Awaitable[empty_pb2.Empty]]:
         r"""Return a callable for the delete subscription method over gRPC.
 
         Deletes the specified subscription.
@@ -543,9 +565,224 @@ class AdminServiceGrpcAsyncIOTransport(AdminServiceTransport):
             self._stubs["delete_subscription"] = self.grpc_channel.unary_unary(
                 "/google.cloud.pubsublite.v1.AdminService/DeleteSubscription",
                 request_serializer=admin.DeleteSubscriptionRequest.serialize,
-                response_deserializer=empty.Empty.FromString,
+                response_deserializer=empty_pb2.Empty.FromString,
             )
         return self._stubs["delete_subscription"]
+
+    @property
+    def seek_subscription(
+        self,
+    ) -> Callable[[admin.SeekSubscriptionRequest], Awaitable[operations_pb2.Operation]]:
+        r"""Return a callable for the seek subscription method over gRPC.
+
+        Performs an out-of-band seek for a subscription to a
+        specified target, which may be timestamps or named
+        positions within the message backlog. Seek translates
+        these targets to cursors for each partition and
+        orchestrates subscribers to start consuming messages
+        from these seek cursors.
+
+        If an operation is returned, the seek has been
+        registered and subscribers will eventually receive
+        messages from the seek cursors (i.e. eventual
+        consistency), as long as they are using a minimum
+        supported client library version and not a system that
+        tracks cursors independently of Pub/Sub Lite (e.g.
+        Apache Beam, Dataflow, Spark). The seek operation will
+        fail for unsupported clients.
+
+        If clients would like to know when subscribers react to
+        the seek (or not), they can poll the operation. The seek
+        operation will succeed and complete once subscribers are
+        ready to receive messages from the seek cursors for all
+        partitions of the topic. This means that the seek
+        operation will not complete until all subscribers come
+        online.
+
+        If the previous seek operation has not yet completed, it
+        will be aborted and the new invocation of seek will
+        supersede it.
+
+        Returns:
+            Callable[[~.SeekSubscriptionRequest],
+                    Awaitable[~.Operation]]:
+                A function that, when called, will call the underlying RPC
+                on the server.
+        """
+        # Generate a "stub function" on-the-fly which will actually make
+        # the request.
+        # gRPC handles serialization and deserialization, so we just need
+        # to pass in the functions for each.
+        if "seek_subscription" not in self._stubs:
+            self._stubs["seek_subscription"] = self.grpc_channel.unary_unary(
+                "/google.cloud.pubsublite.v1.AdminService/SeekSubscription",
+                request_serializer=admin.SeekSubscriptionRequest.serialize,
+                response_deserializer=operations_pb2.Operation.FromString,
+            )
+        return self._stubs["seek_subscription"]
+
+    @property
+    def create_reservation(
+        self,
+    ) -> Callable[[admin.CreateReservationRequest], Awaitable[common.Reservation]]:
+        r"""Return a callable for the create reservation method over gRPC.
+
+        Creates a new reservation.
+
+        Returns:
+            Callable[[~.CreateReservationRequest],
+                    Awaitable[~.Reservation]]:
+                A function that, when called, will call the underlying RPC
+                on the server.
+        """
+        # Generate a "stub function" on-the-fly which will actually make
+        # the request.
+        # gRPC handles serialization and deserialization, so we just need
+        # to pass in the functions for each.
+        if "create_reservation" not in self._stubs:
+            self._stubs["create_reservation"] = self.grpc_channel.unary_unary(
+                "/google.cloud.pubsublite.v1.AdminService/CreateReservation",
+                request_serializer=admin.CreateReservationRequest.serialize,
+                response_deserializer=common.Reservation.deserialize,
+            )
+        return self._stubs["create_reservation"]
+
+    @property
+    def get_reservation(
+        self,
+    ) -> Callable[[admin.GetReservationRequest], Awaitable[common.Reservation]]:
+        r"""Return a callable for the get reservation method over gRPC.
+
+        Returns the reservation configuration.
+
+        Returns:
+            Callable[[~.GetReservationRequest],
+                    Awaitable[~.Reservation]]:
+                A function that, when called, will call the underlying RPC
+                on the server.
+        """
+        # Generate a "stub function" on-the-fly which will actually make
+        # the request.
+        # gRPC handles serialization and deserialization, so we just need
+        # to pass in the functions for each.
+        if "get_reservation" not in self._stubs:
+            self._stubs["get_reservation"] = self.grpc_channel.unary_unary(
+                "/google.cloud.pubsublite.v1.AdminService/GetReservation",
+                request_serializer=admin.GetReservationRequest.serialize,
+                response_deserializer=common.Reservation.deserialize,
+            )
+        return self._stubs["get_reservation"]
+
+    @property
+    def list_reservations(
+        self,
+    ) -> Callable[
+        [admin.ListReservationsRequest], Awaitable[admin.ListReservationsResponse]
+    ]:
+        r"""Return a callable for the list reservations method over gRPC.
+
+        Returns the list of reservations for the given
+        project.
+
+        Returns:
+            Callable[[~.ListReservationsRequest],
+                    Awaitable[~.ListReservationsResponse]]:
+                A function that, when called, will call the underlying RPC
+                on the server.
+        """
+        # Generate a "stub function" on-the-fly which will actually make
+        # the request.
+        # gRPC handles serialization and deserialization, so we just need
+        # to pass in the functions for each.
+        if "list_reservations" not in self._stubs:
+            self._stubs["list_reservations"] = self.grpc_channel.unary_unary(
+                "/google.cloud.pubsublite.v1.AdminService/ListReservations",
+                request_serializer=admin.ListReservationsRequest.serialize,
+                response_deserializer=admin.ListReservationsResponse.deserialize,
+            )
+        return self._stubs["list_reservations"]
+
+    @property
+    def update_reservation(
+        self,
+    ) -> Callable[[admin.UpdateReservationRequest], Awaitable[common.Reservation]]:
+        r"""Return a callable for the update reservation method over gRPC.
+
+        Updates properties of the specified reservation.
+
+        Returns:
+            Callable[[~.UpdateReservationRequest],
+                    Awaitable[~.Reservation]]:
+                A function that, when called, will call the underlying RPC
+                on the server.
+        """
+        # Generate a "stub function" on-the-fly which will actually make
+        # the request.
+        # gRPC handles serialization and deserialization, so we just need
+        # to pass in the functions for each.
+        if "update_reservation" not in self._stubs:
+            self._stubs["update_reservation"] = self.grpc_channel.unary_unary(
+                "/google.cloud.pubsublite.v1.AdminService/UpdateReservation",
+                request_serializer=admin.UpdateReservationRequest.serialize,
+                response_deserializer=common.Reservation.deserialize,
+            )
+        return self._stubs["update_reservation"]
+
+    @property
+    def delete_reservation(
+        self,
+    ) -> Callable[[admin.DeleteReservationRequest], Awaitable[empty_pb2.Empty]]:
+        r"""Return a callable for the delete reservation method over gRPC.
+
+        Deletes the specified reservation.
+
+        Returns:
+            Callable[[~.DeleteReservationRequest],
+                    Awaitable[~.Empty]]:
+                A function that, when called, will call the underlying RPC
+                on the server.
+        """
+        # Generate a "stub function" on-the-fly which will actually make
+        # the request.
+        # gRPC handles serialization and deserialization, so we just need
+        # to pass in the functions for each.
+        if "delete_reservation" not in self._stubs:
+            self._stubs["delete_reservation"] = self.grpc_channel.unary_unary(
+                "/google.cloud.pubsublite.v1.AdminService/DeleteReservation",
+                request_serializer=admin.DeleteReservationRequest.serialize,
+                response_deserializer=empty_pb2.Empty.FromString,
+            )
+        return self._stubs["delete_reservation"]
+
+    @property
+    def list_reservation_topics(
+        self,
+    ) -> Callable[
+        [admin.ListReservationTopicsRequest],
+        Awaitable[admin.ListReservationTopicsResponse],
+    ]:
+        r"""Return a callable for the list reservation topics method over gRPC.
+
+        Lists the topics attached to the specified
+        reservation.
+
+        Returns:
+            Callable[[~.ListReservationTopicsRequest],
+                    Awaitable[~.ListReservationTopicsResponse]]:
+                A function that, when called, will call the underlying RPC
+                on the server.
+        """
+        # Generate a "stub function" on-the-fly which will actually make
+        # the request.
+        # gRPC handles serialization and deserialization, so we just need
+        # to pass in the functions for each.
+        if "list_reservation_topics" not in self._stubs:
+            self._stubs["list_reservation_topics"] = self.grpc_channel.unary_unary(
+                "/google.cloud.pubsublite.v1.AdminService/ListReservationTopics",
+                request_serializer=admin.ListReservationTopicsRequest.serialize,
+                response_deserializer=admin.ListReservationTopicsResponse.deserialize,
+            )
+        return self._stubs["list_reservation_topics"]
 
 
 __all__ = ("AdminServiceGrpcAsyncIOTransport",)

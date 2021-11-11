@@ -47,7 +47,7 @@ class Update(base.BinaryBackedCommand):
 
         $ git add my-package-dir/
         $ git commit -m "package updates"
-        $ {command} my-package-dir/@master --strategy alpha-git-patch
+        $ {command} my-package-dir/@main --strategy alpha-git-patch
       """,
   }
 

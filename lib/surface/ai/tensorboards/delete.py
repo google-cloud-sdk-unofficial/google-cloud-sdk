@@ -41,6 +41,31 @@ def _Run(args, version):
         op_ref=tensorboards_util.ParseTensorboardOperation(operation.name))
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DeleteGa(base.DeleteCommand):
+  """Delete an existing Vertex AI Tensorboard."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To delete a Tensorboard `12345` in region `us-central1` and project `my-project`:
+
+              $ {command} projects/my-project/locations/us-central1/tensorboards/12345
+
+          Or with flags:
+
+              $ {command} 12345
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    flags.AddTensorboardResourceArg(parser, 'to delete')
+
+  def Run(self, args):
+    return _Run(args, constants.GA_VERSION)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DeleteBeta(base.DeleteCommand):
   """Delete an existing Vertex AI Tensorboard."""

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import proto  # type: ignore
 
-
 from google.cloud.pubsublite_v1.types import common
-from google.protobuf import timestamp_pb2 as timestamp  # type: ignore
+from google.protobuf import timestamp_pb2  # type: ignore
 
 
 __protobuf__ = proto.module(
@@ -29,6 +26,8 @@ __protobuf__ = proto.module(
         "ComputeMessageStatsResponse",
         "ComputeHeadCursorRequest",
         "ComputeHeadCursorResponse",
+        "ComputeTimeCursorRequest",
+        "ComputeTimeCursorResponse",
     },
 )
 
@@ -53,12 +52,9 @@ class ComputeMessageStatsRequest(proto.Message):
             will retrieve all messages.
     """
 
-    topic = proto.Field(proto.STRING, number=1)
-
-    partition = proto.Field(proto.INT64, number=2)
-
+    topic = proto.Field(proto.STRING, number=1,)
+    partition = proto.Field(proto.INT64, number=2,)
     start_cursor = proto.Field(proto.MESSAGE, number=3, message=common.Cursor,)
-
     end_cursor = proto.Field(proto.MESSAGE, number=4, message=common.Cursor,)
 
 
@@ -86,22 +82,18 @@ class ComputeMessageStatsResponse(proto.Message):
             there are no messages.
     """
 
-    message_count = proto.Field(proto.INT64, number=1)
-
-    message_bytes = proto.Field(proto.INT64, number=2)
-
+    message_count = proto.Field(proto.INT64, number=1,)
+    message_bytes = proto.Field(proto.INT64, number=2,)
     minimum_publish_time = proto.Field(
-        proto.MESSAGE, number=3, message=timestamp.Timestamp,
+        proto.MESSAGE, number=3, message=timestamp_pb2.Timestamp,
     )
-
     minimum_event_time = proto.Field(
-        proto.MESSAGE, number=4, message=timestamp.Timestamp,
+        proto.MESSAGE, number=4, message=timestamp_pb2.Timestamp,
     )
 
 
 class ComputeHeadCursorRequest(proto.Message):
     r"""Compute the current head cursor for a partition.
-
     Attributes:
         topic (str):
             Required. The topic for which we should
@@ -111,9 +103,8 @@ class ComputeHeadCursorRequest(proto.Message):
             compute the head cursor.
     """
 
-    topic = proto.Field(proto.STRING, number=1)
-
-    partition = proto.Field(proto.INT64, number=2)
+    topic = proto.Field(proto.STRING, number=1,)
+    partition = proto.Field(proto.INT64, number=2,)
 
 
 class ComputeHeadCursorResponse(proto.Message):
@@ -126,6 +117,43 @@ class ComputeHeadCursorResponse(proto.Message):
     """
 
     head_cursor = proto.Field(proto.MESSAGE, number=1, message=common.Cursor,)
+
+
+class ComputeTimeCursorRequest(proto.Message):
+    r"""Compute the corresponding cursor for a publish or event time
+    in a topic partition.
+
+    Attributes:
+        topic (str):
+            Required. The topic for which we should
+            compute the cursor.
+        partition (int):
+            Required. The partition for which we should
+            compute the cursor.
+        target (google.cloud.pubsublite_v1.types.TimeTarget):
+            Required. The target publish or event time.
+            Specifying a future time will return an unset
+            cursor.
+    """
+
+    topic = proto.Field(proto.STRING, number=1,)
+    partition = proto.Field(proto.INT64, number=2,)
+    target = proto.Field(proto.MESSAGE, number=3, message=common.TimeTarget,)
+
+
+class ComputeTimeCursorResponse(proto.Message):
+    r"""Response containing the cursor corresponding to a publish or
+    event time in a topic partition.
+
+    Attributes:
+        cursor (google.cloud.pubsublite_v1.types.Cursor):
+            If present, the cursor references the first message with
+            time greater than or equal to the specified target time. If
+            such a message cannot be found, the cursor will be unset
+            (i.e. ``cursor`` is not present).
+    """
+
+    cursor = proto.Field(proto.MESSAGE, number=1, message=common.Cursor,)
 
 
 __all__ = tuple(sorted(__protobuf__.manifest))

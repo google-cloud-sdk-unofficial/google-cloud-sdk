@@ -25,7 +25,7 @@ class GcloudignoreHelp(base.TopicCommand):
   r"""Reference for `.gcloudignore` files.
 
   Several commands in `gcloud` involve uploading the contents of a directory to
-  Google Cloud Platform to host or build. In many cases, you will not want to
+  Google Cloud to host or build. In many cases, you will not want to
   upload certain files (i.e., "ignore" them).
 
   If there is a file called `.gcloudignore` _in the top-level directory to

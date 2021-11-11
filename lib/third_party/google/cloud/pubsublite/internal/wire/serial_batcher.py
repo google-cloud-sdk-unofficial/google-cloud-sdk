@@ -12,54 +12,74 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from abc import abstractmethod
-from typing import Generic, List, Iterable
+from abc import abstractmethod, ABCMeta
+from typing import Generic, List, NamedTuple
 import asyncio
+from overrides import overrides
 
 from google.cloud.pubsublite.internal.wire.connection import Request, Response
 from google.cloud.pubsublite.internal.wire.work_item import WorkItem
 
 
-class BatchTester(Generic[Request]):
-    """A BatchTester determines whether a given batch of messages must be sent."""
+class BatchSize(NamedTuple):
+    element_count: int
+    byte_count: int
+
+    def __add__(self, other: "BatchSize") -> "BatchSize":
+        return BatchSize(
+            self.element_count + other.element_count, self.byte_count + other.byte_count
+        )
+
+
+class RequestSizer(Generic[Request], metaclass=ABCMeta):
+    """A RequestSizer determines the size of a request."""
 
     @abstractmethod
-    def test(self, requests: Iterable[Request]) -> bool:
+    def get_size(self, request: Request) -> BatchSize:
         """
-    Args:
-      requests: The current outstanding batch.
+        Args:
+          request: A single request.
 
-    Returns: Whether that batch must be sent.
-    """
+        Returns: The BatchSize of this request
+        """
         raise NotImplementedError()
 
 
-class SerialBatcher(Generic[Request, Response]):
-    _tester: BatchTester[Request]
-    _requests: List[WorkItem[Request, Response]]  # A list of outstanding requests
+class IgnoredRequestSizer(RequestSizer[Request]):
+    @overrides
+    def get_size(self, request) -> BatchSize:
+        return BatchSize(0, 0)
 
-    def __init__(self, tester: BatchTester[Request]):
-        self._tester = tester
+
+class SerialBatcher(Generic[Request, Response]):
+    _sizer: RequestSizer[Request]
+    _requests: List[WorkItem[Request, Response]]  # A list of outstanding requests
+    _batch_size: BatchSize
+
+    def __init__(self, sizer: RequestSizer[Request] = IgnoredRequestSizer()):
+        self._sizer = sizer
         self._requests = []
+        self._batch_size = BatchSize(0, 0)
 
     def add(self, request: Request) -> "asyncio.Future[Response]":
-        """Add a new request to this batcher. Callers must always call should_flush() after add, and flush() if that returns
-    true.
+        """Add a new request to this batcher.
 
-    Args:
-      request: The request to send.
+        Args:
+          request: The request to send.
 
-    Returns:
-      A future that will resolve to the response or a GoogleAPICallError.
-    """
+        Returns:
+          A future that will resolve to the response or a GoogleAPICallError.
+        """
         item = WorkItem[Request, Response](request)
         self._requests.append(item)
+        self._batch_size += self._sizer.get_size(request)
         return item.response_future
 
-    def should_flush(self) -> bool:
-        return self._tester.test(item.request for item in self._requests)
+    def size(self) -> BatchSize:
+        return self._batch_size
 
     def flush(self) -> List[WorkItem[Request, Response]]:
         requests = self._requests
         self._requests = []
+        self._batch_size = BatchSize(0, 0)
         return requests

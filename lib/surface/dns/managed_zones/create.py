@@ -44,6 +44,7 @@ def _AddArgsCommon(parser, messages):
   flags.GetPrivateForwardingTargetsArg().AddToParser(parser)
   flags.GetReverseLookupArg().AddToParser(parser)
   flags.GetServiceDirectoryArg().AddToParser(parser)
+  flags.GetManagedZoneLoggingArg().AddToParser(parser)
 
 
 def _MakeDnssecConfig(args, messages):
@@ -167,6 +168,11 @@ class Create(base.CreateCommand):
           namespace=messages.ManagedZoneServiceDirectoryConfigNamespace(
               namespaceUrl=args.service_directory_namespace))
 
+    cloud_logging_config = None
+    if args.IsSpecified('log_dns_queries'):
+      cloud_logging_config = messages.ManagedZoneCloudLoggingConfig()
+      cloud_logging_config.enableLogging = args.log_dns_queries
+
     zone = messages.ManagedZone(
         name=zone_ref.managedZone,
         dnsName=util.AppendTrailingDot(args.dns_name),
@@ -178,7 +184,8 @@ class Create(base.CreateCommand):
         privateVisibilityConfig=visibility_config,
         peeringConfig=peering_config,
         reverseLookupConfig=reverse_lookup_config,
-        serviceDirectoryConfig=service_directory_config)
+        serviceDirectoryConfig=service_directory_config,
+        cloudLoggingConfig=cloud_logging_config)
 
     result = dns.managedZones.Create(
         messages.DnsManagedZonesCreateRequest(managedZone=zone,
@@ -310,6 +317,11 @@ class CreateBeta(base.CreateCommand):
           namespace=messages.ManagedZoneServiceDirectoryConfigNamespace(
               namespaceUrl=args.service_directory_namespace))
 
+    cloud_logging_config = None
+    if args.IsSpecified('log_dns_queries'):
+      cloud_logging_config = messages.ManagedZoneCloudLoggingConfig()
+      cloud_logging_config.enableLogging = args.log_dns_queries
+
     zone = messages.ManagedZone(
         name=zone_ref.managedZone,
         dnsName=util.AppendTrailingDot(args.dns_name),
@@ -321,7 +333,8 @@ class CreateBeta(base.CreateCommand):
         privateVisibilityConfig=visibility_config,
         peeringConfig=peering_config,
         reverseLookupConfig=reverse_lookup_config,
-        serviceDirectoryConfig=service_directory_config)
+        serviceDirectoryConfig=service_directory_config,
+        cloudLoggingConfig=cloud_logging_config)
 
     result = dns.managedZones.Create(
         messages.DnsManagedZonesCreateRequest(managedZone=zone,

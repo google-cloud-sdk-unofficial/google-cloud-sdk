@@ -84,6 +84,8 @@ def _Destination(trigger):
     A string representing the destination for the trigger.
   """
   destination = trigger.get('destination')
+  if destination is None:
+    return ''
 
   if 'cloudRun' in destination:
     dest = destination.get('cloudRun')

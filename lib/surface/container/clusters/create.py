@@ -239,6 +239,9 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       additional_zones=get_default('additional_zones'),
       addons=get_default('addons'),
       boot_disk_kms_key=get_default('boot_disk_kms_key'),
+      cluster_dns=get_default('cluster_dns'),
+      cluster_dns_scope=get_default('cluster_dns_scope'),
+      cluster_dns_domain=get_default('cluster_dns_domain'),
       cluster_ipv4_cidr=get_default('cluster_ipv4_cidr'),
       cluster_secondary_range_name=get_default('cluster_secondary_range_name'),
       cluster_version=get_default('cluster_version'),
@@ -450,6 +453,8 @@ flags_to_add = {
             flags.AddCloudRunConfigFlag,
         'clusterautoscaling':
             flags.AddClusterAutoscalingFlags,
+        'clusterdns':
+            flags.AddClusterDNSFlags,
         'clusterversion':
             flags.AddClusterVersionFlag,
         'confidentialnodes':
@@ -1053,6 +1058,16 @@ class Create(base.CreateCommand):
     if options.enable_l4_ilb_subsetting:
       log.warning('L4 ILB Subsetting cannot be disabled, once enabled.')
 
+    # TODO(b/201956384) Remove check that requires specifying scope, once
+    # cluster scope is also GA. This check is added to prevent enabling cluster
+    # scope(the default scope) by not specifying a scope value.
+    ga_track = (self.ReleaseTrack() == base.ReleaseTrack.GA)
+    if ga_track and options.cluster_dns and options.cluster_dns.lower(
+    ) == 'clouddns' and not options.cluster_dns_scope:
+      raise util.Error(
+          'DNS Scope should be specified when using CloudDNS in GA.'
+          )
+
     if options.enable_kubernetes_alpha:
       console_io.PromptContinue(
           message=constants.KUBERNETES_ALPHA_PROMPT,
@@ -1134,9 +1149,6 @@ class CreateBeta(Create):
     ops.system_config_from_file = get_default('system_config_from_file')
     ops.datapath_provider = get_default('datapath_provider')
     ops.disable_default_snat = get_default('disable_default_snat')
-    ops.cluster_dns = get_default('cluster_dns')
-    ops.cluster_dns_scope = get_default('cluster_dns_scope')
-    ops.cluster_dns_domain = get_default('cluster_dns_domain')
     ops.enable_master_metrics = get_default('enable_master_metrics')
     ops.master_logs = get_default('master_logs')
     ops.enable_confidential_nodes = get_default('enable_confidential_nodes')
@@ -1220,9 +1232,6 @@ class CreateAlpha(Create):
     ops.enable_master_metrics = get_default('enable_master_metrics')
     ops.master_logs = get_default('master_logs')
     ops.enable_confidential_nodes = get_default('enable_confidential_nodes')
-    ops.cluster_dns = get_default('cluster_dns')
-    ops.cluster_dns_scope = get_default('cluster_dns_scope')
-    ops.cluster_dns_domain = get_default('cluster_dns_domain')
     ops.kubernetes_objects_changes_target = \
         getattr(args, 'kubernetes_objects_changes_target', None)
     ops.kubernetes_objects_snapshots_target = \

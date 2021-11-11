@@ -111,7 +111,7 @@
         Hour of day (0 to 23) for maintenance window, in UTC time zone.
     - arg_name: persistence-mode
       api_field: instance.persistenceConfig.persistenceMode
-      release_tracks: [ALPHA]
+      release_tracks: [BETA, ALPHA]
       hidden: true
       help_text: |
         Operation mode for automated persistence.
@@ -124,7 +124,7 @@
         help_text: Automatic RDB persistence
     - arg_name: rdb-snapshot-period
       api_field: instance.persistenceConfig.rdbSnapshotPeriod
-      release_tracks: [ALPHA]
+      release_tracks: [BETA, ALPHA]
       hidden: true
       help_text: |
         Attempted period between RDB snapshots.
@@ -143,16 +143,15 @@
         help_text: 24 hours
     - arg_name: rdb-snapshot-start-time
       api_field: instance.persistenceConfig.rdbSnapshotStartTime
-      release_tracks: [ALPHA]
+      release_tracks: [BETA, ALPHA]
       hidden: true
       help_text: |
         Date and time of the first snapshot, and alignment time for future snapshots.
     - arg_name: read-replicas-mode
       api_field: instance.readReplicasMode
       release_tracks: [BETA, ALPHA]
-      hidden: true
       help_text: |
-        Read replicas mode used by the instance. Only work against standard tier instances with 5GB
+        Read replicas mode used by the instance. Only works against standard tier instances with 5GB
         and above provisioned capacity.
       choices:  # Enum is mapped to keep READ-REPLICAS-MODE-UNSPECIFIED invisible from users.
       - enum_value: READ-REPLICAS-DISABLED
@@ -171,10 +170,8 @@
       api_field: instance.replicaCount
       type: long
       release_tracks: [BETA, ALPHA]
-      hidden: true
       help_text: |
-        The replcia count of the instance. Valid from 1 to 5. Only work against standard tier
-        instances.
+        The replica count of the instance.
     - arg_name: redis-version
       api_field: instance.redisVersion
       metavar: VERSION

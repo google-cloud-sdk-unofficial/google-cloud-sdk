@@ -1,8 +1,8 @@
 - release_tracks: [ALPHA]
 
   help_text:
-    brief: Deletes a single Connector
-    description: Deletes a single Connector.
+    brief: Delete a single Connector
+    description: Delete a single Connector.
     examples: |
       To delete a connector ``my-connector'' run:
 

@@ -14,11 +14,16 @@
 
 import asyncio
 from asyncio import Future
+import logging
+import traceback
 
-from typing import Optional
-from google.api_core.exceptions import GoogleAPICallError, Cancelled
+from google.api_core.exceptions import Cancelled
+from google.cloud.pubsublite.internal.wire.permanent_failable import adapt_error
 from google.cloud.pubsublite.internal.status_codes import is_retryable
-from google.cloud.pubsublite.internal.wait_ignore_cancelled import wait_ignore_errors
+from google.cloud.pubsublite.internal.wait_ignore_cancelled import (
+    wait_ignore_errors,
+    wait_ignore_cancelled,
+)
 from google.cloud.pubsublite.internal.wire.connection_reinitializer import (
     ConnectionReinitializer,
 )
@@ -66,6 +71,8 @@ class RetryingConnection(Connection[Request, Response], PermanentFailable):
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         self.fail(Cancelled("Connection shutting down."))
+        self._loop_task.cancel()
+        await wait_ignore_errors(self._loop_task)
 
     async def write(self, request: Request) -> None:
         item = WorkItem(request)
@@ -77,48 +84,62 @@ class RetryingConnection(Connection[Request, Response], PermanentFailable):
 
     async def _run_loop(self):
         """
-    Processes actions on this connection and handles retries until cancelled.
-    """
-        last_failure: Optional[GoogleAPICallError] = None
+        Processes actions on this connection and handles retries until cancelled.
+        """
         try:
             bad_retries = 0
-            while True:
+            while not self.error():
                 try:
                     conn_fut = self._connection_factory.new()
                     async with (await conn_fut) as connection:
-                        # Needs to happen prior to reinitialization to clear outstanding waiters.
-                        if last_failure is not None:
-                            while not self._write_queue.empty():
-                                self._write_queue.get_nowait().response_future.set_exception(
-                                    last_failure
-                                )
-                        self._read_queue = asyncio.Queue(maxsize=1)
-                        self._write_queue = asyncio.Queue(maxsize=1)
-                        await self._reinitializer.reinitialize(connection)
+                        await self._reinitializer.reinitialize(
+                            connection  # pytype: disable=name-error
+                        )
                         self._initialized_once.set()
                         bad_retries = 0
-                        await self._loop_connection(connection)
-                except GoogleAPICallError as e:
-                    last_failure = e
+                        await self._loop_connection(
+                            connection  # pytype: disable=name-error
+                        )
+                except Exception as e:
+                    if self.error():
+                        return
+                    e = adapt_error(e)
+                    logging.debug(
+                        "Saw a stream failure. Cause: \n%s", traceback.format_exc()
+                    )
                     if not is_retryable(e):
                         self.fail(e)
                         return
-                    await asyncio.sleep(
-                        min(_MAX_BACKOFF_SECS, _MIN_BACKOFF_SECS * (2 ** bad_retries))
+                    try:
+                        await self._reinitializer.stop_processing(e)
+                    except Exception as stop_error:
+                        self.fail(adapt_error(stop_error))
+                        return
+                    while not self._write_queue.empty():
+                        response_future = self._write_queue.get_nowait().response_future
+                        if not response_future.cancelled():
+                            response_future.set_exception(e)
+                    self._read_queue = asyncio.Queue(maxsize=1)
+                    self._write_queue = asyncio.Queue(maxsize=1)
+                    await wait_ignore_cancelled(
+                        asyncio.sleep(
+                            min(
+                                _MAX_BACKOFF_SECS,
+                                _MIN_BACKOFF_SECS * (2 ** bad_retries),
+                            )
+                        )
                     )
                     bad_retries += 1
-
-        except asyncio.CancelledError:
-            return
         except Exception as e:
-            import traceback
-
-            traceback.print_exc()
-            print(e)
+            logging.error(
+                "Saw a stream failure which was unhandled. Cause: \n%s",
+                traceback.format_exc(),
+            )
+            self.fail(adapt_error(e))
 
     async def _loop_connection(self, connection: Connection[Request, Response]):
         read_task: "Future[Response]" = asyncio.ensure_future(connection.read())
-        write_task: "Future[WorkItem[Request]]" = asyncio.ensure_future(
+        write_task: "Future[WorkItem[Request, None]]" = asyncio.ensure_future(
             self._write_queue.get()
         )
         try:
@@ -145,6 +166,7 @@ class RetryingConnection(Connection[Request, Response], PermanentFailable):
         try:
             await connection.write(to_write.request)
             to_write.response_future.set_result(None)
-        except GoogleAPICallError as e:
+        except Exception as e:
+            e = adapt_error(e)
             to_write.response_future.set_exception(e)
             raise e

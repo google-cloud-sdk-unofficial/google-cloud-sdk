@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
+from typing import List, Union
 
-from google.protobuf.field_mask_pb2 import FieldMask
+from google.api_core.exceptions import InvalidArgument
+from google.api_core.operation import Operation
+from google.protobuf.field_mask_pb2 import FieldMask  # pytype: disable=pyi-error
 
 from google.cloud.pubsublite.admin_client_interface import AdminClientInterface
 from google.cloud.pubsublite.types import (
@@ -23,12 +25,19 @@ from google.cloud.pubsublite.types import (
     LocationPath,
     TopicPath,
     BacklogLocation,
+    PublishTime,
+    EventTime,
 )
+from google.cloud.pubsublite.types.paths import ReservationPath
 from google.cloud.pubsublite_v1 import (
     Subscription,
     Topic,
     AdminServiceClient,
     TopicPartitions,
+    Reservation,
+    TimeTarget,
+    SeekSubscriptionRequest,
+    CreateSubscriptionRequest,
 )
 
 
@@ -67,7 +76,7 @@ class AdminClientImpl(AdminClientInterface):
     def delete_topic(self, topic_path: TopicPath):
         self._underlying.delete_topic(name=str(topic_path))
 
-    def list_topic_subscriptions(self, topic_path: TopicPath):
+    def list_topic_subscriptions(self, topic_path: TopicPath) -> List[SubscriptionPath]:
         subscription_strings = [
             x for x in self._underlying.list_topic_subscriptions(name=str(topic_path))
         ]
@@ -80,12 +89,12 @@ class AdminClientImpl(AdminClientInterface):
     ) -> Subscription:
         path = SubscriptionPath.parse(subscription.name)
         return self._underlying.create_subscription(
-            request={
-                "parent": str(path.to_location_path()),
-                "subscription": subscription,
-                "subscription_id": path.name,
-                "skip_backlog": (starting_offset == BacklogLocation.END),
-            }
+            request=CreateSubscriptionRequest(
+                parent=str(path.to_location_path()),
+                subscription=subscription,
+                subscription_id=path.name,
+                skip_backlog=(starting_offset == BacklogLocation.END),
+            )
         )
 
     def get_subscription(self, subscription_path: SubscriptionPath) -> Subscription:
@@ -103,5 +112,61 @@ class AdminClientImpl(AdminClientInterface):
             subscription=subscription, update_mask=update_mask
         )
 
+    def seek_subscription(
+        self,
+        subscription_path: SubscriptionPath,
+        target: Union[BacklogLocation, PublishTime, EventTime],
+    ) -> Operation:
+        request = SeekSubscriptionRequest(name=str(subscription_path))
+        if isinstance(target, PublishTime):
+            request.time_target = TimeTarget(publish_time=target.value)
+        elif isinstance(target, EventTime):
+            request.time_target = TimeTarget(event_time=target.value)
+        elif isinstance(target, BacklogLocation):
+            if target == BacklogLocation.END:
+                request.named_target = SeekSubscriptionRequest.NamedTarget.HEAD
+            else:
+                request.named_target = SeekSubscriptionRequest.NamedTarget.TAIL
+        else:
+            raise InvalidArgument("A valid seek target must be specified.")
+        return self._underlying.seek_subscription(request=request)
+
     def delete_subscription(self, subscription_path: SubscriptionPath):
         self._underlying.delete_subscription(name=str(subscription_path))
+
+    def create_reservation(self, reservation: Reservation) -> Reservation:
+        path = ReservationPath.parse(reservation.name)
+        return self._underlying.create_reservation(
+            parent=str(path.to_location_path()),
+            reservation=reservation,
+            reservation_id=path.name,
+        )
+
+    def get_reservation(self, reservation_path: ReservationPath) -> Reservation:
+        return self._underlying.get_reservation(name=str(reservation_path))
+
+    def list_reservations(self, location_path: LocationPath) -> List[Reservation]:
+        return [
+            x for x in self._underlying.list_reservations(parent=str(location_path))
+        ]
+
+    def update_reservation(
+        self, reservation: Reservation, update_mask: FieldMask
+    ) -> Reservation:
+        return self._underlying.update_reservation(
+            reservation=reservation, update_mask=update_mask
+        )
+
+    def delete_reservation(self, reservation_path: ReservationPath):
+        self._underlying.delete_reservation(name=str(reservation_path))
+
+    def list_reservation_topics(
+        self, reservation_path: ReservationPath
+    ) -> List[TopicPath]:
+        subscription_strings = [
+            x
+            for x in self._underlying.list_reservation_topics(
+                name=str(reservation_path)
+            )
+        ]
+        return [TopicPath.parse(x) for x in subscription_strings]

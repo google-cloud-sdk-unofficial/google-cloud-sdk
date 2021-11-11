@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,22 +13,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 from .admin import (
+    CreateReservationRequest,
     CreateSubscriptionRequest,
     CreateTopicRequest,
+    DeleteReservationRequest,
     DeleteSubscriptionRequest,
     DeleteTopicRequest,
+    GetReservationRequest,
     GetSubscriptionRequest,
     GetTopicPartitionsRequest,
     GetTopicRequest,
+    ListReservationsRequest,
+    ListReservationsResponse,
+    ListReservationTopicsRequest,
+    ListReservationTopicsResponse,
     ListSubscriptionsRequest,
     ListSubscriptionsResponse,
     ListTopicsRequest,
     ListTopicsResponse,
     ListTopicSubscriptionsRequest,
     ListTopicSubscriptionsResponse,
+    OperationMetadata,
+    SeekSubscriptionRequest,
+    SeekSubscriptionResponse,
     TopicPartitions,
+    UpdateReservationRequest,
     UpdateSubscriptionRequest,
     UpdateTopicRequest,
 )
@@ -37,8 +46,10 @@ from .common import (
     AttributeValues,
     Cursor,
     PubSubMessage,
+    Reservation,
     SequencedMessage,
     Subscription,
+    TimeTarget,
     Topic,
 )
 from .cursor import (
@@ -81,30 +92,45 @@ from .topic_stats import (
     ComputeHeadCursorResponse,
     ComputeMessageStatsRequest,
     ComputeMessageStatsResponse,
+    ComputeTimeCursorRequest,
+    ComputeTimeCursorResponse,
 )
 
 __all__ = (
+    "CreateReservationRequest",
     "CreateSubscriptionRequest",
     "CreateTopicRequest",
+    "DeleteReservationRequest",
     "DeleteSubscriptionRequest",
     "DeleteTopicRequest",
+    "GetReservationRequest",
     "GetSubscriptionRequest",
     "GetTopicPartitionsRequest",
     "GetTopicRequest",
+    "ListReservationsRequest",
+    "ListReservationsResponse",
+    "ListReservationTopicsRequest",
+    "ListReservationTopicsResponse",
     "ListSubscriptionsRequest",
     "ListSubscriptionsResponse",
     "ListTopicsRequest",
     "ListTopicsResponse",
     "ListTopicSubscriptionsRequest",
     "ListTopicSubscriptionsResponse",
+    "OperationMetadata",
+    "SeekSubscriptionRequest",
+    "SeekSubscriptionResponse",
     "TopicPartitions",
+    "UpdateReservationRequest",
     "UpdateSubscriptionRequest",
     "UpdateTopicRequest",
     "AttributeValues",
     "Cursor",
     "PubSubMessage",
+    "Reservation",
     "SequencedMessage",
     "Subscription",
+    "TimeTarget",
     "Topic",
     "CommitCursorRequest",
     "CommitCursorResponse",
@@ -139,4 +165,6 @@ __all__ = (
     "ComputeHeadCursorResponse",
     "ComputeMessageStatsRequest",
     "ComputeMessageStatsResponse",
+    "ComputeTimeCursorRequest",
+    "ComputeTimeCursorResponse",
 )

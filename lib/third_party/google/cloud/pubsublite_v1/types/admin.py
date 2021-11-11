@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import proto  # type: ignore
 
-
 from google.cloud.pubsublite_v1.types import common
-from google.protobuf import field_mask_pb2 as field_mask  # type: ignore
+from google.protobuf import field_mask_pb2  # type: ignore
+from google.protobuf import timestamp_pb2  # type: ignore
 
 
 __protobuf__ = proto.module(
@@ -41,13 +39,23 @@ __protobuf__ = proto.module(
         "ListSubscriptionsResponse",
         "UpdateSubscriptionRequest",
         "DeleteSubscriptionRequest",
+        "SeekSubscriptionRequest",
+        "SeekSubscriptionResponse",
+        "OperationMetadata",
+        "CreateReservationRequest",
+        "GetReservationRequest",
+        "ListReservationsRequest",
+        "ListReservationsResponse",
+        "UpdateReservationRequest",
+        "DeleteReservationRequest",
+        "ListReservationTopicsRequest",
+        "ListReservationTopicsResponse",
     },
 )
 
 
 class CreateTopicRequest(proto.Message):
     r"""Request for CreateTopic.
-
     Attributes:
         parent (str):
             Required. The parent location in which to create the topic.
@@ -63,51 +71,45 @@ class CreateTopicRequest(proto.Message):
             This value is structured like: ``my-topic-name``.
     """
 
-    parent = proto.Field(proto.STRING, number=1)
-
+    parent = proto.Field(proto.STRING, number=1,)
     topic = proto.Field(proto.MESSAGE, number=2, message=common.Topic,)
-
-    topic_id = proto.Field(proto.STRING, number=3)
+    topic_id = proto.Field(proto.STRING, number=3,)
 
 
 class GetTopicRequest(proto.Message):
     r"""Request for GetTopic.
-
     Attributes:
         name (str):
             Required. The name of the topic whose
             configuration to return.
     """
 
-    name = proto.Field(proto.STRING, number=1)
+    name = proto.Field(proto.STRING, number=1,)
 
 
 class GetTopicPartitionsRequest(proto.Message):
     r"""Request for GetTopicPartitions.
-
     Attributes:
         name (str):
             Required. The topic whose partition
             information to return.
     """
 
-    name = proto.Field(proto.STRING, number=1)
+    name = proto.Field(proto.STRING, number=1,)
 
 
 class TopicPartitions(proto.Message):
     r"""Response for GetTopicPartitions.
-
     Attributes:
         partition_count (int):
             The number of partitions in the topic.
     """
 
-    partition_count = proto.Field(proto.INT64, number=1)
+    partition_count = proto.Field(proto.INT64, number=1,)
 
 
 class ListTopicsRequest(proto.Message):
     r"""Request for ListTopics.
-
     Attributes:
         parent (str):
             Required. The parent whose topics are to be listed.
@@ -127,16 +129,13 @@ class ListTopicsRequest(proto.Message):
             token.
     """
 
-    parent = proto.Field(proto.STRING, number=1)
-
-    page_size = proto.Field(proto.INT32, number=2)
-
-    page_token = proto.Field(proto.STRING, number=3)
+    parent = proto.Field(proto.STRING, number=1,)
+    page_size = proto.Field(proto.INT32, number=2,)
+    page_token = proto.Field(proto.STRING, number=3,)
 
 
 class ListTopicsResponse(proto.Message):
     r"""Response for ListTopics.
-
     Attributes:
         topics (Sequence[google.cloud.pubsublite_v1.types.Topic]):
             The list of topic in the requested parent.
@@ -152,13 +151,11 @@ class ListTopicsResponse(proto.Message):
         return self
 
     topics = proto.RepeatedField(proto.MESSAGE, number=1, message=common.Topic,)
-
-    next_page_token = proto.Field(proto.STRING, number=2)
+    next_page_token = proto.Field(proto.STRING, number=2,)
 
 
 class UpdateTopicRequest(proto.Message):
     r"""Request for UpdateTopic.
-
     Attributes:
         topic (google.cloud.pubsublite_v1.types.Topic):
             Required. The topic to update. Its ``name`` field must be
@@ -169,24 +166,23 @@ class UpdateTopicRequest(proto.Message):
     """
 
     topic = proto.Field(proto.MESSAGE, number=1, message=common.Topic,)
-
-    update_mask = proto.Field(proto.MESSAGE, number=2, message=field_mask.FieldMask,)
+    update_mask = proto.Field(
+        proto.MESSAGE, number=2, message=field_mask_pb2.FieldMask,
+    )
 
 
 class DeleteTopicRequest(proto.Message):
     r"""Request for DeleteTopic.
-
     Attributes:
         name (str):
             Required. The name of the topic to delete.
     """
 
-    name = proto.Field(proto.STRING, number=1)
+    name = proto.Field(proto.STRING, number=1,)
 
 
 class ListTopicSubscriptionsRequest(proto.Message):
     r"""Request for ListTopicSubscriptions.
-
     Attributes:
         name (str):
             Required. The name of the topic whose
@@ -206,16 +202,13 @@ class ListTopicSubscriptionsRequest(proto.Message):
             the page token.
     """
 
-    name = proto.Field(proto.STRING, number=1)
-
-    page_size = proto.Field(proto.INT32, number=2)
-
-    page_token = proto.Field(proto.STRING, number=3)
+    name = proto.Field(proto.STRING, number=1,)
+    page_size = proto.Field(proto.INT32, number=2,)
+    page_token = proto.Field(proto.STRING, number=3,)
 
 
 class ListTopicSubscriptionsResponse(proto.Message):
     r"""Response for ListTopicSubscriptions.
-
     Attributes:
         subscriptions (Sequence[str]):
             The names of subscriptions attached to the
@@ -231,14 +224,12 @@ class ListTopicSubscriptionsResponse(proto.Message):
     def raw_page(self):
         return self
 
-    subscriptions = proto.RepeatedField(proto.STRING, number=1)
-
-    next_page_token = proto.Field(proto.STRING, number=2)
+    subscriptions = proto.RepeatedField(proto.STRING, number=1,)
+    next_page_token = proto.Field(proto.STRING, number=2,)
 
 
 class CreateSubscriptionRequest(proto.Message):
     r"""Request for CreateSubscription.
-
     Attributes:
         parent (str):
             Required. The parent location in which to create the
@@ -260,30 +251,25 @@ class CreateSubscriptionRequest(proto.Message):
             subscription. Defaults to false.
     """
 
-    parent = proto.Field(proto.STRING, number=1)
-
+    parent = proto.Field(proto.STRING, number=1,)
     subscription = proto.Field(proto.MESSAGE, number=2, message=common.Subscription,)
-
-    subscription_id = proto.Field(proto.STRING, number=3)
-
-    skip_backlog = proto.Field(proto.BOOL, number=4)
+    subscription_id = proto.Field(proto.STRING, number=3,)
+    skip_backlog = proto.Field(proto.BOOL, number=4,)
 
 
 class GetSubscriptionRequest(proto.Message):
     r"""Request for GetSubscription.
-
     Attributes:
         name (str):
             Required. The name of the subscription whose
             configuration to return.
     """
 
-    name = proto.Field(proto.STRING, number=1)
+    name = proto.Field(proto.STRING, number=1,)
 
 
 class ListSubscriptionsRequest(proto.Message):
     r"""Request for ListSubscriptions.
-
     Attributes:
         parent (str):
             Required. The parent whose subscriptions are to be listed.
@@ -303,16 +289,13 @@ class ListSubscriptionsRequest(proto.Message):
             page token.
     """
 
-    parent = proto.Field(proto.STRING, number=1)
-
-    page_size = proto.Field(proto.INT32, number=2)
-
-    page_token = proto.Field(proto.STRING, number=3)
+    parent = proto.Field(proto.STRING, number=1,)
+    page_size = proto.Field(proto.INT32, number=2,)
+    page_token = proto.Field(proto.STRING, number=3,)
 
 
 class ListSubscriptionsResponse(proto.Message):
     r"""Response for ListSubscriptions.
-
     Attributes:
         subscriptions (Sequence[google.cloud.pubsublite_v1.types.Subscription]):
             The list of subscriptions in the requested
@@ -331,13 +314,11 @@ class ListSubscriptionsResponse(proto.Message):
     subscriptions = proto.RepeatedField(
         proto.MESSAGE, number=1, message=common.Subscription,
     )
-
-    next_page_token = proto.Field(proto.STRING, number=2)
+    next_page_token = proto.Field(proto.STRING, number=2,)
 
 
 class UpdateSubscriptionRequest(proto.Message):
     r"""Request for UpdateSubscription.
-
     Attributes:
         subscription (google.cloud.pubsublite_v1.types.Subscription):
             Required. The subscription to update. Its ``name`` field
@@ -348,20 +329,237 @@ class UpdateSubscriptionRequest(proto.Message):
     """
 
     subscription = proto.Field(proto.MESSAGE, number=1, message=common.Subscription,)
-
-    update_mask = proto.Field(proto.MESSAGE, number=2, message=field_mask.FieldMask,)
+    update_mask = proto.Field(
+        proto.MESSAGE, number=2, message=field_mask_pb2.FieldMask,
+    )
 
 
 class DeleteSubscriptionRequest(proto.Message):
     r"""Request for DeleteSubscription.
-
     Attributes:
         name (str):
             Required. The name of the subscription to
             delete.
     """
 
-    name = proto.Field(proto.STRING, number=1)
+    name = proto.Field(proto.STRING, number=1,)
+
+
+class SeekSubscriptionRequest(proto.Message):
+    r"""Request for SeekSubscription.
+    Attributes:
+        name (str):
+            Required. The name of the subscription to
+            seek.
+        named_target (google.cloud.pubsublite_v1.types.SeekSubscriptionRequest.NamedTarget):
+            Seek to a named position with respect to the
+            message backlog.
+        time_target (google.cloud.pubsublite_v1.types.TimeTarget):
+            Seek to the first message whose publish or
+            event time is greater than or equal to the
+            specified query time. If no such message can be
+            located, will seek to the end of the message
+            backlog.
+    """
+
+    class NamedTarget(proto.Enum):
+        r"""A named position with respect to the message backlog."""
+        NAMED_TARGET_UNSPECIFIED = 0
+        TAIL = 1
+        HEAD = 2
+
+    name = proto.Field(proto.STRING, number=1,)
+    named_target = proto.Field(proto.ENUM, number=2, oneof="target", enum=NamedTarget,)
+    time_target = proto.Field(
+        proto.MESSAGE, number=3, oneof="target", message=common.TimeTarget,
+    )
+
+
+class SeekSubscriptionResponse(proto.Message):
+    r"""Response for SeekSubscription long running operation.    """
+
+
+class OperationMetadata(proto.Message):
+    r"""Metadata for long running operations.
+    Attributes:
+        create_time (google.protobuf.timestamp_pb2.Timestamp):
+            The time the operation was created.
+        end_time (google.protobuf.timestamp_pb2.Timestamp):
+            The time the operation finished running. Not
+            set if the operation has not completed.
+        target (str):
+            Resource path for the target of the operation. For example,
+            targets of seeks are subscription resources, structured
+            like:
+            projects/{project_number}/locations/{location}/subscriptions/{subscription_id}
+        verb (str):
+            Name of the verb executed by the operation.
+    """
+
+    create_time = proto.Field(proto.MESSAGE, number=1, message=timestamp_pb2.Timestamp,)
+    end_time = proto.Field(proto.MESSAGE, number=2, message=timestamp_pb2.Timestamp,)
+    target = proto.Field(proto.STRING, number=3,)
+    verb = proto.Field(proto.STRING, number=4,)
+
+
+class CreateReservationRequest(proto.Message):
+    r"""Request for CreateReservation.
+    Attributes:
+        parent (str):
+            Required. The parent location in which to create the
+            reservation. Structured like
+            ``projects/{project_number}/locations/{location}``.
+        reservation (google.cloud.pubsublite_v1.types.Reservation):
+            Required. Configuration of the reservation to create. Its
+            ``name`` field is ignored.
+        reservation_id (str):
+            Required. The ID to use for the reservation, which will
+            become the final component of the reservation's name.
+
+            This value is structured like: ``my-reservation-name``.
+    """
+
+    parent = proto.Field(proto.STRING, number=1,)
+    reservation = proto.Field(proto.MESSAGE, number=2, message=common.Reservation,)
+    reservation_id = proto.Field(proto.STRING, number=3,)
+
+
+class GetReservationRequest(proto.Message):
+    r"""Request for GetReservation.
+    Attributes:
+        name (str):
+            Required. The name of the reservation whose configuration to
+            return. Structured like:
+            projects/{project_number}/locations/{location}/reservations/{reservation_id}
+    """
+
+    name = proto.Field(proto.STRING, number=1,)
+
+
+class ListReservationsRequest(proto.Message):
+    r"""Request for ListReservations.
+    Attributes:
+        parent (str):
+            Required. The parent whose reservations are to be listed.
+            Structured like
+            ``projects/{project_number}/locations/{location}``.
+        page_size (int):
+            The maximum number of reservations to return.
+            The service may return fewer than this value. If
+            unset or zero, all reservations for the parent
+            will be returned.
+        page_token (str):
+            A page token, received from a previous ``ListReservations``
+            call. Provide this to retrieve the subsequent page.
+
+            When paginating, all other parameters provided to
+            ``ListReservations`` must match the call that provided the
+            page token.
+    """
+
+    parent = proto.Field(proto.STRING, number=1,)
+    page_size = proto.Field(proto.INT32, number=2,)
+    page_token = proto.Field(proto.STRING, number=3,)
+
+
+class ListReservationsResponse(proto.Message):
+    r"""Response for ListReservations.
+    Attributes:
+        reservations (Sequence[google.cloud.pubsublite_v1.types.Reservation]):
+            The list of reservation in the requested
+            parent. The order of the reservations is
+            unspecified.
+        next_page_token (str):
+            A token that can be sent as ``page_token`` to retrieve the
+            next page of results. If this field is omitted, there are no
+            more results.
+    """
+
+    @property
+    def raw_page(self):
+        return self
+
+    reservations = proto.RepeatedField(
+        proto.MESSAGE, number=1, message=common.Reservation,
+    )
+    next_page_token = proto.Field(proto.STRING, number=2,)
+
+
+class UpdateReservationRequest(proto.Message):
+    r"""Request for UpdateReservation.
+    Attributes:
+        reservation (google.cloud.pubsublite_v1.types.Reservation):
+            Required. The reservation to update. Its ``name`` field must
+            be populated.
+        update_mask (google.protobuf.field_mask_pb2.FieldMask):
+            Required. A mask specifying the reservation
+            fields to change.
+    """
+
+    reservation = proto.Field(proto.MESSAGE, number=1, message=common.Reservation,)
+    update_mask = proto.Field(
+        proto.MESSAGE, number=2, message=field_mask_pb2.FieldMask,
+    )
+
+
+class DeleteReservationRequest(proto.Message):
+    r"""Request for DeleteReservation.
+    Attributes:
+        name (str):
+            Required. The name of the reservation to delete. Structured
+            like:
+            projects/{project_number}/locations/{location}/reservations/{reservation_id}
+    """
+
+    name = proto.Field(proto.STRING, number=1,)
+
+
+class ListReservationTopicsRequest(proto.Message):
+    r"""Request for ListReservationTopics.
+    Attributes:
+        name (str):
+            Required. The name of the reservation whose topics to list.
+            Structured like:
+            projects/{project_number}/locations/{location}/reservations/{reservation_id}
+        page_size (int):
+            The maximum number of topics to return. The
+            service may return fewer than this value.
+            If unset or zero, all topics for the given
+            reservation will be returned.
+        page_token (str):
+            A page token, received from a previous
+            ``ListReservationTopics`` call. Provide this to retrieve the
+            subsequent page.
+
+            When paginating, all other parameters provided to
+            ``ListReservationTopics`` must match the call that provided
+            the page token.
+    """
+
+    name = proto.Field(proto.STRING, number=1,)
+    page_size = proto.Field(proto.INT32, number=2,)
+    page_token = proto.Field(proto.STRING, number=3,)
+
+
+class ListReservationTopicsResponse(proto.Message):
+    r"""Response for ListReservationTopics.
+    Attributes:
+        topics (Sequence[str]):
+            The names of topics attached to the
+            reservation. The order of the topics is
+            unspecified.
+        next_page_token (str):
+            A token that can be sent as ``page_token`` to retrieve the
+            next page of results. If this field is omitted, there are no
+            more results.
+    """
+
+    @property
+    def raw_page(self):
+        return self
+
+    topics = proto.RepeatedField(proto.STRING, number=1,)
+    next_page_token = proto.Field(proto.STRING, number=2,)
 
 
 __all__ = tuple(sorted(__protobuf__.manifest))

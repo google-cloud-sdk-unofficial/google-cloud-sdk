@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,13 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 from typing import (
     Any,
-    AsyncIterable,
+    AsyncIterator,
     Awaitable,
     Callable,
-    Iterable,
+    Iterator,
     Sequence,
     Tuple,
     Optional,
@@ -77,14 +75,14 @@ class ListTopicsPager:
         return getattr(self._response, name)
 
     @property
-    def pages(self) -> Iterable[admin.ListTopicsResponse]:
+    def pages(self) -> Iterator[admin.ListTopicsResponse]:
         yield self._response
         while self._response.next_page_token:
             self._request.page_token = self._response.next_page_token
             self._response = self._method(self._request, metadata=self._metadata)
             yield self._response
 
-    def __iter__(self) -> Iterable[common.Topic]:
+    def __iter__(self) -> Iterator[common.Topic]:
         for page in self.pages:
             yield from page.topics
 
@@ -118,7 +116,7 @@ class ListTopicsAsyncPager:
         *,
         metadata: Sequence[Tuple[str, str]] = ()
     ):
-        """Instantiate the pager.
+        """Instantiates the pager.
 
         Args:
             method (Callable): The method that was originally called, and
@@ -139,14 +137,14 @@ class ListTopicsAsyncPager:
         return getattr(self._response, name)
 
     @property
-    async def pages(self) -> AsyncIterable[admin.ListTopicsResponse]:
+    async def pages(self) -> AsyncIterator[admin.ListTopicsResponse]:
         yield self._response
         while self._response.next_page_token:
             self._request.page_token = self._response.next_page_token
             self._response = await self._method(self._request, metadata=self._metadata)
             yield self._response
 
-    def __aiter__(self) -> AsyncIterable[common.Topic]:
+    def __aiter__(self) -> AsyncIterator[common.Topic]:
         async def async_generator():
             async for page in self.pages:
                 for response in page.topics:
@@ -205,14 +203,14 @@ class ListTopicSubscriptionsPager:
         return getattr(self._response, name)
 
     @property
-    def pages(self) -> Iterable[admin.ListTopicSubscriptionsResponse]:
+    def pages(self) -> Iterator[admin.ListTopicSubscriptionsResponse]:
         yield self._response
         while self._response.next_page_token:
             self._request.page_token = self._response.next_page_token
             self._response = self._method(self._request, metadata=self._metadata)
             yield self._response
 
-    def __iter__(self) -> Iterable[str]:
+    def __iter__(self) -> Iterator[str]:
         for page in self.pages:
             yield from page.subscriptions
 
@@ -246,7 +244,7 @@ class ListTopicSubscriptionsAsyncPager:
         *,
         metadata: Sequence[Tuple[str, str]] = ()
     ):
-        """Instantiate the pager.
+        """Instantiates the pager.
 
         Args:
             method (Callable): The method that was originally called, and
@@ -267,14 +265,14 @@ class ListTopicSubscriptionsAsyncPager:
         return getattr(self._response, name)
 
     @property
-    async def pages(self) -> AsyncIterable[admin.ListTopicSubscriptionsResponse]:
+    async def pages(self) -> AsyncIterator[admin.ListTopicSubscriptionsResponse]:
         yield self._response
         while self._response.next_page_token:
             self._request.page_token = self._response.next_page_token
             self._response = await self._method(self._request, metadata=self._metadata)
             yield self._response
 
-    def __aiter__(self) -> AsyncIterable[str]:
+    def __aiter__(self) -> AsyncIterator[str]:
         async def async_generator():
             async for page in self.pages:
                 for response in page.subscriptions:
@@ -333,14 +331,14 @@ class ListSubscriptionsPager:
         return getattr(self._response, name)
 
     @property
-    def pages(self) -> Iterable[admin.ListSubscriptionsResponse]:
+    def pages(self) -> Iterator[admin.ListSubscriptionsResponse]:
         yield self._response
         while self._response.next_page_token:
             self._request.page_token = self._response.next_page_token
             self._response = self._method(self._request, metadata=self._metadata)
             yield self._response
 
-    def __iter__(self) -> Iterable[common.Subscription]:
+    def __iter__(self) -> Iterator[common.Subscription]:
         for page in self.pages:
             yield from page.subscriptions
 
@@ -374,7 +372,7 @@ class ListSubscriptionsAsyncPager:
         *,
         metadata: Sequence[Tuple[str, str]] = ()
     ):
-        """Instantiate the pager.
+        """Instantiates the pager.
 
         Args:
             method (Callable): The method that was originally called, and
@@ -395,17 +393,273 @@ class ListSubscriptionsAsyncPager:
         return getattr(self._response, name)
 
     @property
-    async def pages(self) -> AsyncIterable[admin.ListSubscriptionsResponse]:
+    async def pages(self) -> AsyncIterator[admin.ListSubscriptionsResponse]:
         yield self._response
         while self._response.next_page_token:
             self._request.page_token = self._response.next_page_token
             self._response = await self._method(self._request, metadata=self._metadata)
             yield self._response
 
-    def __aiter__(self) -> AsyncIterable[common.Subscription]:
+    def __aiter__(self) -> AsyncIterator[common.Subscription]:
         async def async_generator():
             async for page in self.pages:
                 for response in page.subscriptions:
+                    yield response
+
+        return async_generator()
+
+    def __repr__(self) -> str:
+        return "{0}<{1!r}>".format(self.__class__.__name__, self._response)
+
+
+class ListReservationsPager:
+    """A pager for iterating through ``list_reservations`` requests.
+
+    This class thinly wraps an initial
+    :class:`google.cloud.pubsublite_v1.types.ListReservationsResponse` object, and
+    provides an ``__iter__`` method to iterate through its
+    ``reservations`` field.
+
+    If there are more pages, the ``__iter__`` method will make additional
+    ``ListReservations`` requests and continue to iterate
+    through the ``reservations`` field on the
+    corresponding responses.
+
+    All the usual :class:`google.cloud.pubsublite_v1.types.ListReservationsResponse`
+    attributes are available on the pager. If multiple requests are made, only
+    the most recent response is retained, and thus used for attribute lookup.
+    """
+
+    def __init__(
+        self,
+        method: Callable[..., admin.ListReservationsResponse],
+        request: admin.ListReservationsRequest,
+        response: admin.ListReservationsResponse,
+        *,
+        metadata: Sequence[Tuple[str, str]] = ()
+    ):
+        """Instantiate the pager.
+
+        Args:
+            method (Callable): The method that was originally called, and
+                which instantiated this pager.
+            request (google.cloud.pubsublite_v1.types.ListReservationsRequest):
+                The initial request object.
+            response (google.cloud.pubsublite_v1.types.ListReservationsResponse):
+                The initial response object.
+            metadata (Sequence[Tuple[str, str]]): Strings which should be
+                sent along with the request as metadata.
+        """
+        self._method = method
+        self._request = admin.ListReservationsRequest(request)
+        self._response = response
+        self._metadata = metadata
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._response, name)
+
+    @property
+    def pages(self) -> Iterator[admin.ListReservationsResponse]:
+        yield self._response
+        while self._response.next_page_token:
+            self._request.page_token = self._response.next_page_token
+            self._response = self._method(self._request, metadata=self._metadata)
+            yield self._response
+
+    def __iter__(self) -> Iterator[common.Reservation]:
+        for page in self.pages:
+            yield from page.reservations
+
+    def __repr__(self) -> str:
+        return "{0}<{1!r}>".format(self.__class__.__name__, self._response)
+
+
+class ListReservationsAsyncPager:
+    """A pager for iterating through ``list_reservations`` requests.
+
+    This class thinly wraps an initial
+    :class:`google.cloud.pubsublite_v1.types.ListReservationsResponse` object, and
+    provides an ``__aiter__`` method to iterate through its
+    ``reservations`` field.
+
+    If there are more pages, the ``__aiter__`` method will make additional
+    ``ListReservations`` requests and continue to iterate
+    through the ``reservations`` field on the
+    corresponding responses.
+
+    All the usual :class:`google.cloud.pubsublite_v1.types.ListReservationsResponse`
+    attributes are available on the pager. If multiple requests are made, only
+    the most recent response is retained, and thus used for attribute lookup.
+    """
+
+    def __init__(
+        self,
+        method: Callable[..., Awaitable[admin.ListReservationsResponse]],
+        request: admin.ListReservationsRequest,
+        response: admin.ListReservationsResponse,
+        *,
+        metadata: Sequence[Tuple[str, str]] = ()
+    ):
+        """Instantiates the pager.
+
+        Args:
+            method (Callable): The method that was originally called, and
+                which instantiated this pager.
+            request (google.cloud.pubsublite_v1.types.ListReservationsRequest):
+                The initial request object.
+            response (google.cloud.pubsublite_v1.types.ListReservationsResponse):
+                The initial response object.
+            metadata (Sequence[Tuple[str, str]]): Strings which should be
+                sent along with the request as metadata.
+        """
+        self._method = method
+        self._request = admin.ListReservationsRequest(request)
+        self._response = response
+        self._metadata = metadata
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._response, name)
+
+    @property
+    async def pages(self) -> AsyncIterator[admin.ListReservationsResponse]:
+        yield self._response
+        while self._response.next_page_token:
+            self._request.page_token = self._response.next_page_token
+            self._response = await self._method(self._request, metadata=self._metadata)
+            yield self._response
+
+    def __aiter__(self) -> AsyncIterator[common.Reservation]:
+        async def async_generator():
+            async for page in self.pages:
+                for response in page.reservations:
+                    yield response
+
+        return async_generator()
+
+    def __repr__(self) -> str:
+        return "{0}<{1!r}>".format(self.__class__.__name__, self._response)
+
+
+class ListReservationTopicsPager:
+    """A pager for iterating through ``list_reservation_topics`` requests.
+
+    This class thinly wraps an initial
+    :class:`google.cloud.pubsublite_v1.types.ListReservationTopicsResponse` object, and
+    provides an ``__iter__`` method to iterate through its
+    ``topics`` field.
+
+    If there are more pages, the ``__iter__`` method will make additional
+    ``ListReservationTopics`` requests and continue to iterate
+    through the ``topics`` field on the
+    corresponding responses.
+
+    All the usual :class:`google.cloud.pubsublite_v1.types.ListReservationTopicsResponse`
+    attributes are available on the pager. If multiple requests are made, only
+    the most recent response is retained, and thus used for attribute lookup.
+    """
+
+    def __init__(
+        self,
+        method: Callable[..., admin.ListReservationTopicsResponse],
+        request: admin.ListReservationTopicsRequest,
+        response: admin.ListReservationTopicsResponse,
+        *,
+        metadata: Sequence[Tuple[str, str]] = ()
+    ):
+        """Instantiate the pager.
+
+        Args:
+            method (Callable): The method that was originally called, and
+                which instantiated this pager.
+            request (google.cloud.pubsublite_v1.types.ListReservationTopicsRequest):
+                The initial request object.
+            response (google.cloud.pubsublite_v1.types.ListReservationTopicsResponse):
+                The initial response object.
+            metadata (Sequence[Tuple[str, str]]): Strings which should be
+                sent along with the request as metadata.
+        """
+        self._method = method
+        self._request = admin.ListReservationTopicsRequest(request)
+        self._response = response
+        self._metadata = metadata
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._response, name)
+
+    @property
+    def pages(self) -> Iterator[admin.ListReservationTopicsResponse]:
+        yield self._response
+        while self._response.next_page_token:
+            self._request.page_token = self._response.next_page_token
+            self._response = self._method(self._request, metadata=self._metadata)
+            yield self._response
+
+    def __iter__(self) -> Iterator[str]:
+        for page in self.pages:
+            yield from page.topics
+
+    def __repr__(self) -> str:
+        return "{0}<{1!r}>".format(self.__class__.__name__, self._response)
+
+
+class ListReservationTopicsAsyncPager:
+    """A pager for iterating through ``list_reservation_topics`` requests.
+
+    This class thinly wraps an initial
+    :class:`google.cloud.pubsublite_v1.types.ListReservationTopicsResponse` object, and
+    provides an ``__aiter__`` method to iterate through its
+    ``topics`` field.
+
+    If there are more pages, the ``__aiter__`` method will make additional
+    ``ListReservationTopics`` requests and continue to iterate
+    through the ``topics`` field on the
+    corresponding responses.
+
+    All the usual :class:`google.cloud.pubsublite_v1.types.ListReservationTopicsResponse`
+    attributes are available on the pager. If multiple requests are made, only
+    the most recent response is retained, and thus used for attribute lookup.
+    """
+
+    def __init__(
+        self,
+        method: Callable[..., Awaitable[admin.ListReservationTopicsResponse]],
+        request: admin.ListReservationTopicsRequest,
+        response: admin.ListReservationTopicsResponse,
+        *,
+        metadata: Sequence[Tuple[str, str]] = ()
+    ):
+        """Instantiates the pager.
+
+        Args:
+            method (Callable): The method that was originally called, and
+                which instantiated this pager.
+            request (google.cloud.pubsublite_v1.types.ListReservationTopicsRequest):
+                The initial request object.
+            response (google.cloud.pubsublite_v1.types.ListReservationTopicsResponse):
+                The initial response object.
+            metadata (Sequence[Tuple[str, str]]): Strings which should be
+                sent along with the request as metadata.
+        """
+        self._method = method
+        self._request = admin.ListReservationTopicsRequest(request)
+        self._response = response
+        self._metadata = metadata
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._response, name)
+
+    @property
+    async def pages(self) -> AsyncIterator[admin.ListReservationTopicsResponse]:
+        yield self._response
+        while self._response.next_page_token:
+            self._request.page_token = self._response.next_page_token
+            self._response = await self._method(self._request, metadata=self._metadata)
+            yield self._response
+
+    def __aiter__(self) -> AsyncIterator[str]:
+        async def async_generator():
+            async for page in self.pages:
+                for response in page.topics:
                     yield response
 
         return async_generator()

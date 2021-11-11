@@ -71,7 +71,18 @@ class AsymmetricSign(base.Command):
   def _PerformIntegrityVerification(self, args):
     return not args.skip_integrity_verification
 
-  def _CreateAsymmetricSignRequest(self, args):
+  def _SignOnDigest(self, args):
+    return args.digest_algorithm is not None
+
+  def _ReadBinaryFile(self, path, max_bytes):
+    data = files.ReadBinaryFileContents(path)
+    if len(data) > max_bytes:
+      raise exceptions.BadFileException(
+          'The file [{0}] is larger than the maximum size of {1} bytes.'.format(
+              path, max_bytes))
+    return data
+
+  def _CreateAsymmetricSignRequestOnDigest(self, args):
     try:
       digest = get_digest.GetDigest(args.digest_algorithm, args.input_file)
     except EnvironmentError as e:
@@ -92,7 +103,52 @@ class AsymmetricSign(base.Command):
 
     return req
 
-  def _VerifyResponseIntegrityFields(self, req, resp):
+  def _CreateAsymmetricSignRequestOnData(self, args):
+    """Returns an AsymmetricSignRequest for use with a data input.
+
+    Populates an AsymmetricSignRequest with its data field populated by data
+    read from args.input_file. dataCrc32c is populated if integrity verification
+    is not skipped.
+
+    Args:
+      args: Input arguments.
+
+    Returns:
+      An AsymmetricSignRequest with data populated and dataCrc32c populated if
+      integrity verification is not skipped.
+
+    Raises:
+      exceptions.BadFileException: An error occurred reading the input file.
+      This can occur if the file can't be read or if the file is larger than
+      64 KiB.
+    """
+    try:
+      # The Asymmetric Sign API limits the data input to 64KiB.
+      data = self._ReadBinaryFile(args.input_file, max_bytes=65536)
+    except files.Error as e:
+      raise exceptions.BadFileException(
+          'Failed to read input file [{0}]: {1}'.format(args.input_file, e))
+
+    messages = cloudkms_base.GetMessagesModule()
+    req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsAsymmetricSignRequest(  # pylint: disable=line-too-long
+        name=flags.ParseCryptoKeyVersionName(args).RelativeName())
+
+    if self._PerformIntegrityVerification(args):
+      data_crc32c = crc32c.Crc32c(data)
+      req.asymmetricSignRequest = messages.AsymmetricSignRequest(
+          data=data, dataCrc32c=data_crc32c)
+    else:
+      req.asymmetricSignRequest = messages.AsymmetricSignRequest(data=data)
+
+    return req
+
+  def _CreateAsymmetricSignRequest(self, args):
+    if self._SignOnDigest(args):
+      return self._CreateAsymmetricSignRequestOnDigest(args)
+    else:
+      return self._CreateAsymmetricSignRequestOnData(args)
+
+  def _VerifyResponseIntegrityFields(self, req, resp, use_digest=True):
     """Verifies integrity fields in AsymmetricSignResponse."""
 
     # Verify resource name.
@@ -101,10 +157,16 @@ class AsymmetricSign(base.Command):
           e2e_integrity.GetResourceNameMismatchErrorMessage(
               req.name, resp.name))
 
-    # digest_crc32c was verified server-side.
-    if not resp.verifiedDigestCrc32c:
-      raise e2e_integrity.ClientSideIntegrityVerificationError(
-          e2e_integrity.GetRequestToServerCorruptedErrorMessage())
+    if use_digest:
+      # digest_crc32c was verified server-side.
+      if not resp.verifiedDigestCrc32c:
+        raise e2e_integrity.ClientSideIntegrityVerificationError(
+            e2e_integrity.GetRequestToServerCorruptedErrorMessage())
+    else:
+      # data_crc32c was verified server-side.
+      if not resp.verifiedDataCrc32c:
+        raise e2e_integrity.ClientSideIntegrityVerificationError(
+            e2e_integrity.GetRequestToServerCorruptedErrorMessage())
 
     # Verify signature checksum.
     if not crc32c.Crc32cMatches(resp.signature, resp.signatureCrc32c):
@@ -124,7 +186,8 @@ class AsymmetricSign(base.Command):
       e2e_integrity.ProcessHttpBadRequestError(error)
 
     if self._PerformIntegrityVerification(args):
-      self._VerifyResponseIntegrityFields(req, resp)
+      self._VerifyResponseIntegrityFields(
+          req, resp, use_digest=self._SignOnDigest(args))
 
     try:
       log.WriteToFileOrStdout(

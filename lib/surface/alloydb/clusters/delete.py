@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.alloydb import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+from googlecloudsdk.core.console import console_io
 
 
 @base.Hidden
@@ -62,6 +63,12 @@ class Delete(base.DeleteCommand):
         'alloydb.projects.locations.clusters',
         projectsId=properties.VALUES.core.project.GetOrFail,
         locationsId=args.region, clustersId=args.cluster)
+
+    prompt_message = (
+        'All of the cluster data will be lost when the cluster is deleted.')
+    if not console_io.PromptContinue(message=prompt_message):
+      return None
+
     req = alloydb_messages.AlloydbProjectsLocationsClustersDeleteRequest(
         name=cluster_ref.RelativeName(), force=args.force)
     op = alloydb_client.projects_locations_clusters.Delete(req)

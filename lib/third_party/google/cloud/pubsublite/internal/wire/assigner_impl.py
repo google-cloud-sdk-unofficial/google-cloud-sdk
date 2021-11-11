@@ -17,6 +17,8 @@ from typing import Optional, Set
 
 import logging
 
+from overrides import overrides
+
 from google.cloud.pubsublite.internal.wait_ignore_cancelled import wait_ignore_errors
 from google.cloud.pubsublite.internal.wire.assigner import Assigner
 from google.cloud.pubsublite.internal.wire.retrying_connection import (
@@ -28,7 +30,7 @@ from google.cloud.pubsublite.internal.wire.connection_reinitializer import (
     ConnectionReinitializer,
 )
 from google.cloud.pubsublite.internal.wire.connection import Connection
-from google.cloud.pubsublite.types import Partition
+from google.cloud.pubsublite.types.partition import Partition
 from google.cloud.pubsublite_v1.types import (
     PartitionAssignmentRequest,
     PartitionAssignment,
@@ -103,13 +105,17 @@ class AssignerImpl(
         await self._stop_receiver()
         await self._connection.__aexit__(exc_type, exc_val, exc_tb)
 
-    async def reinitialize(
-        self, connection: Connection[PartitionAssignmentRequest, PartitionAssignment]
-    ):
+    @overrides
+    async def stop_processing(self, error: GoogleAPICallError):
+        await self._stop_receiver()
         self._outstanding_assignment = False
         while not self._new_assignment.empty():
             self._new_assignment.get_nowait()
-        await self._stop_receiver()
+
+    @overrides
+    async def reinitialize(
+        self, connection: Connection[PartitionAssignmentRequest, PartitionAssignment],
+    ):
         await connection.write(PartitionAssignmentRequest(initial=self._initial))
         self._start_receiver()
 

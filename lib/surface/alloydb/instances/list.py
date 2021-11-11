@@ -28,7 +28,6 @@ from googlecloudsdk.core import properties
 _INSTANCE_FORMAT = """
     table(
         name,
-        tier,
         instanceType:label="INSTANCE_TYPE",
         state:label=STATUS
     )

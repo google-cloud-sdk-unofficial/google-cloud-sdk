@@ -36,6 +36,7 @@ def _AddArgs(parser):
   flags.AddRegionResourceArg(parser, 'to create a Tensorboard')
   flags.GetDisplayNameArg('tensorboard').AddToParser(parser)
   flags.GetDescriptionArg('tensorboard').AddToParser(parser)
+  flags.AddKmsKeyResourceArg(parser, 'tensorboard')
   labels_util.AddCreateLabelsFlags(parser)
 
 
@@ -58,6 +59,35 @@ def _Run(args, version):
         log.status.Print(
             ('Created Vertex AI Tensorboard: {}.').format(response['name']))
     return response_msg
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateGa(base.CreateCommand):
+  """Create a new Vertex AI Tensorboard."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To create a Tensorboard with the display name `my tensorboard`:
+
+              $ {command} --display-name="my tensorboard"
+
+          You may also provide a description:
+
+              $ {command} --description="my description"
+
+          You may also provide labels:
+
+              $ {command} --labels="label1=value1" --labels="label2=value2"
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser)
+
+  def Run(self, args):
+    return _Run(args, constants.GA_VERSION)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

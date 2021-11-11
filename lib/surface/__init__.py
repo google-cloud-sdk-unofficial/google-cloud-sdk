@@ -26,10 +26,10 @@ from googlecloudsdk.core import properties
 
 
 class Gcloud(base.Group):
-  """Manage Google Cloud Platform resources and developer workflow.
+  """Manage Google Cloud resources and developer workflow.
 
   The *gcloud* CLI manages authentication, local configuration, developer
-  workflow, and interactions with the Google Cloud Platform APIs.
+  workflow, and interactions with the Google Cloud APIs.
 
   For a quick introduction to the gcloud command-line tool, a list of commonly
   used commands, and a look at how these commands are structured, run
@@ -43,7 +43,7 @@ class Gcloud(base.Group):
         '--account',
         metavar='ACCOUNT',
         category=base.COMMONLY_USED_FLAGS,
-        help='Google Cloud Platform user account to use for invocation.',
+        help='Google Cloud user account to use for invocation.',
         action=actions.StoreProperty(properties.VALUES.core.account))
 
     # Ideally this would be on the alpha group (since it's alpha) but there are
@@ -92,7 +92,7 @@ class Gcloud(base.Group):
         '--billing-project',
         metavar='BILLING_PROJECT',
         category=base.COMMONLY_USED_FLAGS,
-        help='The Google Cloud Platform project that will be charged quota for '
+        help='The Google Cloud project that will be charged quota for '
              'operations performed in gcloud. If you need to operate on one '
              'project, but need quota against a different project, you can use '
              'this flag to specify the billing project. If both '

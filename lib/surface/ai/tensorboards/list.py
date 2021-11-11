@@ -26,6 +26,14 @@ from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.core import resources
 
 
+def _GetUriGa(tensorboard):
+  ref = resources.REGISTRY.ParseRelativeName(
+      tensorboard.name,
+      constants.TENSORBOARDS_COLLECTION,
+      api_version=constants.AI_PLATFORM_API_VERSION[constants.GA_VERSION])
+  return ref.SelfLink()
+
+
 def _GetUriBeta(tensorboard):
   ref = resources.REGISTRY.ParseRelativeName(
       tensorboard.name,
@@ -52,6 +60,28 @@ def _Run(args, version):
         page_size=args.page_size,
         region_ref=region_ref,
         sort_by=args.sort_by)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ListGa(base.ListCommand):
+  """Lists the Tensorboards of the given project and region."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To list Tensorboards:
+
+              $ {command}
+          """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    flags.AddRegionResourceArg(parser, 'to list Tensorboards')
+    parser.display_info.AddUriFunc(_GetUriGa)
+
+  def Run(self, args):
+    return _Run(args, constants.GA_VERSION)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import firewalls_utils
-from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 from googlecloudsdk.core import properties
@@ -46,12 +45,13 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        '--network', help='The network to get the effective firewalls for.')
+        '--network',
+        required=True,
+        help='The network to get the effective firewalls for.')
     parser.add_argument(
         '--region', help='The region to get the effective regional firewalls.')
     parser.display_info.AddFormat(
         firewalls_utils.EFFECTIVE_FIREWALL_LIST_FORMAT)
-    lister.AddBaseListerArgs(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -68,10 +68,12 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
     else:
       region = properties.VALUES.compute.region.GetOrFail()
 
-    network_ref = network_flags.NetworkArgumentForOtherResource(
+    network = network_flags.NetworkArgumentForOtherResource(
         short_help=None).ResolveAsResource(args, holder.resources)
+    network_ref = network.SelfLink() if network else None
+
     request = messages.ComputeRegionNetworkFirewallPoliciesGetEffectiveFirewallsRequest(
-        project=project, region=region, network=network_ref.SelfLink())
+        project=project, region=region, network=network_ref)
 
     responses = client.MakeRequests([
         (client.apitools_client.regionNetworkFirewallPolicies,

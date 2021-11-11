@@ -49,22 +49,22 @@ def make_async_publisher(
     metadata: Optional[Mapping[str, str]] = None,
 ) -> AsyncSinglePublisher:
     """
-  Make a new publisher for the given topic.
+    Make a new publisher for the given topic.
 
-  Args:
-    topic: The topic to publish to.
-    transport: The transport type to use.
-    per_partition_batching_settings: Settings for batching messages on each partition. The default is reasonable for most cases.
-    credentials: The credentials to use to connect. GOOGLE_DEFAULT_CREDENTIALS is used if None.
-    client_options: Other options to pass to the client. Note that if you pass any you must set api_endpoint.
-    metadata: Additional metadata to send with the RPC.
+    Args:
+      topic: The topic to publish to.
+      transport: The transport type to use.
+      per_partition_batching_settings: Settings for batching messages on each partition. The default is reasonable for most cases.
+      credentials: The credentials to use to connect. GOOGLE_DEFAULT_CREDENTIALS is used if None.
+      client_options: Other options to pass to the client. Note that if you pass any you must set api_endpoint.
+      metadata: Additional metadata to send with the RPC.
 
-  Returns:
-    A new AsyncPublisher.
+    Returns:
+      A new AsyncPublisher.
 
-  Throws:
-    GoogleApiCallException on any error determining topic structure.
-  """
+    Throws:
+      GoogleApiCallException on any error determining topic structure.
+    """
     metadata = merge_metadata(pubsub_context(framework="CLOUD_PUBSUB_SHIM"), metadata)
 
     def underlying_factory():
@@ -89,22 +89,22 @@ def make_publisher(
     metadata: Optional[Mapping[str, str]] = None,
 ) -> SinglePublisher:
     """
-  Make a new publisher for the given topic.
+    Make a new publisher for the given topic.
 
-  Args:
-    topic: The topic to publish to.
-    transport: The transport type to use.
-    per_partition_batching_settings: Settings for batching messages on each partition. The default is reasonable for most cases.
-    credentials: The credentials to use to connect. GOOGLE_DEFAULT_CREDENTIALS is used if None.
-    client_options: Other options to pass to the client. Note that if you pass any you must set api_endpoint.
-    metadata: Additional metadata to send with the RPC.
+    Args:
+      topic: The topic to publish to.
+      transport: The transport type to use.
+      per_partition_batching_settings: Settings for batching messages on each partition. The default is reasonable for most cases.
+      credentials: The credentials to use to connect. GOOGLE_DEFAULT_CREDENTIALS is used if None.
+      client_options: Other options to pass to the client. Note that if you pass any you must set api_endpoint.
+      metadata: Additional metadata to send with the RPC.
 
-  Returns:
-    A new Publisher.
+    Returns:
+      A new Publisher.
 
-  Throws:
-    GoogleApiCallException on any error determining topic structure.
-  """
+    Throws:
+      GoogleApiCallException on any error determining topic structure.
+    """
     return SinglePublisherImpl(
         make_async_publisher(
             topic=topic,

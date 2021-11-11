@@ -40,7 +40,7 @@ $ {command} my-cluster --location=us-west1 --azure-region=AZURE_REGION --cluster
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a GKE cluster on Azure."""
 
@@ -68,13 +68,11 @@ class Create(base.CreateCommand):
               "to associate with the cluster."))
     parser.add_argument(
         "--service-load-balancer-subnet-id",
-        hidden=True,
         help=("ARM ID of the subnet where Kubernetes private service type "
               "load balancers are deployed, when the Service lacks a subnet "
               "annotation."))
     parser.add_argument(
         "--endpoint-subnet-id",
-        hidden=True,
         help=("ARM ID of the subnet where the control plane load balancer "
               "is deployed. When unspecified, it defaults to the control "
               "plane subnet ID."))
@@ -89,8 +87,8 @@ class Create(base.CreateCommand):
     flags.AddReplicaPlacements(parser)
     flags.AddTags(parser, "cluster")
     flags.AddValidateOnly(parser, "creation of the cluster")
-    flags.AddDatabaseEncryption(parser, hidden=True)
-    flags.AddConfigEncryption(parser, hidden=True)
+    flags.AddDatabaseEncryption(parser)
+    flags.AddConfigEncryption(parser)
     flags.AddProxyConfig(parser)
     flags.AddFleetProject(parser)
     base.ASYNC_FLAG.AddToParser(parser)

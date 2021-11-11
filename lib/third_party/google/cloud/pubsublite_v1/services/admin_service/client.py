@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 from collections import OrderedDict
 from distutils import util
 import os
@@ -23,20 +21,21 @@ from typing import Callable, Dict, Optional, Sequence, Tuple, Type, Union
 import pkg_resources
 
 from google.api_core import client_options as client_options_lib  # type: ignore
-from google.api_core import exceptions  # type: ignore
+from google.api_core import exceptions as core_exceptions  # type: ignore
 from google.api_core import gapic_v1  # type: ignore
 from google.api_core import retry as retries  # type: ignore
-from google.auth import credentials  # type: ignore
+from google.auth import credentials as ga_credentials  # type: ignore
 from google.auth.transport import mtls  # type: ignore
 from google.auth.transport.grpc import SslCredentials  # type: ignore
 from google.auth.exceptions import MutualTLSChannelError  # type: ignore
 from google.oauth2 import service_account  # type: ignore
 
+from google.api_core import operation  # type: ignore
+from google.api_core import operation_async  # type: ignore
 from google.cloud.pubsublite_v1.services.admin_service import pagers
 from google.cloud.pubsublite_v1.types import admin
 from google.cloud.pubsublite_v1.types import common
-from google.protobuf import field_mask_pb2 as field_mask  # type: ignore
-
+from google.protobuf import field_mask_pb2  # type: ignore
 from .transports.base import AdminServiceTransport, DEFAULT_CLIENT_INFO
 from .transports.grpc import AdminServiceGrpcTransport
 from .transports.grpc_asyncio import AdminServiceGrpcAsyncIOTransport
@@ -55,7 +54,7 @@ class AdminServiceClientMeta(type):
     _transport_registry["grpc_asyncio"] = AdminServiceGrpcAsyncIOTransport
 
     def get_transport_class(cls, label: str = None,) -> Type[AdminServiceTransport]:
-        """Return an appropriate transport class.
+        """Returns an appropriate transport class.
 
         Args:
             label: The name of the desired transport. If none is
@@ -81,7 +80,8 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
 
     @staticmethod
     def _get_default_mtls_endpoint(api_endpoint):
-        """Convert api endpoint to mTLS endpoint.
+        """Converts api endpoint to mTLS endpoint.
+
         Convert "*.sandbox.googleapis.com" and "*.googleapis.com" to
         "*.mtls.sandbox.googleapis.com" and "*.mtls.googleapis.com" respectively.
         Args:
@@ -115,7 +115,8 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
 
     @classmethod
     def from_service_account_info(cls, info: dict, *args, **kwargs):
-        """Creates an instance of this client using the provided credentials info.
+        """Creates an instance of this client using the provided credentials
+            info.
 
         Args:
             info (dict): The service account private key info.
@@ -132,7 +133,7 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
     @classmethod
     def from_service_account_file(cls, filename: str, *args, **kwargs):
         """Creates an instance of this client using the provided credentials
-        file.
+            file.
 
         Args:
             filename (str): The path to the service account private key json
@@ -151,23 +152,40 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
 
     @property
     def transport(self) -> AdminServiceTransport:
-        """Return the transport used by the client instance.
+        """Returns the transport used by the client instance.
 
         Returns:
-            AdminServiceTransport: The transport used by the client instance.
+            AdminServiceTransport: The transport used by the client
+                instance.
         """
         return self._transport
 
     @staticmethod
+    def reservation_path(project: str, location: str, reservation: str,) -> str:
+        """Returns a fully-qualified reservation string."""
+        return "projects/{project}/locations/{location}/reservations/{reservation}".format(
+            project=project, location=location, reservation=reservation,
+        )
+
+    @staticmethod
+    def parse_reservation_path(path: str) -> Dict[str, str]:
+        """Parses a reservation path into its component segments."""
+        m = re.match(
+            r"^projects/(?P<project>.+?)/locations/(?P<location>.+?)/reservations/(?P<reservation>.+?)$",
+            path,
+        )
+        return m.groupdict() if m else {}
+
+    @staticmethod
     def subscription_path(project: str, location: str, subscription: str,) -> str:
-        """Return a fully-qualified subscription string."""
+        """Returns a fully-qualified subscription string."""
         return "projects/{project}/locations/{location}/subscriptions/{subscription}".format(
             project=project, location=location, subscription=subscription,
         )
 
     @staticmethod
     def parse_subscription_path(path: str) -> Dict[str, str]:
-        """Parse a subscription path into its component segments."""
+        """Parses a subscription path into its component segments."""
         m = re.match(
             r"^projects/(?P<project>.+?)/locations/(?P<location>.+?)/subscriptions/(?P<subscription>.+?)$",
             path,
@@ -176,14 +194,14 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
 
     @staticmethod
     def topic_path(project: str, location: str, topic: str,) -> str:
-        """Return a fully-qualified topic string."""
+        """Returns a fully-qualified topic string."""
         return "projects/{project}/locations/{location}/topics/{topic}".format(
             project=project, location=location, topic=topic,
         )
 
     @staticmethod
     def parse_topic_path(path: str) -> Dict[str, str]:
-        """Parse a topic path into its component segments."""
+        """Parses a topic path into its component segments."""
         m = re.match(
             r"^projects/(?P<project>.+?)/locations/(?P<location>.+?)/topics/(?P<topic>.+?)$",
             path,
@@ -192,7 +210,7 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
 
     @staticmethod
     def common_billing_account_path(billing_account: str,) -> str:
-        """Return a fully-qualified billing_account string."""
+        """Returns a fully-qualified billing_account string."""
         return "billingAccounts/{billing_account}".format(
             billing_account=billing_account,
         )
@@ -205,7 +223,7 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
 
     @staticmethod
     def common_folder_path(folder: str,) -> str:
-        """Return a fully-qualified folder string."""
+        """Returns a fully-qualified folder string."""
         return "folders/{folder}".format(folder=folder,)
 
     @staticmethod
@@ -216,7 +234,7 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
 
     @staticmethod
     def common_organization_path(organization: str,) -> str:
-        """Return a fully-qualified organization string."""
+        """Returns a fully-qualified organization string."""
         return "organizations/{organization}".format(organization=organization,)
 
     @staticmethod
@@ -227,7 +245,7 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
 
     @staticmethod
     def common_project_path(project: str,) -> str:
-        """Return a fully-qualified project string."""
+        """Returns a fully-qualified project string."""
         return "projects/{project}".format(project=project,)
 
     @staticmethod
@@ -238,7 +256,7 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
 
     @staticmethod
     def common_location_path(project: str, location: str,) -> str:
-        """Return a fully-qualified location string."""
+        """Returns a fully-qualified location string."""
         return "projects/{project}/locations/{location}".format(
             project=project, location=location,
         )
@@ -252,12 +270,12 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
     def __init__(
         self,
         *,
-        credentials: Optional[credentials.Credentials] = None,
+        credentials: Optional[ga_credentials.Credentials] = None,
         transport: Union[str, AdminServiceTransport, None] = None,
         client_options: Optional[client_options_lib.ClientOptions] = None,
         client_info: gapic_v1.client_info.ClientInfo = DEFAULT_CLIENT_INFO,
     ) -> None:
-        """Instantiate the admin service client.
+        """Instantiates the admin service client.
 
         Args:
             credentials (Optional[google.auth.credentials.Credentials]): The
@@ -312,9 +330,10 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
                 client_cert_source_func = client_options.client_cert_source
             else:
                 is_mtls = mtls.has_default_client_cert_source()
-                client_cert_source_func = (
-                    mtls.default_client_cert_source() if is_mtls else None
-                )
+                if is_mtls:
+                    client_cert_source_func = mtls.default_client_cert_source()
+                else:
+                    client_cert_source_func = None
 
         # Figure out which api endpoint to use.
         if client_options.api_endpoint is not None:
@@ -326,12 +345,14 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
             elif use_mtls_env == "always":
                 api_endpoint = self.DEFAULT_MTLS_ENDPOINT
             elif use_mtls_env == "auto":
-                api_endpoint = (
-                    self.DEFAULT_MTLS_ENDPOINT if is_mtls else self.DEFAULT_ENDPOINT
-                )
+                if is_mtls:
+                    api_endpoint = self.DEFAULT_MTLS_ENDPOINT
+                else:
+                    api_endpoint = self.DEFAULT_ENDPOINT
             else:
                 raise MutualTLSChannelError(
-                    "Unsupported GOOGLE_API_USE_MTLS_ENDPOINT value. Accepted values: never, auto, always"
+                    "Unsupported GOOGLE_API_USE_MTLS_ENDPOINT value. Accepted "
+                    "values: never, auto, always"
                 )
 
         # Save or instantiate the transport.
@@ -346,8 +367,8 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
                 )
             if client_options.scopes:
                 raise ValueError(
-                    "When providing a transport instance, "
-                    "provide its scopes directly."
+                    "When providing a transport instance, provide its scopes "
+                    "directly."
                 )
             self._transport = transport
         else:
@@ -360,6 +381,10 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
                 client_cert_source_for_mtls=client_cert_source_func,
                 quota_project_id=client_options.quota_project_id,
                 client_info=client_info,
+                always_use_jwt_access=(
+                    Transport == type(self).get_transport_class("grpc")
+                    or Transport == type(self).get_transport_class("grpc_asyncio")
+                ),
             )
 
     def create_topic(
@@ -402,7 +427,6 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
                 This corresponds to the ``topic_id`` field
                 on the ``request`` instance; if ``request`` is provided, this
                 should not be set.
-
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
@@ -429,10 +453,8 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         # there are no flattened fields.
         if not isinstance(request, admin.CreateTopicRequest):
             request = admin.CreateTopicRequest(request)
-
             # If we have keyword arguments corresponding to fields on the
             # request, apply these.
-
             if parent is not None:
                 request.parent = parent
             if topic is not None:
@@ -477,7 +499,6 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
                 This corresponds to the ``name`` field
                 on the ``request`` instance; if ``request`` is provided, this
                 should not be set.
-
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
@@ -504,10 +525,8 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         # there are no flattened fields.
         if not isinstance(request, admin.GetTopicRequest):
             request = admin.GetTopicRequest(request)
-
             # If we have keyword arguments corresponding to fields on the
             # request, apply these.
-
             if name is not None:
                 request.name = name
 
@@ -549,7 +568,6 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
                 This corresponds to the ``name`` field
                 on the ``request`` instance; if ``request`` is provided, this
                 should not be set.
-
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
@@ -576,10 +594,8 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         # there are no flattened fields.
         if not isinstance(request, admin.GetTopicPartitionsRequest):
             request = admin.GetTopicPartitionsRequest(request)
-
             # If we have keyword arguments corresponding to fields on the
             # request, apply these.
-
             if name is not None:
                 request.name = name
 
@@ -621,7 +637,6 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
                 This corresponds to the ``parent`` field
                 on the ``request`` instance; if ``request`` is provided, this
                 should not be set.
-
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
@@ -652,10 +667,8 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         # there are no flattened fields.
         if not isinstance(request, admin.ListTopicsRequest):
             request = admin.ListTopicsRequest(request)
-
             # If we have keyword arguments corresponding to fields on the
             # request, apply these.
-
             if parent is not None:
                 request.parent = parent
 
@@ -686,7 +699,7 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         request: admin.UpdateTopicRequest = None,
         *,
         topic: common.Topic = None,
-        update_mask: field_mask.FieldMask = None,
+        update_mask: field_mask_pb2.FieldMask = None,
         retry: retries.Retry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
@@ -710,7 +723,6 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
                 This corresponds to the ``update_mask`` field
                 on the ``request`` instance; if ``request`` is provided, this
                 should not be set.
-
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
@@ -737,10 +749,8 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         # there are no flattened fields.
         if not isinstance(request, admin.UpdateTopicRequest):
             request = admin.UpdateTopicRequest(request)
-
             # If we have keyword arguments corresponding to fields on the
             # request, apply these.
-
             if topic is not None:
                 request.topic = topic
             if update_mask is not None:
@@ -785,7 +795,6 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
                 This corresponds to the ``name`` field
                 on the ``request`` instance; if ``request`` is provided, this
                 should not be set.
-
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
@@ -808,10 +817,8 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         # there are no flattened fields.
         if not isinstance(request, admin.DeleteTopicRequest):
             request = admin.DeleteTopicRequest(request)
-
             # If we have keyword arguments corresponding to fields on the
             # request, apply these.
-
             if name is not None:
                 request.name = name
 
@@ -852,7 +859,6 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
                 This corresponds to the ``name`` field
                 on the ``request`` instance; if ``request`` is provided, this
                 should not be set.
-
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
@@ -883,10 +889,8 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         # there are no flattened fields.
         if not isinstance(request, admin.ListTopicSubscriptionsRequest):
             request = admin.ListTopicSubscriptionsRequest(request)
-
             # If we have keyword arguments corresponding to fields on the
             # request, apply these.
-
             if name is not None:
                 request.name = name
 
@@ -952,7 +956,6 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
                 This corresponds to the ``subscription_id`` field
                 on the ``request`` instance; if ``request`` is provided, this
                 should not be set.
-
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
@@ -981,10 +984,8 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         # there are no flattened fields.
         if not isinstance(request, admin.CreateSubscriptionRequest):
             request = admin.CreateSubscriptionRequest(request)
-
             # If we have keyword arguments corresponding to fields on the
             # request, apply these.
-
             if parent is not None:
                 request.parent = parent
             if subscription is not None:
@@ -1030,7 +1031,6 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
                 This corresponds to the ``name`` field
                 on the ``request`` instance; if ``request`` is provided, this
                 should not be set.
-
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
@@ -1059,10 +1059,8 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         # there are no flattened fields.
         if not isinstance(request, admin.GetSubscriptionRequest):
             request = admin.GetSubscriptionRequest(request)
-
             # If we have keyword arguments corresponding to fields on the
             # request, apply these.
-
             if name is not None:
                 request.name = name
 
@@ -1105,7 +1103,6 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
                 This corresponds to the ``parent`` field
                 on the ``request`` instance; if ``request`` is provided, this
                 should not be set.
-
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
@@ -1136,10 +1133,8 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         # there are no flattened fields.
         if not isinstance(request, admin.ListSubscriptionsRequest):
             request = admin.ListSubscriptionsRequest(request)
-
             # If we have keyword arguments corresponding to fields on the
             # request, apply these.
-
             if parent is not None:
                 request.parent = parent
 
@@ -1170,7 +1165,7 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         request: admin.UpdateSubscriptionRequest = None,
         *,
         subscription: common.Subscription = None,
-        update_mask: field_mask.FieldMask = None,
+        update_mask: field_mask_pb2.FieldMask = None,
         retry: retries.Retry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
@@ -1194,7 +1189,6 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
                 This corresponds to the ``update_mask`` field
                 on the ``request`` instance; if ``request`` is provided, this
                 should not be set.
-
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
@@ -1223,10 +1217,8 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         # there are no flattened fields.
         if not isinstance(request, admin.UpdateSubscriptionRequest):
             request = admin.UpdateSubscriptionRequest(request)
-
             # If we have keyword arguments corresponding to fields on the
             # request, apply these.
-
             if subscription is not None:
                 request.subscription = subscription
             if update_mask is not None:
@@ -1271,7 +1263,6 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
                 This corresponds to the ``name`` field
                 on the ``request`` instance; if ``request`` is provided, this
                 should not be set.
-
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
             timeout (float): The timeout for this request.
@@ -1294,10 +1285,8 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         # there are no flattened fields.
         if not isinstance(request, admin.DeleteSubscriptionRequest):
             request = admin.DeleteSubscriptionRequest(request)
-
             # If we have keyword arguments corresponding to fields on the
             # request, apply these.
-
             if name is not None:
                 request.name = name
 
@@ -1315,6 +1304,562 @@ class AdminServiceClient(metaclass=AdminServiceClientMeta):
         rpc(
             request, retry=retry, timeout=timeout, metadata=metadata,
         )
+
+    def seek_subscription(
+        self,
+        request: admin.SeekSubscriptionRequest = None,
+        *,
+        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        timeout: float = None,
+        metadata: Sequence[Tuple[str, str]] = (),
+    ) -> operation.Operation:
+        r"""Performs an out-of-band seek for a subscription to a
+        specified target, which may be timestamps or named
+        positions within the message backlog. Seek translates
+        these targets to cursors for each partition and
+        orchestrates subscribers to start consuming messages
+        from these seek cursors.
+
+        If an operation is returned, the seek has been
+        registered and subscribers will eventually receive
+        messages from the seek cursors (i.e. eventual
+        consistency), as long as they are using a minimum
+        supported client library version and not a system that
+        tracks cursors independently of Pub/Sub Lite (e.g.
+        Apache Beam, Dataflow, Spark). The seek operation will
+        fail for unsupported clients.
+
+        If clients would like to know when subscribers react to
+        the seek (or not), they can poll the operation. The seek
+        operation will succeed and complete once subscribers are
+        ready to receive messages from the seek cursors for all
+        partitions of the topic. This means that the seek
+        operation will not complete until all subscribers come
+        online.
+
+        If the previous seek operation has not yet completed, it
+        will be aborted and the new invocation of seek will
+        supersede it.
+
+        Args:
+            request (google.cloud.pubsublite_v1.types.SeekSubscriptionRequest):
+                The request object. Request for SeekSubscription.
+            retry (google.api_core.retry.Retry): Designation of what errors, if any,
+                should be retried.
+            timeout (float): The timeout for this request.
+            metadata (Sequence[Tuple[str, str]]): Strings which should be
+                sent along with the request as metadata.
+
+        Returns:
+            google.api_core.operation.Operation:
+                An object representing a long-running operation.
+
+                The result type for the operation will be
+                :class:`google.cloud.pubsublite_v1.types.SeekSubscriptionResponse`
+                Response for SeekSubscription long running operation.
+
+        """
+        # Create or coerce a protobuf request object.
+        # Minor optimization to avoid making a copy if the user passes
+        # in a admin.SeekSubscriptionRequest.
+        # There's no risk of modifying the input as we've already verified
+        # there are no flattened fields.
+        if not isinstance(request, admin.SeekSubscriptionRequest):
+            request = admin.SeekSubscriptionRequest(request)
+
+        # Wrap the RPC method; this adds retry and timeout information,
+        # and friendly error handling.
+        rpc = self._transport._wrapped_methods[self._transport.seek_subscription]
+
+        # Certain fields should be provided within the metadata header;
+        # add these here.
+        metadata = tuple(metadata) + (
+            gapic_v1.routing_header.to_grpc_metadata((("name", request.name),)),
+        )
+
+        # Send the request.
+        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+
+        # Wrap the response in an operation future.
+        response = operation.from_gapic(
+            response,
+            self._transport.operations_client,
+            admin.SeekSubscriptionResponse,
+            metadata_type=admin.OperationMetadata,
+        )
+
+        # Done; return the response.
+        return response
+
+    def create_reservation(
+        self,
+        request: admin.CreateReservationRequest = None,
+        *,
+        parent: str = None,
+        reservation: common.Reservation = None,
+        reservation_id: str = None,
+        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        timeout: float = None,
+        metadata: Sequence[Tuple[str, str]] = (),
+    ) -> common.Reservation:
+        r"""Creates a new reservation.
+
+        Args:
+            request (google.cloud.pubsublite_v1.types.CreateReservationRequest):
+                The request object. Request for CreateReservation.
+            parent (str):
+                Required. The parent location in which to create the
+                reservation. Structured like
+                ``projects/{project_number}/locations/{location}``.
+
+                This corresponds to the ``parent`` field
+                on the ``request`` instance; if ``request`` is provided, this
+                should not be set.
+            reservation (google.cloud.pubsublite_v1.types.Reservation):
+                Required. Configuration of the reservation to create.
+                Its ``name`` field is ignored.
+
+                This corresponds to the ``reservation`` field
+                on the ``request`` instance; if ``request`` is provided, this
+                should not be set.
+            reservation_id (str):
+                Required. The ID to use for the reservation, which will
+                become the final component of the reservation's name.
+
+                This value is structured like: ``my-reservation-name``.
+
+                This corresponds to the ``reservation_id`` field
+                on the ``request`` instance; if ``request`` is provided, this
+                should not be set.
+            retry (google.api_core.retry.Retry): Designation of what errors, if any,
+                should be retried.
+            timeout (float): The timeout for this request.
+            metadata (Sequence[Tuple[str, str]]): Strings which should be
+                sent along with the request as metadata.
+
+        Returns:
+            google.cloud.pubsublite_v1.types.Reservation:
+                Metadata about a reservation
+                resource.
+
+        """
+        # Create or coerce a protobuf request object.
+        # Sanity check: If we got a request object, we should *not* have
+        # gotten any keyword arguments that map to the request.
+        has_flattened_params = any([parent, reservation, reservation_id])
+        if request is not None and has_flattened_params:
+            raise ValueError(
+                "If the `request` argument is set, then none of "
+                "the individual field arguments should be set."
+            )
+
+        # Minor optimization to avoid making a copy if the user passes
+        # in a admin.CreateReservationRequest.
+        # There's no risk of modifying the input as we've already verified
+        # there are no flattened fields.
+        if not isinstance(request, admin.CreateReservationRequest):
+            request = admin.CreateReservationRequest(request)
+            # If we have keyword arguments corresponding to fields on the
+            # request, apply these.
+            if parent is not None:
+                request.parent = parent
+            if reservation is not None:
+                request.reservation = reservation
+            if reservation_id is not None:
+                request.reservation_id = reservation_id
+
+        # Wrap the RPC method; this adds retry and timeout information,
+        # and friendly error handling.
+        rpc = self._transport._wrapped_methods[self._transport.create_reservation]
+
+        # Certain fields should be provided within the metadata header;
+        # add these here.
+        metadata = tuple(metadata) + (
+            gapic_v1.routing_header.to_grpc_metadata((("parent", request.parent),)),
+        )
+
+        # Send the request.
+        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+
+        # Done; return the response.
+        return response
+
+    def get_reservation(
+        self,
+        request: admin.GetReservationRequest = None,
+        *,
+        name: str = None,
+        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        timeout: float = None,
+        metadata: Sequence[Tuple[str, str]] = (),
+    ) -> common.Reservation:
+        r"""Returns the reservation configuration.
+
+        Args:
+            request (google.cloud.pubsublite_v1.types.GetReservationRequest):
+                The request object. Request for GetReservation.
+            name (str):
+                Required. The name of the reservation whose
+                configuration to return. Structured like:
+                projects/{project_number}/locations/{location}/reservations/{reservation_id}
+
+                This corresponds to the ``name`` field
+                on the ``request`` instance; if ``request`` is provided, this
+                should not be set.
+            retry (google.api_core.retry.Retry): Designation of what errors, if any,
+                should be retried.
+            timeout (float): The timeout for this request.
+            metadata (Sequence[Tuple[str, str]]): Strings which should be
+                sent along with the request as metadata.
+
+        Returns:
+            google.cloud.pubsublite_v1.types.Reservation:
+                Metadata about a reservation
+                resource.
+
+        """
+        # Create or coerce a protobuf request object.
+        # Sanity check: If we got a request object, we should *not* have
+        # gotten any keyword arguments that map to the request.
+        has_flattened_params = any([name])
+        if request is not None and has_flattened_params:
+            raise ValueError(
+                "If the `request` argument is set, then none of "
+                "the individual field arguments should be set."
+            )
+
+        # Minor optimization to avoid making a copy if the user passes
+        # in a admin.GetReservationRequest.
+        # There's no risk of modifying the input as we've already verified
+        # there are no flattened fields.
+        if not isinstance(request, admin.GetReservationRequest):
+            request = admin.GetReservationRequest(request)
+            # If we have keyword arguments corresponding to fields on the
+            # request, apply these.
+            if name is not None:
+                request.name = name
+
+        # Wrap the RPC method; this adds retry and timeout information,
+        # and friendly error handling.
+        rpc = self._transport._wrapped_methods[self._transport.get_reservation]
+
+        # Certain fields should be provided within the metadata header;
+        # add these here.
+        metadata = tuple(metadata) + (
+            gapic_v1.routing_header.to_grpc_metadata((("name", request.name),)),
+        )
+
+        # Send the request.
+        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+
+        # Done; return the response.
+        return response
+
+    def list_reservations(
+        self,
+        request: admin.ListReservationsRequest = None,
+        *,
+        parent: str = None,
+        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        timeout: float = None,
+        metadata: Sequence[Tuple[str, str]] = (),
+    ) -> pagers.ListReservationsPager:
+        r"""Returns the list of reservations for the given
+        project.
+
+        Args:
+            request (google.cloud.pubsublite_v1.types.ListReservationsRequest):
+                The request object. Request for ListReservations.
+            parent (str):
+                Required. The parent whose reservations are to be
+                listed. Structured like
+                ``projects/{project_number}/locations/{location}``.
+
+                This corresponds to the ``parent`` field
+                on the ``request`` instance; if ``request`` is provided, this
+                should not be set.
+            retry (google.api_core.retry.Retry): Designation of what errors, if any,
+                should be retried.
+            timeout (float): The timeout for this request.
+            metadata (Sequence[Tuple[str, str]]): Strings which should be
+                sent along with the request as metadata.
+
+        Returns:
+            google.cloud.pubsublite_v1.services.admin_service.pagers.ListReservationsPager:
+                Response for ListReservations.
+                Iterating over this object will yield
+                results and resolve additional pages
+                automatically.
+
+        """
+        # Create or coerce a protobuf request object.
+        # Sanity check: If we got a request object, we should *not* have
+        # gotten any keyword arguments that map to the request.
+        has_flattened_params = any([parent])
+        if request is not None and has_flattened_params:
+            raise ValueError(
+                "If the `request` argument is set, then none of "
+                "the individual field arguments should be set."
+            )
+
+        # Minor optimization to avoid making a copy if the user passes
+        # in a admin.ListReservationsRequest.
+        # There's no risk of modifying the input as we've already verified
+        # there are no flattened fields.
+        if not isinstance(request, admin.ListReservationsRequest):
+            request = admin.ListReservationsRequest(request)
+            # If we have keyword arguments corresponding to fields on the
+            # request, apply these.
+            if parent is not None:
+                request.parent = parent
+
+        # Wrap the RPC method; this adds retry and timeout information,
+        # and friendly error handling.
+        rpc = self._transport._wrapped_methods[self._transport.list_reservations]
+
+        # Certain fields should be provided within the metadata header;
+        # add these here.
+        metadata = tuple(metadata) + (
+            gapic_v1.routing_header.to_grpc_metadata((("parent", request.parent),)),
+        )
+
+        # Send the request.
+        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+
+        # This method is paged; wrap the response in a pager, which provides
+        # an `__iter__` convenience method.
+        response = pagers.ListReservationsPager(
+            method=rpc, request=request, response=response, metadata=metadata,
+        )
+
+        # Done; return the response.
+        return response
+
+    def update_reservation(
+        self,
+        request: admin.UpdateReservationRequest = None,
+        *,
+        reservation: common.Reservation = None,
+        update_mask: field_mask_pb2.FieldMask = None,
+        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        timeout: float = None,
+        metadata: Sequence[Tuple[str, str]] = (),
+    ) -> common.Reservation:
+        r"""Updates properties of the specified reservation.
+
+        Args:
+            request (google.cloud.pubsublite_v1.types.UpdateReservationRequest):
+                The request object. Request for UpdateReservation.
+            reservation (google.cloud.pubsublite_v1.types.Reservation):
+                Required. The reservation to update. Its ``name`` field
+                must be populated.
+
+                This corresponds to the ``reservation`` field
+                on the ``request`` instance; if ``request`` is provided, this
+                should not be set.
+            update_mask (google.protobuf.field_mask_pb2.FieldMask):
+                Required. A mask specifying the
+                reservation fields to change.
+
+                This corresponds to the ``update_mask`` field
+                on the ``request`` instance; if ``request`` is provided, this
+                should not be set.
+            retry (google.api_core.retry.Retry): Designation of what errors, if any,
+                should be retried.
+            timeout (float): The timeout for this request.
+            metadata (Sequence[Tuple[str, str]]): Strings which should be
+                sent along with the request as metadata.
+
+        Returns:
+            google.cloud.pubsublite_v1.types.Reservation:
+                Metadata about a reservation
+                resource.
+
+        """
+        # Create or coerce a protobuf request object.
+        # Sanity check: If we got a request object, we should *not* have
+        # gotten any keyword arguments that map to the request.
+        has_flattened_params = any([reservation, update_mask])
+        if request is not None and has_flattened_params:
+            raise ValueError(
+                "If the `request` argument is set, then none of "
+                "the individual field arguments should be set."
+            )
+
+        # Minor optimization to avoid making a copy if the user passes
+        # in a admin.UpdateReservationRequest.
+        # There's no risk of modifying the input as we've already verified
+        # there are no flattened fields.
+        if not isinstance(request, admin.UpdateReservationRequest):
+            request = admin.UpdateReservationRequest(request)
+            # If we have keyword arguments corresponding to fields on the
+            # request, apply these.
+            if reservation is not None:
+                request.reservation = reservation
+            if update_mask is not None:
+                request.update_mask = update_mask
+
+        # Wrap the RPC method; this adds retry and timeout information,
+        # and friendly error handling.
+        rpc = self._transport._wrapped_methods[self._transport.update_reservation]
+
+        # Certain fields should be provided within the metadata header;
+        # add these here.
+        metadata = tuple(metadata) + (
+            gapic_v1.routing_header.to_grpc_metadata(
+                (("reservation.name", request.reservation.name),)
+            ),
+        )
+
+        # Send the request.
+        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+
+        # Done; return the response.
+        return response
+
+    def delete_reservation(
+        self,
+        request: admin.DeleteReservationRequest = None,
+        *,
+        name: str = None,
+        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        timeout: float = None,
+        metadata: Sequence[Tuple[str, str]] = (),
+    ) -> None:
+        r"""Deletes the specified reservation.
+
+        Args:
+            request (google.cloud.pubsublite_v1.types.DeleteReservationRequest):
+                The request object. Request for DeleteReservation.
+            name (str):
+                Required. The name of the reservation to delete.
+                Structured like:
+                projects/{project_number}/locations/{location}/reservations/{reservation_id}
+
+                This corresponds to the ``name`` field
+                on the ``request`` instance; if ``request`` is provided, this
+                should not be set.
+            retry (google.api_core.retry.Retry): Designation of what errors, if any,
+                should be retried.
+            timeout (float): The timeout for this request.
+            metadata (Sequence[Tuple[str, str]]): Strings which should be
+                sent along with the request as metadata.
+        """
+        # Create or coerce a protobuf request object.
+        # Sanity check: If we got a request object, we should *not* have
+        # gotten any keyword arguments that map to the request.
+        has_flattened_params = any([name])
+        if request is not None and has_flattened_params:
+            raise ValueError(
+                "If the `request` argument is set, then none of "
+                "the individual field arguments should be set."
+            )
+
+        # Minor optimization to avoid making a copy if the user passes
+        # in a admin.DeleteReservationRequest.
+        # There's no risk of modifying the input as we've already verified
+        # there are no flattened fields.
+        if not isinstance(request, admin.DeleteReservationRequest):
+            request = admin.DeleteReservationRequest(request)
+            # If we have keyword arguments corresponding to fields on the
+            # request, apply these.
+            if name is not None:
+                request.name = name
+
+        # Wrap the RPC method; this adds retry and timeout information,
+        # and friendly error handling.
+        rpc = self._transport._wrapped_methods[self._transport.delete_reservation]
+
+        # Certain fields should be provided within the metadata header;
+        # add these here.
+        metadata = tuple(metadata) + (
+            gapic_v1.routing_header.to_grpc_metadata((("name", request.name),)),
+        )
+
+        # Send the request.
+        rpc(
+            request, retry=retry, timeout=timeout, metadata=metadata,
+        )
+
+    def list_reservation_topics(
+        self,
+        request: admin.ListReservationTopicsRequest = None,
+        *,
+        name: str = None,
+        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        timeout: float = None,
+        metadata: Sequence[Tuple[str, str]] = (),
+    ) -> pagers.ListReservationTopicsPager:
+        r"""Lists the topics attached to the specified
+        reservation.
+
+        Args:
+            request (google.cloud.pubsublite_v1.types.ListReservationTopicsRequest):
+                The request object. Request for ListReservationTopics.
+            name (str):
+                Required. The name of the reservation whose topics to
+                list. Structured like:
+                projects/{project_number}/locations/{location}/reservations/{reservation_id}
+
+                This corresponds to the ``name`` field
+                on the ``request`` instance; if ``request`` is provided, this
+                should not be set.
+            retry (google.api_core.retry.Retry): Designation of what errors, if any,
+                should be retried.
+            timeout (float): The timeout for this request.
+            metadata (Sequence[Tuple[str, str]]): Strings which should be
+                sent along with the request as metadata.
+
+        Returns:
+            google.cloud.pubsublite_v1.services.admin_service.pagers.ListReservationTopicsPager:
+                Response for ListReservationTopics.
+                Iterating over this object will yield
+                results and resolve additional pages
+                automatically.
+
+        """
+        # Create or coerce a protobuf request object.
+        # Sanity check: If we got a request object, we should *not* have
+        # gotten any keyword arguments that map to the request.
+        has_flattened_params = any([name])
+        if request is not None and has_flattened_params:
+            raise ValueError(
+                "If the `request` argument is set, then none of "
+                "the individual field arguments should be set."
+            )
+
+        # Minor optimization to avoid making a copy if the user passes
+        # in a admin.ListReservationTopicsRequest.
+        # There's no risk of modifying the input as we've already verified
+        # there are no flattened fields.
+        if not isinstance(request, admin.ListReservationTopicsRequest):
+            request = admin.ListReservationTopicsRequest(request)
+            # If we have keyword arguments corresponding to fields on the
+            # request, apply these.
+            if name is not None:
+                request.name = name
+
+        # Wrap the RPC method; this adds retry and timeout information,
+        # and friendly error handling.
+        rpc = self._transport._wrapped_methods[self._transport.list_reservation_topics]
+
+        # Certain fields should be provided within the metadata header;
+        # add these here.
+        metadata = tuple(metadata) + (
+            gapic_v1.routing_header.to_grpc_metadata((("name", request.name),)),
+        )
+
+        # Send the request.
+        response = rpc(request, retry=retry, timeout=timeout, metadata=metadata,)
+
+        # This method is paged; wrap the response in a pager, which provides
+        # an `__iter__` convenience method.
+        response = pagers.ListReservationTopicsPager(
+            method=rpc, request=request, response=response, metadata=metadata,
+        )
+
+        # Done; return the response.
+        return response
 
 
 try:

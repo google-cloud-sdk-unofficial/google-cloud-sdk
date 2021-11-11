@@ -36,8 +36,7 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1 --node-version
 """
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a node pool in an Anthos cluster on AWS."""
 
@@ -48,6 +47,7 @@ class Update(base.UpdateCommand):
     resource_args.AddAwsNodePoolResourceArg(parser, 'to update')
     flags.AddNodeVersion(parser, required=False)
     flags.AddValidateOnly(parser, 'node pool to update')
+    flags.AddAutoscaling(parser, required=False)
     base.ASYNC_FLAG.AddToParser(parser)
 
     parser.display_info.AddFormat(node_pools.NODEPOOLS_FORMAT)

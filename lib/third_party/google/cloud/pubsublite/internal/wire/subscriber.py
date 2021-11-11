@@ -12,32 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from abc import abstractmethod
-from typing import AsyncContextManager
+from abc import abstractmethod, ABCMeta
+from typing import AsyncContextManager, List
 from google.cloud.pubsublite_v1.types import SequencedMessage, FlowControlRequest
 
 
-class Subscriber(AsyncContextManager):
+class Subscriber(AsyncContextManager, metaclass=ABCMeta):
     """
-  A Pub/Sub Lite asynchronous wire protocol subscriber.
-  """
+    A Pub/Sub Lite asynchronous wire protocol subscriber.
+    """
 
     @abstractmethod
-    async def read(self) -> SequencedMessage:
+    async def read(self) -> List[SequencedMessage.meta.pb]:
         """
-    Read the next message off of the stream.
+        Read a batch of messages off of the stream.
 
-    Returns:
-      The next message.
+        Returns:
+          The next batch of messages.
 
-    Raises:
-      GoogleAPICallError: On a permanent error.
-    """
+        Raises:
+          GoogleAPICallError: On a permanent error.
+        """
         raise NotImplementedError()
 
     @abstractmethod
-    async def allow_flow(self, request: FlowControlRequest):
+    def allow_flow(self, request: FlowControlRequest):
         """
-    Allow an additional amount of messages and bytes to be sent to this client.
-    """
+        Allow an additional amount of messages and bytes to be sent to this client.
+        """
         raise NotImplementedError()

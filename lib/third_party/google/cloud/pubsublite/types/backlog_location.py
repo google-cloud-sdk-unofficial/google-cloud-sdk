@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import enum
+from datetime import datetime
+from typing import NamedTuple
 
 
 class BacklogLocation(enum.Enum):
@@ -22,3 +24,15 @@ class BacklogLocation(enum.Enum):
 
     BEGINNING = 0
     END = 1
+
+
+class PublishTime(NamedTuple):
+    """The publish timestamp of a message."""
+
+    value: datetime
+
+
+class EventTime(NamedTuple):
+    """A user-defined event timestamp of a message."""
+
+    value: datetime

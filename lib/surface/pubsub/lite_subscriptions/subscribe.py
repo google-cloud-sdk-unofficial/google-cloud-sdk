@@ -106,5 +106,8 @@ class Subscribe(base.Command):
       while received < args.num_messages:
         message = subscriber_client.Pull()
         if message:
+          splits = message.message_id.split(',')
+          message.message_id = 'Partition: {}, Offset: {}'.format(splits[0],
+                                                                  splits[1])
           printer.Print([message])
           received += 1

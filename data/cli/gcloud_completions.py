@@ -962,6 +962,58 @@ STATIC_COMPLETION_CLI_TREE = {
             }
           },
           "flags": {}
+        },
+        "tensorboards": {
+          "commands": {
+            "create": {
+              "commands": {},
+              "flags": {
+                "--description": "value",
+                "--display-name": "value",
+                "--kms-key": "dynamic",
+                "--kms-keyring": "dynamic",
+                "--kms-location": "dynamic",
+                "--kms-project": "dynamic",
+                "--labels": "value",
+                "--region": "value"
+              }
+            },
+            "delete": {
+              "commands": {},
+              "flags": {
+                "--region": "dynamic"
+              }
+            },
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--region": "dynamic"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--page-size": "value",
+                "--region": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--clear-labels": "bool",
+                "--description": "value",
+                "--display-name": "value",
+                "--region": "dynamic",
+                "--remove-labels": "value",
+                "--update-labels": "value"
+              }
+            }
+          },
+          "flags": {}
         }
       },
       "flags": {}
@@ -3022,6 +3074,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--description": "value",
                     "--display-name": "value",
+                    "--kms-key": "dynamic",
+                    "--kms-keyring": "dynamic",
+                    "--kms-location": "dynamic",
+                    "--kms-project": "dynamic",
                     "--labels": "value",
                     "--region": "value"
                   }
@@ -3892,6 +3948,35 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--page-size": "value",
                         "--sort-by": "value"
                       }
+                    }
+                  },
+                  "flags": {}
+                },
+                "sync": {
+                  "commands": {
+                    "repo": {
+                      "commands": {
+                        "describe": {
+                          "commands": {},
+                          "flags": {
+                            "--managed-resources": "value",
+                            "--name": "value",
+                            "--namespace": "value",
+                            "--source": "value"
+                          }
+                        },
+                        "list": {
+                          "commands": {},
+                          "flags": {
+                            "--membership": "value",
+                            "--namespace": "value",
+                            "--selector": "value",
+                            "--status": "value",
+                            "--targets": "value"
+                          }
+                        }
+                      },
+                      "flags": {}
                     }
                   },
                   "flags": {}
@@ -10203,6 +10288,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--description": "value",
                     "--disk": "value",
                     "--enable-nested-virtualization": "bool",
+                    "--enable-uefi-networking": "bool",
                     "--host-error-timeout-seconds": "value",
                     "--image": "value",
                     "--image-family": "value",
@@ -10516,6 +10602,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--description": "value",
                         "--enable-display-device": "bool",
                         "--enable-nested-virtualization": "bool",
+                        "--enable-uefi-networking": "bool",
                         "--erase-windows-vss-signature": "bool",
                         "--host-error-timeout-seconds": "value",
                         "--image": "value",
@@ -10633,6 +10720,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--disk": "value",
                     "--enable-display-device": "bool",
                     "--enable-nested-virtualization": "bool",
+                    "--enable-uefi-networking": "bool",
                     "--erase-windows-vss-signature": "bool",
                     "--host-error-timeout-seconds": "value",
                     "--hostname": "value",
@@ -12064,7 +12152,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--limit": "value",
                     "--network": "value",
                     "--page-size": "value",
-                    "--regexp": "value",
                     "--region": "value",
                     "--sort-by": "value",
                     "--uri": "bool"
@@ -12074,9 +12161,11 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--filter": "value",
+                    "--global": "bool",
                     "--limit": "value",
                     "--page-size": "value",
                     "--regexp": "value",
+                    "--regions": "value",
                     "--sort-by": "value",
                     "--uri": "bool"
                   }
@@ -16209,7 +16298,9 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--async": "bool",
                         "--aws-region": "value",
                         "--cluster-version": "value",
+                        "--config-encryption-kms-key-arn": "value",
                         "--database-encryption-kms-key-arn": "value",
+                        "--fleet-project": "value",
                         "--iam-instance-profile": "value",
                         "--instance-type": "value",
                         "--location": "value",
@@ -16259,7 +16350,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "get-credentials": {
                       "commands": {},
                       "flags": {
-                        "--location": "value"
+                        "--location": "value",
+                        "--private-endpoint": "bool"
                       }
                     },
                     "list": {
@@ -16271,6 +16363,15 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--page-size": "value",
                         "--sort-by": "value",
                         "--uri": "bool"
+                      }
+                    },
+                    "update": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--cluster-version": "value",
+                        "--location": "value",
+                        "--validate-only": "bool"
                       }
                     }
                   },
@@ -16289,6 +16390,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--async": "bool",
                         "--cluster": "value",
+                        "--config-encryption-kms-key-arn": "value",
                         "--iam-instance-profile": "value",
                         "--instance-type": "value",
                         "--location": "value",
@@ -16340,6 +16442,18 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--page-size": "value",
                         "--sort-by": "value",
                         "--uri": "bool"
+                      }
+                    },
+                    "update": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--cluster": "value",
+                        "--location": "value",
+                        "--max-nodes": "value",
+                        "--min-nodes": "value",
+                        "--node-version": "value",
+                        "--validate-only": "bool"
                       }
                     }
                   },
@@ -16431,6 +16545,11 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--azure-region": "value",
                         "--client": "value",
                         "--cluster-version": "value",
+                        "--config-encryption-key-id": "value",
+                        "--config-encryption-public-key": "value",
+                        "--database-encryption-key-id": "value",
+                        "--endpoint-subnet-id": "value",
+                        "--fleet-project": "value",
                         "--location": "value",
                         "--main-volume-size": "value",
                         "--pod-address-cidr-blocks": "value",
@@ -16440,6 +16559,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--resource-group-id": "value",
                         "--root-volume-size": "value",
                         "--service-address-cidr-blocks": "value",
+                        "--service-load-balancer-subnet-id": "value",
                         "--ssh-public-key": "value",
                         "--subnet-id": "value",
                         "--tags": "value",
@@ -16464,7 +16584,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "get-credentials": {
                       "commands": {},
                       "flags": {
-                        "--location": "value"
+                        "--location": "value",
+                        "--private-endpoint": "bool"
                       }
                     },
                     "list": {
@@ -16476,6 +16597,16 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--page-size": "value",
                         "--sort-by": "value",
                         "--uri": "bool"
+                      }
+                    },
+                    "update": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--client": "value",
+                        "--cluster-version": "value",
+                        "--location": "value",
+                        "--validate-only": "bool"
                       }
                     }
                   },
@@ -16495,6 +16626,8 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--async": "bool",
                         "--azure-availability-zone": "value",
                         "--cluster": "value",
+                        "--config-encryption-key-id": "value",
+                        "--config-encryption-public-key": "value",
                         "--location": "value",
                         "--max-nodes": "value",
                         "--max-pods-per-node": "value",
@@ -16537,6 +16670,18 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--page-size": "value",
                         "--sort-by": "value",
                         "--uri": "bool"
+                      }
+                    },
+                    "update": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--cluster": "value",
+                        "--location": "value",
+                        "--max-nodes": "value",
+                        "--min-nodes": "value",
+                        "--node-version": "value",
+                        "--validate-only": "bool"
                       }
                     }
                   },
@@ -21021,6 +21166,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--ksk-key-length": "value",
                     "--labels": "value",
+                    "--log-dns-queries": "bool",
                     "--managed-reverse-lookup": "bool",
                     "--networks": "value",
                     "--private-forwarding-targets": "value",
@@ -21084,6 +21230,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "rsasha512"
                     ],
                     "--ksk-key-length": "value",
+                    "--log-dns-queries": "bool",
                     "--managed-reverse-lookup": "bool",
                     "--networks": "value",
                     "--private-forwarding-targets": "value",
@@ -28963,6 +29110,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--location": "value"
                   }
                 },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
+                  }
+                },
                 "export": {
                   "commands": {},
                   "flags": {
@@ -30447,6 +30600,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-auth": "bool",
                     "--labels": "value",
                     "--network": "value",
+                    "--read-replicas-mode": [
+                      "read-replicas-disabled",
+                      "read-replicas-enabled"
+                    ],
                     "--redis-config": "value",
                     "--redis-version": [
                       "redis_3_2",
@@ -30455,6 +30612,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "redis_6_x"
                     ],
                     "--region": "dynamic",
+                    "--replica-count": "value",
                     "--reserved-ip-range": "value",
                     "--size": "value",
                     "--tier": [
@@ -30546,6 +30704,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "dynamic",
                     "--remove-labels": "value",
                     "--remove-redis-config": "value",
+                    "--replica-count": "value",
                     "--size": "value",
                     "--update-labels": "value",
                     "--update-redis-config": "value"
@@ -38145,6 +38304,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--description": "value",
                     "--display-name": "value",
+                    "--kms-key": "dynamic",
+                    "--kms-keyring": "dynamic",
+                    "--kms-location": "dynamic",
+                    "--kms-project": "dynamic",
                     "--labels": "value",
                     "--region": "value"
                   }
@@ -47452,6 +47615,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--async": "bool",
                         "--auto-allocate-nat-external-ips": "bool",
+                        "--enable-dynamic-port-allocation": "bool",
                         "--enable-endpoint-independent-mapping": "bool",
                         "--enable-logging": "bool",
                         "--icmp-idle-timeout": "value",
@@ -47460,6 +47624,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "ERRORS_ONLY",
                           "TRANSLATIONS_ONLY"
                         ],
+                        "--max-ports-per-vm": "value",
                         "--min-ports-per-vm": "value",
                         "--nat-all-subnet-ip-ranges": "bool",
                         "--nat-custom-subnet-ip-ranges": "value",
@@ -47554,12 +47719,14 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--async": "bool",
                         "--auto-allocate-nat-external-ips": "bool",
                         "--clear-icmp-idle-timeout": "bool",
+                        "--clear-max-ports-per-vm": "bool",
                         "--clear-min-ports-per-vm": "bool",
                         "--clear-nat-external-drain-ip-pool": "bool",
                         "--clear-tcp-established-idle-timeout": "bool",
                         "--clear-tcp-time-wait-timeout": "bool",
                         "--clear-tcp-transitory-idle-timeout": "bool",
                         "--clear-udp-idle-timeout": "bool",
+                        "--enable-dynamic-port-allocation": "bool",
                         "--enable-endpoint-independent-mapping": "bool",
                         "--enable-logging": "bool",
                         "--icmp-idle-timeout": "value",
@@ -47568,6 +47735,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "ERRORS_ONLY",
                           "TRANSLATIONS_ONLY"
                         ],
+                        "--max-ports-per-vm": "value",
                         "--min-ports-per-vm": "value",
                         "--nat-all-subnet-ip-ranges": "bool",
                         "--nat-custom-subnet-ip-ranges": "value",
@@ -48395,6 +48563,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "no",
                   "yes"
                 ],
+                "--troubleshoot": "bool",
                 "--tunnel-through-iap": "bool",
                 "--zone": "dynamic"
               }
@@ -53478,6 +53647,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--ksk-key-length": "value",
                     "--labels": "value",
+                    "--log-dns-queries": "bool",
                     "--managed-reverse-lookup": "bool",
                     "--networks": "value",
                     "--private-forwarding-targets": "value",
@@ -53541,6 +53711,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "rsasha512"
                     ],
                     "--ksk-key-length": "value",
+                    "--log-dns-queries": "bool",
                     "--managed-reverse-lookup": "bool",
                     "--networks": "value",
                     "--private-forwarding-targets": "value",
@@ -62648,6 +62819,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-auth": "bool",
                     "--labels": "value",
                     "--network": "value",
+                    "--read-replicas-mode": [
+                      "read-replicas-disabled",
+                      "read-replicas-enabled"
+                    ],
                     "--redis-config": "value",
                     "--redis-version": [
                       "redis_3_2",
@@ -62656,6 +62831,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "redis_6_x"
                     ],
                     "--region": "dynamic",
+                    "--replica-count": "value",
                     "--reserved-ip-range": "value",
                     "--size": "value",
                     "--tier": [
@@ -62747,6 +62923,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "dynamic",
                     "--remove-labels": "value",
                     "--remove-redis-config": "value",
+                    "--replica-count": "value",
                     "--size": "value",
                     "--update-labels": "value",
                     "--update-redis-config": "value"
@@ -71587,6 +71764,30 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
+            "os-policy-assignment-reports": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--instance": "value",
+                    "--location": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--assignment-id": "value",
+                    "--filter": "value",
+                    "--instance": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "os-policy-assignments": {
               "commands": {
                 "create": {
@@ -74308,6 +74509,436 @@ STATIC_COMPLETION_CLI_TREE = {
     },
     "container": {
       "commands": {
+        "aws": {
+          "commands": {
+            "clusters": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--aws-region": "value",
+                    "--cluster-version": "value",
+                    "--config-encryption-kms-key-arn": "value",
+                    "--database-encryption-kms-key-arn": "value",
+                    "--fleet-project": "value",
+                    "--iam-instance-profile": "value",
+                    "--instance-type": "value",
+                    "--location": "value",
+                    "--main-volume-iops": "value",
+                    "--main-volume-kms-key-arn": "value",
+                    "--main-volume-size": "value",
+                    "--main-volume-type": [
+                      "gp2",
+                      "gp3"
+                    ],
+                    "--pod-address-cidr-blocks": "value",
+                    "--proxy-secret-arn": "value",
+                    "--proxy-secret-version-id": "value",
+                    "--role-arn": "value",
+                    "--role-session-name": "value",
+                    "--root-volume-iops": "value",
+                    "--root-volume-kms-key-arn": "value",
+                    "--root-volume-size": "value",
+                    "--root-volume-type": [
+                      "gp2",
+                      "gp3"
+                    ],
+                    "--security-group-ids": "value",
+                    "--service-address-cidr-blocks": "value",
+                    "--service-load-balancer-subnet-ids": "value",
+                    "--ssh-ec2-key-pair": "value",
+                    "--subnet-ids": "value",
+                    "--tags": "value",
+                    "--validate-only": "bool",
+                    "--vpc-id": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "value",
+                    "--validate-only": "bool"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
+                  }
+                },
+                "get-credentials": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value",
+                    "--private-endpoint": "bool"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--cluster-version": "value",
+                    "--location": "value",
+                    "--validate-only": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "get-server-config": {
+              "commands": {},
+              "flags": {
+                "--location": "value"
+              }
+            },
+            "node-pools": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--cluster": "value",
+                    "--config-encryption-kms-key-arn": "value",
+                    "--iam-instance-profile": "value",
+                    "--instance-type": "value",
+                    "--location": "value",
+                    "--max-nodes": "value",
+                    "--max-pods-per-node": "value",
+                    "--min-nodes": "value",
+                    "--node-labels": "value",
+                    "--node-taints": "value",
+                    "--node-version": "value",
+                    "--proxy-secret-arn": "value",
+                    "--proxy-secret-version-id": "value",
+                    "--root-volume-iops": "value",
+                    "--root-volume-kms-key-arn": "value",
+                    "--root-volume-size": "value",
+                    "--root-volume-type": [
+                      "gp2",
+                      "gp3"
+                    ],
+                    "--security-group-ids": "value",
+                    "--ssh-ec2-key-pair": "value",
+                    "--subnet-id": "value",
+                    "--tags": "value",
+                    "--validate-only": "bool"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--cluster": "value",
+                    "--location": "value",
+                    "--validate-only": "bool"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "value",
+                    "--location": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--cluster": "value",
+                    "--location": "value",
+                    "--max-nodes": "value",
+                    "--min-nodes": "value",
+                    "--node-version": "value",
+                    "--validate-only": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "operations": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "wait": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
+                  }
+                }
+              },
+              "flags": {}
+            }
+          },
+          "flags": {}
+        },
+        "azure": {
+          "commands": {
+            "clients": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--application-id": "value",
+                    "--location": "value",
+                    "--tenant-id": "value",
+                    "--validate-only": "bool"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
+                  }
+                },
+                "get-public-cert": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value",
+                    "--output-file": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "clusters": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--azure-region": "value",
+                    "--client": "value",
+                    "--cluster-version": "value",
+                    "--config-encryption-key-id": "value",
+                    "--config-encryption-public-key": "value",
+                    "--database-encryption-key-id": "value",
+                    "--endpoint-subnet-id": "value",
+                    "--fleet-project": "value",
+                    "--location": "value",
+                    "--main-volume-size": "value",
+                    "--pod-address-cidr-blocks": "value",
+                    "--proxy-resource-group-id": "value",
+                    "--proxy-secret-id": "value",
+                    "--replica-placements": "value",
+                    "--resource-group-id": "value",
+                    "--root-volume-size": "value",
+                    "--service-address-cidr-blocks": "value",
+                    "--service-load-balancer-subnet-id": "value",
+                    "--ssh-public-key": "value",
+                    "--subnet-id": "value",
+                    "--tags": "value",
+                    "--validate-only": "bool",
+                    "--vm-size": "value",
+                    "--vnet-id": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
+                  }
+                },
+                "get-credentials": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value",
+                    "--private-endpoint": "bool"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--client": "value",
+                    "--cluster-version": "value",
+                    "--location": "value",
+                    "--validate-only": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "get-server-config": {
+              "commands": {},
+              "flags": {
+                "--location": "value"
+              }
+            },
+            "node-pools": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--azure-availability-zone": "value",
+                    "--cluster": "value",
+                    "--config-encryption-key-id": "value",
+                    "--config-encryption-public-key": "value",
+                    "--location": "value",
+                    "--max-nodes": "value",
+                    "--max-pods-per-node": "value",
+                    "--min-nodes": "value",
+                    "--node-labels": "value",
+                    "--node-taints": "value",
+                    "--node-version": "value",
+                    "--proxy-resource-group-id": "value",
+                    "--proxy-secret-id": "value",
+                    "--root-volume-size": "value",
+                    "--ssh-public-key": "value",
+                    "--subnet-id": "value",
+                    "--tags": "value",
+                    "--validate-only": "bool",
+                    "--vm-size": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--cluster": "value",
+                    "--location": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "value",
+                    "--location": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--cluster": "value",
+                    "--location": "value",
+                    "--max-nodes": "value",
+                    "--min-nodes": "value",
+                    "--node-version": "value",
+                    "--validate-only": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "operations": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "wait": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
+                  }
+                }
+              },
+              "flags": {}
+            }
+          },
+          "flags": {}
+        },
         "binauthz": {
           "commands": {
             "attestations": {
@@ -74527,6 +75158,15 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--autoscaling-profile": "value",
                 "--boot-disk-kms-key": "value",
                 "--cloud-run-config": "value",
+                "--cluster-dns": [
+                  "clouddns",
+                  "default"
+                ],
+                "--cluster-dns-domain": "value",
+                "--cluster-dns-scope": [
+                  "cluster",
+                  "vpc"
+                ],
                 "--cluster-ipv4-cidr": "value",
                 "--cluster-secondary-range-name": "value",
                 "--cluster-version": "value",
@@ -74744,6 +75384,15 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--clear-maintenance-window": "bool",
                 "--clear-resource-usage-bigquery-dataset": "bool",
                 "--cloud-run-config": "value",
+                "--cluster-dns": [
+                  "clouddns",
+                  "default"
+                ],
+                "--cluster-dns-domain": "value",
+                "--cluster-dns-scope": [
+                  "cluster",
+                  "vpc"
+                ],
                 "--complete-credential-rotation": "bool",
                 "--complete-ip-rotation": "bool",
                 "--database-encryption-key": "value",
@@ -77490,6 +78139,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 ],
                 "--ksk-key-length": "value",
                 "--labels": "value",
+                "--log-dns-queries": "bool",
                 "--managed-reverse-lookup": "bool",
                 "--networks": "value",
                 "--private-forwarding-targets": "value",
@@ -77552,6 +78202,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "rsasha512"
                 ],
                 "--ksk-key-length": "value",
+                "--log-dns-queries": "bool",
                 "--managed-reverse-lookup": "bool",
                 "--networks": "value",
                 "--private-forwarding-targets": "value",
@@ -86624,6 +87275,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--read-time": "value",
                 "--sort-by": "value",
                 "--source": "dynamic"
+              }
+            },
+            "set-mute": {
+              "commands": {},
+              "flags": {
+                "--folder": "value",
+                "--mute": [
+                  "muted",
+                  "unmuted"
+                ],
+                "--organization": "value",
+                "--source": "value"
               }
             },
             "update": {

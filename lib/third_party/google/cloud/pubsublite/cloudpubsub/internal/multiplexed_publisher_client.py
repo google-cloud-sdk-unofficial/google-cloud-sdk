@@ -38,7 +38,9 @@ class MultiplexedPublisherClient(PublisherClientInterface):
 
     def __init__(self, publisher_factory: PublisherFactory):
         self._publisher_factory = publisher_factory
-        self._multiplexer = ClientMultiplexer()
+        self._multiplexer = ClientMultiplexer(
+            lambda topic: self._create_and_start_publisher(topic)
+        )
 
     @overrides
     def publish(
@@ -50,14 +52,25 @@ class MultiplexedPublisherClient(PublisherClientInterface):
     ) -> "Future[str]":
         if isinstance(topic, str):
             topic = TopicPath.parse(topic)
-        publisher = self._multiplexer.get_or_create(
-            topic, lambda: self._publisher_factory(topic).__enter__()
-        )
+        try:
+            publisher = self._multiplexer.get_or_create(topic)
+        except GoogleAPICallError as e:
+            failed = Future()
+            failed.set_exception(e)
+            return failed
         future = publisher.publish(data=data, ordering_key=ordering_key, **attrs)
         future.add_done_callback(
             lambda fut: self._on_future_completion(topic, publisher, fut)
         )
         return future
+
+    def _create_and_start_publisher(self, topic: Union[TopicPath, str]):
+        publisher = self._publisher_factory(topic)
+        try:
+            return publisher.__enter__()
+        except GoogleAPICallError:
+            publisher.__exit__(None, None, None)
+            raise
 
     def _on_future_completion(
         self, topic: TopicPath, publisher: SinglePublisher, future: "Future[str]"

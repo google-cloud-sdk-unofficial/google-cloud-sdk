@@ -41,7 +41,7 @@
         Enables Redis AUTH for the instance.
     - arg_name: persistence-mode
       api_field: instance.persistenceConfig.persistenceMode
-      release_tracks: [ALPHA]
+      release_tracks: [BETA, ALPHA]
       hidden: true
       help_text: |
         Operation mode for automated persistence.
@@ -54,7 +54,7 @@
         help_text: Automatic RDB persistence
     - arg_name: rdb-snapshot-period
       api_field: instance.persistenceConfig.rdbSnapshotPeriod
-      release_tracks: [ALPHA]
+      release_tracks: [BETA, ALPHA]
       hidden: true
       help_text: |
         The attempted period between RDB snapshots.
@@ -73,7 +73,7 @@
         help_text: 24 hours
     - arg_name: rdb-snapshot-start-time
       api_field: instance.persistenceConfig.rdbSnapshotStartTime
-      release_tracks: [ALPHA]
+      release_tracks: [BETA, ALPHA]
       hidden: true
       help_text: |
         The date & time of the first snapshot, and alignment time for future snapshots.
@@ -81,10 +81,8 @@
       api_field: instance.replicaCount
       type: long
       release_tracks: [BETA, ALPHA]
-      hidden: true
       help_text: |
-        The replcia count of the instance. Valid from 1 to 5. Only work against standard tier
-        instances.
+        The replica count of the instance. Valid from 0 to 5.
     - group:
         release_tracks: [BETA, ALPHA]
         hidden: true
@@ -147,6 +145,9 @@
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdateRedisConfigs
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdateAuthEnabled
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdateReplicaCount
+      - googlecloudsdk.command_lib.redis.instances_update_util:UpdatePersistenceMode
+      - googlecloudsdk.command_lib.redis.instances_update_util:UpdateRdbSnapshotPeriod
+      - googlecloudsdk.command_lib.redis.instances_update_util:UpdateRdbSnapshotStartTime
     GA:
       api_version: v1
       modify_request_hooks:

@@ -1,8 +1,8 @@
 - release_tracks: [ALPHA]
 
   help_text:
-    brief: Describes a single Connector
-    description: Describes a single Connector.
+    brief: Describe a single Connector
+    description: Describe a single Connector.
     examples: |
       To describe a connector ``my-connector'' run:
 

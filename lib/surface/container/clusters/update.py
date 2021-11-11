@@ -340,6 +340,7 @@ class Update(base.UpdateCommand):
     flags.AddILBSubsettingFlags(group, hidden=False)
     flags.AddMeshCertificatesFlags(group)
     flags.AddEnableImageStreamingFlag(group)
+    flags.AddClusterDNSFlags(group, hidden=False)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -381,6 +382,24 @@ class Update(base.UpdateCommand):
     opts.notification_config = args.notification_config
     opts.security_group = args.security_group
     opts.enable_image_streaming = args.enable_image_streaming
+    # TODO(b/201956384) Remove check that requires specifying scope, once
+    # cluster scope is also GA. This check is added to prevent enabling cluster
+    # scope(the default scope) by not specifying a scope value.
+    opts.cluster_dns = args.cluster_dns
+    opts.cluster_dns_scope = args.cluster_dns_scope
+    opts.cluster_dns_domain = args.cluster_dns_domain
+    if opts.cluster_dns and opts.cluster_dns.lower() == 'clouddns':
+      if not opts.cluster_dns_scope:
+        raise util.Error(
+            'DNS Scope should be specified when using CloudDNS in GA.'
+        )
+      console_io.PromptContinue(
+          message='Enabling CloudDNS is a one-way operation. Once enabled, '
+          'this configuration cannot be disabled. '
+          'All the node-pools in the cluster need to be re-created by the user '
+          'to start using CloudDNS for DNS lookups. It is highly recommended to'
+          ' complete this step shortly after enabling CloudDNS.',
+          cancel_on_no=True)
     return opts
 
   def Run(self, args):
@@ -979,7 +998,7 @@ class UpdateAlpha(Update):
     if opts.cluster_dns and opts.cluster_dns.lower() == 'clouddns':
       console_io.PromptContinue(
           message='Enabling CloudDNS is a one-way operation. Once enabled, '
-          'this configuration cannot be disabled.'
+          'this configuration cannot be disabled. '
           'All the node-pools in the cluster need to be re-created by the user '
           'to start using CloudDNS for DNS lookups. It is highly recommended to'
           ' complete this step shortly after enabling CloudDNS.',

@@ -31,7 +31,7 @@ $ {command} --cluster=my-cluster --location=us-west1
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Describe(base.ListCommand):
   """List GKE node pools on AWS."""
 

@@ -115,18 +115,12 @@ class Create(base.CreateCommand):
                                                     router_ref.Name()))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateAlphaBeta(Create):
   """Add a NAT to a Compute Engine router."""
 
   with_rules = True
   with_tcp_time_wait_timeout = True
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Add a NAT to a Compute Engine router."""
-
   with_dynamic_port_allocation = True
 
 

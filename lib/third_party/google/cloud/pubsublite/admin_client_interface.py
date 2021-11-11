@@ -13,17 +13,21 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Union
 
+from google.api_core.operation import Operation
 from google.cloud.pubsublite.types import (
     CloudRegion,
     TopicPath,
     LocationPath,
     SubscriptionPath,
     BacklogLocation,
+    PublishTime,
+    EventTime,
 )
-from google.cloud.pubsublite_v1 import Topic, Subscription
-from google.protobuf.field_mask_pb2 import FieldMask
+from google.cloud.pubsublite.types.paths import ReservationPath
+from google.cloud.pubsublite_v1 import Topic, Subscription, Reservation
+from google.protobuf.field_mask_pb2 import FieldMask  # pytype: disable=pyi-error
 
 
 class AdminClientInterface(ABC):
@@ -60,7 +64,7 @@ class AdminClientInterface(ABC):
         """Delete a topic and all associated messages."""
 
     @abstractmethod
-    def list_topic_subscriptions(self, topic_path: TopicPath):
+    def list_topic_subscriptions(self, topic_path: TopicPath) -> List[SubscriptionPath]:
         """List the subscriptions that exist for a given topic."""
 
     @abstractmethod
@@ -88,5 +92,69 @@ class AdminClientInterface(ABC):
         """Update the masked fields of the provided subscription."""
 
     @abstractmethod
+    def seek_subscription(
+        self,
+        subscription_path: SubscriptionPath,
+        target: Union[BacklogLocation, PublishTime, EventTime],
+    ) -> Operation:
+        """Initiate an out-of-band seek for a subscription to a specified target.
+
+        The seek target may be timestamps or named positions within the message
+        backlog See https://cloud.google.com/pubsub/lite/docs/seek for more
+        information.
+
+        Returns:
+            google.api_core.operation.Operation with:
+              result type: google.cloud.pubsublite.SeekSubscriptionResponse
+              metadata type: google.cloud.pubsublite.OperationMetadata
+        """
+
+    @abstractmethod
     def delete_subscription(self, subscription_path: SubscriptionPath):
         """Delete a subscription and all associated messages."""
+
+    @abstractmethod
+    def create_reservation(self, reservation: Reservation) -> Reservation:
+        """Create a reservation, returns the created reservation.
+
+        warning:: This may not be implemented in the backend, it is a pre-release feature.
+        """
+
+    @abstractmethod
+    def get_reservation(self, reservation_path: ReservationPath) -> Reservation:
+        """Get the reservation object from the server.
+
+        warning:: This may not be implemented in the backend, it is a pre-release feature.
+        """
+
+    @abstractmethod
+    def list_reservations(self, location_path: LocationPath) -> List[Reservation]:
+        """List the Pub/Sub lite reservations that exist for a project in a given location.
+
+        warning:: This may not be implemented in the backend, it is a pre-release feature.
+        """
+
+    @abstractmethod
+    def update_reservation(
+        self, reservation: Reservation, update_mask: FieldMask
+    ) -> Reservation:
+        """Update the masked fields of the provided reservation.
+
+        warning:: This may not be implemented in the backend, it is a pre-release feature.
+        """
+
+    @abstractmethod
+    def delete_reservation(self, reservation_path: ReservationPath):
+        """Delete a reservation and all associated messages.
+
+        warning:: This may not be implemented in the backend, it is a pre-release feature.
+        """
+
+    @abstractmethod
+    def list_reservation_topics(
+        self, reservation_path: ReservationPath
+    ) -> List[TopicPath]:
+        """List the subscriptions that exist for a given reservation.
+
+        warning:: This may not be implemented in the backend, it is a pre-release feature.
+        """

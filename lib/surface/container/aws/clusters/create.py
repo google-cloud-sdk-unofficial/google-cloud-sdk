@@ -38,7 +38,7 @@ $ {command} my-cluster --location=us-west1 --aws-region=AWS_REGION --cluster-ver
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a GKE cluster on AWS."""
 
