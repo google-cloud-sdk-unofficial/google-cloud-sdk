@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to describe a GKE cluster on AWS."""
+"""Command to describe a node pool in an Anthos cluster on AWS."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -33,7 +33,7 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Describe GKE node pool on AWS."""
+  """Describe a node pool in an Anthos cluster on AWS."""
 
   detailed_help = {'EXAMPLES': _EXAMPLES}
 

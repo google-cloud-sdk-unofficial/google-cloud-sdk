@@ -195,7 +195,7 @@ def _create_additional_agents(agent_count, agent_id_prefix, docker_command):
 
 
 class Install(base.Command):
-  """Installs an on-premise Transfer agent."""
+  """Installs an on-premise transfer agent."""
 
   detailed_help = {
       'DESCRIPTION':

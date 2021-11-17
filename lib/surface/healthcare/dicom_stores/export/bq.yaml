@@ -4,9 +4,13 @@
     brief:  Export a Cloud Healthcare API API DICOM store to BigQuery.
     description: Export a Cloud Healthcare API API DICOM store to BigQuery.
     examples: |
-      To export the dicom-store 'test-dicom-store' to the BigQuery table 'testtable' in the dataset 'testdataset', overwriting any existing table, run:
+      To export the dicom-store ``test-dicom-store'' to the BigQuery table ``testtable'' in the dataset ``testdataset'', overwriting any existing table, run:
 
-        $ {command} test-dicom-store --bq-table=bq://my-project.testdataset.testtable --overwrite-table --dataset=test-dataset
+        $ {command} test-dicom-store --bq-table=bq://my-project.testdataset.testtable --dataset=test-dataset --write-disposition=write-truncate
+
+      To export the dicom-store ``test-dicom-store'' to the BigQuery table ``testtable'' in the dataset ``testdataset'', appending any existing table, run:
+
+        $ {command} test-dicom-store --bq-table=bq://my-project.testdataset.testtable --dataset=test-dataset --write-disposition=write-append
 
   request:
     collection: healthcare.projects.locations.datasets.dicomStores
@@ -40,7 +44,6 @@
         store. If the flag is not set and the destination table already exists,
         the export call returns an error.
     - arg_name: write-disposition
-      release_tracks: [ALPHA, BETA]
       api_field: exportDicomDataRequest.bigqueryDestination.writeDisposition
       help_text: |
         Determines whether the existing table in the destination is to be overwritten or appended to.

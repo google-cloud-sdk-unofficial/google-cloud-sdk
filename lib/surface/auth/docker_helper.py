@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.credentials import creds as c_creds
+from googlecloudsdk.core.credentials import exceptions as creds_exceptions
 from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.docker import credential_utils
 
@@ -63,7 +64,7 @@ class DockerHelper(base.Command):
       # stdout.
       try:
         cred = c_store.Load(use_google_auth=True)
-      except c_store.NoActiveAccountException:
+      except creds_exceptions.NoActiveAccountException:
         log.Print('You do not currently have an active account selected. '
                   'See https://cloud.google.com/sdk/docs/authorizing for more '
                   'information.')

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The main command group for cloud container aws."""
+"""Command group `gcloud container aws node-pools`."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,7 +25,7 @@ from googlecloudsdk.core import log
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class NodePools(base.Group):
-  """Create and manage Google Kubernetes Engine node pools on AWS."""
+  """Create and manage node pools in an Anthos cluster on AWS."""
 
   @staticmethod
   def Args(parser):

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The main command group for cloud container azure."""
+"""Command group `gcloud container azure`."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,8 +25,4 @@ from googlecloudsdk.command_lib.projects import util
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Azure(base.Group):
-  """Deploy and manage clusters of machines on Azure for running containers.
-
-  The gcloud container azure command group lets you create and manage Google
-  Kubernetes Engine containers and clusters running on Azure.
-  """
+  """Deploy and manage clusters of machines on Azure for running containers."""

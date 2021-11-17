@@ -35,6 +35,9 @@ class SetIamPolicy(base.Command):
   prevent the replacement if the policy for the service account has been
   subsequently updated.) A policy file that does not contain an etag value will
   replace any existing policy for the service account.
+
+  If the service account does not exist, this command returns a
+  `PERMISSION_DENIED` error.
   """
 
   detailed_help = iam_util.GetDetailedHelpForSetIamPolicy(

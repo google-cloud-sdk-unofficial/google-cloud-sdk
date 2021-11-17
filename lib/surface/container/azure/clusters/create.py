@@ -42,7 +42,7 @@ $ {command} my-cluster --location=us-west1 --azure-region=AZURE_REGION --cluster
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a GKE cluster on Azure."""
+  """Create an Anthos cluster on Azure."""
 
   detailed_help = {"EXAMPLES": _EXAMPLES}
 

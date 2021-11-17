@@ -34,6 +34,9 @@ class GetIamPolicy(base.ListCommand):
   set-iam-policy. The output includes an "etag" field identifying the version
   emitted and allowing detection of concurrent policy updates; see
   $ gcloud iam service-accounts set-iam-policy for additional details.
+
+  If the service account does not exist, this command returns a
+  `PERMISSION_DENIED` error.
   """
 
   detailed_help = {

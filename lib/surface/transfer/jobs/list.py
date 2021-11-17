@@ -20,15 +20,18 @@ from __future__ import unicode_literals
 
 import json
 
+from apitools.base.py import list_pager
+
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.transfer import list_util
 from googlecloudsdk.command_lib.transfer import name_util
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_printer
 
 
-class List(base.ListCommand):
+class List(base.Command):
   """Lists Transfer Service transfer jobs."""
 
   detailed_help = {
@@ -64,6 +67,7 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.SetSortArgs(False)
+    list_util.add_common_list_flags(parser)
     parser.add_argument(
         '--job-names',
         type=arg_parsers.ArgList(),
@@ -91,28 +95,28 @@ class List(base.ListCommand):
     """API response display logic."""
     if args.expand_table:
       # Removes unwanted "transferJobs/" and "transferOperations/" prefixes.
-      # Take first 63 characters of variable transfer source.
-      # Remove "s" from repeatInterval seconds and make ISO duration string.
       format_string = """table(
-          transferJobs.name.map().slice(13:).map().join(sep='').join(sep='\n'),
-          transferJobs.transferSpec.map().firstof(
-            gcsDataSource, awsS3DataSource, httpDataSource,
-            azureBlobStorageDataSource
-            ).map().firstof(bucketName, listUrl, container
-            ).join(sep='\n'):label=SOURCE,
-          transferJobs.transferSpec.gcsDataSink.bucketName.join(
-            sep='\n'):label=DESTINATION,
-          transferJobs.latestOperationName.map().slice(19:).map().join(
-            sep='').join(sep='\n'),
-          transferJobs.status.join(sep='\n'))
+          name.slice(13:).join(sep=''),
+          transferSpec.firstof(
+              gcsDataSource, awsS3DataSource, httpDataSource,
+              azureBlobStorageDataSource, posixDataSource
+            ).firstof(
+              bucketName, listUrl, container, rootDirectory
+            ).trailoff(45):label=SOURCE,
+          transferSpec.firstof(
+              gcsDataSink, posixDataSink
+          ).firstof(
+              bucketName, rootDirectory
+          ).trailoff(45):label=DESTINATION,
+          latestOperationName.slice(19:).join(sep=''),
+          status)
       """
     else:
       format_string = """table(
-          transferJobs.name.map().slice(13:).map().join(sep='').join(sep='\n'),
-          transferJobs.latestOperationName.map().slice(19:).map().join(
-              sep='').join(sep='\n'))
+          name.slice(13:).join(sep=''),
+          latestOperationName.slice(19:).join(sep=''))
       """
-    resource_printer.Print(resources, format_string)
+    resource_printer.Print(resources, args.format or format_string)
 
   def Run(self, args):
     """Command execution logic."""
@@ -132,5 +136,13 @@ class List(base.ListCommand):
     }
     filter_string = json.dumps(filter_dictionary)
 
-    return client.transferJobs.List(
-        messages.StoragetransferTransferJobsListRequest(filter=filter_string))
+    resources_iterator = list_pager.YieldFromList(
+        client.transferJobs,
+        messages.StoragetransferTransferJobsListRequest(filter=filter_string),
+        batch_size=args.page_size,
+        batch_size_attribute='pageSize',
+        field='transferJobs',
+        limit=args.limit,
+    )
+    list_util.print_transfer_resources_iterator(resources_iterator,
+                                                self.Display, args)

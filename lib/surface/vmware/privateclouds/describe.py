@@ -29,13 +29,13 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To get a description of a private cloud called ``my-privatecloud'' in project ``my-project'' and zone ``us-west2-a'', run:
+          To get a description of a private cloud called ``my-private-cloud'' in project ``my-project'' and zone ``us-west2-a'', run:
 
-            $ {command} my-privatecloud --location=us-west2-a --project=my-project
+            $ {command} my-private-cloud --location=us-west2-a --project=my-project
 
           Or:
 
-            $ {command} my-privatecloud
+            $ {command} my-private-cloud
 
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,
@@ -52,7 +52,7 @@ class Describe(base.DescribeCommand):
     flags.AddPrivatecloudArgToParser(parser, positional=True)
 
   def Run(self, args):
-    privatecloud = args.CONCEPTS.privatecloud.Parse()
+    privatecloud = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
     return client.Get(privatecloud)
 

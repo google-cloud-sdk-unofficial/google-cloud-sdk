@@ -90,14 +90,14 @@ class Update(base.UpdateCommand):
       disk_res = messages.Disk(name=disk_ref.Name())
       if args.IsSpecified('update_user_licenses'):
         disk_res.userLicenses = args.update_user_licenses
-      if args.IsSpecified('zone'):
+      if disk_ref.Collection() == 'compute.disks':
         disk_update_request = messages.ComputeDisksUpdateRequest(
             project=disk_ref.project,
             disk=disk_ref.Name(),
             diskResource=disk_res,
             zone=disk_ref.zone,
             paths=['userLicenses'])
-      elif args.IsSpecified('region'):
+      else:
         disk_update_request = messages.ComputeRegionDisksUpdateRequest(
             project=disk_ref.project,
             disk=disk_ref.Name(),

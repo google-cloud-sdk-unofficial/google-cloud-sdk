@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Get the kubeconfig for an Azure cluster."""
+"""Command to get the kubeconfig for an Anthos cluster on Azure."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,7 +29,7 @@ from googlecloudsdk.core import log
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetKubeconfig(base.DescribeCommand):
-  """Get the kubeconfig for an Azure cluster."""
+  """Get the kubeconfig for an Anthos cluster on Azure."""
 
   @staticmethod
   def Args(parser):

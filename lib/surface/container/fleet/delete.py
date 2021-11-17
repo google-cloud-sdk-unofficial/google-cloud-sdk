@@ -22,7 +22,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.util.apis import arg_utils
-from googlecloudsdk.command_lib.util.args import common_args
 
 
 @base.Hidden
@@ -44,7 +43,7 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    common_args.ProjectArgument().AddToParser(parser)
+    pass
 
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)

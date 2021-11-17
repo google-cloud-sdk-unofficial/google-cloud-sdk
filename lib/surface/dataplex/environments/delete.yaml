@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: |
+      Delete a Dataplex Environment.
+    description: |
+      Delete a Dataplex Environment based on project, location, lake, environment.
+
+      {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/environments/{environment_id}
+    examples: |
+     $ {command} projects/test-project/locations/us-central1/lakes/test-lake/environments/test-environment
+
+
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.lakes.environments
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Environment you want to delete.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:environment
+  async:
+    collection: dataplex.projects.locations.operations

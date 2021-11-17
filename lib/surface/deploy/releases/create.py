@@ -64,6 +64,7 @@ def _CommonArgs(parser):
   flags.AddDescription(parser, 'Description of the release.')
   flags.AddAnnotationsFlag(parser, _RELEASE)
   flags.AddLabelsFlag(parser, _RELEASE)
+  flags.AddSkaffoldVersion(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -83,7 +84,7 @@ class Create(base.CreateCommand):
     # Create the release create request.
     release_config = release_util.CreateReleaseConfig(
         args.source, args.gcs_source_staging_dir, args.ignore_file, args.images,
-        args.build_artifacts, args.description)
+        args.build_artifacts, args.description, args.skaffold_version)
     deploy_util.SetMetadata(client.messages, release_config,
                             deploy_util.ResourceType.RELEASE, args.annotations,
                             args.labels)

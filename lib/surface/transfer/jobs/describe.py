@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to get details on a Transfer job."""
+"""Command to get details on a transfer job."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core.resource import resource_printer
 
 
-class Describe(base.ListCommand):
+class Describe(base.Command):
   """Get configuration and latest operation details about transfer job."""
 
   detailed_help = {

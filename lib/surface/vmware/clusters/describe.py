@@ -45,13 +45,13 @@ Describe.detailed_help = {
         """,
     'EXAMPLES':
         """
-          To describe a cluster called ``my-cluster'' in private cloud ``my-privatecloud'' and zone ``us-west2-a'', run:
+          To describe a cluster called ``my-cluster'' in private cloud ``my-private-cloud'' and zone ``us-west2-a'', run:
 
-            $ {command} my-cluster --location=us-west2-a --project=my-project --privatecloud=my-privatecloud
+            $ {command} my-cluster --location=us-west2-a --project=my-project --private-cloud=my-private-cloud
 
             Or:
 
-            $ {command} my-cluster --privatecloud=my-privatecloud
+            $ {command} my-cluster --private-cloud=my-private-cloud
 
            In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,

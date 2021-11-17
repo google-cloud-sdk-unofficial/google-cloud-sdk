@@ -60,9 +60,9 @@ class CreateGA(base.CreateCommand):
 
   _version = constants.GA_VERSION
 
-  @classmethod
-  def Args(cls, parser):
-    flags.AddCreateCustomJobFlags(parser, version=cls._version)
+  @staticmethod
+  def Args(parser):
+    flags.AddCreateCustomJobFlags(parser)
 
   def _DisplayResult(self, response):
     cmd_prefix = 'gcloud'
@@ -73,7 +73,7 @@ class CreateGA(base.CreateCommand):
         _JOB_CREATION_DISPLAY_MESSAGE_TEMPLATE.format(
             job_name=response.name, command_prefix=cmd_prefix))
 
-  def _PrepareJobSpec(self, args, api_client, project, region):
+  def _PrepareJobSpec(self, args, api_client, project):
     job_config = api_client.ImportResourceMessage(
         args.config, 'CustomJobSpec') if args.config else api_client.GetMessage(
             'CustomJobSpec')()
@@ -104,7 +104,7 @@ class CreateGA(base.CreateCommand):
     with endpoint_util.AiplatformEndpointOverrides(
         version=self._version, region=region):
       api_client = client.CustomJobsClient(version=self._version)
-      job_spec = self._PrepareJobSpec(args, api_client, project, region)
+      job_spec = self._PrepareJobSpec(args, api_client, project)
 
       response = api_client.Create(
           parent=region_ref.RelativeName(),

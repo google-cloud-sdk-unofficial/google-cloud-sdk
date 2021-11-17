@@ -98,6 +98,10 @@ class DeployBeta(Deploy):
     # Configure flags for secrets
     secrets_config.ConfigureFlags(parser)
 
+    # Configure flags for CMEK
+    flags.AddKMSKeyFlags(parser)
+    flags.AddDockerRepositoryFlags(parser)
+
     # Add additional flags for GCFv2
     flags.AddRunServiceAccountFlag(parser, track)
     flags.AddSignatureTypeFlag(parser, track)
@@ -122,10 +126,6 @@ class DeployAlpha(DeployBeta):
   def Args(parser, track=base.ReleaseTrack.ALPHA):
     """Register alpha (and implicitly beta) flags for this command."""
     DeployBeta.Args(parser, track)
-
-    # Configure flags for CMEK
-    flags.AddKMSKeyFlags(parser)
-    flags.AddDockerRepositoryFlags(parser)
 
   def Run(self, args):
     if flags.ShouldUseGen2():

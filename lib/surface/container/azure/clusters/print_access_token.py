@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to print access tokens for a GKE cluster on Azure."""
+"""Command to print access tokens for an Anthos cluster on Azure."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class PrintAccessToken(base.Command):
-  """Generate an access token for a GKE cluster on Azure."""
+  """Generate an access token for an Anthos cluster on Azure."""
 
   @staticmethod
   def Args(parser):

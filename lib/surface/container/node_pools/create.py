@@ -165,7 +165,8 @@ def ParseCreateNodePoolOptionsBase(args):
       pod_ipv4_range=args.pod_ipv4_range,
       create_pod_ipv4_range=args.create_pod_ipv4_range,
       gvnic=args.enable_gvnic,
-      enable_image_streaming=args.enable_image_streaming)
+      enable_image_streaming=args.enable_image_streaming,
+      spot=args.spot)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -198,6 +199,7 @@ class Create(base.CreateCommand):
     flags.AddNodeGroupFlag(parser)
     flags.AddEnableGvnicFlag(parser)
     flags.AddEnableImageStreamingFlag(parser, for_node_pool=True)
+    flags.AddSpotFlag(parser, for_node_pool=True, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -285,6 +287,10 @@ class CreateBeta(Create):
     flags.AddEnableGvnicFlag(parser)
     flags.AddSpotFlag(parser, for_node_pool=True)
     flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=True)
+    flags.AddEnableRollingUpdateFlag(parser)
+    flags.AddEnableBlueGreenUpdateFlag(parser)
+    flags.AddStandardRolloutPolicyFlag(parser)
+    flags.AddNodePoolSoakDurationFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -300,6 +306,10 @@ class CreateBeta(Create):
     ops.enable_private_nodes = args.enable_private_nodes
     ops.spot = args.spot
     ops.placement_type = args.placement_type
+    ops.enable_blue_green_update = args.enable_blue_green_update
+    ops.enable_rolling_update = args.enable_rolling_update
+    ops.node_pool_soak_duration = args.node_pool_soak_duration
+    ops.standard_rollout_policy = args.standard_rollout_policy
     return ops
 
 
@@ -323,6 +333,10 @@ class CreateAlpha(Create):
     ops.enable_private_nodes = args.enable_private_nodes
     ops.spot = args.spot
     ops.placement_type = args.placement_type
+    ops.enable_blue_green_update = args.enable_blue_green_update
+    ops.enable_rolling_update = args.enable_rolling_update
+    ops.node_pool_soak_duration = args.node_pool_soak_duration
+    ops.standard_rollout_policy = args.standard_rollout_policy
     return ops
 
   @staticmethod
@@ -356,6 +370,9 @@ class CreateAlpha(Create):
     flags.AddEnableGvnicFlag(parser)
     flags.AddSpotFlag(parser, for_node_pool=True)
     flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=True)
-
+    flags.AddEnableRollingUpdateFlag(parser)
+    flags.AddEnableBlueGreenUpdateFlag(parser)
+    flags.AddStandardRolloutPolicyFlag(parser, for_node_pool=True)
+    flags.AddNodePoolSoakDurationFlag(parser, for_node_pool=True)
 
 Create.detailed_help = DETAILED_HELP

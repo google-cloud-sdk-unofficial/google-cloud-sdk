@@ -182,9 +182,17 @@ class UpdateBeta(Update):
     autoscaling_group = flags.AddClusterAutoscalingFlags(group, hidden=False)
     flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=False)
 
-    surge_upgrade_group = group.add_argument_group('Upgrade settings')
-    flags.AddSurgeUpgradeFlag(surge_upgrade_group, for_node_pool=True)
-    flags.AddMaxUnavailableUpgradeFlag(surge_upgrade_group, for_node_pool=True)
+    upgrade_settings_group = group.add_argument_group('Upgrade settings')
+    flags.AddEnableRollingUpdateFlag(upgrade_settings_group)
+    flags.AddSurgeUpgradeFlag(upgrade_settings_group, for_node_pool=True)
+    flags.AddMaxUnavailableUpgradeFlag(
+        upgrade_settings_group, for_node_pool=True)
+
+    flags.AddEnableBlueGreenUpdateFlag(upgrade_settings_group)
+    flags.AddStandardRolloutPolicyFlag(
+        upgrade_settings_group, for_node_pool=True)
+    flags.AddNodePoolSoakDurationFlag(
+        upgrade_settings_group, for_node_pool=True)
 
     flags.AddWorkloadMetadataFlag(group, use_mode=False)
 
@@ -223,7 +231,11 @@ class UpdateBeta(Update):
         enable_private_nodes=args.enable_private_nodes,
         enable_gcfs=args.enable_gcfs,
         gvnic=args.enable_gvnic,
-        enable_image_streaming=args.enable_image_streaming)
+        enable_image_streaming=args.enable_image_streaming,
+        enable_blue_green_update=args.enable_blue_green_update,
+        enable_rolling_update=args.enable_rolling_update,
+        node_pool_soak_duration=args.node_pool_soak_duration,
+        standard_rollout_policy=args.standard_rollout_policy)
     return ops
 
 
@@ -243,9 +255,17 @@ class UpdateAlpha(Update):
     autoscaling_group = flags.AddClusterAutoscalingFlags(group, hidden=False)
     flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=False)
 
-    surge_upgrade_group = group.add_argument_group('Upgrade settings')
-    flags.AddSurgeUpgradeFlag(surge_upgrade_group, for_node_pool=True)
-    flags.AddMaxUnavailableUpgradeFlag(surge_upgrade_group, for_node_pool=True)
+    upgrade_settings_group = group.add_argument_group('Upgrade settings')
+    flags.AddEnableRollingUpdateFlag(upgrade_settings_group)
+    flags.AddSurgeUpgradeFlag(upgrade_settings_group, for_node_pool=True)
+    flags.AddMaxUnavailableUpgradeFlag(
+        upgrade_settings_group, for_node_pool=True)
+
+    flags.AddEnableBlueGreenUpdateFlag(upgrade_settings_group)
+    flags.AddStandardRolloutPolicyFlag(
+        upgrade_settings_group, for_node_pool=True)
+    flags.AddNodePoolSoakDurationFlag(
+        upgrade_settings_group, for_node_pool=True)
 
     flags.AddWorkloadMetadataFlag(group, use_mode=False)
 
@@ -284,7 +304,11 @@ class UpdateAlpha(Update):
         enable_private_nodes=args.enable_private_nodes,
         enable_gcfs=args.enable_gcfs,
         gvnic=args.enable_gvnic,
-        enable_image_streaming=args.enable_image_streaming)
+        enable_image_streaming=args.enable_image_streaming,
+        enable_blue_green_update=args.enable_blue_green_update,
+        enable_rolling_update=args.enable_rolling_update,
+        node_pool_soak_duration=args.node_pool_soak_duration,
+        standard_rollout_policy=args.standard_rollout_policy)
     return ops
 
 

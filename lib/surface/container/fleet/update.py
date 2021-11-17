@@ -22,7 +22,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.util.apis import arg_utils
-from googlecloudsdk.command_lib.util.args import common_args
 
 
 @base.Hidden
@@ -51,7 +50,6 @@ class Update(base.UpdateCommand):
         help='Display name of the fleet to be created (required). 4-30 '
         'characters, alphanumeric and [ \'"!-] only.',
         required=True)
-    common_args.ProjectArgument().AddToParser(parser)
 
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)

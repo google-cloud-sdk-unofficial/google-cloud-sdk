@@ -22,4 +22,4 @@ from googlecloudsdk.calliope import base
 
 
 class Operations(base.Group):
-  """Manage Transfer operations."""
+  """Manage transfer operations."""

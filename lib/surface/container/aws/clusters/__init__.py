@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The main command group for cloud container aws."""
+"""Command group `gcloud container aws clusters`."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,7 +25,7 @@ from googlecloudsdk.core import log
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Clusters(base.Group):
-  """Create and manage Google Kubernetes Engine clusters on AWS."""
+  """Create and manage Anthos clusters on AWS."""
 
   @staticmethod
   def Args(parser):

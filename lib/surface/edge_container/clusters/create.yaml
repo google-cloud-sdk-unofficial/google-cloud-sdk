@@ -47,6 +47,18 @@
         All services in the cluster are assigned an RFC1918 IPv4 address from this
         block. This field cannot be changed after creation.
       default: "10.96.0.0/12"
+    - arg_name: cluster-ipv6-cidr
+      api_field: cluster.networking.clusterIpv6CidrBlocks
+      repeated: false
+      help_text: |
+        If specified, all pods in the cluster are assigned an RFC4193 IPv6 address
+        from this block. This field cannot be changed after creation.
+    - arg_name: services-ipv6-cidr
+      api_field: cluster.networking.servicesIpv6CidrBlocks
+      repeated: false
+      help_text: |
+        If specified, all services in the cluster are assigned an RFC4193 IPv6
+        address from this block. This field cannot be changed after creation.
     - arg_name: admin-users
       api_field: cluster.authorization.adminUsers.username
       repeated: false

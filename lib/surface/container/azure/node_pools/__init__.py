@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The 'container azure node-pools' command group."""
+"""Command group `gcloud container azure node-pools`."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,7 +26,7 @@ from googlecloudsdk.core import log
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class NodePools(base.Group):
-  """Manage node pools on Azure clusters."""
+  """Create and manage node pools in an Anthos cluster on Azure."""
 
   @staticmethod
   def Args(parser):

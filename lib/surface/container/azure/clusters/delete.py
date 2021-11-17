@@ -12,8 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Command to delete an Azure cluster."""
+"""Command to delete an Anthos cluster on Azure."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -38,7 +37,7 @@ $ {command} my-cluster --location=us-west1
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
-  """Delete an Azure cluster."""
+  """Delete an Anthos cluster on Azure."""
 
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
@@ -60,8 +59,8 @@ class Delete(base.DeleteCommand):
       cluster = api_client.Get(cluster_ref)
       console_io.PromptContinue(
           message=gke_util.ConstructList(
-              'The following Azure cluster will be deleted:', [
-                  '[{name}] in [{region}]'.format(
+              'The following clusters will be deleted.', [
+                  '[{name}] in Azure region [{region}]'.format(
                       name=cluster_ref.azureClustersId,
                       region=cluster.azureRegion)
               ]),
@@ -78,7 +77,8 @@ class Delete(base.DeleteCommand):
             waiter.CloudOperationPollerNoResources(
                 api_client.client.projects_locations_operations),
             op_ref,
-            'Deleting cluster {}'.format(cluster_ref.azureClustersId),
+            'Deleting cluster {} in Azure region {}'.format(
+                cluster_ref.azureClustersId, cluster.azureRegion),
             wait_ceiling_ms=constants.MAX_LRO_POLL_INTERVAL_MS)
 
       log.DeletedResource(

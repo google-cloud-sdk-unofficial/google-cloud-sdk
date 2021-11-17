@@ -12,13 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to get credentials of a GKE cluster on Azure."""
+"""Command to get credentials of an Anthos cluster on Azure."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.api_lib.container.azure import util as azure_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
@@ -29,7 +28,7 @@ from googlecloudsdk.command_lib.container.gkemulticloud import kubeconfig
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class GetCredentials(base.Command):
-  """Get credentials of a GKE cluster on Azure."""
+  """Get credentials of an Anthos cluster on Azure."""
 
   detailed_help = {
       'EXAMPLES': kubeconfig.COMMAND_EXAMPLE,
@@ -44,8 +43,6 @@ class GetCredentials(base.Command):
 
   def Run(self, args):
     """Runs the get-credentials command."""
-    util.CheckKubectlInstalled()
-
     with endpoint_util.GkemulticloudEndpointOverride(
         resource_args.ParseAzureClusterResourceArg(args).locationsId,
         self.ReleaseTrack()):

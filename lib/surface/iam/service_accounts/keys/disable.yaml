@@ -2,13 +2,15 @@
 
   help_text:
     brief: Disable a public key related to an IAM service account.
-    description: Disable a public key related to an IAM service account.
+    description: |
+      Disable a public key related to an IAM service account.
+
+      If the service account does not exist, this command returns a `PERMISSION_DENIED` error.
     examples: |
       To disable a key with ID `b4f1037aeef9ab37deee9` for the service
       account `my-iam-account@my-project.iam.gserviceaccount.com`, run:
 
-        {command} b4f1037aeef9ab37deee9
-          --iam-account=my-iam-account@my-project.iam.gserviceaccount.com
+        {command} b4f1037aeef9ab37deee9 --iam-account=my-iam-account@my-project.iam.gserviceaccount.com
 
   arguments:
     resource:

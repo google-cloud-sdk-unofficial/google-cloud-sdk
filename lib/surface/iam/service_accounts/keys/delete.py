@@ -30,7 +30,11 @@ from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.Command):
-  """Delete a user-managed key from a service account."""
+  """Delete a user-managed key from a service account.
+
+  If the service account does not exist, this command returns a
+  `PERMISSION_DENIED` error.
+  """
 
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""

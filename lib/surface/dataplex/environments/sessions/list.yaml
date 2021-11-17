@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: |
+      List Sessions associated with a Environment.
+    description: |
+      List Sessions associated with a Environment based on project, location, lake and environment.
+
+      {command} --project={project_id} --location={location} --lake={lake_id} --environment={environment_id}
+    examples: |
+      {command} --projects="test-project" --locations=us-central1 --lakes=test-lake --environment=test-environment
+
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.lakes.environments.sessions
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Environment to list the Sessions associated with the Environment.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:environment
+  output:
+    format: |
+      table(
+        name.basename():label=SESSION_ID,
+        state:label=SESSION_STATUS,
+        userId:label=USER_ID,
+        createTime:label=CREATE_TIME
+      )

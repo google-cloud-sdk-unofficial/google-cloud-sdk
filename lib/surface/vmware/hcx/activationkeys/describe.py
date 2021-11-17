@@ -45,13 +45,13 @@ Describe.detailed_help = {
         """,
     'EXAMPLES':
         """
-          To describe a HCX activation key called ``key1'' in private cloud ``my-privatecloud'' in zone ``us-west2-a'', run:
+          To describe a HCX activation key called ``key1'' in private cloud ``my-private-cloud'' in zone ``us-west2-a'', run:
 
-            $ {command} key1 --location=us-west2-a --project=my-project --privatecloud=my-privatecloud
+            $ {command} key1 --location=us-west2-a --project=my-project --private-cloud=my-private-cloud
 
             Or:
 
-            $ {command} key1 --privatecloud=my-privatecloud
+            $ {command} key1 --private-cloud=my-private-cloud
 
            In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,

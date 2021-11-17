@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2020 Google LLC. All Rights Reserved.
+# Copyright 2021 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for managing instance configurations."""
+"""Command group for managing Compute Engine instance configurations."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,11 +23,4 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Config(base.Group):
-  """Manage Compute Engine virtual machine configurations."""
-
-
-Config.detailed_help = {
-    'DESCRIPTION': """
-      Manage Compute Engine virtual machine configurations.
-    """,
-}
+  """Manage Compute Engine instance configurations."""

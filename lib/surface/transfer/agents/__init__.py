@@ -23,4 +23,4 @@ from googlecloudsdk.calliope import base
 
 @base.Hidden
 class Agents(base.Group):
-  """Manage on-premise Transfer agents."""
+  """Manage on-premise transfer agents."""

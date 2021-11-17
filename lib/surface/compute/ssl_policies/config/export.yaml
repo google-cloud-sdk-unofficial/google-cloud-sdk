@@ -1,9 +1,9 @@
 release_tracks: [ALPHA]
 command_type: CONFIG_EXPORT
 help_text:
-  brief: Export the configuration for a Compute ssl policy.
+  brief: Export the configuration for a Compute Engine ssl policy.
   description: |
-    *{command}* exports the configuration for a Compute ssl policy.
+    *{command}* exports the configuration for a Compute Engine ssl policy.
 
     Ssl policy configurations can be exported in
     Kubernetes Resource Model (krm) or Terraform HCL formats. The

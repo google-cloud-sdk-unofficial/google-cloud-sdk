@@ -82,22 +82,22 @@
       release_tracks: [ALPHA]
       hidden: true
       choices:
-      - arg_value: mon
+      - arg_value: monday
         enum_value: MONDAY
-      - arg_value: tue
+      - arg_value: tuesday
         enum_value: TUESDAY
-      - arg_value: wed
+      - arg_value: wednesday
         enum_value: WEDNESDAY
-      - arg_value: thu
+      - arg_value: thursday
         enum_value: THURSDAY
-      - arg_value: fri
+      - arg_value: friday
         enum_value: FRIDAY
-      - arg_value: sat
+      - arg_value: saturday
         enum_value: SATURDAY
-      - arg_value: sun
+      - arg_value: sunday
         enum_value: SUNDAY
       help_text: |
-        The day of week when the window starts, e.g. 'sun'.
+        The day of week when the window starts, e.g. 'sunday'.
     - arg_name: maintenance-window-start-time
       api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.startTime.hours
       release_tracks: [ALPHA]

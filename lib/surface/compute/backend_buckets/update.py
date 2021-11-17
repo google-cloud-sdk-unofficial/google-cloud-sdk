@@ -43,7 +43,6 @@ class Update(base.UpdateCommand):
 
   BACKEND_BUCKET_ARG = None
   EDGE_SECURITY_POLICY_ARG = None
-  _support_edge_policies = False
   _support_extended_caching = False
 
   @classmethod
@@ -56,11 +55,10 @@ class Update(base.UpdateCommand):
 
     cdn_flags.AddCdnPolicyArgs(parser, 'backend bucket', update_command=True)
 
-    if cls._support_edge_policies:
-      cls.EDGE_SECURITY_POLICY_ARG = (
-          security_policy_flags.EdgeSecurityPolicyArgumentForTargetResource(
-              resource='backend bucket'))
-      cls.EDGE_SECURITY_POLICY_ARG.AddArgument(parser)
+    cls.EDGE_SECURITY_POLICY_ARG = (
+        security_policy_flags.EdgeSecurityPolicyArgumentForTargetResource(
+            resource='backend bucket'))
+    cls.EDGE_SECURITY_POLICY_ARG.AddArgument(parser)
 
     if cls._support_extended_caching:
       backend_buckets_flags.AddCacheKeyExtendedCachingArgs(parser)
@@ -70,8 +68,7 @@ class Update(base.UpdateCommand):
     return (args.IsSpecified('description') or
             args.IsSpecified('gcs_bucket_name') or
             args.IsSpecified('enable_cdn') or
-            (self._support_edge_policies and
-             args.IsSpecified('edge_security_policy')) or
+            args.IsSpecified('edge_security_policy') or
             (self._support_extended_caching and
              args.IsSpecified('cache_key_include_http_header')) or
             (self._support_extended_caching and
@@ -187,8 +184,7 @@ class Update(base.UpdateCommand):
             [self.GetSetRequest(client, backend_bucket_ref, new_object)])
 
     # Empty string is a valid value.
-    if (self._support_edge_policies and
-        getattr(args, 'edge_security_policy', None) is not None):
+    if getattr(args, 'edge_security_policy', None) is not None:
       try:
         security_policy_ref = self.EDGE_SECURITY_POLICY_ARG.ResolveAsResource(
             args, holder.resources).SelfLink()
@@ -221,7 +217,6 @@ class UpdateBeta(Update):
 
   *{command}* is used to update backend buckets.
   """
-  _support_edge_policies = True
   _support_extended_caching = True
 
 
@@ -231,5 +226,4 @@ class UpdateAlpha(UpdateBeta):
 
   *{command}* is used to update backend buckets.
   """
-  _support_edge_policies = True
   _support_extended_caching = True

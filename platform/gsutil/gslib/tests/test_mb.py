@@ -169,7 +169,7 @@ class TestMb(testcase.GsUtilIntegrationTestCase):
          suri(bucket_uri)],
         return_stderr=True,
         expected_status=1)
-    self.assertIn('Invalid argument', stderr)
+    self.assertIn('ASYNC_TURBO cannot be enabled on REGION bucket', stderr)
 
   @SkipForXML('RPO flag only works for GCS JSON API.')
   def test_create_with_rpo_incorrect_value_raises_error(self):
@@ -192,11 +192,11 @@ class TestMb(testcase.GsUtilIntegrationTestCase):
     bucket_uri = boto.storage_uri('gs://%s' % (bucket_name.lower()),
                                   suppress_consec_slashes=False)
     self.RunGsUtil(
-        ['mb', '--placement', 'us-central1,us-east1',
+        ['mb', '--placement', 'us-central1,us-west1',
          suri(bucket_uri)])
     stdout = self.RunGsUtil(['ls', '-Lb', suri(bucket_uri)], return_stdout=True)
     self.assertRegex(stdout,
-                     r"Placement locations:\t\t\['US-CENTRAL1', 'US-EAST1'\]")
+                     r"Placement locations:\t\t\['US-CENTRAL1', 'US-WEST1'\]")
 
   @SkipForXML('The --placement flag only works for GCS JSON API.')
   def test_create_with_invalid_placement_flag_raises_error(self):

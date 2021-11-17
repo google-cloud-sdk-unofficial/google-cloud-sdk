@@ -172,6 +172,7 @@ class Deploy(base.DescribeCommand):
     """Run the deploy command."""
     identifiers = args.CONCEPTS.environment.Parse().AsDict()
     labels_arg = labels_util.GetUpdateLabelsDictFromArgs(args)
+    local_dir_archive = None
     try:
       local_dir_archive = cmd_lib.LocalDirectoryArchive(args.source)
       if args.bundle_file:
@@ -194,4 +195,5 @@ class Deploy(base.DescribeCommand):
           message="Waiting for operation [{}] to complete".format(
               operation["uuid"]))
     finally:
-      local_dir_archive.Close()
+      if local_dir_archive and hasattr(local_dir_archive, "Close"):
+        local_dir_archive.Close()

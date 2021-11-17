@@ -27,7 +27,6 @@ from googlecloudsdk.command_lib.transfer import jobs_apitools_util
 class Delete(base.Command):
   """Delete a Transfer Service transfer job."""
 
-  # pylint:disable=line-too-long
   detailed_help = {
       'DESCRIPTION':
           """\

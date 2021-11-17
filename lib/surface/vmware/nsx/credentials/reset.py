@@ -34,7 +34,7 @@ class Reset(base.UpdateCommand):
     flags.AddPrivatecloudArgToParser(parser)
 
   def Run(self, args):
-    resource = args.CONCEPTS.privatecloud.Parse()
+    resource = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
     operation = client.ResetNsxCredentials(resource)
     log.UpdatedResource(operation.name, kind='nsx credentials', is_async=True)
@@ -46,14 +46,14 @@ Reset.detailed_help = {
         """,
     'EXAMPLES':
         """
-          To reset sign-in credentials for NSX in private cloud ``my-privatecloud'', run:
+          To reset sign-in credentials for NSX in private cloud ``my-private-cloud'', run:
 
 
-            $ {command} --privatecloud=my-privatecloud --location=us-west2-a --project=my-project
+            $ {command} --private-cloud=my-private-cloud --location=us-west2-a --project=my-project
 
           Or:
 
-            $ {command} --privatecloud=my-privatecloud
+            $ {command} --private-cloud=my-private-cloud
 
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,

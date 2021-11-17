@@ -31,14 +31,14 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To unmark a private cloud called ``my-privatecloud'' for deletion, run:
+          To unmark a private cloud called ``my-private-cloud'' for deletion, run:
 
 
-            $ {command} my-privatecloud --location=us-west2-a --project=my-project
+            $ {command} my-private-cloud --location=us-west2-a --project=my-project
 
           Or:
 
-            $ {command} my-privatecloud
+            $ {command} my-private-cloud
 
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
 
@@ -56,7 +56,7 @@ class UnDescribe(base.DeleteCommand):
     flags.AddPrivatecloudArgToParser(parser, positional=True)
 
   def Run(self, args):
-    privatecloud = args.CONCEPTS.privatecloud.Parse()
+    privatecloud = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
     operation = client.UnDelete(privatecloud)
     log.RestoredResource(operation.name, kind='private cloud', is_async=True)

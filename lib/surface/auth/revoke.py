@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.auth import auth_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import creds as c_creds
+from googlecloudsdk.core.credentials import exceptions as creds_exceptions
 from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.resource import resource_printer
 
@@ -102,7 +103,7 @@ class Revoke(base.Command):
       try:
         creds = c_store.Load(
             account, prevent_refresh=True, use_google_auth=True)
-      except c_store.Error:
+      except creds_exceptions.Error:
         # Ignore all errors. These will be properly handled in the subsequent
         # Revoke call.
         creds = None

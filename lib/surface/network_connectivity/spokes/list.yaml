@@ -34,6 +34,7 @@
                 linkedRouterApplianceInstances.yesno(yes="Router appliance", no="")
             ):label=TYPE,
             firstof(linkedVpnTunnels.uris, linkedInterconnectAttachments.uris, linkedRouterApplianceInstances.instances).len():label="RESOURCE COUNT",
+            firstof(linkedVpnTunnels.siteToSiteDataTransfer, linkedInterconnectAttachments.siteToSiteDataTransfer, linkedRouterApplianceInstances.siteToSiteDataTransfer).yesno(yes="On", no="Off"):label="DATA TRANSFER",
             description
         )
     ALPHA:

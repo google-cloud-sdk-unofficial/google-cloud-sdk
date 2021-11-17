@@ -34,8 +34,6 @@ from googlecloudsdk.core import resources
 class Create(base.CreateCommand):
   """Add a NAT to a Compute Engine router."""
 
-  with_rules = False
-  with_tcp_time_wait_timeout = False
   with_dynamic_port_allocation = False
 
   @classmethod
@@ -51,8 +49,6 @@ class Create(base.CreateCommand):
     nats_flags.AddCommonNatArgs(
         parser,
         for_create=True,
-        with_rules=cls.with_rules,
-        with_tcp_time_wait_timeout=cls.with_tcp_time_wait_timeout,
         with_dynamic_port_allocation=cls.with_dynamic_port_allocation)
 
   def Run(self, args):
@@ -70,8 +66,6 @@ class Create(base.CreateCommand):
     nat = nats_utils.CreateNatMessage(
         args,
         holder,
-        with_rules=self.with_rules,
-        with_tcp_time_wait_timeout=self.with_tcp_time_wait_timeout,
         with_dynamic_port_allocation=self.with_dynamic_port_allocation)
 
     replacement.nats.append(nat)
@@ -119,8 +113,6 @@ class Create(base.CreateCommand):
 class CreateAlphaBeta(Create):
   """Add a NAT to a Compute Engine router."""
 
-  with_rules = True
-  with_tcp_time_wait_timeout = True
   with_dynamic_port_allocation = True
 
 

@@ -37,7 +37,13 @@ class List(base.ListCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    parser.display_info.AddFormat("""\
+      table(
+        name,
+        region.basename(),
+        description
+      )
+      """)
     lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
     parser.display_info.AddCacheUpdater(flags.NetworkFirewallPoliciesCompleter)
 
@@ -77,10 +83,7 @@ class List(base.ListCommand):
     # Aggregated global NFPs and RNFPs for all regions defined in project
     request = messages.ComputeRegionsListRequest(project=project)
     regions = list_pager.YieldFromList(
-        client.regions,
-        request,
-        field='items',
-        batch_size=None)
+        client.regions, request, field='items', batch_size=None)
     aggregated_generators = []
     aggregated_generators.append(
         list_pager.YieldFromList(
@@ -112,14 +115,11 @@ List.detailed_help = {
     To list regional network firewall policies under project
     ``my-project'', specify a list of regions with ``--regions'':
 
-      $ {command} \
-          --project=my-project \
-          --regions="region-a, region-b"
+      $ {command} --project=my-project --regions="region-a, region-b"
 
     To list all global and regional network firewall policies under project
     ``my-project'', omit ``--global'' and ``--regions'':
 
-      $ {command} \
-          --project=my-project
+      $ {command} --project=my-project
     """,
 }

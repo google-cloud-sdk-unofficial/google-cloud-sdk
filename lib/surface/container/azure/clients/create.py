@@ -12,8 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Command to create a new GKE cluster on Azure."""
+"""Command to create an Azure client."""
 
 from __future__ import absolute_import
 from __future__ import division

@@ -2,7 +2,10 @@
 
   help_text:
     brief: Enable an IAM service account.
-    description: Enable an IAM service account.
+    description: |
+      Enable an IAM service account.
+
+      If the service account does not exist, this command returns a `PERMISSION_DENIED` error.
     examples: |
       To enable a service account from your project, run:
 

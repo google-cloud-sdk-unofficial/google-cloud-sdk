@@ -28,11 +28,11 @@ class Startup(base.TopicCommand):
 
   # Choosing a Python Interpreter
 
-  The `gcloud` CLI runs under Python. On Windows and Mac, you have the option of
-  installing a bundled Python interpreter, on Linux you must have a Python
-  interpreter available somewhere on your system. `gcloud` will
-  attempt to locate an interpreter on your system PATH by looking for the
-  following binaries:
+  The `gcloud` CLI runs under Python. Windows, Mac and Linux RPM based installs
+  include a bundled Python interpreter. To intall on Linux using a different
+  package format, you must you must have a Python interpreter on your system,
+  `gcloud` will  attempt to locate an interpreter on your system PATH by looking
+  for the following binaries:
 
       * python2
       * python27
@@ -50,6 +50,14 @@ class Startup(base.TopicCommand):
 
       * `dev_appserver`
       * `endpointscfg`
+
+  Bundled Python on Linux
+
+  Starting with release 365.0.0, RPM installs of google-cloud-sdk will include
+  a bundled Python 3.8 installation. This installation will be used by
+  default. If you want to use a different Python installation, set the
+  CLOUDSDK_PYTHON environment variable to the absolute path to your python
+  interpreter.
 
   If you have multiple Python interpreters available (including a bundled
   python) or if you don't have one on your PATH, you can specify which

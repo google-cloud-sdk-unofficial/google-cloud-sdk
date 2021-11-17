@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to create a new GKE cluster on AWS."""
+"""Command to create an Anthos cluster on AWS."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -34,13 +34,13 @@ _EXAMPLES = """
 To create a cluster named ``my-cluster'' managed in location ``us-west1'',
 run:
 
-$ {command} my-cluster --location=us-west1 --aws-region=AWS_REGION --cluster-version=CLUSTER_VERSION --database-encryption-kms-key-arn=KMS_KEY_ARN --iam-instance-profile=IAM_INSTANCE_PROFILE --pod-address-cidr-blocks=POD_ADDRESS_CIDR_BLOCKS --role-arn=ROLE_ARN --service-address-cidr-blocks=SERVICE_ADDRESS_CIDR_BLOCKS --service-load-balancer-subnet-ids=SUBNET_ID --subnet-ids=SUBNET_ID --vpc-id=VPC_ID
+$ {command} my-cluster --location=us-west1 --aws-region=AWS_REGION --cluster-version=CLUSTER_VERSION --database-encryption-kms-key-arn=KMS_KEY_ARN --iam-instance-profile=IAM_INSTANCE_PROFILE --pod-address-cidr-blocks=POD_ADDRESS_CIDR_BLOCKS --role-arn=ROLE_ARN --service-address-cidr-blocks=SERVICE_ADDRESS_CIDR_BLOCKS --subnet-ids=SUBNET_ID --vpc-id=VPC_ID
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a GKE cluster on AWS."""
+  """Create an Anthos cluster on AWS."""
 
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
@@ -67,7 +67,6 @@ class Create(base.CreateCommand):
     flags.AddTags(parser, 'cluster')
 
     aws_flags.AddAwsRegion(parser)
-    aws_flags.AddServiceLoadBalancerSubnetIDs(parser)
     aws_flags.AddIamInstanceProfile(parser)
     aws_flags.AddInstanceType(parser)
     aws_flags.AddSshEC2KeyPair(parser)
@@ -124,3 +123,14 @@ class Create(base.CreateCommand):
       log.CreatedResource(
           cluster_ref, kind=constants.AWS_CLUSTER_KIND, is_async=async_)
       return cluster_client.Get(cluster_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create an Anthos cluster on AWS."""
+
+  @staticmethod
+  def Args(parser, track=base.ReleaseTrack.BETA):
+    """Registers alpha track flags for this command."""
+    Create.Args(parser)
+    aws_flags.AddServiceLoadBalancerSubnetIDs(parser)

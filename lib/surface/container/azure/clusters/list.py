@@ -12,8 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Command to list Azure clusters."""
+"""Command to list Anthos clusters on Azure."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -35,7 +34,7 @@ $ {command} --location=us-west1
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List Azure clusters."""
+  """List Anthos clusters on Azure."""
 
   detailed_help = {'EXAMPLES': _EXAMPLES}
 

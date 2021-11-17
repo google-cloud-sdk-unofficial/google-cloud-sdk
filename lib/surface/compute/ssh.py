@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import argparse
+import datetime
 import sys
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -31,6 +32,7 @@ from googlecloudsdk.command_lib.compute import network_troubleshooter
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.compute import user_permission_troubleshooter
+from googlecloudsdk.command_lib.compute import vm_boot_troubleshooter
 from googlecloudsdk.command_lib.compute import vm_status_troubleshooter
 from googlecloudsdk.command_lib.compute import vpc_troubleshooter
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
@@ -45,6 +47,11 @@ Recommendation: To check for possible causes of SSH connectivity issues and get
 recommendations, rerun the ssh command with the --troubleshoot option. Example:
 
 gcloud alpha compute ssh example-instance --zone=us-central1-a --troubleshoot
+"""
+
+TROUBLESHOOT_HEADER = """
+Starting ssh troubleshooting for instance {0} in zone {1}'
+Start time: {2}
 """
 
 
@@ -194,6 +201,14 @@ def RunTroubleshooting(project=None, zone=None, instance=None,
   vm_status = vm_status_troubleshooter.VMStatusTroubleshooter(**vm_status_args)
   vm_status()
 
+  vm_boot_args = {
+      'project': project,
+      'zone': zone,
+      'instance': instance,
+  }
+  vm_boot = vm_boot_troubleshooter.VMBootTroubleshooter(**vm_boot_args)
+  vm_boot()
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Ssh(base.Command):
@@ -272,6 +287,10 @@ class Ssh(base.Command):
       internal_address = ssh_utils.GetInternalIPAddress(instance)
 
       if hasattr(args, 'troubleshoot') and args.troubleshoot:
+        log.status.Print(TROUBLESHOOT_HEADER.format(
+            instance_ref, args.zone or instance_ref.zone,
+            datetime.datetime.now()
+        ))
         RunTroubleshooting(project, args.zone or instance_ref.zone,
                            instance, iap_tunnel_args)
         return

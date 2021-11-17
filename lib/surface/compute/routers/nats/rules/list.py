@@ -28,7 +28,6 @@ from googlecloudsdk.command_lib.compute.routers.nats import nats_utils
 from googlecloudsdk.command_lib.compute.routers.nats.rules import flags as rules_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.DescribeCommand):
   """Lists the NATs on a Compute Engine router."""
 

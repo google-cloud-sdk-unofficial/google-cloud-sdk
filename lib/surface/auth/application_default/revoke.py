@@ -66,7 +66,7 @@ class Revoke(base.SilentCommand):
           'The given credential file is a service account credential, and '
           'cannot be revoked.')
     if isinstance(creds, google_auth_creds.Credentials):
-      creds = c_google_auth.UserCredWithReauth.FromGoogleAuthUserCredentials(
+      creds = c_google_auth.Credentials.FromGoogleAuthUserCredentials(
           creds)
 
     console_io.PromptContinue(

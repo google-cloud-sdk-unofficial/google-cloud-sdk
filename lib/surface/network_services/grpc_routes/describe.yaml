@@ -1,0 +1,20 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Describe a grpc route.
+  description: Show details of a grpc route.
+
+  examples: |
+    Show details about a grpc route named 'my-grpc-route'.
+
+      $ {command} my-grpc-route --location=global
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:grpcRoute
+    help_text: Name of the grpc route to be described.
+
+request: &request
+  api_version: v1alpha1
+  collection: networkservices.projects.locations.grpcRoutes

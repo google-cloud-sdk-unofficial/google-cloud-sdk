@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to list Transfer operations."""
+"""Command to list transfer operations."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -20,15 +20,18 @@ from __future__ import unicode_literals
 
 import json
 
+from apitools.base.py import list_pager
+
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.transfer import list_util
 from googlecloudsdk.command_lib.transfer import name_util
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_printer
 
 
-class List(base.ListCommand):
+class List(base.Command):
   """Lists Transfer Service transfer operations."""
 
   detailed_help = {
@@ -61,6 +64,7 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.SetSortArgs(False)
+    list_util.add_common_list_flags(parser)
     parser.add_argument(
         '--job-names',
         type=arg_parsers.ArgList(),
@@ -80,7 +84,7 @@ class List(base.ListCommand):
         type=arg_parsers.ArgList(),
         metavar='OPERATION_STATUSES',
         help='List only transfer operations with the statuses you'
-        " specify. Options include 'in-progress', 'paused', 'success',"
+        " specify. Options include 'in_progress', 'paused', 'success',"
         "'failed', 'aborted'. Separate multiple statuses with commas (e.g.,"
         ' --operation-statuses=failed,aborted).')
     parser.add_argument(
@@ -98,25 +102,21 @@ class List(base.ListCommand):
       # Extract start date from start time string.
       # Remove "s" from repeatInterval seconds and make ISO duration string.
       format_string = """table(
-          operations.name.map().slice(19:).map().join(sep='').join(sep='\n'),
-          operations.metadata.startTime.map().date().join(
-              sep='\n'):label='START TIME',
-          operations.metadata.counters.bytesCopiedToSink.map().size().join(
-              sep='\n'):label='DATA COPIED',
-          operations.metadata.status.join(sep='\n'),
-          operations.metadata.errorBreakdowns.map().yesno(yes='Yes').join(
-            sep='\n'):label='HAS ERRORS',
-          operations.metadata.transferJobName.map().slice(13:).map().join(
-            sep='').join(sep='\n'):label='TRANSFER JOB NAME')
+          name.slice(19:).join(sep=''),
+          metadata.startTime.date('%Y-%m-%d'):label='START DATE',
+          metadata.counters.bytesCopiedToSink.size():label='DATA COPIED',
+          metadata.status,
+          metadata.errorBreakdowns.yesno(yes='Yes'):label='HAS ERRORS',
+          metadata.transferJobName.slice(13:).join(
+             sep=''):label='TRANSFER JOB NAME')
       """
     else:
       format_string = """table(
-          operations.name.map().slice(19:).map().join(sep='').join(sep='\n'),
-          operations.metadata.startTime.map().date('%Y-%m-%d').join(
-              sep='\n'):label='START DATE',
-          operations.metadata.status.join(sep='\n'))
+          name.slice(19:).join(sep=''),
+          metadata.startTime.date('%Y-%m-%d'):label='START DATE',
+          metadata.status)
       """
-    resource_printer.Print(resources, format_string)
+    resource_printer.Print(resources, args.format or format_string)
 
   def Run(self, args):
     """Command execution logic."""
@@ -142,7 +142,14 @@ class List(base.ListCommand):
     }
     filter_string = json.dumps(filter_dictionary)
 
-    return client.transferOperations.List(
-        # name is unused but required.
+    resources_iterator = list_pager.YieldFromList(
+        client.transferOperations,
         messages.StoragetransferTransferOperationsListRequest(
-            name='transferOperations', filter=filter_string))
+            filter=filter_string, name='transferOperations'),
+        batch_size=args.page_size,
+        batch_size_attribute='pageSize',
+        field='operations',
+        limit=args.limit,
+    )
+    list_util.print_transfer_resources_iterator(resources_iterator,
+                                                self.Display, args)

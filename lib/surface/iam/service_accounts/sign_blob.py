@@ -33,6 +33,9 @@ class SignBlob(base.Command):
 
   This command signs a file containing arbitrary binary data (a blob) using a
   system-managed service account key.
+
+  If the service account does not exist, this command returns a
+  `PERMISSION_DENIED` error.
   """
 
   detailed_help = {

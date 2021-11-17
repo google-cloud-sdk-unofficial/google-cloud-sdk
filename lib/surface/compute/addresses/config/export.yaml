@@ -1,9 +1,9 @@
 release_tracks: [ALPHA]
 command_type: CONFIG_EXPORT
 help_text:
-  brief: Export the configuration for a Compute address.
+  brief: Export the configuration for a Compute Engine address.
   description: |
-    *{command}* exports the configuration for a Compute address.
+    *{command}* exports the configuration for a Compute Engine address.
 
     Address configurations can be exported in
     Kubernetes Resource Model (krm) or Terraform HCL formats. The

@@ -34,8 +34,6 @@ from googlecloudsdk.core import resources
 class Update(base.UpdateCommand):
   """Update a NAT on a Compute Engine router."""
 
-  with_rules = False
-  with_tcp_time_wait_timeout = False
   with_dynamic_port_allocation = False
 
   @classmethod
@@ -51,8 +49,6 @@ class Update(base.UpdateCommand):
     nats_flags.AddCommonNatArgs(
         parser,
         for_create=False,
-        with_rules=cls.with_rules,
-        with_tcp_time_wait_timeout=cls.with_tcp_time_wait_timeout,
         with_dynamic_port_allocation=cls.with_dynamic_port_allocation)
 
   def Run(self, args):
@@ -71,8 +67,6 @@ class Update(base.UpdateCommand):
         existing_nat,
         args,
         holder,
-        with_rules=self.with_rules,
-        with_tcp_time_wait_timeout=self.with_tcp_time_wait_timeout,
         with_dynamic_port_allocation=self.with_dynamic_port_allocation)
 
     request_type = messages.ComputeRoutersPatchRequest
@@ -118,8 +112,6 @@ class Update(base.UpdateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpdateAlphaBeta(Update):
   """Update a NAT on a Compute Engine router."""
-  with_rules = True
-  with_tcp_time_wait_timeout = True
   with_dynamic_port_allocation = True
 
 

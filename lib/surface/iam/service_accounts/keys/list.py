@@ -29,7 +29,11 @@ from googlecloudsdk.core.util import times
 
 
 class List(base.ListCommand):
-  """List the keys for a service account."""
+  """List the keys for a service account.
+
+  If the service account does not exist, this command returns a
+  `PERMISSION_DENIED` error.
+  """
 
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""

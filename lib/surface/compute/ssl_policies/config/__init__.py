@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for managing instance configurations."""
+"""Command group for managing Compute Engine ssl policy configurations."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,11 +23,4 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Config(base.Group):
-  """Manage Compute Engine SSL policy configurations."""
-
-
-Config.detailed_help = {
-    'DESCRIPTION': """
-      Manage Compute Engine SSL policy configurations.
-    """,
-}
+  """Manage Compute Engine ssl policy configurations."""

@@ -72,7 +72,7 @@ class UpdateHelper(object):
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
            support_logging, support_client_only, support_grpc_protocol,
            support_subsetting, support_subsetting_subset_size,
-           support_unspecified_protocol, support_edge_policies,
+           support_unspecified_protocol,
            support_connection_tracking, support_strong_session_affinity,
            support_advanced_load_balancing, support_service_bindings,
            support_extended_caching):
@@ -95,11 +95,10 @@ class UpdateHelper(object):
         security_policy_flags.SecurityPolicyArgumentForTargetResource(
             resource='backend service'))
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
-    if support_edge_policies:
-      cls.EDGE_SECURITY_POLICY_ARG = (
-          security_policy_flags.EdgeSecurityPolicyArgumentForTargetResource(
-              resource='backend service'))
-      cls.EDGE_SECURITY_POLICY_ARG.AddArgument(parser)
+    cls.EDGE_SECURITY_POLICY_ARG = (
+        security_policy_flags.EdgeSecurityPolicyArgumentForTargetResource(
+            resource='backend service'))
+    cls.EDGE_SECURITY_POLICY_ARG.AddArgument(parser)
     flags.AddTimeout(parser, default=None)
     flags.AddPortName(parser)
     flags.AddProtocol(
@@ -158,7 +157,6 @@ class UpdateHelper(object):
                support_logging,
                support_subsetting,
                support_subsetting_subset_size,
-               support_edge_policies=False,
                support_connection_tracking=False,
                support_strong_session_affinity=False,
                support_advanced_load_balancing=False,
@@ -169,7 +167,6 @@ class UpdateHelper(object):
     self._support_logging = support_logging
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
-    self._support_edge_policies = support_edge_policies
     self._support_connection_tracking = support_connection_tracking
     self._support_strong_session_affinity = support_strong_session_affinity
     self._support_advanced_load_balancing = support_advanced_load_balancing
@@ -318,8 +315,7 @@ class UpdateHelper(object):
         args.IsSpecified('port_name'),
         args.IsSpecified('protocol'),
         args.IsSpecified('security_policy'),
-        args.IsSpecified('edge_security_policy')
-        if self._support_edge_policies else False,
+        args.IsSpecified('edge_security_policy'),
         args.IsSpecified('session_affinity'),
         args.IsSpecified('timeout'),
         args.IsSpecified('connection_drain_on_failover')
@@ -502,8 +498,7 @@ class UpdateHelper(object):
       security_policy_result = []
 
     # Empty string is a valid value.
-    if (self._support_edge_policies and
-        getattr(args, 'edge_security_policy', None) is not None):
+    if getattr(args, 'edge_security_policy', None) is not None:
       try:
         security_policy_ref = self.EDGE_SECURITY_POLICY_ARG.ResolveAsResource(
             args, holder.resources).SelfLink()
@@ -536,7 +531,6 @@ class UpdateGA(base.UpdateCommand):
   _support_grpc_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = False
-  _support_edge_policies = False
   _support_connection_tracking = False
   _support_strong_session_affinity = False
   _support_advanced_load_balancing = False
@@ -556,7 +550,6 @@ class UpdateGA(base.UpdateCommand):
         support_subsetting=cls._support_subsetting,
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_unspecified_protocol=cls._support_unspecified_protocol,
-        support_edge_policies=cls._support_edge_policies,
         support_connection_tracking=cls._support_connection_tracking,
         support_strong_session_affinity=cls._support_strong_session_affinity,
         support_advanced_load_balancing=cls._support_advanced_load_balancing,
@@ -569,7 +562,7 @@ class UpdateGA(base.UpdateCommand):
     return UpdateHelper(
         self._support_l7_internal_load_balancer, self._support_failover,
         self._support_logging, self._support_subsetting,
-        self._support_subsetting_subset_size, self._support_edge_policies,
+        self._support_subsetting_subset_size,
         self._support_connection_tracking,
         self._support_strong_session_affinity,
         self._support_advanced_load_balancing, self._support_service_bindings,
@@ -588,7 +581,6 @@ class UpdateBeta(UpdateGA):
   _support_grpc_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = False
-  _support_edge_policies = True
   _support_connection_tracking = True
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = False
@@ -608,7 +600,6 @@ class UpdateAlpha(UpdateBeta):
   _support_grpc_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = True
-  _support_edge_policies = True
   _support_connection_tracking = True
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = True

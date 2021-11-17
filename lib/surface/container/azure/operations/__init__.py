@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The main command group for cloud container azure."""
+"""Command group for `gcloud container azure operations`."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,7 +25,7 @@ from googlecloudsdk.core import log
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Operations(base.Group):
-  """List and describe operations for Google Kubernetes Engine clusters on AWS."""
+  """Manage Anthos Multi-Cloud long running operations for Azure."""
 
   @staticmethod
   def Args(parser):

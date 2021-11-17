@@ -114,6 +114,8 @@ def _GetConfirmedClearedFields(args, patch_instance, original_instance):
     cleared_fields.append('settings.databaseFlags')
   if args.remove_deny_maintenance_period:
     cleared_fields.append('settings.denyMaintenancePeriods')
+  if args.clear_password_policy:
+    cleared_fields.append('settings.passwordValidationPolicy')
 
   log.status.write(
       'The following message will be used for the patch API method.\n')

@@ -11,6 +11,8 @@ help_text:
     policies for other types of resources. For example, to manage IAM policies
     on a project, use the $ gcloud projects commands.
 
+    If the service account does not exist, this command returns a `PERMISSION_DENIED` error.
+
   examples: |
     To remove an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
     on a service account with identifier 'my-iam-account@my-project.iam.gserviceaccount.com', run:

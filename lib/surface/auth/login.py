@@ -35,6 +35,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import creds as c_creds
 from googlecloudsdk.core.credentials import devshell as c_devshell
+from googlecloudsdk.core.credentials import exceptions as creds_exceptions
 from googlecloudsdk.core.credentials import gce as c_gce
 from googlecloudsdk.core.credentials import store as c_store
 
@@ -201,7 +202,7 @@ class Login(base.Command):
     if account and not args.force and not args.cred_file:
       try:
         creds = c_store.Load(account=account, scopes=scopes)
-      except c_store.Error:
+      except creds_exceptions.Error:
         creds = None
       if creds:
         # Account already has valid creds, just switch to it.
@@ -297,7 +298,7 @@ def LoginWithCredFileConfig(cred_config, scopes, project, activate, brief,
   # Check if account already exists in storage.
   try:
     exist_creds = c_store.Load(account=account, scopes=scopes)
-  except c_store.Error:
+  except creds_exceptions.Error:
     exist_creds = None
   if exist_creds:
     message = textwrap.dedent("""

@@ -96,45 +96,30 @@ class Create(base.CreateCommand):
         wp = workerpool_config.LoadWorkerpoolConfigFromPath(
             args.config_from_file, messages)
       except cloudbuild_util.ParseProtoException as err:
-        log.err.Print('\nFailed to parse configuration from file. If you'
-                      ' were a Beta user, note that the format for this'
-                      ' file has changed slightly for GA.\n')
+        log.err.Print(
+            '\nFailed to parse configuration from file. If you'
+            ' were a Private Preview user, note that the format for this'
+            ' file has changed slightly for GA.\n')
         raise err
     else:
-      if release_track == base.ReleaseTrack.GA:
-        wp.privatePoolV1Config = messages.PrivatePoolV1Config()
+      wp.privatePoolV1Config = messages.PrivatePoolV1Config()
 
-        network_config = messages.NetworkConfig()
-        if args.peered_network is not None:
-          network_config.peeredNetwork = args.peered_network
-        # All of the egress flags are mutually exclusive with each other.
-        if args.no_external_ip or args.no_public_egress:
-          network_config.egressOption = messages.NetworkConfig.EgressOptionValueValuesEnum.NO_PUBLIC_EGRESS
-        wp.privatePoolV1Config.networkConfig = network_config
+      network_config = messages.NetworkConfig()
+      if args.peered_network is not None:
+        network_config.peeredNetwork = args.peered_network
+      # All of the egress flags are mutually exclusive with each other.
+      if args.no_public_egress or (release_track == base.ReleaseTrack.GA and
+                                   args.no_external_ip):
+        network_config.egressOption = messages.NetworkConfig.EgressOptionValueValuesEnum.NO_PUBLIC_EGRESS
+      wp.privatePoolV1Config.networkConfig = network_config
 
-        worker_config = messages.WorkerConfig()
-        if args.worker_machine_type is not None:
-          worker_config.machineType = args.worker_machine_type
-        if args.worker_disk_size is not None:
-          worker_config.diskSizeGb = compute_utils.BytesToGb(
-              args.worker_disk_size)
-        wp.privatePoolV1Config.workerConfig = worker_config
-
-      else:
-        network_config = messages.NetworkConfig()
-        if args.peered_network is not None:
-          network_config.peeredNetwork = args.peered_network
-        wp.networkConfig = network_config
-
-        worker_config = messages.WorkerConfig()
-        if args.worker_machine_type is not None:
-          worker_config.machineType = args.worker_machine_type
-        if args.worker_disk_size is not None:
-          worker_config.diskSizeGb = compute_utils.BytesToGb(
-              args.worker_disk_size)
-        if args.no_external_ip:
-          worker_config.noExternalIp = True
-        wp.workerConfig = worker_config
+      worker_config = messages.WorkerConfig()
+      if args.worker_machine_type is not None:
+        worker_config.machineType = args.worker_machine_type
+      if args.worker_disk_size is not None:
+        worker_config.diskSizeGb = compute_utils.BytesToGb(
+            args.worker_disk_size)
+      wp.privatePoolV1Config.workerConfig = worker_config
 
     parent = properties.VALUES.core.project.Get(required=True)
 

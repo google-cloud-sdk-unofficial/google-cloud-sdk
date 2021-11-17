@@ -36,11 +36,11 @@ DETAILED_HELP = {
           To create a private cloud in the ``us-west2-a'' zone using ``standard-72'' nodes that connects to the ``default-vpc'' VPC network of another project, run:
 
 
-          $ {command} my-privatecloud --location=us-west2-a --project=my-project --cluster=my-management-cluster --node-type=standard-72 --node-count=3 --management-range=192.168.0.0/24 --network=default-vpc --network-project=another-project
+          $ {command} my-private-cloud --location=us-west2-a --project=my-project --cluster=my-management-cluster --node-type=standard-72 --node-count=3 --management-range=192.168.0.0/24 --network=default-vpc --network-project=another-project
 
           Or:
 
-          $ {command} my-privatecloud --cluster=my-management-cluster--node-type=standard-72 --node-count=3 --management-range=192.168.0.0/24 --network=default-vpc --network-project=another-project
+          $ {command} my-private-cloud --cluster=my-management-cluster--node-type=standard-72 --node-count=3 --management-range=192.168.0.0/24 --network=default-vpc --network-project=another-project
 
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,
@@ -90,7 +90,7 @@ class Create(base.CreateCommand):
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
-    privatecloud = args.CONCEPTS.privatecloud.Parse()
+    privatecloud = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
     operation = client.Create(privatecloud, args.labels, args.description,
                               args.cluster, args.node_type, args.node_count,

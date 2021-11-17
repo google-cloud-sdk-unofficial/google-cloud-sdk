@@ -1,9 +1,9 @@
 release_tracks: [ALPHA]
 command_type: CONFIG_EXPORT
 help_text:
-  brief: Export the configuration for a Compute firewall.
+  brief: Export the configuration for a Compute Engine firewall.
   description: |
-    *{command}* exports the configuration for a Compute firewall.
+    *{command}* exports the configuration for a Compute Engine firewall.
 
     Firewall configurations can be exported in
     Kubernetes Resource Model (krm) or Terraform HCL formats. The

@@ -108,4 +108,5 @@ class Terraform(base.BinaryBackedCommand):
         terraform_plan_json=args.terraform_plan_json,
         verbosity=args.verbosity,
         env=env_vars)
+    self.exit_code = response.exit_code
     return self._DefaultOperationResponseHandler(response)

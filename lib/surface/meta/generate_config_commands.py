@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.meta import generate_config_command
 from googlecloudsdk.command_lib.util.resource_map.declarative import resource_name_translator
-from googlecloudsdk.core import log
 
 
 class GenerateCommand(base.Command):
@@ -33,6 +32,7 @@ class GenerateCommand(base.Command):
     parser.add_argument(
         '--output-root',
         metavar='DIRECTORY',
+        required=True,
         help=('Root of the directory within which to generate config '
               'config export commands.'))
     parser.add_argument(
@@ -68,10 +68,8 @@ class GenerateCommand(base.Command):
         else:
           render_files = True
       if render_files:
-        log.status.Print('Rendering files for {}.'.format(
-            collection.collection_name))
         generate_config_command.WriteConfigYaml(collection.collection_name,
                                                 args.output_root,
-                                                resource_data.home_directory,
+                                                resource_data,
                                                 release_tracks,
                                                 args.enable_overwrites)

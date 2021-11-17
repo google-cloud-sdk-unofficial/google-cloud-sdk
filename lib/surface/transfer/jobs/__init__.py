@@ -22,4 +22,4 @@ from googlecloudsdk.calliope import base
 
 
 class Jobs(base.Group):
-  """Manage Transfer jobs."""
+  """Manage transfer jobs."""

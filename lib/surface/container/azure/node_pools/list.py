@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command to list Azure node pools."""
+"""Command to list node pools in an Anthos cluster on Azure."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -35,7 +35,7 @@ $ {command} --cluster=my-cluster --location=us-west1
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List Azure node pools."""
+  """List node pools in an Anthos cluster on Azure."""
 
   detailed_help = {'EXAMPLES': _EXAMPLES}
 

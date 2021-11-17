@@ -24,12 +24,16 @@
   request:
     ALPHA:
       api_version: v1alpha
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.metastore.services.util:GenerateNetworkConfigFromSubnetList
+      - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfig
     BETA:
       api_version: v1beta
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.metastore.services.util:GenerateNetworkConfigFromSubnetList
+      - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfig
     GA:
       api_version: v1
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfig
     collection: metastore.projects.locations.services
 
   arguments:
@@ -39,15 +43,6 @@
         you want to create.
       spec: !REF googlecloudsdk.command_lib.metastore.resources:service
     params:
-    - arg_name: network
-      api_field: service.network
-      processor: googlecloudsdk.command_lib.metastore.parsers:ParseNetwork
-      default: default
-      help_text: |
-        The name of the network on which the service can be accessed.
-        This can be the network's ID, fully-qualified URL, or relative name in
-        the form `projects/{project_id}/global/networks/{network}`.
-        If unspecified, the "default" network will be used.
     - arg_name: port
       api_field: service.port
       default: 9083
@@ -210,6 +205,51 @@
         Mutually exclusive with flag `--data-catalog-sync`.
         This can be provided as a fully-qualified URL, or a relative name in
         the form `projects/{project_id}/locations/{location}/keyRings/{key_ring_id}/cryptoKeys/{crypto_key_id}`.
+    - group:
+        help_text: |
+          Network configuration for the metastore service.
+        mutex: true
+        params:
+        - arg_name: network
+          release_tracks: [GA]
+          api_field: service.network
+          processor: googlecloudsdk.command_lib.metastore.parsers:ParseNetwork
+          help_text: |
+            The name of the network on which the service can be accessed.
+            This can be the network's ID, fully-qualified URL, or relative name in
+            the form `projects/{project_id}/global/networks/{network}`.
+            If unspecified, the "default" network will be used.
+          default: default
+        - arg_name: network
+          release_tracks: [ALPHA, BETA]
+          api_field: service.network
+          processor: googlecloudsdk.command_lib.metastore.parsers:ParseNetwork
+          help_text: |
+            The name of the network on which the service can be accessed.
+            This can be the network's ID, fully-qualified URL, or relative name in
+            the form `projects/{project_id}/global/networks/{network}`.
+            If "network", "consumer-subnetworks" and "network-config" are unspecified,
+            the "default" network will be used.
+        - arg_name: consumer-subnetworks
+          release_tracks: [ALPHA, BETA]
+          help_text: |
+            The list of subnetworks from which the service can be accessed.
+            This can be the subnetwork's ID, fully-qualified URL, or relative name in
+            the form `projects/{project_id}/regions/{region_id}/subnetworks/{subnetwork}`.
+          type: "arg_list"
+        - arg_name: network-config-from-file
+          release_tracks: [ALPHA, BETA]
+          api_field: service.networkConfig
+          type: "googlecloudsdk.calliope.arg_parsers:YAMLFileContents:"
+          help_text: |
+            Path to a YAML file containing the network configuration for Dataproc Metastore instance.
+            The contents of the file should be structured as follows:
+
+            YAML:
+            consumers:
+            - subnetwork: projects/{project_id}/regions/{region_id}/subnetworks/{subnetwork_id}
+            - subnetwork: projects/{project_id}/regions/{region_id}/subnetworks/{subnetwork_id}
+            ...
     labels:
       api_field: service.labels
 

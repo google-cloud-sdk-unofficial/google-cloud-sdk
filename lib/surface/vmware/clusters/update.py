@@ -55,13 +55,13 @@ Update.detailed_help = {
         """,
     'EXAMPLES':
         """
-          To resize a cluster called ``my-cluster'' in private cloud ``my-privatecloud'' and zone ``us-west2-a'' to have ``3'' nodes, run:
+          To resize a cluster called ``my-cluster'' in private cloud ``my-private-cloud'' and zone ``us-west2-a'' to have ``3'' nodes, run:
 
-            $ {command} my-cluster --location=us-west2-a --project=my-project --privatecloud=my-privatecloud --node-count=3
+            $ {command} my-cluster --location=us-west2-a --project=my-project --private-cloud=my-private-cloud --node-count=3
 
             Or:
 
-            $ {command} my-cluster --privatecloud=my-privatecloud --node-count=3
+            $ {command} my-cluster --private-cloud=my-private-cloud --node-count=3
 
            In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,

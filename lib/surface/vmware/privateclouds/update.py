@@ -31,13 +31,13 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To update a private cloud named ``example-pc'' by changing its description to ``Example description'' and adding the labels ``key1'' and ``key2'' with respective values ``value1'' and ``value2'', run:
+          To update a private cloud named ``my-private-cloud'' by changing its description to ``Example description'' and adding the labels ``key1'' and ``key2'' with respective values ``value1'' and ``value2'', run:
 
-            $ {command} example-pc --location=us-west2-a --project=my-project --description='Example description' --labels=key1=value1,key2=value2
+            $ {command} my-private-cloud --location=us-west2-a --project=my-project --description='Example description' --labels=key1=value1,key2=value2
 
           Or:
 
-            $ {command} example-pc --description='Example description' --labels=key1=value1,key2=value2
+            $ {command} my-private-cloud --description='Example description' --labels=key1=value1,key2=value2
 
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
 
@@ -70,7 +70,7 @@ class Update(base.UpdateCommand):
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
-    privatecloud = args.CONCEPTS.privatecloud.Parse()
+    privatecloud = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
     operation = client.Update(
         privatecloud,

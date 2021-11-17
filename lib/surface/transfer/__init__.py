@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Cloud Storage Transfer commands."""
+"""Cloud Transfer Service commands."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Transfer(base.Group):
-  """Manage Storage Transfer jobs, operations, and agents."""
+  """Manage Transfer Service jobs, operations, and agents."""
 
   def Filter(self, context, args):
     # TODO(b/190541554):  Determine if command group works with project number

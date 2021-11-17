@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to get Google Kubernetes Engine server configuration for Azure."""
+"""Command to get Anthos Multi-Cloud server configuration for Azure."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -34,7 +34,7 @@ $ {command} --location=us-west1
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class GetServerConfig(base.Command):
-  """Get Google Kubernetes Engine server configuration for Azure."""
+  """Get Anthos Multi-Cloud server configuration for Azure."""
 
   detailed_help = {'EXAMPLES': _EXAMPLES}
 

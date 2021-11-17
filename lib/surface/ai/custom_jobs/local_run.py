@@ -31,7 +31,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Run a custom training locally.
 
@@ -69,14 +70,14 @@ class Create(base.CreateCommand):
               - another_project
                   - something
 
-          If you set 'my_project' as the working directory, then you should
+          If you set 'my_project' as the package, then you should
           execute the task.py by specifying "--script=my_training/task.py" or
           "--python-module=my_training.task", the 'requirements.txt' will be
           processed. And you will also be able to install extra packages by,
           e.g. specifying "--extra-packages=dep/foo.tar.gz,bar.whl" or include
           extra directories, e.g. specifying "--extra-dirs=dataset,config".
 
-          If you set 'my_training' as the working directory, then you should
+          If you set 'my_training' as the package, then you should
           execute the task.py by specifying "--script=task.py" or
           "--python-module=task", the 'setup.py' will be processed. However, you
           won't be able to access any other files or directories that are not in
@@ -88,19 +89,19 @@ class Create(base.CreateCommand):
           """\
           To execute an python module with required dependencies, run:
 
-            $ {command} --python-module=my_training.task --base-image=gcr.io/my/image --requirements=pandas,scipy>=1.3.0
+            $ {command} --python-module=my_training.task --executor-image-uri=gcr.io/my/image --requirements=pandas,scipy>=1.3.0
 
           To execute a python script using local GPU, run:
 
-            $ {command} --script=my_training/task.py --base-image=gcr.io/my/image --gpu
+            $ {command} --script=my_training/task.py --executor-image-uri=gcr.io/my/image --gpu
 
           To execute an arbitrary script with custom arguments, run:
 
-            $ {command} --script=my_run.sh --base-image=gcr.io/my/image -- --my-arg bar --enable_foo
+            $ {command} --script=my_run.sh --executor-image-uri=gcr.io/my/image -- --my-arg bar --enable_foo
 
           To run an existing container training without building new image, run:
 
-            $ {command} --base-image=gcr.io/my/custom-training-image
+            $ {command} --executor-image-uri=gcr.io/my/custom-training-image
           """,
   }
 
@@ -111,15 +112,15 @@ class Create(base.CreateCommand):
   def Run(self, args):
     args = validation.ValidateLocalRunArgs(args)
 
-    with files.ChDir(args.work_dir):
-      log.status.Print('Working directory is set to {}.'.format(args.work_dir))
+    with files.ChDir(args.local_package_path):
+      log.status.Print('Package is set to {}.'.format(args.local_package_path))
       executable_image = args.executor_image_uri or args.base_image
 
       if args.script:
         # TODO(b/176214485): Consider including the image id in build result.
         built_image = docker_builder.BuildImage(
             base_image=executable_image,
-            host_workdir=args.local_package_path or args.work_dir,
+            host_workdir=args.local_package_path,
             main_script=args.script,
             python_module=args.python_module,
             requirements=args.requirements,
@@ -142,7 +143,7 @@ class Create(base.CreateCommand):
 
       # Clean generated cache
       cache_dir, _ = os.path.split(
-          os.path.join(args.work_dir, args.script or ''))
+          os.path.join(args.local_package_path, args.script or ''))
       if local_util.ClearPyCache(cache_dir):
         log.status.Print(
             'Cleaned Python cache from directory: {}'.format(cache_dir))

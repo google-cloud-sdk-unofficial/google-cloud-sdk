@@ -58,6 +58,51 @@
               api_field: instance.nodeCount
               help_text: |
                 Number of memcache nodes in this instance. Valid values range from 1 to 20.
+            - group:
+                release_tracks: [ALPHA]
+                hidden: true
+                mutex: true
+                params:
+                - arg_name: maintenance-window-any
+                  action: store_true
+                  help_text: |
+                    Removes the user-specified maintenance window.
+                - group:
+                    params:
+                    - arg_name: maintenance-window-day
+                      release_tracks: [ALPHA]
+                      hidden: true
+                      api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.day
+                      choices:
+                      - arg_value: monday
+                        enum_value: MONDAY
+                      - arg_value: tuesday
+                        enum_value: TUESDAY
+                      - arg_value: wednesday
+                        enum_value: WEDNESDAY
+                      - arg_value: thursday
+                        enum_value: THURSDAY
+                      - arg_value: friday
+                        enum_value: FRIDAY
+                      - arg_value: saturday
+                        enum_value: SATURDAY
+                      - arg_value: sunday
+                        enum_value: SUNDAY
+                      help_text: |
+                        The day of week when the window starts, e.g. 'sunday'.
+                    - arg_name: maintenance-window-start-time
+                      release_tracks: [ALPHA]
+                      hidden: true
+                      api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.startTime.hours
+                      help_text: |
+                        Hour of day (0 to 23) for the start of maintenance window, in UTC time zone.
+                    - arg_name: maintenance-window-duration
+                      release_tracks: [ALPHA]
+                      hidden: true
+                      type: int
+                      api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.duration
+                      help_text: |
+                        Duration of the maintenance window in integer hours, e.g '4'.
         - arg_name: parameters
           api_field: instance.parameters.params
           metavar: KEY=VALUE
@@ -108,14 +153,26 @@
   request:
     ALPHA:
       api_version: v1beta2
+      method: patch
+      # --parameters flag uses the method `updateParameters`, all other flags use method `patch`
+      modify_method_hook: googlecloudsdk.command_lib.memcache.instances_update_util:ChooseUpdateMethod
+      # The two update methods uses different API calls with incompatible fields so we must create the
+      # requests
+      create_request_hook: googlecloudsdk.command_lib.memcache.instances_update_util:CreateUpdateRequestAlpha
     BETA:
       api_version: v1beta2
+      method: patch
+      # --parameters flag uses the method `updateParameters`, all other flags use method `patch`
+      modify_method_hook: googlecloudsdk.command_lib.memcache.instances_update_util:ChooseUpdateMethod
+      # The two update methods uses different API calls with incompatible fields so we must create the
+      # requests
+      create_request_hook: googlecloudsdk.command_lib.memcache.instances_update_util:CreateUpdateRequest
     GA:
+      method: patch
       api_version: v1
+      # --parameters flag uses the method `updateParameters`, all other flags use method `patch`
+      modify_method_hook: googlecloudsdk.command_lib.memcache.instances_update_util:ChooseUpdateMethod
+      # The two update methods uses different API calls with incompatible fields so we must create the
+      # requests
+      create_request_hook: googlecloudsdk.command_lib.memcache.instances_update_util:CreateUpdateRequest
     collection: memcache.projects.locations.instances
-    method: patch
-    # --parameters flag uses the method `updateParameters`, all other flags use method `patch`
-    modify_method_hook: googlecloudsdk.command_lib.memcache.instances_update_util:ChooseUpdateMethod
-    # The two update methods uses different API calls with incompatible fields so we must create the
-    # requests
-    create_request_hook: googlecloudsdk.command_lib.memcache.instances_update_util:CreateUpdateRequest

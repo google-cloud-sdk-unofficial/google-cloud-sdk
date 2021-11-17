@@ -7,6 +7,7 @@
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
+from distutils import util
 import os
 
 import bootstrapping
@@ -59,6 +60,11 @@ def main():
       else:
         # Don't have any credentials we can pass.
         raise store.NoCredentialsForAccountException(account)
+
+    use_client_cert = bool(util.strtobool(
+        os.getenv('GOOGLE_API_USE_CLIENT_CERTIFICATE', 'false')))
+    if use_client_cert:
+      args.append('--mtls')
 
     _MaybeAddOption(args, 'project_id', project)
 

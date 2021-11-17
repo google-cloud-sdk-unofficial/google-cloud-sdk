@@ -28,28 +28,33 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+def _Args(parser):
+  """Register flags for this command.
+
+  Args:
+    parser: an argparse.ArgumentParser-like object. It is mocked out in order to
+      capture some information, but behaves like an ArgumentParser.
+  """
+
+  flags.AddAsyncFlag(parser)
+  flags.AddNodePoolNameArg(parser, 'The name of the node pool to rollback.')
+  flags.AddNodePoolClusterFlag(
+      parser, 'The cluster from which to rollback the node pool.')
+  parser.add_argument(
+      '--timeout',
+      type=int,
+      default=1800,  # Seconds
+      hidden=True,
+      help='THIS ARGUMENT NEEDS HELP TEXT.')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Rollback(base.Command):
   """Rollback a node-pool upgrade."""
 
   @staticmethod
   def Args(parser):
-    """Register flags for this command.
-
-    Args:
-      parser: an argparse.ArgumentParser-like object. It is mocked out in order
-        to capture some information, but behaves like an ArgumentParser.
-    """
-
-    flags.AddAsyncFlag(parser)
-    flags.AddNodePoolNameArg(parser, 'The name of the node pool to rollback.')
-    flags.AddNodePoolClusterFlag(
-        parser, 'The cluster from which to rollback the node pool.')
-    parser.add_argument(
-        '--timeout',
-        type=int,
-        default=1800,  # Seconds
-        hidden=True,
-        help='THIS ARGUMENT NEEDS HELP TEXT.')
+    _Args(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -97,6 +102,25 @@ class Rollback(base.Command):
     log.UpdatedResource(pool_ref)
     return op_ref
 
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class RollbackBeta(Rollback):
+  """Rollback a node-pool upgrade."""
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser)
+    flags.AddRespectPodDisruptionBudgetFlag(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RollbackAlpha(Rollback):
+  """Rollback a node-pool upgrade."""
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser)
+    flags.AddRespectPodDisruptionBudgetFlag(parser)
 
 Rollback.detailed_help = {
     'brief':

@@ -44,6 +44,7 @@ from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import creds as c_creds
+from googlecloudsdk.core.credentials import exceptions as creds_exceptions
 from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import platforms
@@ -118,7 +119,7 @@ class GitHelper(base.Command):
       try:
         cred = c_store.Load(account, use_google_auth=True)
         c_store.Refresh(cred)
-      except c_store.Error as e:
+      except creds_exceptions.Error as e:
         sys.stderr.write(textwrap.dedent("""\
             ERROR: {error}
             Run 'gcloud auth login' to log in.

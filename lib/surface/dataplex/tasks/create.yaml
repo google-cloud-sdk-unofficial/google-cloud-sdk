@@ -141,10 +141,6 @@
               help_text: |
                 The Google Cloud Storage URI of the main Python file to use as the driver. Must
                 be a .py file.
-            - arg_name: spark-python-script
-              api_field: googleCloudDataplexV1Task.spark.pythonScript
-              help_text: |
-                Python script text to execute as the driver.
             - arg_name: spark-sql-script-file
               api_field: googleCloudDataplexV1Task.spark.sqlScriptFile
               help_text: |

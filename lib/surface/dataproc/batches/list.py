@@ -56,11 +56,12 @@ class List(base.ListCommand):
         metavar='EXPRESSION',
         require_coverage_in_tests=False,
         help="""\
-        Apply a Boolean filter _EXPRESSION_ to each resource item to be listed.
-        If the expression evaluates `True`, then that item is listed. For more
-        details and examples of filter expressions, run $ gcloud topic filters. This
-        flag interacts with other flags that are applied in this order: *--flatten*,
-        *--sort-by*, *--filter*, *--limit*.""")
+        Apply a Boolean filter EXPRESSION to each resource item to be listed
+        (the '=' equality operator is the only supported operator).
+        If the expression evaluates true for an item, the item is listed.
+        This flag interacts with other flags, which are applied in the
+        following order: *--flatten*, *--sort-by*, *--filter*, *--limit*.
+        For more information, run 'gcloud topic filters'.""")
 
     flags.AddRegionFlag(parser)
     parser.display_info.AddFormat("""

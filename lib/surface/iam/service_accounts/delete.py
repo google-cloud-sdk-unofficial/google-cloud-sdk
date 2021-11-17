@@ -29,7 +29,11 @@ from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.DeleteCommand):
-  """Delete a service account from a project."""
+  """Delete a service account from a project.
+
+  If the service account does not exist, this command returns a
+  `PERMISSION_DENIED` error.
+  """
 
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""

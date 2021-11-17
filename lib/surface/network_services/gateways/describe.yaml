@@ -1,0 +1,20 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Describe a gateway.
+  description: Show the details of a Network Services gateway.
+
+  examples: |
+    Show details about a gateway named 'my-gateway'.
+
+      $ {command} my-gateway --location=global
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:gateway
+    help_text: Name of the gateway to be described.
+
+request: &request
+  api_version: v1alpha1
+  collection: networkservices.projects.locations.gateways

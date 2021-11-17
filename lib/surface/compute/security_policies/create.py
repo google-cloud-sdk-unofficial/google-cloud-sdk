@@ -48,8 +48,11 @@ class Create(base.CreateCommand):
     group = parser.add_group(mutex=True, help='Creation options.')
 
     group.add_argument(
-        '--description',
-        help=('An optional, textual description for the security policy.'))
+        '--type',
+        choices=['CLOUD_ARMOR', 'CLOUD_ARMOR_EDGE'],
+        type=lambda x: x.upper(),
+        metavar='SECURITY_POLICY_TYPE',
+        help=('The type indicates the intended use of the security policy.'))
 
     group.add_argument(
         '--file-name',
@@ -63,6 +66,10 @@ class Create(base.CreateCommand):
             'The format of the file to create the security policy config from. '
             'Specify either yaml or json. Defaults to yaml if not specified. '
             'Will be ignored if --file-name is not specified.'))
+
+    parser.add_argument(
+        '--description',
+        help=('An optional, textual description for the security policy.'))
 
     parser.display_info.AddCacheUpdater(flags.GlobalSecurityPoliciesCompleter)
 
@@ -98,8 +105,15 @@ class Create(base.CreateCommand):
       template = self._GetTemplateFromFile(args, holder.client.messages)
       template.name = ref.Name()
     else:
-      template = holder.client.messages.SecurityPolicy(
-          name=ref.Name(), description=args.description)
+      if args.IsSpecified('type'):
+        template = holder.client.messages.SecurityPolicy(
+            name=ref.Name(),
+            description=args.description,
+            type=holder.client.messages.SecurityPolicy
+            .TypeValueValuesEnum(args.type))
+      else:
+        template = holder.client.messages.SecurityPolicy(
+            name=ref.Name(), description=args.description)
 
     return security_policy.Create(template)
 

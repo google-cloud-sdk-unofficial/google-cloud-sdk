@@ -1,9 +1,9 @@
 release_tracks: [ALPHA]
 command_type: CONFIG_EXPORT
 help_text:
-  brief: Export the configuration for a Compute instance.
+  brief: Export the configuration for a Compute Engine instance.
   description: |
-    *{command}* exports the configuration for a Compute instance.
+    *{command}* exports the configuration for a Compute Engine instance.
 
     Instance configurations can be exported in
     Kubernetes Resource Model (krm) or Terraform HCL formats. The

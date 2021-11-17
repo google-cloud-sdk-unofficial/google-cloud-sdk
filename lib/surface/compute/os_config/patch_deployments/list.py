@@ -61,7 +61,9 @@ def _TransformFrequency(resource):
   elif _RECURRING_SCHEDULE in resource:
     output_format = 'Recurring - {} {}'
     schedule = resource[_RECURRING_SCHEDULE]
-    if schedule['frequency'] == 'WEEKLY':
+    if schedule['frequency'] == 'DAILY':
+      return output_format.format('Daily', '')
+    elif schedule['frequency'] == 'WEEKLY':
       return output_format.format('Weekly', '')
     elif schedule['frequency'] == 'MONTHLY':
       if schedule['monthly'].get('weekDayOfMonth', ''):

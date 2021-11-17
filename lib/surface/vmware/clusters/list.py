@@ -33,12 +33,12 @@ class List(base.ListCommand):
     flags.AddPrivatecloudArgToParser(parser)
     parser.display_info.AddFormat('table(name.segment(-1):label=NAME,'
                                   'name.segment(-5):label=LOCATION,'
-                                  'name.segment(-3):label=PRIVATECLOUD,'
+                                  'name.segment(-3):label=PRIVATE_CLOUD,'
                                   'nodeTypeId:label=NODE_TYPE,'
                                   'nodeCount,createTime,state)')
 
   def Run(self, args):
-    privatecloud = args.CONCEPTS.privatecloud.Parse()
+    privatecloud = args.CONCEPTS.private_cloud.Parse()
     client = ClustersClient()
     return client.List(privatecloud, limit=args.limit)
 
@@ -50,13 +50,13 @@ List.detailed_help = {
           """,
     'EXAMPLES':
         """
-          To list clusters in the ``my-privatecloud'' private cloud run:
+          To list clusters in the ``my-private-cloud'' private cloud run:
 
-            $ {command} --location=us-west2-a --project=my-project --privatecloud=my-privatecloud
+            $ {command} --location=us-west2-a --project=my-project --private-cloud=my-private-cloud
 
             Or:
 
-            $ {command} --privatecloud=my-privatecloud
+            $ {command} --private-cloud=my-private-cloud
 
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,

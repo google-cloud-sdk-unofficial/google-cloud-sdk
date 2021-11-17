@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.asset import client_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.asset import asset_query_printer
 from googlecloudsdk.command_lib.asset import flags
 from googlecloudsdk.command_lib.asset import utils as asset_utils
 from googlecloudsdk.command_lib.util.args import common_args
@@ -65,11 +66,16 @@ class Query(base.Command):
     flags.AddPageToken(parser)
     flags.AddTimeout(parser)
 
+    parser.display_info.AddFormat(
+        asset_query_printer.ASSET_QUERY_PRINTER_FORMAT)
+
+    asset_query_printer.AssetQueryPrinter.Register(parser)
+
   def Run(self, args):
+
     parent = asset_utils.GetParentNameForExport(args.organization, args.project,
                                                 args.folder)
     client = client_util.AssetQueryClient(parent)
-    return client.Query(args)
+    resp = client.Query(args)
 
-  # TODO(b/200986834): pretty print the response.
-  # def Display():
+    return resp

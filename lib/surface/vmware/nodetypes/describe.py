@@ -52,7 +52,7 @@ class Describe(base.DescribeCommand):
     flags.AddNodeTypeArgToParser(parser, positional=True)
 
   def Run(self, args):
-    resource = args.CONCEPTS.nodetype.Parse()
+    resource = args.CONCEPTS.node_type.Parse()
     client = NodeTypesClient()
     return client.Get(resource)
 

@@ -22,7 +22,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.util.apis import arg_utils
-from googlecloudsdk.command_lib.util.args import common_args
 
 
 @base.Hidden
@@ -45,7 +44,6 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    common_args.ProjectArgument().AddToParser(parser)
     parser.add_argument(
         '--display-name',
         type=str,

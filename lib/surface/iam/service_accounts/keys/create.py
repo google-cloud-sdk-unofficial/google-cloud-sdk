@@ -28,7 +28,11 @@ from googlecloudsdk.core import log
 
 
 class Create(base.Command):
-  """Create a private key for a service account."""
+  """Create a private key for a service account.
+
+  If the service account does not exist, this command returns a
+  `PERMISSION_DENIED` error.
+  """
 
   detailed_help = {
       'NOTES': textwrap.dedent("""

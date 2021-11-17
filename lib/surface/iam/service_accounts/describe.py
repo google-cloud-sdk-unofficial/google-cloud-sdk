@@ -34,7 +34,8 @@ class Describe(base.DescribeCommand):
           This command shows metadata for a service account.
 
           This call can fail for the following reasons:
-              * The service account specified does not exist.
+              * The specified service account does not exist. In this case, you
+                receive a `PERMISSION_DENIED` error.
               * The active user does not have permission to access the given
                 service account.
           """),

@@ -39,7 +39,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe a Bare Metal solution volume."""
+  """Describe a Bare Metal Solution volume."""
 
   @staticmethod
   def Args(parser):

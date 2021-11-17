@@ -361,7 +361,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       autopilot=is_autopilot,
       gvnic=get_default('enable_gvnic'),
       enable_confidential_nodes=get_default('enable_confidential_nodes'),
-      enable_image_streaming=get_default('enable_image_streaming'))
+      enable_image_streaming=get_default('enable_image_streaming'),
+      spot=get_default('spot'))
 
 
 GA = 'ga'
@@ -548,6 +549,8 @@ flags_to_add = {
             flags.AddShieldedInstanceFlags,
         'shieldednodes':
             flags.AddEnableShieldedNodesFlags,
+        'spot':
+            lambda p: flags.AddSpotFlag(p, hidden=True),
         'surgeupgrade':
             flags.AddSurgeUpgradeFlag,
         'systemconfig':

@@ -97,7 +97,7 @@ class PrintAccessToken(base.Command):
 
     # Converts the user credentials so that it can handle reauth during refresh.
     if isinstance(creds, google_auth_creds.Credentials):
-      creds = c_google_auth.UserCredWithReauth.FromGoogleAuthUserCredentials(
+      creds = c_google_auth.Credentials.FromGoogleAuthUserCredentials(
           creds)
     with c_store.HandleGoogleAuthCredentialsRefreshError(for_adc=True):
       creds.refresh(requests.GoogleAuthRequest())

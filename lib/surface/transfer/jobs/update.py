@@ -37,6 +37,10 @@ def _clear_fields(args, job):
       job.transferSpec.azureBlobStorageDataSource.azureCredentials = None
   if args.clear_schedule:
     job.schedule = None
+  if args.clear_source_agent_pool:
+    job.transferSpec.sourceAgentPoolName = None
+  if args.clear_destination_agent_pool:
+    job.transferSpec.sinkAgentPoolName = None
   if args.clear_include_prefixes:
     job.transferSpec.objectConditions.includePrefixes = []
   if args.clear_exclude_prefixes:

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command to delete an Azure node pool."""
+"""Command to delete a node pool in an Anthos cluster on Azure."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -40,7 +40,7 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
-  """Delete an Azure node pool."""
+  """Delete a node pool in an Anthos cluster on Azure."""
 
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
