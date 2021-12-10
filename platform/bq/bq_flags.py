@@ -24,7 +24,7 @@ flags.DEFINE_boolean('debug_mode', False,
 flags.DEFINE_string(
     'trace',
     None,
-    'A tracing token of the form "token:<token>" '
+    'A tracing token '
     'to include in api requests.'
 )
 flags.DEFINE_string(
@@ -125,5 +125,8 @@ flags.DEFINE_boolean(
     'enable_gdrive', True,
     'When set to true, requests new OAuth token with GDrive scope. '
     'When set to false, requests new OAuth token without GDrive scope.')
+flags.DEFINE_boolean(
+    'mtls', False,
+    'If set will use mtls client certificate on connections to BigQuery.')
 
 

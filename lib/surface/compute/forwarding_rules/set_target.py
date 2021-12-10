@@ -142,7 +142,7 @@ class Set(base.UpdateCommand):
 class SetBeta(Set):
   """Modify a forwarding rule to direct network traffic to a new target."""
   _include_l7_internal_load_balancing = True
-  _include_gfe3 = False
+  _include_gfe3 = True
   _include_l7_rxlb = True
 
 
@@ -150,4 +150,3 @@ class SetBeta(Set):
 class SetAlpha(SetBeta):
   """Modify a forwarding rule to direct network traffic to a new target."""
   _include_l7_internal_load_balancing = True
-  _include_gfe3 = True

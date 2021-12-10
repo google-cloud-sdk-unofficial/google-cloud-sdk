@@ -1,4 +1,4 @@
-- release_tracks: [BETA, ALPHA]
+- release_tracks: [GA, BETA, ALPHA]
   help_text:
     brief: View the list of Cloud DNS response policy rules within a response policy.
     description: Displays the list of all Cloud DNS response policy rules in a given response policy.
@@ -14,10 +14,6 @@
   request:
     collection: dns.responsePolicyRules
     method: list
-    ALPHA:
-      api_version: v1alpha2
-    BETA:
-      api_version: v1beta2
 
   response:
     id_field: ruleName

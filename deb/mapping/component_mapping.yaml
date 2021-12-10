@@ -13,6 +13,7 @@ bigtable: google-cloud-sdk-bigtable-emulator
 bq: google-cloud-sdk
 cbt: google-cloud-sdk-cbt
 cloud-build-local: google-cloud-sdk-cloud-build-local
+cloud-run-proxy: unavailable
 cloud_sql_proxy: unavailable
 cloud-datastore-emulator: google-cloud-sdk-datastore-emulator
 cloud-firestore-emulator: google-cloud-sdk-firestore-emulator

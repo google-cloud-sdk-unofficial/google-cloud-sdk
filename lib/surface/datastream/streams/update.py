@@ -59,8 +59,7 @@ class Update(base.Command):
     streams_flags.AddUpdateMaskFlag(parser)
     streams_flags.AddDisplayNameFlag(parser, required=False)
     streams_flags.AddBackfillStrategyGroup(parser, required=False)
-    streams_flags.AddForceFlag(parser)
-    streams_flags.AddValidateOnlyFlag(parser)
+    streams_flags.AddValidationGroup(parser)
     streams_flags.AddStateFlag(parser)
     flags.AddLabelsUpdateFlags(parser)
 

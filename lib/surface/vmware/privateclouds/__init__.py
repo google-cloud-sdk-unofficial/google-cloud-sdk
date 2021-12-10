@@ -23,7 +23,13 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Privateclouds(base.Group):
+class PrivatecloudsAlpha(base.Group):
   """Manage private clouds in Google Cloud VMware Engine."""
 
   category = base.COMPUTE_CATEGORY
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class PrivatecloudsBeta(PrivatecloudsAlpha):
+  """Manage private clouds in Google Cloud VMware Engine."""

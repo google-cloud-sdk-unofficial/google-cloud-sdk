@@ -18,11 +18,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import list_pager
 
+from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import exceptions as gcloud_exceptions
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.iam.workforce_pools import flags
 
@@ -57,10 +57,15 @@ class List(base.ListCommand):
 
   def Run(self, args):
     if args.limit is not None and (args.limit < 1):
-      raise exceptions.InvalidArgumentException('Limit size must be >=1')
+      raise gcloud_exceptions.InvalidArgumentException('Limit size must be >=1')
 
     client, messages = util.GetClientAndMessages()
-    parent_name = iam_util.GetParentName(args.organization, None)
+    if not args.organization:
+      raise gcloud_exceptions.RequiredArgumentException(
+          '--organization',
+          'Should specify the organization for workforce pools.')
+    parent_name = iam_util.GetParentName(args.organization, None,
+                                         'workforce pools')
     return list_pager.YieldFromList(
         client.locations_workforcePools,
         messages.IamLocationsWorkforcePoolsListRequest(

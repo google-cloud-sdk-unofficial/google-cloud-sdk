@@ -128,7 +128,7 @@ def _GetConfirmedClearedFields(args, patch_instance, original_instance):
   return cleared_fields
 
 
-def AddBaseArgs(parser):
+def AddBaseArgs(parser, is_alpha=False):
   """Adds base args and flags to the parser."""
   # TODO(b/35705305): move common flags to command_lib.sql.flags
   flags.AddActivationPolicy(parser)
@@ -239,6 +239,11 @@ def AddBaseArgs(parser):
   flags.AddStorageSize(parser)
   flags.AddTier(parser, is_patch=True)
   flags.AddEnablePointInTimeRecovery(parser)
+  flags.AddDatabaseVersion(
+      parser,
+      support_default_version=False,
+      expose_mvs_versions=True,
+      expose_all_versions=is_alpha)
 
 
 def AddBetaArgs(parser):
@@ -252,7 +257,7 @@ def AddBetaArgs(parser):
 def AddAlphaArgs(parser):
   """Adds alpha args and flags to the parser."""
   flags.AddSqlServerAuditBucketPath(parser)
-  flags.AddDatabaseVersion(parser, hidden=True)
+  flags.AddMaintenanceVersion(parser)
 
 
 def RunBasePatchCommand(args, release_track):
@@ -393,7 +398,7 @@ class PatchAlpha(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
-    AddBaseArgs(parser)
+    AddBaseArgs(parser, is_alpha=True)
     flags.AddZone(
         parser,
         help_text=('Preferred Compute Engine zone (e.g. us-central1-a, '

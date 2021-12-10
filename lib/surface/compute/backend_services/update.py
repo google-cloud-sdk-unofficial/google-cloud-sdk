@@ -72,8 +72,7 @@ class UpdateHelper(object):
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
            support_logging, support_client_only, support_grpc_protocol,
            support_subsetting, support_subsetting_subset_size,
-           support_unspecified_protocol,
-           support_connection_tracking, support_strong_session_affinity,
+           support_unspecified_protocol, support_strong_session_affinity,
            support_advanced_load_balancing, support_service_bindings,
            support_extended_caching):
     """Add all arguments for updating a backend service."""
@@ -138,8 +137,7 @@ class UpdateHelper(object):
 
     cdn_flags.AddCdnPolicyArgs(parser, 'backend service', update_command=True)
 
-    if support_connection_tracking:
-      flags.AddConnectionTrackingPolicy(parser)
+    flags.AddConnectionTrackingPolicy(parser)
 
     if support_strong_session_affinity:
       flags.AddStrongSessionAffinity(parser)
@@ -157,7 +155,6 @@ class UpdateHelper(object):
                support_logging,
                support_subsetting,
                support_subsetting_subset_size,
-               support_connection_tracking=False,
                support_strong_session_affinity=False,
                support_advanced_load_balancing=False,
                support_service_bindings=False,
@@ -167,7 +164,6 @@ class UpdateHelper(object):
     self._support_logging = support_logging
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
-    self._support_connection_tracking = support_connection_tracking
     self._support_strong_session_affinity = support_strong_session_affinity
     self._support_advanced_load_balancing = support_advanced_load_balancing
     self._support_service_bindings = support_service_bindings
@@ -244,12 +240,11 @@ class UpdateHelper(object):
         replacement.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
       replacement.enableCDN = True
 
-    if self._support_connection_tracking:
-      backend_services_utils.ApplyConnectionTrackingPolicyArgs(
-          client,
-          args,
-          replacement,
-          support_strong_session_affinity=self._support_strong_session_affinity)
+    backend_services_utils.ApplyConnectionTrackingPolicyArgs(
+        client,
+        args,
+        replacement,
+        support_strong_session_affinity=self._support_strong_session_affinity)
 
     self._ApplyIapArgs(client, args.iap, existing, replacement)
 
@@ -350,12 +345,9 @@ class UpdateHelper(object):
         args.IsSpecified('no_serve_while_stale'),
         args.IsSpecified('bypass_cache_on_request_headers'),
         args.IsSpecified('no_bypass_cache_on_request_headers'),
-        args.IsSpecified('connection_persistence_on_unhealthy_backends')
-        if self._support_connection_tracking else False,
-        args.IsSpecified('tracking_mode')
-        if self._support_connection_tracking else False,
-        args.IsSpecified('idle_timeout_sec')
-        if self._support_connection_tracking else False,
+        args.IsSpecified('connection_persistence_on_unhealthy_backends'),
+        args.IsSpecified('tracking_mode'),
+        args.IsSpecified('idle_timeout_sec'),
         args.IsSpecified('enable_strong_affinity')
         if self._support_strong_session_affinity else False,
         args.IsSpecified('service_lb_policy')
@@ -373,8 +365,9 @@ class UpdateHelper(object):
   def GetSetRequest(self, client, backend_service_ref, replacement):
     """Returns a backend service patch request."""
 
-    if (backend_service_ref.Collection() == 'compute.backendServices') and (
-        self._support_failover and replacement.failoverPolicy):
+    if (backend_service_ref.Collection()
+        == 'compute.backendServices') and (self._support_failover and
+                                           replacement.failoverPolicy):
       raise exceptions.InvalidArgumentException(
           '--global',
           'cannot specify failover policies for global backend services.')
@@ -441,8 +434,8 @@ class UpdateHelper(object):
       if replacement.iap.enabled and not (existing_iap and
                                           existing_iap.enabled):
         log.warning(backend_services_utils.IapBestPracticesNotice())
-      if (replacement.iap.enabled and replacement.protocol is
-          not client.messages.BackendService.ProtocolValueValuesEnum.HTTPS):
+      if (replacement.iap.enabled and replacement.protocol
+          is not client.messages.BackendService.ProtocolValueValuesEnum.HTTPS):
         log.warning(backend_services_utils.IapHttpWarning())
 
   def Run(self, args, holder):
@@ -531,7 +524,6 @@ class UpdateGA(base.UpdateCommand):
   _support_grpc_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = False
-  _support_connection_tracking = False
   _support_strong_session_affinity = False
   _support_advanced_load_balancing = False
   _support_service_bindings = False
@@ -550,7 +542,6 @@ class UpdateGA(base.UpdateCommand):
         support_subsetting=cls._support_subsetting,
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_unspecified_protocol=cls._support_unspecified_protocol,
-        support_connection_tracking=cls._support_connection_tracking,
         support_strong_session_affinity=cls._support_strong_session_affinity,
         support_advanced_load_balancing=cls._support_advanced_load_balancing,
         support_service_bindings=cls._support_service_bindings,
@@ -559,14 +550,14 @@ class UpdateGA(base.UpdateCommand):
   def Run(self, args):
     """Issues requests necessary to update the Backend Services."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return UpdateHelper(
-        self._support_l7_internal_load_balancer, self._support_failover,
-        self._support_logging, self._support_subsetting,
-        self._support_subsetting_subset_size,
-        self._support_connection_tracking,
-        self._support_strong_session_affinity,
-        self._support_advanced_load_balancing, self._support_service_bindings,
-        self._support_extended_caching).Run(args, holder)
+    return UpdateHelper(self._support_l7_internal_load_balancer,
+                        self._support_failover, self._support_logging,
+                        self._support_subsetting,
+                        self._support_subsetting_subset_size,
+                        self._support_strong_session_affinity,
+                        self._support_advanced_load_balancing,
+                        self._support_service_bindings,
+                        self._support_extended_caching).Run(args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -581,10 +572,9 @@ class UpdateBeta(UpdateGA):
   _support_grpc_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = False
-  _support_connection_tracking = True
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = False
-  _support_service_bindings = False
+  _support_service_bindings = True
   _support_extended_caching = True
 
 
@@ -600,7 +590,6 @@ class UpdateAlpha(UpdateBeta):
   _support_grpc_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = True
-  _support_connection_tracking = True
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = True
   _support_service_bindings = True

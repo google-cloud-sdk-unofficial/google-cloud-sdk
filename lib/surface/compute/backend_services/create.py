@@ -94,9 +94,9 @@ class CreateHelper(object):
            support_l7_rxlb, support_failover, support_logging, support_multinic,
            support_client_only, support_grpc_protocol,
            support_unspecified_protocol, support_subsetting,
-           support_subsetting_subset_size, support_connection_tracking,
-           support_strong_session_affinity, support_advanced_load_balancing,
-           support_service_bindings, support_extended_caching):
+           support_subsetting_subset_size, support_strong_session_affinity,
+           support_advanced_load_balancing, support_service_bindings,
+           support_extended_caching):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -162,8 +162,7 @@ class CreateHelper(object):
 
     cdn_flags.AddCdnPolicyArgs(parser, 'backend service')
 
-    if support_connection_tracking:
-      flags.AddConnectionTrackingPolicy(parser)
+    flags.AddConnectionTrackingPolicy(parser)
 
     if support_strong_session_affinity:
       flags.AddStrongSessionAffinity(parser)
@@ -171,9 +170,9 @@ class CreateHelper(object):
   def __init__(self, support_l7_internal_load_balancer, support_gfe3,
                support_l7_rxlb, support_failover, support_logging,
                support_multinic, support_subsetting,
-               support_subsetting_subset_size, support_connection_tracking,
-               support_strong_session_affinity, support_advanced_load_balancing,
-               support_service_bindings, support_extended_caching):
+               support_subsetting_subset_size, support_strong_session_affinity,
+               support_advanced_load_balancing, support_service_bindings,
+               support_extended_caching):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_gfe3 = support_gfe3
     self._support_l7_rxlb = support_l7_rxlb
@@ -182,7 +181,6 @@ class CreateHelper(object):
     self._support_multinic = support_multinic
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
-    self._support_connection_tracking = support_connection_tracking
     self._support_strong_session_affinity = support_strong_session_affinity
     self._support_advanced_load_balancing = support_advanced_load_balancing
     self._support_service_bindings = support_service_bindings
@@ -314,12 +312,11 @@ class CreateHelper(object):
       backend_services_utils.ApplySubsettingArgs(
           client, args, backend_service, self._support_subsetting_subset_size)
 
-    if self._support_connection_tracking:
-      backend_services_utils.ApplyConnectionTrackingPolicyArgs(
-          client,
-          args,
-          backend_service,
-          support_strong_session_affinity=self._support_strong_session_affinity)
+    backend_services_utils.ApplyConnectionTrackingPolicyArgs(
+        client,
+        args,
+        backend_service,
+        support_strong_session_affinity=self._support_strong_session_affinity)
 
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
@@ -423,7 +420,6 @@ class CreateGA(base.CreateCommand):
   _support_unspecified_protocol = False
   _support_subsetting = True
   _support_subsetting_subset_size = False
-  _support_connection_tracking = False
   _support_strong_session_affinity = False
   _support_advanced_load_balancing = False
   _support_service_bindings = False
@@ -445,7 +441,6 @@ class CreateGA(base.CreateCommand):
         support_unspecified_protocol=cls._support_unspecified_protocol,
         support_subsetting=cls._support_subsetting,
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
-        support_connection_tracking=cls._support_connection_tracking,
         support_strong_session_affinity=cls._support_strong_session_affinity,
         support_advanced_load_balancing=cls._support_advanced_load_balancing,
         support_service_bindings=cls._support_service_bindings,
@@ -465,7 +460,6 @@ class CreateGA(base.CreateCommand):
         support_multinic=self._support_multinic,
         support_subsetting=self._support_subsetting,
         support_subsetting_subset_size=self._support_subsetting_subset_size,
-        support_connection_tracking=self._support_connection_tracking,
         support_strong_session_affinity=self._support_strong_session_affinity,
         support_advanced_load_balancing=self._support_advanced_load_balancing,
         support_service_bindings=self._support_service_bindings,
@@ -492,16 +486,16 @@ class CreateBeta(CreateGA):
   https://cloud.google.com/load-balancing/docs/backend-service.
   """
   _support_l7_rxlb = True
+  _support_gfe3 = True
   _support_multinic = True
   _support_client_only = False
   _support_grpc_protocol = True
   _support_unspecified_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = False
-  _support_connection_tracking = True
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = False
-  _support_service_bindings = False
+  _support_service_bindings = True
   _support_extended_caching = True
 
 
@@ -523,13 +517,11 @@ class CreateAlpha(CreateBeta):
   For more information about the available settings, see
   https://cloud.google.com/load-balancing/docs/backend-service.
   """
-  _support_gfe3 = True
   _support_client_only = True
   _support_grpc_protocol = True
   _support_unspecified_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = True
-  _support_connection_tracking = True
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = True
   _support_service_bindings = True

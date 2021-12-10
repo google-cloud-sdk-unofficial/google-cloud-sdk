@@ -53,7 +53,7 @@ class Create(base.Command):
     """
     flags.AddTypeArg(parser)
     flags.AddNameArg(parser)
-    flags.AddServiceArg(parser)
+    flags.AddServiceCreateArg(parser)
     flags.AddParametersArg(parser)
 
   def Run(self, args):
@@ -62,7 +62,8 @@ class Create(base.Command):
     integration_type = args.type
     service = args.service
     integration_name = args.name
-    parameters = flags.GetAndValidateParameters(args, integration_type)
+    parameters = flags.GetParameters(args)
+    flags.ValidateParameters(parameters, integration_type)
 
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, self.ReleaseTrack())

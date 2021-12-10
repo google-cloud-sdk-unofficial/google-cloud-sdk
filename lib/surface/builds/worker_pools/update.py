@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.cloudbuild import cloudbuild_exceptions
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import workerpool_config
 from googlecloudsdk.api_lib.compute import utils as compute_utils
@@ -58,7 +59,7 @@ class Update(base.UpdateCommand):
                                                       base.ReleaseTrack.GA)
     parser.display_info.AddFormat("""
           table(
-            name,
+            name.segment(-1),
             createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
             state
           )
@@ -90,11 +91,13 @@ class Update(base.UpdateCommand):
       try:
         wp = workerpool_config.LoadWorkerpoolConfigFromPath(
             args.config_from_file, messages)
-      except cloudbuild_util.ParseProtoException as err:
-        log.err.Print(
-            '\nFailed to parse configuration from file. If you'
-            ' were a Private Preview user, note that the format for this'
-            ' file has changed slightly for GA.\n')
+        # Don't allow a worker pool config for hybrid worker pools in any other
+        # track but alpha.
+        if release_track != base.ReleaseTrack.ALPHA:
+          if wp.hybridPoolConfig is not None:
+            raise cloudbuild_exceptions.HybridNonAlphaConfigError
+      except cloudbuild_exceptions.ParseProtoException as err:
+        log.err.Print('\nFailed to parse configuration from file.\n')
         raise err
     else:
       wp.privatePoolV1Config = messages.PrivatePoolV1Config()
@@ -106,14 +109,14 @@ class Update(base.UpdateCommand):
             args.worker_disk_size)
       wp.privatePoolV1Config.workerConfig = worker_config
 
-      nc = messages.NetworkConfig()
+      private_worker_network_config = messages.NetworkConfig()
       # All of the egress flags are mutually exclusive with each other.
       if args.no_public_egress or (release_track == base.ReleaseTrack.GA and
                                    args.no_external_ip):
-        nc.egressOption = messages.NetworkConfig.EgressOptionValueValuesEnum.NO_PUBLIC_EGRESS
+        private_worker_network_config.egressOption = messages.NetworkConfig.EgressOptionValueValuesEnum.NO_PUBLIC_EGRESS
       if args.public_egress:
-        nc.egressOption = messages.NetworkConfig.EgressOptionValueValuesEnum.PUBLIC_EGRESS
-      wp.privatePoolV1Config.networkConfig = nc
+        private_worker_network_config.egressOption = messages.NetworkConfig.EgressOptionValueValuesEnum.PUBLIC_EGRESS
+      wp.privatePoolV1Config.networkConfig = private_worker_network_config
 
     # Get the workerpool ref
     wp_resource = resources.REGISTRY.Parse(
@@ -142,13 +145,6 @@ class Update(base.UpdateCommand):
         op_resource, 'Updating worker pool')
 
     log.UpdatedResource(wp_resource)
-
-    # Format the workerpool name for display
-    try:
-      updated_wp.name = cloudbuild_util.RegionalWorkerPoolShortName(
-          updated_wp.name)
-    except ValueError:
-      pass  # Must be an old version.
 
     return updated_wp
 
@@ -192,8 +188,109 @@ class UpdateAlpha(Update):
                                                       base.ReleaseTrack.ALPHA)
     parser.display_info.AddFormat("""
           table(
-            name,
+            name.segment(-1),
             createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
             state
           )
         """)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+
+    wp_name = args.WORKER_POOL
+    wp_region = args.region
+
+    release_track = self.ReleaseTrack()
+    client = cloudbuild_util.GetClientInstance(release_track)
+    messages = cloudbuild_util.GetMessagesModule(release_track)
+
+    parent = properties.VALUES.core.project.Get(required=True)
+
+    # Get the workerpool proto from either the flags or the specified file.
+    wp = messages.WorkerPool()
+    if args.config_from_file is not None:
+      try:
+        wp = workerpool_config.LoadWorkerpoolConfigFromPath(
+            args.config_from_file, messages)
+        if wp.hybridPoolConfig is not None:
+          if wp_region not in cloudbuild_util.CBH_SUPPORTED_REGIONS:
+            raise cloudbuild_exceptions.HybridUnsupportedRegionError(wp_region)
+      except cloudbuild_exceptions.ParseProtoException as err:
+        log.err.Print('\nFailed to parse configuration from file. If you'
+                      ' were a Beta user, note that the format for this'
+                      ' file has changed slightly for GA.\n')
+        raise err
+    else:
+      private_worker_config = messages.WorkerConfig()
+      if args.worker_machine_type is not None:
+        private_worker_config.machineType = args.worker_machine_type
+      if args.worker_disk_size is not None:
+        private_worker_config.diskSizeGb = compute_utils.BytesToGb(
+            args.worker_disk_size)
+
+      private_worker_network_config = messages.NetworkConfig()
+      # All of the egress flags are mutually exclusive with each other.
+      if args.no_public_egress or (release_track == base.ReleaseTrack.GA and
+                                   args.no_external_ip):
+        private_worker_network_config.egressOption = messages.NetworkConfig.EgressOptionValueValuesEnum.NO_PUBLIC_EGRESS
+      if args.public_egress:
+        private_worker_network_config.egressOption = messages.NetworkConfig.EgressOptionValueValuesEnum.PUBLIC_EGRESS
+
+      # The private pool and hybrid pool flags are mutually exclusive
+      hybrid_worker_config = messages.HybridWorkerConfig()
+      if args.default_build_disk_size is not None:
+        hybrid_worker_config.diskSizeGb = compute_utils.BytesToGb(
+            args.default_build_disk_size)
+      if args.default_build_memory is not None:
+        hybrid_worker_config.memoryGb = compute_utils.BytesToGb(
+            args.default_build_memory)
+      if args.default_build_vcpu_count is not None:
+        hybrid_worker_config.vcpuCount = args.default_build_vcpu_count
+
+      if args.default_build_disk_size is not None or args.default_build_memory is not None or args.default_build_vcpu_count is not None:
+        if wp_region not in cloudbuild_util.CBH_SUPPORTED_REGIONS:
+          raise cloudbuild_exceptions.HybridUnsupportedRegionError(wp_region)
+        wp.hybridPoolConfig = messages.HybridPoolConfig()
+        wp.hybridPoolConfig.defaultWorkerConfig = hybrid_worker_config
+      else:
+        wp.privatePoolV1Config = messages.PrivatePoolV1Config()
+        wp.privatePoolV1Config.networkConfig = private_worker_network_config
+        wp.privatePoolV1Config.workerConfig = private_worker_config
+
+    # Get the workerpool ref
+    wp_resource = resources.REGISTRY.Parse(
+        None,
+        collection='cloudbuild.projects.locations.workerPools',
+        api_version=cloudbuild_util.RELEASE_TRACK_TO_API_VERSION[release_track],
+        params={
+            'projectsId': parent,
+            'locationsId': wp_region,
+            'workerPoolsId': wp_name,
+        })
+
+    update_mask = cloudbuild_util.MessageToFieldPaths(wp)
+    req = messages.CloudbuildProjectsLocationsWorkerPoolsPatchRequest(
+        name=wp_resource.RelativeName(),
+        workerPool=wp,
+        updateMask=','.join(update_mask))
+    # Send the Update request
+    updated_op = client.projects_locations_workerPools.Patch(req)
+
+    op_resource = resources.REGISTRY.ParseRelativeName(
+        updated_op.name, collection='cloudbuild.projects.locations.operations')
+    updated_wp = waiter.WaitFor(
+        waiter.CloudOperationPoller(client.projects_locations_workerPools,
+                                    client.projects_locations_operations),
+        op_resource, 'Updating worker pool')
+
+    log.UpdatedResource(wp_resource)
+
+    return updated_wp

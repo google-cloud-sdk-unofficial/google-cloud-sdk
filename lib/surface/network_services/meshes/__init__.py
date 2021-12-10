@@ -24,3 +24,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Meshes(base.Group):
   """Manage Network Services Meshes."""
+  category = base.MANAGEMENT_TOOLS_CATEGORY

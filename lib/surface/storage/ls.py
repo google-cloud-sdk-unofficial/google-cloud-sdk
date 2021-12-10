@@ -21,7 +21,9 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage.tasks import task_executor
 from googlecloudsdk.command_lib.storage.tasks.ls import cloud_list_task
@@ -153,8 +155,11 @@ class Ls(base.Command):
         action='store_true',
         help='List all available metadata about items as a JSON dump.')
 
+    flags.add_encryption_flags(parser)
+
   def Run(self, args):
     """Command execution logic."""
+    encryption_util.initialize_key_store(args)
     if args.path:
       storage_urls = [storage_url.storage_url_from_string(path)
                       for path in args.path]

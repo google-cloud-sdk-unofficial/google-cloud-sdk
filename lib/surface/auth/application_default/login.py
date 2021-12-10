@@ -97,14 +97,6 @@ class Login(base.Command):
         'The list of possible scopes can be found at: '
         '[](https://developers.google.com/identity/protocols/googlescopes).'
         .format(', '.join(auth_util.DEFAULT_SCOPES)))
-    parser.add_argument(
-        '--use-oauth2client',
-        action='store_true',
-        default=False,
-        hidden=True,
-        help='The gcloud command-line tool is using google-auth-library-python '
-        'as its new auth library during login. Use this flag to switch '
-        'back to the oauth2client.')
     flags.AddQuotaProjectFlags(parser)
     parser.display_info.AddFormat('none')
 
@@ -136,26 +128,12 @@ class Login(base.Command):
     # This reauth scope is only used here and when refreshing the access token.
     scopes = (args.scopes or auth_util.DEFAULT_SCOPES) + [config.REAUTH_SCOPE]
     launch_browser = check_browser.ShouldLaunchBrowser(args.launch_browser)
-    if args.use_oauth2client:
-      if args.client_id_file:
-        creds = auth_util.DoInstalledAppBrowserFlow(
-            launch_browser=launch_browser,
-            scopes=scopes,
-            client_id_file=args.client_id_file)
-      else:
-        creds = auth_util.DoInstalledAppBrowserFlow(
-            launch_browser=launch_browser,
-            scopes=scopes,
-            client_id=auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_ID,
-            client_secret=auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_SECRET)
-
-    else:
-      properties.VALUES.auth.client_id.Set(
-          auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_ID)
-      properties.VALUES.auth.client_secret.Set(
-          auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_SECRET)
-      creds = auth_util.DoInstalledAppBrowserFlowGoogleAuth(
-          launch_browser, scopes, client_id_file=args.client_id_file)
+    properties.VALUES.auth.client_id.Set(
+        auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_ID)
+    properties.VALUES.auth.client_secret.Set(
+        auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_SECRET)
+    creds = auth_util.DoInstalledAppBrowserFlowGoogleAuth(
+        launch_browser, scopes, client_id_file=args.client_id_file)
 
     target_impersonation_principal, delegates = None, None
     impersonation_service_accounts = properties.VALUES.auth.impersonate_service_account.Get(

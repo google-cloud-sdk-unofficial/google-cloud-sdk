@@ -16,9 +16,9 @@
         $ {command} --project=my-project
 
   request:
-    collection: gkebackup.projects.locations.restores
+    collection: gkebackup.projects.locations.restorePlans.restores
     ALPHA:
-      api_version: v1alpha1
+      api_version: v1
 
   response:
     id_field: name
@@ -28,8 +28,8 @@
       help_text: |
         Name of the location from which to list restores (provided via options or through
         properties):
-        `--project=<project> --location=<location>`.
-      spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:default_location
+        `--project=<project> --location=<location> --restore-plan=<restore-plan>`.
+      spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:default_restore_plan
 
   output:
     ALPHA:

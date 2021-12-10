@@ -26,7 +26,7 @@ from googlecloudsdk.core import log
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          Unmark a VMware Engine private cloud that was previously marked for deletion by `gcloud vmware privateclouds delete`.
+          Unmark a VMware Engine private cloud that was previously marked for deletion by `{parent_command} delete`.
 
         """,
     'EXAMPLES':
@@ -47,8 +47,10 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UnDescribe(base.DeleteCommand):
-  """Cancel deletion a VMware Engine private cloud."""
+class UnDeleteAlpha(base.DeleteCommand):
+  """Cancel deletion of a VMware Engine private cloud."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -62,4 +64,7 @@ class UnDescribe(base.DeleteCommand):
     log.RestoredResource(operation.name, kind='private cloud', is_async=True)
 
 
-UnDescribe.detailed_help = DETAILED_HELP
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UnDeleteBeta(UnDeleteAlpha):
+  """Cancel deletion of a VMware Engine private cloud."""

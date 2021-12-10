@@ -30,8 +30,9 @@ class Delete(base.Command):
   detailed_help = {
       'DESCRIPTION':
           """\
-      Delete an agent pool. Note, you should check if there are in-progress
-      transfer operations associated with the pool first (example below).
+      Delete an agent pool. Note that before you can delete a pool, all
+      the pool's agents must be stopped, its associated jobs must be disabled,
+      and there must be no associated in-progress transfer operations.
       """,
       'EXAMPLES':
           """\

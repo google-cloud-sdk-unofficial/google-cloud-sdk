@@ -46,6 +46,7 @@ class Deploy(base.Command):
     flags.AddFunctionRetryFlag(parser)
     flags.AddFunctionTimeoutFlag(parser, track)
     flags.AddMaxInstancesFlag(parser)
+    flags.AddMinInstancesFlag(parser)
     flags.AddRuntimeFlag(parser)
     flags.AddServiceAccountFlag(parser)
     args_labels_util.AddUpdateLabelsFlags(
@@ -91,9 +92,6 @@ class DeployBeta(Deploy):
   def Args(parser, track=base.ReleaseTrack.BETA):
     """Register beta flags for this command."""
     Deploy.Args(parser, track)
-
-    # Add additional args for this release track
-    flags.AddMinInstancesFlag(parser)
 
     # Configure flags for secrets
     secrets_config.ConfigureFlags(parser)

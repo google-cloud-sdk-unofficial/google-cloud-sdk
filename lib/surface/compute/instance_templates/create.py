@@ -61,7 +61,6 @@ def _CommonArgs(parser,
                 support_source_instance,
                 support_local_ssd_size=False,
                 support_kms=False,
-                support_location_hint=False,
                 support_multi_writer=False,
                 support_mesh=False,
                 support_host_error_timeout_seconds=False,
@@ -117,8 +116,7 @@ def _CommonArgs(parser,
 
   sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
 
-  if support_location_hint:
-    instances_flags.AddLocationHintArg(parser)
+  instances_flags.AddLocationHintArg(parser)
 
   if support_visible_core_count:
     instances_flags.AddVisibleCoreCountArgs(parser)
@@ -487,7 +485,6 @@ def _RunCreate(compute_api,
                args,
                support_source_instance,
                support_kms=False,
-               support_location_hint=False,
                support_post_key_revocation_action_type=False,
                support_multi_writer=False,
                support_mesh=False,
@@ -509,7 +506,6 @@ def _RunCreate(compute_api,
         arguments specified in the .Args() method.
       support_source_instance: indicates whether source instance is supported.
       support_kms: Indicate whether KMS is integrated or not.
-      support_location_hint: Indicate whether location hint is supported.
       support_post_key_revocation_action_type: Indicate whether
         post_key_revocation_action_type is supported.
       support_multi_writer: Indicates whether a disk can have multiple writers.
@@ -602,7 +598,7 @@ def _RunCreate(compute_api,
       args, client.messages)
 
   location_hint = None
-  if support_location_hint and args.IsSpecified('location_hint'):
+  if args.IsSpecified('location_hint'):
     location_hint = args.location_hint
 
   provisioning_model = None
@@ -826,7 +822,6 @@ class Create(base.CreateCommand):
   """
   _support_source_instance = True
   _support_kms = True
-  _support_location_hint = False
   _support_post_key_revocation_action_type = False
   _support_multi_writer = False
   _support_mesh = False
@@ -845,7 +840,6 @@ class Create(base.CreateCommand):
         release_track=base.ReleaseTrack.GA,
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
-        support_location_hint=cls._support_location_hint,
         support_multi_writer=cls._support_multi_writer,
         support_mesh=cls._support_mesh,
         support_numa_node_count=cls._support_numa_node_count,
@@ -872,7 +866,6 @@ class Create(base.CreateCommand):
         args,
         support_source_instance=self._support_source_instance,
         support_kms=self._support_kms,
-        support_location_hint=self._support_location_hint,
         support_post_key_revocation_action_type=self
         ._support_post_key_revocation_action_type,
         support_multi_writer=self._support_multi_writer,
@@ -902,7 +895,6 @@ class CreateBeta(Create):
   """
   _support_source_instance = True
   _support_kms = True
-  _support_location_hint = False
   _support_post_key_revocation_action_type = True
   _support_multi_writer = True
   _support_mesh = True
@@ -923,7 +915,6 @@ class CreateBeta(Create):
         support_local_ssd_size=False,
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
-        support_location_hint=cls._support_location_hint,
         support_multi_writer=cls._support_multi_writer,
         support_mesh=cls._support_mesh,
         support_host_error_timeout_seconds=cls
@@ -954,7 +945,6 @@ class CreateBeta(Create):
         args=args,
         support_source_instance=self._support_source_instance,
         support_kms=self._support_kms,
-        support_location_hint=self._support_location_hint,
         support_post_key_revocation_action_type=self
         ._support_post_key_revocation_action_type,
         support_multi_writer=self._support_multi_writer,
@@ -986,7 +976,6 @@ class CreateAlpha(Create):
   """
   _support_source_instance = True
   _support_kms = True
-  _support_location_hint = True
   _support_post_key_revocation_action_type = True
   _support_multi_writer = True
   _support_mesh = True
@@ -1007,7 +996,6 @@ class CreateAlpha(Create):
         support_local_ssd_size=True,
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
-        support_location_hint=cls._support_location_hint,
         support_multi_writer=cls._support_multi_writer,
         support_mesh=cls._support_mesh,
         support_host_error_timeout_seconds=cls
@@ -1041,7 +1029,6 @@ class CreateAlpha(Create):
         args=args,
         support_source_instance=self._support_source_instance,
         support_kms=self._support_kms,
-        support_location_hint=self._support_location_hint,
         support_post_key_revocation_action_type=self
         ._support_post_key_revocation_action_type,
         support_multi_writer=self._support_multi_writer,

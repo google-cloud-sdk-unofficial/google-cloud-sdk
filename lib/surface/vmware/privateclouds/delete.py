@@ -26,7 +26,7 @@ from googlecloudsdk.core import log
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          Marks a VMware Engine private cloud for deletion. The resource is deleted 3 hours after being marked for deletion. This process can be reversed by using `gcloud vmware privateclouds undelete`.
+          Marks a VMware Engine private cloud for deletion. The resource is deleted 3 hours after being marked for deletion. This process can be reversed by using `{parent_command} undelete`.
         """,
     'EXAMPLES':
         """
@@ -44,19 +44,34 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Delete(base.DeleteCommand):
+class DeleteAlpha(base.DeleteCommand):
   """Delete a VMware Engine private cloud."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
     flags.AddPrivatecloudArgToParser(parser, positional=True)
+    parser.add_argument(
+        '--delay-hours',
+        required=False,
+        hidden=True,
+        default=3,
+        choices=[0, 1, 2, 3, 4, 5, 6, 7, 8],
+        type=int,
+        help="""
+        Number of hours to wait before deleting the private cloud. Specifying a value of `0` for this field begins the deletion process immediately.
+        """)
 
   def Run(self, args):
     privatecloud = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
-    operation = client.Delete(privatecloud)
+    operation = client.Delete(privatecloud, args.delay_hours)
     log.DeletedResource(operation.name, kind='private cloud', is_async=True)
 
 
-Delete.detailed_help = DETAILED_HELP
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(DeleteAlpha):
+  """Delete a VMware Engine private cloud."""

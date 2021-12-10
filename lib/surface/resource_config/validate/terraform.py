@@ -104,7 +104,7 @@ class Terraform(base.BinaryBackedCommand):
     response = operation(
         command='validate',
         policy_library=args.policy_library,
-        project=args.project,
+        project=args.project or properties.VALUES.core.project.Get(),
         terraform_plan_json=args.terraform_plan_json,
         verbosity=args.verbosity,
         env=env_vars)

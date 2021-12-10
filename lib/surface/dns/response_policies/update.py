@@ -30,11 +30,11 @@ from googlecloudsdk.core import log
 def _AddArgsCommon(parser):
   flags.GetResponsePolicyDescriptionArg().AddToParser(parser)
   flags.GetResponsePolicyNetworksArg().AddToParser(parser)
-  flags.GetResponsePolicyGkeClustersArg().AddToParser(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
+class Update(base.UpdateCommand):
   r"""Updates a Cloud DNS response policy.
 
       This command updates a Cloud DNS response policy.
@@ -43,11 +43,13 @@ class UpdateBeta(base.UpdateCommand):
 
       To update a response policy with minimal arguments, run:
 
-        $ {command} myresponsepolicy --description='My updated response policy.' --networks=''
+        $ {command} myresponsepolicy --description='My updated response policy.'
+        --networks=''
 
       To update a response policy with all optional arguments, run:
 
-        $ {command} myresponsepolicy --description='My updated response policy.' --networks=network1,network2
+        $ {command} myresponsepolicy --description='My updated response policy.'
+        --networks=network1,network2
   """
 
   def _FetchResponsePolicy(self, response_policy_ref, api_version):
@@ -59,11 +61,20 @@ class UpdateBeta(base.UpdateCommand):
         project=response_policy_ref.project)
     return client.responsePolicies.Get(get_request)
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def _BetaOrAlpha(cls):
+    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
+                                  base.ReleaseTrack.ALPHA)
+
+  @classmethod
+  def Args(cls, parser):
     resource_args.AddResponsePolicyResourceArg(
-        parser, verb='to update', api_version='v1beta2')
+        parser,
+        verb='to update',
+        api_version=util.GetApiFromTrack(cls.ReleaseTrack()))
     _AddArgsCommon(parser)
+    if cls._BetaOrAlpha():
+      flags.GetResponsePolicyGkeClustersArg().AddToParser(parser)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
@@ -76,7 +87,7 @@ class UpdateBeta(base.UpdateCommand):
     to_update = self._FetchResponsePolicy(response_policy_ref, api_version)
 
     if not (args.IsSpecified('networks') or args.IsSpecified('description') or
-            args.IsSpecified('gkeclusters')):
+            (self._BetaOrAlpha() and args.IsSpecified('gkeclusters'))):
       log.status.Print('Nothing to update.')
       return to_update
 
@@ -86,7 +97,7 @@ class UpdateBeta(base.UpdateCommand):
       to_update.networks = command_util.ParseResponsePolicyNetworks(
           args.networks, response_policy_ref.project, api_version)
 
-    if args.IsSpecified('gkeclusters'):
+    if self._BetaOrAlpha() and args.IsSpecified('gkeclusters'):
       gkeclusters = args.gkeclusters
       to_update.gkeClusters = [
           messages.ResponsePolicyGKECluster(gkeClusterName=name)
@@ -106,28 +117,3 @@ class UpdateBeta(base.UpdateCommand):
                         kind='ResponsePolicy')
 
     return updated_response_policy
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
-  r"""Updates a Cloud DNS response policy.
-
-      This command updates a Cloud DNS response policy.
-
-      ## EXAMPLES
-
-      To update a response policy with minimal arguments, run:
-
-        $ {command} myresponsepolicy --description='My updated response policy.' --networks=''
-
-      To update a response policy with all optional arguments, run:
-
-        $ {command} myresponsepolicy --description='My updated response policy.' --networks=network1,network2
-  """
-
-  @staticmethod
-  def Args(parser):
-    resource_args.AddResponsePolicyResourceArg(
-        parser, verb='to update', api_version='v1alpha2')
-    _AddArgsCommon(parser)
-    parser.display_info.AddFormat('json')

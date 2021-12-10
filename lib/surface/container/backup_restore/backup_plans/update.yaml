@@ -16,7 +16,7 @@
     modify_request_hooks:
     - googlecloudsdk.command_lib.container.backup_restore.hooks:PreprocessUpdateBackupPlan
     ALPHA:
-      api_version: v1alpha1
+      api_version: v1
 
   async:
     collection: gkebackup.projects.locations.operations
@@ -32,7 +32,7 @@
       spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:positional_backup_plan
 
     params:
-    - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:etag
+    - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:backup_plan_etag
     - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:backup_plan_description
     - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:deactivated
     # Retention policy
@@ -45,7 +45,7 @@
     # Backup schedule
     - group:
         params:
-        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cron_schedule
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:update_cron_schedule
         - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:paused
     # Backup scope
     - group:

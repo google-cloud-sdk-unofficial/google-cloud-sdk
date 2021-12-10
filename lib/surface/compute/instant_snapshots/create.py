@@ -28,7 +28,7 @@ import six
 
 
 def _SourceArgs(parser):
-  source_disk = parser.add_group('Source disk options')
+  source_disk = parser.add_group('Source disk options', required=True)
   ips_flags.SOURCE_DISK_ARG.AddArgument(source_disk)
 
 

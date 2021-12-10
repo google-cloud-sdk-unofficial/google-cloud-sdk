@@ -10,7 +10,7 @@ help_text:
 
 request:
   collection: datastream.projects.locations
-  api_version: v1alpha1
+  api_version: v1
 
 arguments:
   resource:

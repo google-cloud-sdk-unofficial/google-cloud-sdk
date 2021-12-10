@@ -32,6 +32,60 @@ from googlecloudsdk.command_lib.sql import instances as command_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
+DESCRIPTION = ("""\
+
+    *{command}* creates a clone of a Cloud SQL instance. The clone is an
+    independent copy of the source instance with the same data and settings.
+    Source and destination instances must be in the same project. An instance
+    can be cloned from its current state, or from an earlier point in time.
+
+    For MySQL: The binary log coordinates, if specified, act as the point in
+    time the source instance is cloned from. If not specified, the current state
+    of the instance is cloned.
+
+    For PostgreSQL: The point in time, if specified, defines a past state of the
+    instance to clone. If not specified, the current state of the instance is
+    cloned.
+    """)
+
+EXAMPLES_GA = ("""\
+    To clone an instance from its current state (most recent binary log
+  coordinates):
+
+    $ {command} instance-foo instance-bar
+
+  To clone a MySQL instance from an earlier point in time (past binary log
+  coordinates):
+
+    $ {command} instance-foo instance-bar --bin-log-file-name mysql-bin.000020 --bin-log-position 170
+
+  To clone a MySQL source instance at a specific point in time:
+
+    $ {command} instance-foo instance-bar --point-in-time '2012-11-15T16:19:00.094Z'
+
+  To clone a PostgreSQL source instance at a specific point in time:
+
+    $ {command} instance-foo instance-bar --point-in-time '2012-11-15T16:19:00.094Z'
+    """)
+
+EXAMPLES_ALPHA = ("""\
+
+  To specify the allocated IP range for the private IP target Instance
+  (reserved for future use):
+
+  $ {command} instance-foo instance-bar --allocated-ip-range-name range-bar
+    """)
+
+DETAILED_HELP = {
+    'DESCRIPTION': DESCRIPTION,
+    'EXAMPLES': EXAMPLES_GA,
+}
+
+DETAILED_APLHA_HELP = {
+    'DESCRIPTION': DESCRIPTION,
+    'EXAMPLES': EXAMPLES_GA + EXAMPLES_ALPHA,
+}
+
 
 def _GetInstanceRefsFromArgs(args, client):
   """Get validated refs to source and destination instances from args."""
@@ -62,25 +116,44 @@ def _CheckSourceAndDestination(source_instance_ref, destination_instance_ref):
             dest=destination_instance_ref.project))
 
 
-def _UpdateRequestFromArgs(request, args, sql_messages):
-  """Update request with point-in-time recovery options."""
+def AddAlphaArgs(parser):
+  """Declare alpha flags for this command parser."""
+  parser.add_argument(
+      '--allocated-ip-range-name',
+      required=False,
+      help="""\
+      The name of the IP range allocated for the destination instance with
+      private network connectivity. For example:
+      \'google-managed-services-default\'. If set, the the destination instance
+      IP is created in the allocated range represented by this name.
+      Reserved for future use.
+      """)
 
+
+def _UpdateRequestFromArgs(request, args, sql_messages, release_track):
+  """Update request with clone options."""
+  clone_context = request.instancesCloneRequest.cloneContext
+  # PITR options
   if args.bin_log_file_name and args.bin_log_position:
-    clone_context = request.instancesCloneRequest.cloneContext
     clone_context.binLogCoordinates = sql_messages.BinLogCoordinates(
         binLogFileName=args.bin_log_file_name,
         binLogPosition=args.bin_log_position)
   elif args.point_in_time:
-    clone_context = request.instancesCloneRequest.cloneContext
     clone_context.pointInTime = args.point_in_time.strftime(
         '%Y-%m-%dT%H:%M:%S.%fZ')
 
+  if release_track == base.ReleaseTrack.ALPHA:
+    # ALLOCATED IP RANGE options
+    if args.allocated_ip_range_name:
+      clone_context.allocatedIpRange = args.allocated_ip_range_name
 
-def RunBaseCloneCommand(args):
+
+def RunBaseCloneCommand(args, release_track):
   """Clones a Cloud SQL instance.
 
   Args:
     args: argparse.Namespace, The arguments used to invoke this command.
+    release_track: base.ReleaseTrack, the release track that this was run under.
 
   Returns:
     A dict object representing the operations resource describing the
@@ -104,7 +177,7 @@ def RunBaseCloneCommand(args):
               kind='sql#cloneContext',
               destinationInstanceName=destination_instance_ref.instance)))
 
-  _UpdateRequestFromArgs(request, args, sql_messages)
+  _UpdateRequestFromArgs(request, args, sql_messages, release_track)
 
   # Check if source is V1; raise error if so.
   # Check if source has customer-managed key; show warning if so.
@@ -189,49 +262,23 @@ def AddBaseArgs(parser):
       type=arg_parsers.Datetime.Parse,
       required=False,
       help="""\
-      Represents the state of an instance at any given point in time inside a
-      write-ahead log file. Enable point-in-time recovery on the source
-      instance to create a write-ahead log file. Uses RFC 3339 format in UTC
-      timezone. If specified, defines a past state of the instance to clone.
+      Represents the state of an instance at any given point in time inside
+      a transaction log file. For MySQL, the binary log file is used for
+      transaction logs. For PostgreSQL, the write-ahead log file is used for
+      transaction logs. To create a transaction log, enable point-in-time
+      recovery on the source instance. Instance should have transaction logs
+      accumulated upto the point in time they want to restore upto.
+      Uses RFC 3339 format in UTC timezone. If specified, defines a past
+      state of the instance to clone.
       For example, '2012-11-15T16:19:00.094Z'.
       """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Clone(base.CreateCommand):
-  # pylint: disable=line-too-long
-  """Clones a Cloud SQL instance.
+  """Clones a Cloud SQL instance."""
 
-  *{command}* creates a clone of a Cloud SQL instance. The clone is an
-  independent copy of the source instance with the same data and settings.
-  Source and destination instances must be in the same project. An instance can
-  be cloned from its current state, or from an earlier point in time.
-
-  For MySQL: The binary log coordinates, if specified, act as the point in time
-  the source instance is cloned from. If not specified, the current state of the
-  instance is cloned.
-
-  For PostgreSQL: The point in time, if specified, defines a past state of the
-  instance to clone. If not specified, the current state of the instance is
-  cloned.
-
-  ## EXAMPLES
-
-  To clone an instance from its current state (most recent binary log
-  coordinates):
-
-    $ {command} instance-foo instance-bar
-
-  To clone a MySQL instance from an earlier point in time (past binary log
-  coordinates):
-
-    $ {command} instance-foo instance-bar --bin-log-file-name mysql-bin.000020 --bin-log-position 170
-
-  To clone a PostgreSQL source instance at a specific point in time:
-
-    $ {command} instance-foo instance-bar --point-in-time '2012-11-15T16:19:00.094Z'
-  """
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):
@@ -240,4 +287,21 @@ class Clone(base.CreateCommand):
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
 
   def Run(self, args):
-    return RunBaseCloneCommand(args)
+    return RunBaseCloneCommand(args, self.ReleaseTrack())
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CloneAlpha(base.CreateCommand):
+  """Clones a Cloud SQL instance."""
+
+  detailed_help = DETAILED_APLHA_HELP
+
+  def Run(self, args):
+    return RunBaseCloneCommand(args, self.ReleaseTrack())
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command."""
+    AddBaseArgs(parser)
+    AddAlphaArgs(parser)
+    parser.display_info.AddCacheUpdater(flags.InstanceCompleter)

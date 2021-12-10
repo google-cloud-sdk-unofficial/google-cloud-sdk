@@ -44,9 +44,8 @@ def _Run(args):
       raise auth_exceptions.WrongAccountTypeError(
           'Invalid account Type for `--audiences`. '
           'Requires valid service account.')
-    target_audiences = ' '.join(args.audiences)
     # TODO(b/170394261): Avoid changing constant values.
-    config.CLOUDSDK_CLIENT_ID = target_audiences
+    config.CLOUDSDK_CLIENT_ID = args.audiences
 
   if args.IsSpecified('token_format') or args.IsSpecified('include_license'):
     if not auth_util.IsGceAccountCredentials(cred):

@@ -42,7 +42,7 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Describe a job."""
-    client = jobs.JobsClient()
+    client = jobs.JobsClient(self.ReleaseTrack())
 
     job_ref = args.CONCEPTS.job_name.Parse()
 

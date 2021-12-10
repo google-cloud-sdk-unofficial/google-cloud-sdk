@@ -25,3 +25,4 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.GA)
 class EndpointPolicies(base.Group):
   """Manage Network Services EndpointPolicies."""
+  category = base.MANAGEMENT_TOOLS_CATEGORY

@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import promote_util
 from googlecloudsdk.command_lib.deploy import release_util
 from googlecloudsdk.command_lib.deploy import resource_args
+from googlecloudsdk.command_lib.deploy import rollout_util
 from googlecloudsdk.command_lib.deploy import target_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import resources
@@ -87,8 +88,8 @@ class Rollback(base.CreateCommand):
 
 def _GetRollbackRelease(release_id, pipeline_id, target_ref):
   """Gets the release that will be used by promote API to create the rollback rollout."""
+  ref_dict = target_ref.AsDict()
   if release_id:
-    ref_dict = target_ref.AsDict()
     return resources.REGISTRY.Parse(
         release_id,
         collection='clouddeploy.projects.locations.deliveryPipelines.releases',
@@ -99,17 +100,24 @@ def _GetRollbackRelease(release_id, pipeline_id, target_ref):
             'releasesId': release_id
         })
   else:
-    try:
-      _, prior_rollout = target_util.GetReleasesAndCurrentRollout(
-          target_ref, pipeline_id, 1)
-    except core_exceptions.Error:
+    pipeline_ref = resources.REGISTRY.Parse(
+        release_id,
+        collection='clouddeploy.projects.locations.deliveryPipelines',
+        params={
+            'projectsId': ref_dict['projectsId'],
+            'locationsId': ref_dict['locationsId'],
+            'deliveryPipelinesId': pipeline_id,
+        })
+    prior_rollouts = rollout_util.GetSucceededRollout(
+        target_ref=target_ref, pipeline_ref=pipeline_ref, limit=2)
+    if len(prior_rollouts) < 2:
       raise core_exceptions.Error(
           'unable to rollback target {}. Target has less than 2 rollouts.'
           .format(target_ref.Name()))
 
     return resources.REGISTRY.ParseRelativeName(
         resources.REGISTRY.Parse(
-            prior_rollout.name,
+            prior_rollouts[0].name,
             collection='clouddeploy.projects.locations.deliveryPipelines.releases.rollouts'
         ).Parent().RelativeName(),
         collection='clouddeploy.projects.locations.deliveryPipelines.releases')

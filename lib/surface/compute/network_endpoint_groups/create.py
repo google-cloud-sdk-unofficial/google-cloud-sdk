@@ -80,7 +80,7 @@ class Create(base.CreateCommand):
   support_l4ilb_neg = False
   support_vm_ip_neg = True
   support_serverless_deployment = False
-  support_l7psc_neg = False
+  support_l7psc_neg = True
 
   @classmethod
   def Args(cls, parser):
@@ -249,7 +249,6 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a Google Compute Engine network endpoint group."""
 
-  support_l7psc_neg = True
   support_serverless_deployment = True
 
 

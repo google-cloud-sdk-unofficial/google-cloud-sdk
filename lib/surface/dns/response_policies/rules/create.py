@@ -39,11 +39,10 @@ def _AddArgsCommon(parser, messages):
       help='DNS name (wildcard or exact) to apply this rule to.')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
+class Create(base.UpdateCommand):
   r"""Creates a new Cloud DNS response policy rule.
-
-      This command creates a new Cloud DNS response policy rule.
 
       ## EXAMPLES
 
@@ -56,12 +55,13 @@ class CreateBeta(base.UpdateCommand):
         $ {command} myresponsepolicyrule --response-policy="myresponsepolicy" --dns-name="www.zone.com." --behavior=bypassResponsePolicy
   """
 
-  @staticmethod
-  def Args(parser):
-    messages = apis.GetMessagesModule('dns', 'v1beta2')
+  @classmethod
+  def Args(cls, parser):
+    api_version = util.GetApiFromTrack(cls.ReleaseTrack())
+    messages = apis.GetMessagesModule('dns', api_version)
     _AddArgsCommon(parser, messages)
     resource_args.AddResponsePolicyRuleArg(
-        parser, verb='to create', api_version='v1beta2')
+        parser, verb='to create', api_version=api_version)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
@@ -111,29 +111,3 @@ class CreateBeta(base.UpdateCommand):
     log.CreatedResource(response_policy_rule, kind='ResponsePolicyRule')
 
     return result
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  r"""Creates a new Cloud DNS response policy rule.
-
-      This command creates a new Cloud DNS response policy rule.
-
-       ## EXAMPLES
-
-      To create a new response policy rule with local data rrsets, run:
-
-        $ {command} myresponsepolicyrule --response-policy="myresponsepolicy" --dns-name="www.zone.com." --local-data=name=www.zone.com.,type=CNAME,ttl=21600,rrdatas=zone.com.
-
-      To create a new response policy rule with behavior, run:
-
-        $ {command} myresponsepolicyrule --response-policy="myresponsepolicy" --dns-name="www.zone.com." --behavior=bypassResponsePolicy
-  """
-
-  @staticmethod
-  def Args(parser):
-    resource_args.AddResponsePolicyRuleArg(
-        parser, verb='to create', api_version='v1alpha2')
-    messages = apis.GetMessagesModule('dns', 'v1alpha2')
-    _AddArgsCommon(parser, messages)
-    parser.display_info.AddFormat('json')

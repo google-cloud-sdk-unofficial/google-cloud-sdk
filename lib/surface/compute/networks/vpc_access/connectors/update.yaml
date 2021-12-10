@@ -12,7 +12,7 @@
       The following command updates a VPC Access connector with name
       `my-vpc-connector` in region `us-central1`:
 
-        $ {command} my-vpc-connector --region=us-central1 --min-throughput=300
+        $ {command} my-vpc-connector --region=us-central1 --min-instances=3
 
   async:
     collection: vpcaccess.projects.locations.operations
@@ -33,17 +33,24 @@
       help_text: |
         Arguments and flags that specify the VPC Access connector you want to update.
     params:
-    - arg_name: min-throughput
+    - arg_name: min-instances
       release_tracks: [ALPHA]
-      api_field: connector.minThroughput
+      api_field: connector.minInstances
       required: false
       help_text: |
-        Minimum throughput in Mbps. Value must be a multiple of 100 between 200 and 1000.
-        Must be lower than the value specified by `--max-throughput`.
-    - arg_name: max-throughput
+        Minimum instances number of instances underlying a connector. Value must be between 2 and 10.
+        Must be lower than the value specified by `--max-instances`.
+    - arg_name: max-instances
       release_tracks: [ALPHA]
-      api_field: connector.maxThroughput
+      api_field: connector.maxInstances
       required: false
       help_text: |
-        Maximum throughput in Mbps. Value must be a multiple of 100 between 200 and 1000.
-        Must be higher than the value specified by `--min-throughput`.
+        Maximum instances number of instances underlying a connector. Value must be between 2 and 10.
+        Must be higher than the value specified by `--min-instances`.
+    - arg_name: machine-type
+      release_tracks: [ALPHA]
+      api_field: connector.machineType
+      required: false
+      help_text: |
+        Machine type of VMs underlying the VPC Access connector. Accepted values are ``e2-micro'',
+        ``f1-micro'', and ``e2-standard-4''.

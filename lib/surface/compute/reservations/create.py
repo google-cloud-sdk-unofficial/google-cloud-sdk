@@ -55,16 +55,13 @@ def _RunCreate(compute_api, args):
 class Create(base.CreateCommand):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
-  _support_location_hint = False
 
   @classmethod
   def Args(cls, parser):
     resource_args.GetReservationResourceArg().AddArgument(
         parser, operation_type='create')
     flags.AddCreateFlags(
-        parser,
-        support_share_setting=cls._support_share_setting,
-        support_location_hint=cls._support_location_hint)
+        parser, support_share_setting=cls._support_share_setting)
 
   def Run(self, args):
     return _RunCreate(base_classes.ComputeApiHolder(base.ReleaseTrack.GA), args)
@@ -74,16 +71,13 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
-  _support_location_hint = False
 
   @classmethod
   def Args(cls, parser):
     resource_args.GetReservationResourceArg().AddArgument(
         parser, operation_type='create')
     flags.AddCreateFlags(
-        parser,
-        support_share_setting=cls._support_share_setting,
-        support_location_hint=cls._support_location_hint)
+        parser, support_share_setting=cls._support_share_setting)
 
   def Run(self, args):
     return _RunCreate(
@@ -94,7 +88,6 @@ class CreateBeta(Create):
 class CreateAlpha(CreateBeta):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
-  _support_location_hint = True
 
   @classmethod
   def Args(cls, parser):
@@ -103,7 +96,6 @@ class CreateAlpha(CreateBeta):
     flags.AddCreateFlags(
         parser,
         support_share_setting=cls._support_share_setting,
-        support_location_hint=cls._support_location_hint,
         support_fleet=True)
 
   def Run(self, args):

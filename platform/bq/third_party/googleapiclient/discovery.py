@@ -22,7 +22,8 @@ import six
 from six.moves import zip
 
 
-__all__ = ["build", "build_from_document", "fix_method_name", "key2param"]
+__all__ = ["build", "build_from_document", "fix_method_name", "key2param",
+           "add_mtls_creds", "get_client_options", "add_mtls_creds"]
 
 from six import BytesIO
 from six.moves import http_client
@@ -30,6 +31,7 @@ from six.moves.urllib.parse import urlencode, urlparse, urljoin, urlunparse, par
 
 # Standard library imports
 import copy
+from collections import OrderedDict
 
 try:
     from email.generator import BytesGenerator
@@ -47,6 +49,14 @@ import re
 # Third-party imports
 import httplib2
 import uritemplate
+import google.api_core.client_options
+from google.auth.transport import mtls
+from google.auth.exceptions import MutualTLSChannelError
+
+try:
+    import google_auth_httplib2
+except ImportError:  # pragma: NO COVER
+    google_auth_httplib2 = None
 
 # Local imports
 from googleapiclient import _auth
@@ -110,6 +120,10 @@ MEDIA_MIME_TYPE_PARAMETER_DEFAULT_VALUE = {
 }
 _PAGE_TOKEN_NAMES = ("pageToken", "nextPageToken")
 
+# Parameters controlling mTLS behavior. See https://google.aip.dev/auth/4114.
+GOOGLE_API_USE_CLIENT_CERTIFICATE = "GOOGLE_API_USE_CLIENT_CERTIFICATE"
+GOOGLE_API_USE_MTLS_ENDPOINT = "GOOGLE_API_USE_MTLS_ENDPOINT"
+
 # Parameters accepted by the stack, but not visible via discovery.
 # TODO(user): Remove 'userip' in 'v2'.
 STACK_QUERY_PARAMETERS = frozenset(["trace", "pp", "userip", "strict"])
@@ -131,10 +145,10 @@ def fix_method_name(name):
     name: string, method name.
 
   Returns:
-    The name with '_' appended if the name is a reserved word and '$'
+    The name with '_' appended if the name is a reserved word and '$' and '-'
     replaced with '_'.
   """
-    name = name.replace("$", "_")
+    name = name.replace("$", "_").replace("-", "_")
     if keyword.iskeyword(name) or name in RESERVED_WORDS:
         return name + "_"
     else:
@@ -170,13 +184,18 @@ def build(
     serviceName,
     version,
     http=None,
-    discoveryServiceUrl=DISCOVERY_URI,
+    discoveryServiceUrl=None,
     developerKey=None,
     model=None,
     requestBuilder=HttpRequest,
     credentials=None,
     cache_discovery=True,
     cache=None,
+    client_options=None,
+    adc_cert_path=None,
+    adc_key_path=None,
+    num_retries=1,
+    static_discovery=None,
 ):
     """Construct a Resource for interacting with an API.
 
@@ -203,25 +222,84 @@ def build(
     cache_discovery: Boolean, whether or not to cache the discovery doc.
     cache: googleapiclient.discovery_cache.base.CacheBase, an optional
       cache object for the discovery documents.
+    client_options: Mapping object or google.api_core.client_options, client
+      options to set user options on the client.
+      (1) The API endpoint should be set through client_options. If API endpoint
+      is not set, `GOOGLE_API_USE_MTLS_ENDPOINT` environment variable can be used
+      to control which endpoint to use.
+      (2) client_cert_source is not supported, client cert should be provided using
+      client_encrypted_cert_source instead. In order to use the provided client
+      cert, `GOOGLE_API_USE_CLIENT_CERTIFICATE` environment variable must be
+      set to `true`.
+      More details on the environment variables are here:
+      https://google.aip.dev/auth/4114
+    adc_cert_path: str, client certificate file path to save the application
+      default client certificate for mTLS. This field is required if you want to
+      use the default client certificate. `GOOGLE_API_USE_CLIENT_CERTIFICATE`
+      environment variable must be set to `true` in order to use this field,
+      otherwise this field is ignored.
+      More details on the environment variables are here:
+      https://google.aip.dev/auth/4114
+    adc_key_path: str, client encrypted private key file path to save the
+      application default client encrypted private key for mTLS. This field is
+      required if you want to use the default client certificate.
+      `GOOGLE_API_USE_CLIENT_CERTIFICATE` environment variable must be set to
+      `true` in order to use this field, otherwise this field is ignored.
+      More details on the environment variables are here:
+      https://google.aip.dev/auth/4114
+    num_retries: Integer, number of times to retry discovery with
+      randomized exponential backoff in case of intermittent/connection issues.
+    static_discovery: Boolean, whether or not to use the static discovery docs
+      included in the library. The default value for `static_discovery` depends
+      on the value of `discoveryServiceUrl`. `static_discovery` will default to
+      `True` when `discoveryServiceUrl` is also not provided, otherwise it will
+      default to `False`.
 
   Returns:
     A Resource object with methods for interacting with the service.
+
+  Raises:
+    google.auth.exceptions.MutualTLSChannelError: if there are any problems
+      setting up mutual TLS channel.
   """
     params = {"api": serviceName, "apiVersion": version}
+
+    # The default value for `static_discovery` depends on the value of
+    # `discoveryServiceUrl`. `static_discovery` will default to `False` when
+    # `discoveryServiceUrl` is provided, otherwise it will default to
+    # `None` that the client will fallback to the internet to fetch the
+    # discovery document if it is not found in the static artifacts. This is
+    # added for backwards compatability with google-api-python-client 1.x which
+    # does not support the `static_discovery` parameter.
+    if static_discovery is None and discoveryServiceUrl:
+        static_discovery = False
+
+    if discoveryServiceUrl is None:
+        discoveryServiceUrl = DISCOVERY_URI
 
     if http is None:
         discovery_http = build_http()
     else:
         discovery_http = http
 
-    for discovery_url in (discoveryServiceUrl, V2_DISCOVERY_URI):
+    service = None
+
+    for discovery_url in _discovery_service_uri_options(discoveryServiceUrl, version):
         requested_url = uritemplate.expand(discovery_url, params)
 
         try:
             content = _retrieve_discovery_doc(
-                requested_url, discovery_http, cache_discovery, cache, developerKey
+                requested_url,
+                discovery_http,
+                cache_discovery,
+                serviceName,
+                version,
+                cache,
+                developerKey,
+                num_retries=num_retries,
+                static_discovery=static_discovery,
             )
-            return build_from_document(
+            service = build_from_document(
                 content,
                 base=discovery_url,
                 http=http,
@@ -229,17 +307,63 @@ def build(
                 model=model,
                 requestBuilder=requestBuilder,
                 credentials=credentials,
+                client_options=client_options,
+                adc_cert_path=adc_cert_path,
+                adc_key_path=adc_key_path,
             )
+            break  # exit if a service was created
         except HttpError as e:
             if e.resp.status == http_client.NOT_FOUND:
                 continue
             else:
                 raise e
 
-    raise UnknownApiNameOrVersion("name: %s  version: %s" % (serviceName, version))
+    # If discovery_http was created by this function, we are done with it
+    # and can safely close it
+    if http is None:
+        discovery_http.close()
+
+    if service is None:
+        raise UnknownApiNameOrVersion("name: %s  version: %s" % (serviceName, version))
+    else:
+        return service
 
 
-def _retrieve_discovery_doc(url, http, cache_discovery, cache=None, developerKey=None):
+def _discovery_service_uri_options(discoveryServiceUrl, version):
+    """
+    Returns Discovery URIs to be used for attemnting to build the API Resource.
+
+  Args:
+    discoveryServiceUrl:
+        string, the Original Discovery Service URL preferred by the customer.
+    version:
+        string, API Version requested
+
+  Returns:
+      A list of URIs to be tried for the Service Discovery, in order.
+    """
+
+    urls = [discoveryServiceUrl, V2_DISCOVERY_URI]
+    # V1 Discovery won't work if the requested version is None
+    if discoveryServiceUrl == V1_DISCOVERY_URI and version is None:
+        logger.warning(
+            "Discovery V1 does not support empty versions. Defaulting to V2..."
+        )
+        urls.pop(0)
+    return list(OrderedDict.fromkeys(urls))
+
+
+def _retrieve_discovery_doc(
+    url,
+    http,
+    cache_discovery,
+    serviceName,
+    version,
+    cache=None,
+    developerKey=None,
+    num_retries=1,
+    static_discovery=None
+):
     """Retrieves the discovery_doc from cache or the internet.
 
   Args:
@@ -247,22 +371,41 @@ def _retrieve_discovery_doc(url, http, cache_discovery, cache=None, developerKey
     http: httplib2.Http, An instance of httplib2.Http or something that acts
       like it through which HTTP requests will be made.
     cache_discovery: Boolean, whether or not to cache the discovery doc.
+    serviceName: string, name of the service.
+    version: string, the version of the service.
     cache: googleapiclient.discovery_cache.base.Cache, an optional cache
       object for the discovery documents.
+    developerKey: string, Key for controlling API usage, generated
+      from the API Console.
+    num_retries: Integer, number of times to retry discovery with
+      randomized exponential backoff in case of intermittent/connection issues.
+    static_discovery: Boolean, whether or not to use the static discovery docs
+      included in the library.
 
   Returns:
     A unicode string representation of the discovery document.
   """
-    if cache_discovery:
-        from . import discovery_cache
-        from .discovery_cache import base
+    from . import discovery_cache
 
+    if cache_discovery:
         if cache is None:
             cache = discovery_cache.autodetect()
         if cache:
             content = cache.get(url)
             if content:
                 return content
+
+    # When `static_discovery=True`, use static discovery artifacts included
+    # with the library
+    if static_discovery is True or static_discovery is None:
+        content = discovery_cache.get_static_doc(serviceName, version)
+        if content:
+            return content
+        else:
+            logger.warn("Failed to find discovery document from static " +
+                "artifacts for '%s.%s'. Please manually include the " +
+                "discovery document to your binary, more details are in " +
+                "go/python-static-artifact-flip.", serviceName, version)
 
     actual_url = url
     # REMOTE_ADDR is defined by the CGI spec [RFC3875] as the environment
@@ -273,12 +416,12 @@ def _retrieve_discovery_doc(url, http, cache_discovery, cache=None, developerKey
         actual_url = _add_query_parameter(url, "userIp", os.environ["REMOTE_ADDR"])
     if developerKey:
         actual_url = _add_query_parameter(url, "key", developerKey)
-    logger.info("URL being requested: GET %s", actual_url)
+    logger.debug("URL being requested: GET %s", actual_url)
 
-    resp, content = http.request(actual_url)
-
-    if resp.status >= 400:
-        raise HttpError(resp, content, uri=actual_url)
+    # Execute this request with retries build into HttpRequest
+    # Note that it will already raise an error if we don't get a 2xx response
+    req = HttpRequest(http, HttpRequest.null_postproc, actual_url)
+    resp, content = req.execute(num_retries=num_retries)
 
     try:
         content = content.decode("utf-8")
@@ -294,6 +437,108 @@ def _retrieve_discovery_doc(url, http, cache_discovery, cache=None, developerKey
         cache.set(url, content)
     return content
 
+def get_client_options(client_options=None):
+    """Get default options or massage incomming options into correct format.
+
+  Args:
+    client_options: Mapping object or google.api_core.client_options, client
+      options to set user options on the client.
+  Returns:A client_options object.
+  """
+    if client_options is None:
+        return google.api_core.client_options.ClientOptions()
+    if isinstance(client_options, six.moves.collections_abc.Mapping):
+        return google.api_core.client_options.from_dict(client_options)
+    return client_options
+
+def _get_service(service):
+    """Converts the disocvery document into a dictionary.
+
+  Args:
+      service: string or object, the JSON discovery document describing the API.
+      The value passed in may either be the JSON string or the deserialized
+      JSON.
+  Returns:
+    The discovery document as a dictionary.
+  """
+    if isinstance(service, six.string_types):
+        return json.loads(service)
+    elif isinstance(service, six.binary_type):
+        return json.loads(service.decode("utf-8"))
+    return service
+
+
+def add_mtls_creds(http, client_options, adc_cert_path, adc_key_path):
+    """Obtain client cert and create mTLS http channel if cert exists.
+  Args:
+    http: httplib2.Http, An instance of httplib2.Http or something that acts
+      like it that HTTP requests will be made through.
+    client_options: Mapping object or google.api_core.client_options, client
+      options to set user options on the client.
+    adc_cert_path: str, client certificate file path to save the application
+      default client certificate for mTLS.
+    adc_key_path: str, client encrypted private key file path to save the
+      application default client encrypted private key for mTLS.
+  Returns:
+    Boolean indicating whether the cert was used or not.
+  """
+    client_cert_to_use = None
+    if client_options and client_options.client_cert_source:
+        raise MutualTLSChannelError(
+            "ClientOptions.client_cert_source is not supported, please use ClientOptions.client_encrypted_cert_source."
+        )
+    if (
+        client_options
+        and hasattr(client_options, "client_encrypted_cert_source")
+        and client_options.client_encrypted_cert_source
+    ):
+        client_cert_to_use = client_options.client_encrypted_cert_source
+    elif (
+        adc_cert_path and adc_key_path and mtls.has_default_client_cert_source()
+    ):
+        client_cert_to_use = mtls.default_client_encrypted_cert_source(
+            adc_cert_path, adc_key_path
+      )
+    if not client_cert_to_use:
+        return False
+    cert_path, key_path, passphrase = client_cert_to_use()
+
+    # The http object we built could be google_auth_httplib2.AuthorizedHttp
+    # or httplib2.Http. In the first case we need to extract the wrapped
+    # httplib2.Http object from google_auth_httplib2.AuthorizedHttp.
+    http_channel = (
+        http.http
+        if google_auth_httplib2
+        and isinstance(http, google_auth_httplib2.AuthorizedHttp)
+        else http
+    )
+    http_channel.add_certificate(key_path, cert_path, "", passphrase)
+    return True
+
+
+def _get_mtls_endpoint(service):
+    """Return the mtls endpoint from the discovery document.
+
+  Args:
+    service: The discovery document describing as a dictionary.
+  Returns:
+    The mtls URL, or None if there is no mtls endpoint.
+  """
+    if "mtlsRootUrl" not in service:
+        return None
+    return urljoin(service["mtlsRootUrl"], service["servicePath"])
+
+def get_mtls_endpoint(service):
+    """Return the mtls endpoint from the discovery document.
+
+  Args:
+    service: string or object, the JSON discovery document describing the API.
+      The value passed in may either be the JSON string or the deserialized
+      JSON.
+  Returns:
+    The mtls URL, or None if there is no mtls endpoint.
+  """
+    return _get_mtls_endpoint(_get_service(service))
 
 @positional(1)
 def build_from_document(
@@ -305,7 +550,9 @@ def build_from_document(
     model=None,
     requestBuilder=HttpRequest,
     credentials=None,
-    use_mtls_endpoint=False
+    client_options=None,
+    adc_cert_path=None,
+    adc_key_path=None,
 ):
     """Create a Resource for interacting with an API.
 
@@ -330,24 +577,53 @@ def build_from_document(
     credentials: oauth2client.Credentials or
       google.auth.credentials.Credentials, credentials to be used for
       authentication.
-    use_mtls_endpoint: If true, and mtlRootUrl exists, then use that as the
-      base. Future version of googleapiclient will pull this value from an
-      OS environment variable. When the new version is brought in BQ will want
-      it to be set to auto.
+    client_options: Mapping object or google.api_core.client_options, client
+      options to set user options on the client.
+      (1) The API endpoint should be set through client_options. If API endpoint
+      is not set, `GOOGLE_API_USE_MTLS_ENDPOINT` environment variable can be used
+      to control which endpoint to use.
+      (2) client_cert_source is not supported, client cert should be provided using
+      client_encrypted_cert_source instead. In order to use the provided client
+      cert, `GOOGLE_API_USE_CLIENT_CERTIFICATE` environment variable must be
+      set to `true`.
+      More details on the environment variables are here:
+      https://google.aip.dev/auth/4114
+    adc_cert_path: str, client certificate file path to save the application
+      default client certificate for mTLS. This field is required if you want to
+      use the default client certificate. `GOOGLE_API_USE_CLIENT_CERTIFICATE`
+      environment variable must be set to `true` in order to use this field,
+      otherwise this field is ignored.
+      More details on the environment variables are here:
+      https://google.aip.dev/auth/4114
+    adc_key_path: str, client encrypted private key file path to save the
+      application default client encrypted private key for mTLS. This field is
+      required if you want to use the default client certificate.
+      `GOOGLE_API_USE_CLIENT_CERTIFICATE` environment variable must be set to
+      `true` in order to use this field, otherwise this field is ignored.
+      More details on the environment variables are here:
+      https://google.aip.dev/auth/4114
 
   Returns:
     A Resource object with methods for interacting with the service.
+
+  Raises:
+    google.auth.exceptions.MutualTLSChannelError: if there are any problems
+      setting up mutual TLS channel.
   """
+    client_options = get_client_options(client_options)
+    service = _get_service(service)
 
-    if http is not None and credentials is not None:
-        raise ValueError("Arguments http and credentials are mutually exclusive.")
+    if http is not None:
+        # if http is passed, the user cannot provide credentials
+        banned_options = [
+            (credentials, "credentials"),
+            (client_options.credentials_file, "client_options.credentials_file"),
+        ]
+        for option, name in banned_options:
+            if option is not None:
+                raise ValueError("Arguments http and {} are mutually exclusive".format(name))
 
-    if isinstance(service, six.string_types):
-        service = json.loads(service)
-    elif isinstance(service, six.binary_type):
-        service = json.loads(service.decode("utf-8"))
-
-    if "rootUrl" not in service and (isinstance(http, (HttpMock, HttpMockSequence))):
+    if "rootUrl" not in service and isinstance(http, (HttpMock, HttpMockSequence)):
         logger.error(
             "You are using HttpMock or HttpMockSequence without"
             + "having the service discovery doc in cache. Try calling "
@@ -356,7 +632,11 @@ def build_from_document(
         )
         raise InvalidJsonError()
 
+    # If an API Endpoint is provided on client options, use that as the base URL
     base = urljoin(service["rootUrl"], service["servicePath"])
+    if client_options.api_endpoint:
+        base = client_options.api_endpoint
+
     schema = Schemas(service)
 
     # If the http client is not specified, then we must construct an http client
@@ -371,13 +651,30 @@ def build_from_document(
         # If so, then the we need to setup authentication if no developerKey is
         # specified.
         if scopes and not developerKey:
+            # Make sure the user didn't pass multiple credentials
+            if client_options.credentials_file and credentials:
+                raise google.api_core.exceptions.DuplicateCredentialArgs(
+                    "client_options.credentials_file and credentials are mutually exclusive."
+            )
+            # Check for credentials file via client options
+            if client_options.credentials_file:
+                credentials = _auth.credentials_from_file(
+                    client_options.credentials_file,
+                    scopes=client_options.scopes,
+                    quota_project_id=client_options.quota_project_id,
+                )
             # If the user didn't pass in credentials, attempt to acquire application
             # default credentials.
             if credentials is None:
-                credentials = _auth.default_credentials()
+                credentials = _auth.default_credentials(
+                    scopes=client_options.scopes,
+                    quota_project_id=client_options.quota_project_id,
+                )
 
             # The credentials need to be scoped.
-            credentials = _auth.with_scopes(credentials, scopes)
+            # If the user provided scopes via client_options don't override them
+            if not client_options.scopes:
+                credentials = _auth.with_scopes(credentials, scopes)
 
         # If credentials are provided, create an authorized http instance;
         # otherwise, skip authentication.
@@ -389,14 +686,38 @@ def build_from_document(
         else:
             http = build_http()
 
+        # Obtain client cert and create mTLS http channel if cert exists.
+        use_client_cert = os.getenv(GOOGLE_API_USE_CLIENT_CERTIFICATE, "false")
+        if use_client_cert not in ("true", "false"):
+            raise MutualTLSChannelError(
+                "Unsupported GOOGLE_API_USE_CLIENT_CERTIFICATE value. Accepted values: true, false"
+            )
+        client_cert_used = False
+        if use_client_cert == "true":
+            client_cert_used = add_mtls_creds(http, client_options, adc_cert_path, adc_key_path)
+
+        # If user doesn't provide api endpoint via client options, decide which
+        # api endpoint to use.
+        if not client_options or not client_options.api_endpoint:
+            mtls_endpoint = _get_mtls_endpoint(service)
+            if (mtls_endpoint):
+                use_mtls_endpoint = os.getenv(GOOGLE_API_USE_MTLS_ENDPOINT, "auto")
+
+                if use_mtls_endpoint not in ("never", "auto", "always"):
+                    raise MutualTLSChannelError(
+                        "Unsupported GOOGLE_API_USE_MTLS_ENDPOINT value. Accepted values: never, auto, always"
+                    )
+
+                # Switch to mTLS endpoint, if environment variable is "always", or
+                # environment varibable is "auto" and client cert exists.
+                if use_mtls_endpoint == "always" or (
+                    use_mtls_endpoint == "auto" and client_cert_used
+                ):
+                    base = mtls_endpoint
+
     if model is None:
         features = service.get("features", [])
         model = JsonModel("dataWrapper" in features)
-
-    # If user doesn't provide api endpoint via client options, decide which
-    # api endpoint to use.
-    if "mtlsRootUrl" in service and use_mtls_endpoint:
-      base = urljoin(service["mtlsRootUrl"], service["servicePath"])
 
     return Resource(
         http=http,
@@ -690,7 +1011,9 @@ class ResourceMethodParameters(object):
           comes from the dictionary of methods stored in the 'methods' key in
           the deserialized discovery document.
     """
-        for arg, desc in six.iteritems(method_desc.get("parameters", {})):
+        parameters = method_desc.get("parameters", {})
+        sorted_parameters = OrderedDict(sorted(parameters.items()))
+        for arg, desc in six.iteritems(sorted_parameters):
             param = key2param(arg)
             self.argmap[param] = arg
 
@@ -902,7 +1225,7 @@ def createMethod(methodName, methodDesc, rootDesc, schema):
                     ) % multipart_boundary
                     url = _add_query_parameter(url, "uploadType", "multipart")
 
-        logger.info("URL being requested: %s %s" % (httpMethod, url))
+        logger.debug("URL being requested: %s %s" % (httpMethod, url))
         return self._requestBuilder(
             self._http,
             model.response,
@@ -929,7 +1252,7 @@ def createMethod(methodName, methodDesc, rootDesc, schema):
     if "body" in all_args:
         args_ordered.append("body")
 
-    for name in all_args:
+    for name in sorted(all_args):
         if name not in args_ordered:
             args_ordered.append(name)
 
@@ -947,7 +1270,7 @@ def createMethod(methodName, methodDesc, rootDesc, schema):
         paramdoc = paramdesc.get("description", "A parameter")
         if "$ref" in paramdesc:
             docs.append(
-                ("  %s: object, %s%s%s\n    The object takes the" " form of:\n\n%s\n\n")
+                ("  %s: object, %s%s%s\n    The object takes the form of:\n\n%s\n\n")
                 % (
                     arg,
                     paramdoc,
@@ -1022,14 +1345,14 @@ Returns:
             request.uri = _add_query_parameter(
                 request.uri, pageTokenName, nextPageToken
             )
-            logger.info("Next page request URL: %s %s" % (methodName, request.uri))
+            logger.debug("Next page request URL: %s %s" % (methodName, request.uri))
         else:
             # Replace pageToken value in request body
             model = self._model
             body = model.deserialize(request.body)
             body[pageTokenName] = nextPageToken
             request.body = model.serialize(body)
-            logger.info("Next page request body: %s %s" % (methodName, body))
+            logger.debug("Next page request body: %s %s" % (methodName, body))
 
         return request
 
@@ -1113,6 +1436,20 @@ class Resource(object):
         self.__dict__.update(state)
         self._dynamic_attrs = []
         self._set_service_methods()
+
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, exc_tb):
+        self.close()
+
+    def close(self):
+        """Close httplib2 connections."""
+        # httplib2 leaves sockets open by default.
+        # Cleanup using the `close` method.
+        # https://github.com/httplib2/httplib2/issues/148
+        self._http.close()
 
     def _set_service_methods(self):
         self._add_basic_methods(self._resourceDesc, self._rootDesc, self._schema)

@@ -29,9 +29,9 @@ _DETAILED_HELP = {
         '{description}',
     'EXAMPLES':
         """ \
-        To create a new channel ``my-channel'' for provider ''projects/eventflow-qa/locations/us-central1/providers/test-provider'' in location ''us-central1'', run:
+        To create a new channel ``my-channel'' for provider ``test-provider'' in location ``us-central1'', run:
 
-          $ {command} my-channel --provider projects/eventflow-qa/locations/us-central1/providers/test-provider --location us-central1
+          $ {command} my-channel --provider test-provider --location us-central1
         """,
 }
 
@@ -45,8 +45,7 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    flags.AddChannelResourceArg(parser, 'Channel to create.', required=True)
-    flags.AddProviderArg(parser, required=True)
+    flags.AddCreateChannelArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -58,8 +57,9 @@ class Create(base.CreateCommand):
     location_name = channel_ref.Parent().Name()
     log.debug('Creating channel {} for project {} in location {}'.format(
         channel_ref.Name(), project_name, location_name))
+    provider_ref = args.CONCEPTS.provider.Parse()
     operation = client.Create(channel_ref,
-                              client.BuildChannel(channel_ref, args.provider))
+                              client.BuildChannel(channel_ref, provider_ref))
 
     if args.async_:
       return operation

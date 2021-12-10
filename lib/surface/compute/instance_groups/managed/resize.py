@@ -134,6 +134,23 @@ class ResizeBeta(Resize):
             zone=igm_ref.zone))
     return client.MakeRequests([(service, 'ResizeAdvanced', request)])
 
+  @staticmethod
+  def _MakeRmigResizeAdvancedRequest(client, igm_ref, args):
+    service = client.apitools_client.regionInstanceGroupManagers
+    request = (
+        client.messages
+        .ComputeRegionInstanceGroupManagersResizeAdvancedRequest(
+            instanceGroupManager=igm_ref.Name(),
+            regionInstanceGroupManagersResizeAdvancedRequest=(
+                client.messages
+                .RegionInstanceGroupManagersResizeAdvancedRequest(
+                    targetSize=args.size,
+                    noCreationRetries=not args.creation_retries,
+                )),
+            project=igm_ref.project,
+            region=igm_ref.region))
+    return client.MakeRequests([(service, 'ResizeAdvanced', request)])
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -143,9 +160,9 @@ class ResizeBeta(Resize):
       return self._MakeIgmResizeAdvancedRequest(client, igm_ref, args)
 
     if igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
+      # user specifies --no-creation-retries flag explicitly
       if not args.creation_retries:
-        raise exceptions.ConflictingArgumentsException(
-            '--no-creation-retries', '--region')
+        return self._MakeRmigResizeAdvancedRequest(client, igm_ref, args)
       return self._MakeRmigResizeRequest(client, igm_ref, args)
 
     raise ValueError('Unknown reference type {0}'.format(igm_ref.Collection()))
@@ -201,23 +218,6 @@ class ResizeAlpha(ResizeBeta):
         project=igm_ref.project,
         zone=igm_ref.zone)
     return client.MakeRequests([(service, 'Patch', request)])
-
-  @staticmethod
-  def _MakeRmigResizeAdvancedRequest(client, igm_ref, args):
-    service = client.apitools_client.regionInstanceGroupManagers
-    request = (
-        client.messages
-        .ComputeRegionInstanceGroupManagersResizeAdvancedRequest(
-            instanceGroupManager=igm_ref.Name(),
-            regionInstanceGroupManagersResizeAdvancedRequest=(
-                client.messages
-                .RegionInstanceGroupManagersResizeAdvancedRequest(
-                    targetSize=args.size,
-                    noCreationRetries=not args.creation_retries,
-                )),
-            project=igm_ref.project,
-            region=igm_ref.region))
-    return client.MakeRequests([(service, 'ResizeAdvanced', request)])
 
   @staticmethod
   def _MakeRmigPatchRequest(client, igm_ref, args):

@@ -24,4 +24,7 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Opsagents(base.Group):
   """Manage Operation Suite (Ops) agents for Compute Engine VM instances."""
-  base.EnableUserProjectQuota()
+
+  def Filter(self, context, args):
+    del context, args
+    base.EnableUserProjectQuota()

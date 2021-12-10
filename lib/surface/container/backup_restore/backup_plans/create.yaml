@@ -14,7 +14,7 @@
   request:
     collection: gkebackup.projects.locations.backupPlans
     ALPHA:
-      api_version: v1alpha1
+      api_version: v1
 
   async:
     collection: gkebackup.projects.locations.operations

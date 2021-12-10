@@ -13,23 +13,8 @@
 
       This command prints a list of Access Policies in a tabular form:
 
-        NAME      ORGANIZATION  TITLE      ETAG
-        MY_POLICY 12345         My Policy  123abcdef
-
-    ALPHA:
-      description: |
-        List access policies.
-
-        ## EXAMPLES
-
-        To list access policies, run the following command:
-
-          $ {command}
-
-        This command prints a list of Access Policies in a tabular form:
-
-          NAME      ORGANIZATION SCOPE       TITLE      ETAG
-          MY_POLICY 12345        projects/123 My Policy  123abcdef
+        NAME      ORGANIZATION SCOPE        TITLE      ETAG
+        MY_POLICY 12345        projects/123 My Policy  123abcdef
 
   request:
     collection: accesscontextmanager.accessPolicies
@@ -47,19 +32,11 @@
       spec: !REF googlecloudsdk.command_lib.organizations.resources:organization
 
   output:
-    ALPHA:
-      format: |
-        table(
-            name.basename(),
-            parent.basename():label=ORGANIZATION,
-            scopes.flatten(),
-            title,
-            etag
-        )
     format: |
       table(
           name.basename(),
           parent.basename():label=ORGANIZATION,
+          scopes.flatten(),
           title,
           etag
       )

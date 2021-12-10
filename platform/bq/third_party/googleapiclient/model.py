@@ -31,9 +31,9 @@ import platform
 
 from six.moves.urllib.parse import urlencode
 
-from googleapiclient import __version__
 from googleapiclient.errors import HttpError
 
+_LIBRARY_VERSION = "2.2.0"
 _PY_VERSION = platform.python_version()
 
 LOGGER = logging.getLogger(__name__)
@@ -153,7 +153,7 @@ class BaseModel(Model):
         else:
             headers["x-goog-api-client"] = ""
         headers["x-goog-api-client"] += "gdcl/%s gl-python/%s" % (
-            __version__,
+            _LIBRARY_VERSION,
             _PY_VERSION,
         )
 

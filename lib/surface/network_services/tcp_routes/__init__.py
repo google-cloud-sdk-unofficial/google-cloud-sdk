@@ -24,3 +24,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class TcpRoutes(base.Group):
   """Manage Network Services TcpRoutes."""
+  category = base.MANAGEMENT_TOOLS_CATEGORY

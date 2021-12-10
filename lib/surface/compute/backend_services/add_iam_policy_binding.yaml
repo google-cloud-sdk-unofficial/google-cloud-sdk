@@ -1,0 +1,35 @@
+release_tracks: [ALPHA, BETA]
+help_text:
+  brief: Add an IAM policy binding to a Compute Engine backend service.
+  description: |
+    Add an IAM policy binding to a Compute Engine backend service.
+
+  examples: |
+    To add an IAM policy binding for the role of 'compute.loadBalancerServiceUser'
+    for the user 'test-user@gmail.com' with backend service 'my-backend-service' and region 'REGION', run:
+
+      $ {command} my-backend-service --region=REGION --member='user:test-user@gmail.com' --role='roles/compute.loadBalancerServiceUser'
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
+
+request:
+  collection: compute.regionBackendServices
+  use_relative_name: false
+  api_version: v1
+  BETA:
+    api_version: beta
+  ALPHA:
+    api_version: alpha
+
+iam:
+  set_iam_policy_request_path: regionSetPolicyRequest
+  message_type_overrides:
+    policy: Policy
+    set_iam_policy_request: ComputeBackendServicesSetIamPolicyRequest
+
+arguments:
+  resource:
+    help_text: The backend service for which to add the IAM policy to.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:backend_service
+    override_resource_collection: true

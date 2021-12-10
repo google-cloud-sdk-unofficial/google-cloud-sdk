@@ -7,14 +7,14 @@
 
     A port of Ruby on Rails' inflector to Python.
 
-    :copyright: (c) 2012-2015 by Janne Vanhala
+    :copyright: (c) 2012-2020 by Janne Vanhala
 
     :license: MIT, see LICENSE for more details.
 """
 import re
 import unicodedata
 
-__version__ = "0.3.1"
+__version__ = "0.5.1"
 
 PLURALS = [
     (r"(?i)(quiz)$", r"\1zes"),
@@ -22,6 +22,7 @@ PLURALS = [
     (r"(?i)^(ox)$", r"\1en"),
     (r"(?i)(m|l)ice$", r"\1ice"),
     (r"(?i)(m|l)ouse$", r"\1ice"),
+    (r"(?i)(passer)s?by$", r"\1sby"),
     (r"(?i)(matr|vert|ind)(?:ix|ex)$", r"\1ices"),
     (r"(?i)(x|ch|ss|sh)$", r"\1es"),
     (r"(?i)([^aeiouy]|qu)y$", r"\1ies"),
@@ -46,6 +47,7 @@ SINGULARS = [
     (r"(?i)(quiz)zes$", r"\1"),
     (r"(?i)(matr)ices$", r"\1ix"),
     (r"(?i)(vert|ind)ices$", r"\1ex"),
+    (r"(?i)(passer)sby$", r"\1by"),
     (r"(?i)^(ox)en", r"\1"),
     (r"(?i)(alias|status)(es)?$", r"\1"),
     (r"(?i)(octop|vir)(us|i)$", r"\1us"),

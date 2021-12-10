@@ -43,13 +43,22 @@ class Create(base.CreateCommand):
         help="""\
         Nodes count for cluster
         """)
+    parser.add_argument(
+        '--node-custom-core-count',
+        required=False,
+        type=int,
+        hidden=True,
+        help="""\
+         Customized number of virtual cores to use for each node of the cluster. To get a list of valid values for your node type, run the `gcloud alpha vmware nodetypes describe` command and reference the `availableCustomCoreCounts` field in the output.
+        """)
+
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
     cluster = args.CONCEPTS.cluster.Parse()
     client = ClustersClient()
     operation = client.Create(cluster, args.node_type,
-                              args.node_count)
+                              args.node_count, args.node_custom_core_count)
     log.CreatedResource(operation.name, kind='cluster', is_async=True)
 
 Create.detailed_help = {

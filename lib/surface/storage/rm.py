@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.storage import request_config_factory
+from googlecloudsdk.api_lib.storage import user_request_args_factory
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import flags
@@ -131,7 +131,7 @@ class Rm(base.Command):
         recursion_requested=args.recursive)
 
     user_request_args = (
-        request_config_factory.get_user_request_args_from_command_args(args))
+        user_request_args_factory.get_user_request_args_from_command_args(args))
     task_status_queue = task_graph_executor.multiprocessing_context.Queue()
     task_iterator_factory = (
         delete_task_iterator_factory.DeleteTaskIteratorFactory(

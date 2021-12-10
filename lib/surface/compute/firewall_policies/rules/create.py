@@ -50,6 +50,11 @@ class Create(base.CreateCommand):
     flags.AddDisabled(parser)
     flags.AddTargetResources(parser)
     flags.AddTargetServiceAccounts(parser)
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.AddSrcFqdns(parser)
+      flags.AddDestFqdns(parser)
+      flags.AddSrcRegionCodes(parser)
+      flags.AddDestRegionCodes(parser)
     flags.AddDescription(parser)
     flags.AddOrganization(parser, required=False)
     parser.display_info.AddCacheUpdater(flags.FirewallPoliciesCompleter)
@@ -68,6 +73,10 @@ class Create(base.CreateCommand):
     layer4_configs = []
     target_resources = []
     target_service_accounts = []
+    src_fqdns = []
+    dest_fqdns = []
+    src_region_codes = []
+    dest_region_codes = []
     enable_logging = False
     disabled = False
     if args.IsSpecified('src_ip_ranges'):
@@ -80,6 +89,15 @@ class Create(base.CreateCommand):
       target_resources = args.target_resources
     if args.IsSpecified('target_service_accounts'):
       target_service_accounts = args.target_service_accounts
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      if args.IsSpecified('src_fqdns'):
+        src_fqdns = args.src_fqdns
+      if args.IsSpecified('dest_fqdns'):
+        dest_fqdns = args.dest_fqdns
+      if args.IsSpecified('src_region_codes'):
+        src_region_codes = args.src_region_codes
+      if args.IsSpecified('dest_region_codes'):
+        dest_region_codes = args.dest_region_codes
     if args.IsSpecified('enable_logging'):
       enable_logging = args.enable_logging
     if args.IsSpecified('disabled'):
@@ -87,10 +105,20 @@ class Create(base.CreateCommand):
 
     layer4_config_list = rule_utils.ParseLayer4Configs(layer4_configs,
                                                        holder.client.messages)
-    matcher = holder.client.messages.FirewallPolicyRuleMatcher(
-        srcIpRanges=src_ip_ranges,
-        destIpRanges=dest_ip_ranges,
-        layer4Configs=layer4_config_list)
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      matcher = holder.client.messages.FirewallPolicyRuleMatcher(
+          srcIpRanges=src_ip_ranges,
+          destIpRanges=dest_ip_ranges,
+          layer4Configs=layer4_config_list,
+          srcFqdns=src_fqdns,
+          destFqdns=dest_fqdns,
+          srcRegionCodes=src_region_codes,
+          destRegionCodes=dest_region_codes)
+    else:
+      matcher = holder.client.messages.FirewallPolicyRuleMatcher(
+          srcIpRanges=src_ip_ranges,
+          destIpRanges=dest_ip_ranges,
+          layer4Configs=layer4_config_list)
     traffic_direct = holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.INGRESS
     if args.IsSpecified('direction'):
       if args.direction == 'INGRESS':

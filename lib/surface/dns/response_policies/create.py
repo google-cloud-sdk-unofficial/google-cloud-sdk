@@ -31,11 +31,11 @@ from googlecloudsdk.core import log
 def _AddArgsCommon(parser):
   flags.GetResponsePolicyDescriptionArg(required=True).AddToParser(parser)
   flags.GetResponsePolicyNetworksArg().AddToParser(parser)
-  flags.GetResponsePolicyGkeClustersArg().AddToParser(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
+class Create(base.UpdateCommand):
   r"""Creates a new Cloud DNS response policy.
 
       This command creates a new Cloud DNS response policy.
@@ -44,18 +44,29 @@ class CreateBeta(base.UpdateCommand):
 
       To create a new response policy with minimal arguments, run:
 
-        $ {command} myresponsepolicy --description='My new response policy.' --networks=''
+        $ {command} myresponsepolicy --description='My new response policy.'
+        --networks=''
 
       To create a new response policy with all optional arguments, run:
 
-        $ {command} myresponsepolicy --description='My new response policy.' --networks=network1,network2
+        $ {command} myresponsepolicy --description='My new response policy.'
+        --networks=network1,network2
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def _BetaOrAlpha(cls):
+    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
+                                  base.ReleaseTrack.ALPHA)
+
+  @classmethod
+  def Args(cls, parser):
     resource_args.AddResponsePolicyResourceArg(
-        parser, verb='to create', api_version='v1beta2')
+        parser,
+        verb='to create',
+        api_version=util.GetApiFromTrack(cls.ReleaseTrack()))
     _AddArgsCommon(parser)
+    if cls._BetaOrAlpha():
+      flags.GetResponsePolicyGkeClustersArg().AddToParser(parser)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
@@ -70,13 +81,16 @@ class CreateBeta(base.UpdateCommand):
     response_policy = messages.ResponsePolicy(
         responsePolicyName=response_policy_name)
 
-    if args.IsSpecified('networks') or args.IsSpecified('gkeclusters'):
+    if args.IsSpecified('networks') or (self._BetaOrAlpha() and
+                                        args.IsSpecified('gkeclusters')):
       if args.networks == ['']:
         args.networks = []
       response_policy.networks = command_util.ParseResponsePolicyNetworks(
           args.networks, response_policy_ref.project, api_version)
 
-      if args.IsSpecified('gkeclusters'):
+      if (self.ReleaseTrack()
+          in (base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA) and
+          args.IsSpecified('gkeclusters')):
         gkeclusters = args.gkeclusters
         response_policy.gkeClusters = [
             messages.ResponsePolicyGKECluster(gkeClusterName=name)
@@ -84,6 +98,13 @@ class CreateBeta(base.UpdateCommand):
         ]
 
     else:
+      if self._BetaOrAlpha():
+        raise exceptions.RequiredArgumentException(
+            '--networks', ("""A list of networks must be provided.'
+           NOTE: You can provide an empty value ("") for response policies that
+           have NO network binding.
+            """))
+
       raise exceptions.RequiredArgumentException(
           '--networks,--gkeclusters',
           ("""A list of networks or GKE clusters must be provided.'
@@ -102,28 +123,3 @@ class CreateBeta(base.UpdateCommand):
     log.CreatedResource(response_policy_ref, kind='ResponsePolicy')
 
     return result
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  r"""Creates a new Cloud DNS response policy.
-
-      This command creates a new Cloud DNS response policy.
-
-      ## EXAMPLES
-
-      To create a new response policy with minimal arguments, run:
-
-        $ {command} myresponsepolicy --description='My new response policy.' --networks=''
-
-      To create a new response policy with all optional arguments, run:
-
-        $ {command} myresponsepolicy --description='My new response policy.' --networks=network1,network2
-  """
-
-  @staticmethod
-  def Args(parser):
-    resource_args.AddResponsePolicyResourceArg(
-        parser, verb='to create', api_version='v1alpha2')
-    _AddArgsCommon(parser)
-    parser.display_info.AddFormat('json')

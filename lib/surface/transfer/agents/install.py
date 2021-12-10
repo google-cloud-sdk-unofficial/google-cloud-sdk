@@ -25,6 +25,8 @@ import subprocess
 import sys
 
 from googlecloudsdk.api_lib.auth import util as login_util
+from googlecloudsdk.api_lib.transfer import agent_pools_util
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.auth import auth_util
 from googlecloudsdk.core import config
@@ -65,9 +67,6 @@ proxy server from sending valid outbound requests.
 DOCKER_NOT_FOUND_HELP_TEXT_BASE_FORMAT = """
 The agent runs inside a Docker container, so you'll need
 to install Docker before finishing agent installation.
-
-For most Linux operating systems, you can copy and run the piped installation
-commands below:
 
 {os_instructions}
 """
@@ -247,6 +246,11 @@ class Install(base.Command):
     project = properties.VALUES.core.project.Get()
     if not project:
       raise ValueError(MISSING_PROJECT_ERROR_TEXT)
+
+    messages = apis.GetMessagesModule('storagetransfer', 'v1')
+    if (agent_pools_util.api_get(args.pool).state !=
+        messages.AgentPool.StateValueValuesEnum.CREATED):
+      raise ValueError('Agent pool not found: ' + args.pool)
 
     creds_file_path = _authenticate_and_get_creds_file_path(args.creds_file)
     log.status.Print('[1/3] Credentials found ✓')

@@ -38,6 +38,7 @@ def _AddArgs(parser, version):
   flags.AddRegionResourceArg(
       parser, 'to create endpoint', prompt_func=region_util.PromptForOpRegion)
   flags.GetDescriptionArg('endpoint').AddToParser(parser)
+  flags.GetUserSpecifiedIdArg('endpoint').AddToParser(parser)
   labels_util.AddCreateLabelsFlags(parser)
   if version == constants.BETA_VERSION:
     flags.GetEndpointNetworkArg().AddToParser(parser)
@@ -57,14 +58,14 @@ def _Run(args, version):
           region_ref, args.display_name,
           labels_util.ParseCreateArgs(
               args, endpoints_client.messages.GoogleCloudAiplatformV1Endpoint
-              .LabelsValue), args.description)
+              .LabelsValue), args.description, args.endpoint_id)
     else:
       op = endpoints_client.CreateBeta(
           region_ref, args.display_name,
           labels_util.ParseCreateArgs(
               args, endpoints_client.messages
               .GoogleCloudAiplatformV1beta1Endpoint.LabelsValue),
-          args.description, args.network)
+          args.description, args.network, args.endpoint_id)
     response_msg = operations_util.WaitForOpMaybe(
         operation_client, op, endpoints_util.ParseOperation(op.name))
     if response_msg is not None:

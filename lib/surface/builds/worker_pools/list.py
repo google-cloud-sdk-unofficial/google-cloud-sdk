@@ -92,6 +92,9 @@ class List(base.ListCommand):
 
     # Format the workerpool names for display
     for wp in wp_list:
+      if release_track != base.ReleaseTrack.ALPHA:
+        if wp.hybridPoolConfig is not None:
+          wp_list.remove(wp)
       try:
         wp.name = cloudbuild_util.RegionalWorkerPoolShortName(wp.name)
       except ValueError:

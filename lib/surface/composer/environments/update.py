@@ -51,9 +51,9 @@ class Update(base.Command):
   """Update properties of a Cloud Composer environment."""
 
   detailed_help = DETAILED_HELP
-  _support_autoscaling = False
+  _support_autoscaling = True
   _support_maintenance_window = False
-  _support_environment_size = False
+  _support_environment_size = True
 
   @staticmethod
   def Args(parser, release_track=base.ReleaseTrack.GA):
@@ -76,11 +76,8 @@ class Update(base.Command):
     flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(Update.update_type_group)
     flags.WEB_SERVER_MACHINE_TYPE.AddToParser(Update.update_type_group)
 
-    # Note: this flag is available for patching of both Composer 1.*.* and 2.*.*
-    # environments, although it is currently invalid for Composer 2.*.* in
-    # gcloud GA.
-    if release_track == base.ReleaseTrack.GA:
-      flags.NUM_SCHEDULERS.AddToParser(Update.update_type_group)
+    flags.AddAutoscalingUpdateFlagsToGroup(Update.update_type_group,
+                                           release_track)
 
   def _ConstructPatch(self, env_ref, args, support_environment_upgrades=False):
     env_obj = environments_api_util.Get(
@@ -125,16 +122,16 @@ class Update(base.Command):
               opt='web-server-machine-type'))
     params['cloud_sql_machine_type'] = args.cloud_sql_machine_type
     params['web_server_machine_type'] = args.web_server_machine_type
-
-    flags.ValidateSchedulerCountFlag(args.scheduler_count, is_composer_v1,
-                                     self.ReleaseTrack())
     params['scheduler_count'] = args.scheduler_count
 
     if self._support_environment_size:
       if (args.environment_size and is_composer_v1):
         raise command_util.InvalidUserInputError(
             _INVALID_OPTION_FOR_V1_ERROR_MSG.format(opt='environment-size'))
-      if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      if self.ReleaseTrack() == base.ReleaseTrack.GA:
+        params['environment_size'] = flags.ENVIRONMENT_SIZE_GA.GetEnumForChoice(
+            args.environment_size)
+      elif self.ReleaseTrack() == base.ReleaseTrack.BETA:
         params[
             'environment_size'] = flags.ENVIRONMENT_SIZE_BETA.GetEnumForChoice(
                 args.environment_size)
@@ -207,8 +204,6 @@ class UpdateBeta(Update):
     UpdateBeta.support_environment_upgrades = True
     flags.AddEnvUpgradeFlagsToGroup(Update.update_type_group)
     flags.AddMaintenanceWindowFlagsGroup(Update.update_type_group)
-    flags.AddAutoscalingUpdateFlagsToGroup(Update.update_type_group,
-                                           release_track)
 
   @staticmethod
   def Args(parser):

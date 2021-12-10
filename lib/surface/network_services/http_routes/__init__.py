@@ -24,3 +24,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class HttpRoutes(base.Group):
   """Manage Network Services HttpRoutes."""
+  category = base.MANAGEMENT_TOOLS_CATEGORY

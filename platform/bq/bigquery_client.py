@@ -67,6 +67,7 @@ CONNECTION_TYPE_TO_PROPERTY_MAP = {
     'Azure': 'azure',
     'SQL_DATA_SOURCE': 'sqlDataSource',
     'CLOUD_SPANNER': 'cloudSpanner',
+    'CLOUD_RESOURCE': 'cloudResource',
 }
 CONNECTION_PROPERTY_TO_TYPE_MAP = {
     p: t for t, p in six.iteritems(CONNECTION_TYPE_TO_PROPERTY_MAP)
@@ -877,7 +878,7 @@ class BigqueryModel(model.JsonModel):
   def request(self, headers, path_params, query_params, body_value):
     """Updates outgoing request."""
     if 'trace' not in query_params and self.trace:
-      query_params['trace'] = self.trace
+      headers['cookie'] = self.trace
     return super(BigqueryModel, self).request(headers, path_params,
                                               query_params, body_value)
 
@@ -1155,6 +1156,14 @@ class BigqueryClient(object):
         ca_certs=flags.FLAGS.ca_certificates_file or None,
         disable_ssl_certificate_validation=flags.FLAGS.disable_ssl_validation)
 
+    if hasattr(http, 'redirect_codes'):
+      http.redirect_codes = set(http.redirect_codes) - {308}
+
+    if flags.FLAGS.mtls:
+      _, self._cert_file = tempfile.mkstemp()
+      _, self._key_file = tempfile.mkstemp()
+      discovery.add_mtls_creds(http, discovery.get_client_options(),
+                               self._cert_file, self._key_file)
 
     return http
 
@@ -1186,7 +1195,7 @@ class BigqueryClient(object):
         discovery_document = pkgutil.get_data(
             'bigquery_client',
             'discovery/%s.bigquery.%s.rest.json' %
-            (_ToFilename(self.api), self.api_version))
+            (_ToFilename(self.api), self.api_version)).decode('utf-8')
       except IOError:
         discovery_document = None
     if discovery_document is None:
@@ -1237,12 +1246,16 @@ class BigqueryClient(object):
 
     discovery_document_to_build_client = discovery_document
     try:
+      client_options = discovery.get_client_options()
+      if flags.FLAGS.mtls:
+        client_options.api_endpoint = discovery.get_mtls_endpoint(
+            discovery_document_to_build_client)
       built_client = discovery.build_from_document(
           discovery_document_to_build_client,
           http=http,
           model=bigquery_model,
-          requestBuilder=bigquery_http,
-      )
+          client_options=client_options,
+          requestBuilder=bigquery_http)
       return built_client
     except Exception:
       logging.error('Error building from discovery document: %s',
@@ -1266,12 +1279,16 @@ class BigqueryClient(object):
       logging.error('Failed to build discovery_next document')
       raise
     try:
+      client_options = discovery.get_client_options()
+      if flags.FLAGS.mtls:
+        client_options.api_endpoint = discovery.get_mtls_endpoint(
+            models_discovery_document)
       return discovery.build_from_document(
           models_discovery_document,
           http=http,
           model=bigquery_model,
-          requestBuilder=bigquery_http,
-      )
+          client_options=client_options,
+          requestBuilder=bigquery_http)
     except Exception:
       logging.error('Error building from models document: %s',
                     models_discovery_document)
@@ -1294,12 +1311,16 @@ class BigqueryClient(object):
       logging.error('Failed to build iam policy discovery document')
       raise
     try:
+      client_options = discovery.get_client_options()
+      if flags.FLAGS.mtls:
+        client_options.api_endpoint = discovery.get_mtls_endpoint(
+            iam_policy_discovery_document)
       return discovery.build_from_document(
           iam_policy_discovery_document,
           http=http,
           model=bigquery_model,
-          requestBuilder=bigquery_http,
-      )
+          client_options=client_options,
+          requestBuilder=bigquery_http)
     except Exception:
       logging.error('Error building from iam policy document: %s',
                     iam_policy_discovery_document)
@@ -1342,7 +1363,6 @@ class BigqueryClient(object):
     insert_client = self.apiclient
     return insert_client
 
-
   def GetTransferV1ApiClient(
        self, transferserver_address=None):
     """Return the apiclient that supports Transfer v1 operation."""
@@ -1362,11 +1382,9 @@ class BigqueryClient(object):
   def GetReservationApiClient(self, reservationserver_address=None):
     """Return the apiclient that supports reservation operations."""
     path = reservationserver_address
-    # Alpha feature actually is hosted in beta endpoint.
-    if (self.api_version == 'v1beta1' or
-        self.api_version == 'autoscale_alpha' or
-        self.api_version == 'autoscale_preview'):
+    if self.api_version == 'v1beta1':
       reservation_version = 'v1beta1'
+    # Alpha feature actually is hosted in v1 endpoint.
     else:
       reservation_version = 'v1'
     if path is None:
@@ -1911,7 +1929,6 @@ class BigqueryClient(object):
         **table_dict)
     return op.execute()
 
-
   def GetTransferConfig(self, transfer_id):
     client = self.GetTransferV1ApiClient()
     return client.projects().locations().transferConfigs().get(
@@ -2027,8 +2044,7 @@ class BigqueryClient(object):
         max_concurrency,
         enable_queuing_and_priorities,
         autoscale_max_slots,
-        autoscale_budget_slot_hours
-    )
+        autoscale_budget_slot_hours)
     client = self.GetReservationApiClient()
     parent = 'projects/%s/locations/%s' % (reference.projectId,
                                            reference.location)
@@ -2329,7 +2345,7 @@ class BigqueryClient(object):
     """
     client = self.GetReservationApiClient()
     client.projects().locations().capacityCommitments().delete(
-        name=reference.path()).execute()
+        name=reference.path(), force=force).execute()
 
   def UpdateCapacityCommitment(self, reference, plan, renewal_plan):
     """Updates a capacity commitment with the given reference.
@@ -2701,13 +2717,13 @@ class BigqueryClient(object):
           update_mask.append('aws.crossAccountRole.iamRoleId')
         if aws_properties.get('accessRole') and \
             aws_properties['accessRole'].get('iamRoleId'):
-          update_mask.append('aws.accessRole.iamRoleId')
+          update_mask.append('aws.access_role.iam_role_id')
       else:
         connection['aws'] = {}
 
       if connection_credential:
         connection['aws']['credential'] = json.loads(connection_credential)
-      update_mask.append('aws.credential')
+        update_mask.append('aws.credential')
 
     elif connection_type == 'Azure':
       if properties:
@@ -4559,7 +4575,9 @@ class BigqueryClient(object):
       default_partition_expiration_ms=None,
       data_location=None,
       labels=None,
-      default_kms_key=None
+      default_kms_key=None,
+      source_dataset_reference=None
+
   ):
     """Create a dataset corresponding to DatasetReference.
 
@@ -4581,9 +4599,13 @@ class BigqueryClient(object):
       default_kms_key: An optional kms dey that will apply to all newly created
         tables in the dataset, if no explicit key is supplied in the creating
         request.
+      source_dataset_reference: An optional ApiClientHelper.DatasetReference
+        that will be the source of this linked dataset.
 
     Raises:
       TypeError: if reference is not an ApiClientHelper.DatasetReference
+        or if source_dataset_reference is provided but is not an
+        ApiClientHelper.DatasetReference.
       BigqueryDuplicateError: if reference exists and ignore_existing
          is False.
     """
@@ -4609,6 +4631,17 @@ class BigqueryClient(object):
       body['labels'] = {}
       for label_key, label_value in labels.items():
         body['labels'][label_key] = label_value
+    if source_dataset_reference is not None:
+      _Typecheck(
+          source_dataset_reference,
+          ApiClientHelper.DatasetReference,
+          method='CreateDataset')
+      body['linkedDatasetSource'] = {
+          'sourceDataset':
+              BigqueryClient.ConstructObjectInfo(source_dataset_reference)
+              ['datasetReference']
+      }
+
 
     try:
       self.apiclient.datasets().insert(
@@ -5181,7 +5214,8 @@ class BigqueryClient(object):
       labels_to_set=None,
       label_keys_to_remove=None,
       etag=None,
-      default_kms_key=None):
+      default_kms_key=None
+  ):
     """Updates a dataset.
 
     Args:
@@ -5508,24 +5542,23 @@ class BigqueryClient(object):
       result = request.execute()
     return result
 
-  def _StartQueryRpc(
-      self,
-      query,
-      dry_run=None,
-      use_cache=None,
-      preserve_nulls=None,
-      request_id=None,
-      maximum_bytes_billed=None,
-      max_results=None,
-      timeout_ms=None,
-      min_completion_ratio=None,
-      project_id=None,
-      external_table_definitions_json=None,
-      udf_resources=None,
-      use_legacy_sql=None,
-      location=None,
-      connection_properties=None,
-      **kwds):
+  def _StartQueryRpc(self,
+                     query,
+                     dry_run=None,
+                     use_cache=None,
+                     preserve_nulls=None,
+                     request_id=None,
+                     maximum_bytes_billed=None,
+                     max_results=None,
+                     timeout_ms=None,
+                     min_completion_ratio=None,
+                     project_id=None,
+                     external_table_definitions_json=None,
+                     udf_resources=None,
+                     use_legacy_sql=None,
+                     location=None,
+                     connection_properties=None,
+                     **kwds):
     """Executes the given query using the rpc-style query api.
 
     Args:
@@ -5902,24 +5935,23 @@ class BigqueryClient(object):
     return self.ReadSchemaAndJobRows(
         job['jobReference'], start_row=start_row, max_rows=max_rows)
 
-  def RunQueryRpc(
-      self,
-      query,
-      dry_run=None,
-      use_cache=None,
-      preserve_nulls=None,
-      request_id=None,
-      maximum_bytes_billed=None,
-      max_results=None,
-      wait=sys.maxsize,
-      min_completion_ratio=None,
-      wait_printer_factory=None,
-      max_single_wait=None,
-      external_table_definitions_json=None,
-      udf_resources=None,
-      location=None,
-      connection_properties=None,
-      **kwds):
+  def RunQueryRpc(self,
+                  query,
+                  dry_run=None,
+                  use_cache=None,
+                  preserve_nulls=None,
+                  request_id=None,
+                  maximum_bytes_billed=None,
+                  max_results=None,
+                  wait=sys.maxsize,
+                  min_completion_ratio=None,
+                  wait_printer_factory=None,
+                  max_single_wait=None,
+                  external_table_definitions_json=None,
+                  udf_resources=None,
+                  location=None,
+                  connection_properties=None,
+                  **kwds):
     """Executes the given query using the rpc-style query api.
 
     Args:
@@ -6368,6 +6400,7 @@ class BigqueryClient(object):
               print_header=None,
               field_delimiter=None,
               destination_format=None,
+              trial_id=None,
               compression=None,
               use_avro_logical_types=None,
               **kwds):
@@ -6384,6 +6417,8 @@ class BigqueryClient(object):
       field_delimiter: Optional. Specifies the single byte field delimiter.
       destination_format: Optional. Format to extract table to. May be "CSV",
         "AVRO" or "NEWLINE_DELIMITED_JSON".
+      trial_id: Optional. 1-based ID of the trial to be exported from a
+        hyperparameter tuning model.
       compression: Optional. The compression type to use for exported files.
         Possible values include "GZIP" and "NONE". The default value is NONE.
       use_avro_logical_types: Optional. Whether to use avro logical types for
@@ -6410,6 +6445,8 @@ class BigqueryClient(object):
       extract_config = {'sourceTable': dict(reference)}
     elif isinstance(reference, ApiClientHelper.ModelReference):
       extract_config = {'sourceModel': dict(reference)}
+      if trial_id:
+        extract_config.update({'modelExtractOptions': {'trialId': trial_id}})
     _ApplyParameters(
         extract_config,
         destination_uris=uris,

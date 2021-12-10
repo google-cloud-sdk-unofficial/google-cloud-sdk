@@ -1,4 +1,4 @@
-- release_tracks: [BETA, ALPHA]
+- release_tracks: [GA, BETA, ALPHA]
   help_text:
     brief: Describes a Cloud DNS response policy.
     description: |
@@ -12,10 +12,6 @@
   request:
     collection: dns.responsePolicies
     method: get
-    ALPHA:
-      api_version: v1alpha2
-    BETA:
-      api_version: v1beta2
 
   arguments:
     resource:

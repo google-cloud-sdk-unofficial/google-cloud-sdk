@@ -40,10 +40,12 @@ class Delete(base.DeleteCommand):
     concept_parsers.ConceptParser([flags.GetInstancePresentationSpec(
         'The instance to delete.')]).AddToParser(parser)
     instances_flags.AddLocationArg(parser)
+    instances_flags.AddRegionArg(parser)
     instances_flags.AddAsyncFlag(parser)
+    instances_flags.AddForceArg(parser)
 
   def Run(self, args):
-    """Delete a Filestore instance."""
+    """Deletes a Filestore instance."""
     instance_ref = args.CONCEPTS.instance.Parse()
     delete_warning = ('You are about to delete Filestore instance {}.\n'
                       'Are you sure?'.format(instance_ref.RelativeName()))
@@ -52,8 +54,7 @@ class Delete(base.DeleteCommand):
       return None
     client = filestore_client.FilestoreClient(version=self._API_VERSION)
 
-    result = client.DeleteInstance(
-        instance_ref, args.async_)
+    result = client.DeleteInstance(instance_ref, args.async_, args.force)
 
     if args.async_:
       command = properties.VALUES.metrics.command_name.Get().split('.')
@@ -71,27 +72,17 @@ class DeleteBeta(Delete):
 
   _API_VERSION = filestore_client.BETA_API_VERSION
 
-  @staticmethod
-  def Args(parser):
-    concept_parsers.ConceptParser([flags.GetInstancePresentationSpec(
-        'The instance to delete.')]).AddToParser(parser)
-    instances_flags.AddLocationArg(parser)
-    instances_flags.AddRegionArg(parser)
-    instances_flags.AddAsyncFlag(parser)
-    instances_flags.AddForceArg(parser)
-
   def Run(self, args):
-    """Deletes a Cloud Filestore instance."""
+    """Deletes a Filestore instance."""
     instance_ref = args.CONCEPTS.instance.Parse()
-    delete_warning = ('You are about to delete Cloud Filestore instance {}.\n'
+    delete_warning = ('You are about to delete Filestore instance {}.\n'
                       'Are you sure?'.format(instance_ref.RelativeName()))
 
     if not console_io.PromptContinue(message=delete_warning):
       return None
     client = filestore_client.FilestoreClient(version=self._API_VERSION)
 
-    result = client.DeleteInstanceBeta(
-        instance_ref, args.async_, args.force)
+    result = client.DeleteInstance(instance_ref, args.async_, args.force)
 
     if args.async_:
       command = properties.VALUES.metrics.command_name.Get().split('.')
@@ -104,20 +95,43 @@ class DeleteBeta(Delete):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(Delete):
+class DeleteAlpha(base.DeleteCommand):
   """Delete a Filestore instance."""
 
   _API_VERSION = filestore_client.ALPHA_API_VERSION
 
   @staticmethod
   def Args(parser):
-    concept_parsers.ConceptParser([flags.GetInstancePresentationSpec(
-        'The instance to delete.')]).AddToParser(parser)
+    concept_parsers.ConceptParser([
+        flags.GetInstancePresentationSpec('The instance to delete.')
+    ]).AddToParser(parser)
     instances_flags.AddLocationArg(parser)
     instances_flags.AddRegionArg(parser)
     instances_flags.AddAsyncFlag(parser)
 
-Delete.detailed_help = {
+  def Run(self, args):
+    """Delete a Filestore instance."""
+    instance_ref = args.CONCEPTS.instance.Parse()
+    delete_warning = ('You are about to delete Filestore instance {}.\n'
+                      'Are you sure?'.format(instance_ref.RelativeName()))
+
+    if not console_io.PromptContinue(message=delete_warning):
+      return None
+    client = filestore_client.FilestoreClient(version=self._API_VERSION)
+
+    result = client.DeleteInstanceAlpha(instance_ref, args.async_)
+
+    if args.async_:
+      command = properties.VALUES.metrics.command_name.Get().split('.')
+      if command:
+        command[-1] = 'list'
+      log.status.Print(
+          'Check the status of the deletion by listing all instances:\n  '
+          '$ {} '.format(' '.join(command)))
+    return result
+
+
+help_ = {
     'DESCRIPTION':
         'Delete a Filestore instance.',
     'EXAMPLES':
@@ -127,3 +141,5 @@ To delete a Filestore instance named NAME in us-central1-c:
   $ {command} NAME --zone=us-central1-c
 """
 }
+Delete.detailed_help = help_
+DeleteAlpha.detailed_help = help_

@@ -24,3 +24,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Gateways(base.Group):
   """Manage Network Services Gateways."""
+  category = base.MANAGEMENT_TOOLS_CATEGORY

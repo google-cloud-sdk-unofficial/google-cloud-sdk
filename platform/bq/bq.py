@@ -27,7 +27,7 @@ __author__ = 'craigcitro@google.com (Craig Citro)'
 # Add to path dependencies if present.
 _THIRD_PARTY_DIR = os.path.join(os.path.dirname(__file__), 'third_party')
 if os.path.isdir(_THIRD_PARTY_DIR) and _THIRD_PARTY_DIR not in sys.path:
-  sys.path.append(_THIRD_PARTY_DIR)
+  sys.path.insert(0, _THIRD_PARTY_DIR)
 
 # This strange import below ensures that the correct 'google' is imported.
 # We reload after sys.path is updated, so we know if will find our google
@@ -50,11 +50,6 @@ import httplib2
 from pyglib import appcommands
 
 import yaml
-
-# Moving _THIRD_PARTY_DIR to the front of sys.path to find the right
-# google.apputils package.
-if sys.path and sys.path[0] != _THIRD_PARTY_DIR:
-  sys.path.insert(0, _THIRD_PARTY_DIR)
 
 # pylint: disable=g-bad-import-order
 import six
@@ -528,12 +523,12 @@ class Factory(object):
 
 
 class Client(object):
-  """Class wrapping a singleton bigquery_client.BigqueryClient."""
-  client = None
+  """Class caching bigquery_client.BigqueryClient based on arguments."""
+  client_cache = {}
 
   @staticmethod
-  def Create(config_logging=True, **kwds):
-    """Build a new BigqueryClient configured from kwds and FLAGS.
+  def _CollectArgs(config_logging=True, **kwds):
+    """Collect and combine FLAGS and kwds to create BQ Client.
 
     Args:
       config_logging: if True, set python logging according to --apilog.
@@ -552,12 +547,6 @@ class Client(object):
     if FLAGS.httplib2_debuglevel:
       httplib2.debuglevel = FLAGS.httplib2_debuglevel
 
-    if 'credentials' in kwds:
-      credentials = kwds.pop('credentials')
-    else:
-      credentials = credential_loader.GetCredentialsFromFlags()
-    assert credentials is not None
-
     client_args = {}
     global_args = (
         'credential_file',
@@ -575,19 +564,51 @@ class Client(object):
     if FLAGS.discovery_file:
       with open(FLAGS.discovery_file) as f:
         client_args['discovery_document'] = f.read()
+
+    return client_args
+
+  @staticmethod
+  def Create(config_logging=True, **kwds):
+    """Build a new BigqueryClient configured from kwds and FLAGS.
+
+    Args:
+      config_logging: if True, set python logging according to --apilog.
+      **kwds: keyword arguments for creating BigqueryClient.
+    """
+
+    if 'credentials' in kwds:
+      credentials = kwds.pop('credentials')
+    else:
+      credentials = credential_loader.GetCredentialsFromFlags()
+    assert credentials is not None
+
+    client_args = Client._CollectArgs(config_logging, **kwds)
     bigquery_client_factory = Factory.GetBigqueryClientFactory()
     return bigquery_client_factory(credentials=credentials, **client_args)
 
   @classmethod
+  def _GetClientCacheKey(cls, **kwds):
+    client_args = Client._CollectArgs(**kwds)
+    return ('client_args={client_args},'
+            'service_account_credential_file={service_account_credential_file},'
+            'apilog={apilog},'.format(
+                client_args=client_args,
+                service_account_credential_file=FLAGS
+                .service_account_credential_file,
+                apilog=FLAGS.apilog))
+
+  @classmethod
   def Get(cls):
     """Return a BigqueryClient initialized from flags."""
-    if cls.client is None:
+    cache_key = Client._GetClientCacheKey()
+    if cache_key not in cls.client_cache:
       try:
-        cls.client = Client.Create()
+        cls.client_cache[cache_key] = Client.Create()
       except ValueError as e:
         # Convert constructor parameter errors into flag usage errors.
         raise app.UsageError(e)
-    return cls.client
+
+    return cls.client_cache[cache_key]
 
   @classmethod
   def Delete(cls):
@@ -596,7 +617,9 @@ class Client(object):
     This is needed when flags have changed, and we need to force
     client recreation to reflect new flag values.
     """
-    cls.client = None
+    cache_key = Client._GetClientCacheKey()
+    if cache_key in cls.client_cache:
+      del cls.client_cache[cache_key]
 
 
 def _Typecheck(obj, types, message=None):  # pylint: disable=redefined-outer-name
@@ -629,7 +652,6 @@ class NewCmd(appcommands.Cmd):
       self._star_kwds = bool(code.co_flags & 0x08)
       if self._star_args:
         self._max_args = sys.maxsize
-      self._debug_mode = FLAGS.debug_mode
       self.surface_in_shell = True
       self.__doc__ = self.RunWithArgs.__doc__
     elif self.Run.__func__ is NewCmd.Run.__func__:
@@ -690,11 +712,15 @@ class NewCmd(appcommands.Cmd):
       0 on success, nonzero on failure.
     """
     self._CheckFlags()
+    self._debug_mode = FLAGS.debug_mode
     if not self._new_style:
       return super(NewCmd, self).Run(argv)
 
     original_values = {
         name: self._command_flags[name].value for name in self._command_flags
+    }
+    original_presence = {
+        name: self._command_flags[name].present for name in self._command_flags
     }
     try:
       args = self._command_flags(argv)[1:]
@@ -736,7 +762,8 @@ class NewCmd(appcommands.Cmd):
     finally:
       for flag, value in six.iteritems(original_values):
         setattr(self, flag, value)
-        self._command_flags[flag].parse(value)
+        self._command_flags[flag].value = value
+        self._command_flags[flag].present = original_presence[flag]
 
   def RunCmdLoop(self, argv):
     """Hook for use in cmd.Cmd-based command shells."""
@@ -985,9 +1012,9 @@ class _Load(BigqueryCmd):
     flags.DEFINE_string(
         'clustering_fields',
         None,
-        'Comma separated field names. Can only be specified with time based '
-        'partitioning. Data will be first partitioned and subsequently "'
-        'clustered on these fields.',
+        'Comma-separated list of field names that specifies the columns on '
+        'which a table is clustered. To remove the clustering, set an empty '
+        'value.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'use_avro_logical_types',
@@ -1680,9 +1707,9 @@ class _Query(BigqueryCmd):
     flags.DEFINE_string(
         'clustering_fields',
         None,
-        'Comma separated field names. Can only be specified with time based '
-        'partitioning. Data will be first partitioned and subsequently "'
-        'clustered on these fields.',
+        'Comma-separated list of field names that specifies the columns on '
+        'which a table is clustered. To remove the clustering, set an empty '
+        'value.',
         flag_values=fv)
     flags.DEFINE_string(
         'destination_kms_key',
@@ -1851,8 +1878,8 @@ class _Query(BigqueryCmd):
         raise app.UsageError(
             'Scheduled queries do not support legacy SQL. Please use standard '
             'SQL and set the --use_legacy_sql flag to false.')
-      credentials = transfer_client.projects().dataSources().checkValidCreds(
-          name=scheduled_queries_reference, body={}).execute()
+      credentials = CheckValidCreds(reference, 'scheduled_query',
+                                    transfer_client)
       auth_info = {}
       if not credentials:
         auth_info = RetrieveAuthorizationInfo(reference, 'scheduled_query',
@@ -2212,6 +2239,13 @@ class _Extract(BigqueryCmd):
         'nested or repeated fields cannot be exported as CSV. The default '
         'value for models is ML_TF_SAVED_MODEL.',
         flag_values=fv)
+    flags.DEFINE_integer(
+        'trial_id',
+        None,
+        '1-based ID of the trial to be exported from a hyperparameter tuning '
+        'model. The default_trial_id will be exported if not specified. This '
+        'does not apply for models not trained with hyperparameter tuning.',
+        flag_values=fv)
     flags.DEFINE_enum(
         'compression',
         'NONE', ['GZIP', 'DEFLATE', 'SNAPPY', 'NONE'],
@@ -2277,6 +2311,7 @@ class _Extract(BigqueryCmd):
         print_header=self.print_header,
         field_delimiter=_NormalizeFieldDelimiter(self.field_delimiter),
         destination_format=self.destination_format,
+        trial_id=self.trial_id,
         compression=self.compression,
         use_avro_logical_types=self.use_avro_logical_types,
         **kwds)
@@ -2609,7 +2644,7 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       bq ls mydataset
       bq ls -a
       bq ls -m mydataset
-      bq ls --routines mydataset (requires whitelisting)
+      bq ls --routines mydataset
       bq ls --row_access_policies mytable (requires whitelisting)
       bq ls --filter labels.color:red
       bq ls --filter 'labels.color:red labels.size:*'
@@ -3003,7 +3038,7 @@ class _Delete(BigqueryCmd):
     Examples:
       bq rm ds.table
       bq rm -m ds.model
-      bq rm --routine ds.routine (requires whitelisting)
+      bq rm --routine ds.routine
       bq rm -r -f old_dataset
       bq rm --transfer_config=projects/p/locations/l/transferConfigs/c
       bq rm --connection --project_id=proj --location=us con
@@ -3629,9 +3664,8 @@ class _Make(BigqueryCmd):
     flags.DEFINE_string(
         'clustering_fields',
         None,
-        'Comma separated field names. Can only be specified with time based '
-        'partitioning. Data will be first partitioned and subsequently "'
-        'clustered on these fields.',
+        'Comma-separated list of field names that specifies the columns on '
+        'which a table is clustered.',
         flag_values=fv)
     flags.DEFINE_string(
         'range_partitioning',
@@ -3811,6 +3845,12 @@ class _Make(BigqueryCmd):
         'interpreting logical types into their corresponding types '
         '(ie. TIMESTAMP), instead of only using their raw types (ie. INTEGER).',
         flag_values=fv)
+    flags.DEFINE_string(
+        'source_dataset',
+        None,
+        'When set to a dataset reference, creates a Linked Dataset pointing to '
+        'the source dataset.',
+        flag_values=fv)
     flags.DEFINE_boolean(
         'parquet_enum_as_string',
         False, 'Infer Parquet ENUM logical type as STRING '
@@ -3839,6 +3879,7 @@ class _Make(BigqueryCmd):
       bq mk --materialized_view='select sum(x) as sum_x from dataset.table'
           new_dataset.newview
       bq mk -d --data_location=EU new_dataset
+      bq mk -d --source_dataset=src_dataset new_dataset (requires allowlisting)
       bq mk --transfer_config --target_dataset=dataset --display_name=name
           -p='{"param":"value"}' --data_source=source
           --schedule_start_time={schedule_start_time}
@@ -3935,10 +3976,8 @@ class _Make(BigqueryCmd):
       reference = 'projects/' + (client.GetProjectReference().projectId)
       credentials = False
       if self.data_source:
-        data_sources_reference = (
-            reference + '/dataSources/' + self.data_source)
-        credentials = transfer_client.projects().dataSources().checkValidCreds(
-            name=data_sources_reference, body={}).execute()
+        credentials = CheckValidCreds(reference, self.data_source,
+                                      transfer_client)
       else:
         raise bigquery_client.BigqueryError('A data source must be provided.')
       auth_info = {}
@@ -4009,6 +4048,11 @@ class _Make(BigqueryCmd):
             self.tenant_id)
 
       param_properties = self.properties
+      # All connection types require properties, except CLOUD_RESOURCE as
+      # it serves as a container for a service account that is generated
+      # by the connection service.
+      if not param_properties and self.connection_type == 'CLOUD_RESOURCE':
+        param_properties = '{}'
       if not param_properties:
         raise app.UsageError('Need to specify --properties')
       created_connection = client.CreateConnection(
@@ -4059,6 +4103,11 @@ class _Make(BigqueryCmd):
       if self.label is not None:
         labels = _ParseLabels(self.label)
 
+      if self.source_dataset:
+        source_dataset_reference = client.GetDatasetReference(
+            self.source_dataset)
+      else:
+        source_dataset_reference = None
 
 
       client.CreateDataset(
@@ -4069,10 +4118,13 @@ class _Make(BigqueryCmd):
           default_partition_expiration_ms=default_partition_exp_ms,
           data_location=location,
           default_kms_key=self.default_kms_key,
-          labels=labels
+          labels=labels,
+          source_dataset_reference=source_dataset_reference
       )
       print("Dataset '%s' successfully created." % (reference,))
     elif isinstance(reference, TableReference):
+      if self.source_dataset:
+        raise app.UsageError('Cannot specify --source_dataset for a table.')
       object_name = 'Table'
       if self.view:
         object_name = 'View'
@@ -4491,9 +4543,13 @@ class _Update(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_string(
         'reservation_size',
+        None, 'DEPRECATED, Please use bi_reservation_size instead.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'bi_reservation_size',
         None, 'BI reservation size. Can be specified in bytes '
-        '(--reservation_size=2147483648) or in GB (--reservation_size=2G). '
-        'Minimum 2GB. Use 0 to remove reservation.',
+        '(--bi_reservation_size=2147483648) or in GB (--bi_reservation_size=1G). '
+        'Minimum 1GB. Use 0 to remove reservation.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'use_idle_slots',
@@ -4726,10 +4782,9 @@ class _Update(BigqueryCmd):
     flags.DEFINE_string(
         'clustering_fields',
         None,
-        'Comma separated field names. Can only be specified for time based '
-        'partitioned tables. Data will be first partitioned and subsequently "'
-        'clustered on these fields. Set this to an empty string to remove '
-        'clustering on a table.',
+        'Comma-separated list of field names that specifies the columns on '
+        'which a table is clustered. To remove the clustering, set an empty '
+        'value.',
         flag_values=fv)
     flags.DEFINE_string(
         'etag', None, 'Only update if etag matches.', flag_values=fv)
@@ -4767,7 +4822,7 @@ class _Update(BigqueryCmd):
         'iam_role_id', None, '[Experimental] IAM role id.', flag_values=fv)
     flags.DEFINE_boolean(
         'federated_aws',
-        None,
+        True,
         '[Experimental] Federated identity.',
         flag_values=fv)
     flags.DEFINE_string(
@@ -4809,7 +4864,7 @@ class _Update(BigqueryCmd):
           --refresh_window_days=5 --update_credentials
           projects/p/locations/l/transferConfigs/c
       bq update --reservation --location=US --project_id=my-project
-          --reservation_size=2G
+          --bi_reservation_size=2G
       bq update --capacity_commitment --location=US --project_id=my-project
           --plan=MONTHLY --renewal_plan=FLEX commitment_id
       bq update --capacity_commitment --location=US --project_id=my-project
@@ -4837,10 +4892,13 @@ class _Update(BigqueryCmd):
       reference = client.GetTableReference(identifier)
     elif self.reservation:
       try:
-        if self.reservation_size is not None:
+        if self.reservation_size is not None or self.bi_reservation_size is not None:
+          size = self.bi_reservation_size
+          if size is None:
+            size = self.reservation_size
           reference = client.GetBiReservationReference(FLAGS.location)
           object_info = client.UpdateBiReservation(reference,
-                                                   self.reservation_size)
+                                                   size)
           print(object_info)
         else:
           reference = client.GetReservationReference(
@@ -4932,12 +4990,8 @@ class _Update(BigqueryCmd):
       reference = client.GetConnectionReference(
           identifier=identifier, default_location=FLAGS.location)
       if self.connection_type == 'AWS' and self.iam_role_id:
-        if self.federated_aws:
-          self.properties = bigquery_client.MakeAccessRolePropertiesJson(
-              self.iam_role_id)
-        else:
-          self.properties = bigquery_client.MakeIamRoleIdPropertiesJson(
-              self.iam_role_id)
+        self.properties = bigquery_client.MakeAccessRolePropertiesJson(
+            self.iam_role_id)
       if self.connection_type == 'Azure' and self.tenant_id:
         self.properties = bigquery_client.MakeTenantIdPropertiesJson(
             self.tenant_id)
@@ -4995,7 +5049,8 @@ class _Update(BigqueryCmd):
           labels_to_set=labels_to_set,
           label_keys_to_remove=label_keys_to_remove,
           default_kms_key=self.default_kms_key,
-          etag=self.etag)
+          etag=self.etag
+      )
       print("Dataset '%s' successfully updated." % (reference,))
     elif isinstance(reference, TableReference):
       object_name = 'Table'
@@ -5125,6 +5180,40 @@ class _Update(BigqueryCmd):
       print("Model '%s' successfully updated." % (reference))
 
 
+def CheckValidCreds(reference, data_source, transfer_client):
+  """Checks valid credentials.
+
+  Checks if Data Transfer Service valid credentials exist for the given data
+  source and requesting user. Some data sources don't support service account,
+  so we need to talk to them on behalf of the end user. This method just checks
+  whether we have OAuth token for the particular user, which is a pre-requisite
+  before a user can create a transfer config.
+
+  Args:
+    reference: The project reference.
+    data_source: The data source of the transfer config.
+    transfer_client: The transfer api client.
+
+  Returns:
+    credentials: It contains an instance of CheckValidCredsResponse if valid
+    credentials exist.
+
+  """
+  credentials = None
+  if FLAGS.location:
+    data_source_reference = (
+        reference + '/locations/' + FLAGS.location + '/dataSources/' +
+        data_source)
+    credentials = transfer_client.projects().locations().dataSources(
+    ).checkValidCreds(
+        name=data_source_reference, body={}).execute()
+  else:
+    data_source_reference = (reference + '/dataSources/' + data_source)
+    credentials = transfer_client.projects().dataSources().checkValidCreds(
+        name=data_source_reference, body={}).execute()
+  return credentials
+
+
 def RetrieveAuthorizationInfo(reference, data_source, transfer_client):
   """Retrieves the authorization code.
 
@@ -5181,7 +5270,8 @@ def _UpdateDataset(
     labels_to_set=None,
     label_keys_to_remove=None,
     etag=None,
-    default_kms_key=None):
+    default_kms_key=None
+):
   """Updates a dataset.
 
   Reads JSON file if specified and loads updated values, before calling bigquery
@@ -5231,7 +5321,8 @@ def _UpdateDataset(
       labels_to_set=labels_to_set,
       label_keys_to_remove=label_keys_to_remove,
       etag=etag,
-      default_kms_key=default_kms_key)
+      default_kms_key=default_kms_key
+  )
 
 
 class _Show(BigqueryCmd):
@@ -5354,7 +5445,7 @@ class _Show(BigqueryCmd):
       bq show [--view] dataset.view
       bq show [--materialized_view] dataset.materialized_view
       bq show -m ds.model
-      bq show --routine ds.routine (requires whitelisting)
+      bq show --routine ds.routine
       bq show --transfer_config projects/p/locations/l/transferConfigs/c
       bq show --transfer_run projects/p/locations/l/transferConfigs/c/runs/r
       bq show --encryption_service_account
@@ -5409,12 +5500,16 @@ class _Show(BigqueryCmd):
     elif self.reservation_assignment:
       object_info = client.SearchReservationAssignments(
           location=FLAGS.location,
-          job_type=FLAGS.job_type,
-          assignee_type=FLAGS.assignee_type,
-          assignee_id=FLAGS.assignee_id)
+          job_type=self.job_type,
+          assignee_type=self.assignee_type,
+          assignee_id=self.assignee_id)
+      # Here we just need any object of ReservationAssignmentReference type, but
+      # the value of the object doesn't matter here.
+      # _PrintObjectInfo() will use the type and object_info to format the
+      # output.
       reference = ApiClientHelper.ReservationAssignmentReference.Create(
-          projectId=FLAGS.project_id,
-          location=FLAGS.location,
+          projectId=' ',
+          location=' ',
           reservationId=' ',
           reservationAssignmentId=' ')
       print_reference = False
@@ -5922,7 +6017,7 @@ class _Wait(BigqueryCmd):  # pylint: disable=missing-docstring
       job_reference = client.GetJobReference(job_id, FLAGS.location)
     try:
       job = client.WaitJob(
-          job_reference=job_reference, wait=secs, status=FLAGS.wait_for_status)
+          job_reference=job_reference, wait=secs, status=self.wait_for_status)
       _PrintObjectInfo(
           job, JobReference.Create(**job['jobReference']), custom_format='show')
       return 1 if self.fail_on_error and BigqueryClient.IsFailedJob(job) else 0
@@ -6551,6 +6646,7 @@ class CommandLoop(cmd.Cmd):
 
   def postcmd(self, stop, line):
     return bool(stop) or line == 'EOF'
+
 
 
 # pylint: enable=g-bad-name

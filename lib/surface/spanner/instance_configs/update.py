@@ -18,11 +18,77 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
+from googlecloudsdk.api_lib.spanner import instance_configs
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.spanner import flags
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
 class Update(base.UpdateCommand):
   """Update a Cloud Spanner instance config."""
-  pass
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+        To update display name on a Cloud Spanner instance config 'custom-instance-config', run:
+
+          $ {command} custom-instance-config --display-name=nam3-RO-us-central1
+
+        To modify the instance config 'custom-instance-config' by adding labels 'k0', with value 'value1' and label 'k1' with value 'value2' and removing labels with key 'k3', run:
+
+         $ {command} custom-instance-config --update-labels=k0=value1,k1=value2 --remove-labels=k3
+
+        To clear all labels on a Cloud Spanner instance config 'custom-instance-config', run:
+
+          $ {command} custom-instance-config --clear-labels
+
+        To remove an existing label on a Cloud Spanner instance config 'custom-instance-config', run:
+
+          $ {command} custom-instance-config --remove-labels=KEY1,KEY2
+        """),
+  }
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    parser.add_argument(
+        'config',
+        metavar='INSTANCE_CONFIG',
+        completer=flags.InstanceConfigCompleter,
+        help='Cloud Spanner instance config. The `custom-` prefix is required '
+        'to avoid name conflicts with Google managed configurations.')
+
+    parser.add_argument(
+        '--display-name',
+        help='The name of this instance configuration as it appears in UIs.')
+
+    parser.add_argument(
+        '--etag', help='Used for optimistic concurrency control.')
+
+    labels_util.AddUpdateLabelsFlags(parser)
+
+    parser.add_argument(
+        '--validate-only',
+        action='store_true',
+        default=False,
+        help='Validate the update action, but don\'t actually perform it.')
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Instance config update response.
+    """
+    return instance_configs.Patch(args)

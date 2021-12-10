@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.vmware import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          List VMware Engine operations in location.
+          List VMware Engine private clouds.
         """,
     'EXAMPLES':
         """
@@ -45,8 +45,10 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.ListCommand):
-  """List VMware Engine operations."""
+class ListAlpha(base.ListCommand):
+  """List VMware Engine private clouds."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -65,4 +67,7 @@ class List(base.ListCommand):
     return client.List(location, limit=args.limit)
 
 
-List.detailed_help = DETAILED_HELP
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(ListAlpha):
+  """List VMware Engine private clouds."""

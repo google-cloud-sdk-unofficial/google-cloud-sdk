@@ -291,6 +291,7 @@ class CreateBeta(Create):
     flags.AddEnableBlueGreenUpdateFlag(parser)
     flags.AddStandardRolloutPolicyFlag(parser)
     flags.AddNodePoolSoakDurationFlag(parser)
+    flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -310,6 +311,7 @@ class CreateBeta(Create):
     ops.enable_rolling_update = args.enable_rolling_update
     ops.node_pool_soak_duration = args.node_pool_soak_duration
     ops.standard_rollout_policy = args.standard_rollout_policy
+    ops.maintenance_interval = args.maintenance_interval
     return ops
 
 
@@ -337,6 +339,7 @@ class CreateAlpha(Create):
     ops.enable_rolling_update = args.enable_rolling_update
     ops.node_pool_soak_duration = args.node_pool_soak_duration
     ops.standard_rollout_policy = args.standard_rollout_policy
+    ops.maintenance_interval = args.maintenance_interval
     return ops
 
   @staticmethod
@@ -374,5 +377,6 @@ class CreateAlpha(Create):
     flags.AddEnableBlueGreenUpdateFlag(parser)
     flags.AddStandardRolloutPolicyFlag(parser, for_node_pool=True)
     flags.AddNodePoolSoakDurationFlag(parser, for_node_pool=True)
+    flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)
 
 Create.detailed_help = DETAILED_HELP

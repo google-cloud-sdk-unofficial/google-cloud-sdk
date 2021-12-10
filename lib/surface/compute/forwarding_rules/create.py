@@ -583,7 +583,7 @@ class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
   _support_l7_internal_load_balancing = True
-  _support_gfe3 = False
+  _support_gfe3 = True
   _support_l7_rxlb = True
   _support_all_protocol = False
   _support_target_service_attachment = True
@@ -597,7 +597,6 @@ class CreateAlpha(CreateBeta):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
   _support_l7_internal_load_balancing = True
-  _support_gfe3 = True
   _support_all_protocol = True
   _support_target_service_attachment = True
   _support_sd_registration_for_regional = True

@@ -14,11 +14,9 @@
 # limitations under the License.
 """'vmware privateclouds create' command."""
 
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
-
 
 from googlecloudsdk.api_lib.vmware.privateclouds import PrivateCloudsClient
 from googlecloudsdk.calliope import base
@@ -29,7 +27,7 @@ from googlecloudsdk.core import log
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          Create a VMware Engine private cloud. Private cloud creation is considered finished when the private cloud is in READY state. Check the progress of a private cloud using `gcloud alpha vmware privateclouds list`.
+          Create a VMware Engine private cloud. Private cloud creation is considered finished when the private cloud is in READY state. Check the progress of a private cloud using `{parent_command} list`.
         """,
     'EXAMPLES':
         """
@@ -48,8 +46,10 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.CreateCommand):
+class CreateAlpha(base.CreateCommand):
   """Create a VMware Engine private cloud."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -67,7 +67,7 @@ class Create(base.CreateCommand):
         required=True,
         type=int,
         help="""\
-        Node type to use for management cluster nodes. To get a list of available node types, run `gcloud alpha vmware nodetypes list`.
+        Node type to use for management cluster nodes. To get a list of available node types, run `{grandparent_command} nodetypes list`.
         """)
     parser.add_argument(
         '--management-range',
@@ -87,6 +87,14 @@ class Create(base.CreateCommand):
         help="""\
          Project ID or project name of the VPC network. Use this flag when the VPC network is in another project.
         """)
+    parser.add_argument(
+        '--node-custom-core-count',
+        required=False,
+        hidden=True,
+        type=int,
+        help="""\
+         Customized number of virtual cores to use for each node of the management cluster. To get a list of valid values for your node type, run the `{grandparent_command} nodetypes describe` command and reference the `availableCustomCoreCounts` field in the output.
+        """)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
@@ -95,7 +103,11 @@ class Create(base.CreateCommand):
     operation = client.Create(privatecloud, args.labels, args.description,
                               args.cluster, args.node_type, args.node_count,
                               args.management_range, args.network,
-                              args.network_project)
+                              args.network_project, args.node_custom_core_count)
     log.CreatedResource(operation.name, kind='private cloud', is_async=True)
 
-Create.detailed_help = DETAILED_HELP
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(CreateAlpha):
+  """Create a VMware Engine private cloud."""

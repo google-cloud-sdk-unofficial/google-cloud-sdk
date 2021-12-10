@@ -27,7 +27,8 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import properties
 
 
-DESCRIPTION = ('Discover a Datastream connection profile')
+DESCRIPTION = (
+    'Discover data objects accessible from a Datastream connection profile')
 EXAMPLES = """\
     To discover an existing connection profile:
 
@@ -40,7 +41,7 @@ EXAMPLES = """\
    """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Discover(base.Command):
   """Discover a Datastream connection profile."""
   detailed_help = {'DESCRIPTION': DESCRIPTION, 'EXAMPLES': EXAMPLES}
@@ -78,4 +79,4 @@ class Discover(base.Command):
     parent_ref = util.ParentRef(project, location)
 
     cp_client = connection_profiles.ConnectionProfilesClient()
-    return cp_client.Discover(parent_ref, args)
+    return cp_client.Discover(parent_ref, self.ReleaseTrack(), args)

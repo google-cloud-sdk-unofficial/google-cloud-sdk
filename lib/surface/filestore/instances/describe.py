@@ -36,6 +36,7 @@ class Describe(base.DescribeCommand):
     concept_parsers.ConceptParser([flags.GetInstancePresentationSpec(
         'The instance to describe.')]).AddToParser(parser)
     instances_flags.AddLocationArg(parser)
+    instances_flags.AddRegionArg(parser)
 
   def Run(self, args):
     """Run the describe command."""
@@ -50,26 +51,12 @@ class DescribeBeta(Describe):
 
   _API_VERSION = filestore_client.BETA_API_VERSION
 
-  @staticmethod
-  def Args(parser):
-    concept_parsers.ConceptParser([flags.GetInstancePresentationSpec(
-        'The instance to describe.')]).AddToParser(parser)
-    instances_flags.AddLocationArg(parser)
-    instances_flags.AddRegionArg(parser)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(Describe):
   """Show metadata for a Filestore instance."""
 
   _API_VERSION = filestore_client.ALPHA_API_VERSION
-
-  @staticmethod
-  def Args(parser):
-    concept_parsers.ConceptParser([flags.GetInstancePresentationSpec(
-        'The instance to describe.')]).AddToParser(parser)
-    instances_flags.AddLocationArg(parser)
-    instances_flags.AddRegionArg(parser)
 
 
 Describe.detailed_help = {

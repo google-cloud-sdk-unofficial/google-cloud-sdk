@@ -42,7 +42,7 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Describe a job template."""
-    client = templates.TemplatesClient()
+    client = templates.TemplatesClient(self.ReleaseTrack())
 
     template_ref = args.CONCEPTS.template_id.Parse()
 

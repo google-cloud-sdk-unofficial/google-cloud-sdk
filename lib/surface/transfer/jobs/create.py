@@ -57,6 +57,12 @@ class Create(base.Command):
 
         $ {command} gs://foo gs://bar/ --include-prefixes=baz,qux --include-modified-after-relative=1d
 
+      To create a one-time, immediate transfer job to move data from a directory
+      with absolute path "/foo/bar/" in the filesystem associated with
+      agent pool "my-pool" into Google Cloud Storage bucket "example-bucket",
+      run:
+
+        $ {command} posix:///foo/bar/ gs://example-bucket --source-agent-pool=my-pool
       """
   }
   # pylint:enable=line-too-long

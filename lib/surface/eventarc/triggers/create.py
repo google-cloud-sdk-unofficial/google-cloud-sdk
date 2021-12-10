@@ -67,6 +67,7 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     flags.AddCreateTrigerResourceArgs(parser, cls.ReleaseTrack())
     flags.AddEventFiltersArg(parser, cls.ReleaseTrack(), required=True)
+    flags.AddEventFiltersPathPatternArg(parser, cls.ReleaseTrack())
     flags.AddServiceAccountArg(parser)
     flags.AddCreateDestinationArgs(parser, cls.ReleaseTrack(), required=True)
     flags.AddTransportTopicResourceArg(parser)
@@ -79,6 +80,8 @@ class Create(base.CreateCommand):
     channel_ref = flags.GetChannelArg(args, self.ReleaseTrack())
     transport_topic_ref = args.CONCEPTS.transport_topic.Parse()
     event_filters = flags.GetEventFiltersArg(args, self.ReleaseTrack())
+    event_filters_path_pattern = flags.GetEventFiltersPathPatternArg(
+        args, self.ReleaseTrack())
 
     destination_message = None
     # destination Cloud Run service
@@ -117,6 +120,7 @@ class Create(base.CreateCommand):
     else:
       raise UnsupportedDestinationError('Must specify a valid destination.')
     trigger_message = client.BuildTriggerMessage(trigger_ref, event_filters,
+                                                 event_filters_path_pattern,
                                                  args.service_account,
                                                  destination_message,
                                                  transport_topic_ref,

@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA, GA]
 help_text:
   brief: Remove IAM policy binding for an access policy.
   description: |
@@ -26,7 +26,7 @@ request:
 
 arguments:
   resource:
-    help_text: The access policy to add the IAM binding.
+    help_text: The access policy to remove the IAM binding.
     spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:policy
 
 iam:

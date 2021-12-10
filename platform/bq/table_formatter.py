@@ -143,12 +143,13 @@ class TableFormatter(object):
       return self.__unicode__().encode(encoding,
                                        'backslashreplace').decode(encoding)
 
-  def Print(self, output=sys.stdout):
+  def Print(self, output=None):
     if self or self._empty_output_meaningful:
       # TODO(user): Make encoding a customizable attribute on
       # the TableFormatter.
+      file = output if output else sys.stdout
       encoding = sys.stdout.encoding or 'utf8'
-      print(self._EncodedStr(encoding), file=output)
+      print(self._EncodedStr(encoding), file=file)
 
   def AddRow(self, row):
     """Add a new row (an iterable) to this formatter."""

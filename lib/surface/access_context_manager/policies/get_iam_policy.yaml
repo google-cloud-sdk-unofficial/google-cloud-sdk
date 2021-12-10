@@ -1,9 +1,9 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: Get the IAM policy for an access policy.
     description: |
-      *{command}* displays the IAM policy associated with an access policy.
+      *{command}* Displays the IAM policy associated with an access policy.
       If formatted as JSON, the output can be edited and used as
       a policy file for *set-iam-policy*. The output includes an "etag"
       field identifying the version emitted and allowing detection of

@@ -47,6 +47,7 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     flags.AddTriggerResourceArg(parser, 'The trigger to update.', required=True)
     flags.AddEventFiltersArg(parser, cls.ReleaseTrack())
+    flags.AddEventFiltersPathPatternArg(parser, cls.ReleaseTrack())
     flags.AddUpdateDestinationArgs(parser, cls.ReleaseTrack())
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -59,8 +60,11 @@ class Update(base.UpdateCommand):
     client = triggers.CreateTriggersClient(self.ReleaseTrack())
     trigger_ref = args.CONCEPTS.trigger.Parse()
     event_filters = flags.GetEventFiltersArg(args, self.ReleaseTrack())
+    event_filters_path_pattern = flags.GetEventFiltersPathPatternArg(
+        args, self.ReleaseTrack())
     update_mask = client.BuildUpdateMask(
         event_filters=event_filters is not None,
+        event_filters_path_pattern=event_filters_path_pattern is not None,
         service_account=args.IsSpecified('service_account') or
         args.clear_service_account,
         destination_run_service=args.IsSpecified('destination_run_service'),
@@ -100,6 +104,7 @@ class Update(base.UpdateCommand):
       destination_message = client.BuildWorkflowDestinationMessage(
           trigger_ref.Parent().Parent().Name(), workflow, location)
     trigger_message = client.BuildTriggerMessage(trigger_ref, event_filters,
+                                                 event_filters_path_pattern,
                                                  args.service_account,
                                                  destination_message, None,
                                                  None)
@@ -158,7 +163,7 @@ class UpdateBeta(Update):
         args.destination_run_service, args.destination_run_path,
         args.destination_run_region)
     trigger_message = client.BuildTriggerMessage(trigger_ref, event_filters,
-                                                 args.service_account,
+                                                 None, args.service_account,
                                                  destination_message, None,
                                                  None)
     operation = client.Patch(trigger_ref, trigger_message, update_mask)

@@ -95,7 +95,6 @@ def _CommonArgs(parser,
                 enable_regional=False,
                 enable_kms=False,
                 deprecate_maintenance_policy=False,
-                supports_location_hint=False,
                 supports_erase_vss=False,
                 snapshot_csek=False,
                 image_csek=False,
@@ -107,7 +106,8 @@ def _CommonArgs(parser,
                 support_termination_action=False,
                 support_host_error_timeout_seconds=False,
                 support_numa_node_count=False,
-                support_disk_architecture=False):
+                support_disk_architecture=False,
+                support_network_queue_count=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
@@ -126,7 +126,8 @@ def _CommonArgs(parser,
       parser,
       instances=True,
       support_subinterface=support_subinterface,
-      instance_create=True)
+      instance_create=True,
+      support_network_queue_count=support_network_queue_count)
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
   instances_flags.AddMaintenancePolicyArgs(
@@ -176,8 +177,7 @@ def _CommonArgs(parser,
 
   sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
 
-  if supports_location_hint:
-    instances_flags.AddLocationHintArg(parser)
+  instances_flags.AddLocationHintArg(parser)
 
   if supports_erase_vss:
     flags.AddEraseVssSignature(parser, 'source snapshots or source machine'
@@ -220,7 +220,6 @@ class Create(base.CreateCommand):
   _support_public_dns = False
   _support_erase_vss = False
   _support_machine_image_key = False
-  _support_location_hint = False
   _support_source_snapshot_csek = False
   _support_image_csek = False
   _support_post_key_revocation_action_type = False
@@ -242,6 +241,7 @@ class Create(base.CreateCommand):
   _support_visible_core_count = False
   _support_disk_architecture = False
   _support_enable_uefi_networking = False
+  _support_network_queue_count = False
 
   @classmethod
   def Args(cls, parser):
@@ -299,7 +299,6 @@ class Create(base.CreateCommand):
         compute_client,
         skip_defaults,
         support_node_affinity=True,
-        support_location_hint=self._support_location_hint,
         support_node_project=self._support_node_project,
         support_provisioning_model=self._support_provisioning_model,
         support_termination_action=self._support_termination_action,
@@ -602,7 +601,6 @@ class CreateBeta(Create):
   _support_public_dns = False
   _support_erase_vss = True
   _support_machine_image_key = True
-  _support_location_hint = False
   _support_source_snapshot_csek = False
   _support_image_csek = False
   _support_post_key_revocation_action_type = True
@@ -622,6 +620,7 @@ class CreateBeta(Create):
   _support_termination_action = True
   _support_disk_architecture = False
   _support_enable_uefi_networking = False
+  _support_network_queue_count = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -681,7 +680,6 @@ class CreateAlpha(CreateBeta):
   _support_public_dns = True
   _support_erase_vss = True
   _support_machine_image_key = True
-  _support_location_hint = True
   _support_source_snapshot_csek = True
   _support_image_csek = True
   _support_post_key_revocation_action_type = True
@@ -703,6 +701,7 @@ class CreateAlpha(CreateBeta):
   _support_visible_core_count = True
   _support_disk_architecture = True
   _support_enable_uefi_networking = True
+  _support_network_queue_count = True
 
   @classmethod
   def Args(cls, parser):
@@ -711,7 +710,6 @@ class CreateAlpha(CreateBeta):
         enable_regional=cls._support_regional,
         enable_kms=cls._support_kms,
         deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
-        supports_location_hint=cls._support_location_hint,
         supports_erase_vss=cls._support_erase_vss,
         snapshot_csek=cls._support_source_snapshot_csek,
         image_csek=cls._support_image_csek,
@@ -724,7 +722,8 @@ class CreateAlpha(CreateBeta):
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
-        support_disk_architecture=cls._support_disk_architecture)
+        support_disk_architecture=cls._support_disk_architecture,
+        support_network_queue_count=cls._support_network_queue_count)
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())

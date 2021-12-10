@@ -43,7 +43,7 @@ class Delete(base.DeleteCommand):
 
   def Run(self, args):
     """Delete a job."""
-    client = jobs.JobsClient()
+    client = jobs.JobsClient(self.ReleaseTrack())
 
     job_ref = args.CONCEPTS.job_name.Parse()
 

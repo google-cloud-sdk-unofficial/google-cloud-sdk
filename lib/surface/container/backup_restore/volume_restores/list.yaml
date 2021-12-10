@@ -7,18 +7,18 @@
 
       ## EXAMPLES
 
-      To list all volume restores in project ``my-project'' in location ``us-central1'' under restores ``my-restore'', run:
+      To list all volume restores in project ``my-project'' in location ``us-central1'' under restore plan ``my-restore-plan'' under restores ``my-restore'', run:
 
-        $ {command} --restore=my-restore --project=my-project --location=us-central1
+        $ {command} --project=my-project --location=us-central1 --restore-plan=my-restore-plan --restore=my-restore
 
-      To list all volume restores in project ``my-project'' across all locations under all restores, run:
+      To list all volume restores in project ``my-project'' across all locations under all restore plans and restores, run:
 
         $ {command} --project=my-project
 
   request:
-    collection: gkebackup.projects.locations.restores.volumeRestores
+    collection: gkebackup.projects.locations.restorePlans.restores.volumeRestores
     ALPHA:
-      api_version: v1alpha1
+      api_version: v1
 
   response:
     id_field: name
@@ -28,7 +28,7 @@
       help_text: |
         Name of the restore from which to list volume restores (provided via options or through
         properties), e.g.
-        `--project=PROJECT --location=LOCATION --restore=RESTORE`.
+        `--project=<project> --location=<location> --restore-plan=<restore-plan> --restore=<restore>`.
       spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:default_restore
 
   output:

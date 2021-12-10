@@ -22,9 +22,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Transcoder(base.Group):
-  """Manage Cloud Transcoder jobs and job templates."""
+  """Manage Transcoder jobs and job templates."""
   category = base.SOLUTIONS_CATEGORY
 
   def Filter(self, context, args):

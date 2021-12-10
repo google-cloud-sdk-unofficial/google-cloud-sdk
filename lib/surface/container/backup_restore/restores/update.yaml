@@ -7,17 +7,14 @@
 
       ## EXAMPLES
 
-      To update a restore 'my-restore' in project 'my-project' in location 'us-central1' to add new description, run:
+      To update a restore ``my-restore'' in project ``my-project'' in location ``us-central1'' under restore plan ``my-restore-plan'' to add new description, run:
 
-        $ {command} 'my-restore'
-            --project=my-project \
-            --location=us-central1 \
-            --description="New description"
+        $ {command} my-restore --project=my-project --location=us-central1 --restore-plan=my-restore-plan --description="New description"
 
   request:
-    collection: gkebackup.projects.locations.restores
+    collection: gkebackup.projects.locations.restorePlans.restores
     ALPHA:
-      api_version: v1alpha1
+      api_version: v1
 
   async:
     collection: gkebackup.projects.locations.operations
@@ -26,14 +23,14 @@
     resource:
       help_text: |
         Name of the restore to update. The name may be provided either as a relative name, e.g.
-        `projects/<project>/locations/<location>/restores/<restore>`
+        `projects/<project>/locations/<location>/restorePlans/<restorePlan>/restores/<restore>`
         or as a single ID name (with the parent resources provided via options or through
         properties), e.g.
-        `RESTORE --project=<project> --location=<location>`.
+        `RESTORE --project=<project> --location=<location> --restore-plan=<restore-plan>`.
       spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:restore
 
     params:
-    - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:etag
+    - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_etag
     - arg_name: description
       api_field: restore.description
       type: str

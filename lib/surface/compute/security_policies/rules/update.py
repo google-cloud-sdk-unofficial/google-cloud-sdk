@@ -155,7 +155,7 @@ class UpdateGA(base.UpdateCommand):
   SECURITY_POLICY_ARG = None
 
   _support_redirect = False
-  _support_rate_limit = False
+  _support_rate_limit = True
   _support_header_action = False
   _support_tcl_ssl = False
 

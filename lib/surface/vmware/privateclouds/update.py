@@ -46,8 +46,10 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Update(base.UpdateCommand):
-  """Update VMware Engine private cloud."""
+class UpdateAlpha(base.UpdateCommand):
+  """Update a VMware Engine private cloud."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -79,4 +81,8 @@ class Update(base.UpdateCommand):
         external_ip_access=args.external_ip_access)
     log.UpdatedResource(operation.name, kind='private cloud', is_async=True)
 
-Update.detailed_help = DETAILED_HELP
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(UpdateAlpha):
+  """Update a VMware Engine private cloud."""

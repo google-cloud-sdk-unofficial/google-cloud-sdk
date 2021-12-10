@@ -29,7 +29,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class CreateInstance(base.CreateCommand):
   """Create a new Bigtable instance."""
 
@@ -75,7 +76,7 @@ class CreateInstance(base.CreateCommand):
 
     return self._Run(args)
 
-  def _Run(self, args, add_autoscaling=False):
+  def _Run(self, args):
     """Implements Run() with different possible features flags."""
 
     cli = util.GetAdminClient()
@@ -86,7 +87,7 @@ class CreateInstance(base.CreateCommand):
     msgs = util.GetAdminMessages()
     instance_type = msgs.Instance.TypeValueValuesEnum(args.instance_type)
 
-    new_clusters = self._Clusters(args, add_autoscaling=add_autoscaling)
+    new_clusters = self._Clusters(args)
     clusters_properties = []
     for cluster_id, cluster in sorted(new_clusters.items()):
       clusters_properties.append(
@@ -113,12 +114,11 @@ class CreateInstance(base.CreateCommand):
     return util.AwaitInstance(
         operation_ref, 'Creating bigtable instance {0}'.format(ref.Name()))
 
-  def _Clusters(self, args, add_autoscaling=False):
+  def _Clusters(self, args):
     """Get the clusters configs from command arguments.
 
     Args:
       args: the argparse namespace from Run().
-      add_autoscaling: flag to add the autoscaling feature.
 
     Returns:
       A dict mapping from cluster id to msg.Cluster.
@@ -138,8 +138,7 @@ class CreateInstance(base.CreateCommand):
             '--cluster-zone and --cluster-num-nodes to specify cluster(s), not '
             'both.')
 
-      if add_autoscaling:
-        self._ValidateClusterConfigArgs(args.cluster_config)
+      self._ValidateClusterConfigArgs(args.cluster_config)
       new_clusters = {}
       for cluster_dict in args.cluster_config:
         nodes = cluster_dict.get('nodes', 1)
@@ -153,17 +152,16 @@ class CreateInstance(base.CreateCommand):
           cluster.encryptionConfig = msgs.EncryptionConfig(
               kmsKeyName=cluster_dict['kms-key'])
 
-        if add_autoscaling:
-          if ('autoscaling-min-nodes' in cluster_dict or
-              'autoscaling-max-nodes' in cluster_dict or
-              'autoscaling-cpu-target' in cluster_dict):
-            cluster.clusterConfig = clusters.BuildClusterConfig(
-                autoscaling_min=cluster_dict['autoscaling-min-nodes'],
-                autoscaling_max=cluster_dict['autoscaling-max-nodes'],
-                autoscaling_cpu_target=cluster_dict['autoscaling-cpu-target'])
-            # serveNodes must be set to None or 0 to enable Autoscaling.
-            # go/cbt-autoscaler-api
-            cluster.serveNodes = None
+        if ('autoscaling-min-nodes' in cluster_dict or
+            'autoscaling-max-nodes' in cluster_dict or
+            'autoscaling-cpu-target' in cluster_dict):
+          cluster.clusterConfig = clusters.BuildClusterConfig(
+              autoscaling_min=cluster_dict['autoscaling-min-nodes'],
+              autoscaling_max=cluster_dict['autoscaling-max-nodes'],
+              autoscaling_cpu_target=cluster_dict['autoscaling-cpu-target'])
+          # serveNodes must be set to None or 0 to enable Autoscaling.
+          # go/cbt-autoscaler-api
+          cluster.serveNodes = None
 
         new_clusters[cluster_dict['id']] = cluster
       return new_clusters
@@ -207,21 +205,3 @@ class CreateInstance(base.CreateCommand):
               '--autoscaling-cpu-target', 'All of --autoscaling-min-nodes '
               '--autoscaling-max-nodes --autoscaling-cpu-target must be set to '
               'enable Autoscaling.')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateInstanceAlpha(CreateInstance):
-  """Create a new Bigtable instance."""
-
-  def Run(self, args):
-    """Executes the instances create command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-
-    return self._Run(args, add_autoscaling=True)

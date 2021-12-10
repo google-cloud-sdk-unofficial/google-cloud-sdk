@@ -101,11 +101,10 @@ class Describe(base.DescribeCommand):
         log.status.Print('Unable to get target {}'.format(stage.targetId))
         continue
       detail = {'Target': target_ref.RelativeName()}
-      releases, current_rollout = target_util.GetReleasesAndCurrentRollout(
-          target_ref, pipeline_ref.Name())
+      current_rollout = target_util.GetCurrentRollout(target_ref, pipeline_ref)
       detail = describe.SetCurrentReleaseAndRollout(current_rollout, detail)
       if target_obj.requireApproval:
-        detail = describe.ListPendingApprovals(releases, target_ref, detail)
+        detail = describe.ListPendingApprovals(target_ref, pipeline_ref, detail)
       targets.append(detail)
 
     output['Targets'] = targets

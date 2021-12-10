@@ -64,7 +64,6 @@ DETAILED_HELP = {
 def _CommonArgs(parser,
                 deprecate_maintenance_policy=False,
                 support_min_node_cpu=False,
-                support_location_hint=False,
                 support_erase_vss=False,
                 snapshot_csek=False,
                 image_csek=False,
@@ -129,8 +128,7 @@ def _CommonArgs(parser,
   if support_min_node_cpu:
     instances_flags.AddMinNodeCpuArg(parser)
 
-  if support_location_hint:
-    instances_flags.AddLocationHintArg(parser)
+  instances_flags.AddLocationHintArg(parser)
 
   if support_erase_vss:
     flags.AddEraseVssSignature(parser, 'source snapshots or source machine'
@@ -186,7 +184,6 @@ class Create(base.Command):
   _support_public_dns = False
   _support_erase_vss = True
   _support_min_node_cpu = True
-  _support_location_hint = True
   _support_source_snapshot_csek = False
   _support_image_csek = True
   _support_confidential_compute = True
@@ -213,7 +210,6 @@ class Create(base.Command):
         parser,
         deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
         support_min_node_cpu=cls._support_min_node_cpu,
-        support_location_hint=cls._support_location_hint,
         support_erase_vss=cls._support_erase_vss,
         snapshot_csek=cls._support_source_snapshot_csek,
         image_csek=cls._support_image_csek,
@@ -288,7 +284,6 @@ class Create(base.Command):
         skip_defaults,
         support_node_affinity=False,
         support_min_node_cpu=self._support_min_node_cpu,
-        support_location_hint=self._support_location_hint,
         support_host_error_timeout_seconds=self
         ._support_host_error_timeout_seconds,
         support_provisioning_model=self._support_provisioning_model,
@@ -582,7 +577,6 @@ class CreateBeta(Create):
         parser,
         deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
         support_min_node_cpu=cls._support_min_node_cpu,
-        support_location_hint=cls._support_location_hint,
         support_erase_vss=cls._support_erase_vss,
         snapshot_csek=cls._support_source_snapshot_csek,
         image_csek=cls._support_image_csek,
@@ -623,7 +617,6 @@ class CreateAlpha(Create):
         parser,
         deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
         support_min_node_cpu=cls._support_min_node_cpu,
-        support_location_hint=cls._support_location_hint,
         support_erase_vss=cls._support_erase_vss,
         snapshot_csek=cls._support_source_snapshot_csek,
         image_csek=cls._support_image_csek,

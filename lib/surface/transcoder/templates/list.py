@@ -49,7 +49,7 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """List job templates."""
-    client = templates.TemplatesClient()
+    client = templates.TemplatesClient(self.ReleaseTrack())
 
     parent_ref = args.CONCEPTS.location.Parse()
 

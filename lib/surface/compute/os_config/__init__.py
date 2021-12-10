@@ -26,4 +26,7 @@ from googlecloudsdk.calliope import base
 class Osconfig(base.Group):
   """Manage OS Config tasks for Compute Engine VM instances."""
   category = base.TOOLS_CATEGORY
-  base.EnableUserProjectQuota()
+
+  def Filter(self, context, args):
+    del context, args
+    base.EnableUserProjectQuota()

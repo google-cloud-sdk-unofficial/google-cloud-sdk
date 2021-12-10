@@ -28,9 +28,6 @@ class List(base.ListCommand):
   detailed_help = {
       'DESCRIPTION': """\
           {description}
-
-          If the current project contains an App Engine application, the
-          location with the App Engine application is returned first at index 0.
           """,
       'EXAMPLES': """\
           To list the locations where Cloud Scheduler is available:

@@ -49,7 +49,7 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     """Create a job template."""
-    client = templates.TemplatesClient()
+    client = templates.TemplatesClient(self.ReleaseTrack())
 
     template_ref = args.CONCEPTS.template_id.Parse()
 

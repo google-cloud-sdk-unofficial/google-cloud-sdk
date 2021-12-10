@@ -688,6 +688,8 @@ flags_to_add = {
             flags.AddMetadataFlags,
         'mincpu':
             flags.AddMinCpuPlatformFlag,
+        'maintenanceinterval':
+            flags.AddMaintenanceIntervalFlag,
         'monitoring':
             flags.AddMonitoringFlag,
         'networkpolicy':
@@ -877,6 +879,8 @@ flags_to_add = {
             flags.AddMetadataFlags,
         'mincpu':
             flags.AddMinCpuPlatformFlag,
+        'maintenanceinterval':
+            flags.AddMaintenanceIntervalFlag,
         'monitoring':
             flags.AddMonitoringFlag,
         'networkpolicy':
@@ -1061,6 +1065,11 @@ class Create(base.CreateCommand):
     if options.enable_l4_ilb_subsetting:
       log.warning('L4 ILB Subsetting cannot be disabled, once enabled.')
 
+    if options.enable_pod_security_policy:
+      log.warning(
+          'Kubernetes has officially deprecated PodSecurityPolicy in version 1.21 and will be removed in 1.25 with no upgrade path available with this feature enabled. For additional details, please refer to https://cloud.google.com/kubernetes-engine/docs/how-to/pod-security-policies'
+          )
+
     # TODO(b/201956384) Remove check that requires specifying scope, once
     # cluster scope is also GA. This check is added to prevent enabling cluster
     # scope(the default scope) by not specifying a scope value.
@@ -1176,6 +1185,7 @@ class CreateBeta(Create):
     ops.enable_managed_prometheus = get_default('enable_managed_prometheus')
     ops.spot = get_default('spot')
     ops.placement_type = get_default('placement_type')
+    ops.maintenance_interval = get_default('maintenance_interval')
     return ops
 
 
@@ -1255,4 +1265,5 @@ class CreateAlpha(Create):
     ops.enable_managed_prometheus = get_default('enable_managed_prometheus')
     ops.spot = get_default('spot')
     ops.placement_type = get_default('placement_type')
+    ops.maintenance_interval = get_default('maintenance_interval')
     return ops

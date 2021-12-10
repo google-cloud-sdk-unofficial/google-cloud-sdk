@@ -1,10 +1,14 @@
-release_tracks: [ALPHA]
+release_tracks: [BETA, ALPHA]
 
 help_text:
   brief: |
     Delete service binding.
   description: |
     Delete the specified service binding.
+  examples: |
+      To delete a service binding called 'my-service-binding', run:
+
+        $ {command} my-service-binding --location=global
 
 arguments:
   resource:
@@ -16,5 +20,8 @@ async:
   collection: networkservices.projects.locations.operations
 
 request: &request
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networkservices.projects.locations.serviceBindings

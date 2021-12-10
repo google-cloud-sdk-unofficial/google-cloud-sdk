@@ -41,6 +41,7 @@ def _AddArgs(parser, version):
   flags.AddPredictionResourcesArgs(parser, version)
   flags.GetEnableAccessLoggingArg().AddToParser(parser)
   flags.GetServiceAccountArg().AddToParser(parser)
+  flags.GetUserSpecifiedIdArg('deployed-model').AddToParser(parser)
 
 
 def _Run(args, version):
@@ -67,7 +68,8 @@ def _Run(args, version):
           enable_access_logging=args.enable_access_logging,
           disable_container_logging=args.disable_container_logging,
           service_account=args.service_account,
-          traffic_split=args.traffic_split)
+          traffic_split=args.traffic_split,
+          deployed_model_id=args.deployed_model_id)
     else:
       op = endpoints_client.DeployModelBeta(
           endpoint_ref,
@@ -82,7 +84,8 @@ def _Run(args, version):
           enable_access_logging=args.enable_access_logging,
           enable_container_logging=args.enable_container_logging,
           service_account=args.service_account,
-          traffic_split=args.traffic_split)
+          traffic_split=args.traffic_split,
+          deployed_model_id=args.deployed_model_id)
     response_msg = operations_util.WaitForOpMaybe(
         operation_client, op, endpoints_util.ParseOperation(op.name))
     if response_msg is not None:

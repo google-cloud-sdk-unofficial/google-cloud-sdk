@@ -51,7 +51,7 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """List jobs."""
-    client = jobs.JobsClient()
+    client = jobs.JobsClient(self.ReleaseTrack())
 
     parent_ref = args.CONCEPTS.location.Parse()
 

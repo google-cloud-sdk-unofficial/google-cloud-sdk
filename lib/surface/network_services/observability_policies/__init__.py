@@ -24,3 +24,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ObservabilityPolicies(base.Group):
   """Manage Network Services ObservabilityPolicies."""
+  category = base.MANAGEMENT_TOOLS_CATEGORY

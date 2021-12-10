@@ -24,3 +24,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GrpcRoutes(base.Group):
   """Manage Network Services GrpcRoutes."""
+  category = base.MANAGEMENT_TOOLS_CATEGORY

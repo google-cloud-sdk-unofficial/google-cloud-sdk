@@ -38,32 +38,56 @@ EXAMPLES = """\
 
     To create a connection profile for Google Cloud Storage:
 
+        $ {command} CONNECTION_PROFILE --location=us-central1 --type=google-cloud-storage --bucket=fake-bucket --root-path=/root/path --display-name=my-profile
+   """
+EXAMPLES_BETA = """\
+    To create a connection profile for Oracle:
+
+        $ {command} CONNECTION_PROFILE --location=us-central1 --type=oracle --oracle-password=fakepassword --oracle-username=fakeuser --display-name=my-profile --oracle-hostname=35.188.150.50 --oracle-port=1521 --database-service=ORCL --static-ip-connectivity
+
+    To create a connection profile for Mysql:
+
+        $ {command} CONNECTION_PROFILE --location=us-central1 --type=mysql --mysql-password=fakepassword --mysql-username=fakeuser --display-name=my-profile --mysql-hostname=35.188.150.50 --mysql-port=3306 --static-ip-connectivity
+
+    To create a connection profile for Google Cloud Storage:
+
         $ {command} CONNECTION_PROFILE --location=us-central1 --type=google-cloud-storage --bucket-name=fake-bucket --root-path=/root/path --display-name=my-profile --no-connectivity
    """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Datastream connection profile."""
   detailed_help = {'DESCRIPTION': DESCRIPTION, 'EXAMPLES': EXAMPLES}
 
   @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
+  def CommonArgs(parser, release_track):
+    """Common arguments for all release tracks.
 
     Args:
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
+      release_track: Some arguments are added based on the command release
+        track.
     """
-    resource_args.AddConnectionProfileResourceArg(parser, 'to create')
+    resource_args.AddConnectionProfileResourceArg(parser, 'to create',
+                                                  release_track)
 
     cp_flags.AddTypeFlag(parser)
     cp_flags.AddDisplayNameFlag(parser)
+    if release_track == base.ReleaseTrack.GA:
+      cp_flags.AddValidationGroup(parser, 'Create')
+
     profile_flags = parser.add_group(required=True, mutex=True)
     cp_flags.AddMysqlProfileGroup(profile_flags)
     cp_flags.AddOracleProfileGroup(profile_flags)
-    cp_flags.AddGcsProfileGroup(profile_flags)
+    cp_flags.AddGcsProfileGroup(profile_flags, release_track)
     flags.AddLabelsCreateFlags(parser)
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command."""
+    Create.CommonArgs(parser, base.ReleaseTrack.GA)
 
   def Run(self, args):
     """Create a Datastream connection profile.
@@ -89,7 +113,8 @@ class Create(base.Command):
     cp_type = (args.type).upper()
     cp_client = connection_profiles.ConnectionProfilesClient()
     result_operation = cp_client.Create(
-        parent_ref, connection_profile_ref.connectionProfilesId, cp_type, args)
+        parent_ref, connection_profile_ref.connectionProfilesId, cp_type,
+        self.ReleaseTrack(), args)
 
     client = util.GetClientInstance()
     messages = util.GetMessagesModule()
@@ -104,3 +129,14 @@ class Create(base.Command):
     return client.projects_locations_operations.Get(
         messages.DatastreamProjectsLocationsOperationsGetRequest(
             name=operation_ref.operationsId))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a Datastream connection profile."""
+  detailed_help = {'DESCRIPTION': DESCRIPTION, 'EXAMPLES': EXAMPLES_BETA}
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command."""
+    Create.CommonArgs(parser, base.ReleaseTrack.BETA)

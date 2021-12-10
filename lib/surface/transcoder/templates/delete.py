@@ -43,7 +43,7 @@ class Delete(base.DeleteCommand):
 
   def Run(self, args):
     """Deletes a job template."""
-    client = templates.TemplatesClient()
+    client = templates.TemplatesClient(self.ReleaseTrack())
 
     template_ref = args.CONCEPTS.template_id.Parse()
 

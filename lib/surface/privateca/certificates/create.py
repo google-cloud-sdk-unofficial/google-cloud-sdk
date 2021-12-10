@@ -19,6 +19,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.cloudkms import cryptokeyversions
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import certificate_utils
 from googlecloudsdk.api_lib.privateca import request_utils
@@ -36,6 +37,8 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
+
+import six
 
 _KEY_OUTPUT_HELP = """The path where the generated private key file should be written (in PEM format).
 
@@ -102,8 +105,16 @@ class CreateBeta(base.CreateCommand):
         '--csr', help='A PEM-encoded certificate signing request file path.'
     ).AddToParser(cert_generation_group)
 
-    key_generation_group = cert_generation_group.add_group(
-        help='Alternatively, to generate a new key pair, use the following:')
+    # This group is not useful in the beta command, but is here for consistency
+    # in the flag hierarchy with the GA command.
+    non_csr_group = cert_generation_group.add_group(
+        help='Alternatively, you may describe the certificate and key to use.')
+    key_group = non_csr_group.add_group(
+        mutex=True, required=True,
+        help='To describe the key that will be used for this certificate, use '
+             'one of the following options.')
+    key_generation_group = key_group.add_group(
+        help='To generate a new key pair, use the following:')
     base.Argument(
         '--generate-key',
         help='Use this flag to have a new RSA-2048 private key securely generated on your machine.',
@@ -115,10 +126,10 @@ class CreateBeta(base.CreateCommand):
         '--key-output-file', help=_KEY_OUTPUT_HELP,
         required=True).AddToParser(key_generation_group)
 
-    subject_group = key_generation_group.add_group(
+    subject_group = non_csr_group.add_group(
         help='The subject names for the certificate.', required=True)
     flags.AddSubjectFlags(subject_group)
-    reusable_config_group = key_generation_group.add_group(
+    reusable_config_group = non_csr_group.add_group(
         mutex=True, help='The x509 configuration used for this certificate.')
     flags.AddInlineReusableConfigFlags(
         reusable_config_group, is_ca_command=False, default_max_chain_length=0)
@@ -319,8 +330,14 @@ class Create(base.CreateCommand):
         '--csr', help='A PEM-encoded certificate signing request file path.'
     ).AddToParser(cert_generation_group)
 
-    key_generation_group = cert_generation_group.add_group(
-        help='Alternatively, to generate a new key pair, use the following:')
+    non_csr_group = cert_generation_group.add_group(
+        help='Alternatively, you may describe the certificate and key to use.')
+    key_group = non_csr_group.add_group(
+        mutex=True, required=True,
+        help='To describe the key that will be used for this certificate, use '
+             'one of the following options.')
+    key_generation_group = key_group.add_group(
+        help='To generate a new key pair, use the following:')
     base.Argument(
         '--generate-key',
         help='Use this flag to have a new RSA-2048 private key securely generated on your machine.',
@@ -337,10 +354,10 @@ class Create(base.CreateCommand):
         'issuing the certificate. If omitted, a certificate authority '
         'will be will be chosen from the CA pool by the service on your behalf.',
         required=False).AddToParser(parser)
-    subject_group = key_generation_group.add_group(
+    subject_group = non_csr_group.add_group(
         help='The subject names for the certificate.', required=True)
     flags_v1.AddSubjectFlags(subject_group)
-    x509_parameters_group = key_generation_group.add_group(
+    x509_parameters_group = non_csr_group.add_group(
         mutex=True, help='The x509 configuration used for this certificate.')
     flags_v1.AddInlineX509ParametersFlags(
         x509_parameters_group, is_ca_command=False, default_max_chain_length=0)
@@ -372,6 +389,11 @@ class Create(base.CreateCommand):
                 'as the issuing CA Pool.',
                 required=False,
                 prefixes=True),
+            presentation_specs.ResourcePresentationSpec(
+                '--kms-key-version',
+                resource_args.CreateKmsKeyVersionResourceSpec(),
+                'An existing KMS key version backing this certificate.',
+                group=key_group),
         ],
         command_level_fallthroughs={
             '--template.location': ['CERTIFICATE.issuer-location']
@@ -402,13 +424,7 @@ class Create(base.CreateCommand):
           ('To create a certificate, please specify either a preset profile '
            'or a certificate template.'))
 
-    if not args.IsSpecified('csr') and not args.IsSpecified('generate_key'):
-      # This should not happen because of the required arg group, but protects
-      # in case of future additions.
-      raise exceptions.OneOfArgumentsRequiredException(
-          ['--csr', '--generate-key'],
-          ('To create a certificate, please specify either a CSR or the '
-           '--generate-key flag to create a new key.'))
+    resource_args.ValidateResourceIsCompleteIfSpecified(args, 'kms_key_version')
 
   @classmethod
   def _PrintWarningsForUnpersistedCert(cls, args):
@@ -427,9 +443,29 @@ class Create(base.CreateCommand):
           'issuing CA pool is in the DevOps tier, which does not expose '
           'certificate lifecycle.'.format(names=names, verb=verb))
 
+  def _GetPublicKey(self, args):
+    """Fetches the public key associated with a non-CSR certificate request, as UTF-8 encoded bytes."""
+    kms_key_version = args.CONCEPTS.kms_key_version.Parse()
+    if args.generate_key:
+      private_key, public_key = key_generation.RSAKeyGen(2048)
+      key_generation.ExportPrivateKey(args.key_output_file, private_key)
+      return public_key
+    elif kms_key_version:
+      public_key_response = cryptokeyversions.GetPublicKey(kms_key_version)
+      # bytes(..) requires an explicit encoding in PY3.
+      return (bytes(public_key_response.pem) if six.PY2
+              else bytes(public_key_response.pem, 'utf-8'))
+    else:
+      # This should not happen because of the required arg group, but protects
+      # in case of future additions.
+      raise exceptions.OneOfArgumentsRequiredException(
+          ['--csr', '--generate-key', '--kms-key-version'],
+          ('To create a certificate, please specify either a CSR, the '
+           '--generate-key flag to create a new key, or the --kms-key-version '
+           'flag to use an existing KMS key.'))
+
   def _GenerateCertificateConfig(self, request, args):
-    private_key, public_key = key_generation.RSAKeyGen(2048)
-    key_generation.ExportPrivateKey(args.key_output_file, private_key)
+    public_key = self._GetPublicKey(args)
 
     config = self.messages.CertificateConfig()
     config.publicKey = self.messages.PublicKey()
@@ -474,7 +510,7 @@ class Create(base.CreateCommand):
 
     if args.csr:
       request.certificate.pemCsr = _ReadCsr(args.csr)
-    elif args.generate_key:
+    else:
       request.certificate.config = self._GenerateCertificateConfig(
           request, args)
 

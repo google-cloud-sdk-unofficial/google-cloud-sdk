@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.spanner import instance_configs
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -71,7 +72,7 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--etag', help='Used for optimistic concurrency control.')
 
-    # TODO(b/399093071): Add labels argument.
+    labels_util.AddCreateLabelsFlags(parser)
 
     parser.add_argument(
         '--validate-only',
@@ -162,4 +163,4 @@ class Create(base.CreateCommand):
     """
     return instance_configs.Create(args.config, args.display_name,
                                    args.base_config, args.replicas,
-                                   args.validate_only, args.etag)
+                                   args.validate_only, args.labels, args.etag)

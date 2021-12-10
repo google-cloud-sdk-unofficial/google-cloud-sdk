@@ -54,6 +54,11 @@ class Create(base.CreateCommand):
     flags.AddTargetSecureTags(parser)
     flags.AddSrcAddressGroups(parser)
     flags.AddDestAddressGroups(parser)
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.AddSrcFqdns(parser)
+      flags.AddDestFqdns(parser)
+      flags.AddSrcRegionCodes(parser)
+      flags.AddDestRegionCodes(parser)
     parser.display_info.AddCacheUpdater(flags.NetworkFirewallPoliciesCompleter)
 
   def Run(self, args):
@@ -76,6 +81,10 @@ class Create(base.CreateCommand):
     target_secure_tags = []
     src_address_groups = []
     dest_address_groups = []
+    src_fqdns = []
+    dest_fqdns = []
+    src_region_codes = []
+    dest_region_codes = []
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
     if args.IsSpecified('dest_ip_ranges'):
@@ -98,15 +107,37 @@ class Create(base.CreateCommand):
       src_address_groups = args.src_address_groups
     if args.IsSpecified('dest_address_groups'):
       dest_address_groups = args.dest_address_groups
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      if args.IsSpecified('src_fqdns'):
+        src_fqdns = args.src_fqdns
+      if args.IsSpecified('dest_fqdns'):
+        dest_fqdns = args.dest_fqdns
+      if args.IsSpecified('src_region_codes'):
+        src_region_codes = args.src_region_codes
+      if args.IsSpecified('dest_region_codes'):
+        dest_region_codes = args.dest_region_codes
     layer4_config_list = rule_utils.ParseLayer4Configs(layer4_configs,
                                                        holder.client.messages)
-    matcher = holder.client.messages.FirewallPolicyRuleMatcher(
-        srcIpRanges=src_ip_ranges,
-        destIpRanges=dest_ip_ranges,
-        layer4Configs=layer4_config_list,
-        srcSecureTags=src_secure_tags,
-        srcAddressGroups=src_address_groups,
-        destAddressGroups=dest_address_groups)
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      matcher = holder.client.messages.FirewallPolicyRuleMatcher(
+          srcIpRanges=src_ip_ranges,
+          destIpRanges=dest_ip_ranges,
+          layer4Configs=layer4_config_list,
+          srcSecureTags=src_secure_tags,
+          srcAddressGroups=src_address_groups,
+          destAddressGroups=dest_address_groups,
+          srcFqdns=src_fqdns,
+          destFqdns=dest_fqdns,
+          srcRegionCodes=src_region_codes,
+          destRegionCodes=dest_region_codes)
+    else:
+      matcher = holder.client.messages.FirewallPolicyRuleMatcher(
+          srcIpRanges=src_ip_ranges,
+          destIpRanges=dest_ip_ranges,
+          layer4Configs=layer4_config_list,
+          srcSecureTags=src_secure_tags,
+          srcAddressGroups=src_address_groups,
+          destAddressGroups=dest_address_groups)
     traffic_direct = (
         holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum
         .INGRESS)

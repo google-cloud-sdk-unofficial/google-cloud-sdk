@@ -120,6 +120,8 @@ def _SourceArgs(parser, source_instant_snapshot_enabled=False):
     disks_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(source_group)
   disks_flags.SOURCE_DISK_ARG.AddArgument(parser, mutex_group=source_group)
 
+  disks_flags.AddLocationHintArg(parser)
+
 
 def _CommonArgs(messages,
                 parser,

@@ -52,4 +52,3 @@ class Serverless(base.Group):
     # TODO(b/190539410):  Determine if command group works with project number
     base.RequireProjectID(args)
     del context, args
-    base.OptOutRequests()  # TODO(b/168098776): Remove to migrate to requests.

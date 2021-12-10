@@ -16,7 +16,7 @@
     examples: |
       To print the IAM policy for repository `my-repo`, run:
 
-        $ {command} get-iam-policy my-repo
+        $ {command} my-repo
 
   request: &request
     api_version: v1beta2

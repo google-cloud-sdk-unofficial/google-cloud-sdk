@@ -18,12 +18,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.cloudbuild import cloudbuild_exceptions
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import workerpool_config
 from googlecloudsdk.api_lib.compute import utils as compute_utils
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import workerpool_flags
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -65,7 +67,7 @@ class Create(base.CreateCommand):
                                                       base.ReleaseTrack.GA)
     parser.display_info.AddFormat("""
           table(
-            name,
+            name.segment(-1),
             createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
             state
           )
@@ -95,7 +97,12 @@ class Create(base.CreateCommand):
       try:
         wp = workerpool_config.LoadWorkerpoolConfigFromPath(
             args.config_from_file, messages)
-      except cloudbuild_util.ParseProtoException as err:
+        # Don't allow a worker pool config for hybrid worker pools in any other
+        # track but alpha.
+        if release_track != base.ReleaseTrack.ALPHA:
+          if wp.hybridPoolConfig is not None:
+            raise cloudbuild_exceptions.HybridNonAlphaConfigError
+      except cloudbuild_exceptions.ParseProtoException as err:
         log.err.Print(
             '\nFailed to parse configuration from file. If you'
             ' were a Private Preview user, note that the format for this'
@@ -156,13 +163,6 @@ class Create(base.CreateCommand):
 
     log.CreatedResource(wp_resource)
 
-    # Format the workerpool name for display
-    try:
-      created_wp.name = cloudbuild_util.RegionalWorkerPoolShortName(
-          created_wp.name)
-    except ValueError:
-      pass  # Must be an old version.
-
     return created_wp
 
 
@@ -205,8 +205,119 @@ class CreateAlpha(Create):
                                                       base.ReleaseTrack.ALPHA)
     parser.display_info.AddFormat("""
           table(
-            name,
+            name.segment(-1),
             createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
             state
           )
         """)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+
+    wp_name = args.WORKER_POOL
+    wp_region = args.region
+
+    release_track = self.ReleaseTrack()
+    client = cloudbuild_util.GetClientInstance(release_track)
+    messages = cloudbuild_util.GetMessagesModule(release_track)
+
+    # Get the workerpool proto from either the flags or the specified file.
+    wp = messages.WorkerPool()
+    if args.config_from_file is not None:
+      try:
+        wp = workerpool_config.LoadWorkerpoolConfigFromPath(
+            args.config_from_file, messages)
+        if wp.hybridPoolConfig is not None:
+          if wp_region not in cloudbuild_util.CBH_SUPPORTED_REGIONS:
+            raise cloudbuild_exceptions.HybridUnsupportedRegionError(wp_region)
+      except cloudbuild_exceptions.ParseProtoException as err:
+        log.err.Print('\nFailed to parse configuration from file.\n')
+        raise err
+    else:
+      if args.membership is not None:
+        if wp_region not in cloudbuild_util.CBH_SUPPORTED_REGIONS:
+          raise cloudbuild_exceptions.HybridUnsupportedRegionError(wp_region)
+
+        wp.hybridPoolConfig = messages.HybridPoolConfig()
+        wp.hybridPoolConfig.membership = args.membership
+
+        worker_config = messages.HybridWorkerConfig()
+        if args.default_build_disk_size is not None:
+          worker_config.diskSizeGb = compute_utils.BytesToGb(
+              args.default_build_disk_size)
+        if args.default_build_memory is not None:
+          worker_config.memoryGb = cloudbuild_util.BytesToGb(
+              args.default_build_memory)
+        if args.default_build_vcpu_count is not None:
+          worker_config.vcpuCount = args.default_build_vcpu_count
+        wp.hybridPoolConfig.defaultWorkerConfig = worker_config
+
+        wp.hybridPoolConfig.builderImageCaching = arg_utils.ChoiceToEnum(
+            args.builder_image_caching,
+            messages.HybridPoolConfig.BuilderImageCachingValueValuesEnum)
+        if args.caching_storage_class is not None:
+          wp.hybridPoolConfig.cachingStorageClass = args.caching_storage_class
+      else:
+        wp.privatePoolV1Config = messages.PrivatePoolV1Config()
+
+        network_config = messages.NetworkConfig()
+        if args.peered_network is not None:
+          network_config.peeredNetwork = args.peered_network
+        # All of the egress flags are mutually exclusive with each other.
+        if args.no_public_egress or (release_track == base.ReleaseTrack.GA and
+                                     args.no_external_ip):
+          network_config.egressOption = messages.NetworkConfig.EgressOptionValueValuesEnum.NO_PUBLIC_EGRESS
+        wp.privatePoolV1Config.networkConfig = network_config
+
+        worker_config = messages.WorkerConfig()
+        if args.worker_machine_type is not None:
+          worker_config.machineType = args.worker_machine_type
+        if args.worker_disk_size is not None:
+          worker_config.diskSizeGb = compute_utils.BytesToGb(
+              args.worker_disk_size)
+        wp.privatePoolV1Config.workerConfig = worker_config
+
+    parent = properties.VALUES.core.project.Get(required=True)
+
+    # Get the parent project.location ref
+    parent_resource = resources.REGISTRY.Create(
+        collection='cloudbuild.projects.locations',
+        projectsId=parent,
+        locationsId=wp_region)
+
+    # Send the Create request
+    created_op = client.projects_locations_workerPools.Create(
+        messages.CloudbuildProjectsLocationsWorkerPoolsCreateRequest(
+            workerPool=wp,
+            parent=parent_resource.RelativeName(),
+            workerPoolId=wp_name))
+
+    op_resource = resources.REGISTRY.ParseRelativeName(
+        created_op.name, collection='cloudbuild.projects.locations.operations')
+    created_wp = waiter.WaitFor(
+        waiter.CloudOperationPoller(client.projects_locations_workerPools,
+                                    client.projects_locations_operations),
+        op_resource, 'Creating worker pool')
+
+    # Get the workerpool ref
+    wp_resource = resources.REGISTRY.Parse(
+        None,
+        collection='cloudbuild.projects.locations.workerPools',
+        api_version=cloudbuild_util.RELEASE_TRACK_TO_API_VERSION[release_track],
+        params={
+            'projectsId': parent,
+            'locationsId': wp_region,
+            'workerPoolsId': created_wp.name,
+        })
+
+    log.CreatedResource(wp_resource)
+
+    return created_wp

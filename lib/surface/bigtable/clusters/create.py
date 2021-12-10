@@ -27,7 +27,8 @@ from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class CreateCluster(base.CreateCommand):
   """Create a bigtable cluster."""
 
@@ -50,8 +51,8 @@ class CreateCluster(base.CreateCommand):
   def Args(parser):
     """Register flags for this command."""
     arguments.AddClusterResourceArg(parser, 'to describe')
-    arguments.ArgAdder(parser).AddClusterZone().AddClusterNodes(
-        required=False, default=3).AddAsync()
+    arguments.ArgAdder(
+        parser).AddClusterZone().AddAsync().AddScalingArgsForClusterCreate()
     arguments.AddKmsKeyResourceArg(parser, 'cluster')
 
   def Run(self, args):
@@ -87,26 +88,10 @@ class CreateCluster(base.CreateCommand):
         serveNodes=args.num_nodes,
         location=util.LocationUrl(args.zone),
         defaultStorageType=storage_type)
+
     kms_key = arguments.GetAndValidateKmsKeyName(args)
     if kms_key:
       cluster.encryptionConfig = msgs.EncryptionConfig(kmsKeyName=kms_key)
-    return cluster
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateClusterAlpha(CreateCluster):
-  """Create a bigtable cluster."""
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    arguments.AddClusterResourceArg(parser, 'to describe')
-    arguments.ArgAdder(
-        parser).AddClusterZone().AddAsync().AddScalingArgsForClusterCreate()
-    arguments.AddKmsKeyResourceArg(parser, 'cluster')
-
-  def _Cluster(self, args):
-    cluster = CreateCluster._Cluster(self, args)
 
     if (args.autoscaling_min_nodes is not None or
         args.autoscaling_max_nodes is not None or
@@ -118,4 +103,5 @@ class CreateClusterAlpha(CreateCluster):
       # serveNodes must be set to None or 0 to enable Autoscaling.
       # go/cbt-autoscaler-api
       cluster.serveNodes = None
+
     return cluster

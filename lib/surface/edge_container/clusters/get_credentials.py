@@ -30,8 +30,6 @@ import six
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-# Keep hidden until serverside changes are rolled out and ready.
-@base.Hidden
 class GetCredentials(base.Command):
   """Get credentials of an edge-container cluster."""
 

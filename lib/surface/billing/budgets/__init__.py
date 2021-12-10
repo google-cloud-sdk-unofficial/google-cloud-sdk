@@ -26,4 +26,6 @@ from googlecloudsdk.calliope import base
 class Budgets(base.Group):
   """Manage the budgets of your billing accounts."""
 
-  base.EnableUserProjectQuota()
+  def Filter(self, context, args):
+    del context, args
+    base.EnableUserProjectQuota()

@@ -1,31 +1,35 @@
 release_tracks: [ALPHA]
 command_type: CONFIG_EXPORT
 help_text:
-  brief: Export the configuration for a cluster.
+  brief: Export the configuration for a Container cluster.
   description: |
-    *{command}* exports the configuration for a cluster.
+    *{command}* exports the configuration for a Container cluster.
 
-    Cluster configurations can be exported in Kubernetes Resource Model (krm) or Terraform HCL formats. The
+    Cluster configurations can be exported in
+    Kubernetes Resource Model (krm) or Terraform HCL formats. The
     default format is `krm`.
 
-    Specifying `--all` allows you to export the configurations for all clusters within the
-    project.
+    Specifying `--all` allows you to export the configurations for all
+    clusters within the project.
 
-    Specifying `--path` allows you to export the configuration(s) to a local directory.
+    Specifying `--path` allows you to export the configuration(s) to
+    a local directory.
   examples: |
     To export the configuration for a cluster, run:
 
-      $ {command} my-address
+      $ {command} my-cluster
 
     To export the configuration for a cluster to a file, run:
 
-      $ {command} my-address --path=/path/to/dir/
+      $ {command} my-cluster --path=/path/to/dir/
 
-    To export the configuration for a cluster in Terraform HCL format, run:
+    To export the configuration for a cluster in Terraform
+    HCL format, run:
 
-      $ {command} my-address --resource-format=terraform
+      $ {command} my-cluster --resource-format=terraform
 
-    To export the configurations for all clusters within a project, run:
+    To export the configurations for all clusters within a
+    project, run:
 
       $ {command} --all
 arguments:

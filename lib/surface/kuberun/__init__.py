@@ -45,4 +45,3 @@ class KubeRun(base.Group):
     # TODO(b/190535898):  Determine if command group works with project number
     base.RequireProjectID(args)
     del context, args
-    base.OptOutRequests()  # TODO(b/168098776): Remove to migrate to requests.

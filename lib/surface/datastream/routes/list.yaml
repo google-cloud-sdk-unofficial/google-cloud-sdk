@@ -1,4 +1,4 @@
-- release_tracks: [BETA]  # TODO (b/188891571): switch gcloud BETA to use either BETA or stable v1 version
+- release_tracks: [BETA]
 
   help_text:
     brief: List Datastream routes.
@@ -11,7 +11,7 @@
 
   request:
     collection: datastream.projects.locations.privateConnections.routes
-    api_version: v1alpha1
+    api_version: v1
 
   response:
     id_field: name

@@ -16,7 +16,7 @@
     modify_request_hooks:
     - googlecloudsdk.command_lib.container.backup_restore.hooks:AddForceToDeleteRequest
     ALPHA:
-      api_version: v1alpha1
+      api_version: v1
 
   arguments:
     resource:

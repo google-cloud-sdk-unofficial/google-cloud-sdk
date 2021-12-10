@@ -59,21 +59,21 @@ class Create(base.CreateCommand):
     """Create a job."""
     util.ValidateCreateJobArguments(args)
 
-    client = jobs.JobsClient()
+    client = jobs.JobsClient(self.ReleaseTrack())
 
     parent_ref = args.CONCEPTS.location.Parse()
     input_uri = args.input_uri
     output_uri = args.output_uri
-    priority = args.priority
 
     template_id = args.template_id
     job_config = None
     if template_id is None:
       job_config = util.GetContent(args.file, args.json)
 
-    return client.Create(parent_ref=parent_ref,
-                         job_json=job_config,
-                         template_id=template_id,
-                         input_uri=input_uri,
-                         output_uri=output_uri,
-                         priority=priority)
+    return client.Create(
+        parent_ref=parent_ref,
+        job_json=job_config,
+        template_id=template_id,
+        input_uri=input_uri,
+        output_uri=output_uri,
+    )

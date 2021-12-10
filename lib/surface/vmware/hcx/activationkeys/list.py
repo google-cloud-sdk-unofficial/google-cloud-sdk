@@ -34,7 +34,7 @@ class List(base.ListCommand):
     parser.display_info.AddFormat('table(name.segment(-1):label=NAME,'
                                   'name.segment(-5):label=LOCATION,'
                                   'name.segment(-3):label=PRIVATE_CLOUD,'
-                                  'createTime,state)')
+                                  'createTime,state,activationKey)')
 
   def Run(self, args):
     privatecloud = args.CONCEPTS.private_cloud.Parse()

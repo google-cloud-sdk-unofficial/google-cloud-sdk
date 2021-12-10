@@ -18,8 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.storage import request_config_factory
+from googlecloudsdk.api_lib.storage import user_request_args_factory
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import name_expansion
 from googlecloudsdk.command_lib.storage import storage_url
@@ -90,13 +91,12 @@ class Cp(base.Command):
     flags.add_encryption_flags(parser)
 
   def Run(self, args):
+    encryption_util.initialize_key_store(args)
     source_expansion_iterator = name_expansion.NameExpansionIterator(
         args.source,
         recursion_requested=args.recursive,
         ignore_symlinks=args.ignore_symlinks)
     task_status_queue = task_graph_executor.multiprocessing_context.Queue()
-    user_request_args = (
-        request_config_factory.get_user_request_args_from_command_args(args))
 
     raw_destination_url = storage_url.storage_url_from_string(args.destination)
     if (isinstance(raw_destination_url, storage_url.FileUrl) and
@@ -109,6 +109,9 @@ class Cp(base.Command):
       shared_stream = None
       parallelizable = True
 
+    user_request_args = (
+        user_request_args_factory.get_user_request_args_from_command_args(
+            args, metadata_type=user_request_args_factory.MetadataType.OBJECT))
     task_iterator = copy_task_iterator.CopyTaskIterator(
         source_expansion_iterator,
         args.destination,

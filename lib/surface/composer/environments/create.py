@@ -194,6 +194,7 @@ information on how to structure KEYs and VALUEs, run
   flags.WEB_SERVER_DENY_ALL.AddToParser(web_server_group)
   flags.CLOUD_SQL_MACHINE_TYPE.AddToParser(parser)
   flags.WEB_SERVER_MACHINE_TYPE.AddToParser(parser)
+  flags.AddMaintenanceWindowFlagsGroup(parser)
 
   permission_info = '{} must hold permission {}'.format(
       "The 'Cloud Composer Service Agent' service account",
@@ -202,10 +203,26 @@ information on how to structure KEYs and VALUEs, run
       parser, 'environment', permission_info=permission_info)
 
   if release_track == base.ReleaseTrack.GA:
-    # Note: this flag is available for creation of both Composer 1.*.* and 2.*.*
-    # environments, although it is currently invalid for Composer 2.*.* in
-    # gcloud GA.
-    flags.NUM_SCHEDULERS.AddToParser(parser)
+    flags.ENVIRONMENT_SIZE_GA.choice_arg.AddToParser(parser)
+  elif release_track == base.ReleaseTrack.BETA:
+    flags.ENVIRONMENT_SIZE_BETA.choice_arg.AddToParser(parser)
+  elif release_track == base.ReleaseTrack.ALPHA:
+    flags.ENVIRONMENT_SIZE_ALPHA.choice_arg.AddToParser(parser)
+
+  autoscaling_group_parser = parser.add_argument_group(
+      flags.AUTOSCALING_FLAG_GROUP_DESCRIPTION)
+  flags.SCHEDULER_CPU.AddToParser(autoscaling_group_parser)
+  flags.WORKER_CPU.AddToParser(autoscaling_group_parser)
+  flags.WEB_SERVER_CPU.AddToParser(autoscaling_group_parser)
+  flags.SCHEDULER_MEMORY.AddToParser(autoscaling_group_parser)
+  flags.WORKER_MEMORY.AddToParser(autoscaling_group_parser)
+  flags.WEB_SERVER_MEMORY.AddToParser(autoscaling_group_parser)
+  flags.SCHEDULER_STORAGE.AddToParser(autoscaling_group_parser)
+  flags.WORKER_STORAGE.AddToParser(autoscaling_group_parser)
+  flags.WEB_SERVER_STORAGE.AddToParser(autoscaling_group_parser)
+  flags.MIN_WORKERS.AddToParser(autoscaling_group_parser)
+  flags.MAX_WORKERS.AddToParser(autoscaling_group_parser)
+  flags.NUM_SCHEDULERS.AddToParser(autoscaling_group_parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -276,11 +293,6 @@ class Create(base.Command):
     self.kms_key = None
     if args.kms_key:
       self.kms_key = flags.GetAndValidateKmsEncryptionKey(args)
-
-    flags.ValidateSchedulerCountFlag(
-        args.scheduler_count,
-        image_versions_util.IsImageVersionStringComposerV1(self.image_version),
-        self.ReleaseTrack())
 
     operation = self.GetOperationMessage(
         args,
@@ -383,15 +395,13 @@ class Create(base.Command):
               prerequisite='enable-private-environment',
               opt='cloud-sql-ipv4-cidr'))
 
-    if (release_track != base.ReleaseTrack.GA and
-        args.composer_network_ipv4_cidr and
+    if (args.composer_network_ipv4_cidr and
         image_versions_util.IsImageVersionStringComposerV1(image_version)):
       raise command_util.InvalidUserInputError(
           _INVALID_OPTION_FOR_V1_ERROR_MSG.format(
               opt='composer-network-ipv4-cidr'))
 
-    if (release_track != base.ReleaseTrack.GA and
-        args.composer_network_ipv4_cidr and
+    if (args.composer_network_ipv4_cidr and
         not args.enable_private_environment):
       raise command_util.InvalidUserInputError(
           PREREQUISITE_OPTION_ERROR_MSG.format(
@@ -400,7 +410,6 @@ class Create(base.Command):
 
   def ParseWebServerAccessControlConfigOptions(self, args, image_version):
     if (args.enable_private_environment and
-        image_versions_util.IsImageVersionStringComposerV1(image_version) and
         not args.web_server_allow_ip and not args.web_server_allow_all and
         not args.web_server_deny_all):
       raise command_util.InvalidUserInputError(
@@ -408,30 +417,16 @@ class Create(base.Command):
           '--web-server-allow-ip, --web-server-allow-all ' +
           'or --web-server-deny-all')
 
-    if (
-        args.web_server_allow_ip or args.web_server_allow_all or
-        args.web_server_deny_all
-    ) and not image_versions_util.IsImageVersionStringComposerV1(image_version):
-      raise command_util.InvalidUserInputError(
-          'Cannot specify --web-server-allow-ip, --web-server-allow-all ' +
-          'or --web-server-deny-all with Composer 2.X or greater.')
-
     # Default to allow all if no flag is specified.
-    self.web_server_access_control = None
-    if image_versions_util.IsImageVersionStringComposerV1(image_version):
-      self.web_server_access_control = (
-          environments_api_util.BuildWebServerAllowedIps(
-              args.web_server_allow_ip, args.web_server_allow_all or
-              not args.web_server_allow_ip, args.web_server_deny_all))
-      flags.ValidateIpRanges(
-          [acl['ip_range'] for acl in self.web_server_access_control])
+    self.web_server_access_control = (
+        environments_api_util.BuildWebServerAllowedIps(
+            args.web_server_allow_ip, args.web_server_allow_all or
+            not args.web_server_allow_ip, args.web_server_deny_all))
+    flags.ValidateIpRanges(
+        [acl['ip_range'] for acl in self.web_server_access_control])
 
   def ValidateFlagsAddedInComposer2(self, args, is_composer_v1, release_track):
     """Raises InputError if flags from Composer v2 are used when creating v1."""
-    # Composer 2 flags are currently unavailable in GA release track.
-    if release_track == base.ReleaseTrack.GA:
-      return
-
     if args.environment_size and is_composer_v1:
       raise command_util.InvalidUserInputError(
           _INVALID_OPTION_FOR_V1_ERROR_MSG.format(opt='environment-size'))
@@ -444,6 +439,18 @@ class Create(base.Command):
       raise command_util.InvalidUserInputError(
           'Workloads Config flags introduced in Composer 2.X'
           ' cannot be used when creating Composer 1.X environments.')
+
+    # Connection subnetwork is currently unavailable in GA release track.
+    if release_track == base.ReleaseTrack.GA:
+      return
+    if args.connection_subnetwork and is_composer_v1:
+      raise command_util.InvalidUserInputError(
+          _INVALID_OPTION_FOR_V1_ERROR_MSG.format(opt='connection-subnetwork'))
+    if args.connection_subnetwork and not args.enable_private_environment:
+      raise command_util.InvalidUserInputError(
+          PREREQUISITE_OPTION_ERROR_MSG.format(
+              prerequisite='enable-private-environment',
+              opt='connection-subnetwork'))
 
   def ValidateComposer1ExclusiveFlags(self, args, is_composer_v1,
                                       release_track):
@@ -458,9 +465,6 @@ class Create(base.Command):
     if args.machine_type and not is_composer_v1:
       raise command_util.InvalidUserInputError(
           _INVALID_OPTION_FOR_V2_ERROR_MSG.format(opt='machine-type'))
-    if args.kms_key and not is_composer_v1:
-      raise command_util.InvalidUserInputError(
-          _INVALID_OPTION_FOR_V2_ERROR_MSG.format(opt='kms-key'))
 
   def GetOperationMessage(self, args, is_composer_v1):
     """Constructs Create message."""
@@ -491,10 +495,32 @@ class Create(base.Command):
         master_ipv4_cidr=args.master_ipv4_cidr,
         web_server_ipv4_cidr=args.web_server_ipv4_cidr,
         cloud_sql_ipv4_cidr=args.cloud_sql_ipv4_cidr,
+        composer_network_ipv4_cidr=args.composer_network_ipv4_cidr,
         web_server_access_control=self.web_server_access_control,
         cloud_sql_machine_type=args.cloud_sql_machine_type,
         web_server_machine_type=args.web_server_machine_type,
+        scheduler_cpu=args.scheduler_cpu,
+        worker_cpu=args.worker_cpu,
+        web_server_cpu=args.web_server_cpu,
+        scheduler_memory_gb=environments_api_util.MemorySizeBytesToGB(
+            args.scheduler_memory),
+        worker_memory_gb=environments_api_util.MemorySizeBytesToGB(
+            args.worker_memory),
+        web_server_memory_gb=environments_api_util.MemorySizeBytesToGB(
+            args.web_server_memory),
+        scheduler_storage_gb=environments_api_util.MemorySizeBytesToGB(
+            args.scheduler_storage),
+        worker_storage_gb=environments_api_util.MemorySizeBytesToGB(
+            args.worker_storage),
+        web_server_storage_gb=environments_api_util.MemorySizeBytesToGB(
+            args.web_server_storage),
+        min_workers=args.min_workers,
+        max_workers=args.max_workers,
         scheduler_count=args.scheduler_count,
+        environment_size=args.environment_size,
+        maintenance_window_start=args.maintenance_window_start,
+        maintenance_window_end=args.maintenance_window_end,
+        maintenance_window_recurrence=args.maintenance_window_recurrence,
         release_track=self.ReleaseTrack())
     return environments_api_util.Create(self.env_ref, create_flags,
                                         is_composer_v1)
@@ -515,29 +541,6 @@ class CreateBeta(Create):
   @classmethod
   def Args(cls, parser, release_track=base.ReleaseTrack.BETA):
     super(CreateBeta, cls).Args(parser, base.ReleaseTrack.BETA)
-
-    if release_track == base.ReleaseTrack.BETA:
-      flags.ENVIRONMENT_SIZE_BETA.choice_arg.AddToParser(parser)
-    elif release_track == base.ReleaseTrack.ALPHA:
-      flags.ENVIRONMENT_SIZE_ALPHA.choice_arg.AddToParser(parser)
-    flags.AddMaintenanceWindowFlagsGroup(parser)
-    autoscaling_group_parser = parser.add_argument_group(
-        flags.AUTOSCALING_FLAG_GROUP_DESCRIPTION)
-    flags.SCHEDULER_CPU.AddToParser(autoscaling_group_parser)
-    flags.WORKER_CPU.AddToParser(autoscaling_group_parser)
-    flags.WEB_SERVER_CPU.AddToParser(autoscaling_group_parser)
-    flags.SCHEDULER_MEMORY.AddToParser(autoscaling_group_parser)
-    flags.WORKER_MEMORY.AddToParser(autoscaling_group_parser)
-    flags.WEB_SERVER_MEMORY.AddToParser(autoscaling_group_parser)
-    flags.SCHEDULER_STORAGE.AddToParser(autoscaling_group_parser)
-    flags.WORKER_STORAGE.AddToParser(autoscaling_group_parser)
-    flags.WEB_SERVER_STORAGE.AddToParser(autoscaling_group_parser)
-    flags.MIN_WORKERS.AddToParser(autoscaling_group_parser)
-    flags.MAX_WORKERS.AddToParser(autoscaling_group_parser)
-    # Note: this flag is available for creation of both Composer 1.*.* and 2.*.*
-    # environments.
-    flags.NUM_SCHEDULERS.AddToParser(autoscaling_group_parser)
-
     flags.ENABLE_IP_MASQ_AGENT_FLAG.AddToParser(parser)
 
   def GetOperationMessage(self, args, is_composer_v1):
@@ -567,6 +570,7 @@ class CreateBeta(Create):
         private_environment=args.enable_private_environment,
         private_endpoint=args.enable_private_endpoint,
         privately_used_public_ips=args.enable_privately_used_public_ips,
+        connection_subnetwork=args.connection_subnetwork,
         master_ipv4_cidr=args.master_ipv4_cidr,
         web_server_ipv4_cidr=args.web_server_ipv4_cidr,
         cloud_sql_ipv4_cidr=args.cloud_sql_ipv4_cidr,
@@ -664,6 +668,7 @@ class CreateAlpha(CreateBeta):
         composer_network_ipv4_cidr=args.composer_network_ipv4_cidr,
         master_ipv4_cidr=args.master_ipv4_cidr,
         privately_used_public_ips=args.enable_privately_used_public_ips,
+        connection_subnetwork=args.connection_subnetwork,
         web_server_access_control=self.web_server_access_control,
         cloud_sql_machine_type=args.cloud_sql_machine_type,
         web_server_machine_type=args.web_server_machine_type,

@@ -53,8 +53,8 @@ class GcloudignoreHelp(base.TopicCommand):
 
      $ gcloud config set gcloudignore/enabled false
 
-  The default `.gcloudignore` file, which can be overriden with `--ignore-file`,
-  is as follows:
+  The default content of the generated `.gcloudignore` file, which can be
+  overriden with `--ignore-file`, is as follows:
 
     .gcloudignore
     .git
@@ -107,14 +107,15 @@ class GcloudignoreHelp(base.TopicCommand):
 
   ### ADVANCED TOPICS
 
-  In order to support Git-related files, there is a special comment syntax:
+  In order to ignore files specified in the gitignore file, there is a special
+  comment syntax:
 
     #!include:.gitignore
 
-  This will include the contents of a `.gitignore`-style file at that path at
-  that point in the file. It does not recurse (that is, the included file
-  *cannot* `#!include` another file) and cannot be anywhere but the top-level
-  directory to be uploaded.
+  This will insert the content of a `.gitignore`-style file named `.gitignore`
+  at the point of the include line. It does not recurse (that is, the included
+  file *cannot* `#!include` another file) and cannot be anywhere but the
+  top-level directory to be uploaded.
 
   The gcloud meta list-files-for-upload command can be used to display files
   files that will uploaded.

@@ -33,7 +33,7 @@ request:
 arguments:
   resource:
     help_text: The keyring to remove the IAM policy binding.
-    spec: !REF googlecloudsdk.command_lib.kms.resources:keyring
+    spec: !REF googlecloudsdk.command_lib.kms.resources:key_ring
 
 iam:
   enable_condition: true

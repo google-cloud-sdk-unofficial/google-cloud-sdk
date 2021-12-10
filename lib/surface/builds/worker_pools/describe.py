@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -90,6 +91,10 @@ class Describe(base.DescribeCommand):
     wp = client.projects_locations_workerPools.Get(
         messages.CloudbuildProjectsLocationsWorkerPoolsGetRequest(
             name=wp_resource.RelativeName()))
+
+    if release_track != base.ReleaseTrack.ALPHA:
+      if wp.hybridPoolConfig is not None:
+        raise exceptions.Error('NOT_FOUND: Requested entity was not found.')
 
     # Format the workerpool name for display
     try:

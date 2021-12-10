@@ -20,12 +20,15 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core.resource import resource_printer
+
 
 _DELETE_SPECIFIC_AGENTS_MESSAGE_FORMAT = """\
 To delete specific agents on your machine, run the following Docker command:
 
 docker stop {}
 
+Note: If you encounter a permission error, you may need to add "sudo" before "docker".
 """
 _DELETE_ALL_AGENTS_COMMAND = (
     'docker stop $(docker container list --quiet --all --filter'
@@ -35,12 +38,14 @@ To delete all agents on your machine, run the following Docker command:
 
 {}
 
+Note: If you encounter a permission error, you may need to add "sudo" before both instances of "docker".
 """.format(_DELETE_ALL_AGENTS_COMMAND)
 _UNINSTALL_MESSAGE = """\
 To delete all agents on your machine and uninstall the machine's agent Docker image, run the following command:
 
 {}; docker image rm gcr.io/cloud-ingest/tsop-agent
 
+Note: If you encounter a permission error, you may need to add "sudo" before all three instances of "docker".
 """.format(_DELETE_ALL_AGENTS_COMMAND)
 _LIST_AGENTS_MESSAGE = """\
 Pick which agents to delete. You can include --all to delete all agents on your machine or --ids to specify agent IDs. You can find agent IDs by running:
@@ -92,6 +97,10 @@ class Delete(base.Command):
         ' the agents. Uninstalling the Docker image will free up space, but'
         " you'll need to reinstall it to run agents on this machine in the"
         ' future.')
+
+  def Display(self, args, resources):
+    del args  # Unsued.
+    resource_printer.Print(resources, 'object')
 
   def Run(self, args):
     if args.ids:

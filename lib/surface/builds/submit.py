@@ -30,6 +30,9 @@ def _CommonArgs(parser):
   Args:
     parser: An argparse.ArgumentParser-like object. It is mocked out in order to
       capture some information, but behaves like an ArgumentParser.
+
+  Returns:
+    worker pool flag group
   """
   source = parser.add_mutually_exclusive_group()
   source.add_argument(
@@ -60,7 +63,7 @@ def _CommonArgs(parser):
   flags.AddMachineTypeFlag(parser)
   flags.AddDiskSizeFlag(parser)
   flags.AddSubstitutionsFlag(parser)
-  flags.AddWorkerPoolFlag(parser)
+  worker_pools = flags.AddWorkerPoolFlag(parser)
 
   flags.AddNoCacheFlag(parser)
   flags.AddAsyncFlag(parser)
@@ -80,6 +83,8 @@ def _CommonArgs(parser):
 
   flags.AddIgnoreFileFlag(parser)
   flags.AddConfigFlags(parser)
+
+  return worker_pools
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -195,8 +200,8 @@ class SubmitAlpha(SubmitBeta):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser)
-    flags.AddConfigFlagsAlpha(parser)
+    worker_pools = _CommonArgs(parser)
+    flags.AddConfigFlagsAlpha(worker_pools)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -220,9 +225,8 @@ class SubmitAlpha(SubmitBeta):
         args.tag, args.no_cache, messages, args.substitutions, args.config,
         args.IsSpecified('source'), args.no_source, args.source,
         args.gcs_source_staging_dir, args.ignore_file, args.gcs_log_dir,
-        args.machine_type, args.disk_size, args.worker_pool, args.pack,
-        arg_cluster_name=args.cluster,
-        arg_cluster_location=args.cluster_location)
+        args.machine_type, args.disk_size, args.memory, args.vcpu_count,
+        args.worker_pool, args.pack)
 
     build_region = submit_util.DetermineBuildRegion(build_config, build_region)
     build_region = build_region or cloudbuild_util.DEFAULT_REGION

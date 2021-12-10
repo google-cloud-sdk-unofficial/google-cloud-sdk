@@ -50,7 +50,7 @@ gcloud alpha compute ssh example-instance --zone=us-central1-a --troubleshoot
 """
 
 TROUBLESHOOT_HEADER = """
-Starting ssh troubleshooting for instance {0} in zone {1}'
+Starting ssh troubleshooting for instance {0} in zone {1}
 Start time: {2}
 """
 
@@ -159,6 +159,7 @@ def AddTroubleshootArg(parser):
           - Network connectivity
           - User permissions
           - Virtual Private Cloud (VPC) settings
+          - VM boot
           """)
 
 

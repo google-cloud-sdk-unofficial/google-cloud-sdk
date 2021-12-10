@@ -1,4 +1,4 @@
-- release_tracks: [BETA]
+- release_tracks: [BETA, GA]
   help_text:
     brief:  Create a Filestore snapshot.
     description: |
@@ -54,6 +54,8 @@
   request:
     BETA:
       api_version: v1beta1
+    GA:
+      api_version: v1
     display_resource_type: snapshot
     collection: file.projects.locations.instances.snapshots
     # Disable validating that a snapshot resource arg is specified (as we are using the

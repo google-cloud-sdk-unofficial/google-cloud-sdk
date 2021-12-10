@@ -84,14 +84,14 @@ class _List(object):
     raise NotImplementedError
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class ListBETA(_List, base.ListCommand):
   """List Datastream connection profiles.
 
   List connection profiles.
 
   ## API REFERENCE
-    This command uses the datastream/v1alpha1 API. The full documentation
+    This command uses the datastream/v1 API. The full documentation
     for this API can be found at: https://cloud.google.com/datastream/
 
   ## EXAMPLES

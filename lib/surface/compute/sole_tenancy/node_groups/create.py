@@ -46,6 +46,7 @@ class Create(base.CreateCommand):
     flags.AddCreateArgsToParser(parser)
     flags.AddAutoscalingPolicyArgToParser(parser, required_mode=True)
     flags.AddMaintenanceWindowArgToParser(parser)
+    flags.AddLocationHintArgToParser(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -109,6 +110,7 @@ class CreateBeta(Create):
     flags.AddCreateArgsToParser(parser)
     flags.AddAutoscalingPolicyArgToParser(parser, required_mode=True)
     flags.AddMaintenanceWindowArgToParser(parser)
+    flags.AddLocationHintArgToParser(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

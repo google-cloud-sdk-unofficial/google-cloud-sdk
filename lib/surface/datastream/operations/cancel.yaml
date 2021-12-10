@@ -11,6 +11,7 @@
   request:
     collection: datastream.projects.locations.operations
     method: cancel
+    api_version: v1
 
   arguments:
     resource:

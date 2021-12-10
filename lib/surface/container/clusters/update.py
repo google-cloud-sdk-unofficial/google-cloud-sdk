@@ -437,6 +437,10 @@ class Update(base.UpdateCommand):
                    'You can still attempt updates to the cluster.\n').format(
                        console_attr.SafeText(error)))
 
+    if getattr(args, 'enable_pod_security_policy', None):
+      log.warning(
+          'Kubernetes has officially deprecated PodSecurityPolicy in version 1.21 and will be removed in 1.25 with no upgrade path available with this feature enabled. For additional details, please refer to https://cloud.google.com/kubernetes-engine/docs/how-to/pod-security-policies'
+          )
     # locations will be None if additional-zones was specified, an empty list
     # if it was specified with no argument, or a populated list if zones were
     # provided. We want to distinguish between the case where it isn't
@@ -768,6 +772,7 @@ class UpdateBeta(Update):
     flags.AddAuthenticatorSecurityGroupFlags(group)
     flags.AddEnableGcfsFlag(group)
     flags.AddEnableImageStreamingFlag(group)
+    flags.AddMaintenanceIntervalFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -852,6 +857,7 @@ class UpdateBeta(Update):
     opts.security_group = args.security_group
     opts.enable_gcfs = args.enable_gcfs
     opts.enable_image_streaming = args.enable_image_streaming
+    opts.maintenance_interval = args.maintenance_interval
     return opts
 
 
@@ -927,6 +933,7 @@ class UpdateAlpha(Update):
     flags.AddAuthenticatorSecurityGroupFlags(group)
     flags.AddEnableGcfsFlag(group)
     flags.AddEnableImageStreamingFlag(group)
+    flags.AddMaintenanceIntervalFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1007,5 +1014,6 @@ class UpdateAlpha(Update):
     opts.security_group = args.security_group
     opts.enable_gcfs = args.enable_gcfs
     opts.enable_image_streaming = args.enable_image_streaming
+    opts.maintenance_interval = args.maintenance_interval
 
     return opts

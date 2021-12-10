@@ -51,8 +51,8 @@ def _FetchResponsePolicyRule(response_policy, response_policy_rule,
   return client.responsePolicyRules.Get(get_request)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Update(base.UpdateCommand):
   r"""Updates a new Cloud DNS response policy rule.
 
       This command updates a new Cloud DNS response policy rule.
@@ -61,23 +61,26 @@ class UpdateBeta(base.UpdateCommand):
 
       To update a new response policy rule with DNS name, run:
 
-        $ {command} myresponsepolicyrule --response-policy="myresponsepolicy" --dns-name="www.newzone.com." # pylint: disable=line-too-long
+        $ {command} myresponsepolicyrule --response-policy="myresponsepolicy"
+        --dns-name="www.newzone.com." # pylint: disable=line-too-long
 
       To update a new response policy rule with local data rrsets, run:
 
-        $ {command} myresponsepolicyrule --response-policy="myresponsepolicy" --local-data=name=www.zone.com.,type=A,ttl=21600,rrdatas=1.2.3.4
+        $ {command} myresponsepolicyrule --response-policy="myresponsepolicy"
+        --local-data=name=www.zone.com.,type=A,ttl=21600,rrdatas=1.2.3.4
 
       To update a new response policy rule with behavior, run:
 
-        $ {command} myresponsepolicyrule --response-policy="myresponsepolicy" --behavior=bypassResponsePolicy
+        $ {command} myresponsepolicyrule --response-policy="myresponsepolicy"
+        --behavior=bypassResponsePolicy
   """
 
   @staticmethod
   def Args(parser):
-    messages = apis.GetMessagesModule('dns', 'v1beta2')
+    messages = apis.GetMessagesModule('dns', 'v1')
     _AddArgsCommon(parser, messages)
     resource_args.AddResponsePolicyRuleArg(
-        parser, verb='to update', api_version='v1beta2')
+        parser, verb='to update', api_version='v1')
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
@@ -139,8 +142,8 @@ class UpdateBeta(base.UpdateCommand):
     return updated_response_policy_rule
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
   r"""Updates a new Cloud DNS response policy rule.
 
       This command updates a new Cloud DNS response policy rule.

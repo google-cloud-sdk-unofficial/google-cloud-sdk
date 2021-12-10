@@ -7,25 +7,25 @@
 
       ## EXAMPLES
 
-      To delete a restore 'my-restore' in project 'my-project' in location 'us-central1', run:
+      To delete a restore 'my-restore' in project 'my-project' in location 'us-central1' under restore plan ``my-restore-plan'', run:
 
-        $ {command} my-restore --project=my-project --location=us-central1
+        $ {command} my-restore --project=my-project --location=us-central1 --restore-plan=my-restore-plan
 
   request:
-    collection: gkebackup.projects.locations.restores
+    collection: gkebackup.projects.locations.restorePlans.restores
     modify_request_hooks:
     - googlecloudsdk.command_lib.container.backup_restore.hooks:AddForceToDeleteRequest
     ALPHA:
-      api_version: v1alpha1
+      api_version: v1
 
   arguments:
     resource:
       help_text: |
         Name of the restore to delete. The name may be provided either as a relative name, e.g.
-        `projects/<project>/locations/<location>/restores/<restore>`
+        `projects/<project>/locations/<location>/restorePlans/<restorePlan>/restores/<restore>`
         or as a single ID name (with the parent resources provided via options or through
         properties), e.g.
-        `RESTORE --project=<project> --location=<location>`.
+        `RESTORE --project=<project> --location=<location> --restore-plan=<restorePlan>`.
       spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:restore
 
     params:

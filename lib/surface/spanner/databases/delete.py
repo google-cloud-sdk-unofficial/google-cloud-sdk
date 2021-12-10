@@ -27,7 +27,13 @@ from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.DeleteCommand):
-  """Delete a Cloud Spanner database."""
+  """Delete a Cloud Spanner database.
+
+  Delete a Cloud Spanner database.
+
+  Note: Cloud Spanner might continue to accept requests for a few seconds
+  after the database has been deleted.
+  """
 
   detailed_help = {
       'EXAMPLES':

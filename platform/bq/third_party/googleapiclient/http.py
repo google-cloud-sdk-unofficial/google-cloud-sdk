@@ -29,9 +29,7 @@ from six.moves import range
 from six import BytesIO, StringIO
 from six.moves.urllib.parse import urlparse, urlunparse, quote, unquote
 
-import base64
 import copy
-import gzip
 import httplib2
 import json
 import logging
@@ -39,7 +37,6 @@ import mimetypes
 import os
 import random
 import socket
-import sys
 import time
 import uuid
 
@@ -82,6 +79,11 @@ DEFAULT_HTTP_TIMEOUT_SEC = 60
 
 _LEGACY_BATCH_URI = "https://www.googleapis.com/batch"
 
+if six.PY2:
+    # That's a builtin python3 exception, nonexistent in python2.
+    # Defined to None to avoid NameError while trying to catch it
+    ConnectionError = None
+
 
 def _should_retry_response(resp_status, content):
     """Determines whether a response should be retried.
@@ -93,6 +95,8 @@ def _should_retry_response(resp_status, content):
   Returns:
     True if the response should be retried, otherwise False.
   """
+    reason = None
+
     # Retry on 5xx errors.
     if resp_status >= 500:
         return True
@@ -112,7 +116,22 @@ def _should_retry_response(resp_status, content):
         try:
             data = json.loads(content.decode("utf-8"))
             if isinstance(data, dict):
-                reason = data["error"]["errors"][0]["reason"]
+                # There are many variations of the error json so we need
+                # to determine the keyword which has the error detail. Make sure
+                # that the order of the keywords below isn't changed as it can
+                # break user code. If the "errors" key exists, we must use that
+                # first.
+                # See Issue #1243
+                # https://github.com/googleapis/google-api-python-client/issues/1243
+                error_detail_keyword = next((kw for kw in ["errors", "status", "message"] if kw in data["error"]), "")
+
+                if error_detail_keyword:
+                    reason = data["error"][error_detail_keyword]
+
+                    if isinstance(reason, list) and len(reason) > 0:
+                        reason = reason[0]
+                        if "reason" in reason:
+                            reason = reason["reason"]
             else:
                 reason = data[0]["error"]["errors"]["reason"]
         except (UnicodeDecodeError, ValueError, KeyError):
@@ -175,16 +194,24 @@ def _retry_request(
         except _ssl_SSLError as ssl_error:
             exception = ssl_error
         except socket.timeout as socket_timeout:
-            # It's important that this be before socket.error as it's a subclass
+            # Needs to be before socket.error as it's a subclass of OSError
             # socket.timeout has no errorcode
             exception = socket_timeout
-        except socket.error as socket_error:
+        except ConnectionError as connection_error:
+            # Needs to be before socket.error as it's a subclass of OSError
+            exception = connection_error
+        except OSError as socket_error:
             # errno's contents differ by platform, so we have to match by name.
+            # Some of these same errors may have been caught above, e.g. ECONNRESET *should* be
+            # raised as a ConnectionError, but some libraries will raise it as a socket.error
+            # with an errno corresponding to ECONNRESET
             if socket.errno.errorcode.get(socket_error.errno) not in {
                 "WSAETIMEDOUT",
                 "ETIMEDOUT",
                 "EPIPE",
                 "ECONNABORTED",
+                "ECONNREFUSED",
+                "ECONNRESET",
             }:
                 raise
             exception = socket_error
@@ -563,8 +590,9 @@ class MediaFileUpload(MediaIoBaseUpload):
       resumable: bool, True if this is a resumable upload. False means upload
         in a single request.
     """
+        self._fd = None
         self._filename = filename
-        fd = open(self._filename, "rb")
+        self._fd = open(self._filename, "rb")
         if mimetype is None:
             # No mimetype provided, make a guess.
             mimetype, _ = mimetypes.guess_type(filename)
@@ -572,11 +600,12 @@ class MediaFileUpload(MediaIoBaseUpload):
                 # Guess failed, use octet-stream.
                 mimetype = "application/octet-stream"
         super(MediaFileUpload, self).__init__(
-            fd, mimetype, chunksize=chunksize, resumable=resumable
+            self._fd, mimetype, chunksize=chunksize, resumable=resumable
         )
 
     def __del__(self):
-        self._fd.close()
+        if self._fd:
+            self._fd.close()
 
     def to_json(self):
         """Creating a JSON representation of an instance of MediaFileUpload.
@@ -701,7 +730,7 @@ class MediaIoBaseDownload(object):
 
     Raises:
       googleapiclient.errors.HttpError if the response was not a 2xx.
-      httplib2.HttpLib2Error if a transport error has occured.
+      httplib2.HttpLib2Error if a transport error has occurred.
     """
         headers = self._headers.copy()
         headers["range"] = "bytes=%d-%d" % (
@@ -737,8 +766,16 @@ class MediaIoBaseDownload(object):
             if self._total_size is None or self._progress == self._total_size:
                 self._done = True
             return MediaDownloadProgress(self._progress, self._total_size), self._done
-        else:
-            raise HttpError(resp, content, uri=self._uri)
+        elif resp.status == 416:
+            # 416 is Range Not Satisfiable
+            # This typically occurs with a zero byte file
+            content_range = resp["content-range"]
+            length = content_range.rsplit("/", 1)[1]
+            self._total_size = int(length)
+            if self._total_size == 0:
+                self._done = True
+                return MediaDownloadProgress(self._progress, self._total_size), self._done
+        raise HttpError(resp, content, uri=self._uri)
 
 
 class _StreamSlice(object):
@@ -821,12 +858,6 @@ class HttpRequest(object):
         self.response_callbacks = []
         self._in_error_state = False
 
-        # This workaround asks httplib2 v0.16.0+ to exclude 308 from
-        # its list of HTTP status codes it treats as redirects.
-        # See: https://github.com/googleapis/google-api-python-client/issues/803#issuecomment-578151576
-        if hasattr(self.http, "redirect_codes"):
-          self.http.redirect_codes = set(self.http.redirect_codes) - {308}
-
         # The size of the non-media part of the request.
         self.body_size = len(self.body or "")
 
@@ -858,7 +889,7 @@ class HttpRequest(object):
 
     Raises:
       googleapiclient.errors.HttpError if the response was not a 2xx.
-      httplib2.HttpLib2Error if a transport error has occured.
+      httplib2.HttpLib2Error if a transport error has occurred.
     """
         if http is None:
             http = self.http
@@ -954,7 +985,7 @@ class HttpRequest(object):
 
     Raises:
       googleapiclient.errors.HttpError if the response was not a 2xx.
-      httplib2.HttpLib2Error if a transport error has occured.
+      httplib2.HttpLib2Error if a transport error has occurred.
     """
         if http is None:
             http = self.http
@@ -1024,12 +1055,16 @@ class HttpRequest(object):
             chunk_end = self.resumable_progress + len(data) - 1
 
         headers = {
-            "Content-Range": "bytes %d-%d/%s"
-            % (self.resumable_progress, chunk_end, size),
             # Must set the content-length header here because httplib can't
             # calculate the size when working with _StreamSlice.
             "Content-Length": str(chunk_end - self.resumable_progress + 1),
         }
+
+        # An empty file results in chunk_end = -1 and size = 0
+        # sending "bytes 0--1/0" results in an invalid request
+        # Only add header "Content-Range" if chunk_end != -1
+        if chunk_end != -1:
+            headers["Content-Range"] = "bytes %d-%d/%s" % (self.resumable_progress, chunk_end, size)
 
         for retry_num in range(num_retries + 1):
             if retry_num > 0:
@@ -1116,6 +1151,10 @@ class HttpRequest(object):
             resumable=d["resumable"],
         )
 
+    @staticmethod
+    def null_postproc(resp, contents):
+        return resp, contents
+
 
 class BatchHttpRequest(object):
     """Batches multiple HttpRequest objects into a single HTTP request.
@@ -1166,9 +1205,9 @@ class BatchHttpRequest(object):
             batch_uri = _LEGACY_BATCH_URI
 
         if batch_uri == _LEGACY_BATCH_URI:
-            LOGGER.warn(
+            LOGGER.warning(
                 "You have constructed a BatchHttpRequest using the legacy batch "
-                "endpoint %s. This endpoint will be turned down on March 25, 2019. "
+                "endpoint %s. This endpoint will be turned down on August 12, 2020. "
                 "Please provide the API-specific endpoint or use "
                 "service.new_batch_http_request(). For more details see "
                 "https://developers.googleblog.com/2018/03/discontinuing-support-for-json-rpc-and.html"
@@ -1247,7 +1286,7 @@ class BatchHttpRequest(object):
 
         # NB: we intentionally leave whitespace between base/id and '+', so RFC2822
         # line folding works properly on Python 3; see
-        # https://github.com/google/google-api-python-client/issues/164
+        # https://github.com/googleapis/google-api-python-client/issues/164
         return "<%s + %s>" % (self._base_id, quote(id_))
 
     def _header_to_id(self, header):
@@ -1414,10 +1453,10 @@ class BatchHttpRequest(object):
       http: httplib2.Http, an http object to be used to make the request with.
       order: list, list of request ids in the order they were added to the
         batch.
-      request: list, list of request objects to send.
+      requests: list, list of request objects to send.
 
     Raises:
-      httplib2.HttpLib2Error if a transport error has occured.
+      httplib2.HttpLib2Error if a transport error has occurred.
       googleapiclient.errors.BatchError if the response is the wrong format.
     """
         message = MIMEMultipart("mixed")
@@ -1493,7 +1532,7 @@ class BatchHttpRequest(object):
       None
 
     Raises:
-      httplib2.HttpLib2Error if a transport error has occured.
+      httplib2.HttpLib2Error if a transport error has occurred.
       googleapiclient.errors.BatchError if the response is the wrong format.
     """
         # If we have no requests return
@@ -1688,9 +1727,8 @@ class HttpMock(object):
         if headers is None:
             headers = {"status": "200"}
         if filename:
-            f = open(filename, "rb")
-            self.data = f.read()
-            f.close()
+            with open(filename, "rb") as f:
+                self.data = f.read()
         else:
             self.data = None
         self.response_headers = headers
@@ -1715,6 +1753,8 @@ class HttpMock(object):
         self.headers = headers
         return httplib2.Response(self.response_headers), self.data
 
+    def close(self):
+        return None
 
 class HttpMockSequence(object):
     """Mock of httplib2.Http
@@ -1747,6 +1787,7 @@ class HttpMockSequence(object):
     """
         self._iterable = iterable
         self.follow_redirects = True
+        self.request_sequence = list()
 
     def request(
         self,
@@ -1757,8 +1798,11 @@ class HttpMockSequence(object):
         redirections=1,
         connection_type=None,
     ):
+        # Remember the request so after the fact this mock can be examined
+        self.request_sequence.append((uri, method, body, headers))
         resp, content = self._iterable.pop(0)
         content = six.ensure_binary(content)
+
         if content == b"echo_request_headers":
             content = headers
         elif content == b"echo_request_headers_as_json":
@@ -1774,6 +1818,8 @@ class HttpMockSequence(object):
             content = content.encode("utf-8")
         return httplib2.Response(resp), content
 
+    def close(self):
+        return None
 
 def set_user_agent(http, user_agent):
     """Set the user-agent on every request.
@@ -1899,6 +1945,13 @@ def build_http():
     # for Resumable Uploads rather than Permanent Redirects.
     # This asks httplib2 to exclude 308s from the status codes
     # it treats as redirects
-    if hasattr(http, 'redirect_codes'): http.redirect_codes = http.redirect_codes - {308}
+    try:
+      http.redirect_codes = http.redirect_codes - {308}
+    except AttributeError:
+      # Apache Beam tests depend on this library and cannot
+      # currently upgrade their httplib2 version
+      # http.redirect_codes does not exist in previous versions
+      # of httplib2, so pass
+      pass
 
     return http

@@ -29,21 +29,24 @@ from googlecloudsdk.command_lib.iam import iam_util
 
 
 class List(base.ListCommand):
-  """List the roles defined at a parent organization or a project.
+  """List predefined roles, or the custom roles for an organization or project.
 
-  This command lists the roles with given parent organization or project.
+  When an organization or project is specified, this command lists the custom
+  roles that are defined for that organization or project.
+
+  Otherwise, this command lists IAM's predefined roles.
 
   ## EXAMPLES
 
-  To list the roles for the organization ``12345'', run:
+  To list custom roles for the organization ``12345'', run:
 
     $ {command} --organization=12345
 
-  To list the roles for the project ``myproject'', run:
+  To list custom roles for the project ``myproject'', run:
 
     $ {command} --project=myproject
 
-  To list the curated roles, run:
+  To list all predefined roles, run:
 
     $ {command}
   """

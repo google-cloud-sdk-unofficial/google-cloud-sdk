@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -87,6 +88,19 @@ class Delete(base.DeleteCommand):
             'locationsId': wp_region,
             'workerPoolsId': wp_name,
         })
+
+    # If the worker pool is located in CBH_SUPPORTED_REGIONS it might be a
+    # hybrid worker pool. Currently it should only be possible to delete a
+    # hybrid worker pool in the alpha release track. Therefore we first GET the
+    # worker pool if it's in a CBH_SUPPORTED_REGIONS region and check whether
+    # it's a hybrid worker pool before we might delete it.
+    if release_track != base.ReleaseTrack.ALPHA and wp_region in cloudbuild_util.CBH_SUPPORTED_REGIONS:
+      # Send the Get request
+      wp = client.projects_locations_workerPools.Get(
+          messages.CloudbuildProjectsLocationsWorkerPoolsGetRequest(
+              name=wp_resource.RelativeName()))
+      if wp.hybridPoolConfig is not None:
+        raise exceptions.Error('NOT_FOUND: Requested entity was not found.')
 
     # Send the Delete request
     deleted_op = client.projects_locations_workerPools.Delete(

@@ -1,4 +1,4 @@
-- release_tracks: [BETA]
+- release_tracks: [BETA, GA]
   help_text:
     brief: |
       Update the description or labels of a Filestore snapshot.
@@ -46,6 +46,8 @@
   request:
     BETA:
       api_version: v1beta1
+    GA:
+      api_version: v1
     display_resource_type: snapshot
     collection: file.projects.locations.instances.snapshots
     modify_request_hooks:
