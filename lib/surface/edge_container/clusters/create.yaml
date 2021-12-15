@@ -27,12 +27,17 @@
       api_field: cluster.defaultMaxPodsPerNode
       help_text: |
         The default maximum number of pods per node.
+    - arg_name: fleet-project
+      api_field: cluster.fleet.project
+      help_text: |
+        Name of the Fleet host project where the cluster is registered.
     - arg_name: hub-membership
       api_field: cluster.hub.membership
       help_text: |
+        DEPRECATED - use --fleet-project instead.
+
         Name of the membership resource to use when registering this cluster
         with GKE Hub.
-      required: true
     - arg_name: cluster-ipv4-cidr
       api_field: cluster.networking.clusterIpv4CidrBlocks
       repeated: false

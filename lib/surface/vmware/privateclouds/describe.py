@@ -44,7 +44,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(base.DescribeCommand):
-  """Describe a VMware Engine private cloud."""
+  """Describe a Google Cloud VMware Engine private cloud."""
 
   detailed_help = DETAILED_HELP
 
@@ -62,4 +62,4 @@ class DescribeAlpha(base.DescribeCommand):
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DescribeBeta(DescribeAlpha):
-  """Describe a VMware Engine private cloud."""
+  """Describe a Google Cloud VMware Engine private cloud."""

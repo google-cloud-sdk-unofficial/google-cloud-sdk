@@ -176,7 +176,8 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddAcceleratorArgs(parser, enable_gpu_partition=True)
+    flags.AddAcceleratorArgs(
+        parser, enable_gpu_partition=True, enable_gpu_time_sharing=False)
     flags.AddBootDiskKmsKeyFlag(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)
@@ -231,11 +232,9 @@ class Create(base.CreateCommand):
         log.status.Print(constants.KUBERNETES_GPU_LIMITATION_MSG)
 
       if not options.image_type:
-        log.warning(
-            'Starting with version 1.19, newly created node-pools '
-            'will have COS_CONTAINERD as the default node image '
-            'when no image type is specified.'
-        )
+        log.warning('Starting with version 1.19, newly created node-pools '
+                    'will have COS_CONTAINERD as the default node image '
+                    'when no image type is specified.')
       elif options.image_type.upper() == 'WINDOWS_SAC':
         log.warning(WARN_WINDOWS_SAC_SUPPORT_LIFECYCLE)
 
@@ -260,7 +259,8 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddAcceleratorArgs(parser, enable_gpu_partition=True)
+    flags.AddAcceleratorArgs(
+        parser, enable_gpu_partition=True, enable_gpu_time_sharing=True)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDsBetaFlags(parser, for_node_pool=True)
     flags.AddBootDiskKmsKeyFlag(parser)
@@ -345,7 +345,8 @@ class CreateAlpha(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddAcceleratorArgs(parser, enable_gpu_partition=True)
+    flags.AddAcceleratorArgs(
+        parser, enable_gpu_partition=True, enable_gpu_time_sharing=True)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=False)
     flags.AddLocalSSDsAlphaFlags(parser, for_node_pool=True)
@@ -378,5 +379,6 @@ class CreateAlpha(Create):
     flags.AddStandardRolloutPolicyFlag(parser, for_node_pool=True)
     flags.AddNodePoolSoakDurationFlag(parser, for_node_pool=True)
     flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)
+
 
 Create.detailed_help = DETAILED_HELP

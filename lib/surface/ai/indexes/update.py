@@ -57,7 +57,8 @@ class Update(base.UpdateCommand):
     region = index_ref.AsDict()['locationsId']
     project_id = index_ref.AsDict()['projectsId']
     with endpoint_util.AiplatformEndpointOverrides(version, region=region):
-      operation = client.IndexesClient().PatchBeta(index_ref, args)
+      operation = client.IndexesClient(version=version).PatchBeta(
+          index_ref, args)
       if args.metadata_file is not None:
         # Update index content.
         op_ref = indexes_util.ParseIndexOperation(operation.name)

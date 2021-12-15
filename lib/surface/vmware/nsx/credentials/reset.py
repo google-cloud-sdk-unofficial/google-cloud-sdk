@@ -23,23 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
 from googlecloudsdk.core import log
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Reset(base.UpdateCommand):
-  """Reset VMware NSX sign-in credentials associated with a VMware Engine private cloud."""
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.AddPrivatecloudArgToParser(parser)
-
-  def Run(self, args):
-    resource = args.CONCEPTS.private_cloud.Parse()
-    client = PrivateCloudsClient()
-    operation = client.ResetNsxCredentials(resource)
-    log.UpdatedResource(operation.name, kind='nsx credentials', is_async=True)
-
-Reset.detailed_help = {
+DETAILED_HELP = {
     'DESCRIPTION':
         """
           Reset VMware NSX sign-in credentials associated with a VMware Engine private cloud.
@@ -58,3 +42,27 @@ Reset.detailed_help = {
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ResetAlpha(base.UpdateCommand):
+  """Reset VMware NSX sign-in credentials associated with a Google Cloud VMware Engine private cloud."""
+
+  detailed_help = DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    flags.AddPrivatecloudArgToParser(parser)
+
+  def Run(self, args):
+    resource = args.CONCEPTS.private_cloud.Parse()
+    client = PrivateCloudsClient()
+    operation = client.ResetNsxCredentials(resource)
+    log.UpdatedResource(operation.name, kind='nsx credentials', is_async=True)
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ResetBeta(ResetAlpha):
+  """Reset VMware NSX sign-in credentials associated with a Google Cloud VMware Engine private cloud."""

@@ -66,7 +66,6 @@ def _CommonArgs(parser,
                 support_host_error_timeout_seconds=False,
                 support_numa_node_count=False,
                 support_visible_core_count=False,
-                support_network_perf_configs=False,
                 support_disk_architecture=False):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -121,8 +120,8 @@ def _CommonArgs(parser,
   if support_visible_core_count:
     instances_flags.AddVisibleCoreCountArgs(parser)
 
-  if support_network_perf_configs:
-    instances_flags.AddNetworkPerformanceConfigsArgs(parser)
+  instances_flags.AddNetworkPerformanceConfigsArgs(parser)
+
   flags.AddRegionFlag(
       parser, resource_type='subnetwork', operation_type='attach')
 
@@ -374,10 +373,10 @@ def AddServiceProxyArgsToMetadata(args):
     if 'access-log' in args.service_proxy:
       proxy_spec['access-log'] = args.service_proxy['access-log']
 
-    if 'network' in args.service_proxy:
-      proxy_spec['network'] = args.service_proxy['network']
-    else:
-      proxy_spec['network'] = ''
+    proxy_spec['network'] = args.service_proxy.get('network', '')
+
+    if 'scope' in args.service_proxy:
+      proxy_spec['scope'] = args.service_proxy['scope']
 
     if 'intercept-all-outbound-traffic' in args.service_proxy:
       traffic_interception = collections.OrderedDict()
@@ -493,7 +492,6 @@ def _RunCreate(compute_api,
                support_host_error_timeout_seconds=False,
                support_numa_node_count=False,
                support_visible_core_count=False,
-               support_network_perf_configs=False,
                support_disk_architecture=False,
                support_enable_uefi_networking=False):
   """Common routine for creating instance template.
@@ -520,8 +518,6 @@ def _RunCreate(compute_api,
       support_numa_node_count: Indicates whether setting NUMA node count is
         supported.
       support_visible_core_count: Indicates whether setting a custom visible
-      support_network_perf_configs: Indicates whether advanced networking tiers
-        are supported. core count is supported.
       support_disk_architecture: Storage resources can be used to create boot
         disks compatible with ARM64 or X86_64 machine architectures. If this
         field is not specified, the default is ARCHITECTURE_UNSPECIFIED.
@@ -753,8 +749,7 @@ def _RunCreate(compute_api,
   instance_template.properties.confidentialInstanceConfig = (
       confidential_instance_config_message)
 
-  if (support_network_perf_configs and
-      args.IsSpecified('network_performance_configs')):
+  if args.IsSpecified('network_performance_configs'):
     instance_template.properties.networkPerformanceConfig = (
         instance_utils.GetNetworkPerformanceConfig(args, client))
 
@@ -829,7 +824,6 @@ class Create(base.CreateCommand):
   _support_termination_action = False
   _support_numa_node_count = False
   _support_visible_core_count = False
-  _support_network_perf_configs = False
   _support_disk_architecture = False
   _support_enable_uefi_networking = False
 
@@ -844,7 +838,6 @@ class Create(base.CreateCommand):
         support_mesh=cls._support_mesh,
         support_numa_node_count=cls._support_numa_node_count,
         support_visible_core_count=cls._support_visible_core_count,
-        support_network_perf_configs=cls._support_network_perf_configs,
         support_disk_architecture=cls._support_disk_architecture)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -874,7 +867,6 @@ class Create(base.CreateCommand):
         support_termination_action=self._support_termination_action,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_network_perf_configs=self._support_network_perf_configs,
         support_disk_architecture=self._support_disk_architecture,
         support_enable_uefi_networking=self._support_enable_uefi_networking)
 
@@ -903,7 +895,6 @@ class CreateBeta(Create):
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_visible_core_count = False
-  _support_network_perf_configs = True
   _support_disk_architecture = False
   _support_enable_uefi_networking = False
 
@@ -920,7 +911,6 @@ class CreateBeta(Create):
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
         support_visible_core_count=cls._support_visible_core_count,
-        support_network_perf_configs=cls._support_network_perf_configs,
         support_disk_architecture=cls._support_disk_architecture)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -955,7 +945,6 @@ class CreateBeta(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_network_perf_configs=self._support_network_perf_configs,
         support_disk_architecture=self._support_disk_architecture,
         support_enable_uefi_networking=self._support_enable_uefi_networking)
 
@@ -984,7 +973,6 @@ class CreateAlpha(Create):
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = True
   _support_visible_core_count = True
-  _support_network_perf_configs = True
   _support_disk_architecture = True
   _support_enable_uefi_networking = True
 
@@ -1002,7 +990,6 @@ class CreateAlpha(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
         support_visible_core_count=cls._support_visible_core_count,
-        support_network_perf_configs=cls._support_network_perf_configs,
         support_disk_architecture=cls._support_disk_architecture)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
@@ -1039,7 +1026,6 @@ class CreateAlpha(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_network_perf_configs=self._support_network_perf_configs,
         support_disk_architecture=self._support_disk_architecture,
         support_enable_uefi_networking=self._support_enable_uefi_networking)
 

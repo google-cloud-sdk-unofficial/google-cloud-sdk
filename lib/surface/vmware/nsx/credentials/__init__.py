@@ -23,7 +23,13 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class NsxCredentials(base.Group):
+class NsxCredentialsAlpha(base.Group):
   """Manage VMware NSX credentials using Google Cloud VMware Engine."""
 
   category = base.COMPUTE_CATEGORY
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class NsxCredentialsBeta(NsxCredentialsAlpha):
+  """Manage VMware NSX credentials using Google Cloud VMware Engine."""

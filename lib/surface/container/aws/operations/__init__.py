@@ -25,7 +25,7 @@ from googlecloudsdk.core import log
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Operations(base.Group):
-  """Manage Anthos Multi-Cloud long running operations for Azure."""
+  """Manage Anthos Multi-Cloud long running operations for AWS."""
 
   @staticmethod
   def Args(parser):

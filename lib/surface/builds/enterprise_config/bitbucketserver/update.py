@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import bitbucketserver_flags
 from googlecloudsdk.core import log
@@ -82,7 +83,15 @@ class CreateAlpha(base.CreateCommand):
         bitbucketServerConfig=bbs,
         updateMask=','.join(update_mask))
     # Send the Update request
-    updated_bbs = client.projects_locations_bitbucketServerConfigs.Patch(req)
+    updated_op = client.projects_locations_bitbucketServerConfigs.Patch(req)
+    op_resource = resources.REGISTRY.ParseRelativeName(
+        updated_op.name, collection='cloudbuild.projects.locations.operations')
+
+    updated_bbs = waiter.WaitFor(
+        waiter.CloudOperationPoller(
+            client.projects_locations_bitbucketServerConfigs,
+            client.projects_locations_operations), op_resource,
+        'Updating Bitbucket Server config')
 
     log.UpdatedResource(bbs_resource)
 

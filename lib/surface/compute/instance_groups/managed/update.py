@@ -259,35 +259,23 @@ class UpdateBeta(UpdateGA):
   @classmethod
   def Args(cls, parser):
     UpdateGA.Args(parser)
-
-
-UpdateBeta.detailed_help = UpdateGA.detailed_help
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
-  """Update a Compute Engine managed instance group."""
-
-  @classmethod
-  def Args(cls, parser):
-    UpdateBeta.Args(parser)
     instance_groups_flags.AddMigUpdateStatefulFlagsIPs(parser)
 
   def _StatefulArgsSet(self, args):
-    return (super(UpdateAlpha, self)._StatefulArgsSet(args) or
+    return (super(UpdateBeta, self)._StatefulArgsSet(args) or
             args.IsSpecified('stateful_internal_ip') or
             args.IsSpecified('remove_stateful_internal_ips') or
             args.IsSpecified('stateful_external_ip') or
             args.IsSpecified('remove_stateful_external_ips'))
 
   def _StatefulnessIntroduced(self, args):
-    return (super(UpdateAlpha, self)._StatefulnessIntroduced(args) or
+    return (super(UpdateBeta, self)._StatefulnessIntroduced(args) or
             args.IsSpecified('stateful_internal_ip') or
             args.IsSpecified('stateful_external_ip'))
 
   def _ValidateStatefulPolicyParams(self, args, stateful_policy):
-    super(UpdateAlpha, self)._ValidateStatefulPolicyParams(args,
-                                                           stateful_policy)
+    super(UpdateBeta, self)._ValidateStatefulPolicyParams(args,
+                                                          stateful_policy)
     instance_groups_flags.ValidateUpdateStatefulPolicyParamsWithIPs(
         args, stateful_policy)
 
@@ -354,7 +342,7 @@ class UpdateAlpha(UpdateBeta):
 
   def _GetUpdatedStatefulPolicy(self, client, current_stateful_policy, args):
     """Create an updated stateful policy based on specified args."""
-    stateful_policy = super(UpdateAlpha, self)._GetUpdatedStatefulPolicy(
+    stateful_policy = super(UpdateBeta, self)._GetUpdatedStatefulPolicy(
         client, current_stateful_policy, args)
 
     stateful_internal_ips = self._GetUpdatedStatefulPolicyForInternalIPs(
@@ -368,6 +356,18 @@ class UpdateAlpha(UpdateBeta):
     return policy_utils.UpdateStatefulPolicy(
         client.messages, stateful_policy,
         None, stateful_internal_ips, stateful_external_ips)
+
+
+UpdateBeta.detailed_help = UpdateGA.detailed_help
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Update a Compute Engine managed instance group."""
+
+  @classmethod
+  def Args(cls, parser):
+    UpdateBeta.Args(parser)
 
 
 UpdateAlpha.detailed_help = UpdateBeta.detailed_help

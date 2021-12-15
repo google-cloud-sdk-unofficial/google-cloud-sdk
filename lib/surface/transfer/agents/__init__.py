@@ -23,4 +23,10 @@ from googlecloudsdk.calliope import base
 
 @base.Hidden
 class Agents(base.Group):
-  """Manage on-premise transfer agents."""
+  """Manage Transfer Service agents.
+
+  Manage agents. Agents arre lightweight applications that enable Transfer
+  Service users to transfer data to or from POSIX filesystems, such as
+  on-premises filesystems. Agents are installed locally on your machine and run
+  within Docker containers.
+  """

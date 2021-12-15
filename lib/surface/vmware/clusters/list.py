@@ -22,28 +22,7 @@ from googlecloudsdk.api_lib.vmware.clusters import ClustersClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.ListCommand):
-  """List clusters in a Google VMware Engine private cloud."""
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.AddPrivatecloudArgToParser(parser)
-    parser.display_info.AddFormat('table(name.segment(-1):label=NAME,'
-                                  'name.segment(-5):label=LOCATION,'
-                                  'name.segment(-3):label=PRIVATE_CLOUD,'
-                                  'nodeTypeId:label=NODE_TYPE,'
-                                  'nodeCount,createTime,state)')
-
-  def Run(self, args):
-    privatecloud = args.CONCEPTS.private_cloud.Parse()
-    client = ClustersClient()
-    return client.List(privatecloud, limit=args.limit)
-
-
-List.detailed_help = {
+DETAILED_HELP = {
     'DESCRIPTION':
         """
           List clusters in a VMware Engine private cloud.
@@ -61,3 +40,32 @@ List.detailed_help = {
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(base.ListCommand):
+  """List clusters in a Google Cloud VMware Engine private cloud."""
+
+  detailed_help = DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    flags.AddPrivatecloudArgToParser(parser)
+    parser.display_info.AddFormat('table(name.segment(-1):label=NAME,'
+                                  'name.segment(-5):label=LOCATION,'
+                                  'name.segment(-3):label=PRIVATE_CLOUD,'
+                                  'nodeTypeId:label=NODE_TYPE,'
+                                  'nodeCount,createTime,state)')
+
+  def Run(self, args):
+    privatecloud = args.CONCEPTS.private_cloud.Parse()
+    client = ClustersClient()
+    return client.List(privatecloud, limit=args.limit)
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(ListAlpha):
+  """List clusters in a Google Cloud VMware Engine private cloud."""
+

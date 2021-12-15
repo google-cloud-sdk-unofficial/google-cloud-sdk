@@ -43,8 +43,10 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(base.DescribeCommand):
-  """Display data associated with a VMware Engine node type."""
+class DescribeAlpha(base.DescribeCommand):
+  """Display data associated with a Google Cloud VMware Engine node type."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -57,4 +59,8 @@ class Describe(base.DescribeCommand):
     return client.Get(resource)
 
 
-Describe.detailed_help = DETAILED_HELP
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(DescribeAlpha):
+  """Display data associated with a Google Cloud VMware Engine node type."""
+

@@ -194,13 +194,14 @@ def _create_additional_agents(agent_count, agent_id_prefix, docker_command):
 
 
 class Install(base.Command):
-  """Installs an on-premise transfer agent."""
+  """Install Transfer Service agents."""
 
   detailed_help = {
       'DESCRIPTION':
           """\
-      Install Transfer Service agents to enable the transfer of data from POSIX
-      filesystem sources (for example, on-premises filesystems).
+      Install Transfer Service agents to enable you to transfer data to or from
+      POSIX filesystems, such as on-premises filesystems. Agents are installed
+      locally on your machine and run inside Docker containers.
       """,
       'EXAMPLES':
           """\

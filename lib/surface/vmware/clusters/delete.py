@@ -23,24 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
 from googlecloudsdk.core import log
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Delete(base.DescribeCommand):
-  """Delete a Google Cloud VMware Engine cluster."""
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.AddClusterArgToParser(parser, positional=True)
-
-  def Run(self, args):
-    cluster = args.CONCEPTS.cluster.Parse()
-    client = ClustersClient()
-    operation = client.Delete(cluster)
-    log.DeletedResource(operation.name, kind='cluster', is_async=True)
-
-
-Delete.detailed_help = {
+DETAILED_HELP = {
     'DESCRIPTION':
         """
           Delete a cluster in a VMware Engine private cloud.
@@ -58,3 +41,27 @@ Delete.detailed_help = {
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(base.DeleteCommand):
+  """Delete a Google Cloud VMware Engine cluster."""
+
+  detailed_help = DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    flags.AddClusterArgToParser(parser, positional=True)
+
+  def Run(self, args):
+    cluster = args.CONCEPTS.cluster.Parse()
+    client = ClustersClient()
+    operation = client.Delete(cluster)
+    log.DeletedResource(operation.name, kind='cluster', is_async=True)
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(DeleteAlpha):
+  """Delete a Google Cloud VMware Engine cluster."""

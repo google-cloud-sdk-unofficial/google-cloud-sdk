@@ -167,6 +167,7 @@ def _CommonArgs(parser,
     instances_flags.AddNumaNodeCountArgs(parser)
   instances_flags.AddStackTypeArgs(parser)
   instances_flags.AddIpv6NetworkTierArgs(parser)
+  instances_flags.AddNetworkPerformanceConfigsArgs(parser)
 
   instances_flags.AddReservationAffinityGroup(
       parser,
@@ -230,7 +231,6 @@ class Create(base.CreateCommand):
   _enable_pd_interface = False
   _support_replica_zones = False
   _support_multi_writer = False
-  _support_network_performance_configs = False
   _support_subinterface = False
   _support_secure_tag = False
   _support_node_project = False
@@ -472,8 +472,7 @@ class Create(base.CreateCommand):
             args.post_key_revocation_action_type, compute_client.messages
             .Instance.PostKeyRevocationActionTypeValueValuesEnum)
 
-      if self._support_network_performance_configs and args.IsSpecified(
-          'network_performance_configs'):
+      if args.IsSpecified('network_performance_configs'):
         instance.networkPerformanceConfig = instance_utils.GetNetworkPerformanceConfig(
             args, compute_client)
 
@@ -525,9 +524,7 @@ class Create(base.CreateCommand):
     instances_flags.ValidateAcceleratorArgs(args)
     instances_flags.ValidateNetworkTierArgs(args)
     instances_flags.ValidateReservationAffinityGroup(args)
-
-    if self._support_network_performance_configs:
-      instances_flags.ValidateNetworkPerformanceConfigsArgs(args)
+    instances_flags.ValidateNetworkPerformanceConfigsArgs(args)
 
     if self._support_termination_action:
       instances_flags.ValidateInstanceScheduling(args)
@@ -610,7 +607,6 @@ class CreateBeta(Create):
   _support_boot_snapshot_uri = True
   _support_replica_zones = False
   _support_multi_writer = True
-  _support_network_performance_configs = True
   _support_subinterface = False
   _support_secure_tag = False
   _support_node_project = False
@@ -666,7 +662,6 @@ class CreateBeta(Create):
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_BETA_API_VERSION)
     instances_flags.AddConfidentialComputeArgs(parser)
-    instances_flags.AddNetworkPerformanceConfigsArgs(parser)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
 
 
@@ -690,7 +685,6 @@ class CreateAlpha(CreateBeta):
   _enable_pd_interface = True
   _support_replica_zones = True
   _support_multi_writer = True
-  _support_network_performance_configs = True
   _support_subinterface = True
   _support_secure_tag = True
   _support_node_project = True
@@ -740,7 +734,6 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddStableFleetArgs(parser)
-    instances_flags.AddNetworkPerformanceConfigsArgs(parser)
     instances_flags.AddSecureTagsArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
     instances_flags.AddEnableUefiNetworkingArgs(parser)

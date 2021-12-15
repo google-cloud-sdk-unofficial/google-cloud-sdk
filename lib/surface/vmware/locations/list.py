@@ -24,10 +24,25 @@ from googlecloudsdk.api_lib.vmware.locations import LocationsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
 
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """
+          List supported VMware Engine locations.
+        """,
+    'EXAMPLES':
+        """
+          To list VMware Engine locations, run:
+
+            $ {command}
+    """,
+}
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.ListCommand):
+class ListAlpha(base.ListCommand):
   """List Google Cloud VMware Engine locations."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -45,15 +60,7 @@ class List(base.ListCommand):
     return client.List(project, limit=args.limit)
 
 
-List.detailed_help = {
-    'DESCRIPTION':
-        """
-          List supported VMware Engine locations.
-        """,
-    'EXAMPLES':
-        """
-          To list VMware Engine locations, run:
-
-            $ {command}
-    """,
-}
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(ListAlpha):
+  """List Google Cloud VMware Engine locations."""

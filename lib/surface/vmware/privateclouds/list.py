@@ -46,7 +46,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(base.ListCommand):
-  """List VMware Engine private clouds."""
+  """List Google Cloud VMware Engine private clouds."""
 
   detailed_help = DETAILED_HELP
 
@@ -70,4 +70,4 @@ class ListAlpha(base.ListCommand):
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(ListAlpha):
-  """List VMware Engine private clouds."""
+  """List Google Cloud VMware Engine private clouds."""

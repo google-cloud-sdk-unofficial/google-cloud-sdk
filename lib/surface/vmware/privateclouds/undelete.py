@@ -48,7 +48,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UnDeleteAlpha(base.DeleteCommand):
-  """Cancel deletion of a VMware Engine private cloud."""
+  """Cancel deletion of a Google Cloud VMware Engine private cloud."""
 
   detailed_help = DETAILED_HELP
 
@@ -67,4 +67,4 @@ class UnDeleteAlpha(base.DeleteCommand):
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UnDeleteBeta(UnDeleteAlpha):
-  """Cancel deletion of a VMware Engine private cloud."""
+  """Cancel deletion of a Google Cloud VMware Engine private cloud."""

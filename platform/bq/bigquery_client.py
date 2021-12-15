@@ -58,6 +58,9 @@ _MAX_RESULTS = 100000
 
 _GCS_SCHEME_PREFIX = 'gs://'
 
+collections_abc = collections
+if sys.version_info > (3, 8):
+  collections_abc = collections.abc
 
 # Maps supported connection type names to the corresponding property in the
 # connection proto.
@@ -6719,7 +6722,7 @@ class ApiClientHelper(object):
   def __init__(self, *unused_args, **unused_kwds):
     raise NotImplementedError('Cannot instantiate static class ApiClientHelper')
 
-  class Reference(collections.Mapping):
+  class Reference(collections_abc.Mapping):
     """Base class for Reference objects returned by apiclient."""
     _required_fields = frozenset()
     _optional_fields = frozenset()

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.bms.bms_client import BmsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bms import flags
+from googlecloudsdk.core import log
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -37,7 +38,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a snapshot of a Bare Metal Solution volume."""
 
@@ -52,8 +53,10 @@ class Create(base.CreateCommand):
     volume = args.CONCEPTS.volume.Parse()
     client = BmsClient()
 
-    return client.CreateVolumeSnapshot(resource=volume,
-                                       description=args.description)
+    res = client.CreateVolumeSnapshot(resource=volume,
+                                      description=args.description)
+    log.CreatedResource(res.name.split('/')[-1], 'snapshot')
+    return res
 
 
 Create.detailed_help = DETAILED_HELP

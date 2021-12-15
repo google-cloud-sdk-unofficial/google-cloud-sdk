@@ -161,14 +161,6 @@ CreateGA.detailed_help = {
 class CreateBeta(CreateGA):
   """Create per-instance config for an instance in a managed instance group."""
 
-
-CreateBeta.detailed_help = CreateGA.detailed_help
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create per-instance config for an instance in a managed instance group."""
-
   @classmethod
   def Args(cls, parser):
     CreateGA.Args(parser)
@@ -180,18 +172,18 @@ class CreateAlpha(CreateBeta):
         args.stateful_internal_ip, args.stateful_external_ip)
 
   def _ValidateStatefulFlagsForInstanceConfigs(self, args):
-    super(CreateAlpha, self)._ValidateStatefulFlagsForInstanceConfigs(args)
+    super(CreateBeta, self)._ValidateStatefulFlagsForInstanceConfigs(args)
     instance_groups_flags.ValidateMigStatefulIPFlagsForInstanceConfigs(
         args=args,
         current_internal_addresses=[],
         current_external_addresses=[])
 
 
-CreateAlpha.detailed_help = {
-    'brief': CreateBeta.detailed_help['brief'],
-    'DESCRIPTION': CreateBeta.detailed_help['DESCRIPTION'],
+CreateBeta.detailed_help = {
+    'brief': CreateGA.detailed_help['brief'],
+    'DESCRIPTION': CreateGA.detailed_help['DESCRIPTION'],
     'EXAMPLES':
-        CreateBeta.detailed_help['EXAMPLES'] +
+        CreateGA.detailed_help['EXAMPLES'] +
         """\
 
         To create a per-instance config with a stateful internal IP
@@ -213,3 +205,15 @@ CreateAlpha.detailed_help = {
                          'addresses/my-address'
                          ',interface-name=nic0'))
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create per-instance config for an instance in a managed instance group."""
+
+  @classmethod
+  def Args(cls, parser):
+    CreateBeta.Args(parser)
+
+
+CreateAlpha.detailed_help = CreateBeta.detailed_help

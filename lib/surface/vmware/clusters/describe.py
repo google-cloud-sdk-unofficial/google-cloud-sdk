@@ -22,26 +22,10 @@ from googlecloudsdk.api_lib.vmware.clusters import ClustersClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(base.DescribeCommand):
-  """Describe a VMware Engine cluster."""
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.AddClusterArgToParser(parser, positional=True)
-
-  def Run(self, args):
-    cluster = args.CONCEPTS.cluster.Parse()
-    client = ClustersClient()
-    return client.Get(cluster)
-
-
-Describe.detailed_help = {
+DETAILED_HELP = {
     'DESCRIPTION':
         """
-          Describe a cluster in a VMware Engine private cloud.
+          Display data associated with a VMware Engine cluster, such as its node count, node type, and status.
         """,
     'EXAMPLES':
         """
@@ -56,3 +40,26 @@ Describe.detailed_help = {
            In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(base.DescribeCommand):
+  """Describe a Google Cloud VMware Engine cluster."""
+
+  detailed_help = DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    flags.AddClusterArgToParser(parser, positional=True)
+
+  def Run(self, args):
+    cluster = args.CONCEPTS.cluster.Parse()
+    client = ClustersClient()
+    return client.Get(cluster)
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(DescribeAlpha):
+  """Describe a Google Cloud VMware Engine cluster."""

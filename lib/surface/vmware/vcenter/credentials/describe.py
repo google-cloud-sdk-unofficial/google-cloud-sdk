@@ -45,7 +45,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(base.DescribeCommand):
-  """Describe VMware Engine vCenter credentials."""
+  """Describe Google Cloud VMware Engine vCenter credentials."""
 
   detailed_help = DETAILED_HELP
 
@@ -63,4 +63,4 @@ class DescribeAlpha(base.DescribeCommand):
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DescribeBeta(DescribeAlpha):
-  """Describe VMware Engine vCenter credentials."""
+  """Describe Google Cloud VMware Engine vCenter credentials."""

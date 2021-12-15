@@ -278,40 +278,32 @@ UpdateGA.detailed_help = {
 class UpdateBeta(UpdateGA):
   """Update per-instance config of a managed instance group."""
 
-
-UpdateBeta.detailed_help = UpdateGA.detailed_help
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
-  """Update per-instance config of a managed instance group."""
-
   @classmethod
   def Args(cls, parser):
     UpdateGA.Args(parser)
     instance_groups_flags.AddMigStatefulIPsFlagsForUpdateInstanceConfigs(parser)
 
   def _ValidateStatefulFlagsForInstanceConfigs(self, args, per_instance_config):
-    super(UpdateAlpha, self)._ValidateStatefulFlagsForInstanceConfigs(
+    super(UpdateBeta, self)._ValidateStatefulFlagsForInstanceConfigs(
         args, per_instance_config)
     instance_groups_flags.ValidateMigStatefulIPFlagsForInstanceConfigs(
         args,
-        UpdateAlpha._GetInterfacesWithInternalAddresses(per_instance_config),
-        UpdateAlpha._GetInterfacesWithExternalAddresses(per_instance_config),
+        UpdateBeta._GetInterfacesWithInternalAddresses(per_instance_config),
+        UpdateBeta._GetInterfacesWithExternalAddresses(per_instance_config),
         for_update=True)
 
   def _CombinePerInstanceConfigMessage(self, holder, per_instance_config,
                                        instance_ref, args):
     messages = holder.client.messages
     per_instance_config = super(
-        UpdateAlpha, self)._CombinePerInstanceConfigMessage(
+        UpdateBeta, self)._CombinePerInstanceConfigMessage(
             holder, per_instance_config, instance_ref, args)
-    UpdateAlpha._PatchStatefulInternalIPs(
+    UpdateBeta._PatchStatefulInternalIPs(
         messages=messages,
         per_instance_config=per_instance_config,
         ips_to_update=args.stateful_internal_ip,
         ips_to_remove=args.remove_stateful_internal_ips)
-    UpdateAlpha._PatchStatefulExternalIPs(
+    UpdateBeta._PatchStatefulExternalIPs(
         messages=messages,
         per_instance_config=per_instance_config,
         ips_to_update=args.stateful_external_ip,
@@ -327,7 +319,7 @@ class UpdateAlpha(UpdateBeta):
                                     ips_to_remove):
     """Verify that there are no extraneous IP interfaces to be removed."""
     ips_to_remove_set = set(ips_to_remove or [])
-    existing_interfaces = UpdateAlpha._GetExistingInterfaceNames(existing_ips)
+    existing_interfaces = UpdateBeta._GetExistingInterfaceNames(existing_ips)
     extraneous_interfaces = ips_to_remove_set.difference(existing_interfaces)
     if extraneous_interfaces:
       raise exceptions.InvalidArgumentException(
@@ -381,7 +373,7 @@ class UpdateAlpha(UpdateBeta):
         per_instance_config.preservedState.internalIPs.additionalProperties
         if per_instance_config.preservedState.internalIPs
         else [])
-    return UpdateAlpha._GetExistingInterfaceNames(existing_ips)
+    return UpdateBeta._GetExistingInterfaceNames(existing_ips)
 
   @staticmethod
   def _GetInterfacesWithExternalAddresses(per_instance_config):
@@ -389,7 +381,7 @@ class UpdateAlpha(UpdateBeta):
         per_instance_config.preservedState.externalIPs.additionalProperties
         if per_instance_config.preservedState.externalIPs
         else [])
-    return UpdateAlpha._GetExistingInterfaceNames(existing_ips)
+    return UpdateBeta._GetExistingInterfaceNames(existing_ips)
 
   @staticmethod
   def _PatchStatefulInternalIPs(messages, per_instance_config,
@@ -404,11 +396,11 @@ class UpdateAlpha(UpdateBeta):
                 instance_groups_flags.STATEFUL_IP_DEFAULT_INTERFACE_NAME)):
             ip for ip in iter(ips_to_update or [])
     }
-    UpdateAlpha._VerifyStatefulIPsToRemoveSet(
+    UpdateBeta._VerifyStatefulIPsToRemoveSet(
         '--remove-stateful-internal-ips', existing_ips, ips_to_remove)
-    new_stateful_ips, remaining_ips_to_update = UpdateAlpha._UpdateExistingIPs(
+    new_stateful_ips, remaining_ips_to_update = UpdateBeta._UpdateExistingIPs(
         messages, existing_ips, ips_to_update_dict, ips_to_remove)
-    new_stateful_ips.extend(UpdateAlpha._CreateInternalIPs(
+    new_stateful_ips.extend(UpdateBeta._CreateInternalIPs(
         messages, remaining_ips_to_update))
     per_instance_config.preservedState.internalIPs = (
         messages.PreservedState.InternalIPsValue(
@@ -427,22 +419,22 @@ class UpdateAlpha(UpdateBeta):
                 instance_groups_flags.STATEFUL_IP_DEFAULT_INTERFACE_NAME)):
             ip for ip in iter(ips_to_update or [])
     }
-    UpdateAlpha._VerifyStatefulIPsToRemoveSet(
+    UpdateBeta._VerifyStatefulIPsToRemoveSet(
         '--remove-stateful-external-ips', existing_ips, ips_to_remove)
-    new_stateful_ips, remaining_ips_to_update = UpdateAlpha._UpdateExistingIPs(
+    new_stateful_ips, remaining_ips_to_update = UpdateBeta._UpdateExistingIPs(
         messages, existing_ips, ips_to_update_dict, ips_to_remove)
-    new_stateful_ips.extend(UpdateAlpha._CreateExternalIPs(
+    new_stateful_ips.extend(UpdateBeta._CreateExternalIPs(
         messages, remaining_ips_to_update))
     per_instance_config.preservedState.externalIPs = (
         messages.PreservedState.ExternalIPsValue(
             additionalProperties=new_stateful_ips))
 
 
-UpdateAlpha.detailed_help = {
-    'brief': UpdateBeta.detailed_help['brief'],
-    'DESCRIPTION': UpdateBeta.detailed_help['DESCRIPTION'],
+UpdateBeta.detailed_help = {
+    'brief': UpdateGA.detailed_help['brief'],
+    'DESCRIPTION': UpdateGA.detailed_help['DESCRIPTION'],
     'EXAMPLES':
-        UpdateBeta.detailed_help['EXAMPLES'] +
+        UpdateGA.detailed_help['EXAMPLES'] +
         """\
 
         To update a per-instance configuration with a stateful internal IP
@@ -462,3 +454,15 @@ UpdateAlpha.detailed_help = {
                          'interface-name=nic0'),
             remove_internal_ip='--remove-stateful-internal-ips=nic0')
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Update per-instance config of a managed instance group."""
+
+  @classmethod
+  def Args(cls, parser):
+    UpdateBeta.Args(parser)
+
+
+UpdateAlpha.detailed_help = UpdateBeta.detailed_help

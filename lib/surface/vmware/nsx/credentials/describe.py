@@ -22,23 +22,7 @@ from googlecloudsdk.api_lib.vmware.privateclouds import PrivateCloudsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(base.DescribeCommand):
-  """Retrieve VMware NSX sign-in credentials associated with a VMware Engine private cloud."""
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.AddPrivatecloudArgToParser(parser)
-
-  def Run(self, args):
-    resource = args.CONCEPTS.private_cloud.Parse()
-    client = PrivateCloudsClient()
-    return client.GetNsxCredentials(resource)
-
-
-Describe.detailed_help = {
+DETAILED_HELP = {
     'DESCRIPTION':
         """
           Retrieve VMware NSX sign-in credentials associated with a VMware Engine private cloud.
@@ -56,3 +40,26 @@ Describe.detailed_help = {
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(base.DescribeCommand):
+  """Retrieve VMware NSX sign-in credentials associated with a Google Cloud VMware Engine private cloud."""
+
+  detailed_help = DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    flags.AddPrivatecloudArgToParser(parser)
+
+  def Run(self, args):
+    resource = args.CONCEPTS.private_cloud.Parse()
+    client = PrivateCloudsClient()
+    return client.GetNsxCredentials(resource)
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(DescribeAlpha):
+  """Retrieve VMware NSX sign-in credentials associated with a Google Cloud VMware Engine private cloud."""

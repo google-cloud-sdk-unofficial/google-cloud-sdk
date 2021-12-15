@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -70,7 +71,13 @@ class DeleteAlpha(base.DeleteCommand):
         })
 
     # Send the Delete request
-    client.projects_locations_bitbucketServerConfigs.Delete(
+    deleted_op = client.projects_locations_bitbucketServerConfigs.Delete(
         messages.CloudbuildProjectsLocationsBitbucketServerConfigsDeleteRequest(
             name=bbs_resource.RelativeName()))
+    op_resource = resources.REGISTRY.ParseRelativeName(
+        deleted_op.name, collection='cloudbuild.projects.locations.operations')
+    waiter.WaitFor(
+        waiter.CloudOperationPollerNoResources(
+            client.projects_locations_operations), op_resource,
+        'Deleting Bitbucket Server config')
     log.DeletedResource(bbs_resource)

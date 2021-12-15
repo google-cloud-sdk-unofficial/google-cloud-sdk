@@ -30,29 +30,44 @@ DESCRIPTION = ('Create a Datastream private connection')
 EXAMPLES = """\
     To create a privateConnection called 'my-privateConnection', run:
 
+        $ {command} my-privateConnection --location=us-central1 --display-name=my-privateConnection --vpc=vpc-example --subnet=10.0.0.0/29
+
+
+   """
+EXAMPLES_BETA = """\
+    To create a privateConnection called 'my-privateConnection', run:
+
         $ {command} my-privateConnection --location=us-central1 --display-name=my-privateConnection --vpc-name=vpc-example --subnet=10.0.0.0/29
 
 
    """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Datastream private connection."""
   detailed_help = {'DESCRIPTION': DESCRIPTION, 'EXAMPLES': EXAMPLES}
 
   @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
+  def CommonArgs(parser, release_track):
+    """Common arguments for all release tracks.
 
     Args:
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
+      release_track: Some arguments are added based on the command release
+        track.
     """
-    resource_args.AddPrivateConnectionResourceArg(parser, 'to create')
+    resource_args.AddPrivateConnectionResourceArg(parser, 'to create',
+                                                  release_track)
 
     pc_flags.AddDisplayNameFlag(parser)
     flags.AddLabelsCreateFlags(parser)
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command."""
+    Create.CommonArgs(parser, base.ReleaseTrack.GA)
 
   def Run(self, args):
     """Create a Datastream private connection.
@@ -70,7 +85,8 @@ class Create(base.Command):
 
     pc_client = private_connections.PrivateConnectionsClient()
     result_operation = pc_client.Create(
-        parent_ref, private_connection_ref.privateConnectionsId, args)
+        parent_ref, private_connection_ref.privateConnectionsId,
+        self.ReleaseTrack(), args)
 
     client = util.GetClientInstance()
     messages = util.GetMessagesModule()
@@ -85,3 +101,14 @@ class Create(base.Command):
     return client.projects_locations_operations.Get(
         messages.DatastreamProjectsLocationsOperationsGetRequest(
             name=operation_ref.operationsId))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a Datastream private connection."""
+  detailed_help = {'DESCRIPTION': DESCRIPTION, 'EXAMPLES': EXAMPLES_BETA}
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command."""
+    Create.CommonArgs(parser, base.ReleaseTrack.BETA)

@@ -25,8 +25,8 @@ from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class List(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ListV1(base.ListCommand):
   """Lists the indexes of the given project and region.
 
   ## EXAMPLES
@@ -44,7 +44,22 @@ class List(base.ListCommand):
     region_ref = args.CONCEPTS.region.Parse()
     region = region_ref.AsDict()['locationsId']
     with endpoint_util.AiplatformEndpointOverrides(version, region=region):
-      return client.IndexesClient().List(region_ref=region_ref)
+      return client.IndexesClient(version=version).List(region_ref=region_ref)
+
+  def Run(self, args):
+    return self._Run(args, constants.GA_VERSION)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ListV1Beta1(ListV1):
+  """Lists the indexes of the given project and region.
+
+  ## EXAMPLES
+
+  Lists the indexes of project `example` in region `us-central1`, run:
+
+    $ {command} --project=example --region=us-central1
+  """
 
   def Run(self, args):
     return self._Run(args, constants.BETA_VERSION)

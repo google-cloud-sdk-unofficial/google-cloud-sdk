@@ -45,7 +45,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeleteAlpha(base.DeleteCommand):
-  """Delete a VMware Engine private cloud."""
+  """Delete a Google Cloud VMware Engine private cloud."""
 
   detailed_help = DETAILED_HELP
 
@@ -74,4 +74,4 @@ class DeleteAlpha(base.DeleteCommand):
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DeleteBeta(DeleteAlpha):
-  """Delete a VMware Engine private cloud."""
+  """Delete a Google Cloud VMware Engine private cloud."""

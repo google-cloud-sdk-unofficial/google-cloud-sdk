@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import bitbucketserver_flags
 from googlecloudsdk.core import log
@@ -70,9 +71,16 @@ class CreateAlpha(base.CreateCommand):
         projectsId=parent,
         locationsId=bbs_region)
     # Send the Create request
-    created_config = client.projects_locations_bitbucketServerConfigs.Create(
+    created_op = client.projects_locations_bitbucketServerConfigs.Create(
         messages.CloudbuildProjectsLocationsBitbucketServerConfigsCreateRequest(
             parent=parent_resource.RelativeName(), bitbucketServerConfig=bbs))
+    op_resource = resources.REGISTRY.ParseRelativeName(
+        created_op.name, collection='cloudbuild.projects.locations.operations')
+    created_config = waiter.WaitFor(
+        waiter.CloudOperationPoller(
+            client.projects_locations_bitbucketServerConfigs,
+            client.projects_locations_operations), op_resource,
+        'Creating Bitbucket Server config')
     bbs_resource = resources.REGISTRY.Parse(
         None,
         collection='cloudbuild.projects.locations.bitbucketServerConfigs',

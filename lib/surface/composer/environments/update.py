@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.composer import image_versions_util as image_ver
 from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.command_lib.composer import util as command_util
 
-
 DETAILED_HELP = {
     'EXAMPLES':
         """\
@@ -67,7 +66,6 @@ class Update(base.Command):
     flags.AddEnvVariableUpdateFlagsToGroup(Update.update_type_group)
     flags.AddAirflowConfigUpdateFlagsToGroup(Update.update_type_group)
     flags.AddLabelsUpdateFlagsToGroup(Update.update_type_group)
-
     web_server_group = Update.update_type_group.add_mutually_exclusive_group()
     flags.UPDATE_WEB_SERVER_ALLOW_IP.AddToParser(web_server_group)
     flags.WEB_SERVER_ALLOW_ALL.AddToParser(web_server_group)
@@ -78,6 +76,9 @@ class Update(base.Command):
 
     flags.AddAutoscalingUpdateFlagsToGroup(Update.update_type_group,
                                            release_track)
+    if release_track != base.ReleaseTrack.GA:
+      flags.AddMasterAuthorizedNetworksUpdateFlagsToGroup(
+          Update.update_type_group)
 
   def _ConstructPatch(self, env_ref, args, support_environment_upgrades=False):
     env_obj = environments_api_util.Get(
@@ -173,7 +174,25 @@ class Update(base.Command):
       params['maintenance_window_end'] = args.maintenance_window_end
       params[
           'maintenance_window_recurrence'] = args.maintenance_window_recurrence
-
+    if self.ReleaseTrack() != base.ReleaseTrack.GA:
+      if args.enable_master_authorized_networks and args.disable_master_authorized_networks:
+        raise command_util.InvalidUserInputError(
+            'Cannot specify --enable-master-authorized-networks with --disable-master-authorized-networks'
+        )
+      if args.disable_master_authorized_networks and args.master_authorized_networks:
+        raise command_util.InvalidUserInputError(
+            'Cannot specify --disable-master-authorized-networks with --master-authorized-networks'
+        )
+      if args.enable_master_authorized_networks is None and args.master_authorized_networks:
+        raise command_util.InvalidUserInputError(
+            'Cannot specify --master-authorized-networks without --enable-master-authorized-networks'
+        )
+      if args.enable_master_authorized_networks or args.disable_master_authorized_networks:
+        params[
+            'master_authorized_networks_enabled'] = True if args.enable_master_authorized_networks else False
+      command_util.ValidateMasterAuthorizedNetworks(
+          args.master_authorized_networks)
+      params['master_authorized_networks'] = args.master_authorized_networks
     return patch_util.ConstructPatch(**params)
 
   def Run(self, args):

@@ -23,28 +23,10 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
 from googlecloudsdk.core import log
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.CreateCommand):
-  """Create a Google Cloud VMware HCX activation key."""
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.AddHcxActivationKeyArgToParser(parser)
-
-  def Run(self, args):
-    hcx_activation_key = args.CONCEPTS.hcx_activation_key.Parse()
-    client = HcxActivationKeysClient()
-    operation = client.Create(hcx_activation_key)
-    log.CreatedResource(
-        operation.name, kind='hcx activation key', is_async=True)
-
-
-Create.detailed_help = {
+DETAILED_HELP = {
     'DESCRIPTION':
         """
-          Create a HCX activation key in a VMware Engine private cloud. Successful creation of a HCX activation key results in a HCX activation key in AVAILABLE state. Check the progress of a HCX activation key using `gcloud alpha vmware hcx activationkeys list`.
+          Create a HCX activation key in a VMware Engine private cloud. Successful creation of a HCX activation key results in a HCX activation key in AVAILABLE state. Check the progress of a HCX activation key using `{parent_command} list`.
         """,
     'EXAMPLES':
         """
@@ -59,3 +41,29 @@ Create.detailed_help = {
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(base.CreateCommand):
+  """Create a Google Cloud VMware HCX activation key."""
+
+  detailed_help = DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    flags.AddHcxActivationKeyArgToParser(parser)
+
+  def Run(self, args):
+    hcx_activation_key = args.CONCEPTS.hcx_activation_key.Parse()
+    client = HcxActivationKeysClient()
+    operation = client.Create(hcx_activation_key)
+    log.CreatedResource(
+        operation.name, kind='hcx activation key', is_async=True)
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(CreateAlpha):
+  """Create a Google Cloud VMware HCX activation key."""
+

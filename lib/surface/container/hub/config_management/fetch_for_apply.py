@@ -26,6 +26,7 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import semver
 
 
 @gbase.ReleaseTracks(gbase.ReleaseTrack.ALPHA)
@@ -72,6 +73,7 @@ class Fetch(base.DescribeCommand):
             'Membership {} is not in Hub.'.format(membership))
 
     f = self.GetFeature()
+    version = utils.get_backfill_version_from_feature(f, membership)
     membership_spec = None
     for full_name, spec in self.hubclient.ToPyDict(f.membershipSpecs).items():
       if util.MembershipShortname(full_name) == membership and spec is not None:
@@ -84,13 +86,13 @@ class Fetch(base.DescribeCommand):
     # feature spec
     template = yaml.load(utils.APPLY_SPEC_VERSION_1)
     full_config = template['spec']
-    merge_config_sync(membership_spec, full_config)
+    merge_config_sync(membership_spec, full_config, version)
     merge_non_cs_components(membership_spec, full_config)
 
     return template
 
 
-def merge_config_sync(spec, config):
+def merge_config_sync(spec, config, version):
   """Merge configSync set in feature spec with the config template.
 
   ConfigSync has nested object structs need to be flatten.
@@ -98,6 +100,7 @@ def merge_config_sync(spec, config):
   Args:
     spec: the ConfigManagementMembershipSpec message
     config: the dict loaded from full config template
+    version: the version string of the membership
   """
   if not spec or not spec.configSync:
     return
@@ -109,6 +112,12 @@ def merge_config_sync(spec, config):
     # when enabled is no set in feature spec, it's determined by syncRepo
     if spec.configSync.git and git.syncRepo:
       cs['enabled'] = True
+  if (not version or
+      semver.SemVer(version) >= semver.SemVer(utils.PREVENT_DRIFT_VERSION)):
+    if spec.configSync.preventDrift:
+      cs['preventDrift'] = spec.configSync.preventDrift
+  else:
+    del cs['preventDrift']
   if spec.configSync.sourceFormat:
     cs['sourceFormat'] = spec.configSync.sourceFormat
   if not git:

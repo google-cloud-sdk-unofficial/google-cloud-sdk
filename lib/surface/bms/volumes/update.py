@@ -44,7 +44,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Bare Metal Solution volume."""
 

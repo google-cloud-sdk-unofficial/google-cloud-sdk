@@ -1,4 +1,4 @@
-- release_tracks: [BETA]
+- release_tracks: [BETA, GA]
   help_text:
     brief: Delete a Datastream operation.
     description: Delete a Datastream operation.

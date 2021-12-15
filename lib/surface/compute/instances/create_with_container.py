@@ -61,6 +61,7 @@ def _Args(parser,
   instances_flags.AddCustomMachineTypeArgs(parser)
   instances_flags.AddNetworkArgs(parser)
   instances_flags.AddPrivateNetworkIpArgs(parser)
+  instances_flags.AddNetworkPerformanceConfigsArgs(parser)
   instances_flags.AddShieldedInstanceConfigArgs(
       parser=parser, for_container=True)
   instances_flags.AddKonletArgs(parser)
@@ -90,7 +91,6 @@ class CreateWithContainer(base.CreateCommand):
   _support_create_boot_disk = True
   _support_match_container_mount_disks = True
   _support_nvdimm = False
-  _support_network_performance_configs = False
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
   _support_visible_core_count = False
@@ -113,6 +113,7 @@ class CreateWithContainer(base.CreateCommand):
     instances_flags.ValidateDiskCommonFlags(args)
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
     instances_flags.ValidatePublicPtrFlags(args)
+    instances_flags.ValidateNetworkPerformanceConfigsArgs(args)
     if instance_utils.UseExistingBootDisk(args.disk or []):
       raise exceptions.InvalidArgumentException(
           '--disk', 'Boot disk specified for containerized VM.')
@@ -300,8 +301,7 @@ class CreateWithContainer(base.CreateCommand):
       if shielded_instance_config:
         instance.shieldedInstanceConfig = shielded_instance_config
 
-      if (self._support_network_performance_configs and
-          args.IsSpecified('network_performance_configs')):
+      if args.IsSpecified('network_performance_configs'):
         instance.networkPerformanceConfig = (
             instance_utils.GetNetworkPerformanceConfig(args, compute_client))
 
@@ -326,7 +326,6 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_match_container_mount_disks = True
   _support_nvdimm = False
   _support_visible_core_count = False
-  _support_network_performance_configs = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
 
@@ -339,12 +338,10 @@ class CreateWithContainerBeta(CreateWithContainer):
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_BETA_API_VERSION)
-    instances_flags.AddNetworkPerformanceConfigsArgs(parser)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
 
   def _ValidateTrackSpecificArgs(self, args):
     instances_flags.ValidateLocalSsdFlags(args)
-    instances_flags.ValidateNetworkPerformanceConfigsArgs(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -355,7 +352,6 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_create_boot_disk = True
   _support_match_container_mount_disks = True
   _support_nvdimm = True
-  _support_network_performance_configs = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = True
   _support_visible_core_count = True
@@ -372,7 +368,6 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddPublicDnsArgs(parser, instance=True)
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
-    instances_flags.AddNetworkPerformanceConfigsArgs(parser)
     instances_flags.AddStackTypeArgs(parser)
     instances_flags.AddIpv6NetworkTierArgs(parser)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
@@ -383,7 +378,6 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidatePublicDnsFlags(args)
     instances_flags.ValidatePublicPtrFlags(args)
-    instances_flags.ValidateNetworkPerformanceConfigsArgs(args)
 
   def _GetNetworkInterfaces(self, args, client, holder, project, location,
                             scope, skip_defaults):

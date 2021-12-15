@@ -23,7 +23,13 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class HcxActivationKeys(base.Group):
+class HcxActivationKeysAlpha(base.Group):
   """Manage VMware HCX activation keys using Google Cloud VMware Engine."""
 
   category = base.COMPUTE_CATEGORY
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class HcxActivationKeysBeta(HcxActivationKeysAlpha):
+  """Manage VMware HCX activation keys using Google Cloud VMware Engine."""

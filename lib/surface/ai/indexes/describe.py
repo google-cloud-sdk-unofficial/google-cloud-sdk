@@ -25,8 +25,8 @@ from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Describe(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DescribeV1(base.DescribeCommand):
   """Gets detailed index information about the given index id.
 
   ## EXAMPLES
@@ -44,7 +44,22 @@ class Describe(base.DescribeCommand):
     index_ref = args.CONCEPTS.index.Parse()
     region = index_ref.AsDict()['locationsId']
     with endpoint_util.AiplatformEndpointOverrides(version, region=region):
-      return client.IndexesClient().Get(index_ref)
+      return client.IndexesClient(version=version).Get(index_ref)
+
+  def Run(self, args):
+    return self._Run(args, constants.GA_VERSION)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DescribeV1Beta1(DescribeV1):
+  """Gets detailed index information about the given index id.
+
+  ## EXAMPLES
+
+  Describe an index `123` of project `example` in region `us-central1`, run:
+
+    $ {command} 123 --project=example --region=us-central1
+  """
 
   def Run(self, args):
     return self._Run(args, constants.BETA_VERSION)

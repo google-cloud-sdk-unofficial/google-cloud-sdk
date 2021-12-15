@@ -22,33 +22,111 @@ import textwrap
 
 from googlecloudsdk.api_lib.spanner import backup_operations
 from googlecloudsdk.api_lib.spanner import database_operations
+from googlecloudsdk.api_lib.spanner import instance_config_operations
 from googlecloudsdk.api_lib.spanner import instance_operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.spanner import flags
 
 
-def _TransformOperationDone(resource):
-  """Combines done and throttled fields into a single column."""
-  done_cell = '{0}'.format(resource.get('done', False))
-  if resource.get('metadata', {}).get('throttled', False):
-    done_cell += ' (throttled)'
-  return done_cell
+def _CommonRun(args):
+  """Performs run actions common to all List stages."""
+  is_database_type = (
+      args.type == 'DATABASE_RESTORE' or args.type == 'DATABASE' or
+      args.type == 'DATABASE_CREATE' or args.type == 'DATABASE_UPDATE_DDL')
+
+  if args.backup or args.type == 'BACKUP':
+    # Update output table for backup operations.
+    # pylint:disable=protected-access
+    args._GetParser().ai.display_info.AddFormat("""
+          table(
+            name.basename():label=OPERATION_ID,
+            done():label=DONE,
+            metadata.'@type'.split('.').slice(-1:).join(),
+            metadata.name.split('/').slice(-1:).join():label=BACKUP,
+            metadata.database.split('/').slice(-1).join():label=SOURCE_DATABASE,
+            metadata.progress.startTime:label=START_TIME,
+            metadata.progress.endTime:label=END_TIME
+          )
+        """)
+
+  if args.type == 'DATABASE_RESTORE':
+    # Update output table for restore operations.
+    # pylint:disable=protected-access
+    args._GetParser().ai.display_info.AddFormat("""
+          table(
+            name.basename():label=OPERATION_ID,
+            done():label=DONE,
+            metadata.'@type'.split('.').slice(-1:).join(),
+            metadata.name.split('/').slice(-1:).join():label=RESTORED_DATABASE,
+            metadata.backupInfo.backup.split('/').slice(-1).join():label=SOURCE_BACKUP,
+            metadata.progress.startTime:label=START_TIME,
+            metadata.progress.endTime:label=END_TIME
+          )
+        """)
+  elif is_database_type:
+    # Update output table for database operations.
+    # pylint:disable=protected-access
+    args._GetParser().ai.display_info.AddFormat("""
+          table(
+            name.basename():label=OPERATION_ID,
+            metadata.statements.join(sep="\n"),
+            done():label=DONE,
+            metadata.'@type'.split('.').slice(-1:).join(),
+            database().split('/').slice(-1:).join():label=DATABASE_ID
+          )
+        """)
+
+  # Checks that user only specified either database or backup flag.
+  if (args.IsSpecified('database') and args.IsSpecified('backup')):
+    raise c_exceptions.InvalidArgumentException(
+        '--database or --backup',
+        'Must specify either --database or --backup. To search backups for a '
+        'specific database, use the --database flag with --type=BACKUP')
+
+  # Checks that the user did not specify the backup flag with the type filter
+  # set to a database operation type.
+  if (args.IsSpecified('backup') and is_database_type):
+    raise c_exceptions.InvalidArgumentException(
+        '--backup or --type',
+        'The backup flag cannot be used with the type flag set to a '
+        'database operation type.')
+
+  if args.type == 'INSTANCE':
+    if args.IsSpecified('database'):
+      raise c_exceptions.InvalidArgumentException(
+          '--database or --type',
+          'The `--database` flag cannot be used with `--type=INSTANCE`.')
+    if args.IsSpecified('backup'):
+      raise c_exceptions.InvalidArgumentException(
+          '--backup or --type',
+          'The `--backup` flag cannot be used with `--type=INSTANCE`.')
+
+  if args.type == 'BACKUP':
+    if args.database:
+      db_filter = backup_operations.BuildDatabaseFilter(args.instance,
+                                                        args.database)
+      return backup_operations.List(args.instance, db_filter)
+    if args.backup:
+      return backup_operations.ListGeneric(args.instance, args.backup)
+    return backup_operations.List(args.instance)
+
+  if is_database_type:
+    type_filter = database_operations.BuildDatabaseOperationTypeFilter(
+        args.type)
+    return database_operations.ListDatabaseOperations(args.instance,
+                                                      args.database,
+                                                      type_filter)
+
+  if args.backup:
+    return backup_operations.ListGeneric(args.instance, args.backup)
+  if args.database:
+    return database_operations.List(args.instance, args.database)
+
+  return instance_operations.List(args.instance)
 
 
-def _TransformDatabaseId(resource):
-  """Gets database ID depending on operation type."""
-  metadata = resource.get('metadata')
-  base_type = 'type.googleapis.com/google.spanner.admin.database.v1.{}'
-  op_type = metadata.get('@type')
-
-  if op_type == base_type.format(
-      'RestoreDatabaseMetadata') or op_type == base_type.format(
-          'OptimizeRestoredDatabaseMetadata'):
-    return metadata.get('name')
-  return metadata.get('database')
-
-
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List the Cloud Spanner operations on the given instance or database."""
 
@@ -95,63 +173,8 @@ class List(base.ListCommand):
         positional=False,
         text='The ID of the instance the operations are executing on.'
     ).AddToParser(parser)
-    flags.Database(
-        positional=False,
-        required=False,
-        text='For database operations, the name of the database '
-        'the operations are executing on.').AddToParser(parser)
-    flags.Backup(
-        positional=False,
-        required=False,
-        text='For backup operations, the name of the backup '
-        'the operations are executing on.').AddToParser(parser)
 
-    type_choices = {
-        'INSTANCE':
-            'Returns instance operations for the given instance. '
-            'Note, type=INSTANCE does not work with --database or --backup.',
-        'DATABASE':
-            'If only the instance is specified (--instance), returns all '
-            'database operations associated with the databases in the '
-            'instance. When a database is specified (--database), the command '
-            'would return database operations for the given database.',
-        'BACKUP':
-            'If only the instance is specified (--instance), returns all '
-            'backup operations associated with backups in the instance. When '
-            'a backup is specified (--backup), only the backup operations for '
-            'the given backup are returned.',
-        'DATABASE_RESTORE':
-            'Database restore operations are returned for all databases in '
-            'the given instance (--instance only) or only those associated '
-            'with the given database (--database)',
-        'DATABASE_CREATE':
-            'Database create operations are returned for all databases in '
-            'the given instance (--instance only) or only those associated '
-            'with the given database (--database)',
-        'DATABASE_UPDATE_DDL':
-            'Database update DDL operations are returned for all databases in '
-            'the given instance (--instance only) or only those associated '
-            'with the given database (--database)'
-    }
-
-    parser.add_argument(
-        '--type',
-        default='',
-        type=lambda x: x.upper(),
-        choices=type_choices,
-        help='(optional) List only the operations of the given type.')
-
-    parser.display_info.AddFormat("""
-          table(
-            name.basename():label=OPERATION_ID,
-            metadata.statements.join(sep="\n"),
-            done():label=DONE,
-            metadata.'@type'.split('.').slice(-1:).join()
-          )
-        """)
-    parser.display_info.AddCacheUpdater(None)
-    parser.display_info.AddTransforms({'done': _TransformOperationDone})
-    parser.display_info.AddTransforms({'database': _TransformDatabaseId})
+    flags.AddCommonListArgs(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -163,99 +186,50 @@ class List(base.ListCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    is_database_type = (
-        args.type == 'DATABASE_RESTORE' or args.type == 'DATABASE' or
-        args.type == 'DATABASE_CREATE' or args.type == 'DATABASE_UPDATE_DDL')
+    return _CommonRun(args)
 
-    if args.backup or args.type == 'BACKUP':
-      # Update output table for backup operations.
-      # pylint:disable=protected-access
-      args._GetParser().ai.display_info.AddFormat("""
-          table(
-            name.basename():label=OPERATION_ID,
-            done():label=DONE,
-            metadata.'@type'.split('.').slice(-1:).join(),
-            metadata.name.split('/').slice(-1:).join():label=BACKUP,
-            metadata.database.split('/').slice(-1).join():label=SOURCE_DATABASE,
-            metadata.progress.startTime:label=START_TIME,
-            metadata.progress.endTime:label=END_TIME
-          )
-        """)
 
-    if args.type == 'DATABASE_RESTORE':
-      # Update output table for restore operations.
-      # pylint:disable=protected-access
-      args._GetParser().ai.display_info.AddFormat("""
-          table(
-            name.basename():label=OPERATION_ID,
-            done():label=DONE,
-            metadata.'@type'.split('.').slice(-1:).join(),
-            metadata.name.split('/').slice(-1:).join():label=RESTORED_DATABASE,
-            metadata.backupInfo.backup.split('/').slice(-1).join():label=SOURCE_BACKUP,
-            metadata.progress.startTime:label=START_TIME,
-            metadata.progress.endTime:label=END_TIME
-          )
-        """)
-    elif is_database_type:
-      # Update output table for database operations.
-      # pylint:disable=protected-access
-      args._GetParser().ai.display_info.AddFormat("""
-          table(
-            name.basename():label=OPERATION_ID,
-            metadata.statements.join(sep="\n"),
-            done():label=DONE,
-            metadata.'@type'.split('.').slice(-1:).join(),
-            database().split('/').slice(-1:).join():label=DATABASE_ID
-          )
-        """)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaList(List):
+  """List the Cloud Spanner operations on the given instance or database or instance-config."""
 
-    # Checks that user only specified either database or backup flag.
-    if (args.IsSpecified('database') and args.IsSpecified('backup')):
-      raise c_exceptions.InvalidArgumentException(
-          '--database or --backup',
-          'Must specify either --database or --backup. To search backups for a '
-          'specific database, use the --database flag with --type=BACKUP')
+  @staticmethod
+  def Args(parser):
+    """See base class."""
+    mutex_group = parser.add_group(mutex=True, required=True)
+    mutex_group.add_argument(
+        '--instance-config',
+        completer=flags.InstanceConfigCompleter,
+        help='The ID of the instance config the operation is executing on.')
+    mutex_group.add_argument(
+        '--instance',
+        completer=flags.InstanceCompleter,
+        help='The ID of the instance the operation is executing on.')
 
-    # Checks that the user did not specify the backup flag with the type filter
-    # set to a database operation type.
-    if (args.IsSpecified('backup') and is_database_type):
-      raise c_exceptions.InvalidArgumentException(
-          '--backup or --type',
-          'The backup flag cannot be used with the type flag set to a '
-          'database operation type.'
-      )
+    additional_choices = {
+        'INSTANCE_CONFIG_CREATE':
+            'Instance config create operations are returned for the given '
+            'instance config (--instance-config).',
+        'INSTANCE_CONFIG_UPDATE':
+            'Instance config update operations are returned for the given '
+            'instance config (--instance-config).'
+    }
 
-    if args.type == 'INSTANCE':
-      if args.IsSpecified('database'):
-        raise c_exceptions.InvalidArgumentException(
-            '--database or --type',
-            'The `--database` flag cannot be used with `--type=INSTANCE`.'
-        )
-      if args.IsSpecified('backup'):
-        raise c_exceptions.InvalidArgumentException(
-            '--backup or --type',
-            'The `--backup` flag cannot be used with `--type=INSTANCE`.'
-        )
+    flags.AddCommonListArgs(parser, additional_choices)
 
-    if args.type == 'BACKUP':
-      if args.database:
-        db_filter = backup_operations.BuildDatabaseFilter(
-            args.instance, args.database)
-        return backup_operations.List(args.instance, db_filter)
-      if args.backup:
-        return backup_operations.ListGeneric(args.instance, args.backup)
-      return backup_operations.List(args.instance)
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
 
-    if is_database_type:
-      type_filter = database_operations.BuildDatabaseOperationTypeFilter(
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+    if args.instance_config:
+      type_filter = instance_config_operations.BuildInstanceConfigOperationTypeFilter(
           args.type)
-      return database_operations.ListDatabaseOperations(args.instance,
-                                                        args.database,
-                                                        type_filter)
+      return instance_config_operations.List(args.instance_config, type_filter)
 
-    if args.backup:
-      return backup_operations.ListGeneric(args.instance, args.backup)
-    if args.database:
-      return database_operations.List(args.instance, args.database)
-
-    return instance_operations.List(args.instance)
+    return _CommonRun(args)

@@ -39,9 +39,9 @@ DESCRIPTION = ("""\
     Source and destination instances must be in the same project. An instance
     can be cloned from its current state, or from an earlier point in time.
 
-    For MySQL: The binary log coordinates, if specified, act as the point in
-    time the source instance is cloned from. If not specified, the current state
-    of the instance is cloned.
+    For MySQL: The binary log coordinates or timestamp (point in time), if
+    specified, act as the point in time the source instance is cloned from. If
+    not specified, the current state of the instance is cloned.
 
     For PostgreSQL: The point in time, if specified, defines a past state of the
     instance to clone. If not specified, the current state of the instance is

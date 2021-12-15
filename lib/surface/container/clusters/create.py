@@ -404,6 +404,13 @@ def AddPrivateIPv6Flag(api, parser):
   flags.AddPrivateIpv6GoogleAccessTypeFlag(api, parser)
 
 
+def AddAcceleratorFlag(parser, enable_gpu_partition, enable_gpu_time_sharing):
+  flags.AddAcceleratorArgs(
+      parser,
+      enable_gpu_partition=enable_gpu_partition,
+      enable_gpu_time_sharing=enable_gpu_time_sharing)
+
+
 def AddKubernetesObjectsExportFlag(parser):
   flags.AddKubernetesObjectsExportConfig(parser, for_create=True)
 
@@ -420,8 +427,7 @@ def AttrValue(args, flagname, flag_defaults):
 
 flags_to_add = {
     GA: {
-        'accelerator':
-            (lambda p: flags.AddAcceleratorArgs(p, enable_gpu_partition=True)),
+        'accelerator': (lambda p: AddAcceleratorFlag(p, True, False)),
         'additionalzones':
             _AddAdditionalZonesFlag,
         'addons':
@@ -571,8 +577,7 @@ flags_to_add = {
             flags.AddWorkloadMetadataFlag,
     },
     BETA: {
-        'accelerator':
-            (lambda p: flags.AddAcceleratorArgs(p, enable_gpu_partition=True)),
+        'accelerator': (lambda p: AddAcceleratorFlag(p, True, True)),
         'additionalzones':
             _AddAdditionalZonesGroup,
         'addons':
@@ -755,8 +760,7 @@ flags_to_add = {
             flags.AddEnableServiceExternalIPs,
     },
     ALPHA: {
-        'accelerator':
-            (lambda p: flags.AddAcceleratorArgs(p, enable_gpu_partition=True)),
+        'accelerator': (lambda p: AddAcceleratorFlag(p, True, True)),
         'additionalzones':
             _AddAdditionalZonesGroup,
         'addons':
@@ -1077,8 +1081,7 @@ class Create(base.CreateCommand):
     if ga_track and options.cluster_dns and options.cluster_dns.lower(
     ) == 'clouddns' and not options.cluster_dns_scope:
       raise util.Error(
-          'DNS Scope should be specified when using CloudDNS in GA.'
-          )
+          'DNS Scope should be specified when using CloudDNS in GA.')
 
     if options.enable_kubernetes_alpha:
       console_io.PromptContinue(

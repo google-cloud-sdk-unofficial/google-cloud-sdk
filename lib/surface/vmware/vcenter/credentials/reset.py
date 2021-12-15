@@ -47,7 +47,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ResetAlpha(base.UpdateCommand):
-  """Reset VMware vCenter sign-in credentials associated with a VMware Engine private cloud."""
+  """Reset VMware vCenter sign-in credentials associated with a Google Cloud VMware Engine private cloud."""
 
   detailed_help = DETAILED_HELP
 
@@ -67,4 +67,4 @@ class ResetAlpha(base.UpdateCommand):
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ResetBeta(ResetAlpha):
-  """Reset VMware vCenter sign-in credentials associated with a VMware Engine private cloud."""
+  """Reset VMware vCenter sign-in credentials associated with a Google Cloud VMware Engine private cloud."""

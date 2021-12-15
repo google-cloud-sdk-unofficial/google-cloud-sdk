@@ -24,7 +24,13 @@ from googlecloudsdk.calliope import base
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Hcx(base.Group):
+class HcxAlpha(base.Group):
   """Manage HCX using Google Cloud VMware Engine."""
 
   category = base.COMPUTE_CATEGORY
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class HcxBeta(HcxAlpha):
+  """Manage HCX using Google Cloud VMware Engine."""

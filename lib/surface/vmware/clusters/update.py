@@ -25,10 +25,31 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
 from googlecloudsdk.core import log
 
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """
+          Adjust the number of nodes in the VMware Engine cluster. Successful addition or removal of a node results in a cluster in READY state. Check the progress of a cluster using `{parent_command} list`.
+        """,
+    'EXAMPLES':
+        """
+          To resize a cluster called ``my-cluster'' in private cloud ``my-private-cloud'' and zone ``us-west2-a'' to have ``3'' nodes, run:
+
+            $ {command} my-cluster --location=us-west2-a --project=my-project --private-cloud=my-private-cloud --node-count=3
+
+            Or:
+
+            $ {command} my-cluster --private-cloud=my-private-cloud --node-count=3
+
+           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
+    """,
+}
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Update(base.UpdateCommand):
-  """Update a VMware Engine cluster."""
+class UpdateAlpha(base.UpdateCommand):
+  """Update a Google Cloud VMware Engine cluster."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -48,21 +69,8 @@ class Update(base.UpdateCommand):
     operation = client.Update(cluster, args.node_count)
     log.UpdatedResource(operation.name, kind='cluster', is_async=True)
 
-Update.detailed_help = {
-    'DESCRIPTION':
-        """
-          Adjust the number of nodes in the VMware Engine cluster. Successful addition or removal of a node results in a cluster in READY state. Check the progress of a cluster using `gcloud alpha vmware clusters list`.
-        """,
-    'EXAMPLES':
-        """
-          To resize a cluster called ``my-cluster'' in private cloud ``my-private-cloud'' and zone ``us-west2-a'' to have ``3'' nodes, run:
 
-            $ {command} my-cluster --location=us-west2-a --project=my-project --private-cloud=my-private-cloud --node-count=3
-
-            Or:
-
-            $ {command} my-cluster --private-cloud=my-private-cloud --node-count=3
-
-           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
-    """,
-}
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(UpdateAlpha):
+  """Update a Google Cloud VMware Engine cluster."""

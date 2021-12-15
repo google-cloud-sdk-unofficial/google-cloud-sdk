@@ -43,7 +43,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Bare Metal Solution volumes in a project."""
 
@@ -63,7 +63,6 @@ class List(base.ListCommand):
     parser.display_info.AddFormat(
         'table(name.segment(-1):label=NAME,name.segment(-5):label=PROJECT,'
         'name.segment(-3):label=REGION,requestedSizeGib,storageType,state)')
-
 
   def Run(self, args):
     region = args.CONCEPTS.region.Parse()

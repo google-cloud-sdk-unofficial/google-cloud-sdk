@@ -29,6 +29,16 @@ DESCRIPTION = ('Create a Datastream stream')
 EXAMPLES = """\
     To create a stream with an Oracle source and Google Cloud Storage destination:
 
+        $ {command} STREAM --location=us-central1 --display-name=my-stream --source=source --oracle-source-config=source_config.json --destination=destination --gcs-destination-config=destination_config.json --backfill-none
+
+    To create a connection profile for Mysql with a backfill all strategy that contains some excluded objects:
+
+        $ {command} STREAM --location=us-central1 --display-name=my-stream --source=source --mysql-source-config=source_config.json --destination=destination --gcs-destination-config=destination_config.json --backfill-all --mysql-excluded-objects=excluded_objects.json
+
+   """
+EXAMPLES_BETA = """\
+    To create a stream with an Oracle source and Google Cloud Storage destination:
+
         $ {command} STREAM --location=us-central1 --display-name=my-stream --source-name=source --oracle-source-config=source_config.json --destination-name=destination --gcs-destination-config=destination_config.json --backfill-none
 
     To create a connection profile for Mysql with a backfill all strategy that contains some excluded objects:
@@ -38,26 +48,33 @@ EXAMPLES = """\
    """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Datastream stream."""
   detailed_help = {'DESCRIPTION': DESCRIPTION, 'EXAMPLES': EXAMPLES}
 
   @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
+  def CommonArgs(parser, release_track):
+    """Common arguments for all release tracks.
 
     Args:
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
+      release_track: Some arguments are added based on the command release
+        track.
     """
-    resource_args.AddStreamResourceArg(parser, 'to create')
+    resource_args.AddStreamResourceArg(parser, 'to create', release_track)
 
     streams_flags.AddDisplayNameFlag(parser)
     streams_flags.AddBackfillStrategyGroup(parser)
-    streams_flags.AddValidationGroup(parser)
+    streams_flags.AddValidationGroup(parser, 'Create')
 
     flags.AddLabelsCreateFlags(parser)
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command."""
+    Create.CommonArgs(parser, base.ReleaseTrack.GA)
 
   def Run(self, args):
     """Create a Datastream stream.
@@ -74,8 +91,8 @@ class Create(base.Command):
     parent_ref = stream_ref.Parent().RelativeName()
 
     stream_client = streams.StreamsClient()
-    result_operation = stream_client.Create(
-        parent_ref, stream_ref.streamsId, args)
+    result_operation = stream_client.Create(parent_ref, stream_ref.streamsId,
+                                            self.ReleaseTrack(), args)
 
     client = util.GetClientInstance()
     messages = util.GetMessagesModule()
@@ -90,3 +107,14 @@ class Create(base.Command):
     return client.projects_locations_operations.Get(
         messages.DatastreamProjectsLocationsOperationsGetRequest(
             name=operation_ref.operationsId))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Creates a Datastream stream."""
+  detailed_help = {'DESCRIPTION': DESCRIPTION, 'EXAMPLES': EXAMPLES_BETA}
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command."""
+    Create.CommonArgs(parser, base.ReleaseTrack.BETA)

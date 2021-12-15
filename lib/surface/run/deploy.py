@@ -112,6 +112,7 @@ class Deploy(base.Command):
     flags.AddBinAuthzPolicyFlags(managed_group)
     flags.AddBinAuthzBreakglassFlag(managed_group)
     flags.AddCloudSQLFlags(managed_group)
+    flags.AddCpuThrottlingFlag(managed_group)
     flags.AddRevisionSuffixArg(managed_group)
     flags.AddVpcConnectorArgs(managed_group)
     flags.AddEgressSettingsFlag(managed_group)
@@ -293,7 +294,6 @@ class BetaDeploy(Deploy):
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddCpuThrottlingFlag(managed_group)
     flags.AddSandboxArg(managed_group)
 
 
@@ -308,7 +308,6 @@ class AlphaDeploy(Deploy):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddSandboxArg(managed_group)
-    flags.AddCpuThrottlingFlag(managed_group)
     flags.AddConfidentialFlag(managed_group)
     flags.AddCustomAudiencesFlag(managed_group)
     flags.AddSessionAffinityFlag(managed_group)

@@ -45,8 +45,10 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.ListCommand):
+class ListAlpha(base.ListCommand):
   """List Google Cloud VMware Engine operations."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -67,4 +69,7 @@ class List(base.ListCommand):
     return client.List(location, limit=args.limit)
 
 
-List.detailed_help = DETAILED_HELP
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(ListAlpha):
+  """List Google Cloud VMware Engine operations."""

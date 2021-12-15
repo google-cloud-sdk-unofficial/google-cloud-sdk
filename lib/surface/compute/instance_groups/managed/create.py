@@ -339,18 +339,6 @@ class CreateBeta(CreateGA):
   @classmethod
   def Args(cls, parser):
     CreateGA.Args(parser)
-
-
-CreateBeta.detailed_help = CreateGA.detailed_help
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create Compute Engine managed instance groups."""
-
-  @classmethod
-  def Args(cls, parser):
-    CreateBeta.Args(parser)
     instance_groups_flags.AddMigCreateStatefulIPsFlags(parser)
 
   def _HandleStatefulArgs(self, instance_group_manager, args, client):
@@ -363,8 +351,8 @@ class CreateAlpha(CreateBeta):
           self._CreateStatefulPolicy(args, client))
 
   def _CreateStatefulPolicy(self, args, client):
-    stateful_policy = super(CreateAlpha, self)._CreateStatefulPolicy(args,
-                                                                     client)
+    stateful_policy = super(CreateBeta, self)._CreateStatefulPolicy(args,
+                                                                    client)
     stateful_internal_ips = []
     for stateful_ip_dict in args.stateful_internal_ip or []:
       stateful_internal_ips.append(
@@ -386,6 +374,17 @@ class CreateAlpha(CreateBeta):
             additionalProperties=stateful_external_ips))
 
     return stateful_policy
+
+CreateBeta.detailed_help = CreateGA.detailed_help
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create Compute Engine managed instance groups."""
+
+  @classmethod
+  def Args(cls, parser):
+    CreateBeta.Args(parser)
 
 
 CreateAlpha.detailed_help = CreateBeta.detailed_help

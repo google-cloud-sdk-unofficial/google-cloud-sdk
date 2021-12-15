@@ -256,6 +256,7 @@ class Create(base.Command):
                                                         self.image_version,
                                                         self.ReleaseTrack())
     self.ParseWebServerAccessControlConfigOptions(args, self.image_version)
+    self.ParseMasterAuthorizedNetworksConfigOptions(args, self.ReleaseTrack())
     self.ValidateFlagsAddedInComposer2(
         args,
         image_versions_util.IsImageVersionStringComposerV1(self.image_version),
@@ -425,6 +426,19 @@ class Create(base.Command):
     flags.ValidateIpRanges(
         [acl['ip_range'] for acl in self.web_server_access_control])
 
+  def ParseMasterAuthorizedNetworksConfigOptions(self, args, release_track):
+    if release_track == base.ReleaseTrack.GA:
+      return
+    if args.enable_master_authorized_networks:
+      self.enable_master_authorized_networks = args.enable_master_authorized_networks
+    elif args.master_authorized_networks:
+      raise command_util.InvalidUserInputError(
+          'Cannot specify --master-authorized-networks without ' +
+          '--enable-master-authorized-networks.')
+    command_util.ValidateMasterAuthorizedNetworks(
+        args.master_authorized_networks)
+    self.master_authorized_networks = args.master_authorized_networks
+
   def ValidateFlagsAddedInComposer2(self, args, is_composer_v1, release_track):
     """Raises InputError if flags from Composer v2 are used when creating v1."""
     if args.environment_size and is_composer_v1:
@@ -542,6 +556,12 @@ class CreateBeta(Create):
   def Args(cls, parser, release_track=base.ReleaseTrack.BETA):
     super(CreateBeta, cls).Args(parser, base.ReleaseTrack.BETA)
     flags.ENABLE_IP_MASQ_AGENT_FLAG.AddToParser(parser)
+    master_authorized_networks_group = parser.add_group(
+        help='Master Authorized Networks configuration')
+    flags.ENABLE_MASTER_AUTHORIZED_NETWORKS_FLAG.AddToParser(
+        master_authorized_networks_group)
+    flags.MASTER_AUTHORIZED_NETWORKS_FLAG.AddToParser(
+        master_authorized_networks_group)
 
   def GetOperationMessage(self, args, is_composer_v1):
     """See base class."""
@@ -601,6 +621,9 @@ class CreateBeta(Create):
         maintenance_window_end=args.maintenance_window_end,
         maintenance_window_recurrence=args.maintenance_window_recurrence,
         environment_size=args.environment_size,
+        enable_master_authorized_networks=args
+        .enable_master_authorized_networks,
+        master_authorized_networks=args.master_authorized_networks,
         release_track=self.ReleaseTrack())
 
     return environments_api_util.Create(self.env_ref, create_flags,
@@ -693,6 +716,9 @@ class CreateAlpha(CreateBeta):
         maintenance_window_start=args.maintenance_window_start,
         maintenance_window_end=args.maintenance_window_end,
         maintenance_window_recurrence=args.maintenance_window_recurrence,
+        enable_master_authorized_networks=args
+        .enable_master_authorized_networks,
+        master_authorized_networks=args.master_authorized_networks,
         release_track=self.ReleaseTrack())
 
     return environments_api_util.Create(self.env_ref, create_flags,

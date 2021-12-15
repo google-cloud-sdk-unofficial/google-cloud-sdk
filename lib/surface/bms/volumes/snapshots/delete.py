@@ -38,7 +38,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete a Bare Metal Solution volume snapshot."""
 

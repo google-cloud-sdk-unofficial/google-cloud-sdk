@@ -24,10 +24,31 @@ from googlecloudsdk.api_lib.vmware.nodetypes import NodeTypesClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
 
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """
+          List VMware Engine node types.
+        """,
+    'EXAMPLES':
+        """
+          To list VMware Engine node types, run:
+
+            $ {command} --location=us-central1 --project=my-project
+
+          Or:
+
+            $ {command}
+
+          In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
+    """,
+}
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.ListCommand):
+class ListAlpha(base.ListCommand):
   """List supported Google Cloud VMware Engine node types."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -48,21 +69,8 @@ class List(base.ListCommand):
     return client.List(location, limit=args.limit)
 
 
-List.detailed_help = {
-    'DESCRIPTION':
-        """
-          List VMware Engine node types.
-        """,
-    'EXAMPLES':
-        """
-          To list VMware Engine node types, run:
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(ListAlpha):
+  """List supported Google Cloud VMware Engine node types."""
 
-            $ {command} --location=us-central1 --project=my-project
-
-          Or:
-
-            $ {command}
-
-          In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
-    """,
-}

@@ -210,6 +210,15 @@ class UpdateHelper(object):
 
     if args.enable_cdn is not None:
       replacement.enableCDN = args.enable_cdn
+    elif not replacement.enableCDN and args.cache_mode:
+      # TODO (b/209812994): Replace implicit config change with
+      # warning that CDN is disabled and a prompt to enable it with
+      # --enable-cdn
+      log.warning(
+          'Setting a cache mode also enabled Cloud CDN, which was previously ' +
+          'disabled. If this was not intended, disable Cloud ' +
+          'CDN with `--no-enable-cdn`.')
+      replacement.enableCDN = True
 
     if args.session_affinity is not None:
       replacement.sessionAffinity = (
@@ -235,10 +244,6 @@ class UpdateHelper(object):
         apply_signed_url_cache_max_age=True,
         cleared_fields=cleared_fields,
         support_extended_caching=self._support_extended_caching)
-
-    if (replacement.cdnPolicy is not None and
-        replacement.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
-      replacement.enableCDN = True
 
     backend_services_utils.ApplyConnectionTrackingPolicyArgs(
         client,
@@ -571,7 +576,7 @@ class UpdateBeta(UpdateGA):
   _support_unspecified_protocol = True
   _support_grpc_protocol = True
   _support_subsetting = True
-  _support_subsetting_subset_size = False
+  _support_subsetting_subset_size = True
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = False
   _support_service_bindings = True

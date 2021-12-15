@@ -492,7 +492,7 @@ class CreateBeta(CreateGA):
   _support_grpc_protocol = True
   _support_unspecified_protocol = True
   _support_subsetting = True
-  _support_subsetting_subset_size = False
+  _support_subsetting_subset_size = True
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = False
   _support_service_bindings = True

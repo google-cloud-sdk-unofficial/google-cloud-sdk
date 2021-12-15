@@ -28,8 +28,8 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs import instance_configs_messages
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class CreateInstanceBetaAndGA(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateInstanceGA(base.CreateCommand):
   """Create a new virtual machine instance in a managed instance group."""
 
   @classmethod
@@ -108,7 +108,7 @@ class CreateInstanceBetaAndGA(base.CreateCommand):
         disk_getter=NonExistentDiskGetter())
 
 
-CreateInstanceBetaAndGA.detailed_help = {
+CreateInstanceGA.detailed_help = {
     'brief':
         ('Create a new virtual machine instance in a managed instance group '
          'with a defined name and optionally its stateful configuration.'),
@@ -137,8 +137,8 @@ CreateInstanceBetaAndGA.detailed_help = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateInstanceAlpha(CreateInstanceBetaAndGA):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateInstanceBeta(CreateInstanceGA):
   """Create a new virtual machine instance in a managed instance group."""
 
   @classmethod
@@ -149,7 +149,7 @@ class CreateInstanceAlpha(CreateInstanceBetaAndGA):
     instance_groups_flags.AddCreateInstancesFlags(parser, add_stateful_ips=True)
 
   def _ValidateStatefulFlagsForInstanceConfigs(self, args):
-    super(CreateInstanceAlpha,
+    super(CreateInstanceBeta,
           self)._ValidateStatefulFlagsForInstanceConfigs(args)
     instance_groups_flags.ValidateMigStatefulIPFlagsForInstanceConfigs(
         args, current_internal_addresses=[], current_external_addresses=[])
@@ -165,8 +165,8 @@ class CreateInstanceAlpha(CreateInstanceBetaAndGA):
         disk_getter=NonExistentDiskGetter())
 
 
-CreateInstanceAlpha.detailed_help = {
-    'brief': CreateInstanceBetaAndGA.detailed_help['brief'],
+CreateInstanceBeta.detailed_help = {
+    'brief': CreateInstanceGA.detailed_help['brief'],
     'DESCRIPTION':
         """\
         *{command}* creates a  virtual machine instance with a defined name and
@@ -196,6 +196,14 @@ CreateInstanceAlpha.detailed_help = {
                   --stateful-external-ip=address=/projects/example-project/regions/europe-west4/addresses/my-address,interface-name=nic1
         """
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateInstanceAlpha(CreateInstanceBeta):
+  """Create a new virtual machine instance in a managed instance group."""
+
+
+CreateInstanceAlpha.detailed_help = CreateInstanceBeta.detailed_help
 
 
 class NonExistentDiskGetter(object):

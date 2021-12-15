@@ -29,6 +29,20 @@ DESCRIPTION = ('Create a Datastream stream')
 EXAMPLES = """\
     To update a stream with a new source and new display name:
 
+        $ {command} STREAM --location=us-central1 --display-name=my-stream --source=source --update-mask=display_name,source
+
+    To update a stream's state to RUNNING:
+
+        $ {command} STREAM --location=us-central1 --state=RUNNING --update-mask=state
+
+    To update a stream's oracle source config:
+
+        $ {command} STREAM --location=us-central1 --oracle-source-config=good_oracle_cp.json --update-mask=oracle_source_config.include_objects
+
+   """
+EXAMPLES_BETA = """\
+    To update a stream with a new source and new display name:
+
         $ {command} STREAM --location=us-central1 --display-name=my-stream --source-name=source --update-mask=display_name,source_name
 
     To update a stream's state to RUNNING:
@@ -42,26 +56,34 @@ EXAMPLES = """\
    """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Updates a Datastream stream."""
   detailed_help = {'DESCRIPTION': DESCRIPTION, 'EXAMPLES': EXAMPLES}
 
   @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
+  def CommonArgs(parser, release_track):
+    """Common arguments for all release tracks.
 
     Args:
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
+      release_track: Some arguments are added based on the command release
+        track.
     """
-    resource_args.AddStreamResourceArg(parser, 'to update', required=False)
+    resource_args.AddStreamResourceArg(
+        parser, 'to update', release_track, required=False)
     streams_flags.AddUpdateMaskFlag(parser)
     streams_flags.AddDisplayNameFlag(parser, required=False)
     streams_flags.AddBackfillStrategyGroup(parser, required=False)
-    streams_flags.AddValidationGroup(parser)
+    streams_flags.AddValidationGroup(parser, 'Update')
     streams_flags.AddStateFlag(parser)
     flags.AddLabelsUpdateFlags(parser)
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command."""
+    Update.CommonArgs(parser, base.ReleaseTrack.GA)
 
   def Run(self, args):
     """Create a Datastream stream.
@@ -77,8 +99,8 @@ class Update(base.Command):
     stream_ref = args.CONCEPTS.stream.Parse()
 
     stream_client = streams.StreamsClient()
-    result_operation = stream_client.Update(
-        stream_ref.RelativeName(), args)
+    result_operation = stream_client.Update(stream_ref.RelativeName(),
+                                            self.ReleaseTrack(), args)
 
     client = util.GetClientInstance()
     messages = util.GetMessagesModule()
@@ -93,3 +115,14 @@ class Update(base.Command):
     return client.projects_locations_operations.Get(
         messages.DatastreamProjectsLocationsOperationsGetRequest(
             name=operation_ref.operationsId))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Updates a Datastream stream."""
+  detailed_help = {'DESCRIPTION': DESCRIPTION, 'EXAMPLES': EXAMPLES_BETA}
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command."""
+    Update.CommonArgs(parser, base.ReleaseTrack.BETA)

@@ -58,7 +58,8 @@ class Create(base.CreateCommand):
     region = region_ref.AsDict()['locationsId']
     project_id = region_ref.AsDict()['projectsId']
     with endpoint_util.AiplatformEndpointOverrides(version, region=region):
-      operation = client.IndexesClient().CreateBeta(region_ref, args)
+      operation = client.IndexesClient(version=version).CreateBeta(
+          region_ref, args)
       op_ref = indexes_util.ParseIndexOperation(operation.name)
       index_id = op_ref.AsDict()['indexesId']
       log.status.Print(

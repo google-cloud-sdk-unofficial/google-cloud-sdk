@@ -26,10 +26,29 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.vmware import flags
 from googlecloudsdk.core import log
 
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """
+          Create a cluster in a VMware Engine private cloud. Successful creation of a cluster results in a cluster in READY state. Check the progress of a cluster using `{parent_command} list`.
+        """,
+    'EXAMPLES':
+        """
+          To create a cluster called ``my-cluster'' in private cloud ``my-private-cloud'', with 3 initial ``standard-72'' nodes in zone ``us-west2-a'', run:
+
+            $ {command} my-cluster --location=us-west2-a --project=my-project --private-cloud=my-private-cloud --node-type=standard-72 --node-count=3
+            Or:
+
+            $ {command} my-cluster --private-cloud=my-private-cloud --node-type=standard-72 --node-count=3
+            In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
+    """,
+}
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.CreateCommand):
+class CreateAlpha(base.CreateCommand):
   """Create a Google Cloud VMware Engine cluster."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -49,7 +68,7 @@ class Create(base.CreateCommand):
         type=int,
         hidden=True,
         help="""\
-         Customized number of virtual cores to use for each node of the cluster. To get a list of valid values for your node type, run the `gcloud alpha vmware nodetypes describe` command and reference the `availableCustomCoreCounts` field in the output.
+         Customized number of virtual cores to use for each node of the cluster. To get a list of valid values for your node type, run the `{grandparent_command} nodetypes describe` command and reference the `availableCustomCoreCounts` field in the output.
         """)
 
     labels_util.AddCreateLabelsFlags(parser)
@@ -61,19 +80,8 @@ class Create(base.CreateCommand):
                               args.node_count, args.node_custom_core_count)
     log.CreatedResource(operation.name, kind='cluster', is_async=True)
 
-Create.detailed_help = {
-    'DESCRIPTION':
-        """
-          Create a cluster in a VMware Engine private cloud. Successful creation of a cluster results in a cluster in READY state. Check the progress of a cluster using `gcloud alpha vmware clusters list`.
-        """,
-    'EXAMPLES':
-        """
-          To create a cluster called ``my-cluster'' in private cloud ``my-private-cloud'', with 3 initial ``standard-72'' nodes in zone ``us-west2-a'', run:
 
-            $ {command} my-cluster --location=us-west2-a --project=my-project --private-cloud=my-private-cloud --node-type=standard-72 --node-count=3
-            Or:
-
-            $ {command} my-cluster --private-cloud=my-private-cloud --node-type=standard-72 --node-count=3
-            In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
-    """,
-}
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(CreateAlpha):
+  """Create a Google Cloud VMware Engine cluster."""

@@ -38,7 +38,7 @@ DETAILED_HELP = {
 
           Or:
 
-          $ {command} my-private-cloud --cluster=my-management-cluster--node-type=standard-72 --node-count=3 --management-range=192.168.0.0/24 --network=default-vpc --network-project=another-project
+          $ {command} my-private-cloud --cluster=my-management-cluster --node-type=standard-72 --node-count=3 --management-range=192.168.0.0/24 --network=default-vpc --network-project=another-project
 
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,

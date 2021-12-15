@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.alloydb import api_util
 from googlecloudsdk.api_lib.alloydb import cluster_operations
 from googlecloudsdk.calliope import base
@@ -25,6 +26,21 @@ from googlecloudsdk.command_lib.alloydb import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+
+
+_CUSTOM_JSON_FIELD_MAPPINGS = {
+    'backupSource_backupName': 'backupSource.backupName',
+}
+
+
+def ClusterImportBackupRequestHook(alloydb_messages, req):
+  updated_requests_type = (
+      alloydb_messages.AlloydbProjectsLocationsClustersImportRequest)
+  for req_field, mapped_param in _CUSTOM_JSON_FIELD_MAPPINGS.items():
+    encoding.AddCustomJsonFieldMapping(updated_requests_type,
+                                       req_field,
+                                       mapped_param)
+  return req
 
 
 @base.Hidden
@@ -71,6 +87,7 @@ class Import(base.Command):
         backupSource_backupName=backup_ref.RelativeName(),
         clusterId=args.cluster,
         parent=location_ref.RelativeName())
+    ClusterImportBackupRequestHook(alloydb_messages, req)
     op = alloydb_client.projects_locations_clusters.Import(req)
     op_ref = resources.REGISTRY.ParseRelativeName(
         op.name, collection='alloydb.projects.locations.operations')

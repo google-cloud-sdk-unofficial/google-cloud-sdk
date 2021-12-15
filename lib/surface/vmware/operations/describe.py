@@ -43,8 +43,10 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(base.DescribeCommand):
-  """Describe Google Cloud VMware Engine operation."""
+class DescribeAlpha(base.DescribeCommand):
+  """Describe a Google Cloud VMware Engine operation."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -57,4 +59,7 @@ class Describe(base.DescribeCommand):
     return client.Get(resource)
 
 
-Describe.detailed_help = DETAILED_HELP
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(DescribeAlpha):
+  """Describe a Google Cloud VMware Engine operation."""

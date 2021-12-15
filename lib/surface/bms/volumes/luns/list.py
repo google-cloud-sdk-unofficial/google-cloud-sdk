@@ -41,7 +41,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class List(six.with_metaclass(abc.ABCMeta, base.CacheCommand)):
   """List Bare Metal Solution LUNs in a project."""
 

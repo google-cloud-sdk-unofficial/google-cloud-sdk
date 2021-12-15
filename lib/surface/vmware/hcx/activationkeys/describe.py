@@ -22,26 +22,10 @@ from googlecloudsdk.api_lib.vmware.hcxactivationkeys import HcxActivationKeysCli
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(base.DescribeCommand):
-  """Describe a Google Cloud VMware HCX activation key."""
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command."""
-    flags.AddHcxActivationKeyArgToParser(parser)
-
-  def Run(self, args):
-    key = args.CONCEPTS.hcx_activation_key.Parse()
-    client = HcxActivationKeysClient()
-    return client.Get(key)
-
-
-Describe.detailed_help = {
+DETAILED_HELP = {
     'DESCRIPTION':
         """
-          Describe a HCX activation key in a VMware Engine private cloud.
+          Display data associated with an HCX activation key, such as the key itself, its resource name, and when it was created.
         """,
     'EXAMPLES':
         """
@@ -56,3 +40,26 @@ Describe.detailed_help = {
            In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,
 }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(base.DescribeCommand):
+  """Describe a Google Cloud VMware HCX activation key."""
+
+  detailed_help = DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    flags.AddHcxActivationKeyArgToParser(parser)
+
+  def Run(self, args):
+    key = args.CONCEPTS.hcx_activation_key.Parse()
+    client = HcxActivationKeysClient()
+    return client.Get(key)
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(DescribeAlpha):
+  """Describe a Google Cloud VMware HCX activation key."""

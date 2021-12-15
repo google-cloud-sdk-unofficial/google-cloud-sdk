@@ -122,12 +122,7 @@ class Apply(base.UpdateCommand):
     Raises: Error, if retrieving FeatureSpec of FeatureState fails
     """
     f = self.GetFeature()
-    spec_version, state_version = utils.versions_for_member(f, membership_id)
-
-    if spec_version:
-      return spec_version
-    # backfill non-specified spec version with current state_version
-    return state_version
+    return utils.get_backfill_version_from_feature(f, membership_id)
 
 
 def _validate_meta(configmanagement):
@@ -197,6 +192,8 @@ def _parse_config_sync(configmanagement, msg):
 
   if 'sourceFormat' in spec_git:
     config_sync.sourceFormat = spec_git['sourceFormat']
+  if 'preventDrift' in spec_git:
+    config_sync.preventDrift = spec_git['preventDrift']
   return config_sync
 
 

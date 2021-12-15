@@ -47,7 +47,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(base.UpdateCommand):
-  """Update a VMware Engine private cloud."""
+  """Update a Google Cloud VMware Engine private cloud."""
 
   detailed_help = DETAILED_HELP
 
@@ -85,4 +85,4 @@ class UpdateAlpha(base.UpdateCommand):
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(UpdateAlpha):
-  """Update a VMware Engine private cloud."""
+  """Update a Google Cloud VMware Engine private cloud."""

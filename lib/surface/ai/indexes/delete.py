@@ -29,8 +29,8 @@ from googlecloudsdk.command_lib.ai import operations_util
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Delete(base.DeleteCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DeleteV1(base.DeleteCommand):
   """Delete an existing Vertex AI index.
 
   ## EXAMPLES
@@ -51,11 +51,26 @@ class Delete(base.DeleteCommand):
     with endpoint_util.AiplatformEndpointOverrides(version, region=region):
       console_io.PromptContinue(
           'This will delete index [{}]...'.format(index_id), cancel_on_no=True)
-      operation = client.IndexesClient().Delete(index_ref)
+      operation = client.IndexesClient(version=version).Delete(index_ref)
       return operations_util.WaitForOpMaybe(
           operations_client=operations.OperationsClient(),
           op=operation,
           op_ref=indexes_util.ParseIndexOperation(operation.name))
+
+  def Run(self, args):
+    return self._Run(args, constants.GA_VERSION)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DeleteV1Beta1(DeleteV1):
+  """Delete an existing Vertex AI index.
+
+  ## EXAMPLES
+
+  To delete an index `123` of project `example` in region `us-central1`, run:
+
+    $ {command} 123 --project=example --region=us-central1
+  """
 
   def Run(self, args):
     return self._Run(args, constants.BETA_VERSION)
