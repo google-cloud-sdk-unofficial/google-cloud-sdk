@@ -22,12 +22,40 @@ import textwrap
 
 from googlecloudsdk.api_lib.spanner import backup_operations
 from googlecloudsdk.api_lib.spanner import database_operations
+from googlecloudsdk.api_lib.spanner import instance_config_operations
 from googlecloudsdk.api_lib.spanner import instance_operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.spanner import flags
 
 
+def _CommonRun(args):
+  """Performs run actions common to all Describe stages.
+
+  Args:
+    args: The arguments that were provided to this command invocation.
+
+  Returns:
+    (Operation) The response message.
+  """
+  # TODO(b/199322841): Remove Common Run from the describe after instance-config
+  # flag is present in all (GA/Beta/Alpha) stages. Currently, it is only present
+  # in the Alpha stage.
+  # Checks that user only specified either database or backup flag.
+  if (args.IsSpecified('database') and args.IsSpecified('backup')):
+    raise c_exceptions.InvalidArgumentException(
+        '--database or --backup', 'Must specify either --database or --backup.')
+
+  if args.backup:
+    return backup_operations.Get(args.instance, args.backup, args.operation)
+
+  if args.database:
+    return database_operations.Get(args.instance, args.database, args.operation)
+
+  return instance_operations.Get(args.instance, args.operation)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe a Cloud Spanner operation."""
 
@@ -64,15 +92,8 @@ class Describe(base.DescribeCommand):
     flags.Instance(positional=False,
                    text='The ID of the instance the operation is executing on.'
                   ).AddToParser(parser)
-    flags.Database(positional=False, required=False,
-                   text='For a database operation, the name of the database '
-                   'the operation is executing on.').AddToParser(parser)
-    flags.Backup(
-        positional=False,
-        required=False,
-        text='For a backup operation, the name of the backup '
-        'the operation is executing on.').AddToParser(parser)
-    flags.OperationId().AddToParser(parser)
+
+    flags.AddCommonDescribeArgs(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -84,17 +105,39 @@ class Describe(base.DescribeCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    # Checks that user only specified either database or backup flag.
-    if (args.IsSpecified('database') and args.IsSpecified('backup')):
-      raise c_exceptions.InvalidArgumentException(
-          '--database or --backup',
-          'Must specify either --database or --backup.')
+    return _CommonRun(args)
 
-    if args.backup:
-      return backup_operations.Get(args.instance, args.backup, args.operation)
 
-    if args.database:
-      return database_operations.Get(
-          args.instance, args.database, args.operation)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDescribe(Describe):
+  """Describe a Cloud Spanner operation."""
 
-    return instance_operations.Get(args.instance, args.operation)
+  @staticmethod
+  def Args(parser):
+    """See base class."""
+    mutex_group = parser.add_group(mutex=True, required=True)
+    mutex_group.add_argument(
+        '--instance-config',
+        completer=flags.InstanceConfigCompleter,
+        help='The ID of the instance config the operation is executing on.')
+    mutex_group.add_argument(
+        '--instance',
+        completer=flags.InstanceCompleter,
+        help='The ID of the instance the operation is executing on.')
+
+    flags.AddCommonDescribeArgs(parser)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+    if args.instance_config:
+      return instance_config_operations.Get(args.instance_config,
+                                            args.operation)
+    return _CommonRun(args)

@@ -101,6 +101,7 @@ def _CommonArgs(parser,
   instances_flags.AddMinNodeCpuArg(parser)
   instances_flags.AddNestedVirtualizationArgs(parser)
   instances_flags.AddThreadsPerCoreArgs(parser)
+  instances_flags.AddEnableUefiNetworkingArgs(parser)
   if support_numa_node_count:
     instances_flags.AddNumaNodeCountArgs(parser)
   instances_flags.AddStackTypeArgs(parser)
@@ -378,6 +379,9 @@ def AddServiceProxyArgsToMetadata(args):
     if 'scope' in args.service_proxy:
       proxy_spec['scope'] = args.service_proxy['scope']
 
+    if 'mesh' in args.service_proxy:
+      proxy_spec['mesh'] = args.service_proxy['mesh']
+
     if 'intercept-all-outbound-traffic' in args.service_proxy:
       traffic_interception = collections.OrderedDict()
       traffic_interception['intercept-all-outbound'] = True
@@ -492,8 +496,7 @@ def _RunCreate(compute_api,
                support_host_error_timeout_seconds=False,
                support_numa_node_count=False,
                support_visible_core_count=False,
-               support_disk_architecture=False,
-               support_enable_uefi_networking=False):
+               support_disk_architecture=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -521,8 +524,6 @@ def _RunCreate(compute_api,
       support_disk_architecture: Storage resources can be used to create boot
         disks compatible with ARM64 or X86_64 machine architectures. If this
         field is not specified, the default is ARCHITECTURE_UNSPECIFIED.
-      support_enable_uefi_networking: Indicates whether setting uefi networking
-        is supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -776,8 +777,7 @@ def _RunCreate(compute_api,
   if (args.enable_nested_virtualization is not None or
       args.threads_per_core is not None or
       (support_numa_node_count and args.numa_node_count is not None) or
-      has_visible_core_count or (support_enable_uefi_networking and
-                                 args.enable_uefi_networking is not None)):
+      has_visible_core_count or args.enable_uefi_networking is not None):
 
     visible_core_count = args.visible_core_count if has_visible_core_count else None
     instance_template.properties.advancedMachineFeatures = (
@@ -785,8 +785,7 @@ def _RunCreate(compute_api,
             client.messages, args.enable_nested_virtualization,
             args.threads_per_core,
             args.numa_node_count if support_numa_node_count else None,
-            visible_core_count, args.enable_uefi_networking
-            if support_enable_uefi_networking else None))
+            visible_core_count, args.enable_uefi_networking))
 
   request = client.messages.ComputeInstanceTemplatesInsertRequest(
       instanceTemplate=instance_template, project=instance_template_ref.project)
@@ -825,7 +824,6 @@ class Create(base.CreateCommand):
   _support_numa_node_count = False
   _support_visible_core_count = False
   _support_disk_architecture = False
-  _support_enable_uefi_networking = False
 
   @classmethod
   def Args(cls, parser):
@@ -867,8 +865,7 @@ class Create(base.CreateCommand):
         support_termination_action=self._support_termination_action,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_disk_architecture=self._support_disk_architecture,
-        support_enable_uefi_networking=self._support_enable_uefi_networking)
+        support_disk_architecture=self._support_disk_architecture)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -896,7 +893,6 @@ class CreateBeta(Create):
   _support_numa_node_count = False
   _support_visible_core_count = False
   _support_disk_architecture = False
-  _support_enable_uefi_networking = False
 
   @classmethod
   def Args(cls, parser):
@@ -945,8 +941,7 @@ class CreateBeta(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_disk_architecture=self._support_disk_architecture,
-        support_enable_uefi_networking=self._support_enable_uefi_networking)
+        support_disk_architecture=self._support_disk_architecture)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -974,7 +969,6 @@ class CreateAlpha(Create):
   _support_numa_node_count = True
   _support_visible_core_count = True
   _support_disk_architecture = True
-  _support_enable_uefi_networking = True
 
   @classmethod
   def Args(cls, parser):
@@ -999,7 +993,6 @@ class CreateAlpha(Create):
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddProvisioningModelVmArgs(parser)
     instances_flags.AddInstanceTerminationActionVmArgs(parser)
-    instances_flags.AddEnableUefiNetworkingArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.
@@ -1026,8 +1019,7 @@ class CreateAlpha(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_disk_architecture=self._support_disk_architecture,
-        support_enable_uefi_networking=self._support_enable_uefi_networking)
+        support_disk_architecture=self._support_disk_architecture)
 
 
 DETAILED_HELP = {

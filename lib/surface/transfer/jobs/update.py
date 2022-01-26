@@ -41,6 +41,10 @@ def _clear_fields(args, job):
     job.transferSpec.sourceAgentPoolName = None
   if args.clear_destination_agent_pool:
     job.transferSpec.sinkAgentPoolName = None
+  if args.clear_intermediate_storage_path:
+    job.transferSpec.gcsIntermediateDataLocation = None
+  if args.clear_manifest_file:
+    job.transferSpec.transferManifest = None
   if args.clear_include_prefixes:
     job.transferSpec.objectConditions.includePrefixes = []
   if args.clear_exclude_prefixes:

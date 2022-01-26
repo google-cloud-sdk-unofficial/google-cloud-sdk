@@ -20,13 +20,15 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.hub.build import utils
+from googlecloudsdk.command_lib.container.hub.features import base as hubbase
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Describe(base.DescribeCommand):
+class Describe(hubbase.DescribeCommand):
   """Describe a worker pool used by Google Cloud Build."""
 
   detailed_help = {
@@ -113,3 +115,68 @@ class DescribeBeta(Describe):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(Describe):
   """Describe a worker pool used by Google Cloud Build."""
+
+  feature_name = 'cloudbuild'
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser-like object. It is mocked out in order
+        to capture some information, but behaves like an ArgumentParser.
+    """
+    parser.add_argument(
+        '--region',
+        required=True,
+        help='The Cloud region where the worker pool is.')
+    parser.add_argument(
+        'WORKER_POOL', help='The ID of the worker pool to describe.')
+    parser.display_info.AddFormat("""
+      multi(wp_status:format='table[box](
+          NAME:label=NAME:sort=1,
+          TYPE:label="TYPE",
+          HWP_DESCRIPTION:label="CLUSTER DESCRIPTION":optional,
+          HWP_STATUS:label=STATUS:optional
+      )',
+          wp_config:format=default)
+    """)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+
+    wp = super(DescribeAlpha, self).Run(args)
+
+    wp_status = {
+        'NAME': wp.name,
+    }
+    wp_out = {
+        'wp_config': wp,
+        'wp_status': wp_status
+    }
+
+    if wp.privatePoolV1Config is not None:
+      wp_status[
+          'TYPE'] = cloudbuild_util.WorkerpoolTypes.PRIVATE.name.capitalize()
+    elif wp.hybridPoolConfig is not None:
+      feature = self.GetFeature(v1alpha1=True)
+      feature_state_memberships = utils.GetFeatureStateMemberships(feature)
+      details = feature_state_memberships[wp.hybridPoolConfig.membership]
+      wp_status.update({
+          'TYPE': cloudbuild_util.WorkerpoolTypes.HYBRID.name.capitalize(),
+          'HWP_DESCRIPTION': details.description,
+          'HWP_STATUS': details.code,
+      })
+    else:
+      wp_status[
+          'TYPE'] = cloudbuild_util.WorkerpoolTypes.UNKNOWN.name.capitalize()
+
+    return wp_out

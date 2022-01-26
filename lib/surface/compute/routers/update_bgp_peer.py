@@ -36,18 +36,13 @@ class UpdateBgpPeer(base.UpdateCommand):
   ROUTER_ARG = None
 
   @classmethod
-  def _Args(cls,
-            parser,
-            support_enable_ipv6=False,
-            support_havpn_ipv6=False):
+  def _Args(cls, parser):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddBgpPeerArgs(
         parser,
         for_add_bgp_peer=False,
-        support_enable_ipv6=support_enable_ipv6,
-        support_havpn_ipv6=support_havpn_ipv6,
         is_update=True)
     flags.AddUpdateCustomAdvertisementArgs(parser, 'peer')
 
@@ -55,11 +50,7 @@ class UpdateBgpPeer(base.UpdateCommand):
   def Args(cls, parser):
     cls._Args(parser)
 
-  def _Run(self,
-           args,
-           support_bfd_mode=False,
-           support_enable_ipv6=False,
-           support_havpn_ipv6=False):
+  def _Run(self, args, support_bfd_mode=False):
     # Manually ensure replace/incremental flags are mutually exclusive.
     router_utils.CheckIncompatibleFlagsOrRaise(args)
 
@@ -74,12 +65,7 @@ class UpdateBgpPeer(base.UpdateCommand):
 
     # Retrieve specified peer and update base fields.
     peer = _UpdateBgpPeerMessage(
-        messages,
-        replacement,
-        args,
-        support_bfd_mode=support_bfd_mode,
-        support_enable_ipv6=support_enable_ipv6,
-        support_havpn_ipv6=support_havpn_ipv6)
+        messages, replacement, args, support_bfd_mode=support_bfd_mode)
 
     if router_utils.HasReplaceAdvertisementFlags(args):
       mode, groups, ranges = router_utils.ParseAdvertisements(
@@ -205,25 +191,16 @@ class UpdateBgpPeerAlpha(UpdateBgpPeerBeta):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(
-        parser,
-        support_enable_ipv6=True,
-        support_havpn_ipv6=True)
+    cls._Args(parser)
 
   def Run(self, args):
-    return self._Run(
-        args,
-        support_bfd_mode=True,
-        support_enable_ipv6=True,
-        support_havpn_ipv6=True)
+    return self._Run(args, support_bfd_mode=True)
 
 
 def _UpdateBgpPeerMessage(messages,
                           router_message,
                           args,
-                          support_bfd_mode=False,
-                          support_enable_ipv6=False,
-                          support_havpn_ipv6=False):
+                          support_bfd_mode=False):
   """Updates base attributes of a BGP peer based on flag arguments."""
 
   peer = router_utils.FindBgpPeerOrRaise(router_message, args.peer_name)
@@ -241,13 +218,12 @@ def _UpdateBgpPeerMessage(messages,
       attrs['enable'] = messages.RouterBgpPeer.EnableValueValuesEnum.TRUE
     else:
       attrs['enable'] = messages.RouterBgpPeer.EnableValueValuesEnum.FALSE
-  if support_enable_ipv6 and args.enable_ipv6 is not None:
+  if args.enable_ipv6 is not None:
     attrs['enableIpv6'] = args.enable_ipv6
-  if support_havpn_ipv6:
-    if args.ipv6_nexthop_address is not None:
-      attrs['ipv6NexthopAddress'] = args.ipv6_nexthop_address
-    if args.peer_ipv6_nexthop_address is not None:
-      attrs['peerIpv6NexthopAddress'] = args.peer_ipv6_nexthop_address
+  if args.ipv6_nexthop_address is not None:
+    attrs['ipv6NexthopAddress'] = args.ipv6_nexthop_address
+  if args.peer_ipv6_nexthop_address is not None:
+    attrs['peerIpv6NexthopAddress'] = args.peer_ipv6_nexthop_address
   for attr, value in attrs.items():
     if value is not None:
       setattr(peer, attr, value)

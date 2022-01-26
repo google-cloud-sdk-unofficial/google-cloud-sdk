@@ -57,6 +57,10 @@ class Update(base.UpdateCommand):
     attachment_flags.AddAdminEnabled(parser, update=True)
     attachment_flags.AddBandwidth(parser, required=False)
     attachment_flags.AddMtu(parser)
+    attachment_flags.AddStackType(parser)
+    attachment_flags.AddCandidateIpv6Subnets(parser)
+    attachment_flags.AddCloudRouterIpv6InterfaceId(parser)
+    attachment_flags.AddCustomerRouterIpv6InterfaceId(parser)
 
   def Run(self, args):
     interconnect_attachment = self._get_attachment(args)
@@ -65,7 +69,13 @@ class Update(base.UpdateCommand):
         description=args.description,
         admin_enabled=admin_enabled,
         bandwidth=getattr(args, 'bandwidth', None),
-        mtu=getattr(args, 'mtu', None))
+        mtu=getattr(args, 'mtu', None),
+        stack_type=getattr(args, 'stack_type', None),
+        candidate_ipv6_subnets=getattr(args, 'candidate_ipv6_subnets', None),
+        cloud_router_ipv6_interface_id=getattr(
+            args, 'cloud_router_ipv6_interface_id', None),
+        customer_router_ipv6_interface_id=getattr(
+            args, 'customer_router_ipv6_interface_id', None))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -125,7 +135,3 @@ class UpdateAlpha(UpdateBeta):
   @classmethod
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
-    attachment_flags.AddStackType(parser)
-    attachment_flags.AddCandidateIpv6Subnets(parser)
-    attachment_flags.AddCloudRouterIpv6InterfaceId(parser)
-    attachment_flags.AddCustomerRouterIpv6InterfaceId(parser)

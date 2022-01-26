@@ -2798,7 +2798,7 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         raise bigquery_client.BigqueryError(
             "Failed to list capacity commitments '%s': %s" % (identifier, e))
     elif self.reservation:
-      bi_response = None
+      has_bi_response = None
       response = []
       if FLAGS.api_version == 'autoscale_alpha':
         object_type = AutoscaleAlphaReservationReference
@@ -2814,7 +2814,8 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
           default_reservation_id=' ')
       try:
         bi_response = client.ListBiReservations(reference)
-        if 'size' in bi_response:
+        has_bi_response = 'size' in bi_response
+        if has_bi_response:
           size_in_bytes = int(bi_response['size'])
           size_in_gbytes = size_in_bytes / (1024 * 1024 * 1024)
           print('BI Engine reservation: %sGB' % size_in_gbytes)
@@ -2834,7 +2835,7 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       if 'reservations' in response:
         results = response['reservations']
       else:
-        if bi_response is None:
+        if not has_bi_response:
           print('No reservations found.')
       if 'nextPageToken' in response:
         _PrintPageToken(response)
@@ -3197,6 +3198,11 @@ class _Copy(BigqueryCmd):
         None,
         'Expiration time, in seconds from now, of the destination table.',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'clone',
+        False,
+        'Create a clone of source table.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, source_tables, dest_table):
@@ -3234,6 +3240,9 @@ class _Copy(BigqueryCmd):
     elif self.restore:
       operation_type = 'RESTORE'
       operation = 'restored'
+    elif self.clone:
+      operation_type = 'CLONE'
+      operation = 'cloned'
     else:
       operation_type = 'COPY'
     kwds = {
@@ -3715,6 +3724,14 @@ class _Make(BigqueryCmd):
         'this reservation node.',
         flag_values=fv)
     flags.DEFINE_boolean(
+        'multi_region_auxiliary',
+        False,
+        'If true, capacity commitment or reservation is placed in the '
+        'organization''s auxiliary region which is designated for disaster '
+        'recovery purposes. Applicable only for US and EU locations. Available '
+        'only for allow-listed projects.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
         'use_idle_slots',
         True,
         'If true, any query running in this reservation will be able to use '
@@ -3930,6 +3947,7 @@ class _Make(BigqueryCmd):
             ignore_idle_slots=ignore_idle_arg,
             max_concurrency=self.max_concurrency,
             enable_queuing_and_priorities=self.enable_queuing_and_priorities,
+            multi_region_auxiliary=self.multi_region_auxiliary,
             autoscale_max_slots=self.autoscale_max_slots,
             autoscale_budget_slot_hours=self.autoscale_budget_slot_hours)
       except BaseException as e:
@@ -3947,7 +3965,8 @@ class _Make(BigqueryCmd):
             reference,
             self.slots,
             self.plan,
-            self.renewal_plan)
+            self.renewal_plan,
+            self.multi_region_auxiliary)
       except BaseException as e:
         raise bigquery_client.BigqueryError(
             "Failed to create capacity commitment in '%s': %s" %
@@ -5124,7 +5143,8 @@ class _Update(BigqueryCmd):
           clustering=clustering,
           require_partition_filter=self.require_partition_filter,
           etag=self.etag,
-          encryption_configuration=encryption_configuration)
+          encryption_configuration=encryption_configuration
+      )
 
       print("%s '%s' successfully updated." % (
           object_name,
@@ -6710,6 +6730,9 @@ class _Init(BigqueryCmd):
 
   def RunWithArgs(self):
     """Authenticate and create a default .bigqueryrc file."""
+    # Capture project_id before loading defaults from ~/.bigqueryrc so that we
+    # get the true value of the flag as specified on the command line.
+    project_id_flag = FLAGS.project_id
     bq_utils.ProcessBigqueryrc()
     _ConfigureLogging(bigquery_client)
     if self.delete_credentials:
@@ -6740,67 +6763,65 @@ class _Init(BigqueryCmd):
     print('First, we need to set up your credentials if they do not ')
     print('already exist.')
     print()
-
+    # NOTE: even if the client is not used below (when --project_id is
+    # specified), getting the client will start the authorization workflow if
+    # credentials do not already exist and so it is important this is done
+    # unconditionally.
     client = Client.Get()
+
     entries = {'credential_file': FLAGS.credential_file}
-    projects = client.ListProjects(max_results=1000)
-    print('Credential creation complete. Now we will select a default project.')
-    print()
-    if not projects:
-      print('No projects found for this user. Please go to ')
-      print('  https://console.cloud.google.com/')
-      print('and create a project.')
+    if project_id_flag:
+      print('Setting project_id %s as the default.' % project_id_flag)
       print()
+      entries['project_id'] = project_id_flag
     else:
-      print('List of projects:')
-      formatter = _GetFormatterFromFlags()
-      formatter.AddColumn('#')
-      BigqueryClient.ConfigureFormatter(formatter, ProjectReference)
-      for index, project in enumerate(projects):
-        result = BigqueryClient.FormatProjectInfo(project)
-        result.update({'#': index + 1})
-        formatter.AddDict(result)
-      formatter.Print()
-
-      if FLAGS.project_id:
-        matching_projects = [
-            p for p in map(BigqueryClient.ConstructObjectReference, projects)
-            if p.projectId == FLAGS.project_id
-        ]
-        if not matching_projects:
-          print('This user does not have access to project_id %s' %
-                FLAGS.project_id)
-          return 1
-        project_reference = matching_projects[0]
-        print('Setting %s as the default.' % (project_reference,))
+      projects = client.ListProjects(max_results=1000)
+      print('Credential creation complete. Now we will select a default '
+            'project.')
+      print()
+      if not projects:
+        print('No projects found for this user. Please go to ')
+        print('  https://console.cloud.google.com/')
+        print('and create a project.')
         print()
-        entries['project_id'] = project_reference.projectId
-      elif len(projects) == 1:
-        project_reference = BigqueryClient.ConstructObjectReference(projects[0])
-        print('Found only one project, setting %s as the default.' %
-              (project_reference,))
-        print()
-        entries['project_id'] = project_reference.projectId
       else:
-        print('Found multiple projects. Please enter a selection for ')
-        print('which should be the default, or leave blank to not ')
-        print('set a default.')
-        print()
+        print('List of projects:')
+        formatter = _GetFormatterFromFlags()
+        formatter.AddColumn('#')
+        BigqueryClient.ConfigureFormatter(formatter, ProjectReference)
+        for index, project in enumerate(projects):
+          result = BigqueryClient.FormatProjectInfo(project)
+          result.update({'#': index + 1})
+          formatter.AddDict(result)
+        formatter.Print()
 
-        response = None
-        while not isinstance(response, int):
-          response = _PromptWithDefault('Enter a selection (1 - %s): ' %
-                                        (len(projects),))
-          try:
-            if not response or 1 <= int(response) <= len(projects):
-              response = int(response or 0)
-          except ValueError:
-            pass
-        print()
-        if response:
+        if len(projects) == 1:
           project_reference = BigqueryClient.ConstructObjectReference(
-              projects[response - 1])
+              projects[0])
+          print('Found only one project, setting %s as the default.' %
+                (project_reference,))
+          print()
           entries['project_id'] = project_reference.projectId
+        else:
+          print('Found multiple projects. Please enter a selection for ')
+          print('which should be the default, or leave blank to not ')
+          print('set a default.')
+          print()
+
+          response = None
+          while not isinstance(response, int):
+            response = _PromptWithDefault('Enter a selection (1 - %s): ' %
+                                          (len(projects),))
+            try:
+              if not response or 1 <= int(response) <= len(projects):
+                response = int(response or 0)
+            except ValueError:
+              pass
+          print()
+          if response:
+            project_reference = BigqueryClient.ConstructObjectReference(
+                projects[response - 1])
+            entries['project_id'] = project_reference.projectId
 
     try:
       with open(bigqueryrc, 'w') as rcfile:

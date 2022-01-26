@@ -82,9 +82,9 @@ class Create(base.CreateCommand):
         default=False,
         help='Validate the create action, but don\'t actually perform it.')
 
-    group_replicas_args = parser.add_argument_group(mutex=True, required=True)
-    group_replicas_args.add_argument(
+    parser.add_argument(
         '--replicas',
+        required=True,
         metavar='location=LOCATION,type=TYPE',
         action='store',
         type=arg_parsers.ArgList(

@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.container.hub.features import base
 class Enable(base.EnableCommand):
   """Enable the Cloud Build Hybrid Feature.
 
-  Enables the Cloud Build Hybrid Feature in the Hub.
+  Enables the Cloud Build Hybrid Feature in the Fleet.
 
   ## EXAMPLES
 

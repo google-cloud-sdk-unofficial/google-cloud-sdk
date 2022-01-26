@@ -1,0 +1,32 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List Edge Container nodePools.
+    description: |
+      List Edge Container nodePools.
+    examples: |
+      To list the nodePools in region us-central1, run:
+
+        $ {command} --location=us-central1 --cluster=<my-cluster>
+
+  request:
+    collection: edgecontainer.projects.locations.clusters.nodePools
+    api_version: v1alpha
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Parent Edge Container location to list all contained Edge Container nodePools.
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.container.resources:cluster
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        nodeCount:label=NODE_COUNT,
+        nodeLocation:label=NODE_LOCATION,
+        labels:label=LABELS,
+        createTime.date():label=CREATED
+      )

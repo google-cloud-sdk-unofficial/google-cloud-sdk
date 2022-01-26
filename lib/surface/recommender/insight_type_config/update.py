@@ -61,6 +61,7 @@ class Update(base.Command):
     flags.AddDisplayNameToParser(parser, 'insight type configuration')
     flags.AddValidateOnlyToParser(parser)
     flags.AddEtagToParser(parser, 'insight type configuration')
+    flags.AddAnnotationsToParser(parser, 'insight type configuration')
 
   def Run(self, args):
     """Run 'gcloud recommender insight-type-config update'.

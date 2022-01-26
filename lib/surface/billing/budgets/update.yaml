@@ -210,7 +210,7 @@
           GA:
             api_field: googleCloudBillingBudgetsV1Budget.budgetFilter.calendarPeriod
           help_text: |
-            Specifies to track usage over recurring calendar period.
+            Specifies to track usage over recurring calendar period. If you're creating a budget with a custom time period, omit this flag.
         - group:
             params:
             - arg_name: start-date

@@ -44,19 +44,18 @@ from googlecloudsdk.core.util import retry
 
 RECOMMEND_MESSAGE = """
 Recommendation: To check for possible causes of SSH connectivity issues and get
-recommendations, rerun the ssh command with the --troubleshoot option. Example:
+recommendations, rerun the ssh command with the --troubleshoot option.
 
-gcloud {0} compute ssh example-instance --zone=us-central1-a --troubleshoot
+{0}
 
 Or, to investigate an IAP tunneling issue:
 
-gcloud {0} compute ssh example-instance --zone=us-central1-a --tunnel-through-iap --troubleshoot
+{1}
 """
 
 ReleaseTrack = {
     'alpha': 'alpha',
     'beta': 'beta',
-    'ga': '',
 }
 
 TROUBLESHOOT_HEADER = """
@@ -418,15 +417,28 @@ class Ssh(base.Command):
           ssh_helper.env,
           force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
     except ssh.CommandError as e:
-      if hasattr(args, 'troubleshoot'):
-        log.status.Print(RECOMMEND_MESSAGE.format(ReleaseTrack.get(
-            self.ReleaseTrack())))
+      log.status.Print(self.createRecommendMessage(args, instance_name,
+                                                   instance_ref, project))
       raise e
 
     if return_code:
       # This is the return code of the remote command.  Problems with SSH itself
       # will result in ssh.CommandError being raised above.
       sys.exit(return_code)
+
+  def createRecommendMessage(self, args, instance_name, instance_ref, project):
+    release_track = ReleaseTrack.get(str(self.ReleaseTrack()).lower())
+    release_track = release_track + ' ' if release_track else ''
+    command = 'gcloud {0}compute ssh {1} --project={2} --zone={3} '.format(
+        release_track, instance_name, project.name,
+        args.zone or instance_ref.zone)
+    if args.ssh_key_file:
+      command += '--ssh-key-file={0} '.format(args.ssh_key_file)
+    if args.force_key_file_overwrite:
+      command += '--force-key-file-overwrite '
+    command += '--troubleshoot'
+    command_iap = command + ' --tunnel-through-iap'
+    return RECOMMEND_MESSAGE.format(command, command_iap)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

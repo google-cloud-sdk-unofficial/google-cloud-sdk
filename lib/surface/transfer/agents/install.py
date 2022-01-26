@@ -56,14 +56,13 @@ MOUNT_DIRECTORIES_HELP_TEXT = """
 If you want to grant agents access to specific parts of your filesystem instead
 of the entire filesystem, specify which directory paths to mount to the agent
 container. Multiple paths must be separated by commas with no spaces (e.g.,
-`--mount-directories=/system/path/to/dir1,/path/to/dir2`). Note that when
-mounting directories, Transfer Service will also mount your
-/tmp directory for storing logs and your credentials file for agent
-authentication.
+`--mount-directories=/system/path/to/dir1,/path/to/dir2`). When mounting
+specific directories, gcloud transfer will also mount a directory for logs
+(either /tmp or what you've specified for --logs-directory) and your Google
+credentials file for agent authentication.
 
-If not specified, Transfer Service will mount your entire filesystem to the
-agent container, enabling agents to transfer data from any part of the
-filesystem.
+If this flag is not specified, gcloud transfer will mount your entire filesystem
+to the agent container.
 """
 MISSING_PROJECT_ERROR_TEXT = """
 Could not find project ID. Try adding the project flag: --project=[project-id]
@@ -111,12 +110,17 @@ https://console.cloud.google.com/transfer/on-premises/agent-pools/pool/\
 """
 
 
+def _expand_path(path):
+  """Converts relative and symbolic paths to absolute paths."""
+  return os.path.abspath(os.path.expanduser(path))
+
+
 def _authenticate_and_get_creds_file_path(existing_creds_file=None):
   """Ensures agent will be able to authenticate and returns creds."""
   # Can't disable near "else" (https://github.com/PyCQA/pylint/issues/872).
   # pylint:disable=protected-access
   if existing_creds_file:
-    creds_file_path = os.path.abspath(os.path.expanduser(existing_creds_file))
+    creds_file_path = _expand_path(existing_creds_file)
     if not os.path.exists(creds_file_path):
       raise OSError(
           'Credentials file not found at {}. Check for typos and ensure a'
@@ -127,8 +131,8 @@ def _authenticate_and_get_creds_file_path(existing_creds_file=None):
     # pylint:enable=protected-access
     if not os.path.exists(creds_file_path):
       creds = login_util.DoInstalledAppBrowserFlowGoogleAuth(
-          launch_browser=False,
-          scopes=(login_util.DEFAULT_SCOPES + [config.REAUTH_SCOPE]))
+          scopes=(login_util.DEFAULT_SCOPES + [config.REAUTH_SCOPE]),
+          no_launch_browser=True)
       auth_util.DumpADCOptionalQuotaProject(creds)
 
   return creds_file_path
@@ -156,12 +160,14 @@ def _get_docker_command(args, project, creds_file_path):
       '--rm',
       '-d',
   ]
+  expanded_creds_file_path = _expand_path(creds_file_path)
+  expanded_logs_directory_path = _expand_path(args.logs_directory)
   if args.mount_directories:
     # Mount mandatory directories.
     base_docker_command.extend([
-        '-v=/tmp:/tmp',  # Holds logs.
+        '-v={}:/tmp'.format(expanded_logs_directory_path),
         '-v={creds_file_path}:{creds_file_path}'.format(
-            creds_file_path=creds_file_path),
+            creds_file_path=expanded_creds_file_path),
     ])
     # Mount user's custom directories.
     base_docker_command.extend([
@@ -175,10 +181,11 @@ def _get_docker_command(args, project, creds_file_path):
     base_docker_command.append('HTTPS_PROXY={}'.format(args.proxy))
   agent_args = [
       'gcr.io/cloud-ingest/tsop-agent:latest',
-      '--project-id={}'.format(project),
-      '--creds-file={}'.format(creds_file_path),
-      '--hostname={}'.format(socket.gethostname()),
       '--agent-pool={}'.format(args.pool),
+      '--creds-file={}'.format(expanded_creds_file_path),
+      '--hostname={}'.format(socket.gethostname()),
+      '--log-dir={}'.format(expanded_logs_directory_path),
+      '--project-id={}'.format(project),
   ]
   if not args.mount_directories:
     # Needed to mount entire filesystem.
@@ -260,6 +267,12 @@ class Install(base.Command):
         '--id-prefix',
         help='An optional prefix to add to the agent ID to help identify the'
         ' agent.')
+    parser.add_argument(
+        '--logs-directory',
+        default='/tmp',
+        help='Specify the absolute path to the directory you want to store'
+        ' transfer logs in. If not specified, gcloud transfer will mount your'
+        ' /tmp directory for logs.')
     parser.add_argument(
         '--memlock-limit',
         default=64000000,

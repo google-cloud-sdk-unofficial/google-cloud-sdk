@@ -20,7 +20,9 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.resource_manager import operations
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.resource_manager import endpoint_utils
 from googlecloudsdk.command_lib.resource_manager import flags
+from googlecloudsdk.command_lib.resource_manager import tag_arguments
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -44,6 +46,11 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     flags.OperationIdArg('you want to describe.').AddToParser(parser)
+    tag_arguments.AddLocationArgToParser(parser, (
+        'Region or zone of the Operation to get. This field is not required if '
+        'the Operation is on a global resource such as a Project or TagKey.'))
 
   def Run(self, args):
-    return operations.GetOperationV3(args.id)
+    location = args.location if args.IsSpecified('location') else None
+    with endpoint_utils.CrmEndpointOverrides(location):
+      return operations.GetOperationV3(args.id)

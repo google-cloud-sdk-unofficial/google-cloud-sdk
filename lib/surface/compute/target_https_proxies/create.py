@@ -66,10 +66,11 @@ def _DetailedHelp():
 def _Args(parser,
           include_l7_internal_load_balancing=False,
           traffic_director_security=False,
-          certificate_map=False):
+          certificate_map=False,
+          list_format=None):
   """Add the target https proxies comamnd line flags to the parser."""
 
-  parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+  parser.display_info.AddFormat(list_format)
   parser.add_argument(
       '--description',
       help='An optional, textual description for the target HTTPS proxy.')
@@ -144,6 +145,7 @@ class Create(base.CreateCommand):
   _include_l7_internal_load_balancing = True
   _traffic_director_security = False
   _certificate_map = False
+  _list_format = flags.DEFAULT_LIST_FORMAT
 
   SSL_CERTIFICATES_ARG = None
   TARGET_HTTPS_PROXY_ARG = None
@@ -185,7 +187,8 @@ class Create(base.CreateCommand):
         include_l7_internal_load_balancing=cls
         ._include_l7_internal_load_balancing,
         traffic_director_security=cls._traffic_director_security,
-        certificate_map=cls._certificate_map)
+        certificate_map=cls._certificate_map,
+        list_format=cls._list_format)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -208,9 +211,11 @@ class Create(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   _certificate_map = True
+  _list_format = flags.DEFAULT_BETA_LIST_FORMAT
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
   _traffic_director_security = True
   _certificate_map = True
+  _list_format = flags.DEFAULT_BETA_LIST_FORMAT

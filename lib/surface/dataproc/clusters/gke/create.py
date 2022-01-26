@@ -23,6 +23,8 @@ import collections
 from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
+from googlecloudsdk.api_lib.dataproc import exceptions
+from googlecloudsdk.api_lib.dataproc import gke_helpers
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import clusters
@@ -130,6 +132,8 @@ class Create(base.CreateCommand):
     virtual_cluster_config = Create._GetVirtualClusterConfig(
         dataproc, gke_cluster_ref, args)
 
+    Create._VerifyGkeClusterIsWorkloadIdentityEnabled(gke_cluster_ref)
+
     if args.setup_workload_identity:
       Create._SetupWorkloadIdentity(args, cluster_ref, gke_cluster_ref)
 
@@ -187,6 +191,15 @@ class Create(base.CreateCommand):
         kubernetesClusterConfig=kubernetes_cluster_config)
 
     return virtual_cluster_config
+
+  @staticmethod
+  def _VerifyGkeClusterIsWorkloadIdentityEnabled(gke_cluster_ref):
+    workload_identity_enabled = gke_helpers.GetGkeClusterIsWorkloadIdentityEnabled(
+        project=gke_cluster_ref.projectsId,
+        location=gke_cluster_ref.locationsId,
+        cluster=gke_cluster_ref.clustersId)
+    if not workload_identity_enabled:
+      raise exceptions.GkeClusterMissingWorkloadIdentityError(gke_cluster_ref)
 
   @staticmethod
   def _SetupWorkloadIdentity(args, cluster_ref, gke_cluster_ref):

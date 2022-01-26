@@ -33,6 +33,14 @@ _DETAILED_HELP = {
         To list all triggers in location ``us-central1'', run:
 
           $ {command} --location=us-central1
+
+        To list all triggers in all locations, run:
+
+          $ {command} --location=-
+
+        or
+
+          $ {command}
         """,
 }
 
@@ -120,7 +128,7 @@ class List(base.ListCommand):
         parser,
         "The location for which to list triggers. This should be either "
         "``global'' or one of the supported regions.",
-        required=True)
+        required=False)
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(triggers.GetTriggerURI)
     parser.display_info.AddTransforms({

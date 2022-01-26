@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.container.hub.features import base
 class Status(base.DescribeCommand):
   """Status of the Cloud Build Feature.
 
-  Displays the status of the Cloud Build Feature in the Hub.
+  Displays the status of the Cloud Build Feature in the Fleet.
 
   ## EXAMPLES
 

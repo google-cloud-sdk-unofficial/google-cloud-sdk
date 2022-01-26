@@ -112,6 +112,7 @@ def _CommonArgs(parser,
   instances_flags.AddShieldedInstanceConfigArgs(parser)
   instances_flags.AddNestedVirtualizationArgs(parser)
   instances_flags.AddThreadsPerCoreArgs(parser)
+  instances_flags.AddEnableUefiNetworkingArgs(parser)
   if support_numa_node_count:
     instances_flags.AddNumaNodeCountArgs(parser)
 
@@ -140,6 +141,8 @@ def _CommonArgs(parser,
       '--description', help='Specifies a textual description of the instances.')
 
   base.ASYNC_FLAG.AddToParser(parser)
+  parser.display_info.AddFormat(
+      'multi(instances:format="table(name,zone.basename())")')
 
   if support_visible_core_count:
     instances_flags.AddVisibleCoreCountArgs(parser)
@@ -176,6 +179,37 @@ def _GetOperations(compute_client, project, operation_group_id):
   return operations_response, errors_to_collect
 
 
+def _GetResult(compute_client, request, operation_group_id):
+  """Requests operations with group id and parses them as an output."""
+
+  operations_response, errors = _GetOperations(compute_client, request.project,
+                                               operation_group_id)
+  result = {'operationGroupId': operation_group_id, 'instances': []}
+  if not errors:
+    successful = [
+        op for op in operations_response if op.operationType == 'insert' and
+        str(op.status) == 'DONE' and op.error is None
+    ]
+    num_successful = len(successful)
+    num_unsuccessful = request.bulkInsertInstanceResource.count - num_successful
+
+    def GetInstanceStatus(op):
+      return {
+          'id': op.targetId,
+          'name': op.targetLink.split('/')[-1],
+          'zone': op.zone,
+          'selfLink': op.targetLink
+      }
+
+    instances_status = [GetInstanceStatus(op) for op in successful]
+
+    result['createdInstanceCount'] = num_successful
+    result['failedInstanceCount'] = num_unsuccessful
+    result['instances'] = instances_status
+
+  return result
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create Compute Engine virtual machine instances."""
@@ -200,7 +234,6 @@ class Create(base.Command):
   _support_visible_core_count = False
   _support_provisioning_model = False
   _support_termination_action = False
-  _support_enable_uefi_networking = False
 
   _log_async = False
 
@@ -373,16 +406,14 @@ class Create(base.Command):
         (self._support_numa_node_count and args.numa_node_count is not None) or
         (self._support_visible_core_count and
          args.visible_core_count is not None) or
-        (self._support_enable_uefi_networking and
-         args.enable_uefi_networking is not None)):
+        args.enable_uefi_networking is not None):
       visible_core_count = args.visible_core_count if self._support_visible_core_count else None
       advanced_machine_features = (
           instance_utils.CreateAdvancedMachineFeaturesMessage(
               compute_client.messages, args.enable_nested_virtualization,
               args.threads_per_core,
               args.numa_node_count if self._support_numa_node_count else None,
-              visible_core_count, args.enable_uefi_networking
-              if self._support_enable_uefi_networking else None))
+              visible_core_count, args.enable_uefi_networking))
 
     parsed_resource_policies = []
     resource_policies = getattr(args, 'resource_policies', None)
@@ -467,6 +498,16 @@ class Create(base.Command):
     return instance_service, request_message
 
   def Run(self, args):
+    """Runs bulk create command.
+
+    Args:
+      args: argparse.Namespace, An object that contains the values for the
+        arguments specified in the .Args() method.
+
+    Returns:
+      A resource object dispatched by display.Displayer().
+    """
+
     instances_flags.ValidateBulkCreateArgs(args)
     instances_flags.ValidateLocationPolicyArgs(args)
     instances_flags.ValidateBulkDiskFlags(
@@ -501,11 +542,6 @@ class Create(base.Command):
                                                       resource_parser, project,
                                                       location, scope)
 
-    if not args.IsSpecified('format'):
-      # Unless a format is specified we are outputing status information
-      # via the Epilog, so can default to no formatted output.
-      args.format = 'disable'
-
     self._errors = []
     self._log_async = False
     self._status_message = None
@@ -530,21 +566,12 @@ class Create(base.Command):
     self._errors = errors_to_collect
     if response:
       operation_group_id = response[0].operationGroupId
-
-      operations_response, errors = _GetOperations(compute_client,
-                                                   request.project,
-                                                   operation_group_id)
-
-      if not errors:
-        num_successful = sum(1 for op in operations_response
-                             if op.operationType == 'insert' and
-                             str(op.status) == 'DONE' and op.error is None)
-        num_unsuccessful = request.bulkInsertInstanceResource.count - num_successful
-
+      result = _GetResult(compute_client, request, operation_group_id)
+      if result['createdInstanceCount'] is not None and result[
+          'failedInstanceCount'] is not None:
         self._status_message = 'VM instances created: {}, failed: {}.'.format(
-            num_successful, num_unsuccessful)
-
-      return {'operationGroupId': operation_group_id}
+            result['createdInstanceCount'], result['failedInstanceCount'])
+      return result
     return
 
   def Epilog(self, resources_were_displayed):
@@ -573,7 +600,6 @@ class CreateBeta(Create):
   _support_visible_core_count = False
   _support_provisioning_model = True
   _support_termination_action = True
-  _support_enable_uefi_networking = False
 
   @classmethod
   def Args(cls, parser):
@@ -613,7 +639,6 @@ class CreateAlpha(Create):
   _support_visible_core_count = True
   _support_provisioning_model = True
   _support_termination_action = True
-  _support_enable_uefi_networking = True
 
   @classmethod
   def Args(cls, parser):
@@ -641,7 +666,6 @@ class CreateAlpha(Create):
     instances_flags.AddBulkCreateArgs(parser)
     instances_flags.AddSecureTagsArgs(parser)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
-    instances_flags.AddEnableUefiNetworkingArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

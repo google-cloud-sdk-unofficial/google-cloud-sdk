@@ -58,9 +58,6 @@ _MAX_RESULTS = 100000
 
 _GCS_SCHEME_PREFIX = 'gs://'
 
-collections_abc = collections
-if sys.version_info > (3, 8):
-  collections_abc = collections.abc
 
 # Maps supported connection type names to the corresponding property in the
 # connection proto.
@@ -1435,6 +1432,7 @@ class BigqueryClient(object):
       entry = entry.copy()
       view = entry.pop('view', None)
       dataset = entry.pop('dataset', None)
+      routine = entry.pop('routine', None)
       if view:
         acl_entries['VIEW'].append(
             '%s:%s.%s' %
@@ -1445,6 +1443,10 @@ class BigqueryClient(object):
           acl_entries['All ' + target + ' in DATASET'].append(
               '%s:%s' % (dataset_reference.get('projectId'),
                          dataset_reference.get('datasetId')))
+      elif routine:
+        acl_entries['ROUTINE'].append(
+            '%s:%s.%s' % (routine.get('projectId'), routine.get('datasetId'),
+                          routine.get('routineId')))
       else:
         role = entry.pop('role', None)
         if not role or len(list(entry.values())) != 1:
@@ -1948,8 +1950,9 @@ class BigqueryClient(object):
       ignore_idle_slots,
       max_concurrency,
       enable_queuing_and_priorities,
-      autoscale_max_slots=None,
-      autoscale_budget_slot_hours=None):
+      multi_region_auxiliary,
+      autoscale_max_slots,
+      autoscale_budget_slot_hours):
     # pylint: disable=g-doc-args
     """Return the request body for CreateReservation.
 
@@ -1960,6 +1963,8 @@ class BigqueryClient(object):
       max_concurrency: Reservation maximum concurrency.
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
+      multi_region_auxiliary: Whether this reservation is for the auxiliary
+        region.
       autoscale_max_slots: Number of slots to be scaled when needed.
       autoscale_budget_slot_hours: The budget expressed in slot-hours for 7*24
         hour rolling window.
@@ -1973,6 +1978,8 @@ class BigqueryClient(object):
     reservation = {}
     reservation['slot_capacity'] = slots
     reservation['ignore_idle_slots'] = ignore_idle_slots
+    if multi_region_auxiliary is not None:
+      reservation['multi_region_auxiliary'] = multi_region_auxiliary
     if max_concurrency is not None:
       if (self.api_version != 'v1beta1'
          ):
@@ -2018,8 +2025,9 @@ class BigqueryClient(object):
       ignore_idle_slots,
       max_concurrency,
       enable_queuing_and_priorities,
-      autoscale_max_slots=None,
-      autoscale_budget_slot_hours=None):
+      multi_region_auxiliary,
+      autoscale_max_slots,
+      autoscale_budget_slot_hours):
     # pylint: disable=g-doc-args
     """Create a reservation with the given reservation reference.
 
@@ -2031,6 +2039,8 @@ class BigqueryClient(object):
       max_concurrency: Reservation maximum concurrency.
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
+      multi_region_auxiliary: Whether this reservation is for the auxiliary
+        region.
       autoscale_max_slots: Number of slots to be scaled when needed.
       autoscale_budget_slot_hours: The budget expressed in slot-hours for 7*24
         hour rolling window.
@@ -2046,6 +2056,7 @@ class BigqueryClient(object):
         ignore_idle_slots,
         max_concurrency,
         enable_queuing_and_priorities,
+        multi_region_auxiliary,
         autoscale_max_slots,
         autoscale_budget_slot_hours)
     client = self.GetReservationApiClient()
@@ -2285,7 +2296,8 @@ class BigqueryClient(object):
       reference,
       slots,
       plan,
-      renewal_plan):
+      renewal_plan,
+      multi_region_auxiliary):
     # pylint: disable=g-doc-args
     """Create a capacity commitment.
 
@@ -2294,6 +2306,8 @@ class BigqueryClient(object):
       slots: Number of slots in this commitment.
       plan: Commitment plan for this capacity commitment.
       renewal_plan: Renewal plan for this capacity commitment.
+      multi_region_auxiliary: Whether this commitment is for the auxiliary
+        region.
 
     Returns:
       Capacity commitment object that was created.
@@ -2302,6 +2316,8 @@ class BigqueryClient(object):
     capacity_commitment['slot_count'] = slots
     capacity_commitment['plan'] = plan
     capacity_commitment['renewal_plan'] = renewal_plan
+    if multi_region_auxiliary is not None:
+      capacity_commitment['multi_region_auxiliary'] = multi_region_auxiliary
     client = self.GetReservationApiClient()
     parent = 'projects/%s/locations/%s' % (reference.projectId,
                                            reference.location)
@@ -2991,13 +3007,17 @@ class BigqueryClient(object):
       if print_format == 'view':
         formatter.AddColumns(('Query',))
       if print_format == 'materialized_view':
-        formatter.AddColumns(('Query', 'Enable Refresh', 'Refresh Interval Ms',
-                              'Last Refresh Time'))
+        formatter.AddColumns(('Query',
+                              'Enable Refresh',
+                              'Refresh Interval Ms',
+                              'Last Refresh Time'
+                              ))
     elif reference_type == ApiClientHelper.EncryptionServiceAccount:
       formatter.AddColumns(list(object_info.keys()))
     elif reference_type == ApiClientHelper.ReservationReference:
       formatter.AddColumns(('name', 'slotCapacity', 'ignoreIdleSlots',
-                            'creationTime', 'updateTime'))
+                            'creationTime', 'updateTime',
+                            'multiRegionAuxiliary'))
     elif reference_type == ApiClientHelper.BetaReservationReference:
       formatter.AddColumns((
           'name',
@@ -3006,19 +3026,22 @@ class BigqueryClient(object):
           'ignoreIdleSlots',
           'enableQueuingAndPriorities',
           'creationTime',
-          'updateTime'))
+          'updateTime',
+          'multiRegionAuxiliary'))
     elif reference_type == ApiClientHelper.AutoscaleAlphaReservationReference:
       formatter.AddColumns(
           ('name', 'slotCapacity', 'ignoreIdleSlots', 'autoscaleMaxSlots',
-           'autoscaleCurrentSlots', 'creationTime', 'updateTime'))
+           'autoscaleCurrentSlots', 'creationTime', 'updateTime',
+           'multiRegionAuxiliary'))
     elif reference_type == ApiClientHelper.AutoscalePreviewReservationReference:
       formatter.AddColumns(
           ('name', 'slotCapacity', 'ignoreIdleSlots',
            'autoscaleBudgetSlotHours', 'autoscaleUsedBudgetSlotHours',
-           'creationTime', 'updateTime'))
+           'creationTime', 'updateTime', 'multiRegionAuxiliary'))
     elif reference_type == ApiClientHelper.CapacityCommitmentReference:
       formatter.AddColumns(('name', 'slotCount', 'plan', 'renewalPlan', 'state',
-                            'commitmentStartTime', 'commitmentEndTime'))
+                            'commitmentStartTime', 'commitmentEndTime',
+                            'multiRegionAuxiliary'))
     elif reference_type == ApiClientHelper.BetaReservationAssignmentReference:
       formatter.AddColumns(('name', 'jobType', 'assignee', 'priority'))
     elif reference_type == ApiClientHelper.ReservationAssignmentReference:
@@ -3658,6 +3681,8 @@ class BigqueryClient(object):
       result['slotCapacity'] = '0'
     if 'ignoreIdleSlots' not in list(result.keys()):
       result['ignoreIdleSlots'] = 'False'
+    if 'multiRegionAuxiliary' not in list(result.keys()):
+      result['multiRegionAuxiliary'] = 'False'
     if (reference_type == ApiClientHelper.BetaReservationReference and
         'maxConcurrency' not in list(result.keys())):
       result['maxConcurrency'] = '0 (auto)'
@@ -3711,6 +3736,8 @@ class BigqueryClient(object):
     # Default values not passed along in the response.
     if 'slotCount' not in list(result.keys()):
       result['slotCount'] = '0'
+    if 'multiRegionAuxiliary' not in list(result.keys()):
+      result['multiRegionAuxiliary'] = 'False'
     return result
 
   @staticmethod
@@ -5022,28 +5049,30 @@ class BigqueryClient(object):
       raise BigqueryError('Data source \'%s\' does not'
                           ' support refresh window days.' % data_source)
 
-  def UpdateTable(self,
-                  reference,
-                  schema=None,
-                  description=None,
-                  display_name=None,
-                  expiration=None,
-                  view_query=None,
-                  materialized_view_query=None,
-                  enable_refresh=None,
-                  refresh_interval_ms=None,
-                  external_data_config=None,
-                  view_udf_resources=None,
-                  use_legacy_sql=None,
-                  labels_to_set=None,
-                  label_keys_to_remove=None,
-                  time_partitioning=None,
-                  range_partitioning=None,
-                  clustering=None,
-                  require_partition_filter=None,
-                  etag=None,
-                  encryption_configuration=None,
-                  location=None):
+  def UpdateTable(
+      self,
+      reference,
+      schema=None,
+      description=None,
+      display_name=None,
+      expiration=None,
+      view_query=None,
+      materialized_view_query=None,
+      enable_refresh=None,
+      refresh_interval_ms=None,
+      external_data_config=None,
+      view_udf_resources=None,
+      use_legacy_sql=None,
+      labels_to_set=None,
+      label_keys_to_remove=None,
+      time_partitioning=None,
+      range_partitioning=None,
+      clustering=None,
+      require_partition_filter=None,
+      etag=None,
+      encryption_configuration=None,
+      location=None
+  ):
     """Updates a table.
 
     Args:
@@ -5144,7 +5173,9 @@ class BigqueryClient(object):
     if location is not None:
       table['location'] = location
 
-    request = self.apiclient.tables().patch(body=table, **dict(reference))
+    request = self.apiclient.tables().patch(
+        body=table,
+        **dict(reference))
 
     # Perform a conditional update to protect against concurrent
     # modifications to this table. If there is a conflicting
@@ -5640,7 +5671,12 @@ class BigqueryClient(object):
                       max_results=None,
                       timeout_ms=None,
                       location=None):
-    """Waits for a query to complete, once.
+    """Waits for a query job to run and returns results if complete.
+
+    By default, waits 10s for the provided job to complete and either returns
+    the results or a response where jobComplete is set to false. The timeout can
+    be increased but the call is not guaranteed to wait for the specified
+    timeout.
 
     Args:
       job_id: The job id of the query job that we are waiting to complete.
@@ -6722,7 +6758,7 @@ class ApiClientHelper(object):
   def __init__(self, *unused_args, **unused_kwds):
     raise NotImplementedError('Cannot instantiate static class ApiClientHelper')
 
-  class Reference(collections_abc.Mapping):
+  class Reference(collections.Mapping):
     """Base class for Reference objects returned by apiclient."""
     _required_fields = frozenset()
     _optional_fields = frozenset()

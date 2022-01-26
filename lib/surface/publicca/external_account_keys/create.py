@@ -48,11 +48,6 @@ class Create(base.CreateCommand):
       $ {command} --key-output-file=./external_account_key.txt
   """
 
-  def __init__(self, *args, **kwargs):
-    super(Create, self).__init__(*args, **kwargs)
-    self.client = publicca_base.GetClientInstance()
-    self.messages = publicca_base.GetMessagesModule()
-
   @staticmethod
   def Args(parser):
     parser.add_argument(
@@ -60,6 +55,9 @@ class Create(base.CreateCommand):
         help='The path where the generated external account key is written.')
 
   def Run(self, args):
+    api_version = publicca_base.GetVersion(self.ReleaseTrack())
+    self.client = publicca_base.GetClientInstance(api_version)
+    self.messages = publicca_base.GetMessagesModule(api_version)
     project = properties.VALUES.core.project.Get(required=True)
     request = self.messages.PubliccaProjectsLocationsExternalAccountKeysCreateRequest(
         parent='projects/{}/locations/global'.format(project))

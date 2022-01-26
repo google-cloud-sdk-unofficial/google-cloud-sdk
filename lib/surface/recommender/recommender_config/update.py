@@ -61,6 +61,7 @@ class Update(base.Command):
     flags.AddDisplayNameToParser(parser, 'recommender configuration')
     flags.AddValidateOnlyToParser(parser)
     flags.AddEtagToParser(parser, 'recommender configuration')
+    flags.AddAnnotationsToParser(parser, 'recommender configuration')
 
   def Run(self, args):
     """Run 'gcloud recommender recommender-config update'.

@@ -487,6 +487,12 @@ def _AddPatchConfigArguments(parser):
   _AddWinGroupArguments(parser)
   _AddZypperGroupArguments(parser)
   _AddPrePostStepArguments(parser)
+  parser.add_argument(
+      '--mig-instances-allowed',
+      action='store_true',
+      help="""\
+        If set, patching of VMs that are part of a managed instance group (MIG) is allowed.""",
+  )
 
 
 def _CreateAptSettings(args, messages):
@@ -758,6 +764,7 @@ def _CreatePatchConfig(args, messages):
           args, messages, is_pre_patch_step=True),
       postStep=_CreatePrePostPatchStepSettings(
           args, messages, is_pre_patch_step=False),
+      migInstancesAllowed=args.mig_instances_allowed,
   )
 
 

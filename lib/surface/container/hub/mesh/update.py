@@ -26,7 +26,6 @@ from googlecloudsdk.core.console import console_io
 
 
 @gbase.ReleaseTracks(gbase.ReleaseTrack.ALPHA)
-@gbase.Hidden
 class Update(base.UpdateCommand):
   """Update the configuration of the Service Mesh Feature.
 

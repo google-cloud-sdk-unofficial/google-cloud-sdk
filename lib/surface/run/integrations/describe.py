@@ -60,4 +60,5 @@ class Describe(base.DescribeCommand):
         args, run_flags.Product.RUN_APPS, self.ReleaseTrack())
     with run_apps_operations.Connect(conn_context) as client:
       resource_config = client.GetIntegration(name)
-      return resource_config
+      resource_status = client.GetIntegrationStatus(name)
+      return {'resource': resource_config, 'status': resource_status}

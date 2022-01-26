@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
+from googlecloudsdk.command_lib.ai import index_endpoints_util
 from googlecloudsdk.command_lib.ai import indexes_util
 
 
@@ -41,6 +42,11 @@ class DescribeV1(base.DescribeCommand):
   project `example` in region `us-central1`, run:
 
     $ {command} 123 --index=456 --project=example --region=us-central1
+
+  To describe an operation `123` belongs to parent index endpoint resource `456`
+  of project `example` in region `us-central1`, run:
+
+    $ {command} 123 --index-endpoint=456 --project=example --region=us-central1
   """
 
   @staticmethod
@@ -50,6 +56,11 @@ class DescribeV1(base.DescribeCommand):
         required=False,
         helper_text="""\
      ID of the index. Applies to operations belongs to an index resource. Do not set otherwise.
+    """).AddToParser(parser)
+    flags.GetIndexEndpointIdArg(
+        required=False,
+        helper_text="""\
+     ID of the index endpoint. Applies to operations belongs to an index endpoint resource. Do not set otherwise.
     """).AddToParser(parser)
 
   def _Run(self, args, version):
@@ -64,6 +75,9 @@ class DescribeV1(base.DescribeCommand):
       # Override the operation name using the multi-parent format.
       operation_ref = indexes_util.BuildIndexParentOperation(
           project_id, region, args.index, operation_id)
+    elif args.index_endpoint is not None:
+      operation_ref = index_endpoints_util.BuildParentOperation(
+          project_id, region, args.index_endpoint, operation_id)
     with endpoint_util.AiplatformEndpointOverrides(version, region=region):
       return operations.OperationsClient(version=version).Get(operation_ref)
 

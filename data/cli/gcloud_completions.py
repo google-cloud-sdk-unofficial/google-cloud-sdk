@@ -1148,6 +1148,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--index": "value",
+                "--index-endpoint": "value",
                 "--region": "dynamic"
               }
             }
@@ -3127,6 +3128,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--index": "value",
+                    "--index-endpoint": "value",
                     "--region": "dynamic"
                   }
                 }
@@ -6334,6 +6336,13 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--limit": "value",
+                    "--region": "dynamic"
+                  }
+                },
+                "reset": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
                     "--region": "dynamic"
                   }
                 }
@@ -13677,6 +13686,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--instance-filter-name-prefixes": "value",
                         "--instance-filter-names": "value",
                         "--instance-filter-zones": "value",
+                        "--mig-instances-allowed": "bool",
                         "--post-patch-linux-executable": "value",
                         "--post-patch-linux-success-codes": "value",
                         "--post-patch-windows-executable": "value",
@@ -14521,7 +14531,8 @@ STATIC_COMPLETION_CLI_TREE = {
                             "--nat": "value",
                             "--region": "dynamic",
                             "--router": "dynamic",
-                            "--source-nat-active-ips": "value"
+                            "--source-nat-active-ips": "value",
+                            "--source-nat-active-ranges": "value"
                           }
                         },
                         "delete": {
@@ -14553,12 +14564,15 @@ STATIC_COMPLETION_CLI_TREE = {
                           "flags": {
                             "--async": "bool",
                             "--clear-source-nat-drain-ips": "bool",
+                            "--clear-source-nat-drain-ranges": "bool",
                             "--match": "value",
                             "--nat": "value",
                             "--region": "dynamic",
                             "--router": "dynamic",
                             "--source-nat-active-ips": "value",
-                            "--source-nat-drain-ips": "value"
+                            "--source-nat-active-ranges": "value",
+                            "--source-nat-drain-ips": "value",
+                            "--source-nat-drain-ranges": "value"
                           }
                         }
                       },
@@ -17063,7 +17077,6 @@ STATIC_COMPLETION_CLI_TREE = {
                         ],
                         "--security-group-ids": "value",
                         "--service-address-cidr-blocks": "value",
-                        "--service-load-balancer-subnet-ids": "value",
                         "--ssh-ec2-key-pair": "value",
                         "--subnet-ids": "value",
                         "--tags": "value",
@@ -18860,6 +18873,16 @@ STATIC_COMPLETION_CLI_TREE = {
                     "enable": {
                       "commands": {},
                       "flags": {}
+                    },
+                    "update": {
+                      "commands": {},
+                      "flags": {
+                        "--control-plane": [
+                          "automatic",
+                          "manual"
+                        ],
+                        "--membership": "value"
+                      }
                     }
                   },
                   "flags": {}
@@ -27854,6 +27877,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--async": "bool",
                     "--consumer-subnetworks": "value",
                     "--data-catalog-sync": "bool",
+                    "--database-type": [
+                      "mysql",
+                      "spanner"
+                    ],
                     "--encryption-kms-key": "value",
                     "--hive-metastore-configs": "value",
                     "--hive-metastore-configs-from-file": "value",
@@ -32130,6 +32157,10 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "resource-config": {
           "commands": {
+            "apply": {
+              "commands": {},
+              "flags": {}
+            },
             "bulk-export": {
               "commands": {},
               "flags": {
@@ -32316,7 +32347,9 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {
                 "describe": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--location": "value"
+                  }
                 }
               },
               "flags": {}
@@ -33148,6 +33181,25 @@ STATIC_COMPLETION_CLI_TREE = {
                       "managed"
                     ],
                     "--region": "value"
+                  }
+                },
+                "proxy": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "value",
+                    "--cluster-location": "value",
+                    "--context": "value",
+                    "--kubeconfig": "value",
+                    "--namespace": "value",
+                    "--platform": [
+                      "gke",
+                      "kubernetes",
+                      "managed"
+                    ],
+                    "--port": "value",
+                    "--region": "value",
+                    "--tag": "value",
+                    "--token": "value"
                   }
                 },
                 "remove-iam-policy-binding": {
@@ -35122,7 +35174,8 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--backup": "dynamic",
                     "--database": "dynamic",
-                    "--instance": "dynamic"
+                    "--instance": "dynamic",
+                    "--instance-config": "dynamic"
                   }
                 },
                 "describe": {
@@ -35130,7 +35183,8 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--backup": "dynamic",
                     "--database": "dynamic",
-                    "--instance": "dynamic"
+                    "--instance": "dynamic",
+                    "--instance-config": "dynamic"
                   }
                 },
                 "list": {
@@ -36470,6 +36524,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--count": "value",
                     "--creds-file": "value",
                     "--id-prefix": "value",
+                    "--logs-directory": "value",
                     "--memlock-limit": "value",
                     "--mount-directories": "value",
                     "--pool": "value",
@@ -36513,6 +36568,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--include-modified-before-absolute": "value",
                     "--include-modified-before-relative": "value",
                     "--include-prefixes": "value",
+                    "--intermediate-storage-path": "value",
+                    "--manifest-file": "value",
                     "--name": "value",
                     "--no-async": "bool",
                     "--notification-event-types": "value",
@@ -36572,6 +36629,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--clear-include-modified-before-absolute": "bool",
                     "--clear-include-modified-before-relative": "bool",
                     "--clear-include-prefixes": "bool",
+                    "--clear-intermediate-storage-path": "bool",
+                    "--clear-manifest-file": "bool",
                     "--clear-notification-config": "bool",
                     "--clear-notification-event-types": "bool",
                     "--clear-schedule": "bool",
@@ -36590,6 +36649,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--include-modified-before-absolute": "value",
                     "--include-modified-before-relative": "value",
                     "--include-prefixes": "value",
+                    "--intermediate-storage-path": "value",
+                    "--manifest-file": "value",
                     "--notification-event-types": "value",
                     "--notification-payload-format": [
                       "json",
@@ -40026,6 +40087,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--index": "value",
+                    "--index-endpoint": "value",
                     "--region": "dynamic"
                   }
                 }
@@ -46902,6 +46964,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--description": "value",
                     "--disk": "value",
                     "--enable-nested-virtualization": "bool",
+                    "--enable-uefi-networking": "bool",
                     "--host-error-timeout-seconds": "value",
                     "--image": "value",
                     "--image-family": "value",
@@ -47195,6 +47258,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--disk": "value",
                         "--enable-display-device": "bool",
                         "--enable-nested-virtualization": "bool",
+                        "--enable-uefi-networking": "bool",
                         "--erase-windows-vss-signature": "bool",
                         "--host-error-timeout-seconds": "value",
                         "--image": "value",
@@ -47292,6 +47356,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--disk": "value",
                     "--enable-display-device": "bool",
                     "--enable-nested-virtualization": "bool",
+                    "--enable-uefi-networking": "bool",
                     "--erase-windows-vss-signature": "bool",
                     "--host-error-timeout-seconds": "value",
                     "--hostname": "value",
@@ -48022,13 +48087,20 @@ STATIC_COMPLETION_CLI_TREE = {
                               "50m",
                               "5g"
                             ],
+                            "--candidate-ipv6-subnets": "value",
                             "--candidate-subnets": "value",
+                            "--cloud-router-ipv6-interface-id": "value",
+                            "--customer-router-ipv6-interface-id": "value",
                             "--description": "value",
                             "--enable-admin": "bool",
                             "--interconnect": "dynamic",
                             "--mtu": "value",
                             "--region": "dynamic",
                             "--router": "dynamic",
+                            "--stack-type": [
+                              "IPV4_IPV6",
+                              "IPV4_ONLY"
+                            ],
                             "--vlan": "value"
                           }
                         },
@@ -48049,12 +48121,19 @@ STATIC_COMPLETION_CLI_TREE = {
                               "50m",
                               "5g"
                             ],
+                            "--candidate-ipv6-subnets": "value",
                             "--clear-labels": "bool",
+                            "--cloud-router-ipv6-interface-id": "value",
+                            "--customer-router-ipv6-interface-id": "value",
                             "--description": "value",
                             "--enable-admin": "bool",
                             "--mtu": "value",
                             "--region": "dynamic",
                             "--remove-labels": "value",
+                            "--stack-type": [
+                              "IPV4_IPV6",
+                              "IPV4_ONLY"
+                            ],
                             "--update-labels": "value"
                           }
                         }
@@ -49158,6 +49237,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--instance-filter-name-prefixes": "value",
                         "--instance-filter-names": "value",
                         "--instance-filter-zones": "value",
+                        "--mig-instances-allowed": "bool",
                         "--post-patch-linux-executable": "value",
                         "--post-patch-linux-success-codes": "value",
                         "--post-patch-windows-executable": "value",
@@ -49772,12 +49852,15 @@ STATIC_COMPLETION_CLI_TREE = {
                       "DISABLED",
                       "PASSIVE"
                     ],
+                    "--enable-ipv6": "bool",
                     "--enabled": "bool",
                     "--instance": "dynamic",
                     "--instance-zone": "dynamic",
                     "--interface": "value",
+                    "--ipv6-nexthop-address": "value",
                     "--peer-asn": "value",
                     "--peer-ip-address": "value",
+                    "--peer-ipv6-nexthop-address": "value",
                     "--peer-name": "value",
                     "--region": "dynamic",
                     "--set-advertisement-groups": "value",
@@ -50057,11 +50140,14 @@ STATIC_COMPLETION_CLI_TREE = {
                       "DISABLED",
                       "PASSIVE"
                     ],
+                    "--enable-ipv6": "bool",
                     "--enabled": "bool",
                     "--interface": "value",
                     "--ip-address": "value",
+                    "--ipv6-nexthop-address": "value",
                     "--peer-asn": "value",
                     "--peer-ip-address": "value",
+                    "--peer-ipv6-nexthop-address": "value",
                     "--peer-name": "value",
                     "--region": "dynamic",
                     "--remove-advertisement-groups": "value",
@@ -61990,6 +62076,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--async": "bool",
                     "--consumer-subnetworks": "value",
                     "--data-catalog-sync": "bool",
+                    "--database-type": [
+                      "mysql",
+                      "spanner"
+                    ],
                     "--encryption-kms-key": "value",
                     "--hive-metastore-configs": "value",
                     "--hive-metastore-configs-from-file": "value",
@@ -64823,6 +64913,22 @@ STATIC_COMPLETION_CLI_TREE = {
           },
           "flags": {}
         },
+        "publicca": {
+          "commands": {
+            "external-account-keys": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--key-output-file": "value"
+                  }
+                }
+              },
+              "flags": {}
+            }
+          },
+          "flags": {}
+        },
         "pubsub": {
           "commands": {
             "lite-operations": {
@@ -65416,6 +65522,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update": {
                   "commands": {},
                   "flags": {
+                    "--annotations": "value",
                     "--config-file": "value",
                     "--display-name": "value",
                     "--etag": "value",
@@ -65547,6 +65654,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update": {
                   "commands": {},
                   "flags": {
+                    "--annotations": "value",
                     "--config-file": "value",
                     "--display-name": "value",
                     "--etag": "value",
@@ -69914,6 +70022,13 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--limit": "value",
                 "--region": "dynamic"
               }
+            },
+            "reset": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--region": "dynamic"
+              }
             }
           },
           "flags": {}
@@ -73041,6 +73156,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--description": "value",
                 "--disk": "value",
                 "--enable-nested-virtualization": "bool",
+                "--enable-uefi-networking": "bool",
                 "--image": "value",
                 "--image-family": "value",
                 "--image-project": "value",
@@ -73318,6 +73434,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--description": "value",
                     "--disk": "value",
                     "--enable-nested-virtualization": "bool",
+                    "--enable-uefi-networking": "bool",
                     "--erase-windows-vss-signature": "bool",
                     "--image": "value",
                     "--image-family": "value",
@@ -73407,6 +73524,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--disk": "value",
                 "--enable-display-device": "bool",
                 "--enable-nested-virtualization": "bool",
+                "--enable-uefi-networking": "bool",
                 "--hostname": "value",
                 "--image": "value",
                 "--image-family": "value",
@@ -74038,13 +74156,20 @@ STATIC_COMPLETION_CLI_TREE = {
                           "50m",
                           "5g"
                         ],
+                        "--candidate-ipv6-subnets": "value",
                         "--candidate-subnets": "value",
+                        "--cloud-router-ipv6-interface-id": "value",
+                        "--customer-router-ipv6-interface-id": "value",
                         "--description": "value",
                         "--enable-admin": "bool",
                         "--interconnect": "dynamic",
                         "--mtu": "value",
                         "--region": "dynamic",
                         "--router": "dynamic",
+                        "--stack-type": [
+                          "IPV4_IPV6",
+                          "IPV4_ONLY"
+                        ],
                         "--vlan": "value"
                       }
                     },
@@ -74065,10 +74190,17 @@ STATIC_COMPLETION_CLI_TREE = {
                           "50m",
                           "5g"
                         ],
+                        "--candidate-ipv6-subnets": "value",
+                        "--cloud-router-ipv6-interface-id": "value",
+                        "--customer-router-ipv6-interface-id": "value",
                         "--description": "value",
                         "--enable-admin": "bool",
                         "--mtu": "value",
-                        "--region": "dynamic"
+                        "--region": "dynamic",
+                        "--stack-type": [
+                          "IPV4_IPV6",
+                          "IPV4_ONLY"
+                        ]
                       }
                     }
                   },
@@ -75058,6 +75190,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--instance-filter-name-prefixes": "value",
                     "--instance-filter-names": "value",
                     "--instance-filter-zones": "value",
+                    "--mig-instances-allowed": "bool",
                     "--post-patch-linux-executable": "value",
                     "--post-patch-linux-success-codes": "value",
                     "--post-patch-windows-executable": "value",
@@ -75665,12 +75798,15 @@ STATIC_COMPLETION_CLI_TREE = {
                   "DISABLED",
                   "PASSIVE"
                 ],
+                "--enable-ipv6": "bool",
                 "--enabled": "bool",
                 "--instance": "dynamic",
                 "--instance-zone": "dynamic",
                 "--interface": "value",
+                "--ipv6-nexthop-address": "value",
                 "--peer-asn": "value",
                 "--peer-ip-address": "value",
+                "--peer-ipv6-nexthop-address": "value",
                 "--peer-name": "value",
                 "--region": "dynamic",
                 "--set-advertisement-groups": "value",
@@ -75950,11 +76086,14 @@ STATIC_COMPLETION_CLI_TREE = {
                   "DISABLED",
                   "PASSIVE"
                 ],
+                "--enable-ipv6": "bool",
                 "--enabled": "bool",
                 "--interface": "value",
                 "--ip-address": "value",
+                "--ipv6-nexthop-address": "value",
                 "--peer-asn": "value",
                 "--peer-ip-address": "value",
+                "--peer-ipv6-nexthop-address": "value",
                 "--peer-name": "value",
                 "--region": "dynamic",
                 "--remove-advertisement-groups": "value",
@@ -83806,6 +83945,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "--clear-labels": "bool",
             "--clear-max-instances": "bool",
             "--clear-min-instances": "bool",
+            "--clear-secrets": "bool",
             "--clear-vpc-connector": "bool",
             "--egress-settings": [
               "all",
@@ -83826,6 +83966,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "--remove-build-env-vars": "value",
             "--remove-env-vars": "value",
             "--remove-labels": "value",
+            "--remove-secrets": "value",
             "--retry": "bool",
             "--runtime": "value",
             "--security-level": [
@@ -83835,6 +83976,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "--service-account": "value",
             "--set-build-env-vars": "value",
             "--set-env-vars": "value",
+            "--set-secrets": "value",
             "--source": "value",
             "--stage-bucket": "value",
             "--timeout": "value",
@@ -83846,6 +83988,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "--update-build-env-vars": "value",
             "--update-env-vars": "value",
             "--update-labels": "value",
+            "--update-secrets": "value",
             "--vpc-connector": "value"
           }
         },

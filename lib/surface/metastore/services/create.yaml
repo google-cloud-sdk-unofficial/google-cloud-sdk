@@ -99,6 +99,21 @@
           Services using the `CANARY` release channel are not subject to any SLAs.
       default: stable
       api_field: service.releaseChannel
+    - arg_name: database-type
+      release_tracks: [ALPHA, BETA]
+      help_text: |
+        The type of database the Dataproc Metastore service will store data in.
+      choices:
+      - arg_value: mysql
+        enum_value: MYSQL
+        help_text:  |
+          `MYSQL` database type is a Dataproc Metastore service backed by MySQL CloudSQL.
+      - arg_value: spanner
+        enum_value: SPANNER
+        help_text:  |
+          `SPANNER` database type is a Dataproc Metastore service backed by Cloud Spanner.
+      default: mysql
+      api_field: service.databaseType
     - group:
         help_text: |
           Configuration properties specific to running Hive metastore

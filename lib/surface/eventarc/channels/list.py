@@ -30,6 +30,14 @@ _DETAILED_HELP = {
         To list all channels in location ``us-central1'', run:
 
           $ {command} --location=us-central1
+
+        To list all channels in all locations, run:
+
+          $ {command} --location=-
+
+        or
+
+          $ {command}
         """,
 }
 
@@ -55,7 +63,7 @@ class List(base.ListCommand):
     flags.AddLocationResourceArg(
         parser,
         "Location for which to list channels. This should be one of the supported regions.",
-        required=True)
+        required=False)
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(channels.GetChannelURI)
 

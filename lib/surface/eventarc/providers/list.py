@@ -30,6 +30,14 @@ _DETAILED_HELP = {
         To list all providers in location `us-central1`, run:
 
           $ {command} --location=us-central1
+
+        To list all providers in all locations, run:
+
+          $ {command} --location=-
+
+        or
+
+          $ {command}
         """,
 }
 
@@ -55,7 +63,7 @@ class List(base.ListCommand):
     flags.AddLocationResourceArg(
         parser,
         'The location in which to list event providers.',
-        required=True)
+        required=False)
     flags.AddProviderNameArg(parser)
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(providers.GetProvidersURI)

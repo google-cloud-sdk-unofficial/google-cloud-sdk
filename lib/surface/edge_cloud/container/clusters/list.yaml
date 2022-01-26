@@ -1,0 +1,32 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List Edge Container clusters.
+    description: |
+      List Edge Container clusters.
+    examples: |
+      To list the clusters in region us-central1, run:
+
+        $ {command} --location=us-central1
+
+  request:
+    collection: edgecontainer.projects.locations.clusters
+    api_version: v1alpha
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Parent Edge Container location to list all contained Edge Container clusters.
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.container.resources:location
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        hub.membership.segment(5):label=HUB_MEMBERSHIP,
+        endpoint:label=ENDPOINT,
+        labels:label=LABELS,
+        createTime.date():label=CREATED
+      )

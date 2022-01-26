@@ -68,13 +68,13 @@ class Create(base.Command):
     compute_resources.add_argument(
         '--compute-node-count',
         type=int,
-        default=4,
+        default=0,
         required=False,
         help='Total number of worker nodes in the cluster.')
     compute_resources.add_argument(
         '--compute-max-node-count',
         type=int,
-        default=6,
+        default=0,
         required=False,
         help='Maximum number of configurable nodes.')
     os_image_runtime = infrastructure_spec.add_group(

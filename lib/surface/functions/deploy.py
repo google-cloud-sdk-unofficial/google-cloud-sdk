@@ -71,6 +71,9 @@ class Deploy(base.Command):
     # Add args for specifying ignore files to upload source
     flags.AddIgnoreFileFlag(parser)
 
+    # Add flags for secrets
+    secrets_config.ConfigureFlags(parser)
+
     # Add flags for network settings
     flags.AddVPCConnectorMutexGroup(parser)
     flags.AddEgressSettingsFlag(parser)
@@ -92,9 +95,6 @@ class DeployBeta(Deploy):
   def Args(parser, track=base.ReleaseTrack.BETA):
     """Register beta flags for this command."""
     Deploy.Args(parser, track)
-
-    # Configure flags for secrets
-    secrets_config.ConfigureFlags(parser)
 
     # Configure flags for CMEK
     flags.AddKMSKeyFlags(parser)

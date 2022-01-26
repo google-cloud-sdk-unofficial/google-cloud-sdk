@@ -2303,9 +2303,9 @@
             "type": "string",
             "enumDescriptions": [
               "Invalid type.",
-              "Depending on the order, decimal values could be converted to NUMERIC type.",
-              "Depending on the order, decimal values could be converted to BIGNUMERIC type.",
-              "Depending on the order, decimal values could be converted to STRING type."
+              "Decimal values could be converted to NUMERIC type.",
+              "Decimal values could be converted to BIGNUMERIC type.",
+              "Decimal values could be converted to STRING type."
             ],
             "enum": [
               "DECIMAL_TARGET_TYPE_UNSPECIFIED",
@@ -2936,9 +2936,9 @@
             "type": "string",
             "enumDescriptions": [
               "Invalid type.",
-              "Depending on the order, decimal values could be converted to NUMERIC type.",
-              "Depending on the order, decimal values could be converted to BIGNUMERIC type.",
-              "Depending on the order, decimal values could be converted to STRING type."
+              "Decimal values could be converted to NUMERIC type.",
+              "Decimal values could be converted to BIGNUMERIC type.",
+              "Decimal values could be converted to STRING type."
             ],
             "enum": [
               "DECIMAL_TARGET_TYPE_UNSPECIFIED",
@@ -3142,6 +3142,22 @@
         "useAvroLogicalTypes": {
           "description": "Whether to use logical types when extracting to AVRO format. Not applicable when extracting models.",
           "type": "boolean"
+        },
+        "modelExtractOptions": {
+          "description": "Optional. Model extract options only applicable when extracting models.",
+          "$ref": "ModelExtractOptions"
+        }
+      }
+    },
+    "ModelExtractOptions": {
+      "id": "ModelExtractOptions",
+      "description": "Options related to model extraction.",
+      "type": "object",
+      "properties": {
+        "trialId": {
+          "description": "1-based ID of the trial to be exported from a hyperparameter tuning model. The default_trial_id will be exported if not specified. This does not apply for models not trained with hyperparameter tuning.",
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -3977,7 +3993,8 @@
             "Data is not-cached and could not be accelerated by BI Engine.",
             "This particular SQL text is not supported for acceleration by BI Engine.",
             "Input too large for acceleration by BI Engine.",
-            "Catch-all code for all other cases for partial or disabled acceleration."
+            "Catch-all code for all other cases for partial or disabled acceleration.",
+            "One or more tables were not eligible for BI Engine acceleration."
           ],
           "enum": [
             "CODE_UNSPECIFIED",
@@ -3986,7 +4003,8 @@
             "UNCACHED",
             "UNSUPPORTED_SQL_TEXT",
             "INPUT_TOO_LARGE",
-            "OTHER_REASON"
+            "OTHER_REASON",
+            "TABLE_EXCLUDED"
           ]
         },
         "message": {
@@ -6023,7 +6041,7 @@
               "type": "string"
             },
             "location": {
-              "description": "The geographic location of the job. Required except for US and EU. See details at https:\/\/cloud.google.com\/bigquery\/docs\/locations#specifying_your_location.",
+              "description": "The geographic location of the job. You must specify the location to run the job for the following scenarios: - If the location to run a job is not in the `us` or the `eu` multi-regional location - If the job's location is in a single region (for example, `us-central1`) For more information, see https:\/\/cloud.google.com\/bigquery\/docs\/locations#specifying_your_location.",
               "location": "query",
               "type": "string"
             }
@@ -6062,7 +6080,7 @@
               "type": "string"
             },
             "location": {
-              "description": "The geographic location of the job. Required except for US and EU. See details at https:\/\/cloud.google.com\/bigquery\/docs\/locations#specifying_your_location.",
+              "description": "The geographic location of the job. You must specify the location to run the job for the following scenarios: - If the location to run a job is not in the `us` or the `eu` multi-regional location - If the job's location is in a single region (for example, `us-central1`) For more information, see https:\/\/cloud.google.com\/bigquery\/docs\/locations#specifying_your_location.",
               "location": "query",
               "type": "string"
             }
@@ -6294,7 +6312,7 @@
               "format": "uint32"
             },
             "location": {
-              "description": "The geographic location of the job. Required except for US and EU. See details at https:\/\/cloud.google.com\/bigquery\/docs\/locations#specifying_your_location.",
+              "description": "The geographic location of the job. You must specify the location to run the job for the following scenarios: - If the location to run a job is not in the `us` or the `eu` multi-regional location - If the job's location is in a single region (for example, `us-central1`) For more information, see https:\/\/cloud.google.com\/bigquery\/docs\/locations#specifying_your_location.",
               "location": "query",
               "type": "string"
             },

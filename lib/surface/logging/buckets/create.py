@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -86,6 +87,9 @@ class Create(base.CreateCommand):
       bucket_data['indexConfigs'] = args.index
 
     if is_alpha and args.IsSpecified('cmek_kms_key_name'):
+      console_io.PromptContinue(
+          'CMEK cannot be disabled on a bucket once enabled.',
+          cancel_on_no=True)
       cmek_settings = util.GetMessages().CmekSettings(
           kmsKeyName=args.cmek_kms_key_name)
       bucket_data['cmekSettings'] = cmek_settings

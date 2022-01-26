@@ -45,6 +45,10 @@ class Update(base.UpdateCommand):
   Changes one or more properties associated with a bucket.
   """
 
+  def __init__(self, *args, **kwargs):
+    super(Update, self).__init__(*args, **kwargs)
+    self._current_bucket = None
+
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
@@ -67,14 +71,24 @@ class Update(base.UpdateCommand):
         type=arg_parsers.ArgList(),
         metavar='RESTRICTED_FIELD')
 
-  def GetBucket(self, args):
-    """Returns a bucket specified by the arguments."""
-    return util.GetClient().projects_locations_buckets.Get(
-        util.GetMessages().LoggingProjectsLocationsBucketsGetRequest(
-            name=util.CreateResourceName(
-                util.CreateResourceName(
-                    util.GetProjectResource(args.project).RelativeName(),
-                    'locations', args.location), 'buckets', args.BUCKET_ID)))
+  def GetCurrentBucket(self, args):
+    """Returns a bucket specified by the arguments.
+
+    Loads the current bucket at most once. If called multiple times, the
+    previously-loaded bucket will be returned.
+
+    Args:
+      args: The argument set. This is not checked across GetCurrentBucket calls,
+        and must be consistent.
+    """
+    if not self._current_bucket:
+      return util.GetClient().projects_locations_buckets.Get(
+          util.GetMessages().LoggingProjectsLocationsBucketsGetRequest(
+              name=util.CreateResourceName(
+                  util.CreateResourceName(
+                      util.GetProjectResource(args.project).RelativeName(),
+                      'locations', args.location), 'buckets', args.BUCKET_ID)))
+    return self._current_bucket
 
   def _Run(self, args, is_alpha=False):
     bucket_data = {}
@@ -106,7 +120,7 @@ class Update(base.UpdateCommand):
                      args.IsSpecified('remove_indexes') or
                      args.IsSpecified('add_index') or
                      args.IsSpecified('update_index')):
-      bucket = self.GetBucket(args)
+      bucket = self.GetCurrentBucket(args)
       bucket_data['indexConfigs'] = []
       update_mask.append('index_configs')
       indexes_to_remove = (
@@ -143,6 +157,14 @@ class Update(base.UpdateCommand):
         bucket_data['indexConfigs'] += args.add_index
 
     if is_alpha and args.IsSpecified('cmek_kms_key_name'):
+      bucket = self.GetCurrentBucket(args)
+      if not bucket.cmekSettings:
+        # This is the first time CMEK settings are being applied. Warn the user
+        # that this is irreversible.
+        console_io.PromptContinue(
+            'CMEK cannot be disabled on a bucket once enabled.',
+            cancel_on_no=True)
+
       cmek_settings = util.GetMessages().CmekSettings(
           kmsKeyName=args.cmek_kms_key_name)
       bucket_data['cmekSettings'] = cmek_settings
@@ -213,19 +235,18 @@ class UpdateAlpha(Update):
             },
             required_keys=['fieldPath', 'type']),
         metavar='KEY=VALUE, ...',
-        help=(
-            'Add an index to be added to the log bucket. This flag can be '
-            'repeated. The ``fieldPath\'\' and ``type\'\' attributes are '
-            'required. For example '
-            ' --index=fieldPath=jsonPayload.foo,type=INDEX_TYPE_STRING. '
-            'The following keys are accepted:\n\n'
-            '*fieldPath*::: The LogEntry field path to index.'
-            'For example: jsonPayload.request.status. '
-            'Paths are limited to 800 characters and can include only '
-            'letters, digits, underscores, hyphens, and periods.\n\n'
-            '*type*::: The type of data in this index.'
-            'For example: INDEX_TYPE_STRING '
-            'Supported types are Strings and Integers. \n\n '))
+        help=('Add an index to be added to the log bucket. This flag can be '
+              'repeated. The ``fieldPath\'\' and ``type\'\' attributes are '
+              'required. For example '
+              ' --index=fieldPath=jsonPayload.foo,type=INDEX_TYPE_STRING. '
+              'The following keys are accepted:\n\n'
+              '*fieldPath*::: The LogEntry field path to index.'
+              'For example: jsonPayload.request.status. '
+              'Paths are limited to 800 characters and can include only '
+              'letters, digits, underscores, hyphens, and periods.\n\n'
+              '*type*::: The type of data in this index.'
+              'For example: INDEX_TYPE_STRING '
+              'Supported types are Strings and Integers. \n\n '))
     parser.add_argument(
         '--update-index',
         action='append',
@@ -250,8 +271,7 @@ class UpdateAlpha(Update):
             'letters, digits, underscores, hyphens, and periods.\n\n'
             '*type*::: The type of data in this index. '
             'For example: INDEX_TYPE_STRING '
-            'Supported types are Strings and Integers. '
-            ))
+            'Supported types are Strings and Integers. '))
     parser.add_argument(
         '--cmek-kms-key-name',
         help='A valid `kms_key_name` will enable CMEK for the bucket.')

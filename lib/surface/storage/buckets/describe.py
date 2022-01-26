@@ -18,11 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import storage_url
 
 
-@base.Hidden
-class Describe(base.ListCommand):
+class Describe(base.DescribeCommand):
   """Describes Cloud Storage buckets."""
 
   detailed_help = {
@@ -48,5 +49,5 @@ class Describe(base.ListCommand):
     parser.add_argument('url', help='Specifies URL of bucket to describe.')
 
   def Run(self, args):
-    del args  # Unused.
-    raise NotImplementedError
+    url = storage_url.storage_url_from_string(args.url)
+    return api_factory.get_api(url.scheme).get_bucket(url.bucket_name).metadata

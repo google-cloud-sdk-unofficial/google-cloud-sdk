@@ -217,7 +217,9 @@ class Update(base.SilentCommand):
             required=False,
             include_l7_internal_load_balancing=cls
             ._include_l7_internal_load_balancing))
-    cls.SSL_CERTIFICATES_ARG.AddArgument(parser, cust_metavar='SSL_CERTIFICATE')
+    if not cls._certificate_map:
+      cls.SSL_CERTIFICATES_ARG.AddArgument(
+          parser, cust_metavar='SSL_CERTIFICATE')
 
     cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument(
         include_l7_internal_load_balancing=cls
@@ -233,14 +235,18 @@ class Update(base.SilentCommand):
 
     if cls._certificate_map:
       group = parser.add_mutually_exclusive_group()
+      cert_group = group.add_argument_group()
+      cls.SSL_CERTIFICATES_ARG.AddArgument(
+          cert_group, cust_metavar='SSL_CERTIFICATE')
+      map_group = group.add_mutually_exclusive_group()
       resource_args.AddCertificateMapResourceArg(
-          group,
+          map_group,
           'to attach',
           name='certificate-map',
           positional=False,
           required=False)
       resource_args.GetClearCertificateMapArgumentForOtherResource(
-          'HTTPS proxy').AddToParser(group)
+          'HTTPS proxy').AddToParser(map_group)
 
     group = parser.add_mutually_exclusive_group()
     cls.SSL_POLICY_ARG = (

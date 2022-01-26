@@ -28,7 +28,7 @@ from googlecloudsdk.core.console import console_io
 class Disable(base.DisableCommand):
   """Disable Cloud Build Hybrid Feature.
 
-  Disables the Cloud Build Hybrid Feature in the Hub.
+  Disables the Cloud Build Hybrid Feature in the Fleet.
 
   ## EXAMPLES
 
