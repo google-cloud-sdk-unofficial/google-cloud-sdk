@@ -47,9 +47,6 @@
       - arg_value: YUM
         enum_value: YUM
         help_text: YUM package format.
-      - arg_value: PYPI
-        enum_value: PYPI
-        help_text: (DEPRECATED) Python package format. Use PYTHON instead.
       - arg_value: PYTHON
         enum_value: PYTHON
         help_text: Python package format.

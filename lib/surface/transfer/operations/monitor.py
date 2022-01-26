@@ -31,7 +31,11 @@ class Monitor(base.Command):
       Track progress in real time for a transfer operation.
       """,
       'EXAMPLES':
-          '$ {command} OPERATION-NAME',
+          """\
+      To monitor an operation, run:
+
+        $ {command} OPERATION-NAME
+      """,
   }
 
   @staticmethod

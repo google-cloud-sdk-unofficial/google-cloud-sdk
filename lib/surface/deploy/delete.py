@@ -51,7 +51,8 @@ def _CommonArgs(parser):
   resource_args.AddLocationResourceArg(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Delete(base.UpdateCommand):
   """Deletes delivery pipeline(s) and target(s) in a yaml configuration."""
 

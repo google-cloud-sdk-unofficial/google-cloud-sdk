@@ -2,17 +2,21 @@
   hidden: true
   help_text:
     brief: |
-      Retrieve a Dataplex Lake Resource IAM policy.
+      Get the IAM policy for a Dataplex lake resource.
     description: |
-      Get a Dataplex Lake Iam Policy based on project_id, location, and lake_id.
-
-      {command} projects/{project_id}/locations/{location}/lakes/{lake_id}
+      Displays the IAM policy associated with a Dataplex lake resource.
+      If formatted as JSON, the output can be edited and used as
+      a policy file for *set-iam-policy*. The output includes an "etag"
+      field identifying the version emitted and allowing detection of
+      concurrent policy updates.
     examples: |
-      {command} projects/test-project/locations/us-central1/lakes/test-lake
+      To print the IAM policy for Dataplex lake 'test-lake' in location 'us-central1', run:
+
+          $ {command} test-lake --location=us-central1
   request:
     collection: dataplex.projects.locations.lakes
   arguments:
     resource:
       help_text: |
-        Arguments and flags that define the Dataplex Lake IAM policy you want to retrieve.
+        Arguments and flags that define the Dataplex lake IAM policy you want to retrieve.
       spec: !REF googlecloudsdk.command_lib.dataplex.resources:lake

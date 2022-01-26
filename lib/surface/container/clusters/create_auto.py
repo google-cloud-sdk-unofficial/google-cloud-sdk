@@ -34,6 +34,7 @@ auto_flags = [
     'authenticatorsecurity',
     'databaseencryption',
     'bootdiskkms',
+    'network_tags',
 ]
 
 # Change default flag values in create-auto
@@ -54,6 +55,7 @@ def AddAutoFlags(parser):
   """Adds flags that are not same in create."""
   flags.AddLoggingFlag(parser, autopilot=True)
   flags.AddMonitoringFlag(parser, autopilot=True)
+  flags.AddNetworkTagsCreate(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CertificateManagerAlpha(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CertificateManagerAlphaBeta(base.Group):
   """Manage SSL certificates for your Google Cloud projects."""
 
   category = base.NETWORKING_CATEGORY

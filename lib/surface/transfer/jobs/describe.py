@@ -33,7 +33,11 @@ class Describe(base.Command):
       job.
       """,
       'EXAMPLES':
-          '$ {command} JOB-NAME',
+          """\
+      To describe a job, run:
+
+        $ {command} JOB-NAME
+      """,
   }
 
   @staticmethod

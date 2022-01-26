@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Describe an existing certificate.
@@ -11,7 +11,7 @@
 
   request:
     collection: certificatemanager.projects.locations.certificates
-    api_version: v1alpha2
+    api_version: v1
 
   arguments:
     resource:

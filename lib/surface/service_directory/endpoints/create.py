@@ -38,7 +38,7 @@ class Create(base.CreateCommand):
           """\
           To create a Service Directory endpoint, run:
 
-            $ {command} my-endpoint --service=my-service --namespace=my-namespace --location=us-east1 --address=1.2.3.4 --port=5 --annotations=a=b,c=d
+            $ {command} my-endpoint --service=my-service --namespace=my-namespace --location=us-east1 --address=1.2.3.4 --port=5 --annotations=a=b,c=d  --network=projects/123456789/locations/global/networks/default
           """,
   }
 
@@ -54,13 +54,15 @@ class Create(base.CreateCommand):
     flags.AddAddressFlag(parser)
     flags.AddPortFlag(parser)
     flags.AddAnnotationsFlag(parser, _RESOURCE_TYPE, _ENDPOINT_LIMIT)
+    flags.AddNetworkFlag(parser)
 
   def Run(self, args):
     client = endpoints.EndpointsClient()
     endpoint_ref = args.CONCEPTS.endpoint.Parse()
     annotations = util.ParseAnnotationsArg(args.annotations, _RESOURCE_TYPE)
 
-    result = client.Create(endpoint_ref, args.address, args.port, annotations)
+    result = client.Create(endpoint_ref, args.address, args.port, annotations,
+                           args.network)
     log.CreatedResource(endpoint_ref.endpointsId, _RESOURCE_TYPE)
 
     return result

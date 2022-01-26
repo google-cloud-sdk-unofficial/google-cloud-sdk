@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.ai import validation as common_validation
 from googlecloudsdk.command_lib.ai.custom_jobs import custom_jobs_util
 from googlecloudsdk.command_lib.ai.custom_jobs import flags
 from googlecloudsdk.command_lib.ai.custom_jobs import validation
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -105,12 +106,16 @@ class CreateGA(base.CreateCommand):
         version=self._version, region=region):
       api_client = client.CustomJobsClient(version=self._version)
       job_spec = self._PrepareJobSpec(args, api_client, project)
+      labels = labels_util.ParseCreateArgs(
+          args,
+          api_client.CustomJobMessage().LabelsValue)
 
       response = api_client.Create(
           parent=region_ref.RelativeName(),
           display_name=args.display_name,
           job_spec=job_spec,
-          kms_key_name=common_validation.GetAndValidateKmsKey(args))
+          kms_key_name=common_validation.GetAndValidateKmsKey(args),
+          labels=labels)
       self._DisplayResult(response)
       return response
 

@@ -35,17 +35,17 @@ class Spark(base.Command):
           """,
       'EXAMPLES':
           """\
-          To submit a Spark job, to:
+          To submit a Spark job, run:
 
-            $ {command} --region=us-central1 --jar=my_jar.jar --bucket=gs://my-bucket -- ARG1 ARG2
+            $ {command} --region=us-central1 --jar=my_jar.jar --deps-bucket=gs://my-bucket -- ARG1 ARG2
 
           To submit a Spark job that runs a specific class of a jar, run:
 
-            $ {command} --region=us-central1 --class=org.my.main.Class --jars=my_jar1.jar,my_jar2.jar --bucket=gs://my-bucket -- ARG1 ARG2
+            $ {command} --region=us-central1 --class=org.my.main.Class --jars=my_jar1.jar,my_jar2.jar --deps-bucket=gs://my-bucket -- ARG1 ARG2
 
           To submit a Spark job that runs a jar installed on the cluster, run:
 
-            $ {command} --region=us-central1 --class=org.apache.spark.examples.SparkPi --bucket=gs://my-bucket --jars=file:///usr/lib/spark/examples/jars/spark-examples.jar -- 15
+            $ {command} --region=us-central1 --class=org.apache.spark.examples.SparkPi --deps-bucket=gs://my-bucket --jars=file:///usr/lib/spark/examples/jars/spark-examples.jar -- 15
           """
   }
 

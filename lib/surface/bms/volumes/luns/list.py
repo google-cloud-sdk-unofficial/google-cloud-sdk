@@ -58,9 +58,9 @@ class List(six.with_metaclass(abc.ABCMeta, base.CacheCommand)):
     # it takes -1 (my-snapshot), -3 (my-volume), -5 (us-central1), and
     # -7 (myproject)
     parser.display_info.AddFormat(
-        'table(name.segment(-1):label=NAME,name.segment(-5):label=REGION,'
-        'name.segment(-3):label=VOLUME,sizeGb,state'
-        ')')
+        'table(name.segment(-1):label=NAME,id:label=ID,'
+        'name.segment(-5):label=REGION,'
+        'name.segment(-3):label=VOLUME,sizeGb,state)')
 
   def Run(self, args):
     volume = args.CONCEPTS.volume.Parse()

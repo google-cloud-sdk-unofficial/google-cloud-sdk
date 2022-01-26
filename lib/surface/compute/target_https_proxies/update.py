@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import target_proxies_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.certificate_manager import resource_args
 from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
@@ -70,20 +71,29 @@ def _DetailedHelp():
   }
 
 
-def _CheckMissingArgument(args):
-  if not sum(
-      args.IsSpecified(arg) for arg in [
-          'ssl_certificates', 'url_map', 'quic_override', 'ssl_policy',
-          'clear_ssl_policy'
-      ]):
+def _CheckMissingArgument(args, certificate_map):
+  """Checks for missing argument."""
+  all_args = [
+      'ssl_certificates', 'url_map', 'quic_override', 'ssl_policy',
+      'clear_ssl_policy'
+  ]
+  err_msg_args = [
+      '[--ssl-certificates]', '[--url-map]', '[--quic-override]',
+      '[--ssl-policy]', '[--clear-ssl-policy]'
+  ]
+  if certificate_map:
+    all_args.append('certificate_map')
+    err_msg_args.append('[--certificate-map]')
+    all_args.append('clear_certificate_map')
+    err_msg_args.append('[--clear-certificate-map]')
+  if not sum(args.IsSpecified(arg) for arg in all_args):
     raise compute_exceptions.ArgumentError(
-        'You must specify at least one of [--ssl-certificates], '
-        '[--url-map], [--quic-override], [--ssl-policy] or '
-        '[--clear-ssl-policy].')
+        'You must specify at least one of %s or %s.' %
+        (', '.join(err_msg_args[:-1]), err_msg_args[-1]))
 
 
 def _Run(args, holder, ssl_certificates_arg, target_https_proxy_arg,
-         url_map_arg, ssl_policy_arg):
+         url_map_arg, ssl_policy_arg, certificate_map_ref):
   """Issues requests necessary to update Target HTTPS Proxies."""
   client = holder.client
 
@@ -170,16 +180,28 @@ def _Run(args, holder, ssl_certificates_arg, target_https_proxy_arg,
              targetHttpsProxy=target_https_proxy_ref.Name(),
              sslPolicyReference=ssl_policy)))
 
+  clear_certificate_map = args.IsKnownAndSpecified('clear_certificate_map')
+  if certificate_map_ref or clear_certificate_map:
+    self_link = certificate_map_ref.SelfLink() if certificate_map_ref else None
+    requests.append(
+        (client.apitools_client.targetHttpsProxies, 'SetCertificateMap',
+         client.messages.ComputeTargetHttpsProxiesSetCertificateMapRequest(
+             project=target_https_proxy_ref.project,
+             targetHttpsProxy=target_https_proxy_ref.Name(),
+             targetHttpsProxiesSetCertificateMapRequest=client.messages
+             .TargetHttpsProxiesSetCertificateMapRequest(
+                 certificateMap=self_link))))
+
   return client.MakeRequests(requests)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.SilentCommand):
   """Update a target HTTPS proxy."""
 
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
   _include_l7_internal_load_balancing = True
+  _certificate_map = False
 
   SSL_CERTIFICATES_ARG = None
   TARGET_HTTPS_PROXY_ARG = None
@@ -209,6 +231,17 @@ class Update(base.SilentCommand):
         ._include_l7_internal_load_balancing)
     cls.URL_MAP_ARG.AddArgument(parser)
 
+    if cls._certificate_map:
+      group = parser.add_mutually_exclusive_group()
+      resource_args.AddCertificateMapResourceArg(
+          group,
+          'to attach',
+          name='certificate-map',
+          positional=False,
+          required=False)
+      resource_args.GetClearCertificateMapArgumentForOtherResource(
+          'HTTPS proxy').AddToParser(group)
+
     group = parser.add_mutually_exclusive_group()
     cls.SSL_POLICY_ARG = (
         ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
@@ -220,8 +253,20 @@ class Update(base.SilentCommand):
     target_proxies_utils.AddQuicOverrideUpdateArgs(parser)
 
   def Run(self, args):
-    _CheckMissingArgument(args)
+    _CheckMissingArgument(args, self._certificate_map)
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    certificate_map_ref = args.CONCEPTS.certificate_map.Parse(
+    ) if self._certificate_map else None
     return _Run(args, holder, self.SSL_CERTIFICATES_ARG,
                 self.TARGET_HTTPS_PROXY_ARG, self.URL_MAP_ARG,
-                self.SSL_POLICY_ARG)
+                self.SSL_POLICY_ARG, certificate_map_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  _certificate_map = True
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  _certificate_map = True

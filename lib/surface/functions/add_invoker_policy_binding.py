@@ -24,6 +24,19 @@ from googlecloudsdk.command_lib.functions.v2.add_invoker_policy_binding import c
 from googlecloudsdk.command_lib.iam import iam_util
 
 
+_DETAILED_HELP = {
+    'DESCRIPTION':
+        '{description}',
+    'EXAMPLES':
+        """\
+          To add the invoker policy binding for `FUNCTION-1` from role
+          `ROLE-1` for member `MEMBER-1` run:
+
+            $ {command} FUNCTION-1 --member=MEMBER-1
+          """,
+}
+
+
 def _CommonArgs(parser, track):
   """Registers flags for this command."""
   del track
@@ -31,13 +44,14 @@ def _CommonArgs(parser, track):
   iam_util.AddMemberFlag(parser, 'to add to the IAM policy', False)
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AddInvokerPolicyBindingBeta(base.Command):
   """Adds an invoker binding to the IAM policy of a Google Cloud Function.
 
   This command applies to Cloud Functions V2 only.
   """
+
+  detailed_help = _DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -57,10 +71,8 @@ class AddInvokerPolicyBindingBeta(base.Command):
     return command.Run(args, self.ReleaseTrack())
 
 
-# Note: does not inherit from AddInvokerPolicyBindingBeta to avoid inheriting
-# _is_hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AddInvokerPolicyBindingAlpha(base.Command):
+class AddInvokerPolicyBindingAlpha(AddInvokerPolicyBindingBeta):
   """Add an invoker binding to the IAM policy of a Google Cloud Function.
 
   This command applies to Cloud Functions V2 only.

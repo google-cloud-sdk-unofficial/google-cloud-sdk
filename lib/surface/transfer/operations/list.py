@@ -48,7 +48,7 @@ class List(base.Command):
 
       To list all failed operations in your project, run:
 
-        $ {command} --job-operation-statuses=failed
+        $ {command} --operation-statuses=failed
 
       To list operations 'foo' and 'bar', run:
 

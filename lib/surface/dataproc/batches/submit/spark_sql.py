@@ -33,7 +33,7 @@ class SparkSql(base.Command):
           """\
           To submit a Spark SQL job running "my-sql-script.sql" and upload it to "gs://my-bucket", run:
 
-            $ {command} my-sql-script.sql --bucket=gs://my-bucket --region=us-central1 --script-variables="NAME=VALUE,NAME2=VALUE2"
+            $ {command} my-sql-script.sql --deps-bucket=gs://my-bucket --region=us-central1 --vars="NAME=VALUE,NAME2=VALUE2"
           """
   }
 

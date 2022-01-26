@@ -22,8 +22,10 @@ import json
 import textwrap
 
 from apitools.base.py import exceptions as apitools_exceptions
+from googlecloudsdk.api_lib.container import api_adapter as gke_api_adapter
 from googlecloudsdk.api_lib.util import exceptions as core_api_exceptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.command_lib.container.hub import agent_util
 from googlecloudsdk.command_lib.container.hub import api_util
 from googlecloudsdk.command_lib.container.hub import exclusivity_util
@@ -204,6 +206,21 @@ class Register(base.CreateCommand):
         The registry to pull GKE Connect Agent image if not using gcr.io/gkeconnect.
           """),
     )
+    parser.add_argument(
+        '--internal-ip',
+        help='Whether to use the internal IP address of the cluster endpoint.',
+        action='store_true')
+    if cls.ReleaseTrack() is not base.ReleaseTrack.GA:
+      parser.add_argument(
+          '--cross-connect-subnetwork',
+          hidden=True,
+          help='full path of cross connect subnet whose endpoint to persist')
+      parser.add_argument(
+          '--private-endpoint-fqdn',
+          help='whether to persist the private fqdn',
+          hidden=True,
+          default=None,
+          action='store_true')
     credentials = parser.add_mutually_exclusive_group(required=True)
     credentials.add_argument(
         SERVICE_ACCOUNT_KEY_FILE_FLAG,
@@ -278,10 +295,20 @@ class Register(base.CreateCommand):
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
     # This incidentally verifies that the kubeconfig and context args are valid.
+    if self.ReleaseTrack() is base.ReleaseTrack.BETA or self.ReleaseTrack(
+    ) is base.ReleaseTrack.ALPHA:
+      api_adapter = gke_api_adapter.NewAPIAdapter('v1beta1')
+    else:
+      api_adapter = gke_api_adapter.NewAPIAdapter('v1')
     with kube_util.KubernetesClient(
+        api_adapter=api_adapter,
         gke_uri=getattr(args, 'gke_uri', None),
         gke_cluster=getattr(args, 'gke_cluster', None),
         kubeconfig=getattr(args, 'kubeconfig', None),
+        internal_ip=getattr(args, 'internal_ip', False),
+        cross_connect_subnetwork=getattr(args, 'cross_connect_subnetwork',
+                                         None),
+        private_endpoint_fqdn=getattr(args, 'private_endpoint_fqdn', None),
         context=getattr(args, 'context', None),
         public_issuer_url=getattr(args, 'public_issuer_url', None),
         enable_workload_identity=getattr(args, 'enable_workload_identity',
@@ -289,6 +316,8 @@ class Register(base.CreateCommand):
     ) as kube_client:
       kube_client.CheckClusterAdminPermissions()
       kube_util.ValidateClusterIdentifierFlags(kube_client, args)
+      if self.ReleaseTrack() is not base.ReleaseTrack.GA:
+        flags.VerifyGetCredentialsFlags(args)
       uuid = kube_util.GetClusterUUID(kube_client)
       # Read the service account files provided in the arguments early, in order
       # to catch invalid files before performing mutating operations.

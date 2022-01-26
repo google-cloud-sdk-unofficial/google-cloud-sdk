@@ -34,19 +34,19 @@ class Submit(base.Group):
           """\
           To submit a PySpark job, run:
 
-            $ {command} pyspark my-pyspark.py --region='us-central1' --bucket=gs://my-bucket --python-files='path/to/my/python/scripts'
+            $ {command} pyspark my-pyspark.py --region='us-central1' --deps-bucket=gs://my-bucket --py-files='path/to/my/python/scripts'
 
           To submit a Spark job, run:
 
-            $ {command} spark --region='us-central1' --bucket=gs://my-bucket --jar='my_jar.jar' -- ARG1 ARG2
+            $ {command} spark --region='us-central1' --deps-bucket=gs://my-bucket --jar='my_jar.jar' -- ARG1 ARG2
 
           To submit a Spark-R job, run:
 
-            $ {command} spark-r my-main-r.r --region='us-central1' --bucket=gs://my-bucket -- ARG1 ARG2
+            $ {command} spark-r my-main-r.r --region='us-central1' --deps-bucket=gs://my-bucket -- ARG1 ARG2
 
           To submit a Spark-Sql job, run:
 
-            $ {command} spark-sql 'my-sql-script.sql' --region='us-central1' --bucket=gs://my-bucket --script-variable='variable=value'
+            $ {command} spark-sql 'my-sql-script.sql' --region='us-central1' --deps-bucket=gs://my-bucket --vars='variable=value'
         """
   }
 

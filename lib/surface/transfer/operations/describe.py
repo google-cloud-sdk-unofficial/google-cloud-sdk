@@ -32,7 +32,11 @@ class Describe(base.Command):
       Get details about a specific transfer operation.
       """,
       'EXAMPLES':
-          '$ {command} OPERATION-NAME',
+          """\
+      To describe an operation, run:
+
+        $ {command} OPERATION-NAME
+      """,
   }
 
   @staticmethod

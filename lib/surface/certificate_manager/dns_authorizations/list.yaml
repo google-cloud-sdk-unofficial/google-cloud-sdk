@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: List all DNS Authorizations in a project.
@@ -11,7 +11,7 @@
 
   request:
     collection: certificatemanager.projects.locations.dnsAuthorizations
-    api_version: v1alpha2
+    api_version: v1
 
   response:
     id_field: name

@@ -76,3 +76,9 @@ class Create(base.CreateCommand):
     else:
       status_message += '\n[{}]\n'.format(key_and_id)
     log.status.Print(status_message)
+    return {
+        'b64MacKey':
+            external_account_key.b64MacKey.decode('utf-8', 'backslashreplace'),
+        'keyId':
+            external_account_key.keyId,
+    }

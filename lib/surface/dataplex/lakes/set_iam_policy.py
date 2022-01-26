@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`gcloud dataplex asset add-iam-policy-binding` command."""
+"""Command to set-iam-policy for a Dataplex lake resource."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,16 +28,22 @@ from googlecloudsdk.command_lib.iam import iam_util
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetIamPolicy(base.Command):
-  """Sets IAM policy to a lake."""
+  """Set the IAM policy to a Dataplex lake as defined in a JSON or YAML file.
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    the policy file format and contents.
+
+  """
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To Set an IAM policy binding to a lake, run:
+          The following command will read an IAM policy defined in a JSON file
+          'policy.son' and set it for the Dataplex lake 'test-lake' defined in
+          location 'us-central1':
 
-            $ {command} projects/{project_id}/locations/{location}/lakes/{lake_id} policy.json
+            $ {command} --location=us-central1 test-lake policy.json
 
-            policy.json is the relative path to the json file.
           """,
   }
 

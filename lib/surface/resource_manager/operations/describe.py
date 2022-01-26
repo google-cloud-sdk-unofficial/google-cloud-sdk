@@ -46,4 +46,4 @@ class Describe(base.DescribeCommand):
     flags.OperationIdArg('you want to describe.').AddToParser(parser)
 
   def Run(self, args):
-    return operations.GetOperation(args.id)
+    return operations.GetOperationV3(args.id)

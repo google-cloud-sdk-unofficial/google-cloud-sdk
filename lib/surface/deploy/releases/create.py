@@ -76,7 +76,8 @@ def _CommonArgs(parser):
   flags.AddSkaffoldFileFlag(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Creates a new release, delivery pipeline qualified."""
 
@@ -96,7 +97,7 @@ class Create(base.CreateCommand):
     release_config = release_util.CreateReleaseConfig(
         args.source, args.gcs_source_staging_dir, args.ignore_file, args.images,
         args.build_artifacts, args.description, args.skaffold_version,
-        args.skaffold_file)
+        args.skaffold_file, release_ref.AsDict()['locationsId'])
     deploy_util.SetMetadata(client.messages, release_config,
                             deploy_util.ResourceType.RELEASE, args.annotations,
                             args.labels)

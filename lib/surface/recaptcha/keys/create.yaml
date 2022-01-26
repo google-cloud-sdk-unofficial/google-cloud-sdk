@@ -31,6 +31,41 @@
         If set, all assessments for this key will return this score. Must be between 0
         (likely not legitimate) and 1 (likely legitimate) inclusive.
     - group:
+        help_text: |
+          Options for the creation of a WAF-enabled key. For more information, please refer to
+          https://cloud.google.com/recaptcha-enterprise/docs/integration-overview.
+        params:
+        - arg_name: waf-service
+          required: true
+          api_field: googleCloudRecaptchaenterpriseV1Key.wafSettings.wafService
+          help_text: |
+            The WAF service provider to use.
+          choices:
+          - enum_value: CA
+            arg_value: ca
+            help_text: |
+              Cloud Armor
+        - arg_name: waf-feature
+          required: true
+          api_field: googleCloudRecaptchaenterpriseV1Key.wafSettings.wafFeature
+          help_text: |
+            The WAF feature to use. For more information, see
+            https://cloud.google.com/recaptcha-enterprise/docs/usecase#comparison_of_features.
+          choices:
+          - enum_value: CHALLENGE_PAGE
+            arg_value: challenge-page
+            help_text: |
+              Redirects suspicious traffic to reCAPTCHA challenge page.
+          - enum_value: ACTION_TOKEN
+            arg_value: action-token
+            help_text: |
+              Use reCAPTCHA action-tokens to protect user actions.
+          - enum_value: SESSION_TOKEN
+            arg_value: session-token
+            help_text: |
+              Use reCAPTCHA session-tokens to protect the whole user session on the
+              site's domain.
+    - group:
         mutex: true
         required: true
         params:

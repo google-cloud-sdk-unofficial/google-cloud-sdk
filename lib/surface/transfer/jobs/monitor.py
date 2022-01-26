@@ -32,7 +32,11 @@ class Monitor(base.Command):
       Track progress in real time for a transfer job's latest operation.
       """,
       'EXAMPLES':
-          '$ {command} JOB-NAME',
+          """\
+      To monitor a job, run:
+
+        $ {command} JOB-NAME
+      """,
   }
 
   @staticmethod

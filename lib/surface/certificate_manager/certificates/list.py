@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.certificate_manager import util
 _FORMAT = """\
 table(
     name.scope(certificates),
-    subjectAlternativeNames.sansToString(undefined=''):label=SUBJECT_ALTERNATIVE_NAMES,
+    san_dnsnames.sansToString(undefined=''):label=SUBJECT_ALTERNATIVE_NAMES,
     description,
     scope,
     expireTime.date('%Y-%m-%d %H:%M:%S %Oz', undefined=''),
@@ -54,7 +54,7 @@ _TRANSFORMS = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List certificates.
 

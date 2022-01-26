@@ -32,7 +32,11 @@ class Pause(base.Command):
       Pause a currently running transfer operation.
       """,
       'EXAMPLES':
-          '$ {command} OPERATION-NAME',
+          """\
+      To pause an operation, run:
+
+        $ {command} OPERATION-NAME
+      """,
   }
 
   @staticmethod

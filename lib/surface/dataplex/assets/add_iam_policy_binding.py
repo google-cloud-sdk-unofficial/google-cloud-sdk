@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`gcloud dataplex asset add-iam-policy-binding` command."""
+"""Command to add-iam-policy-binding to a Dataplex asset resource."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,14 +28,19 @@ from googlecloudsdk.command_lib.iam import iam_util
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AddIamPolicyBinding(base.Command):
-  """Adds IAM policy binding to an asset."""
+  """Adds IAM policy binding to a Dataplex asset resource."""
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To add an IAM policy binding to an asset, run:
+          To add an IAM policy binding for the role of 'roles/dataplex.viewer'
+          for the user 'test-user@gmail.com' to asset 'test-asset' within zone
+          'test-zone' in lake 'test-lake' in location 'us-central', run:
 
-            $ {command} projects/project_id/locations/location/lakes/{lake_id}/zones/{zone_id}/assets/{asset_id} --role=roles/dataplex.viewer --member=user:foo@gmail.com
+            $ {command} test-asset --location=us-central1 --lake=test-lake --zone=test-zone --role=roles/dataplex.viewer --member=user:foo@gmail.com
+
+          See https://cloud.google.com/dataplex/docs/iam-roles for details of
+          policy role and member types.
           """,
   }
 

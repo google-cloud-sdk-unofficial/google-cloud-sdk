@@ -46,8 +46,18 @@ RECOMMEND_MESSAGE = """
 Recommendation: To check for possible causes of SSH connectivity issues and get
 recommendations, rerun the ssh command with the --troubleshoot option. Example:
 
-gcloud alpha compute ssh example-instance --zone=us-central1-a --troubleshoot
+gcloud {0} compute ssh example-instance --zone=us-central1-a --troubleshoot
+
+Or, to investigate an IAP tunneling issue:
+
+gcloud {0} compute ssh example-instance --zone=us-central1-a --tunnel-through-iap --troubleshoot
 """
+
+ReleaseTrack = {
+    'alpha': 'alpha',
+    'beta': 'beta',
+    'ga': '',
+}
 
 TROUBLESHOOT_HEADER = """
 Starting ssh troubleshooting for instance {0} in zone {1}
@@ -152,7 +162,7 @@ def AddTroubleshootArg(parser):
       help="""\
           If you can't connect to a virtual machine (VM) instance using SSH, you can investigate the problem using the `--troubleshoot` flag:
 
-            $ {command} VM_NAME --zone=ZONE --troubleshoot
+            $ {command} VM_NAME --zone=ZONE --troubleshoot [--tunnel-through-iap]
 
           The troubleshoot flag runs tests and returns recommendations for four types of issues:
           - VM status
@@ -160,6 +170,8 @@ def AddTroubleshootArg(parser):
           - User permissions
           - Virtual Private Cloud (VPC) settings
           - VM boot
+
+          If you specify the `--tunnel-through-iap` flag, the tool also checks IAP port forwarding.
           """)
 
 
@@ -216,7 +228,6 @@ class Ssh(base.Command):
   """SSH into a virtual machine instance."""
 
   category = base.TOOLS_CATEGORY
-  enable_troubleshoot_flag = False
   enable_host_based_flags = False
   enable_security_keys = False
 
@@ -231,8 +242,7 @@ class Ssh(base.Command):
     AddCommandArg(parser)
     AddSSHArgs(parser)
     AddContainerArg(parser)
-    if cls.enable_troubleshoot_flag:
-      AddTroubleshootArg(parser)
+    AddTroubleshootArg(parser)
     # TODO(b/190426150): Move this to Beta and then GA.
     if cls.enable_host_based_flags:
       iap_tunnel.AddHostBasedTunnelArgs(parser)
@@ -287,7 +297,7 @@ class Ssh(base.Command):
 
       internal_address = ssh_utils.GetInternalIPAddress(instance)
 
-      if hasattr(args, 'troubleshoot') and args.troubleshoot:
+      if args.troubleshoot:
         log.status.Print(TROUBLESHOOT_HEADER.format(
             instance_ref, args.zone or instance_ref.zone,
             datetime.datetime.now()
@@ -409,7 +419,8 @@ class Ssh(base.Command):
           force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
     except ssh.CommandError as e:
       if hasattr(args, 'troubleshoot'):
-        log.status.Print(RECOMMEND_MESSAGE)
+        log.status.Print(RECOMMEND_MESSAGE.format(ReleaseTrack.get(
+            self.ReleaseTrack())))
       raise e
 
     if return_code:
@@ -421,7 +432,6 @@ class Ssh(base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SshBeta(Ssh):
   """SSH into a virtual machine instance (Beta)."""
-  enable_troubleshoot_flag = True
   enable_host_based_flags = False
   enable_security_keys = True
 
@@ -429,7 +439,6 @@ class SshBeta(Ssh):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SshAlpha(SshBeta):
   """SSH into a virtual machine instance (Alpha)."""
-  enable_troubleshoot_flag = True
   enable_host_based_flags = True
   enable_security_keys = True
 

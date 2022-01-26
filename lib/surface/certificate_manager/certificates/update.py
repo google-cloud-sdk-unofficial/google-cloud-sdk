@@ -28,7 +28,7 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update a certificate.
 
@@ -63,9 +63,9 @@ class Update(base.UpdateCommand):
     # provided, gcloud should take care of it.
     if args.IsSpecified('certificate_file') and args.IsSpecified(
         'private_key_file'):
-      new_self_managed_cert_data = client.messages.SelfManagedCertData(
-          certificatePem=args.certificate_file.encode('utf-8'),
-          privateKeyPem=args.private_key_file.encode('utf-8'),
+      new_self_managed_cert_data = client.messages.SelfManagedCertificate(
+          pemCertificate=args.certificate_file.encode('utf-8'),
+          pemPrivateKey=args.private_key_file.encode('utf-8'),
       )
 
     new_description = None

@@ -61,8 +61,9 @@ class List(base.ListCommand):
     # given projects/myproject/locations/us-central1/volumes/my-test
     # it takes -1 (my-test), -3 (us-central1), and -5 (myproject).
     parser.display_info.AddFormat(
-        'table(name.segment(-1):label=NAME,name.segment(-5):label=PROJECT,'
-        'name.segment(-3):label=REGION,requestedSizeGib,storageType,state)')
+        'table(name.segment(-1):label=NAME,id:label=ID,'
+        'name.segment(-5):label=PROJECT,name.segment(-3):label=REGION,'
+        'requestedSizeGib,storageType,state)')
 
   def Run(self, args):
     region = args.CONCEPTS.region.Parse()

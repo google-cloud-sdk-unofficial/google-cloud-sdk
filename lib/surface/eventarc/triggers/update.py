@@ -68,6 +68,7 @@ class Update(base.UpdateCommand):
         service_account=args.IsSpecified('service_account') or
         args.clear_service_account,
         destination_run_service=args.IsSpecified('destination_run_service'),
+        destination_run_job=args.IsSpecified('destination_run_job'),
         destination_run_path=args.IsSpecified('destination_run_path') or
         args.clear_destination_run_path,
         destination_run_region=args.IsSpecified('destination_run_region'),
@@ -84,12 +85,13 @@ class Update(base.UpdateCommand):
     self._event_type = client.GetEventType(old_trigger)
     destination_message = None
     if (args.IsSpecified('destination_run_service') or
+        args.IsSpecified('destination_run_job') or
         args.IsSpecified('destination_run_region') or
         args.IsSpecified('destination_run_path') or
         args.clear_destination_run_path):
       destination_message = client.BuildCloudRunDestinationMessage(
-          args.destination_run_service, args.destination_run_path,
-          args.destination_run_region)
+          args.destination_run_service, args.destination_run_job,
+          args.destination_run_path, args.destination_run_region)
     elif (args.IsSpecified('destination_gke_namespace') or
           args.IsSpecified('destination_gke_service') or
           args.IsSpecified('destination_gke_path') or
@@ -152,6 +154,7 @@ class UpdateBeta(Update):
         service_account=args.IsSpecified('service_account') or
         args.clear_service_account,
         destination_run_service=args.IsSpecified('destination_run_service'),
+        destination_run_job=None,  # Not supported in BETA release track or API
         destination_run_path=args.IsSpecified('destination_run_path') or
         args.clear_destination_run_path,
         destination_run_region=args.IsSpecified('destination_run_region'))
@@ -160,7 +163,7 @@ class UpdateBeta(Update):
     # In the async case, this is the only way to get the type.
     self._event_type = client.GetEventType(old_trigger)
     destination_message = client.BuildCloudRunDestinationMessage(
-        args.destination_run_service, args.destination_run_path,
+        args.destination_run_service, None, args.destination_run_path,
         args.destination_run_region)
     trigger_message = client.BuildTriggerMessage(trigger_ref, event_filters,
                                                  None, args.service_account,

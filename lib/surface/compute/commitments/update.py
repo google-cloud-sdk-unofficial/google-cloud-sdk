@@ -30,7 +30,8 @@ from googlecloudsdk.command_lib.compute.commitments import flags
 _MISSING_COMMITMENTS_QUOTA_REGEX = r'Quota .COMMITMENTS. exceeded.+'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
   """Update Compute Engine commitments."""
   detailed_help = {

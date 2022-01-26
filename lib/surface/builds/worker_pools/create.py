@@ -235,16 +235,11 @@ class CreateAlpha(Create):
       try:
         wp = workerpool_config.LoadWorkerpoolConfigFromPath(
             args.config_from_file, messages)
-        if wp.hybridPoolConfig is not None:
-          if wp_region not in cloudbuild_util.CBH_SUPPORTED_REGIONS:
-            raise cloudbuild_exceptions.HybridUnsupportedRegionError(wp_region)
       except cloudbuild_exceptions.ParseProtoException as err:
         log.err.Print('\nFailed to parse configuration from file.\n')
         raise err
     else:
       if args.membership is not None:
-        if wp_region not in cloudbuild_util.CBH_SUPPORTED_REGIONS:
-          raise cloudbuild_exceptions.HybridUnsupportedRegionError(wp_region)
 
         wp.hybridPoolConfig = messages.HybridPoolConfig()
         wp.hybridPoolConfig.membership = args.membership

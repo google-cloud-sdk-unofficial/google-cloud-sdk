@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import uuid
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
+from googlecloudsdk.api_lib.dataproc import storage_helpers
 from googlecloudsdk.api_lib.dataproc import util as dp_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
@@ -58,7 +59,10 @@ class InstantiateFromFile(base.CreateCommand):
     instance_id = uuid.uuid4().hex
     regions_ref = dp_util.ParseRegion(dataproc)
 
-    data = console_io.ReadFromFileOrStdin(args.file or '-', binary=False)
+    if args.file.startswith('gs://'):
+      data = storage_helpers.ReadObject(args.file)
+    else:
+      data = console_io.ReadFromFileOrStdin(args.file, binary=False)
     template = export_util.Import(
         message_type=msgs.WorkflowTemplate, stream=data)
 

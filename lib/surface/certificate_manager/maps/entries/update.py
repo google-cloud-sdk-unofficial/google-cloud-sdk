@@ -29,7 +29,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update a certificate map entry.
 
@@ -45,9 +45,8 @@ class Update(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    group = flags.AddAttachedCertificatesFlagsToParser(parser)
     resource_args.AddCertificateMapEntryAndCertificatesResourceArgs(
-        parser, entry_verb='to update', cert_group=group)
+        parser, entry_verb='to update')
     labels_util.AddUpdateLabelsFlags(parser)
     flags.AddDescriptionFlagToParser(parser, 'certificate map entry')
     flags.AddAsyncFlagToParser(parser)
@@ -61,8 +60,6 @@ class Update(base.UpdateCommand):
       new_description = args.description
 
     new_certs = None
-    if args.IsSpecified('clear_certificates'):
-      new_certs = []
     if args.IsSpecified('certificates'):
       new_certs = args.CONCEPTS.certificates.Parse()
       console_io.PromptContinue(

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Show details about a DNS Authorization.
@@ -10,7 +10,7 @@
 
   request:
     collection: certificatemanager.projects.locations.dnsAuthorizations
-    api_version: v1alpha2
+    api_version: v1
 
   arguments:
     resource:

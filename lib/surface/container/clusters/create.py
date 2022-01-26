@@ -280,6 +280,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       system_config_from_file=get_default('system_config_from_file'),
       private_ipv6_google_access_type=get_default('private_ipv6_google_access_type'),
       tags=get_default('tags'),
+      network_tags=get_default('network_tags'),
+      nap_network_tags=get_default('nap_network_tags'),
       threads_per_core=get_default('threads_per_core'),
       user=get_default('username'),
       metadata=metadata,
@@ -532,6 +534,8 @@ flags_to_add = {
             flags.AddTagsCreate,
         'threads_per_core':
             flags.AddThreadsPerCore,
+        'nap_network_tags':
+            flags.AddNAPNetworkTagsCreate,
         'tpu':
             flags.AddTpuFlags,
         'verticalpodautoscaling':
@@ -704,6 +708,8 @@ flags_to_add = {
             lambda p: flags.AddSystemConfigFlag(p, hidden=False),
         'tags':
             flags.AddTagsCreate,
+        'nap_network_tags':
+            flags.AddNAPNetworkTagsCreate,
         'threads_per_core':
             flags.AddThreadsPerCore,
         'tpu':
@@ -898,6 +904,8 @@ flags_to_add = {
             lambda p: flags.AddSystemConfigFlag(p, hidden=False),
         'tags':
             flags.AddTagsCreate,
+        'nap_network_tags':
+            flags.AddNAPNetworkTagsCreate,
         'threads_per_core':
             flags.AddThreadsPerCore,
         'tpu':

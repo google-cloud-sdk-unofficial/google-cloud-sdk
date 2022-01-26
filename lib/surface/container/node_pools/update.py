@@ -144,10 +144,8 @@ class Update(base.UpdateCommand):
 
     if options.tags is not None:
       console_io.PromptContinue(
-          message=(
-              'The previous user-specified tags on this node pool will be '
-              'replaced by \'{tags}\'').format(
-                  tags=args.GetValue('tags')),
+          message=('The previous user-specified tags on this node pool will be '
+                   'replaced by \'{tags}\'').format(tags=args.GetValue('tags')),
           throw_if_unattended=True,
           cancel_on_no=True)
 
@@ -206,15 +204,14 @@ class UpdateBeta(Update):
 
     flags.AddSystemConfigFlag(group, hidden=False)
 
-    flags.AddNodeLabelsFlag(
-        group, for_node_pool=True, for_update=True)
-    flags.AddNodeTaintsFlag(
-        group, for_node_pool=True, for_update=True)
+    flags.AddNodeLabelsFlag(group, for_node_pool=True, for_update=True)
+    flags.AddNodeTaintsFlag(group, for_node_pool=True, for_update=True)
     flags.AddTagsNodePoolUpdate(group)
     flags.AddNodePoolEnablePrivateNodes(group, for_update=True, hidden=True)
     flags.AddEnableGcfsFlag(group, for_node_pool=True)
     flags.AddEnableGvnicFlag(group)
     flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
+    flags.AddNetworkPerformanceConfigFlags(group)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -241,7 +238,8 @@ class UpdateBeta(Update):
         enable_blue_green_update=args.enable_blue_green_update,
         enable_rolling_update=args.enable_rolling_update,
         node_pool_soak_duration=args.node_pool_soak_duration,
-        standard_rollout_policy=args.standard_rollout_policy)
+        standard_rollout_policy=args.standard_rollout_policy,
+        network_performance_config=args.network_performance_configs)
     return ops
 
 
@@ -279,15 +277,14 @@ class UpdateAlpha(Update):
 
     flags.AddSystemConfigFlag(group, hidden=False)
 
-    flags.AddNodeLabelsFlag(
-        group, for_node_pool=True, for_update=True)
-    flags.AddNodeTaintsFlag(
-        group, for_node_pool=True, for_update=True)
+    flags.AddNodeLabelsFlag(group, for_node_pool=True, for_update=True)
+    flags.AddNodeTaintsFlag(group, for_node_pool=True, for_update=True)
     flags.AddTagsNodePoolUpdate(group)
     flags.AddNodePoolEnablePrivateNodes(group, for_update=True, hidden=True)
     flags.AddEnableGcfsFlag(group, for_node_pool=True)
     flags.AddEnableGvnicFlag(group)
     flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
+    flags.AddNetworkPerformanceConfigFlags(group)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -314,7 +311,8 @@ class UpdateAlpha(Update):
         enable_blue_green_update=args.enable_blue_green_update,
         enable_rolling_update=args.enable_rolling_update,
         node_pool_soak_duration=args.node_pool_soak_duration,
-        standard_rollout_policy=args.standard_rollout_policy)
+        standard_rollout_policy=args.standard_rollout_policy,
+        network_performance_config=args.network_performance_configs)
     return ops
 
 

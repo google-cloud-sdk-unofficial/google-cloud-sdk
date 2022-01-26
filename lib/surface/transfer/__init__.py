@@ -21,10 +21,25 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """\
+        The gcloud transfer command group lets you create and manage
+        Transfer Service jobs, operations, and agents.
+
+        More information on Cloud Storage can be found here:
+        https://cloud.google.com/storage-transfer-service
+        """,
+}
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Transfer(base.Group):
   """Manage Transfer Service jobs, operations, and agents."""
+
+  category = base.TRANSFER_CATEGORY
+
+  detailed_help = DETAILED_HELP
 
   def Filter(self, context, args):
     # TODO(b/190541554):  Determine if command group works with project number

@@ -84,15 +84,24 @@ class Create(base.CreateCommand):
         args, self.ReleaseTrack())
 
     destination_message = None
-    # destination Cloud Run service
-    if args.IsSpecified('destination_run_service'):
+    # destination Cloud Run
+    if args.IsSpecified('destination_run_service') or args.IsKnownAndSpecified(
+        'destination_run_job'):
+      resource_type = 'service' if args.IsSpecified(
+          'destination_run_service') else 'job'
       destination_run_region = self.GetDestinationLocation(
-          args, trigger_ref, 'destination_run_region', 'Cloud Run service')
+          args, trigger_ref, 'destination_run_region',
+          'Cloud Run {}'.format(resource_type))
 
+      # Jobs only exist in the v1 API and thus only in the GA track.
+      # This extra check is needed so we don't throw trying to access a flag
+      # which doesn't exist.
+      run_job = args.destination_run_job if 'destination_run_job' in args else None
       destination_message = client.BuildCloudRunDestinationMessage(
-          args.destination_run_service, args.destination_run_path,
+          args.destination_run_service, run_job, args.destination_run_path,
           destination_run_region)
-      dest_str = 'Cloud Run service [{}]'.format(args.destination_run_service)
+      dest_str = 'Cloud Run {} [{}]'.format(
+          resource_type, args.destination_run_service or run_job)
       loading_msg = ''
     # destination GKE service
     elif args.IsSpecified('destination_gke_service'):

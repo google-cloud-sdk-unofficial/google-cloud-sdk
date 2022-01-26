@@ -34,11 +34,10 @@ from googlecloudsdk.core import properties
 _MISSING_COMMITMENTS_QUOTA_REGEX = r'Quota .COMMITMENTS. exceeded.+'
 
 
-def _CommonArgs(track, parser, support_auto_renew=False):
+def _CommonArgs(track, parser):
   """Add common flags."""
   flags.MakeCommitmentArg(False).AddArgument(parser, operation_type='create')
-  if support_auto_renew:
-    flags.AddAutoRenew(parser)
+  flags.AddAutoRenew(parser)
   messages = apis.GetMessagesModule('compute', track)
   flags.GetTypeMapperFlag(messages).choice_arg.AddToParser(parser)
 
@@ -73,8 +72,8 @@ class Create(base.Command):
         name=commitment_ref.Name(),
         plan=flags.TranslatePlanArg(messages, args.plan),
         resources=flags.TranslateResourcesArgGroup(messages, args),
-        type=commitment_type
-    )
+        type=commitment_type,
+        autoRenew=flags.TranslateAutoRenewArg(args))
     return messages.ComputeRegionCommitmentsInsertRequest(
         commitment=commitment,
         project=project,
@@ -137,7 +136,8 @@ class CreateBeta(Create):
         name=commitment_ref.Name(),
         plan=flags.TranslatePlanArg(messages, args.plan),
         resources=flags.TranslateResourcesArgGroup(messages, args),
-        type=commitment_type)
+        type=commitment_type,
+        autoRenew=flags.TranslateAutoRenewArg(args))
     return messages.ComputeRegionCommitmentsInsertRequest(
         commitment=commitment,
         project=project,
@@ -152,7 +152,7 @@ class CreateAlpha(CreateBeta):
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgs('alpha', parser, support_auto_renew=True)
+    _CommonArgs('alpha', parser)
     flags.AddCreateFlags(
         parser, support_share_setting=cls._support_share_setting)
 

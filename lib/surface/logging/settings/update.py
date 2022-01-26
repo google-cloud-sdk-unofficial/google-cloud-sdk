@@ -121,8 +121,8 @@ class Update(base.Command):
     settings = {}
     update_mask = []
     parameter_names = [
-        '--kms_key_name | --clear_kms_key', '--storage_location',
-        '--disable_default_sink'
+        '--kms-key-name | --clear-kms-key', '--storage-location',
+        '--disable-default-sink'
     ]
 
     if args.IsSpecified('kms_key_name'):

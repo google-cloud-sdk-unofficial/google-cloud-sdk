@@ -27,10 +27,16 @@ class Cancel(base.Command):
   """Cancel a transfer operation."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
       Cancel a transfer operation.
       """,
-      'EXAMPLES': '$ {command} OPERATION-NAME',
+      'EXAMPLES':
+          """\
+      To cancel an operation, run:
+
+        $ {command} OPERATION-NAME
+      """,
   }
 
   @staticmethod

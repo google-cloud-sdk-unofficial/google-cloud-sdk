@@ -57,19 +57,10 @@ class Update(base.Command):
     flags.AddRecommenderFlagsToParser(
         parser,
         [reco_base.EntityType.PROJECT, reco_base.EntityType.ORGANIZATION])
-    parser.add_argument(
-        '--config-file',
-        help='Generation config of a recommender configuration')
-    parser.add_argument(
-        '--display-name', help='Display name of the recommender configuration')
-    parser.add_argument(
-        '--validate-only',
-        action='store_true',
-        default=False,
-        help='If true, validate the request and preview the change, but do not actually update it.'
-    )
-    parser.add_argument(
-        '--etag', required=True, help='Etag of the recommender configuration')
+    flags.AddConfigFileToParser(parser, 'recommender configuration')
+    flags.AddDisplayNameToParser(parser, 'recommender configuration')
+    flags.AddValidateOnlyToParser(parser)
+    flags.AddEtagToParser(parser, 'recommender configuration')
 
   def Run(self, args):
     """Run 'gcloud recommender recommender-config update'.

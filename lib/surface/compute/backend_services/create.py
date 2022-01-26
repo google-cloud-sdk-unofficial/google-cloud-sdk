@@ -95,8 +95,7 @@ class CreateHelper(object):
            support_client_only, support_grpc_protocol,
            support_unspecified_protocol, support_subsetting,
            support_subsetting_subset_size, support_strong_session_affinity,
-           support_advanced_load_balancing, support_service_bindings,
-           support_extended_caching):
+           support_advanced_load_balancing, support_service_bindings):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -137,8 +136,7 @@ class CreateHelper(object):
     flags.AddCacheKeyIncludeHost(parser, default=True)
     flags.AddCacheKeyIncludeQueryString(parser, default=True)
     flags.AddCacheKeyQueryStringList(parser)
-    if support_extended_caching:
-      flags.AddCacheKeyExtendedCachingArgs(parser)
+    flags.AddCacheKeyExtendedCachingArgs(parser)
     AddIapFlag(parser)
     parser.display_info.AddCacheUpdater(flags.BackendServicesCompleter)
     signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
@@ -171,8 +169,7 @@ class CreateHelper(object):
                support_l7_rxlb, support_failover, support_logging,
                support_multinic, support_subsetting,
                support_subsetting_subset_size, support_strong_session_affinity,
-               support_advanced_load_balancing, support_service_bindings,
-               support_extended_caching):
+               support_advanced_load_balancing, support_service_bindings):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_gfe3 = support_gfe3
     self._support_l7_rxlb = support_l7_rxlb
@@ -184,7 +181,6 @@ class CreateHelper(object):
     self._support_strong_session_affinity = support_strong_session_affinity
     self._support_advanced_load_balancing = support_advanced_load_balancing
     self._support_service_bindings = support_service_bindings
-    self._support_extended_caching = support_extended_caching
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
     """Returns a global backend service create request."""
@@ -216,8 +212,7 @@ class CreateHelper(object):
         args,
         backend_service,
         is_update=False,
-        apply_signed_url_cache_max_age=True,
-        support_extended_caching=self._support_extended_caching)
+        apply_signed_url_cache_max_age=True)
 
     if (self._support_advanced_load_balancing and
         args.service_lb_policy is not None):
@@ -423,7 +418,6 @@ class CreateGA(base.CreateCommand):
   _support_strong_session_affinity = False
   _support_advanced_load_balancing = False
   _support_service_bindings = False
-  _support_extended_caching = False
 
   @classmethod
   def Args(cls, parser):
@@ -443,8 +437,7 @@ class CreateGA(base.CreateCommand):
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_strong_session_affinity=cls._support_strong_session_affinity,
         support_advanced_load_balancing=cls._support_advanced_load_balancing,
-        support_service_bindings=cls._support_service_bindings,
-        support_extended_caching=cls._support_extended_caching)
+        support_service_bindings=cls._support_service_bindings)
 
   def Run(self, args):
     """Issues request necessary to create Backend Service."""
@@ -462,8 +455,7 @@ class CreateGA(base.CreateCommand):
         support_subsetting_subset_size=self._support_subsetting_subset_size,
         support_strong_session_affinity=self._support_strong_session_affinity,
         support_advanced_load_balancing=self._support_advanced_load_balancing,
-        support_service_bindings=self._support_service_bindings,
-        support_extended_caching=self._support_extended_caching).Run(
+        support_service_bindings=self._support_service_bindings).Run(
             args, holder)
 
 
@@ -496,7 +488,6 @@ class CreateBeta(CreateGA):
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = False
   _support_service_bindings = True
-  _support_extended_caching = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -525,4 +516,3 @@ class CreateAlpha(CreateBeta):
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = True
   _support_service_bindings = True
-  _support_extended_caching = True

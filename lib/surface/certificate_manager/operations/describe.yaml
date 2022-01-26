@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Describe a long-running operation.
@@ -13,8 +13,7 @@
 
   request:
     collection: certificatemanager.projects.locations.operations
-    ALPHA:
-      api_version: v1alpha1
+    api_version: v1
 
   arguments:
     resource:

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google Inc. All Rights Reserved.
+# Copyright 2022 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`Command to authorize a P4SA service account to another resource."""
+"""Command to authorize a P4SA service account to another resource."""
+
 
 from __future__ import absolute_import
 from __future__ import division
@@ -52,7 +53,8 @@ class Authorize(base.Command):
             $ {command} --location=us-east1 --project=test-project --storage-bucket-resource=dataplex-storage-bucket
 
           To authorize the service account in project 'test-project' to
-          manage the BigQuery dataset 'test-dataset' in project 'test-project2', run:
+          manage the BigQuery dataset 'test-dataset' in project 'test-project2',
+          run:
 
             $ {command} --location=us-east1 --project=test-project --bigquery-dataset-resource=test-dataset --secondary-project=test-project2
           """,
@@ -63,11 +65,11 @@ class Authorize(base.Command):
     resource_args.AddProjectArg(parser,
                                 'to add service agent IAM policy binding to.')
     data_group = parser.add_group(
-        mutex=True, required=True, help='Container or Object to bind p4sa')
+        mutex=True, required=True, help='Container or Object to bind P4SA.')
     data_group.add_argument(
         '--storage-bucket-resource',
-        help='The identifier of the Cloud Storage bucket to authorize the project on.'
-    )
+        help="""The identifier of the Cloud Storage bucket to authorize the
+                project on.""")
     data_group.add_argument(
         '--project-resource',
         help='The identifier of the project to authorize.')
@@ -76,7 +78,8 @@ class Authorize(base.Command):
     dataset_group.add_argument(
         '--bigquery-dataset-resource',
         required=True,
-        help='The identifier of the BigQuery dataset to authorize.')
+        help='The identifier of the BigQuery dataset to authorize.'
+    )
     dataset_group.add_argument(
         '--secondary-project',
         required=True,

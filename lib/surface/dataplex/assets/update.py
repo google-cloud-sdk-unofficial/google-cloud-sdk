@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`gcloud dataplex asset update` command."""
+"""Command to update a Dataplex asset resource."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,26 +32,29 @@ from googlecloudsdk.core import log
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.Command):
-  """Updating an Asset."""
+  """Update a Dataplex asset resource."""
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To update a Dataplex Asset, run:
+          To update a Dataplex asset 'test-asset' in zone 'test-zone' in lake
+          'test-lake' in location 'us-central1' to have the display name
+          'first-dataplex-asset' and discovery include patterns 'abc', 'def',
+          run:
 
-            $ {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id}/assets/{asset_id}
+            $ {command} test-asset --location=us-central1 --lake=test-lake --zone=test-zone --display-name="first-dataplex-asset" --discovery-include-patterns=abc,def
           """,
   }
 
   @staticmethod
   def Args(parser):
-    resource_args.AddAssetResourceArg(parser, 'to update an Asset to.')
+    resource_args.AddAssetResourceArg(parser, 'to update.')
     parser.add_argument(
         '--validate-only',
         action='store_true',
         default=False,
         help='Validate the update action, but don\'t actually perform it.')
-    parser.add_argument('--description', help='Description of the Asset')
+    parser.add_argument('--description', help='Description of the asset')
     parser.add_argument('--display-name', help='Display Name')
     flags.AddDiscoveryArgs(parser)
     base.ASYNC_FLAG.AddToParser(parser)

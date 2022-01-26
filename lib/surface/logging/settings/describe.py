@@ -67,5 +67,5 @@ class Describe(base.DescribeCommand):
       billing-account.
     """
     parent_name = util.GetParentFromArgs(args)
-    return util.GetClient().v2.GetSettings(
-        util.GetMessages().LoggingGetSettingsRequest(name=parent_name))
+    return util.GetClient().projects.GetSettings(
+        util.GetMessages().LoggingProjectsGetSettingsRequest(name=parent_name))

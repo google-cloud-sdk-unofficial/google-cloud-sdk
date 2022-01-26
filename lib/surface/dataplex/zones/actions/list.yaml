@@ -2,12 +2,13 @@
   hidden: true
   help_text:
     brief: |
-      List Dataplex Zone Resource Actions.
+      List Dataplex zone actions.
     description: |
-      List Dataplex Zone resource actions based on project, location, lake, and zone.
+      List all Dataplex Actions under a specific zone.
 
     examples: |
-      To show all actions related to a Dataplex Zone defined in project ``test-project'' in location ``us-central1'' with lake ``test-lake'' and zone ``test-zone'', run:
+      To list all actions of a Dataplex zone 'test-zone' defined in project 'test-project' in
+      location 'us-central1' with lake 'test-lake', run:
 
         $ {command} --project=test-project --location=us-central1 --lake=test-lake --zone=test-zone
 
@@ -19,7 +20,7 @@
   arguments:
     resource:
       help_text: |
-        Arguments and flags that define the Dataplex Lake Actions you want to list.
+        Arguments and flags that define the Dataplex zone Actions you want to list.
       override_resource_collection: true
       spec: !REF googlecloudsdk.command_lib.dataplex.resources:zone
 

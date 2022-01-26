@@ -36,7 +36,6 @@ class Create(base.CreateCommand):
   """
 
   BACKEND_BUCKET_ARG = None
-  _support_extended_caching = False
 
   @classmethod
   def Args(cls, parser):
@@ -50,8 +49,7 @@ class Create(base.CreateCommand):
 
     cdn_flags.AddCdnPolicyArgs(parser, 'backend bucket')
 
-    if cls._support_extended_caching:
-      backend_buckets_flags.AddCacheKeyExtendedCachingArgs(parser)
+    backend_buckets_flags.AddCacheKeyExtendedCachingArgs(parser)
 
   def CreateBackendBucket(self, args):
     """Creates and returns the backend bucket."""
@@ -69,11 +67,7 @@ class Create(base.CreateCommand):
         bucketName=args.gcs_bucket_name,
         enableCdn=enable_cdn)
 
-    backend_buckets_utils.ApplyCdnPolicyArgs(
-        client,
-        args,
-        backend_bucket,
-        support_extended_caching=self._support_extended_caching)
+    backend_buckets_utils.ApplyCdnPolicyArgs(client, args, backend_bucket)
 
     if args.custom_response_header is not None:
       backend_bucket.customResponseHeaders = args.custom_response_header
@@ -107,4 +101,3 @@ class CreateAlphaBeta(Create):
   define Google Cloud Storage buckets that can serve content. URL
   maps define which requests are sent to which backend buckets.
   """
-  _support_extended_caching = True

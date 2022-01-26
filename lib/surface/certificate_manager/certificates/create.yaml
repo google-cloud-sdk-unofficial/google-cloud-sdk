@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Create a certificate.
@@ -26,7 +26,7 @@
 
   request:
     collection: certificatemanager.projects.locations.certificates
-    api_version: v1alpha2
+    api_version: v1
     modify_request_hooks:
     - googlecloudsdk.command_lib.certificate_manager.hooks:SetAuthorizationURL
 
@@ -81,13 +81,13 @@
               Configuration for uploading self-managed certificates and keys.
             params:
             - arg_name: certificate-file
-              api_field: certificate.selfManaged.certificatePem
+              api_field: certificate.selfManaged.pemCertificate
               required: true
               type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
               help_text: |
                 Certificate data in PEM-encoded form.
             - arg_name: private-key-file
-              api_field: certificate.selfManaged.privateKeyPem
+              api_field: certificate.selfManaged.pemPrivateKey
               required: true
               type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
               help_text: |
@@ -114,14 +114,6 @@
       api_field: certificate.description
       help_text: |
         Human-readable description of the resource.
-    - arg_name: labels
-      api_field: certificate.labels.additionalProperties
-      metavar: KEY=VALUE
-      type:
-        arg_dict:
-          flatten: true
-          spec:
-          - api_field: key
-          - api_field: value
-      help_text: |
-        List of label KEY=VALUE pairs to add.
+
+    labels:
+      api_field: certificate.labels

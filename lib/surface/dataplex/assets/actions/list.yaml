@@ -2,11 +2,12 @@
   hidden: true
   help_text:
     brief: |
-      List Dataplex Asset Resource Actions.
+      List Dataplex asset actions.
     description: |
-      List Dataplex Asset resource actions based on project, location, lake, and zone.
+      List all Dataplex Actions under a specific asset.
     examples: |
-       To show all actions related to a Dataplex Asset defined in project ``test-project'' in location ``us-central1'' with lake ``test-lake'', zone ``test-zone'', and asset ``test-asset'', run:
+       To list all actions of a Dataplex asset 'test-asset' defined in location 'us-central1' with
+       lake 'test-lake', zone `test-zone', run:
 
          $ {command} --project=test-project --location=us-central1 --lake=test-lake --zone=test-zone --asset=test-asset
 
@@ -18,7 +19,7 @@
   arguments:
     resource:
       help_text: |
-        Arguments and flags that define the Dataplex Asset Actions you want to list.
+        Arguments and flags that define the Dataplex asset Actions you want to list.
       override_resource_collection: true
       spec: !REF googlecloudsdk.command_lib.dataplex.resources:asset
 

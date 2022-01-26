@@ -1,17 +1,17 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
-    brief: Delete a DNS Authorization.
+    brief: Update a DNS Authorization.
     description: |
-      Delete a DNS Authorization.
+      Update a DNS Authorization.
     examples: |
-      To delete a DNS Authorization called `my-authorization`, run:
+      To Update a DNS Authorization called `my-authorization`, run:
 
         $ {command} my-authorization
 
   request:
     collection: certificatemanager.projects.locations.dnsAuthorizations
-    api_version: v1alpha2
+    api_version: v1
 
   async:
     collection: certificatemanager.projects.locations.operations
@@ -21,11 +21,14 @@
       help_text: The name of the DNS Authorization to delete.
       spec: !REF googlecloudsdk.command_lib.certificate_manager.resources:dnsAuthorization
 
-    labels:
-      api_field: dnsAuthorization.labels
-
     params:
     - arg_name: description
       api_field: dnsAuthorization.description
       help_text: |
         Human-readable description of the resource.
+
+    labels:
+      api_field: dnsAuthorization.labels
+
+  update:
+    read_modify_update: true

@@ -295,6 +295,7 @@ class CreateBeta(Create):
     flags.AddStandardRolloutPolicyFlag(parser)
     flags.AddNodePoolSoakDurationFlag(parser)
     flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)
+    flags.AddNetworkPerformanceConfigFlags(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -315,6 +316,7 @@ class CreateBeta(Create):
     ops.node_pool_soak_duration = args.node_pool_soak_duration
     ops.standard_rollout_policy = args.standard_rollout_policy
     ops.maintenance_interval = args.maintenance_interval
+    ops.network_performance_config = args.network_performance_configs
     return ops
 
 
@@ -343,6 +345,7 @@ class CreateAlpha(Create):
     ops.node_pool_soak_duration = args.node_pool_soak_duration
     ops.standard_rollout_policy = args.standard_rollout_policy
     ops.maintenance_interval = args.maintenance_interval
+    ops.network_performance_config = args.network_performance_configs
     return ops
 
   @staticmethod
@@ -382,6 +385,7 @@ class CreateAlpha(Create):
     flags.AddStandardRolloutPolicyFlag(parser, for_node_pool=True)
     flags.AddNodePoolSoakDurationFlag(parser, for_node_pool=True)
     flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)
+    flags.AddNetworkPerformanceConfigFlags(parser)
 
 
 Create.detailed_help = DETAILED_HELP

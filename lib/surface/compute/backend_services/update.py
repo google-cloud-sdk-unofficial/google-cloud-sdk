@@ -73,8 +73,7 @@ class UpdateHelper(object):
            support_logging, support_client_only, support_grpc_protocol,
            support_subsetting, support_subsetting_subset_size,
            support_unspecified_protocol, support_strong_session_affinity,
-           support_advanced_load_balancing, support_service_bindings,
-           support_extended_caching):
+           support_advanced_load_balancing, support_service_bindings):
     """Add all arguments for updating a backend service."""
 
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
@@ -112,8 +111,7 @@ class UpdateHelper(object):
     flags.AddCacheKeyIncludeHost(parser, default=None)
     flags.AddCacheKeyIncludeQueryString(parser, default=None)
     flags.AddCacheKeyQueryStringList(parser)
-    if support_extended_caching:
-      flags.AddCacheKeyExtendedCachingArgs(parser)
+    flags.AddCacheKeyExtendedCachingArgs(parser)
     flags.AddSessionAffinity(parser, support_client_only=support_client_only)
     flags.AddAffinityCookieTtl(parser)
     signed_url_flags.AddSignedUrlCacheMaxAge(
@@ -157,8 +155,7 @@ class UpdateHelper(object):
                support_subsetting_subset_size,
                support_strong_session_affinity=False,
                support_advanced_load_balancing=False,
-               support_service_bindings=False,
-               support_extended_caching=False):
+               support_service_bindings=False):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
@@ -167,7 +164,6 @@ class UpdateHelper(object):
     self._support_strong_session_affinity = support_strong_session_affinity
     self._support_advanced_load_balancing = support_advanced_load_balancing
     self._support_service_bindings = support_service_bindings
-    self._support_extended_caching = support_extended_caching
 
   def Modify(self, client, resources, args, existing, backend_service_ref):
     """Modify Backend Service."""
@@ -242,8 +238,7 @@ class UpdateHelper(object):
         replacement,
         is_update=True,
         apply_signed_url_cache_max_age=True,
-        cleared_fields=cleared_fields,
-        support_extended_caching=self._support_extended_caching)
+        cleared_fields=cleared_fields)
 
     backend_services_utils.ApplyConnectionTrackingPolicyArgs(
         client,
@@ -305,10 +300,8 @@ class UpdateHelper(object):
         args.IsSpecified('cache_key_include_query_string'),
         args.IsSpecified('cache_key_query_string_whitelist'),
         args.IsSpecified('cache_key_query_string_blacklist'),
-        args.IsSpecified('cache_key_include_http_header')
-        if self._support_extended_caching else False,
-        args.IsSpecified('cache_key_include_named_cookie')
-        if self._support_extended_caching else False,
+        args.IsSpecified('cache_key_include_http_header'),
+        args.IsSpecified('cache_key_include_named_cookie'),
         args.IsSpecified('signed_url_cache_max_age'),
         args.IsSpecified('http_health_checks'),
         args.IsSpecified('iap'),
@@ -532,7 +525,6 @@ class UpdateGA(base.UpdateCommand):
   _support_strong_session_affinity = False
   _support_advanced_load_balancing = False
   _support_service_bindings = False
-  _support_extended_caching = False
 
   @classmethod
   def Args(cls, parser):
@@ -549,8 +541,7 @@ class UpdateGA(base.UpdateCommand):
         support_unspecified_protocol=cls._support_unspecified_protocol,
         support_strong_session_affinity=cls._support_strong_session_affinity,
         support_advanced_load_balancing=cls._support_advanced_load_balancing,
-        support_service_bindings=cls._support_service_bindings,
-        support_extended_caching=cls._support_extended_caching)
+        support_service_bindings=cls._support_service_bindings)
 
   def Run(self, args):
     """Issues requests necessary to update the Backend Services."""
@@ -561,8 +552,7 @@ class UpdateGA(base.UpdateCommand):
                         self._support_subsetting_subset_size,
                         self._support_strong_session_affinity,
                         self._support_advanced_load_balancing,
-                        self._support_service_bindings,
-                        self._support_extended_caching).Run(args, holder)
+                        self._support_service_bindings).Run(args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -580,7 +570,6 @@ class UpdateBeta(UpdateGA):
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = False
   _support_service_bindings = True
-  _support_extended_caching = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -598,4 +587,3 @@ class UpdateAlpha(UpdateBeta):
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = True
   _support_service_bindings = True
-  _support_extended_caching = True

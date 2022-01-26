@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`gcloud dataplex set-iam-policy` command."""
+"""Command to set-iam-policy for a Dataplex zone resource."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,22 +28,28 @@ from googlecloudsdk.command_lib.iam import iam_util
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetIamPolicy(base.Command):
-  """Sets IAM policy to a zone."""
+  """Set the IAM policy to a Dataplex zone as defined in a JSON or YAML file.
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    the policy file format and contents.
+
+  """
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To Set an IAM policy binding to a zone, run:
+          The following command will read an IAM policy defined in a JSON file
+          'policy.son' and set it for the Dataplex zone 'test-zone' defined in
+          lake 'test-lake' in location 'us-central1':
 
-            $ {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id} policy.json
+            $ {command} test-zone --location=us-central1 --lake=test-lake policy.json
 
-            policy.json is the relative path to the json file.
           """,
   }
 
   @staticmethod
   def Args(parser):
-    resource_args.AddZoneResourceArg(parser, 'to set IAM policy to.')
+    resource_args.AddZoneResourceArg(parser, 'to set IAM policy binding to.')
     iam_util.AddArgForPolicyFile(parser)
 
   @gcloud_exception.CatchHTTPErrorRaiseHTTPException(

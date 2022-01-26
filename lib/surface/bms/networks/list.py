@@ -60,8 +60,8 @@ class List(base.ListCommand):
     # projects/myproject/locations/us-central1/networks/my-test
     # it takes -1 (my-test), -3 (us-central1), and -5 (myproject).
     parser.display_info.AddFormat(
-        'table(name.segment(-1):label=NAME,name.segment(-3):label=REGION,'
-        'cidr:label=RANGE,type,vlanId)')
+        'table(name.segment(-1):label=NAME,id:label=ID,'
+        'name.segment(-3):label=REGION,cidr:label=RANGE,type,vlanId)')
 
   def Run(self, args):
     region = args.CONCEPTS.region.Parse()

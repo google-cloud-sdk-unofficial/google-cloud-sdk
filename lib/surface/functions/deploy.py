@@ -102,7 +102,7 @@ class DeployBeta(Deploy):
 
     # Add additional flags for GCFv2
     flags.AddRunServiceAccountFlag(parser, track)
-    flags.AddSignatureTypeFlag(parser, track)
+    flags.AddSignatureTypeFlag(parser)
     flags.AddTriggerLocationFlag(parser, track)
     flags.AddTriggerServiceAccountFlag(parser, track)
     flags.AddGen2Flag(parser, track)

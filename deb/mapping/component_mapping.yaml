@@ -30,7 +30,7 @@ kubectl: kubectl
 kubectl-oidc: google-cloud-sdk-kubectl-oidc
 local-extract: google-cloud-sdk-local-extract
 minikube: google-cloud-sdk-minikube
-nomos: unavailable
+nomos: google-cloud-sdk-nomos
 pubsub-emulator: google-cloud-sdk-pubsub-emulator
 skaffold: google-cloud-sdk-skaffold
 kustomize: unavailable

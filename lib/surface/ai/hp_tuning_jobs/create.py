@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.ai import util as api_util
 from googlecloudsdk.api_lib.ai.hp_tuning_jobs import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
@@ -26,6 +27,7 @@ from googlecloudsdk.command_lib.ai import validation
 from googlecloudsdk.command_lib.ai.hp_tuning_jobs import flags
 from googlecloudsdk.command_lib.ai.hp_tuning_jobs import hp_tuning_jobs_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 _HPTUNING_JOB_CREATION_DISPLAY_MESSAGE = """\
@@ -58,7 +60,9 @@ class CreateGa(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     flags.AddCreateHpTuningJobFlags(
-        parser, client.GetAlgorithmEnum(version=cls._api_version))
+        parser,
+        api_util.GetMessage('StudySpec',
+                            version=cls._api_version).AlgorithmValueValuesEnum)
 
   def Run(self, args):
     region_ref = args.CONCEPTS.region.Parse()
@@ -68,9 +72,14 @@ class CreateGa(base.CreateCommand):
 
     with endpoint_util.AiplatformEndpointOverrides(
         version=self._api_version, region=region):
-      algorithm = arg_utils.ChoiceToEnum(
-          args.algorithm, client.GetAlgorithmEnum(version=self._api_version))
-      response = client.HpTuningJobsClient(version=self._api_version).Create(
+      api_client = client.HpTuningJobsClient(version=self._api_version)
+      algorithm = arg_utils.ChoiceToEnum(args.algorithm,
+                                         api_client.AlgorithmEnum())
+      labels = labels_util.ParseCreateArgs(
+          args,
+          api_client.HyperparameterTuningJobMessage().LabelsValue)
+
+      response = api_client.Create(
           parent=region_ref.RelativeName(),
           config_path=args.config,
           display_name=args.display_name,
@@ -80,7 +89,8 @@ class CreateGa(base.CreateCommand):
           kms_key_name=validation.GetAndValidateKmsKey(args),
           network=args.network,
           service_account=args.service_account,
-          enable_web_access=args.enable_web_access)
+          enable_web_access=args.enable_web_access,
+          labels=labels)
 
       log.status.Print(
           _HPTUNING_JOB_CREATION_DISPLAY_MESSAGE.format(

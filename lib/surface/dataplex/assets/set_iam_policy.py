@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`gcloud dataplex asset set-iam-policy-binding` command."""
+"""Command to set-iam-policy for a Dataplex asset resource."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,22 +28,28 @@ from googlecloudsdk.command_lib.iam import iam_util
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetIamPolicy(base.Command):
-  """Set an IAM policy binding to a asset."""
+  """Set the IAM policy to a Dataplex asset as defined in a JSON or YAML file.
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    the policy file format and contents.
+
+  """
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To set an IAM policy of an asset, run:
+          The following command will read an IAM policy defined in a JSON file
+          'policy.son' and set it for the Dataplex asset 'test-asset' in zone
+          'test-zone' in lake 'test-lake' in location 'us-central1':
 
-            $ {command} projects/test-project/locations/us-central1/lakes/test-lake/zones/test-zone/assets/test-asset policy.json
+            $ {command} test-asset --location=us-central1 --lake=test-lake --zone=test-zone policy.json
 
-            policy.json is the relative path to the json file.
           """,
   }
 
   @staticmethod
   def Args(parser):
-    resource_args.AddAssetResourceArg(parser, 'to set IAM policy to.')
+    resource_args.AddAssetResourceArg(parser, 'to set IAM policy binding to.')
     iam_util.AddArgForPolicyFile(parser)
 
   @gcloud_exception.CatchHTTPErrorRaiseHTTPException(

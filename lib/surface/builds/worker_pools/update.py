@@ -220,9 +220,6 @@ class UpdateAlpha(Update):
       try:
         wp = workerpool_config.LoadWorkerpoolConfigFromPath(
             args.config_from_file, messages)
-        if wp.hybridPoolConfig is not None:
-          if wp_region not in cloudbuild_util.CBH_SUPPORTED_REGIONS:
-            raise cloudbuild_exceptions.HybridUnsupportedRegionError(wp_region)
       except cloudbuild_exceptions.ParseProtoException as err:
         log.err.Print('\nFailed to parse configuration from file. If you'
                       ' were a Beta user, note that the format for this'
@@ -256,8 +253,6 @@ class UpdateAlpha(Update):
         hybrid_worker_config.vcpuCount = args.default_build_vcpu_count
 
       if args.default_build_disk_size is not None or args.default_build_memory is not None or args.default_build_vcpu_count is not None:
-        if wp_region not in cloudbuild_util.CBH_SUPPORTED_REGIONS:
-          raise cloudbuild_exceptions.HybridUnsupportedRegionError(wp_region)
         wp.hybridPoolConfig = messages.HybridPoolConfig()
         wp.hybridPoolConfig.defaultWorkerConfig = hybrid_worker_config
       else:

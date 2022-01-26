@@ -50,7 +50,8 @@ def _CommonArgs(parser):
   resource_args.AddDeliveryPipelineResourceArg(parser, positional=True)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describes details specific to the individual target, delivery pipeline qualified.
 

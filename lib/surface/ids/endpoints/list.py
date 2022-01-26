@@ -54,9 +54,10 @@ table(
 class List(base.ListCommand):
   """List Cloud IDS endpoints."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.display_info.AddFormat(_FORMAT)
+    parser.display_info.AddUriFunc(flags.MakeGetUriFunc(cls.ReleaseTrack()))
     common_args.ProjectArgument().AddToParser(parser)
 
   def Run(self, args):

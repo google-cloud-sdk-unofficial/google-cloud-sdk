@@ -55,8 +55,8 @@ class List(six.with_metaclass(abc.ABCMeta, base.CacheCommand)):
     # projects/myproject/locations/global/snapshotSchedulePolicies/my-test
     # it takes -1 (my-test), and -5 (myproject).
     parser.display_info.AddFormat(
-        'table(name.segment(-1):label=NAME,name.segment(-5):label=PROJECT,'
-        'description)')
+        'table(name.segment(-1):label=NAME,id:label=ID,'
+        'name.segment(-5):label=PROJECT,description)')
 
   def Run(self, args):
     client = BmsClient()

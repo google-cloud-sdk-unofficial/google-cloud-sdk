@@ -2,13 +2,15 @@
   hidden: true
   help_text:
     brief: |
-      Retrieve a Dataplex Lake Resource.
+      Describe a Dataplex lake resource.
     description: |
-      Get a Dataplex Lake resource based on project, location, and lake.
+      Describe a Dataplex lake resource.
 
-      {command} projects/{project_id}/locations/{location}/lakes/{lake_id}
+      Displays all details of a Dataplex lake resource given a valid lake ID.
     examples: |
-      $ {command} projects/{project_id}/locations/{us-central1}/lakes/test-lake
+      To describe a Dataplex lake 'test-lake' in location 'us-central1', run:
+
+          $ {command} test-lake --location=us-central1
   request:
     ALPHA:
       api_version: v1
@@ -17,5 +19,5 @@
   arguments:
     resource:
       help_text: |
-        Arguments and flags that define the Dataplex Lake you want to retrieve.
+        Arguments and flags that define the Dataplex lake you want to retrieve.
       spec: !REF googlecloudsdk.command_lib.dataplex.resources:lake

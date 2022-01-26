@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import target_proxies_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.certificate_manager import resource_args
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_certificates import (
     flags as ssl_certificates_flags)
@@ -64,7 +65,8 @@ def _DetailedHelp():
 
 def _Args(parser,
           include_l7_internal_load_balancing=False,
-          traffic_director_security=False):
+          traffic_director_security=False,
+          certificate_map=False):
   """Add the target https proxies comamnd line flags to the parser."""
 
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -80,9 +82,17 @@ def _Args(parser,
   if traffic_director_security:
     flags.AddProxyBind(parser, False)
 
+  if certificate_map:
+    resource_args.AddCertificateMapResourceArg(
+        parser,
+        'to attach',
+        name='certificate-map',
+        positional=False,
+        required=False)
+
 
 def _Run(args, holder, target_https_proxy_ref, url_map_ref, ssl_cert_refs,
-         ssl_policy_ref, traffic_director_security):
+         ssl_policy_ref, traffic_director_security, certificate_map_ref):
   """Issues requests necessary to create Target HTTPS Proxies."""
   client = holder.client
 
@@ -107,6 +117,9 @@ def _Run(args, holder, target_https_proxy_ref, url_map_ref, ssl_cert_refs,
   if ssl_policy_ref:
     target_https_proxy.sslPolicy = ssl_policy_ref.SelfLink()
 
+  if certificate_map_ref:
+    target_https_proxy.certificateMap = certificate_map_ref.SelfLink()
+
   if target_https_proxies_utils.IsRegionalTargetHttpsProxiesRef(
       target_https_proxy_ref):
     request = client.messages.ComputeRegionTargetHttpsProxiesInsertRequest(
@@ -123,13 +136,14 @@ def _Run(args, holder, target_https_proxy_ref, url_map_ref, ssl_cert_refs,
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a target HTTPS proxy."""
 
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
   _include_l7_internal_load_balancing = True
   _traffic_director_security = False
+  _certificate_map = False
 
   SSL_CERTIFICATES_ARG = None
   TARGET_HTTPS_PROXY_ARG = None
@@ -139,7 +153,8 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    ssl_certificates_required = not cls._traffic_director_security
+    ssl_certificates_required = (not cls._traffic_director_security) and (
+        not cls._certificate_map)
 
     cls.SSL_CERTIFICATES_ARG = (
         ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
@@ -169,7 +184,8 @@ class Create(base.CreateCommand):
         parser,
         include_l7_internal_load_balancing=cls
         ._include_l7_internal_load_balancing,
-        traffic_director_security=cls._traffic_director_security)
+        traffic_director_security=cls._traffic_director_security,
+        certificate_map=cls._certificate_map)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -182,10 +198,19 @@ class Create(base.CreateCommand):
         holder.resources)
     ssl_policy_ref = self.SSL_POLICY_ARG.ResolveAsResource(
         args, holder.resources) if args.ssl_policy else None
+    certificate_map_ref = args.CONCEPTS.certificate_map.Parse(
+    ) if self._certificate_map else None
     return _Run(args, holder, target_https_proxy_ref, url_map_ref,
-                ssl_cert_refs, ssl_policy_ref, self._traffic_director_security)
+                ssl_cert_refs, ssl_policy_ref, self._traffic_director_security,
+                certificate_map_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  _certificate_map = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
   _traffic_director_security = True
+  _certificate_map = True

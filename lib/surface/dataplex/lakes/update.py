@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`gcloud dataplex lake update` command."""
+"""Command to update a Dataplex lake resource."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -31,26 +31,28 @@ from googlecloudsdk.core import log
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.Command):
-  """Updating a lake."""
+  """Update a Dataplex lake resource."""
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To update a Dataplex Lake, run:
+          To update a Dataplex Lake 'test-lake' in location 'us-central1' to
+          have the display name 'first-dataplex-lake' and service \
+          'projects/test-lake/locations/us-central1/service/test-service', run:
 
-            $ {command} projects/{project_id}/locations/{location}/lakes/{lake_id}
+            $ {command} test-lake --location=us-central1 --display-name="first-dataplex-lake" --service="projects/test-lake/locations/us-central1/service/test-service"
           """,
   }
 
   @staticmethod
   def Args(parser):
-    resource_args.AddLakeResourceArg(parser, 'to updating a Lake to.')
+    resource_args.AddLakeResourceArg(parser, 'to update.')
     parser.add_argument(
         '--validate-only',
         action='store_true',
         default=False,
         help='Validate the update action, but don\'t actually perform it.')
-    parser.add_argument('--description', help='Description of the Lake')
+    parser.add_argument('--description', help='Description of the lake')
     parser.add_argument('--display-name', help='Display Name')
     metastore = parser.add_group(
         help='Settings to manage metadata publishing to a Hive Metastore from a lake.'

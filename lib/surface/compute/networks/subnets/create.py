@@ -51,7 +51,7 @@ def _DetailedHelp():
 def _AddArgs(parser, include_alpha_logging, include_global_managed_proxy,
              include_l7_internal_load_balancing, include_aggregate_purpose,
              include_private_service_connect, include_internal_ipv6_access_type,
-             include_l2, api_version):
+             include_l2, include_private_nat, api_version):
   """Add subnetwork create arguments to parser."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_WITH_IPV6_FIELD)
 
@@ -167,6 +167,10 @@ def _AddArgs(parser, include_alpha_logging, include_global_managed_proxy,
   if include_private_service_connect:
     purpose_choices['PRIVATE_SERVICE_CONNECT'] = (
         'Reserved for Private Service Connect Internal Load Balancing.')
+
+  if include_private_nat:
+    purpose_choices['PRIVATE_NAT'] = (
+        'Reserved for use as source range for Private NAT.')
 
   # Subnetwork purpose is introduced with L7ILB feature. Aggregate purpose
   # will have to be enabled for a given release track only after L7ILB feature
@@ -435,6 +439,7 @@ class Create(base.CreateCommand):
   _include_private_service_connect = True
   _include_internal_ipv6_access_type = False
   _include_l2 = False
+  _include_private_nat = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
 
   detailed_help = _DetailedHelp()
@@ -447,7 +452,7 @@ class Create(base.CreateCommand):
              cls._include_aggregate_purpose,
              cls._include_private_service_connect,
              cls._include_internal_ipv6_access_type, cls._include_l2,
-             cls._api_version)
+             cls._include_private_nat, cls._api_version)
 
   def Run(self, args):
     """Issues a list of requests necessary for adding a subnetwork."""
@@ -461,6 +466,7 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
+  """Create a subnet in the Beta release track."""
 
   _include_private_service_connect = True
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
@@ -468,6 +474,7 @@ class CreateBeta(Create):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
+  """Create a subnet in the Alpha release track."""
 
   _include_alpha_logging = True
   _include_aggregate_purpose = True
@@ -475,4 +482,5 @@ class CreateAlpha(CreateBeta):
   _include_global_managed_proxy = True
   _include_l2 = True
   _include_internal_ipv6_access_type = True
+  _include_private_nat = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION

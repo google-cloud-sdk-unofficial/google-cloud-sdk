@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`gcloud dataplex asset create` command."""
+"""Command to create a Dataplex asset resource."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,27 +32,50 @@ from googlecloudsdk.core import log
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
-  """Creating an Asset."""
+  """Create an asset.
+
+  An asset represents a cloud resource that is being managed within a lake as a
+  member of a zone.
+
+  This asset ID will be used to generate names such as table names when
+  publishing metadata to Hive Metastore and BigQuery.
+   * Must contain only lowercase letters, numbers, and hyphens.
+   * Must start with a letter.
+   * Must end with a number or a letter.
+   * Must be between 1-63 characters.
+   * Must be unique within the zone.
+  """
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To create a Dataplex Asset, run:
+          To create a Dataplex asset with name 'test-asset', within zone
+          'test-zone', in lake 'test-lake', in location 'us-central1', with
+          resource type 'STORAGE_BUCKET', with resource name
+          'projects/test-project/buckets/test-bucket', run:
 
-            $ {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id}/assets/{asset_id}
+            $ {command} test-asset --location=us-central --lake=test-lake --zone=test-zone --resource-type=STORAGE_BUCKET --resource-name=projects/test-project/buckets/test-bucket
+
+          To create a Dataplex asset with name 'test-asset', within zone
+          'test-zone', in lake 'test-lake', in location 'us-central1', with
+          resource type 'STORAGE_BUCKET', with resource name
+          'projects/test-project/buckets/test-bucket', with discovery-enabled,
+          and discovery schedule "0 * * * *", run:
+
+            $ {command} test-asset --location=us-central --lake=test-lake --zone=test-zone --resource-type=STORAGE_BUCKET --resource-name=projects/test-project/buckets/test-bucket --discovery-enabled --discobvery-schedule="0 * * * *"
           """,
   }
 
   @staticmethod
   def Args(parser):
-    resource_args.AddAssetResourceArg(parser, 'to create an Asset to.')
+    resource_args.AddAssetResourceArg(parser, 'to create.')
     parser.add_argument(
         '--validate-only',
         action='store_true',
         default=False,
         help='Validate the create action, but don\'t actually perform it.')
-    parser.add_argument('--description', help='Description of the Asset')
-    parser.add_argument('--display-name', help='Display Name of the Asset')
+    parser.add_argument('--description', help='Description of the asset')
+    parser.add_argument('--display-name', help='Display name of the asset')
     resource_spec = parser.add_group(
         required=True,
         help='Specification of the resource that is referenced by this asset.')

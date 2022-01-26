@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`gcloud dataplex zone remove-iam-policy-binding` command."""
+"""Command to remove-iam-policy-binding from a Dataplex zone resource."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,14 +28,19 @@ from googlecloudsdk.command_lib.iam import iam_util
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class RemoveIamPolicyBinding(base.Command):
-  """Remove IAM policy binding from a zone."""
+  """Remove IAM policy binding from a Dataplex zone resource."""
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To remove an IAM policy binding from a Zone, run:
+          To remove an IAM policy binding for the role 'roles/dataplex.viewer'
+          for the user 'test-user@gmail.com' from zone 'test-zone' in lake
+          'test-lake' in location 'us-central', run:
 
-            $ {command} projects/test-project/locations/location/lakes/test-lake/zones/test-zone --role=roles/dataplex.viewer --member=user:foo@gmail.com
+            $ {command} test-zone --location=us-central1 --lake=test-lake --role=roles/dataplex.viewer --member=user:foo@gmail.com
+
+          See https://cloud.google.com/dataplex/docs/iam-roles for details of
+          policy role and member types.
           """,
   }
 

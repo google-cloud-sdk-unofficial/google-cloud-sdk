@@ -32,7 +32,11 @@ class Resume(base.Command):
       Resume a currently paused transfer operation.
       """,
       'EXAMPLES':
-          '$ {command} OPERATION-NAME',
+          """\
+      To resume an operation, run:
+
+        $ {command} OPERATION-NAME
+      """,
   }
 
   @staticmethod

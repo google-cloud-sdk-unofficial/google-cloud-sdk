@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google Inc. All Rights Reserved.
+# Copyright 2022 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,8 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`Command to deauthorize a P4SA service account from a resource."""
-
+"""Command to deauthorize a P4SA service account from a resource."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -42,13 +41,18 @@ class DeauthorizeLake(base.Command):
           """\
           To deauthorize the service account in project 'test-project' from
           managing another project 'test-project2', run:
+
             $ {command} --location=us-east1 --project=test-project --project-resource=test-project2
+
           To deauthorize the service account in project 'test-project' from
           managing the storage bucket 'dataplex-storage-bucket', run:
+
             $ {command} --location=us-east1 --project=test-project --storage-bucket-resource=dataplex-storage-bucket
+
           To deauthorize the service account in project 'test-project' from
           managing the BigQuery dataset 'test-dataset' in project
           'test-project2', run:
+
             $ {command} --location=us-east1 --project=test-project --bigquery-dataset-resource=test-dataset --secondary-project=test-project2
           """,
   }
@@ -61,7 +65,8 @@ class DeauthorizeLake(base.Command):
         mutex=True, required=True, help='Container or Object to unbind p4sa')
     data_group.add_argument(
         '--storage-bucket-resource',
-        help='The identifier of the Cloud Storage bucket to deauthorize the project from.'
+        help="""The identifier of the Cloud Storage bucket to deauthorize the
+                project from."""
     )
     data_group.add_argument(
         '--project-resource',
@@ -69,9 +74,10 @@ class DeauthorizeLake(base.Command):
     dataset_group = data_group.add_group(
         help='Fields to help identify the BigQuery Dataset.')
     dataset_group.add_argument(
-        '--bigquery-dataset-resource', required=True,
-        help='The identifier of the BigQuery dataset to deauthorize the project from.'
-    )
+        '--bigquery-dataset-resource',
+        required=True,
+        help="""The identifier of the BigQuery dataset to deauthorize the
+                project from.""")
     dataset_group.add_argument(
         '--secondary-project', required=True,
         help='The identifier of the Project where BigQuery dataset resides')

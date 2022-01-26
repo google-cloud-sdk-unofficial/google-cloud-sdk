@@ -24,6 +24,19 @@ from googlecloudsdk.command_lib.functions.v2.remove_invoker_policy_binding impor
 from googlecloudsdk.command_lib.iam import iam_util
 
 
+_DETAILED_HELP = {
+    'DESCRIPTION':
+        '{description}',
+    'EXAMPLES':
+        """\
+          To remove the invoker policy binding for `FUNCTION-1` from role
+          `ROLE-1` for member `MEMBER-1` run:
+
+            $ {command} FUNCTION-1 --member=MEMBER-1
+          """,
+}
+
+
 def _CommonArgs(parser, track):
   """Registers flags for this command."""
   del track
@@ -31,13 +44,14 @@ def _CommonArgs(parser, track):
   iam_util.AddMemberFlag(parser, 'to remove from the IAM policy', False)
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class RemoveInvokerPolicyBindingBeta(base.Command):
   """Removes an invoker binding from the IAM policy of a Google Cloud Function.
 
   This command applies to Cloud Functions V2 only.
   """
+
+  detailed_help = _DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -57,10 +71,8 @@ class RemoveInvokerPolicyBindingBeta(base.Command):
     return command.Run(args, self.ReleaseTrack())
 
 
-# Note: does not inherit from RemoveInvokerPolicyBindingBeta to avoid inheriting
-# _is_hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RemoveInvokerPolicyBindingAlpha(base.Command):
+class RemoveInvokerPolicyBindingAlpha(RemoveInvokerPolicyBindingBeta):
   """Removes an invoker binding from the IAM policy of a Google Cloud Function.
 
   This command applies to Cloud Functions V2 only.

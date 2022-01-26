@@ -57,7 +57,8 @@ def _CommonArgs(parser):
   flags.AddLabelsFlag(parser, _ROLLOUT)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Promote(base.CreateCommand):
   """Promotes a release from one target (source), to another (destination).
 

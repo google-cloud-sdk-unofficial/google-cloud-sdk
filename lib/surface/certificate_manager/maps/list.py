@@ -50,15 +50,16 @@ def _TransformGclbTargets(targets, undefined=''):
     return undefined
   result = []
   for target in targets:
-    ip_configs = resource_transform.GetKeyValue(target, 'ipConfig', None)
+    ip_configs = resource_transform.GetKeyValue(target, 'ipConfigs', None)
     if ip_configs is None:
       return undefined
     for ip_config in ip_configs:
       ip_address = resource_transform.GetKeyValue(ip_config, 'ipAddress', None)
-      port = resource_transform.GetKeyValue(ip_config, 'port', None)
-      if ip_address is None or port is None:
+      ports = resource_transform.GetKeyValue(ip_config, 'ports', None)
+      if ip_address is None or ports is None:
         continue
-      result.append('{}:{}'.format(ip_address, port))
+      for port in ports:
+        result.append('{}:{}'.format(ip_address, port))
   return '\n'.join(result) if result else undefined
 
 
@@ -67,7 +68,7 @@ _TRANSFORMS = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List certificate maps.
 

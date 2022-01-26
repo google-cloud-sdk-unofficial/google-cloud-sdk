@@ -85,6 +85,7 @@ class Create(base.CreateCommand):
     flags.AddEnableProxyProtocolForCreate(parser)
     flags.AddConsumerRejectList(parser)
     flags.AddConsumerAcceptList(parser)
+    flags.AddDomainNames(parser)
 
   def Run(self, args):
     """Issue a service attachment INSERT request."""
@@ -122,6 +123,8 @@ class Create(base.CreateCommand):
       accept_list = service_attachments_utils.GetConsumerAcceptList(
           args, client.messages)
       service_attachment.consumerAcceptLists = accept_list
+    if args.IsSpecified('domain_names'):
+      service_attachment.domainNames = args.domain_names
 
     request = client.messages.ComputeServiceAttachmentsInsertRequest(
         project=service_attachment_ref.project,

@@ -33,7 +33,7 @@ class PySpark(base.Command):
           """\
           To submit a PySpark batch job called "my-batch" that runs "my-pyspark.py", run:
 
-            $ {command} pyspark my-pyspark.py --batch=my-batch --bucket=gs://my-bucket --region=us-central1 --python-files='path/to/my/python/script.py'
+            $ {command} pyspark my-pyspark.py --batch=my-batch --deps-bucket=gs://my-bucket --region=us-central1 --py-files='path/to/my/python/script.py'
           """
   }
 

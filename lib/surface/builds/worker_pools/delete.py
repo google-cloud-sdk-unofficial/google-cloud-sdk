@@ -89,12 +89,10 @@ class Delete(base.DeleteCommand):
             'workerPoolsId': wp_name,
         })
 
-    # If the worker pool is located in CBH_SUPPORTED_REGIONS it might be a
-    # hybrid worker pool. Currently it should only be possible to delete a
-    # hybrid worker pool in the alpha release track. Therefore we first GET the
-    # worker pool if it's in a CBH_SUPPORTED_REGIONS region and check whether
-    # it's a hybrid worker pool before we might delete it.
-    if release_track != base.ReleaseTrack.ALPHA and wp_region in cloudbuild_util.CBH_SUPPORTED_REGIONS:
+    # Allow a hybrid worker pool specifically only to be deleted in the alpha
+    # release track. To do this we must first GET information about the worker
+    # pool to determine it's type (i.e. hybrid or private).
+    if release_track != base.ReleaseTrack.ALPHA:
       # Send the Get request
       wp = client.projects_locations_workerPools.Get(
           messages.CloudbuildProjectsLocationsWorkerPoolsGetRequest(

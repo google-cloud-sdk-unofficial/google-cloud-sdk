@@ -18,15 +18,9 @@
     brief: Create a new OIDC workforce pool provider.
     description: Create a new OIDC workforce pool provider.
     examples: |
-      The following command creates an OIDC workforce pool provider with the ID
-      `my-workforce-pool-provider` in the workforce pool `my-workforce-pool`:
-
-        $ {command} my-workforce-pool-provider \
-          --workforce-pool="my-workforce-pool" \
-          --location="global"
-
       The following command creates a disabled OIDC workforce pool provider with the ID
-      `my-workforce-pool-provider` with explicit values for all required and optional parameters:
+      `my-workforce-pool-provider`. Explicit values for all required and optional parameters are
+      provided.
 
         $ {command} my-workforce-pool-provider \
           --workforce-pool="my-workforce-pool" \

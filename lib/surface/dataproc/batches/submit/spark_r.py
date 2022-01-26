@@ -33,7 +33,7 @@ class SparkR(base.Command):
           """\
           To submit a Spark R batch job running "my-main-r.r" script and upload it to "gs://my-bucket", run:
 
-            $ {command} my-main-r.r --bucket=gs://my-bucket --region='us-central1' -- ARG1 ARG2
+            $ {command} my-main-r.r --deps-bucket=gs://my-bucket --region='us-central1' -- ARG1 ARG2
           """
   }
 

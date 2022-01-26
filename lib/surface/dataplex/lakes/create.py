@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`gcloud dataplex lake create` command."""
+"""Command to create a Dataplex lake resource."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -30,20 +30,44 @@ from googlecloudsdk.core import log
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
-  """Creating a lake."""
+  """Create a Dataplex lake resource.
+
+  A lake is a centralized repository for managing data across the
+  organization, where enterprise data is distributed across many cloud projects,
+  and stored in a variety of storage services, such as Google Cloud Storage and
+  BigQuery. A lake provides data admins with tools to organize, secure and
+  manage their data at scale, and provides data scientists and data engineers an
+  integrated experience to easily search, discover, analyze and transform data
+  and associated metadata.
+
+  The Lake ID will be used to generate names such as database and dataset names
+  when publishing metadata to Hive Metastore and BigQuery.
+  The Lake id must follow these rules:
+   * Must contain only lowercase letters, numbers, and hyphens.
+   * Must start with a letter.
+   * Must end with a number or a letter.
+   * Must be between 1-63 characters.
+   * Must be unique within the customer project / location.
+  """
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To create a Dataplex Lake, run:
+          To create a Dataplex lake with name 'my-dataplex-lake' in location
+          `us-central1`, run:
 
-            $ {command} projects/{project_id}/locations/{location}/lakes/{lake_id}
+            $ {command} my-dataplex-lake --location=us-central
+
+          To create a Dataplex lake with name 'my-dataplex-lake' in location
+          'us-central1' with metastore service 'service-123abc' attached, run:
+
+            $ {command} my-dataplex-lake --location=us-central --metastore-service=projects/my-project/services/service-123abc
           """,
   }
 
   @staticmethod
   def Args(parser):
-    resource_args.AddLakeResourceArg(parser, 'to create a Lake to.')
+    resource_args.AddLakeResourceArg(parser, 'to create.')
     parser.add_argument(
         '--validate-only',
         action='store_true',
@@ -59,8 +83,8 @@ class Create(base.Command):
         which metadata will be published. This is of the form:
         projects/{project_number}/locations/{location_id}/services/{service_id}
         where the location matches the location of the lake.""")
-    parser.add_argument('--description', help='Description of the Lake')
-    parser.add_argument('--display-name', help='Display Name')
+    parser.add_argument('--description', help='Description of the lake.')
+    parser.add_argument('--display-name', help='Display name of the lake.')
     base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
 

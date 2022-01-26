@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`gcloud dataplex zone update` command."""
+"""Command to update a Dataplex zone resource."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,26 +32,28 @@ from googlecloudsdk.core import log
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.Command):
-  """Updating a zone."""
+  """Update a Dataplex zone resource."""
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To update a Dataplex Zone, run:
+          To update a Dataplex zone 'test-zone' in lake 'test-lake' in location
+          'us-central1' to have the display name 'first-dataplex-zone' and
+          discovery include patterns 'abc', 'def', run:
 
-            $ {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id}
+            $ {command} test-zone --location=us-central1 --lake=test-lake --display-name="first-dataplex-zone" --discovery-include-patterns=abc,def
           """,
   }
 
   @staticmethod
   def Args(parser):
-    resource_args.AddZoneResourceArg(parser, 'to Update a Zone to.')
+    resource_args.AddZoneResourceArg(parser, 'to update.')
     parser.add_argument(
         '--validate-only',
         action='store_true',
         default=False,
         help='Validate the create action, but don\'t actually perform it.')
-    parser.add_argument('--description', help='Description of the Zone')
+    parser.add_argument('--description', help='Description of the zone')
     parser.add_argument('--display-name', help='Display Name')
     flags.AddDiscoveryArgs(parser)
     base.ASYNC_FLAG.AddToParser(parser)

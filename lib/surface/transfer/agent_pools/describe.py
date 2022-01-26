@@ -32,7 +32,11 @@ class Describe(base.Command):
       Get details about a specific agent pool.
       """,
       'EXAMPLES':
-          '$ {command} NAME',
+          """\
+      To monitor an agent pool, run:
+
+        $ {command} NAME
+      """,
   }
 
   @staticmethod

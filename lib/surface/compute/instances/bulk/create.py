@@ -75,6 +75,7 @@ def _CommonArgs(parser,
                 support_termination_action=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
+  instances_flags.AddDiskArgsForBulk(parser)
   instances_flags.AddCreateDiskArgs(
       parser,
       enable_kms=True,
@@ -113,7 +114,6 @@ def _CommonArgs(parser,
   instances_flags.AddThreadsPerCoreArgs(parser)
   if support_numa_node_count:
     instances_flags.AddNumaNodeCountArgs(parser)
-  instances_flags.AddBootDiskArgs(parser, enable_kms=True)
 
   if support_display_device:
     instances_flags.AddDisplayDeviceArg(parser)
@@ -303,7 +303,9 @@ class Create(base.Command):
         scope=scope,
         skip_defaults=skip_defaults)
 
-    create_boot_disk = True
+    create_boot_disk = not (
+        instance_utils.UseExistingBootDisk((args.disk or []) +
+                                           (args.create_disk or [])))
     image_uri = create_utils.GetImageUri(args, compute_client, create_boot_disk,
                                          project, resource_parser)
 
@@ -328,6 +330,10 @@ class Create(base.Command):
     disks = []
     if create_utils.CheckSpecifiedDiskArgs(
         args=args, support_disks=False, skip_defaults=skip_defaults):
+
+      #  Disks in bulk insert should be in READ_ONLY mode
+      for disk in args.disk or []:
+        disk['mode'] = 'ro'
       disks = create_utils.CreateDiskMessages(
           args=args,
           project=project,
@@ -344,7 +350,6 @@ class Create(base.Command):
           support_boot_snapshot_uri=self._support_boot_snapshot_uri,
           support_image_csek=self._support_image_csek,
           support_create_disk_snapshots=self._support_create_disk_snapshots,
-          support_persistent_attached_disks=False,
           use_disk_type_uri=False)
 
     machine_type_name = None
@@ -466,7 +471,6 @@ class Create(base.Command):
     instances_flags.ValidateLocationPolicyArgs(args)
     instances_flags.ValidateBulkDiskFlags(
         args,
-        enable_snapshots=True,
         enable_source_snapshot_csek=self._support_source_snapshot_csek,
         enable_image_csek=self._support_image_csek)
     instances_flags.ValidateImageFlags(args)

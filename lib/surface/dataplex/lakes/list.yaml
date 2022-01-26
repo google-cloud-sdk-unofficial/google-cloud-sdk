@@ -2,13 +2,17 @@
   hidden: true
   help_text:
     brief: |
-      List Dataplex Lake Resources.
+      List Dataplex lake resources under a project.
     description: |
-      List Dataplex Lake resource based on project and location. Currently list does not support project/{project_id}/.../ notation.
-
-      {command} --project={project_id} --location={location}
+      List all Dataplex lake resource under a specific project and location.
     examples: |
-      {command} --project=test-project --location=us-central1
+      To list all Dataplex lake resources in location 'us-central', run:
+
+          $ {command} --project=test-project --location=us-central1
+
+      To list all Dataplex lakes in all locations, run:
+
+          $ {command} --project=test-project --location=-
 
   request:
     ALPHA:
@@ -17,7 +21,7 @@
   arguments:
     resource:
       help_text: |
-        Arguments and flags that define the Dataplex Lake you want to list.
+        Arguments and flags that define the Dataplex lake you want to list.
       spec: !REF googlecloudsdk.command_lib.dataplex.resources:location
 
   response:

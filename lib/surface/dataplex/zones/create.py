@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`gcloud dataplex zone create` command."""
+"""Command to create a Dataplex zone resource."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,35 +32,68 @@ from googlecloudsdk.core import log
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
-  """Creating a zone."""
+  """Create a zone.
+
+  A zone represents a logical group of related assets within a lake. A zone can
+  be used to map to organizational structure or represent stages of data
+  readiness from raw to curated. It provides managing behavior that is shared
+  or inherited by all contained assets.
+
+  The Zone ID is used to generate names such as database and dataset names
+  when publishing metadata to Hive Metastore and BigQuery.
+   * Must contain only lowercase letters, numbers, and hyphens.
+   * Must start with a letter.
+   * Must end with a number or a letter.
+   * Must be between 1-63 characters.
+   * Must be unique across all lakes from all locations in a project.
+  """
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To create a Dataplex Zone, run:
+          To create a Dataplex zone with name 'test-zone' within lake
+          'test-lake' in location 'us-central1' with type 'RAW', and resource
+          location type 'SINGLE_REGION', run:
 
-            $ {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/zones/{zone_id}
+            $ {command} test-zone --location=us-central --lake=test-lake --resource-location-type=SINGLE_REGION --type=RAW
+
+          To create a Dataplex zone with name 'test-zone' within lake
+          'test-lake' in location 'us-central1' with type 'RAW',resource
+          location type 'SINGLE_REGION' with discovery-enabled and discovery
+          schedule "0 * * * *", run:
+
+            $ {command} test-zone --location=us-central --lake=test-lake --resource-location-type=SINGLE_REGION --type=RAW --discovery-enabled --discobvery-schedule="0 * * * *"
+
           """,
   }
 
   @staticmethod
   def Args(parser):
-    resource_args.AddZoneResourceArg(parser, 'to create a Zone to.')
+    resource_args.AddZoneResourceArg(parser, 'to create.')
     parser.add_argument(
         '--validate-only',
         action='store_true',
         default=False,
         help='Validate the create action, but don\'t actually perform it.')
-    parser.add_argument('--description', help='Description of the Zone')
-    parser.add_argument('--display-name', help='Display Name')
+    parser.add_argument('--description', help='Description of the zone.')
+    parser.add_argument('--display-name', help='Display name of the zone.')
     parser.add_argument(
         '--type',
         choices={
-            'RAW': 'raw.',
-            'CURATED': 'curated.',
+            'RAW':
+                """A zone that contains data that needs further processing
+                   before it is considered generally ready for consumption and
+                   analytics workloads.""",
+            'CURATED':
+                """A zone that contains data that is considered to be ready for
+                   broader consumption and analytics workloads. Curated
+                   structured data stored in Cloud Storage must conform to
+                   certain file formats (Parquet, Avro, and Orc) and organized
+                   in a hive-compatible directory layout.""",
         },
         type=arg_utils.ChoiceToEnumName,
-        help='Type', required=True)
+        help='Type',
+        required=True)
     flags.AddDiscoveryArgs(parser)
     resource_spec = parser.add_group(
         required=True,
@@ -68,11 +101,13 @@ class Create(base.Command):
     resource_spec.add_argument(
         '--resource-location-type',
         choices={
-            'SINGLE_REGION': 'single_region',
-            'MULTI_REGION': 'multi_region'
+            'SINGLE_REGION':
+                'Resources that are associated with a single region.',
+            'MULTI_REGION':
+                'Resources that are associated with a multi-region location.'
         },
         type=arg_utils.ChoiceToEnumName,
-        help='resource location type',
+        help='Location type of the resources attached to a zone',
         required=True)
     base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)

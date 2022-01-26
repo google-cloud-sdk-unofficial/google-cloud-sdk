@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a certificate map entry.
 
@@ -37,7 +37,7 @@ class Create(base.CreateCommand):
 
   To create a certificate map entry with name simple-entry, run:
 
-    $ {command} simple-map --map=simple-entry --certificates=simple-cert
+    $ {command} simple-entry --map=simple-map --certificates=simple-cert
   """
 
   @staticmethod

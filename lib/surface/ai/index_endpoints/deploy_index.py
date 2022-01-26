@@ -52,7 +52,7 @@ class DeployIndexV1(base.Command):
     flags.GetDeployedIndexId().AddToParser(parser)
     flags.GetIndexIdArg().AddToParser(parser)
     flags.GetDisplayNameArg('deployed index').AddToParser(parser)
-    flags.AddAutomaticResourcesArgs(parser, 'deployed index')
+    flags.AddDeploymentResourcesArgs(parser, 'deployed index')
 
   def _Run(self, args, version):
     validation.ValidateDisplayName(args.display_name)
