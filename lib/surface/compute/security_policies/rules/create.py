@@ -124,9 +124,9 @@ class CreateGA(base.CreateCommand):
 
   SECURITY_POLICY_ARG = None
 
-  _support_redirect = False
+  _support_redirect = True
   _support_rate_limit = True
-  _support_header_action = False
+  _support_header_action = True
   _support_tcl_ssl = False
 
   @classmethod

@@ -32,7 +32,7 @@ from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Apply(base.Command):
-  """Creates or replaces an application from a YAML specification."""
+  """Create or replace an application from a YAML specification."""
 
   detailed_help = {
       'DESCRIPTION':

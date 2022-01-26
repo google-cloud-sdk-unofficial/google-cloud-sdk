@@ -5,9 +5,9 @@
     description: |
       Delete an Edge Container cluster.
     examples: |
-      To delete a cluster called 'test-cluster', run:
+      To delete a cluster called 'my-cluster' in region us-central1, run:
 
-        $ {command} my-cluster
+        $ {command} my-cluster --location=us-central1
 
   request:
     collection: edgecontainer.projects.locations.clusters

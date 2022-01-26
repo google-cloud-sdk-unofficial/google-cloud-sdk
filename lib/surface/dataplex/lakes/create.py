@@ -93,8 +93,8 @@ class Create(base.Command):
       lake.WaitForOperation(create_req_op)
       log.CreatedResource(
           lake_ref.Name(),
-          details='Lake created in project [{0}] with location [{1}]'.format(
-              lake_ref.projectsId, lake_ref.locationsId))
+          details='Lake created in [{0}]'.format(
+              lake_ref.Parent().RelativeName()))
       return
 
     log.status.Print('Creating [{0}] with operation [{1}].'.format(

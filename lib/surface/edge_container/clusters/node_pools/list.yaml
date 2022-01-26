@@ -5,9 +5,9 @@
     description: |
       List Edge Container nodePools.
     examples: |
-      To list the nodePools, run:
+      To list the nodePools in region us-central1, run:
 
-        $ {command}
+        $ {command} --location=us-central1 --cluster=<my-cluster>
 
   request:
     collection: edgecontainer.projects.locations.clusters.nodePools

@@ -5,9 +5,9 @@
     description: |
       List VPN connections.
     examples: |
-      To list the VPN connections, run:
+      To list the VPN connections at region us-central1, run:
 
-        $ {command} --location 'my-location'
+        $ {command} --location=us-central
 
   request:
     collection: edgecontainer.projects.locations.vpnConnections

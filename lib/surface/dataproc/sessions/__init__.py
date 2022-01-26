@@ -25,14 +25,14 @@ from googlecloudsdk.calliope import base
 @base.Hidden  # Hidden until fully implemented and released.
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Sessions(base.Group):
-  """Submit and manage Dataproc sessions.
+  """Create and manage Dataproc sessions.
 
 
-  Submit and manage Dataproc sessions.
+  Create and manage Dataproc sessions.
 
-  Submit a session:
+  Create a session:
 
-    $ {command} submit
+    $ {command} create
 
   List all sessions:
 

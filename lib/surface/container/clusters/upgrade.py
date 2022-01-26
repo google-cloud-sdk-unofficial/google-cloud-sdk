@@ -133,11 +133,11 @@ def MaybeLogDataplaneV2ScaleWarning(cluster):
       cluster.networkConfig.datapathProvider is not None and
       cluster.networkConfig.datapathProvider.name == 'ADVANCED_DATAPATH'):
     # TODO(b/177430844): Remove once scale limits are gone
-    log.warning(
-        'GKE Dataplane V2 has been certified to run up to 500 nodes per'
-        ' cluster, including node autoscaling and surge upgrades. You '
+    log.status.Print(
+        'Note: GKE Dataplane V2 has been certified to run up to 500 nodes per '
+        'cluster, including node autoscaling and surge upgrades. You '
         'may request a cluster size of up to 1000 nodes by filing a '
-        'support ticket with GCP. For more information, please see'
+        'support ticket with GCP. For more information, please see '
         'https://cloud.google.com/kubernetes-engine/docs/concepts/dataplane-v2')
 
 
@@ -148,13 +148,13 @@ def MaybeLog122UpgradeWarning(cluster):
     if cmv >= SemVer('1.22.0-gke.0'):
       return
 
-  log.warning("""
-Starting with v1.22, Kubernetes has removed several v1beta1 APIs for more
-stable v1 APIs. Read more about this change -
-https://cloud.google.com/kubernetes-engine/docs/deprecations/apis-1-22.
-Please ensure that your cluster is not using any deprecated v1beta1 APIs prior
-to upgrading to GKE 1.22.
-""")
+  log.status.Print(
+      'Upcoming breaking change: Starting with v1.22, Kubernetes has removed '
+      'several v1beta1 APIs for more stable v1 APIs. Read more about this '
+      'change - '
+      'https://cloud.google.com/kubernetes-engine/docs/deprecations/apis-1-22. '
+      'Please ensure that your cluster is not using any deprecated v1beta1 '
+      'APIs prior to upgrading to GKE 1.22.')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

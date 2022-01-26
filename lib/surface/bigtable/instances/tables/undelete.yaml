@@ -1,0 +1,19 @@
+- release_tracks: [GA, BETA, ALPHA]
+  hidden: true  # TODO(b/203697846): unhide the CLI after the UndeleteTable feature is released in prod.
+
+  help_text:
+    brief: Undeletes a previously deleted Cloud Bigtable table.
+    description: Undeletes a previously deleted Cloud Bigtable table.
+    examples: |
+      To undelete the table 'my-table' in instance 'my-instance', run:
+
+      $ {command} my-table --instance=my-instance
+
+  request:
+    collection: bigtableadmin.projects.instances.tables
+    method: undelete
+
+  arguments:
+    resource:
+      help_text: Cloud Bigtable table to undelete.
+      spec: !REF googlecloudsdk.command_lib.bigtable.resources:table

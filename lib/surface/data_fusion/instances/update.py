@@ -22,6 +22,7 @@ from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.data_fusion import datafusion as df
 from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.data_fusion import operation_poller
 from googlecloudsdk.command_lib.data_fusion import resource_args
@@ -50,7 +51,10 @@ class Update(base.UpdateCommand):
   }
 
   # REST API Field Names for the updateMask
-  ENABLE_RBAC_FIELD = 'enableRbac'
+  FIELD_PATH_ENABLE_OPTIONS = 'enableOptions'
+  FIELD_PATH_ENABLE_RBAC = 'enableRbac'
+  FIELD_PATH_ENABLE_STACKDRIVER_LOGGING = 'enableStackdriverLogging'
+  FIELD_PATH_ENABLE_STACKDRIVER_MONITORING = 'enableStackdriverMonitoring'
 
   @staticmethod
   def Args(parser):
@@ -70,6 +74,12 @@ class Update(base.UpdateCommand):
         action='store_true',
         help='Enable granular role-based access control for this Data Fusion instance.'
     )
+    parser.add_argument(
+        '--options',
+        type=arg_parsers.ArgDict(),
+        metavar='KEY=VALUE',
+        help='Options to use for instance update, '
+        'specified as KEY1=VALUE1,KEY2=VALUE2.')
     parser.add_argument('--version', help='Version of Datafusion to update to.')
 
   def Run(self, args):
@@ -77,13 +87,25 @@ class Update(base.UpdateCommand):
     instance_ref = args.CONCEPTS.instance.Parse()
 
     labels = args.labels or {}
-    enable_stackdriver_logging = args.enable_stackdriver_logging or False
-    enable_stackdriver_monitoring = args.enable_stackdriver_monitoring or False
-    fields_to_update = []
+    enable_stackdriver_logging = None
+    enable_stackdriver_monitoring = None
     enable_rbac = None
+    options = {}
+
+    fields_to_update = []
+    if args.IsSpecified('options'):
+      options = args.options
+      fields_to_update.append(self.FIELD_PATH_ENABLE_OPTIONS)
     if args.IsSpecified('enable_rbac'):
-      fields_to_update.append(self.ENABLE_RBAC_FIELD)
+      fields_to_update.append(self.FIELD_PATH_ENABLE_RBAC)
       enable_rbac = args.enable_rbac
+    if args.IsSpecified('enable_stackdriver_logging'):
+      fields_to_update.append(self.FIELD_PATH_ENABLE_STACKDRIVER_LOGGING)
+      enable_stackdriver_logging = args.enable_stackdriver_logging
+    if args.IsSpecified('enable_stackdriver_monitoring'):
+      fields_to_update.append(self.FIELD_PATH_ENABLE_STACKDRIVER_MONITORING)
+      enable_stackdriver_monitoring = args.enable_stackdriver_monitoring
+
     version = args.version
     instance = datafusion.messages.Instance(
         name=instance_ref.RelativeName(),
@@ -91,6 +113,8 @@ class Update(base.UpdateCommand):
         enableStackdriverLogging=enable_stackdriver_logging,
         enableStackdriverMonitoring=enable_stackdriver_monitoring,
         enableRbac=enable_rbac,
+        options=encoding.DictToAdditionalPropertyMessage(
+            options, datafusion.messages.Instance.OptionsValue, True),
         labels=encoding.DictToAdditionalPropertyMessage(
             labels, datafusion.messages.Instance.LabelsValue, True))
     request = datafusion.messages.DatafusionProjectsLocationsInstancesPatchRequest(

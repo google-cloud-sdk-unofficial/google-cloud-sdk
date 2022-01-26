@@ -87,12 +87,6 @@
           help_text: |
             Service account to use to execute a task.
             If not provided, the default Compute service account for the project is used.
-        - arg_name: execution-service-account-scopes
-          api_field: googleCloudDataplexV1Task.executionSpec.serviceAccountScopes
-          repeated: true
-          help_text: |
-            The set of auth scopes and permissions granted to the service account.
-            By default, the CLOUD_PLATFORM auth scope is enabled.
         - arg_name: max-job-execution-lifetime
           api_field: googleCloudDataplexV1Task.executionSpec.maxJobExecutionLifetime
           help_text: |

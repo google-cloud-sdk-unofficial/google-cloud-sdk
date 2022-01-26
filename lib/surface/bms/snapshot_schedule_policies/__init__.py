@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SnapshotSchedulePolicies(base.Group):
   """Manage snapshot-schedule-policies in Bare Metal Solution."""
   pass

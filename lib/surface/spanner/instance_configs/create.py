@@ -38,11 +38,9 @@ class Create(base.CreateCommand):
         To create a Cloud Spanner instance config, run:
 
           $ {command} custom-instance-config
-            --display-name=nam3-RO-us-central1
-            --base-config=nam3
-            --replicas=location=us-east4,type=READ_WRITE;location=us-east4,type=READ_WRITE;
-                 location=us-east1,type=READ_WRITE;location=us-east1,type=READ_WRITE;
-                 location=us-central1,type=READ_ONLY
+            --display-name=custom-instance-config-name
+            --base-config=projects/{projectID}/instanceConfigs/{google_managed_config_id}
+            --replicas="location=us-east4,type=READ_WRITE;location=us-east4,type=READ_WRITE;location=us-east1,type=READ_WRITE;location=us-east1,type=READ_WRITE;location=us-central1,type=READ_ONLY"
         """),
   }
 
@@ -62,7 +60,11 @@ class Create(base.CreateCommand):
         'to avoid name conflicts with Google managed configurations.')
 
     parser.add_argument(
-        '--base-config', required=True, help='Base configuration name.')
+        '--base-config',
+        required=True,
+        help='Base configuration name. '
+        'e.g. projects/<projectID>/instanceConfigs/<google_managed_config_id>, '
+        'based on which this configuration is created.')
 
     parser.add_argument(
         '--display-name',

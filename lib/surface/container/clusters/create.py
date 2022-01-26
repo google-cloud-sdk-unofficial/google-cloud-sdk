@@ -137,81 +137,45 @@ You should specify `--cluster-ipv4-cidr` to prevent conflicts.
   parser.display_info.AddFormat(util.CLUSTERS_FORMAT)
 
 
-def MaybeLogAuthWarning(args):
-  if (hasattr(args, 'issue_client_certificate') and \
-      args.IsSpecified('issue_client_certificate')):
-    if not (hasattr(args, 'enable_basic_auth') and \
-            (args.IsSpecified('enable_basic_auth') or \
-              args.IsSpecified('username'))):
-      log.warning('If `--issue-client-certificate` is specified but '
-                  '`--enable-basic-auth` or `--username` is not, our API will '
-                  'treat that as `--no-enable-basic-auth`.')
-
-
 def _IsSpecified(args, name):
   """Returns true if an arg is defined and specified, false otherwise."""
   return hasattr(args, name) and args.IsSpecified(name)
 
 
-def MaybeLogReleaseChannelDefaultWarning(args):
-  """Logs a release channel default change message for applicable commands."""
-  if (not _IsSpecified(args, 'cluster_version') and
-      not _IsSpecified(args, 'release_channel') and
-      (hasattr(args, 'enable_autoupgrade') and
-       cmd_util.GetAutoUpgrade(args)) and
-      (hasattr(args, 'enable_autorepair') and cmd_util.GetAutoRepair(args))):
-    log.warning('Starting in January 2021, clusters will use the Regular '
-                'release channel by default when `--cluster-version`, '
-                '`--release-channel`, `--no-enable-autoupgrade`, and '
-                '`--no-enable-autorepair` flags are not specified.')
-
-
 cloudNatTemplate = string.Template(
-    'This cluster has private nodes. If you need connectivity to the '
-    'public internet, for example to pull public containers, you must configure'
-    ' Cloud NAT. To enable NAT for the network of this cluster, run the'
-    ' following commands: \n'
-    'gcloud compute routers create my-router --region $REGION --network default '
-    '--project=$PROJECT_ID \n'
+    'Note: This cluster has private nodes. If you need connectivity to the '
+    'public internet, for example to pull public containers, you must '
+    'configure Cloud NAT. To enable NAT for the network of this cluster, run '
+    'the following commands: \n'
+    'gcloud compute routers create my-router --region $REGION '
+    '--network default --project=$PROJECT_ID \n'
     'gcloud beta compute routers nats create nat --router=my-router '
-    '--region=$REGION --auto-allocate-nat-external-ips --nat-all-subnet-ip-ranges '
-    '--project=$PROJECT_ID')
+    '--region=$REGION --auto-allocate-nat-external-ips '
+    '--nat-all-subnet-ip-ranges --project=$PROJECT_ID')
 
 
 def MaybeLogCloudNatHelpText(args, is_autopilot, location, project_id):
   if is_autopilot and (getattr(args, 'enable_private_nodes', False) and
                        (hasattr(args, 'network') or hasattr('subnetwork'))):
-    log.warning(
+    log.status.Print(
         cloudNatTemplate.substitute(REGION=location, PROJECT_ID=project_id))
 
 
 def MaybeLogDataplaneV2ScaleWarning(args):
   # TODO(b/177430844): Remove once scale limits are gone
   if getattr(args, 'enable_dataplane_v2', False):
-    log.warning(
-        'GKE Dataplane V2 has been certified to run up to 500 nodes per'
-        ' cluster, including node autoscaling and surge upgrades. You '
+    log.status.Print(
+        'Note: GKE Dataplane V2 has been certified to run up to 500 nodes per '
+        'cluster, including node autoscaling and surge upgrades. You '
         'may request a cluster size of up to 1000 nodes by filing a '
-        'support ticket with GCP. For more information, please see'
+        'support ticket with GCP. For more information, please see '
         'https://cloud.google.com/kubernetes-engine/docs/concepts/dataplane-v2')
 
 
 def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
                            project_id):
   """Parses the flags provided with the cluster creation command."""
-  if hasattr(args, 'addons') and args.IsSpecified('addons') and \
-      api_adapter.DASHBOARD in args.addons:
-    log.warning(
-        'The `KubernetesDashboard` addon is deprecated, and will be removed as '
-        'an option for new clusters starting in 1.15. It is recommended to use '
-        'the Cloud Console to manage and monitor your Kubernetes clusters, '
-        'workloads and applications. See: '
-        'https://cloud.google.com/kubernetes-engine/docs/concepts/dashboards')
-
-  flags.LogBasicAuthDeprecationWarning(args)
   flags.MungeBasicAuthFlags(args)
-  MaybeLogAuthWarning(args)
-  MaybeLogReleaseChannelDefaultWarning(args)
 
   enable_ip_alias = get_default('enable_ip_alias')
   if hasattr(args, 'enable_ip_alias'):
@@ -362,7 +326,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       gvnic=get_default('enable_gvnic'),
       enable_confidential_nodes=get_default('enable_confidential_nodes'),
       enable_image_streaming=get_default('enable_image_streaming'),
-      spot=get_default('spot'))
+      spot=get_default('spot'),
+      enable_service_externalips=get_default('enable_service_externalips'))
 
 
 GA = 'ga'
@@ -575,6 +540,8 @@ flags_to_add = {
             flags.AddWorkloadIdentityFlags,
         'workloadmetadata':
             flags.AddWorkloadMetadataFlag,
+        'enableserviceexternalips':
+            flags.AddEnableServiceExternalIPs,
     },
     BETA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True)),
@@ -1035,44 +1002,45 @@ class Create(base.CreateCommand):
     if options.private_cluster and not (
         options.enable_master_authorized_networks or
         options.master_authorized_networks):
-      log.warning(
-          '`--private-cluster` makes the master inaccessible from '
+      log.status.Print(
+          'Note: `--private-cluster` makes the master inaccessible from '
           'cluster-external IP addresses, by design. To allow limited '
           'access to the master, see the `--master-authorized-networks` flags '
           'and our documentation on setting up private clusters: '
-          'https://cloud.google.com'
-          '/kubernetes-engine/docs/how-to/private-clusters')
-
-    if not options.enable_shielded_nodes:
-      log.warning(
-          'Starting with version 1.18, clusters will have shielded GKE nodes by default.'
+          'https://cloud.google.com/kubernetes-engine/docs/how-to/private-clusters'
       )
 
     if options.enable_ip_alias:
-      log.warning(
-          'The Pod address range limits the maximum size of the cluster. '
-          'Please refer to https://cloud.google.com/kubernetes-engine/docs/how-to/flexible-pod-cidr to learn how to optimize IP address allocation.'
-      )
+      log.status.Print(
+          'Note: The Pod address range limits the maximum size of the cluster. '
+          'Please refer to '
+          'https://cloud.google.com/kubernetes-engine/docs/how-to/flexible-pod-cidr '
+          'to learn how to optimize IP address allocation.')
     else:
       max_node_number = util.CalculateMaxNodeNumberByPodRange(
           options.cluster_ipv4_cidr)
       if max_node_number > 0:
-        log.warning(
-            'Your Pod address range (`--cluster-ipv4-cidr`) can accommodate at most %d node(s). '
-            % max_node_number)
-
-    if not options.image_type:
-      log.warning(
-          'Starting with version 1.19, newly created clusters and node-pools will have COS_CONTAINERD as the default node image when no image type is specified.'
-      )
+        log.status.Print(
+            'Note: Your Pod address range (`--cluster-ipv4-cidr`) can '
+            'accommodate at most %d node(s).' % max_node_number)
 
     if options.enable_l4_ilb_subsetting:
-      log.warning('L4 ILB Subsetting cannot be disabled, once enabled.')
+      log.status.Print(
+          'Note: Once enabled, L4 ILB Subsetting cannot be disabled.')
 
     if options.enable_pod_security_policy:
+      log.status.Print(
+          'Upcoming breaking change: Kubernetes has officially deprecated '
+          'PodSecurityPolicy in version 1.21 and will be removed in 1.25 with '
+          'no upgrade path available with this feature enabled. For additional '
+          'details, please refer to '
+          'https://cloud.google.com/kubernetes-engine/docs/how-to/pod-security-policies'
+      )
+
+    if options.enable_managed_prometheus:
       log.warning(
-          'Kubernetes has officially deprecated PodSecurityPolicy in version 1.21 and will be removed in 1.25 with no upgrade path available with this feature enabled. For additional details, please refer to https://cloud.google.com/kubernetes-engine/docs/how-to/pod-security-policies'
-          )
+          'Managed collection for Google Cloud Managed Service for Prometheus is in preview for clusters on version 1.21. It is fully supported on clusters on version 1.22 and above.'
+      )
 
     # TODO(b/201956384) Remove check that requires specifying scope, once
     # cluster scope is also GA. This check is added to prevent enabling cluster
@@ -1090,7 +1058,13 @@ class Create(base.CreateCommand):
           cancel_on_no=True)
 
     if options.accelerators is not None:
-      log.status.Print(constants.KUBERNETES_GPU_LIMITATION_MSG)
+      log.status.Print('Note: ' + constants.KUBERNETES_GPU_LIMITATION_MSG)
+
+    # image streaming feature requires Container File System API to be enabled.
+    # Checking whether the API has been enabled, and warning if not.
+    if options.enable_image_streaming:
+      util.CheckForContainerFileSystemApiEnablementWithPrompt(
+          cluster_ref.projectId)
 
     operation = None
     try:

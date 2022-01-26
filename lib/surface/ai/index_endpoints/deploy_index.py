@@ -40,8 +40,8 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class DeployIndex(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DeployIndexV1(base.Command):
   """Deploy an index to a Vertex AI index endpoint."""
 
   detailed_help = DETAILED_HELP
@@ -59,10 +59,15 @@ class DeployIndex(base.Command):
     index_endpoint_ref = args.CONCEPTS.index_endpoint.Parse()
     region = index_endpoint_ref.AsDict()['locationsId']
     with endpoint_util.AiplatformEndpointOverrides(version, region=region):
-      operation = client.IndexEndpointsClient().DeployIndexBeta(
-          index_endpoint_ref, args)
+      index_endpoint_client = client.IndexEndpointsClient(version=version)
+      if version == constants.GA_VERSION:
+        operation = index_endpoint_client.DeployIndex(index_endpoint_ref, args)
+      else:
+        operation = index_endpoint_client.DeployIndexBeta(
+            index_endpoint_ref, args)
+
       response_msg = operations_util.WaitForOpMaybe(
-          operations_client=operations.OperationsClient(),
+          operations_client=operations.OperationsClient(version=version),
           op=operation,
           op_ref=index_endpoints_util.ParseIndexEndpointOperation(
               operation.name))
@@ -72,6 +77,16 @@ class DeployIndex(base.Command):
         log.status.Print(('Id of the deployed index: {}.').format(
             response['deployedIndex']['id']))
     return response_msg
+
+  def Run(self, args):
+    return self._Run(args, constants.GA_VERSION)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DeployIndexV1Beta1(DeployIndexV1):
+  """Deploy an index to a Vertex AI index endpoint."""
+
+  detailed_help = DETAILED_HELP
 
   def Run(self, args):
     return self._Run(args, constants.BETA_VERSION)

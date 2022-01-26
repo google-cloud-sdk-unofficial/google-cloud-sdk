@@ -25,7 +25,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.machine_images import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List Compute Engine machine images."""
 

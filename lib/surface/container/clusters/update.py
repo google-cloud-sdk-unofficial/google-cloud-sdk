@@ -341,6 +341,7 @@ class Update(base.UpdateCommand):
     flags.AddMeshCertificatesFlags(group)
     flags.AddEnableImageStreamingFlag(group)
     flags.AddClusterDNSFlags(group, hidden=False)
+    flags.AddEnableServiceExternalIPs(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -400,6 +401,7 @@ class Update(base.UpdateCommand):
           'to start using CloudDNS for DNS lookups. It is highly recommended to'
           ' complete this step shortly after enabling CloudDNS.',
           cancel_on_no=True)
+    opts.enable_service_externalips = args.enable_service_externalips
     return opts
 
   def Run(self, args):
@@ -438,9 +440,12 @@ class Update(base.UpdateCommand):
                        console_attr.SafeText(error)))
 
     if getattr(args, 'enable_pod_security_policy', None):
-      log.warning(
-          'Kubernetes has officially deprecated PodSecurityPolicy in version 1.21 and will be removed in 1.25 with no upgrade path available with this feature enabled. For additional details, please refer to https://cloud.google.com/kubernetes-engine/docs/how-to/pod-security-policies'
-          )
+      log.status.Print(
+          'Kubernetes has officially deprecated PodSecurityPolicy in version '
+          '1.21 and will be removed in 1.25 with no upgrade path available '
+          'with this feature enabled. For additional details, please refer to '
+          'https://cloud.google.com/kubernetes-engine/docs/how-to/pod-security-policies'
+      )
     # locations will be None if additional-zones was specified, an empty list
     # if it was specified with no argument, or a populated list if zones were
     # provided. We want to distinguish between the case where it isn't
@@ -454,7 +459,6 @@ class Update(base.UpdateCommand):
     if hasattr(args, 'node_locations') and args.node_locations is not None:
       locations = sorted(args.node_locations)
 
-    flags.LogBasicAuthDeprecationWarning(args)
     if args.IsSpecified('username') or args.IsSpecified('enable_basic_auth'):
       flags.MungeBasicAuthFlags(args)
       options = api_adapter.SetMasterAuthOptions(
@@ -656,6 +660,14 @@ to completion."""
             cluster_ref, args.enable_legacy_authorization)
       else:
         options = self.ParseUpdateOptions(args, locations)
+
+        # Image streaming feature requires Container File System API to be
+        # enabled.
+        # Checking whether the API has been enabled, and warning if not.
+        if options.enable_image_streaming:
+          util.CheckForContainerFileSystemApiEnablementWithPrompt(
+              cluster_ref.projectId)
+
         op_ref = adapter.UpdateCluster(cluster_ref, options)
 
     if not args.async_:
@@ -693,11 +705,11 @@ to completion."""
         cluster.networkConfig.datapathProvider is not None and
         cluster.networkConfig.datapathProvider.name == 'ADVANCED_DATAPATH'):
       # TODO(b/177430844): Remove once scale limits are gone
-      log.warning(
-          'GKE Dataplane V2 has been certified to run up to 500 nodes per'
-          ' cluster, including node autoscaling and surge upgrades. You '
+      log.status.Print(
+          'Note: GKE Dataplane V2 has been certified to run up to 500 nodes '
+          'per cluster, including node autoscaling and surge upgrades. You '
           'may request a cluster size of up to 1000 nodes by filing a '
-          'support ticket with GCP. For more information, please see'
+          'support ticket with GCP. For more information, please see '
           'https://cloud.google.com/kubernetes-engine/docs/concepts/dataplane-v2'
       )
 

@@ -22,6 +22,8 @@ from googlecloudsdk.api_lib.container.azure import util as azure_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
+from googlecloudsdk.command_lib.container.gkemulticloud import flags
+from googlecloudsdk.command_lib.container.gkemulticloud import kubeconfig
 
 
 @base.Hidden
@@ -33,6 +35,7 @@ class PrintAccessToken(base.Command):
   def Args(parser):
     """Registers flags for this command."""
     resource_args.AddAzureClusterResourceArg(parser, "to access")
+    flags.AddExecCredential(parser)
 
   def Run(self, args):
     """Runs the print-access-token command."""
@@ -41,4 +44,9 @@ class PrintAccessToken(base.Command):
         self.ReleaseTrack()):
       cluster_ref = resource_args.ParseAzureClusterResourceArg(args)
       client = azure_api_util.ClustersClient(track=self.ReleaseTrack())
-      return client.GenerateAccessToken(cluster_ref)
+      response = client.GenerateAccessToken(cluster_ref)
+      if args.exec_credential:
+        return kubeconfig.ExecCredential(
+            expiration_timestamp=response.expirationTime,
+            access_token=response.accessToken)
+      return response

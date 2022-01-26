@@ -34,7 +34,7 @@ from googlecloudsdk.core import resources
 _OUTPUT_FILTER = ['[Daisy', '[import-', 'starting build', '  import', 'ERROR']
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Import(base.CreateCommand):
   """Import a machine image into Compute Engine from OVF."""
 
@@ -59,7 +59,6 @@ class Import(base.CreateCommand):
     instances_flags.AddCustomMachineTypeArgs(parser)
     labels_util.AddCreateLabelsFlags(parser)
     daisy_utils.AddCommonDaisyArgs(parser, operation='an import')
-    daisy_utils.AddExtraCommonDaisyArgs(parser)
     daisy_utils.AddOVFSourceUriArg(parser)
     parser.add_argument(
         '--os',
@@ -126,6 +125,25 @@ class Import(base.CreateCommand):
         self.ReleaseTrack().id.lower() if self.ReleaseTrack() else None,
     )
 
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ImportBeta(Import):
+  """Import a machine image into Compute Engine from OVF for Beta."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(ImportBeta, cls).Args(parser)
+    daisy_utils.AddExtraCommonDaisyArgs(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ImportAlpha(Import):
+  """Import a machine image into Compute Engine from OVF for Alpha."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(ImportAlpha, cls).Args(parser)
+    daisy_utils.AddExtraCommonDaisyArgs(parser)
 
 Import.detailed_help = {
     'brief': (

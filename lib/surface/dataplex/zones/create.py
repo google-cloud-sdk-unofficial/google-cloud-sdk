@@ -100,8 +100,8 @@ class Create(base.Command):
       zone.WaitForOperation(create_req_op)
       log.CreatedResource(
           zone_ref.Name(),
-          details='Zone created in lake [{0}] in project [{1}] with location [{2}]'
-          .format(zone_ref.lakesId, zone_ref.projectsId, zone_ref.locationsId))
+          details='Zone created in [{0}]'
+          .format(zone_ref.Parent().RelativeName()))
       return
 
     log.status.Print('Creating [{0}] with operation [{1}].'.format(

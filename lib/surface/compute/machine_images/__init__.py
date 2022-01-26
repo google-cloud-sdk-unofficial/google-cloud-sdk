@@ -22,7 +22,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class MachineImage(base.Group):
   """Read and manage Compute Engine machine image resources."""
   category = base.COMPUTE_CATEGORY
@@ -34,6 +33,6 @@ MachineImage.detailed_help = {
         For more information about machine images, see the
         [machine images documentation](https://cloud.google.com/compute/docs/machine-images).
 
-        See also: [Machine images API](https://cloud.google.com/compute/docs/reference/rest/beta/machineImages).
+        See also: [Machine images API](https://cloud.google.com/compute/docs/reference/rest/v1/machineImages).
     """,
 }

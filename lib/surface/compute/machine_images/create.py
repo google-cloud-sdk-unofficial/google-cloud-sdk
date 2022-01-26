@@ -28,7 +28,6 @@ from googlecloudsdk.command_lib.compute.kms import resource_args as kms_resource
 from googlecloudsdk.command_lib.compute.machine_images import flags as machine_image_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a Compute Engine machine image."""
   _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = True

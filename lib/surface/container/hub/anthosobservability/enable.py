@@ -30,7 +30,7 @@ class Enable(base.EnableCommand):
 
   ## Examples
 
-  Enable Service Mesh Feature:
+  Enable Anthos Observability Feature:
 
     $ {command}
   """

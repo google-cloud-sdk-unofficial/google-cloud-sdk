@@ -1,4 +1,4 @@
-release_tracks: [ALPHA, BETA]
+release_tracks: [ALPHA, BETA, GA]
 
 help_text:
   brief: Set the IAM policy for a Compute Engine machine image.
@@ -19,7 +19,9 @@ request:
   use_relative_name: false
   modify_request_hooks:
   - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=globalSetPolicyRequest.policy.version
-  api_version: beta
+  api_version: v1
+  BETA:
+    api_version: beta
   ALPHA:
     api_version: alpha
 arguments:

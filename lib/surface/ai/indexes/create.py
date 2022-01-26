@@ -29,8 +29,8 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Create(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateV1(base.CreateCommand):
   """Create a new Vertex AI index.
 
   ## EXAMPLES
@@ -58,8 +58,12 @@ class Create(base.CreateCommand):
     region = region_ref.AsDict()['locationsId']
     project_id = region_ref.AsDict()['projectsId']
     with endpoint_util.AiplatformEndpointOverrides(version, region=region):
-      operation = client.IndexesClient(version=version).CreateBeta(
-          region_ref, args)
+      index_client = client.IndexesClient(version=version)
+      if version == constants.GA_VERSION:
+        operation = index_client.Create(region_ref, args)
+      else:
+        operation = index_client.CreateBeta(region_ref, args)
+
       op_ref = indexes_util.ParseIndexOperation(operation.name)
       index_id = op_ref.AsDict()['indexesId']
       log.status.Print(
@@ -70,6 +74,24 @@ class Create(base.CreateCommand):
               sub_commands='--index={} [--project={}]'.format(
                   index_id, project_id)))
       return operation
+
+  def Run(self, args):
+    return self._Run(args, constants.GA_VERSION)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateV1Beta1(CreateV1):
+  """Create a new Vertex AI index.
+
+  ## EXAMPLES
+
+  To create an index under project `example` in region
+  `us-central1`, run:
+
+    $ {command} --display-name=index --description=test
+    --metadata-file=path/to/your/metadata.json
+    --project=example --region=us-central1
+  """
 
   def Run(self, args):
     return self._Run(args, constants.BETA_VERSION)

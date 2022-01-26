@@ -48,7 +48,12 @@ class Describe(base.Command):
       To describe the repository that is synced by a RootSync or RepoSync CR
       in the namespace <NAMESPACE> with the name <NAME>:
 
-          $ {command} describe --namespace=<NAMESPACE> --name=<NAME>
+          $ {command} describe --sync-namespace=<NAMESPACE> --sync-name=<NAME>
+
+      To describe the repository that is synced by a RootSync or RepoSync CR
+      in the namespace <NAMESPACE> with the name <NAME> from a specific cluster <CLUSTER>:
+
+          $ {command} describe --sync-namespace=<NAMESPACE> --sync-name=<NAME> --cluster=<CLUSTER>
 
       To describe a repository with source as <SOURCE> and list all the
       managed resources from this repositry:
@@ -67,13 +72,18 @@ class Describe(base.Command):
   def Args(parser):
     parser.display_info.AddFormat(describe_format)
     parser.add_argument(
-        '--name',
+        '--sync-name',
         required=False,
         help='Name of the RootSync or RepoSync CR to sync a repository.')
     parser.add_argument(
-        '--namespace',
+        '--sync-namespace',
         required=False,
         help='Namespace of the RootSync or RepoSync CR to sync a repository.')
+    parser.add_argument(
+        '--cluster',
+        required=False,
+        help='The cluster name or the membership name that a repository is synced to.'
+    )
     parser.add_argument(
         '--source',
         required=False,
@@ -89,5 +99,6 @@ class Describe(base.Command):
 
   def Run(self, args):
     project_id = properties.VALUES.core.project.GetOrFail()
-    return status.DescribeRepo(project_id, args.name, args.namespace,
-                               args.source, args.managed_resources)
+    return status.DescribeRepo(project_id, args.sync_name, args.sync_namespace,
+                               args.source, args.cluster,
+                               args.managed_resources)

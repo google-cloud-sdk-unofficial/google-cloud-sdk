@@ -108,6 +108,7 @@ def AddBaseArgs(parser):
   flags.AddInsightsConfigRecordApplicationTags(
       parser, show_negated_in_help=True)
   flags.AddInsightsConfigRecordClientAddress(parser, show_negated_in_help=True)
+  flags.AddInsightsConfigQueryPlansPerMinute(parser)
   parser.add_argument(
       '--master-instance-name',
       required=False,

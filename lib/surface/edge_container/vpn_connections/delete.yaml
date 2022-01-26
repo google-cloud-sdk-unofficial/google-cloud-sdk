@@ -5,9 +5,9 @@
     description: |
       Delete a VPN connection.
     examples: |
-      To delete a VPN connection called 'test-vpn-connection' at location 'my-location', run:
+      To delete a VPN connection called 'test-vpn-connection' at region 'us-central1', run:
 
-        $ {command} test-vpn-connection --location 'my-location'
+        $ {command} test-vpn-connection --location=us-central1
 
   request:
     collection: edgecontainer.projects.locations.vpnConnections

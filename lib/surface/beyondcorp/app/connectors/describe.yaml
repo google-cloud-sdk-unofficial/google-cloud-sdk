@@ -20,10 +20,19 @@
   request:
     collection: beyondcorp.projects.locations.connectors
 
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.beyondcorp.app.connectors.hooks:HideDetailsBeforeDescribing
+
   arguments:
     resource:
       help_text: The Beyondcorp connector you want to get details about.
       spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:connector
+    params:
+    - arg_name: details
+      type: bool
+      help_text: |
+        Includes details.
 
   output:
     format: json

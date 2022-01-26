@@ -37,3 +37,6 @@ class Describe(base.DescribeCommand):
   """
 
   feature_name = 'anthosobservability'
+
+  def Run(self, args):
+    return self.GetFeature(v1alpha1=True)

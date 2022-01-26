@@ -3,9 +3,9 @@
   help_text:
     brief: List Edge Container regions.
     description: |
-      List all regions where Edge Container clusters can be created.
+      List all regions (locations) where Edge Container clusters can be created.
     examples: |
-      To list all the regions where Edge Container clusters can be created, run:
+      To list all the regions (locations) where Edge Container clusters can be created, run:
 
         $ {command}
 

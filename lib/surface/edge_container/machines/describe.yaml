@@ -4,9 +4,9 @@ help_text:
   brief: Show details about the machine.
   description: Show details about the machine.
   examples: |
-    To show details about a device, run:
+    To show details about a machine called 'my-machine' in region us-central1, run:
 
-      $ {command} my-machine --name=my-name
+      $ {command} my-machine --location=us-central1
 
 request:
   collection: edgecontainer.projects.locations.machines

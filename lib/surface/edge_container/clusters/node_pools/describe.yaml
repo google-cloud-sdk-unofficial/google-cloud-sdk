@@ -4,9 +4,9 @@ help_text:
   brief: Show details about the nodePool.
   description: Show details about the nodePool.
   examples: |
-    To show details about a device, run:
+    To show details about a node pool called 'my-nodePool' in region us-central1, run:
 
-      $ {command} my-nodePool --name=my-name
+      $ {command} my-nodePool --location=us-central1 --cluster=<my-cluster>
 
 request:
   collection: edgecontainer.projects.locations.clusters.nodePools

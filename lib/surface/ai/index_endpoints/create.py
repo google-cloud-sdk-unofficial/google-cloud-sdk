@@ -32,8 +32,8 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Create(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateV1(base.CreateCommand):
   """Create a new Vertex AI index endpoint.
 
   ## EXAMPLES
@@ -60,9 +60,14 @@ class Create(base.CreateCommand):
     region_ref = args.CONCEPTS.region.Parse()
     region = region_ref.AsDict()['locationsId']
     with endpoint_util.AiplatformEndpointOverrides(version, region=region):
-      operation = client.IndexEndpointsClient().CreateBeta(region_ref, args)
+      index_endpoint_client = client.IndexEndpointsClient(version=version)
+      if version == constants.GA_VERSION:
+        operation = index_endpoint_client.Create(region_ref, args)
+      else:
+        operation = index_endpoint_client.CreateBeta(region_ref, args)
+
       response_msg = operations_util.WaitForOpMaybe(
-          operations_client=operations.OperationsClient(),
+          operations_client=operations.OperationsClient(version=version),
           op=operation,
           op_ref=index_endpoints_util.ParseIndexEndpointOperation(
               operation.name))
@@ -72,6 +77,25 @@ class Create(base.CreateCommand):
           log.status.Print(('Created Vertex AI index endpoint: {}.').format(
               response['name']))
       return response_msg
+
+  def Run(self, args):
+    return self._Run(args, constants.GA_VERSION)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateV1Beta1(CreateV1):
+  """Create a new Vertex AI index endpoint.
+
+  ## EXAMPLES
+
+  To create an index endpoint under project `example` with network
+  `projects/123/global/networks/test-network` in region
+  `us-central1`, run:
+
+    $ {command} --display-name=index-endpoint --description=test
+    --network=projects/123/global/networks/test-network
+    --project=example --region=us-central1
+  """
 
   def Run(self, args):
     return self._Run(args, constants.BETA_VERSION)

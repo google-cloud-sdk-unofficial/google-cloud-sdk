@@ -4,9 +4,9 @@
     brief: Show details about the cluster.
     description: Show details about the cluster.
     examples: |
-      To show details about a device, run:
+      To show details about a cluster called 'my-cluster' in region us-central1, run:
 
-        $ {command} my-cluster --name=my-name
+        $ {command} my-cluster --location=us-central1
 
   request:
     collection: edgecontainer.projects.locations.clusters

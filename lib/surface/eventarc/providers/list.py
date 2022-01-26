@@ -36,9 +36,11 @@ _DETAILED_HELP = {
 _FORMAT = """ \
 table(
 name.scope("providers"):label=NAME,
-eventTypes.type.list():label=TYPES
+name.scope("locations").segment(0):label=LOCATION
 )
 """
+
+_FILTER = 'name:/providers/'
 
 
 @base.Hidden
@@ -51,7 +53,10 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     flags.AddLocationResourceArg(
-        parser, 'The location in which to list event providers.', required=True)
+        parser,
+        'The location in which to list event providers.',
+        required=True)
+    flags.AddProviderNameArg(parser)
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(providers.GetProvidersURI)
 
@@ -59,4 +64,6 @@ class List(base.ListCommand):
     """Run the list command."""
     client = providers.ProvidersClient(self.ReleaseTrack())
     location_ref = args.CONCEPTS.location.Parse()
+    if args.name:
+      args.GetDisplayInfo().AddFilter(_FILTER + args.name)
     return client.List(location_ref, limit=args.limit, page_size=args.page_size)

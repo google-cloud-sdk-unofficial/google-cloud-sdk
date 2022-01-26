@@ -6,9 +6,10 @@
       Create an Edge Container cluster.
     # TODO(b/176452774) Fill in the example command for all methods and resources.
     examples: |
-      To create a cluster called 'my-cluster', run:
+      To create a cluster called 'my-cluster' in region us-central1 and create a GKE Hub membership
+      to connect it to, run:
 
-        $ {command} my-cluster
+        $ {command} my-cluster --location=us-central1 --hub-membership=<new-hub-membership>
 
   request:
     collection: edgecontainer.projects.locations.clusters

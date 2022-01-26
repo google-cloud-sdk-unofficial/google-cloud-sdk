@@ -30,11 +30,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a NAT on a Compute Engine router."""
-
-  with_dynamic_port_allocation = False
 
   @classmethod
   def Args(cls, parser):
@@ -46,10 +43,7 @@ class Update(base.UpdateCommand):
     compute_flags.AddRegionFlag(parser, 'NAT', operation_type='create')
 
     nats_flags.AddNatNameArg(parser, operation_type='create')
-    nats_flags.AddCommonNatArgs(
-        parser,
-        for_create=False,
-        with_dynamic_port_allocation=cls.with_dynamic_port_allocation)
+    nats_flags.AddCommonNatArgs(parser, for_create=False)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -63,11 +57,7 @@ class Update(base.UpdateCommand):
 
     # Retrieve specified NAT and update base fields.
     existing_nat = nats_utils.FindNatOrRaise(replacement, args.name)
-    nat = nats_utils.UpdateNatMessage(
-        existing_nat,
-        args,
-        holder,
-        with_dynamic_port_allocation=self.with_dynamic_port_allocation)
+    nat = nats_utils.UpdateNatMessage(existing_nat, args, holder)
 
     request_type = messages.ComputeRoutersPatchRequest
     result = service.Patch(
@@ -107,12 +97,6 @@ class Update(base.UpdateCommand):
         operation_poller, operation_ref,
         'Updating nat [{0}] in router [{1}]'.format(nat.name,
                                                     router_ref.Name()))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateAlphaBeta(Update):
-  """Update a NAT on a Compute Engine router."""
-  with_dynamic_port_allocation = True
 
 
 Update.detailed_help = {

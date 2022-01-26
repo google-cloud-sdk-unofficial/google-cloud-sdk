@@ -98,9 +98,8 @@ class Create(base.Command):
       asset.WaitForOperation(create_req_op)
       log.CreatedResource(
           asset_ref.Name(),
-          details='Asset created in zone [{0}] in lake [{1}] in project [{2}] with location [{3}]'
-          .format(asset_ref.zonesId, asset_ref.lakesId, asset_ref.projectsId,
-                  asset_ref.locationsId))
+          details='Asset created in [{0}]'
+          .format(asset_ref.Parent().RelativeName()))
       return
 
     log.status.Print('Creating [{0}] with operation [{1}].'.format(

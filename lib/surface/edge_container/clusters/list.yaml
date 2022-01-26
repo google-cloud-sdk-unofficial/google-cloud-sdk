@@ -5,9 +5,9 @@
     description: |
       List Edge Container clusters.
     examples: |
-      To list the clusters, run:
+      To list the clusters in region us-central1, run:
 
-        $ {command} --location <my-location> --cluster <my-cluster>
+        $ {command} --location=us-central1
 
   request:
     collection: edgecontainer.projects.locations.clusters

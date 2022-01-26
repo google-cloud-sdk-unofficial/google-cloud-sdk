@@ -54,7 +54,7 @@ class Create(base.CreateCommand):
     flags.GetResourceRecordSetsNameArg().AddToParser(parser)
     flags.GetResourceRecordSetsTypeArg(True).AddToParser(parser)
     flags.GetResourceRecordSetsTtlArg(False).AddToParser(parser)
-    flags.GetResourceRecordSetsRrdatasArg(True).AddToParser(parser)
+    flags.GetResourceRecordSetsRrdatasArgGroup().AddToParser(parser)
     parser.display_info.AddCacheUpdater(None)
     parser.display_info.AddTransforms(flags.RESOURCERECORDSETS_TRANSFORMS)
     parser.display_info.AddFormat(flags.RESOURCERECORDSETS_FORMAT)
@@ -93,7 +93,8 @@ class CreateBeta(Create):
     flags.GetResourceRecordSetsNameArg().AddToParser(parser)
     flags.GetResourceRecordSetsTypeArg(True).AddToParser(parser)
     flags.GetResourceRecordSetsTtlArg(False).AddToParser(parser)
-    flags.GetResourceRecordSetsRrdatasArgGroup().AddToParser(parser)
+    flags.GetResourceRecordSetsRrdatasArgGroup(
+        use_deprecated_names=True).AddToParser(parser)
     parser.display_info.AddCacheUpdater(None)
     parser.display_info.AddTransforms(flags.RESOURCERECORDSETS_TRANSFORMS)
     parser.display_info.AddFormat(flags.RESOURCERECORDSETS_FORMAT)

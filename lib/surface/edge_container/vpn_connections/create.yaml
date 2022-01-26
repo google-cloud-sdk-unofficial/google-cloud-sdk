@@ -6,9 +6,9 @@
       Creates a new VPN connection.
     examples: |
       To create a connection called 'my-vpn-connection' between the VPC network 'my-vpc' and
-      the Edge Container cluster 'my-cluster' which is at location 'my-location', run:
+      the Edge Container cluster 'my-cluster' which is at region us-central1, run:
 
-        $ {command} my-vpn-connection --location 'my-location' --vpc-network 'my-vpc' --cluster 'my-cluster'
+        $ {command} my-vpn-connection --location=us-central1 --vpc-network='my-vpc' --cluster='my-cluster'
 
       Here VPC network and cluster should be under the same project.
 

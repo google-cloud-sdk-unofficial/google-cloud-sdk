@@ -29,8 +29,8 @@ class Startup(base.TopicCommand):
   # Choosing a Python Interpreter
 
   The `gcloud` CLI runs under Python. Windows, Mac and Linux RPM based installs
-  include a bundled Python interpreter. To intall on Linux using a different
-  package format, you must you must have a Python interpreter on your system,
+  include a bundled Python interpreter. To install on Linux using a different
+  package format, you must have a Python interpreter on your system,
   `gcloud` will  attempt to locate an interpreter on your system PATH by looking
   for the following binaries:
 

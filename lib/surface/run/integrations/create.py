@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
-  """Creates a Cloud Run Integration."""
+  """Create a Cloud Run Integration."""
 
   detailed_help = {
       'DESCRIPTION':

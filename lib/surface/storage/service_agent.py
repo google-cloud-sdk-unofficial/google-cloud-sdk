@@ -20,7 +20,11 @@ from __future__ import unicode_literals
 
 import textwrap
 
+from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.artifacts import requests
+from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.core import log
 
 
 @base.Hidden
@@ -62,4 +66,10 @@ class ServiceAgent(base.Command):
             service agent's project."""))
 
   def Run(self, args):
-    raise NotImplementedError
+    api = api_factory.get_api(storage_url.ProviderPrefix.GCS)
+    service_agent = api.get_service_agent()
+    if args.authorize_cmek:
+      requests.AddCryptoKeyPermission(args.authorize_cmek,
+                                      'serviceAccount:' + service_agent)
+    else:
+      log.Print(service_agent)

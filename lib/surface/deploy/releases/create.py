@@ -43,6 +43,14 @@ _DETAILED_HELP = {
     and deploy a rollout to target prod :
 
       $ {command} my-release --delivery-pipeline=my-pipeline --region=us-central1 --to-target=prod
+
+    The current UTC date and time on the machine running the gcloud command can
+    also be included in the release name by adding $DATE and $TIME parameters:
+
+      $ {command} my-release-$DATE-$TIME --delivery-pipeline=my-pipeline --region=us-central1
+
+      If the current UTC date and time is set to 2021-12-21 12:02, then the created release
+      will have its name set as my-release-20211221-1202.
     """,
 }
 _RELEASE = 'release'
@@ -65,6 +73,7 @@ def _CommonArgs(parser):
   flags.AddAnnotationsFlag(parser, _RELEASE)
   flags.AddLabelsFlag(parser, _RELEASE)
   flags.AddSkaffoldVersion(parser)
+  flags.AddSkaffoldFileFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -79,12 +88,15 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""
+    args.CONCEPTS.parsed_args.release = release_util.RenderPattern(
+        args.CONCEPTS.parsed_args.release)
     release_ref = args.CONCEPTS.release.Parse()
     client = release.ReleaseClient()
     # Create the release create request.
     release_config = release_util.CreateReleaseConfig(
         args.source, args.gcs_source_staging_dir, args.ignore_file, args.images,
-        args.build_artifacts, args.description, args.skaffold_version)
+        args.build_artifacts, args.description, args.skaffold_version,
+        args.skaffold_file)
     deploy_util.SetMetadata(client.messages, release_config,
                             deploy_util.ResourceType.RELEASE, args.annotations,
                             args.labels)

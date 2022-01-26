@@ -29,8 +29,8 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class Update(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateV1(base.UpdateCommand):
   """Update an Vertex AI index endpoint.
 
   ## EXAMPLES
@@ -54,9 +54,12 @@ class Update(base.UpdateCommand):
     index_endpoint_ref = args.CONCEPTS.index_endpoint.Parse()
     region = index_endpoint_ref.AsDict()['locationsId']
     with endpoint_util.AiplatformEndpointOverrides(version, region=region):
+      index_endpoint_client = client.IndexEndpointsClient(version=version)
       try:
-        result = client.IndexEndpointsClient().PatchBeta(
-            index_endpoint_ref, args)
+        if version == constants.GA_VERSION:
+          result = index_endpoint_client.Patch(index_endpoint_ref, args)
+        else:
+          result = index_endpoint_client.PatchBeta(index_endpoint_ref, args)
       except errors.NoFieldsSpecifiedError:
         available_update_args = [
             'display_name', 'description', 'update_labels', 'clear_labels',
@@ -69,6 +72,22 @@ class Update(base.UpdateCommand):
       else:
         log.UpdatedResource(result.name, kind='Vertex AI index endpoint')
         return result
+
+  def Run(self, args):
+    return self._Run(args, constants.GA_VERSION)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class UpdateV1Beta1(UpdateV1):
+  """Update an Vertex AI index endpoint.
+
+  ## EXAMPLES
+
+  To update display name of index endpoint `123` under project `example` in
+  region `us-central1`, run:
+
+    $ {command} --display-name=new-name --project=example --region=us-central1
+  """
 
   def Run(self, args):
     return self._Run(args, constants.BETA_VERSION)

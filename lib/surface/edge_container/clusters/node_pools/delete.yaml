@@ -5,9 +5,9 @@
     description: |
       Delete an Edge Container nodePool.
     examples: |
-      To delete a nodePool called 'test-nodePool', run:
+      To delete a nodePool called 'my-nodePool' in region us-central1, run:
 
-        $ {command} my-nodePool
+        $ {command} my-nodePool --cluster=<my-cluster> --location=us-central1
 
   request:
     collection: edgecontainer.projects.locations.clusters.nodePools

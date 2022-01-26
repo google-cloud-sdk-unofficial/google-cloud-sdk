@@ -5,9 +5,19 @@
     description: |
       Create a new Edge Container nodePool.
     examples: |
-      To create a node pool called 'test-nodePool', run:
+      To create a node pool called 'my-nodePool', containing 3 nodes in region us-central1, run:
 
-        $ {command} my-nodePool
+        $ {command} my-nodePool --cluster=<my-cluster> --location=us-central1 --node-location=<my-node-location> --node-count=3
+
+      To create a node pool called 'my-nodePool', containing 3 nodes in region us-central1,
+      using only machine names matching a specific pattern, run:
+
+        $ {command} my-nodePool --cluster=<my-cluster> --location=us-central1 --node-location=<my-node-location> --node-count=3 --machine-filter="name:<name>"
+
+      To create a node pool called 'my-nodePool', containing 3 nodes in region us-central1,
+      using only machine names NOT matching a specific pattern, run:
+
+        $ {command} my-nodePool --cluster=<my-cluster> --location=us-central1 --node-location=<my-node-location> --node-count=3 --machine-filter="NOT name:<name>"
 
   request:
     collection: edgecontainer.projects.locations.clusters.nodePools

@@ -151,6 +151,12 @@ class Update(base.UpdateCommand):
           throw_if_unattended=True,
           cancel_on_no=True)
 
+    # Image streaming feature requires Container File System API to be enabled.
+    # Checking whether the API has been enabled, and warning if not.
+    if options.enable_image_streaming:
+      util.CheckForContainerFileSystemApiEnablementWithPrompt(
+          pool_ref.projectId)
+
     try:
       operation_ref = adapter.UpdateNodePool(pool_ref, options)
 

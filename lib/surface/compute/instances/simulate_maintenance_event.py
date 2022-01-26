@@ -91,11 +91,12 @@ class SimulateMaintenanceEvent(base.UpdateCommand):
 
 SimulateMaintenanceEvent.detailed_help = {
     'brief':
-        'Simulate maintenance of virtual machine instances',
+        'Simulate host maintenance of VM instances',
     'DESCRIPTION':
         """\
-        *{command}* simulates a maintenance event on
-        Compute Engine virtual machines.
+        *{command}* simulates a host maintenance event on a
+        Compute Engine VM. For more information, see
+        https://cloud.google.com/compute/docs/instances/simulating-host-maintenance.
         """,
     'EXAMPLES':
         """\

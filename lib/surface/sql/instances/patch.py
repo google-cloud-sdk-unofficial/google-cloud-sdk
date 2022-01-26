@@ -215,6 +215,7 @@ def AddBaseArgs(parser, is_alpha=False):
   flags.AddInsightsConfigRecordApplicationTags(
       parser, show_negated_in_help=True)
   flags.AddInsightsConfigRecordClientAddress(parser, show_negated_in_help=True)
+  flags.AddInsightsConfigQueryPlansPerMinute(parser)
   flags.AddMemory(parser)
   flags.AddPasswordPolicyMinLength(parser)
   flags.AddPasswordPolicyComplexity(parser)

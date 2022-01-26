@@ -64,10 +64,9 @@ class UpdateAlpha(base.UpdateCommand):
         '--external-ip-access',
         action='store_true',
         default=None,
-        hidden=True,
         help="""\
-        Enable public IP address service for management appliances.
-        Use --no-external-ip-access to disable
+        Enable public IP address service for management appliances so vCenter and NSX can be accessed via internet. Resolution of FQDNs requires local DNS configuration for the private cloud domain. NAT is set up on NSX for external IP ingress traffic, and users must manually configure NSX firewall to allow HTTPS traffic.
+        Use `--no-external-ip-access' to disable.
         """)
     labels_util.AddCreateLabelsFlags(parser)
 

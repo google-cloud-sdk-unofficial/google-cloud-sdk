@@ -58,7 +58,7 @@ class ListAlpha(base.ListCommand):
         'table(name.segment(-1):label=NAME,'
         'name.segment(-5):label=PROJECT,'
         'name.segment(-3):label=LOCATION,'
-        'createTime,state,vcenter.fdqn:label=VCENTER_FQDN)')
+        'createTime,state,vcenter.fqdn:label=VCENTER_FQDN)')
 
   def Run(self, args):
     location = args.CONCEPTS.location.Parse()

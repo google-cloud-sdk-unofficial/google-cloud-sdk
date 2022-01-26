@@ -5,9 +5,9 @@
     description: |
       List Edge Container machines.
     examples: |
-      To list the machines, run:
+      To list the machines in region us-central1, run:
 
-        $ {command}
+        $ {command} --location=us-central1
 
   request:
     collection: edgecontainer.projects.locations.machines

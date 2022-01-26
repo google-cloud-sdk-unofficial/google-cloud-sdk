@@ -60,7 +60,7 @@ class CreateAlpha(base.CreateCommand):
     parser.add_argument(
         '--description',
         help="""\
-        Text describing the private cloud
+        Text describing the private cloud.
         """)
     parser.add_argument(
         '--node-count',
@@ -88,6 +88,13 @@ class CreateAlpha(base.CreateCommand):
          Project ID or project name of the VPC network. Use this flag when the VPC network is in another project.
         """)
     parser.add_argument(
+        '--external-ip-access',
+        action='store_true',
+        default=None,
+        help="""\
+        Enable public IP address service for management appliances so vCenter and NSX can be accessed via internet. Resolution of FQDNs requires local DNS configuration for the private cloud domain. NAT is set up on NSX for external IP ingress traffic, and users must manually configure NSX firewall to allow HTTPS traffic.
+        """)
+    parser.add_argument(
         '--node-custom-core-count',
         required=False,
         hidden=True,
@@ -103,7 +110,8 @@ class CreateAlpha(base.CreateCommand):
     operation = client.Create(privatecloud, args.labels, args.description,
                               args.cluster, args.node_type, args.node_count,
                               args.management_range, args.network,
-                              args.network_project, args.node_custom_core_count)
+                              args.network_project, args.external_ip_access,
+                              args.node_custom_core_count)
     log.CreatedResource(operation.name, kind='private cloud', is_async=True)
 
 

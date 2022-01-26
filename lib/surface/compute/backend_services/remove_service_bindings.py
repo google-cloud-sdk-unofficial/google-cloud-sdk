@@ -26,10 +26,22 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import reference_utils
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
+_DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+        To remove a service binding from a backend service, run:
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+          $ {command} NAME \
+          --service-bindings=SERVICE_BINDING1 --global
+        """,
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveServiceBindings(base.UpdateCommand):
   """Remove service bindings from a backend service."""
+
+  detailed_help = _DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):

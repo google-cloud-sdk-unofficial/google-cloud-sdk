@@ -2,9 +2,9 @@ release_tracks: [ALPHA]
 
 help_text:
   brief: |
-    Describe an Edge Container region.
+    Describe an Edge Container region (location).
   description: |
-    Describe an Edge Container region.
+    Describe an Edge Container region (location).
   examples: |
     To display the metadata for the region `us-central1`, run:
 

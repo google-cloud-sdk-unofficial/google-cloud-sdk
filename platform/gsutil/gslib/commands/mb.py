@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 import re
 import textwrap
 
-from gslib.cloud_api import BadRequestException
+from gslib.cloud_api import AccessDeniedException, BadRequestException
 from gslib.command import Command
 from gslib.command_argument import CommandArgument
 from gslib.commands.rpo import VALID_RPO_VALUES
@@ -37,6 +37,7 @@ from gslib.utils.retention_util import RetentionInSeconds
 from gslib.utils.text_util import InsistAscii
 from gslib.utils.text_util import InsistOnOrOff
 from gslib.utils.text_util import NormalizeStorageClass
+from gslib.utils.encryption_helper import ValidateCMEK
 
 _SYNOPSIS = """
   gsutil mb [-b (on|off)] [-c <class>] [-l <location>] [-p <project>]
@@ -131,6 +132,10 @@ _DETAILED_HELP_TEXT = ("""
   -c class               Specifies the default storage class.
                          Default is "Standard".
 
+  -k <key>               Set the default KMS key using the full path to the key,
+                         which has the following form:
+                         ``projects/[project-id]/locations/[location]/keyRings/[key-ring]/cryptoKeys/[my-key]``
+
   -l location            Can be any supported location. See
                          https://cloud.google.com/storage/docs/locations
                          for a discussion of this distinction. Default is US.
@@ -185,7 +190,7 @@ class MbCommand(Command):
       usage_synopsis=_SYNOPSIS,
       min_args=1,
       max_args=NO_MAX,
-      supported_sub_args='b:c:l:p:s:',
+      supported_sub_args='b:c:l:p:s:k:',
       supported_private_args=[
           'autoclass', 'retention=', 'pap=', 'placement=', 'rpo='
       ],
@@ -228,6 +233,7 @@ class MbCommand(Command):
     """Command entry point for the mb command."""
     autoclass = False
     bucket_policy_only = None
+    kms_key = None
     location = None
     storage_class = None
     seconds = None
@@ -239,6 +245,10 @@ class MbCommand(Command):
       for o, a in self.sub_opts:
         if o == '--autoclass':
           autoclass = True
+          json_only_flags_in_command.append(o)
+        elif o == '-k':
+          kms_key = a
+          ValidateCMEK(kms_key)
           json_only_flags_in_command.append(o)
         elif o == '-l':
           location = a
@@ -287,6 +297,11 @@ class MbCommand(Command):
       if public_access_prevention:
         iam_config.publicAccessPrevention = public_access_prevention
 
+    if kms_key:
+      encryption = apitools_messages.Bucket.EncryptionValue()
+      encryption.defaultKmsKeyName = kms_key
+      bucket_metadata.encryption = encryption
+
     if placements:
       placement_config = apitools_messages.Bucket.CustomPlacementConfigValue()
       placement_config.dataLocations = placements
@@ -324,6 +339,24 @@ class MbCommand(Command):
                                      project_id=self.project_id,
                                      metadata=bucket_metadata,
                                      provider=bucket_url.scheme)
+      except AccessDeniedException as e:
+        message = e.reason
+        if 'key' in message:
+          # This will print the error reason and append the following as a
+          # suggested next step:
+          #
+          # To authorize, run:
+          #   gsutil kms authorize \
+          #     -k <kms_key> \
+          #     -p <project_id>
+          message += ' To authorize, run:\n  gsutil kms authorize'
+          message += ' \\\n    -k %s' % kms_key
+          if (self.project_id):
+            message += ' \\\n    -p %s' % self.project_id
+          raise CommandException(message)
+        else:
+          raise
+
       except BadRequestException as e:
         if (e.status == 400 and e.reason == 'DotfulBucketNameNotUnderTld' and
             bucket_url.scheme == 'gs'):

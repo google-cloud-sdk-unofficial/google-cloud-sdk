@@ -5,9 +5,11 @@
     description: |
       Updates an Edge Container node pool.
     examples: |
-      To update a node pool called 'test-node-pool', run:
+      To update the number of nodes in a node pool called 'my-node-pool' in region us-central1,
+      run:
 
-        $ {command} test-node-pool
+        $ {command} my-node-pool --location=us-central1 --cluster=<my-cluster> \
+            --node-count=<new-count>
 
   request:
     collection: edgecontainer.projects.locations.clusters.nodePools

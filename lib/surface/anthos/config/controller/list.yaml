@@ -21,4 +21,4 @@
       spec: !REF googlecloudsdk.command_lib.anthos.config.controller.resources:instance-list
 
   output:
-    format: table(name,name.scope("locations").segment(0):label=LOCATION)
+    format: table(name,name.scope("locations").segment(0):label=LOCATION,state)

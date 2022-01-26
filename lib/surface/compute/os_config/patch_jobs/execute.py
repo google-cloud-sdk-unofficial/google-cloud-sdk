@@ -357,6 +357,14 @@ def _AddZypperGroupArguments(parser):
       If specified, machines running Zypper add the `--with-update` flag to
       `zypper patch`.""",
   )
+  non_exclusive_group.add_argument(
+      '--zypper-excludes',
+      metavar='ZYPPER_EXCLUDES',
+      type=arg_parsers.ArgList(),
+      help="""\
+      List of Zypper patches to exclude from the patch job.
+      """,
+  )
   zypper_group.add_argument(
       '--zypper-exclusive-patches',
       metavar='ZYPPER_EXCLUSIVE_PATCHES',
@@ -535,7 +543,8 @@ def _CreateZypperSettings(args, messages):
   """Creates a ZypperSettings message from input arguments."""
   if not any([
       args.zypper_categories, args.zypper_severities, args.zypper_with_optional,
-      args.zypper_with_update, args.zypper_exclusive_patches
+      args.zypper_with_update, args.zypper_excludes,
+      args.zypper_exclusive_patches
   ]):
     return None
 
@@ -544,6 +553,7 @@ def _CreateZypperSettings(args, messages):
       severities=args.zypper_severities if args.zypper_severities else [],
       withOptional=args.zypper_with_optional,
       withUpdate=args.zypper_with_update,
+      excludes=args.zypper_excludes if args.zypper_excludes else [],
       exclusivePatches=args.zypper_exclusive_patches
       if args.zypper_exclusive_patches else [],
   )

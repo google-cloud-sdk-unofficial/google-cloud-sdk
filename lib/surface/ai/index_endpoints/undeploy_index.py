@@ -28,8 +28,8 @@ from googlecloudsdk.command_lib.ai import index_endpoints_util
 from googlecloudsdk.command_lib.ai import operations_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UndeployIndex(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UndeployIndexV1(base.Command):
   """Undeploy an index from a Vertex AI index endpoint.
 
   ## EXAMPLES
@@ -50,13 +50,35 @@ class UndeployIndex(base.Command):
     index_endpoint_ref = args.CONCEPTS.index_endpoint.Parse()
     region = index_endpoint_ref.AsDict()['locationsId']
     with endpoint_util.AiplatformEndpointOverrides(version, region=region):
-      operation = client.IndexEndpointsClient().UndeployIndexBeta(
-          index_endpoint_ref, args)
+      index_endpoint_client = client.IndexEndpointsClient(version=version)
+      if version == constants.GA_VERSION:
+        operation = index_endpoint_client.UndeployIndex(index_endpoint_ref,
+                                                        args)
+      else:
+        operation = index_endpoint_client.UndeployIndexBeta(
+            index_endpoint_ref, args)
       return operations_util.WaitForOpMaybe(
-          operations_client=operations.OperationsClient(),
+          operations_client=operations.OperationsClient(version=version),
           op=operation,
           op_ref=index_endpoints_util.ParseIndexEndpointOperation(
               operation.name))
+
+  def Run(self, args):
+    return self._Run(args, constants.GA_VERSION)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UndeployIndexV1Beta1(UndeployIndexV1):
+  """Undeploy an index from a Vertex AI index endpoint.
+
+  ## EXAMPLES
+
+  To undeploy the deployed-index ``deployed-index-345'' from an index endpoint
+  ``456'' under project ``example'' in region ``us-central1'', run:
+
+    $ {command} 456 --project=example --region=us-central1
+    --deployed-index-id=deployed-index-345
+  """
 
   def Run(self, args):
     return self._Run(args, constants.BETA_VERSION)

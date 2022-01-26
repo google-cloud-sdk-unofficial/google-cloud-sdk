@@ -22,8 +22,6 @@
   request: &request
     api_version: v1beta2
     collection: artifactregistry.projects.locations.repositories
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.artifacts.util:ValidateLocationHook
 
   arguments:
     resource:

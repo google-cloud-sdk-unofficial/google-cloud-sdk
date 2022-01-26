@@ -56,10 +56,10 @@ DETAILED_HELP = {
 }
 
 WARN_WINDOWS_SAC_SUPPORT_LIFECYCLE = (
-    'Windows SAC node pools must be upgraded regularly to remain operational. '
-    'Please refer to https://cloud.google.com/kubernetes-engine/docs/how-to/'
-    'creating-a-cluster-windows#choose_your_windows_server_node_image for more '
-    'information.')
+    'Note: Windows SAC node pools must be upgraded regularly to remain '
+    'operational. Please refer to '
+    'https://cloud.google.com/kubernetes-engine/docs/how-to/creating-a-cluster-windows#choose_your_windows_server_node_image'
+    ' for more information.')
 
 
 def _Args(parser):
@@ -229,14 +229,17 @@ class Create(base.CreateCommand):
       options = self.ParseCreateNodePoolOptions(args)
 
       if options.accelerators is not None:
-        log.status.Print(constants.KUBERNETES_GPU_LIMITATION_MSG)
+        log.status.Print('Note: ' + constants.KUBERNETES_GPU_LIMITATION_MSG)
 
-      if not options.image_type:
-        log.warning('Starting with version 1.19, newly created node-pools '
-                    'will have COS_CONTAINERD as the default node image '
-                    'when no image type is specified.')
-      elif options.image_type.upper() == 'WINDOWS_SAC':
-        log.warning(WARN_WINDOWS_SAC_SUPPORT_LIFECYCLE)
+      elif options.image_type and options.image_type.upper() == 'WINDOWS_SAC':
+        log.status.Print(WARN_WINDOWS_SAC_SUPPORT_LIFECYCLE)
+
+      # Image streaming feature requires Container File System API to be
+      # enabled.
+      # Checking whether the API has been enabled, and warning if not.
+      if options.enable_image_streaming:
+        util.CheckForContainerFileSystemApiEnablementWithPrompt(
+            pool_ref.projectId)
 
       operation_ref = adapter.CreateNodePool(pool_ref, options)
 
@@ -286,7 +289,7 @@ class CreateBeta(Create):
     flags.AddNodePoolEnablePrivateNodes(parser, hidden=True)
     flags.AddEnableGvnicFlag(parser)
     flags.AddSpotFlag(parser, for_node_pool=True)
-    flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=True)
+    flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=False)
     flags.AddEnableRollingUpdateFlag(parser)
     flags.AddEnableBlueGreenUpdateFlag(parser)
     flags.AddStandardRolloutPolicyFlag(parser)
@@ -373,7 +376,7 @@ class CreateAlpha(Create):
     flags.AddNodePoolEnablePrivateNodes(parser, hidden=True)
     flags.AddEnableGvnicFlag(parser)
     flags.AddSpotFlag(parser, for_node_pool=True)
-    flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=True)
+    flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=False)
     flags.AddEnableRollingUpdateFlag(parser)
     flags.AddEnableBlueGreenUpdateFlag(parser)
     flags.AddStandardRolloutPolicyFlag(parser, for_node_pool=True)

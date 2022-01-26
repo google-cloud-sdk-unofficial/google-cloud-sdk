@@ -1,3 +1,19 @@
+Release 5.6 (release date: 2022-01-06)
+======================================
+New Features
+------------------
+- Check `GCE_METADATA_HOST` environment variable (#1426)
+- Allow service account to use private token endpoint (#1417)
+- Add default encryption key option (-k) to mb command (#1414)
+
+Bug Fixes
+------------------
+- PAP: Handle unspecified as well as inherited (#1404)
+
+Other Changes
+------------------
+- Several documentation updates and clarifications.
+
 Release 5.5 (release date: 2021-11-11)
 ======================================
 Bug Fixes
@@ -10,7 +26,6 @@ Other Changes
 - Add warning for unsupported double wildcard use. (#1386)
 - Changing test email and user references to safer values. (#1396)
 - Several documentation updates and clarifications.
-
 
 Release 5.4 (release date: 2021-10-11)
 ======================================
@@ -2798,7 +2813,7 @@ Release 2.0 (release-date: 2012-01-13)
 New Features
 ------------
 
-- Support for for two new installation modes: enterprise and RPM.
+- Support for two new installation modes: enterprise and RPM.
   Customers can now install gsutil one of three ways:
   - Individual user mode (previously the only available mode): unpacking from
     a gzipped tarball (gs://pub/gsutil.tar.gz) or zip file

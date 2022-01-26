@@ -27,6 +27,7 @@ import sys
 from googlecloudsdk.api_lib.auth import util as login_util
 from googlecloudsdk.api_lib.transfer import agent_pools_util
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.auth import auth_util
 from googlecloudsdk.core import config
@@ -50,6 +51,19 @@ No input required if authenticating with your user account credentials,
 which Transfer Service will look for in your system.
 
 Note that the credentials location will be mounted to the agent container.
+"""
+MOUNT_DIRECTORIES_HELP_TEXT = """
+If you want to grant agents access to specific parts of your filesystem instead
+of the entire filesystem, specify which directory paths to mount to the agent
+container. Multiple paths must be separated by commas with no spaces (e.g.,
+`--mount-directories=/system/path/to/dir1,/path/to/dir2`). Note that when
+mounting directories, Transfer Service will also mount your
+/tmp directory for storing logs and your credentials file for agent
+authentication.
+
+If not specified, Transfer Service will mount your entire filesystem to the
+agent container, enabling agents to transfer data from any part of the
+filesystem.
 """
 MISSING_PROJECT_ERROR_TEXT = """
 Could not find project ID. Try adding the project flag: --project=[project-id]
@@ -132,8 +146,8 @@ def _check_if_docker_installed():
     raise OSError(error_format.format(gcloud_args=' '.join(sys.argv[1:])))
 
 
-def _execute_and_return_docker_command(args, project, creds_file_path):
-  """Generates, executes, and returns agent install and run command."""
+def _get_docker_command(args, project, creds_file_path):
+  """Returns docker command from user arguments and generated values."""
   base_docker_command = [
       'docker',
       'run',
@@ -141,19 +155,34 @@ def _execute_and_return_docker_command(args, project, creds_file_path):
       'memlock={}'.format(args.memlock_limit),
       '--rm',
       '-d',
-      '-v=/:/transfer_root',
   ]
+  if args.mount_directories:
+    # Mount mandatory directories.
+    base_docker_command.extend([
+        '-v=/tmp:/tmp',  # Holds logs.
+        '-v={creds_file_path}:{creds_file_path}'.format(
+            creds_file_path=creds_file_path),
+    ])
+    # Mount user's custom directories.
+    base_docker_command.extend([
+        '-v={path}:{path}'.format(path=path) for path in args.mount_directories
+    ])
+  else:
+    # Mount entire filesystem by default.
+    base_docker_command.append('-v=/:/transfer_root')
   if args.proxy:
     base_docker_command.append('--env')
     base_docker_command.append('HTTPS_PROXY={}'.format(args.proxy))
   agent_args = [
       'gcr.io/cloud-ingest/tsop-agent:latest',
-      '--enable-mount-directory',
       '--project-id={}'.format(project),
       '--creds-file={}'.format(creds_file_path),
       '--hostname={}'.format(socket.gethostname()),
       '--agent-pool={}'.format(args.pool),
   ]
+  if not args.mount_directories:
+    # Needed to mount entire filesystem.
+    agent_args.append('--enable-mount-directory',)
   if args.id_prefix:
     if args.count is not None:
       agent_id_prefix = args.id_prefix + '0'
@@ -161,7 +190,12 @@ def _execute_and_return_docker_command(args, project, creds_file_path):
       agent_id_prefix = args.id_prefix
     # ID prefix must be the last argument for multipe-agent creation to work.
     agent_args.append('--agent-id-prefix={}'.format(agent_id_prefix))
-  full_docker_command = base_docker_command + agent_args
+  return base_docker_command + agent_args
+
+
+def _execute_and_return_docker_command(args, project, creds_file_path):
+  """Generates, executes, and returns agent install and run command."""
+  full_docker_command = _get_docker_command(args, project, creds_file_path)
 
   completed_process = subprocess.run(full_docker_command, check=False)
   if completed_process.returncode != 0:
@@ -233,6 +267,11 @@ class Install(base.Command):
         help="Set the agent container's memlock limit. A value of 64000000"
         ' (default) or higher is required to ensure that agent versions'
         ' 1.14 or later have enough locked memory to be able to start.')
+    parser.add_argument(
+        '--mount-directories',
+        type=arg_parsers.ArgList(),
+        metavar='MOUNT-DIRECTORIES',
+        help=MOUNT_DIRECTORIES_HELP_TEXT)
     parser.add_argument('--proxy', help=PROXY_FLAG_HELP_TEXT)
     parser.add_argument(
         '--pool',

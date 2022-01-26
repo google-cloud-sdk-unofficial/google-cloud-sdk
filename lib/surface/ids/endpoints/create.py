@@ -67,19 +67,22 @@ class Create(base.CreateCommand):
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
+    client = ids_api.Client(self.ReleaseTrack())
+
     endpoint = args.CONCEPTS.endpoint.Parse()
     network = args.network
     severity = args.severity
     description = args.description
     enable_traffic_logs = args.enable_traffic_logs
+    labels = labels_util.ParseCreateArgs(args,
+                                         client.messages.Endpoint.LabelsValue)
     is_async = args.async_
     max_wait = datetime.timedelta(seconds=args.max_wait)
 
-    client = ids_api.Client(self.ReleaseTrack())
     operation = client.CreateEndpoint(endpoint.Name(),
                                       endpoint.Parent().RelativeName(), network,
                                       severity, description,
-                                      enable_traffic_logs)
+                                      enable_traffic_logs, labels)
     # Return the in-progress operation if async is requested.
     if is_async:
       # Delete operations have no format by default,

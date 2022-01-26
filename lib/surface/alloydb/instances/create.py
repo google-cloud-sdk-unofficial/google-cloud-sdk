@@ -43,7 +43,6 @@ class Create(base.CreateCommand):
       parser: argparse.Parser: Parser object for command line inputs
     """
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddAssignIp(parser)
     flags.AddAvailabilityType(parser)
     flags.AddCluster(parser, False)
     flags.AddDatabaseFlags(parser)

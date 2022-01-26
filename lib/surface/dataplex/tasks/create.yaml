@@ -75,7 +75,13 @@
     - group:  # execution_spec
         help_text: |
           Spec related to how a task is executed.
+        required: true
         params:
+        - arg_name: execution-service-account
+          api_field: googleCloudDataplexV1Task.executionSpec.serviceAccount
+          required: true
+          help_text: |
+            Service account to use to execute a task.
         - arg_name: execution-args
           api_field: googleCloudDataplexV1Task.executionSpec.args.additionalProperties
           type:
@@ -97,17 +103,6 @@
             https://cloud.google.com/sdk/gcloud/reference/topic/escaping. In case of
             other keys being present in the args, then TASK_ARGS will be passed as
             the last argument.
-        - arg_name: execution-service-account
-          api_field: googleCloudDataplexV1Task.executionSpec.serviceAccount
-          help_text: |
-            Service account to use to execute a task.
-            If not provided, the default Compute service account for the project is used.
-        - arg_name: execution-service-account-scopes
-          api_field: googleCloudDataplexV1Task.executionSpec.serviceAccountScopes
-          repeated: true
-          help_text: |
-            The set of auth scopes and permissions granted to the service account.
-            By default, the CLOUD_PLATFORM auth scope is enabled.
         - arg_name: max-job-execution-lifetime
           api_field: googleCloudDataplexV1Task.executionSpec.maxJobExecutionLifetime
           help_text: |

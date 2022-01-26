@@ -42,7 +42,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(six.with_metaclass(abc.ABCMeta, base.CacheCommand)):
   """List snapshots for a Bare Metal Solution volume."""
 

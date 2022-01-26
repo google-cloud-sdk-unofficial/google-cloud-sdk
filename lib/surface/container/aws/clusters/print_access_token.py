@@ -22,6 +22,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.aws import clusters
 from googlecloudsdk.command_lib.container.aws import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
+from googlecloudsdk.command_lib.container.gkemulticloud import flags
+from googlecloudsdk.command_lib.container.gkemulticloud import kubeconfig
 
 
 @base.Hidden
@@ -32,7 +34,8 @@ class PrintAccessToken(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    resource_args.AddAwsClusterResourceArg(parser, "to access")
+    resource_args.AddAwsClusterResourceArg(parser, 'to access')
+    flags.AddExecCredential(parser)
 
   def Run(self, args):
     """Run the command."""
@@ -42,4 +45,9 @@ class PrintAccessToken(base.Command):
                                                      self.ReleaseTrack()):
 
       cluster_client = clusters.Client(track=self.ReleaseTrack())
-      return cluster_client.GenerateAccessToken(cluster_ref)
+      response = cluster_client.GenerateAccessToken(cluster_ref)
+      if args.exec_credential:
+        return kubeconfig.ExecCredential(
+            expiration_timestamp=response.expirationTime,
+            access_token=response.accessToken)
+      return response

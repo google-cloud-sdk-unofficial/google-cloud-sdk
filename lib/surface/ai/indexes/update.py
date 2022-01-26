@@ -31,8 +31,8 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class Update(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateV1(base.UpdateCommand):
   """Update an Vertex AI index.
 
   ## EXAMPLES
@@ -57,8 +57,11 @@ class Update(base.UpdateCommand):
     region = index_ref.AsDict()['locationsId']
     project_id = index_ref.AsDict()['projectsId']
     with endpoint_util.AiplatformEndpointOverrides(version, region=region):
-      operation = client.IndexesClient(version=version).PatchBeta(
-          index_ref, args)
+      index_client = client.IndexesClient(version=version)
+      if version == constants.GA_VERSION:
+        operation = index_client.Patch(index_ref, args)
+      else:
+        operation = index_client.PatchBeta(index_ref, args)
       if args.metadata_file is not None:
         # Update index content.
         op_ref = indexes_util.ParseIndexOperation(operation.name)
@@ -74,7 +77,7 @@ class Update(base.UpdateCommand):
 
       # Update index meta data.
       response_msg = operations_util.WaitForOpMaybe(
-          operations_client=operations.OperationsClient(),
+          operations_client=operations.OperationsClient(version=version),
           op=operation,
           op_ref=indexes_util.ParseIndexOperation(operation.name),
           log_method='update')
@@ -85,4 +88,22 @@ class Update(base.UpdateCommand):
       return response_msg
 
   def Run(self, args):
+    return self._Run(args, constants.GA_VERSION)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class UpdateV1Beta1(UpdateV1):
+  """Update an Vertex AI index.
+
+  ## EXAMPLES
+
+  To update index `123` under project `example` in region `us-central1`, run:
+
+    $ {command} --display-name=new-name
+    --metadata-file=path/to/your/metadata.json --project=example
+    --region=us-central1
+  """
+
+  def Run(self, args):
     return self._Run(args, constants.BETA_VERSION)
+
