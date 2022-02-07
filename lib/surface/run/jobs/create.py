@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2020 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ from googlecloudsdk.core.console import progress_tracker
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Deploy(base.Command):
+class Create(base.Command):
   """Deploy a container to Cloud Run that will run to completion."""
 
   detailed_help = {
@@ -45,9 +45,9 @@ class Deploy(base.Command):
           """,
       'EXAMPLES':
           """\
-          To deploy a new job `my-backend` on Cloud Run:
+          To deploy a new job `my-data-transformation` on Cloud Run:
 
-              $ {command} my-backend --image=gcr.io/my/image
+              $ {command} my-data-transformation --image=gcr.io/my/image
 
           You may also omit the job name. Then a prompt will be displayed
           with a suggested default value:
@@ -59,7 +59,7 @@ class Deploy(base.Command):
   @staticmethod
   def CommonArgs(parser):
     # Flags not specific to any platform
-    service_presentation = presentation_specs.ResourcePresentationSpec(
+    job_presentation = presentation_specs.ResourcePresentationSpec(
         'JOB',
         resource_args.GetJobResourceSpec(prompt=True),
         'Job to create.',
@@ -89,64 +89,72 @@ class Deploy(base.Command):
 
     polling_group = parser.add_mutually_exclusive_group()
     flags.AddAsyncFlag(polling_group)
-    flags.AddWaitForCompletionFlag(polling_group)
+    flags.AddWaitForCompletionFlag(polling_group, implies_run_now=True)
 
-    concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
+    flags.AddRunNowFlag(parser)
+
+    concept_parsers.ConceptParser([job_presentation]).AddToParser(parser)
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
 
   @staticmethod
   def Args(parser):
-    Deploy.CommonArgs(parser)
+    Create.CommonArgs(parser)
 
   def Run(self, args):
-    """Deploy a container to Cloud Run."""
+    """Deploy a Job to Cloud Run."""
     job_ref = args.CONCEPTS.job.Parse()
     flags.ValidateResource(job_ref)
 
     conn_context = connection_context.GetConnectionContext(
-        args,
-        flags.Product.RUN,
-        self.ReleaseTrack(),
-        version_override='v1alpha1')
+        args, flags.Product.RUN, self.ReleaseTrack())
     changes = flags.GetJobConfigurationChanges(args)
     changes.append(
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()))
+
+    run_now = args.run_now or args.wait_for_completion
+    execution = None
 
     with serverless_operations.Connect(conn_context) as operations:
       pretty_print.Info(
           messages_util.GetStartDeployMessage(conn_context, job_ref, 'Creating',
                                               'job'))
-      header_msg = 'Creating and {} job...'.format(
-          'running' if args.wait_for_completion else 'starting')
+      if run_now:
+        header_msg = 'Creating and running job...'
+      else:
+        header_msg = 'Creating job...'
       with progress_tracker.StagedProgressTracker(
           header_msg,
-          stages.JobStages(include_completion=args.wait_for_completion),
-          failure_message='Job failed',
+          stages.JobStages(
+              run_now=run_now, include_completion=args.wait_for_completion),
+          failure_message='Job failed to deploy',
           suppress_output=args.async_) as tracker:
         job = operations.CreateJob(
-            job_ref,
-            changes,
-            args.wait_for_completion,
-            tracker,
-            asyn=args.async_)
+            job_ref, changes, tracker, asyn=(args.async_ and not run_now))
+        if run_now:
+          execution = operations.RunJob(job_ref, args.wait_for_completion,
+                                        tracker, args.async_)
 
-      if args.async_:
+      if args.async_ and not run_now:
         pretty_print.Success('Job [{{bold}}{job}{{reset}}] is being created '
                              'asynchronously.'.format(job=job.name))
       else:
         job = operations.GetJob(job_ref)
-        pretty_print.Success(
-            'Job [{{bold}}{job}{{reset}}] has successfully '
-            '{operation}.'.format(
-                job=job.name,
-                operation=('completed'
-                           if args.wait_for_completion else 'started running')))
+        operation = 'been created'
+        if args.wait_for_completion:
+          operation += ' and completed execution [{}]'.format(execution.name)
+        elif run_now:
+          operation += ' and started running execution [{}]'.format(
+              execution.name)
+
+        pretty_print.Success('Job [{{bold}}{job}{{reset}}] has successfully '
+                             '{operation}.'.format(
+                                 job=job.name, operation=operation))
 
       log.Print(
           '\nView details about this job by running '
           '`gcloud{release_track} run jobs describe {job_name}`.'
-          '\nSee logs for this job at: '
+          '\nSee logs for this execution at: '
           # TODO(b/180749348): Don't piggyback off of cloud_run_revision
           'https://console.cloud.google.com/logs/viewer?project={project_id}&resource=cloud_run_revision/service_name/{job_name}'
           .format(

@@ -44,7 +44,9 @@ def _CommonArgs(parser):
       capture some information, but behaves like an ArgumentParser.
   """
   resource_args.AddTargetResourceArg(parser, positional=True)
-  flags.AddDeliveryPipeline(parser)
+  flags.AddDeliveryPipeline(parser, required=False)
+  flags.AddListAllPipelines(parser)
+  flags.AddSkipPipelineLookup(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
@@ -58,11 +60,15 @@ class Describe(base.DescribeCommand):
 
     detail of the target to be described.
 
-  Current Release:
+  Latest Release:
 
     the detail of the active release in the target.
 
-  Last Deployment:
+  Latest Rollout:
+
+    the detail of the active rollout in the target.
+
+  Deployed:
 
     timestamp of the last successful deployment.
 
@@ -81,4 +87,6 @@ class Describe(base.DescribeCommand):
     """This is what gets called when the user runs this command."""
     target_ref = args.CONCEPTS.target.Parse()
 
-    return describe.DescribeTarget(target_ref, args.delivery_pipeline)
+    return describe.DescribeTarget(target_ref, args.delivery_pipeline,
+                                   args.skip_pipeline_lookup,
+                                   args.list_all_pipelines)

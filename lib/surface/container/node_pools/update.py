@@ -86,6 +86,7 @@ class Update(base.UpdateCommand):
     flags.AddSystemConfigFlag(group, hidden=False)
     flags.AddEnableGvnicFlag(group)
     flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
+    flags.AddEnableConfidentialNodesFlag(group, for_node_pool=True, hidden=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -103,7 +104,8 @@ class Update(base.UpdateCommand):
         max_unavailable_upgrade=args.max_unavailable_upgrade,
         system_config_from_file=args.system_config_from_file,
         gvnic=args.enable_gvnic,
-        enable_image_streaming=args.enable_image_streaming)
+        enable_image_streaming=args.enable_image_streaming,
+        enable_confidential_nodes=args.enable_confidential_nodes)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -212,6 +214,7 @@ class UpdateBeta(Update):
     flags.AddEnableGvnicFlag(group)
     flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
     flags.AddNetworkPerformanceConfigFlags(group)
+    flags.AddEnableConfidentialNodesFlag(group, for_node_pool=True, hidden=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -239,7 +242,8 @@ class UpdateBeta(Update):
         enable_rolling_update=args.enable_rolling_update,
         node_pool_soak_duration=args.node_pool_soak_duration,
         standard_rollout_policy=args.standard_rollout_policy,
-        network_performance_config=args.network_performance_configs)
+        network_performance_config=args.network_performance_configs,
+        enable_confidential_nodes=args.enable_confidential_nodes)
     return ops
 
 
@@ -285,6 +289,7 @@ class UpdateAlpha(Update):
     flags.AddEnableGvnicFlag(group)
     flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
     flags.AddNetworkPerformanceConfigFlags(group)
+    flags.AddEnableConfidentialNodesFlag(group, for_node_pool=True, hidden=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -312,7 +317,8 @@ class UpdateAlpha(Update):
         enable_rolling_update=args.enable_rolling_update,
         node_pool_soak_duration=args.node_pool_soak_duration,
         standard_rollout_policy=args.standard_rollout_policy,
-        network_performance_config=args.network_performance_configs)
+        network_performance_config=args.network_performance_configs,
+        enable_confidential_nodes=args.enable_confidential_nodes)
     return ops
 
 

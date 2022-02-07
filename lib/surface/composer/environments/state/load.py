@@ -34,7 +34,7 @@ DETAILED_HELP = {
           To load state of the environment using state load operation in
           an environment named ``env-1'', run:
 
-          $ {command} env-1 --snapshot-location \
+          $ {command} env-1 --snapshot-path \
           gs://my-bucket/path-to-the-specific-snapshot
         """
 }
@@ -52,9 +52,9 @@ class LoadEnvironmentState(base.Command):
                                             'to load state of an environment')
     base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
-        '--snapshot-location',
+        '--snapshot-path',
         type=str,
-        help='The Cloud storage location to load the snapshot from. It must '
+        help='The Cloud storage path to load the snapshot from. It must '
         'start with prefix gs:// and one needs to specify a single snapshot '
         'that should be loaded',
         required=True)
@@ -65,7 +65,7 @@ class LoadEnvironmentState(base.Command):
     operation = environments_api_util.LoadEnvironmentState(
         env_resource,
         args.skip_pypi_packages_installation,
-        args.snapshot_location,
+        args.snapshot_path,
         release_track=self.ReleaseTrack())
     if args.async_:
       return self._AsynchronousExecution(env_resource, operation)

@@ -34,26 +34,28 @@ class Cheatsheet(base.TopicCommand):
   * `gcloud init`: Initialize, authorize, and configure the `gcloud` tool.
   * `gcloud version`: Display version and installed components.
   * `gcloud components install`: Install specific components.
-  * `gcloud components update`: Update your Cloud SDK to the latest version.
+  * `gcloud components update`: Update your Google Cloud CLI to the latest
+     version.
   * `gcloud config set` `project`: Set a default Google Cloud project to
                                    work on.
   * `gcloud info`: Display current `gcloud` tool environment details.
 
   ### Help
-  Cloud SDK is happy to help
+  Google Cloud CLI is happy to help
 
   * `gcloud help`: Search the `gcloud` tool reference documents for specific
     terms.
-  * `gcloud feedback`: Provide feedback for the Cloud SDK team.
+  * `gcloud feedback`: Provide feedback for the Google Cloud CLI team.
   * `gcloud topic`: Supplementary help material for non-command topics like
     accessibility, filtering, and formatting.
 
   ### Personalization
-  Make the Cloud SDK your own; personalize your configuration with properties
+  Make the Google Cloud CLI your own; personalize your configuration with
+  properties
 
   * `gcloud config set`: Define a property (like compute/zone) for the current
     configuration.
-  * `gcloud config get-value`: Fetch value of a Cloud SDK property.
+  * `gcloud config get-value`: Fetch value of a Google Cloud CLI property.
   * `gcloud config list`: Display all the properties for the current
     configuration.
   * `gcloud config configurations create`: Create a new named configuration.
@@ -63,7 +65,7 @@ class Cheatsheet(base.TopicCommand):
     configuration.
 
   ### Credentials
-  Grant and revoke authorization to Cloud SDK
+  Grant and revoke authorization to Google Cloud CLI
 
   * `gcloud auth login`: Authorize Google Cloud access for the `gcloud` tool
     with Google user credentials and set current account as active.

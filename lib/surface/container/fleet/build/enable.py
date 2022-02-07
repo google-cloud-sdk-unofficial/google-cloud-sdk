@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,13 +24,13 @@ from googlecloudsdk.command_lib.container.hub.features import base
 
 @gbase.Hidden
 class Enable(base.EnableCommand):
-  """Enable the Cloud Build Hybrid Feature.
+  """Enable the Cloud Build hybrid pools feature.
 
-  Enables the Cloud Build Hybrid Feature in the Fleet.
+  Enables the Cloud Build Hybrid Feature in the fleet.
 
   ## EXAMPLES
 
-  To enable the Cloud Build Hybrid Feature, run:
+  To enable the Cloud Build hybrid pools feature, run:
 
     $ {command}
   """

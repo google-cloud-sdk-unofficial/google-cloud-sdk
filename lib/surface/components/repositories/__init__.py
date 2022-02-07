@@ -38,7 +38,7 @@ class Repositories(base.Group):
       'DESCRIPTION': """\
           List, add, and remove component repositories for Trusted Tester
           programs.  If you are not participating in a Trusted Tester program,
-          these commands are not necessary for updating your Cloud SDK
+          these commands are not necessary for updating your Google Cloud CLI
           installation.
 
           If you are participating in a Trusted Tester program, you will be
@@ -47,12 +47,12 @@ class Repositories(base.Group):
           registered.
 
           Once you have a repository registered, the component manager will use
-          that location to locate new Cloud SDK components that are available,
-          or possibly different versions of existing components that can be
-          installed.
+          that location to locate new Google Cloud CLI components that are
+          available, or possibly different versions of existing components that
+          can be installed.
 
-          If you want to revert to a standard version of the Cloud SDK at any
-          time, you may remove all repositories and then run:
+          If you want to revert to a standard version of the Google Cloud CLI at
+          any time, you may remove all repositories and then run:
 
             $ gcloud components update
 

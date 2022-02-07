@@ -165,6 +165,19 @@
           processor: googlecloudsdk.command_lib.metastore.validators:ValidateHourOfDay
           help_text: |
             The hour of day (0-23) when the window starts.
+    - arg_name: endpoint-protocol
+      help_text: |
+        The protocol to use for the metastore service endpoint.
+      choices:
+      - arg_value: thrift
+        enum_value: THRIFT
+        help_text:  |
+          The legacy Apache `THRIFT` protocol.
+      - arg_value: grpc
+        enum_value: GRPC
+        help_text:  |
+          The modernized `GRPC` protocol.
+      api_field: service.hiveMetastoreConfig.endpointProtocol
     labels:
       api_field: service.labels
 

@@ -22,4 +22,4 @@ from googlecloudsdk.calliope import base
 
 
 class Policy(base.Group):
-  """Create and manage Google Binary Authorization policy."""
+  """Create and manage Google Binary Authorization policies."""

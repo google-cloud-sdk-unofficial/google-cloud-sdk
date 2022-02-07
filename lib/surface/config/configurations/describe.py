@@ -37,13 +37,13 @@ class Describe(base.DescribeCommand):
           configurations.
           """,
       'EXAMPLES': """\
-          To describe existing named configuration, run:
+          To describe an existing configuration named `my-config`, run:
 
-            $ {command} my_config
+            $ {command} my-config
 
           This is similar to:
 
-            $ gcloud config configurations activate my_config
+            $ gcloud config configurations activate my-config
 
             $ gcloud config list
           """,

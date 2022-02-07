@@ -122,4 +122,15 @@ class DeleteBeta(Delete):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeleteAlpha(Delete):
-  """Delete a worker pool from Google Cloud Build."""
+  """Delete a private or hybrid worker pool from Google Cloud Build."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To delete a private or hybrid worker pool named `wp1` in region `us-central1`, run:
+
+            $ {command} wp1 --region=us-central1
+          """,
+  }

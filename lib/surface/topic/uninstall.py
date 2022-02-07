@@ -23,18 +23,18 @@ from googlecloudsdk.calliope import base
 
 
 class Uninstall(base.TopicCommand):
-  """Supplementary help for uninstalling Cloud SDK.
+  """Supplementary help for uninstalling Google Cloud CLI.
 
 
-  # Uninstalling Google Cloud SDK
+  # Uninstalling Google Cloud CLI
 
   Note: For installations completed using an OS package (such as `apt-get`,
-  `yum`, etc.), uninstall Cloud SDK via the OS package manager.
+  `yum`, etc.), uninstall Google Cloud CLI via the OS package manager.
 
   Note: For Windows installations, execute the uninstaller.exe found under
-  your Cloud SDK directory.
+  your Google Cloud CLI directory.
 
-  To completely remove Cloud SDK, follow these instructions:
+  To completely remove Google Cloud CLI, follow these instructions:
 
       * Locate your installation directory by running:
 

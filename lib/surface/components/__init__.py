@@ -28,11 +28,11 @@ from googlecloudsdk.core import log
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Components(base.Group):
-  """List, install, update, or remove Google Cloud SDK components.
+  """List, install, update, or remove Google Cloud CLI components.
 
   The {command} command group lets you control which tools are installed
-  in the Cloud SDK. It can be used to install, update and remove components of
-  the Cloud SDK, ensuring a lean, up-to-date installation.
+  in the Google Cloud CLI. It can be used to install, update and remove
+  components of the Google Cloud CLI, ensuring a lean, up-to-date installation.
 
   {command} regularly checks whether updates are available for the
   tools you already have installed, and gives you the opportunity to upgrade to

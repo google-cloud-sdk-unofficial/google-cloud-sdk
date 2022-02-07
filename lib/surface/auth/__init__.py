@@ -26,11 +26,11 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Auth(base.Group):
-  """Manage oauth2 credentials for the Google Cloud SDK.
+  """Manage oauth2 credentials for the Google Cloud CLI.
 
-  The gcloud auth command group lets you grant and revoke authorization to Cloud
-  SDK (gcloud) to access Google Cloud. Typically, when scripting Cloud
-  SDK tools for use on multiple machines, using `gcloud auth
+  The gcloud auth command group lets you grant and revoke authorization to
+  Google Cloud CLI (gcloud) to access Google Cloud. Typically, when scripting
+  Google Cloud CLI tools for use on multiple machines, using `gcloud auth
   activate-service-account` is recommended.
 
   For more information on authorization and credential types, see:

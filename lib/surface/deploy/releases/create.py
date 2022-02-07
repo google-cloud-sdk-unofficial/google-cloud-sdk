@@ -47,10 +47,13 @@ _DETAILED_HELP = {
     The current UTC date and time on the machine running the gcloud command can
     also be included in the release name by adding $DATE and $TIME parameters:
 
-      $ {command} my-release-$DATE-$TIME --delivery-pipeline=my-pipeline --region=us-central1
+      $ {command} 'my-release-$DATE-$TIME' --delivery-pipeline=my-pipeline --region=us-central1
 
       If the current UTC date and time is set to 2021-12-21 12:02, then the created release
       will have its name set as my-release-20211221-1202.
+
+      When using these parameters, please be sure to wrap the release name in single quotes
+      or else the template parameters will be overriden by environment variables.
     """,
 }
 _RELEASE = 'release'

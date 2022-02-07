@@ -51,6 +51,7 @@ class UpdateBetaGa(base.UpdateCommand):
 
     flags.AddCloudArmorAdaptiveProtection(parser)
     flags.AddAdvancedOptions(parser)
+    flags.AddRecaptchaOptions(parser)
 
   def _ValidateArgs(self, args):
     """Validates that at least one field to update is specified.
@@ -62,11 +63,12 @@ class UpdateBetaGa(base.UpdateCommand):
     if not (args.IsSpecified('description') or
             args.IsSpecified('enable_layer7_ddos_defense') or
             args.IsSpecified('layer7_ddos_defense_rule_visibility') or
-            args.IsSpecified('json_parsing') or args.IsSpecified('log_level')):
+            args.IsSpecified('json_parsing') or args.IsSpecified('log_level') or
+            args.IsSpecified('recaptcha_redirect_site_key')):
       parameter_names = [
           '--description', '--enable-layer7-ddos-defense',
           '--layer7-ddos-defense-rule-visibility', '--json-parsing',
-          '--log-level'
+          '--log-level', '--recaptcha-redirect-site-key'
       ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update')
@@ -83,6 +85,7 @@ class UpdateBetaGa(base.UpdateCommand):
     adaptive_protection_config = (
         existing_security_policy.adaptiveProtectionConfig)
     advanced_options_config = existing_security_policy.advancedOptionsConfig
+    recaptcha_options_config = existing_security_policy.recaptchaOptionsConfig
     if args.description is not None:
       description = args.description
     if (args.IsSpecified('enable_layer7_ddos_defense') or
@@ -94,11 +97,16 @@ class UpdateBetaGa(base.UpdateCommand):
       advanced_options_config = (
           security_policies_utils.CreateAdvancedOptionsConfig(
               holder.client, args, advanced_options_config))
+    if args.IsSpecified('recaptcha_redirect_site_key'):
+      recaptcha_options_config = (
+          security_policies_utils.CreateRecaptchaOptionsConfig(
+              holder.client, args, recaptcha_options_config))
 
     updated_security_policy = holder.client.messages.SecurityPolicy(
         description=description,
         adaptiveProtectionConfig=adaptive_protection_config,
         advancedOptionsConfig=advanced_options_config,
+        recaptchaOptionsConfig=recaptcha_options_config,
         fingerprint=existing_security_policy.fingerprint)
 
     return security_policy.Patch(security_policy=updated_security_policy)
@@ -129,6 +137,7 @@ class UpdateAlpha(UpdateBetaGa):
 
     flags.AddCloudArmorAdaptiveProtection(parser)
     flags.AddAdvancedOptions(parser)
+    flags.AddRecaptchaOptions(parser)
     flags.AddDdosProtectionConfig(parser)
 
     parser.add_argument(
@@ -148,11 +157,12 @@ class UpdateAlpha(UpdateBetaGa):
             args.IsSpecified('enable_layer7_ddos_defense') or
             args.IsSpecified('layer7_ddos_defense_rule_visibility') or
             args.IsSpecified('json_parsing') or args.IsSpecified('log_level') or
+            args.IsSpecified('recaptcha_redirect_site_key') or
             args.IsSpecified('ddos_protection')):
       parameter_names = [
           '--description', '--enable-ml', '--enable-layer7-ddos-defense',
           '--layer7-ddos-defense-rule-visibility', '--json-parsing',
-          '--log-level', '--ddos-protection'
+          '--log-level', '--recaptcha-redirect-site-key', '--ddos-protection'
       ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update')
@@ -170,6 +180,7 @@ class UpdateAlpha(UpdateBetaGa):
     adaptive_protection_config = (
         existing_security_policy.adaptiveProtectionConfig)
     advanced_options_config = existing_security_policy.advancedOptionsConfig
+    recaptcha_options_config = existing_security_policy.recaptchaOptionsConfig
     ddos_protection_config = existing_security_policy.ddosProtectionConfig
     if args.description is not None:
       description = args.description
@@ -185,6 +196,10 @@ class UpdateAlpha(UpdateBetaGa):
       advanced_options_config = (
           security_policies_utils.CreateAdvancedOptionsConfig(
               holder.client, args, advanced_options_config))
+    if args.IsSpecified('recaptcha_redirect_site_key'):
+      recaptcha_options_config = (
+          security_policies_utils.CreateRecaptchaOptionsConfig(
+              holder.client, args, recaptcha_options_config))
     if args.IsSpecified('ddos_protection'):
       ddos_protection_config = (
           security_policies_utils.CreateDdosProtectionConfig(
@@ -195,6 +210,7 @@ class UpdateAlpha(UpdateBetaGa):
         cloudArmorConfig=cloud_armor_config,
         adaptiveProtectionConfig=adaptive_protection_config,
         advancedOptionsConfig=advanced_options_config,
+        recaptchaOptionsConfig=recaptcha_options_config,
         ddosProtectionConfig=ddos_protection_config,
         fingerprint=existing_security_policy.fingerprint)
 

@@ -33,6 +33,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import resource_manager_tags_utils
 from googlecloudsdk.command_lib.compute.instance_templates import flags as instance_templates_flags
 from googlecloudsdk.command_lib.compute.instance_templates import mesh_util
 from googlecloudsdk.command_lib.compute.instance_templates import service_proxy_aux_data
@@ -496,7 +497,8 @@ def _RunCreate(compute_api,
                support_host_error_timeout_seconds=False,
                support_numa_node_count=False,
                support_visible_core_count=False,
-               support_disk_architecture=False):
+               support_disk_architecture=False,
+               support_resource_manager_tags=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -524,6 +526,8 @@ def _RunCreate(compute_api,
       support_disk_architecture: Storage resources can be used to create boot
         disks compatible with ARM64 or X86_64 machine architectures. If this
         field is not specified, the default is ARCHITECTURE_UNSPECIFIED.
+      support_resource_manager_tags: Indicates whether setting resource manager
+        tags is supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -787,6 +791,18 @@ def _RunCreate(compute_api,
             args.numa_node_count if support_numa_node_count else None,
             visible_core_count, args.enable_uefi_networking))
 
+  if support_resource_manager_tags and args.resource_manager_tags:
+    ret_resource_manager_tags = resource_manager_tags_utils.GetResourceManagerTags(
+        args.resource_manager_tags)
+    if ret_resource_manager_tags is not None:
+      properties = client.messages.InstanceProperties
+      instance_template.properties.resourceManagerTags = properties.ResourceManagerTagsValue(
+          additionalProperties=[
+              properties.ResourceManagerTagsValue.AdditionalProperty(
+                  key=key, value=value) for key, value in sorted(
+                      six.iteritems(ret_resource_manager_tags))
+          ])
+
   request = client.messages.ComputeInstanceTemplatesInsertRequest(
       instanceTemplate=instance_template, project=instance_template_ref.project)
 
@@ -824,6 +840,7 @@ class Create(base.CreateCommand):
   _support_numa_node_count = False
   _support_visible_core_count = False
   _support_disk_architecture = False
+  _support_resource_manager_tags = False
 
   @classmethod
   def Args(cls, parser):
@@ -865,7 +882,8 @@ class Create(base.CreateCommand):
         support_termination_action=self._support_termination_action,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_disk_architecture=self._support_disk_architecture)
+        support_disk_architecture=self._support_disk_architecture,
+        support_resource_manager_tags=self._support_resource_manager_tags)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -893,6 +911,7 @@ class CreateBeta(Create):
   _support_numa_node_count = False
   _support_visible_core_count = False
   _support_disk_architecture = False
+  _support_resource_manager_tags = False
 
   @classmethod
   def Args(cls, parser):
@@ -941,7 +960,8 @@ class CreateBeta(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_disk_architecture=self._support_disk_architecture)
+        support_disk_architecture=self._support_disk_architecture,
+        support_resource_manager_tags=self._support_resource_manager_tags)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -969,6 +989,7 @@ class CreateAlpha(Create):
   _support_numa_node_count = True
   _support_visible_core_count = True
   _support_disk_architecture = True
+  _support_resource_manager_tags = True
 
   @classmethod
   def Args(cls, parser):
@@ -993,6 +1014,7 @@ class CreateAlpha(Create):
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddProvisioningModelVmArgs(parser)
     instances_flags.AddInstanceTerminationActionVmArgs(parser)
+    instances_flags.AddResourceManagerTagsArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.
@@ -1019,7 +1041,8 @@ class CreateAlpha(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_disk_architecture=self._support_disk_architecture)
+        support_disk_architecture=self._support_disk_architecture,
+        support_resource_manager_tags=self._support_resource_manager_tags)
 
 
 DETAILED_HELP = {

@@ -48,5 +48,5 @@ class Sessions(base.Group):
 
   Terminate an active session:
 
-    $ {command} cancel SESSION_ID
+    $ {command} terminate SESSION_ID
   """

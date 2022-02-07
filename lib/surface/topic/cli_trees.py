@@ -41,8 +41,8 @@ class CliTrees(base.TopicCommand):
   is the corresponding CLI name. For example, the CLI tree file name for
   *gcloud* is *gcloud.json*.
 
-  CLI trees associated with Cloud SDK modules are installed in the
-  *data/cli* subdirectory of the Cloud SDK installation root:
+  CLI trees associated with Google Cloud CLI modules are installed in the
+  *data/cli* subdirectory of the Google Cloud CLI installation root:
 
       $(gcloud info --format="value(installation.sdk_root)")/data/cli
 

@@ -27,6 +27,7 @@ from googlecloudsdk.api_lib.compute.instances.create import utils as create_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import resource_manager_tags_utils
 from googlecloudsdk.command_lib.compute import scope as compute_scopes
 from googlecloudsdk.command_lib.compute import secure_tags_utils
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
@@ -36,6 +37,8 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+import six
+
 
 DETAILED_HELP = {
     'brief':
@@ -82,7 +85,8 @@ def _CommonArgs(parser,
       enable_snapshots=True,
       source_snapshot_csek=snapshot_csek,
       image_csek=image_csek,
-      include_name=False)
+      include_name=False,
+      support_boot=True)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
@@ -229,6 +233,7 @@ class Create(base.Command):
   _support_display_device = False
   _support_local_ssd_size = False
   _support_secure_tags = False
+  _support_resource_manager_tags = False
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
   _support_visible_core_count = False
@@ -457,6 +462,18 @@ class Create(base.Command):
     if self._support_secure_tags and args.secure_tags:
       instance_properties.secureTags = secure_tags_utils.GetSecureTags(
           args.secure_tags)
+    if self._support_resource_manager_tags and args.resource_manager_tags:
+      ret_resource_manager_tags = resource_manager_tags_utils.GetResourceManagerTags(
+          args.resource_manager_tags)
+      if ret_resource_manager_tags is not None:
+        properties_message = compute_client.messages.InstanceProperties
+        instance_properties.resourceManagerTags = properties_message.ResourceManagerTagsValue(
+            additionalProperties=[
+                properties_message.ResourceManagerTagsValue.AdditionalProperty(
+                    key=key, value=value) for key, value in sorted(
+                        six.iteritems(ret_resource_manager_tags))
+            ])
+
     if self._support_display_device and display_device:
       instance_properties.displayDevice = display_device
 
@@ -595,6 +612,7 @@ class CreateBeta(Create):
 
   _support_display_device = True
   _support_secure_tags = False
+  _support_resource_manager_tags = False
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_visible_core_count = False
@@ -634,6 +652,7 @@ class CreateAlpha(Create):
   _support_display_device = True
   _support_local_ssd_size = True
   _support_secure_tags = True
+  _support_resource_manager_tags = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = True
   _support_visible_core_count = True
@@ -665,6 +684,7 @@ class CreateAlpha(Create):
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddBulkCreateArgs(parser)
     instances_flags.AddSecureTagsArgs(parser)
+    instances_flags.AddResourceManagerTagsArgs(parser)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
 
 

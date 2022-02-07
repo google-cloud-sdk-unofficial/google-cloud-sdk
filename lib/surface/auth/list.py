@@ -30,9 +30,10 @@ class List(base.ListCommand):
 
   Lists accounts whose credentials have been obtained using `gcloud init`,
   `gcloud auth login` and `gcloud auth activate-service-account`, and shows
-  which account is active. The active account is used by gcloud and other Cloud
-  SDK tools to access Google Cloud Platform. While there is no limit on the
-  number of accounts with stored credentials, there is only one active account.
+  which account is active. The active account is used by gcloud and other Google
+  Cloud CLI tools to access Google Cloud Platform. While there is no limit on
+  the number of accounts with stored credentials, there is only one active
+  account.
 
   ## EXAMPLES
 

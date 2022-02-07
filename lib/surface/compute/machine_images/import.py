@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import daisy_utils
+from googlecloudsdk.api_lib.compute import image_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
@@ -40,6 +41,9 @@ class Import(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
+    compute_holder = cls._GetComputeApiHolder(no_http=True)
+    messages = compute_holder.client.messages
+
     parser.display_info.AddFormat(machine_image_flags.DEFAULT_LIST_FORMAT)
     Import.MACHINE_IMAGE_ARG = machine_image_flags.MakeMachineImageArg()
     Import.MACHINE_IMAGE_ARG.AddArgument(parser, operation_type='import')
@@ -60,6 +64,10 @@ class Import(base.CreateCommand):
     labels_util.AddCreateLabelsFlags(parser)
     daisy_utils.AddCommonDaisyArgs(parser, operation='an import')
     daisy_utils.AddOVFSourceUriArg(parser)
+
+    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
+      image_utils.AddGuestOsFeaturesArgForImport(parser, messages)
+
     parser.add_argument(
         '--os',
         required=False,
@@ -77,25 +85,30 @@ class Import(base.CreateCommand):
     daisy_utils.AddNoAddressArg(
         parser,
         'machine image import',
-        docs_url='https://cloud.google.com/nat/docs/gce-example#create-nat '
-        + 'and https://cloud.google.com/vpc/docs/private-access-options#pga'
-    )
+        docs_url=(
+            'https://cloud.google.com/nat/docs/gce-example#create-nat '
+            'and https://cloud.google.com/vpc/docs/private-access-options#pga'))
     daisy_utils.AddComputeServiceAccountArg(
         parser, 'machine image import',
         daisy_utils.IMPORT_ROLES_FOR_COMPUTE_SERVICE_ACCOUNT)
     instances_flags.AddServiceAccountAndScopeArgs(
         parser,
         False,
-        extra_scopes_help=
-        'However, if neither `--scopes` nor `--no-scopes` are '
-        'specified and the project has no default service '
-        'account, then the machine image is imported with no '
-        'scopes. Note that the level of access that a service '
-        'account has is determined by a combination of access '
-        'scopes and IAM roles so you must configure both '
-        'access scopes and IAM roles for the service account '
-        'to work properly.',
-        operation='Import', resource='machine image')
+        extra_scopes_help=(
+            'However, if neither `--scopes` nor `--no-scopes` are '
+            'specified and the project has no default service '
+            'account, then the machine image is imported with no '
+            'scopes. Note that the level of access that a service '
+            'account has is determined by a combination of access '
+            'scopes and IAM roles so you must configure both '
+            'access scopes and IAM roles for the service account '
+            'to work properly.'),
+        operation='Import',
+        resource='machine image')
+
+  @classmethod
+  def _GetComputeApiHolder(cls, no_http=False):
+    return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
 
   def _ValidateArgs(self, args, compute_client):
     instances_flags.ValidateNicFlags(args)
@@ -110,7 +123,7 @@ class Import(base.CreateCommand):
           'must be a path to an object or a directory in Cloud Storage')
 
   def Run(self, args):
-    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    compute_holder = self._GetComputeApiHolder()
     compute_client = compute_holder.client
 
     self._ValidateArgs(args, compute_client)
@@ -121,9 +134,9 @@ class Import(base.CreateCommand):
     return daisy_utils.RunMachineImageOVFImportBuild(
         args=args,
         output_filter=_OUTPUT_FILTER,
-        release_track=
-        self.ReleaseTrack().id.lower() if self.ReleaseTrack() else None,
-    )
+        release_track=(self.ReleaseTrack().id.lower()
+                       if self.ReleaseTrack() else None),
+        messages=compute_client.messages)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

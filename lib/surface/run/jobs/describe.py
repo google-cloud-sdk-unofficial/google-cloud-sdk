@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2020 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,24 +58,21 @@ class Describe(base.DescribeCommand):
     concept_parsers.ConceptParser([job_presentation]).AddToParser(parser)
 
     resource_printer.RegisterFormatter(
-        job_printer.JOB_PRINTER_FORMAT,
-        job_printer.JobPrinter, hidden=True)
+        job_printer.JOB_PRINTER_FORMAT, job_printer.JobPrinter, hidden=True)
     parser.display_info.AddFormat(job_printer.JOB_PRINTER_FORMAT)
     resource_printer.RegisterFormatter(
         export_printer.EXPORT_PRINTER_FORMAT,
-        export_printer.ExportPrinter, hidden=True)
+        export_printer.ExportPrinter,
+        hidden=True)
 
   @staticmethod
   def Args(parser):
     Describe.CommonArgs(parser)
 
   def Run(self, args):
-    """Show details about a job."""
+    """Show details about a job execution."""
     conn_context = connection_context.GetConnectionContext(
-        args,
-        flags.Product.RUN,
-        self.ReleaseTrack(),
-        version_override='v1alpha1')
+        args, flags.Product.RUN, self.ReleaseTrack(), version_override='v1')
     job_ref = args.CONCEPTS.job.Parse()
 
     with serverless_operations.Connect(conn_context) as client:

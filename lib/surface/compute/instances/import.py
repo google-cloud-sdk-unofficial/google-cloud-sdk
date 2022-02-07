@@ -22,6 +22,7 @@ import re
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import daisy_utils
+from googlecloudsdk.api_lib.compute import image_utils
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -45,6 +46,9 @@ class Import(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
+    compute_holder = cls._GetComputeApiHolder(no_http=True)
+    messages = compute_holder.client.messages
+
     instances_flags.AddCanIpForwardArgs(parser)
     instances_flags.AddMachineTypeArgs(parser)
     instances_flags.AddNoRestartOnFailureArgs(parser)
@@ -67,6 +71,10 @@ class Import(base.CreateCommand):
         choices=sorted(cls._OS_CHOICES),
         help='Specifies the OS of the image being imported.')
     daisy_utils.AddByolArg(parser)
+
+    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
+      image_utils.AddGuestOsFeaturesArgForImport(parser, messages)
+
     parser.add_argument(
         '--description',
         help='Specifies a textual description of the VM instances.')
@@ -88,16 +96,20 @@ class Import(base.CreateCommand):
     instances_flags.AddServiceAccountAndScopeArgs(
         parser,
         False,
-        extra_scopes_help=
-        'However, if neither `--scopes` nor `--no-scopes` are '
-        'specified and the project has no default service '
-        'account, then the VM instance is imported with no '
-        'scopes. Note that the level of access that a service '
-        'account has is determined by a combination of access '
-        'scopes and IAM roles so you must configure both '
-        'access scopes and IAM roles for the service account '
-        'to work properly.',
+        extra_scopes_help=(
+            'However, if neither `--scopes` nor `--no-scopes` are '
+            'specified and the project has no default service '
+            'account, then the VM instance is imported with no '
+            'scopes. Note that the level of access that a service '
+            'account has is determined by a combination of access '
+            'scopes and IAM roles so you must configure both '
+            'access scopes and IAM roles for the service account '
+            'to work properly.'),
         operation='Import')
+
+  @classmethod
+  def _GetComputeApiHolder(cls, no_http=False):
+    return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
 
   def _ValidateInstanceName(self, args):
     """Raise an exception if requested instance name is invalid."""
@@ -136,8 +148,9 @@ class Import(base.CreateCommand):
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
 
   def Run(self, args):
-    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    compute_holder = self._GetComputeApiHolder()
     compute_client = compute_holder.client
+    messages = compute_client.messages
 
     self._ValidateArgs(args, compute_client)
 
@@ -160,9 +173,20 @@ class Import(base.CreateCommand):
           'source-uri',
           'must be a path to an object or a directory in Cloud Storage')
 
+    # The value of the attribute 'guest_os_features' can be can be a list, None,
+    # or the attribute may not be present at all.
+    # We treat the case when it is None or when it is not present as if the list
+    # of features is empty. We need to use the trailing `or ()` rather than
+    # give () as a default value to getattr() to handle the case where
+    # args.guest_os_features is present, but it is None.
+    guest_os_features = getattr(args, 'guest_os_features', None) or ()
+    uefi_compatible = (
+        messages.GuestOsFeature.TypeValueValuesEnum.UEFI_COMPATIBLE.name
+        in guest_os_features)
+
     return daisy_utils.RunInstanceOVFImportBuild(
         args=args,
-        compute_client=compute_holder.client,
+        compute_client=compute_client,
         instance_name=args.instance_name,
         source_uri=source_uri,
         no_guest_environment=not args.guest_environment,
@@ -178,12 +202,13 @@ class Import(base.CreateCommand):
         no_restart_on_failure=not args.restart_on_failure,
         os=args.os,
         byol=getattr(args, 'byol', False),
+        uefi_compatible=uefi_compatible,
         tags=args.tags,
         zone=properties.VALUES.compute.zone.Get(),
         project=args.project,
         output_filter=_OUTPUT_FILTER,
-        release_track=
-        self.ReleaseTrack().id.lower() if self.ReleaseTrack() else None,
+        release_track=(self.ReleaseTrack().id.lower()
+                       if self.ReleaseTrack() else None),
         hostname=getattr(args, 'hostname', None),
         no_address=getattr(args, 'no_address', False),
         compute_service_account=getattr(args, 'compute_service_account', ''),

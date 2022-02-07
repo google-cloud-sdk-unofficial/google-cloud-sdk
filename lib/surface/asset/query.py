@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.asset import client_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.asset import asset_query_printer
 from googlecloudsdk.command_lib.asset import flags
 from googlecloudsdk.command_lib.asset import utils as asset_utils
@@ -71,7 +72,14 @@ class Query(base.Command):
 
     asset_query_printer.AssetQueryPrinter.Register(parser)
 
+  def ValidateArgs(self, args):
+    if args.IsSpecified('job_reference') and args.IsSpecified('statement'):
+      raise calliope_exceptions.ConflictingArgumentsException(
+          'Only one of [--job-reference] and [--statement] should be specified.'
+      )
+
   def Run(self, args):
+    self.ValidateArgs(args)
 
     parent = asset_utils.GetParentNameForExport(args.organization, args.project,
                                                 args.folder)

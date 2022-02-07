@@ -45,7 +45,7 @@ class Startup(base.TopicCommand):
   Python 3 is preferred over Python 2. Note that `gcloud` requires Python
   version 2.7.x or 3.5-3.8.
 
-  Other Python tools shipped in the Cloud SDK do not support Python 3 and
+  Other Python tools shipped in the Google Cloud CLI do not support Python 3 and
   require Python 2.7.x, including:
 
       * `dev_appserver`

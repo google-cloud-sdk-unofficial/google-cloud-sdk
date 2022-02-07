@@ -166,7 +166,8 @@ def ParseCreateNodePoolOptionsBase(args):
       create_pod_ipv4_range=args.create_pod_ipv4_range,
       gvnic=args.enable_gvnic,
       enable_image_streaming=args.enable_image_streaming,
-      spot=args.spot)
+      spot=args.spot,
+      enable_confidential_nodes=args.enable_confidential_nodes)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -201,6 +202,8 @@ class Create(base.CreateCommand):
     flags.AddEnableGvnicFlag(parser)
     flags.AddEnableImageStreamingFlag(parser, for_node_pool=True)
     flags.AddSpotFlag(parser, for_node_pool=True, hidden=True)
+    flags.AddEnableConfidentialNodesFlag(
+        parser, for_node_pool=True, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -296,6 +299,8 @@ class CreateBeta(Create):
     flags.AddNodePoolSoakDurationFlag(parser)
     flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)
     flags.AddNetworkPerformanceConfigFlags(parser)
+    flags.AddEnableConfidentialNodesFlag(
+        parser, for_node_pool=True, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -317,6 +322,7 @@ class CreateBeta(Create):
     ops.standard_rollout_policy = args.standard_rollout_policy
     ops.maintenance_interval = args.maintenance_interval
     ops.network_performance_config = args.network_performance_configs
+    ops.enable_confidential_nodes = args.enable_confidential_nodes
     return ops
 
 
@@ -346,6 +352,7 @@ class CreateAlpha(Create):
     ops.standard_rollout_policy = args.standard_rollout_policy
     ops.maintenance_interval = args.maintenance_interval
     ops.network_performance_config = args.network_performance_configs
+    ops.enable_confidential_nodes = args.enable_confidential_nodes
     return ops
 
   @staticmethod
@@ -386,6 +393,8 @@ class CreateAlpha(Create):
     flags.AddNodePoolSoakDurationFlag(parser, for_node_pool=True)
     flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)
     flags.AddNetworkPerformanceConfigFlags(parser)
+    flags.AddEnableConfidentialNodesFlag(
+        parser, for_node_pool=True, hidden=True)
 
 
 Create.detailed_help = DETAILED_HELP

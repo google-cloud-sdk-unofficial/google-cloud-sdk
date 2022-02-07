@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,20 +19,20 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base as gbase
-from googlecloudsdk.command_lib.container.hub.build import utils
+from googlecloudsdk.command_lib.container.fleet.build import utils
 from googlecloudsdk.command_lib.container.hub.features import base
 from googlecloudsdk.core.console import console_io
 
 
 @gbase.Hidden
 class Disable(base.DisableCommand):
-  """Disable Cloud Build Hybrid Feature.
+  """Disable the Cloud Build hybrid pools feature.
 
-  Disables the Cloud Build Hybrid Feature in the Fleet.
+  Disables the Cloud Build Hybrid Feature in the fleet.
 
   ## EXAMPLES
 
-  To disable the Cloud Build Hybrid Feature, run:
+  To disable the Cloud Build hybrid pools feature, run:
 
     $ {command}
   """

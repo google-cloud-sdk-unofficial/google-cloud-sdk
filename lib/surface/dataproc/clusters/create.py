@@ -51,6 +51,7 @@ class Create(base.CreateCommand):
     flags.AddClusterResourceArg(parser, 'create', dataproc.api_version)
     clusters.ArgsForClusterRef(
         parser,
+        dataproc,
         cls.BETA,
         include_ttl_config=True,
         include_gke_platform_args=cls.BETA)

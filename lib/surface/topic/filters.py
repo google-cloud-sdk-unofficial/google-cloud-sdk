@@ -210,7 +210,7 @@ class Filters(base.TopicCommand):
 
           ### Filter on a custom or nested list in response
 
-          By default the filter exprespression operates on root level resources.
+          By default the filter expression operates on root level resources.
           In order to filter on a nested list(not at the root level of the json)
           , one can use the `--flatten` flag to provide a the `resource-key` to
           list. For example, To list members under `my-project` that have an

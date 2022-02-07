@@ -64,6 +64,8 @@ def _clear_fields(args, job):
     job.notificationConfig = None
   if args.clear_notification_event_types:
     job.notificationConfig.eventTypes = []
+  if args.clear_log_config:
+    job.loggingConfig = None
 
 
 class Update(base.Command):

@@ -28,7 +28,7 @@ from googlecloudsdk.core import properties
 
 
 class Unset(base.Command):
-  """Unset a Cloud SDK property.
+  """Unset a Google Cloud CLI property.
 
   By default, unsets the property in your active configuration only. Use the
   `--installation` flag to unset the property across all configurations. See

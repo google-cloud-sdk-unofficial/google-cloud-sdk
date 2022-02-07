@@ -127,7 +127,7 @@ future by running the following command:
 """)
 
         usage_reporting = console_io.PromptContinue(
-            prompt_string='Do you want to help improve the Google Cloud SDK',
+            prompt_string='Do you want to help improve the Google Cloud CLI',
             default=False)
   properties.PersistProperty(
       properties.VALUES.core.disable_usage_reporting, not usage_reporting,
@@ -213,8 +213,8 @@ def MaybeInstallPythonOnMac():
   if platforms.Platform.IsActuallyM1ArmArchitecture():
     return
 
-  print('\nCloud SDK works best with Python {} and certain modules.\n'.format(
-      PYTHON_VERSION))
+  print('\nGoogle Cloud CLI works best with Python {} and certain modules.\n'
+        .format(PYTHON_VERSION))
 
   already_have_python_version = os.path.isdir(MACOS_PYTHON_INSTALL_PATH)
   if already_have_python_version:

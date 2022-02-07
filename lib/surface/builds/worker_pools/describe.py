@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.hub.build import utils
+from googlecloudsdk.command_lib.container.fleet.build import utils
 from googlecloudsdk.command_lib.container.hub.features import base as hubbase
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
@@ -114,7 +114,18 @@ class DescribeBeta(Describe):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(Describe):
-  """Describe a worker pool used by Google Cloud Build."""
+  """Describe a private or hybrid worker pool used by Google Cloud Build."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+            To get information about a private or hybrid worker pool named `wp1` in region `us-central1`, run:
+
+              $ {command} wp1 --region=us-central1
+            """,
+  }
 
   feature_name = 'cloudbuild'
 

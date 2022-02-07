@@ -20,7 +20,9 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.command_lib.storage import wildcard_iterator
 
 
 class Describe(base.DescribeCommand):
@@ -36,11 +38,11 @@ class Describe(base.DescribeCommand):
 
       Describe a Google Cloud Storage bucket named "my-bucket":
 
-        $ *{command}* gs://my-bucket
+        $ {command} gs://my-bucket
 
       Desribe bucket with JSON formatting, only returning the "name" key:
 
-        $ *{command}* gs://my-bucket --format=json(name)
+        $ {command} gs://my-bucket --format=json(name)
       """,
   }
 
@@ -49,5 +51,10 @@ class Describe(base.DescribeCommand):
     parser.add_argument('url', help='Specifies URL of bucket to describe.')
 
   def Run(self, args):
+    if wildcard_iterator.contains_wildcard(args.url):
+      raise errors.InvalidUrlError(
+          'Describe does not accept wildcards because it returns a single'
+          ' resource. Please use the `ls` or `buckets list` command for'
+          ' retrieving multiple resources.')
     url = storage_url.storage_url_from_string(args.url)
     return api_factory.get_api(url.scheme).get_bucket(url.bucket_name).metadata

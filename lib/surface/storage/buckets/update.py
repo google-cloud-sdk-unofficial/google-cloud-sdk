@@ -80,11 +80,11 @@ class Update(base.Command):
       The following command updates the retention period of a Cloud Storage
       bucket named "my-bucket" to one year and thirty-six minutes:
 
-        $ {command} gs://my-bucket --retention 1y36m
+        $ {command} gs://my-bucket --retention-period 1y36m
 
       The following command clears the retention period of a bucket:
 
-        $ {command} gs://my-bucket --clear-retention
+        $ {command} gs://my-bucket --clear-retention-period
       """,
   }
 
@@ -92,6 +92,10 @@ class Update(base.Command):
   def Args(parser):
     parser.add_argument(
         'url', type=str, help='The URL of the bucket to update.')
+    parser.add_argument(
+        '--clear-cors',
+        action='store_true',
+        help="Clears the bucket's CORS settings.")
     parser.add_argument('--cors-file', help=_CORS_HELP_TEXT)
     parser.add_argument(
         '--default-storage-class',
@@ -153,7 +157,7 @@ class Update(base.Command):
         ' requester pays all costs related to accessing the bucket and its'
         ' objects.')
     parser.add_argument(
-        '--retention',
+        '--retention-period',
         help='Minimum [retention period](https://cloud.google.com'
         '/storage/docs/bucket-lock#retention-periods)'
         ' for objects stored in the bucket, for example'
@@ -162,11 +166,11 @@ class Update(base.Command):
         ' length of time. Default is no retention period. Only available'
         ' for Cloud Storage using the JSON API.')
     parser.add_argument(
-        '--clear-retention',
+        '--clear-retention-period',
         action='store_true',
         help='Clears the object retention period for a bucket.')
     parser.add_argument(
-        '--lock-retention',
+        '--lock-retention-period',
         action=arg_parsers.StoreTrueFalseAction,
         help='Locks an unlocked retention policy on the buckets. Caution: A'
         ' locked retention policy cannot be removed from a bucket or reduced in'
@@ -197,11 +201,17 @@ class Update(base.Command):
         ' domain serves the specified "main" page instead of performing the'
         ' usual bucket listing.')
     parser.add_argument(
+        '--clear-web-main-page-suffix',
+        help='Clear website main page suffix if bucket is hosting website.')
+    parser.add_argument(
         '--web-error-page',
         help='Cloud Storage allows you to configure a bucket to behave like a'
         ' static website. A subsequent GET bucket request through a custom'
         ' domain for a non-existent object serves the specified error page'
         ' instead of the standard Cloud Storage error.')
+    parser.add_argument(
+        '--clear-web-error-page',
+        help='Clear website error page if bucket is hosting website.')
 
   def Run(self, args):
     del args  # Unused.

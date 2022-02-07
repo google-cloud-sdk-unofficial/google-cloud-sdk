@@ -17,6 +17,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
@@ -76,10 +77,10 @@ class CreateAlpha(base.CreateCommand):
             'locationsId': cloudbuild_util.DEFAULT_REGION,
             'bitbucketServerConfigsId': config_id,
         })
-    bbs.name = bbs_resource.RelativeName()
+
     update_mask = cloudbuild_util.MessageToFieldPaths(bbs)
     req = messages.CloudbuildProjectsLocationsBitbucketServerConfigsPatchRequest(
-        name=bbs.name,
+        name=bbs_resource.RelativeName(),
         bitbucketServerConfig=bbs,
         updateMask=','.join(update_mask))
     # Send the Update request

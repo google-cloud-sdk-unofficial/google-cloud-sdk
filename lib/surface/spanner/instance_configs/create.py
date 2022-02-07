@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.api_lib.spanner import instance_configs
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
@@ -41,6 +41,19 @@ class Create(base.CreateCommand):
             --display-name=custom-instance-config-name
             --base-config=projects/{projectID}/instanceConfigs/{google_managed_config_id}
             --replicas="location=us-east4,type=READ_WRITE;location=us-east4,type=READ_WRITE;location=us-east1,type=READ_WRITE;location=us-east1,type=READ_WRITE;location=us-central1,type=READ_ONLY"
+
+        To create a Cloud Spanner instance config based on an existing Google managed configs and user managed configs with adding replica 'us-east4' of type 'READ_WRITE', run:
+
+          $ {command} custom-instance-config
+            --clone-config=projects/{projectID}/instanceConfigs/{config_id}
+            --add-replicas="location=us-east4,type=READ_WRITE"
+
+        To create a Cloud Spanner instance config based on an existing Google managed configs and user managed configs with adding replica 'us-east4' of type 'READ_WRITE' and removing replica 'us-central1' of type 'READ_ONLY', run:
+
+          $ {command} custom-instance-config
+            --clone-config=projects/{projectID}/instanceConfigs/{config_id}
+            --add-replicas="location=us-east4,type=READ_WRITE"
+            --skip-replicas="location=us-central1,type=READ_ONLY"
         """),
   }
 
@@ -60,16 +73,10 @@ class Create(base.CreateCommand):
         'to avoid name conflicts with Google managed configurations.')
 
     parser.add_argument(
-        '--base-config',
-        required=True,
-        help='Base configuration name. '
-        'e.g. projects/<projectID>/instanceConfigs/<google_managed_config_id>, '
-        'based on which this configuration is created.')
-
-    parser.add_argument(
         '--display-name',
-        required=True,
-        help='The name of this instance configuration as it appears in UIs.')
+        help='The name of this instance configuration as it appears in UIs. '
+        'Must specify this option if creating an instance-config with '
+        '--replicas.')
 
     parser.add_argument(
         '--etag', help='Used for optimistic concurrency control.')
@@ -82,24 +89,7 @@ class Create(base.CreateCommand):
         default=False,
         help='Validate the create action, but don\'t actually perform it.')
 
-    parser.add_argument(
-        '--replicas',
-        required=True,
-        metavar='location=LOCATION,type=TYPE',
-        action='store',
-        type=arg_parsers.ArgList(
-            custom_delim_char=';',
-            min_length=1,
-            element_type=arg_parsers.ArgDict(
-                spec={
-                    'location': str,
-                    # TODO(b/399093071): Change type to
-                    # ReplicaInfo.TypeValueValuesEnum instead of str.
-                    'type': str
-                },
-                required_keys=['location', 'type']),
-        ),
-        help="""\
+    replica_help_text = """\
         The geographic placement of nodes in this instance configuration and
         their replication properties.
 
@@ -151,7 +141,40 @@ class Create(base.CreateCommand):
           * Participate in leader election but are not eligible to become
             leader.
 
-        """)
+        """
+    clone_or_manual = parser.add_mutually_exclusive_group(required=True)
+    manual_flags = clone_or_manual.add_argument_group(
+        'Command-line flags to setup an instance-config replicas:')
+    flags.ReplicaFlag(manual_flags, name='--replicas', text=replica_help_text)
+    manual_flags.add_argument(
+        '--base-config',
+        required=True,
+        help='Base configuration name. '
+        'e.g. projects/<projectID>/instanceConfigs/<google_managed_config_id>, '
+        'based on which this configuration is created.')
+
+    clone_flags = clone_or_manual.add_argument_group(
+        'Command-line flags to setup an instance-config using clone options:')
+    clone_flags.add_argument(
+        '--clone-config',
+        required=True,
+        metavar='INSTANCE_CONFIG',
+        completer=flags.InstanceConfigCompleter,
+        help='Cloud Spanner instance config name, based on which this '
+        'configuration is created. The clone is an independent copy of this '
+        'config. Available configurations can be found by running '
+        '"gcloud spanner instance-configs list"')
+    flags.ReplicaFlag(
+        clone_flags,
+        name='--add-replicas',
+        text='Add new replicas while cloning from the source config.',
+        required=False)
+    flags.ReplicaFlag(
+        clone_flags,
+        name='--skip-replicas',
+        text='Skip replicas from the source config while cloning. Each replica '
+        'in the list must exist in the source config replicas list.',
+        required=False)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -163,6 +186,16 @@ class Create(base.CreateCommand):
     Returns:
       Instance config create response.
     """
-    return instance_configs.Create(args.config, args.display_name,
-                                   args.base_config, args.replicas,
-                                   args.validate_only, args.labels, args.etag)
+    if args.clone_config:
+      # If the config exists, it's cloned, otherwise, we display the
+      # error from instanceConfigs.Get.
+      config = instance_configs.Get(args.clone_config)
+      return instance_configs.CreateUsingExistingConfig(args, config)
+    else:
+      if not args.IsSpecified('display_name'):
+        raise c_exceptions.InvalidArgumentException(
+            '--display-name', 'Must specify --display-name.')
+
+      return instance_configs.CreateUsingReplicas(
+          args.config, args.display_name, args.base_config, args.replicas,
+          args.validate_only, args.labels, args.etag)

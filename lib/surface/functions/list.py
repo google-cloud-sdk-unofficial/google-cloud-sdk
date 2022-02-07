@@ -40,7 +40,7 @@ class List(base.ListCommand):
         type=arg_parsers.ArgList(min_length=1),
         default=['-'])
     parser.display_info.AddFormat(
-        'table(name.basename(), status, trigger():label=TRIGGER, '
+        'table(name.basename():sort=1, status, trigger():label=TRIGGER, '
         'name.scope("locations").segment(0):label=REGION)')
     base.URI_FLAG.RemoveFromParser(parser)
 
@@ -66,7 +66,7 @@ class ListBeta(base.ListCommand):
 
     parser.display_info.AddFormat("""
         table(
-          name.basename(),
+          name.basename():sort=1,
           state():label=STATE,
           trigger():label=TRIGGER,
           name.scope("locations").segment(0):label=REGION,

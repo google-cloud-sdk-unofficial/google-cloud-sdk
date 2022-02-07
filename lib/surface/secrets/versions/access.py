@@ -19,9 +19,11 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.secrets import api as secrets_api
+from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import fmt as secrets_fmt
+from googlecloudsdk.command_lib.util import crc32c
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -82,3 +84,12 @@ class AccessBeta(Access):
     secrets_args.AddVersionOrLatest(
         parser, purpose='to access', positional=True, required=True)
     secrets_fmt.UseSecretData(parser)
+
+  def Run(self, args):
+    version_ref = args.CONCEPTS.version.Parse()
+    version = secrets_api.Versions().Access(version_ref)
+    if crc32c.does_data_match_checksum(version.payload.data,
+                                       version.payload.dataCrc32c):
+      return version
+    raise exceptions.HttpException(
+        'Payload data corruption occurred, please retry.')

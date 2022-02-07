@@ -64,34 +64,59 @@ class Rollback(base.CreateCommand):
     flags.AddRelease(parser, 'Name of the release to rollback to.')
     flags.AddRolloutID(parser)
     flags.AddDeliveryPipeline(parser)
+    flags.AddDescriptionFlag(parser)
 
   def Run(self, args):
     target_ref = args.CONCEPTS.target.Parse()
     # Check if target exists
     target_util.GetTarget(target_ref)
 
-    release_ref = _GetRollbackRelease(args.release, args.delivery_pipeline,
-                                      target_ref)
+    current_release_ref, rollback_release_ref = _GetCurrentAndRollbackRelease(
+        args.release, args.delivery_pipeline, target_ref)
     try:
-      release_obj = release.ReleaseClient().Get(release_ref.RelativeName())
+      release_obj = release.ReleaseClient().Get(
+          rollback_release_ref.RelativeName())
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error)
 
     prompt = 'Rolling back target {} to release {}.\n\n'.format(
-        target_ref.Name(), release_ref.Name())
-    release_util.PrintDiff(release_ref, release_obj, target_ref.Name(), prompt)
+        target_ref.Name(), rollback_release_ref.Name())
+    release_util.PrintDiff(rollback_release_ref, release_obj, target_ref.Name(),
+                           prompt)
 
     console_io.PromptContinue(cancel_on_no=True)
 
-    promote_util.Promote(release_ref, release_obj, target_ref.Name(), False,
-                         args.rollout_id)
+    rollout_description = args.description or 'Rollback from {}'.format(
+        current_release_ref.Name())
+    promote_util.Promote(
+        rollback_release_ref,
+        release_obj,
+        target_ref.Name(),
+        False,
+        args.rollout_id,
+        description=rollout_description)
 
 
-def _GetRollbackRelease(release_id, pipeline_id, target_ref):
-  """Gets the release that will be used by promote API to create the rollback rollout."""
+def _GetCurrentAndRollbackRelease(release_id, pipeline_id, target_ref):
+  """Gets the current deployed release and the release that will be used by promote API to create the rollback rollout."""
   ref_dict = target_ref.AsDict()
+  pipeline_ref = resources.REGISTRY.Parse(
+      pipeline_id,
+      collection='clouddeploy.projects.locations.deliveryPipelines',
+      params={
+          'projectsId': ref_dict['projectsId'],
+          'locationsId': ref_dict['locationsId'],
+          'deliveryPipelinesId': pipeline_id,
+      })
   if release_id:
-    return resources.REGISTRY.Parse(
+    current_rollout = target_util.GetCurrentRollout(target_ref, pipeline_ref)
+    current_release_ref = resources.REGISTRY.ParseRelativeName(
+        resources.REGISTRY.Parse(
+            current_rollout.name,
+            collection='clouddeploy.projects.locations.deliveryPipelines.releases.rollouts'
+        ).Parent().RelativeName(),
+        collection='clouddeploy.projects.locations.deliveryPipelines.releases')
+    rollback_release_ref = resources.REGISTRY.Parse(
         release_id,
         collection='clouddeploy.projects.locations.deliveryPipelines.releases',
         params={
@@ -100,15 +125,8 @@ def _GetRollbackRelease(release_id, pipeline_id, target_ref):
             'deliveryPipelinesId': pipeline_id,
             'releasesId': release_id
         })
+    return current_release_ref, rollback_release_ref
   else:
-    pipeline_ref = resources.REGISTRY.Parse(
-        release_id,
-        collection='clouddeploy.projects.locations.deliveryPipelines',
-        params={
-            'projectsId': ref_dict['projectsId'],
-            'locationsId': ref_dict['locationsId'],
-            'deliveryPipelinesId': pipeline_id,
-        })
     prior_rollouts = rollout_util.GetSucceededRollout(
         target_ref=target_ref, pipeline_ref=pipeline_ref, limit=2)
     if len(prior_rollouts) < 2:
@@ -116,9 +134,16 @@ def _GetRollbackRelease(release_id, pipeline_id, target_ref):
           'unable to rollback target {}. Target has less than 2 rollouts.'
           .format(target_ref.Name()))
 
-    return resources.REGISTRY.ParseRelativeName(
+    current_release_ref = resources.REGISTRY.ParseRelativeName(
+        resources.REGISTRY.Parse(
+            prior_rollouts[1].name,
+            collection='clouddeploy.projects.locations.deliveryPipelines.releases.rollouts'
+        ).Parent().RelativeName(),
+        collection='clouddeploy.projects.locations.deliveryPipelines.releases')
+    rollback_release_ref = resources.REGISTRY.ParseRelativeName(
         resources.REGISTRY.Parse(
             prior_rollouts[0].name,
             collection='clouddeploy.projects.locations.deliveryPipelines.releases.rollouts'
         ).Parent().RelativeName(),
         collection='clouddeploy.projects.locations.deliveryPipelines.releases')
+    return current_release_ref, rollback_release_ref

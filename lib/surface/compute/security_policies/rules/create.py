@@ -61,7 +61,10 @@ class CreateHelper(object):
     if support_redirect:
       flags.AddRedirectOptions(parser)
     if support_rate_limit:
-      flags.AddRateLimitOptions(parser, support_tcp_ssl=support_tcp_ssl)
+      flags.AddRateLimitOptions(
+          parser,
+          support_tcp_ssl=support_tcp_ssl,
+          support_exceed_redirect=support_redirect)
     if support_header_action:
       flags.AddRequestHeadersToAdd(parser)
     parser.display_info.AddCacheUpdater(

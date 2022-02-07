@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2020 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,13 +34,15 @@ class Delete(base.Command):
   """Delete a job."""
 
   detailed_help = {
-      'DESCRIPTION': """
+      'DESCRIPTION':
+          """
           {description}
           """,
-      'EXAMPLES': """
+      'EXAMPLES':
+          """
           To delete a job:
 
-              $ {command} <job-name>
+              $ {command} job-name
           """,
   }
 
@@ -61,15 +63,11 @@ class Delete(base.Command):
   def Run(self, args):
     """Delete a job."""
     conn_context = connection_context.GetConnectionContext(
-        args,
-        flags.Product.RUN,
-        self.ReleaseTrack(),
-        version_override='v1alpha1')
+        args, flags.Product.RUN, self.ReleaseTrack())
     job_ref = args.CONCEPTS.job.Parse()
 
     console_io.PromptContinue(
-        message='Job [{}] will be deleted.'.format(
-            job_ref.jobsId),
+        message='Job [{}] will be deleted.'.format(job_ref.jobsId),
         throw_if_unattended=True,
         cancel_on_no=True)
 

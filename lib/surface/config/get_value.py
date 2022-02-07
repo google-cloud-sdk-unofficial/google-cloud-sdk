@@ -30,7 +30,7 @@ import six
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class GetValue(base.Command):
-  """Print the value of a Cloud SDK property.
+  """Print the value of a Google Cloud CLI property.
 
   {command} prints the property value from your active client side configuration
   only.

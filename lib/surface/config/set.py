@@ -29,10 +29,10 @@ from googlecloudsdk.core import properties
 
 
 class Set(base.Command):
-  """Set a Cloud SDK property.
+  """Set a Google Cloud CLI property.
 
   {command} sets the specified property in your active configuration only. A
-  property governs the behavior of a specific aspect of Cloud SDK such as
+  property governs the behavior of a specific aspect of Google Cloud CLI such as
   the service account to use or the verbosity level of logs. To
   set the property across all configurations, use the `--installation` flag. For
   more information regarding creating and using configurations, see
@@ -42,7 +42,7 @@ class Set(base.Command):
 
   To unset properties, use `gcloud config unset`.
 
-  Cloud SDK comes with a `default` configuration. To create multiple
+  Google Cloud CLI comes with a `default` configuration. To create multiple
   configurations, use `gcloud config configurations create`, and
   `gcloud config configurations activate` to switch between them.
 
@@ -78,7 +78,7 @@ class Set(base.Command):
     $ {command} proxy/address 1.234.56.78
     $ {command} proxy/port 8080
 
-  For a full list of accepted values, see the Cloud SDK properties
+  For a full list of accepted values, see the Google Cloud CLI properties
   page: https://cloud.google.com/sdk/docs/properties
   """
 

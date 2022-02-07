@@ -41,13 +41,13 @@ class Delete(base.SilentCommand):
           configurations.
           """,
       'EXAMPLES': """\
-          To delete a named configuration, run:
+          To delete an existing configuration named `my-config`, run:
 
-            $ {command} my_config
+            $ {command} my-config
 
           To delete more than one configuration, run:
 
-            $ {command} my_config1 my_config2
+            $ {command} my-config1 my-config2
 
           To list existing configurations, run:
 

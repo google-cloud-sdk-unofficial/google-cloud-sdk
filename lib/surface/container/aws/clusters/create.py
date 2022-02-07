@@ -65,6 +65,7 @@ class Create(base.CreateCommand):
     flags.AddValidateOnly(parser, 'cluster to create')
     flags.AddFleetProject(parser)
     flags.AddTags(parser, 'cluster')
+    flags.AddAdminUsers(parser)
 
     aws_flags.AddAwsRegion(parser)
     aws_flags.AddIamInstanceProfile(parser)

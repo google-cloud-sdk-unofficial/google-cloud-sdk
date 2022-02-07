@@ -125,11 +125,11 @@ def _SuggestIncludeRecentLogs():
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Feedback(base.Command):
-  """Provide feedback to the Google Cloud SDK team.
+  """Provide feedback to the Google Cloud CLI team.
 
-  The Google Cloud SDK team offers support through a number of channels:
+  The Google Cloud CLI team offers support through a number of channels:
 
-  * Google Cloud SDK Issue Tracker
+  * Google Cloud CLI Issue Tracker
   * Stack Overflow "#gcloud" tag
   * google-cloud-dev Google group
 

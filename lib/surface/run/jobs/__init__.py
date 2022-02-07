@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2020 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,7 +33,8 @@ class Jobs(base.Group):
   """
 
   detailed_help = {
-      'EXAMPLES': """
+      'EXAMPLES':
+          """
           To list your existing jobs, run:
 
             $ {command} list
@@ -47,11 +48,7 @@ class Jobs(base.Group):
 
   def Filter(self, context, args):
     """Runs before command.Run and validates platform with passed args."""
-    self._CheckPlatform()
+    # Ensures a platform is set on the run/platform property and
+    # all other passed args are valid for this platform and release track.
+    flags.GetAndValidatePlatform(args, self.ReleaseTrack(), flags.Product.RUN)
     return context
-
-  def _CheckPlatform(self):
-    platform = platforms.GetPlatform()
-    if platform != platforms.PLATFORM_MANAGED:
-      raise exceptions.PlatformError(
-          'This command group is only supported for fully managed Cloud Run.')

@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import log as secrets_log
 from googlecloudsdk.command_lib.secrets import util as secrets_util
+from googlecloudsdk.command_lib.util import crc32c
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
@@ -529,7 +530,9 @@ class CreateBeta(Create):
         topics=args.topics)
 
     if data:
-      version = secrets_api.Secrets().AddVersion(secret_ref, data)
+      data_crc32c = crc32c.get_crc32c(data)
+      version = secrets_api.Secrets().AddVersionBeta(
+          secret_ref, data, crc32c.get_checksum(data_crc32c))
       version_ref = secrets_args.ParseVersionRef(version.name)
       secrets_log.Versions().Created(version_ref)
     else:

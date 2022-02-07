@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import log as secrets_log
 from googlecloudsdk.command_lib.secrets import util as secrets_util
+from googlecloudsdk.command_lib.util import crc32c
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -109,3 +110,23 @@ class CreateBeta(Create):
     secrets_args.AddSecret(
         parser, purpose='to create', positional=True, required=True)
     secrets_args.AddDataFile(parser, required=True)
+
+  def Run(self, args):
+    secret_ref = args.CONCEPTS.secret.Parse()
+    data = secrets_util.ReadFileOrStdin(args.data_file)
+
+    # Differentiate between the flag being provided with an empty value and the
+    # flag being omitted. See b/138796299 for info.
+    if args.data_file == '':  # pylint: disable=g-explicit-bool-comparison
+      raise exceptions.BadFileException(self.EMPTY_DATA_FILE_MESSAGE)
+
+    data_crc32c = crc32c.get_crc32c(data)
+    version = secrets_api.Secrets().AddVersionBeta(
+        secret_ref, data, crc32c.get_checksum(data_crc32c))
+    version_ref = secrets_args.ParseVersionRef(version.name)
+    if not version.clientSpecifiedPayloadChecksum:
+      raise exceptions.HttpException(
+          'Version created but payload data corruption may have occurred, '
+          'please retry.')
+    secrets_log.Versions().Created(version_ref)
+    return version

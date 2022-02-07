@@ -227,9 +227,9 @@ class Interactive(base.Command):
 
   *{command}* uses CLI tree data files for typeahead, command line completion,
   and help snippet generation. A few CLI trees are installed with their
-  respective Cloud SDK components: *gcloud* (core component), *bq*, *gsutil*,
-  and *kubectl*. Trees for commands that have man(1) pages are generated on
-  the fly. See `$ gcloud topic cli-trees` for details.
+  respective Google Cloud CLI components: *gcloud* (core component), *bq*,
+  *gsutil*, and *kubectl*. Trees for commands that have man(1) pages are
+  generated on the fly. See `$ gcloud topic cli-trees` for details.
 
   ## EXAMPLES
 

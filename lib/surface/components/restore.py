@@ -26,8 +26,8 @@ from googlecloudsdk.command_lib.components import util
 class Restore(base.SilentCommand):
   """Restore the Cloud SDK installation to its previous state.
 
-  This is an undo operation, which restores the Cloud SDK installation on the
-  local workstation to the state it was in just before the most recent
+  This is an undo operation, which restores the Google Cloud CLI installation on
+  the local workstation to the state it was in just before the most recent
   `{parent_command} update`, `{parent_command} remove`, or
   `{parent_command} install` command. Only the state before the most recent such
   state is remembered, so it is impossible to restore the state that existed
@@ -35,7 +35,7 @@ class Restore(base.SilentCommand):
   does not undo a previous `restore` command.
 
   ## EXAMPLES
-  To restore Cloud SDK installation to its previous state, run:
+  To restore Google Cloud CLI installation to its previous state, run:
 
     $ {command}
   """

@@ -127,6 +127,21 @@ class ListAlpha(List):
           """,
   }
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To fetch a list of all private and hybrid worker pools running in region `us-central1`, run:
+
+            $ {command} --region=us-central1
+
+          To fetch a list of only hybrid worker pools running in region `us-central1`, run:
+
+            $ {command} --region=us-central1 --filter="type:Hybrid"
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command.

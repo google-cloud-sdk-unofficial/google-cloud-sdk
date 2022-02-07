@@ -106,6 +106,7 @@ class DeployBeta(Deploy):
     flags.AddTriggerLocationFlag(parser, track)
     flags.AddTriggerServiceAccountFlag(parser, track)
     flags.AddGen2Flag(parser, track)
+    flags.AddServeAllTrafficLatestRevisionFlag(parser, track)
 
   def Run(self, args):
     if flags.ShouldUseGen2():

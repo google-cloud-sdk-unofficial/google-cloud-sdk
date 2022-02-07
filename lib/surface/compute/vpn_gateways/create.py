@@ -60,9 +60,10 @@ class Create(base.CreateCommand):
     _VPN_GATEWAY_ARG.AddArgument(parser, operation_type='create')
     flags.GetDescriptionFlag().AddToParser(parser)
     flags.GetInterconnectAttachmentsFlag().AddToParser(parser)
+    flags.GetStackType().AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.VpnGatewaysCompleter)
 
-  def _Run(self, args, support_havpn_ipv6=False):
+  def _Run(self, args):
     """Issues the request to create a new VPN gateway."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     helper = vpn_gateways_utils.VpnGatewayHelper(holder)
@@ -73,15 +74,12 @@ class Create(base.CreateCommand):
       vpn_interfaces_with_interconnect_attachments = self._mapInterconnectAttachments(
           args, holder.resources, vpn_gateway_ref.region,
           vpn_gateway_ref.project)
-    stack_type = None
-    if support_havpn_ipv6:
-      stack_type = args.stack_type
     vpn_gateway_to_insert = helper.GetVpnGatewayForInsert(
         name=vpn_gateway_ref.Name(),
         description=args.description,
         network=network_ref.SelfLink(),
         vpn_interfaces_with_interconnect_attachments=vpn_interfaces_with_interconnect_attachments,
-        stack_type=stack_type)
+        stack_type=args.stack_type)
     operation_ref = helper.Create(vpn_gateway_ref, vpn_gateway_to_insert)
     return helper.WaitForOperation(vpn_gateway_ref, operation_ref,
                                    'Creating VPN Gateway')
@@ -132,8 +130,7 @@ class CreateAlpha(Create):
   def Args(cls, parser):
     """Set up arguments for this command."""
     super(CreateAlpha, cls).Args(parser)
-    flags.GetStackType().AddToParser(parser)
 
   def Run(self, args):
     """See base.CreateCommand."""
-    return self._Run(args, support_havpn_ipv6=True)
+    return self._Run(args)

@@ -23,6 +23,10 @@ from googlecloudsdk.calliope import base
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Deprecate(
+    is_removed=False,
+    warning='This command group is deprecated. Use the `gcloud alpha edge-cloud container` command group instead.'
+)
 class EdgeContainer(base.Group):
   """Manage Edge Container resources."""
   category = base.COMPUTE_CATEGORY

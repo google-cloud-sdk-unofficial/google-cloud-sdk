@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Utils for GKE Hub Cloud Build Hybrid commands."""
+"""Utils for Fleet Cloud Build Hybrid commands."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,7 +32,7 @@ class Error(exceptions.Error):
 
 
 def VerifyMembership(membership):
-  """Verify the format of `membership` and check the membership exists in Hub.
+  """Verify the format of `membership` and check the membership exists in Fleet.
 
   Args:
     membership: The full membership ID.
@@ -41,14 +41,14 @@ def VerifyMembership(membership):
     Error: if the membership specification is improper.
   """
 
-  hub_membership_regex = r'^projects/(?P<ProjectNum>[0-9-]+)/locations/global/memberships/(?P<Membership>[a-z0-9-]+)$'
-  if re.search(hub_membership_regex, membership) is None:
+  fleet_membership_regex = r'^projects/(?P<ProjectNum>[0-9-]+)/locations/global/memberships/(?P<Membership>[a-z0-9-]+)$'
+  if re.search(fleet_membership_regex, membership) is None:
     raise Error(
         'Improper membership specification. '
         'Format should be: projects/[PROJECT_NUM]/locations/global/memberships/[MEMBERSHIP-ID]'
     )
   # We're ignoring the result of this call because we just want to verify the
-  # membership exists in the hub.
+  # membership exists in the fleet.
   v1beta1_client = apis.GetClientInstance('gkehub', 'v1beta1')
   v1beta1_client.projects_locations_memberships.Get(
       v1beta1_client.MESSAGES_MODULE
@@ -109,7 +109,7 @@ def MembershipSpecPatch(messages, membership, spec):
   """Builds a Feature message for updating one CloudBuildMembershipConfig.
 
   Args:
-    messages: The v1alpha1 Hub messages package
+    messages: The v1alpha1 Fleet messages package
     membership: The membership name to use as the key.
     spec: The CloudBuildMembershipConfig to use as the value.
 

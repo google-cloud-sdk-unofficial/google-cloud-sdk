@@ -55,7 +55,7 @@ def LogResponse(survey_instance):
 
 
 class Survey(base.Command):
-  """Invoke a customer satisfaction survey for Cloud SDK.
+  """Invoke a customer satisfaction survey for Google Cloud CLI.
 
   To permanently disable the survey prompt, run:
 

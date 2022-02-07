@@ -26,15 +26,15 @@ from googlecloudsdk.core import properties
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Config(base.Group):
-  """View and edit Cloud SDK properties.
+  """View and edit Google Cloud CLI properties.
 
   The {command} command group lets you set, view and unset properties used by
-  Cloud SDK.
+  Google Cloud CLI.
 
   A configuration is a set of properties that govern the behavior of `gcloud`
-  and other Cloud SDK tools. The initial `default` configuration is set when
-  `gcloud init` is run. You can create additional named configurations using
-  `gcloud init` or `{command} configurations create`.
+  and other Google Cloud CLI tools. The initial `default` configuration is set
+  when `gcloud init` is run. You can create additional named configurations
+  using `gcloud init` or `{command} configurations create`.
 
   To display the path of the active configuration along with information
   about the current `gcloud` environment, run $ gcloud info.

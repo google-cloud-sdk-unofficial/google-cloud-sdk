@@ -36,7 +36,7 @@ from googlecloudsdk.core.util import files
 class ActivateServiceAccount(base.SilentCommand):
   r"""Authorize access to Google Cloud with a service account.
 
-  To allow `gcloud` (and other tools in Cloud SDK) to use service account
+  To allow `gcloud` (and other tools in Google Cloud CLI) to use service account
   credentials to make requests, use this command to import these credentials
   from a file that contains a private authorization key, and activate them for
   use in `gcloud`. {command} serves the same function as `gcloud auth login`

@@ -32,7 +32,7 @@ class BadConfigListInvocation(exceptions.Error):
 
 
 class List(base.ListCommand):
-  """List Cloud SDK properties for the currently active configuration.
+  """List Google Cloud CLI properties for the currently active configuration.
 
   {command} lists all properties of the active configuration. These include the
   account used to authorize access to the Cloud Platform, the current Cloud

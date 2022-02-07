@@ -165,15 +165,21 @@ class Import(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
+    compute_holder = cls._GetComputeApiHolder(no_http=True)
+    compute_client = compute_holder.client
+    messages = compute_client.messages
+
     Import.DISK_IMAGE_ARG = flags.MakeDiskImageArg()
     Import.DISK_IMAGE_ARG.AddArgument(parser, operation_type='create')
 
     flags.compute_flags.AddZoneFlag(
-        parser, 'image', 'import',
+        parser,
+        'image',
+        'import',
         help_text='Zone to use when importing the image. When you import '
-                  'an image, the import tool creates and uses temporary VMs '
-                  'in your project for the import process. Use this flag to '
-                  'specify the zone to use for these temporary VMs.')
+        'an image, the import tool creates and uses temporary VMs '
+        'in your project for the import process. Use this flag to '
+        'specify the zone to use for these temporary VMs.')
 
     if cls.ReleaseTrack() == base.ReleaseTrack.GA:
       source = parser.add_mutually_exclusive_group(required=True)
@@ -205,10 +211,11 @@ class Import(base.CreateCommand):
       flags.SOURCE_IMAGE_ARG.AddArgument(
           import_from_local_or_gcs, operation_type='import')
 
-      import_from_aws = source.add_group(
-          help='Image import from AWS.'
-      )
+      import_from_aws = source.add_group(help='Image import from AWS.')
       daisy_utils.AddAWSImageImportSourceArgs(import_from_aws)
+
+    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
+      image_utils.AddGuestOsFeaturesArgForImport(parser, messages)
 
     workflow = parser.add_mutually_exclusive_group()
     os_group = workflow.add_group()
@@ -248,16 +255,16 @@ class Import(base.CreateCommand):
         action='store_true',
         default=True,
         help='Installs the guest environment on the image.'
-             ' See '
-             'https://cloud.google.com/compute/docs/images/guest-environment.')
+        ' See '
+        'https://cloud.google.com/compute/docs/images/guest-environment.')
 
     parser.add_argument(
         '--network',
-        help=('Name of the network in your project to use for the image '
-              'import. When you import an image, the import tool creates and '
-              'uses temporary VMs in your project for the import process. Use '
-              'this flag to specify the network to use for these temporary VMs.'
-              ),
+        help=(
+            'Name of the network in your project to use for the image '
+            'import. When you import an image, the import tool creates and '
+            'uses temporary VMs in your project for the import process. Use '
+            'this flag to specify the network to use for these temporary VMs.'),
     )
 
     parser.add_argument(
@@ -273,17 +280,14 @@ class Import(base.CreateCommand):
             optional.
           * If the network is in custom subnet mode, then this field must be
             specified.
-        """
-              ),
+        """),
     )
 
     parser.add_argument(
-        '--family',
-        help='Family to set for the imported image.')
+        '--family', help='Family to set for the imported image.')
 
     parser.add_argument(
-        '--description',
-        help='Description to set for the imported image.')
+        '--description', help='Description to set for the imported image.')
 
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
@@ -302,8 +306,7 @@ class Import(base.CreateCommand):
         help='Whether to generalize the image using Windows Sysprep.')
 
     daisy_utils.AddNoAddressArg(
-        parser,
-        'image import',
+        parser, 'image import',
         'https://cloud.google.com/compute/docs/import/importing-virtual-disks#no-external-ip'
     )
 
@@ -311,8 +314,12 @@ class Import(base.CreateCommand):
         parser, 'image import',
         daisy_utils.IMPORT_ROLES_FOR_COMPUTE_SERVICE_ACCOUNT)
 
+  @classmethod
+  def _GetComputeApiHolder(cls, no_http=False):
+    return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
+
   def Run(self, args):
-    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    compute_holder = self._GetComputeApiHolder()
 
     # Fail early if the requested image name is invalid or already exists.
     _CheckImageName(args.image_name)
@@ -337,27 +344,26 @@ class Import(base.CreateCommand):
         if self.ReleaseTrack() else None)
 
   def _CreateImportStager(self, args, compute_holder):
-    if self.ReleaseTrack(
-    ) != base.ReleaseTrack.GA and _HasExternalCloudProvider(args):
-      return ImportFromExternalCloudProviderStager(self.storage_client, args)
+    if (self.ReleaseTrack() != base.ReleaseTrack.GA and
+        _HasExternalCloudProvider(args)):
+      return ImportFromExternalCloudProviderStager(self.storage_client,
+                                                   compute_holder, args)
 
     if args.source_image:
-      return ImportFromImageStager(
-          self.storage_client, compute_holder, args)
+      return ImportFromImageStager(self.storage_client, compute_holder, args)
 
     if daisy_utils.IsLocalFile(args.source_file):
-      return ImportFromLocalFileStager(
-          self.storage_client, args)
+      return ImportFromLocalFileStager(self.storage_client, compute_holder,
+                                       args)
 
     try:
       gcs_uri = daisy_utils.MakeGcsObjectUri(args.source_file)
     except storage_util.InvalidObjectNameError:
       raise exceptions.InvalidArgumentException(
-          'source-file',
-          'must be a path to an object in Google Cloud Storage')
+          'source-file', 'must be a path to an object in Google Cloud Storage')
     else:
-      return ImportFromGSFileStager(
-          self.storage_client, args, gcs_uri)
+      return ImportFromGSFileStager(self.storage_client, compute_holder, args,
+                                    gcs_uri)
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -369,8 +375,9 @@ class BaseImportStager(object):
   the appropriate location.
   """
 
-  def __init__(self, storage_client, args):
+  def __init__(self, storage_client, compute_holder, args):
     self.storage_client = storage_client
+    self.compute_holder = compute_holder
     self.args = args
     self.daisy_bucket = self.GetAndCreateDaisyBucket()
 
@@ -383,6 +390,7 @@ class BaseImportStager(object):
       import_args - array of strings, import args.
     """
     import_args = []
+    messages = self.compute_holder.client.messages
 
     daisy_utils.AppendArg(import_args, 'zone',
                           properties.VALUES.compute.zone.Get())
@@ -403,6 +411,20 @@ class BaseImportStager(object):
     daisy_utils.AppendArg(import_args, 'family', self.args.family)
     if 'byol' in self.args:
       daisy_utils.AppendBoolArg(import_args, 'byol', self.args.byol)
+
+    # The value of the attribute 'guest_os_features' can be can be a list, None,
+    # or the attribute may not be present at all.
+    # We treat the case when it is None or when it is not present as if the list
+    # of features is empty. We need to use the trailing `or ()` rather than
+    # give () as a default value to getattr() to handle the case where
+    # args.guest_os_features is present, but it is None.
+    guest_os_features = getattr(self.args, 'guest_os_features', None) or ()
+    uefi_compatible = (
+        messages.GuestOsFeature.TypeValueValuesEnum.UEFI_COMPATIBLE.name
+        in guest_os_features)
+    if uefi_compatible:
+      daisy_utils.AppendBoolArg(import_args, 'uefi_compatible', True)
+
     if 'sysprep_windows' in self.args:
       daisy_utils.AppendBoolArg(import_args, 'sysprep_windows',
                                 self.args.sysprep_windows)
@@ -448,10 +470,6 @@ class ImportFromExternalCloudProviderStager(BaseImportStager):
 class ImportFromImageStager(BaseImportStager):
   """Image import stager from an existing image."""
 
-  def __init__(self, storage_client, compute_holder, args):
-    super(ImportFromImageStager, self).__init__(storage_client, args)
-    self.compute_holder = compute_holder
-
   def Stage(self):
     _CheckForExistingImage(
         self.args.source_image,
@@ -471,7 +489,8 @@ class ImportFromImageStager(BaseImportStager):
 
   def _GetSourceImage(self):
     ref = resources.REGISTRY.Parse(
-        self.args.source_image, collection='compute.images',
+        self.args.source_image,
+        collection='compute.images',
         params={'project': properties.VALUES.core.project.GetOrFail})
     # source_name should be of the form 'global/images/image-name'.
     source_name = ref.RelativeName()[len(ref.Parent().RelativeName() + '/'):]
@@ -510,8 +529,8 @@ class BaseImportFromFileStager(BaseImportStager):
           'Only the first vmdk disk will be imported. To import a .ova'
           'completely, please try \'gcloud compute instances import\''
           'instead.')
-    elif (self.args.source_file.lower().endswith('.tar.gz')
-          or self.args.source_file.lower().endswith('.tgz')):
+    elif (self.args.source_file.lower().endswith('.tar.gz') or
+          self.args.source_file.lower().endswith('.tgz')):
       raise exceptions.BadFileException(
           '`gcloud compute images import` does not support compressed '
           'archives. Please extract your image and try again.\n If you got '
@@ -530,20 +549,19 @@ class ImportFromLocalFileStager(BaseImportFromFileStager):
   """Image import stager from a local file."""
 
   def _CopySourceFileToScratchBucket(self):
-    return self._UploadToGcs(
-        self.args.async_, self.args.source_file, self.daisy_bucket,
-        uuid.uuid4())
+    return self._UploadToGcs(self.args.async_, self.args.source_file,
+                             self.daisy_bucket, uuid.uuid4())
 
   def _UploadToGcs(self, is_async, local_path, daisy_bucket, image_uuid):
     """Uploads a local file to GCS. Returns the gs:// URI to that file."""
     file_name = os.path.basename(local_path).replace(' ', '-')
-    dest_path = 'gs://{0}/tmpimage/{1}-{2}'.format(
-        daisy_bucket, image_uuid, file_name)
+    dest_path = 'gs://{0}/tmpimage/{1}-{2}'.format(daisy_bucket, image_uuid,
+                                                   file_name)
     if is_async:
       log.status.Print('Async: After upload is complete, your image will be '
                        'imported from Cloud Storage asynchronously.')
-    with progress_tracker.ProgressTracker(
-        'Copying [{0}] to [{1}]'.format(local_path, dest_path)):
+    with progress_tracker.ProgressTracker('Copying [{0}] to [{1}]'.format(
+        local_path, dest_path)):
       return self._UploadToGcsStorageApi(local_path, dest_path)
 
   def _UploadToGcsStorageApi(self, local_path, dest_path):
@@ -556,10 +574,10 @@ class ImportFromLocalFileStager(BaseImportFromFileStager):
 class ImportFromGSFileStager(BaseImportFromFileStager):
   """Image import stager from a file in Cloud Storage."""
 
-  def __init__(self, storage_client, args, gcs_uri):
+  def __init__(self, storage_client, compute_holder, args, gcs_uri):
     self.source_file_gcs_uri = gcs_uri
-    super(ImportFromGSFileStager, self).__init__(
-        storage_client, args)
+    super(ImportFromGSFileStager, self).__init__(storage_client, compute_holder,
+                                                 args)
 
   def GetBucketLocation(self):
     return self.storage_client.GetBucketLocationForFile(
@@ -567,14 +585,14 @@ class ImportFromGSFileStager(BaseImportFromFileStager):
 
   def _CopySourceFileToScratchBucket(self):
     image_file = os.path.basename(self.source_file_gcs_uri)
-    dest_uri = 'gs://{0}/tmpimage/{1}-{2}'.format(
-        self.daisy_bucket, uuid.uuid4(), image_file)
-    src_object = resources.REGISTRY.Parse(self.source_file_gcs_uri,
-                                          collection='storage.objects')
-    dest_object = resources.REGISTRY.Parse(dest_uri,
-                                           collection='storage.objects')
-    with progress_tracker.ProgressTracker(
-        'Copying [{0}] to [{1}]'.format(self.source_file_gcs_uri, dest_uri)):
+    dest_uri = 'gs://{0}/tmpimage/{1}-{2}'.format(self.daisy_bucket,
+                                                  uuid.uuid4(), image_file)
+    src_object = resources.REGISTRY.Parse(
+        self.source_file_gcs_uri, collection='storage.objects')
+    dest_object = resources.REGISTRY.Parse(
+        dest_uri, collection='storage.objects')
+    with progress_tracker.ProgressTracker('Copying [{0}] to [{1}]'.format(
+        self.source_file_gcs_uri, dest_uri)):
       self.storage_client.Rewrite(src_object, dest_object)
     return dest_uri
 

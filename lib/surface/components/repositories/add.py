@@ -38,7 +38,7 @@ class Add(base.SilentCommand):
 
           If you are participating in a Trusted Tester program, you will be
           instructed on the location of repositories with additional versions of
-          one or more Cloud SDK components.
+          one or more Google Cloud CLI components.
       """,
       'EXAMPLES': """\
           To add the Trusted Tester component repository

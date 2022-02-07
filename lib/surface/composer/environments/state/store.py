@@ -22,6 +22,7 @@ import textwrap
 
 from googlecloudsdk.api_lib.composer import environments_util as environments_api_util
 from googlecloudsdk.api_lib.composer import operations_util as operations_api_util
+from googlecloudsdk.api_lib.composer import util as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.command_lib.composer import util as command_util
@@ -72,6 +73,10 @@ class StoreEnvironmentState(base.Command):
         kind='environment',
         is_async=True,
         details='with operation [{}]'.format(operation.name))
+
+    log.status.Print('If you want to see the result, run:')
+    log.status.Print('gcloud composer operations describe ' + operation.name)
+
     return operation
 
   def _SynchronousExecution(self, env_resource, operation):
@@ -81,6 +86,25 @@ class StoreEnvironmentState(base.Command):
           'Waiting for [{}] to be updated with [{}]'.format(
               env_resource.RelativeName(), operation.name),
           release_track=self.ReleaseTrack())
+
+      completed_operation = operations_api_util.GetService(
+          self.ReleaseTrack()).Get(
+              api_util.GetMessagesModule(self.ReleaseTrack())
+              .ComposerProjectsLocationsOperationsGetRequest(
+                  name=operation.name))
+
+      log.status.Print('\nIf you want to see the result once more, run:')
+      log.status.Print('gcloud composer operations describe ' + operation.name +
+                       '\n')
+
+      log.status.Print(
+          'If you want to see history of all operations to be able'
+          ' to display results of previous check-upgrade runs, run:')
+      log.status.Print('gcloud composer operations list\n')
+
+      log.status.Print('Response: ')
+
+      return completed_operation.response
     except command_util.Error as e:
       raise command_util.Error(
           'Failed to store the state of the environment [{}]: {}'.format(

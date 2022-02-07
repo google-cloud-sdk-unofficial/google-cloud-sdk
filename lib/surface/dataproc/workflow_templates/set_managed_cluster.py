@@ -49,6 +49,7 @@ To update managed cluster in a workflow template, run:
           If unspecified, the workflow template ID will be used.""")
     clusters.ArgsForClusterRef(
         parser,
+        dataproc,
         cls.Beta(),
         include_deprecated=cls.Beta(),
         include_gke_platform_args=False)

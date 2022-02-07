@@ -91,7 +91,7 @@ class Update(base.UpdateCommand):
       try:
         wp = workerpool_config.LoadWorkerpoolConfigFromPath(
             args.config_from_file, messages)
-        # Don't allow a worker pool config for hybrid worker pools in any other
+        # Don't allow a worker pool config for hybrid pools in any other
         # track but alpha.
         if release_track != base.ReleaseTrack.ALPHA:
           if wp.hybridPoolConfig is not None:
@@ -174,7 +174,26 @@ class UpdateBeta(Update):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(Update):
-  """Update a worker pool used by Google Cloud Build."""
+  """Update a private or hybrid pool used by Google Cloud Build."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        * Private pools
+
+        To change the machine type and disk size of a private pool named `pwp1`, run:
+
+          $ {command} pwp1 --region=us-central1 --worker-machine-type=e2-standard-2 --worker-disk-size=64GB
+
+        * Hybrid pools
+
+        To change the default build disk size and default build vcpu count of a hybrid pool named `hwp1`, run:
+
+          $ {command} hwp1 --region=us-west4 --default-build-disk-size=100GB --default-build-vcpu-count=3.5
+          """,
+  }
 
   @staticmethod
   def Args(parser):

@@ -148,8 +148,9 @@ class Login(base.Command):
   service accounts, the `--cred-file` flag must be specified with the path
   to the workload identity credential configuration file or service account key
   file (JSON).
-  Login with workload identity federation is not yet supported in other Cloud
-  SDK CLIs (e.g. `gsutil` and `bq`) and is only applicable to `gcloud` commands.
+  Login with workload identity federation is not yet supported in other Google
+  Cloud CLIs (e.g. `gsutil` and `bq`) and is only applicable to `gcloud`
+  commands.
   For more information on workload identity federation, see:
   [](https://cloud.google.com/iam/docs/workload-identity-federation).
 

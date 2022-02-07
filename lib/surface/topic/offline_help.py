@@ -29,7 +29,7 @@ class OfflineHelp(base.TopicCommand):
   online access:
 
     * Browse https://cloud.google.com/sdk/gcloud/reference/ for the most
-      recent Cloud SDK release online documents.
+      recent Google Cloud CLI release online documents.
 
     * Add the *--help* flag to any command. This will render a man style
       document in a terminal pager. The document is always up to date with the
@@ -48,10 +48,10 @@ class OfflineHelp(base.TopicCommand):
     * Generate and install *man*(1) style documents on a local host. More
       details on this below.
 
-  All of these methods have the same content, all generated from a Cloud SDK
-  `gcloud` installation. The last two are user maintained and can become out
+  All of these methods have the same content, all generated from a Google Cloud
+  CLI `gcloud` installation. The last two are user maintained and can become out
   of date. Either use them for one time offline access, or make them part of
-  your Cloud SDK installation/update routine.
+  your Google Cloud CLI installation/update routine.
 
   ### Generating offline HTML documents
 

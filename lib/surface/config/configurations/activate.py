@@ -36,9 +36,9 @@ class Activate(base.SilentCommand):
           configurations.
           """,
       'EXAMPLES': """\
-          To activate an existing named configuration, run:
+          To activate an existing configuration named `my-config`, run:
 
-            $ {command} my_config
+            $ {command} my-config
 
           To list all properties in the activated configuration, run:
 

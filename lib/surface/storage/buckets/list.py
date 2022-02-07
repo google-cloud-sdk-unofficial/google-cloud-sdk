@@ -38,15 +38,15 @@ class List(base.ListCommand):
 
       List all Google Cloud Storage buckets in default project:
 
-        $ *{command}*
+        $ {command}
 
       List buckets beginning with "b":
 
-        $ *{command}* gs://b*
+        $ {command} gs://b*
 
       List buckets with JSON formatting, only returning the "name" key:
 
-        $ *{command}* --format="json(name)"
+        $ {command} --format="json(name)"
       """,
   }
 

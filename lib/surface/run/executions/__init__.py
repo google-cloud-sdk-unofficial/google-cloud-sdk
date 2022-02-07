@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,17 +12,37 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Cloud Build Feature."""
+"""The gcloud run revisions group."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import exceptions
+from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import platforms
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
-class CloudBuild(base.Group):
-  """Manage the Cloud Build Hybrid Feature."""
-  pass
+class Executions(base.Group):
+  """View and manage your Cloud Run jobs executions.
+
+  This set of commands can be used to view and manage your Cloud Run jobs
+  executions.
+  """
+
+  detailed_help = {
+      'EXAMPLES':
+          """
+          To list your executions for a job, run:
+
+            $ {command} list --job=my-job
+      """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    """Adds --region flag."""
+    flags.AddRegionArg(parser)

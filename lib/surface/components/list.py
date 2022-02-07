@@ -25,9 +25,9 @@ from googlecloudsdk.core import log
 
 
 class List(base.ListCommand):
-  """List the status of all Cloud SDK components.
+  """List the status of all Google Cloud CLI components.
 
-  This command lists all the available components in the Cloud SDK. For
+  This command lists all the available components in the Google Cloud CLI. For
   each component, the command lists the following information:
 
   * Status on your local workstation: not installed, installed (and
@@ -38,7 +38,7 @@ class List(base.ListCommand):
   * Size of the component
 
   ## EXAMPLES
-  To list the status of all Cloud SDK components, run:
+  To list the status of all Google Cloud CLI components, run:
 
     $ {command}
 

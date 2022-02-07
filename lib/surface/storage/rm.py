@@ -110,6 +110,7 @@ class Rm(base.Command):
         ' of an object.')
 
     flags.add_precondition_flags(parser)
+    flags.add_continue_on_error_flag(parser)
 
   def Run(self, args):
     if args.stdin:
@@ -144,7 +145,8 @@ class Rm(base.Command):
         task_iterator_factory.object_iterator(),
         parallelizable=True,
         task_status_queue=task_status_queue,
-        progress_type=task_status.ProgressType.COUNT)
+        progress_type=task_status.ProgressType.COUNT,
+        continue_on_error=args.continue_on_error)
 
     bucket_iterator = plurality_checkable_iterator.PluralityCheckableIterator(
         task_iterator_factory.bucket_iterator())
@@ -156,7 +158,8 @@ class Rm(base.Command):
           bucket_iterator,
           parallelizable=True,
           task_status_queue=task_status_queue,
-          progress_type=task_status.ProgressType.COUNT)
+          progress_type=task_status.ProgressType.COUNT,
+          continue_on_error=args.continue_on_error)
     else:
       bucket_exit_code = 0
     self.exit_code = max(object_exit_code, bucket_exit_code)

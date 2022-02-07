@@ -17,6 +17,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
@@ -61,7 +62,6 @@ class CreateAlpha(base.CreateCommand):
     client = cloudbuild_util.GetClientInstance()
     messages = cloudbuild_util.GetMessagesModule()
     bbs = cloudbuild_util.BitbucketServerConfigFromArgs(args, False)
-
     parent = properties.VALUES.core.project.Get(required=True)
     # Use default region global until Proctor is fully regionalized.
     bbs_region = cloudbuild_util.DEFAULT_REGION
@@ -73,7 +73,9 @@ class CreateAlpha(base.CreateCommand):
     # Send the Create request
     created_op = client.projects_locations_bitbucketServerConfigs.Create(
         messages.CloudbuildProjectsLocationsBitbucketServerConfigsCreateRequest(
-            parent=parent_resource.RelativeName(), bitbucketServerConfig=bbs))
+            parent=parent_resource.RelativeName(),
+            bitbucketServerConfig=bbs,
+            bitbucketServerConfigId=args.name))
     op_resource = resources.REGISTRY.ParseRelativeName(
         created_op.name, collection='cloudbuild.projects.locations.operations')
     created_config = waiter.WaitFor(

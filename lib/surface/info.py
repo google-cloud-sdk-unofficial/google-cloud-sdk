@@ -70,7 +70,7 @@ class Info(base.Command):
     diagnostics.add_argument(
         '--run-diagnostics',
         action='store_true',
-        help='Run diagnostics on your installation of the Cloud SDK.')
+        help='Run diagnostics on your installation of the Google Cloud CLI.')
     diagnostics.add_argument(
         '--ignore-hidden-property-whitelist',
         action='store_true',

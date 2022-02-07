@@ -26,11 +26,13 @@
       api_version: v1alpha
       modify_request_hooks:
       - googlecloudsdk.command_lib.metastore.services.util:GenerateNetworkConfigFromSubnetList
+      - googlecloudsdk.command_lib.metastore.services.util:GenerateAuxiliaryVersionsConfigFromList
       - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfig
     BETA:
       api_version: v1beta
       modify_request_hooks:
       - googlecloudsdk.command_lib.metastore.services.util:GenerateNetworkConfigFromSubnetList
+      - googlecloudsdk.command_lib.metastore.services.util:GenerateAuxiliaryVersionsConfigFromList
       - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfig
     GA:
       api_version: v1
@@ -265,6 +267,64 @@
             - subnetwork: projects/{project_id}/regions/{region_id}/subnetworks/{subnetwork_id}
             - subnetwork: projects/{project_id}/regions/{region_id}/subnetworks/{subnetwork_id}
             ...
+    - group:
+        help_text: |
+          Auxiliary versions configuration for the dataproc metastore service. When specified,
+          a secondary Hive metastore service is created along with the primary service.
+        mutex: true
+        release_tracks: [ALPHA, BETA]
+        params:
+        - arg_name: auxiliary-versions
+          type: "arg_list"
+          help_text: |
+            The list of Hive metastore versions of the auxiliary service.
+            The auxiliary version must be less than the primary Hive metastore service's version.
+        - arg_name: auxiliary-versions-from-file
+          api_field: service.hiveMetastoreConfig.auxiliaryVersions
+          type: "googlecloudsdk.calliope.arg_parsers:YAMLFileContents:"
+          processor: googlecloudsdk.command_lib.metastore.services.util:LoadAuxiliaryVersionsConfigsFromYamlFile
+          help_text: |
+            Path to a YAML file containing the auxiliary versions configuration for
+            Dataproc Metastore instance. The file should contain a unique auxiliary service name and
+            auxiliary version that is lower than the primary service version. The primary version's
+            hive metastore configs are applied to the auxiliary version. Additional hive metastore
+            configs can be specified for the auxiliary version using "config_overrides". If the
+            metastore configs are the same, they will override the primary hive metastore configs.
+            The contents of the file should be structured as follows:
+
+            YAML:
+
+              -
+                name: aux-service1
+                version: x.y.z
+                config_overrides:
+                  key1: value1
+                  key2: value2
+                ...
+              -
+                name: aux-service2
+                version: x.y.z
+                config_overrides:
+                  key1: value1
+                  key2: value2
+                ...
+              ...
+    - arg_name: endpoint-protocol
+      release_tracks: [ALPHA, BETA]
+      help_text: |
+        The protocol to use for the metastore service endpoint.
+        If unspecified, defaults to `THRIFT`.
+      choices:
+      - arg_value: thrift
+        enum_value: THRIFT
+        help_text:  |
+          The legacy Apache `THRIFT` protocol.
+      - arg_value: grpc
+        enum_value: GRPC
+        help_text:  |
+          The modernized `GRPC` protocol.
+      default: thrift
+      api_field: service.hiveMetastoreConfig.endpointProtocol
     labels:
       api_field: service.labels
 

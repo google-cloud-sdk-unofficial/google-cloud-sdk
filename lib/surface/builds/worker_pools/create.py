@@ -97,7 +97,7 @@ class Create(base.CreateCommand):
       try:
         wp = workerpool_config.LoadWorkerpoolConfigFromPath(
             args.config_from_file, messages)
-        # Don't allow a worker pool config for hybrid worker pools in any other
+        # Don't allow a worker pool config for hybrid pools in any other
         # track but alpha.
         if release_track != base.ReleaseTrack.ALPHA:
           if wp.hybridPoolConfig is not None:
@@ -191,7 +191,37 @@ class CreateBeta(Create):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
-  """Create a worker pool for use by Google Cloud Build."""
+  """Create a private or hybrid pool for use by Google Cloud Build."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+
+        * Private pools
+
+        To create a private pool named `pwp1` in region `us-central1`, run:
+
+          $ {command} pwp1 --region=us-central1
+
+        To create a private pool in project `p1` in region `us-central1` where workers are of machine type
+        `e2-standard-2` and are peered to the VPC network `projects/123/global/networks/default` and have a disk size of
+        64GB, run:
+
+          $ {command} pwp1 --project=p1 --region=us-central1 --peered-network=projects/123/global/networks/default --worker-machine-type=e2-standard-2 --worker-disk-size=64GB
+
+        * Hybrid pools
+
+        To create a hybrid pool named `hwp1` out of Hub member named `foo` in region `us-west4`, run:
+
+          $ {command} hwp1 --region=us-west4 --membership=projects/123/locations/global/memberships/foo
+
+        To create a hybrid pool in project `p1` in region `us-west4` that requires 60 GB of disk size per build by default, run:
+
+          $ {command} hwp1 --region=us-west4 --membership=projects/123/locations/global/memberships/foo --default-build-disk-size=60GB
+          """,
+  }
 
   @staticmethod
   def Args(parser):

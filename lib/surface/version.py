@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command to print version information for Cloud SDK components.
+"""Command to print version information for Google Cloud CLI components.
 """
 
 from __future__ import absolute_import
@@ -28,11 +28,11 @@ from googlecloudsdk.core.updater import update_manager
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Version(base.Command):
-  """Print version information for Cloud SDK components."""
+  """Print version information for Google Cloud CLI components."""
 
   detailed_help = {
       'EXAMPLES': """
-          To print the version information for each installed Cloud SDK
+          To print the version information for each installed Google Cloud CLI
           components and print a message if updates are available, run:
 
             $ {command}
@@ -47,7 +47,7 @@ class Version(base.Command):
 
   def Run(self, args):
     if config.Paths().sdk_root:
-      # Components are only valid if this is a built Cloud SDK.
+      # Components are only valid if this is a built Google Cloud CLI.
       manager = update_manager.UpdateManager()
       versions = dict(manager.GetCurrentVersionsInformation())
     else:
@@ -61,6 +61,6 @@ class Version(base.Command):
       manager = update_manager.UpdateManager()
       if manager.UpdatesAvailable():
         log.status.write("""\
-Updates are available for some Cloud SDK components.  To install them,
+Updates are available for some Google Cloud CLI components.  To install them,
 please run:
   $ gcloud components update\n""")

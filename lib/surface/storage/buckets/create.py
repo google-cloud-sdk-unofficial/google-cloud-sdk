@@ -18,11 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.command_lib.storage import user_request_args_factory
 from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.storage.tasks.buckets import create_bucket_task
-from googlecloudsdk.core.util import iso_duration
 
 
 class Create(base.Command):
@@ -44,7 +45,7 @@ class Create(base.Command):
       [storage class](https://cloud.google.com/storage/docs/storage-classes) in
       the ``asia'' [location](https://cloud.google.com/storage/docs/locations):
 
-        $ {command} gs://my-bucket --storage-class=nearline --location=asia
+        $ {command} gs://my-bucket --default-storage-class=nearline --location=asia
       """,
   }
 
@@ -63,10 +64,10 @@ class Create(base.Command):
     parser.add_argument(
         '--uniform-bucket-level-access',
         '-b',
-        action='store_true',
+        action=arg_parsers.StoreTrueFalseAction,
         help='Turns on uniform bucket-level access setting. Default is False.')
     parser.add_argument(
-        '--storage-class',
+        '--default-storage-class',
         '-c',
         '-s',
         type=str,
@@ -75,7 +76,7 @@ class Create(base.Command):
               ' the bucket. If not specified, the default storage class'
               ' used by Cloud Storage is "Standard".'))
     parser.add_argument(
-        '--retention',
+        '--retention-period',
         help='Minimum [retention period](https://cloud.google.com'
         '/storage/docs/bucket-lock#retention-periods)'
         ' for objects stored in the bucket, for example'
@@ -85,16 +86,11 @@ class Create(base.Command):
         ' for Cloud Storage using the JSON API.')
 
   def Run(self, args):
-    resource = resource_reference.BucketResource(
+    resource = resource_reference.UnknownResource(
         storage_url.storage_url_from_string(args.url))
-    if args.location:
-      resource.location = args.location
-    if args.uniform_bucket_level_access:
-      resource.uniform_bucket_level_access = True
-    if args.storage_class:
-      resource.storage_class = args.storage_class
-    if args.retention:
-      resource.retention_period = int(iso_duration.Duration().Parse(
-          args.retention).total_seconds)
-
-    create_bucket_task.CreateBucketTask(resource).execute()
+    user_request_args = (
+        user_request_args_factory.get_user_request_args_from_command_args(
+            args, metadata_type=user_request_args_factory.MetadataType.BUCKET))
+    create_bucket_task.CreateBucketTask(
+        resource,
+        user_request_args=user_request_args).execute()

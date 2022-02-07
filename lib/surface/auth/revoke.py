@@ -55,8 +55,8 @@ class Revoke(base.Command):
   active account, effectively logging out of that account. If --all is given,
   the behaviors described above apply individually to each account in the list.
 
-  You can revoke credentials when you want to prevent gcloud and other Cloud
-  SDK tools from using the specified account. You do not need to revoke
+  You can revoke credentials when you want to prevent gcloud and other Google
+  Cloud CLI tools from using the specified account. You do not need to revoke
   credentials to switch between accounts.
   """
 

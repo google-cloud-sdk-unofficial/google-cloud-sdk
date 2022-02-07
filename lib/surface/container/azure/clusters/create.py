@@ -91,6 +91,7 @@ class Create(base.CreateCommand):
     flags.AddConfigEncryption(parser)
     flags.AddProxyConfig(parser)
     flags.AddFleetProject(parser)
+    flags.AddAdminUsers(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(command_util.CLUSTERS_FORMAT)
 
@@ -120,7 +121,9 @@ class Create(base.CreateCommand):
     main_volume_size = flags.GetMainVolumeSize(args)
     validate_only = flags.GetValidateOnly(args)
     tags = flags.GetTags(args)
-    admin_users = [properties.VALUES.core.account.Get()]
+    admin_users = args.admin_users if args.admin_users else [
+        properties.VALUES.core.account.Get()
+    ]
     async_ = getattr(args, "async_", False)
     fleet_project = flags.GetFleetProject(args)
     service_load_balancer_subnet_id = args.service_load_balancer_subnet_id
