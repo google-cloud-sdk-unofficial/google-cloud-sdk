@@ -788,6 +788,7 @@ class UpdateBeta(Update):
     flags.AddNAPNetworkTagsUpdate(group)
     flags.AddEnableImageStreamingFlag(group)
     flags.AddMaintenanceIntervalFlag(group)
+    flags.AddDataplaneV2Flag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -874,6 +875,7 @@ class UpdateBeta(Update):
     opts.nap_network_tags = args.nap_network_tags
     opts.enable_image_streaming = args.enable_image_streaming
     opts.maintenance_interval = args.maintenance_interval
+    opts.dataplane_v2 = args.enable_dataplane_v2
     return opts
 
 
@@ -951,6 +953,7 @@ class UpdateAlpha(Update):
     flags.AddNAPNetworkTagsUpdate(group)
     flags.AddEnableImageStreamingFlag(group)
     flags.AddMaintenanceIntervalFlag(group)
+    flags.AddDataplaneV2Flag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1033,5 +1036,5 @@ class UpdateAlpha(Update):
     opts.nap_network_tags = args.nap_network_tags
     opts.enable_image_streaming = args.enable_image_streaming
     opts.maintenance_interval = args.maintenance_interval
-
+    opts.dataplane_v2 = args.enable_dataplane_v2
     return opts

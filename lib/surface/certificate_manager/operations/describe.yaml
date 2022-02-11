@@ -19,5 +19,3 @@
     resource:
       help_text: Certificate Manager operation to describe.
       spec: !REF googlecloudsdk.command_lib.certificate_manager.resources:operation
-      removed_flags:
-      - location

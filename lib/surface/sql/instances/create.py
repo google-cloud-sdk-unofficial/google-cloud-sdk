@@ -153,13 +153,13 @@ def AddBaseArgs(parser):
       'instance',
       flag_overrides=kms_flag_overrides)
   flags.AddEnablePointInTimeRecovery(parser)
+  flags.AddNetwork(parser)
 
 
 def AddBetaArgs(parser):
   """Declare beta flag and positional arguments for this command parser."""
   flags.AddExternalMasterGroup(parser)
   flags.AddInstanceResizeLimit(parser)
-  flags.AddNetwork(parser)
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddCreateLabelsFlags(parser)
 

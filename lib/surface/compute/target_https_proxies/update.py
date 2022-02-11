@@ -244,7 +244,8 @@ class Update(base.SilentCommand):
           'to attach',
           name='certificate-map',
           positional=False,
-          required=False)
+          required=False,
+          with_location=False)
       resource_args.GetClearCertificateMapArgumentForOtherResource(
           'HTTPS proxy').AddToParser(map_group)
 

@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.transfer import jobs_util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.transfer import jobs_apitools_util
+from googlecloudsdk.command_lib.transfer import jobs_flag_util
 
 
 class Delete(base.Command):
@@ -43,6 +44,7 @@ class Delete(base.Command):
   @staticmethod
   def Args(parser):
     parser.add_argument('name', help='The name of the job you want to delete.')
+    jobs_flag_util.add_source_creds_flag(parser)
 
   def Run(self, args):
     client = apis.GetClientInstance('storagetransfer', 'v1')
@@ -52,5 +54,5 @@ class Delete(base.Command):
     existing_job.status = messages.TransferJob.StatusValueValuesEnum.DELETED
 
     return client.transferJobs.Patch(
-        jobs_apitools_util.generate_patch_transfer_job_message(
-            messages, existing_job))
+        jobs_apitools_util.generate_transfer_job_message(
+            args, messages, existing_job))

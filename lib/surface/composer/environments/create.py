@@ -454,9 +454,6 @@ class Create(base.Command):
           'Workloads Config flags introduced in Composer 2.X'
           ' cannot be used when creating Composer 1.X environments.')
 
-    # Connection subnetwork is currently unavailable in GA release track.
-    if release_track == base.ReleaseTrack.GA:
-      return
     if args.connection_subnetwork and is_composer_v1:
       raise command_util.InvalidUserInputError(
           _INVALID_OPTION_FOR_V1_ERROR_MSG.format(opt='connection-subnetwork'))
@@ -511,6 +508,7 @@ class Create(base.Command):
         cloud_sql_ipv4_cidr=args.cloud_sql_ipv4_cidr,
         composer_network_ipv4_cidr=args.composer_network_ipv4_cidr,
         web_server_access_control=self.web_server_access_control,
+        connection_subnetwork=args.connection_subnetwork,
         cloud_sql_machine_type=args.cloud_sql_machine_type,
         web_server_machine_type=args.web_server_machine_type,
         scheduler_cpu=args.scheduler_cpu,

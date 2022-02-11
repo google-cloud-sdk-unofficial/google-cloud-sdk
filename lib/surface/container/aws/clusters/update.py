@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.aws import clusters
+from googlecloudsdk.command_lib.container.aws import flags as aws_flags
 from googlecloudsdk.command_lib.container.aws import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
@@ -46,6 +47,12 @@ class Update(base.UpdateCommand):
     resource_args.AddAwsClusterResourceArg(parser, 'to update')
     flags.AddClusterVersion(parser, required=False)
     flags.AddValidateOnly(parser, 'update of the cluster')
+    flags.AddAdminUsers(parser, create=False)
+
+    aws_flags.AddInstanceType(parser)
+    aws_flags.AddRoleArn(parser, required=False)
+    aws_flags.AddRoleSessionName(parser)
+
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(clusters.CLUSTERS_FORMAT)
 

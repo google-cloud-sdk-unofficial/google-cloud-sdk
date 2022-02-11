@@ -35,6 +35,11 @@ class Monitor(base.Command):
       To monitor an operation, run:
 
         $ {command} OPERATION-NAME
+
+      If you're looking for specific error details, use the
+      "operations describe" command:
+
+        $ {parent_command} describe OPERATION-NAME
       """,
   }
 

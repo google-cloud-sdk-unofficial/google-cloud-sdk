@@ -20,6 +20,14 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage import user_request_args_factory
+from googlecloudsdk.command_lib.storage import wildcard_iterator
+from googlecloudsdk.command_lib.storage.tasks import task_executor
+from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
+from googlecloudsdk.command_lib.storage.tasks import task_status
+from googlecloudsdk.command_lib.storage.tasks.buckets import update_bucket_task
+
 
 _CORS_HELP_TEXT = """
 Sets the Cross-Origin Resource Sharing (CORS) configuration on a bucket.
@@ -91,7 +99,7 @@ class Update(base.Command):
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'url', type=str, help='The URL of the bucket to update.')
+        'url', nargs='+', type=str, help='The URLs of the buckets to update.')
     parser.add_argument(
         '--clear-cors',
         action='store_true',
@@ -107,19 +115,21 @@ class Update(base.Command):
         '--clear-default-encryption-key',
         action='store_true',
         help="Clears the bucket's default encryption key.")
-    parser.add_argument('--labels-file', help=_LABELS_HELP_TEXT)
-    parser.add_argument(
+    labels = parser.add_mutually_exclusive_group()
+    labels.add_argument('--labels-file', help=_LABELS_HELP_TEXT)
+    update_labels = labels.add_group()
+    update_labels.add_argument(
         '--update-labels',
         metavar='LABEL_KEYS_AND_VALUES',
         type=arg_parsers.ArgDict(),
         help='Add or update labels. Example:'
         ' --update-labels=key1=value1,key2=value2')
-    parser.add_argument(
+    update_labels.add_argument(
         '--remove-labels',
         metavar='LABEL_KEYS',
         type=arg_parsers.ArgList(),
         help='Remove labels by their key names.')
-    parser.add_argument(
+    labels.add_argument(
         '--clear-labels',
         action='store_true',
         help='Clear all labels associated with a bucket.')
@@ -212,7 +222,23 @@ class Update(base.Command):
     parser.add_argument(
         '--clear-web-error-page',
         help='Clear website error page if bucket is hosting website.')
+    flags.add_continue_on_error_flag(parser)
+
+  def update_task_iterator(self, args):
+    user_request_args = (
+        user_request_args_factory.get_user_request_args_from_command_args(
+            args, metadata_type=user_request_args_factory.MetadataType.BUCKET))
+    for url in args.url:
+      for resource in wildcard_iterator.get_wildcard_iterator(url):
+        yield update_bucket_task.UpdateBucketTask(
+            resource, user_request_args=user_request_args)
 
   def Run(self, args):
-    del args  # Unused.
-    raise NotImplementedError
+    task_status_queue = task_graph_executor.multiprocessing_context.Queue()
+    self.exit_code = task_executor.execute_tasks(
+        self.update_task_iterator(args),
+        parallelizable=True,
+        task_status_queue=task_status_queue,
+        progress_type=task_status.ProgressType.COUNT,
+        continue_on_error=args.continue_on_error,
+    )

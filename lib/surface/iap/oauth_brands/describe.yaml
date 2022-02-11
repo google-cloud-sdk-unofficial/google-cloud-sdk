@@ -1,9 +1,17 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: |
       Describe a Cloud OAuth brand.
     description: |
       *{command}* is used to describe a Cloud OAuth brand.
+    examples: |
+      To describe a Cloud OAuth brand with name NAME, run:
+
+        $ {command} NAME
+
+      To describe a Cloud OAuth brand with name NAME inside project PROJECT_ID, run:
+
+        $ {command} NAME --project=PROJECT_ID
 
   request:
     collection: iap.projects.brands

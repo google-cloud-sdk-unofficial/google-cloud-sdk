@@ -62,14 +62,14 @@ class Upload(base.Command):
     upload_req = messages.UploadAptArtifactRequest
     upload_request = upload_req()
 
-    request = messages.ArtifactregistryProjectsLocationsRepositoriesAptartifactsUploadRequest(
+    request = messages.ArtifactregistryProjectsLocationsRepositoriesAptArtifactsUploadRequest(
         uploadAptArtifactRequest=upload_request,
         parent=repo_ref.RelativeName())
 
     upload = transfer.Upload.FromFile(
         args.source, mime_type='application/vnd.debian.binary-package')
 
-    op_obj = client.projects_locations_repositories_aptartifacts.Upload(
+    op_obj = client.projects_locations_repositories_aptArtifacts.Upload(
         request, upload=upload)
 
     op = op_obj.operation
@@ -106,14 +106,14 @@ class UploadAlpha(Upload):
     upload_req = messages.GoogleDevtoolsArtifactregistryV1alpha1UploadAptArtifactRequest
     upload_request = upload_req()
 
-    request = messages.ArtifactregistryProjectsLocationsRepositoriesAptartifactsUploadRequest(
+    request = messages.ArtifactregistryProjectsLocationsRepositoriesAptArtifactsUploadRequest(
         googleDevtoolsArtifactregistryV1alpha1UploadAptArtifactRequest=upload_request,
         parent=repo_ref.RelativeName())
 
     upload = transfer.Upload.FromFile(
         args.source, mime_type='application/vnd.debian.binary-package')
 
-    op_obj = client.projects_locations_repositories_aptartifacts.Upload(
+    op_obj = client.projects_locations_repositories_aptArtifacts.Upload(
         request, upload=upload)
 
     op = op_obj.operation

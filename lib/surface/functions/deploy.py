@@ -102,11 +102,10 @@ class DeployBeta(Deploy):
 
     # Add additional flags for GCFv2
     flags.AddRunServiceAccountFlag(parser, track)
-    flags.AddSignatureTypeFlag(parser)
     flags.AddTriggerLocationFlag(parser, track)
     flags.AddTriggerServiceAccountFlag(parser, track)
     flags.AddGen2Flag(parser, track)
-    flags.AddServeAllTrafficLatestRevisionFlag(parser, track)
+    flags.AddServeAllTrafficLatestRevisionFlag(parser)
 
   def Run(self, args):
     if flags.ShouldUseGen2():

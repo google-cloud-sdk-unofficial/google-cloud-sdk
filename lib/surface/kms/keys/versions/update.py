@@ -31,8 +31,9 @@ class Update(base.UpdateCommand):
   r"""Update a key version.
 
   {command} can be used to update the key versions. Updates can be made to the
-  the key versions's state (enabling or disabling it), and to its external key
-  URI (if the key version has protection level EXTERNAL).
+  the key versions's state (enabling or disabling it), to its external key
+  URI (if the key version has protection level EXTERNAL), or to its ekm
+  connection key path (if the key version has protection level EXTERNAL_VPC).
 
   ## EXAMPLES
 
@@ -59,12 +60,21 @@ class Update(base.UpdateCommand):
                   --keyring=fellowship \
                   --key=frodo \
                   --external-key-uri=https://example.kms/v0/some/key/path
+
+  The following command updates the ekm connection key path of version 8 of key
+  `bilbo` within keyring `fellowship` and location `us-east1`:
+
+    $ {command} 8 --location=us-east1 \
+                  --keyring=fellowship \
+                  --key=bilbo \
+                  --ekm-connection-key-path=v0/some/key/path
   """
 
   @staticmethod
   def Args(parser):
     flags.AddKeyVersionResourceArgument(parser, 'to describe')
     flags.AddExternalKeyUriFlag(parser)
+    flags.AddEkmConnectionKeyPathFlag(parser)
     flags.AddStateFlag(parser)
 
   def ProcessFlags(self, args):
@@ -72,13 +82,17 @@ class Update(base.UpdateCommand):
 
     if args.external_key_uri:
       fields_to_update.append('externalProtectionLevelOptions.externalKeyUri')
+    if args.ekm_connection_key_path:
+      fields_to_update.append(
+          'externalProtectionLevelOptions.ekmConnectionKeyPath')
     if args.state:
       fields_to_update.append('state')
 
     # Raise an exception when no update field is specified.
     if not fields_to_update:
       raise kms_exceptions.UpdateError(
-          'An error occured: --external-key-uri or --state must be specified.')
+          'An error occurred: --external-key-uri or --ekm-connection-key-path'
+          ' or --state must be specified.')
 
     return fields_to_update
 
@@ -93,7 +107,8 @@ class Update(base.UpdateCommand):
                 args.state),
             externalProtectionLevelOptions=messages
             .ExternalProtectionLevelOptions(
-                externalKeyUri=args.external_key_uri)))
+                externalKeyUri=args.external_key_uri,
+                ekmConnectionKeyPath=args.ekm_connection_key_path)))
 
     req.updateMask = ','.join(fields_to_update)
 
@@ -105,6 +120,13 @@ class Update(base.UpdateCommand):
       raise kms_exceptions.UpdateError(
           'External key URI updates are only available for key versions '
           'with EXTERNAL protection level')
+
+  def CheckKeyIsExternalVpc(self, key_version, messages):
+    if (key_version.protectionLevel !=
+        messages.CryptoKeyVersion.ProtectionLevelValueValuesEnum.EXTERNAL_VPC):
+      raise kms_exceptions.UpdateError(
+          'EkmConnection key path updates are only available for key versions '
+          'with EXTERNAL_VPC protection level')
 
   def Run(self, args):
     # pylint: disable=line-too-long
@@ -123,6 +145,9 @@ class Update(base.UpdateCommand):
     # Check that this key version's ProtectionLevel is EXTERNAL
     if args.external_key_uri:
       self.CheckKeyIsExternal(key_version, messages)
+
+    if args.ekm_connection_key_path:
+      self.CheckKeyIsExternalVpc(key_version, messages)
 
     # Make update request
     update_req = self.CreateRequest(args, messages, fields_to_update)

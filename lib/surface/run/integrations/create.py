@@ -57,16 +57,16 @@ class Create(base.Command):
     flags.AddParametersArg(parser)
 
   def Run(self, args):
-    """Create or Update application from YAML."""
+    """Creates a Cloud Run Integration."""
 
     integration_type = args.type
     service = args.service
     integration_name = args.name
     parameters = flags.GetParameters(args)
-    flags.ValidateParameters(parameters, integration_type)
+    flags.ValidateParameters(integration_type, parameters)
 
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, self.ReleaseTrack())
     with run_apps_operations.Connect(conn_context) as client:
-      return client.CreateIntegration(
+      client.CreateIntegration(
           integration_type, parameters, name=integration_name, service=service)

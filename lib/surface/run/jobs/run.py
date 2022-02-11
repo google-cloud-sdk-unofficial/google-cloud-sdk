@@ -76,22 +76,20 @@ class Run(base.Command):
         raise serverless_exceptions.JobNotFoundError(
             'Cannot find job [{}].'.format(job_ref.Name()))
       header_msg = '{} execution...'.format(
-          'Running' if args.wait_for_completion else 'Starting')
+          'Running' if args.wait else 'Starting')
       with progress_tracker.StagedProgressTracker(
           header_msg,
-          stages.ExecutionStages(include_completion=args.wait_for_completion),
+          stages.ExecutionStages(include_completion=args.wait),
           failure_message='Job failed',
           suppress_output=args.async_) as tracker:
-        e = operations.RunJob(
-            job_ref, args.wait_for_completion, tracker, asyn=args.async_)
+        e = operations.RunJob(job_ref, args.wait, tracker, asyn=args.async_)
 
       if args.async_:
         pretty_print.Success(
             'Execution [{{bold}}{execution}{{reset}}] is being'
             ' started asynchronously.'.format(execution=e.name))
       else:
-        operation = ('completed'
-                     if args.wait_for_completion else 'started running')
+        operation = 'completed' if args.wait else 'started running'
 
         pretty_print.Success('Execution [{{bold}}{execution}{{reset}}] has '
                              'successfully {operation}.'.format(

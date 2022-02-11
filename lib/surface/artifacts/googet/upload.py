@@ -63,13 +63,13 @@ class Upload(base.Command):
     upload_req = messages.GoogleDevtoolsArtifactregistryV1alpha1UploadGooGetArtifactRequest
     upload_request = upload_req()
 
-    request = messages.ArtifactregistryProjectsLocationsRepositoriesGoogetartifactsUploadRequest(
+    request = messages.ArtifactregistryProjectsLocationsRepositoriesGoogetArtifactsUploadRequest(
         googleDevtoolsArtifactregistryV1alpha1UploadGooGetArtifactRequest=upload_request,
         parent=repo_ref.RelativeName())
 
     upload = transfer.Upload.FromFile(args.source, mime_type='application/gzip')
 
-    op_obj = client.projects_locations_repositories_googetartifacts.Upload(
+    op_obj = client.projects_locations_repositories_googetArtifacts.Upload(
         request, upload=upload)
 
     op = op_obj.operation

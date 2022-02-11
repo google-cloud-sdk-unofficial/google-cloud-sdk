@@ -20,7 +20,6 @@
     resource:
       help_text: The location (defaults to global) of the resources.
       spec: !REF googlecloudsdk.command_lib.certificate_manager.resources:location
-      removed_flags: [location]
 
   output:
     format: |

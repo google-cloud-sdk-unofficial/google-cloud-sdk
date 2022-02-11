@@ -24,6 +24,7 @@
     collection: metastore.projects.locations.services
     modify_request_hooks:
     - googlecloudsdk.command_lib.metastore.services.util:SetServiceRequestUpdateHiveMetastoreConfigs
+    - googlecloudsdk.command_lib.metastore.services.util:GenerateUpdateAuxiliaryVersionsConfigs
     - googlecloudsdk.command_lib.metastore.services.util:UpdateServiceMaskHook
     - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfig
 
@@ -178,6 +179,60 @@
         help_text:  |
           The modernized `GRPC` protocol.
       api_field: service.hiveMetastoreConfig.endpointProtocol
+    - group:
+        help_text: |
+          Auxiliary versions configuration for the Dataproc Metastore service. When specified,
+          a secondary Hive metastore service is created along with the primary service.
+        mutex: true
+        params:
+        - arg_name: update-auxiliary-versions-from-file
+          release_tracks: [ALPHA, BETA]
+          api_field: service.hiveMetastoreConfig.auxiliaryVersions
+          type: "googlecloudsdk.calliope.arg_parsers:YAMLFileContents:"
+          processor: googlecloudsdk.command_lib.metastore.services.util:LoadAuxiliaryVersionsConfigsFromYamlFile
+          help_text: |
+            Path to a YAML file containing the auxiliary versions configuration for
+            Dataproc Metastore instance. The file should contain a unique auxiliary service name and
+            auxiliary version that is lower than the primary service version. The primary version's
+            Hive metastore configs are applied to the auxiliary version. Additional Hive metastore
+            configs can be specified for the auxiliary version using "config_overrides". If a
+            specified config property has already been overridden in the primary Hive metastore
+            version's configs, the auxiliary version's override takes precedence.
+            The contents of the file should be structured as follows:
+
+            YAML:
+
+            ```
+              - name: aux-service1
+                version: x.y.z
+                config_overrides:
+                  key1: value1
+                  key2: value2
+                ...
+              - name: aux-service2
+                version: x.y.z
+                config_overrides:
+                  key1: value1
+                  key2: value2
+                ...
+              ...
+            ```
+        - group:
+            params:
+            - arg_name: add-auxiliary-versions
+              release_tracks: [ALPHA, BETA]
+              type: "arg_list"
+              help_text: |
+                Comma-separated list of auxiliary Hive metastore versions to deploy.
+                Auxiliary Hive metastore versions must be less than the primary Hive metastore
+                service's version.
+            - arg_name: clear-auxiliary-versions
+              release_tracks: [ALPHA, BETA]
+              action: store_true
+              help_text: |
+                Clears the existing auxiliary services attached to the primary Hive metastore
+                services. If --add-auxiliary-versions is also specified, --clear-auxiliary-versions
+                is applied first.
     labels:
       api_field: service.labels
 

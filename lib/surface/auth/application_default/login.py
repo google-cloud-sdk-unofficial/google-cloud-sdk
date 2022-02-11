@@ -76,13 +76,7 @@ class Login(base.Command):
   @staticmethod
   def Args(parser):
     """Set args for gcloud auth application-default login."""
-
-    parser.add_argument(
-        '--launch-browser',
-        action='store_true',
-        default=True,
-        help='Launch a browser for authorization. If not enabled or DISPLAY '
-        'variable is not set, prints a URL to standard output to be copied.')
+    flags.AddNoLaunchBrowserFlag(parser)
     parser.add_argument(
         '--client-id-file',
         help='A file containing your own client id to use to login. If '

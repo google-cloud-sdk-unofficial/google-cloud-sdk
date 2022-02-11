@@ -100,7 +100,7 @@ class Describe(hubbase.DescribeCommand):
 
     # Format the workerpool name for display
     try:
-      wp.name = cloudbuild_util.RegionalWorkerPoolShortName(wp.name)
+      wp.name = cloudbuild_util.WorkerPoolShortName(wp.name)
     except ValueError:
       pass  # Must be an old version.
 

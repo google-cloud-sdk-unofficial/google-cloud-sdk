@@ -1,9 +1,13 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: |
       List Cloud IAP OAuth clients in the Cloud OAuth brand.
     description: |
       *{command}* is used to list Cloud IAP OAuth clients in a Cloud OAuth brand.
+    examples: |
+      To list a Cloud OAuth client for the current project, run:
+
+        $ {command} BRAND
 
   request:
     collection: iap.projects.brands.identityAwareProxyClients

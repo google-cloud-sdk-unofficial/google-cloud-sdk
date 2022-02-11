@@ -86,13 +86,7 @@ class Create(base.Command):
         help='Query Engine to be used for the Sql Query.',
         required=True)
 
-    async_group = parser.add_group(
-        required=False,
-        mutex=True,
-        help='Run the command Async or Only validate the command')
-
-    base.ASYNC_FLAG.AddToParser(async_group)
-    async_group.add_argument(
+    parser.add_argument(
         '--validate-only',
         action='store_true',
         default=False,
@@ -113,9 +107,9 @@ class Create(base.Command):
     # and returned in response.
     lake_ref = args.CONCEPTS.lake.Parse()
     dataplex_client = dataplex_util.GetClientInstance()
-    create_req_op = dataplex_client.projects_locations_lakes_content.Create(
+    content_response = dataplex_client.projects_locations_lakes_contentitems.Create(
         dataplex_util.GetMessageModule(
-        ).DataplexProjectsLocationsLakesContentCreateRequest(
+        ).DataplexProjectsLocationsLakesContentitemsCreateRequest(
             parent=lake_ref.RelativeName(),
             validateOnly=args.validate_only,
             googleCloudDataplexV1Content=content
@@ -126,15 +120,7 @@ class Create(base.Command):
       log.status.Print('Validation complete.')
       return
 
-    async_ = getattr(args, 'async_', False)
-    if not async_:
-      response = content.WaitForOperation(create_req_op)
-      log.CreatedResource(
-          response.name,
-          details='Content created in lake [{0}] in project [{1}] with location [{2}]'
-          .format(lake_ref.lakesId, lake_ref.projectsId, lake_ref.locationsId))
-      return
-
-    log.status.Print(
-        'Creating content with path [{0}] and operation [{1}].'.format(
-            args.path, create_req_op.name))
+    log.CreatedResource(
+        content_response.name,
+        details='Content created in lake [{0}] in project [{1}] with location [{2}]'
+        .format(lake_ref.lakesId, lake_ref.projectsId, lake_ref.locationsId))

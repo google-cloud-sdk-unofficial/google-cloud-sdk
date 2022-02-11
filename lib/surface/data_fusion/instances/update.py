@@ -51,7 +51,7 @@ class Update(base.UpdateCommand):
   }
 
   # REST API Field Names for the updateMask
-  FIELD_PATH_ENABLE_OPTIONS = 'enableOptions'
+  FIELD_PATH_OPTIONS = 'options'
   FIELD_PATH_ENABLE_RBAC = 'enableRbac'
   FIELD_PATH_ENABLE_STACKDRIVER_LOGGING = 'enableStackdriverLogging'
   FIELD_PATH_ENABLE_STACKDRIVER_MONITORING = 'enableStackdriverMonitoring'
@@ -95,7 +95,7 @@ class Update(base.UpdateCommand):
     fields_to_update = []
     if args.IsSpecified('options'):
       options = args.options
-      fields_to_update.append(self.FIELD_PATH_ENABLE_OPTIONS)
+      fields_to_update.append(self.FIELD_PATH_OPTIONS)
     if args.IsSpecified('enable_rbac'):
       fields_to_update.append(self.FIELD_PATH_ENABLE_RBAC)
       enable_rbac = args.enable_rbac

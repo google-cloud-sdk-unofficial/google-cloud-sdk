@@ -96,7 +96,7 @@ class List(base.ListCommand):
         if wp.hybridPoolConfig is not None:
           wp_list.remove(wp)
       try:
-        wp.name = cloudbuild_util.RegionalWorkerPoolShortName(wp.name)
+        wp.name = cloudbuild_util.WorkerPoolShortName(wp.name)
       except ValueError:
         pass  # Must be an old version.
 
@@ -203,7 +203,7 @@ class ListAlpha(List):
       elif wp.hybridPoolConfig is not None:
         wp_type = cloudbuild_util.WorkerpoolTypes.HYBRID.name.capitalize()
       try:
-        wp.name = cloudbuild_util.RegionalWorkerPoolShortName(wp.name)
+        wp.name = cloudbuild_util.WorkerPoolShortName(wp.name)
       except ValueError:
         pass  # Must be an old version.
       wp_out.append({'wp': wp, 'type': wp_type})

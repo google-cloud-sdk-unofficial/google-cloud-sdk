@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.transfer import jobs_apitools_util
 from googlecloudsdk.command_lib.transfer import jobs_flag_util
 
 
-def _clear_fields(args, job):
+def _clear_fields(args, messages, job):
   """Removes fields from TransferJob based on clear flags."""
   if args.clear_description:
     job.description = None
@@ -45,21 +45,57 @@ def _clear_fields(args, job):
     job.transferSpec.gcsIntermediateDataLocation = None
   if args.clear_manifest_file:
     job.transferSpec.transferManifest = None
-  if args.clear_include_prefixes:
-    job.transferSpec.objectConditions.includePrefixes = []
-  if args.clear_exclude_prefixes:
-    job.transferSpec.objectConditions.excludePrefixes = []
-  if args.clear_include_modified_before_absolute:
-    job.transferSpec.objectConditions.lastModifiedBefore = None
-  if args.clear_include_modified_after_absolute:
-    job.transferSpec.objectConditions.lastModifiedSince = None
-  if args.clear_include_modified_before_relative:
-    job.transferSpec.objectConditions.minTimeElapsedSinceLastModification = None
-  if args.clear_include_modified_after_relative:
-    job.transferSpec.objectConditions.maxTimeElapsedSinceLastModification = None
-  if args.clear_delete_from:
-    job.transferSpec.transferOptions.deleteObjectsFromSourceAfterTransfer = None
-    job.transferSpec.transferOptions.deleteObjectsUniqueInSink = None
+
+  if getattr(job.transferSpec, 'objectConditions', None):
+    object_conditions = job.transferSpec.objectConditions
+    if args.clear_include_prefixes:
+      object_conditions.includePrefixes = []
+    if args.clear_exclude_prefixes:
+      object_conditions.excludePrefixes = []
+    if args.clear_include_modified_before_absolute:
+      object_conditions.lastModifiedBefore = None
+    if args.clear_include_modified_after_absolute:
+      object_conditions.lastModifiedSince = None
+    if args.clear_include_modified_before_relative:
+      object_conditions.minTimeElapsedSinceLastModification = None
+    if args.clear_include_modified_after_relative:
+      object_conditions.maxTimeElapsedSinceLastModification = None
+
+    if object_conditions == messages.ObjectConditions():
+      job.transferSpec.objectConditions = None
+
+  if getattr(job.transferSpec, 'transferOptions', None):
+    transfer_options = job.transferSpec.transferOptions
+    if args.clear_delete_from:
+      transfer_options.deleteObjectsFromSourceAfterTransfer = None
+      transfer_options.deleteObjectsUniqueInSink = None
+    if args.clear_delete_from:
+      transfer_options.deleteObjectsFromSourceAfterTransfer = None
+      transfer_options.deleteObjectsUniqueInSink = None
+
+    if transfer_options.metadataOptions:
+      existing_metadata_options = transfer_options.metadataOptions
+      new_metadata_options = existing_metadata_options
+
+      if args.clear_preserve_metadata:
+        new_metadata_options = messages.MetadataOptions()
+        if (existing_metadata_options.storageClass != messages.MetadataOptions
+            .StorageClassValueValuesEnum.STORAGE_CLASS_PRESERVE):
+          # Maintain custom values that aren't the preserve flag.
+          new_metadata_options.storageClass = (
+              existing_metadata_options.storageClass)
+
+      if args.clear_custom_storage_class:
+        new_metadata_options.storageClass = None
+
+      if new_metadata_options == messages.MetadataOptions():
+        transfer_options.metadataOptions = None
+      else:
+        transfer_options.metadataOptions = new_metadata_options
+
+    if transfer_options == messages.TransferOptions():
+      job.transferSpec.transferOptions = None
+
   if args.clear_notification_config:
     job.notificationConfig = None
   if args.clear_notification_event_types:
@@ -104,7 +140,7 @@ class Update(base.Command):
     messages = apis.GetMessagesModule('storagetransfer', 'v1')
 
     existing_job = jobs_util.api_get(args.name)
-    _clear_fields(args, existing_job)
+    _clear_fields(args, messages, existing_job)
 
     return client.transferJobs.Patch(
         jobs_apitools_util.generate_transfer_job_message(

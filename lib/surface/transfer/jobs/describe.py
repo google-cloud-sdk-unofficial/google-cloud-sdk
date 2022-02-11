@@ -37,6 +37,13 @@ class Describe(base.Command):
       To describe a job, run:
 
         $ {command} JOB-NAME
+
+      If you're looking for recent error details, use the "latestOperationName"
+      returned by this command as input to the "operations describe" command:
+
+        $ {command} JOB-NAME --format="json(latestOperationName)"
+
+        $ {grandparent_command} operations describe OPERATION-NAME
       """,
   }
 

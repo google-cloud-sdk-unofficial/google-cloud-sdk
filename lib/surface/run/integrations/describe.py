@@ -22,7 +22,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags as run_flags
 from googlecloudsdk.command_lib.run.integrations import flags
+from googlecloudsdk.command_lib.run.integrations import integration_printer
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
+from googlecloudsdk.core.resource import resource_printer
 
 
 @base.Hidden
@@ -52,6 +54,12 @@ class Describe(base.DescribeCommand):
       parser: An argparse.ArgumentParser.
     """
     flags.AddNamePositionalArg(parser)
+    resource_printer.RegisterFormatter(
+        integration_printer.INTEGRATION_PRINTER_FORMAT,
+        integration_printer.IntegrationPrinter,
+        hidden=True)
+    parser.display_info.AddFormat(
+        integration_printer.INTEGRATION_PRINTER_FORMAT)
 
   def Run(self, args):
     """Describe an integration type."""
@@ -61,4 +69,12 @@ class Describe(base.DescribeCommand):
     with run_apps_operations.Connect(conn_context) as client:
       resource_config = client.GetIntegration(name)
       resource_status = client.GetIntegrationStatus(name)
-      return {'resource': resource_config, 'status': resource_status}
+      resource_type = client.GetIntegrationTypeFromConfig(resource_config)
+      integration_type = client.GetIntegrationType(resource_type)
+      return {
+          'name': name,
+          'region': conn_context.region,
+          'type': integration_type,
+          'config': resource_config,
+          'status': resource_status
+      }

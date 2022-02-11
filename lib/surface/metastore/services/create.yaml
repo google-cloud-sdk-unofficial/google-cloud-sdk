@@ -269,7 +269,7 @@
             ...
     - group:
         help_text: |
-          Auxiliary versions configuration for the dataproc metastore service. When specified,
+          Auxiliary versions configuration for the Dataproc Metastore service. When specified,
           a secondary Hive metastore service is created along with the primary service.
         mutex: true
         release_tracks: [ALPHA, BETA]
@@ -277,8 +277,8 @@
         - arg_name: auxiliary-versions
           type: "arg_list"
           help_text: |
-            The list of Hive metastore versions of the auxiliary service.
-            The auxiliary version must be less than the primary Hive metastore service's version.
+            Comma-separated list of auxiliary Hive metastore versions to deploy. Auxiliary Hive
+            metastore versions must be less than the primary Hive metastore service's version.
         - arg_name: auxiliary-versions-from-file
           api_field: service.hiveMetastoreConfig.auxiliaryVersions
           type: "googlecloudsdk.calliope.arg_parsers:YAMLFileContents:"
@@ -287,28 +287,29 @@
             Path to a YAML file containing the auxiliary versions configuration for
             Dataproc Metastore instance. The file should contain a unique auxiliary service name and
             auxiliary version that is lower than the primary service version. The primary version's
-            hive metastore configs are applied to the auxiliary version. Additional hive metastore
-            configs can be specified for the auxiliary version using "config_overrides". If the
-            metastore configs are the same, they will override the primary hive metastore configs.
+            Hive metastore configs are applied to the auxiliary version. Additional Hive metastore
+            configs can be specified for the auxiliary version using "config_overrides". If a
+            specified config property has already been overridden in the primary Hive metastore
+            version's configs, the auxiliary version's override takes precedence.
             The contents of the file should be structured as follows:
 
             YAML:
 
-              -
-                name: aux-service1
+            ```
+              - name: aux-service1
                 version: x.y.z
                 config_overrides:
                   key1: value1
                   key2: value2
                 ...
-              -
-                name: aux-service2
+              - name: aux-service2
                 version: x.y.z
                 config_overrides:
                   key1: value1
                   key2: value2
                 ...
               ...
+            ```
     - arg_name: endpoint-protocol
       release_tracks: [ALPHA, BETA]
       help_text: |

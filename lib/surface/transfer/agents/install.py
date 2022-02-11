@@ -107,6 +107,11 @@ to update and may require a page refresh):
 
 https://console.cloud.google.com/transfer/on-premises/agent-pools/pool/\
 {pool}/agents?project={project}
+
+If your agent does not appear in the pool, check its local logs by running
+"docker container logs [container ID]". The container ID is the string of random
+characters printed by step [2/3]. The container ID can also be found by running
+"docker container list".
 """
 
 
@@ -261,6 +266,12 @@ class Install(base.Command):
 
   @staticmethod
   def Args(parser):
+    parser.add_argument(
+        '--pool',
+        required=True,
+        help='The agent pool to associate with the newly installed agent.'
+        ' When creating transfer jobs, the agent pool parameter will determine'
+        ' which agents are activated.')
     parser.add_argument('--count', type=int, help=COUNT_FLAG_HELP_TEXT)
     parser.add_argument('--creds-file', help=CREDS_FILE_FLAG_HELP_TEXT)
     parser.add_argument(
@@ -286,11 +297,6 @@ class Install(base.Command):
         metavar='MOUNT-DIRECTORIES',
         help=MOUNT_DIRECTORIES_HELP_TEXT)
     parser.add_argument('--proxy', help=PROXY_FLAG_HELP_TEXT)
-    parser.add_argument(
-        '--pool',
-        default='transfer_service_default',
-        help='The agent pool associated with the filesystem for'
-        ' which this agent will handle transfer work.')
 
   def Run(self, args):
     if args.count is not None and args.count < 1:

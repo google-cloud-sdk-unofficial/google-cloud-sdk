@@ -45,7 +45,7 @@ class Update(base.Command):
 
   @staticmethod
   def Args(parser):
-    resource_args.AddContentResourceArg(parser, 'to Update a Content to.')
+    resource_args.AddContentitemResourceArg(parser, 'to Update a Content to.')
 
     parser.add_argument('--description', help='Description of the Content')
     parser.add_argument('--data-text', help='Content data in string format')
@@ -75,13 +75,7 @@ class Update(base.Command):
         type=arg_utils.ChoiceToEnumName,
         help='Query Engine to be used for the Sql Query.')
 
-    async_group = parser.add_group(
-        required=False,
-        mutex=True,
-        help='Run the command Async or Only validate the command')
-
-    base.ASYNC_FLAG.AddToParser(async_group)
-    async_group.add_argument(
+    parser.add_argument(
         '--validate-only',
         action='store_true',
         default=False,
@@ -99,9 +93,9 @@ class Update(base.Command):
 
     content_ref = args.CONCEPTS.content.Parse()
     dataplex_client = dataplex_util.GetClientInstance()
-    update_req_op = dataplex_client.projects_locations_lakes_content.Patch(
+    dataplex_client.projects_locations_lakes_contentitems.Patch(
         dataplex_util.GetMessageModule(
-        ).DataplexProjectsLocationsLakesContentPatchRequest(
+        ).DataplexProjectsLocationsLakesContentitemsPatchRequest(
             name=content_ref.RelativeName(),
             validateOnly=args.validate_only,
             updateMask=u','.join(update_mask),
@@ -112,11 +106,4 @@ class Update(base.Command):
       log.status.Print('Validation complete.')
       return
 
-    async_ = getattr(args, 'async_', False)
-    if not async_:
-      content.WaitForOperation(update_req_op)
-      log.UpdatedResource(content_ref, details='Operation was sucessful.')
-      return
-
-    log.status.Print('Updating [{0}] with operation [{1}].'.format(
-        content_ref, update_req_op.name))
+    log.UpdatedResource(content_ref)

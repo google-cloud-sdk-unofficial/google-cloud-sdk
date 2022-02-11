@@ -135,7 +135,7 @@ class Login(base.Command):
   Use `gcloud auth list` to view credentialed accounts.
 
   If you'd rather authorize without a web browser but still interact with
-  the command line, use the `--no-launch-browser` flag. To authorize without
+  the command line, use the `--no-browser` flag. To authorize without
   a web browser and non-interactively, create a service account with the
   appropriate scopes using the
   [Google Cloud Console](https://console.cloud.google.com) and use
@@ -171,13 +171,7 @@ class Login(base.Command):
   @staticmethod
   def Args(parser):
     """Set args for gcloud auth."""
-
-    parser.add_argument(
-        '--launch-browser',
-        action='store_true', default=True, dest='launch_browser',
-        help='Launch a browser for authorization. If not enabled or if it '
-        'is not possible to launch a browser, prints a URL to standard output '
-        'to be copied.')
+    auth_flags.AddNoLaunchBrowserFlag(parser)
     parser.add_argument(
         '--activate', action='store_true', default=True,
         help='Set the new account to active.')

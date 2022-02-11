@@ -36,6 +36,13 @@ class Monitor(base.Command):
       To monitor a job, run:
 
         $ {command} JOB-NAME
+
+      If you're looking for recent error details, use the "Operation name"
+      returned by this command as input to the "operations describe" command:
+
+        $ {command} JOB-NAME
+
+        $ {grandparent_command} operations describe OPERATION-NAME
       """,
   }
 

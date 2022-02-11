@@ -60,6 +60,10 @@ class Update(base.Command):
     $ {command} --organization=[ORGANIZATION_ID]
     --storage-location=[LOCATION_ID]
 
+  To update storage location for the Logs Router for a folder, run:
+
+    $ {command} --folder=[FOLDER_ID] --storage-location=[LOCATION_ID]
+
   To disable default sink for the Logs Router for an organization, run:
 
     $ {command} --organization=[ORGANIZATION_ID] --disable-default-sink=true
@@ -72,12 +76,20 @@ class Update(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    parser.add_argument(
+    parent_group = parser.add_mutually_exclusive_group(required=True)
+    parent_group.add_argument(
         '--organization',
-        required=True,
+        required=False,
         metavar='ORGANIZATION_ID',
         completer=completers.OrganizationCompleter,
         help='Organization to update Logs Router settings for.')
+
+    parent_group.add_argument(
+        '--folder',
+        required=False,
+        metavar='FOLDER_ID',
+        help='Folder to update Logs Router settings for.')
+
     parser.add_argument(
         '--storage-location',
         required=False,
@@ -147,8 +159,8 @@ class Update(base.Command):
           parameter_names, 'Please specify at least one property to update.')
 
     parent_name = util.GetParentFromArgs(args)
-    return util.GetClient().organizations.UpdateSettings(
-        util.GetMessages().LoggingOrganizationsUpdateSettingsRequest(
+    return util.GetClient().v2.UpdateSettings(
+        util.GetMessages().LoggingUpdateSettingsRequest(
             name=parent_name,
             settings=util.GetMessages().Settings(**settings),
             updateMask=','.join(update_mask)))

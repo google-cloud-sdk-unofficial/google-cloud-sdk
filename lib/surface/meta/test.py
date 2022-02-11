@@ -31,7 +31,9 @@ from googlecloudsdk.calliope import parser_errors
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import execution_utils
+from googlecloudsdk.core import log
 from googlecloudsdk.core import module_util
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 
@@ -107,6 +109,10 @@ class Test(base.Command):
         '--staged-progress-tracker',
         action='store_true',
         help='Run example staged progress tracker.')
+    scenarios.add_argument(
+        '--feature-flag',
+        action='store_true',
+        help='Print the value of a feature flag.')
 
   def _RunArgDict(self, args):
     return args.arg_dict
@@ -183,6 +189,10 @@ class Test(base.Command):
       time.sleep(1)
       tracker.CompleteStage('make')
 
+  def _RunTestFeatureFlag(self, args):
+    log.status.Print('Value of feature flag [test/feature_flag]: {}'.format(
+        properties.VALUES.test.feature_flag.Get()))
+
   def Run(self, args):
     if args.arg_dict:
       r = self._RunArgDict(args)
@@ -191,21 +201,32 @@ class Test(base.Command):
     elif args.argumenterror_outside_argparse:
       r = self._RunArgumenterrorOutsideArgparse(args)
     elif args.core_exception:
-      r = self._RunCoreException(args)
+      self._RunCoreException(args)
+      r = None
     elif args.exec_file:
-      r = self._RunExecFile(args)
+      self._RunExecFile(args)
+      r = None
     elif args.interrupt:
-      r = self._RunInterrupt(args)
+      self._RunInterrupt(args)
+      r = None
     elif args.is_interactive:
-      r = self._RunIsInteractive(args)
+      self._RunIsInteractive(args)
+      r = None
     elif args.prompt_completer:
-      r = self._RunPromptCompleter(args)
+      self._RunPromptCompleter(args)
+      r = None
     elif args.progress_tracker:
-      r = self._RunProgressTracker(args)
+      self._RunProgressTracker(args)
+      r = None
     elif args.sleep:
-      r = self._RunSleep(args)
+      self._RunSleep(args)
+      r = None
     elif args.uncaught_exception:
       r = self._RunUncaughtException(args)
     elif args.staged_progress_tracker:
-      r = self._RunStagedProgressTracker(args)
+      self._RunStagedProgressTracker(args)
+      r = None
+    elif args.feature_flag:
+      self._RunTestFeatureFlag(args)
+      r = None
     return r

@@ -22,7 +22,9 @@ import os.path
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.util.anthos import binary_operations
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.credentials.store import GetFreshAccessToken
+from googlecloudsdk.core.util import files
 
 MISSING_BINARY = ('Could not locate terraform-validator executable [{binary}]. '
                   'Please ensure gcloud terraform-validator component is '
@@ -31,21 +33,52 @@ MISSING_BINARY = ('Could not locate terraform-validator executable [{binary}]. '
                   'more details.')
 
 
-class TerraformValidatorStreamingOperation(
+class TerraformValidatorConvertOperation(
     binary_operations.StreamingBinaryBackedOperation):
-  """Streaming operation for Terraform Validator binary."""
+  """Streaming operation for Terraform Validator convert binary."""
   custom_errors = {}
 
   def __init__(self, **kwargs):
     custom_errors = {
         'MISSING_EXEC': MISSING_BINARY.format(binary='terraform-validator'),
     }
-    super(TerraformValidatorStreamingOperation, self).__init__(
+    super(TerraformValidatorConvertOperation, self).__init__(
         binary='terraform-validator',
         check_hidden=True,
         install_if_missing=True,
         custom_errors=custom_errors,
         structured_output=True,
+        **kwargs)
+
+  def _ParseArgsForCommand(self, command, terraform_plan_json, project,
+                           verbosity, output_path, **kwargs):
+    args = [
+        command,
+        terraform_plan_json,
+        '--output-path',
+        output_path,
+        '--verbosity',
+        verbosity,
+    ]
+    if project:
+      args += ['--project', project]
+    return args
+
+
+class TerraformValidatorValidateOperation(
+    binary_operations.BinaryBackedOperation):
+  """operation for Terraform Validator validate binary."""
+  custom_errors = {}
+
+  def __init__(self, **kwargs):
+    custom_errors = {
+        'MISSING_EXEC': MISSING_BINARY.format(binary='terraform-validator'),
+    }
+    super(TerraformValidatorValidateOperation, self).__init__(
+        binary='terraform-validator',
+        check_hidden=True,
+        install_if_missing=True,
+        custom_errors=custom_errors,
         **kwargs)
 
   def _ParseArgsForCommand(self, command, terraform_plan_json, policy_library,
@@ -93,20 +126,40 @@ class Terraform(base.BinaryBackedCommand):
     )
 
   def Run(self, args):
-    operation = TerraformValidatorStreamingOperation()
+    convert_operation = TerraformValidatorConvertOperation()
+    validate_operation = TerraformValidatorValidateOperation()
 
     env_vars = {
         'GOOGLE_OAUTH_ACCESS_TOKEN':
             GetFreshAccessToken(account=properties.VALUES.core.account.Get()),
-        'USE_STRUCTURED_LOGGING': 'true',
+        'USE_STRUCTURED_LOGGING':
+            'true',
     }
 
-    response = operation(
-        command='validate',
-        policy_library=args.policy_library,
-        project=args.project or properties.VALUES.core.project.Get(),
-        terraform_plan_json=args.terraform_plan_json,
-        verbosity=args.verbosity,
-        env=env_vars)
-    self.exit_code = response.exit_code
-    return self._DefaultOperationResponseHandler(response)
+    with files.TemporaryDirectory() as tempdir:
+      filename = os.path.join(tempdir, 'converted.json')
+
+      response = convert_operation(
+          command='convert',
+          project=args.project or properties.VALUES.core.project.Get(),
+          terraform_plan_json=args.terraform_plan_json,
+          verbosity=args.verbosity,
+          output_path=filename,
+          env=env_vars)
+      self.exit_code = response.exit_code
+      ret = self._DefaultOperationResponseHandler(response)
+      if self.exit_code > 0:
+        return ret
+
+      with progress_tracker.ProgressTracker(
+          message='Validating resources',
+          aborted_message='Aborted validation.'):
+        response = validate_operation(
+            command='validate',
+            policy_library=args.policy_library,
+            project=args.project or properties.VALUES.core.project.Get(),
+            terraform_plan_json=filename,
+            verbosity=args.verbosity,
+            env=env_vars)
+        self.exit_code = response.exit_code
+        return self._DefaultOperationResponseHandler(response)

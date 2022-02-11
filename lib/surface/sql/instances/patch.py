@@ -245,12 +245,12 @@ def AddBaseArgs(parser, is_alpha=False):
       support_default_version=False,
       expose_mvs_versions=True,
       expose_all_versions=is_alpha)
+  flags.AddNetwork(parser)
 
 
 def AddBetaArgs(parser):
   """Adds beta args and flags to the parser."""
   flags.AddInstanceResizeLimit(parser)
-  flags.AddNetwork(parser)
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
 

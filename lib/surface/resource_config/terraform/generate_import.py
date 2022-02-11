@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.util.declarative import flags
 from googlecloudsdk.command_lib.util.declarative import terraform_utils
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.util import files
 
@@ -79,7 +80,8 @@ class GenerateImport(base.DeclarativeCommand):
         message='Generating terraform modules.',
         aborted_message='Aborted module generation.'):
       output_module_filename, module_successes = terraform_utils.GenerateModuleFile(
-          import_data, dest_module_file, dest_module_dir)
+          import_data, properties.VALUES.core.project.Get(required=True),
+          dest_module_file, dest_module_dir)
     log.status.Print('Successfully generated {} with {} modules.'.format(
         output_module_filename, module_successes))
 

@@ -89,7 +89,8 @@ def _Args(parser,
         'to attach',
         name='certificate-map',
         positional=False,
-        required=False)
+        required=False,
+        with_location=False)
 
 
 def _Run(args, holder, target_https_proxy_ref, url_map_ref, ssl_cert_refs,

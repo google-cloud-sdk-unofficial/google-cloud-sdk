@@ -105,17 +105,24 @@ class Create(base.Command):
         help='Override to common configuration of open source components installed on the Dataproc cluster. The properties to set on daemon config files. Property keys are specified in `prefix:property` format.'
     )
     session_spec = parser.add_group(
-        help='The idle time configuration of the session. The session will be auto-terminated at the end of this period.'
+        help='Configuration for sessions created for the environment to be created.'
     )
     session_spec.add_argument(
         '--session-max-idle-duration',
         required=False,
         help='The idle time configuration of the session. The session will be auto-terminated at the end of this period.'
     )
+    session_spec.add_argument(
+        '--session-enable-fast-startup',
+        action='store_true',
+        required=False,
+        default=False,
+        help='Enables fast startup. This causes sessions to be pre-created and available for faster startup to enable interactive exploration use-cases.'
+    )
     async_group = parser.add_group(
         mutex=True,
         required=False,
-        help='At most one of --async | --validate-only may be specified.')
+        help='At most one of --async | --validate-only can be specified.')
     async_group.add_argument(
         '--validate-only',
         action='store_true',

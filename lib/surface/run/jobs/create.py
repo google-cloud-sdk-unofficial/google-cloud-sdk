@@ -112,7 +112,7 @@ class Create(base.Command):
     changes.append(
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()))
 
-    run_now = args.run_now or args.wait_for_completion
+    run_now = args.run_now or args.wait
     execution = None
 
     with serverless_operations.Connect(conn_context) as operations:
@@ -125,15 +125,14 @@ class Create(base.Command):
         header_msg = 'Creating job...'
       with progress_tracker.StagedProgressTracker(
           header_msg,
-          stages.JobStages(
-              run_now=run_now, include_completion=args.wait_for_completion),
+          stages.JobStages(run_now=run_now, include_completion=args.wait),
           failure_message='Job failed to deploy',
           suppress_output=args.async_) as tracker:
         job = operations.CreateJob(
             job_ref, changes, tracker, asyn=(args.async_ and not run_now))
         if run_now:
-          execution = operations.RunJob(job_ref, args.wait_for_completion,
-                                        tracker, args.async_)
+          execution = operations.RunJob(job_ref, args.wait, tracker,
+                                        args.async_)
 
       if args.async_ and not run_now:
         pretty_print.Success('Job [{{bold}}{job}{{reset}}] is being created '
@@ -141,7 +140,7 @@ class Create(base.Command):
       else:
         job = operations.GetJob(job_ref)
         operation = 'been created'
-        if args.wait_for_completion:
+        if args.wait:
           operation += ' and completed execution [{}]'.format(execution.name)
         elif run_now:
           operation += ' and started running execution [{}]'.format(

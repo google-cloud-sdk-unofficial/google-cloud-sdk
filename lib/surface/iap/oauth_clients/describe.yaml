@@ -1,9 +1,17 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
 help_text:
   brief: |
     Describe a Cloud IAP OAuth client.
   description: |
     *{command}* is used to describe a Cloud IAP OAuth client.
+  examples: |
+    To describe a Cloud OAuth client for the current project, run:
+
+        $ {command} NAME
+
+    To describe a Cloud OAuth client for a specific brand, run:
+
+        $ {command} NAME --brand=BRAND
 
 request:
   collection: iap.projects.brands.identityAwareProxyClients

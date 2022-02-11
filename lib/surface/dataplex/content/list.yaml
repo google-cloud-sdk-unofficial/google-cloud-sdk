@@ -8,12 +8,12 @@
 
       {command} --project={project_id} --location={location} --lake={lake_id}
     examples: |
-      {command} --projects="test-project" --locations=us-central1 --lakes=test-lake
+      {command} --projects="test-project" --locations=us-central1 --lake=test-lake
 
   request:
     ALPHA:
       api_version: v1
-    collection: dataplex.projects.locations.lakes.content
+    collection: dataplex.projects.locations.lakes.contentitems
   arguments:
     resource:
       help_text: |

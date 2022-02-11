@@ -8,11 +8,11 @@
 
       {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/content/{content_id}
     examples: |
-      $ {command} projects/project_id/locations/us-central1/lakes/test-lake/content/test-content
+      $ {command} --projects="test-project" --locations=us-central1 --lake=test-lake test-content
   request:
     ALPHA:
       api_version: v1
-    collection: dataplex.projects.locations.lakes.content
+    collection: dataplex.projects.locations.lakes.contentitems
     method: get
   arguments:
     resource:

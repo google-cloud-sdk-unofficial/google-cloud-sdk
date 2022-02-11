@@ -124,9 +124,10 @@ class CreateBeta(Create):
     version = secrets_api.Secrets().AddVersionBeta(
         secret_ref, data, crc32c.get_checksum(data_crc32c))
     version_ref = secrets_args.ParseVersionRef(version.name)
+    secrets_log.Versions().Created(version_ref)
     if not version.clientSpecifiedPayloadChecksum:
       raise exceptions.HttpException(
           'Version created but payload data corruption may have occurred, '
-          'please retry.')
-    secrets_log.Versions().Created(version_ref)
+          'please destroy the created version, and retry. See also '
+          'https://cloud.google.com/secret-manager/docs/data-integrity.')
     return version

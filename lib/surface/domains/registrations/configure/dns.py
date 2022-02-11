@@ -81,7 +81,7 @@ class ConfigureDNS(base.UpdateCommand):
     if args.disable_dnssec and args.dns_settings_from_file:
       raise exceptions.Error(
           'argument --disable-dnssec: At most one of '
-          '--dns-settings-from-file | --disable-dnssec may be specified.')
+          '--dns-settings-from-file | --disable-dnssec can be specified.')
 
     registration = client.Get(registration_ref)
     util.AssertRegistrationOperational(api_version, registration)

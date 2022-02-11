@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 import os
 
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.calliope import usage_text
@@ -91,10 +92,22 @@ class Init(base.Command):
         hidden=True,
         help='THIS ARGUMENT NEEDS HELP TEXT.')
     parser.add_argument(
-        '--console-only', '--no-launch-browser',
-        action='store_true',
+        '--console-only',
+        '--no-launch-browser',
         help=('Prevent the command from launching a browser for '
-              'authorization.'))
+              'authorization.'),
+        action=actions.DeprecationAction(
+            '--console-only',
+            warn='The `--console-only/--no-launch-browser` are deprecated '
+            'and will be removed in future updates. '
+            'Use `--no-browser` as a replacement.',
+            removed=False,
+            action='store_true'))
+    parser.add_argument(
+        '--no-browser',
+        help=('Prevent the command from launching a browser for '
+              'authorization.'),
+        action='store_true')
     parser.add_argument(
         '--skip-diagnostics',
         action='store_true',
@@ -141,7 +154,8 @@ class Init(base.Command):
     # User project quota is now the global default, but this command calls
     # legacy APIs where it should be disabled.
     with base.WithLegacyQuota():
-      if not self._PickAccount(args.console_only, preselected=args.account):
+      if not self._PickAccount(
+          args.console_only, args.no_browser, preselected=args.account):
         return
 
       if not self._PickProject(preselected=args.project):
@@ -153,11 +167,13 @@ class Init(base.Command):
 
       self._Summarize(configuration_name)
 
-  def _PickAccount(self, console_only, preselected=None):
+  def _PickAccount(self, console_only, no_browser, preselected=None):
     """Checks if current credentials are valid, if not runs auth login.
 
     Args:
       console_only: bool, True if the auth flow shouldn't use the browser
+      no_browser: bool, True if the auth flow shouldn't use the browser and
+        should ask another gcloud installation to help with the browser flow.
       preselected: str, disable prompts and use this value if not None
 
     Returns:
@@ -204,7 +220,12 @@ class Init(base.Command):
     if new_credentials:
       # Call `gcloud auth login` to get new credentials.
       # `gcloud auth login` may have user interaction, do not suppress it.
-      browser_args = ['--no-launch-browser'] if console_only else []
+      if console_only:
+        browser_args = ['--no-launch-browser']
+      elif no_browser:
+        browser_args = ['--no-browser']
+      else:
+        browser_args = []
       if not self._RunCmd(['auth', 'login'],
                           ['--force', '--brief'] + browser_args,
                           disable_user_output=False):

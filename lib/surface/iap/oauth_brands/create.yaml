@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
 help_text:
   brief: |
     Create a Cloud OAuth brand for the project.
@@ -10,6 +10,15 @@ help_text:
     process in Google Cloud Platform Console. Note that the
     'internal only' setting can be manually changed in Google Cloud Platform Console
     (https://console.cloud.google.com/apis/credentials/consent). A project can only have one brand.
+  examples: |
+    To create a Cloud OAuth brand for the current project, run:
+
+        $ {command} --application_title=APPLICATION_TITLE --support_email=SUPPORT_EMAIL
+
+    To create a Cloud OAuth brand for the project PROJECT_ID, run:
+
+        $  {command} --application_title=APPLICATION_TITLE --support_email=SUPPORT_EMAIL --project=PROJECT_ID
+
 
 request:
   collection: iap.projects.brands

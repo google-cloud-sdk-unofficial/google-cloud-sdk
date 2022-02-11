@@ -27,8 +27,11 @@ DETAILED_HELP = {
         The gcloud transfer command group lets you create and manage
         Transfer Service jobs, operations, and agents.
 
-        More information on Cloud Storage can be found here:
-        https://cloud.google.com/storage-transfer-service
+        To get started, run:
+        `gcloud alpha transfer jobs create --help`
+
+        More info on prerequisite IAM permissions:
+        https://cloud.google.com/storage-transfer/docs/on-prem-set-up
         """,
 }
 

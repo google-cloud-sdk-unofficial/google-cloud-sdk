@@ -62,14 +62,14 @@ class Upload(base.Command):
     upload_req = messages.UploadYumArtifactRequest
     upload_request = upload_req()
 
-    request = messages.ArtifactregistryProjectsLocationsRepositoriesYumartifactsUploadRequest(
+    request = messages.ArtifactregistryProjectsLocationsRepositoriesYumArtifactsUploadRequest(
         uploadYumArtifactRequest=upload_request,
         parent=repo_ref.RelativeName())
 
     upload = transfer.Upload.FromFile(
         args.source, mime_type='application/x-rpm')
 
-    op_obj = client.projects_locations_repositories_yumartifacts.Upload(
+    op_obj = client.projects_locations_repositories_yumArtifacts.Upload(
         request, upload=upload)
 
     op = op_obj.operation
@@ -106,14 +106,14 @@ class UploadAlpha(Upload):
     upload_req = messages.GoogleDevtoolsArtifactregistryV1alpha1UploadYumArtifactRequest
     upload_request = upload_req()
 
-    request = messages.ArtifactregistryProjectsLocationsRepositoriesYumartifactsUploadRequest(
+    request = messages.ArtifactregistryProjectsLocationsRepositoriesYumArtifactsUploadRequest(
         googleDevtoolsArtifactregistryV1alpha1UploadYumArtifactRequest=upload_request,
         parent=repo_ref.RelativeName())
 
     upload = transfer.Upload.FromFile(
         args.source, mime_type='application/x-rpm')
 
-    op_obj = client.projects_locations_repositories_yumartifacts.Upload(
+    op_obj = client.projects_locations_repositories_yumArtifacts.Upload(
         request, upload=upload)
 
     op = op_obj.operation

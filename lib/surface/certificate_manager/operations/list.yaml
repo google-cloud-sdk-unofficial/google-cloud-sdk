@@ -20,8 +20,6 @@
     resource:
       help_text: Certificate Manager location to list all operations.
       spec: !REF googlecloudsdk.command_lib.certificate_manager.resources:location
-      removed_flags:
-      - location
 
   response:
     id_field: name

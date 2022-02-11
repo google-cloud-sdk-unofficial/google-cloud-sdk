@@ -47,6 +47,8 @@ class Update(base.UpdateCommand):
   def Args(parser):
     resource_args.AddAzureClusterAndClientResourceArgs(parser, update=True)
     flags.AddClusterVersion(parser, required=False)
+    flags.AddVMSize(parser)
+    flags.AddAdminUsers(parser, create=False)
     flags.AddValidateOnly(parser, 'update of the cluster')
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(command_util.CLUSTERS_FORMAT)
@@ -54,6 +56,8 @@ class Update(base.UpdateCommand):
   def Run(self, args):
     """Runs the update command."""
     cluster_version = flags.GetClusterVersion(args)
+    vm_size = flags.GetVMSize(args)
+    admin_users = args.admin_users
     validate_only = flags.GetValidateOnly(args)
     async_ = getattr(args, 'async_', False)
 
@@ -70,6 +74,8 @@ class Update(base.UpdateCommand):
           cluster_ref=cluster_ref,
           client_ref=client_ref,
           cluster_version=cluster_version,
+          vm_size=vm_size,
+          admin_users=admin_users,
           validate_only=validate_only)
 
       if validate_only:
