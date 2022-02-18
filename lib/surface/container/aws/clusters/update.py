@@ -52,6 +52,7 @@ class Update(base.UpdateCommand):
     aws_flags.AddInstanceType(parser)
     aws_flags.AddRoleArn(parser, required=False)
     aws_flags.AddRoleSessionName(parser)
+    aws_flags.AddConfigEncryptionKmsKeyArn(parser, required=False)
 
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(clusters.CLUSTERS_FORMAT)

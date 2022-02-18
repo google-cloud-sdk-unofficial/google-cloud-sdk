@@ -32,7 +32,7 @@ from googlecloudsdk.core.resource import resource_printer
 
 
 class List(base.Command):
-  """Lists Transfer Service transfer jobs."""
+  """List Transfer Service transfer jobs."""
 
   detailed_help = {
       'DESCRIPTION':

@@ -4,7 +4,8 @@
     brief: Create a new VPN spoke.
     description: Create a new [VPN spoke](https://cloud.google.com/network-connectivity/docs/network-connectivity-center/how-to/working-with-hubs-spokes#create-vpn-spoke) with the specified properties.
     examples: |
-      To create a VPN spoke that uses two tunnels in region ``us-central1'', run:
+      To create a VPN spoke in region ``us-central1'' that uses data transfer and has
+      two tunnels, run:
 
         $ {command} my-spoke --hub="https://www.googleapis.com/networkconnectivity/v1/projects/my-project/locations/global/hubs/my-hub" --region=us-central1 --vpn-tunnels=https://www.googleapis.com/compute/v1/projects/my-project/regions/us-central1/vpnTunnels/vpn-tunnel1,https://www.googleapis.com/compute/v1/projects/my-project/regions/us-central1/vpnTunnels/vpn-tunnel2 --site-to-site-data-transfer
 
@@ -28,9 +29,8 @@
     - arg_name: site-to-site-data-transfer
       api_field: spoke.linkedVpnTunnels.siteToSiteDataTransfer
       help_text: |
-        Whether to enable site-to-site data transfer for this spoke. This flag is set to false by
-        default, but you must set it to true. Note that data transfer is available only in
-        supported locations.
+        Whether to enable site-to-site data transfer for this spoke. Data transfer is available only
+        in [supported locations](https://cloud.google.com/network-connectivity/docs/network-connectivity-center/concepts/locations).
     labels:
       api_field: spoke.labels
 

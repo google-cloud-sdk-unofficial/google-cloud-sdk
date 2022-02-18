@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.resource_manager import folders
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.iam import policies_flags
 from googlecloudsdk.command_lib.resource_manager import flags
 
 
@@ -42,4 +43,29 @@ class GetIamPolicy(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
-    return folders.GetAncestorsIamPolicy(args.folder_id)
+    return folders.GetAncestorsIamPolicy(args.folder_id, False,
+                                         self.ReleaseTrack())
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class GetIamPolicyBetaAlpha(base.ListCommand):
+  """Get IAM policies for a folder and its ancestors.
+
+  Get IAM policies for a folder and its ancestors, given a folder ID.
+
+  ## EXAMPLES
+
+  To get IAM policies for folder ``3589215982'' and its ancestors, run:
+
+    $ {command} 3589215982
+  """
+
+  @staticmethod
+  def Args(parser):
+    flags.GetFolderResourceArg('get IAM policy for.').AddToParser(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
+    policies_flags.AddIncludeDenyFlag(parser)
+
+  def Run(self, args):
+    return folders.GetAncestorsIamPolicy(args.folder_id, args.include_deny,
+                                         self.ReleaseTrack())

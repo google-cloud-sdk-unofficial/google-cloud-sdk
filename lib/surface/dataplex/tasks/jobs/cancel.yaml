@@ -1,14 +1,16 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: |
-      Cancel a Dataplex Job running a particular Task.
+      Cancel a Dataplex Job running a particular task.
     description: |
-      Cancel the operation that the given Dataplex Job is running the Task based on project, location, lake, task and job.
+      Cancel the operation that the given Dataplex Job is running task under a specific project,
+      location, lake and task.
 
-      {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/tasks/{task_id}/jobs/{job_id}
     examples: |
-      $ {command} projects/project_id/locations/us-central1/lakes/test-lake/tasks/test-task/jobs/test-job
+      To cancel an job `test-job` running task `test-task` within lake `test-lake` in location
+      `us-central1`, run:
+
+        $ {command} test-job --location=us-central1 --lake=test-lake --task=test-task
   request:
     ALPHA:
       api_version: v1

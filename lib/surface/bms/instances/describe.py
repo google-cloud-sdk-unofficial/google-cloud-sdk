@@ -49,7 +49,7 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     instance = args.CONCEPTS.instance.Parse()
     client = BmsClient()
-    return client.Get(instance)
+    return client.GetInstance(instance)
 
 
 Describe.detailed_help = DETAILED_HELP

@@ -26,8 +26,6 @@ from googlecloudsdk.command_lib.edge_cloud.container import kubeconfig
 from googlecloudsdk.command_lib.edge_cloud.container import resource_args
 from googlecloudsdk.core import resources
 
-import six
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetCredentials(base.Command):
@@ -62,7 +60,7 @@ class GetCredentials(base.Command):
                                          cluster_ref.locationsId,
                                          cluster_ref.clustersId)
     cmd_args = kubeconfig.GenerateAuthProviderCmdArgs(
-        six.text_type(self.ReleaseTrack()).lower(), cluster_ref.clustersId,
+        self.ReleaseTrack(), cluster_ref.clustersId,
         cluster_ref.projectsId, cluster_ref.locationsId)
 
     kubeconfig.GenerateKubeconfig(resp, context, args.auth_provider_cmd_path,

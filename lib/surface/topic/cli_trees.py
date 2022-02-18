@@ -68,7 +68,7 @@ class CliTrees(base.TopicCommand):
 
   `$ gcloud alpha interactive` uses CLI tree data files for typeahead,
   command line completion and active help. A few CLI trees are installed
-  with their respective Cloud SDK components: *gcloud* (core component),
+  with their respective Google Cloud CLI components: *gcloud* (core component),
   *bq*, *gsutil*, and *kubectl*.
 
   The generated trees are a close approximation. You can construct your own,

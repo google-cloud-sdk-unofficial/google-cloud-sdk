@@ -21,6 +21,7 @@ import os.path
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.util.anthos import binary_operations
+from googlecloudsdk.core import metrics
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.credentials.store import GetFreshAccessToken
@@ -134,6 +135,8 @@ class Terraform(base.BinaryBackedCommand):
             GetFreshAccessToken(account=properties.VALUES.core.account.Get()),
         'USE_STRUCTURED_LOGGING':
             'true',
+        'GOOGLE_TERRAFORM_VALIDATOR_USERAGENT_EXTENSION':
+            metrics.GetUserAgent(),
     }
 
     with files.TemporaryDirectory() as tempdir:

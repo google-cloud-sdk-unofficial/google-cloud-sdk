@@ -29,17 +29,16 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update a Dataplex zone resource."""
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To update a Dataplex zone 'test-zone' in lake 'test-lake' in location
-          'us-central1' to have the display name 'first-dataplex-zone' and
-          discovery include patterns 'abc', 'def', run:
+          To update a Dataplex zone `test-zone` in lake `test-lake` in location
+          `us-central1` to have the display name `first-dataplex-zone` and
+          discovery include patterns `abc`, `def`, run:
 
             $ {command} test-zone --location=us-central1 --lake=test-lake --display-name="first-dataplex-zone" --discovery-include-patterns=abc,def
           """,

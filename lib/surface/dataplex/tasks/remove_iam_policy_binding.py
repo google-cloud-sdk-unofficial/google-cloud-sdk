@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`gcloud dataplex task remove-iam-policy-binding` command."""
+"""Command to remove-iam-policy-binding from a Dataplex task resource."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,17 +25,22 @@ from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class RemoveIamPolicyBinding(base.Command):
-  """Remove IAM policy binding from a Dataplex Task."""
+  """Remove IAM policy binding from a Dataplex task resource."""
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To remove an IAM policy binding from a task, run:
+          To remove an IAM policy binding for the role `roles/dataplex.viewer`
+          for the user `testuser@gmail.com` from a task `test-task` within lake
+          `test-lake` in location `us-central1`, run:
 
-            $ {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/tasks/{task_id} --role=roles/dataplex.viewer --member=user:foo@gmail.com
+            $ {command} test-task --location=us-central1 --lake=test-lake \
+                --role=roles/dataplex.viewer --member=user:testuser@gmail.com
+
+          See https://cloud.google.com/dataplex/docs/iam-roles for details of
+          policy role and member types.
           """,
   }
 

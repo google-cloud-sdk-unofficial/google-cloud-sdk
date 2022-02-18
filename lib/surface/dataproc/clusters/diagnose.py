@@ -27,6 +27,7 @@ from googlecloudsdk.api_lib.dataproc import storage_helpers
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import retry
 
@@ -47,16 +48,44 @@ class Diagnose(base.Command):
     flags.AddTimeoutFlag(parser)
     dataproc = dp.Dataproc(cls.ReleaseTrack())
     flags.AddClusterResourceArg(parser, 'diagnose', dataproc.api_version)
+    parser.add_argument(
+        '--tarball-access',
+        type=arg_utils.ChoiceToEnumName,
+        choices=Diagnose._GetValidTarballAccessChoices(dataproc),
+        hidden=True,
+        help='Target access privileges for diagnose tarball.')
+
+  @staticmethod
+  def _GetValidTarballAccessChoices(dataproc):
+    tarball_access_enums = dataproc.messages.DiagnoseClusterRequest.TarballAccessValueValuesEnum
+    return [
+        arg_utils.ChoiceToEnumName(n)
+        for n in tarball_access_enums.names()
+        if n != 'TARBALL_ACCESS_UNSPECIFIED'
+    ]
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
     cluster_ref = args.CONCEPTS.cluster.Parse()
 
-    request = dataproc.messages.DataprocProjectsRegionsClustersDiagnoseRequest(
-        clusterName=cluster_ref.clusterName,
-        region=cluster_ref.region,
-        projectId=cluster_ref.projectId)
+    request = None
+    if args.tarball_access is not None:
+      tarball_access = arg_utils.ChoiceToEnum(
+          args.tarball_access,
+          dataproc.messages.DiagnoseClusterRequest.TarballAccessValueValuesEnum)
+      diagnose_request = dataproc.messages.DiagnoseClusterRequest(
+          tarballAccess=tarball_access)
+      request = dataproc.messages.DataprocProjectsRegionsClustersDiagnoseRequest(
+          clusterName=cluster_ref.clusterName,
+          region=cluster_ref.region,
+          projectId=cluster_ref.projectId,
+          diagnoseClusterRequest=diagnose_request)
+    else:
+      request = dataproc.messages.DataprocProjectsRegionsClustersDiagnoseRequest(
+          clusterName=cluster_ref.clusterName,
+          region=cluster_ref.region,
+          projectId=cluster_ref.projectId)
 
     operation = dataproc.client.projects_regions_clusters.Diagnose(request)
     # TODO(b/36052522): Stream output during polling.

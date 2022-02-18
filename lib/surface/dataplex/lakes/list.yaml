@@ -1,12 +1,11 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: |
       List Dataplex lake resources under a project.
     description: |
       List all Dataplex lake resource under a specific project and location.
     examples: |
-      To list all Dataplex lake resources in location 'us-central', run:
+      To list all Dataplex lake resources in location `us-central`, run:
 
           $ {command} --project=test-project --location=us-central1
 

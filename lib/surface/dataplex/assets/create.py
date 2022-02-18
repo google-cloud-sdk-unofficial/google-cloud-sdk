@@ -29,10 +29,9 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Create(base.Command):
-  """Create an asset.
+  """Create a Dataplex asset resource.
 
   An asset represents a cloud resource that is being managed within a lake as a
   member of a zone.
@@ -49,20 +48,20 @@ class Create(base.Command):
   detailed_help = {
       'EXAMPLES':
           """\
-          To create a Dataplex asset with name 'test-asset', within zone
-          'test-zone', in lake 'test-lake', in location 'us-central1', with
-          resource type 'STORAGE_BUCKET', with resource name
-          'projects/test-project/buckets/test-bucket', run:
+          To create a Dataplex asset with name `test-asset`, within zone
+          `test-zone`, in lake `test-lake`, in location `us-central1`, with
+          resource type `STORAGE_BUCKET`, with resource name
+          `projects/test-project/buckets/test-bucket`, run:
 
             $ {command} test-asset --location=us-central --lake=test-lake --zone=test-zone --resource-type=STORAGE_BUCKET --resource-name=projects/test-project/buckets/test-bucket
 
-          To create a Dataplex asset with name 'test-asset', within zone
-          'test-zone', in lake 'test-lake', in location 'us-central1', with
-          resource type 'STORAGE_BUCKET', with resource name
-          'projects/test-project/buckets/test-bucket', with discovery-enabled,
-          and discovery schedule "0 * * * *", run:
+          To create a Dataplex asset with name `test-asset`, within zone
+          `test-zone`, in lake `test-lake`, in location `us-central1`, with
+          resource type `STORAGE_BUCKET`, with resource name
+          `projects/test-project/buckets/test-bucket`, with discovery-enabled,
+          and discovery schedule `0 * * * *`, run:
 
-            $ {command} test-asset --location=us-central --lake=test-lake --zone=test-zone --resource-type=STORAGE_BUCKET --resource-name=projects/test-project/buckets/test-bucket --discovery-enabled --discobvery-schedule="0 * * * *"
+            $ {command} test-asset --location=us-central --lake=test-lake --zone=test-zone --resource-type=STORAGE_BUCKET --resource-name=projects/test-project/buckets/test-bucket --discovery-enabled --discovery-schedule="0 * * * *"
           """,
   }
 
@@ -83,7 +82,7 @@ class Create(base.Command):
         '--resource-name',
         help=""""Relative name of the cloud resource that contains the data that
                  is being managed within a lake. For example:
-                 projects/{project_number}/buckets/{bucket_id} projects/{project_number}/datasets/{dataset_id}"""
+                 `projects/{project_number}/buckets/{bucket_id}` or  `projects/{project_number}/datasets/{dataset_id}`"""
     )
     resource_spec.add_argument(
         '--resource-type',

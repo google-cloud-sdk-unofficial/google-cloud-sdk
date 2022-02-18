@@ -22,9 +22,11 @@ import textwrap
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.iam.byoid_utilities import cred_config
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class CreateCredConfig(base.CreateCommand):
   """Create a configuration file for generated credentials.
 
@@ -55,8 +57,10 @@ class CreateCredConfig(base.CreateCommand):
           """),
   }
 
-  @staticmethod
-  def Args(parser):
+  _support_aws_session_token_url = False
+
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument(
         'audience', help='The workload identity pool provider resource name.')
 
@@ -66,8 +70,7 @@ class CreateCredConfig(base.CreateCommand):
         '--credential-source-file',
         help='Location of the credential source file.')
     credential_types.add_argument(
-        '--credential-source-url',
-        help='URL to obtain the credential from.')
+        '--credential-source-url', help='URL to obtain the credential from.')
     credential_types.add_argument('--aws', help='Use AWS.', action='store_true')
     credential_types.add_argument(
         '--azure', help='Use Azure.', action='store_true')
@@ -97,6 +100,56 @@ class CreateCredConfig(base.CreateCommand):
         '--subject-token-type',
         help='The type of token being used for authorization.')
 
+    if cls._support_aws_session_token_url:
+      parser.add_argument(
+          '--include-aws-session-token-url',
+          help='Adds the AWS session token url to the credential source to enforce the AWS IMDSv2 flow.',
+          action='store_true')
+
+  def _ValidateArgs(self, args):
+    pass
+
   def Run(self, args):
+    self._ValidateArgs(args)
     cred_config.create_credential_config(
         args, cred_config.ConfigType.WORKLOAD_IDENTITY_POOLS)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateCredConfigAlpha(CreateCredConfig):
+  """Create a configuration file for generated credentials.
+
+  This command creates a configuration file to allow access to authenticated
+  Google Cloud actions from a variety of external accounts.
+  """
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+          To create a file-sourced credential configuration for your project, run:
+
+            $ {command} projects/$PROJECT_NUMBER/locations/$REGION/workloadIdentityPools/$WORKLOAD_POOL_ID/providers/$PROVIDER_ID --service-account=$EMAIL --credential-source-file=$PATH_TO_OIDC_ID_TOKEN --output-file=credentials.json
+
+          To create a URL-sourced credential configuration for your project, run:
+
+            $ {command} projects/$PROJECT_NUMBER/locations/$REGION/workloadIdentityPools/$WORKLOAD_POOL_ID/providers/$PROVIDER_ID --service-account=$EMAIL --credential-source-url=$URL_FOR_OIDC_TOKEN --credential-source-headers=Key=Value --output-file=credentials.json
+
+          To create an AWS-based credential configuration for your project, run:
+
+            $ {command} projects/$PROJECT_NUMBER/locations/$REGION/workloadIdentityPools/$WORKLOAD_POOL_ID/providers/$PROVIDER_ID --service-account=$EMAIL --aws --include-aws-session-token-url --output-file=credentials.json
+
+          To create an Azure-based credential configuration for your project, run:
+
+            $ {command} projects/$PROJECT_NUMBER/locations/$REGION/workloadIdentityPools/$WORKLOAD_POOL_ID/providers/$PROVIDER_ID --service-account=$EMAIL --azure --app-id-uri=$URI_FOR_AZURE_APP_ID --output-file=credentials.json
+
+          To use the resulting file for any of these commands, set the GOOGLE_APPLICATION_CREDENTIALS environment variable to point to the generated file
+          """),
+  }
+
+  _support_aws_session_token_url = True
+
+  def _ValidateArgs(self, args):
+    if args.include_aws_session_token_url and not args.aws:
+      raise exceptions.ConflictingArgumentsException(
+          '--include-aws-session-token-url can be used only for AWS credential types'
+      )

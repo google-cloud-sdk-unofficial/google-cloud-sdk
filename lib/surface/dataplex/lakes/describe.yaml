@@ -1,14 +1,11 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: |
       Describe a Dataplex lake resource.
     description: |
-      Describe a Dataplex lake resource.
-
       Displays all details of a Dataplex lake resource given a valid lake ID.
     examples: |
-      To describe a Dataplex lake 'test-lake' in location 'us-central1', run:
+      To describe a Dataplex lake `test-lake` in location `us-central1`, run:
 
           $ {command} test-lake --location=us-central1
   request:

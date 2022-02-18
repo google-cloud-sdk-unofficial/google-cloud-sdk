@@ -78,7 +78,7 @@ class List(base.ListCommand):
         synthesized_instance = self.synthesizedInstance(instance, client)
         yield synthesized_instance
     else:
-      for instance in client.List(region, limit=args.limit):
+      for instance in client.ListInstances(region, limit=args.limit):
         synthesized_instance = self.synthesizedInstance(instance, client)
         yield synthesized_instance
 

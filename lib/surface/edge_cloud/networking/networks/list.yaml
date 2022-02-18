@@ -7,7 +7,7 @@
     examples: |
       To list the Edge Network networks in edge zone 'us-central1-edge-den1', run:
 
-        $ {command} --location=us-central1 --zone=den1
+        $ {command} --location=us-central1 --zone=us-central1-edge-den1
 
   request:
     collection: edgenetwork.projects.locations.zones.networks
@@ -18,7 +18,7 @@
 
   arguments:
     resource:
-      help_text: Parent Edge Network zone to list all contained Edge Network networks.
+      help_text: Parent Distributed Cloud Edge Network zone to list all contained Distributed Cloud Edge Network networks.
       # The following should point to the parent resource argument definition
       # under your surface's command_lib directory.:
       spec: !REF googlecloudsdk.command_lib.edge_cloud.networking.resources:zone

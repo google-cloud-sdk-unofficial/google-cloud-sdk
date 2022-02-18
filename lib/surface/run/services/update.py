@@ -193,6 +193,7 @@ class AlphaUpdate(Update):
     flags.AddConfidentialFlag(managed_group)
     flags.AddCustomAudiencesFlag(managed_group)
     flags.AddSessionAffinityFlag(managed_group)
+    flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
 
 
 AlphaUpdate.__doc__ = Update.__doc__

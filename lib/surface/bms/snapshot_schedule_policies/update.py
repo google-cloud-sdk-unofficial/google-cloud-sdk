@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.bms.bms_client import BmsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bms import exceptions
 from googlecloudsdk.command_lib.bms import flags
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 DETAILED_HELP = {
@@ -32,11 +33,18 @@ DETAILED_HELP = {
     'EXAMPLES':
         """
           To update an existing policy called ``my-policy'' with new description
-          ``my-description'' and to replace any existing schedules with one
+          ``my-description'' and replace any existing schedules with one
           that runs every 12 hours, run:
 
           $ {command} my-policy --description=my-description --schedule="crontab_spec=0 */12 * * *,retention_count=10,prefix=example"
 
+          To add the label 'key1=value1' to a policy, run:
+
+          $ {command} my-policy --update-labels=key1=value1
+
+          To clear all labels, run:
+
+          $ {command} my-policy --clear-labels
     """,
 }
 
@@ -50,20 +58,31 @@ class Update(base.UpdateCommand):
     """Register flags for this command."""
     flags.AddSnapshotSchedulePolicyArgToParser(parser, positional=True)
     flags.AddSnapshotScheduleArgListToParser(parser, required=False)
+    labels_util.AddUpdateLabelsFlags(parser)
     parser.add_argument('--description',
                         help='Textual description of the policy.')
 
   def Run(self, args):
+    client = BmsClient()
     policy = args.CONCEPTS.snapshot_schedule_policy.Parse()
     description = args.description
     schedules = args.schedule
-    if not description and not schedules:
+    labels_update = None
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    if labels_diff.MayHaveUpdates():
+      orig_resource = client.GetSnapshotSchedulePolicy(policy)
+      labels_update = labels_diff.Apply(
+          client.messages.SnapshotSchedulePolicy.LabelsValue,
+          orig_resource.labels).GetOrNone()
+
+    if not description and not schedules and not labels_diff.MayHaveUpdates():
       raise exceptions.NoConfigurationChangeError(
           'No configuration change was requested. Did you mean to include the '
-          'flags `--description` or `--schedule`?')
+          'flags `--description` `--schedule` `--update-labels`'
+          '`--delete-labels` or `--clear-labels`?')
 
-    client = BmsClient()
     return client.UpdateSnapshotSchedulePolicy(policy_resource=policy,
+                                               labels=labels_update,
                                                description=description,
                                                schedules=schedules)
 

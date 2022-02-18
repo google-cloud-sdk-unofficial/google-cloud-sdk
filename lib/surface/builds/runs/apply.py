@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_exceptions
 from googlecloudsdk.api_lib.cloudbuild.v2 import client_util
 from googlecloudsdk.api_lib.cloudbuild.v2 import input_util
+from googlecloudsdk.api_lib.cloudbuild.v2 import pipeline_input_util
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import run_flags
@@ -57,7 +58,7 @@ class Create(base.CreateCommand):
     parent = 'projects/%s/locations/%s' % (project, args.region)
 
     if run_type == 'PipelineRun':
-      pipeline_run, discarded_fields = input_util.TektonYamlDataToPipelineRun(
+      pipeline_run, discarded_fields = pipeline_input_util.TektonYamlDataToPipelineRun(
           yaml_data)
       self._CheckDiscardedFields(discarded_fields)
       operation = client.projects_locations_pipelineRuns.Create(
@@ -83,7 +84,8 @@ class Create(base.CreateCommand):
       log.CreatedResource(pipeline_run_ref)
       return created_pipeline_run
     elif run_type == 'TaskRun':
-      task_run, discarded_fields = input_util.TektonYamlDataToTaskRun(yaml_data)
+      task_run, discarded_fields = pipeline_input_util.TektonYamlDataToTaskRun(
+          yaml_data)
       self._CheckDiscardedFields(discarded_fields)
       operation = client.projects_locations_taskRuns.Create(
           messages.CloudbuildProjectsLocationsTaskRunsCreateRequest(

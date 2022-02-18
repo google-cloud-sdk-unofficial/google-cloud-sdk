@@ -13,7 +13,7 @@
             --update-labels=k0=value1,k1=value2 --remove-labels=k3
 
   request:
-    collection: beyondcorp.projects.locations.connectors
+    collection: beyondcorp.projects.locations.appConnectors
     modify_request_hooks:
     - googlecloudsdk.command_lib.beyondcorp.app.connectors.hooks:CheckFieldsSpecified
     - googlecloudsdk.command_lib.beyondcorp.app.connectors.hooks:UpdateLabels
@@ -23,8 +23,9 @@
 
   arguments:
     resource:
-      help_text: The Beyondcorp connector you want to update.
+      arg_name: connector
       spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:connector
+      help_text: The Beyondcorp connector you want to update.
 
     params:
     - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connectors.flags:display_name

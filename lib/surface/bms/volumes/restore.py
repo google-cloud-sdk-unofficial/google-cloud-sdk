@@ -42,7 +42,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Restore(base.UpdateCommand):
   """Restore a Bare Metal Solution volume to an existing snapshot."""
 

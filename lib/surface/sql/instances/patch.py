@@ -246,6 +246,7 @@ def AddBaseArgs(parser, is_alpha=False):
       expose_mvs_versions=True,
       expose_all_versions=is_alpha)
   flags.AddNetwork(parser)
+  flags.AddMaintenanceVersion(parser)
 
 
 def AddBetaArgs(parser):
@@ -258,7 +259,6 @@ def AddBetaArgs(parser):
 def AddAlphaArgs(parser):
   """Adds alpha args and flags to the parser."""
   flags.AddSqlServerAuditBucketPath(parser)
-  flags.AddMaintenanceVersion(parser)
 
 
 def RunBasePatchCommand(args, release_track):

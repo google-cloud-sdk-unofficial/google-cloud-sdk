@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command group for Cloud Composer state/disaster recovery."""
+"""The command group for Cloud Composer state recovery."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,12 +22,12 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class State(base.Group):
-  """Manage the state of the environment as a part of the State/Disaster recovery process.
+  """Manage the state of the environment as a part of the State Recovery process.
 
   The {command} command group stores and loads states of Cloud Composer
   environments.
   Storing a state creates a snapshot of an environment. This snapshot then can
-  be loaded as a part of the disaster recovery process.
+  be loaded as a part of the state recovery process.
   """

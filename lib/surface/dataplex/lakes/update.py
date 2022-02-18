@@ -28,19 +28,18 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update a Dataplex lake resource."""
 
   detailed_help = {
       'EXAMPLES':
           """\
-          To update a Dataplex Lake 'test-lake' in location 'us-central1' to
-          have the display name 'first-dataplex-lake' and service \
-          'projects/test-lake/locations/us-central1/service/test-service', run:
+          To update a Dataplex Lake `test-lake` in location `us-central1` to
+          have the display name `first-dataplex-lake` and metastore service \
+          `projects/test-lake/locations/us-central1/service/test-service`, run:
 
-            $ {command} test-lake --location=us-central1 --display-name="first-dataplex-lake" --service="projects/test-lake/locations/us-central1/service/test-service"
+            $ {command} test-lake --location=us-central1 --display-name="first-dataplex-lake" --metastore-service="projects/test-lake/locations/us-central1/service/test-service"
           """,
   }
 
@@ -62,7 +61,7 @@ class Update(base.Command):
         help=""" A relative reference to the Dataproc Metastore
         (https://cloud.google.com/dataproc-metastore/docs) service instance into
         which metadata will be published. This is of the form:
-        projects/{project_number}/locations/{location_id}/services/{service_id}
+        `projects/{project_number}/locations/{location_id}/services/{service_id}`
         where the location matches the location of the lake.""")
     base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)

@@ -36,9 +36,9 @@ class List(base.ListCommand):
 
   ## EXAMPLES
 
-  List sessions in the "us-central1" region:
+  List sessions in the "us-central1" location:
 
-    $ {command} --region="us-central1"
+    $ {command} --location="us-central1"
   """
 
   @staticmethod
@@ -63,7 +63,7 @@ class List(base.ListCommand):
         following order: *--flatten*, *--sort-by*, *--filter*, *--limit*.
         For more information, run 'gcloud topic filters'.""")
 
-    flags.AddRegionFlag(parser)
+    flags.AddLocationFlag(parser)
     parser.display_info.AddFormat("""
           table(
             name.basename():label=SESSION_ID,
@@ -76,7 +76,8 @@ class List(base.ListCommand):
     dataproc = dp.Dataproc(base.ReleaseTrack.GA)
 
     request = List.GetRequest(dataproc.messages,
-                              util.ParseProjectsLocations(dataproc), args)
+                              util.ParseProjectsLocationsForSession(dataproc),
+                              args)
 
     sessions = list_pager.YieldFromList(
         dataproc.client.projects_locations_sessions,

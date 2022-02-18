@@ -309,7 +309,7 @@ class Update(base.UpdateCommand):
     flags.AddCloudRunConfigFlag(parser)
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
-    flags.AddNAPNetworkTagsUpdate(group)
+    flags.AddAutoprovisioningNetworkTagsUpdate(group)
     flags.AddNetworkPolicyFlags(group)
     flags.AddEnableIntraNodeVisibilityFlag(group)
     group_logging_monitoring = group.add_group()
@@ -383,7 +383,7 @@ class Update(base.UpdateCommand):
     opts.disable_default_snat = args.disable_default_snat
     opts.notification_config = args.notification_config
     opts.security_group = args.security_group
-    opts.nap_network_tags = args.nap_network_tags
+    opts.autoprovisioning_network_tags = args.autoprovisioning_network_tags
     opts.enable_image_streaming = args.enable_image_streaming
     # TODO(b/201956384) Remove check that requires specifying scope, once
     # cluster scope is also GA. This check is added to prevent enabling cluster
@@ -785,7 +785,7 @@ class UpdateBeta(Update):
     flags.AddEnableServiceExternalIPs(group)
     flags.AddAuthenticatorSecurityGroupFlags(group)
     flags.AddEnableGcfsFlag(group)
-    flags.AddNAPNetworkTagsUpdate(group)
+    flags.AddAutoprovisioningNetworkTagsUpdate(group)
     flags.AddEnableImageStreamingFlag(group)
     flags.AddMaintenanceIntervalFlag(group)
     flags.AddDataplaneV2Flag(group, hidden=True)
@@ -872,7 +872,7 @@ class UpdateBeta(Update):
     opts.enable_service_externalips = args.enable_service_externalips
     opts.security_group = args.security_group
     opts.enable_gcfs = args.enable_gcfs
-    opts.nap_network_tags = args.nap_network_tags
+    opts.autoprovisioning_network_tags = args.autoprovisioning_network_tags
     opts.enable_image_streaming = args.enable_image_streaming
     opts.maintenance_interval = args.maintenance_interval
     opts.dataplane_v2 = args.enable_dataplane_v2
@@ -950,7 +950,7 @@ class UpdateAlpha(Update):
     flags.AddEnableServiceExternalIPs(group)
     flags.AddAuthenticatorSecurityGroupFlags(group)
     flags.AddEnableGcfsFlag(group)
-    flags.AddNAPNetworkTagsUpdate(group)
+    flags.AddAutoprovisioningNetworkTagsUpdate(group)
     flags.AddEnableImageStreamingFlag(group)
     flags.AddMaintenanceIntervalFlag(group)
     flags.AddDataplaneV2Flag(group, hidden=True)
@@ -1033,7 +1033,7 @@ class UpdateAlpha(Update):
     opts.enable_service_externalips = args.enable_service_externalips
     opts.security_group = args.security_group
     opts.enable_gcfs = args.enable_gcfs
-    opts.nap_network_tags = args.nap_network_tags
+    opts.autoprovisioning_network_tags = args.autoprovisioning_network_tags
     opts.enable_image_streaming = args.enable_image_streaming
     opts.maintenance_interval = args.maintenance_interval
     opts.dataplane_v2 = args.enable_dataplane_v2

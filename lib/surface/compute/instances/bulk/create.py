@@ -73,9 +73,7 @@ def _CommonArgs(parser,
                 support_display_device=False,
                 support_local_ssd_size=False,
                 support_numa_node_count=False,
-                support_visible_core_count=False,
-                support_provisioning_model=False,
-                support_termination_action=False):
+                support_visible_core_count=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgsForBulk(parser)
@@ -94,6 +92,8 @@ def _CommonArgs(parser,
       parser, deprecate=deprecate_maintenance_policy)
   instances_flags.AddNoRestartOnFailureArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
+  instances_flags.AddProvisioningModelVmArgs(parser)
+  instances_flags.AddInstanceTerminationActionVmArgs(parser)
   instances_flags.AddServiceAccountAndScopeArgs(
       parser,
       False,
@@ -155,12 +155,6 @@ def _CommonArgs(parser,
     instances_flags.AddLocalSsdArgsWithSize(parser)
   else:
     instances_flags.AddLocalSsdArgs(parser)
-
-  if support_provisioning_model:
-    instances_flags.AddProvisioningModelVmArgs(parser)
-
-  if support_termination_action:
-    instances_flags.AddInstanceTerminationActionVmArgs(parser)
 
 
 def _GetOperations(compute_client, project, operation_group_id):
@@ -237,8 +231,6 @@ class Create(base.Command):
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
   _support_visible_core_count = False
-  _support_provisioning_model = False
-  _support_termination_action = False
 
   _log_async = False
 
@@ -323,9 +315,7 @@ class Create(base.Command):
         support_node_affinity=False,
         support_min_node_cpu=self._support_min_node_cpu,
         support_host_error_timeout_seconds=self
-        ._support_host_error_timeout_seconds,
-        support_provisioning_model=self._support_provisioning_model,
-        support_termination_action=self._support_termination_action)
+        ._support_host_error_timeout_seconds)
     tags = instance_utils.GetTags(args, compute_client)
     labels = instance_utils.GetLabels(
         args, compute_client, instance_properties=True)
@@ -616,8 +606,6 @@ class CreateBeta(Create):
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_visible_core_count = False
-  _support_provisioning_model = True
-  _support_termination_action = True
 
   @classmethod
   def Args(cls, parser):
@@ -631,9 +619,7 @@ class CreateBeta(Create):
         support_display_device=cls._support_display_device,
         support_local_ssd_size=cls._support_local_ssd_size,
         support_numa_node_count=cls._support_numa_node_count,
-        support_visible_core_count=cls._support_visible_core_count,
-        support_provisioning_model=cls._support_provisioning_model,
-        support_termination_action=cls._support_termination_action)
+        support_visible_core_count=cls._support_visible_core_count)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeBulkSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -656,8 +642,6 @@ class CreateAlpha(Create):
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = True
   _support_visible_core_count = True
-  _support_provisioning_model = True
-  _support_termination_action = True
 
   @classmethod
   def Args(cls, parser):
@@ -671,9 +655,7 @@ class CreateAlpha(Create):
         support_display_device=cls._support_display_device,
         support_local_ssd_size=cls._support_local_ssd_size,
         support_numa_node_count=cls._support_numa_node_count,
-        support_visible_core_count=cls._support_visible_core_count,
-        support_provisioning_model=cls._support_provisioning_model,
-        support_termination_action=cls._support_termination_action)
+        support_visible_core_count=cls._support_visible_core_count)
 
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeBulkSourceInstanceTemplateArg())

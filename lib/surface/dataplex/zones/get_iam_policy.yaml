@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: |
       Get the IAM policy for a Dataplex zone resource.
@@ -10,7 +9,7 @@
       field identifying the version emitted and allowing detection of
       concurrent policy updates.
     examples: |
-      To print the IAM policy for Dataplex zone 'test-zone' within lake `test-lake` in location
+      To print the IAM policy for Dataplex zone `test-zone` within lake `test-lake` in location
       `us-central1`, run:
 
           $ {command} test-zone --location=us-central1 --lake=test-lake

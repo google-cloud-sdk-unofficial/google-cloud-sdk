@@ -29,4 +29,3 @@ class EdgeCloud(base.Group):
 
   def Filter(self, context, args):
     del context, args
-

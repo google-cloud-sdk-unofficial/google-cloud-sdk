@@ -32,7 +32,7 @@ from googlecloudsdk.core.resource import resource_printer
 
 
 class List(base.Command):
-  """Lists Transfer Service transfer agent pools."""
+  """List Transfer Service transfer agent pools."""
 
   detailed_help = {
       'DESCRIPTION':

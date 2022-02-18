@@ -109,6 +109,8 @@ def _CommonArgs(parser,
   instances_flags.AddIpv6NetworkTierArgs(parser)
   maintenance_flags.AddResourcePoliciesArgs(parser, 'added to',
                                             'instance-template')
+  instances_flags.AddProvisioningModelVmArgs(parser)
+  instances_flags.AddInstanceTerminationActionVmArgs(parser)
 
   instance_templates_flags.AddServiceProxyConfigArgs(
       parser, release_track=release_track)
@@ -492,8 +494,6 @@ def _RunCreate(compute_api,
                support_post_key_revocation_action_type=False,
                support_multi_writer=False,
                support_mesh=False,
-               support_provisioning_model=False,
-               support_termination_action=False,
                support_host_error_timeout_seconds=False,
                support_numa_node_count=False,
                support_visible_core_count=False,
@@ -514,10 +514,6 @@ def _RunCreate(compute_api,
       support_multi_writer: Indicates whether a disk can have multiple writers.
       support_mesh: Indicates whether adding VM to a Anthos Service Mesh is
         supported.
-      support_provisioning_model: Indicates whether provisioning_model is
-        supported.
-      support_termination_action: Indicates whether instance_termination_action
-        is supported.
       support_host_error_timeout_seconds: Indicate the timeout in seconds for
         host error detection.
       support_numa_node_count: Indicates whether setting NUMA node count is
@@ -603,16 +599,15 @@ def _RunCreate(compute_api,
     location_hint = args.location_hint
 
   provisioning_model = None
-  if (support_provisioning_model and hasattr(args, 'provisioning_model') and
+  if (hasattr(args, 'provisioning_model') and
       args.IsSpecified('provisioning_model')):
     provisioning_model = args.provisioning_model
 
   termination_action = None
-  if support_termination_action:
+  if (hasattr(args, 'instance_termination_action') and
+      args.IsSpecified('instance_termination_action')):
     instances_flags.ValidateInstanceScheduling(args)
-    if (hasattr(args, 'instance_termination_action') and
-        args.IsSpecified('instance_termination_action')):
-      termination_action = args.instance_termination_action
+    termination_action = args.instance_termination_action
 
   host_error_timeout_seconds = None
   if support_host_error_timeout_seconds and args.IsSpecified(
@@ -835,8 +830,6 @@ class Create(base.CreateCommand):
   _support_post_key_revocation_action_type = False
   _support_multi_writer = False
   _support_mesh = False
-  _support_provisioning_model = False
-  _support_termination_action = False
   _support_numa_node_count = False
   _support_visible_core_count = False
   _support_disk_architecture = False
@@ -878,8 +871,6 @@ class Create(base.CreateCommand):
         ._support_post_key_revocation_action_type,
         support_multi_writer=self._support_multi_writer,
         support_mesh=self._support_mesh,
-        support_provisioning_model=self._support_provisioning_model,
-        support_termination_action=self._support_termination_action,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
         support_disk_architecture=self._support_disk_architecture,
@@ -905,8 +896,6 @@ class CreateBeta(Create):
   _support_post_key_revocation_action_type = True
   _support_multi_writer = True
   _support_mesh = True
-  _support_provisioning_model = True
-  _support_termination_action = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_visible_core_count = False
@@ -932,8 +921,6 @@ class CreateBeta(Create):
         parser, utils.COMPUTE_BETA_API_VERSION)
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
-    instances_flags.AddProvisioningModelVmArgs(parser)
-    instances_flags.AddInstanceTerminationActionVmArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.
@@ -954,8 +941,6 @@ class CreateBeta(Create):
         ._support_post_key_revocation_action_type,
         support_multi_writer=self._support_multi_writer,
         support_mesh=self._support_mesh,
-        support_provisioning_model=self._support_provisioning_model,
-        support_termination_action=self._support_termination_action,
         support_host_error_timeout_seconds=self
         ._support_host_error_timeout_seconds,
         support_numa_node_count=self._support_numa_node_count,
@@ -983,8 +968,6 @@ class CreateAlpha(Create):
   _support_post_key_revocation_action_type = True
   _support_multi_writer = True
   _support_mesh = True
-  _support_provisioning_model = True
-  _support_termination_action = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = True
   _support_visible_core_count = True
@@ -1012,8 +995,6 @@ class CreateAlpha(Create):
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
-    instances_flags.AddProvisioningModelVmArgs(parser)
-    instances_flags.AddInstanceTerminationActionVmArgs(parser)
     instances_flags.AddResourceManagerTagsArgs(parser)
 
   def Run(self, args):
@@ -1035,8 +1016,6 @@ class CreateAlpha(Create):
         ._support_post_key_revocation_action_type,
         support_multi_writer=self._support_multi_writer,
         support_mesh=self._support_mesh,
-        support_provisioning_model=self._support_provisioning_model,
-        support_termination_action=self._support_termination_action,
         support_host_error_timeout_seconds=self
         ._support_host_error_timeout_seconds,
         support_numa_node_count=self._support_numa_node_count,

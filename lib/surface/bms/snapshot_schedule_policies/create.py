@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.bms.bms_client import BmsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bms import flags
+from googlecloudsdk.command_lib.util.args import labels_util
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -30,11 +31,10 @@ DETAILED_HELP = {
     'EXAMPLES':
         """
           To create a policy called ``my-policy'' in project ``my-project''
-          with description ``my-description'' and a schedule that runs every 3
-          hours, run:
+          with description ``my-description'' a schedule that runs every 3
+          hours and labels 'key1=value1' and 'key2=value2', run:
 
-          $ {command} my-policy --project=my-project --description=my-description --schedule="crontab_spec=0 */3 * * *,retention_count=10,prefix=example"
-
+          $ {command} my-policy --project=my-project --description=my-description --schedule="crontab_spec=0 */3 * * *,retention_count=10,prefix=example" --labels=key1=value1,key2=value2
     """,
 }
 
@@ -49,6 +49,7 @@ class Create(base.CreateCommand):
     flags.AddSnapshotSchedulePolicyArgToParser(
         parser, positional=True)
     flags.AddSnapshotScheduleArgListToParser(parser)
+    labels_util.AddCreateLabelsFlags(parser)
     parser.add_argument('--description',
                         help='Description of the policy.')
 
@@ -56,8 +57,12 @@ class Create(base.CreateCommand):
     policy = args.CONCEPTS.snapshot_schedule_policy.Parse()
     description = args.description
     client = BmsClient()
-    return client.CreateSnapshotSchedulePolicy(policy_resource=policy,
-                                               description=description,
-                                               schedules=args.schedule)
+    return client.CreateSnapshotSchedulePolicy(
+        policy_resource=policy,
+        labels=labels_util.ParseCreateArgs(
+            args, client.messages.SnapshotSchedulePolicy.LabelsValue),
+        description=description,
+        schedules=args.schedule)
+
 
 Create.detailed_help = DETAILED_HELP

@@ -32,7 +32,7 @@ class Describe(base.DescribeCommand):
           """\
           To describe a session, run:
 
-            $ {command} EXAMPLE-SESSION --region=us-central1
+            $ {command} EXAMPLE-SESSION --location=us-central1
           """
   }
 

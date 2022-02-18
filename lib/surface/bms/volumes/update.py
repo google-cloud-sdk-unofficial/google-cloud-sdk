@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.bms.bms_client import BmsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bms import exceptions
 from googlecloudsdk.command_lib.bms import flags
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
@@ -40,6 +41,14 @@ DETAILED_HELP = {
           behavior ``oldest-first'', run:
 
           $ {command} my-volume --region=us-central1 --snapshot-schedule-policy=my-policy --snapshot-auto-delete=oldest-first
+
+          To add the label 'key1=value1' to a policy, run:
+
+          $ {command} my-volume --update-labels=key1=value1
+
+          To clear all labels, run:
+
+          $ {command} my-volume --clear-labels
         """,
 }
 
@@ -53,7 +62,7 @@ class Update(base.UpdateCommand):
     """Register flags for this command."""
     flags.AddVolumeSnapshotAutoDeleteBehaviorArgToParser(parser)
     flags.AddVolumeArgToParser(parser, positional=True)
-
+    labels_util.AddUpdateLabelsFlags(parser)
     ssp_group = parser.add_mutually_exclusive_group()
     flags.AddSnapshotSchedulePolicyArgToParser(parser, required=False,
                                                group=ssp_group)
@@ -62,19 +71,30 @@ class Update(base.UpdateCommand):
                            help='Remove any existing snapshot schedule policy.')
 
   def Run(self, args):
+    client = BmsClient()
     volume = args.CONCEPTS.volume.Parse()
     policy = args.CONCEPTS.snapshot_schedule_policy.Parse()
-    client = BmsClient()
+    labels_update = None
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    if labels_diff.MayHaveUpdates():
+      orig_resource = client.GetVolume(volume)
+      labels_update = labels_diff.Apply(
+          client.messages.Volume.LabelsValue,
+          orig_resource.labels).GetOrNone()
 
     if (not policy and not args.snapshot_auto_delete
-        and not args.remove_snapshot_schedule_policy):
+        and not args.remove_snapshot_schedule_policy
+        and not labels_diff.MayHaveUpdates()):
       raise exceptions.NoConfigurationChangeError(
           'No configuration change was requested. Did you mean to include the '
           'flags `--snapshot-schedule-policy`, '
-          '`--remove-snapshot-schedule-policy`, or `--snapshot-auto-delete`?')
+          '`--remove-snapshot-schedule-policy`, '
+          '`--snapshot-auto-delete` `--update-labels`'
+          '`--delete-labels` or `--clear-labels`?')
 
     op_ref = client.UpdateVolume(
         volume_resource=volume,
+        labels=labels_update,
         snapshot_schedule_policy_resource=policy,
         remove_snapshot_schedule_policy=args.remove_snapshot_schedule_policy,
         snapshot_auto_delete=flags

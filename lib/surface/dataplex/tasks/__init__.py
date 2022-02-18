@@ -21,7 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Tasks(base.Group):
   """Manage Dataplex Task services."""
+
+  category = base.DATA_ANALYTICS_CATEGORY

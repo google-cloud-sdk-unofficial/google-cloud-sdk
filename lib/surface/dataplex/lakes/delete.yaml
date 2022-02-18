@@ -1,12 +1,11 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: |
       Delete a Dataplex lake resource.
     description: |
       Delete a Dataplex lake resource.
     examples: |
-      To delete a Dataplex lake 'test-lake' in location 'us-central1', run:
+      To delete a Dataplex lake `test-lake` in location `us-central1`, run:
 
           $ {command} test-lake --location=us-central1
   request:

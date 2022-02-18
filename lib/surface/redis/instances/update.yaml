@@ -80,6 +80,34 @@
       release_tracks: [BETA, ALPHA]
       help_text: |
         The replica count of the instance. Valid from 0 to 5.
+    - arg_name: read-replicas-mode
+      api_field: instance.readReplicasMode
+      release_tracks: [BETA, ALPHA]
+      help_text: |
+          Read replicas mode used by the instance. Only works against standard tier instances with
+          5GB and above provisioned capacity and Redis version 5.0 and above.
+          This is an irreversible update i.e. Read replicas can not be disabled for the instance
+          once it is enabled. Also this update is exclusive and cannot be clubbed with other update
+          operations.
+      choices:  # Enum is mapped to keep READ-REPLICAS-MODE-UNSPECIFIED invisible from users.
+      - enum_value: READ-REPLICAS-ENABLED
+        arg_value: READ-REPLICAS-ENABLED
+        help_text: |
+            Read replica is enabled for the instance if not already enabled. Read endpoint will be
+            provided and the instance can scale up and down the number of replicas.
+      - enum_value: READ-REPLICAS-DISABLED
+        arg_value: READ-REPLICAS-DISABLED
+        help_text: |
+            If read replica is not enabled on the instance, no changes are done. If read replica is
+            enabled for the instance, update operation fails
+    - arg_name: secondary-ip-range
+      api_field: instance.secondaryIpRange
+      release_tracks: [BETA, ALPHA]
+      help_text: |
+        Required only when read-replicas-mode is enabled on the instance. The CIDR range of
+        internal addresses that are reserved for this instance. For example, 10.0.0.0/28 or
+        192.168.0.0/28. Range must be unique and non-overlapping with existing ranges in the
+        network. If value 'auto' passed, the service will automatically pick an available range.
     - group:
         release_tracks: [BETA, ALPHA]
         hidden: true
@@ -129,6 +157,7 @@
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdateRdbSnapshotPeriod
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdateRdbSnapshotStartTime
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdateReplicaCount
+      - googlecloudsdk.command_lib.redis.instances_update_util:UpdateReadReplicasMode
     BETA:
       api_version: v1beta1
       modify_request_hooks:
@@ -145,6 +174,7 @@
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdatePersistenceMode
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdateRdbSnapshotPeriod
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdateRdbSnapshotStartTime
+      - googlecloudsdk.command_lib.redis.instances_update_util:UpdateReadReplicasMode
     GA:
       api_version: v1
       modify_request_hooks:

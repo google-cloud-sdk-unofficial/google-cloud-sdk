@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 from google.auth import exceptions as google_auth_exceptions
 from google.oauth2 import credentials as google_auth_creds
 from googlecloudsdk.api_lib.auth import util as auth_util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import log
@@ -75,6 +76,18 @@ class PrintAccessToken(base.Command):
 
   @staticmethod
   def Args(parser):
+    parser.add_argument(
+        '--scopes',
+        type=arg_parsers.ArgList(min_length=1),
+        metavar='SCOPE',
+        help='The scopes to authorize for. By default [{0}] scopes are used. '
+        'The list of possible scopes can be found at: '
+        '[](https://developers.google.com/identity/protocols/googlescopes).\n\n'
+        'This flag is not for end-user accounts. The scopes of end-user '
+        'credentials cannot change after authorization. '
+        'To request a different set of scopes for end-user accounts, '
+        'rerun `gcloud auth application-default login --scopes`.'.format(
+            auth_util.CLOUD_PLATFORM_SCOPE))
     parser.display_info.AddFormat('value(token)')
 
   def Run(self, args):
@@ -90,10 +103,21 @@ class PrintAccessToken(base.Command):
 
     try:
       creds, _ = c_creds.GetGoogleAuthDefault().default(
-          scopes=[auth_util.CLOUD_PLATFORM_SCOPE])
+          scopes=args.scopes or [auth_util.CLOUD_PLATFORM_SCOPE])
     except google_auth_exceptions.DefaultCredentialsError as e:
       log.debug(e, exc_info=True)
       raise c_exc.ToolException(six.text_type(e))
+
+    if isinstance(creds, google_auth_creds.Credentials) and args.scopes:
+      raise c_exc.InvalidArgumentException(
+          '--scopes',
+          'Application default credentials (ADC) loads an end-user account '
+          'credential. `--scopes` flag is not supported by this '
+          'credential type. To request a different set of scopes, '
+          're-authorize by running '
+          '`gcloud auth application-default login --scopes` and print an '
+          'access token by running '
+          '`gcloud auth application-default print-access-token`')
 
     # Converts the user credentials so that it can handle reauth during refresh.
     if isinstance(creds, google_auth_creds.Credentials):

@@ -30,8 +30,7 @@ from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.projects import util as project_util
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Authorize(base.Command):
   """Authorize a project service account to manage given resource.
 
@@ -42,21 +41,21 @@ class Authorize(base.Command):
   detailed_help = {
       'EXAMPLES':
           """\
-          To authorize the service account in project 'test-project' to
-          manage another project 'test-project2', run:
+          To authorize the service account in project `test-project` to
+          manage another project `test-project2`, run:
 
-            $ {command} --location=us-east1 --project=test-project --project-resource=test-project2
+            $ {command} --project=test-project --project-resource=test-project2
 
-          To authorize the service account in project 'test-project' to
-          manage the storage bucket 'dataplex-storage-bucket', run:
+          To authorize the service account in project `test-project` to
+          manage the storage bucket `dataplex-storage-bucket`, run:
 
-            $ {command} --location=us-east1 --project=test-project --storage-bucket-resource=dataplex-storage-bucket
+            $ {command} --project=test-project --storage-bucket-resource=dataplex-storage-bucket
 
-          To authorize the service account in project 'test-project' to
-          manage the BigQuery dataset 'test-dataset' in project 'test-project2',
+          To authorize the service account in project `test-project` to
+          manage the BigQuery dataset `test-dataset` in project `test-project2`,
           run:
 
-            $ {command} --location=us-east1 --project=test-project --bigquery-dataset-resource=test-dataset --secondary-project=test-project2
+            $ {command} --project=test-project --bigquery-dataset-resource=test-dataset --secondary-project=test-project2
           """,
   }
 

@@ -311,6 +311,6 @@ class AlphaDeploy(Deploy):
     flags.AddConfidentialFlag(managed_group)
     flags.AddCustomAudiencesFlag(managed_group)
     flags.AddSessionAffinityFlag(managed_group)
-
+    flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
 
 AlphaDeploy.__doc__ = Deploy.__doc__

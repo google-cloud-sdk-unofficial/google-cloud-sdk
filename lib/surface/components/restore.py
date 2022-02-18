@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The command to restore a backup of a Cloud SDK installation."""
+"""The command to restore a backup of a Google Cloud CLI installation."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.components import util
 
 
 class Restore(base.SilentCommand):
-  """Restore the Cloud SDK installation to its previous state.
+  """Restore the Google Cloud CLI installation to its previous state.
 
   This is an undo operation, which restores the Google Cloud CLI installation on
   the local workstation to the state it was in just before the most recent

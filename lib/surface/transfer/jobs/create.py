@@ -33,7 +33,7 @@ class Create(base.Command):
   detailed_help = {
       'DESCRIPTION':
           """\
-      Creates a Transfer Service transfer job, allowing you to transfer data to
+      Create a Transfer Service transfer job, allowing you to transfer data to
       Google Cloud Storage on a one-time or recurring basis.
       """,
       'EXAMPLES':

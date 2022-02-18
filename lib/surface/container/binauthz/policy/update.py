@@ -18,16 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import json
-
-from apitools.base.py import encoding
 from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import platform_policy
 from googlecloudsdk.api_lib.util import messages as messages_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
 from googlecloudsdk.command_lib.container.binauthz import parsing
-from googlecloudsdk.core import log
 
 
 @base.Hidden
@@ -55,6 +51,7 @@ class Update(base.UpdateCommand):
         '--policy-file',
         required=True,
         help='The JSON or YAML file containing the new policy.')
+    parser.display_info.AddFormat('yaml')
 
   def Run(self, args):
     # The API is only available in v1.
@@ -66,13 +63,4 @@ class Update(base.UpdateCommand):
     # bubble up to the user if they are raised.
     policy = messages_util.DictToMessageWithErrorCheck(policy_obj,
                                                        messages.PlatformPolicy)
-
-    result = platform_policy.Client('v1').Update(policy_ref, policy)
-    policy_json = encoding.MessageToJson(result)
-    policy_pretty_json = json.dumps(
-        json.loads(policy_json),
-        sort_keys=True,
-        indent=2,
-        separators=(',', ': '))
-    log.UpdatedResource(policy_pretty_json, kind='Policy')
-    return result
+    return platform_policy.Client('v1').Update(policy_ref, policy)

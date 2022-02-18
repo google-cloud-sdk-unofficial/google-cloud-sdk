@@ -21,6 +21,19 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Hidden
+class PolicyIntelligenceAlpha(base.Group):
+  """A platform to help better understand, use and manage policies at scale."""
+  category = base.IDENTITY_AND_SECURITY_CATEGORY
+
+  def Filter(self, context, args):
+    """Enables User-Project override for this surface."""
+    base.EnableUserProjectQuota()
+    # TODO(b/190538573):  Determine if command group works with project number
+    base.RequireProjectID(args)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.Hidden
 class PolicyIntelligenceBeta(base.Group):

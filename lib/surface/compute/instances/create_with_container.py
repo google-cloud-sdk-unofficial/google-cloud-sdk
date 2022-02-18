@@ -56,6 +56,8 @@ def _Args(parser,
       parser, deprecate=deprecate_maintenance_policy)
   instances_flags.AddNoRestartOnFailureArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
+  instances_flags.AddProvisioningModelVmArgs(parser)
+  instances_flags.AddInstanceTerminationActionVmArgs(parser)
   instances_flags.AddServiceAccountAndScopeArgs(parser, False)
   instances_flags.AddTagsArgs(parser)
   instances_flags.AddCustomMachineTypeArgs(parser)
@@ -98,7 +100,10 @@ class CreateWithContainer(base.CreateCommand):
   @staticmethod
   def Args(parser):
     """Register parser args."""
-    _Args(parser, container_mount_enabled=True, support_multi_writer=False)
+    _Args(
+        parser,
+        container_mount_enabled=True,
+        support_multi_writer=False)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArg(parser,
@@ -114,6 +119,7 @@ class CreateWithContainer(base.CreateCommand):
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
     instances_flags.ValidatePublicPtrFlags(args)
     instances_flags.ValidateNetworkPerformanceConfigsArgs(args)
+    instances_flags.ValidateInstanceScheduling(args)
     if instance_utils.UseExistingBootDisk(args.disk or []):
       raise exceptions.InvalidArgumentException(
           '--disk', 'Boot disk specified for containerized VM.')
@@ -332,7 +338,9 @@ class CreateWithContainerBeta(CreateWithContainer):
   @staticmethod
   def Args(parser):
     """Register parser args."""
-    _Args(parser, container_mount_enabled=True)
+    _Args(
+        parser,
+        container_mount_enabled=True)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgsWithSize(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
@@ -359,7 +367,9 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   @staticmethod
   def Args(parser):
     _Args(
-        parser, deprecate_maintenance_policy=True, container_mount_enabled=True)
+        parser,
+        deprecate_maintenance_policy=True,
+        container_mount_enabled=True)
 
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgsWithSize(parser)

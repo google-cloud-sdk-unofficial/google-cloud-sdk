@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.iam import policies_flags
 from googlecloudsdk.command_lib.projects import flags
 from googlecloudsdk.command_lib.projects import util as command_lib_util
 
@@ -42,4 +43,30 @@ class GetIamPolicy(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
-    return command_lib_util.GetIamPolicyWithAncestors(args.project_id)
+    return command_lib_util.GetIamPolicyWithAncestors(args.project_id, False,
+                                                      self.ReleaseTrack())
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class GetIamPolicyAlphaBeta(base.ListCommand):
+  """Get IAM policies for a project and its ancestors.
+
+  Get IAM policies for a project and its ancestors, given a project ID.
+
+  ## EXAMPLES
+
+  To get IAM policies for project `example-project-id-1` and its ancestors, run:
+
+    $ {command} example-project-id-1
+  """
+
+  @staticmethod
+  def Args(parser):
+    flags.GetProjectResourceArg('get IAM policy for').AddToParser(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
+    policies_flags.AddIncludeDenyFlag(parser)
+
+  def Run(self, args):
+    return command_lib_util.GetIamPolicyWithAncestors(args.project_id,
+                                                      args.include_deny,
+                                                      self.ReleaseTrack())

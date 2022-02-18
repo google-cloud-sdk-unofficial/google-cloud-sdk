@@ -1,15 +1,39 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: |
-      Create a Dataplex Task Resource.
+      Create a Dataplex task resource.
     description: |
-      Create a Dataplex Task resource with the given name and configurations.
+      Create a Dataplex task resource.
 
-      {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/tasks/{task_id}
+      A task represents a user visible job that you want Dataplex to perform on a schedule.  It
+      encapsulates your code, your parameters and the schedule.
+
+      This task ID must follow these rules:
+       o Must contain only lowercase letters, numbers, and hyphens.
+       o Must start with a letter.
+       o Must end with a number or a letter.
+       o Must be between 1-63 characters.
+       o Must be unique within the customer project / location.
 
     examples: |
-     $ {command} projects/test-project/locations/us-central1/lakes/test-lake/tasks/test-task
+      To create a Dataplex task `test-task` with ON_DEMAND trigger type,
+      `dataplex-demo-test@test-project.iam.gserviceaccount.com` as execution service account and
+      `gs://test-bucket/test-file.py` as spark python script file within lake `test-lake` in location `us-central1`.
+
+          $ {command} test-task --location=us-central1 --lake=test-lake \
+              --execution-service-account=dataplex-demo-test@test-project.iam.gserviceaccount.com \
+              --spark-python-script-file=gs://test-bucket/test-file.py \
+              --trigger-type=ON_DEMAND
+
+      To create a Dataplex task `test-task` with RECURRING trigger type starting every
+      hour at minute 0, `dataplex-demo-test@test-project.iam.gserviceaccount.com` as execution
+      service account and `gs://test-bucket/test-file.py` as spark python script file within lake `test-lake` in
+      location `us-central1`.
+
+        $ {command} test-task --location=us-central1 --lake=test-lake \
+              --execution-service-account=dataplex-demo-test@test-project.iam.gserviceaccount.com \
+              --spark-python-script-file=gs://test-bucket/test-file.py \
+              --trigger-type=RECURRING --trigger-schedule="0 * * * *"
   request:
     ALPHA:
       api_version: v1
@@ -23,36 +47,36 @@
     - arg_name: description
       api_field: googleCloudDataplexV1Task.description
       help_text: |
-        Description of the task.
+        Description of the Dataplex task.
     - arg_name: display-name
       api_field: googleCloudDataplexV1Task.displayName
       help_text: |
-        Display Name of the task.
-    - group:  # trigger_spec
+        Display name of the Dataplex task.
+    - group:   # trigger_spec
         help_text: |
-          Spec related to how often and when a task should be triggered.
+          Spec related to Dataplex task scheduling and frequency settings.
         required: true
         params:
         - arg_name: trigger-type
           api_field: googleCloudDataplexV1Task.triggerSpec.type
           required: true
-          help_text:  |
-            Trigger type of the user-specified Task.
+          help_text: |
+            Trigger type of the user-specified Dataplex Task.
           choices:
           - arg_value: on-demand
             enum_value: ON_DEMAND
-            help_text:  |
-              The `ON_DEMAND` trigger type runs the Task one-time shortly after Task Creation.
+            help_text: |
+              The `ON_DEMAND` trigger type runs the Dataplex task one time shortly after task creation.
           - arg_value: recurring
             enum_value: RECURRING
-            help_text:  |
+            help_text: |
               The `RECURRING` trigger type makes the task scheduled to run periodically.
         - arg_name: trigger-start-time
           api_field: googleCloudDataplexV1Task.triggerSpec.startTime
           help_text: |
-            The first run of the task will be after this time.
-            If not specified, the task will run shortly after being submitted if
-            ON_DEMAND and based on the schedule if RECURRING.
+            The first run of the task begins after this time. If not specified, an ON_DEMAND
+            task runs when it is submitted and a RECURRING task runs based on the trigger
+            schedule.
         - arg_name: trigger-disabled
           api_field: googleCloudDataplexV1Task.triggerSpec.disabled
           type: bool
@@ -72,7 +96,7 @@
           help_text: |
             Cron schedule (https://en.wikipedia.org/wiki/Cron) for running
             tasks periodically.
-    - group:  # execution_spec
+    - group:   # execution_spec
         help_text: |
           Spec related to how a task is executed.
         required: true
@@ -98,21 +122,21 @@
             - ${task_id}
             - ${job_time}
             To pass positional args, set the key as TASK_ARGS. The value should be a
-            comma-separated string of all the positional arguments. To use a
-            delimiter other than comma, refer to
-            https://cloud.google.com/sdk/gcloud/reference/topic/escaping. In case of
+            comma-separated string of all the positional arguments.
+            See https://cloud.google.com/sdk/gcloud/reference/topic/escaping for details on
+            using a delimiter other than a comma. In case of
             other keys being present in the args, then TASK_ARGS will be passed as
             the last argument.
         - arg_name: max-job-execution-lifetime
           api_field: googleCloudDataplexV1Task.executionSpec.maxJobExecutionLifetime
           help_text: |
             The maximum duration before the job execution expires.
-    - group:  # spark_task_config
+    - group:   # spark_task_config
         help_text: |
           Config related to running custom Spark tasks.
         required: true
         params:
-        - group:  # driver
+        - group:   # driver
             required: true
             mutex: true
             help_text: |
@@ -130,7 +154,9 @@
               api_field: googleCloudDataplexV1Task.spark.mainClass
               help_text: |
                 The name of the driver's main class. The jar file that contains the
-                class must be in the default CLASSPATH or specified in
+                class must be in the default CLASSPATH or specified in `jar_file_uris`.
+                The execution args are passed in as a sequence of named process
+                arguments (`--key=value`).
             - arg_name: spark-python-script-file
               api_field: googleCloudDataplexV1Task.spark.pythonScriptFile
               help_text: |
@@ -158,9 +184,9 @@
             Google Cloud Storage URIs of archives to be extracted into the working directory of
             each executor. Supported file types: .jar, .tar, .tar.gz, .tgz, and
             .zip.
-        - group:  # infrastructure_spec
+        - group:   # infrastructure_spec
             params:
-            - group:  # batch_compute_resource
+            - group:   # batch_compute_resource
                 help_text: |
                   Compute resources needed for a Task when using Dataproc Serverless.
                 params:
@@ -175,7 +201,7 @@
                   help_text: |
                     Max configurable executors.
                     If max_executors_count > executors_count, then auto-scaling is enabled.
-            - group:  # container_image_runtime
+            - group:   # container_image_runtime
                 help_text: |
                   Container Image Runtime Configuration.
                 params:
@@ -202,14 +228,11 @@
                       - api_field: key
                       - api_field: value
                   help_text: |
-                    Override to common configuration of open source components installed on
-                    the Dataproc cluster.
-                    The properties to set on daemon config files.
-                    Property keys are specified in `prefix:property` format, for example
-                    `core:hadoop.tmp.dir`.
-                    For more information, see [Cluster
-                    properties](https://cloud.google.com/dataproc/docs/concepts/cluster-properties).
-            - group:  # vpc-network
+                    The properties to set on daemon config files. Property keys are
+                    specified in prefix:property format, for example core:hadoop.tmp.dir.
+                    For more information, see Cluster properties
+                    (https://cloud.google.com/dataproc/docs/concepts/cluster-properties)
+            - group:   # vpc-network
                 help_text: |
                   Cloud VPC Network used to run the infrastructure.
                 params:

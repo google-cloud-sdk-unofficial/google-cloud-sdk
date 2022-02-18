@@ -27,8 +27,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Dataplex lake resource.
 
@@ -53,13 +52,13 @@ class Create(base.Command):
   detailed_help = {
       'EXAMPLES':
           """\
-          To create a Dataplex lake with name 'my-dataplex-lake' in location
+          To create a Dataplex lake with name `my-dataplex-lake` in location
           `us-central1`, run:
 
             $ {command} my-dataplex-lake --location=us-central
 
-          To create a Dataplex lake with name 'my-dataplex-lake' in location
-          'us-central1' with metastore service 'service-123abc' attached, run:
+          To create a Dataplex lake with name `my-dataplex-lake` in location
+          `us-central1` with metastore service `service-123abc` attached, run:
 
             $ {command} my-dataplex-lake --location=us-central --metastore-service=projects/my-project/services/service-123abc
           """,
@@ -81,7 +80,7 @@ class Create(base.Command):
         help=""" A relative reference to the Dataproc Metastore
         (https://cloud.google.com/dataproc-metastore/docs) service instance into
         which metadata will be published. This is of the form:
-        projects/{project_number}/locations/{location_id}/services/{service_id}
+        `projects/{project_number}/locations/{location_id}/services/{service_id}`
         where the location matches the location of the lake.""")
     parser.add_argument('--description', help='Description of the lake.')
     parser.add_argument('--display-name', help='Display name of the lake.')

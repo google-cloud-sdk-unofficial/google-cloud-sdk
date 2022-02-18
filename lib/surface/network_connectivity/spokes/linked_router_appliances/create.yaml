@@ -4,7 +4,8 @@
     brief: Create a new Router appliance spoke.
     description: Create a new [Router appliance spoke](https://cloud.google.com/network-connectivity/docs/network-connectivity-center/how-to/working-with-hubs-spokes#create-ra-spoke) with the specified properties.
     examples: |
-      To create a spoke that uses two router appliance instances in region ``us-central1'', run:
+      To create a spoke in region ``us-central1'' that uses data transfer and has
+      two router appliance instances, run:
 
         $ {command} my-spoke --hub="https://www.googleapis.com/networkconnectivity/v1/projects/my-project/locations/global/hubs/my-hub" --region=us-central1 --router-appliance=instance=https://www.googleapis.com/compute/v1/projects/my-project/zones/us-central1-a/instances/vm1,ip=10.10.0.1 --router-appliance=instance=https://www.googleapis.com/compute/v1/projects/my-project/zones/us-central1-a/instances/vm2,ip=10.10.0.2 --site-to-site-data-transfer
 
@@ -42,9 +43,8 @@
     - arg_name: site-to-site-data-transfer
       api_field: spoke.linkedRouterApplianceInstances.siteToSiteDataTransfer
       help_text: |
-        Whether to enable site-to-site data transfer for this spoke. This flag is set to false by
-        default, but you must set it to true. Note that data transfer is available only in
-        supported locations.
+        Whether to enable site-to-site data transfer for this spoke. Data transfer is available only
+        in [supported locations](https://cloud.google.com/network-connectivity/docs/network-connectivity-center/concepts/locations).
     labels:
       api_field: spoke.labels
 

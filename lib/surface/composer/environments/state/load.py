@@ -40,7 +40,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class LoadEnvironmentState(base.Command):
   """Load state of the environment from snapshot."""
 
@@ -49,14 +49,14 @@ class LoadEnvironmentState(base.Command):
   @staticmethod
   def Args(parser):
     resource_args.AddEnvironmentResourceArg(parser,
-                                            'to load state of an environment')
+                                            'to load state from a snapshot')
     base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
         '--snapshot-path',
         type=str,
-        help='The Cloud storage path to load the snapshot from. It must '
+        help='The Cloud Storage path to load the snapshot from. It must '
         'start with prefix gs:// and one needs to specify a single snapshot '
-        'that should be loaded',
+        'that should be loaded.',
         required=True)
     flags.SKIP_PYPI_PACKAGES_INSTALLATION.AddToParser(parser)
 

@@ -29,8 +29,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a zone.
 
@@ -51,18 +50,18 @@ class Create(base.Command):
   detailed_help = {
       'EXAMPLES':
           """\
-          To create a Dataplex zone with name 'test-zone' within lake
-          'test-lake' in location 'us-central1' with type 'RAW', and resource
-          location type 'SINGLE_REGION', run:
+          To create a Dataplex zone with name `test-zone` within lake
+          `test-lake` in location `us-central1` with type `RAW`, and resource
+          location type `SINGLE_REGION`, run:
 
             $ {command} test-zone --location=us-central --lake=test-lake --resource-location-type=SINGLE_REGION --type=RAW
 
-          To create a Dataplex zone with name 'test-zone' within lake
-          'test-lake' in location 'us-central1' with type 'RAW',resource
-          location type 'SINGLE_REGION' with discovery-enabled and discovery
-          schedule "0 * * * *", run:
+          To create a Dataplex zone with name `test-zone` within lake
+          `test-lake` in location `us-central1` with type `RAW`,resource
+          location type `SINGLE_REGION` with discovery-enabled and discovery
+          schedule `0 * * * *`, run:
 
-            $ {command} test-zone --location=us-central --lake=test-lake --resource-location-type=SINGLE_REGION --type=RAW --discovery-enabled --discobvery-schedule="0 * * * *"
+            $ {command} test-zone --location=us-central --lake=test-lake --resource-location-type=SINGLE_REGION --type=RAW --discovery-enabled --discovery-schedule="0 * * * *"
 
           """,
   }

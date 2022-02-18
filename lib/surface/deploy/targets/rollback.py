@@ -127,8 +127,9 @@ def _GetCurrentAndRollbackRelease(release_id, pipeline_id, target_ref):
         })
     return current_release_ref, rollback_release_ref
   else:
-    prior_rollouts = rollout_util.GetSucceededRollout(
-        target_ref=target_ref, pipeline_ref=pipeline_ref, limit=2)
+    prior_rollouts = list(
+        rollout_util.GetSucceededRollout(
+            target_ref=target_ref, pipeline_ref=pipeline_ref, limit=2))
     if len(prior_rollouts) < 2:
       raise core_exceptions.Error(
           'unable to rollback target {}. Target has less than 2 rollouts.'

@@ -1,15 +1,16 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: |
-      Update a Dataplex Task Resource.
+      Update a Dataplex task resource.
     description: |
-      Update a Dataplex Task resource with the given configurations.
-
-      {command} projects/{project_id}/locations/{location}/lakes/{lake_id}/tasks/{task_id}
+      Update a Dataplex task resource with the given configurations.
 
     examples: |
-     $ {command} projects/test-project/locations/us-central1/lakes/test-lake/tasks/test-task
+      To update a Dataplex task `test-task` within lake `test-lake` in location `us-central1` and
+      change the description to `Updated Description`, run:
+
+        $ {command} projects/test-project/locations/us-central1/lakes/test-lake/tasks/test-task \
+            --description='Updated Description'
   request:
     ALPHA:
       api_version: v1
@@ -27,7 +28,7 @@
     - arg_name: display-name
       api_field: googleCloudDataplexV1Task.displayName
       help_text: |
-        Display Name of the task.
+        Display name of the task.
     - group:  # trigger_spec
         help_text: |
           Spec related to how often and when a task should be triggered.

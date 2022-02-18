@@ -92,12 +92,16 @@ class RunLocal(base.Command):
     user_args = args.user_args or []
     if args.job_dir:
       user_args.extend(('--job-dir', args.job_dir))
+
+    worker_count = 2 if args.worker_count is None else args.worker_count
+    ps_count = 2 if args.parameter_server_count is None else args.parameter_server_count
+
     if args.distributed:
       retval = local_train.RunDistributed(
           args.module_name,
           package_root,
-          args.parameter_server_count or 2,
-          args.worker_count or 2,
+          ps_count,
+          worker_count,
           args.evaluator_count or 0,
           args.start_port,
           user_args=user_args)

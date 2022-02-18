@@ -103,8 +103,6 @@ def _CommonArgs(parser,
                 support_replica_zones=False,
                 support_subinterface=False,
                 support_node_project=False,
-                support_provisioning_model=False,
-                support_termination_action=False,
                 support_host_error_timeout_seconds=False,
                 support_numa_node_count=False,
                 support_disk_architecture=False,
@@ -170,6 +168,8 @@ def _CommonArgs(parser,
   instances_flags.AddStackTypeArgs(parser)
   instances_flags.AddIpv6NetworkTierArgs(parser)
   instances_flags.AddNetworkPerformanceConfigsArgs(parser)
+  instances_flags.AddProvisioningModelVmArgs(parser)
+  instances_flags.AddInstanceTerminationActionVmArgs(parser)
 
   instances_flags.AddReservationAffinityGroup(
       parser,
@@ -203,12 +203,6 @@ def _CommonArgs(parser,
   if support_node_project:
     instances_flags.AddNodeProjectArgs(parser)
 
-  if support_provisioning_model:
-    instances_flags.AddProvisioningModelVmArgs(parser)
-
-  if support_termination_action:
-    instances_flags.AddInstanceTerminationActionVmArgs(parser)
-
   if support_host_error_timeout_seconds:
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
 
@@ -237,8 +231,6 @@ class Create(base.CreateCommand):
   _support_secure_tag = False
   _support_resource_manager_tags = False
   _support_node_project = False
-  _support_provisioning_model = False
-  _support_termination_action = False
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
   _support_visible_core_count = False
@@ -302,8 +294,6 @@ class Create(base.CreateCommand):
         skip_defaults,
         support_node_affinity=True,
         support_node_project=self._support_node_project,
-        support_provisioning_model=self._support_provisioning_model,
-        support_termination_action=self._support_termination_action,
         support_host_error_timeout_seconds=self
         ._support_host_error_timeout_seconds)
     tags = instance_utils.GetTags(args, compute_client)
@@ -537,9 +527,7 @@ class Create(base.CreateCommand):
     instances_flags.ValidateNetworkTierArgs(args)
     instances_flags.ValidateReservationAffinityGroup(args)
     instances_flags.ValidateNetworkPerformanceConfigsArgs(args)
-
-    if self._support_termination_action:
-      instances_flags.ValidateInstanceScheduling(args)
+    instances_flags.ValidateInstanceScheduling(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     compute_client = holder.client
@@ -625,8 +613,6 @@ class CreateBeta(Create):
   _support_node_project = False
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
-  _support_provisioning_model = True
-  _support_termination_action = True
   _support_disk_architecture = False
   _support_network_queue_count = False
 
@@ -657,8 +643,6 @@ class CreateBeta(Create):
         support_multi_writer=cls._support_multi_writer,
         support_subinterface=cls._support_subinterface,
         support_node_project=cls._support_node_project,
-        support_provisioning_model=cls._support_provisioning_model,
-        support_termination_action=cls._support_termination_action,
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
@@ -701,8 +685,6 @@ class CreateAlpha(CreateBeta):
   _support_secure_tag = True
   _support_resource_manager_tags = True
   _support_node_project = True
-  _support_provisioning_model = True
-  _support_termination_action = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = True
   _support_visible_core_count = True
@@ -723,8 +705,6 @@ class CreateAlpha(CreateBeta):
         support_multi_writer=cls._support_multi_writer,
         support_subinterface=cls._support_subinterface,
         support_node_project=cls._support_node_project,
-        support_provisioning_model=cls._support_provisioning_model,
-        support_termination_action=cls._support_termination_action,
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,

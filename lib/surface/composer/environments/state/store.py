@@ -40,7 +40,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class StoreEnvironmentState(base.Command):
   """Store state of the environment by creating a snapshot."""
 

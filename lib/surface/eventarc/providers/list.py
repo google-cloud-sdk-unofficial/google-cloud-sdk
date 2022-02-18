@@ -74,4 +74,5 @@ class List(base.ListCommand):
     location_ref = args.CONCEPTS.location.Parse()
     if args.name:
       args.GetDisplayInfo().AddFilter(_FILTER + args.name)
-    return client.List(location_ref, limit=args.limit, page_size=args.page_size)
+    return client.List(
+        location_ref.RelativeName(), limit=args.limit, page_size=args.page_size)

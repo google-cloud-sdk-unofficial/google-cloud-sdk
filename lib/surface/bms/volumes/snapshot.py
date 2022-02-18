@@ -38,7 +38,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a snapshot of a Bare Metal Solution volume."""
 

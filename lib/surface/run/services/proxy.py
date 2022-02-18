@@ -102,7 +102,7 @@ class Proxy(base.BinaryBackedCommand):
 
     host = self._GetUrl(serv, args.tag, service_ref.servicesId)
     command_executor = proxy.ProxyWrapper()
-    log.Print('Service [{}] in region [{}] is now proxied locally.'.format(
+    log.Print('Proxying service [{}] in region [{}] locally...'.format(
         service_ref.servicesId, serv.region))
 
     response = command_executor(

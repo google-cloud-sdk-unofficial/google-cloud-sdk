@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command group for the Edge Network network CLI."""
+"""The command group for the Distributed Cloud Edge Network CLI."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class EdgeNetwork(base.Group):
-  """Manage Edge Network resources."""
+  """Manage Distributed Cloud Edge Network resources."""
   category = base.COMPUTE_CATEGORY
 
   def Filter(self, context, args):

@@ -21,9 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Actions(base.Group):
-  """Manage Dataplex resource actions."""
+  """Manage Dataplex zone resource actions."""
 
   category = base.DATA_ANALYTICS_CATEGORY

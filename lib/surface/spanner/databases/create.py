@@ -27,70 +27,8 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a Cloud Spanner database."""
-
-  detailed_help = {
-      'EXAMPLES':
-          textwrap.dedent("""\
-        To create an empty Cloud Spanner database, run:
-
-          $ {command} testdb --instance=my-instance-id
-
-        To create a Cloud Spanner database with populated schema, run:
-
-          $ {command} testdb --instance=my-instance-id
-              --ddl='CREATE TABLE mytable (a INT64, b INT64) PRIMARY KEY(a)'
-        """),
-  }
-
-  @staticmethod
-  def Args(parser):
-    """See base class."""
-    resource_args.AddDatabaseResourceArg(parser, 'to create')
-    flags.Ddl(help_text='Semi-colon separated DDL (data definition language) '
-              'statements to run inside the '
-              'newly created database. If there is an error in any statement, '
-              'the database is not created. Full DDL specification is at '
-              'https://cloud.google.com/spanner/docs/data-definition-language'
-             ).AddToParser(parser)
-    flags.DdlFile(
-        help_text='Path of a file that contains semi-colon separated DDL (data '
-        'definition language) statements to run inside the newly created '
-        'database. If there is an error in any statement, the database is not '
-        'created. Full DDL specification is at '
-        'https://cloud.google.com/spanner/docs/data-definition-language.'
-        ' If --ddl_file is set, --ddl is ignored.').AddToParser(parser)
-    base.ASYNC_FLAG.AddToParser(parser)
-    parser.display_info.AddCacheUpdater(flags.DatabaseCompleter)
-    resource_args.AddKmsKeyResourceArg(parser,
-                                       'to create the Cloud Spanner database')
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    database_ref = args.CONCEPTS.database.Parse()
-    instance_ref = database_ref.Parent()
-    kms_key = resource_args.GetAndValidateKmsKeyName(args)
-    op = databases.Create(instance_ref, args.database,
-                          flags.SplitDdlIntoStatements(args), kms_key)
-    if args.async_:
-      return op
-    return database_operations.Await(op, 'Creating database')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaCreate(Create):
-  """Create a Cloud Spanner database with ALPHA features."""
-  __doc__ = Create.__doc__
 
   detailed_help = {
       'EXAMPLES':
@@ -108,20 +46,35 @@ class AlphaCreate(Create):
 
           $ {command} testdb --instance=my-instance-id
               --database-dialect=POSTGRESQL
-
-        Currently, only a subset of Cloud Spanner regions support creating
-        PostgreSQL databases in the preview release of the PostgreSQL interface
-        feature. Consult your preview invitation for details.
-
         """),
   }
 
   @staticmethod
   def Args(parser):
-    Create.Args(parser)
+    """See base class."""
+    resource_args.AddDatabaseResourceArg(parser, 'to create')
+    flags.Ddl(help_text='Semi-colon separated DDL (data definition language) '
+              'statements to run inside the '
+              'newly created database. If there is an error in any statement, '
+              'the database is not created. This option is not supported for '
+              'the PostgreSQL dialect. Full DDL specification is at '
+              'https://cloud.google.com/spanner/docs/data-definition-language'
+             ).AddToParser(parser)
+    flags.DdlFile(
+        help_text='Path of a file that contains semi-colon separated DDL (data '
+        'definition language) statements to run inside the newly created '
+        'database. If there is an error in any statement, the database is not '
+        'created. This option is not supported for the PostgreSQL dialect. '
+        'Full DDL specification is at '
+        'https://cloud.google.com/spanner/docs/data-definition-language.'
+        ' If --ddl_file is set, --ddl is ignored.').AddToParser(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+    parser.display_info.AddCacheUpdater(flags.DatabaseCompleter)
+    resource_args.AddKmsKeyResourceArg(parser,
+                                       'to create the Cloud Spanner database')
     flags.DatabaseDialect(
         help_text='The SQL dialect of the Cloud Spanner Database. '
-        'Available options: GOOGLE_STANDARD_SQL (default) and POSTGRESQL.'
+        'GOOGLE_STANDARD_SQL is the default.'
     ).AddToParser(parser)
 
   def Run(self, args):

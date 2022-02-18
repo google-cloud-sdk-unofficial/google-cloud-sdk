@@ -91,7 +91,7 @@ class UpdateAutoscaling(base.Command):
       new_autoscaler.autoscalingPolicy.cpuUtilization.predictiveMethod = arg_utils.ChoiceToEnum(
           args.cpu_utilization_predictive_method, cpu_predictive_enum)
 
-    scheduled = mig_utils.BuildScheduled(args, client.messages)
+    scheduled = mig_utils.BuildSchedules(args, client.messages)
     if scheduled:
       new_autoscaler.autoscalingPolicy.scalingSchedules = scheduled
 

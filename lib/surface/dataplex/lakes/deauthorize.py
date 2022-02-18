@@ -28,8 +28,7 @@ from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.projects import util as project_util
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class DeauthorizeLake(base.Command):
   """Deauthorize a project service account from managing given resource.
 
@@ -39,21 +38,21 @@ class DeauthorizeLake(base.Command):
   detailed_help = {
       'EXAMPLES':
           """\
-          To deauthorize the service account in project 'test-project' from
-          managing another project 'test-project2', run:
+          To deauthorize the service account in project `test-project` from
+          managing another project `test-project2`, run:
 
-            $ {command} --location=us-east1 --project=test-project --project-resource=test-project2
+            $ {command} --project=test-project --project-resource=test-project2
 
-          To deauthorize the service account in project 'test-project' from
-          managing the storage bucket 'dataplex-storage-bucket', run:
+          To deauthorize the service account in project `test-project` from
+          managing the storage bucket `dataplex-storage-bucket`, run:
 
-            $ {command} --location=us-east1 --project=test-project --storage-bucket-resource=dataplex-storage-bucket
+            $ {command} --project=test-project --storage-bucket-resource=dataplex-storage-bucket
 
-          To deauthorize the service account in project 'test-project' from
-          managing the BigQuery dataset 'test-dataset' in project
-          'test-project2', run:
+          To deauthorize the service account in project `test-project` from
+          managing the BigQuery dataset `test-dataset` in project
+          `test-project2`, run:
 
-            $ {command} --location=us-east1 --project=test-project --bigquery-dataset-resource=test-dataset --secondary-project=test-project2
+            $ {command} --project=test-project --bigquery-dataset-resource=test-dataset --secondary-project=test-project2
           """,
   }
 

@@ -42,8 +42,12 @@
         The frame_number component will exist only for multi-frame instances.
         Refer to the DICOM conformance statement for permissible MIME types:
         https://cloud.google.com/healthcare/docs/dicom#wado-rs  The following
-        extensions will be used for output files:   application/dicom -> .dcm
-        image/jpeg -> .jpg   image/png -> .png  If unspecified, the instances
+        extensions will be used for output files:
+        * application/dicom -> .dcm
+        * image/jpeg -> .jpg
+        * image/png -> .png
+
+        If unspecified, the instances
         will be exported in their original DICOM format.'
     - arg_name: filter-config-gcs-uri
       release_tracks: [ALPHA, BETA]

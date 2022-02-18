@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import functools
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.api_lib.compute.instance_groups.managed import stateful_policy_utils as policy_utils
@@ -279,14 +280,16 @@ class UpdateBeta(UpdateGA):
     instance_groups_flags.ValidateUpdateStatefulPolicyParamsWithIPs(
         args, stateful_policy)
 
-  def _GetUpdatedStatefulPolicyForStatefulIPsCommon(
-      self, client, current_ips, update_ip_to_ip_entry_lambda,
-      update_ips=None, remove_interface_names=None):
-    # Map of ips to have in the stateful policy, after updating and removing
-    # the interfaces specified by the update and remove flags.
-    final_ips_map = {
-        ip_entry.key: ip_entry for ip_entry in current_ips
-    }
+  def _GetStatefulPolicyPatchForStatefulIPsCommon(self,
+                                                  client,
+                                                  update_ip_to_ip_entry_lambda,
+                                                  update_ip_to_none_lambda,
+                                                  update_ips=None,
+                                                  remove_interface_names=None):
+    if remove_interface_names:
+      managed_instance_groups_utils.RegisterCustomStatefulIpsPatchEncoders(
+          client)
+    patched_ips_map = {}
 
     # Update the interfaces specified in IPs to be updated.
     for update_ip in (update_ips or []):
@@ -295,49 +298,39 @@ class UpdateBeta(UpdateGA):
           'interface-name',
           instance_groups_flags.STATEFUL_IP_DEFAULT_INTERFACE_NAME)
       updated_preserved_state_ip = update_ip_to_ip_entry_lambda(update_ip)
-      # Patch semantics on the stateful IP flag.
-      if interface_name in final_ips_map:
-        policy_utils.PatchStatefulPolicyIP(
-            final_ips_map[interface_name], updated_preserved_state_ip)
-      else:
-        final_ips_map[interface_name] = updated_preserved_state_ip
+      patched_ips_map[interface_name] = updated_preserved_state_ip
 
     # Remove the interfaces specified for removal.
     for interface_name in remove_interface_names or []:
-      del final_ips_map[interface_name]
+      updated_preserved_state_ip = update_ip_to_none_lambda(interface_name)
+      patched_ips_map[interface_name] = updated_preserved_state_ip
+
     stateful_ips = sorted(
-        [stateful_ip for key, stateful_ip in six.iteritems(final_ips_map)],
+        [stateful_ip for key, stateful_ip in six.iteritems(patched_ips_map)],
         key=lambda x: x.key)
     return stateful_ips
 
-  def _GetUpdatedStatefulPolicyForInternalIPs(
-      self, client, current_stateful_policy,
-      update_internal_ips=None, remove_interface_names=None):
+  def _GetPatchForStatefulPolicyForInternalIPs(self,
+                                               client,
+                                               update_internal_ips=None,
+                                               remove_interface_names=None):
     # Extract internal IPs protos from current stateful policy proto.
-    if (current_stateful_policy and current_stateful_policy.preservedState
-        and current_stateful_policy.preservedState.internalIPs):
-      current_ips = (current_stateful_policy
-                     .preservedState.internalIPs.additionalProperties)
-    else:
-      current_ips = []
-    return self._GetUpdatedStatefulPolicyForStatefulIPsCommon(
-        client, current_ips,
-        lambda ip: policy_utils.MakeInternalIPEntry(client.messages, ip),
+    return self._GetStatefulPolicyPatchForStatefulIPsCommon(
+        client,
+        functools.partial(policy_utils.MakeInternalIPEntry, client.messages),
+        functools.partial(
+            policy_utils.MakeInternalIPNullEntryForDisablingInPatch, client),
         update_internal_ips, remove_interface_names)
 
-  def _GetUpdatedStatefulPolicyForExternalIPs(
-      self, client, current_stateful_policy,
-      update_external_ips=None, remove_interface_names=None):
-    # Extract internal IPs protos from current stateful policy proto.
-    if (current_stateful_policy and current_stateful_policy.preservedState
-        and current_stateful_policy.preservedState.externalIPs):
-      current_ips = (current_stateful_policy
-                     .preservedState.externalIPs.additionalProperties)
-    else:
-      current_ips = []
-    return self._GetUpdatedStatefulPolicyForStatefulIPsCommon(
-        client, current_ips,
-        lambda ip: policy_utils.MakeExternalIPEntry(client.messages, ip),
+  def _GetPatchForStatefulPolicyForExternalIPs(self,
+                                               client,
+                                               update_external_ips=None,
+                                               remove_interface_names=None):
+    return self._GetStatefulPolicyPatchForStatefulIPsCommon(
+        client,
+        functools.partial(policy_utils.MakeExternalIPEntry, client.messages),
+        functools.partial(
+            policy_utils.MakeExternalIPNullEntryForDisablingInPatch, client),
         update_external_ips, remove_interface_names)
 
   def _GetUpdatedStatefulPolicy(self, client, current_stateful_policy, args):
@@ -345,13 +338,11 @@ class UpdateBeta(UpdateGA):
     stateful_policy = super(UpdateBeta, self)._GetUpdatedStatefulPolicy(
         client, current_stateful_policy, args)
 
-    stateful_internal_ips = self._GetUpdatedStatefulPolicyForInternalIPs(
-        client, current_stateful_policy, args.stateful_internal_ip,
-        args.remove_stateful_internal_ips)
+    stateful_internal_ips = self._GetPatchForStatefulPolicyForInternalIPs(
+        client, args.stateful_internal_ip, args.remove_stateful_internal_ips)
 
-    stateful_external_ips = self._GetUpdatedStatefulPolicyForExternalIPs(
-        client, current_stateful_policy, args.stateful_external_ip,
-        args.remove_stateful_external_ips)
+    stateful_external_ips = self._GetPatchForStatefulPolicyForExternalIPs(
+        client, args.stateful_external_ip, args.remove_stateful_external_ips)
 
     return policy_utils.UpdateStatefulPolicy(
         client.messages, stateful_policy,

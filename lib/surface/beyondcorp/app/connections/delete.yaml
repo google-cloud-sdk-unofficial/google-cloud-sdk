@@ -12,9 +12,10 @@
     collection: beyondcorp.projects.locations.operations
 
   request:
-    collection: beyondcorp.projects.locations.connections
+    collection: beyondcorp.projects.locations.appConnections
 
   arguments:
     resource:
-      help_text: The Beyondcorp connection you want to delete.
+      arg_name: connection
       spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:connection
+      help_text: The Beyondcorp connection you want to delete.

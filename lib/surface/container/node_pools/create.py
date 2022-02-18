@@ -201,7 +201,7 @@ class Create(base.CreateCommand):
     flags.AddNodeGroupFlag(parser)
     flags.AddEnableGvnicFlag(parser)
     flags.AddEnableImageStreamingFlag(parser, for_node_pool=True)
-    flags.AddSpotFlag(parser, for_node_pool=True, hidden=True)
+    flags.AddSpotFlag(parser, for_node_pool=True)
     flags.AddEnableConfidentialNodesFlag(
         parser, for_node_pool=True, hidden=True)
 
@@ -234,7 +234,8 @@ class Create(base.CreateCommand):
       if options.accelerators is not None:
         log.status.Print('Note: ' + constants.KUBERNETES_GPU_LIMITATION_MSG)
 
-      elif options.image_type and options.image_type.upper() == 'WINDOWS_SAC':
+      elif options.image_type and options.image_type.upper().startswith(
+          'WINDOWS_SAC'):
         log.status.Print(WARN_WINDOWS_SAC_SUPPORT_LIFECYCLE)
 
       # Image streaming feature requires Container File System API to be
@@ -301,6 +302,7 @@ class CreateBeta(Create):
     flags.AddNetworkPerformanceConfigFlags(parser)
     flags.AddEnableConfidentialNodesFlag(
         parser, for_node_pool=True, hidden=True)
+    flags.AddDisablePodCIDROverprovisionFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -323,6 +325,7 @@ class CreateBeta(Create):
     ops.maintenance_interval = args.maintenance_interval
     ops.network_performance_config = args.network_performance_configs
     ops.enable_confidential_nodes = args.enable_confidential_nodes
+    ops.disable_pod_cidr_overprovision = args.disable_pod_cidr_overprovision
     return ops
 
 
@@ -353,6 +356,7 @@ class CreateAlpha(Create):
     ops.maintenance_interval = args.maintenance_interval
     ops.network_performance_config = args.network_performance_configs
     ops.enable_confidential_nodes = args.enable_confidential_nodes
+    ops.disable_pod_cidr_overprovision = args.disable_pod_cidr_overprovision
     return ops
 
   @staticmethod
@@ -395,6 +399,7 @@ class CreateAlpha(Create):
     flags.AddNetworkPerformanceConfigFlags(parser)
     flags.AddEnableConfidentialNodesFlag(
         parser, for_node_pool=True, hidden=True)
+    flags.AddDisablePodCIDROverprovisionFlag(parser)
 
 
 Create.detailed_help = DETAILED_HELP

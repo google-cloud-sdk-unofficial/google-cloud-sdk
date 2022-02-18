@@ -56,7 +56,7 @@ To start a local pubsub emulator, run:
         required=False,
         type=lambda arg: arg_parsers.HostPort.Parse(arg, ipv6_enabled=True),
         help='The host:port to which the emulator should be bound. The default '
-             'value is localhost:8085.')
+             'value is [::1]:8085.')
 
   # Override
   def Run(self, args):

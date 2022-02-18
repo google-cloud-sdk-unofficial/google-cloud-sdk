@@ -25,8 +25,7 @@ from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class SetIamPolicy(base.Command):
   """Set the IAM policy to a Dataplex zone as defined in a JSON or YAML file.
 
@@ -39,8 +38,8 @@ class SetIamPolicy(base.Command):
       'EXAMPLES':
           """\
           The following command will read an IAM policy defined in a JSON file
-          'policy.son' and set it for the Dataplex zone 'test-zone' defined in
-          lake 'test-lake' in location 'us-central1':
+          `policy.son` and set it for the Dataplex zone `test-zone` defined in
+          lake `test-lake` in location `us-central1`:
 
             $ {command} test-zone --location=us-central1 --lake=test-lake policy.json
 

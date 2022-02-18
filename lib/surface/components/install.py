@@ -24,12 +24,12 @@ from googlecloudsdk.command_lib.components import util
 
 
 class Install(base.SilentCommand):
-  """Install one or more Cloud SDK components.
+  """Install one or more Google Cloud CLI components.
 
   Ensure that each of the specified components (as well as any dependent
   components) is installed on the local workstation.  Components are installed
-  without performing any upgrades to your existing SDK installation.  All
-  components are installed at the current version of your SDK.
+  without performing any upgrades to your existing CLI installation.  All
+  components are installed at the current version of your CLI.
   """
   detailed_help = {
       'DESCRIPTION': """\
@@ -44,13 +44,13 @@ class Install(base.SilentCommand):
           it depends.  The command lists all components it is about to install,
           and asks for confirmation before proceeding.
 
-          ``{command}'' installs components from the version of the Cloud SDK
-          you currently have installed.  You can see your current version by
+          ``{command}'' installs components from the version of the Google Cloud
+          CLI you currently have installed.  You can see your current version by
           running:
 
             $ {top_command} version
 
-          If you want to update your Cloud SDK installation to the latest
+          If you want to update your Google Cloud CLI installation to the latest
           available version, use:
 
             $ {parent_command} update

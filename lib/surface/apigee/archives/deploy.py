@@ -193,7 +193,9 @@ class Deploy(base.DescribeCommand):
           apigee.LROPoller(operation["organization"]),
           operation["uuid"],
           message="Waiting for operation [{}] to complete".format(
-              operation["uuid"]))
+              operation["uuid"]),
+          wait_ceiling_ms=5000,
+          )
     finally:
       if local_dir_archive and hasattr(local_dir_archive, "Close"):
         local_dir_archive.Close()

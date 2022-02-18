@@ -49,7 +49,7 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     policy = args.CONCEPTS.snapshot_schedule_policy.Parse()
     client = BmsClient()
-    return client.Get(policy)
+    return client.GetSnapshotSchedulePolicy(policy)
 
 
 Describe.detailed_help = DETAILED_HELP

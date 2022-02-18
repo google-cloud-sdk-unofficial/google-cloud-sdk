@@ -40,8 +40,8 @@ class Access(base.DescribeCommand):
     $ {command} 123 --secret=my-secret
 
   Note: The output will be formatted as UTF-8 which can corrupt binary secrets.
-  To get the raw bytes, have Cloud SDK print the response as base64-encoded and
-  decode:
+  To get the raw bytes, have Google Cloud CLI print the response as
+  base64-encoded and decode:
 
     $ {command} 123 --secret=my-secret --format='get(payload.data)' | tr '_-' '/+' | base64 -d
   """

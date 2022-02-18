@@ -280,8 +280,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       system_config_from_file=get_default('system_config_from_file'),
       private_ipv6_google_access_type=get_default('private_ipv6_google_access_type'),
       tags=get_default('tags'),
-      network_tags=get_default('network_tags'),
-      nap_network_tags=get_default('nap_network_tags'),
+      autoprovisioning_network_tags=get_default('autoprovisioning_network_tags'),
       threads_per_core=get_default('threads_per_core'),
       user=get_default('username'),
       metadata=metadata,
@@ -329,7 +328,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_confidential_nodes=get_default('enable_confidential_nodes'),
       enable_image_streaming=get_default('enable_image_streaming'),
       spot=get_default('spot'),
-      enable_service_externalips=get_default('enable_service_externalips'))
+      enable_service_externalips=get_default('enable_service_externalips'),
+      disable_pod_cidr_overprovision=get_default('disable_pod_cidr_overprovision'))
 
 
 GA = 'ga'
@@ -523,7 +523,7 @@ flags_to_add = {
         'shieldednodes':
             flags.AddEnableShieldedNodesFlags,
         'spot':
-            lambda p: flags.AddSpotFlag(p, hidden=True),
+            lambda p: flags.AddSpotFlag(p, hidden=False),
         'surgeupgrade':
             flags.AddSurgeUpgradeFlag,
         'systemconfig':
@@ -534,8 +534,8 @@ flags_to_add = {
             flags.AddTagsCreate,
         'threads_per_core':
             flags.AddThreadsPerCore,
-        'nap_network_tags':
-            flags.AddNAPNetworkTagsCreate,
+        'autoprovisioning_network_tags':
+            flags.AddAutoprovisioningNetworkTagsCreate,
         'tpu':
             flags.AddTpuFlags,
         'verticalpodautoscaling':
@@ -708,8 +708,8 @@ flags_to_add = {
             lambda p: flags.AddSystemConfigFlag(p, hidden=False),
         'tags':
             flags.AddTagsCreate,
-        'nap_network_tags':
-            flags.AddNAPNetworkTagsCreate,
+        'autoprovisioning_network_tags':
+            flags.AddAutoprovisioningNetworkTagsCreate,
         'threads_per_core':
             flags.AddThreadsPerCore,
         'tpu':
@@ -731,6 +731,8 @@ flags_to_add = {
             flags.AddCrossConnectSubnetworksFlag,
         'enableserviceexternalips':
             flags.AddEnableServiceExternalIPs,
+        'disablepodcidroverprovision':
+            flags.AddDisablePodCIDROverprovisionFlag,
     },
     ALPHA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True)),
@@ -904,8 +906,8 @@ flags_to_add = {
             lambda p: flags.AddSystemConfigFlag(p, hidden=False),
         'tags':
             flags.AddTagsCreate,
-        'nap_network_tags':
-            flags.AddNAPNetworkTagsCreate,
+        'autoprovisioning_network_tags':
+            flags.AddAutoprovisioningNetworkTagsCreate,
         'threads_per_core':
             flags.AddThreadsPerCore,
         'tpu':
@@ -927,6 +929,8 @@ flags_to_add = {
             flags.AddCrossConnectSubnetworksFlag,
         'enableserviceexternalips':
             flags.AddEnableServiceExternalIPs,
+        'disablepodcidroverprovision':
+            flags.AddDisablePodCIDROverprovisionFlag,
     },
 }
 
@@ -1171,6 +1175,8 @@ class CreateBeta(Create):
     ops.spot = get_default('spot')
     ops.placement_type = get_default('placement_type')
     ops.maintenance_interval = get_default('maintenance_interval')
+    ops.disable_pod_cidr_overprovision = get_default(
+        'disable_pod_cidr_overprovision')
     return ops
 
 
@@ -1251,4 +1257,6 @@ class CreateAlpha(Create):
     ops.spot = get_default('spot')
     ops.placement_type = get_default('placement_type')
     ops.maintenance_interval = get_default('maintenance_interval')
+    ops.disable_pod_cidr_overprovision = get_default(
+        'disable_pod_cidr_overprovision')
     return ops

@@ -1,7 +1,17 @@
-import collections
-import operator
 import functools
+import operator
 import sys
+
+import six
+from six.moves import reload_module
+# pylint: disable=g-import-not-at-top
+if six.PY2:
+    import collections as collections_abc
+else:
+    # Python 3.7+ raises DeprecationWarnings when using ABCs directly from
+    # collections module, and they will be removed in Python 3.9.
+    import collections.abc as collections_abc
+# pylint: enable=g-import-not-at-top
 
 
 try:
@@ -13,7 +23,7 @@ except ImportError:  # python < 2.7
 iteritems = getattr(dict, 'iteritems', dict.items) # py2-3 compatibility
 
 
-class frozendict(collections.Mapping):
+class frozendict(collections_abc.Mapping):
     """
     An immutable wrapper around dictionaries that implements the complete :py:class:`collections.Mapping`
     interface. It can be used as a drop-in replacement for dictionaries where immutability is desired.
