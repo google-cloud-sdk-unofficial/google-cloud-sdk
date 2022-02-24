@@ -72,10 +72,10 @@ class Info(base.Command):
         action='store_true',
         help='Run diagnostics on your installation of the Google Cloud CLI.')
     diagnostics.add_argument(
-        '--ignore-hidden-property-whitelist',
+        '--ignore-hidden-property-allowlist',
         action='store_true',
         hidden=True,
-        help='Ignore the hidden property whitelist.')
+        help='Ignore the hidden property allowlist.')
     parser.add_argument(
         '--anonymize',
         action='store_true',
@@ -84,7 +84,7 @@ class Info(base.Command):
 
   def Run(self, args):
     if args.run_diagnostics:
-      passed = _RunDiagnostics(args.ignore_hidden_property_whitelist)
+      passed = _RunDiagnostics(args.ignore_hidden_property_allowlist)
       if passed:
         return None
       else:

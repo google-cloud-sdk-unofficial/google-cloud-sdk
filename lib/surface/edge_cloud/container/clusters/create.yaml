@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Create an Edge Container cluster.
@@ -13,7 +13,10 @@
 
   request:
     collection: edgecontainer.projects.locations.clusters
-    api_version: v1alpha
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
     modify_request_hooks:
     - googlecloudsdk.command_lib.edge_cloud.container.hub:SetHubMembershipPath
     - googlecloudsdk.command_lib.edge_cloud.container.admin_users:SetAdminUsers
@@ -34,6 +37,7 @@
         Name of the Fleet host project where the cluster is registered.
     - arg_name: hub-membership
       api_field: cluster.hub.membership
+      release_tracks: [ALPHA]
       help_text: |
         DEPRECATED - use --fleet-project instead.
 
@@ -55,12 +59,14 @@
       default: "10.96.0.0/12"
     - arg_name: cluster-ipv6-cidr
       api_field: cluster.networking.clusterIpv6CidrBlocks
+      release_tracks: [ALPHA]
       repeated: false
       help_text: |
         If specified, all pods in the cluster are assigned an RFC4193 IPv6 address
         from this block. This field cannot be changed after creation.
     - arg_name: services-ipv6-cidr
       api_field: cluster.networking.servicesIpv6CidrBlocks
+      release_tracks: [ALPHA]
       repeated: false
       help_text: |
         If specified, all services in the cluster are assigned an RFC4193 IPv6

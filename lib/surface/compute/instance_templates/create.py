@@ -103,6 +103,7 @@ def _CommonArgs(parser,
   instances_flags.AddNestedVirtualizationArgs(parser)
   instances_flags.AddThreadsPerCoreArgs(parser)
   instances_flags.AddEnableUefiNetworkingArgs(parser)
+  instances_flags.AddResourceManagerTagsArgs(parser)
   if support_numa_node_count:
     instances_flags.AddNumaNodeCountArgs(parser)
   instances_flags.AddStackTypeArgs(parser)
@@ -385,6 +386,9 @@ def AddServiceProxyArgsToMetadata(args):
     if 'mesh' in args.service_proxy:
       proxy_spec['mesh'] = args.service_proxy['mesh']
 
+    if 'project-number' in args.service_proxy:
+      proxy_spec['project-number'] = args.service_proxy['project-number']
+
     if 'intercept-all-outbound-traffic' in args.service_proxy:
       traffic_interception = collections.OrderedDict()
       traffic_interception['intercept-all-outbound'] = True
@@ -497,8 +501,7 @@ def _RunCreate(compute_api,
                support_host_error_timeout_seconds=False,
                support_numa_node_count=False,
                support_visible_core_count=False,
-               support_disk_architecture=False,
-               support_resource_manager_tags=False):
+               support_disk_architecture=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -522,8 +525,6 @@ def _RunCreate(compute_api,
       support_disk_architecture: Storage resources can be used to create boot
         disks compatible with ARM64 or X86_64 machine architectures. If this
         field is not specified, the default is ARCHITECTURE_UNSPECIFIED.
-      support_resource_manager_tags: Indicates whether setting resource manager
-        tags is supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -786,7 +787,7 @@ def _RunCreate(compute_api,
             args.numa_node_count if support_numa_node_count else None,
             visible_core_count, args.enable_uefi_networking))
 
-  if support_resource_manager_tags and args.resource_manager_tags:
+  if args.resource_manager_tags:
     ret_resource_manager_tags = resource_manager_tags_utils.GetResourceManagerTags(
         args.resource_manager_tags)
     if ret_resource_manager_tags is not None:
@@ -833,7 +834,6 @@ class Create(base.CreateCommand):
   _support_numa_node_count = False
   _support_visible_core_count = False
   _support_disk_architecture = False
-  _support_resource_manager_tags = False
 
   @classmethod
   def Args(cls, parser):
@@ -873,8 +873,7 @@ class Create(base.CreateCommand):
         support_mesh=self._support_mesh,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_disk_architecture=self._support_disk_architecture,
-        support_resource_manager_tags=self._support_resource_manager_tags)
+        support_disk_architecture=self._support_disk_architecture)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -900,7 +899,6 @@ class CreateBeta(Create):
   _support_numa_node_count = False
   _support_visible_core_count = False
   _support_disk_architecture = False
-  _support_resource_manager_tags = False
 
   @classmethod
   def Args(cls, parser):
@@ -945,8 +943,7 @@ class CreateBeta(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_disk_architecture=self._support_disk_architecture,
-        support_resource_manager_tags=self._support_resource_manager_tags)
+        support_disk_architecture=self._support_disk_architecture)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -972,7 +969,6 @@ class CreateAlpha(Create):
   _support_numa_node_count = True
   _support_visible_core_count = True
   _support_disk_architecture = True
-  _support_resource_manager_tags = True
 
   @classmethod
   def Args(cls, parser):
@@ -995,7 +991,6 @@ class CreateAlpha(Create):
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
-    instances_flags.AddResourceManagerTagsArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.
@@ -1020,8 +1015,7 @@ class CreateAlpha(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_disk_architecture=self._support_disk_architecture,
-        support_resource_manager_tags=self._support_resource_manager_tags)
+        support_disk_architecture=self._support_disk_architecture)
 
 
 DETAILED_HELP = {

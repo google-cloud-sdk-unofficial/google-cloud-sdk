@@ -26,7 +26,6 @@ from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import run_flags
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -43,7 +42,7 @@ class Create(base.CreateCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    parser = run_flags.AddCreateFlags(parser)
+    parser = run_flags.AddsCreateFlags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""
@@ -54,8 +53,7 @@ class Create(base.CreateCommand):
     run_type = yaml_data['kind']
     run_id = yaml_data['metadata']['name']
 
-    project = properties.VALUES.core.project.Get(required=True)
-    parent = 'projects/%s/locations/%s' % (project, args.region)
+    parent = args.CONCEPTS.region.Parse().RelativeName()
 
     if run_type == 'PipelineRun':
       pipeline_run, discarded_fields = pipeline_input_util.TektonYamlDataToPipelineRun(

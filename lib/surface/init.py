@@ -437,6 +437,10 @@ https://console.developers.google.com/apis page.
         '* Run `gcloud topic --help` to learn about advanced features of the '
         'SDK like arg files and output formatting')
 
+    log.status.Print(
+        '* Run `gcloud cheat-sheet` to see a roster of go-to `gcloud` '
+        'commands.')
+
   def _CreateConfiguration(self):
     configuration_name = console_io.PromptResponse(
         'Enter configuration name. Names start with a lower case letter and '

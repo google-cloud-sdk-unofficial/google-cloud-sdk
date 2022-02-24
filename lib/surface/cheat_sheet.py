@@ -55,7 +55,7 @@ class Cheatsheet(base.TopicCommand):
 
   * `gcloud config set`: Define a property (like compute/zone) for the current
     configuration.
-  * `gcloud config get-value`: Fetch value of a Google Cloud CLI property.
+  * `gcloud config get`: Fetch value of a Google Cloud CLI property.
   * `gcloud config list`: Display all the properties for the current
     configuration.
   * `gcloud config configurations create`: Create a new named configuration.

@@ -73,7 +73,8 @@ class UpdateHelper(object):
            support_logging, support_client_only, support_grpc_protocol,
            support_subsetting, support_subsetting_subset_size,
            support_unspecified_protocol, support_strong_session_affinity,
-           support_advanced_load_balancing, support_service_bindings):
+           support_advanced_load_balancing, support_service_bindings,
+           support_dynamic_compression, support_weighted_lb):
     """Add all arguments for updating a backend service."""
 
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
@@ -140,12 +141,18 @@ class UpdateHelper(object):
     if support_strong_session_affinity:
       flags.AddStrongSessionAffinity(parser)
 
+    if support_dynamic_compression:
+      flags.AddCompressionMode(parser)
+
     if support_advanced_load_balancing:
       flags.AddServiceLoadBalancingPolicy(
           parser, required=False, is_update=True)
 
     if support_service_bindings:
       flags.AddServiceBindings(parser, required=False, is_update=True)
+
+    if support_weighted_lb:
+      flags.AddLocalityLbPolicy(parser)
 
   def __init__(self,
                support_l7_internal_load_balancer,
@@ -155,7 +162,9 @@ class UpdateHelper(object):
                support_subsetting_subset_size,
                support_strong_session_affinity=False,
                support_advanced_load_balancing=False,
-               support_service_bindings=False):
+               support_service_bindings=False,
+               support_dynamic_compression=False,
+               support_weighted_lb=False):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
@@ -164,6 +173,8 @@ class UpdateHelper(object):
     self._support_strong_session_affinity = support_strong_session_affinity
     self._support_advanced_load_balancing = support_advanced_load_balancing
     self._support_service_bindings = support_service_bindings
+    self._support_dynamic_compression = support_dynamic_compression
+    self._support_weighted_lb = support_weighted_lb
 
   def Modify(self, client, resources, args, existing, backend_service_ref):
     """Modify Backend Service."""
@@ -232,6 +243,11 @@ class UpdateHelper(object):
       backend_services_utils.ApplySubsettingArgs(
           client, args, replacement, self._support_subsetting_subset_size)
 
+    if self._support_weighted_lb and args.locality_lb_policy is not None:
+      replacement.localityLbPolicy = (
+          client.messages.BackendService.LocalityLbPolicyValueValuesEnum(
+              args.locality_lb_policy))
+
     backend_services_utils.ApplyCdnPolicyArgs(
         client,
         args,
@@ -245,6 +261,11 @@ class UpdateHelper(object):
         args,
         replacement,
         support_strong_session_affinity=self._support_strong_session_affinity)
+
+    if self._support_dynamic_compression and args.compression_mode is not None:
+      replacement.compressionMode = (
+          client.messages.BackendService.CompressionModeValueValuesEnum(
+              args.compression_mode))
 
     self._ApplyIapArgs(client, args.iap, existing, replacement)
 
@@ -348,6 +369,8 @@ class UpdateHelper(object):
         args.IsSpecified('idle_timeout_sec'),
         args.IsSpecified('enable_strong_affinity')
         if self._support_strong_session_affinity else False,
+        args.IsSpecified('compression_mode')
+        if self._support_dynamic_compression else False,
         args.IsSpecified('service_lb_policy')
         if self._support_advanced_load_balancing else False,
         args.IsSpecified('no_service_lb_policy')
@@ -355,7 +378,9 @@ class UpdateHelper(object):
         args.IsSpecified('service_bindings')
         if self._support_service_bindings else False,
         args.IsSpecified('no_service_bindings')
-        if self._support_service_bindings else False
+        if self._support_service_bindings else False,
+        args.IsSpecified('locality_lb_policy')
+        if self._support_weighted_lb else False
     ]):
       raise compute_exceptions.UpdatePropertyError(
           'At least one property must be modified.')
@@ -517,7 +542,7 @@ class UpdateGA(base.UpdateCommand):
   _support_l7_internal_load_balancer = True
   _support_logging = True
   _support_failover = True
-  _support_client_only = False
+  _support_client_only = True
   _support_unspecified_protocol = False
   _support_grpc_protocol = True
   _support_subsetting = True
@@ -525,6 +550,8 @@ class UpdateGA(base.UpdateCommand):
   _support_strong_session_affinity = False
   _support_advanced_load_balancing = False
   _support_service_bindings = False
+  _support_dynamic_compression = False
+  _support_weighted_lb = False
 
   @classmethod
   def Args(cls, parser):
@@ -541,7 +568,9 @@ class UpdateGA(base.UpdateCommand):
         support_unspecified_protocol=cls._support_unspecified_protocol,
         support_strong_session_affinity=cls._support_strong_session_affinity,
         support_advanced_load_balancing=cls._support_advanced_load_balancing,
-        support_service_bindings=cls._support_service_bindings)
+        support_service_bindings=cls._support_service_bindings,
+        support_dynamic_compression=cls._support_dynamic_compression,
+        support_weighted_lb=cls._support_weighted_lb)
 
   def Run(self, args):
     """Issues requests necessary to update the Backend Services."""
@@ -552,7 +581,9 @@ class UpdateGA(base.UpdateCommand):
                         self._support_subsetting_subset_size,
                         self._support_strong_session_affinity,
                         self._support_advanced_load_balancing,
-                        self._support_service_bindings).Run(args, holder)
+                        self._support_service_bindings,
+                        self._support_dynamic_compression,
+                        self._support_weighted_lb).Run(args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -562,7 +593,7 @@ class UpdateBeta(UpdateGA):
   *{command}* is used to update backend services.
   """
 
-  _support_client_only = False
+  _support_client_only = True
   _support_unspecified_protocol = True
   _support_grpc_protocol = True
   _support_subsetting = True
@@ -570,6 +601,8 @@ class UpdateBeta(UpdateGA):
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = False
   _support_service_bindings = True
+  _support_dynamic_compression = True
+  _support_weighted_lb = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -587,3 +620,5 @@ class UpdateAlpha(UpdateBeta):
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = True
   _support_service_bindings = True
+  _support_dynamic_compression = True
+  _support_weighted_lb = True

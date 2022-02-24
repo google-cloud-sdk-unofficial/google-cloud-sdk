@@ -30,23 +30,17 @@ class SetTargetHelper(object):
 
   FORWARDING_RULE_ARG = None
 
-  def __init__(self, holder, include_l7_internal_load_balancing, include_gfe3,
-               include_l7_rxlb):
+  def __init__(self, holder, include_l7_internal_load_balancing):
     self._holder = holder
     self._include_l7_internal_load_balancing = include_l7_internal_load_balancing
-    self._include_gfe3 = include_gfe3
-    self._include_l7_rxlb = include_l7_rxlb
 
   @classmethod
-  def Args(cls, parser, include_l7_internal_load_balancing, include_gfe3,
-           include_l7_rxlb):
+  def Args(cls, parser, include_l7_internal_load_balancing):
     """Adds flags to set the target of a forwarding rule."""
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
     flags.AddUpdateArgs(
         parser,
-        include_l7_internal_load_balancing=include_l7_internal_load_balancing,
-        include_gfe3=include_gfe3,
-        include_l7_rxlb=include_l7_rxlb)
+        include_l7_internal_load_balancing=include_l7_internal_load_balancing)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
   def Run(self, args):
@@ -86,11 +80,7 @@ class SetTargetHelper(object):
                              args):
     """Create a regionally scoped request."""
     target_ref, _ = utils.GetRegionalTarget(
-        client,
-        resources,
-        args,
-        forwarding_rule_ref=forwarding_rule_ref,
-        include_l7_rxlb=self._include_l7_rxlb)
+        client, resources, args, forwarding_rule_ref=forwarding_rule_ref)
 
     request = client.messages.ComputeForwardingRulesSetTargetRequest(
         forwardingRule=forwarding_rule_ref.Name(),
@@ -111,8 +101,6 @@ class Set(base.UpdateCommand):
   FORWARDING_RULE_ARG = None
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
   _include_l7_internal_load_balancing = True
-  _include_gfe3 = False
-  _include_l7_rxlb = False
 
   detailed_help = {
       'DESCRIPTION': ("""
@@ -129,21 +117,18 @@ class Set(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    SetTargetHelper.Args(parser, cls._include_l7_internal_load_balancing,
-                         cls._include_gfe3, cls._include_l7_rxlb)
+    SetTargetHelper.Args(parser, cls._include_l7_internal_load_balancing)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return SetTargetHelper(holder, self._include_l7_internal_load_balancing,
-                           self._include_gfe3, self._include_l7_rxlb).Run(args)
+    return SetTargetHelper(holder,
+                           self._include_l7_internal_load_balancing).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SetBeta(Set):
   """Modify a forwarding rule to direct network traffic to a new target."""
   _include_l7_internal_load_balancing = True
-  _include_gfe3 = True
-  _include_l7_rxlb = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

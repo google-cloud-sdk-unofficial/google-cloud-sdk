@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: List Edge Container zones.
@@ -17,7 +17,10 @@
 
   request:
     collection: edgecontainer.projects.locations
-    api_version: v1alpha
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
 
   response:
     modify_response_hooks:

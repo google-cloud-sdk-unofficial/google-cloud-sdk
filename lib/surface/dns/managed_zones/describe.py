@@ -65,17 +65,29 @@ class DescribeBeta(base.DescribeCommand):
   To display the details of your managed-zone, run:
 
     $ {command} my-zone
+
+  To display the details of a zonal managed-zone in Zonal Cloud DNS service in
+  us-east1-c, run:
+
+    $ {command} my-zone --location=us-east1-c
   """
 
   @staticmethod
   def Args(parser):
     flags.GetZoneResourceArg(
         'The name of the managed-zone to be described.').AddToParser(parser)
+    flags.GetLocationArg().AddToParser(parser)
 
   def Run(self, args):
-    api_version = util.GetApiFromTrack(self.ReleaseTrack())
-    zones_client = managed_zones.Client.FromApiVersion(api_version)
-    zone_ref = args.CONCEPTS.zone.Parse()
+    api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
+    location = args.location if api_version == 'v2' else None
+    zones_client = managed_zones.Client.FromApiVersion(api_version, location)
+    registry = util.GetRegistry(api_version)
+
+    zone_ref = registry.Parse(
+        args.zone,
+        util.GetParamsForRegistry(api_version, args),
+        collection='dns.managedZones')
     return zones_client.Get(zone_ref)
 
 
@@ -90,4 +102,8 @@ class DescribeAlpha(DescribeBeta):
   To display the details of your managed-zone, run:
 
     $ {command} my-zone
+
+  To display the details of a zonal managed-zone in us-east1-c, run:
+
+    $ {command} my-zone --location=us-east1-c
   """

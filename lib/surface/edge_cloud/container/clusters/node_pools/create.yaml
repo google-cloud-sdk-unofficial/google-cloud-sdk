@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Create an Edge Container node pool.
@@ -21,7 +21,10 @@
 
   request:
     collection: edgecontainer.projects.locations.clusters.nodePools
-    api_version: v1alpha
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
 
   arguments:
     resource:

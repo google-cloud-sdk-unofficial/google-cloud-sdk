@@ -22,9 +22,10 @@ from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
-from googlecloudsdk.core import properties
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe a record-set in a managed-zone.
 
@@ -37,20 +38,26 @@ class Describe(base.DescribeCommand):
   run:
 
     $ {command} foo.bar.com. --type=A --zone=my_zone
-
   """
+
+  @classmethod
+  def _BetaOrAlpha(cls):
+    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
+                                  base.ReleaseTrack.ALPHA)
 
   @classmethod
   def Args(cls, parser):
     flags.GetZoneArg().AddToParser(parser)
     flags.GetResourceRecordSetsNameArg().AddToParser(parser)
     flags.GetResourceRecordSetsTypeArg(True).AddToParser(parser)
+    if cls._BetaOrAlpha():
+      flags.GetLocationArg().AddToParser(parser)
     parser.display_info.AddCacheUpdater(None)
     parser.display_info.AddTransforms(flags.RESOURCERECORDSETS_TRANSFORMS)
     parser.display_info.AddFormat(flags.RESOURCERECORDSETS_FORMAT)
 
   def Run(self, args):
-    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
 
     messages = apis.GetMessagesModule('dns', api_version)
 
@@ -58,14 +65,16 @@ class Describe(base.DescribeCommand):
 
     zone_ref = util.GetRegistry(api_version).Parse(
         args.zone,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
+        params=util.GetParamsForRegistry(api_version, args),
         collection='dns.managedZones')
 
-    return dns_client.resourceRecordSets.Get(
-        messages.DnsResourceRecordSetsGetRequest(
-            project=zone_ref.project,
-            managedZone=zone_ref.Name(),
-            name=util.AppendTrailingDot(args.name),
-            type=args.type))
+    request = messages.DnsResourceRecordSetsGetRequest(
+        project=zone_ref.project,
+        managedZone=zone_ref.Name(),
+        name=util.AppendTrailingDot(args.name),
+        type=args.type)
+
+    if api_version == 'v2' and self._BetaOrAlpha():
+      request.location = args.location
+
+    return dns_client.resourceRecordSets.Get(request)

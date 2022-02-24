@@ -51,6 +51,7 @@ class Export(base.Command):
       'gs://bucket-name/object-name' and only export the asset metadata, run:
 
         $ {command} --project='test-project' --asset-types='compute.googleapis.com/Disk' --snapshot-time='2019-03-05T00:00:00Z' --output-path='gs://bucket-name/object-name' --content-type='resource'
+
       To export a snapshot of assets of type 'compute.googleapis.com/Disk' in
       project 'test-project' at '2019-03-05T00:00:00Z' to
       'projects/projectId/datasets/datasetId/tables/table_name', overwrite the table

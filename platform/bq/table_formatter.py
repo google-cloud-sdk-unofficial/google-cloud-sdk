@@ -429,8 +429,8 @@ class PrettyFormatter(TableFormatter):
           'Cannot add a new column to an initialized table')
     if align not in ('l', 'c', 'r'):
       raise FormatterException('Invalid column alignment: %s' % (align,))
-    lines = column_name.split('\n')
-    self.column_widths.append(max(len(line) for line in lines))
+    lines = six.text_type(column_name).split('\n')
+    self.column_widths.append(max(wcwidth.wcswidth(line) for line in lines))
     self.column_alignments.append(align)
     self.column_names.append(column_name)
     self.header_height = max(len(lines), self.header_height)

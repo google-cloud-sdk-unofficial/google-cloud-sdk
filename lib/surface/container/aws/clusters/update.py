@@ -53,6 +53,9 @@ class Update(base.UpdateCommand):
     aws_flags.AddRoleArn(parser, required=False)
     aws_flags.AddRoleSessionName(parser)
     aws_flags.AddConfigEncryptionKmsKeyArn(parser, required=False)
+    aws_flags.AddSecurityGroupIds(parser, 'control plane replicas')
+    aws_flags.AddProxySecretArn(parser)
+    aws_flags.AddProxySecretVersionId(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(clusters.CLUSTERS_FORMAT)

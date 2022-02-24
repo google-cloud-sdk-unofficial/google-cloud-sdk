@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.edge_cloud.container import resource_args
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class GetCredentials(base.Command):
   """Get credentials of an edge-container cluster."""
 

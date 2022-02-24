@@ -17,7 +17,7 @@
             --format=json(displayName, name.basename(), state, applicationEndpoint.host, applicationEndpoint.port, updateTime, labels)
 
   request:
-    collection: beyondcorp.projects.locations.appConnections
+    collection: beyondcorp.projects.locations.connections
   arguments:
     resource:
       help_text: |

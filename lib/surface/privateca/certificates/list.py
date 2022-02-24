@@ -32,6 +32,7 @@ from googlecloudsdk.command_lib.privateca import text_utils
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
+from googlecloudsdk.core.resource import resource_projection_spec
 
 _DETAILED_HELP = {
     'EXAMPLES':
@@ -108,8 +109,12 @@ class ListBeta(base.ListCommand):
     client = privateca_base.GetClientInstance()
     messages = privateca_base.GetMessagesModule()
 
+    display_info = args.GetDisplayInfo()
+    defaults = resource_projection_spec.ProjectionSpec(
+        symbols=display_info.transforms, aliases=display_info.aliases)
     client_filter, server_filter = filter_rewrite.BackendFilterRewrite(
-    ).Rewrite(args.filter)
+    ).Rewrite(
+        args.filter, defaults=defaults)
     log.info('original_filter=%r, client_filter=%r, server_filter=%r',
              args.filter, client_filter, server_filter)
     # Overwrite client filter used by gcloud.
@@ -205,8 +210,12 @@ class List(base.ListCommand):
     client = privateca_base.GetClientInstance(api_version='v1')
     messages = privateca_base.GetMessagesModule(api_version='v1')
 
+    display_info = args.GetDisplayInfo()
+    defaults = resource_projection_spec.ProjectionSpec(
+        symbols=display_info.transforms, aliases=display_info.aliases)
     client_filter, server_filter = filter_rewrite.BackendFilterRewrite(
-    ).Rewrite(args.filter)
+    ).Rewrite(
+        args.filter, defaults=defaults)
     log.info('original_filter=%r, client_filter=%r, server_filter=%r',
              args.filter, client_filter, server_filter)
     # Overwrite client filter used by gcloud.

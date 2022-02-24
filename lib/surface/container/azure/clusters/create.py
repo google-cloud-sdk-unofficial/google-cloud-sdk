@@ -19,9 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.azure import util as azure_api_util
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.azure import util as command_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
@@ -52,7 +50,6 @@ class Create(base.CreateCommand):
 
     parser.add_argument(
         "--azure-region",
-        action=actions.StoreProperty(properties.VALUES.azure.azure_region),
         required=True,
         help=("Azure location to deploy the cluster. "
               "Refer to your Azure subscription for available locations."))
@@ -98,14 +95,7 @@ class Create(base.CreateCommand):
   def Run(self, args):
     """Runs the create command."""
 
-    azure_region = getattr(args, "azure_region", None)
-    if not azure_region:
-      try:
-        azure_region = properties.VALUES.azure.azure_region.GetOrFail()
-      except properties.RequiredPropertyError:
-        raise exceptions.RequiredArgumentException("--azure-region",
-                                                   "Must be specified.")
-
+    azure_region = args.azure_region
     resource_group_id = args.resource_group_id
     vnet_id = args.vnet_id
     pod_address_cidr_blocks = args.pod_address_cidr_blocks

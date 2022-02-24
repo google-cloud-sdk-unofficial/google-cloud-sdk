@@ -49,7 +49,7 @@ DETAILED_HELP = {
 }
 
 
-def _CommonArgs(messages, cls, parser, support_update_architecture=False):
+def _CommonArgs(cls, parser, support_update_architecture=False):
   """Add arguments used for parsing in all command tracks."""
   cls.DISK_IMAGE_ARG = images_flags.MakeDiskImageArg(plural=False)
   cls.DISK_IMAGE_ARG.AddArgument(parser, operation_type='update')
@@ -67,12 +67,7 @@ def _CommonArgs(messages, cls, parser, support_update_architecture=False):
   )
 
   if support_update_architecture:
-    architecture_enum_type = messages.Image.ArchitectureValueValuesEnum
-    excluded_enums = [
-        'ARCHITECTURE_UNSPECIFIED',
-    ]
-    architecture_choices = sorted(
-        [e for e in architecture_enum_type.names() if e not in excluded_enums])
+    architecture_choices = sorted(['ARM64', 'X86_64'])
     parser.add_argument(
         '--architecture',
         choices=architecture_choices,
@@ -89,8 +84,7 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    messages = cls._GetApiHolder(no_http=True).client.messages
-    _CommonArgs(messages, cls, parser, support_update_architecture=False)
+    _CommonArgs(cls, parser, support_update_architecture=False)
 
   def Run(self, args):
     return self._Run(args, support_update_architecture=False)
@@ -173,8 +167,7 @@ class UpdateBeta(Update):
 
   @classmethod
   def Args(cls, parser):
-    messages = messages = cls._GetApiHolder(no_http=True).client.messages
-    _CommonArgs(messages, cls, parser, support_update_architecture=False)
+    _CommonArgs(cls, parser, support_update_architecture=False)
 
   def Run(self, args, support_update_architecture=False):
     return self._Run(args, support_update_architecture)
@@ -189,8 +182,7 @@ class UpdateAlpha(UpdateBeta):
 
   @classmethod
   def Args(cls, parser):
-    messages = messages = cls._GetApiHolder(no_http=True).client.messages
-    _CommonArgs(messages, cls, parser, support_update_architecture=True)
+    _CommonArgs(cls, parser, support_update_architecture=True)
 
   def Run(self, args, support_update_architecture=True):
     return self._Run(args, support_update_architecture)

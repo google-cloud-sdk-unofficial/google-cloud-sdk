@@ -36,9 +36,11 @@ DETAILED_HELP = {
           To create a cluster called ``my-cluster'' in private cloud ``my-private-cloud'', with 3 initial ``standard-72'' nodes in zone ``us-west2-a'', run:
 
             $ {command} my-cluster --location=us-west2-a --project=my-project --private-cloud=my-private-cloud --node-type=standard-72 --node-count=3
+
             Or:
 
             $ {command} my-cluster --private-cloud=my-private-cloud --node-type=standard-72 --node-count=3
+
             In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,
 }

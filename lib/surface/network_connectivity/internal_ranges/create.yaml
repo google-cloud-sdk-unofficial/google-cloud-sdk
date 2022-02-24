@@ -13,8 +13,8 @@
         $ {command} my-range
           --ip-cidr-range="192.168.0.0/25"
           --network="https://www.googleapis.com/compute/v1/projects/my-project/locations/global/networks/my-network"
-          --project my-project
-          --region global
+          --project=my-project
+          --region=global
 
       Create an internal range with name ``my-range'' and auto-allocated /25 block (prefix-length
       ``25'') in network ``my-network'' and region ``global'':
@@ -22,8 +22,8 @@
         $ {command} my-range
           --prefix-length=25
           --network="my-network"
-          --project my-project
-          --region global
+          --project=my-project
+          --region=global
 
   arguments:
     resource:

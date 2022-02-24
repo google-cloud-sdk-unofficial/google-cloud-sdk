@@ -28,10 +28,11 @@ from googlecloudsdk.command_lib.dns import util as command_util
 from googlecloudsdk.core import log
 
 
-def _AddArgsCommon(parser, messages):
+def _AddArgsCommon(parser):
   """Adds the common arguments for all versions."""
   flags.GetLocalDataResourceRecordSets().AddToParser(parser)
-  flags.AddResponsePolicyRulesBehaviorFlagArgs(parser, messages)
+  # TODO(b/215745011) use AddResponsePolicyRulesBehaviorFlag once switch to v2
+  flags.GetResponsePolicyRulesBehavior().AddToParser(parser)
 
   parser.add_argument(
       '--dns-name',
@@ -48,45 +49,63 @@ class Create(base.UpdateCommand):
 
       To create a new response policy rule with local data rrsets, run:
 
-        $ {command} myresponsepolicyrule --response-policy="myresponsepolicy" --dns-name="www.zone.com." --local-data=name=www.zone.com.,type=CNAME,ttl=21600,rrdatas=zone.com.
+        $ {command} myresponsepolicyrule --response-policy="myresponsepolicy"
+        --dns-name="www.zone.com."
+        --local-data=name=www.zone.com.,type=CNAME,ttl=21600,rrdatas=zone.com.
 
       To create a new response policy rule with behavior, run:
 
-        $ {command} myresponsepolicyrule --response-policy="myresponsepolicy" --dns-name="www.zone.com." --behavior=bypassResponsePolicy
+        $ {command} myresponsepolicyrule --response-policy="myresponsepolicy"
+        --dns-name="www.zone.com." --behavior=bypassResponsePolicy
+
+      To create a new response policy rule with behavior in a zonal response
+      policy in us-east1-a, run:
+
+        $ {command} myresponsepolicyrule --response-policy="myresponsepolicy"
+        --dns-name="www.zone.com." --behavior=bypassResponsePolicy
+        --location=us-east1-a
   """
+
+  @classmethod
+  def _BetaOrAlpha(cls):
+    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
+                                  base.ReleaseTrack.ALPHA)
 
   @classmethod
   def Args(cls, parser):
     api_version = util.GetApiFromTrack(cls.ReleaseTrack())
-    messages = apis.GetMessagesModule('dns', api_version)
-    _AddArgsCommon(parser, messages)
+    _AddArgsCommon(parser)
     resource_args.AddResponsePolicyRuleArg(
         parser, verb='to create', api_version=api_version)
+    if cls._BetaOrAlpha():
+      flags.GetLocationArg().AddToParser(parser)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
-    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
     client = util.GetApiClient(api_version)
     messages = apis.GetMessagesModule('dns', api_version)
 
     # Get Response Policy Rule
-    response_policy_rule_ref = args.CONCEPTS.response_policy_rule.Parse()
+    registry = util.GetRegistry(api_version)
+    response_policy_rule_ref = registry.Parse(
+        args.response_policy_rule,
+        util.GetParamsForRegistry(api_version, args, parent='responsePolicies'),
+        collection='dns.responsePolicyRules')
     response_policy_rule_name = response_policy_rule_ref.Name()
 
     response_policy_rule = messages.ResponsePolicyRule(
         ruleName=response_policy_rule_name)
 
     response_policy_rule.dnsName = args.dns_name
-    response_policy = messages.ResponsePolicy(
-        responsePolicyName=args.response_policy)
 
     if args.IsSpecified('behavior') and args.IsSpecified('local_data'):
       raise exceptions.ConflictingArgumentsException(
           'Only one of arguments [--behavior, --local-data] is allowed.')
 
     if args.IsSpecified('behavior'):
-      response_policy_rule.behavior = command_util\
-          .ParseResponsePolicyRulesBehavior(args, api_version)
+      response_policy_rule.behavior = command_util.ParseResponsePolicyRulesBehavior(
+          args, api_version)
     elif args.IsSpecified('local_data'):
       rrsets = []
       for rrset in args.local_data:
@@ -102,12 +121,15 @@ class Create(base.UpdateCommand):
       response_policy_rule.localData = local_data
 
     create_request = messages.DnsResponsePolicyRulesCreateRequest(
-        responsePolicy=response_policy.responsePolicyName,
+        responsePolicy=args.response_policy,
         project=response_policy_rule_ref.project,
         responsePolicyRule=response_policy_rule)
 
+    if api_version == 'v2' and self._BetaOrAlpha():
+      create_request.location = args.location
+
     result = client.responsePolicyRules.Create(create_request)
 
-    log.CreatedResource(response_policy_rule, kind='ResponsePolicyRule')
+    log.CreatedResource(response_policy_rule_ref, kind='ResponsePolicyRule')
 
     return result

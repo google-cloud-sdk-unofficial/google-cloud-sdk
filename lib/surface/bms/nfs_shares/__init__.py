@@ -22,8 +22,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-# TODO(b/218692770): Unhide class when NFS APIs are ready in prod.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class NfsShares(base.Group):
   """Manage NFS shares in Bare Metal Solution."""

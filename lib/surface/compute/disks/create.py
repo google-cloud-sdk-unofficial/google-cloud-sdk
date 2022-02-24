@@ -81,7 +81,9 @@ DETAILED_HELP = {
 }
 
 
-def _SourceArgs(parser, source_instant_snapshot_enabled=False):
+def _SourceArgs(parser,
+                source_instant_snapshot_enabled=False,
+                support_async_pd=False):
   """Add mutually exclusive source args."""
   source_parent_group = parser.add_group()
   source_group = source_parent_group.add_mutually_exclusive_group()
@@ -119,18 +121,21 @@ def _SourceArgs(parser, source_instant_snapshot_enabled=False):
   if source_instant_snapshot_enabled:
     disks_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(source_group)
   disks_flags.SOURCE_DISK_ARG.AddArgument(parser, mutex_group=source_group)
+  if support_async_pd:
+    disks_flags.ASYNC_PRIMARY_DISK_ARG.AddArgument(
+        parser, mutex_group=source_group)
 
   disks_flags.AddLocationHintArg(parser)
 
 
-def _CommonArgs(messages,
-                parser,
+def _CommonArgs(parser,
                 include_physical_block_size_support=False,
                 vss_erase_enabled=False,
                 source_instant_snapshot_enabled=False,
                 support_pd_interface=False,
                 support_user_licenses=False,
-                support_architecture=False):
+                support_architecture=False,
+                support_async_pd=False):
   """Add arguments used for parsing in all command tracks."""
   Create.disks_arg.AddArgument(parser, operation_type='create')
   parser.add_argument(
@@ -187,7 +192,7 @@ def _CommonArgs(messages,
             'be added onto the created disks to indicate the licensing and '
             'billing policies.'))
 
-  _SourceArgs(parser, source_instant_snapshot_enabled)
+  _SourceArgs(parser, source_instant_snapshot_enabled, support_async_pd)
 
   disks_flags.AddProvisionedIopsFlag(parser, arg_parsers, constants)
 
@@ -200,7 +205,7 @@ def _CommonArgs(messages,
               'can be edited after disk is created.'))
 
   if support_architecture:
-    disks_flags.AddArchitectureFlag(parser, messages)
+    disks_flags.AddArchitectureFlag(parser)
 
   csek_utils.AddCsekKeyArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
@@ -255,7 +260,7 @@ class Create(base.Command):
   def Args(cls, parser):
     messages = cls._GetApiHolder(no_http=True).client.messages
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
-    _CommonArgs(messages, parser)
+    _CommonArgs(parser)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
@@ -380,6 +385,15 @@ class Create(base.Command):
         return source_disk_ref.SelfLink()
     return None
 
+  def GetAsyncPrimaryDiskUri(self, args, compute_holder):
+    primary_disk_ref = None
+    if args.primary_disk:
+      primary_disk_ref = disks_flags.ASYNC_PRIMARY_DISK_ARG.ResolveAsResource(
+          args, compute_holder.resources)
+      if primary_disk_ref:
+        return primary_disk_ref.SelfLink()
+    return None
+
   def GetLabels(self, args, client):
     labels = None
     args_labels = getattr(args, 'labels', None)
@@ -437,7 +451,8 @@ class Create(base.Command):
            support_vss_erase=False,
            support_pd_interface=False,
            support_user_licenses=False,
-           support_architecture=False):
+           support_architecture=False,
+           support_async_pd=False):
     compute_holder = self._GetApiHolder()
     client = compute_holder.client
 
@@ -500,6 +515,14 @@ class Create(base.Command):
         kwargs['interface'] = arg_utils.ChoiceToEnum(
             args.interface, client.messages.Disk.InterfaceValueValuesEnum)
 
+      if support_async_pd and args.primary_disk:
+        if not args.primary_disk_zone and not args.primary_disk_region:
+          raise exceptions.OneOfArgumentsRequiredException(
+              ['--primary-disk-zone', '--primary-disk-region'],
+              'must specify a scope for the primary disk.')
+        primary_disk = client.messages.DiskAsyncReplication()
+        primary_disk.disk = self.GetAsyncPrimaryDiskUri(args, compute_holder)
+        kwargs['asyncPrimaryDisk'] = primary_disk
       # end of alpha/beta features.
 
       if supports_physical_block and args.IsSpecified('physical_block_size'):
@@ -607,7 +630,6 @@ class CreateBeta(Create):
     messages = cls._GetApiHolder(no_http=True).client.messages
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(
-        messages,
         parser,
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
@@ -639,14 +661,14 @@ class CreateAlpha(CreateBeta):
     messages = cls._GetApiHolder(no_http=True).client.messages
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(
-        messages,
         parser,
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
         source_instant_snapshot_enabled=True,
         support_pd_interface=True,
         support_user_licenses=True,
-        support_architecture=True)
+        support_architecture=True,
+        support_async_pd=True)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
@@ -662,7 +684,8 @@ class CreateAlpha(CreateBeta):
         support_vss_erase=True,
         support_pd_interface=True,
         support_user_licenses=True,
-        support_architecture=True)
+        support_architecture=True,
+        support_async_pd=True)
 
 
 def _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder):

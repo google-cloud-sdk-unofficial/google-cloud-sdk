@@ -1,0 +1,91 @@
+# -*- coding: utf-8 -*- #
+# Copyright 2022 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Create a Workflow."""
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+
+from googlecloudsdk.api_lib.cloudbuild.v2 import client_util
+from googlecloudsdk.api_lib.cloudbuild.v2 import input_util
+from googlecloudsdk.api_lib.cloudbuild.v2 import workflow_input_util
+from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.cloudbuild import resource_args
+from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class Create(base.CreateCommand):
+  """Create a Workflow."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser-like object. It is mocked out in order
+        to capture some information, but behaves like an ArgumentParser.
+    """
+    concept_parsers.ConceptParser.ForResource(
+        'WORKFLOW_ID',
+        resource_args.GetWorkflowResourceSpec(),
+        'Workflow.',
+        required=True).AddToParser(parser)
+    parser.add_argument(
+        '--file',
+        required=True,
+        help='The YAML file to use as the Workflow configuration file.')
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command."""
+    client = client_util.GetClientInstance()
+    messages = client_util.GetMessagesModule()
+
+    yaml_data = input_util.LoadYamlFromPath(args.file)
+    workflow = workflow_input_util.CloudBuildYamlDataToWorkflow(yaml_data)
+
+    project = properties.VALUES.core.project.Get(required=True)
+    parent = 'projects/%s/locations/%s' % (project, args.region)
+    name = '%s/workflows/%s' % (parent, args.WORKFLOW_ID)
+
+    # Update workflow (or create if missing).
+    workflow.name = name
+    update_operation = client.projects_locations_workflows.Patch(
+        messages.CloudbuildProjectsLocationsWorkflowsPatchRequest(
+            workflow=workflow, allowMissing=True))
+
+    update_operation_ref = resources.REGISTRY.ParseRelativeName(
+        update_operation.name,
+        collection='cloudbuild.projects.locations.operations')
+
+    updated_workflow = waiter.WaitFor(
+        waiter.CloudOperationPoller(client.projects_locations_workflows,
+                                    client.projects_locations_operations),
+        update_operation_ref, 'Updating Workflow')
+
+    updated_workflow_ref = resources.REGISTRY.Parse(
+        updated_workflow.name,
+        collection='cloudbuild.projects.locations.workflows',
+        api_version=client_util.RELEASE_TRACK_TO_API_VERSION[
+            self.ReleaseTrack()],
+    )
+
+    log.status.Print('Apply result: {}'.format(updated_workflow_ref))
+    return updated_workflow

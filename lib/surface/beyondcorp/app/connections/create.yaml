@@ -26,7 +26,7 @@
             --async
 
   request:
-    collection: beyondcorp.projects.locations.appConnections
+    collection: beyondcorp.projects.locations.connections
     modify_request_hooks:
     - googlecloudsdk.command_lib.beyondcorp.app.connections.hooks:ValidateAndParseAppEndpoint
     - googlecloudsdk.command_lib.beyondcorp.app.connections.hooks:SetConnectors
@@ -36,9 +36,8 @@
 
   arguments:
     resource:
-      arg_name: connection
-      spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:connection
       help_text: The Beyondcorp application connection you want to create.
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:connection
     params:
     - group:
         help_text: Application endpoint.
@@ -57,4 +56,4 @@
     - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connections.flags:display_name
 
     labels:
-      api_field: googleCloudBeyondcorpAppconnectionsV1alphaAppConnection.labels
+      api_field: connection.labels

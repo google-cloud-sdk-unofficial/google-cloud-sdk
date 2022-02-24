@@ -54,7 +54,7 @@ class Config(base.Group):
   the ``project'' property in the ``core'' category to ``my-project'', use a
   command like:
 
-    $ CLOUDSDK_CORE_PROJECT=my-project gcloud config get-value core/project
+    $ CLOUDSDK_CORE_PROJECT=my-project gcloud config get core/project
 
   For more information on configurations, see `gcloud topic configurations`.
 

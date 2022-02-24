@@ -18,12 +18,12 @@
     collection: beyondcorp.projects.locations.operations
 
   request:
-    collection: beyondcorp.projects.locations.appConnections
+    collection: beyondcorp.projects.locations.connections
 
   arguments:
     resource:
-      arg_name: connection
-      spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:connection
       help_text: The Beyondcorp connector you want to get details about.
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:connection
+
   output:
     format: json

@@ -23,9 +23,10 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Delete a record-set in a managed-zone.
 
@@ -38,18 +39,24 @@ class Delete(base.DeleteCommand):
   run:
 
     $ {command} foo.bar.com. --type=A --zone=my_zone
-
   """
+
+  @classmethod
+  def _BetaOrAlpha(cls):
+    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
+                                  base.ReleaseTrack.ALPHA)
 
   @classmethod
   def Args(cls, parser):
     flags.GetZoneArg().AddToParser(parser)
     flags.GetResourceRecordSetsNameArg().AddToParser(parser)
     flags.GetResourceRecordSetsTypeArg(True).AddToParser(parser)
+    if cls._BetaOrAlpha():
+      flags.GetLocationArg().AddToParser(parser)
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
-    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
 
     messages = apis.GetMessagesModule('dns', api_version)
 
@@ -57,26 +64,25 @@ class Delete(base.DeleteCommand):
 
     zone_ref = util.GetRegistry(api_version).Parse(
         args.zone,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
+        params=util.GetParamsForRegistry(api_version, args),
         collection='dns.managedZones')
-
+    param = util.GetParamsForRegistry(api_version, args, parent='managedZones')
+    param['name'] = args.name
     rrsets_ref = util.GetRegistry(api_version).Parse(
         args.type,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-            'managedZone': args.zone,
-            'name': args.name
-        },
+        params=param,
         collection='dns.resourceRecordSets')
 
-    result = dns_client.resourceRecordSets.Delete(
-        messages.DnsResourceRecordSetsDeleteRequest(
-            project=zone_ref.project,
-            managedZone=zone_ref.Name(),
-            name=util.AppendTrailingDot(args.name),
-            type=args.type))
+    request = messages.DnsResourceRecordSetsDeleteRequest(
+        project=zone_ref.project,
+        managedZone=zone_ref.Name(),
+        name=util.AppendTrailingDot(args.name),
+        type=args.type)
+
+    if api_version == 'v2' and self._BetaOrAlpha():
+      request.location = args.location
+
+    result = dns_client.resourceRecordSets.Delete(request)
     log.DeletedResource(rrsets_ref)
 
     return result

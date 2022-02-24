@@ -28,10 +28,11 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-def _AddArgsCommon(parser, messages):
+def _AddArgsCommon(parser):
   """Adds the common arguments for all versions."""
   flags.GetLocalDataResourceRecordSets().AddToParser(parser)
-  flags.AddResponsePolicyRulesBehaviorFlagArgs(parser, messages)
+  # TODO(b/215745011) use AddResponsePolicyRulesBehaviorFlag once switch to v2
+  flags.GetResponsePolicyRulesBehavior().AddToParser(parser)
 
   parser.add_argument(
       '--dns-name',
@@ -39,8 +40,8 @@ def _AddArgsCommon(parser, messages):
       help='DNS name (wildcard or exact) to apply this rule to.')
 
 
-def _FetchResponsePolicyRule(response_policy, response_policy_rule,
-                             api_version):
+def _FetchResponsePolicyRule(response_policy, response_policy_rule, api_version,
+                             args):
   """Get response policy rule to be Updated."""
   client = util.GetApiClient(api_version)
   m = apis.GetMessagesModule('dns', api_version)
@@ -48,10 +49,13 @@ def _FetchResponsePolicyRule(response_policy, response_policy_rule,
       responsePolicy=response_policy,
       project=properties.VALUES.core.project.Get(),
       responsePolicyRule=response_policy_rule)
+  if api_version == 'v2':
+    get_request.location = args.location
   return client.responsePolicyRules.Get(get_request)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Updates a new Cloud DNS response policy rule.
 
@@ -75,16 +79,22 @@ class Update(base.UpdateCommand):
         --behavior=bypassResponsePolicy
   """
 
-  @staticmethod
-  def Args(parser):
-    messages = apis.GetMessagesModule('dns', 'v1')
-    _AddArgsCommon(parser, messages)
+  @classmethod
+  def _BetaOrAlpha(cls):
+    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
+                                  base.ReleaseTrack.ALPHA)
+
+  @classmethod
+  def Args(cls, parser):
+    _AddArgsCommon(parser)
     resource_args.AddResponsePolicyRuleArg(
         parser, verb='to update', api_version='v1')
+    if cls._BetaOrAlpha():
+      flags.GetLocationArg().AddToParser(parser)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
-    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
     client = util.GetApiClient(api_version)
     messages = apis.GetMessagesModule('dns', api_version)
 
@@ -98,9 +108,9 @@ class Update(base.UpdateCommand):
     response_policy = messages.ResponsePolicy(
         responsePolicyName=args.response_policy)
 
-    to_update = _FetchResponsePolicyRule(response_policy.responsePolicyName, \
-                                              response_policy_rule.ruleName,\
-                                              api_version)
+    to_update = _FetchResponsePolicyRule(response_policy.responsePolicyName,
+                                         response_policy_rule.ruleName,
+                                         api_version, args)
 
     if not args.IsSpecified('dns_name') and not args.IsSpecified(
         'local_data') and not args.IsSpecified('behavior'):
@@ -125,8 +135,8 @@ class Update(base.UpdateCommand):
 
     if args.IsSpecified('behavior'):
       to_update.localData = None
-      to_update.behavior = command_util\
-          .ParseResponsePolicyRulesBehavior(args, api_version)
+      to_update.behavior = command_util.ParseResponsePolicyRulesBehavior(
+          args, api_version)
 
     update_req = messages.DnsResponsePolicyRulesUpdateRequest(
         responsePolicy=response_policy.responsePolicyName,
@@ -134,39 +144,12 @@ class Update(base.UpdateCommand):
         responsePolicyRuleResource=to_update,
         project=properties.VALUES.core.project.Get())
 
+    if api_version == 'v2' and self._BetaOrAlpha():
+      update_req.location = args.location
+
     updated_response_policy_rule = client.responsePolicyRules.Update(update_req)
 
     log.UpdatedResource(updated_response_policy_rule.responsePolicyRule,
                         kind='ResponsePolicyRule')
 
     return updated_response_policy_rule
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
-  r"""Updates a new Cloud DNS response policy rule.
-
-      This command updates a new Cloud DNS response policy rule.
-
-      ## EXAMPLES
-
-      To update a new response policy rule with DNS name, run:
-
-        $ {command} myresponsepolicyrule --response-policy="myresponsepolicy" --dns-name="www.newzone.com." # pylint: disable=line-too-long
-
-      To update a new response policy rule with local data rrsets, run:
-
-        $ {command} myresponsepolicyrule --response-policy="myresponsepolicy" --local-data=name=www.zone.com.,type=A,ttl=21600,rrdatas=1.2.3.4
-
-      To update a new response policy rule with behavior, run:
-
-        $ {command} myresponsepolicyrule --response-policy="myresponsepolicy" --behavior=bypassResponsePolicy
-  """
-
-  @staticmethod
-  def Args(parser):
-    resource_args.AddResponsePolicyRuleArg(
-        parser, verb='to update', api_version='v1beta2')
-    messages = apis.GetMessagesModule('dns', 'v1beta2')
-    _AddArgsCommon(parser, messages)
-    parser.display_info.AddFormat('json')

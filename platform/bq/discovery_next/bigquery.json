@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20220119",
+ "revision": "20220218",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -512,6 +512,23 @@
     "selfLink": {
      "type": "string",
      "description": "[Output-only] A URL that can be used to access the resource again. You can use this URL in Get or Update requests to the resource."
+    },
+    "tags": {
+     "type": "array",
+     "description": "[Optional]The tags associated with this dataset. Tag keys are globally unique.",
+     "items": {
+      "type": "object",
+      "properties": {
+       "tagKey": {
+        "type": "string",
+        "description": "[Required] The namespaced friendly name of the tag key, e.g. \"12345/environment\" where 12345 is org id."
+       },
+       "tagValue": {
+        "type": "string",
+        "description": "[Required] Friendly short name of the tag value, e.g. \"production\"."
+       }
+      }
+     }
     }
    }
   },
@@ -526,13 +543,15 @@
     "target_types": {
      "type": "array",
      "items": {
-      "type": "object",
-      "properties": {
-       "targetType": {
-        "type": "string",
-        "description": "[Required] Which resources in the dataset this entry applies to. Currently, only views are supported, but additional target types may be added in the future. Possible values: VIEWS: This entry applies to all views in the dataset."
-       }
-      }
+      "type": "string",
+      "enum": [
+       "TARGET_TYPE_UNSPECIFIED",
+       "VIEWS"
+      ],
+      "enumDescriptions": [
+       "Do not use. You must set a target type explicitly.",
+       "This entry applies to views in the dataset."
+      ]
      }
     }
    }
@@ -4590,7 +4609,7 @@
   },
   "StandardSqlDataType": {
    "id": "StandardSqlDataType",
-   "description": "The type of a variable, e.g., a function argument. Examples: INT64: {type_kind=\"INT64\"} ARRAY: {type_kind=\"ARRAY\", array_element_type=\"STRING\"} STRUCT>: {type_kind=\"STRUCT\", struct_type={fields=[ {name=\"x\", type={type_kind=\"STRING\"}}, {name=\"y\", type={type_kind=\"ARRAY\", array_element_type=\"DATE\"}} ]}}",
+   "description": "The data type of a variable such as a function argument. Examples include: * INT64: `{\"typeKind\": \"INT64\"}` * ARRAY: { \"typeKind\": \"ARRAY\", \"arrayElementType\": {\"typeKind\": \"STRING\"} } * STRUCT>: { \"typeKind\": \"STRUCT\", \"structType\": { \"fields\": [ { \"name\": \"x\", \"type\": {\"typeKind: \"STRING\"} }, { \"name\": \"y\", \"type\": { \"typeKind\": \"ARRAY\", \"arrayElementType\": {\"typekind\": \"DATE\"} } } ] } }",
    "type": "object",
    "properties": {
     "typeKind": {

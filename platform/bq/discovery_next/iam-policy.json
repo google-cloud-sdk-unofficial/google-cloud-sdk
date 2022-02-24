@@ -1923,7 +1923,7 @@
     },
     "StandardSqlDataType": {
       "id": "StandardSqlDataType",
-      "description": "The type of a variable, e.g., a function argument. Examples: INT64: {type_kind=\"INT64\"} ARRAY: {type_kind=\"ARRAY\", array_element_type=\"STRING\"} STRUCT>: {type_kind=\"STRUCT\", struct_type={fields=[ {name=\"x\", type={type_kind=\"STRING\"}}, {name=\"y\", type={type_kind=\"ARRAY\", array_element_type=\"DATE\"}} ]}}",
+      "description": "The data type of a variable such as a function argument. Examples include: * INT64: `{\"typeKind\": \"INT64\"}` * ARRAY: { \"typeKind\": \"ARRAY\", \"arrayElementType\": {\"typeKind\": \"STRING\"} } * STRUCT>: { \"typeKind\": \"STRUCT\", \"structType\": { \"fields\": [ { \"name\": \"x\", \"type\": {\"typeKind: \"STRING\"} }, { \"name\": \"y\", \"type\": { \"typeKind\": \"ARRAY\", \"arrayElementType\": {\"typekind\": \"DATE\"} } } ] } }",
       "type": "object",
       "properties": {
         "typeKind": {
@@ -2126,6 +2126,7 @@
           "$ref": "TableReference"
         },
         "tableDefinitions": {
+          "description": "Optional. You can specify external table definitions, which operate as ephemeral tables that can be queried. These definitions are configured using a JSON map, where the string key represents the table identifier, and the value is the corresponding external data configuration object.",
           "type": "object",
           "additionalProperties": {
             "$ref": "ExternalDataConfiguration"
@@ -2409,6 +2410,10 @@
         },
         "collation": {
           "description": "Optional. Field collation can be set only when the type of field is STRING. The valid values are: * 'und:ci': undetermined locale, case insensitive. * 'binary': unicode code point order. * '': empty string. Default to 'binary' behavior.",
+          "type": "string"
+        },
+        "defaultValueExpression": {
+          "description": "Optional. A SQL expression to specify the default value for this field. It can only be set for top level fields (columns). You can use struct or array expression to specify default value the entire struct or array. The valid SQL expressions are: * Literals for all data types, including STRUCT and ARRAY. * Following functions: * CURRENT_TIMESTAMP * CURRENT_TIME * CURRENT_DATE * CURRENT_DATETIME * GENERATE_UUID * RAND * SESSION_USER * Struct or array literals with the allowed functions, for example, [CURRENT_DATE, DATE '2020-01-01']",
           "type": "string"
         }
       }
@@ -3045,7 +3050,7 @@
     },
     "JobConfigurationTableCopy": {
       "id": "JobConfigurationTableCopy",
-      "description": "JobConfigurationTableCopy configures a job that copies data from one table to another.",
+      "description": "JobConfigurationTableCopy configures a job that copies data from one table to another. For more information on copying tables, see [Copy a table](https:\/\/cloud.google.com\/bigquery\/docs\/managing-tables#copy-table).",
       "type": "object",
       "properties": {
         "sourceTable": {
@@ -3082,13 +3087,15 @@
             "Unspecified operation type.",
             "The source and destination table have the same table type.",
             "The source table type is TABLE and the destination table type is SNAPSHOT.",
-            "The source table type is SNAPSHOT and the destination table type is TABLE."
+            "The source table type is SNAPSHOT and the destination table type is TABLE.",
+            "The source and destination table have the same table type, but only bill for unique data."
           ],
           "enum": [
             "OPERATION_TYPE_UNSPECIFIED",
             "COPY",
             "SNAPSHOT",
-            "RESTORE"
+            "RESTORE",
+            "CLONE"
           ]
         },
         "destinationExpirationTime": {
@@ -3245,7 +3252,7 @@
           "format": "int64"
         },
         "reservationUsage": {
-          "description": "Output only. Job resource usage breakdown by reservation.",
+          "description": "Output only. Job resource usage breakdown by reservation. This field reported misleading information and will no longer be populated.",
           "readOnly": true,
           "type": "array",
           "items": {
@@ -3365,7 +3372,7 @@
           "format": "int64"
         },
         "reservationUsage": {
-          "description": "Output only. Job resource usage breakdown by reservation.",
+          "description": "Output only. Job resource usage breakdown by reservation. This field reported misleading information and will no longer be populated.",
           "readOnly": true,
           "type": "array",
           "items": {
@@ -4495,7 +4502,7 @@
           "format": "uint64"
         },
         "pageToken": {
-          "description": "A token used for paging results.",
+          "description": "A token used for paging results. A non-empty token indicates that additional results are available. To see additional results, query the [`jobs.getQueryResults`](https:\/\/cloud.google.com\/bigquery\/docs\/reference\/rest\/v2\/jobs\/getQueryResults) method. For more information, see [Paging through table data](https:\/\/cloud.google.com\/bigquery\/docs\/paging-results).",
           "type": "string"
         },
         "rows": {
@@ -4558,7 +4565,7 @@
           "type": "string"
         },
         "nextPageToken": {
-          "description": "A token to request the next page of results.",
+          "description": "Use this token to request the next page of results.",
           "type": "string"
         },
         "projects": {
@@ -5144,11 +5151,11 @@
                 "$ref": "RangePartitioning"
               },
               "clustering": {
-                "description": "[TrustedTester] Clustering specification for this table, if configured.",
+                "description": "Clustering specification for this table, if configured.",
                 "$ref": "Clustering"
               },
               "hivePartitioningOptions": {
-                "description": "[Experimental] The hive partitioning configuration for this table, when applicable.",
+                "description": "The hive partitioning configuration for this table, when applicable.",
                 "$ref": "HivePartitioningOptions"
               },
               "labels": {
@@ -6377,13 +6384,13 @@
           "httpMethod": "GET",
           "parameters": {
             "maxResults": {
-              "description": "Maximum number of results to read. A wrapper is used here because behavior for maxResults 0 differs from the behavior for maxResults unset.",
+              "description": "Maximum number of results to return in a single results page. To paginate through larger sets of results, this method must be called multiple times. To do so, populate the pageToken of a subsequent request with the nextPageToken from the prior response. A wrapper is used here because behavior for maxResults 0 differs from the behavior for maxResults unset.",
               "location": "query",
               "type": "integer",
               "format": "uint32"
             },
             "pageToken": {
-              "description": "Page token, returned by a previous call, to request the next page of results.",
+              "description": "Page token, returned by a previous call, to request the next page of results. If not present, no further pages are present.",
               "location": "query",
               "type": "string"
             }

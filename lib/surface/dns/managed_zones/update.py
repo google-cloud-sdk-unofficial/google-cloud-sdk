@@ -50,12 +50,19 @@ def _Update(zones_client,
             forwarding_config=None,
             peering_config=None,
             reverse_lookup_config=None,
-            cloud_logging_config=None):
+            cloud_logging_config=None,
+            api_version='v1'):
   """Helper function to perform the update."""
-  zone_ref = args.CONCEPTS.zone.Parse()
+  registry = util.GetRegistry(api_version)
+
+  zone_ref = registry.Parse(
+      args.zone,
+      util.GetParamsForRegistry(api_version, args),
+      collection='dns.managedZones')
 
   dnssec_config = command_util.ParseDnssecConfigArgs(args,
-                                                     zones_client.messages)
+                                                     zones_client.messages,
+                                                     api_version)
   labels_update = labels_util.ProcessUpdateArgsLazy(
       args, zones_client.messages.ManagedZone.LabelsValue,
       lambda: zones_client.Get(zone_ref).labels)
@@ -183,6 +190,10 @@ class UpdateBeta(base.UpdateCommand):
 
     $ {command} my-zone --description="Hello, world!"
 
+  To change the description of a zonal managed-zone in us-east1-a, run:
+
+    $ {command} my-zone --description="Hello, world!" --location=us-east1-a
+
   """
 
   @staticmethod
@@ -190,10 +201,12 @@ class UpdateBeta(base.UpdateCommand):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
     _CommonArgs(parser, messages)
     flags.GetManagedZoneGkeClustersArg().AddToParser(parser)
+    flags.GetLocationArg().AddToParser(parser)
 
   def Run(self, args):
-    api_version = util.GetApiFromTrack(self.ReleaseTrack())
-    zones_client = managed_zones.Client.FromApiVersion(api_version)
+    api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
+    location = args.location if api_version == 'v2' else None
+    zones_client = managed_zones.Client.FromApiVersion(api_version, location)
     messages = zones_client.messages
 
     forwarding_config = None
@@ -257,7 +270,8 @@ class UpdateBeta(base.UpdateCommand):
         forwarding_config=forwarding_config,
         peering_config=peering_config,
         reverse_lookup_config=reverse_lookup_config,
-        cloud_logging_config=cloud_logging_config)
+        cloud_logging_config=cloud_logging_config,
+        api_version=api_version)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -279,3 +293,4 @@ class UpdateAlpha(UpdateBeta):
     messages = apis.GetMessagesModule('dns', 'v1alpha2')
     _CommonArgs(parser, messages)
     flags.GetManagedZoneGkeClustersArg().AddToParser(parser)
+    flags.GetLocationArg().AddToParser(parser)

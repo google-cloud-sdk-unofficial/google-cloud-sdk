@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, GA]
 
 help_text:
   brief: Show details about the machine.
@@ -10,7 +10,10 @@ help_text:
 
 request:
   collection: edgecontainer.projects.locations.machines
-  api_version: v1alpha
+  ALPHA:
+    api_version: v1alpha
+  GA:
+    api_version: v1
 
 arguments:
   resource:

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Poll long-running edge container operation until it completes.
@@ -13,7 +13,10 @@
 
   request:
     collection: edgecontainer.projects.locations.operations
-    api_version: v1alpha
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
 
   arguments:
     resource:

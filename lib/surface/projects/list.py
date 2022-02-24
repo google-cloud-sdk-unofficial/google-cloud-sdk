@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core.resource import resource_projection_spec
 
 
 class List(base.ListCommand):
@@ -54,8 +55,11 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """Run the list command."""
+    display_info = args.GetDisplayInfo()
+    defaults = resource_projection_spec.ProjectionSpec(
+        symbols=display_info.transforms, aliases=display_info.aliases)
     args.filter, server_filter = filter_rewrite.ListRewriter().Rewrite(
-        args.filter)
+        args.filter, defaults=defaults)
     log.info('client_filter="%s" server_filter="%s"',
              args.filter, server_filter)
     server_limit = args.limit

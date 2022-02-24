@@ -24,6 +24,7 @@ import textwrap
 from googlecloudsdk.api_lib.auth import util as auth_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.command_lib.auth import auth_util as command_auth_util
 from googlecloudsdk.command_lib.auth import flags
 from googlecloudsdk.core import config
@@ -120,6 +121,13 @@ class Login(base.Command):
           message=message, throw_if_unattended=True, cancel_on_no=True)
 
     command_auth_util.PromptIfADCEnvVarIsSet()
+    if args.client_id_file and not args.launch_browser:
+      raise c_exc.InvalidArgumentException(
+          '--no-launch-browser',
+          '`--no-launch-browser` flow no longer works with the '
+          '`--client-id-file`. Please replace `--no-launch-browser` with '
+          '`--no-browser`.'
+      )
     # This reauth scope is only used here and when refreshing the access token.
     scopes = (args.scopes or auth_util.DEFAULT_SCOPES) + [config.REAUTH_SCOPE]
     properties.VALUES.auth.client_id.Set(

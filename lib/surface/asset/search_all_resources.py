@@ -55,7 +55,7 @@ def AddScopeArgument(parser):
         granted the ``cloudasset.assets.searchAllResources'' permission on
         the desired scope. If not specified, the [configured project property](https://cloud.google.com//sdk/docs/configurations#setting_configuration_properties)
         will be used. To find the configured project, run:
-        ```gcloud config get-value project```. To change the setting, run:
+        ```gcloud config get project```. To change the setting, run:
         ```gcloud config set project PROJECT_ID```.
 
         The allowed values are:

@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import wildcard_iterator
+from googlecloudsdk.core.resource import resource_projector
 
 
 class List(base.ListCommand):
@@ -72,5 +73,6 @@ class List(base.ListCommand):
           url.url_string,
           fields_scope=cloud_api.FieldsScope.FULL,
           get_bucket_metadata=True):
-        yield bucket.metadata
-      # TODO(b/215404053): May change output format.
+        # MakeSerializable will omit all the None values.
+        yield resource_projector.MakeSerializable(
+            bucket.get_displayable_bucket_data())

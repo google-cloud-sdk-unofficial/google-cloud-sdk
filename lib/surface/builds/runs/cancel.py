@@ -24,7 +24,6 @@ from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import run_flags
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -41,11 +40,13 @@ class Cancel(base.Command):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    parser = run_flags.AddRunFlags(parser)
+    parser = run_flags.AddsRunFlags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""
-    project = properties.VALUES.core.project.Get(required=True)
+    region_ref = args.CONCEPTS.region.Parse()
+    region = region_ref.AsDict()['locationsId']
+    project = region_ref.AsDict()['projectsId']
     run_id = args.RUN_ID
 
     if args.type == 'pipelinerun':
@@ -57,7 +58,7 @@ class Cancel(base.Command):
           api_version='v2',
           params={
               'projectsId': project,
-              'locationsId': args.region,
+              'locationsId': region,
               'pipelineRunsId': run_id,
           })
       pipeline_run = messages.PipelineRun(
@@ -87,7 +88,7 @@ class Cancel(base.Command):
           api_version='v2',
           params={
               'projectsId': project,
-              'locationsId': args.region,
+              'locationsId': region,
               'taskRunsId': run_id,
           })
       task_run = messages.TaskRun(
@@ -116,7 +117,7 @@ class Cancel(base.Command):
           api_version='v1',
           params={
               'projectsId': project,
-              'locationsId': args.region,
+              'locationsId': region,
               'buildsId': run_id,
           },
           collection='cloudbuild.projects.locations.builds')

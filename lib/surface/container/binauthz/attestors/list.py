@@ -52,4 +52,5 @@ class List(base.ListCommand):
 
   def Run(self, args):
     api_version = apis.GetApiVersion(self.ReleaseTrack())
-    return attestors.Client(api_version).List(util.GetProjectRef())
+    return attestors.Client(api_version).List(
+        util.GetProjectRef(), page_size=args.page_size, limit=args.limit)

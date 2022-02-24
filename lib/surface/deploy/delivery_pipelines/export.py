@@ -72,7 +72,6 @@ class Export(base.ExportCommand):
       raise exceptions.HttpException(error)
 
     manifest = manifest_util.ProtoToManifest(
-        pipeline, pipeline_ref, manifest_util.DELIVERY_PIPELINE_KIND_V1BETA1,
-        manifest_util.DELIVERY_PIPELINE_FIELDS)
+        pipeline, pipeline_ref, manifest_util.DELIVERY_PIPELINE_KIND_V1BETA1)
 
     export_util.Export(manifest, args)

@@ -21,20 +21,19 @@
             --async
 
   request:
-    collection: beyondcorp.projects.locations.appConnectors
+    collection: beyondcorp.projects.locations.connectors
 
   async:
     collection: beyondcorp.projects.locations.operations
 
   arguments:
     resource:
-      arg_name: connector
-      spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:connector
       help_text: The Beyondcorp connector you want to create.
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:connector
 
     params:
     - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connectors.flags:service_account
     - _REF_: googlecloudsdk.command_lib.beyondcorp.app.connectors.flags:display_name
 
     labels:
-      api_field: googleCloudBeyondcorpAppconnectorsV1alphaAppConnector.labels
+      api_field: connector.labels

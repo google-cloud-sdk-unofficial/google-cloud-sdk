@@ -30,7 +30,8 @@ class Reinstall(base.SilentCommand):
   to fix it by downloading the latest version of the Google Cloud CLI and
   reinstalling it. This will replace your existing installation with a fresh
   one.  The command is the equivalent of deleting your current installation,
-  downloading a fresh copy of the SDK, and installing in the same location.
+  downloading a fresh copy of the gcloud CLI, and installing in the same
+  location.
 
   ## EXAMPLES
   To reinstall all components you have installed, run:

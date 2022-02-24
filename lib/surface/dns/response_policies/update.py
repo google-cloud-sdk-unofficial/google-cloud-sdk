@@ -50,6 +50,12 @@ class Update(base.UpdateCommand):
 
         $ {command} myresponsepolicy --description='My updated response policy.'
         --networks=network1,network2
+
+      To update a new zonal response policy scoped to a GKE cluster in
+      us-central1-a, run:
+
+        $ {command} myresponsepolicy --description='My new response policy.'
+        --gkeclusters=cluster1 --location=us-central1-a
   """
 
   def _FetchResponsePolicy(self, response_policy_ref, api_version):
@@ -75,15 +81,21 @@ class Update(base.UpdateCommand):
     _AddArgsCommon(parser)
     if cls._BetaOrAlpha():
       flags.GetResponsePolicyGkeClustersArg().AddToParser(parser)
+      flags.GetLocationArg().AddToParser(parser)
+
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
-    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
     client = util.GetApiClient(api_version)
     messages = apis.GetMessagesModule('dns', api_version)
 
     # Get Response Policy
-    response_policy_ref = args.CONCEPTS.response_policies.Parse()
+    registry = util.GetRegistry(api_version)
+    response_policy_ref = registry.Parse(
+        args.response_policies,
+        util.GetParamsForRegistry(api_version, args),
+        collection='dns.responsePolicies')
     to_update = self._FetchResponsePolicy(response_policy_ref, api_version)
 
     if not (args.IsSpecified('networks') or args.IsSpecified('description') or
@@ -108,8 +120,12 @@ class Update(base.UpdateCommand):
       to_update.description = args.description
 
     update_req = messages.DnsResponsePoliciesUpdateRequest(
-        responsePolicy=args.response_policies,
-        responsePolicyResource=to_update, project=response_policy_ref.project)
+        responsePolicy=response_policy_ref.Name(),
+        responsePolicyResource=to_update,
+        project=response_policy_ref.project)
+
+    if api_version == 'v2':
+      update_req.location = args.location
 
     updated_response_policy = client.responsePolicies.Update(update_req)
 

@@ -37,8 +37,6 @@ DETAILED_HELP = {
 }
 
 
-# TODO(b/218692770): Unhide class when NFS APIs are ready in prod.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe a Bare Metal solution NFS share."""

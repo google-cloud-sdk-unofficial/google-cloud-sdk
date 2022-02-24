@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Delete a VPN connection between an Edge Container cluster and a VPC network.
@@ -11,7 +11,10 @@
 
   request:
     collection: edgecontainer.projects.locations.vpnConnections
-    api_version: v1alpha
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
 
   arguments:
     resource:

@@ -9,7 +9,7 @@
       Display details about an internal range named ``my-range'' in project ``my-project'' and
       region ``global'', run:
 
-        $ {command} my-range --project my-project --region global
+        $ {command} my-range --project=my-project --region=global
 
   arguments:
     resource:

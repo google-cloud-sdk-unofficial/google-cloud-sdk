@@ -34,8 +34,8 @@ class ApplicationDefault(base.Group):
   These credentials are only used by Google client libraries in your own
   application.
 
-  More information on ADC and how they work can be found here:
-  https://developers.google.com/identity/protocols/application-default-credentials
+  For more information about ADC and how it works, see [Authenticating as a
+  service account](https://cloud.google.com/docs/authentication/production).
 
   ## EXAMPLES
 

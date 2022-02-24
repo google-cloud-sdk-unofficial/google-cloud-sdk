@@ -177,9 +177,8 @@ class Filters(base.TopicCommand):
           True if _key_ does not contain a match for the RE (regular expression)
           pattern _value_.
 
-          For more about regular expression syntax, see:
-          https://docs.python.org/3/library/re.html#re-syntax which follows the
-          PCRE dialect.
+          Regular expressions are evaluated using Python's standard library:
+          https://docs.python.org/3/library/re.html#re-syntax.
 
           ### Determine which fields are available for filtering
 

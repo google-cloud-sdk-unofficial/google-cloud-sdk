@@ -75,6 +75,7 @@ class CachedCredentialLoader(CredentialLoader):
     Args:
       credential_cache_file: path to a local file to cache credential.
       read_cache_first: whether to load credential from cache first.
+
     Raises:
       BigqueryError: if cache file cannot be created to store credential.
     """

@@ -3747,7 +3747,14 @@ class _Make(BigqueryCmd):
     flags.DEFINE_integer(
         'max_concurrency',
         None,
-        'Reservation maximum concurrency.',
+        'Reservation maximum concurrency. Deprecated, please use concurrency '
+        'instead.',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'concurrency',
+        None,
+        'Maximum number of queries that are allowed to run concurrently in '
+        'this reservation. Note: this is a soft limit.',
         flag_values=fv)
     flags.DEFINE_bool(
         'enable_queuing_and_priorities',
@@ -3945,7 +3952,8 @@ class _Make(BigqueryCmd):
             reference=reference,
             slots=self.slots,
             ignore_idle_slots=ignore_idle_arg,
-            max_concurrency=self.max_concurrency,
+            concurrency=self.concurrency
+            if self.concurrency is not None else self.max_concurrency,
             enable_queuing_and_priorities=self.enable_queuing_and_priorities,
             multi_region_auxiliary=self.multi_region_auxiliary,
             autoscale_max_slots=self.autoscale_max_slots,
@@ -4586,7 +4594,14 @@ class _Update(BigqueryCmd):
     flags.DEFINE_integer(
         'max_concurrency',
         None,
-        'Reservation maximum concurrency.',
+        'Reservation maximum concurrency. Deprecated, please use concurrency '
+        'instead.',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'concurrency',
+        None,
+        'Maximum number of queries that are allowed to run concurrently in '
+        'this reservation. Note: this is a soft limit.',
         flag_values=fv)
     flags.DEFINE_bool(
         'enable_queuing_and_priorities',
@@ -4929,7 +4944,8 @@ class _Update(BigqueryCmd):
               reference=reference,
               slots=self.slots,
               ignore_idle_slots=ignore_idle_arg,
-              max_concurrency=self.max_concurrency,
+              concurrency=self.concurrency
+              if self.concurrency is not None else self.max_concurrency,
               enable_queuing_and_priorities=self.enable_queuing_and_priorities,
               autoscale_max_slots=self.autoscale_max_slots,
               autoscale_budget_slot_hours=self.autoscale_budget_slot_hours)

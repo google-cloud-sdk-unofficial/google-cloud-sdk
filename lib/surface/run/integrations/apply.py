@@ -19,14 +19,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.run.integrations import api_utils
-from googlecloudsdk.api_lib.util import messages as messages_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags as run_flags
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
+from googlecloudsdk.core import yaml
 
 
 @base.Hidden
@@ -59,18 +58,10 @@ class Apply(base.Command):
   def Run(self, args):
     """Create or Update application from YAML."""
 
-    messages = api_utils.GetMessages()
     self._ValidateAppConfigFile(args.FILE)
     app_dict = dict(args.FILE)
     name = app_dict.pop('name')
-    try:
-      appconfig = messages_util.DictToMessageWithErrorCheck(
-          app_dict, messages.Config)
-    except messages_util.ScalarTypeMismatchError as e:
-      raise exceptions.FieldMismatchError(
-          e,
-          help_text='Please make sure that the YAML file matches the Cloud Run '
-          'Integrations definition spec.')
+    appconfig = {'config': yaml.dump(args.FILE).encode('utf-8')}
 
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, self.ReleaseTrack())

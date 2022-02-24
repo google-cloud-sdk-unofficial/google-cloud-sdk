@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.compute import filter_rewrite
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.resource import resource_projection_spec
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -42,7 +43,11 @@ class List(base.ListCommand):
 
     project = properties.VALUES.core.project.Get(required=True)
 
-    args.filter, filter_expr = filter_rewrite.Rewriter().Rewrite(args.filter)
+    display_info = args.GetDisplayInfo()
+    defaults = resource_projection_spec.ProjectionSpec(
+        symbols=display_info.transforms, aliases=display_info.aliases)
+    args.filter, filter_expr = filter_rewrite.Rewriter().Rewrite(
+        args.filter, defaults=defaults)
     request = messages.ComputeSecurityPoliciesListRequest(
         project=project, filter=filter_expr)
 

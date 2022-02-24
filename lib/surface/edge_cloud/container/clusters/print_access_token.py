@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.edge_cloud.container import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 @base.Hidden
 class PrintAccessToken(base.Command):
   """Generate an access token for an Edge Container cluster."""

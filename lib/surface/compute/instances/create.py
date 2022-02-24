@@ -163,6 +163,7 @@ def _CommonArgs(parser,
   instances_flags.AddNestedVirtualizationArgs(parser)
   instances_flags.AddThreadsPerCoreArgs(parser)
   instances_flags.AddEnableUefiNetworkingArgs(parser)
+  instances_flags.AddResourceManagerTagsArgs(parser)
   if support_numa_node_count:
     instances_flags.AddNumaNodeCountArgs(parser)
   instances_flags.AddStackTypeArgs(parser)
@@ -229,7 +230,6 @@ class Create(base.CreateCommand):
   _support_multi_writer = False
   _support_subinterface = False
   _support_secure_tag = False
-  _support_resource_manager_tags = False
   _support_node_project = False
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
@@ -412,7 +412,7 @@ class Create(base.CreateCommand):
       if self._support_secure_tag and args.secure_tags:
         instance.secureTags = secure_tags_utils.GetSecureTags(args.secure_tags)
 
-      if self._support_resource_manager_tags and args.resource_manager_tags:
+      if args.resource_manager_tags:
         ret_resource_manager_tags = resource_manager_tags_utils.GetResourceManagerTags(
             args.resource_manager_tags)
         if ret_resource_manager_tags is not None:
@@ -609,7 +609,6 @@ class CreateBeta(Create):
   _support_multi_writer = True
   _support_subinterface = False
   _support_secure_tag = False
-  _support_resource_manager_tags = False
   _support_node_project = False
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
@@ -683,7 +682,6 @@ class CreateAlpha(CreateBeta):
   _support_multi_writer = True
   _support_subinterface = True
   _support_secure_tag = True
-  _support_resource_manager_tags = True
   _support_node_project = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = True
@@ -727,7 +725,6 @@ class CreateAlpha(CreateBeta):
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddStableFleetArgs(parser)
     instances_flags.AddSecureTagsArgs(parser)
-    instances_flags.AddResourceManagerTagsArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
 
 

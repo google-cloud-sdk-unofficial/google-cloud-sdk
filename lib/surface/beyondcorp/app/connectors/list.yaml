@@ -18,7 +18,7 @@
             --format=json(displayName, name, state, principalInfo.serviceAccount.email,createTime,updateTime,labels)
 
   request:
-    collection: beyondcorp.projects.locations.appConnectors
+    collection: beyondcorp.projects.locations.connectors
   arguments:
     resource:
       help_text: |

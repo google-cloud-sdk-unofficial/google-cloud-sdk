@@ -8,7 +8,7 @@
     examples: |
       List all internal ranges in project ``my-project'' and region ``global'', run:
 
-        $ {command} --project my-project --region global
+        $ {command} --project=my-project --region=global
 
   arguments:
     resource:

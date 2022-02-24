@@ -507,6 +507,15 @@ example, to get a snapshot of the guest's process tree, run:
 
   $ {command} example-instance --zone=us-central1-a --command="ps -ejH"
 
+When running a command on a virtual machine, a non-interactive shell will
+typically be used. (See the INVOCATION section of
+https://linux.die.net/man/1/bash for an overview.) That behavior can be
+overridden by specifying a shell to run the command, and passing the `-t` flag
+to SSH to allocate a pseudo-TTY. For example, to see the environment variables
+set during an interactive session, run:
+
+  $ {command} example-instance --zone=us-central1-a --command="bash -i -c env" -- -t
+
 If you are using the Google Container-Optimized virtual machine image,
 you can SSH into one of your containers with:
 

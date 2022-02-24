@@ -117,6 +117,7 @@ def _CommonArgs(parser,
   instances_flags.AddNestedVirtualizationArgs(parser)
   instances_flags.AddThreadsPerCoreArgs(parser)
   instances_flags.AddEnableUefiNetworkingArgs(parser)
+  instances_flags.AddResourceManagerTagsArgs(parser)
   if support_numa_node_count:
     instances_flags.AddNumaNodeCountArgs(parser)
 
@@ -227,7 +228,6 @@ class Create(base.Command):
   _support_display_device = False
   _support_local_ssd_size = False
   _support_secure_tags = False
-  _support_resource_manager_tags = False
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
   _support_visible_core_count = False
@@ -452,7 +452,7 @@ class Create(base.Command):
     if self._support_secure_tags and args.secure_tags:
       instance_properties.secureTags = secure_tags_utils.GetSecureTags(
           args.secure_tags)
-    if self._support_resource_manager_tags and args.resource_manager_tags:
+    if args.resource_manager_tags:
       ret_resource_manager_tags = resource_manager_tags_utils.GetResourceManagerTags(
           args.resource_manager_tags)
       if ret_resource_manager_tags is not None:
@@ -602,7 +602,6 @@ class CreateBeta(Create):
 
   _support_display_device = True
   _support_secure_tags = False
-  _support_resource_manager_tags = False
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_visible_core_count = False
@@ -638,7 +637,6 @@ class CreateAlpha(Create):
   _support_display_device = True
   _support_local_ssd_size = True
   _support_secure_tags = True
-  _support_resource_manager_tags = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = True
   _support_visible_core_count = True
@@ -666,7 +664,6 @@ class CreateAlpha(Create):
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddBulkCreateArgs(parser)
     instances_flags.AddSecureTagsArgs(parser)
-    instances_flags.AddResourceManagerTagsArgs(parser)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
 
 

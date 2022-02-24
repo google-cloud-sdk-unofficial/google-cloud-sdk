@@ -65,7 +65,6 @@ class Export(base.ExportCommand):
     target_ref = args.CONCEPTS.target.Parse()
     target_obj = target_util.GetTarget(target_ref)
     manifest = manifest_util.ProtoToManifest(target_obj, target_ref,
-                                             manifest_util.TARGET_KIND_V1BETA1,
-                                             manifest_util.TARGET_FIELDS)
+                                             manifest_util.TARGET_KIND_V1BETA1)
 
     export_util.Export(manifest, args)

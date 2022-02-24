@@ -29,7 +29,9 @@ class Configurations(base.Group):
       'DESCRIPTION': """\
           {description}
 
-          See `gcloud topic configurations` for an overview of named
+          The current configuration can be managed via the
+          CLOUDSDK_ACTIVE_CONFIG_NAME environment variable or a configuration
+          property. See `gcloud topic configurations` for an overview of named
           configurations.
           """,
   }

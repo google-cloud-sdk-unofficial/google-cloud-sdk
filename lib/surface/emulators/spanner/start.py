@@ -61,10 +61,10 @@ class Start(base.Command):
         '--use-docker',
         required=False,
         type=arg_parsers.ArgBoolean(),
-        help='Use the cloud spanner emulator docker image even if the platform '
-        'has a native binary available in the sdk. Currently we only provide a '
-        'native binary for Linux. For other systems, you must install docker '
-        'for your platform before starting the emulator.')
+        help='Use the Cloud Spanner emulator docker image even if the platform '
+        'has a native binary available in the gcloud CLI. Currently we only '
+        'provide a native binary for Linux. For other systems, you must '
+        'install Docker for your platform before starting the emulator.')
     parser.add_argument(
         '--enable-fault-injection',
         required=False,

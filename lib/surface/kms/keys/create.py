@@ -146,7 +146,7 @@ class Create(base.CreateCommand):
         --default-algorithm=external-symmetric-encryption \
         --protection-level=external-vpc
         --skip-initial-version-creation
-        --crypto-key-backend="projects/$(gcloud config get-value project)/
+        --crypto-key-backend="projects/$(gcloud config get project)/
         locations/us-central1/ekmConnections/eagles"
 
   """

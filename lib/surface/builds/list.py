@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.builds import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+from googlecloudsdk.core.resource import resource_projection_spec
 
 
 class List(base.ListCommand):
@@ -109,8 +110,11 @@ class List(base.ListCommand):
         projectsId=project_id,
         locationsId=build_region)
 
+    display_info = args.GetDisplayInfo()
+    defaults = resource_projection_spec.ProjectionSpec(
+        symbols=display_info.transforms, aliases=display_info.aliases)
     args.filter, server_filter = filter_rewrite.Backend(args.ongoing).Rewrite(
-        args.filter)
+        args.filter, defaults=defaults)
 
     return list_pager.YieldFromList(
         client.projects_locations_builds,

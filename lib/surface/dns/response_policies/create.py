@@ -51,6 +51,13 @@ class Create(base.UpdateCommand):
 
         $ {command} myresponsepolicy --description='My new response policy.'
         --networks=network1,network2
+
+      To create a new zonal response policy scoped to a GKE cluster in
+        us-central1-a, run (alpha/beta):
+
+        $ {command} beta myresponsepolicy --description='My new response
+        policy.'
+        --gkeclusters=cluster1 --location=us-central1-a
   """
 
   @classmethod
@@ -66,16 +73,21 @@ class Create(base.UpdateCommand):
         api_version=util.GetApiFromTrack(cls.ReleaseTrack()))
     _AddArgsCommon(parser)
     if cls._BetaOrAlpha():
+      flags.GetLocationArg().AddToParser(parser)
       flags.GetResponsePolicyGkeClustersArg().AddToParser(parser)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
-    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
     client = util.GetApiClient(api_version)
     messages = apis.GetMessagesModule('dns', api_version)
 
     # Get Response Policy
-    response_policy_ref = args.CONCEPTS.response_policies.Parse()
+    registry = util.GetRegistry(api_version)
+    response_policy_ref = registry.Parse(
+        args.response_policies,
+        util.GetParamsForRegistry(api_version, args),
+        collection='dns.responsePolicies')
     response_policy_name = response_policy_ref.Name()
 
     response_policy = messages.ResponsePolicy(
@@ -117,6 +129,9 @@ class Create(base.UpdateCommand):
 
     create_request = messages.DnsResponsePoliciesCreateRequest(
         responsePolicy=response_policy, project=response_policy_ref.project)
+
+    if api_version == 'v2':
+      create_request.location = args.location
 
     result = client.responsePolicies.Create(create_request)
 

@@ -67,8 +67,8 @@ class List(base.ListCommand):
   def Run(self, args):
     """Create a Cloud Run Integration."""
 
-    integration_type = args.type.lower() if args.type else None
-    service_name = args.service.lower() if args.service else None
+    integration_type = args.type
+    service_name = args.service
 
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, self.ReleaseTrack())

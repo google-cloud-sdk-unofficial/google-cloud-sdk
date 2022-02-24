@@ -8,7 +8,7 @@
     examples: |
       Delete an internal range named ``my-hub'' in project ``my-project'' and region ``global'', run:
 
-        $ {command} my-range --project my-project --region global
+        $ {command} my-range --project=my-project --region=global
 
   arguments:
     resource:

@@ -90,12 +90,13 @@ class CreateHelper(object):
   HTTPS_HEALTH_CHECK_ARG = None
 
   @classmethod
-  def Args(cls, parser, support_l7_internal_load_balancer, support_gfe3,
-           support_l7_rxlb, support_failover, support_logging, support_multinic,
-           support_client_only, support_grpc_protocol,
-           support_unspecified_protocol, support_subsetting,
-           support_subsetting_subset_size, support_strong_session_affinity,
-           support_advanced_load_balancing, support_service_bindings):
+  def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
+           support_logging, support_multinic, support_client_only,
+           support_grpc_protocol, support_unspecified_protocol,
+           support_subsetting, support_subsetting_subset_size,
+           support_strong_session_affinity, support_advanced_load_balancing,
+           support_service_bindings, support_dynamic_compression,
+           support_weighted_lb):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -127,10 +128,7 @@ class CreateHelper(object):
     flags.AddAffinityCookieTtl(parser)
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddLoadBalancingScheme(
-        parser,
-        include_l7_ilb=support_l7_internal_load_balancer,
-        include_gfe3=support_gfe3,
-        include_l7_rxlb=support_l7_rxlb)
+        parser, include_l7_ilb=support_l7_internal_load_balancer)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=False)
     flags.AddCacheKeyIncludeProtocol(parser, default=True)
     flags.AddCacheKeyIncludeHost(parser, default=True)
@@ -158,6 +156,9 @@ class CreateHelper(object):
     if support_multinic:
       flags.AddNetwork(parser)
 
+    if support_weighted_lb:
+      flags.AddLocalityLbPolicy(parser)
+
     cdn_flags.AddCdnPolicyArgs(parser, 'backend service')
 
     flags.AddConnectionTrackingPolicy(parser)
@@ -165,14 +166,15 @@ class CreateHelper(object):
     if support_strong_session_affinity:
       flags.AddStrongSessionAffinity(parser)
 
-  def __init__(self, support_l7_internal_load_balancer, support_gfe3,
-               support_l7_rxlb, support_failover, support_logging,
-               support_multinic, support_subsetting,
+    if support_dynamic_compression:
+      flags.AddCompressionMode(parser)
+
+  def __init__(self, support_l7_internal_load_balancer, support_failover,
+               support_logging, support_multinic, support_subsetting,
                support_subsetting_subset_size, support_strong_session_affinity,
-               support_advanced_load_balancing, support_service_bindings):
+               support_advanced_load_balancing, support_service_bindings,
+               support_dynamic_compression, support_weighted_lb):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
-    self._support_gfe3 = support_gfe3
-    self._support_l7_rxlb = support_l7_rxlb
     self._support_failover = support_failover
     self._support_logging = support_logging
     self._support_multinic = support_multinic
@@ -181,6 +183,8 @@ class CreateHelper(object):
     self._support_strong_session_affinity = support_strong_session_affinity
     self._support_advanced_load_balancing = support_advanced_load_balancing
     self._support_service_bindings = support_service_bindings
+    self._support_dynamic_compression = support_dynamic_compression
+    self._support_weighted_lb = support_weighted_lb
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
     """Returns a global backend service create request."""
@@ -226,6 +230,10 @@ class CreateHelper(object):
                                                  'global', binding_name)
           for binding_name in args.service_bindings
       ]
+    if self._support_dynamic_compression and args.compression_mode is not None:
+      backend_service.compressionMode = (
+          client.messages.BackendService.CompressionModeValueValuesEnum(
+              args.compression_mode))
     if self._support_subsetting:
       backend_services_utils.ApplySubsettingArgs(
           client, args, backend_service, self._support_subsetting_subset_size)
@@ -242,6 +250,11 @@ class CreateHelper(object):
     if (backend_service.cdnPolicy is not None and
         backend_service.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
       backend_service.enableCDN = True
+
+    if self._support_weighted_lb and args.locality_lb_policy is not None:
+      backend_service.localityLbPolicy = (
+          client.messages.BackendService.LocalityLbPolicyValueValuesEnum(
+              args.locality_lb_policy))
 
     self._ApplyIapArgs(client.messages, args.iap, backend_service)
 
@@ -325,6 +338,11 @@ class CreateHelper(object):
       backend_service.network = flags.NETWORK_ARG.ResolveAsResource(
           args, holder.resources).SelfLink()
 
+    if self._support_weighted_lb and args.locality_lb_policy is not None:
+      backend_service.localityLbPolicy = (
+          client.messages.BackendService.LocalityLbPolicyValueValuesEnum(
+              args.locality_lb_policy))
+
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,
         region=backend_services_ref.region,
@@ -405,12 +423,10 @@ class CreateGA(base.CreateCommand):
   """
 
   _support_l7_internal_load_balancer = True
-  _support_gfe3 = False
-  _support_l7_rxlb = False
   _support_failover = True
   _support_logging = True
   _support_multinic = True
-  _support_client_only = False
+  _support_client_only = True
   _support_grpc_protocol = True
   _support_unspecified_protocol = False
   _support_subsetting = True
@@ -418,6 +434,8 @@ class CreateGA(base.CreateCommand):
   _support_strong_session_affinity = False
   _support_advanced_load_balancing = False
   _support_service_bindings = False
+  _support_dynamic_compression = False
+  _support_weighted_lb = False
 
   @classmethod
   def Args(cls, parser):
@@ -425,8 +443,6 @@ class CreateGA(base.CreateCommand):
         parser,
         support_l7_internal_load_balancer=cls
         ._support_l7_internal_load_balancer,
-        support_gfe3=cls._support_gfe3,
-        support_l7_rxlb=cls._support_l7_rxlb,
         support_failover=cls._support_failover,
         support_logging=cls._support_logging,
         support_multinic=cls._support_multinic,
@@ -437,7 +453,9 @@ class CreateGA(base.CreateCommand):
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_strong_session_affinity=cls._support_strong_session_affinity,
         support_advanced_load_balancing=cls._support_advanced_load_balancing,
-        support_service_bindings=cls._support_service_bindings)
+        support_service_bindings=cls._support_service_bindings,
+        support_dynamic_compression=cls._support_dynamic_compression,
+        support_weighted_lb=cls._support_weighted_lb)
 
   def Run(self, args):
     """Issues request necessary to create Backend Service."""
@@ -446,8 +464,6 @@ class CreateGA(base.CreateCommand):
     return CreateHelper(
         support_l7_internal_load_balancer=self
         ._support_l7_internal_load_balancer,
-        support_gfe3=self._support_gfe3,
-        support_l7_rxlb=self._support_l7_rxlb,
         support_failover=self._support_failover,
         support_logging=self._support_logging,
         support_multinic=self._support_multinic,
@@ -455,7 +471,9 @@ class CreateGA(base.CreateCommand):
         support_subsetting_subset_size=self._support_subsetting_subset_size,
         support_strong_session_affinity=self._support_strong_session_affinity,
         support_advanced_load_balancing=self._support_advanced_load_balancing,
-        support_service_bindings=self._support_service_bindings).Run(
+        support_service_bindings=self._support_service_bindings,
+        support_dynamic_compression=self._support_dynamic_compression,
+        support_weighted_lb=self._support_weighted_lb).Run(
             args, holder)
 
 
@@ -477,10 +495,8 @@ class CreateBeta(CreateGA):
   For more information about the available settings, see
   https://cloud.google.com/load-balancing/docs/backend-service.
   """
-  _support_l7_rxlb = True
-  _support_gfe3 = True
   _support_multinic = True
-  _support_client_only = False
+  _support_client_only = True
   _support_grpc_protocol = True
   _support_unspecified_protocol = True
   _support_subsetting = True
@@ -488,6 +504,8 @@ class CreateBeta(CreateGA):
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = False
   _support_service_bindings = True
+  _support_dynamic_compression = True
+  _support_weighted_lb = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -516,3 +534,5 @@ class CreateAlpha(CreateBeta):
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = True
   _support_service_bindings = True
+  _support_dynamic_compression = True
+  _support_weighted_lb = True

@@ -11,16 +11,16 @@
 
         $ {command} my-range
           --ip-cidr-range="192.168.0.0/24"
-          --project my-project
-          --region global
+          --project=my-project
+          --region=global
 
       Extend an internal range named ``my-range'' in project ``my-project'' and
       region ``global'' to an address block of /24:
 
         $ {command} my-range
           --prefix-length=24
-          --project my-project
-          --region global
+          --project=my-project
+          --region=global
 
   arguments:
     resource:

@@ -92,4 +92,6 @@ class List(base.ListCommand):
     return client.YieldAttestations(
         note_ref=note_ref,
         artifact_url=normalized_artifact_url,
+        page_size=args.page_size,
+        limit=args.limit,
     )

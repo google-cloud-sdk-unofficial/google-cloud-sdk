@@ -703,6 +703,10 @@ flags_to_add = {
             flags.AddSpotFlag,
         'stackdriver':
             flags.AddEnableStackdriverKubernetesFlag,
+        'stacktype':
+            flags.AddStackTypeFlag,
+        'ipv6Accesstype':
+            flags.AddIpv6AccessTypeFlag,
         'surgeupgrade': (lambda p: flags.AddSurgeUpgradeFlag(p, default=1)),
         'systemconfig':
             lambda p: flags.AddSystemConfigFlag(p, hidden=False),
@@ -901,6 +905,10 @@ flags_to_add = {
             flags.AddEnableStackdriverKubernetesFlag,
         'securityprofile':
             flags.AddSecurityProfileForCreateFlags,
+        'stacktype':
+            flags.AddStackTypeFlag,
+        'ipv6accesstype':
+            flags.AddIpv6AccessTypeFlag,
         'surgeupgrade': (lambda p: flags.AddSurgeUpgradeFlag(p, default=1)),
         'systemconfig':
             lambda p: flags.AddSystemConfigFlag(p, hidden=False),
@@ -1177,6 +1185,8 @@ class CreateBeta(Create):
     ops.maintenance_interval = get_default('maintenance_interval')
     ops.disable_pod_cidr_overprovision = get_default(
         'disable_pod_cidr_overprovision')
+    ops.stack_type = get_default('stack_type')
+    ops.ipv6_access_type = get_default('ipv6_access_type')
     return ops
 
 
@@ -1259,4 +1269,6 @@ class CreateAlpha(Create):
     ops.maintenance_interval = get_default('maintenance_interval')
     ops.disable_pod_cidr_overprovision = get_default(
         'disable_pod_cidr_overprovision')
+    ops.stack_type = get_default('stack_type')
+    ops.ipv6_access_type = get_default('ipv6_access_type')
     return ops

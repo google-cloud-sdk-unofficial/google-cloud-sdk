@@ -58,6 +58,10 @@ _MAX_RESULTS = 100000
 
 _GCS_SCHEME_PREFIX = 'gs://'
 
+collections_abc = collections
+if sys.version_info > (3, 8):
+  collections_abc = collections.abc
+
 
 # Maps supported connection type names to the corresponding property in the
 # connection proto.
@@ -1948,7 +1952,7 @@ class BigqueryClient(object):
       self,
       slots,
       ignore_idle_slots,
-      max_concurrency,
+      concurrency,
       enable_queuing_and_priorities,
       multi_region_auxiliary,
       autoscale_max_slots,
@@ -1960,7 +1964,7 @@ class BigqueryClient(object):
       slots: Number of slots allocated to this reservation subtree.
       ignore_idle_slots: Specifies whether queries should ignore idle slots from
         other reservations.
-      max_concurrency: Reservation maximum concurrency.
+      concurrency: Reservation maximum concurrency.
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
       multi_region_auxiliary: Whether this reservation is for the auxiliary
@@ -1980,13 +1984,13 @@ class BigqueryClient(object):
     reservation['ignore_idle_slots'] = ignore_idle_slots
     if multi_region_auxiliary is not None:
       reservation['multi_region_auxiliary'] = multi_region_auxiliary
-    if max_concurrency is not None:
+    if concurrency is not None:
       if (self.api_version != 'v1beta1'
          ):
         raise BigqueryError(
-            'max_concurrency is only supported in v1beta1. Please specify'
+            'concurrency is only supported in v1beta1. Please specify'
             '\'--api_version=v1beta1\' and retry.')
-      reservation['max_concurrency'] = max_concurrency
+      reservation['concurrency'] = concurrency
 
     if enable_queuing_and_priorities is not None:
       if (self.api_version != 'v1beta1'
@@ -2023,7 +2027,7 @@ class BigqueryClient(object):
       reference,
       slots,
       ignore_idle_slots,
-      max_concurrency,
+      concurrency,
       enable_queuing_and_priorities,
       multi_region_auxiliary,
       autoscale_max_slots,
@@ -2036,7 +2040,7 @@ class BigqueryClient(object):
       slots: Number of slots allocated to this reservation subtree.
       ignore_idle_slots: Specifies whether queries should ignore idle slots from
         other reservations.
-      max_concurrency: Reservation maximum concurrency.
+      concurrency: Reservation maximum concurrency.
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
       multi_region_auxiliary: Whether this reservation is for the auxiliary
@@ -2054,7 +2058,7 @@ class BigqueryClient(object):
     reservation = self.GetBodyForCreateReservation(
         slots,
         ignore_idle_slots,
-        max_concurrency,
+        concurrency,
         enable_queuing_and_priorities,
         multi_region_auxiliary,
         autoscale_max_slots,
@@ -2164,7 +2168,7 @@ class BigqueryClient(object):
       self,
       slots,
       ignore_idle_slots,
-      max_concurrency,
+      concurrency,
       enable_queuing_and_priorities,
       autoscale_max_slots,
       autoscale_budget_slot_hours=None):
@@ -2175,7 +2179,7 @@ class BigqueryClient(object):
       slots: Number of slots allocated to this reservation subtree.
       ignore_idle_slots: Specifies whether queries should ignore idle slots from
         other reservations.
-      max_concurrency: Reservation maximum concurrency.
+      concurrency: Reservation maximum concurrency.
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
       autoscale_max_slots: Number of slots to be scaled when needed.
@@ -2198,14 +2202,14 @@ class BigqueryClient(object):
       reservation['ignore_idle_slots'] = ignore_idle_slots
       update_mask += 'ignore_idle_slots,'
 
-    if max_concurrency is not None:
+    if concurrency is not None:
       if (self.api_version != 'v1beta1'
          ):
         raise BigqueryError(
-            'max_concurrency is only supported in v1beta1. Please specify'
+            'concurrency is only supported in v1beta1. Please specify'
             '\'--api_version=v1beta1\' and retry.')
-      reservation['max_concurrency'] = max_concurrency
-      update_mask += 'max_concurrency,'
+      reservation['concurrency'] = concurrency
+      update_mask += 'concurrency,'
 
     if enable_queuing_and_priorities is not None:
       if (self.api_version != 'v1beta1'
@@ -2253,7 +2257,7 @@ class BigqueryClient(object):
       reference,
       slots,
       ignore_idle_slots,
-      max_concurrency,
+      concurrency,
       enable_queuing_and_priorities,
       autoscale_max_slots,
       autoscale_budget_slot_hours=None,
@@ -2266,7 +2270,7 @@ class BigqueryClient(object):
       slots: Number of slots allocated to this reservation subtree.
       ignore_idle_slots: Specifies whether queries should ignore idle slots from
         other reservations.
-      max_concurrency: Reservation maximum concurrency.
+      concurrency: Reservation maximum concurrency.
       enable_queuing_and_priorities: Whether queuing and new prioritization
         behavior should be enabled for the reservation.
       autoscale_max_slots: Number of slots to be scaled when needed.
@@ -2282,7 +2286,7 @@ class BigqueryClient(object):
     reservation, update_mask = self.GetParamsForUpdateReservation(
         slots,
         ignore_idle_slots,
-        max_concurrency,
+        concurrency,
         enable_queuing_and_priorities,
         autoscale_max_slots,
         autoscale_budget_slot_hours)
@@ -3022,7 +3026,7 @@ class BigqueryClient(object):
       formatter.AddColumns((
           'name',
           'slotCapacity',
-          'maxConcurrency',
+          'concurrency',
           'ignoreIdleSlots',
           'enableQueuingAndPriorities',
           'creationTime',
@@ -3684,8 +3688,8 @@ class BigqueryClient(object):
     if 'multiRegionAuxiliary' not in list(result.keys()):
       result['multiRegionAuxiliary'] = 'False'
     if (reference_type == ApiClientHelper.BetaReservationReference and
-        'maxConcurrency' not in list(result.keys())):
-      result['maxConcurrency'] = '0 (auto)'
+        'concurrency' not in list(result.keys())):
+      result['concurrency'] = '0 (auto)'
     if (reference_type == ApiClientHelper.BetaReservationReference and
         'enableQueuingAndPriorities' not in list(result.keys())):
       result['enableQueuingAndPriorities'] = 'False'
@@ -6758,7 +6762,7 @@ class ApiClientHelper(object):
   def __init__(self, *unused_args, **unused_kwds):
     raise NotImplementedError('Cannot instantiate static class ApiClientHelper')
 
-  class Reference(collections.Mapping):
+  class Reference(collections_abc.Mapping):
     """Base class for Reference objects returned by apiclient."""
     _required_fields = frozenset()
     _optional_fields = frozenset()

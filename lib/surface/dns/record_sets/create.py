@@ -25,10 +25,10 @@ from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
-from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Creates a record-set in a managed-zone."""
 
@@ -45,8 +45,19 @@ class Create(base.CreateCommand):
 
           $ {command} foo.bar.com. --rrdatas=1.2.3.4,9.8.7.6 --type=A --ttl=60
             --zone=my_zone
+
+          To create a record-set with dnsName foo.bar.com., record type A,
+          rrdata [1.2.3.4, 9.8.7.6] and ttl 60 in my_zone in us-east1-a run this:
+
+          $ {command} us-east1-a.bar.com. --rrdatas=1.2.3.4,9.8.7.6 --type=A --ttl=60
+            --zone=my_zone --location=us-east1-a
           """)
   }
+
+  @classmethod
+  def _BetaOrAlpha(cls):
+    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
+                                  base.ReleaseTrack.ALPHA)
 
   @classmethod
   def Args(cls, parser):
@@ -54,13 +65,18 @@ class Create(base.CreateCommand):
     flags.GetResourceRecordSetsNameArg().AddToParser(parser)
     flags.GetResourceRecordSetsTypeArg(True).AddToParser(parser)
     flags.GetResourceRecordSetsTtlArg(False).AddToParser(parser)
-    flags.GetResourceRecordSetsRrdatasArgGroup().AddToParser(parser)
+    if cls._BetaOrAlpha():
+      flags.GetResourceRecordSetsRrdatasArgGroup(
+          use_deprecated_names=True).AddToParser(parser)
+      flags.GetLocationArg().AddToParser(parser)
+    else:
+      flags.GetResourceRecordSetsRrdatasArgGroup().AddToParser(parser)
     parser.display_info.AddCacheUpdater(None)
     parser.display_info.AddTransforms(flags.RESOURCERECORDSETS_TRANSFORMS)
     parser.display_info.AddFormat(flags.RESOURCERECORDSETS_FORMAT)
 
   def Run(self, args):
-    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
 
     messages = apis.GetMessagesModule('dns', api_version)
 
@@ -68,33 +84,17 @@ class Create(base.CreateCommand):
 
     zone_ref = util.GetRegistry(api_version).Parse(
         args.zone,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
+        params=util.GetParamsForRegistry(api_version, args),
         collection='dns.managedZones')
+    request = messages.DnsResourceRecordSetsCreateRequest(
+        project=zone_ref.project,
+        managedZone=zone_ref.Name(),
+        resourceRecordSet=rrsets_util.CreateRecordSetFromArgs(
+            args, api_version))
 
-    result = dns_client.resourceRecordSets.Create(
-        messages.DnsResourceRecordSetsCreateRequest(
-            project=zone_ref.project,
-            managedZone=zone_ref.Name(),
-            resourceRecordSet=rrsets_util.CreateRecordSetFromArgs(
-                args, api_version)))
+    if api_version == 'v2' and self._BetaOrAlpha():
+      request.location = args.location
+
+    result = dns_client.resourceRecordSets.Create(request)
 
     return result
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CreateBeta(Create):
-  """Creates a record-set in a managed-zone on the beta release track."""
-
-  @classmethod
-  def Args(cls, parser):
-    flags.GetZoneArg().AddToParser(parser)
-    flags.GetResourceRecordSetsNameArg().AddToParser(parser)
-    flags.GetResourceRecordSetsTypeArg(True).AddToParser(parser)
-    flags.GetResourceRecordSetsTtlArg(False).AddToParser(parser)
-    flags.GetResourceRecordSetsRrdatasArgGroup(
-        use_deprecated_names=True).AddToParser(parser)
-    parser.display_info.AddCacheUpdater(None)
-    parser.display_info.AddTransforms(flags.RESOURCERECORDSETS_TRANSFORMS)
-    parser.display_info.AddFormat(flags.RESOURCERECORDSETS_FORMAT)

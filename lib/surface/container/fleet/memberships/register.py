@@ -393,6 +393,9 @@ class Register(base.CreateCommand):
       membership_id = uuid
       resource_name = api_util.MembershipRef(project, 'global', uuid)
       obj = self._CheckMembershipWithUUID(resource_name, args.CLUSTER_NAME)
+
+      # get api version version to pass into create/update membership
+      api_server_version = kube_util.GetClusterServerVersion(kube_client)
       if obj:
         # The membership exists and has the same description.
         already_exists = True
@@ -407,7 +410,8 @@ class Register(base.CreateCommand):
                                           args.CLUSTER_NAME,
                                           gke_cluster_self_link, uuid,
                                           self.ReleaseTrack(), issuer_url,
-                                          private_keyset_json)
+                                          private_keyset_json,
+                                          api_server_version)
           # Generate CRD Manifest should only be called afer create/update.
           self._InstallOrUpdateExclusivityArtifacts(kube_client, resource_name)
         except apitools_exceptions.HttpConflictError as e:

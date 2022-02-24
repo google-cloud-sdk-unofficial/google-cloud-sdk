@@ -79,35 +79,42 @@ class DeleteBeta(base.DeleteCommand):
   To delete an empty managed-zone, run:
 
     $ {command} my-zone
+
+  To delete an empty zonal managed-zone in us-east1-c, run:
+
+    $ {command} my-zone --location=us-east1-c
   """
 
   @staticmethod
   def Args(parser):
     flags.GetDnsZoneArg(
         'The name of the empty managed-zone to be deleted.').AddToParser(parser)
+    flags.GetLocationArg().AddToParser(parser)
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
-    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
     dns = util.GetApiClient(api_version)
+    registry = util.GetRegistry(api_version)
 
-    zone_ref = util.GetRegistry(api_version).Parse(
+    zone_ref = registry.Parse(
         args.dns_zone,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
+        util.GetParamsForRegistry(api_version, args),
         collection='dns.managedZones')
+    request = dns.MESSAGES_MODULE.DnsManagedZonesDeleteRequest(
+        managedZone=zone_ref.managedZone, project=zone_ref.project)
 
-    result = dns.managedZones.Delete(
-        dns.MESSAGES_MODULE.DnsManagedZonesDeleteRequest(
-            managedZone=zone_ref.managedZone,
-            project=zone_ref.project))
+    if api_version == 'v2':
+      # For a request with location, use v2 api.
+      request.location = args.location
+
+    result = dns.managedZones.Delete(request)
     log.DeletedResource(zone_ref)
     return result
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(base.DeleteCommand):
+class DeleteAlpha(DeleteBeta):
   """Delete an empty Cloud DNS managed-zone.
 
   This command deletes an empty Cloud DNS managed-zone. An empty managed-zone
@@ -118,6 +125,10 @@ class DeleteAlpha(base.DeleteCommand):
   To delete an empty managed-zone, run:
 
     $ {command} my-zone
+
+  To delete an empty zonal managed-zone in us-east1-c, run:
+
+    $ {command} my-zone --location=us-east1-c
   """
 
   @staticmethod
@@ -125,21 +136,4 @@ class DeleteAlpha(base.DeleteCommand):
     flags.GetDnsZoneArg(
         'The name of the empty managed-zone to be deleted.').AddToParser(parser)
     parser.display_info.AddCacheUpdater(None)
-
-  def Run(self, args):
-    api_version = util.GetApiFromTrack(self.ReleaseTrack())
-    dns = util.GetApiClient(api_version)
-
-    zone_ref = util.GetRegistry(api_version).Parse(
-        args.dns_zone,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
-        collection='dns.managedZones')
-
-    result = dns.managedZones.Delete(
-        dns.MESSAGES_MODULE.DnsManagedZonesDeleteRequest(
-            managedZone=zone_ref.managedZone,
-            project=zone_ref.project))
-    log.DeletedResource(zone_ref)
-    return result
+    flags.GetLocationArg().AddToParser(parser)

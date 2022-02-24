@@ -23,7 +23,6 @@ from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
-from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -55,7 +54,7 @@ class Update(base.UpdateCommand):
     parser.display_info.AddFormat(flags.RESOURCERECORDSETS_FORMAT)
 
   def Run(self, args):
-    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
 
     messages = apis.GetMessagesModule('dns', api_version)
 
@@ -63,20 +62,22 @@ class Update(base.UpdateCommand):
 
     zone_ref = util.GetRegistry(api_version).Parse(
         args.zone,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
+        params=util.GetParamsForRegistry(api_version, args),
         collection='dns.managedZones')
 
     resource_record_set = rrsets_util.CreateRecordSetFromArgs(args, api_version)
 
-    result = dns_client.resourceRecordSets.Patch(
-        messages.DnsResourceRecordSetsPatchRequest(
-            project=zone_ref.project,
-            managedZone=zone_ref.Name(),
-            name=util.AppendTrailingDot(resource_record_set.name),
-            type=resource_record_set.type,
-            resourceRecordSet=resource_record_set))
+    request = messages.DnsResourceRecordSetsPatchRequest(
+        project=zone_ref.project,
+        managedZone=zone_ref.Name(),
+        name=util.AppendTrailingDot(resource_record_set.name),
+        type=resource_record_set.type,
+        resourceRecordSet=resource_record_set)
+
+    if api_version == 'v2':
+      request.location = args.location
+
+    result = dns_client.resourceRecordSets.Patch(request)
 
     return result
 
@@ -96,11 +97,17 @@ class UpdateBeta(Update):
     $ {command} foo.bar.com. --rrdatas=1.2.3.4,9.8.7.6 --type=A --ttl=60
        --zone=my_zone
 
+  To update a record-set with dnsName foo.bar.com., record type A to have rrdata
+  [1.2.3.4, 9.8.7.6] and ttl 60 in my_zone that locates in us-east1-a, run:
+
+    $ {command} foo.bar.com. --rrdatas=1.2.3.4,9.8.7.6 --type=A --ttl=60
+       --zone=my_zone --location=us-east1-a
   """
 
   @classmethod
   def Args(cls, parser):
     flags.GetZoneArg().AddToParser(parser)
+    flags.GetLocationArg().AddToParser(parser)
     flags.GetResourceRecordSetsNameArg().AddToParser(parser)
     flags.GetResourceRecordSetsTypeArg(True).AddToParser(parser)
     flags.GetResourceRecordSetsTtlArg(False).AddToParser(parser)

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: |
@@ -19,7 +19,10 @@
 
   request:
     collection: edgecontainer.projects.locations
-    api_version: v1alpha
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
     # Because the resource argument is a zone, the default list method will
     # attempt to list '/projects/{project}/locations/{zone}/locations', whereas
     # the GetLocation API should be called with a region (and then the zone

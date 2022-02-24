@@ -24,9 +24,10 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
-from googlecloudsdk.core import properties
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """View the list of record-sets in a managed-zone.
 
@@ -52,9 +53,16 @@ class List(base.ListCommand):
     $ {command} --zone=my_zone --name="my.zone.com." --type="CNAME"
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def _BetaOrAlpha(cls):
+    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
+                                  base.ReleaseTrack.ALPHA)
+
+  @classmethod
+  def Args(cls, parser):
     flags.GetZoneArg().AddToParser(parser)
+    if cls._BetaOrAlpha():
+      flags.GetLocationArg().AddToParser(parser)
     name_type_group = parser.add_group()
     name_type_group.add_argument(
         '--name', required=True,
@@ -68,22 +76,26 @@ class List(base.ListCommand):
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
-    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
 
     dns_client = util.GetApiClient(api_version)
 
     zone_ref = util.GetRegistry(api_version).Parse(
         args.zone,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
+        params=util.GetParamsForRegistry(api_version, args),
         collection='dns.managedZones')
+
+    list_request = dns_client.MESSAGES_MODULE.DnsResourceRecordSetsListRequest(
+        project=zone_ref.project,
+        managedZone=zone_ref.Name(),
+        name=util.AppendTrailingDot(args.name),
+        type=args.type)
+
+    if api_version == 'v2' and self._BetaOrAlpha():
+      list_request.location = args.location
 
     return list_pager.YieldFromList(
         dns_client.resourceRecordSets,
-        dns_client.MESSAGES_MODULE.DnsResourceRecordSetsListRequest(
-            project=zone_ref.project,
-            managedZone=zone_ref.Name(),
-            name=util.AppendTrailingDot(args.name),
-            type=args.type),
-        limit=args.limit, field='rrsets')
+        list_request,
+        limit=args.limit,
+        field='rrsets')

@@ -47,11 +47,12 @@ def _AddArgsCommon(parser, messages):
   flags.GetManagedZoneLoggingArg().AddToParser(parser)
 
 
-def _MakeDnssecConfig(args, messages):
+def _MakeDnssecConfig(args, messages, api_version='v1'):
   """Parse user-specified args into a DnssecConfig message."""
   dnssec_config = None
   if args.dnssec_state is not None:
-    dnssec_config = command_util.ParseDnssecConfigArgs(args, messages)
+    dnssec_config = command_util.ParseDnssecConfigArgs(args, messages,
+                                                       api_version)
   else:
     bad_args = [
         'denial_of_existence', 'ksk_algorithm', 'zsk_algorithm',
@@ -211,6 +212,14 @@ class CreateBeta(base.CreateCommand):
     $ {command} my-zone-2 --description "Signed Zone"
         --dns-name myzone.example
         --dnssec-state=on
+
+    To create a zonal managed-zone scoped to a GKE Cluster in us-east1-a, run:
+
+    $ {command} my-zonal-zone --description "Signed Zone"
+        --dns-name=cluster.local
+        --visibiilty=private
+        --gkeclusters=cluster1
+        --location=us-east1-a
   """
 
   @staticmethod
@@ -218,6 +227,7 @@ class CreateBeta(base.CreateCommand):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
     _AddArgsCommon(parser, messages)
     flags.GetManagedZoneGkeClustersArg().AddToParser(parser)
+    flags.GetLocationArg().AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
 
   def Run(self, args):
@@ -245,19 +255,27 @@ class CreateBeta(base.CreateCommand):
           'If --visibility is set to public (default), setting gkeclusters is '
           'not allowed.')
 
-    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
     dns = util.GetApiClient(api_version)
     messages = apis.GetMessagesModule('dns', api_version)
     registry = util.GetRegistry(api_version)
 
     zone_ref = registry.Parse(
         args.dns_zone,
-        params={'project': properties.VALUES.core.project.GetOrFail},
+        util.GetParamsForRegistry(api_version, args),
         collection='dns.managedZones')
 
-    visibility = messages.ManagedZone.VisibilityValueValuesEnum(args.visibility)
+    visibility_flag = args.visibility
+    private_enum = None
+    if api_version == 'v2':
+      # v2 doesn't set lower_camel_enums, so enums are in upper case
+      private_enum = messages.ManagedZone.VisibilityValueValuesEnum.PRIVATE
+      visibility_flag = args.visibility.upper()
+    else:
+      private_enum = messages.ManagedZone.VisibilityValueValuesEnum.private
+    visibility = messages.ManagedZone.VisibilityValueValuesEnum(visibility_flag)
     visibility_config = None
-    if visibility == messages.ManagedZone.VisibilityValueValuesEnum.private:
+    if visibility == private_enum:
       # Handle explicitly empty networks case (--networks='')
       networks = args.networks if args.networks and args.networks != [''
                                                                      ] else []
@@ -294,7 +312,7 @@ class CreateBeta(base.CreateCommand):
     else:
       forwarding_config = None
 
-    dnssec_config = _MakeDnssecConfig(args, messages)
+    dnssec_config = _MakeDnssecConfig(args, messages, api_version)
     labels = labels_util.ParseCreateArgs(args, messages.ManagedZone.LabelsValue)
 
     peering_config = None
@@ -336,9 +354,14 @@ class CreateBeta(base.CreateCommand):
         serviceDirectoryConfig=service_directory_config,
         cloudLoggingConfig=cloud_logging_config)
 
-    result = dns.managedZones.Create(
-        messages.DnsManagedZonesCreateRequest(managedZone=zone,
-                                              project=zone_ref.project))
+    request = messages.DnsManagedZonesCreateRequest(
+        managedZone=zone, project=zone_ref.project)
+
+    if api_version == 'v2':
+      # For a request with location, use v2 api.
+      request.location = args.location
+
+    result = dns.managedZones.Create(request)
     log.CreatedResource(zone_ref)
     return [result]
 
@@ -360,6 +383,14 @@ class CreateAlpha(CreateBeta):
     $ {command} my-zone-2 --description="Signed Zone" \
         --dns-name=myzone.example \
         --dnssec-state=on
+
+  To create a zonal managed-zone scoped to a GKE Cluster in us-east1-a, run:
+
+    $ {command} my-zonal-zone --description="Signed Zone" \
+        --dns-name=cluster.local
+        --visibiilty=private
+        --gkeclusters=cluster1
+        --location=us-east1-a
   """
 
   @staticmethod
@@ -367,4 +398,5 @@ class CreateAlpha(CreateBeta):
     messages = apis.GetMessagesModule('dns', 'v1alpha2')
     _AddArgsCommon(parser, messages)
     flags.GetManagedZoneGkeClustersArg().AddToParser(parser)
+    flags.GetLocationArg().AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)

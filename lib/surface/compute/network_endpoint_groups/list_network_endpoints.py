@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.compute import filter_rewrite
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.network_endpoint_groups import flags
+from googlecloudsdk.core.resource import resource_projection_spec
 
 DETAILED_HELP = {
     'EXAMPLES': """
@@ -68,7 +69,11 @@ class ListNetworkEndpoints(base.ListCommand):
             holder.resources,
             scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    args.filter, filter_expr = filter_rewrite.Rewriter().Rewrite(args.filter)
+    display_info = args.GetDisplayInfo()
+    defaults = resource_projection_spec.ProjectionSpec(
+        symbols=display_info.transforms, aliases=display_info.aliases)
+    args.filter, filter_expr = filter_rewrite.Rewriter().Rewrite(
+        args.filter, defaults=defaults)
 
     if hasattr(neg_ref, 'zone'):
       request = messages.ComputeNetworkEndpointGroupsListNetworkEndpointsRequest(

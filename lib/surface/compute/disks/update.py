@@ -29,8 +29,7 @@ from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-def _CommonArgs(messages,
-                cls,
+def _CommonArgs(cls,
                 parser,
                 support_user_licenses=False,
                 support_architecture=False):
@@ -57,12 +56,7 @@ def _CommonArgs(messages,
 
   if support_architecture:
     scope = parser.add_mutually_exclusive_group()
-    architecture_enum_type = messages.Disk.ArchitectureValueValuesEnum
-    excluded_enums = [
-        messages.Disk.ArchitectureValueValuesEnum.ARCHITECTURE_UNSPECIFIED
-    ]
-    architecture_choices = sorted(
-        [e for e in architecture_enum_type.names() if e not in excluded_enums])
+    architecture_choices = sorted(['ARM64', 'X86_64'])
     scope.add_argument(
         '--update-architecture',
         choices=architecture_choices,
@@ -98,13 +92,8 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    messages = cls._GetApiHolder(no_http=True).client.messages
     _CommonArgs(
-        messages,
-        cls,
-        parser,
-        support_user_licenses=False,
-        support_architecture=False)
+        cls, parser, support_user_licenses=False, support_architecture=False)
 
   @classmethod
   def _GetApiHolder(cls, no_http=False):
@@ -198,13 +187,8 @@ class UpdateBeta(Update):
 
   @classmethod
   def Args(cls, parser):
-    messages = cls._GetApiHolder(no_http=True).client.messages
     _CommonArgs(
-        messages,
-        cls,
-        parser,
-        support_user_licenses=True,
-        support_architecture=False)
+        cls, parser, support_user_licenses=True, support_architecture=False)
 
   @classmethod
   def _GetApiHolder(cls, no_http=False):
@@ -223,13 +207,8 @@ class UpdateAlpha(UpdateBeta):
 
   @classmethod
   def Args(cls, parser):
-    messages = cls._GetApiHolder(no_http=True).client.messages
     _CommonArgs(
-        messages,
-        cls,
-        parser,
-        support_user_licenses=True,
-        support_architecture=True)
+        cls, parser, support_user_licenses=True, support_architecture=True)
 
   @classmethod
   def _GetApiHolder(cls, no_http=False):

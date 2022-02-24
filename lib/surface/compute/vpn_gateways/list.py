@@ -25,6 +25,7 @@ from googlecloudsdk.api_lib.compute.vpn_gateways import vpn_gateways_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.vpn_gateways import flags
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.resource import resource_projection_spec
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
@@ -51,7 +52,11 @@ class List(base.ListCommand):
     helper = vpn_gateways_utils.VpnGatewayHelper(holder)
 
     project = properties.VALUES.core.project.GetOrFail()
-    args.filter, filter_expr = filter_rewrite.Rewriter().Rewrite(args.filter)
+    display_info = args.GetDisplayInfo()
+    defaults = resource_projection_spec.ProjectionSpec(
+        symbols=display_info.transforms, aliases=display_info.aliases)
+    args.filter, filter_expr = filter_rewrite.Rewriter().Rewrite(
+        args.filter, defaults=defaults)
     return helper.List(project=project, filter_expr=filter_expr)
 
 

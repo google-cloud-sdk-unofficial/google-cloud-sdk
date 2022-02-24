@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import fmt as secrets_fmt
 from googlecloudsdk.core.resource import resource_expr_rewrite
+from googlecloudsdk.core.resource import resource_projection_spec
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -57,7 +58,10 @@ class List(base.ListCommand):
     server_filter = None
     if args.filter:
       rewriter = resource_expr_rewrite.Backend()
-      _, server_filter = rewriter.Rewrite(args.filter)
+      display_info = args.GetDisplayInfo()
+      defaults = resource_projection_spec.ProjectionSpec(
+          symbols=display_info.transforms, aliases=display_info.aliases)
+      _, server_filter = rewriter.Rewrite(args.filter, defaults=defaults)
 
     return secrets_api.Secrets().ListWithPager(
         project_ref=project_ref, limit=args.limit, request_filter=server_filter)
@@ -94,7 +98,10 @@ class ListBeta(List):
     server_filter = None
     if args.filter:
       rewriter = resource_expr_rewrite.Backend()
-      _, server_filter = rewriter.Rewrite(args.filter)
+      display_info = args.GetDisplayInfo()
+      defaults = resource_projection_spec.ProjectionSpec(
+          symbols=display_info.transforms, aliases=display_info.aliases)
+      _, server_filter = rewriter.Rewrite(args.filter, defaults=defaults)
 
     return secrets_api.Secrets().ListWithPager(
         project_ref=project_ref, limit=args.limit, request_filter=server_filter)

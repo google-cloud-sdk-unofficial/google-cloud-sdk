@@ -26,10 +26,11 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Export(base.Command):
   r"""Export your record-sets into a file.
 
@@ -54,9 +55,16 @@ class Export(base.Command):
       --zone=examplezonename
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def _BetaOrAlpha(cls):
+    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
+                                  base.ReleaseTrack.ALPHA)
+
+  @classmethod
+  def Args(cls, parser):
     flags.GetZoneArg().AddToParser(parser)
+    if cls._BetaOrAlpha():
+      flags.GetLocationArg().AddToParser(parser)
     parser.add_argument('records_file',
                         help='File to which record-sets should be exported.')
     parser.add_argument(
@@ -72,39 +80,36 @@ class Export(base.Command):
              'global `--format` flag which affects console output alone.')
 
   def Run(self, args):
-    api_version = 'v1'
-    # If in the future there are differences between API version, do NOT use
-    # this patter of checking ReleaseTrack. Break this into multiple classes.
-    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
-      api_version = 'v1beta2'
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      api_version = 'v1alpha2'
+    api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
 
     dns = util.GetApiClient(api_version)
 
     # Get the managed-zone.
     zone_ref = util.GetRegistry(api_version).Parse(
         args.zone,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
+        params=util.GetParamsForRegistry(api_version, args),
         collection='dns.managedZones')
     try:
-      zone = dns.managedZones.Get(
-          dns.MESSAGES_MODULE.DnsManagedZonesGetRequest(
-              project=zone_ref.project,
-              managedZone=zone_ref.managedZone))
+      get_request = dns.MESSAGES_MODULE.DnsManagedZonesGetRequest(
+          project=zone_ref.project, managedZone=zone_ref.managedZone)
+
+      if api_version == 'v2' and self._BetaOrAlpha():
+        get_request.location = args.location
+
+      zone = dns.managedZones.Get(get_request)
     except apitools_exceptions.HttpError as error:
       raise calliope_exceptions.HttpException(error)
 
     # Get all the record-sets.
     record_sets = []
+    list_request = dns.MESSAGES_MODULE.DnsResourceRecordSetsListRequest(
+        project=zone_ref.project, managedZone=zone_ref.Name())
+
+    if api_version == 'v2' and self._BetaOrAlpha():
+      list_request.location = args.location
+
     for record_set in list_pager.YieldFromList(
-        dns.resourceRecordSets,
-        dns.MESSAGES_MODULE.DnsResourceRecordSetsListRequest(
-            project=zone_ref.project,
-            managedZone=zone_ref.Name()),
-        field='rrsets'):
+        dns.resourceRecordSets, list_request, field='rrsets'):
       record_sets.append(record_set)
 
     # Export the record-sets.

@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, GA]
 
 help_text:
   brief: |
@@ -17,4 +17,7 @@ arguments:
 
 request:
   collection: edgecontainer.projects.locations
-  api_version: v1alpha
+  ALPHA:
+    api_version: v1alpha
+  GA:
+    api_version: v1

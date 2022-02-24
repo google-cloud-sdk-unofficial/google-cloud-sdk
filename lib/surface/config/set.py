@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.config import config_validators
 from googlecloudsdk.command_lib.config import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
 
 
 class Set(base.Command):
@@ -112,20 +113,29 @@ class Set(base.Command):
     if not prop:
       raise c_exc.InvalidArgumentException(
           'property', 'Must be in the form: [SECTION/]PROPERTY')
-    properties.PersistProperty(prop, args.value, scope=scope)
 
     scope_msg = ''
     if args.installation:
       scope_msg = 'installation '
-    log.status.Print('Updated {0}property [{1}].'.format(scope_msg, prop))
 
-    if prop == properties.VALUES.core.project:
-      config_validators.WarnIfSettingProjectWithNoAccess(scope, prop.Get())
     if prop == properties.VALUES.context_aware.use_client_certificate:
-      config_validators.WarnIfActivateUseClientCertificate(prop)
+      config_validators.WarnIfActivateUseClientCertificate(args.value)
+
+    showed_warning = False
+    if prop == properties.VALUES.core.project:
+      showed_warning = config_validators.WarnIfSettingProjectWithNoAccess(
+          scope, args.value)
     if prop == properties.VALUES.compute.zone:
-      config_validators.WarnIfSettingNonExistentRegionZone(prop.Get(),
-                                                           zonal=True)
+      showed_warning = config_validators.WarnIfSettingNonExistentRegionZone(
+          args.value, zonal=True)
     if prop == properties.VALUES.compute.region:
-      config_validators.WarnIfSettingNonExistentRegionZone(prop.Get(),
-                                                           zonal=False)
+      showed_warning = config_validators.WarnIfSettingNonExistentRegionZone(
+          args.value, zonal=False)
+    if showed_warning and not args.quiet and console_io.CanPrompt():
+      if not console_io.PromptContinue(
+          'Are you sure you wish to set {0}property [{1}] to {2}?'.format(
+              scope_msg, prop, args.value)):
+        return
+
+    properties.PersistProperty(prop, args.value, scope=scope)
+    log.status.Print('Updated {0}property [{1}].'.format(scope_msg, prop))

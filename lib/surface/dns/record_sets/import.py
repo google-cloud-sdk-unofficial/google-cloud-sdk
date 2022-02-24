@@ -29,11 +29,12 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
 
 
 @base.UnicodeIsSupported
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Import(base.Command):
   """Import record-sets into your managed-zone.
 
@@ -62,9 +63,16 @@ class Import(base.Command):
     $ {command} YAML_RECORDS_FILE --delete-all-existing --zone=MANAGED_ZONE
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def _BetaOrAlpha(cls):
+    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
+                                  base.ReleaseTrack.ALPHA)
+
+  @classmethod
+  def Args(cls, parser):
     flags.GetZoneArg().AddToParser(parser)
+    if cls._BetaOrAlpha():
+      flags.GetLocationArg().AddToParser(parser)
     parser.add_argument('records_file',
                         help='File from which record-sets should be '
                              'imported. For examples of YAML-formatted '
@@ -92,13 +100,7 @@ class Import(base.Command):
     parser.display_info.AddFormat(flags.CHANGES_FORMAT)
 
   def Run(self, args):
-    api_version = 'v1'
-    # If in the future there are differences between API version, do NOT use
-    # this patter of checking ReleaseTrack. Break this into multiple classes.
-    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
-      api_version = 'v1beta2'
-    elif self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      api_version = 'v1alpha2'
+    api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
 
     if not os.path.exists(args.records_file):
       raise import_util.RecordsFileNotFound(
@@ -113,27 +115,30 @@ class Import(base.Command):
     # Get the managed-zone.
     zone_ref = util.GetRegistry(api_version).Parse(
         args.zone,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
+        params=util.GetParamsForRegistry(api_version, args),
         collection='dns.managedZones')
 
     try:
-      zone = dns.managedZones.Get(
-          dns.MESSAGES_MODULE.DnsManagedZonesGetRequest(
-              project=zone_ref.project,
-              managedZone=zone_ref.managedZone))
+      get_request = dns.MESSAGES_MODULE.DnsManagedZonesGetRequest(
+          project=zone_ref.project, managedZone=zone_ref.managedZone)
+
+      if api_version == 'v2' and self._BetaOrAlpha():
+        get_request.location = args.location
+
+      zone = dns.managedZones.Get(get_request)
     except apitools_exceptions.HttpError as error:
       raise calliope_exceptions.HttpException(error)
 
     # Get the current record-sets.
     current = {}
+    list_request = dns.MESSAGES_MODULE.DnsResourceRecordSetsListRequest(
+        project=zone_ref.project, managedZone=zone_ref.Name())
+
+    if api_version == 'v2':
+      list_request.location = args.location
+
     for record in list_pager.YieldFromList(
-        dns.resourceRecordSets,
-        dns.MESSAGES_MODULE.DnsResourceRecordSetsListRequest(
-            project=zone_ref.project,
-            managedZone=zone_ref.Name()),
-        field='rrsets'):
+        dns.resourceRecordSets, list_request, field='rrsets'):
       current[(record.name, record.type)] = record
 
     # Get the imported record-sets.
@@ -163,16 +168,19 @@ class Import(base.Command):
       return None
 
     # Send the change to the service.
-    result = dns.changes.Create(
-        dns.MESSAGES_MODULE.DnsChangesCreateRequest(
-            change=change,
-            managedZone=zone.name,
-            project=zone_ref.project))
-    change_ref = util.GetRegistry(api_version).Create(
+    create_request = dns.MESSAGES_MODULE.DnsChangesCreateRequest(
+        change=change, managedZone=zone.name, project=zone_ref.project)
+
+    if api_version == 'v2' and self._BetaOrAlpha():
+      create_request.location = args.location
+
+    result = dns.changes.Create(create_request)
+    param = util.GetParamsForRegistry(api_version, args, parent='managedZones')
+    param['changeId'] = result.id
+    change_ref = util.GetRegistry(api_version).Parse(
+        line=None,
         collection='dns.changes',
-        project=zone_ref.project,
-        managedZone=zone.name,
-        changeId=result.id)
+        params=param)
     msg = 'Imported record-sets from [{0}] into managed-zone [{1}].'.format(
         args.records_file, zone_ref.Name())
     log.status.Print(msg)

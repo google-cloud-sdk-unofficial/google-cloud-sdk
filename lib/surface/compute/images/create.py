@@ -63,7 +63,7 @@ def _Args(parser,
 
   # Alpha and Beta Args
   if support_disk_architecture:
-    image_utils.AddArchitectureArg(parser, messages)
+    image_utils.AddArchitectureArg(parser)
 
   if supports_force_create:
     # Deprecated as of Aug 2017.

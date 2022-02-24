@@ -21,7 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags as run_flags
+from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run.integrations import flags
+from googlecloudsdk.command_lib.run.integrations import messages_util
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 
 
@@ -66,8 +68,26 @@ class Update(base.Command):
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, self.ReleaseTrack())
     with run_apps_operations.Connect(conn_context) as client:
-      return client.UpdateIntegration(
+      client.UpdateIntegration(
           name=integration_name,
           parameters=parameters,
           add_service=add_service,
           remove_service=remove_service)
+
+      resource_config = client.GetIntegration(integration_name)
+      resource_status = client.GetIntegrationStatus(integration_name)
+      resource_type = client.GetIntegrationTypeFromConfig(resource_config)
+      integration_type = client.GetIntegrationType(resource_type)
+
+      pretty_print.Info(' ')
+      pretty_print.Success(
+          messages_util.GetSuccessMessageDeploy(integration_type,
+                                                integration_name))
+
+      call_to_action = messages_util.GetCallToAction(integration_type,
+                                                     resource_config,
+                                                     resource_status)
+      if call_to_action:
+        pretty_print.Info(' ')
+        pretty_print.Info(call_to_action)
+

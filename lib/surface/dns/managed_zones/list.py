@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import properties
 
 
@@ -84,6 +85,11 @@ class ListBeta(base.ListCommand):
   To see the list of first 10 managed-zones, run:
 
     $ {command} --limit=10
+
+  To see the list of all managed-zones in a Zonal Cloud DNS service in
+  us-east1-c, run:
+
+    $ {command} --location=us-east1-c
   """
 
   @staticmethod
@@ -91,18 +97,22 @@ class ListBeta(base.ListCommand):
     parser.display_info.AddFormat('table(name, dnsName, description,'
                                   ' visibility)')
     parser.display_info.AddUriFunc(_GetUriFunction('v1beta2'))
+    flags.GetLocationArg().AddToParser(parser)
 
   def Run(self, args):
-    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
     dns_client = util.GetApiClient(api_version)
 
     project_id = properties.VALUES.core.project.GetOrFail()
 
+    request = dns_client.MESSAGES_MODULE.DnsManagedZonesListRequest(
+        project=project_id)
+    # For a request with location, use v2 api.
+    if api_version == 'v2':
+      request.location = args.location
+
     return list_pager.YieldFromList(
-        dns_client.managedZones,
-        dns_client.MESSAGES_MODULE.DnsManagedZonesListRequest(
-            project=project_id),
-        field='managedZones')
+        dns_client.managedZones, request, field='managedZones')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -120,6 +130,11 @@ class ListAlpha(ListBeta):
   To see the list of first 10 managed-zones, run:
 
     $ {command} --limit=10
+
+  To see the list of all managed-zones in a Zonal Cloud DNS service in
+  us-east1-c, run:
+
+    $ {command} --location=us-east1-c
   """
 
   @staticmethod
@@ -127,3 +142,4 @@ class ListAlpha(ListBeta):
     parser.display_info.AddFormat('table(name, dnsName, description,'
                                   ' visibility)')
     parser.display_info.AddUriFunc(_GetUriFunction('v1alpha2'))
+    flags.GetLocationArg().AddToParser(parser)
