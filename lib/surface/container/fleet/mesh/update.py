@@ -58,7 +58,7 @@ class Update(base.UpdateCommand):
   def Run(self, args):
     memberships = base.ListMemberships()
     if not memberships:
-      raise exceptions.Error('No Memberships available in the Fleet.')
+      raise exceptions.Error('No Memberships available in the fleet.')
     membership = args.membership
     if not membership:
       if console_io.CanPrompt():
@@ -75,7 +75,7 @@ class Update(base.UpdateCommand):
     else:
       if membership not in memberships:
         raise exceptions.Error(
-            'Membership {} does not exist in the Fleet.'.format(membership))
+            'Membership {} does not exist in the fleet.'.format(membership))
     membership = self.MembershipResourceName(membership)
 
     f = self.GetFeature()

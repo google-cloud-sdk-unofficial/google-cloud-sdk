@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.container.hub.features import base
 class Disable(base.DisableCommand):
   """Disable Multi-cluster Ingress Feature.
 
-  This command disables Multi-cluster Ingress Feature in Hub.
+  This command disables Multi-cluster Ingress Feature in a fleet.
 
   ## EXAMPLES
 

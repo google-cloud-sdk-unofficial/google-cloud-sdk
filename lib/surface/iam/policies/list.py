@@ -25,7 +25,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import policies_flags as flags
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List the policies on the given attachment point."""
@@ -34,7 +33,7 @@ class List(base.ListCommand):
       'EXAMPLES':
           textwrap.dedent("""\
           The following command lists the IAM policy defined at the resource
-          project ``123" of kind ``denypolicies":
+          project ``123'' of kind ``denypolicies'':
 
             $ {command} --attachment-point=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies
           """),

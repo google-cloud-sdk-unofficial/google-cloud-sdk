@@ -47,39 +47,7 @@ class Describe(base.Command):
     project = region_ref.AsDict()['projectsId']
     run_id = args.RUN_ID
 
-    if args.type == 'pipelinerun':
-      client = v2_client_util.GetClientInstance()
-      messages = v2_client_util.GetMessagesModule()
-      pipeline_run_resource = resources.REGISTRY.Parse(
-          run_id,
-          collection='cloudbuild.projects.locations.pipelineRuns',
-          api_version='v2',
-          params={
-              'projectsId': project,
-              'locationsId': region,
-              'pipelineRunsId': run_id,
-          })
-      pipeline_run = client.projects_locations_pipelineRuns.Get(
-          messages.CloudbuildProjectsLocationsPipelineRunsGetRequest(
-              name=pipeline_run_resource.RelativeName(),))
-      return pipeline_run
-    elif args.type == 'taskrun':
-      client = v2_client_util.GetClientInstance()
-      messages = v2_client_util.GetMessagesModule()
-      task_run_resource = resources.REGISTRY.Parse(
-          run_id,
-          collection='cloudbuild.projects.locations.taskRuns',
-          api_version='v2',
-          params={
-              'projectsId': project,
-              'locationsId': region,
-              'taskRunsId': run_id,
-          })
-      task_run = client.projects_locations_taskRuns.Get(
-          messages.CloudbuildProjectsLocationsTaskRunsGetRequest(
-              name=task_run_resource.RelativeName(),))
-      return task_run
-    elif args.type == 'build':
+    if args.type == 'build':
       client = v1_client_util.GetClientInstance()
       messages = v1_client_util.GetMessagesModule()
       build_resource = resources.REGISTRY.Parse(
@@ -93,3 +61,5 @@ class Describe(base.Command):
       return client.projects_locations_builds.Get(
           messages.CloudbuildProjectsLocationsBuildsGetRequest(
               name=build_resource.RelativeName()))
+    else:
+      return v2_client_util.GetRun(project, region, run_id, args.type)

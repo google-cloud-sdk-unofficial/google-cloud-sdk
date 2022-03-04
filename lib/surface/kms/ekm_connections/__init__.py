@@ -24,7 +24,8 @@ from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class EkmConnections(base.Group):
   """Create and manage ekm connections.
 

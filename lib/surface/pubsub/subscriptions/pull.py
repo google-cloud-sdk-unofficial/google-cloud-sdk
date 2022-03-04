@@ -19,12 +19,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as api_ex
+
 from googlecloudsdk.api_lib.pubsub import subscriptions
+from googlecloudsdk.api_lib.util import exceptions as util_ex
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import resource_args
-
+from googlecloudsdk.command_lib.pubsub import util
+import six
 
 MESSAGE_FORMAT = """\
 table[box](
@@ -37,8 +41,23 @@ table[box](
 )
 """
 
+MESSAGE_FORMAT_WITH_ACK_STATUS = """\
+table[box](
+  received_message.message.data.decode(base64).decode(utf-8),
+  received_message.message.messageId,
+  received_message.message.orderingKey,
+  received_message.message.attributes.list(separator='\n'),
+  received_message.deliveryAttempt,
+  received_message.ackId.if(NOT auto_ack),
+  ack_status.if(auto_ack)
+)
+"""
 
-def _Run(args, max_messages, return_immediately=True):
+
+def _Run(args,
+         max_messages,
+         return_immediately=True,
+         exactly_once_failure_handling=False):
   """Pulls messages from a subscription."""
   client = subscriptions.SubscriptionsClient()
 
@@ -46,11 +65,41 @@ def _Run(args, max_messages, return_immediately=True):
   pull_response = client.Pull(subscription_ref, max_messages,
                               return_immediately)
 
+  failed_ack_ids = {}
+  ack_ids_and_failure_reasons = []
   if args.auto_ack and pull_response.receivedMessages:
     ack_ids = [message.ackId for message in pull_response.receivedMessages]
-    client.Ack(ack_ids, subscription_ref)
+    try:
+      client.Ack(ack_ids, subscription_ref)
+    except api_ex.HttpError as error:
+      if not exactly_once_failure_handling:
+        raise error
 
-  return pull_response.receivedMessages
+      exc = util_ex.HttpException(error)
+      ack_ids_and_failure_reasons = util.ParseExactlyOnceErrorInfo(
+          exc.payload.details)
+      # If the failure doesn't have more information (specifically for exactly
+      # once related failures), assume all the ack ids have failed with the
+      # same status.
+      if not ack_ids_and_failure_reasons:
+        for ack_id in ack_ids:
+          failed_ack_ids[ack_id] = 'FAILURE_' + six.text_type(error.status_code)
+
+    if not failed_ack_ids:
+      for ack_ids_and_failure_reason in ack_ids_and_failure_reasons:
+        failed_ack_ids[ack_ids_and_failure_reason[
+            'AckId']] = ack_ids_and_failure_reason['FailureReason']
+
+  if not exactly_once_failure_handling:
+    return pull_response.receivedMessages
+
+  return_val = []
+  for message in pull_response.receivedMessages:
+    ack_status = 'SUCCESS'
+    if message.ackId in failed_ack_ids:
+      ack_status = failed_ack_ids[message.ackId]
+    return_val.append({'received_message': message, 'ack_status': ack_status})
+  return return_val
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -90,7 +139,7 @@ class PullBeta(Pull):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(MESSAGE_FORMAT)
+    parser.display_info.AddFormat(MESSAGE_FORMAT_WITH_ACK_STATUS)
     resource_args.AddSubscriptionResourceArg(parser, 'to pull messages from.')
     flags.AddPullFlags(parser, add_deprecated=True, add_wait=True)
 
@@ -103,4 +152,8 @@ class PullBeta(Pull):
     else:
       max_messages = args.max_messages
     return_immediately = not args.wait if args.IsSpecified('wait') else True
-    return _Run(args, max_messages, return_immediately)
+    return _Run(
+        args,
+        max_messages,
+        return_immediately,
+        exactly_once_failure_handling=True)

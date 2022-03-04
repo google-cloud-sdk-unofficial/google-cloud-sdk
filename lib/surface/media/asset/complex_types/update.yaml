@@ -4,8 +4,10 @@
     description: Update a Media Asset complex type.
     examples: |
       To update an asset type with id my-ct, run:
+
         $ {command} my-ct --complex-type-config-file complex_type_configs.json --update-mask fields,allowUndefinedFields
-      where complex_type_configs.json content can be:
+
+      , where complex_type_configs.json content can be:
       {
         "fields": {
           "testField1": {

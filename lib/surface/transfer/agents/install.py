@@ -136,8 +136,7 @@ def _authenticate_and_get_creds_file_path(existing_creds_file=None):
     # pylint:enable=protected-access
     if not os.path.exists(creds_file_path):
       creds = login_util.DoInstalledAppBrowserFlowGoogleAuth(
-          scopes=(login_util.DEFAULT_SCOPES + [config.REAUTH_SCOPE]),
-          no_launch_browser=True)
+          scopes=(login_util.DEFAULT_SCOPES + [config.REAUTH_SCOPE]))
       auth_util.DumpADCOptionalQuotaProject(creds)
 
   return creds_file_path

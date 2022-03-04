@@ -35,6 +35,7 @@ class ListHostProjects(base.ListCommand):
           12345, run:
 
             $ {command} 12345
+
             NAME       CREATION_TIMESTAMP            XPN_PROJECT_STATUS
             xpn-host1  2000-01-01T12:00:00.00-00:00  HOST
             xpn-host2  2000-01-02T12:00:00.00-00:00  HOST

@@ -68,9 +68,5 @@ class Export(base.DeclarativeCommand):
 
   def Run(self, args):
     client = kcc_client.KccClient()
-    if (args.IsSpecified('resource_types') or
-        args.IsSpecified('resource_types_file')):
-      client.BulkExportFromAssetList(args)
-    else:
-      client.BulkExport(args)
+    client.BulkExport(args)
     return

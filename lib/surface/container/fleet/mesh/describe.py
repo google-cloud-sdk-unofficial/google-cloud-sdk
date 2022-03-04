@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.container.hub.features import base
 class Describe(base.DescribeCommand):
   """Describe the status of Service Mesh Feature resource.
 
-  Describe the status of Service Mesh Feature resource in Hub.
+  Describe the status of Service Mesh Feature resource in a fleet.
 
   ## EXAMPLES
 

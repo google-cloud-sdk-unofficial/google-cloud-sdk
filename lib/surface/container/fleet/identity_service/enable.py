@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.container.hub.features import base
 class Enable(base.EnableCommand):
   """Enable Identity Service Feature.
 
-  This command enables the Identity Service Feature in Hub.
+  This command enables the Identity Service Feature in a fleet.
 
   ## EXAMPLES
 

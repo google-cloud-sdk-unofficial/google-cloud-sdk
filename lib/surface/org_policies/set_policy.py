@@ -22,6 +22,7 @@ from apitools.base.py import exceptions as api_exceptions
 from argcomplete import completers
 from googlecloudsdk.api_lib.orgpolicy import service as org_policy_service
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.org_policies import arguments
 from googlecloudsdk.command_lib.org_policies import exceptions
 from googlecloudsdk.command_lib.org_policies import utils
 from googlecloudsdk.core import log
@@ -43,6 +44,59 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetPolicy(base.Command):
+  """Set an organization policy from a JSON or YAML file."""
+
+  @staticmethod
+  def Args(parser):
+    arguments.AddUpdateMaskArgToParser(parser)
+    parser.add_argument(
+        'policy_file',
+        metavar='POLICY_FILE',
+        completer=completers.FilesCompleter,
+        help='Path to JSON or YAML file that contains the organization policy.')
+
+  def Run(self, args):
+    """Creates or updates a policy from a JSON or YAML file.
+
+    This first converts the contents of the specified file into a policy object.
+    It then fetches the current policy using GetPolicy. If it does not exist,
+    the policy is created using CreatePolicy. If it does, the retrieved policy
+    is checked to see if it needs to be updated. If so, the policy is updated
+    using UpdatePolicy.
+
+    Args:
+      args: argparse.Namespace, An object that contains the values for the
+        arguments specified in the Args method.
+
+    Returns:
+      The created or updated policy.
+    """
+    org_policy_api = org_policy_service.OrgPolicyApi(self.ReleaseTrack())
+    input_policy = utils.GetMessageFromFile(args.policy_file,
+                                            self.ReleaseTrack())
+    if not input_policy.name:
+      raise exceptions.InvalidInputError(
+          'Name field not present in the organization policy.')
+
+    try:
+      policy = org_policy_api.GetPolicy(input_policy.name)
+    except api_exceptions.HttpNotFoundError:
+      create_response = org_policy_api.CreatePolicy(input_policy)
+      log.CreatedResource(input_policy.name, 'policy')
+      return create_response
+
+    if policy == input_policy:
+      return policy
+
+    update_mask = utils.GetUpdateMaskFromArgs(args)
+    update_response = org_policy_api.UpdatePolicy(input_policy, update_mask)
+    log.UpdatedResource(input_policy.name, 'policy')
+    return update_response
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SetPolicyALPHA(SetPolicy):
   """Set an organization policy from a JSON or YAML file."""
 
   @staticmethod
@@ -85,17 +139,9 @@ class SetPolicy(base.Command):
 
     if policy == input_policy:
       return policy
-
     update_response = org_policy_api.UpdatePolicy(input_policy)
     log.UpdatedResource(input_policy.name, 'policy')
     return update_response
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetPolicyALPHA(SetPolicy):
-  """Set an organization policy from a JSON or YAML file."""
-  pass
 
 
 SetPolicy.detailed_help = DETAILED_HELP

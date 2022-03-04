@@ -83,8 +83,8 @@ class Enable(base.EnableCommand):
     membership_specs = {}
     poco_hub_config = utils.set_poco_hub_config_parameters_from_args(
         args, self.messages)
-    poco_hub_config.installSpec = self.messages.PolicyControllerPolicyControllerHubConfig.InstallSpecValueValuesEnum(
-        self.messages.PolicyControllerPolicyControllerHubConfig
+    poco_hub_config.installSpec = self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum(
+        self.messages.PolicyControllerHubConfig
         .InstallSpecValueValuesEnum.INSTALL_SPEC_ENABLED)
 
     memberships = utils.select_memberships(args)

@@ -53,13 +53,13 @@ class GenerateGatewayRbac(base.Command):
 
       $ {command} --membership=my-cluster
       --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com
-      --role=clusterrole/cluster-reader --rbac-output-file=./rbac.yaml
+      --role=clusterrole/cluster-admin --rbac-output-file=./rbac.yaml
 
     Dry run mode to generate the RBAC policy, and print on screen:
 
       $ {command} --membership=my-cluster
       --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com
-      --role=clusterrole/cluster-reader
+      --role=clusterrole/cluster-admin
 
     Anthos support mode, generate the RBAC policy file with read-only permission
     for TSE/Eng to debug customers' clusters:
@@ -70,14 +70,14 @@ class GenerateGatewayRbac(base.Command):
 
       $ {command} --membership=my-cluster
       --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com
-      --role=clusterrole/cluster-reader --context=my-cluster-contex
+      --role=clusterrole/cluster-admin --context=my-cluster-contex
       --kubeconfig=/home/user/custom_kubeconfig --apply
 
     Revoke mode, revoke the RBAC policy for the specified users:
 
       $ {command} --membership=my-cluster
       --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com
-      --role=clusterrole/cluster-reader --context=my-cluster-contex
+      --role=clusterrole/cluster-admin --context=my-cluster-contex
       --kubeconfig=/home/user/custom_kubeconfig --apply
   """
 

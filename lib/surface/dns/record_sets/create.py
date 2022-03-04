@@ -90,7 +90,10 @@ class Create(base.CreateCommand):
         project=zone_ref.project,
         managedZone=zone_ref.Name(),
         resourceRecordSet=rrsets_util.CreateRecordSetFromArgs(
-            args, api_version))
+            args,
+            api_version,
+            allow_extended_records=(
+                self.ReleaseTrack() == base.ReleaseTrack.ALPHA)))
 
     if api_version == 'v2' and self._BetaOrAlpha():
       request.location = args.location

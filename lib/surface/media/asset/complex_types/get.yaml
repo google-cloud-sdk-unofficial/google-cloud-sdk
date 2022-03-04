@@ -4,6 +4,7 @@
     description: Get a Cloud Media Asset complex type.
     examples: |
       To get a specific asset type with id  my-ct, run:
+
         $ {command} my-ct
 
   request:

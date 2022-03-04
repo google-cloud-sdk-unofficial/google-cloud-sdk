@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.recommender import flag_utils as api_utils
+from googlecloudsdk.api_lib.recommender import recommendation
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.recommender import flags
@@ -86,12 +86,6 @@ class MarkFailed(base.Command):
     Returns:
       The recommendations after being marked as failed.
     """
-    api_version = api_utils.GetApiVersion(self.ReleaseTrack())
-    is_insight_api = False
-    is_list_api = False
-    recommender_service = api_utils.GetServiceFromArgs(args, is_insight_api,
-                                                       api_version)
-    parent_ref = flags.GetParentFromFlags(args, is_list_api, is_insight_api)
-    request = api_utils.GetMarkFailedRequestFromArgs(args, parent_ref,
-                                                     api_version)
-    return recommender_service.MarkFailed(request)
+    client = recommendation.CreateClient(self.ReleaseTrack())
+    name = flags.GetRecommendationName(args)
+    return client.MarkFailed(name, args.state_metadata, args.etag)

@@ -150,17 +150,17 @@ class AdjustTraffic(base.Command):
               display_info=args.GetDisplayInfo()).Display()
         raise
 
-    if args.async_:
-      pretty_print.Success('Updating traffic asynchronously.')
-    else:
-      serv = client.GetService(service_ref)
-      resources = traffic_pair.GetTrafficTargetPairs(
-          serv.spec_traffic,
-          serv.status_traffic,
-          is_managed,
-          serv.status.latestReadyRevisionName,
-          serv.status.url)
-      return resources
+      if args.async_:
+        pretty_print.Success('Updating traffic asynchronously.')
+      else:
+        serv = client.GetService(service_ref)
+        resources = traffic_pair.GetTrafficTargetPairs(
+            serv.spec_traffic,
+            serv.status_traffic,
+            is_managed,
+            serv.status.latestReadyRevisionName,
+            serv.status.url)
+        return resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

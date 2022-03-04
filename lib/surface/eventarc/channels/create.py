@@ -29,9 +29,9 @@ _DETAILED_HELP = {
         '{description}',
     'EXAMPLES':
         """ \
-        To create a new channel ``my-channel'' for provider ``test-provider'' in location ``us-central1'', run:
+        To create a new channel ``my-channel'' for provider ``event-provider'' in location ``us-central1'', run:
 
-          $ {command} my-channel --provider test-provider --location us-central1
+          $ {command} my-channel --provider event-provider --location us-central1
         """,
 }
 

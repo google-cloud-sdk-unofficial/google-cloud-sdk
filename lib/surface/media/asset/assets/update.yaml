@@ -4,7 +4,9 @@
     description: Update a Media Asset asset.
     examples: |
       To update an asset with id  my-asset with in the default project and 'us-central1' location and under asset type my-at, run:
+
         $ {command} my-asset --asset_type my-at --asset-config-file asset.json
+
       , where asset.json can be:
       {
         "metadata": {

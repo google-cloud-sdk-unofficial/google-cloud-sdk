@@ -80,7 +80,9 @@ class Remove(base.Command):
     dns = util.GetApiClient(api_version)
 
     record_to_remove = rrsets_util.CreateRecordSetFromArgs(
-        args, api_version=api_version)
+        args,
+        api_version=api_version,
+        allow_extended_records=(self.ReleaseTrack() == base.ReleaseTrack.ALPHA))
 
     # Ensure the record to be removed exists
     zone_ref = util.GetRegistry(api_version).Parse(

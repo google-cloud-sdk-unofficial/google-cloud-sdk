@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.iam import policies_flags as flags
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a policy on the given attachment point with the given name."""
@@ -35,8 +34,8 @@ class Create(base.CreateCommand):
       'EXAMPLES':
           textwrap.dedent("""\
           The following command creates the IAM policy defined at the resource
-          project ``123" of kind ``denypolicies" and id ``my-deny-policy" from the
-          file ``policy.json" :
+          project ``123'' of kind ``denypolicies'' and id ``my-deny-policy'' from the
+          file ``policy.json'':
 
 
             $ {command} my-deny-policy --attachment-point=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies --policy-file=policy.json

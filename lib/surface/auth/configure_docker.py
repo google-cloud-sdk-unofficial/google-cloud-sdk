@@ -54,11 +54,27 @@ class ConfigureDocker(base.Command):
   For more details on Docker registries, see
   [](https://docs.docker.com/registry/).
 
+  For more details on how to authenticate to Google Container Registry using
+  this command, see
+  [](https://cloud.google.com/container-registry/docs/advanced-authentication#gcloud-helper).
+
+  For more details on Google Container Registry's standalone credential helpers,
+  see [](https://github.com/GoogleCloudPlatform/docker-credential-gcr).
+
   For more details on Docker credential helpers, see
   [](https://docs.docker.com/engine/reference/commandline/login/#credential-helpers).
 
-  For more details on the Google Container Registry's Docker credential helper,
-  see [](https://github.com/GoogleCloudPlatform/docker-credential-gcr).
+
+  ## EXAMPLES
+
+  To configure docker authentication after logging into gcloud, run:
+
+    $ {command}
+
+  To configure docker authentication with Container Registry, e.g., `gcr.io`,
+  run:
+
+    $ {command} gcr.io
   """
   # pylint: enable=line-too-long
 
@@ -77,7 +93,10 @@ class ConfigureDocker(base.Command):
     parser.add_argument(
         'registries',
         nargs='?',
-        help='The comma-separated list of registries to configure the credential helper for.'
+        help='The comma-separated list of registries to configure the credential'
+        ' helper for. Container Registry is a service for storing private '
+        'container images. For available registries, see '
+        '[](https://cloud.google.com/container-registry/docs/pushing-and-pulling#add-registry).'
     )
     parser.add_argument(
         '--include-artifact-registry',

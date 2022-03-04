@@ -443,6 +443,8 @@ flags_to_add = {
             flags.AddDiskSizeFlag,
         'disktype':
             flags.AddDiskTypeFlag,
+        'identityservice':
+            flags.AddIdentityServiceFlag,
         'imagestreaming':
             flags.AddEnableImageStreamingFlag,
         'ilbsubsetting':

@@ -34,7 +34,7 @@ from googlecloudsdk.core import resources
 class Create(base.CreateCommand):
   """Add a NAT to a Compute Engine router."""
 
-  with_type = False
+  with_private_nat = False
 
   @classmethod
   def Args(cls, parser):
@@ -46,10 +46,10 @@ class Create(base.CreateCommand):
     compute_flags.AddRegionFlag(parser, 'NAT', operation_type='create')
 
     nats_flags.AddNatNameArg(parser, operation_type='create')
-    if cls.with_type:
+    if cls.with_private_nat:
       nats_flags.AddTypeArg(parser)
     nats_flags.AddCommonNatArgs(
-        parser, for_create=True, with_type=cls.with_type)
+        parser, for_create=True, with_private_nat=cls.with_private_nat)
 
   def Run(self, args):
     """See base.CreateCommand."""
@@ -63,7 +63,7 @@ class Create(base.CreateCommand):
     request_type = messages.ComputeRoutersGetRequest
     replacement = service.Get(request_type(**router_ref.AsDict()))
 
-    nat = nats_utils.CreateNatMessage(args, holder, self.with_type)
+    nat = nats_utils.CreateNatMessage(args, holder, self.with_private_nat)
 
     replacement.nats.append(nat)
 
@@ -152,4 +152,4 @@ Create.detailed_help = {
 class CreateAlpha(Create):
   """Add a NAT to a Compute Engine router."""
 
-  with_type = True
+  with_private_nat = True

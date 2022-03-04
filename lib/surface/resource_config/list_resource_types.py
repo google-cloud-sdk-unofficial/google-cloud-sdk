@@ -22,6 +22,7 @@ import collections
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.util.declarative import flags as declarative_flags
+from googlecloudsdk.command_lib.util.declarative.clients import declarative_client_base
 from googlecloudsdk.command_lib.util.declarative.clients import kcc_client
 
 try:
@@ -58,7 +59,7 @@ class ListResources(base.DeclarativeCommand):
   @classmethod
   def Args(cls, parser):
     declarative_flags.AddListResourcesFlags(parser)
-    parser.display_info.AddFormat(kcc_client.RESOURCE_LIST_FORMAT)
+    parser.display_info.AddFormat(declarative_client_base.RESOURCE_LIST_FORMAT)
 
   def Run(self, args):
     client = kcc_client.KccClient()

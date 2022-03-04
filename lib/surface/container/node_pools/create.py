@@ -300,8 +300,7 @@ class CreateBeta(Create):
     flags.AddNodePoolSoakDurationFlag(parser)
     flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)
     flags.AddNetworkPerformanceConfigFlags(parser)
-    flags.AddEnableConfidentialNodesFlag(
-        parser, for_node_pool=True, hidden=True)
+    flags.AddEnableConfidentialNodesFlag(parser, for_node_pool=True)
     flags.AddDisablePodCIDROverprovisionFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
@@ -397,8 +396,7 @@ class CreateAlpha(Create):
     flags.AddNodePoolSoakDurationFlag(parser, for_node_pool=True)
     flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)
     flags.AddNetworkPerformanceConfigFlags(parser)
-    flags.AddEnableConfidentialNodesFlag(
-        parser, for_node_pool=True, hidden=True)
+    flags.AddEnableConfidentialNodesFlag(parser, for_node_pool=True)
     flags.AddDisablePodCIDROverprovisionFlag(parser)
 
 

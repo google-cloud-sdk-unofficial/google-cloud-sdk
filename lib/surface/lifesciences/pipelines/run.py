@@ -221,8 +221,9 @@ class Run(base.SilentCommand):
     parser.add_argument(
         '--service-account-email',
         default='default',
-        help='''The service account used to run the pipeline. If unspecified,
-            defaults to the Compute Engine service account for your project.''')
+        help='''The service account used on the Compute Engine VMs that run the
+            pipeline. If unspecified, defaults to the Compute Engine service
+            account for your project.''')
 
     parser.add_argument(
         '--service-account-scopes',

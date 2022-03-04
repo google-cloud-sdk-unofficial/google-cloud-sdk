@@ -4,6 +4,7 @@
     description: Delete a new Media Asset complex type.
     examples: |
       To delete a new asset type with id  my-ct, run:
+
         $ {command} my-ct
 
   request:

@@ -48,14 +48,18 @@ class Describe(base.DescribeCommand):
   Describe the specified image:
 
     $ {command} gcr.io/myproject/myimage@digest
-          OR
+
+          Or:
+
     $ {command} gcr.io/myproject/myimage:tag
 
   Find the digest for a tag:
 
     $ {command} gcr.io/myproject/myimage:tag \
       --format="value(image_summary.digest)"
-          OR
+
+          Or:
+
     $ {command} gcr.io/myproject/myimage:tag \
       --format="value(image_summary.fully_qualified_digest)"
 
@@ -97,14 +101,18 @@ class DescribeAlphaAndBeta(Describe):
   Describe the specified image:
 
     $ {command} gcr.io/myproject/myimage@digest
-          OR
+
+          Or:
+
     $ {command} gcr.io/myproject/myimage:tag
 
   Find the digest for a tag:
 
     $ {command} gcr.io/myproject/myimage:tag \
       --format="value(image_summary.digest)"
-          OR
+
+          Or:
+
     $ {command} gcr.io/myproject/myimage:tag \
       --format="value(image_summary.fully_qualified_digest)"
 

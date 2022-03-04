@@ -19,27 +19,58 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as api_ex
+
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import resource_args
+from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-def _Run(args, ack_ids, legacy_output=False):
+def _Run(args, ack_ids, legacy_output=False, capture_failures=False):
+  """Acks one or more messages."""
   client = subscriptions.SubscriptionsClient()
 
   subscription_ref = args.CONCEPTS.subscription.Parse()
-  result = client.Ack(ack_ids, subscription_ref)
+  if not capture_failures:
+    result = client.Ack(ack_ids, subscription_ref)
+    log.status.Print(
+        'Acked the messages with the following ackIds: [{}]'.format(
+            ','.join(ack_ids)))
+    if legacy_output:
+      return {
+          'subscriptionId': subscription_ref.RelativeName(),
+          'ackIds': ack_ids
+      }, {}
+    else:
+      return result, {}
 
-  log.status.Print('Acked the messages with the following ackIds: [{}]'
-                   .format(','.join(ack_ids)))
+  result = None
+  ack_ids_and_failure_reasons = {}
+  try:
+    result = client.Ack(ack_ids, subscription_ref)
+  except api_ex.HttpError as error:
+    ack_ids_and_failure_reasons = util.HandleExactlyOnceDeliveryError(error)
+
+  failed_ack_ids, successfully_processed_ack_ids = util.ParseExactlyOnceAckIdsAndFailureReasons(
+      ack_ids_and_failure_reasons, ack_ids)
+
+  log.status.Print('Acked the messages with the following ackIds: [{}]'.format(
+      ','.join(successfully_processed_ack_ids)))
+  if failed_ack_ids:
+    log.status.Print(
+        'Failed to ack the messages with the following ackIds: [{}]'.format(
+            ','.join(failed_ack_ids)))
+
   if legacy_output:
-    return {'subscriptionId': subscription_ref.RelativeName(),
-            'ackIds': ack_ids}
-  else:
-    return result
+    result = {
+        'subscriptionId': subscription_ref.RelativeName(),
+        'ackIds': ack_ids
+    }
+  return result, ack_ids_and_failure_reasons
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -63,7 +94,8 @@ class Ack(base.Command):
     flags.AddAckIdFlag(parser, 'acknowledge.')
 
   def Run(self, args):
-    return _Run(args, args.ack_ids)
+    result, _ = _Run(args, args.ack_ids)
+    return result
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -78,4 +110,8 @@ class AckBeta(Ack):
   def Run(self, args):
     ack_ids = flags.ParseAckIdsArgs(args)
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
-    return _Run(args, ack_ids, legacy_output=legacy_output)
+    result, ack_ids_and_failure_reasons = _Run(
+        args, ack_ids, capture_failures=True, legacy_output=legacy_output)
+    if ack_ids_and_failure_reasons:
+      return ack_ids_and_failure_reasons
+    return result

@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.container.hub.features import base
 class Disable(base.DisableCommand):
   """Disable Service Mesh Feature.
 
-  Disable the Service Mesh Feature in Hub.
+  Disable the Service Mesh Feature in a fleet.
 
   ## EXAMPLES
 

@@ -46,6 +46,8 @@ def _Run(args, enable_labels=False, legacy_output=False):
   max_delivery_attempts = getattr(args, 'max_delivery_attempts', None)
   retain_acked_messages = getattr(args, 'retain_acked_messages', None)
   retention_duration = getattr(args, 'message_retention_duration', None)
+  enable_exactly_once_delivery = getattr(args, 'enable_exactly_once_delivery',
+                                         None)
   if retention_duration:
     retention_duration = util.FormatDuration(retention_duration)
   min_retry_delay = getattr(args, 'min_retry_delay', None)
@@ -89,7 +91,8 @@ def _Run(args, enable_labels=False, legacy_output=False):
           dead_letter_topic=dead_letter_topic,
           max_delivery_attempts=max_delivery_attempts,
           min_retry_delay=min_retry_delay,
-          max_retry_delay=max_retry_delay)
+          max_retry_delay=max_retry_delay,
+          enable_exactly_once_delivery=enable_exactly_once_delivery)
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
       log.CreatedResource(subscription_ref.RelativeName(),
@@ -151,7 +154,8 @@ class CreateBeta(Create):
         'to create.',
         plural=True)
     resource_args.AddResourceArgs(parser, [topic, subscription])
-    flags.AddSubscriptionSettingsFlags(parser)
+    flags.AddSubscriptionSettingsFlags(
+        parser, support_enable_exactly_once_delivery=True)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):

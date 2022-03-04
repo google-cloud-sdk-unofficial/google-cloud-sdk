@@ -83,7 +83,11 @@ class Add(base.Command):
           trans_file, api_version=api_version)
 
     change.additions.append(
-        rrsets_util.CreateRecordSetFromArgs(args, api_version=api_version))
+        rrsets_util.CreateRecordSetFromArgs(
+            args,
+            api_version=api_version,
+            allow_extended_records=(
+                self.ReleaseTrack() == base.ReleaseTrack.ALPHA)))
 
     with trans_util.TransactionFile(args.transaction_file, 'w') as trans_file:
       trans_util.WriteToYamlFile(trans_file, change)

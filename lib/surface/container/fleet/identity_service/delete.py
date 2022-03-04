@@ -48,14 +48,14 @@ class Delete(base.UpdateCommand):
     )
 
   def Run(self, args):
-    # Get Hub memberships (cluster registered with Hub) from GCP Project.
+    # Get fleet memberships (cluster registered with fleet) from GCP Project.
     memberships = base.ListMemberships()
     if not memberships:
-      raise exceptions.Error('No Memberships available in Hub.')
+      raise exceptions.Error('No Memberships available in the fleet.')
 
     # Acquire membership.
     membership = None
-    # Prompt user for an existing hub membership if none is provided.
+    # Prompt user for an existing fleet membership if none is provided.
     if not args.membership:
       index = 0
       if len(memberships) > 1:
@@ -69,7 +69,7 @@ class Delete(base.UpdateCommand):
       membership = args.membership
       if membership not in memberships:
         raise exceptions.Error(
-            'Membership {} is not in Hub.'.format(membership))
+            'Membership {} is not in the fleet.'.format(membership))
 
     # Setup a patch to set the MembershipSpec to the empty proto ("delete").
     membership_key = self.MembershipResourceName(membership)

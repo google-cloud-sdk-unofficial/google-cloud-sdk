@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.container.hub.features import base
 class Disable(base.DisableCommand):
   """Disable Identity Service Feature.
 
-  This command disables the Identity Service Feature in Hub.
+  This command disables the Identity Service Feature in a fleet.
 
   ## EXAMPLES
 

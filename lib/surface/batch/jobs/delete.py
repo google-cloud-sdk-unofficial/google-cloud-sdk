@@ -33,8 +33,8 @@ class Delete(base.DeleteCommand):
 
   ## EXAMPLES
 
-  The following command delete a job with the job name
-  `projects/foo/locations/us-central1/jobs/bar`:
+  To delete the job with name
+  `projects/foo/locations/us-central1/jobs/bar`, run:
 
     $ {command} projects/foo/locations/us-central1/jobs/bar
   """

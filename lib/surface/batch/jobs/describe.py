@@ -33,8 +33,8 @@ class Describe(base.DescribeCommand):
 
   ## EXAMPLES
 
-  The following command prints details of a job with the job name
-  `projects/foo/locations/us-central1/jobs/bar`:
+  To print details of the job with name
+  `projects/foo/locations/us-central1/jobs/bar`, run:
 
     $ {command} projects/foo/locations/us-central1/jobs/bar
   """

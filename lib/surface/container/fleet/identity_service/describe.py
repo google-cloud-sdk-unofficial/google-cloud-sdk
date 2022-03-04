@@ -26,7 +26,7 @@ from googlecloudsdk.core import log
 class Describe(base.FeatureCommand, gcloud_base.ListCommand):
   """Prints the status of all clusters with Identity Service installed.
 
-  Prints the status of the Identity Service Feature resource in Hub.
+  Prints the status of the Identity Service Feature resource in a fleet.
 
   ## EXAMPLES
 
@@ -43,11 +43,11 @@ class Describe(base.FeatureCommand, gcloud_base.ListCommand):
     pass
 
   def Run(self, args):
-    # Get Hub memberships (cluster registered with Hub) from GCP Project.
+    # Get fleet memberships (cluster registered with fleet) from GCP Project.
     memberships = base.ListMemberships()
     response = self.GetFeature()
     if not memberships:
-      log.status.Print('No Memberships available in Hub.')
+      log.status.Print('No Memberships available in the fleet.')
       return {}
 
     return {'Identity Service Feature': response}

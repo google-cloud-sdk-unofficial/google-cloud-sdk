@@ -34,7 +34,7 @@ from googlecloudsdk.core.util import retry
 class Enable(base.EnableCommand):
   """Enable Multi-cluster Ingress Feature.
 
-  This command enables Multi-cluster Ingress Feature in Hub.
+  This command enables Multi-cluster Ingress Feature in a fleet.
 
   ## EXAMPLES
 
@@ -60,7 +60,7 @@ class Enable(base.EnableCommand):
     if not args.config_membership:
       memberships = base.ListMemberships()
       if not memberships:
-        raise exceptions.Error('No Memberships available in Hub.')
+        raise exceptions.Error('No Memberships available in the fleet.')
       index = console_io.PromptChoice(
           options=memberships, message='Please specify a config membership:\n')
       config_membership = memberships[index]
@@ -71,7 +71,7 @@ class Enable(base.EnableCommand):
       config_membership = os.path.basename(args.config_membership)
     config_membership = self.MembershipResourceName(config_membership)
 
-    # MCI requires MCSD. Enablement of the Hub feature for MCSD is taken care
+    # MCI requires MCSD. Enablement of the fleet feature for MCSD is taken care
     # of by CLH but we need to enable the OP API before that happens. If not,
     # CLH will return an error asking for the API to be enabled.
     mcsd_api = info.Get('multiclusterservicediscovery').api

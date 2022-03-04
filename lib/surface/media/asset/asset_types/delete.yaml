@@ -4,6 +4,7 @@
     description: Delete a new Media Asset asset type.
     examples: |
       To delete a new asset type with id  my-at, run:
+
         $ {command} my-at
 
   request:

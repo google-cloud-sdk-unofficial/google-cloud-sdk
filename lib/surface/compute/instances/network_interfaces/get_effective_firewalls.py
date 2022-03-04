@@ -155,7 +155,8 @@ GetEffectiveFirewalls.detailed_help = {
         """\
     To get the effective firewalls of instance with name example-instance, run:
 
-      $ {command} example-instance,
+      $ {command} example-instance
+
     To show all fields of the firewall rules, please show in JSON format with
     option --format=json
 

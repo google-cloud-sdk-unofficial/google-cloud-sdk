@@ -18,8 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import list_pager
-from googlecloudsdk.api_lib.recommender import flag_utils as api_utils
+from googlecloudsdk.api_lib.recommender import recommendation
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.recommender import flags
 
@@ -37,7 +36,7 @@ DETAILED_HELP = {
 class List(base.ListCommand):
   r"""List operations for a recommendation.
 
-  This command will list all recommendations for a give cloud_entity_id,
+  This command will list all recommendations for a given cloud_entity_id,
   location and recommender. Supported recommenders can be found here:
   https://cloud.google.com/recommender/docs/recommenders.
   Currently the following cloud_entity_types are supported: project,
@@ -86,18 +85,6 @@ class List(base.ListCommand):
     Returns:
       The list of recommendations for this project.
     """
-    api_version = api_utils.GetApiVersion(self.ReleaseTrack())
-    is_insight_api = False
-    is_list_api = True
-    recommender_service = api_utils.GetServiceFromArgs(args, is_insight_api,
-                                                       api_version)
-    parent_ref = flags.GetParentFromFlags(args, is_list_api, is_insight_api)
-    request = api_utils.GetListRequestFromArgs(args, parent_ref, is_insight_api,
-                                               api_version)
-    return list_pager.YieldFromList(
-        recommender_service,
-        request,
-        batch_size_attribute='pageSize',
-        batch_size=args.page_size,
-        limit=args.limit,
-        field='recommendations')
+    client = recommendation.CreateClient(self.ReleaseTrack())
+    parent_name = flags.GetRecommenderName(args)
+    return client.List(parent_name, args.page_size, args.limit)

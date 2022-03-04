@@ -19,10 +19,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as api_ex
+
 from googlecloudsdk.api_lib.pubsub import subscriptions
+from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import resource_args
+from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -61,18 +65,45 @@ class ModifyAckDeadline(base.Command):
 
     subscription_ref = args.CONCEPTS.subscription.Parse()
     ack_ids = flags.ParseAckIdsArgs(args)
-    result = client.ModifyAckDeadline(
-        subscription_ref, ack_ids, args.ack_deadline)
+    result = None
+    ack_ids_and_failure_reasons = {}
+    try:
+      result = client.ModifyAckDeadline(subscription_ref, ack_ids,
+                                        args.ack_deadline)
+    except api_ex.HttpError as error:
+      exc = exceptions.HttpException(error)
+      ack_ids_and_failure_reasons = util.ParseExactlyOnceErrorInfo(
+          exc.payload.details)
+      # If the failure doesn't have more information (specifically for exactly
+      # once related failures), re-raise the exception.
+      if not ack_ids_and_failure_reasons:
+        raise
+
+    failed_ack_ids = [ack['AckId'] for ack in ack_ids_and_failure_reasons]
+    successfully_processed_ack_ids = [
+        ack_id for ack_id in ack_ids if ack_id not in failed_ack_ids
+    ]
 
     log.status.Print('Set ackDeadlineSeconds to [{0}] for messages with ackId '
                      '[{1}]] for subscription [{2}]'.format(
-                         args.ack_deadline, ','.join(ack_ids),
+                         args.ack_deadline,
+                         ','.join(successfully_processed_ack_ids),
                          subscription_ref.RelativeName()))
+    if failed_ack_ids:
+      log.status.Print(
+          'Set ackDeadlineSeconds to [{0}] for messages with ackId '
+          '[{1}]] failed for subscription [{2}]'.format(
+              args.ack_deadline, ','.join(failed_ack_ids),
+              subscription_ref.RelativeName()))
+    if ack_ids_and_failure_reasons:
+      return ack_ids_and_failure_reasons
 
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
     if legacy_output:
-      return {'subscriptionId': subscription_ref.RelativeName(),
-              'ackId': ack_ids,
-              'ackDeadlineSeconds': args.ack_deadline}
-    else:
-      return result
+      result = {
+          'subscriptionId': subscription_ref.RelativeName(),
+          'ackId': ack_ids,
+          'ackDeadlineSeconds': args.ack_deadline
+      }
+
+    return result

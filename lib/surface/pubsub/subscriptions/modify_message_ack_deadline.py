@@ -19,33 +19,68 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as api_ex
+
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import resource_args
+from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-def _Run(args, ack_ids, legacy_output=False):
+def _Run(args, ack_ids, legacy_output=False, capture_failures=False):
   """Modifies the ack deadline for one or more messages."""
   client = subscriptions.SubscriptionsClient()
 
   subscription_ref = args.CONCEPTS.subscription.Parse()
-  result = client.ModifyAckDeadline(
-      subscription_ref, ack_ids, args.ack_deadline)
+  if not capture_failures:
+    result = client.ModifyAckDeadline(subscription_ref, ack_ids,
+                                      args.ack_deadline)
+
+    log.status.Print('Set ackDeadlineSeconds to [{0}] for messages with ackId '
+                     '[{1}]] for subscription [{2}]'.format(
+                         args.ack_deadline, ','.join(ack_ids),
+                         subscription_ref.RelativeName()))
+
+    if legacy_output:
+      return {
+          'subscriptionId': subscription_ref.RelativeName(),
+          'ackId': ack_ids,
+          'ackDeadlineSeconds': args.ack_deadline
+      }, {}
+    else:
+      return result, {}
+
+  result = None
+  ack_ids_and_failure_reasons = {}
+  try:
+    result = client.ModifyAckDeadline(subscription_ref, ack_ids,
+                                      args.ack_deadline)
+  except api_ex.HttpError as error:
+    ack_ids_and_failure_reasons = util.HandleExactlyOnceDeliveryError(error)
+
+  failed_ack_ids, successfully_processed_ack_ids = util.ParseExactlyOnceAckIdsAndFailureReasons(
+      ack_ids_and_failure_reasons, ack_ids)
 
   log.status.Print('Set ackDeadlineSeconds to [{0}] for messages with ackId '
                    '[{1}]] for subscription [{2}]'.format(
-                       args.ack_deadline, ','.join(ack_ids),
+                       args.ack_deadline,
+                       ','.join(successfully_processed_ack_ids),
                        subscription_ref.RelativeName()))
-
+  if failed_ack_ids:
+    log.status.Print('Set ackDeadlineSeconds to [{0}] for messages with ackId '
+                     '[{1}]] failed for subscription [{2}]'.format(
+                         args.ack_deadline, ','.join(failed_ack_ids),
+                         subscription_ref.RelativeName()))
   if legacy_output:
-    return {'subscriptionId': subscription_ref.RelativeName(),
-            'ackId': ack_ids,
-            'ackDeadlineSeconds': args.ack_deadline}
-  else:
-    return result
+    result = {
+        'subscriptionId': subscription_ref.RelativeName(),
+        'ackId': ack_ids,
+        'ackDeadlineSeconds': args.ack_deadline
+    }
+  return result, ack_ids_and_failure_reasons
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -66,7 +101,8 @@ class ModifyMessageAckDeadline(base.Command):
     flags.AddAckDeadlineFlag(parser, required=True)
 
   def Run(self, args):
-    return _Run(args, args.ack_ids)
+    result, _ = _Run(args, args.ack_ids)
+    return result
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -82,4 +118,8 @@ class ModifyMessageAckDeadlineBeta(ModifyMessageAckDeadline):
   def Run(self, args):
     ack_ids = flags.ParseAckIdsArgs(args)
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
-    return _Run(args, ack_ids, legacy_output=legacy_output)
+    result, ack_ids_and_failure_reasons = _Run(
+        args, ack_ids, legacy_output=legacy_output, capture_failures=True)
+    if ack_ids_and_failure_reasons:
+      return ack_ids_and_failure_reasons
+    return result

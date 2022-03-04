@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.recommender import flag_utils as api_utils
+from googlecloudsdk.api_lib.recommender import insight
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.recommender import flags
@@ -86,13 +86,6 @@ class MarkAccepted(base.Command):
     Returns:
       The result insights after being marked as accepted
     """
-    api_version = api_utils.GetApiVersion(self.ReleaseTrack())
-    is_insight_api = True
-    is_list_api = False
-    recommender_service = api_utils.GetServiceFromArgs(args, is_insight_api,
-                                                       api_version)
-    parent_ref = flags.GetParentFromFlags(args, is_list_api, is_insight_api)
-    request = api_utils.GetMarkAcceptedRequestFromArgs(args, parent_ref,
-                                                       is_insight_api,
-                                                       api_version)
-    return recommender_service.MarkAccepted(request)
+    client = insight.CreateClient(self.ReleaseTrack())
+    name = flags.GetInsightName(args)
+    return client.MarkAccepted(name, args.state_metadata, args.etag)

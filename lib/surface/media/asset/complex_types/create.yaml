@@ -4,8 +4,10 @@
     description: Create a new Media Asset complex type.
     examples: |
       To create a new complext type with id  my-ct with in the default project and 'us-central1' location, run:
+
         $ {command} my-ct my-ct --complex-type-config-file complex_type_configs.json
-      where complex_type_configs.json content can be:
+
+      , where complex_type_configs.json content can be:
       {
         "fields": {
           "testField1": {

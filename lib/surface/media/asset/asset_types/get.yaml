@@ -4,6 +4,7 @@
     description: Create a new Media Asset asset type.
     examples: |
       To get a specific asset type with id  my-at, run:
+
         $ {command} my-at
 
   request:

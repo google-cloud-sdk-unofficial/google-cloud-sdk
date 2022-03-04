@@ -26,17 +26,16 @@ from googlecloudsdk.command_lib.iam import policies_flags as flags
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
-  """Updates the policy on the given attachment point with the given name."""
+  """Update the policy on the given attachment point with the given name."""
 
   detailed_help = {
       'EXAMPLES':
           textwrap.dedent("""\
           The following command updates the IAM policy defined at the resource
-          project ``123" of kind ``denypolicies" and id ``my-deny-policy", with
-          etag ``abc":
+          project ``123'' of kind ``denypolicies'' and id ``my-deny-policy'',
+          with etag ``abc'':
 
             $ {command} my-deny-policy --attachment-point=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies --policy-file=policy.json --etag=abc
 

@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.container.hub.features import base
 class Enable(base.EnableCommand):
   """Enable Service Mesh Feature.
 
-  Enable the Service Mesh Feature in Hub.
+  Enable the Service Mesh Feature in a fleet.
 
   ## EXAMPLES
 

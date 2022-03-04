@@ -52,11 +52,11 @@ class Disable(base.UpdateCommand):
 
   def Run(self, args):
     membership_specs = {}
-    poco_not_installed = self.messages.PolicyControllerPolicyControllerHubConfig.InstallSpecValueValuesEnum(
-        self.messages.PolicyControllerPolicyControllerHubConfig
+    poco_not_installed = self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum(
+        self.messages.PolicyControllerHubConfig
         .InstallSpecValueValuesEnum.INSTALL_SPEC_NOT_INSTALLED)
 
-    poco_hub_config = self.messages.PolicyControllerPolicyControllerHubConfig(
+    poco_hub_config = self.messages.PolicyControllerHubConfig(
         installSpec=poco_not_installed)
 
     memberships = utils.select_memberships(args)

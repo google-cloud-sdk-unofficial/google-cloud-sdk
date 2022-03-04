@@ -86,7 +86,8 @@ class Update(base.UpdateCommand):
     flags.AddSystemConfigFlag(group, hidden=False)
     flags.AddEnableGvnicFlag(group)
     flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
-    flags.AddEnableConfidentialNodesFlag(group, for_node_pool=True, hidden=True)
+    flags.AddEnableConfidentialNodesFlag(
+        group, for_node_pool=True, hidden=True, is_update=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -214,7 +215,8 @@ class UpdateBeta(Update):
     flags.AddEnableGvnicFlag(group)
     flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
     flags.AddNetworkPerformanceConfigFlags(group)
-    flags.AddEnableConfidentialNodesFlag(group, for_node_pool=True, hidden=True)
+    flags.AddEnableConfidentialNodesFlag(
+        group, for_node_pool=True, is_update=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -289,7 +291,8 @@ class UpdateAlpha(Update):
     flags.AddEnableGvnicFlag(group)
     flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
     flags.AddNetworkPerformanceConfigFlags(group)
-    flags.AddEnableConfidentialNodesFlag(group, for_node_pool=True, hidden=True)
+    flags.AddEnableConfidentialNodesFlag(
+        group, for_node_pool=True, is_update=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)

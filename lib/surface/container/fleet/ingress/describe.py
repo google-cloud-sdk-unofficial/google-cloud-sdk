@@ -25,7 +25,7 @@ class Describe(base.DescribeCommand):
   """Describe the status of Multi-cluster Ingress Feature resource.
 
   This command describes the status of Multi-cluster Ingress Feature resource in
-  Hub.
+  fleet.
 
   ## EXAMPLES
 

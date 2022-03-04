@@ -4,8 +4,11 @@
     description: List Media Asset complex types.
     examples: |
       To list all asset types in the default 'us-central1' location, run:
+
         $ {command}
+
       To list all asset types in 'us-west1' location, run:
+
         $ {command} --location us-west1
 
   request:

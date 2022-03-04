@@ -122,7 +122,8 @@ GetEffectiveFirewalls.detailed_help = {
         """\
     To get the effective firewalls of network with name example-network, run:
 
-      $ {command} example-network,
+      $ {command} example-network
+
     To show all fields of the firewall rules, please show in JSON format with
     option --format=json
 

@@ -326,6 +326,7 @@ class Update(base.UpdateCommand):
     flags.AddReleaseChannelFlag(group, is_update=True, hidden=False)
     flags.AddWorkloadIdentityFlags(group)
     flags.AddWorkloadIdentityUpdateFlags(group)
+    flags.AddIdentityServiceFlag(group)
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
@@ -404,6 +405,7 @@ class Update(base.UpdateCommand):
           ' complete this step shortly after enabling CloudDNS.',
           cancel_on_no=True)
     opts.enable_service_externalips = args.enable_service_externalips
+    opts.enable_identity_service = args.enable_identity_service
     return opts
 
   def Run(self, args):

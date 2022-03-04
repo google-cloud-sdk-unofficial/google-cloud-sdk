@@ -516,10 +516,6 @@ class Create(base.Command):
             args.interface, client.messages.Disk.InterfaceValueValuesEnum)
 
       if support_async_pd and args.primary_disk:
-        if not args.primary_disk_zone and not args.primary_disk_region:
-          raise exceptions.OneOfArgumentsRequiredException(
-              ['--primary-disk-zone', '--primary-disk-region'],
-              'must specify a scope for the primary disk.')
         primary_disk = client.messages.DiskAsyncReplication()
         primary_disk.disk = self.GetAsyncPrimaryDiskUri(args, compute_holder)
         kwargs['asyncPrimaryDisk'] = primary_disk

@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.recommender import flag_utils as api_utils
+from googlecloudsdk.api_lib.recommender import recommendation
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.recommender import flags
@@ -87,12 +87,6 @@ class MarkClaimed(base.Command):
     Returns:
       The recommendations after being marked as claimed.
     """
-    api_version = api_utils.GetApiVersion(self.ReleaseTrack())
-    is_insight_api = False
-    is_list_api = False
-    recommender_service = api_utils.GetServiceFromArgs(args, is_insight_api,
-                                                       api_version)
-    parent_ref = flags.GetParentFromFlags(args, is_list_api, is_insight_api)
-    request = api_utils.GetMarkClaimedRequestFromArgs(args, parent_ref,
-                                                      api_version)
-    return recommender_service.MarkClaimed(request)
+    client = recommendation.CreateClient(self.ReleaseTrack())
+    name = flags.GetRecommendationName(args)
+    return client.MarkClaimed(name, args.state_metadata, args.etag)

@@ -4,7 +4,9 @@
     description: Create a new Media Asset asset type.
     examples: |
       To create a new asset type with id  my-at with in the default project and 'us-central1' location, run:
+
         $ {command} my-at --create-asset-type-configs-file asset_type.json --labels a=x,b=y
+
       , where assetType.json can be:
       {
         "metadataConfigs": {

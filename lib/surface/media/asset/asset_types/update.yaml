@@ -4,8 +4,10 @@
     description: Update a Media Asset asset type.
     examples: |
       To update an asset type with id my-at, run:
+
         $ {command} my-at --update-asset-type-configs-file update_config.json
-      where update_config.json includes the update mask and the asset type's changed fields, e.g:
+
+      , where update_config.json includes the update mask and the asset type's changed fields, e.g:
       {
         "assetType": {
           "metadataConfigs": {

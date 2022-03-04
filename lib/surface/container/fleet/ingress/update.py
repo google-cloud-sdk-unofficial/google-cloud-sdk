@@ -30,7 +30,7 @@ from googlecloudsdk.core.console import console_io
 class Update(base.UpdateCommand):
   """Update Multi-cluster Ingress Feature.
 
-  This command updates Multi-cluster Ingress Feature in Hub.
+  This command updates Multi-cluster Ingress Feature in a fleet.
 
   ## EXAMPLES
 
@@ -64,7 +64,7 @@ class Update(base.UpdateCommand):
     if not config_membership:
       memberships = base.ListMemberships()
       if not memberships:
-        raise exceptions.Error('No Memberships available in Hub.')
+        raise exceptions.Error('No Memberships available in the fleet.')
       index = console_io.PromptChoice(
           options=memberships,
           message='Please specify a config membership:\n')

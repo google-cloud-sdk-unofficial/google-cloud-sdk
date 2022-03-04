@@ -65,7 +65,10 @@ class Update(base.UpdateCommand):
         params=util.GetParamsForRegistry(api_version, args),
         collection='dns.managedZones')
 
-    resource_record_set = rrsets_util.CreateRecordSetFromArgs(args, api_version)
+    resource_record_set = rrsets_util.CreateRecordSetFromArgs(
+        args,
+        api_version,
+        allow_extended_records=(self.ReleaseTrack() == base.ReleaseTrack.ALPHA))
 
     request = messages.DnsResourceRecordSetsPatchRequest(
         project=zone_ref.project,
