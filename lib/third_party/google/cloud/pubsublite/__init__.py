@@ -71,6 +71,7 @@ from google.cloud.pubsublite_v1.types.admin import UpdateTopicRequest
 from google.cloud.pubsublite_v1.types.common import AttributeValues
 from google.cloud.pubsublite_v1.types.common import Cursor
 from google.cloud.pubsublite_v1.types.common import PubSubMessage
+from google.cloud.pubsublite_v1.types.common import Reservation
 from google.cloud.pubsublite_v1.types.common import SequencedMessage
 from google.cloud.pubsublite_v1.types.common import Subscription
 from google.cloud.pubsublite_v1.types.common import TimeTarget
@@ -164,6 +165,7 @@ __all__ = (
     "PublishResponse",
     "PublisherServiceAsyncClient",
     "PublisherServiceClient",
+    "Reservation",
     "SeekSubscriptionRequest",
     "SeekSubscriptionResponse",
     "SeekRequest",

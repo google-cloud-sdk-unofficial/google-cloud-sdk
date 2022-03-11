@@ -22,7 +22,7 @@
   arguments:
     resource:
       help_text: The project to list cluster memberships for.
-      spec: !REF googlecloudsdk.command_lib.container.hub.resources:project
+      spec: !REF googlecloudsdk.command_lib.container.fleet.resources:project
       override_resource_collection: true
 
   response:

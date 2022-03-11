@@ -41,6 +41,7 @@ DETAILED_HELP = {
 }
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(six.with_metaclass(abc.ABCMeta, base.CacheCommand)):
   """List Bare Metal Solution snapshot schedule policies in a project."""

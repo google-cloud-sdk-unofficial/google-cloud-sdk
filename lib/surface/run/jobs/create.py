@@ -36,7 +36,7 @@ from googlecloudsdk.core.console import progress_tracker
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
-  """Deploy a container to Cloud Run that will run to completion."""
+  """Deploy a new job to Cloud Run."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -47,12 +47,12 @@ class Create(base.Command):
           """\
           To deploy a new job `my-data-transformation` on Cloud Run:
 
-              $ {command} my-data-transformation --image=gcr.io/my/image
+              $ {command} my-data-transformation --image=us-docker.pkg.dev/project/image
 
           You may also omit the job name. Then a prompt will be displayed
           with a suggested default value:
 
-              $ {command} --image=gcr.io/my/image
+              $ {command} --image=us-docker.pkg.dev/project/image
           """,
   }
 

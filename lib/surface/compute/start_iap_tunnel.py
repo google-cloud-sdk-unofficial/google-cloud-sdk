@@ -53,6 +53,15 @@ specify the `--region` and `--network` flags:
   $ {command} 10.1.2.3 3389 --region=us-central1 --network=default
 """
 
+_NUMPY_HELP_TEXT = """
+
+To increase the performance of the tunnel, consider installing NumPy. To install
+NumPy, see: https://numpy.org/install/.
+After installing NumPy, run the following command to allow gcloud to access
+external packages:
+  export CLOUDSDK_PYTHON_SITEPACKAGES=1
+"""
+
 
 def _DetailedHelp(version):
   """Construct help text based on the command release track."""
@@ -156,6 +165,15 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
     else:
       iap_tunnel_helper.ConfigureForInstance(target.zone, target.instance,
                                              target.interface, target.port)
+
+    # Check if user has numpy installed, show message asking them to install.
+    # Numpy will be used later inside the websocket library to speed up the
+    # transfer rate. Showing the message here before the process start looks
+    # better than showing when the actual import happen inside the websocket.
+    try:
+      import numpy  # pylint: disable=g-import-not-at-top, unused-import
+    except ImportError:
+      log.warning(_NUMPY_HELP_TEXT)
 
     iap_tunnel_helper.Run()
 

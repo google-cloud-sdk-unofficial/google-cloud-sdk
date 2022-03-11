@@ -28,6 +28,8 @@ class NackHandler(ABC):
     def on_nack(self, message: PubsubMessage, ack: Callable[[], None]):
         """Handle a negative acknowledgement. ack must eventually be called.
 
+        This method will be called on an event loop and should not block.
+
         Args:
           message: The nacked message.
           ack: A callable to acknowledge the underlying message. This must eventually be called.

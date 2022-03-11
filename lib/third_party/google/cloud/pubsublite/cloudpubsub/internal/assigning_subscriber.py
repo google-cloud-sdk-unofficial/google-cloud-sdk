@@ -17,6 +17,7 @@ from typing import Callable, NamedTuple, Dict, List, Set, Optional
 
 from google.cloud.pubsub_v1.subscriber.message import Message
 
+from google.cloud.pubsublite.cloudpubsub.reassignment_handler import ReassignmentHandler
 from google.cloud.pubsublite.cloudpubsub.internal.single_subscriber import (
     AsyncSingleSubscriber,
 )
@@ -39,6 +40,7 @@ class _RunningSubscriber(NamedTuple):
 class AssigningSingleSubscriber(AsyncSingleSubscriber, PermanentFailable):
     _assigner_factory: Callable[[], Assigner]
     _subscriber_factory: PartitionSubscriberFactory
+    _reassignment_handler: ReassignmentHandler
 
     _subscribers: Dict[Partition, _RunningSubscriber]
 
@@ -51,6 +53,7 @@ class AssigningSingleSubscriber(AsyncSingleSubscriber, PermanentFailable):
         self,
         assigner_factory: Callable[[], Assigner],
         subscriber_factory: PartitionSubscriberFactory,
+        reassignment_handler: ReassignmentHandler,
     ):
         """
         Accepts a factory for an Assigner instead of an Assigner because GRPC asyncio uses the current thread's event
@@ -58,8 +61,9 @@ class AssigningSingleSubscriber(AsyncSingleSubscriber, PermanentFailable):
         """
         super().__init__()
         self._assigner_factory = assigner_factory
-        self._assigner = None
         self._subscriber_factory = subscriber_factory
+        self._reassignment_handler = reassignment_handler
+        self._assigner = None
         self._subscribers = {}
         self._batches = None
 
@@ -85,14 +89,20 @@ class AssigningSingleSubscriber(AsyncSingleSubscriber, PermanentFailable):
 
     async def _assign_action(self):
         assignment: Set[Partition] = await self._assigner.get_assignment()
-        added_partitions = assignment - self._subscribers.keys()
-        removed_partitions = self._subscribers.keys() - assignment
+        old_assignment: Set[Partition] = set(self._subscribers.keys())
+        added_partitions = assignment - old_assignment
+        removed_partitions = old_assignment - assignment
         for partition in added_partitions:
             await self._start_subscriber(partition)
         for partition in removed_partitions:
             subscriber = self._subscribers[partition]
             del self._subscribers[partition]
             await self._stop_subscriber(subscriber)
+        maybe_awaitable = self._reassignment_handler.handle_reassignment(
+            old_assignment, assignment
+        )
+        if maybe_awaitable is not None:
+            await maybe_awaitable
 
     async def __aenter__(self):
         self._batches = Queue()

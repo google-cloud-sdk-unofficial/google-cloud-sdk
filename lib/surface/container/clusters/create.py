@@ -739,6 +739,8 @@ flags_to_add = {
             flags.AddEnableServiceExternalIPs,
         'disablepodcidroverprovision':
             flags.AddDisablePodCIDROverprovisionFlag,
+        'enableworkloadconfigaudit':
+            flags.AddWorkloadConfigAuditFlag,
     },
     ALPHA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True)),
@@ -941,6 +943,8 @@ flags_to_add = {
             flags.AddEnableServiceExternalIPs,
         'disablepodcidroverprovision':
             flags.AddDisablePodCIDROverprovisionFlag,
+        'enableworkloadconfigaudit':
+            flags.AddWorkloadConfigAuditFlag,
     },
 }
 
@@ -1189,6 +1193,8 @@ class CreateBeta(Create):
         'disable_pod_cidr_overprovision')
     ops.stack_type = get_default('stack_type')
     ops.ipv6_access_type = get_default('ipv6_access_type')
+    ops.enable_workload_config_audit = get_default(
+        'enable_workload_config_audit')
     return ops
 
 
@@ -1273,4 +1279,6 @@ class CreateAlpha(Create):
         'disable_pod_cidr_overprovision')
     ops.stack_type = get_default('stack_type')
     ops.ipv6_access_type = get_default('ipv6_access_type')
+    ops.enable_workload_config_audit = get_default(
+        'enable_workload_config_audit')
     return ops

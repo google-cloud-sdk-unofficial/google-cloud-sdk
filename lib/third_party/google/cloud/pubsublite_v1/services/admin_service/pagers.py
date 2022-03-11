@@ -18,10 +18,10 @@ from typing import (
     AsyncIterator,
     Awaitable,
     Callable,
-    Iterator,
     Sequence,
     Tuple,
     Optional,
+    Iterator,
 )
 
 from google.cloud.pubsublite_v1.types import admin

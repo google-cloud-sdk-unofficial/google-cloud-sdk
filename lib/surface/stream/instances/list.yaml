@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List Stream instances.
+    description: |
+      List Stream instances.
+    examples: |
+      To list stream instances, run:
+
+        $ {command}
+
+  request:
+    collection: stream.projects.locations.streamInstances
+    api_version: v1alpha1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Location to list all stream contents, defaults to global.
+      spec: !REF googlecloudsdk.command_lib.stream.resources:location

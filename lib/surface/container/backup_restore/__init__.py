@@ -25,6 +25,8 @@ from googlecloudsdk.calliope import base
 class GKEBackup(base.Group):
   """Backup for GKE Services."""
 
+  category = base.COMPUTE_CATEGORY
+
   def Filter(self, context, args):
     """See base class."""
     base.RequireProjectID(args)

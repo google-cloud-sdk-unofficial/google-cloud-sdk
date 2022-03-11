@@ -19,6 +19,7 @@ such as the library and Python version, to API services.
 """
 
 import platform
+from typing import Union
 
 import pkg_resources
 
@@ -26,6 +27,8 @@ from google.api_core import version as api_core_version
 
 _PY_VERSION = platform.python_version()
 _API_CORE_VERSION = api_core_version.__version__
+
+_GRPC_VERSION: Union[str, None]
 
 try:
     _GRPC_VERSION = pkg_resources.get_distribution("grpcio").version
@@ -42,7 +45,7 @@ class ClientInfo(object):
 
     Args:
         python_version (str): The Python interpreter version, for example,
-            ``'2.7.13'``.
+            ``'3.9.6'``.
         grpc_version (Optional[str]): The gRPC library version.
         api_core_version (str): The google-api-core library version.
         gapic_version (Optional[str]): The sversion of gapic-generated client
@@ -54,6 +57,7 @@ class ClientInfo(object):
         user_agent (Optional[str]): Prefix to the user agent header. This is
             used to supply information such as application name or partner tool.
             Recommended format: ``application-or-tool-ID/major.minor.version``.
+        rest_version (Optional[str]): The requests library version.
     """
 
     def __init__(
@@ -64,6 +68,7 @@ class ClientInfo(object):
         gapic_version=None,
         client_library_version=None,
         user_agent=None,
+        rest_version=None,
     ):
         self.python_version = python_version
         self.grpc_version = grpc_version
@@ -71,6 +76,7 @@ class ClientInfo(object):
         self.gapic_version = gapic_version
         self.client_library_version = client_library_version
         self.user_agent = user_agent
+        self.rest_version = rest_version
 
     def to_user_agent(self):
         """Returns the user-agent string for this client info."""
@@ -86,6 +92,9 @@ class ClientInfo(object):
 
         if self.grpc_version is not None:
             ua += "grpc/{grpc_version} "
+
+        if self.rest_version is not None:
+            ua += "rest/{rest_version} "
 
         ua += "gax/{api_core_version} "
 

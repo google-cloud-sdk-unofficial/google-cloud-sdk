@@ -33,6 +33,7 @@ __protobuf__ = proto.module(
 
 class InitialPublishRequest(proto.Message):
     r"""The first request that must be sent on a newly-opened stream.
+
     Attributes:
         topic (str):
             The topic to which messages will be written.
@@ -47,11 +48,13 @@ class InitialPublishRequest(proto.Message):
 
 
 class InitialPublishResponse(proto.Message):
-    r"""Response to an InitialPublishRequest.    """
+    r"""Response to an InitialPublishRequest.
+    """
 
 
 class MessagePublishRequest(proto.Message):
     r"""Request to publish messages to the topic.
+
     Attributes:
         messages (Sequence[google.cloud.pubsublite_v1.types.PubSubMessage]):
             The messages to publish.
@@ -64,6 +67,7 @@ class MessagePublishRequest(proto.Message):
 
 class MessagePublishResponse(proto.Message):
     r"""Response to a MessagePublishRequest.
+
     Attributes:
         start_cursor (google.cloud.pubsublite_v1.types.Cursor):
             The cursor of the first published message in
@@ -77,11 +81,23 @@ class MessagePublishResponse(proto.Message):
 
 class PublishRequest(proto.Message):
     r"""Request sent from the client to the server on a stream.
+
+    This message has `oneof`_ fields (mutually exclusive fields).
+    For each oneof, at most one member field can be set at the same time.
+    Setting any member of the oneof automatically clears all other
+    members.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
     Attributes:
         initial_request (google.cloud.pubsublite_v1.types.InitialPublishRequest):
             Initial request on the stream.
+
+            This field is a member of `oneof`_ ``request_type``.
         message_publish_request (google.cloud.pubsublite_v1.types.MessagePublishRequest):
             Request to publish messages.
+
+            This field is a member of `oneof`_ ``request_type``.
     """
 
     initial_request = proto.Field(
@@ -94,11 +110,23 @@ class PublishRequest(proto.Message):
 
 class PublishResponse(proto.Message):
     r"""Response to a PublishRequest.
+
+    This message has `oneof`_ fields (mutually exclusive fields).
+    For each oneof, at most one member field can be set at the same time.
+    Setting any member of the oneof automatically clears all other
+    members.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
     Attributes:
         initial_response (google.cloud.pubsublite_v1.types.InitialPublishResponse):
             Initial response on the stream.
+
+            This field is a member of `oneof`_ ``response_type``.
         message_response (google.cloud.pubsublite_v1.types.MessagePublishResponse):
             Response to publishing messages.
+
+            This field is a member of `oneof`_ ``response_type``.
     """
 
     initial_response = proto.Field(

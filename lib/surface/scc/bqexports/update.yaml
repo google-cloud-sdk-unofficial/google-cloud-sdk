@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-  hidden: true
 
   help_text:
     brief: Update a Cloud Security Command Center BigQuery export.

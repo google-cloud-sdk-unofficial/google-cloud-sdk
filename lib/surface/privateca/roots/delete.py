@@ -124,6 +124,9 @@ class Delete(base.DeleteCommand):
     may be recovered with the `{parent_command} undelete` command within a grace
     period of 30 days.
 
+    Use the --skip-grace-period flag to delete as soon as possible without the
+    30-day grace period to undelete.
+
     Note that any user-managed KMS keys or Google Cloud Storage buckets
     will not be affected by this operation. You will need to delete the user-
     managed resources separately once the CA is deleted. Any Google-managed
@@ -157,6 +160,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     resource_args.AddCertAuthorityPositionalResourceArg(parser, 'to delete')
     flags_v1.AddIgnoreActiveCertificatesFlag(parser)
+    flags_v1.AddSkipGracePeriodFlag(parser)
 
   def Run(self, args):
     client = privateca_base.GetClientInstance(api_version='v1')
@@ -164,10 +168,18 @@ class Delete(base.DeleteCommand):
 
     ca_ref = args.CONCEPTS.certificate_authority.Parse()
 
-    if not console_io.PromptContinue(
-        message='You are about to delete a Certificate Authority [{}]'.format(
-            ca_ref.RelativeName()),
-        default=True):
+    if args.skip_grace_period:
+      prompt_message = (
+          'You are about to delete Certificate Authority [{}] as '
+          'soon as possible without a 30-day grace period where '
+          'undeletion would have been allowed. If you proceed, there '
+          'will be no way to recover this CA.').format(ca_ref.RelativeName())
+    else:
+      prompt_message = (
+          'You are about to delete Certificate Authority [{}]').format(
+              ca_ref.RelativeName())
+
+    if not console_io.PromptContinue(message=prompt_message, default=True):
       log.status.Print('Aborted by user.')
       return
 
@@ -186,6 +198,7 @@ class Delete(base.DeleteCommand):
         .PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesDeleteRequest(
             name=ca_ref.RelativeName(),
             ignoreActiveCertificates=args.ignore_active_certificates,
+            skipGracePeriod=args.skip_grace_period,
             requestId=request_utils.GenerateRequestId()))
 
     ca_response = operations.Await(
@@ -196,6 +209,10 @@ class Delete(base.DeleteCommand):
     formatted_expire_time = times.ParseDateTime(ca.expireTime).astimezone(
         tz.tzutc()).strftime('%Y-%m-%dT%H:%MZ')
 
-    log.status.Print(
-        'Deleted Root CA [{}]. CA can be undeleted until {}.'.format(
-            ca_ref.RelativeName(), formatted_expire_time))
+    if args.skip_grace_period:
+      log.status.Print('Deleted Root CA [{}]. CA can not be undeleted.'.format(
+          ca_ref.RelativeName()))
+    else:
+      log.status.Print(
+          'Deleted Root CA [{}]. CA can be undeleted until {}.'.format(
+              ca_ref.RelativeName(), formatted_expire_time))

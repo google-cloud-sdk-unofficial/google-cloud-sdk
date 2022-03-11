@@ -37,9 +37,9 @@ __protobuf__ = proto.module(
 
 
 class InitialCommitCursorRequest(proto.Message):
-    r"""The first streaming request that must be sent on a newly-
-    pened stream. The client must wait for the response before
-    sending subsequent requests on the stream.
+    r"""The first streaming request that must be sent on a
+    newly-opened stream. The client must wait for the response
+    before sending subsequent requests on the stream.
 
     Attributes:
         subscription (str):
@@ -56,7 +56,8 @@ class InitialCommitCursorRequest(proto.Message):
 
 
 class InitialCommitCursorResponse(proto.Message):
-    r"""Response to an InitialCommitCursorRequest.    """
+    r"""Response to an InitialCommitCursorRequest.
+    """
 
 
 class SequencedCommitCursorRequest(proto.Message):
@@ -73,6 +74,7 @@ class SequencedCommitCursorRequest(proto.Message):
 
 class SequencedCommitCursorResponse(proto.Message):
     r"""Response to a SequencedCommitCursorRequest.
+
     Attributes:
         acknowledged_commits (int):
             The number of outstanding
@@ -87,11 +89,23 @@ class SequencedCommitCursorResponse(proto.Message):
 
 class StreamingCommitCursorRequest(proto.Message):
     r"""A request sent from the client to the server on a stream.
+
+    This message has `oneof`_ fields (mutually exclusive fields).
+    For each oneof, at most one member field can be set at the same time.
+    Setting any member of the oneof automatically clears all other
+    members.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
     Attributes:
         initial (google.cloud.pubsublite_v1.types.InitialCommitCursorRequest):
             Initial request on the stream.
+
+            This field is a member of `oneof`_ ``request``.
         commit (google.cloud.pubsublite_v1.types.SequencedCommitCursorRequest):
             Request to commit a new cursor value.
+
+            This field is a member of `oneof`_ ``request``.
     """
 
     initial = proto.Field(
@@ -107,11 +121,23 @@ class StreamingCommitCursorRequest(proto.Message):
 
 class StreamingCommitCursorResponse(proto.Message):
     r"""Response to a StreamingCommitCursorRequest.
+
+    This message has `oneof`_ fields (mutually exclusive fields).
+    For each oneof, at most one member field can be set at the same time.
+    Setting any member of the oneof automatically clears all other
+    members.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
     Attributes:
         initial (google.cloud.pubsublite_v1.types.InitialCommitCursorResponse):
             Initial response on the stream.
+
+            This field is a member of `oneof`_ ``request``.
         commit (google.cloud.pubsublite_v1.types.SequencedCommitCursorResponse):
             Response to committing a new cursor value.
+
+            This field is a member of `oneof`_ ``request``.
     """
 
     initial = proto.Field(
@@ -127,6 +153,7 @@ class StreamingCommitCursorResponse(proto.Message):
 
 class CommitCursorRequest(proto.Message):
     r"""Request for CommitCursor.
+
     Attributes:
         subscription (str):
             The subscription for which to update the
@@ -145,11 +172,13 @@ class CommitCursorRequest(proto.Message):
 
 
 class CommitCursorResponse(proto.Message):
-    r"""Response for CommitCursor.    """
+    r"""Response for CommitCursor.
+    """
 
 
 class ListPartitionCursorsRequest(proto.Message):
     r"""Request for ListPartitionCursors.
+
     Attributes:
         parent (str):
             Required. The subscription for which to retrieve cursors.
@@ -177,6 +206,7 @@ class ListPartitionCursorsRequest(proto.Message):
 
 class PartitionCursor(proto.Message):
     r"""A pair of a Cursor and the partition it is for.
+
     Attributes:
         partition (int):
             The partition this is for.
@@ -190,6 +220,7 @@ class PartitionCursor(proto.Message):
 
 class ListPartitionCursorsResponse(proto.Message):
     r"""Response for ListPartitionCursors
+
     Attributes:
         partition_cursors (Sequence[google.cloud.pubsublite_v1.types.PartitionCursor]):
             The partition cursors from this request.

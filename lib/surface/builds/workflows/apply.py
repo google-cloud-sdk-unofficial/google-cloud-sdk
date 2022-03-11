@@ -69,7 +69,7 @@ class Create(base.CreateCommand):
     workflow.name = name
     update_operation = client.projects_locations_workflows.Patch(
         messages.CloudbuildProjectsLocationsWorkflowsPatchRequest(
-            workflow=workflow, allowMissing=True))
+            name=name, workflow=workflow, allowMissing=True))
 
     update_operation_ref = resources.REGISTRY.ParseRelativeName(
         update_operation.name,

@@ -20,6 +20,14 @@ _EXPEDITE_BATCH_REQUEST_RATIO = 0.5
 _MAX_INT64 = 0x7FFFFFFFFFFFFFFF
 
 
+def _clamp(val: int):
+    if val > _MAX_INT64:
+        return _MAX_INT64
+    if val < 0:
+        return 0
+    return val
+
+
 class _AggregateRequest:
     _request: FlowControlRequest.meta.pb
 
@@ -39,10 +47,13 @@ class _AggregateRequest:
         return self
 
     def to_optional(self) -> Optional[FlowControlRequest]:
-        if self._request.allowed_messages == 0 and self._request.allowed_bytes == 0:
+        allowed_messages = _clamp(self._request.allowed_messages)
+        allowed_bytes = _clamp(self._request.allowed_bytes)
+        if allowed_messages == 0 and allowed_bytes == 0:
             return None
         request = FlowControlRequest()
-        request._pb = self._request
+        request._pb.allowed_messages = allowed_messages
+        request._pb.allowed_bytes = allowed_bytes
         return request
 
 

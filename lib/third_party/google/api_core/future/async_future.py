@@ -24,6 +24,7 @@ from google.api_core.future import base
 
 class _OperationNotComplete(Exception):
     """Private exception used for polling via retry."""
+
     pass
 
 
@@ -42,8 +43,10 @@ class AsyncFuture(base.Future):
     The :meth:`done` method should be implemented by subclasses. The polling
     behavior will repeatedly call ``done`` until it returns True.
 
-    .. note: Privacy here is intended to prevent the final class from
-      overexposing, not to prevent subclasses from accessing methods.
+    .. note::
+
+        Privacy here is intended to prevent the final class from
+        overexposing, not to prevent subclasses from accessing methods.
 
     Args:
         retry (google.api_core.retry.Retry): The retry configuration used
@@ -145,7 +148,9 @@ class AsyncFuture(base.Future):
                 is complete.
         """
         if self._background_task is None:
-            self._background_task = asyncio.get_event_loop().create_task(self._blocking_poll())
+            self._background_task = asyncio.get_event_loop().create_task(
+                self._blocking_poll()
+            )
         self._future.add_done_callback(fn)
 
     def set_result(self, result):

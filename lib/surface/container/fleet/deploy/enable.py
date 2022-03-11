@@ -20,8 +20,8 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.services import enable_api
 from googlecloudsdk.calliope import base as gbase
-from googlecloudsdk.command_lib.container.hub.features import base
-from googlecloudsdk.command_lib.container.hub.features import info
+from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.features import info
 
 
 @gbase.Hidden

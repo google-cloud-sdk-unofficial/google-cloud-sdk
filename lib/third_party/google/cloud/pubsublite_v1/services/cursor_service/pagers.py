@@ -15,13 +15,13 @@
 #
 from typing import (
     Any,
-    AsyncIterable,
+    AsyncIterator,
     Awaitable,
     Callable,
-    Iterable,
     Sequence,
     Tuple,
     Optional,
+    Iterator,
 )
 
 from google.cloud.pubsublite_v1.types import cursor
@@ -74,14 +74,14 @@ class ListPartitionCursorsPager:
         return getattr(self._response, name)
 
     @property
-    def pages(self) -> Iterable[cursor.ListPartitionCursorsResponse]:
+    def pages(self) -> Iterator[cursor.ListPartitionCursorsResponse]:
         yield self._response
         while self._response.next_page_token:
             self._request.page_token = self._response.next_page_token
             self._response = self._method(self._request, metadata=self._metadata)
             yield self._response
 
-    def __iter__(self) -> Iterable[cursor.PartitionCursor]:
+    def __iter__(self) -> Iterator[cursor.PartitionCursor]:
         for page in self.pages:
             yield from page.partition_cursors
 
@@ -136,14 +136,14 @@ class ListPartitionCursorsAsyncPager:
         return getattr(self._response, name)
 
     @property
-    async def pages(self) -> AsyncIterable[cursor.ListPartitionCursorsResponse]:
+    async def pages(self) -> AsyncIterator[cursor.ListPartitionCursorsResponse]:
         yield self._response
         while self._response.next_page_token:
             self._request.page_token = self._response.next_page_token
             self._response = await self._method(self._request, metadata=self._metadata)
             yield self._response
 
-    def __aiter__(self) -> AsyncIterable[cursor.PartitionCursor]:
+    def __aiter__(self) -> AsyncIterator[cursor.PartitionCursor]:
         async def async_generator():
             async for page in self.pages:
                 for response in page.partition_cursors:

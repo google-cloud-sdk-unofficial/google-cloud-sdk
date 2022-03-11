@@ -76,6 +76,15 @@ class Create(base.Command):
               ' the bucket. If not specified, the default storage class'
               ' used by Cloud Storage is "Standard".'))
     parser.add_argument(
+        '--default-encryption-key',
+        '-k',
+        type=str,
+        help=(
+            'Set the default KMS key using the full path to the key, which '
+            'has the following form: '
+            '``projects/[project-id]/locations/[location]/keyRings/[key-ring]/cryptoKeys/[my-key]\'\'.'
+        ))
+    parser.add_argument(
         '--retention-period',
         help='Minimum [retention period](https://cloud.google.com'
         '/storage/docs/bucket-lock#retention-periods)'

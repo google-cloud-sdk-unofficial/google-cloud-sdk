@@ -12,14 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command to enable Service Mesh Feature."""
+"""The command to enable Anthos Observability Feature."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base as gbase
-from googlecloudsdk.command_lib.container.hub.features import base
+from googlecloudsdk.command_lib.container.fleet.features import base
 
 
 @gbase.Hidden

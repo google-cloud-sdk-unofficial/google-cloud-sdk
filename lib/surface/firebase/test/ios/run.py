@@ -138,7 +138,7 @@ class Run(base.ListCommand):
     bucket_ops = results_bucket.ResultsBucketOps(project, args.results_bucket,
                                                  args.results_dir, tr_client,
                                                  tr_messages, storage_client)
-    if getattr(args, 'app', None):
+    if args.app:
       bucket_ops.UploadFileToGcs(args.app, _IPA_MIME_TYPE)
     if args.test:
       bucket_ops.UploadFileToGcs(args.test, 'application/zip')

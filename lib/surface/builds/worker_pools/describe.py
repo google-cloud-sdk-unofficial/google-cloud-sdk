@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet.build import utils
-from googlecloudsdk.command_lib.container.hub.features import base as hubbase
+from googlecloudsdk.command_lib.container.fleet.features import base as hubbase
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources

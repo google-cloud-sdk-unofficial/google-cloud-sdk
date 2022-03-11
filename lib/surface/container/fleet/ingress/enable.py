@@ -23,8 +23,8 @@ import textwrap
 import time
 
 from googlecloudsdk.api_lib.services import enable_api
-from googlecloudsdk.command_lib.container.hub.features import base
-from googlecloudsdk.command_lib.container.hub.features import info
+from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.features import info
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker

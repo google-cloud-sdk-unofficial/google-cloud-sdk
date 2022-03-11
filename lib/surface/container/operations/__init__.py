@@ -27,6 +27,8 @@ from googlecloudsdk.core import log
 class Operations(base.Group):
   """Get and list operations for Google Kubernetes Engine clusters."""
 
+  category = base.COMPUTE_CATEGORY
+
   @staticmethod
   def Args(parser):
     """Add arguments to the parser.

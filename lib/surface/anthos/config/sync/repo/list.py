@@ -40,9 +40,11 @@ class List(base.Command):
   detailed_help = {
       'PREREQUISITES':
           """
-       Please setup Connect Gateway for the registered clusters in order to
-       use this command. The instructions can be found at
+       Please setup Connect Gateway if your registered clusters are non-GKE
+       clusters. The instructions can be found at
        https://cloud.google.com/anthos/multicluster-management/gateway/setup.
+       For registered clusters that are GKE clusters, no need to setup the Connect
+       Gateway.
           """,
       'EXAMPLES':
           """

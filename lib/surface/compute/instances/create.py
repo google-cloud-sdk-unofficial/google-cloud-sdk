@@ -23,6 +23,7 @@ import re
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.api_lib.compute import instance_utils
+from googlecloudsdk.api_lib.compute import kms_utils
 from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.instances.create import utils as create_utils
@@ -106,7 +107,8 @@ def _CommonArgs(parser,
                 support_host_error_timeout_seconds=False,
                 support_numa_node_count=False,
                 support_disk_architecture=False,
-                support_network_queue_count=False):
+                support_network_queue_count=False,
+                support_instance_kms=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
@@ -150,9 +152,7 @@ def _CommonArgs(parser,
   instances_flags.AddPrivateNetworkIpArgs(parser)
   instances_flags.AddHostnameArg(parser)
   instances_flags.AddImageArgs(
-      parser,
-      enable_snapshots=True,
-      support_image_family_scope=True)
+      parser, enable_snapshots=True, support_image_family_scope=True)
   instances_flags.AddDeletionProtectionFlag(parser)
   instances_flags.AddPublicPtrArgs(parser, instance=True)
   instances_flags.AddIpv6PublicPtrDomainArg(parser)
@@ -207,6 +207,9 @@ def _CommonArgs(parser,
   if support_host_error_timeout_seconds:
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
 
+  if support_instance_kms:
+    instances_flags.AddInstanceKmsArgs(parser)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
@@ -236,6 +239,7 @@ class Create(base.CreateCommand):
   _support_visible_core_count = False
   _support_disk_architecture = False
   _support_network_queue_count = False
+  _support_instance_kms = False
 
   @classmethod
   def Args(cls, parser):
@@ -250,7 +254,8 @@ class Create(base.CreateCommand):
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
-        support_disk_architecture=cls._support_disk_architecture)
+        support_disk_architecture=cls._support_disk_architecture,
+        support_instance_kms=cls._support_instance_kms)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -408,6 +413,13 @@ class Create(base.CreateCommand):
           serviceAccounts=project_to_sa[instance_ref.project],
           scheduling=scheduling,
           tags=tags)
+
+      if self._support_instance_kms and args.CONCEPTS.instance_kms_key:
+        instance.instanceEncryptionKey = kms_utils.MaybeGetKmsKey(
+            args,
+            compute_client.messages,
+            instance.instanceEncryptionKey,
+            instance_prefix=True)
 
       if self._support_secure_tag and args.secure_tags:
         instance.secureTags = secure_tags_utils.GetSecureTags(args.secure_tags)
@@ -614,6 +626,7 @@ class CreateBeta(Create):
   _support_numa_node_count = False
   _support_disk_architecture = False
   _support_network_queue_count = False
+  _support_instance_kms = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -645,7 +658,8 @@ class CreateBeta(Create):
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
-        support_disk_architecture=cls._support_disk_architecture)
+        support_disk_architecture=cls._support_disk_architecture,
+        support_instance_kms=cls._support_instance_kms)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -688,6 +702,7 @@ class CreateAlpha(CreateBeta):
   _support_visible_core_count = True
   _support_disk_architecture = True
   _support_network_queue_count = True
+  _support_instance_kms = True
 
   @classmethod
   def Args(cls, parser):
@@ -707,7 +722,8 @@ class CreateAlpha(CreateBeta):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
         support_disk_architecture=cls._support_disk_architecture,
-        support_network_queue_count=cls._support_network_queue_count)
+        support_network_queue_count=cls._support_network_queue_count,
+        support_instance_kms=cls._support_instance_kms)
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())

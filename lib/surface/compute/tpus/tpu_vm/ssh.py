@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 import argparse
 import os.path
+import sys
 import threading
 
 from googlecloudsdk.calliope import base
@@ -221,6 +222,7 @@ class Ssh(base.Command):
                        'to {}'.format(output_directory_path))
 
     ssh_threads = []
+    exit_statuses = [None] * len(worker_ips)
     for worker, ips in worker_ips.items():
       identity_file = None
       options = None
@@ -255,11 +257,24 @@ class Ssh(base.Command):
         ssh_threads.append(
             threading.Thread(
                 target=tpu_ssh_utils.AttemptRunWithRetries,
-                args=('SSH', worker, cmd, ssh_helper.env, output_file_writer,
-                      True, SSHRunCmd)))
+                args=('SSH', worker, exit_statuses, cmd, ssh_helper.env,
+                      output_file_writer, True, SSHRunCmd)))
         ssh_threads[-1].start()
       else:
         # Run on a single worker.
-        tpu_ssh_utils.AttemptRunWithRetries('SSH', worker, cmd, ssh_helper.env,
-                                            output_file_writer, False,
-                                            SSHRunCmd)
+        tpu_ssh_utils.AttemptRunWithRetries('SSH', worker, exit_statuses, cmd,
+                                            ssh_helper.env, output_file_writer,
+                                            False, SSHRunCmd)
+
+    if len(worker_ips) > 1:
+      # Wait for all the threads to complete.
+      for i in range(len(ssh_threads)):
+        ssh_threads[i].join()
+
+      # Exit with a nonzero code, if there are any.
+      # This ensures that if any command failed on a worker, we don't end up
+      # returning 0 for a value.
+      for status in exit_statuses:
+        if status:
+          sys.exit(status)
+

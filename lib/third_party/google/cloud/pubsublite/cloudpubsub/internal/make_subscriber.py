@@ -18,6 +18,10 @@ from uuid import uuid4
 from google.api_core.client_options import ClientOptions
 from google.auth.credentials import Credentials
 
+from google.cloud.pubsublite.cloudpubsub.reassignment_handler import (
+    ReassignmentHandler,
+    DefaultReassignmentHandler,
+)
 from google.cloud.pubsublite.cloudpubsub.message_transforms import (
     to_cps_subscribe_message,
     add_id_to_cps_subscribe_transformer,
@@ -179,6 +183,7 @@ def make_async_subscriber(
     transport: str,
     per_partition_flow_control_settings: FlowControlSettings,
     nack_handler: Optional[NackHandler] = None,
+    reassignment_handler: Optional[ReassignmentHandler] = None,
     message_transformer: Optional[MessageTransformer] = None,
     fixed_partitions: Optional[Set[Partition]] = None,
     credentials: Optional[Credentials] = None,
@@ -218,6 +223,8 @@ def make_async_subscriber(
 
     if nack_handler is None:
         nack_handler = DefaultNackHandler()
+    if reassignment_handler is None:
+        reassignment_handler = DefaultReassignmentHandler()
     if message_transformer is None:
         message_transformer = MessageTransformer.of_callable(to_cps_subscribe_message)
     partition_subscriber_factory = _make_partition_subscriber_factory(
@@ -230,4 +237,6 @@ def make_async_subscriber(
         nack_handler,
         message_transformer,
     )
-    return AssigningSingleSubscriber(assigner_factory, partition_subscriber_factory)
+    return AssigningSingleSubscriber(
+        assigner_factory, partition_subscriber_factory, reassignment_handler
+    )

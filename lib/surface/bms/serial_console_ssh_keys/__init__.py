@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SerialConsoleSshKeys(base.Group):
   """Manage interactive serial console SSH keys in Bare Metal Solution."""

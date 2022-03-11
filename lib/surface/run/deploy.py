@@ -91,16 +91,16 @@ class Deploy(base.Command):
           """\
           To deploy a container to the service `my-backend` on Cloud Run:
 
-              $ {command} my-backend --image=gcr.io/my/image
+              $ {command} my-backend --image=us-docker.pkg.dev/project/image
 
           You may also omit the service name. Then a prompt will be displayed
           with a suggested default value:
 
-              $ {command} --image=gcr.io/my/image
+              $ {command} --image=us-docker.pkg.dev/project/image
 
           To deploy to Cloud Run on Kubernetes Engine, you need to specify a cluster:
 
-              $ {command} --image=gcr.io/my/image --cluster=my-cluster
+              $ {command} --image=us-docker.pkg.dev/project/image --cluster=my-cluster
           """,
   }
 

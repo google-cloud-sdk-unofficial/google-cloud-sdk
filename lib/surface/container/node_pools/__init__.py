@@ -27,6 +27,8 @@ from googlecloudsdk.core import log
 class NodePools(base.Group):
   """Create and delete operations for Google Kubernetes Engine node pools."""
 
+  category = base.COMPUTE_CATEGORY
+
   @staticmethod
   def Args(parser):
     """Add arguments to the parser.

@@ -791,6 +791,7 @@ class UpdateBeta(Update):
     flags.AddEnableImageStreamingFlag(group)
     flags.AddMaintenanceIntervalFlag(group)
     flags.AddDataplaneV2Flag(group, hidden=True)
+    flags.AddWorkloadConfigAuditFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -878,6 +879,7 @@ class UpdateBeta(Update):
     opts.enable_image_streaming = args.enable_image_streaming
     opts.maintenance_interval = args.maintenance_interval
     opts.dataplane_v2 = args.enable_dataplane_v2
+    opts.enable_workload_config_audit = args.enable_workload_config_audit
     return opts
 
 
@@ -956,6 +958,7 @@ class UpdateAlpha(Update):
     flags.AddEnableImageStreamingFlag(group)
     flags.AddMaintenanceIntervalFlag(group)
     flags.AddDataplaneV2Flag(group, hidden=True)
+    flags.AddWorkloadConfigAuditFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1039,4 +1042,5 @@ class UpdateAlpha(Update):
     opts.enable_image_streaming = args.enable_image_streaming
     opts.maintenance_interval = args.maintenance_interval
     opts.dataplane_v2 = args.enable_dataplane_v2
+    opts.enable_workload_config_audit = args.enable_workload_config_audit
     return opts

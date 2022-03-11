@@ -26,6 +26,8 @@ from googlecloudsdk.calliope import base
 class Images(base.Group):
   """List and manipulate Google Container Registry images."""
 
+  category = base.COMPUTE_CATEGORY
+
   @staticmethod
   def Args(parser):
     """Add arguments to the parser.

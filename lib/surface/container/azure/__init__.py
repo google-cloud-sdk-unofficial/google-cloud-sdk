@@ -26,3 +26,5 @@ from googlecloudsdk.command_lib.projects import util
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Azure(base.Group):
   """Deploy and manage clusters of machines on Azure for running containers."""
+
+  category = base.COMPUTE_CATEGORY

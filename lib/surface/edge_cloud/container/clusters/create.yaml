@@ -78,7 +78,25 @@
         Username (Google email address) of the user who should be granted
         cluster-admin initially. This currently supports exactly one admin. If not
         set, the account issuing the creation request will be used by default.
-
+    - arg_name: maintenance-window-start
+      api_field: cluster.maintenancePolicy.window.recurringWindow.window.startTime
+      repeated: false
+      help_text: |
+        Start time of the recurring cluster maintenance window in the [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt)
+        format. E.g. "2021-01-01T00:00:00Z" or "2021-01-01T00:00:00-05:00"
+    - arg_name: maintenance-window-end
+      api_field: cluster.maintenancePolicy.window.recurringWindow.window.endTime
+      repeated: false
+      help_text: |
+        End time of the recurring cluster maintenance window in the [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt)
+        format. E.g. "2021-01-01T00:00:00Z" or "2021-01-01T00:00:00-05:00"
+    - arg_name: maintenance-window-recurrence
+      api_field: cluster.maintenancePolicy.window.recurringWindow.recurrence
+      repeated: false
+      help_text: |
+        An [RFC 5545](https://tools.ietf.org/html/rfc5545#section-3.8.5.3)
+        recurrence rule for how the cluster maintenance window recurs. They go
+        on for the span of time between the start and the end time.
     labels:
       api_field: cluster.labels
 

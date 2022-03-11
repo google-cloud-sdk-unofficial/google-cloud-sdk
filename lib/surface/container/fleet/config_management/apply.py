@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.container.fleet.config_management import utils
-from googlecloudsdk.command_lib.container.hub.features import base
+from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_io
@@ -137,7 +137,7 @@ def _validate_meta(configmanagement):
     raise exceptions.Error(
         'Only "applySpecVersion: 1" is supported. To use a later version,'
         'please fetch the config by running\n'
-        'gcloud container hub config-management fetch-for-apply')
+        'gcloud container fleet config-management fetch-for-apply')
 
   if 'spec' not in configmanagement:
     raise exceptions.Error('Missing required field .spec')

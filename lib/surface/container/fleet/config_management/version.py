@@ -18,9 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.hub import util
+from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.hub.features import base as feature_base
+from googlecloudsdk.command_lib.container.fleet.features import base as feature_base
 
 NA = 'NA'
 

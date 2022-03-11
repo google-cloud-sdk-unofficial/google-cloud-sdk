@@ -16,15 +16,20 @@
 from collections import OrderedDict
 import functools
 import re
-from typing import Dict, Sequence, Tuple, Type, Union
+from typing import Dict, Optional, Sequence, Tuple, Type, Union
 import pkg_resources
 
-import google.api_core.client_options as ClientOptions  # type: ignore
-from google.api_core import exceptions as core_exceptions  # type: ignore
-from google.api_core import gapic_v1  # type: ignore
-from google.api_core import retry as retries  # type: ignore
+from google.api_core.client_options import ClientOptions
+from google.api_core import exceptions as core_exceptions
+from google.api_core import gapic_v1
+from google.api_core import retry as retries
 from google.auth import credentials as ga_credentials  # type: ignore
 from google.oauth2 import service_account  # type: ignore
+
+try:
+    OptionalRetry = Union[retries.Retry, gapic_v1.method._MethodDefault]
+except AttributeError:  # pragma: NO COVER
+    OptionalRetry = Union[retries.Retry, object]  # type: ignore
 
 from google.api_core import operation  # type: ignore
 from google.api_core import operation_async  # type: ignore
@@ -108,6 +113,42 @@ class AdminServiceAsyncClient:
 
     from_service_account_json = from_service_account_file
 
+    @classmethod
+    def get_mtls_endpoint_and_cert_source(
+        cls, client_options: Optional[ClientOptions] = None
+    ):
+        """Return the API endpoint and client cert source for mutual TLS.
+
+        The client cert source is determined in the following order:
+        (1) if `GOOGLE_API_USE_CLIENT_CERTIFICATE` environment variable is not "true", the
+        client cert source is None.
+        (2) if `client_options.client_cert_source` is provided, use the provided one; if the
+        default client cert source exists, use the default one; otherwise the client cert
+        source is None.
+
+        The API endpoint is determined in the following order:
+        (1) if `client_options.api_endpoint` if provided, use the provided one.
+        (2) if `GOOGLE_API_USE_CLIENT_CERTIFICATE` environment variable is "always", use the
+        default mTLS endpoint; if the environment variabel is "never", use the default API
+        endpoint; otherwise if client cert source exists, use the default mTLS endpoint, otherwise
+        use the default API endpoint.
+
+        More details can be found at https://google.aip.dev/auth/4114.
+
+        Args:
+            client_options (google.api_core.client_options.ClientOptions): Custom options for the
+                client. Only the `api_endpoint` and `client_cert_source` properties may be used
+                in this method.
+
+        Returns:
+            Tuple[str, Callable[[], Tuple[bytes, bytes]]]: returns the API endpoint and the
+                client cert source to use.
+
+        Raises:
+            google.auth.exceptions.MutualTLSChannelError: If any errors happen.
+        """
+        return AdminServiceClient.get_mtls_endpoint_and_cert_source(client_options)  # type: ignore
+
     @property
     def transport(self) -> AdminServiceTransport:
         """Returns the transport used by the client instance.
@@ -170,19 +211,19 @@ class AdminServiceAsyncClient:
 
     async def create_topic(
         self,
-        request: admin.CreateTopicRequest = None,
+        request: Union[admin.CreateTopicRequest, dict] = None,
         *,
         parent: str = None,
         topic: common.Topic = None,
         topic_id: str = None,
-        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> common.Topic:
         r"""Creates a new topic.
 
         Args:
-            request (:class:`google.cloud.pubsublite_v1.types.CreateTopicRequest`):
+            request (Union[google.cloud.pubsublite_v1.types.CreateTopicRequest, dict]):
                 The request object. Request for CreateTopic.
             parent (:class:`str`):
                 Required. The parent location in which to create the
@@ -219,7 +260,7 @@ class AdminServiceAsyncClient:
                 Metadata about a topic resource.
         """
         # Create or coerce a protobuf request object.
-        # Sanity check: If we got a request object, we should *not* have
+        # Quick check: If we got a request object, we should *not* have
         # gotten any keyword arguments that map to the request.
         has_flattened_params = any([parent, topic, topic_id])
         if request is not None and has_flattened_params:
@@ -261,17 +302,17 @@ class AdminServiceAsyncClient:
 
     async def get_topic(
         self,
-        request: admin.GetTopicRequest = None,
+        request: Union[admin.GetTopicRequest, dict] = None,
         *,
         name: str = None,
-        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> common.Topic:
         r"""Returns the topic configuration.
 
         Args:
-            request (:class:`google.cloud.pubsublite_v1.types.GetTopicRequest`):
+            request (Union[google.cloud.pubsublite_v1.types.GetTopicRequest, dict]):
                 The request object. Request for GetTopic.
             name (:class:`str`):
                 Required. The name of the topic whose
@@ -291,7 +332,7 @@ class AdminServiceAsyncClient:
                 Metadata about a topic resource.
         """
         # Create or coerce a protobuf request object.
-        # Sanity check: If we got a request object, we should *not* have
+        # Quick check: If we got a request object, we should *not* have
         # gotten any keyword arguments that map to the request.
         has_flattened_params = any([name])
         if request is not None and has_flattened_params:
@@ -329,10 +370,10 @@ class AdminServiceAsyncClient:
 
     async def get_topic_partitions(
         self,
-        request: admin.GetTopicPartitionsRequest = None,
+        request: Union[admin.GetTopicPartitionsRequest, dict] = None,
         *,
         name: str = None,
-        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> admin.TopicPartitions:
@@ -340,7 +381,7 @@ class AdminServiceAsyncClient:
         topic.
 
         Args:
-            request (:class:`google.cloud.pubsublite_v1.types.GetTopicPartitionsRequest`):
+            request (Union[google.cloud.pubsublite_v1.types.GetTopicPartitionsRequest, dict]):
                 The request object. Request for GetTopicPartitions.
             name (:class:`str`):
                 Required. The topic whose partition
@@ -360,7 +401,7 @@ class AdminServiceAsyncClient:
                 Response for GetTopicPartitions.
         """
         # Create or coerce a protobuf request object.
-        # Sanity check: If we got a request object, we should *not* have
+        # Quick check: If we got a request object, we should *not* have
         # gotten any keyword arguments that map to the request.
         has_flattened_params = any([name])
         if request is not None and has_flattened_params:
@@ -398,17 +439,17 @@ class AdminServiceAsyncClient:
 
     async def list_topics(
         self,
-        request: admin.ListTopicsRequest = None,
+        request: Union[admin.ListTopicsRequest, dict] = None,
         *,
         parent: str = None,
-        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> pagers.ListTopicsAsyncPager:
         r"""Returns the list of topics for the given project.
 
         Args:
-            request (:class:`google.cloud.pubsublite_v1.types.ListTopicsRequest`):
+            request (Union[google.cloud.pubsublite_v1.types.ListTopicsRequest, dict]):
                 The request object. Request for ListTopics.
             parent (:class:`str`):
                 Required. The parent whose topics are to be listed.
@@ -433,7 +474,7 @@ class AdminServiceAsyncClient:
 
         """
         # Create or coerce a protobuf request object.
-        # Sanity check: If we got a request object, we should *not* have
+        # Quick check: If we got a request object, we should *not* have
         # gotten any keyword arguments that map to the request.
         has_flattened_params = any([parent])
         if request is not None and has_flattened_params:
@@ -477,18 +518,18 @@ class AdminServiceAsyncClient:
 
     async def update_topic(
         self,
-        request: admin.UpdateTopicRequest = None,
+        request: Union[admin.UpdateTopicRequest, dict] = None,
         *,
         topic: common.Topic = None,
         update_mask: field_mask_pb2.FieldMask = None,
-        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> common.Topic:
         r"""Updates properties of the specified topic.
 
         Args:
-            request (:class:`google.cloud.pubsublite_v1.types.UpdateTopicRequest`):
+            request (Union[google.cloud.pubsublite_v1.types.UpdateTopicRequest, dict]):
                 The request object. Request for UpdateTopic.
             topic (:class:`google.cloud.pubsublite_v1.types.Topic`):
                 Required. The topic to update. Its ``name`` field must
@@ -515,7 +556,7 @@ class AdminServiceAsyncClient:
                 Metadata about a topic resource.
         """
         # Create or coerce a protobuf request object.
-        # Sanity check: If we got a request object, we should *not* have
+        # Quick check: If we got a request object, we should *not* have
         # gotten any keyword arguments that map to the request.
         has_flattened_params = any([topic, update_mask])
         if request is not None and has_flattened_params:
@@ -557,17 +598,17 @@ class AdminServiceAsyncClient:
 
     async def delete_topic(
         self,
-        request: admin.DeleteTopicRequest = None,
+        request: Union[admin.DeleteTopicRequest, dict] = None,
         *,
         name: str = None,
-        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> None:
         r"""Deletes the specified topic.
 
         Args:
-            request (:class:`google.cloud.pubsublite_v1.types.DeleteTopicRequest`):
+            request (Union[google.cloud.pubsublite_v1.types.DeleteTopicRequest, dict]):
                 The request object. Request for DeleteTopic.
             name (:class:`str`):
                 Required. The name of the topic to
@@ -583,7 +624,7 @@ class AdminServiceAsyncClient:
                 sent along with the request as metadata.
         """
         # Create or coerce a protobuf request object.
-        # Sanity check: If we got a request object, we should *not* have
+        # Quick check: If we got a request object, we should *not* have
         # gotten any keyword arguments that map to the request.
         has_flattened_params = any([name])
         if request is not None and has_flattened_params:
@@ -620,10 +661,10 @@ class AdminServiceAsyncClient:
 
     async def list_topic_subscriptions(
         self,
-        request: admin.ListTopicSubscriptionsRequest = None,
+        request: Union[admin.ListTopicSubscriptionsRequest, dict] = None,
         *,
         name: str = None,
-        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> pagers.ListTopicSubscriptionsAsyncPager:
@@ -631,7 +672,7 @@ class AdminServiceAsyncClient:
         topic.
 
         Args:
-            request (:class:`google.cloud.pubsublite_v1.types.ListTopicSubscriptionsRequest`):
+            request (Union[google.cloud.pubsublite_v1.types.ListTopicSubscriptionsRequest, dict]):
                 The request object. Request for ListTopicSubscriptions.
             name (:class:`str`):
                 Required. The name of the topic whose
@@ -655,7 +696,7 @@ class AdminServiceAsyncClient:
 
         """
         # Create or coerce a protobuf request object.
-        # Sanity check: If we got a request object, we should *not* have
+        # Quick check: If we got a request object, we should *not* have
         # gotten any keyword arguments that map to the request.
         has_flattened_params = any([name])
         if request is not None and has_flattened_params:
@@ -699,19 +740,19 @@ class AdminServiceAsyncClient:
 
     async def create_subscription(
         self,
-        request: admin.CreateSubscriptionRequest = None,
+        request: Union[admin.CreateSubscriptionRequest, dict] = None,
         *,
         parent: str = None,
         subscription: common.Subscription = None,
         subscription_id: str = None,
-        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> common.Subscription:
         r"""Creates a new subscription.
 
         Args:
-            request (:class:`google.cloud.pubsublite_v1.types.CreateSubscriptionRequest`):
+            request (Union[google.cloud.pubsublite_v1.types.CreateSubscriptionRequest, dict]):
                 The request object. Request for CreateSubscription.
             parent (:class:`str`):
                 Required. The parent location in which to create the
@@ -750,7 +791,7 @@ class AdminServiceAsyncClient:
 
         """
         # Create or coerce a protobuf request object.
-        # Sanity check: If we got a request object, we should *not* have
+        # Quick check: If we got a request object, we should *not* have
         # gotten any keyword arguments that map to the request.
         has_flattened_params = any([parent, subscription, subscription_id])
         if request is not None and has_flattened_params:
@@ -792,17 +833,17 @@ class AdminServiceAsyncClient:
 
     async def get_subscription(
         self,
-        request: admin.GetSubscriptionRequest = None,
+        request: Union[admin.GetSubscriptionRequest, dict] = None,
         *,
         name: str = None,
-        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> common.Subscription:
         r"""Returns the subscription configuration.
 
         Args:
-            request (:class:`google.cloud.pubsublite_v1.types.GetSubscriptionRequest`):
+            request (Union[google.cloud.pubsublite_v1.types.GetSubscriptionRequest, dict]):
                 The request object. Request for GetSubscription.
             name (:class:`str`):
                 Required. The name of the
@@ -825,7 +866,7 @@ class AdminServiceAsyncClient:
 
         """
         # Create or coerce a protobuf request object.
-        # Sanity check: If we got a request object, we should *not* have
+        # Quick check: If we got a request object, we should *not* have
         # gotten any keyword arguments that map to the request.
         has_flattened_params = any([name])
         if request is not None and has_flattened_params:
@@ -863,10 +904,10 @@ class AdminServiceAsyncClient:
 
     async def list_subscriptions(
         self,
-        request: admin.ListSubscriptionsRequest = None,
+        request: Union[admin.ListSubscriptionsRequest, dict] = None,
         *,
         parent: str = None,
-        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> pagers.ListSubscriptionsAsyncPager:
@@ -874,7 +915,7 @@ class AdminServiceAsyncClient:
         project.
 
         Args:
-            request (:class:`google.cloud.pubsublite_v1.types.ListSubscriptionsRequest`):
+            request (Union[google.cloud.pubsublite_v1.types.ListSubscriptionsRequest, dict]):
                 The request object. Request for ListSubscriptions.
             parent (:class:`str`):
                 Required. The parent whose subscriptions are to be
@@ -899,7 +940,7 @@ class AdminServiceAsyncClient:
 
         """
         # Create or coerce a protobuf request object.
-        # Sanity check: If we got a request object, we should *not* have
+        # Quick check: If we got a request object, we should *not* have
         # gotten any keyword arguments that map to the request.
         has_flattened_params = any([parent])
         if request is not None and has_flattened_params:
@@ -943,18 +984,18 @@ class AdminServiceAsyncClient:
 
     async def update_subscription(
         self,
-        request: admin.UpdateSubscriptionRequest = None,
+        request: Union[admin.UpdateSubscriptionRequest, dict] = None,
         *,
         subscription: common.Subscription = None,
         update_mask: field_mask_pb2.FieldMask = None,
-        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> common.Subscription:
         r"""Updates properties of the specified subscription.
 
         Args:
-            request (:class:`google.cloud.pubsublite_v1.types.UpdateSubscriptionRequest`):
+            request (Union[google.cloud.pubsublite_v1.types.UpdateSubscriptionRequest, dict]):
                 The request object. Request for UpdateSubscription.
             subscription (:class:`google.cloud.pubsublite_v1.types.Subscription`):
                 Required. The subscription to update. Its ``name`` field
@@ -983,7 +1024,7 @@ class AdminServiceAsyncClient:
 
         """
         # Create or coerce a protobuf request object.
-        # Sanity check: If we got a request object, we should *not* have
+        # Quick check: If we got a request object, we should *not* have
         # gotten any keyword arguments that map to the request.
         has_flattened_params = any([subscription, update_mask])
         if request is not None and has_flattened_params:
@@ -1025,17 +1066,17 @@ class AdminServiceAsyncClient:
 
     async def delete_subscription(
         self,
-        request: admin.DeleteSubscriptionRequest = None,
+        request: Union[admin.DeleteSubscriptionRequest, dict] = None,
         *,
         name: str = None,
-        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> None:
         r"""Deletes the specified subscription.
 
         Args:
-            request (:class:`google.cloud.pubsublite_v1.types.DeleteSubscriptionRequest`):
+            request (Union[google.cloud.pubsublite_v1.types.DeleteSubscriptionRequest, dict]):
                 The request object. Request for DeleteSubscription.
             name (:class:`str`):
                 Required. The name of the
@@ -1051,7 +1092,7 @@ class AdminServiceAsyncClient:
                 sent along with the request as metadata.
         """
         # Create or coerce a protobuf request object.
-        # Sanity check: If we got a request object, we should *not* have
+        # Quick check: If we got a request object, we should *not* have
         # gotten any keyword arguments that map to the request.
         has_flattened_params = any([name])
         if request is not None and has_flattened_params:
@@ -1088,9 +1129,9 @@ class AdminServiceAsyncClient:
 
     async def seek_subscription(
         self,
-        request: admin.SeekSubscriptionRequest = None,
+        request: Union[admin.SeekSubscriptionRequest, dict] = None,
         *,
-        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> operation_async.AsyncOperation:
@@ -1123,7 +1164,7 @@ class AdminServiceAsyncClient:
         supersede it.
 
         Args:
-            request (:class:`google.cloud.pubsublite_v1.types.SeekSubscriptionRequest`):
+            request (Union[google.cloud.pubsublite_v1.types.SeekSubscriptionRequest, dict]):
                 The request object. Request for SeekSubscription.
             retry (google.api_core.retry.Retry): Designation of what errors, if any,
                 should be retried.
@@ -1173,19 +1214,19 @@ class AdminServiceAsyncClient:
 
     async def create_reservation(
         self,
-        request: admin.CreateReservationRequest = None,
+        request: Union[admin.CreateReservationRequest, dict] = None,
         *,
         parent: str = None,
         reservation: common.Reservation = None,
         reservation_id: str = None,
-        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> common.Reservation:
         r"""Creates a new reservation.
 
         Args:
-            request (:class:`google.cloud.pubsublite_v1.types.CreateReservationRequest`):
+            request (Union[google.cloud.pubsublite_v1.types.CreateReservationRequest, dict]):
                 The request object. Request for CreateReservation.
             parent (:class:`str`):
                 Required. The parent location in which to create the
@@ -1224,7 +1265,7 @@ class AdminServiceAsyncClient:
 
         """
         # Create or coerce a protobuf request object.
-        # Sanity check: If we got a request object, we should *not* have
+        # Quick check: If we got a request object, we should *not* have
         # gotten any keyword arguments that map to the request.
         has_flattened_params = any([parent, reservation, reservation_id])
         if request is not None and has_flattened_params:
@@ -1266,17 +1307,17 @@ class AdminServiceAsyncClient:
 
     async def get_reservation(
         self,
-        request: admin.GetReservationRequest = None,
+        request: Union[admin.GetReservationRequest, dict] = None,
         *,
         name: str = None,
-        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> common.Reservation:
         r"""Returns the reservation configuration.
 
         Args:
-            request (:class:`google.cloud.pubsublite_v1.types.GetReservationRequest`):
+            request (Union[google.cloud.pubsublite_v1.types.GetReservationRequest, dict]):
                 The request object. Request for GetReservation.
             name (:class:`str`):
                 Required. The name of the reservation whose
@@ -1299,7 +1340,7 @@ class AdminServiceAsyncClient:
 
         """
         # Create or coerce a protobuf request object.
-        # Sanity check: If we got a request object, we should *not* have
+        # Quick check: If we got a request object, we should *not* have
         # gotten any keyword arguments that map to the request.
         has_flattened_params = any([name])
         if request is not None and has_flattened_params:
@@ -1337,10 +1378,10 @@ class AdminServiceAsyncClient:
 
     async def list_reservations(
         self,
-        request: admin.ListReservationsRequest = None,
+        request: Union[admin.ListReservationsRequest, dict] = None,
         *,
         parent: str = None,
-        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> pagers.ListReservationsAsyncPager:
@@ -1348,7 +1389,7 @@ class AdminServiceAsyncClient:
         project.
 
         Args:
-            request (:class:`google.cloud.pubsublite_v1.types.ListReservationsRequest`):
+            request (Union[google.cloud.pubsublite_v1.types.ListReservationsRequest, dict]):
                 The request object. Request for ListReservations.
             parent (:class:`str`):
                 Required. The parent whose reservations are to be
@@ -1373,7 +1414,7 @@ class AdminServiceAsyncClient:
 
         """
         # Create or coerce a protobuf request object.
-        # Sanity check: If we got a request object, we should *not* have
+        # Quick check: If we got a request object, we should *not* have
         # gotten any keyword arguments that map to the request.
         has_flattened_params = any([parent])
         if request is not None and has_flattened_params:
@@ -1417,18 +1458,18 @@ class AdminServiceAsyncClient:
 
     async def update_reservation(
         self,
-        request: admin.UpdateReservationRequest = None,
+        request: Union[admin.UpdateReservationRequest, dict] = None,
         *,
         reservation: common.Reservation = None,
         update_mask: field_mask_pb2.FieldMask = None,
-        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> common.Reservation:
         r"""Updates properties of the specified reservation.
 
         Args:
-            request (:class:`google.cloud.pubsublite_v1.types.UpdateReservationRequest`):
+            request (Union[google.cloud.pubsublite_v1.types.UpdateReservationRequest, dict]):
                 The request object. Request for UpdateReservation.
             reservation (:class:`google.cloud.pubsublite_v1.types.Reservation`):
                 Required. The reservation to update. Its ``name`` field
@@ -1457,7 +1498,7 @@ class AdminServiceAsyncClient:
 
         """
         # Create or coerce a protobuf request object.
-        # Sanity check: If we got a request object, we should *not* have
+        # Quick check: If we got a request object, we should *not* have
         # gotten any keyword arguments that map to the request.
         has_flattened_params = any([reservation, update_mask])
         if request is not None and has_flattened_params:
@@ -1499,17 +1540,17 @@ class AdminServiceAsyncClient:
 
     async def delete_reservation(
         self,
-        request: admin.DeleteReservationRequest = None,
+        request: Union[admin.DeleteReservationRequest, dict] = None,
         *,
         name: str = None,
-        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> None:
         r"""Deletes the specified reservation.
 
         Args:
-            request (:class:`google.cloud.pubsublite_v1.types.DeleteReservationRequest`):
+            request (Union[google.cloud.pubsublite_v1.types.DeleteReservationRequest, dict]):
                 The request object. Request for DeleteReservation.
             name (:class:`str`):
                 Required. The name of the reservation to delete.
@@ -1526,7 +1567,7 @@ class AdminServiceAsyncClient:
                 sent along with the request as metadata.
         """
         # Create or coerce a protobuf request object.
-        # Sanity check: If we got a request object, we should *not* have
+        # Quick check: If we got a request object, we should *not* have
         # gotten any keyword arguments that map to the request.
         has_flattened_params = any([name])
         if request is not None and has_flattened_params:
@@ -1563,10 +1604,10 @@ class AdminServiceAsyncClient:
 
     async def list_reservation_topics(
         self,
-        request: admin.ListReservationTopicsRequest = None,
+        request: Union[admin.ListReservationTopicsRequest, dict] = None,
         *,
         name: str = None,
-        retry: retries.Retry = gapic_v1.method.DEFAULT,
+        retry: OptionalRetry = gapic_v1.method.DEFAULT,
         timeout: float = None,
         metadata: Sequence[Tuple[str, str]] = (),
     ) -> pagers.ListReservationTopicsAsyncPager:
@@ -1574,7 +1615,7 @@ class AdminServiceAsyncClient:
         reservation.
 
         Args:
-            request (:class:`google.cloud.pubsublite_v1.types.ListReservationTopicsRequest`):
+            request (Union[google.cloud.pubsublite_v1.types.ListReservationTopicsRequest, dict]):
                 The request object. Request for ListReservationTopics.
             name (:class:`str`):
                 Required. The name of the reservation whose topics to
@@ -1599,7 +1640,7 @@ class AdminServiceAsyncClient:
 
         """
         # Create or coerce a protobuf request object.
-        # Sanity check: If we got a request object, we should *not* have
+        # Quick check: If we got a request object, we should *not* have
         # gotten any keyword arguments that map to the request.
         has_flattened_params = any([name])
         if request is not None and has_flattened_params:
@@ -1640,6 +1681,12 @@ class AdminServiceAsyncClient:
 
         # Done; return the response.
         return response
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        await self.transport.close()
 
 
 try:

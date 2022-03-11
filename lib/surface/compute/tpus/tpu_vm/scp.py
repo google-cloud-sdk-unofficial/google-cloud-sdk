@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import sys
 import threading
 
 from argcomplete.completers import FilesCompleter
@@ -174,6 +175,7 @@ class Scp(base.Command):
       extra_flags.extend(args.scp_flag)
 
     ssh_threads = []
+    exit_statuses = [None] * len(worker_ips)
     for worker, ips in worker_ips.items():
       options = None
       if not args.plain:
@@ -200,10 +202,24 @@ class Scp(base.Command):
         ssh_threads.append(
             threading.Thread(
                 target=tpu_ssh_utils.AttemptRunWithRetries,
-                args=('SCP', worker, cmd, ssh_helper.env, None, True,
-                      SCPRunCmd)))
+                args=('SCP', worker, exit_statuses, cmd, ssh_helper.env, None,
+                      True, SCPRunCmd)))
         ssh_threads[-1].start()
       else:
         # Run on a single worker.
-        tpu_ssh_utils.AttemptRunWithRetries('SCP', worker, cmd, ssh_helper.env,
-                                            None, False, SCPRunCmd)
+        tpu_ssh_utils.AttemptRunWithRetries('SCP', worker, exit_statuses,
+                                            cmd, ssh_helper.env, None, False,
+                                            SCPRunCmd)
+
+    if len(worker_ips) > 1:
+      # Wait for all the threads to complete.
+      for i in range(len(ssh_threads)):
+        ssh_threads[i].join()
+
+      # Exit with a nonzero status, if any.
+      # This ensures that if any command failed on a worker, we don't end up
+      # returning 0 for a value.
+      for status in exit_statuses:
+        if status:
+          sys.exit(status)
+

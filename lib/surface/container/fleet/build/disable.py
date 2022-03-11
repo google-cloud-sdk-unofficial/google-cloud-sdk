@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base as gbase
 from googlecloudsdk.command_lib.container.fleet.build import utils
-from googlecloudsdk.command_lib.container.hub.features import base
+from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.core.console import console_io
 
 

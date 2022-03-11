@@ -250,6 +250,7 @@ def default_async(scopes=None, request=None, quota_project_id=None):
             invalid.
     """
     from google.auth._credentials_async import with_scopes_if_required
+    from google.auth.credentials import CredentialsWithQuotaProject
 
     explicit_project_id = os.environ.get(
         environment_vars.PROJECT, os.environ.get(environment_vars.LEGACY_PROJECT)
@@ -265,9 +266,11 @@ def default_async(scopes=None, request=None, quota_project_id=None):
     for checker in checkers:
         credentials, project_id = checker()
         if credentials is not None:
-            credentials = with_scopes_if_required(
-                credentials, scopes
-            ).with_quota_project(quota_project_id)
+            credentials = with_scopes_if_required(credentials, scopes)
+            if quota_project_id and isinstance(
+                credentials, CredentialsWithQuotaProject
+            ):
+                credentials = credentials.with_quota_project(quota_project_id)
             effective_project_id = explicit_project_id or project_id
             if not effective_project_id:
                 _default._LOGGER.warning(

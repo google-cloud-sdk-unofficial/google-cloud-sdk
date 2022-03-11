@@ -140,6 +140,8 @@ class Binauthz(base.Group):
         ```
   """
 
+  category = base.COMPUTE_CATEGORY
+
   def Filter(self, context, args):
     """See base class."""
     base.RequireProjectID(args)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,26 +21,44 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Fleet(base.Group):
-  """Centrally manage features and services on all your Kubernetes clusters with Fleet.
+  """Centrally manage features and services on all your Kubernetes clusters with fleet.
 
   The command group to register GKE or other Kubernetes clusters running in a
   variety of environments, including Google cloud, on premises in customer
-  datacenters, or other third party clouds with Fleet. Fleet provides a
+  datacenters, or other third party clouds with fleet. Fleet provides a
   centralized control-plane to managed features and services on all registered
   clusters.
 
-  Each project can have only one fleet.
+  A registered cluster is always associated with a Membership, a resource
+  within fleet.
 
   ## EXAMPLES
 
-  Manage a project's fleet:
+  Manage memberships of all your GKE and other Kubernetes clusters with fleet:
 
-    $ {command} --help
+    $ {command} memberships --help
+
+  Manage Config Management feature on all memberships:
+
+    $ {command} config-management --help
+
+  Manage Multi-cluster Ingress feature on all memberships:
+
+    $ {command} ingress --help
+
+  Manage Multi-cluster Services feature on all memberships:
+
+    $ {command} multi-cluster-services --help
+
+  Manage CloudRun feature on all memberships:
+
+    $ {command} cloudrun --help
   """
+
+  category = base.COMPUTE_CATEGORY
 
   def Filter(self, context, args):
     """See base class."""

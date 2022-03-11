@@ -47,7 +47,7 @@ class Update(base.Command):
           """\
           To update the container image of Cloud Run job `my-job`:
 
-              $ {command} my-job --image=gcr.io/my-project/image
+              $ {command} my-job --image=us-docker.pkg.dev/project/image
           """,
   }
 

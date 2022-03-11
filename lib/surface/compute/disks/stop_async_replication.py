@@ -53,7 +53,7 @@ def _CommonArgs(parser):
   """Add arguments used for parsing in all command tracks."""
   StopAsyncReplication.disks_arg.AddArgument(
       parser, operation_type='stop async replication')
-  disks_flags.ASYNC_SECONDARY_DISK_ARG.AddArgument(parser)
+  StopAsyncReplication.secondary_disk_arg.AddArgument(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -63,12 +63,13 @@ class StopAsyncReplication(base.Command):
   @classmethod
   def Args(cls, parser):
     StopAsyncReplication.disks_arg = disks_flags.MakeDiskArg(plural=False)
+    StopAsyncReplication.secondary_disk_arg = disks_flags.MakeSecondaryDiskArg()
     _CommonArgs(parser)
 
   def GetAsyncSecondaryDiskUri(self, args, compute_holder):
     secondary_disk_ref = None
     if args.secondary_disk:
-      secondary_disk_ref = disks_flags.ASYNC_SECONDARY_DISK_ARG.ResolveAsResource(
+      secondary_disk_ref = self.secondary_disk_arg.ResolveAsResource(
           args, compute_holder.resources)
       if secondary_disk_ref:
         return secondary_disk_ref.SelfLink()

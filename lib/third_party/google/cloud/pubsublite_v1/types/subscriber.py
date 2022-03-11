@@ -64,6 +64,7 @@ class InitialSubscribeRequest(proto.Message):
 
 class InitialSubscribeResponse(proto.Message):
     r"""Response to an InitialSubscribeRequest.
+
     Attributes:
         cursor (google.cloud.pubsublite_v1.types.Cursor):
             The cursor from which the subscriber will
@@ -83,12 +84,23 @@ class SeekRequest(proto.Message):
     outstanding (i.e., has not received a SeekResponse) on the same
     stream.
 
+    This message has `oneof`_ fields (mutually exclusive fields).
+    For each oneof, at most one member field can be set at the same time.
+    Setting any member of the oneof automatically clears all other
+    members.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
     Attributes:
         named_target (google.cloud.pubsublite_v1.types.SeekRequest.NamedTarget):
             A named target.
+
+            This field is a member of `oneof`_ ``target``.
         cursor (google.cloud.pubsublite_v1.types.Cursor):
             A target corresponding to the cursor,
             pointing to anywhere in the topic partition.
+
+            This field is a member of `oneof`_ ``target``.
     """
 
     class NamedTarget(proto.Enum):
@@ -107,6 +119,7 @@ class SeekRequest(proto.Message):
 
 class SeekResponse(proto.Message):
     r"""Response to a SeekRequest.
+
     Attributes:
         cursor (google.cloud.pubsublite_v1.types.Cursor):
             The new delivery cursor for the current
@@ -135,14 +148,28 @@ class FlowControlRequest(proto.Message):
 
 class SubscribeRequest(proto.Message):
     r"""A request sent from the client to the server on a stream.
+
+    This message has `oneof`_ fields (mutually exclusive fields).
+    For each oneof, at most one member field can be set at the same time.
+    Setting any member of the oneof automatically clears all other
+    members.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
     Attributes:
         initial (google.cloud.pubsublite_v1.types.InitialSubscribeRequest):
             Initial request on the stream.
+
+            This field is a member of `oneof`_ ``request``.
         seek (google.cloud.pubsublite_v1.types.SeekRequest):
             Request to update the stream's delivery
             cursor.
+
+            This field is a member of `oneof`_ ``request``.
         flow_control (google.cloud.pubsublite_v1.types.FlowControlRequest):
             Request to grant tokens to the server,
+
+            This field is a member of `oneof`_ ``request``.
     """
 
     initial = proto.Field(
@@ -175,14 +202,28 @@ class MessageResponse(proto.Message):
 
 class SubscribeResponse(proto.Message):
     r"""Response to SubscribeRequest.
+
+    This message has `oneof`_ fields (mutually exclusive fields).
+    For each oneof, at most one member field can be set at the same time.
+    Setting any member of the oneof automatically clears all other
+    members.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
     Attributes:
         initial (google.cloud.pubsublite_v1.types.InitialSubscribeResponse):
             Initial response on the stream.
+
+            This field is a member of `oneof`_ ``response``.
         seek (google.cloud.pubsublite_v1.types.SeekResponse):
             Response to a Seek operation.
+
+            This field is a member of `oneof`_ ``response``.
         messages (google.cloud.pubsublite_v1.types.MessageResponse):
             Response containing messages from the topic
             partition.
+
+            This field is a member of `oneof`_ ``response``.
     """
 
     initial = proto.Field(
@@ -244,16 +285,29 @@ class PartitionAssignmentAck(proto.Message):
     assignment, partitions may remain unassigned for a period of
     time until the client is known to be inactive, after which time
     the server will break the stream.
-        """
+
+    """
 
 
 class PartitionAssignmentRequest(proto.Message):
     r"""A request on the PartitionAssignment stream.
+
+    This message has `oneof`_ fields (mutually exclusive fields).
+    For each oneof, at most one member field can be set at the same time.
+    Setting any member of the oneof automatically clears all other
+    members.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
     Attributes:
         initial (google.cloud.pubsublite_v1.types.InitialPartitionAssignmentRequest):
             Initial request on the stream.
+
+            This field is a member of `oneof`_ ``request``.
         ack (google.cloud.pubsublite_v1.types.PartitionAssignmentAck):
             Acknowledgement of a partition assignment.
+
+            This field is a member of `oneof`_ ``request``.
     """
 
     initial = proto.Field(

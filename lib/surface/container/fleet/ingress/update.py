@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 import os
 import textwrap
 
-from googlecloudsdk.command_lib.container.hub.features import base
+from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io

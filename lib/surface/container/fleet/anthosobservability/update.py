@@ -18,9 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.hub import client
+from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.calliope import base as gbase
-from googlecloudsdk.command_lib.container.hub.features import base
+from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.core import exceptions
 
 
@@ -105,7 +105,7 @@ class Update(base.UpdateCommand):
 
     all_memberships = base.ListMemberships()
     if not all_memberships:
-      raise exceptions.Error('No Memberships available in Hub.')
+      raise exceptions.Error('No Memberships available in the fleet.')
     if membership not in all_memberships:
       raise exceptions.Error(
           'Membership {} not found. Valid choices are {}.'.format(

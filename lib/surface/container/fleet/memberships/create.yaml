@@ -32,7 +32,7 @@
   arguments:
     resource:
       help_text: The cluster membership to create.
-      spec: !REF googlecloudsdk.command_lib.container.hub.resources:membership
+      spec: !REF googlecloudsdk.command_lib.container.fleet.resources:membership
     params:
     - api_field: membership.description
       release_tracks: [BETA]

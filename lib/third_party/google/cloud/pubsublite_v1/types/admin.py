@@ -56,6 +56,7 @@ __protobuf__ = proto.module(
 
 class CreateTopicRequest(proto.Message):
     r"""Request for CreateTopic.
+
     Attributes:
         parent (str):
             Required. The parent location in which to create the topic.
@@ -78,6 +79,7 @@ class CreateTopicRequest(proto.Message):
 
 class GetTopicRequest(proto.Message):
     r"""Request for GetTopic.
+
     Attributes:
         name (str):
             Required. The name of the topic whose
@@ -89,6 +91,7 @@ class GetTopicRequest(proto.Message):
 
 class GetTopicPartitionsRequest(proto.Message):
     r"""Request for GetTopicPartitions.
+
     Attributes:
         name (str):
             Required. The topic whose partition
@@ -100,6 +103,7 @@ class GetTopicPartitionsRequest(proto.Message):
 
 class TopicPartitions(proto.Message):
     r"""Response for GetTopicPartitions.
+
     Attributes:
         partition_count (int):
             The number of partitions in the topic.
@@ -110,6 +114,7 @@ class TopicPartitions(proto.Message):
 
 class ListTopicsRequest(proto.Message):
     r"""Request for ListTopics.
+
     Attributes:
         parent (str):
             Required. The parent whose topics are to be listed.
@@ -136,6 +141,7 @@ class ListTopicsRequest(proto.Message):
 
 class ListTopicsResponse(proto.Message):
     r"""Response for ListTopics.
+
     Attributes:
         topics (Sequence[google.cloud.pubsublite_v1.types.Topic]):
             The list of topic in the requested parent.
@@ -156,6 +162,7 @@ class ListTopicsResponse(proto.Message):
 
 class UpdateTopicRequest(proto.Message):
     r"""Request for UpdateTopic.
+
     Attributes:
         topic (google.cloud.pubsublite_v1.types.Topic):
             Required. The topic to update. Its ``name`` field must be
@@ -173,6 +180,7 @@ class UpdateTopicRequest(proto.Message):
 
 class DeleteTopicRequest(proto.Message):
     r"""Request for DeleteTopic.
+
     Attributes:
         name (str):
             Required. The name of the topic to delete.
@@ -183,6 +191,7 @@ class DeleteTopicRequest(proto.Message):
 
 class ListTopicSubscriptionsRequest(proto.Message):
     r"""Request for ListTopicSubscriptions.
+
     Attributes:
         name (str):
             Required. The name of the topic whose
@@ -209,6 +218,7 @@ class ListTopicSubscriptionsRequest(proto.Message):
 
 class ListTopicSubscriptionsResponse(proto.Message):
     r"""Response for ListTopicSubscriptions.
+
     Attributes:
         subscriptions (Sequence[str]):
             The names of subscriptions attached to the
@@ -230,6 +240,7 @@ class ListTopicSubscriptionsResponse(proto.Message):
 
 class CreateSubscriptionRequest(proto.Message):
     r"""Request for CreateSubscription.
+
     Attributes:
         parent (str):
             Required. The parent location in which to create the
@@ -259,6 +270,7 @@ class CreateSubscriptionRequest(proto.Message):
 
 class GetSubscriptionRequest(proto.Message):
     r"""Request for GetSubscription.
+
     Attributes:
         name (str):
             Required. The name of the subscription whose
@@ -270,6 +282,7 @@ class GetSubscriptionRequest(proto.Message):
 
 class ListSubscriptionsRequest(proto.Message):
     r"""Request for ListSubscriptions.
+
     Attributes:
         parent (str):
             Required. The parent whose subscriptions are to be listed.
@@ -296,6 +309,7 @@ class ListSubscriptionsRequest(proto.Message):
 
 class ListSubscriptionsResponse(proto.Message):
     r"""Response for ListSubscriptions.
+
     Attributes:
         subscriptions (Sequence[google.cloud.pubsublite_v1.types.Subscription]):
             The list of subscriptions in the requested
@@ -319,6 +333,7 @@ class ListSubscriptionsResponse(proto.Message):
 
 class UpdateSubscriptionRequest(proto.Message):
     r"""Request for UpdateSubscription.
+
     Attributes:
         subscription (google.cloud.pubsublite_v1.types.Subscription):
             Required. The subscription to update. Its ``name`` field
@@ -336,6 +351,7 @@ class UpdateSubscriptionRequest(proto.Message):
 
 class DeleteSubscriptionRequest(proto.Message):
     r"""Request for DeleteSubscription.
+
     Attributes:
         name (str):
             Required. The name of the subscription to
@@ -347,6 +363,14 @@ class DeleteSubscriptionRequest(proto.Message):
 
 class SeekSubscriptionRequest(proto.Message):
     r"""Request for SeekSubscription.
+
+    This message has `oneof`_ fields (mutually exclusive fields).
+    For each oneof, at most one member field can be set at the same time.
+    Setting any member of the oneof automatically clears all other
+    members.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
     Attributes:
         name (str):
             Required. The name of the subscription to
@@ -354,12 +378,16 @@ class SeekSubscriptionRequest(proto.Message):
         named_target (google.cloud.pubsublite_v1.types.SeekSubscriptionRequest.NamedTarget):
             Seek to a named position with respect to the
             message backlog.
+
+            This field is a member of `oneof`_ ``target``.
         time_target (google.cloud.pubsublite_v1.types.TimeTarget):
             Seek to the first message whose publish or
             event time is greater than or equal to the
             specified query time. If no such message can be
             located, will seek to the end of the message
             backlog.
+
+            This field is a member of `oneof`_ ``target``.
     """
 
     class NamedTarget(proto.Enum):
@@ -376,11 +404,13 @@ class SeekSubscriptionRequest(proto.Message):
 
 
 class SeekSubscriptionResponse(proto.Message):
-    r"""Response for SeekSubscription long running operation.    """
+    r"""Response for SeekSubscription long running operation.
+    """
 
 
 class OperationMetadata(proto.Message):
     r"""Metadata for long running operations.
+
     Attributes:
         create_time (google.protobuf.timestamp_pb2.Timestamp):
             The time the operation was created.
@@ -404,6 +434,7 @@ class OperationMetadata(proto.Message):
 
 class CreateReservationRequest(proto.Message):
     r"""Request for CreateReservation.
+
     Attributes:
         parent (str):
             Required. The parent location in which to create the
@@ -426,6 +457,7 @@ class CreateReservationRequest(proto.Message):
 
 class GetReservationRequest(proto.Message):
     r"""Request for GetReservation.
+
     Attributes:
         name (str):
             Required. The name of the reservation whose configuration to
@@ -438,6 +470,7 @@ class GetReservationRequest(proto.Message):
 
 class ListReservationsRequest(proto.Message):
     r"""Request for ListReservations.
+
     Attributes:
         parent (str):
             Required. The parent whose reservations are to be listed.
@@ -464,6 +497,7 @@ class ListReservationsRequest(proto.Message):
 
 class ListReservationsResponse(proto.Message):
     r"""Response for ListReservations.
+
     Attributes:
         reservations (Sequence[google.cloud.pubsublite_v1.types.Reservation]):
             The list of reservation in the requested
@@ -487,6 +521,7 @@ class ListReservationsResponse(proto.Message):
 
 class UpdateReservationRequest(proto.Message):
     r"""Request for UpdateReservation.
+
     Attributes:
         reservation (google.cloud.pubsublite_v1.types.Reservation):
             Required. The reservation to update. Its ``name`` field must
@@ -504,6 +539,7 @@ class UpdateReservationRequest(proto.Message):
 
 class DeleteReservationRequest(proto.Message):
     r"""Request for DeleteReservation.
+
     Attributes:
         name (str):
             Required. The name of the reservation to delete. Structured
@@ -516,6 +552,7 @@ class DeleteReservationRequest(proto.Message):
 
 class ListReservationTopicsRequest(proto.Message):
     r"""Request for ListReservationTopics.
+
     Attributes:
         name (str):
             Required. The name of the reservation whose topics to list.
@@ -543,6 +580,7 @@ class ListReservationTopicsRequest(proto.Message):
 
 class ListReservationTopicsResponse(proto.Message):
     r"""Response for ListReservationTopics.
+
     Attributes:
         topics (Sequence[str]):
             The names of topics attached to the

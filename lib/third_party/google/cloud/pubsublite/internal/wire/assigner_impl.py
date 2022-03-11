@@ -99,6 +99,7 @@ class AssignerImpl(
             partitions = set()
             for partition in response.partitions:
                 partitions.add(Partition(partition))
+            _LOGGER.info(f"Received new assignment with partitions: {partitions}.")
             self._new_assignment.put_nowait(partitions)
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):

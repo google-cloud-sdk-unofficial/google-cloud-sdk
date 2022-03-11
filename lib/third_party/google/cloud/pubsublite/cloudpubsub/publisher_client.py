@@ -62,6 +62,7 @@ class PublisherClient(PublisherClientInterface, ConstructableFromServiceAccount)
 
     def __init__(
         self,
+        *,
         per_partition_batching_settings: Optional[BatchSettings] = None,
         credentials: Optional[Credentials] = None,
         transport: str = "grpc_asyncio",
@@ -93,7 +94,7 @@ class PublisherClient(PublisherClientInterface, ConstructableFromServiceAccount)
         topic: Union[TopicPath, str],
         data: bytes,
         ordering_key: str = "",
-        **attrs: Mapping[str, str]
+        **attrs: Mapping[str, str],
     ) -> "Future[str]":
         self._require_stared.require_started()
         return self._impl.publish(
@@ -132,6 +133,7 @@ class AsyncPublisherClient(
 
     def __init__(
         self,
+        *,
         per_partition_batching_settings: Optional[BatchSettings] = None,
         credentials: Optional[Credentials] = None,
         transport: str = "grpc_asyncio",
@@ -163,7 +165,7 @@ class AsyncPublisherClient(
         topic: Union[TopicPath, str],
         data: bytes,
         ordering_key: str = "",
-        **attrs: Mapping[str, str]
+        **attrs: Mapping[str, str],
     ) -> str:
         self._require_stared.require_started()
         return await self._impl.publish(

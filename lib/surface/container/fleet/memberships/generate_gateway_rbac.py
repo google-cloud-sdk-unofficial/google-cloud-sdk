@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import sys
 import textwrap
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.hub import kube_util
-from googlecloudsdk.command_lib.container.hub import rbac_util
+from googlecloudsdk.command_lib.container.fleet import kube_util
+from googlecloudsdk.command_lib.container.fleet import rbac_util
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties

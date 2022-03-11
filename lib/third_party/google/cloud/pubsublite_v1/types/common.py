@@ -154,6 +154,13 @@ class Topic(proto.Message):
     class PartitionConfig(proto.Message):
         r"""The settings for a topic's partitions.
 
+        This message has `oneof`_ fields (mutually exclusive fields).
+        For each oneof, at most one member field can be set at the same time.
+        Setting any member of the oneof automatically clears all other
+        members.
+
+        .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
         Attributes:
             count (int):
                 The number of partitions in the topic. Must be at least 1.
@@ -172,8 +179,12 @@ class Topic(proto.Message):
                 this topic; a topic with ``scale`` of 2 and count of 10 is
                 charged for 20 partitions. This value must be in the range
                 [1,4].
+
+                This field is a member of `oneof`_ ``dimension``.
             capacity (google.cloud.pubsublite_v1.types.Topic.PartitionConfig.Capacity):
                 The capacity configuration.
+
+                This field is a member of `oneof`_ ``dimension``.
         """
 
         class Capacity(proto.Message):
@@ -288,12 +299,21 @@ class TimeTarget(proto.Message):
     r"""A target publish or event time. Can be used for seeking to or
     retrieving the corresponding cursor.
 
+    This message has `oneof`_ fields (mutually exclusive fields).
+    For each oneof, at most one member field can be set at the same time.
+    Setting any member of the oneof automatically clears all other
+    members.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
     Attributes:
         publish_time (google.protobuf.timestamp_pb2.Timestamp):
             Request the cursor of the first message with publish time
             greater than or equal to ``publish_time``. All messages
             thereafter are guaranteed to have publish times >=
             ``publish_time``.
+
+            This field is a member of `oneof`_ ``time``.
         event_time (google.protobuf.timestamp_pb2.Timestamp):
             Request the cursor of the first message with event time
             greater than or equal to ``event_time``. If messages are
@@ -301,6 +321,8 @@ class TimeTarget(proto.Message):
             fallback. As event times are user supplied, subsequent
             messages may have event times less than ``event_time`` and
             should be filtered by the client, if necessary.
+
+            This field is a member of `oneof`_ ``time``.
     """
 
     publish_time = proto.Field(

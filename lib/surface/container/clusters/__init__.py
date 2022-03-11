@@ -36,6 +36,8 @@ class Clusters(base.Group):
   to clusters.
   """
 
+  category = base.COMPUTE_CATEGORY
+
   @staticmethod
   def Args(parser):
     """Add arguments to the parser.

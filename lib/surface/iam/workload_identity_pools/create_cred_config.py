@@ -57,7 +57,7 @@ class CreateCredConfig(base.CreateCommand):
           """),
   }
 
-  _support_aws_session_token_url = False
+  _support_imdsv2 = False
 
   @classmethod
   def Args(cls, parser):
@@ -100,10 +100,10 @@ class CreateCredConfig(base.CreateCommand):
         '--subject-token-type',
         help='The type of token being used for authorization.')
 
-    if cls._support_aws_session_token_url:
+    if cls._support_imdsv2:
       parser.add_argument(
-          '--include-aws-session-token-url',
-          help='Adds the AWS session token url to the credential source to enforce the AWS IMDSv2 flow.',
+          '--enable-imdsv2',
+          help='Adds the AWS IMDSv2 session token url to the credential source to enforce the AWS IMDSv2 flow.',
           action='store_true')
 
   def _ValidateArgs(self, args):
@@ -136,7 +136,7 @@ class CreateCredConfigAlpha(CreateCredConfig):
 
           To create an AWS-based credential configuration for your project, run:
 
-            $ {command} projects/$PROJECT_NUMBER/locations/$REGION/workloadIdentityPools/$WORKLOAD_POOL_ID/providers/$PROVIDER_ID --service-account=$EMAIL --aws --include-aws-session-token-url --output-file=credentials.json
+            $ {command} projects/$PROJECT_NUMBER/locations/$REGION/workloadIdentityPools/$WORKLOAD_POOL_ID/providers/$PROVIDER_ID --service-account=$EMAIL --aws --enable-imdsv2 --output-file=credentials.json
 
           To create an Azure-based credential configuration for your project, run:
 
@@ -146,10 +146,10 @@ class CreateCredConfigAlpha(CreateCredConfig):
           """),
   }
 
-  _support_aws_session_token_url = True
+  _support_imdsv2 = True
 
   def _ValidateArgs(self, args):
-    if args.include_aws_session_token_url and not args.aws:
+    if args.enable_imdsv2 and not args.aws:
       raise exceptions.ConflictingArgumentsException(
-          '--include-aws-session-token-url can be used only for AWS credential types'
+          '--enable-imdsv2 can be used only for AWS credential types'
       )

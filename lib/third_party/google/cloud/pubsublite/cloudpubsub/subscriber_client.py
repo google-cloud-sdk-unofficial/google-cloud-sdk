@@ -20,6 +20,7 @@ from google.auth.credentials import Credentials
 from google.cloud.pubsub_v1.subscriber.futures import StreamingPullFuture
 from google.cloud.pubsub_v1.subscriber.message import Message
 
+from google.cloud.pubsublite.cloudpubsub.reassignment_handler import ReassignmentHandler
 from google.cloud.pubsublite.cloudpubsub.internal.make_subscriber import (
     make_async_subscriber,
 )
@@ -61,8 +62,10 @@ class SubscriberClient(SubscriberClientInterface, ConstructableFromServiceAccoun
 
     def __init__(
         self,
+        *,
         executor: Optional[ThreadPoolExecutor] = None,
         nack_handler: Optional[NackHandler] = None,
+        reassignment_handler: Optional[ReassignmentHandler] = None,
         message_transformer: Optional[MessageTransformer] = None,
         credentials: Optional[Credentials] = None,
         transport: str = "grpc_asyncio",
@@ -88,6 +91,7 @@ class SubscriberClient(SubscriberClientInterface, ConstructableFromServiceAccoun
                 transport=transport,
                 per_partition_flow_control_settings=settings,
                 nack_handler=nack_handler,
+                reassignment_handler=reassignment_handler,
                 message_transformer=message_transformer,
                 fixed_partitions=partitions,
                 credentials=credentials,
@@ -140,7 +144,9 @@ class AsyncSubscriberClient(
 
     def __init__(
         self,
+        *,
         nack_handler: Optional[NackHandler] = None,
+        reassignment_handler: Optional[ReassignmentHandler] = None,
         message_transformer: Optional[MessageTransformer] = None,
         credentials: Optional[Credentials] = None,
         transport: str = "grpc_asyncio",
@@ -162,6 +168,7 @@ class AsyncSubscriberClient(
                 transport=transport,
                 per_partition_flow_control_settings=settings,
                 nack_handler=nack_handler,
+                reassignment_handler=reassignment_handler,
                 message_transformer=message_transformer,
                 fixed_partitions=partitions,
                 credentials=credentials,

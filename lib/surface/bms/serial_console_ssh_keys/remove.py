@@ -38,6 +38,7 @@ DETAILED_HELP = {
 }
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Remove(base.DeleteCommand):
   """Remove a Bare Metal solution interactive serial console SSH key."""

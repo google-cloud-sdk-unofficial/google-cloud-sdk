@@ -62,11 +62,11 @@ import logging
 import random
 import time
 
-import six
+import requests.exceptions
 
 from google.api_core import datetime_helpers
 from google.api_core import exceptions
-from google.api_core import general_helpers
+from google.auth import exceptions as auth_exceptions
 
 _LOGGER = logging.getLogger(__name__)
 _DEFAULT_INITIAL_DELAY = 1.0  # seconds
@@ -101,6 +101,9 @@ if_transient_error = if_exception_type(
     exceptions.InternalServerError,
     exceptions.TooManyRequests,
     exceptions.ServiceUnavailable,
+    requests.exceptions.ConnectionError,
+    requests.exceptions.ChunkedEncodingError,
+    auth_exceptions.TransportError,
 )
 """A predicate that checks if an exception is a transient API error.
 
@@ -110,8 +113,11 @@ The following server errors are considered transient:
     ``INTERNAL(13)`` and its subclasses.
 - :class:`google.api_core.exceptions.TooManyRequests` - HTTP 429
 - :class:`google.api_core.exceptions.ServiceUnavailable` - HTTP 503
-- :class:`google.api_core.exceptions.ResourceExhausted` - gRPC
-    ``RESOURCE_EXHAUSTED(8)``
+- :class:`requests.exceptions.ConnectionError`
+- :class:`requests.exceptions.ChunkedEncodingError` - The server declared
+    chunked encoding but sent an invalid chunk.
+- :class:`google.auth.exceptions.TransportError` - Used to indicate an
+    error occurred during an HTTP request.
 """
 # pylint: enable=invalid-name
 
@@ -196,15 +202,12 @@ def retry_target(target, predicate, sleep_generator, deadline, on_error=None):
 
         if deadline_datetime is not None:
             if deadline_datetime <= now:
-                six.raise_from(
-                    exceptions.RetryError(
-                        "Deadline of {:.1f}s exceeded while calling {}".format(
-                            deadline, target
-                        ),
-                        last_exc,
+                raise exceptions.RetryError(
+                    "Deadline of {:.1f}s exceeded while calling target function".format(
+                        deadline
                     ),
                     last_exc,
-                )
+                ) from last_exc
             else:
                 time_to_deadline = (deadline_datetime - now).total_seconds()
                 sleep = min(time_to_deadline, sleep)
@@ -217,7 +220,6 @@ def retry_target(target, predicate, sleep_generator, deadline, on_error=None):
     raise ValueError("Sleep generator stopped yielding sleep values.")
 
 
-@six.python_2_unicode_compatible
 class Retry(object):
     """Exponential retry decorator.
 
@@ -271,7 +273,7 @@ class Retry(object):
         if self._on_error is not None:
             on_error = self._on_error
 
-        @general_helpers.wraps(func)
+        @functools.wraps(func)
         def retry_wrapped_func(*args, **kwargs):
             """A wrapper that calls target function with retry."""
             target = functools.partial(func, *args, **kwargs)
@@ -345,7 +347,7 @@ class Retry(object):
             predicate=self._predicate,
             initial=initial if initial is not None else self._initial,
             maximum=maximum if maximum is not None else self._maximum,
-            multiplier=multiplier if maximum is not None else self._multiplier,
+            multiplier=multiplier if multiplier is not None else self._multiplier,
             deadline=self._deadline,
             on_error=self._on_error,
         )

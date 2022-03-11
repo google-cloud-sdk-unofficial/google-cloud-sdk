@@ -155,6 +155,7 @@ class CreateAlpha(CreateBeta):
     _CommonArgs('alpha', parser)
     flags.AddCreateFlags(
         parser, support_share_setting=cls._support_share_setting)
+    flags.AddSplitSourceCommitment(parser)
 
   def _MakeCreateRequest(self, args, messages, project, region, commitment_ref,
                          holder):
@@ -167,7 +168,8 @@ class CreateAlpha(CreateBeta):
         plan=flags.TranslatePlanArg(messages, args.plan),
         resources=flags.TranslateResourcesArgGroup(messages, args),
         type=commitment_type,
-        autoRenew=flags.TranslateAutoRenewArg(args))
+        autoRenew=flags.TranslateAutoRenewArg(args),
+        splitSourceCommitment=args.split_source_commitment)
     return messages.ComputeRegionCommitmentsInsertRequest(
         commitment=commitment,
         project=project,

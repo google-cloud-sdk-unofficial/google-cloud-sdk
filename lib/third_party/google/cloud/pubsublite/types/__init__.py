@@ -15,21 +15,23 @@
 
 from .location import CloudRegion, CloudZone
 from .partition import Partition
-from .paths import LocationPath, TopicPath, SubscriptionPath
+from .paths import LocationPath, ReservationPath, TopicPath, SubscriptionPath
 from .message_metadata import MessageMetadata
 from .flow_control_settings import FlowControlSettings, DISABLED_FLOW_CONTROL
 from .backlog_location import BacklogLocation, PublishTime, EventTime
 
 __all__ = (
+    "BacklogLocation",
     "CloudRegion",
     "CloudZone",
+    "EventTime",
     "FlowControlSettings",
     "LocationPath",
-    "Partition",
     "MessageMetadata",
+    "Partition",
+    "PublishTime",
+    "Reservation",
+    "ReservationPath",
     "SubscriptionPath",
     "TopicPath",
-    "BacklogLocation",
-    "PublishTime",
-    "EventTime",
 )

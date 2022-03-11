@@ -35,10 +35,10 @@ import six
 from six.moves import range  # pylint: disable=redefined-builtin
 
 
-def _Args(parser, support_global_access, support_l7_internal_load_balancing,
-          support_psc_google_apis, support_all_protocol,
-          support_target_service_attachment, support_l3_default,
-          support_source_ip_range):
+def _Args(parser, support_global_access, support_psc_global_access,
+          support_l7_internal_load_balancing, support_psc_google_apis,
+          support_all_protocol, support_target_service_attachment,
+          support_l3_default, support_source_ip_range):
   """Add the flags to create a forwarding rule."""
 
   flags.AddUpdateArgs(
@@ -54,6 +54,9 @@ def _Args(parser, support_global_access, support_l7_internal_load_balancing,
 
   if support_global_access:
     flags.AddAllowGlobalAccess(parser)
+
+  if support_psc_global_access:
+    flags.AddAllowPscGlobalAccess(parser)
 
   if support_source_ip_range:
     flags.AddSourceIpRanges(parser)
@@ -87,13 +90,14 @@ class CreateHelper(object):
 
   FORWARDING_RULE_ARG = None
 
-  def __init__(self, holder, support_global_access,
+  def __init__(self, holder, support_global_access, support_psc_global_access,
                support_l7_internal_load_balancing, support_psc_google_apis,
                support_all_protocol, support_target_service_attachment,
                _support_sd_registration_for_regional, support_l3_default,
                support_source_ip_range):
     self._holder = holder
     self._support_global_access = support_global_access
+    self._support_psc_global_access = support_psc_global_access
     self._support_l7_internal_load_balancing = support_l7_internal_load_balancing
     self._support_psc_google_apis = support_psc_google_apis
     self._support_all_protocol = support_all_protocol
@@ -103,16 +107,15 @@ class CreateHelper(object):
     self._support_source_ip_range = support_source_ip_range
 
   @classmethod
-  def Args(cls, parser, support_global_access,
+  def Args(cls, parser, support_global_access, support_psc_global_access,
            support_l7_internal_load_balancing, support_psc_google_apis,
            support_all_protocol, support_target_service_attachment,
            support_l3_default, support_source_ip_range):
-    cls.FORWARDING_RULE_ARG = _Args(parser, support_global_access,
-                                    support_l7_internal_load_balancing,
-                                    support_psc_google_apis,
-                                    support_all_protocol,
-                                    support_target_service_attachment,
-                                    support_l3_default, support_source_ip_range)
+    cls.FORWARDING_RULE_ARG = _Args(
+        parser, support_global_access, support_psc_global_access,
+        support_l7_internal_load_balancing, support_psc_google_apis,
+        support_all_protocol, support_target_service_attachment,
+        support_l3_default, support_source_ip_range)
 
   def ConstructProtocol(self, messages, args):
     if args.ip_protocol:
@@ -387,12 +390,12 @@ class CreateHelper(object):
           'a target for internal load balancing.')
     elif args.load_balancing_scheme == 'INTERNAL_MANAGED':
       # This is L7ILB.
-      forwarding_rule.portRange = _MakeSingleUnifiedPortRange(args.port_range,
-                                                              range_list)
+      forwarding_rule.portRange = _MakeSingleUnifiedPortRange(
+          args.port_range, range_list)
     elif args.load_balancing_scheme == 'EXTERNAL_MANAGED':
       # This is regional L7XLB.
-      forwarding_rule.portRange = _MakeSingleUnifiedPortRange(args.port_range,
-                                                              range_list)
+      forwarding_rule.portRange = _MakeSingleUnifiedPortRange(
+          args.port_range, range_list)
     elif ((target_ref.Collection() == 'compute.regionBackendServices') and
           ((args.load_balancing_scheme == 'EXTERNAL') or
            (not args.load_balancing_scheme))):
@@ -415,8 +418,8 @@ class CreateHelper(object):
           # API attribute is more appropriate.
           forwarding_rule.portRange = six.text_type(range_list[0])
       elif args.port_range:
-        forwarding_rule.portRange = _MakeSingleUnifiedPortRange(args.port_range,
-                                                                range_list)
+        forwarding_rule.portRange = _MakeSingleUnifiedPortRange(
+            args.port_range, range_list)
     elif ((target_ref.Collection() == 'compute.targetPool' or
            target_ref.Collection() == 'compute.targetInstances') and
           ((args.load_balancing_scheme == 'EXTERNAL') or
@@ -430,18 +433,22 @@ class CreateHelper(object):
       if ports_all_specified:
         forwarding_rule.allPorts = True
       else:
-        forwarding_rule.portRange = _MakeSingleUnifiedPortRange(args.port_range,
-                                                                range_list)
+        forwarding_rule.portRange = _MakeSingleUnifiedPortRange(
+            args.port_range, range_list)
     else:
       # All other regional forwarding rules with load balancing scheme EXTERNAL.
-      forwarding_rule.portRange = _MakeSingleUnifiedPortRange(args.port_range,
-                                                              range_list)
+      forwarding_rule.portRange = _MakeSingleUnifiedPortRange(
+          args.port_range, range_list)
 
     if hasattr(args, 'service_label'):
       forwarding_rule.serviceLabel = args.service_label
 
     if self._support_global_access and args.IsSpecified('allow_global_access'):
       forwarding_rule.allowGlobalAccess = args.allow_global_access
+
+    if self._support_psc_global_access and args.IsSpecified(
+        'allow_psc_global_access'):
+      forwarding_rule.allowPscGlobalAccess = args.allow_psc_global_access
 
     if hasattr(args, 'is_mirroring_collector'):
       forwarding_rule.isMirroringCollector = args.is_mirroring_collector
@@ -538,6 +545,7 @@ class Create(base.CreateCommand):
   """Create a forwarding rule to direct network traffic to a load balancer."""
 
   _support_global_access = True
+  _support_psc_global_access = False
   _support_l7_internal_load_balancing = True
   _support_psc_google_apis = True
   _support_all_protocol = False
@@ -549,6 +557,7 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     CreateHelper.Args(parser, cls._support_global_access,
+                      cls._support_psc_global_access,
                       cls._support_l7_internal_load_balancing,
                       cls._support_psc_google_apis, cls._support_all_protocol,
                       cls._support_target_service_attachment,
@@ -557,7 +566,7 @@ class Create(base.CreateCommand):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return CreateHelper(
-        holder, self._support_global_access,
+        holder, self._support_global_access, self._support_psc_global_access,
         self._support_l7_internal_load_balancing, self._support_psc_google_apis,
         self._support_all_protocol, self._support_target_service_attachment,
         self._support_sd_registration_for_regional, self._support_l3_default,
@@ -568,6 +577,7 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
+  _support_psc_global_access = False
   _support_l7_internal_load_balancing = True
   _support_all_protocol = False
   _support_target_service_attachment = True
@@ -580,6 +590,7 @@ class CreateBeta(Create):
 class CreateAlpha(CreateBeta):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
+  _support_psc_global_access = True
   _support_l7_internal_load_balancing = True
   _support_all_protocol = True
   _support_target_service_attachment = True

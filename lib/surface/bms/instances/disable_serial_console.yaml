@@ -1,4 +1,5 @@
 - release_tracks: [ALPHA]
+  hidden: true
   help_text:
     brief: |
       Disable interactive serial console for a Bare Metal Solution instance.

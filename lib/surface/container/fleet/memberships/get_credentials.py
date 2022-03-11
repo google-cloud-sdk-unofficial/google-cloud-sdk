@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ import textwrap
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.fleet import api_util as hubapi_util
+from googlecloudsdk.command_lib.container.fleet import connect_gateway_util as cg_util
+from googlecloudsdk.command_lib.container.fleet import gwkubeconfig_util as kconfig
 from googlecloudsdk.command_lib.container.fleet.memberships import errors as memberships_errors
-from googlecloudsdk.command_lib.container.hub import api_util as hubapi_util
-from googlecloudsdk.command_lib.container.hub import connect_gateway_util as cg_util
-from googlecloudsdk.command_lib.container.hub import gwkubeconfig_util as kconfig
 from googlecloudsdk.command_lib.projects import util as project_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties

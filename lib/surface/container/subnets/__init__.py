@@ -26,6 +26,8 @@ from googlecloudsdk.core import log
 class Subnets(base.Group):
   """Manage subnets to be used by Google Kubernetes Engine clusters."""
 
+  category = base.COMPUTE_CATEGORY
+
   @staticmethod
   def Args(parser):
     """Add arguments to the parser.
