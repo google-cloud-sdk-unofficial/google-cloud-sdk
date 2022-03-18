@@ -25,5 +25,5 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SerialConsoleSshKeys(base.Group):
-  """Manage interactive serial console SSH keys in Bare Metal Solution."""
+  """Manage SSH keys for accessing the interactive serial console in Bare Metal Solution."""
   pass

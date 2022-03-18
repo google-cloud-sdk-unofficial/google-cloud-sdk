@@ -21,7 +21,7 @@
       policy role and member types.
 
   request: &request
-    api_version: v1beta2
+    api_version: v1
     collection: artifactregistry.projects.locations.repositories
 
   arguments:

@@ -74,6 +74,7 @@ class SetPolicy(base.Command):
     org_policy_api = org_policy_service.OrgPolicyApi(self.ReleaseTrack())
     input_policy = utils.GetMessageFromFile(args.policy_file,
                                             self.ReleaseTrack())
+    update_mask = utils.GetUpdateMaskFromArgs(args)
     if not input_policy.name:
       raise exceptions.InvalidInputError(
           'Name field not present in the organization policy.')
@@ -81,6 +82,10 @@ class SetPolicy(base.Command):
     try:
       policy = org_policy_api.GetPolicy(input_policy.name)
     except api_exceptions.HttpNotFoundError:
+      if update_mask:
+        log.warning('A policy for the input constraint does not exist on the '
+                    'resource and so the flag `--update_mask` will be ignored. '
+                    'The policy will be set as per input policy file.')
       create_response = org_policy_api.CreatePolicy(input_policy)
       log.CreatedResource(input_policy.name, 'policy')
       return create_response
@@ -88,7 +93,6 @@ class SetPolicy(base.Command):
     if policy == input_policy:
       return policy
 
-    update_mask = utils.GetUpdateMaskFromArgs(args)
     update_response = org_policy_api.UpdatePolicy(input_policy, update_mask)
     log.UpdatedResource(input_policy.name, 'policy')
     return update_response

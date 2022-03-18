@@ -92,6 +92,7 @@ from gslib.utils.parallelism_framework_util import ShouldProhibitMultiprocessing
 from gslib.utils.parallelism_framework_util import UI_THREAD_JOIN_TIMEOUT
 from gslib.utils.parallelism_framework_util import ZERO_TASKS_TO_DO_ARGUMENT
 from gslib.utils.rsync_util import RsyncDiffToApply
+from gslib.utils.shim_util import GcloudStorageCommandMixin
 from gslib.utils.system_util import GetTermLines
 from gslib.utils.system_util import IS_WINDOWS
 from gslib.utils.translation_helper import AclTranslation
@@ -490,7 +491,7 @@ CommandSpec = namedtuple(
     ])
 
 
-class Command(HelpProvider):
+class Command(HelpProvider, GcloudStorageCommandMixin):
   """Base class for all gsutil commands."""
 
   # Each subclass must override this with an instance of CommandSpec.
@@ -642,8 +643,8 @@ class Command(HelpProvider):
       raise CommandException('"%s" command implementation is missing a '
                              'command_spec definition.' % self.command_name)
 
-    quiet_mode = not self.logger.isEnabledFor(logging.INFO)
-    ui_controller = UIController(quiet_mode=quiet_mode,
+    self.quiet_mode = not self.logger.isEnabledFor(logging.INFO)
+    ui_controller = UIController(quiet_mode=self.quiet_mode,
                                  dump_status_messages_file=boto.config.get(
                                      'GSUtil', 'dump_status_messages_file',
                                      None))

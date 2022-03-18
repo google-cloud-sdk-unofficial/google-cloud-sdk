@@ -24,6 +24,16 @@ from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags as run_flags
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
+from googlecloudsdk.command_lib.run.integrations import types_describe_printer
+from googlecloudsdk.core.resource import resource_printer
+
+
+class Params:
+  """Simple struct like class that only holds data."""
+
+  def __init__(self, required, optional):
+    self.required = required
+    self.optional = optional
 
 
 @base.Hidden
@@ -53,11 +63,12 @@ class Describe(base.DescribeCommand):
       parser: An argparse.ArgumentParser.
     """
     flags.AddPositionalTypeArg(parser)
+    resource_printer.RegisterFormatter(
+        types_describe_printer.PRINTER_FORMAT,
+        types_describe_printer.TypesDescribePrinter,
+        hidden=True)
     parser.display_info.AddFormat(
-        'table('
-        'name:label="PARAMETER",'
-        'required.yesno(yes="yes", no=""),'
-        'description:label=DESCRIPTION)')
+        types_describe_printer.PRINTER_FORMAT)
 
   def Run(self, args):
     """Describe an integration type."""
@@ -69,4 +80,22 @@ class Describe(base.DescribeCommand):
       if not type_def:
         raise exceptions.ArgumentError(
             'Cannot find integration type [{}]'.format(type_name))
-      return list(type_def['parameters'])
+
+      return {
+          'description': type_def['description'],
+          'example_command': type_def['example_command'],
+          'parameters': self._GetParams(type_def),
+      }
+
+  def _GetParams(self, type_def):
+    required_params = []
+    optional_params = []
+    # Per the PRD, required parameters should come first.
+    for param in type_def['parameters']:
+      required = param.get('required', False)
+      if required:
+        required_params.append(param)
+      else:
+        optional_params.append(param)
+
+    return Params(required=required_params, optional=optional_params)

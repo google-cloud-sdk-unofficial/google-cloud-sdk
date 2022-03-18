@@ -139,7 +139,7 @@ _DETAILED_HELP_TEXT = ("""
               not by saturated with work if too few objects (specified with ``-n``)
               and too few components (specified with ``-y``) are specified.
 
-  -p          Sets the type of `parallelism to be used (only applicable when
+  -p          Sets the type of parallelism to be used (only applicable when
               threads or processes are specified and threads * processes > 1). The
               default is to use ``fan``. Must be one of the following:
 
@@ -230,8 +230,8 @@ _DETAILED_HELP_TEXT = ("""
               between 0 and 100 (inclusive), with 0 generating a file with
               uniform data, and 100 generating random data. When you specify
               the ``-j`` option, files being uploaded are compressed in-memory and
-              on-the-wire only. See ``cp -j
-              <https://cloud.google.com/storage/docs/gsutil/commands/cp#options>``_
+              on-the-wire only. See `cp -j
+              <https://cloud.google.com/storage/docs/gsutil/commands/cp#options>`_
               for specific semantics.
 
 

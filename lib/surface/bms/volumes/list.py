@@ -55,6 +55,7 @@ class List(base.ListCommand):
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.SORT_BY_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
+    flags.FILTER_FLAG_NO_SORTBY_DOC.AddToParser(parser)
 
     flags.AddRegionArgToParser(parser)
     # The default format picks out the components of the relative name:

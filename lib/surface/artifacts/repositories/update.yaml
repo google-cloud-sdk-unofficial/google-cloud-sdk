@@ -28,7 +28,7 @@
       api_field: repository.labels
 
   request:
-    api_version: v1beta1
+    api_version: v1
     collection: artifactregistry.projects.locations.repositories
 
   update:

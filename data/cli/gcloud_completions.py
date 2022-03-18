@@ -6350,6 +6350,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "list": {
                   "commands": {},
                   "flags": {
+                    "--filter": "value",
                     "--limit": "value",
                     "--region": "dynamic"
                   }
@@ -6447,6 +6448,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "list": {
                   "commands": {},
                   "flags": {
+                    "--filter": "value",
                     "--limit": "value",
                     "--region": "dynamic"
                   }
@@ -6520,13 +6522,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--clear-labels": "bool",
                     "--region": "dynamic",
                     "--remove-labels": "value",
-                    "--remove-snapshot-schedule-policy": "bool",
-                    "--snapshot-auto-delete": [
-                      "disabled",
-                      "newest-first",
-                      "oldest-first"
-                    ],
-                    "--snapshot-schedule-policy": "dynamic",
                     "--update-labels": "value"
                   }
                 }
@@ -8515,6 +8510,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--auto-renew": "bool",
                     "--local-ssd": "value",
                     "--machine-type": "value",
+                    "--merge-source-commitments": "value",
                     "--min-cpu-platform": "value",
                     "--plan": [
                       "12-month",
@@ -14901,6 +14897,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--compress": "bool",
+                "--dest-group": "value",
                 "--dry-run": "bool",
                 "--force-key-file-overwrite": "bool",
                 "--internal-ip": "bool",
@@ -15333,6 +15330,9 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--source-disk-key-file": "value",
                     "--source-disk-region": "dynamic",
                     "--source-disk-zone": "dynamic",
+                    "--source-instant-snapshot": "dynamic",
+                    "--source-instant-snapshot-region": "dynamic",
+                    "--source-instant-snapshot-zone": "dynamic",
                     "--storage-location": "value"
                   }
                 },
@@ -15429,6 +15429,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--min-nodes": "value",
                         "--node-template": "value",
                         "--share-setting": [
+                          "local",
                           "organization",
                           "projects"
                         ],
@@ -15511,6 +15512,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--min-nodes": "value",
                         "--node-template": "value",
                         "--share-setting": [
+                          "local",
                           "organization",
                           "projects"
                         ],
@@ -15634,6 +15636,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--command": "value",
                 "--container": "value",
+                "--dest-group": "value",
                 "--dry-run": "bool",
                 "--force-key-file-overwrite": "bool",
                 "--internal-ip": "bool",
@@ -15796,6 +15799,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "start-iap-tunnel": {
               "commands": {},
               "flags": {
+                "--dest-group": "value",
                 "--iap-tunnel-disable-connection-check": "bool",
                 "--local-host-port": "value",
                 "--network": "value",
@@ -17384,6 +17388,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--max-nodes": "value",
                         "--min-nodes": "value",
                         "--node-version": "value",
+                        "--security-group-ids": "value",
                         "--validate-only": "bool"
                       }
                     }
@@ -18424,6 +18429,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--database-encryption-key": "value",
                     "--default-max-pods-per-node": "value",
                     "--disable-default-snat": "bool",
+                    "--disable-pod-cidr-overprovision": "bool",
                     "--disk-size": "value",
                     "--disk-type": [
                       "pd-balanced",
@@ -19532,6 +19538,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--boot-disk-kms-key": "value",
                     "--cluster": "value",
                     "--create-pod-ipv4-range": "value",
+                    "--disable-pod-cidr-overprovision": "bool",
                     "--disk-size": "value",
                     "--disk-type": [
                       "pd-balanced",
@@ -23244,6 +23251,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--location": "value"
                   }
                 },
+                "get-iam-policy": {
+                  "commands": {},
+                  "flags": {}
+                },
                 "list": {
                   "commands": {},
                   "flags": {
@@ -23253,6 +23264,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--sort-by": "value",
                     "--uri": "bool"
+                  }
+                },
+                "set-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--policy-file": "value"
                   }
                 },
                 "update": {
@@ -31857,44 +31874,6 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
-            "routers": {
-              "commands": {
-                "delete": {
-                  "commands": {},
-                  "flags": {
-                    "--async": "bool",
-                    "--location": "value"
-                  }
-                },
-                "export": {
-                  "commands": {},
-                  "flags": {
-                    "--destination": "value",
-                    "--location": "value"
-                  }
-                },
-                "import": {
-                  "commands": {},
-                  "flags": {
-                    "--async": "bool",
-                    "--location": "value",
-                    "--source": "value"
-                  }
-                },
-                "list": {
-                  "commands": {},
-                  "flags": {
-                    "--filter": "value",
-                    "--limit": "value",
-                    "--location": "value",
-                    "--page-size": "value",
-                    "--sort-by": "value",
-                    "--uri": "bool"
-                  }
-                }
-              },
-              "flags": {}
-            },
             "service-bindings": {
               "commands": {
                 "create": {
@@ -39878,7 +39857,6 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--repository-format": [
                   "apt",
                   "docker",
-                  "googet",
                   "maven",
                   "npm",
                   "python",
@@ -53924,6 +53902,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--database-encryption-key": "value",
                     "--default-max-pods-per-node": "value",
                     "--disable-default-snat": "bool",
+                    "--disable-pod-cidr-overprovision": "bool",
                     "--disk-size": "value",
                     "--disk-type": [
                       "pd-balanced",
@@ -54889,6 +54868,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--boot-disk-kms-key": "value",
                     "--cluster": "value",
                     "--create-pod-ipv4-range": "value",
+                    "--disable-pod-cidr-overprovision": "bool",
                     "--disk-size": "value",
                     "--disk-type": [
                       "pd-balanced",
@@ -72247,6 +72227,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "list": {
               "commands": {},
               "flags": {
+                "--filter": "value",
                 "--limit": "value",
                 "--region": "dynamic"
               }
@@ -72256,6 +72237,22 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--async": "bool",
                 "--region": "dynamic"
+              }
+            },
+            "start": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--region": "dynamic"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--clear-labels": "bool",
+                "--region": "dynamic",
+                "--remove-labels": "value",
+                "--update-labels": "value"
               }
             }
           },
@@ -72275,6 +72272,43 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--filter": "value",
                 "--limit": "value",
                 "--region": "dynamic"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--clear-labels": "bool",
+                "--region": "dynamic",
+                "--remove-labels": "value",
+                "--update-labels": "value"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "nfs-shares": {
+          "commands": {
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--region": "dynamic"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--region": "dynamic"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--clear-labels": "bool",
+                "--region": "dynamic",
+                "--remove-labels": "value",
+                "--update-labels": "value"
               }
             }
           },
@@ -72304,6 +72338,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "list": {
               "commands": {},
               "flags": {
+                "--filter": "value",
                 "--limit": "value",
                 "--region": "dynamic"
               }
@@ -72328,6 +72363,15 @@ STATIC_COMPLETION_CLI_TREE = {
                 }
               },
               "flags": {}
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--clear-labels": "bool",
+                "--region": "dynamic",
+                "--remove-labels": "value",
+                "--update-labels": "value"
+              }
             }
           },
           "flags": {}
@@ -80393,6 +80437,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--max-nodes": "value",
                     "--min-nodes": "value",
                     "--node-version": "value",
+                    "--security-group-ids": "value",
                     "--validate-only": "bool"
                   }
                 }
@@ -88345,6 +88390,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--iam-account": "value"
               }
             },
+            "undelete": {
+              "commands": {},
+              "flags": {}
+            },
             "update": {
               "commands": {},
               "flags": {
@@ -91725,6 +91774,24 @@ STATIC_COMPLETION_CLI_TREE = {
           },
           "flags": {}
         },
+        "locations": {
+          "commands": {
+            "describe": {
+              "commands": {},
+              "flags": {}
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--page-size": "value",
+                "--sort-by": "value"
+              }
+            }
+          },
+          "flags": {}
+        },
         "operations": {
           "commands": {
             "describe": {
@@ -93954,6 +94021,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--enable-auth": "bool",
                 "--labels": "value",
                 "--network": "value",
+                "--read-replicas-mode": [
+                  "read-replicas-disabled",
+                  "read-replicas-enabled"
+                ],
                 "--redis-config": "value",
                 "--redis-version": [
                   "redis_3_2",
@@ -93962,6 +94033,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "redis_6_x"
                 ],
                 "--region": "dynamic",
+                "--replica-count": "value",
                 "--reserved-ip-range": "value",
                 "--size": "value",
                 "--tier": [
@@ -94037,9 +94109,15 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--clear-labels": "bool",
                 "--display-name": "value",
                 "--enable-auth": "bool",
+                "--read-replicas-mode": [
+                  "read-replicas-disabled",
+                  "read-replicas-enabled"
+                ],
                 "--region": "dynamic",
                 "--remove-labels": "value",
                 "--remove-redis-config": "value",
+                "--replica-count": "value",
+                "--secondary-ip-range": "value",
                 "--size": "value",
                 "--update-labels": "value",
                 "--update-redis-config": "value"
@@ -97619,6 +97697,256 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--sort-by": "value",
                 "--uri": "bool"
               }
+            }
+          },
+          "flags": {}
+        }
+      },
+      "flags": {}
+    },
+    "transfer": {
+      "commands": {
+        "agent-pools": {
+          "commands": {
+            "create": {
+              "commands": {},
+              "flags": {
+                "--bandwidth-limit": "value",
+                "--display-name": "value",
+                "--no-async": "bool"
+              }
+            },
+            "delete": {
+              "commands": {},
+              "flags": {}
+            },
+            "describe": {
+              "commands": {},
+              "flags": {}
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--limit": "value",
+                "--names": "value",
+                "--page-size": "value"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--bandwidth-limit": "value",
+                "--clear-bandwidth-limit": "bool",
+                "--clear-display-name": "bool",
+                "--display-name": "value"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "agents": {
+          "commands": {
+            "delete": {
+              "commands": {},
+              "flags": {
+                "--all": "bool",
+                "--ids": "value",
+                "--uninstall": "bool"
+              }
+            },
+            "install": {
+              "commands": {},
+              "flags": {
+                "--count": "value",
+                "--creds-file": "value",
+                "--id-prefix": "value",
+                "--logs-directory": "value",
+                "--memlock-limit": "value",
+                "--mount-directories": "value",
+                "--pool": "value",
+                "--proxy": "value"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "authorize": {
+          "commands": {},
+          "flags": {
+            "--add-missing": "bool",
+            "--creds-file": "value"
+          }
+        },
+        "jobs": {
+          "commands": {
+            "create": {
+              "commands": {},
+              "flags": {
+                "--custom-storage-class": "value",
+                "--delete-from": [
+                  "destination-if-unique",
+                  "source-after-transfer"
+                ],
+                "--description": "value",
+                "--destination-agent-pool": "value",
+                "--do-not-run": "bool",
+                "--exclude-prefixes": "value",
+                "--include-modified-after-absolute": "value",
+                "--include-modified-after-relative": "value",
+                "--include-modified-before-absolute": "value",
+                "--include-modified-before-relative": "value",
+                "--include-prefixes": "value",
+                "--intermediate-storage-path": "value",
+                "--log-action-states": "value",
+                "--log-actions": "value",
+                "--manifest-file": "value",
+                "--name": "value",
+                "--no-async": "bool",
+                "--notification-event-types": "value",
+                "--notification-payload-format": [
+                  "json",
+                  "none"
+                ],
+                "--notification-pubsub-topic": "value",
+                "--overwrite-when": [
+                  "always",
+                  "different"
+                ],
+                "--preserve-metadata": "value",
+                "--schedule-repeats-every": "value",
+                "--schedule-repeats-until": "value",
+                "--schedule-starts": "value",
+                "--source-agent-pool": "value",
+                "--source-creds-file": "value"
+              }
+            },
+            "delete": {
+              "commands": {},
+              "flags": {}
+            },
+            "describe": {
+              "commands": {},
+              "flags": {}
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--expand-table": "bool",
+                "--job-names": "value",
+                "--job-statuses": "value",
+                "--limit": "value",
+                "--page-size": "value"
+              }
+            },
+            "monitor": {
+              "commands": {},
+              "flags": {}
+            },
+            "run": {
+              "commands": {},
+              "flags": {
+                "--no-async": "bool"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--clear-custom-storage-class": "bool",
+                "--clear-delete-from": "bool",
+                "--clear-description": "bool",
+                "--clear-destination-agent-pool": "bool",
+                "--clear-exclude-prefixes": "bool",
+                "--clear-include-modified-after-absolute": "bool",
+                "--clear-include-modified-after-relative": "bool",
+                "--clear-include-modified-before-absolute": "bool",
+                "--clear-include-modified-before-relative": "bool",
+                "--clear-include-prefixes": "bool",
+                "--clear-intermediate-storage-path": "bool",
+                "--clear-log-config": "bool",
+                "--clear-manifest-file": "bool",
+                "--clear-notification-config": "bool",
+                "--clear-notification-event-types": "bool",
+                "--clear-preserve-metadata": "bool",
+                "--clear-schedule": "bool",
+                "--clear-source-agent-pool": "bool",
+                "--clear-source-creds-file": "bool",
+                "--custom-storage-class": "value",
+                "--delete-from": [
+                  "destination-if-unique",
+                  "source-after-transfer"
+                ],
+                "--description": "value",
+                "--destination": "value",
+                "--destination-agent-pool": "value",
+                "--exclude-prefixes": "value",
+                "--include-modified-after-absolute": "value",
+                "--include-modified-after-relative": "value",
+                "--include-modified-before-absolute": "value",
+                "--include-modified-before-relative": "value",
+                "--include-prefixes": "value",
+                "--intermediate-storage-path": "value",
+                "--log-action-states": "value",
+                "--log-actions": "value",
+                "--manifest-file": "value",
+                "--notification-event-types": "value",
+                "--notification-payload-format": [
+                  "json",
+                  "none"
+                ],
+                "--notification-pubsub-topic": "value",
+                "--overwrite-when": [
+                  "always",
+                  "different"
+                ],
+                "--preserve-metadata": "value",
+                "--schedule-repeats-every": "value",
+                "--schedule-repeats-until": "value",
+                "--schedule-starts": "value",
+                "--source": "value",
+                "--source-agent-pool": "value",
+                "--source-creds-file": "value",
+                "--status": [
+                  "deleted",
+                  "disabled",
+                  "enabled"
+                ]
+              }
+            }
+          },
+          "flags": {}
+        },
+        "operations": {
+          "commands": {
+            "cancel": {
+              "commands": {},
+              "flags": {}
+            },
+            "describe": {
+              "commands": {},
+              "flags": {}
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--expand-table": "bool",
+                "--job-names": "value",
+                "--limit": "value",
+                "--operation-names": "value",
+                "--operation-statuses": "value",
+                "--page-size": "value"
+              }
+            },
+            "monitor": {
+              "commands": {},
+              "flags": {}
+            },
+            "pause": {
+              "commands": {},
+              "flags": {}
+            },
+            "resume": {
+              "commands": {},
+              "flags": {}
             }
           },
           "flags": {}

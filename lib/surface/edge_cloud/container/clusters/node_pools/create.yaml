@@ -49,6 +49,14 @@
         Only machines matching this filter will be allowed to join the node
         pool. The filtering language accepts strings like "name=<name>", and is
         documented in more detail at https://google.aip.dev/160.
+    - arg_name: local-disk-kms-key
+      api_field: nodePool.localDiskEncryption.kmsKey
+      help_text: |
+        Google Cloud KMS key that will be used to secure local disks on nodes
+        in this node pool. The Edge Container service account for this project
+        must have `roles/cloudkms.cryptoKeyEncrypterDecrypter` on the key.
+
+        If not provided, a Google-managed key will be used instead.
     labels:
       api_field: nodePool.labels
 

@@ -50,15 +50,15 @@ class Create(base.CreateCommand):
 
       $ {command} prod-root \
           --location=us-west1 --pool=my-pool \
-          --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1" \
-          --subject="CN=Joonix Production Root CA, O=Google" \
+          --kms-key-version="projects/my-project-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1" \
+          --subject="CN=Example Production Root CA, O=Google" \
           --max-chain-length=1
 
   To create a root CA that is based on an existing CA:
 
       $ {command} prod-root \
           --location=us-west1 --pool=my-pool \
-          --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1" \
+          --kms-key-version="projects/my-project-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1" \
           --from-ca=source-root
   """
 
@@ -204,25 +204,25 @@ class CreateBeta(Create):
   To create a root CA that supports one layer of subordinates:
 
       $ {command} prod-root \
-        --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1"
+        --kms-key-version="projects/my-project-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1"
         \
-        --subject="CN=Joonix Production Root CA, O=Google" \
+        --subject="CN=Example Production Root CA, O=Google" \
         --max-chain-length=1
 
   To create a root CA and restrict what it can issue:
 
       $ {command} prod-root \
-        --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1"
+        --kms-key-version="projects/my-project-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1"
         \
-        --subject="CN=Joonix Production Root CA, O=Google" \
+        --subject="CN=Example Production Root CA, O=Google" \
         --issuance-policy=policy.yaml
 
   To create a root CA that doesn't publicly publish CA certificate and CRLs:
 
       $ {command} root-2 \
-        --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1"
+        --kms-key-version="projects/my-project-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1"
         \
-        --subject="CN=Joonix Production Root CA, O=Google" \
+        --subject="CN=Example Production Root CA, O=Google" \
         --issuance-policy=policy.yaml \
         --no-publish-ca-cert \
         --no-publish-crl
@@ -230,7 +230,7 @@ class CreateBeta(Create):
   To create a root CA that is based on an existing CA:
 
       $ {command} prod-root \
-        --kms-key-version="projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1"
+        --kms-key-version="projects/my-project-pki/locations/us-west1/keyRings/kr1/cryptoKeys/k1/cryptoKeyVersions/1"
         \
         --from-ca=source-root --from-ca-location=us-central1
   """

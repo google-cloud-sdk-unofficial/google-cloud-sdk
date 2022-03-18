@@ -162,12 +162,12 @@ information on how to structure KEYs and VALUEs, run
 
       Must be of the form `X.Y[.Z]`.
 
-      The latest supported Cloud Composer version will be used within
-      the created environment.""")
+      The current Cloud Composer version will be used within the created
+      environment.""")
 
   image_version_type = arg_parsers.RegexpValidator(
-      r'^composer-(\d+\.\d+.\d+(?:-[a-z]+\.\d+)?|latest)-airflow-(\d+\.\d+(?:\.\d+)?)',
-      'must be in the form \'composer-A.B.C[-D.E]-airflow-X.Y[.Z]\' or '
+      r'^composer-(\d+(?:\.\d+.\d+(?:-[a-z]+\.\d+)?)?|latest)-airflow-(\d+\.\d+(?:\.\d+)?)',
+      'must be in the form \'composer-A[.B.C[-D.E]]-airflow-X.Y[.Z]\' or '
       '\'latest\' can be provided in place of the Cloud Composer version '
       'string. For example: \'composer-latest-airflow-1.10.0\'.')
   version_group.add_argument(
@@ -177,7 +177,7 @@ information on how to structure KEYs and VALUEs, run
 
       The image version encapsulates the versions of both Cloud Composer
       and Apache Airflow. Must be of the form
-      `composer-A.B.C[-D.E]-airflow-X.Y[.Z]`.
+      `composer-A[.B.C[-D.E]]-airflow-X.Y[.Z]`.
 
       The Cloud Composer and Airflow versions are semantic versions.
       `latest` can be provided instead of an explicit Cloud Composer

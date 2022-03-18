@@ -30,7 +30,7 @@ import six
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          List Bare Metal Solution interactive serial console SSH keys in a project.
+          List the SSH keys added to the project for accessing the interactive serial console in Bare Metal Solution.
         """,
     'EXAMPLES':
         """
@@ -44,7 +44,7 @@ DETAILED_HELP = {
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(six.with_metaclass(abc.ABCMeta, base.CacheCommand)):
-  """List Bare Metal Solution interactive serial console SSH keys in a project."""
+  """List the SSH keys added to the project for accessing the interactive serial console in Bare Metal Solution."""
 
   @staticmethod
   def Args(parser):

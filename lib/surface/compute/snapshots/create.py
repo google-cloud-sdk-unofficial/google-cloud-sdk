@@ -32,31 +32,49 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+def _GAArgs(parser):
+  """Set Args based on Release Track."""
+
+  # GA specific args
+  parser.add_argument('name', help='The name of the snapshot.')
+  snap_flags.AddChainArg(parser)
+  snap_flags.AddSourceDiskCsekKey(parser)
+  flags.AddGuestFlushFlag(parser, 'snapshot', custom_help="""
+  Create an application-consistent snapshot by informing the OS
+  to prepare for the snapshot process. Currently only supported
+  for creating snapshots of disks attached to Windows instances.
+  """)
+  flags.AddStorageLocationFlag(parser, 'snapshot')
+  labels_util.AddCreateLabelsFlags(parser)
+  csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
+  base.ASYNC_FLAG.AddToParser(parser)
+  parser.add_argument(
+      '--description',
+      help=('Text to describe the new snapshot.'))
+  snap_flags.SOURCE_DISK_ARG.AddArgument(parser)
+
+
+def _BetaArgs(parser):
+  _GAArgs(parser)
+
+
+def _AlphaArgs(parser):
+  _GAArgs(parser)
+  snap_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create snapshots of Google Compute Engine persistent disks."""
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('name', help='The name of the snapshot.')
-    snap_flags.AddChainArg(parser)
-    snap_flags.AddSourceDiskCsekKey(parser)
-    flags.AddGuestFlushFlag(parser, 'snapshot', custom_help="""
-    Create an application-consistent snapshot by informing the OS
-    to prepare for the snapshot process. Currently only supported
-    for creating snapshots of disks attached to Windows instances.
-    """)
-    flags.AddStorageLocationFlag(parser, 'snapshot')
-    labels_util.AddCreateLabelsFlags(parser)
-    csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
-    base.ASYNC_FLAG.AddToParser(parser)
-    parser.add_argument(
-        '--description',
-        help=('Text to describe the new snapshot.'))
-    snap_flags.SOURCE_DISK_ARG.AddArgument(parser)
+    _GAArgs(parser)
 
   def Run(self, args):
+    return self._Run(args)
+
+  def _Run(self, args, support_source_instant_snapshot=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
@@ -97,6 +115,11 @@ class Create(base.CreateCommand):
       snapshot_message.guestFlush = True
     if args.chain_name:
       snapshot_message.chainName = args.chain_name
+    if support_source_instant_snapshot and args.source_instant_snapshot:
+      iss_ref = snap_flags.SOURCE_INSTANT_SNAPSHOT_ARG.ResolveAsResource(
+          args, holder.resources,
+          scope_lister=flags.GetDefaultScopeLister(holder.client))
+      snapshot_message.sourceInstantSnapshot = iss_ref.SelfLink()
 
     request = messages.ComputeSnapshotsInsertRequest(
         snapshot=snapshot_message,
@@ -120,6 +143,28 @@ class Create(base.CreateCommand):
     return waiter.WaitFor(
         operation_poller, operation_ref,
         'Creating gce snapshot {0}'.format(snap_ref.Name()))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+
+  @staticmethod
+  def Args(parser):
+    _BetaArgs(parser)
+
+  def Run(self, args):
+    return self._Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+
+  @staticmethod
+  def Args(parser):
+    _AlphaArgs(parser)
+
+  def Run(self, args):
+    return self._Run(args, support_source_instant_snapshot=True)
 
 
 Create.detailed_help = {

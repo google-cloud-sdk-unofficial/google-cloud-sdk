@@ -426,6 +426,7 @@ class Ssh(base.Command):
       # will result in ssh.CommandError being raised above.
       sys.exit(return_code)
 
+  # TODO(b/196572980): Update this to work with on-prem. Can't expect instance.
   def createRecommendMessage(self, args, instance_name, instance_ref, project):
     release_track = ReleaseTrack.get(str(self.ReleaseTrack()).lower())
     release_track = release_track + ' ' if release_track else ''

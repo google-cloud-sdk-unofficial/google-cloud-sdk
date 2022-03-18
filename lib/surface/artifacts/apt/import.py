@@ -32,7 +32,7 @@ from googlecloudsdk.core import resources
 class Import(base.Command):
   """Import one or more Debian packages into an artifact repository."""
 
-  api_version = 'v1beta2'
+  api_version = 'v1'
 
   @staticmethod
   def Args(parser):
@@ -94,12 +94,11 @@ class Import(base.Command):
 class ImportAlpha(Import):
   """Import one or more Debian packages into an artifact repository."""
 
-  api_version = 'v1alpha1'
+  api_version = 'v1'
 
   def Run(self, args):
     """Run package import command."""
     client = apis.GetClientInstance('artifactregistry', self.api_version)
-    beta2client = apis.GetClientInstance('artifactregistry', 'v1beta2')
     messages = client.MESSAGES_MODULE
 
     for gcs_source in args.gcs_source:
@@ -108,14 +107,14 @@ class ImportAlpha(Import):
             'GCS_SOURCE', 'Wildcards must be at the end of the GCS path.')
 
     repo_ref = args.CONCEPTS.repository.Parse()
-    gcs_source = messages.GoogleDevtoolsArtifactregistryV1alpha1ImportAptArtifactsGcsSource(
+    gcs_source = messages.ImportAptArtifactsGcsSource(
         uris=args.gcs_source,
         useWildcards=True)
-    import_request = messages.GoogleDevtoolsArtifactregistryV1alpha1ImportAptArtifactsRequest(
+    import_request = messages.ImportAptArtifactsRequest(
         gcsSource=gcs_source)
 
     request = messages.ArtifactregistryProjectsLocationsRepositoriesAptArtifactsImportRequest(
-        googleDevtoolsArtifactregistryV1alpha1ImportAptArtifactsRequest=import_request,
+        importAptArtifactsRequest=import_request,
         parent=repo_ref.RelativeName())
 
     op = client.projects_locations_repositories_aptArtifacts.Import(request)
@@ -128,7 +127,7 @@ class ImportAlpha(Import):
     else:
       result = waiter.WaitFor(
           waiter.CloudOperationPollerNoResources(
-              beta2client.projects_locations_operations),
+              client.projects_locations_operations),
           op_ref, 'Importing package(s)')
 
       return result

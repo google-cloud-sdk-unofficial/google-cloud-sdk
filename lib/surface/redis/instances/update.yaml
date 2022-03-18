@@ -77,12 +77,10 @@
     - arg_name: replica-count
       api_field: instance.replicaCount
       type: long
-      release_tracks: [BETA, ALPHA]
       help_text: |
         The replica count of the instance. Valid from 0 to 5.
     - arg_name: read-replicas-mode
       api_field: instance.readReplicasMode
-      release_tracks: [BETA, ALPHA]
       help_text: |
           Read replicas mode used by the instance. Only works against standard tier instances with
           5GB and above provisioned capacity and Redis version 5.0 and above.
@@ -102,7 +100,6 @@
             enabled for the instance, update operation fails
     - arg_name: secondary-ip-range
       api_field: instance.secondaryIpRange
-      release_tracks: [BETA, ALPHA]
       help_text: |
         Required only when read-replicas-mode is enabled on the instance. The CIDR range of
         internal addresses that are reserved for this instance. For example, 10.0.0.0/28 or
@@ -184,6 +181,8 @@
       - googlecloudsdk.command_lib.redis.instances_update_util:RemoveRedisConfigs
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdateRedisConfigs
       - googlecloudsdk.command_lib.redis.instances_update_util:UpdateAuthEnabled
+      - googlecloudsdk.command_lib.redis.instances_update_util:UpdateReplicaCount
+      - googlecloudsdk.command_lib.redis.instances_update_util:UpdateReadReplicasMode
     collection: redis.projects.locations.instances
 
 

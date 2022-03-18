@@ -35,7 +35,7 @@ from googlecloudsdk.core import properties
 
 _CreateTargetArgs = collections.namedtuple('_TargetArgs', [
     'project', 'zone', 'instance', 'interface', 'port', 'region', 'network',
-    'host'
+    'host', 'dest_group'
 ])
 
 _ON_PREM_EXTRA_DESCRIPTION = """
@@ -161,7 +161,8 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
 
     if target.host:
       iap_tunnel_helper.ConfigureForHost(target.region, target.network,
-                                         target.host, target.port)
+                                         target.host, target.port,
+                                         target.dest_group)
     else:
       iap_tunnel_helper.ConfigureForInstance(target.zone, target.instance,
                                              target.interface, target.port)
@@ -187,6 +188,7 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
           network=args.network,
           host=args.instance_name,
           port=args.instance_port,
+          dest_group=args.dest_group,
           zone=None,
           instance=None,
           interface=None)
@@ -208,7 +210,8 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
         port=args.instance_port,
         region=None,
         network=None,
-        host=None)
+        host=None,
+        dest_group=None)
 
   def _GetLocalHostPort(self, args):
     local_host_arg = args.local_host_port.host or 'localhost'

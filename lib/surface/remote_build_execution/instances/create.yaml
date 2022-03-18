@@ -27,4 +27,4 @@
       required: false
       default: "us-central1"
       help_text: |
-        The Cloud location to create the instance in.  Currently this can only be 'us-central1'.
+        The Cloud location to create the instance in.

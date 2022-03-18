@@ -48,7 +48,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Bare Metal Solution network."""
 
@@ -72,7 +72,7 @@ class Update(base.UpdateCommand):
     if not labels_diff.MayHaveUpdates():
       raise exceptions.NoConfigurationChangeError(
           'No configuration change was requested. Did you mean to include the '
-          'flags `--update-labels` `--delete-labels` or `--clear-labels`?')
+          'flags `--update-labels` `--remove-labels` or `--clear-labels`?')
 
     op_ref = client.UpdateNetwork(
         network_resource=network, labels=labels_update)

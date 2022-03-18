@@ -146,7 +146,6 @@
         Date and time of the first snapshot in the ISO 1801 format, and alignment time for future snapshots. For example, 2022-11-02T03:00:00Z.
     - arg_name: read-replicas-mode
       api_field: instance.readReplicasMode
-      release_tracks: [BETA, ALPHA]
       help_text: |
         Read replicas mode used by the instance. Only works against standard tier instances with 5GB
         and above provisioned capacity.
@@ -166,7 +165,6 @@
     - arg_name: replica-count
       api_field: instance.replicaCount
       type: long
-      release_tracks: [BETA, ALPHA]
       help_text: |
         The replica count of the instance.
     - arg_name: redis-version
@@ -224,4 +222,6 @@
       - googlecloudsdk.command_lib.redis.instances_create_util:AddDefaultReplicaCount
     GA:
       api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.redis.instances_create_util:AddDefaultReplicaCount
     collection: redis.projects.locations.instances

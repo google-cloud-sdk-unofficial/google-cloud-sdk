@@ -1,4 +1,98 @@
-- release_tracks: [ALPHA, BETA, GA]
+- release_tracks: [GA]
+
+  help_text:
+    brief: |
+      Create an Artifact Registry repository.
+    description: |
+      Create a new Artifact Registry repository.
+
+      This command can fail for the following reasons:
+        * A repository with the same name already exists.
+        * The active account does not have permission to create repositories.
+        * A valid repository format was not provided.
+    examples: |
+      To create a repository with the name `my-repo` under the current project, run:
+
+        $ {command} my-repo
+
+      To create repository `my-repo` with a KMS key
+      `projects/my-project/locations/us/keyRings/my-kr/cryptoKeys/my-key`, run:
+
+        $ {command} my-repo --kms-key=projects/my-project/locations/us/keyRings/my-kr/cryptoKeys/my-key
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.artifacts.resources:repository_without_property
+      help_text: |
+        The Artifact Registry repository to create.
+    params:
+    - arg_name: repository-format
+      required: true
+      api_field: repository.format
+      help_text: |
+        Format of the repository.
+      choices:  # Enum is mapped to keep FORMAT_UNSPECIFIED invisible from users.
+      - arg_value: DOCKER
+        enum_value: DOCKER
+        help_text: Docker image format.
+      - arg_value: MAVEN
+        enum_value: MAVEN
+        help_text: Maven package format.
+      - arg_value: NPM
+        enum_value: NPM
+        help_text: NPM package format.
+      - arg_value: APT
+        enum_value: APT
+        help_text: APT package format.
+      - arg_value: YUM
+        enum_value: YUM
+        help_text: YUM package format.
+      - arg_value: PYTHON
+        enum_value: PYTHON
+        help_text: Python package format.
+    - arg_name: description
+      api_field: repository.description
+      help_text: |
+        Description for the repository.
+    - arg_name: kms-key
+      api_field: repository.kmsKeyName
+      help_text: |
+        Name of the encryption key that's used for encrypting the contents of the repository.
+    - arg_name: allow-snapshot-overwrites
+      type: bool
+      default: false
+      api_field: repository.mavenConfig.allowSnapshotOverwrites
+      help_text: |
+        (Maven only) Allow repository users to publish a snapshot that overwrites the same snapshot version in the repository.
+    - arg_name: version-policy
+      api_field: repository.mavenConfig.versionPolicy
+      default: NONE
+      help_text: |
+        (Maven only) The package versions that the repository will store.
+      choices:
+      - arg_value: NONE
+        enum_value: VERSION_POLICY_UNSPECIFIED
+        help_text: (Maven only) The repository doesn't validate the version type.
+      - arg_value: RELEASE
+        enum_value: RELEASE
+        help_text: (Maven only) The repository accepts release versions only.
+      - arg_value: SNAPSHOT
+        enum_value: SNAPSHOT
+        help_text: (Maven only) The repository accepts snapshot versions only.
+    labels:
+      api_field: repository.labels
+
+  async:
+    collection: artifactregistry.projects.locations.operations
+
+  request:
+    api_version: v1
+    collection: artifactregistry.projects.locations.repositories
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.artifacts.util:CheckServiceAccountPermission
+    - googlecloudsdk.command_lib.artifacts.util:AppendRepoDataToRequest
+
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: |

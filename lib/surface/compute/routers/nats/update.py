@@ -34,6 +34,7 @@ from googlecloudsdk.core import resources
 class Update(base.UpdateCommand):
   """Update a NAT on a Compute Engine router."""
   with_private_nat = False
+  with_subnet_all = False
 
   @classmethod
   def Args(cls, parser):
@@ -45,7 +46,11 @@ class Update(base.UpdateCommand):
     compute_flags.AddRegionFlag(parser, 'NAT', operation_type='create')
 
     nats_flags.AddNatNameArg(parser, operation_type='create')
-    nats_flags.AddCommonNatArgs(parser, for_create=False)
+    nats_flags.AddCommonNatArgs(
+        parser,
+        for_create=False,
+        with_private_nat=cls.with_private_nat,
+        with_subnet_all=cls.with_subnet_all)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -60,7 +65,8 @@ class Update(base.UpdateCommand):
     # Retrieve specified NAT and update base fields.
     existing_nat = nats_utils.FindNatOrRaise(replacement, args.name)
     nat = nats_utils.UpdateNatMessage(existing_nat, args, holder,
-                                      self.with_private_nat)
+                                      self.with_private_nat,
+                                      self.with_subnet_all)
 
     request_type = messages.ComputeRoutersPatchRequest
     result = service.Patch(
@@ -106,6 +112,7 @@ class Update(base.UpdateCommand):
 class UpdateAlpha(Update):
   """Update a NAT on a Compute Engine router."""
   with_private_nat = True
+  with_subnet_all = True
 
 
 Update.detailed_help = {

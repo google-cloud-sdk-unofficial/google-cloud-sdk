@@ -94,8 +94,8 @@ class ListAlpha(List):
 
 def _TransformShareSettings(share_setting):
   """"Transforms share settings to detailed share settings information."""
-  if not share_setting:
-    return 'none'
+  if not share_setting or share_setting['shareType'] == 'LOCAL':
+    return 'local'
   elif share_setting['shareType'] == 'SPECIFIC_PROJECTS':
     return 'specific_project:' + ','.join(share_setting['projects'])
   elif share_setting['shareType'] == 'ORGANIZATION':

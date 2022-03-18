@@ -91,12 +91,12 @@ class CreateHelper(object):
 
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
-           support_logging, support_multinic, support_client_only,
-           support_grpc_protocol, support_unspecified_protocol,
-           support_subsetting, support_subsetting_subset_size,
-           support_strong_session_affinity, support_advanced_load_balancing,
-           support_service_bindings, support_dynamic_compression,
-           support_weighted_lb):
+           support_logging, support_tcp_ssl_logging, support_multinic,
+           support_client_only, support_grpc_protocol,
+           support_unspecified_protocol, support_subsetting,
+           support_subsetting_subset_size, support_strong_session_affinity,
+           support_advanced_load_balancing, support_service_bindings,
+           support_dynamic_compression, support_weighted_lb):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -150,8 +150,12 @@ class CreateHelper(object):
       flags.AddFailoverRatio(parser)
 
     if support_logging:
-      flags.AddEnableLogging(parser)
-      flags.AddLoggingSampleRate(parser)
+      if support_tcp_ssl_logging:
+        flags.AddEnableLoggingProtocols(parser)
+        flags.AddLoggingSampleRateProtocols(parser)
+      else:
+        flags.AddEnableLogging(parser)
+        flags.AddLoggingSampleRate(parser)
 
     if support_multinic:
       flags.AddNetwork(parser)
@@ -170,13 +174,15 @@ class CreateHelper(object):
       flags.AddCompressionMode(parser)
 
   def __init__(self, support_l7_internal_load_balancer, support_failover,
-               support_logging, support_multinic, support_subsetting,
-               support_subsetting_subset_size, support_strong_session_affinity,
-               support_advanced_load_balancing, support_service_bindings,
-               support_dynamic_compression, support_weighted_lb):
+               support_logging, support_tcp_ssl_logging, support_multinic,
+               support_subsetting, support_subsetting_subset_size,
+               support_strong_session_affinity, support_advanced_load_balancing,
+               support_service_bindings, support_dynamic_compression,
+               support_weighted_lb):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
+    self._support_tcp_ssl_logging = support_tcp_ssl_logging
     self._support_multinic = support_multinic
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
@@ -267,7 +273,8 @@ class CreateHelper(object):
         client.messages,
         args,
         backend_service,
-        support_logging=self._support_logging)
+        support_logging=self._support_logging,
+        support_tcp_ssl_logging=self._support_tcp_ssl_logging)
 
     request = client.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service, project=backend_services_ref.project)
@@ -425,6 +432,7 @@ class CreateGA(base.CreateCommand):
   _support_l7_internal_load_balancer = True
   _support_failover = True
   _support_logging = True
+  _support_tcp_ssl_logging = False
   _support_multinic = True
   _support_client_only = True
   _support_grpc_protocol = True
@@ -445,6 +453,7 @@ class CreateGA(base.CreateCommand):
         ._support_l7_internal_load_balancer,
         support_failover=cls._support_failover,
         support_logging=cls._support_logging,
+        support_tcp_ssl_logging=cls._support_tcp_ssl_logging,
         support_multinic=cls._support_multinic,
         support_client_only=cls._support_client_only,
         support_grpc_protocol=cls._support_grpc_protocol,
@@ -466,6 +475,7 @@ class CreateGA(base.CreateCommand):
         ._support_l7_internal_load_balancer,
         support_failover=self._support_failover,
         support_logging=self._support_logging,
+        support_tcp_ssl_logging=self._support_tcp_ssl_logging,
         support_multinic=self._support_multinic,
         support_subsetting=self._support_subsetting,
         support_subsetting_subset_size=self._support_subsetting_subset_size,
@@ -473,8 +483,7 @@ class CreateGA(base.CreateCommand):
         support_advanced_load_balancing=self._support_advanced_load_balancing,
         support_service_bindings=self._support_service_bindings,
         support_dynamic_compression=self._support_dynamic_compression,
-        support_weighted_lb=self._support_weighted_lb).Run(
-            args, holder)
+        support_weighted_lb=self._support_weighted_lb).Run(args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -536,3 +545,4 @@ class CreateAlpha(CreateBeta):
   _support_service_bindings = True
   _support_dynamic_compression = True
   _support_weighted_lb = True
+  _support_tcp_ssl_logging = True

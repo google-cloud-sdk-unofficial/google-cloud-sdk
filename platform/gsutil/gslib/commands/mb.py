@@ -40,7 +40,7 @@ from gslib.utils.text_util import NormalizeStorageClass
 from gslib.utils.encryption_helper import ValidateCMEK
 
 _SYNOPSIS = """
-  gsutil mb [-b (on|off)] [-c <class>] [-l <location>] [-p <project>]
+  gsutil mb [-b (on|off)] [-c <class>] [-k <key>] [-l <location>] [-p <project>]
             [--autoclass] [--retention <time>] [--pap <setting>]
             [--placement <region1>,<region2>]
             [--rpo {}] gs://<bucket_name>...
@@ -152,9 +152,9 @@ _DETAILED_HELP_TEXT = ("""
                          retention policy see "gsutil help retention"
 
   --pap setting          Specifies the public access prevention setting. Valid
-                         values are "enforced" or "unspecified". When
+                         values are "enforced" or "inherited". When
                          "enforced", objects in this bucket cannot be made
-                         publicly accessible. Default is "unspecified".
+                         publicly accessible. Default is "inherited".
 
   --placement reg1,reg2  Two regions that form the cutom dual-region.
                          Only regions within the same continent are or will ever

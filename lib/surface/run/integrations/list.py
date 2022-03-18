@@ -18,9 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.run.integrations import types_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags as run_flags
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
@@ -73,9 +73,7 @@ class List(base.ListCommand):
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, self.ReleaseTrack())
     with run_apps_operations.Connect(conn_context) as client:
-      if (integration_type and
-          not client.IsValidIntegrationType(integration_type)):
-        raise exceptions.IntegrationNotFoundError(
-            'Invalid Integrations Type "{}"'.format(integration_type))
+      if integration_type:
+        types_utils.CheckValidIntegrationType(integration_type)
 
       return client.ListIntegrations(integration_type, service_name)

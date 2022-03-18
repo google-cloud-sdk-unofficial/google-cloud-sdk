@@ -100,15 +100,25 @@ class Proxy(base.BinaryBackedCommand):
       raise exceptions.ArgumentError('Cannot find service [{}]'.format(
           service_ref.servicesId))
 
+    bind = '127.0.0.1:' + (args.port if args.port else '8080')
     host = self._GetUrl(serv, args.tag, service_ref.servicesId)
+
     command_executor = proxy.ProxyWrapper()
     log.Print('Proxying service [{}] in region [{}] locally...'.format(
         service_ref.servicesId, serv.region))
+    log.Print('http://{} proxies to {}'.format(bind, host))
 
-    response = command_executor(
-        host=host,
-        token=args.token or _GetFreshIdToken(),
-        bind='127.0.0.1:' + args.port if args.port else None)
+    if args.token:
+      response = command_executor(host=host, token=args.token, bind=bind)
+    else:
+      # Keep restarting the proxy with fresh token before the token expires (1h)
+      # until hitting a failure.
+      while True:
+        response = command_executor(
+            host=host, token=_GetFreshIdToken(), bind=bind, duration='55m')
+        if response.failed:
+          break
+
     return self._DefaultOperationResponseHandler(response)
 
   def _GetUrl(self, serv, tag, serv_id):

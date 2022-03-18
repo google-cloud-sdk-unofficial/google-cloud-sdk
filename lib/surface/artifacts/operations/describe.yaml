@@ -22,5 +22,5 @@
         The Artifact Registry operation to describe.
 
   request: &request
-    api_version: v1beta2
+    api_version: v1
     collection: artifactregistry.projects.locations.operations

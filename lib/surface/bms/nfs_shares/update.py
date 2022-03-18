@@ -52,7 +52,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Bare Metal Solution NFS share."""
 
@@ -67,7 +67,7 @@ class Update(base.UpdateCommand):
     if not labels_diff.MayHaveUpdates():
       raise exceptions.NoConfigurationChangeError(
           'No configuration change was requested. Did you mean to include the '
-          'flags `--update-labels` `--delete-labels` or `--clear-labels`?')
+          'flags `--update-labels` `--remove-labels` or `--clear-labels`?')
 
     nfs_share = args.CONCEPTS.nfs_share.Parse()
     client = BmsClient()

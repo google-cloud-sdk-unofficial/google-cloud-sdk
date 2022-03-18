@@ -18,7 +18,7 @@
         The project to read the settings from.
 
   request:
-    api_version: v1beta2
+    api_version: v1
     disable_resource_check: true
     collection: artifactregistry.projects
     method: getProjectSettings

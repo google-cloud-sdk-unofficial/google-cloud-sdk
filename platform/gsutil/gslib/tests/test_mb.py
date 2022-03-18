@@ -145,19 +145,15 @@ class TestMb(testcase.GsUtilIntegrationTestCase):
     self.VerifyPublicAccessPreventionValue(bucket_uri, 'enforced')
 
   @SkipForXML('Public access prevention only runs on GCS JSON API.')
-  def test_create_with_pap_unspecified(self):
+  def test_create_with_pap_inherited(self):
     bucket_name = self.MakeTempName('bucket')
     bucket_uri = boto.storage_uri('gs://%s' % (bucket_name.lower()),
                                   suppress_consec_slashes=False)
-    self.RunGsUtil(['mb', '--pap', 'unspecified', suri(bucket_uri)])
-    # TODO(b/201683262) Replace all calls to this method
-    # with self.VerifyPublicAccessPreventionValue(bucket_uri, 'inherited')
-    # once the backend rollout is completed.
+    self.RunGsUtil(['mb', '--pap', 'inherited', suri(bucket_uri)])
     stdout = self.RunGsUtil(['publicaccessprevention', 'get',
                              suri(bucket_uri)],
                             return_stdout=True)
-    self.assertRegex(stdout,
-                     r'%s:\s+(unspecified|inherited)' % suri(bucket_uri))
+    self.assertRegex(stdout, r'%s:\s+inherited' % suri(bucket_uri))
 
   @SkipForXML('Public access prevention only runs on GCS JSON API.')
   def test_create_with_pap_invalid_arg(self):
@@ -292,8 +288,10 @@ class TestMb(testcase.GsUtilIntegrationTestCase):
          suri(bucket_uri)],
         return_stderr=True,
         expected_status=1)
-    self.assertIn('BadRequestException: 400 Invalid custom placement config',
-                  stderr)
+    self.assertRegex(
+        stderr, r'.*BadRequestException: 400 (Invalid custom placement config|'
+        r'One or more unrecognized regions in dual-region, received:'
+        r' INVALID_REG1, INVALID_REG2).*')
 
   @SkipForXML('The --placement flag only works for GCS JSON API.')
   def test_create_with_incorrect_number_of_placement_values_raises_error(self):

@@ -16,16 +16,6 @@
   async:
     collection: certificatemanager.projects.locations.operations
 
-  output:
-    format: |
-      table(
-        name.basename():label=NAME,
-        domain:label=DOMAIN,
-        dnsResourceRecord.name:label=DNS_RECORD,
-        dnsResourceRecord.type:label=RECORD_TYPE,
-        dnsResourceRecord.data:label=DNS_VALUE
-      )
-
   arguments:
     resource:
       help_text: The name of the DNS Authorization to create.

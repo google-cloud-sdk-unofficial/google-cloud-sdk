@@ -27,7 +27,7 @@ from googlecloudsdk.core.console import console_io
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          Remove a Bare Metal Solution interactive serial console SSH key.
+          Remove an SSH key that is used to access the interactive serial console in Bare Metal Solution given its name.
         """,
     'EXAMPLES':
         """
@@ -41,7 +41,7 @@ DETAILED_HELP = {
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Remove(base.DeleteCommand):
-  """Remove a Bare Metal solution interactive serial console SSH key."""
+  """Remove an SSH key that is used to access the interactive serial console in Bare Metal Solution given its name."""
 
   @staticmethod
   def Args(parser):

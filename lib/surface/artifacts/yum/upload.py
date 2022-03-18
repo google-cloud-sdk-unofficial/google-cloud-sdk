@@ -31,7 +31,7 @@ from googlecloudsdk.core import resources
 class Upload(base.Command):
   """Upload an RPM package to an artifact repository."""
 
-  api_version = 'v1beta2'
+  api_version = 'v1'
 
   @staticmethod
   def Args(parser):
@@ -91,23 +91,22 @@ class Upload(base.Command):
 class UploadAlpha(Upload):
   """Upload an RPM package to an artifact repository."""
 
-  api_version = 'v1alpha1'
+  api_version = 'v1'
 
   def Run(self, args):
     """Run package import command."""
     client = apis.GetClientInstance('artifactregistry', self.api_version)
-    betaclient = apis.GetClientInstance('artifactregistry', 'v1beta2')
     messages = client.MESSAGES_MODULE
 
     client.additional_http_headers['X-Goog-Upload-Protocol'] = 'multipart'
 
     repo_ref = args.CONCEPTS.repository.Parse()
 
-    upload_req = messages.GoogleDevtoolsArtifactregistryV1alpha1UploadYumArtifactRequest
+    upload_req = messages.UploadYumArtifactRequest
     upload_request = upload_req()
 
     request = messages.ArtifactregistryProjectsLocationsRepositoriesYumArtifactsUploadRequest(
-        googleDevtoolsArtifactregistryV1alpha1UploadYumArtifactRequest=upload_request,
+        uploadYumArtifactRequest=upload_request,
         parent=repo_ref.RelativeName())
 
     upload = transfer.Upload.FromFile(
@@ -125,7 +124,7 @@ class UploadAlpha(Upload):
     else:
       result = waiter.WaitFor(
           waiter.CloudOperationPollerNoResources(
-              betaclient.projects_locations_operations),
+              client.projects_locations_operations),
           op_ref, 'Uploading package')
 
       return result

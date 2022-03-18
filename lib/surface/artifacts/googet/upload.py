@@ -60,11 +60,11 @@ class Upload(base.Command):
 
     repo_ref = args.CONCEPTS.repository.Parse()
 
-    upload_req = messages.GoogleDevtoolsArtifactregistryV1alpha1UploadGooGetArtifactRequest
+    upload_req = messages.GoogleDevtoolsArtifactregistryV1alpha1UploadGoogetArtifactRequest
     upload_request = upload_req()
 
     request = messages.ArtifactregistryProjectsLocationsRepositoriesGoogetArtifactsUploadRequest(
-        googleDevtoolsArtifactregistryV1alpha1UploadGooGetArtifactRequest=upload_request,
+        googleDevtoolsArtifactregistryV1alpha1UploadGoogetArtifactRequest=upload_request,
         parent=repo_ref.RelativeName())
 
     upload = transfer.Upload.FromFile(args.source, mime_type='application/gzip')

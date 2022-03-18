@@ -156,9 +156,15 @@ class CreateAlpha(CreateBeta):
     flags.AddCreateFlags(
         parser, support_share_setting=cls._support_share_setting)
     flags.AddSplitSourceCommitment(parser)
+    flags.AddMergeSourceCommitments(parser)
 
   def _MakeCreateRequest(self, args, messages, project, region, commitment_ref,
                          holder):
+
+    if (args.split_source_commitment is not None and
+        args.merge_source_commitments is not None):
+      raise Exception('It is not possible to merge and split in one request')
+
     commitment_type_flag = flags.GetTypeMapperFlag(messages)
     commitment_type = commitment_type_flag.GetEnumForChoice(args.type)
     commitment = messages.Commitment(
@@ -169,7 +175,9 @@ class CreateAlpha(CreateBeta):
         resources=flags.TranslateResourcesArgGroup(messages, args),
         type=commitment_type,
         autoRenew=flags.TranslateAutoRenewArg(args),
-        splitSourceCommitment=args.split_source_commitment)
+        splitSourceCommitment=args.split_source_commitment,
+        mergeSourceCommitments=flags.TranslateMergeArg(
+            args.merge_source_commitments))
     return messages.ComputeRegionCommitmentsInsertRequest(
         commitment=commitment,
         project=project,

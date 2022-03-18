@@ -35,6 +35,7 @@ class Create(base.CreateCommand):
   """Add a NAT to a Compute Engine router."""
 
   with_private_nat = False
+  with_subnet_all = False
 
   @classmethod
   def Args(cls, parser):
@@ -49,7 +50,10 @@ class Create(base.CreateCommand):
     if cls.with_private_nat:
       nats_flags.AddTypeArg(parser)
     nats_flags.AddCommonNatArgs(
-        parser, for_create=True, with_private_nat=cls.with_private_nat)
+        parser,
+        for_create=True,
+        with_private_nat=cls.with_private_nat,
+        with_subnet_all=cls.with_subnet_all)
 
   def Run(self, args):
     """See base.CreateCommand."""
@@ -63,7 +67,8 @@ class Create(base.CreateCommand):
     request_type = messages.ComputeRoutersGetRequest
     replacement = service.Get(request_type(**router_ref.AsDict()))
 
-    nat = nats_utils.CreateNatMessage(args, holder, self.with_private_nat)
+    nat = nats_utils.CreateNatMessage(args, holder, self.with_private_nat,
+                                      self.with_subnet_all)
 
     replacement.nats.append(nat)
 
@@ -153,3 +158,4 @@ class CreateAlpha(Create):
   """Add a NAT to a Compute Engine router."""
 
   with_private_nat = True
+  with_subnet_all = True

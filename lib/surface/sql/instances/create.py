@@ -166,7 +166,7 @@ def AddBetaArgs(parser):
 
 def AddAlphaArgs(parser):
   """Declare alpha flags for this command parser."""
-  flags.AddSqlServerAuditBucketPath(parser)
+  flags.AddSqlServerAudit(parser)
 
 
 def RunBaseCreateCommand(args, release_track):

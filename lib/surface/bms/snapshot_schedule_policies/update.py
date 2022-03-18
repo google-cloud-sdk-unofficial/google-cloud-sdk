@@ -80,7 +80,7 @@ class Update(base.UpdateCommand):
       raise exceptions.NoConfigurationChangeError(
           'No configuration change was requested. Did you mean to include the '
           'flags `--description` `--schedule` `--update-labels`'
-          '`--delete-labels` or `--clear-labels`?')
+          '`--remove-labels` or `--clear-labels`?')
 
     return client.UpdateSnapshotSchedulePolicy(policy_resource=policy,
                                                labels=labels_update,

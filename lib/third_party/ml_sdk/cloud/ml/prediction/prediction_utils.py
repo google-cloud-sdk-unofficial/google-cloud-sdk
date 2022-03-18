@@ -28,6 +28,10 @@ import six
 
 from tensorflow.python.framework import dtypes  # pylint: disable=g-direct-tensorflow-import
 
+collections_lib = collections
+if sys.version_info > (3, 8):
+  collections_lib = collections.abc
+
 # --------------------------
 # prediction.common
 # --------------------------
@@ -580,7 +584,7 @@ def parse_predictions(response_json):
   Raises:
     ValueError if response_json is malformed.
   """
-  if not isinstance(response_json, collections.Mapping):
+  if not isinstance(response_json, collections_lib.Mapping):
     raise ValueError(
         "Invalid response received from prediction server: {}".format(
             repr(response_json)))
@@ -603,7 +607,7 @@ def parse_outputs(response_json):
   Raises:
     ValueError if response_json is malformed.
   """
-  if not isinstance(response_json, collections.Mapping):
+  if not isinstance(response_json, collections_lib.Mapping):
     raise ValueError(
         "Invalid response received from prediction server: {}".format(
             repr(response_json)))
@@ -626,7 +630,7 @@ def parse_instances(request_json):
   Raises:
     ValueError if request_json is malformed.
   """
-  if not isinstance(request_json, collections.Mapping):
+  if not isinstance(request_json, collections_lib.Mapping):
     raise ValueError("Invalid request sent to prediction server: {}".format(
         repr(request_json)))
   if INSTANCES_KEY not in request_json:

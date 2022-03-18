@@ -28,7 +28,7 @@ DETAILED_HELP = {
         Transfer Service jobs, operations, and agents.
 
         To get started, run:
-        `gcloud alpha transfer jobs create --help`
+        `gcloud transfer jobs create --help`
 
         More info on prerequisite IAM permissions:
         https://cloud.google.com/storage-transfer/docs/on-prem-set-up
@@ -36,7 +36,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Transfer(base.Group):
   """Manage Transfer Service jobs, operations, and agents."""
 

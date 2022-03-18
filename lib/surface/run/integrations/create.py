@@ -65,7 +65,7 @@ class Create(base.Command):
     service = args.service
     input_name = args.name
     parameters = flags.GetParameters(args)
-    flags.ValidateParameters(integration_type, parameters)
+    flags.ValidateCreateParameters(integration_type, parameters)
 
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, self.ReleaseTrack())
@@ -77,8 +77,10 @@ class Create(base.Command):
 
       pretty_print.Info('')
       pretty_print.Success(
-          messages_util.GetSuccessMessageDeploy(integration_type,
-                                                integration_name))
+          messages_util.GetSuccessMessage(
+              integration_type=integration_type,
+              integration_name=integration_name,
+              action='created'))
 
       call_to_action = messages_util.GetCallToAction(integration_type,
                                                      resource_config,

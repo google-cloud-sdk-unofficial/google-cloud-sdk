@@ -18,13 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import json
-
 from googlecloudsdk.api_lib.bms.bms_client import BmsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bms import flags
 from googlecloudsdk.core import properties
-from googlecloudsdk.core.resource import resource_projector
 
 
 DETAILED_HELP = {
@@ -47,7 +44,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Bare Metal Solution NFS shares in a project."""
 
@@ -67,47 +64,15 @@ class List(base.ListCommand):
         'table(name.segment(-1):label=NAME,nfsShareId:label=ID,'
         'name.segment(-5):label=PROJECT,name.segment(-3):label=REGION,'
         'volume.segment(-1):label=VOLUME_NAME,state,'
-        'allowedClients:label=ALLOWED_CLIENTS)')
+        'allowedClients[].allowedClientsCidr.notnull().list():'
+        'label=ALLOWED_CIDRS)')
 
   def Run(self, args):
     region = args.CONCEPTS.region.Parse()
     client = BmsClient()
     if region is None:
       project = properties.VALUES.core.project.Get(required=True)
-      return (self.synthesizedNfsShare(nfs_share)
-              for nfs_share in client.AggregateListNfsShares(
-                  project, limit=args.limit))
-    return (self.synthesizedNfsShare(nfs_share)
-            for nfs_share in client.ListNfsShares(region, limit=args.limit))
-
-  def synthesizedNfsShare(self, nfs):
-    """Returns a synthesized NFS share resource.
-
-    Synthesized NFS shares has the allowedClients field transformed
-    to a more compact format that allows it to be displayed in the list
-    stdout table.
-
-    Args:
-      nfs: protorpc.messages.Message, The BMS NFS share.
-
-    Returns:
-      Synthesized NFS share resource.
-
-    """
-    out = resource_projector.MakeSerializable(nfs)
-    out['allowedClients'] = []
-    for nfs_client in nfs.allowedClients:
-      # Name is the last element in path.
-      network_name = nfs_client.network.split('/')[-1]
-      nfs_client_summary = {
-          'networkName': network_name,
-          'allowedCidr': nfs_client.allowedClientsCidr,
-          'shareIp': nfs_client.shareIp,
-      }
-      out['allowedClients'].append(nfs_client_summary)
-    # We dump jsons here because when we use the built-in serialization, it
-    # sometimes adds a 'u' character before the strings and the tests break.
-    out['allowedClients'] = json.dumps(out['allowedClients'], sort_keys=True)
-    return out
+      return client.AggregateListNfsShares(project, limit=args.limit)
+    return client.ListNfsShares(region, limit=args.limit)
 
 List.detailed_help = DETAILED_HELP

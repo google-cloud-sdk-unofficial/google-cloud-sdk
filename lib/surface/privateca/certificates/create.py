@@ -86,7 +86,7 @@ class CreateBeta(base.CreateCommand):
         --generate-key \
         --key-output-file=./key \
         --cert-output-file=./cert.pem \
-        --dns-san=www.joonix.net \
+        --dns-san=www.example.com \
         --reusable-config=server-tls
   """
 
@@ -301,7 +301,7 @@ class Create(base.CreateCommand):
         --generate-key \
         --key-output-file=./key \
         --cert-output-file=./cert.pem \
-        --dns-san=www.joonix.net \
+        --dns-san=www.example.com \
         --use-preset-profile=leaf_server_tls
   """
 

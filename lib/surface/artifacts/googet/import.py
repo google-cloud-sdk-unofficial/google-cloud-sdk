@@ -65,17 +65,17 @@ class Import(base.Command):
             'GCS_SOURCE', 'Wildcards must be at the end of the GCS path.')
 
     repo_ref = args.CONCEPTS.repository.Parse()
-    gcs_source = messages.GoogleDevtoolsArtifactregistryV1alpha1ImportGooGetArtifactsGcsSource(
+    gcs_source = messages.GoogleDevtoolsArtifactregistryV1alpha1ImportGoogetArtifactsGcsSource(
         uris=args.gcs_source,
         useWildcards=True)
-    import_request = messages.GoogleDevtoolsArtifactregistryV1alpha1ImportGooGetArtifactsRequest(
+    import_request = messages.GoogleDevtoolsArtifactregistryV1alpha1ImportGoogetArtifactsRequest(
         gcsSource=gcs_source)
 
-    request = messages.ArtifactregistryProjectsLocationsRepositoriesGooGetArtifactsImportRequest(
-        googleDevtoolsArtifactregistryV1alpha1ImportGooGetArtifactsRequest=import_request,
+    request = messages.ArtifactregistryProjectsLocationsRepositoriesGoogetArtifactsImportRequest(
+        googleDevtoolsArtifactregistryV1alpha1ImportGoogetArtifactsRequest=import_request,
         parent=repo_ref.RelativeName())
 
-    op = client.projects_locations_repositories_gooGetArtifacts.Import(request)
+    op = client.projects_locations_repositories_googetArtifacts.Import(request)
 
     op_ref = resources.REGISTRY.ParseRelativeName(
         op.name, collection='artifactregistry.projects.locations.operations')

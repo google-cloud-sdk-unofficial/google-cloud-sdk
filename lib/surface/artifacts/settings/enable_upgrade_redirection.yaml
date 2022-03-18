@@ -21,7 +21,7 @@
       help_text: Validate the project setup, but do not enable redirection
 
   request:
-    api_version: v1beta2
+    api_version: v1
     disable_resource_check: true
     collection: artifactregistry.projects
     method: updateProjectSettings

@@ -70,11 +70,12 @@ class UpdateHelper(object):
 
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
-           support_logging, support_client_only, support_grpc_protocol,
-           support_subsetting, support_subsetting_subset_size,
-           support_unspecified_protocol, support_strong_session_affinity,
-           support_advanced_load_balancing, support_service_bindings,
-           support_dynamic_compression, support_weighted_lb):
+           support_logging, support_tcp_ssl_logging, support_client_only,
+           support_grpc_protocol, support_subsetting,
+           support_subsetting_subset_size, support_unspecified_protocol,
+           support_strong_session_affinity, support_advanced_load_balancing,
+           support_service_bindings, support_dynamic_compression,
+           support_weighted_lb):
     """Add all arguments for updating a backend service."""
 
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
@@ -128,8 +129,12 @@ class UpdateHelper(object):
       flags.AddFailoverRatio(parser)
 
     if support_logging:
-      flags.AddEnableLogging(parser)
-      flags.AddLoggingSampleRate(parser)
+      if support_tcp_ssl_logging:
+        flags.AddEnableLoggingProtocols(parser)
+        flags.AddLoggingSampleRateProtocols(parser)
+      else:
+        flags.AddEnableLogging(parser)
+        flags.AddLoggingSampleRate(parser)
 
     AddIapFlag(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
@@ -158,6 +163,7 @@ class UpdateHelper(object):
                support_l7_internal_load_balancer,
                support_failover,
                support_logging,
+               support_tcp_ssl_logging,
                support_subsetting,
                support_subsetting_subset_size,
                support_strong_session_affinity=False,
@@ -168,6 +174,7 @@ class UpdateHelper(object):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
+    self._support_tcp_ssl_logging = support_tcp_ssl_logging
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_strong_session_affinity = support_strong_session_affinity
@@ -279,7 +286,8 @@ class UpdateHelper(object):
         client.messages,
         args,
         replacement,
-        support_logging=self._support_logging)
+        support_logging=self._support_logging,
+        support_tcp_ssl_logging=self._support_tcp_ssl_logging)
 
     if self._support_advanced_load_balancing:
       if args.service_lb_policy is not None:
@@ -541,6 +549,7 @@ class UpdateGA(base.UpdateCommand):
 
   _support_l7_internal_load_balancer = True
   _support_logging = True
+  _support_tcp_ssl_logging = False
   _support_failover = True
   _support_client_only = True
   _support_unspecified_protocol = False
@@ -561,6 +570,7 @@ class UpdateGA(base.UpdateCommand):
         ._support_l7_internal_load_balancer,
         support_failover=cls._support_failover,
         support_logging=cls._support_logging,
+        support_tcp_ssl_logging=cls._support_tcp_ssl_logging,
         support_client_only=cls._support_client_only,
         support_grpc_protocol=cls._support_grpc_protocol,
         support_subsetting=cls._support_subsetting,
@@ -577,7 +587,7 @@ class UpdateGA(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return UpdateHelper(self._support_l7_internal_load_balancer,
                         self._support_failover, self._support_logging,
-                        self._support_subsetting,
+                        self._support_tcp_ssl_logging, self._support_subsetting,
                         self._support_subsetting_subset_size,
                         self._support_strong_session_affinity,
                         self._support_advanced_load_balancing,
@@ -622,3 +632,4 @@ class UpdateAlpha(UpdateBeta):
   _support_service_bindings = True
   _support_dynamic_compression = True
   _support_weighted_lb = True
+  _support_tcp_ssl_logging = True

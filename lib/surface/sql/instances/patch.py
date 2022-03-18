@@ -258,7 +258,7 @@ def AddBetaArgs(parser):
 
 def AddAlphaArgs(parser):
   """Adds alpha args and flags to the parser."""
-  flags.AddSqlServerAuditBucketPath(parser)
+  flags.AddSqlServerAudit(parser)
 
 
 def RunBasePatchCommand(args, release_track):

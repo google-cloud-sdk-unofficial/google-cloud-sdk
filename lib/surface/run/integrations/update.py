@@ -79,15 +79,17 @@ class Update(base.Command):
       resource_type = client.GetIntegrationTypeFromConfig(resource_config)
       integration_type = client.GetIntegrationType(resource_type)
 
-      pretty_print.Info(' ')
+      pretty_print.Info('')
       pretty_print.Success(
-          messages_util.GetSuccessMessageDeploy(integration_type,
-                                                integration_name))
+          messages_util.GetSuccessMessage(
+              integration_type=integration_type,
+              integration_name=integration_name,
+              action='updated'))
 
       call_to_action = messages_util.GetCallToAction(integration_type,
                                                      resource_config,
                                                      resource_status)
       if call_to_action:
-        pretty_print.Info(' ')
+        pretty_print.Info('')
         pretty_print.Info(call_to_action)
 

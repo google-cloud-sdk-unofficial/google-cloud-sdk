@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.aws import flags as aws_flags
 from googlecloudsdk.command_lib.container.aws import node_pools
 from googlecloudsdk.command_lib.container.aws import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
@@ -48,6 +49,9 @@ class Update(base.UpdateCommand):
     flags.AddNodeVersion(parser, required=False)
     flags.AddValidateOnly(parser, 'node pool to update')
     flags.AddAutoscaling(parser, required=False)
+
+    aws_flags.AddSecurityGroupIds(parser, 'nodes')
+
     base.ASYNC_FLAG.AddToParser(parser)
 
     parser.display_info.AddFormat(node_pools.NODEPOOLS_FORMAT)
