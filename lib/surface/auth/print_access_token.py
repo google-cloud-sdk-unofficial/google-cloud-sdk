@@ -19,14 +19,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from google.auth import credentials
+from google.auth import exceptions as google_auth_exceptions
 from googlecloudsdk.api_lib.auth import exceptions as auth_exceptions
+from googlecloudsdk.api_lib.auth import util as auth_util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
+from googlecloudsdk.core import config
+from googlecloudsdk.core import log
 from googlecloudsdk.core.credentials import creds as c_creds
 from googlecloudsdk.core.credentials import store as c_store
-
 from oauth2client import client
-from google.auth import exceptions as google_auth_exceptions
 
 
 class FakeCredentials(object):
@@ -77,6 +81,17 @@ class AccessToken(base.Command):
         'account', nargs='?',
         help=('Account to get the access token for. If not specified, '
               'the current active account will be used.'))
+    parser.add_argument(
+        '--scopes',
+        hidden=True,
+        type=arg_parsers.ArgList(min_length=1),
+        metavar='SCOPE',
+        help='The scopes to authorize for. This flag is supported for user '
+        'accounts and service accounts only. '
+        'The list of possible scopes can be found at: '
+        '[](https://developers.google.com/identity/protocols/googlescopes).\n\n'
+        'For end-user accounts the provided '
+        'scopes must from [{0}]'.format(config.CLOUDSDK_SCOPES))
     parser.display_info.AddFormat('value(token)')
 
   @c_exc.RaiseErrorInsteadOf(auth_exceptions.AuthenticationError, client.Error,
@@ -88,6 +103,33 @@ class AccessToken(base.Command):
         args.account,
         allow_account_impersonation=True,
         use_google_auth=True)
+    if args.scopes:
+      cred_type = c_creds.CredentialTypeGoogleAuth.FromCredentials(cred)
+      if cred_type not in [
+          c_creds.CredentialTypeGoogleAuth.USER_ACCOUNT,
+          c_creds.CredentialTypeGoogleAuth.SERVICE_ACCOUNT
+      ]:
+        # TODO(b/223649175): Add support for other credential types(e.g GCE).
+        log.warning(
+            '`--scopes` flag may not working as expected and will be ignored '
+            'for account type {}.'.format(cred_type.key)
+        )
+      scopes = args.scopes + [auth_util.OPENID, auth_util.USER_EMAIL_SCOPE]
+
+      # non user account credential types
+      if isinstance(cred, credentials.Scoped):
+        cred = cred.with_scopes(scopes)
+      else:
+        requested_scopes = set(args.scopes)
+        trusted_scopes = set(config.CLOUDSDK_SCOPES)
+        if not requested_scopes.issubset(trusted_scopes):
+          raise c_exc.InvalidArgumentException(
+              '--scopes',
+              'Invalid scopes value. Please make sure the scopes are from [{0}]'
+              .format(config.CLOUDSDK_SCOPES))
+        # pylint:disable=protected-access
+        cred._scopes = scopes
+
     c_store.Refresh(cred)
     if c_creds.IsOauth2ClientCredentials(cred):
       token = cred.access_token

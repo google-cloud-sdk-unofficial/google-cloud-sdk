@@ -23,6 +23,8 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.emulators import datastore_util
 from googlecloudsdk.command_lib.emulators import util
+from googlecloudsdk.command_lib.util import java
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -68,6 +70,25 @@ To start a local datastore emulator, run:
              'for unit tests, but may mask incorrect assumptions about '
              'non-ancestor queries which are eventually consistent.')
 
+  # TODO(b/221477106): Remove this warning after b/221477106 is fixed.
+  def LogJavaVersionWarning(self):
+    """Log a warning message notifying users about Java version change.
+
+    Log the warning when the installed JRE has an earlier version than Java 11.
+    """
+    try:
+      java.RequireJavaInstalled(datastore_util.DATASTORE_TITLE, min_version=11)
+    except java.JavaVersionError:
+      log.warning(
+          'Cloud Datastore Emulator support for Java JRE version 8 will be '
+          'dropped after gcloud command-line tool release 392.0.0. Please '
+          'upgrade to Java JRE version 11 or higher to continue using the '
+          'latest Cloud Datastore Emulator.')
+    except java.JavaError:
+      # A JRE could not be found. Not logging the warning since the user will
+      # not be able to start an emulator anyways.
+      pass
+
   def Run(self, args):
     if not args.host_port:
       args.host_port = arg_parsers.HostPort.Parse(
@@ -75,6 +96,7 @@ To start a local datastore emulator, run:
     args.host_port.host = args.host_port.host or 'localhost'
     args.host_port.port = args.host_port.port or '8081'
 
+    self.LogJavaVersionWarning()
     datastore_util.PrepareGCDDataDir(args)
     with datastore_util.StartGCDEmulator(args) as proc:
       datastore_util.WriteGCDEnvYaml(args)

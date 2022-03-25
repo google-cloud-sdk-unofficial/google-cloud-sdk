@@ -97,16 +97,11 @@
           - api_field: value
     - arg_name: maintenance-window-day
       api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.day
-      release_tracks: [BETA, ALPHA]
-      hidden: true
       help_text: |
         Day of week for maintenance window, in UTC time zone.
-        MAINTENANCE_WINDOW_DAY must be one of: SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY,
-        SATURDAY.
+        MAINTENANCE_WINDOW_DAY must be one of: SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY.
     - arg_name: maintenance-window-hour
       api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.startTime.hours
-      release_tracks: [BETA, ALPHA]
-      hidden: true
       help_text: |
         Hour of day (0 to 23) for maintenance window, in UTC time zone.
     - arg_name: persistence-mode
@@ -187,10 +182,12 @@
     - arg_name: reserved-ip-range
       api_field: instance.reservedIpRange
       help_text: |
-        The CIDR range of internal addresses that are reserved for this
-        instance. For example, 10.0.0.0/29 or 192.168.0.0/29. Range must be
-        unique and non-overlapping with existing ranges in the network. If left
-        unspecified, the service will automatically pick an available range.
+        For DIRECT_PEERING mode, the CIDR range of internal addresses that are reserved for this
+        instance. Range must be unique and non-overlapping with existing subnets in an authorized
+        network. For PRIVATE_SERVICE_ACCESS mode, the name of an IP address range allocated for the
+        private service access connection. If not provided, the service will choose an unused /29
+        block, for example, 10.0.0.0/29 or 192.168.0.0/29. If READ_REPLICAS_ENABLED is used for the
+        --read-replicas-mode flag, then the block size required for this flag is /28.
     - arg_name: size
       api_field: instance.memorySizeGb
       help_text: |

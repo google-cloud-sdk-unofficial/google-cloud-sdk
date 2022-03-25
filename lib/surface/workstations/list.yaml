@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: |
+      List workstations.
+    description: |
+      List all workstations under the specified cluster.
+    examples: |
+      $ {command}
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.workstations.resources:cluster
+      help_text: |
+        The cluster of the workstations to display.
+
+  request:
+    api_version: v1alpha1
+    collection: workstations.projects.locations.workstationClusters.workstations
+
+  output:
+    format: |
+      table(
+        name.basename():sort=1,
+        config.basename(),
+        state.sub("STATE_", ""),
+        createTime.date()
+      )

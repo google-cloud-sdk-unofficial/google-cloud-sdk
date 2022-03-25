@@ -52,3 +52,6 @@
       required: true
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_client_id
       required: true
+
+  async:
+    collection: iam.locations.workforcePools.providers.operations

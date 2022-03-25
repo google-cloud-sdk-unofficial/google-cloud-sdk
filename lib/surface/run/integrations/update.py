@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.run.integrations import types_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags as run_flags
@@ -77,7 +78,7 @@ class Update(base.Command):
       resource_config = client.GetIntegration(integration_name)
       resource_status = client.GetIntegrationStatus(integration_name)
       resource_type = client.GetIntegrationTypeFromConfig(resource_config)
-      integration_type = client.GetIntegrationType(resource_type)
+      integration_type = types_utils.GetIntegrationType(resource_type)
 
       pretty_print.Info('')
       pretty_print.Success(

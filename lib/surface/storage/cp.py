@@ -86,6 +86,14 @@ class Cp(base.Command):
         action='store_true',
         help='Ignore file symlinks instead of copying what they point to.'
         ' Symlinks pointing to directories will always be ignored.')
+    parser.add_argument(
+        '-s',
+        '--storage-class',
+        help='Specifies the storage class of the destination object. If not'
+        ' specified, the default storage class of the destination bucket is'
+        ' used. This option is not valid for copying to non-cloud destinations.'
+    )
+    flags.add_continue_on_error_flag(parser)
     flags.add_precondition_flags(parser)
     flags.add_object_metadata_flags(parser)
     flags.add_encryption_flags(parser)
@@ -99,6 +107,12 @@ class Cp(base.Command):
     task_status_queue = task_graph_executor.multiprocessing_context.Queue()
 
     raw_destination_url = storage_url.storage_url_from_string(args.destination)
+    if (isinstance(raw_destination_url, storage_url.FileUrl) and
+        args.storage_class):
+      raise ValueError(
+          'Cannot specify storage class for a non-cloud destination: {}'.format(
+              raw_destination_url))
+
     if (isinstance(raw_destination_url, storage_url.FileUrl) and
         raw_destination_url.is_pipe):
       log.warning('Downloading to a pipe.'
@@ -126,6 +140,7 @@ class Cp(base.Command):
         parallelizable=parallelizable,
         task_status_queue=task_status_queue,
         progress_type=task_status.ProgressType.FILES_AND_BYTES,
+        continue_on_error=args.continue_on_error,
     )
 
     if shared_stream:

@@ -77,12 +77,12 @@ class Delete(base.DeleteCommand):
             cancel_on_no=True)
 
       op = cluster_client.Delete(cluster_ref, args)
-      op_ref = resource_args.GetOperationResource(op)
 
       if validate_only:
         args.format = 'disable'
         return
 
+      op_ref = resource_args.GetOperationResource(op)
       log.CreatedResource(op_ref, kind=constants.LRO_KIND)
 
       async_ = getattr(args, 'async_', False)

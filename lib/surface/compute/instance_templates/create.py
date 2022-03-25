@@ -67,7 +67,8 @@ def _CommonArgs(parser,
                 support_host_error_timeout_seconds=False,
                 support_numa_node_count=False,
                 support_visible_core_count=False,
-                support_disk_architecture=False):
+                support_disk_architecture=False,
+                support_max_run_duration=False):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
@@ -112,6 +113,9 @@ def _CommonArgs(parser,
                                             'instance-template')
   instances_flags.AddProvisioningModelVmArgs(parser)
   instances_flags.AddInstanceTerminationActionVmArgs(parser)
+
+  if support_max_run_duration:
+    instances_flags.AddMaxRunDurationVmArgs(parser)
 
   instance_templates_flags.AddServiceProxyConfigArgs(
       parser, release_track=release_track)
@@ -188,6 +192,7 @@ The type of reservation for instances created from this template.
 def _ValidateInstancesFlags(
     args,
     support_kms=False,
+    support_max_run_duration=False
 ):
   """Validate flags for instance template that affects instance creation.
 
@@ -195,6 +200,8 @@ def _ValidateInstancesFlags(
       args: argparse.Namespace, An object that contains the values for the
         arguments specified in the .Args() method.
       support_kms: If KMS is supported.
+      support_max_run_duration: max-run-durrations is supported in instance
+        scheduling.
   """
   instances_flags.ValidateDiskCommonFlags(args)
   instances_flags.ValidateDiskBootFlags(args, enable_kms=support_kms)
@@ -205,6 +212,8 @@ def _ValidateInstancesFlags(
   instances_flags.ValidateAcceleratorArgs(args)
   instances_flags.ValidateReservationAffinityGroup(args)
   instances_flags.ValidateNetworkPerformanceConfigsArgs(args)
+  instances_flags.ValidateInstanceScheduling(
+      args, support_max_run_duration=support_max_run_duration)
 
 
 def _AddSourceInstanceToTemplate(compute_api, args, instance_template,
@@ -501,7 +510,9 @@ def _RunCreate(compute_api,
                support_host_error_timeout_seconds=False,
                support_numa_node_count=False,
                support_visible_core_count=False,
-               support_disk_architecture=False):
+               support_disk_architecture=False,
+               support_key_revocation_action_type=False,
+               support_max_run_duration=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -525,11 +536,18 @@ def _RunCreate(compute_api,
       support_disk_architecture: Storage resources can be used to create boot
         disks compatible with ARM64 or X86_64 machine architectures. If this
         field is not specified, the default is ARCHITECTURE_UNSPECIFIED.
+      support_key_revocation_action_type: Indicate whether
+        key_revocation_action_type is supported.
+      support_max_run_duration: Indicate whether max-run-duration or
+        termination-time issupported.
 
   Returns:
       A resource object dispatched by display.Displayer().
   """
-  _ValidateInstancesFlags(args, support_kms=support_kms)
+  _ValidateInstancesFlags(
+      args,
+      support_kms=support_kms,
+      support_max_run_duration=support_max_run_duration)
   instances_flags.ValidateNetworkTierArgs(args)
 
   instance_templates_flags.ValidateServiceProxyFlags(args)
@@ -607,8 +625,17 @@ def _RunCreate(compute_api,
   termination_action = None
   if (hasattr(args, 'instance_termination_action') and
       args.IsSpecified('instance_termination_action')):
-    instances_flags.ValidateInstanceScheduling(args)
     termination_action = args.instance_termination_action
+
+  max_run_duration = None
+  if (hasattr(args, 'max_run_duration') and
+      args.IsSpecified('max_run_duration')):
+    max_run_duration = args.max_run_duration
+
+  termination_time = None
+  if (hasattr(args, 'termination_time') and
+      args.IsSpecified('termination_time')):
+    termination_time = args.termination_time
 
   host_error_timeout_seconds = None
   if support_host_error_timeout_seconds and args.IsSpecified(
@@ -624,7 +651,9 @@ def _RunCreate(compute_api,
       location_hint=location_hint,
       provisioning_model=provisioning_model,
       instance_termination_action=termination_action,
-      host_error_timeout_seconds=host_error_timeout_seconds)
+      host_error_timeout_seconds=host_error_timeout_seconds,
+      max_run_duration=max_run_duration,
+      termination_time=termination_time)
 
   if args.no_service_account:
     service_account = None
@@ -764,6 +793,12 @@ def _RunCreate(compute_api,
         args.post_key_revocation_action_type, client.messages.InstanceProperties
         .PostKeyRevocationActionTypeValueValuesEnum)
 
+  if support_key_revocation_action_type and args.IsSpecified(
+      'key_revocation_action_type'):
+    instance_template.properties.keyRevocationActionType = arg_utils.ChoiceToEnum(
+        args.key_revocation_action_type, client.messages.InstanceProperties
+        .KeyRevocationActionTypeValueValuesEnum)
+
   if args.private_ipv6_google_access_type is not None:
     instance_template.properties.privateIpv6GoogleAccess = (
         instances_flags.GetPrivateIpv6GoogleAccessTypeFlagMapperForTemplate(
@@ -834,6 +869,8 @@ class Create(base.CreateCommand):
   _support_numa_node_count = False
   _support_visible_core_count = False
   _support_disk_architecture = False
+  _support_key_revocation_action_type = False
+  _support_max_run_duration = False
 
   @classmethod
   def Args(cls, parser):
@@ -846,7 +883,8 @@ class Create(base.CreateCommand):
         support_mesh=cls._support_mesh,
         support_numa_node_count=cls._support_numa_node_count,
         support_visible_core_count=cls._support_visible_core_count,
-        support_disk_architecture=cls._support_disk_architecture)
+        support_disk_architecture=cls._support_disk_architecture,
+        support_max_run_duration=cls._support_max_run_duration)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_GA_API_VERSION)
@@ -873,7 +911,11 @@ class Create(base.CreateCommand):
         support_mesh=self._support_mesh,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_disk_architecture=self._support_disk_architecture)
+        support_disk_architecture=self._support_disk_architecture,
+        support_key_revocation_action_type=self
+        ._support_key_revocation_action_type,
+        support_max_run_duration=self._support_max_run_duration
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -899,6 +941,8 @@ class CreateBeta(Create):
   _support_numa_node_count = False
   _support_visible_core_count = False
   _support_disk_architecture = False
+  _support_key_revocation_action_type = False
+  _support_max_run_duration = False
 
   @classmethod
   def Args(cls, parser):
@@ -913,7 +957,8 @@ class CreateBeta(Create):
         support_host_error_timeout_seconds=cls
         ._support_host_error_timeout_seconds,
         support_visible_core_count=cls._support_visible_core_count,
-        support_disk_architecture=cls._support_disk_architecture)
+        support_disk_architecture=cls._support_disk_architecture,
+        support_max_run_duration=cls._support_max_run_duration)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)
@@ -943,7 +988,10 @@ class CreateBeta(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_disk_architecture=self._support_disk_architecture)
+        support_disk_architecture=self._support_disk_architecture,
+        support_key_revocation_action_type=self
+        ._support_key_revocation_action_type,
+        support_max_run_duration=self._support_max_run_duration)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -969,6 +1017,8 @@ class CreateAlpha(Create):
   _support_numa_node_count = True
   _support_visible_core_count = True
   _support_disk_architecture = True
+  _support_key_revocation_action_type = True
+  _support_max_run_duration = True
 
   @classmethod
   def Args(cls, parser):
@@ -984,13 +1034,15 @@ class CreateAlpha(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
         support_visible_core_count=cls._support_visible_core_count,
-        support_disk_architecture=cls._support_disk_architecture)
+        support_disk_architecture=cls._support_disk_architecture,
+        support_max_run_duration=cls._support_max_run_duration)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
+    instance_templates_flags.AddKeyRevocationActionTypeArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.
@@ -1015,7 +1067,10 @@ class CreateAlpha(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=self._support_numa_node_count,
         support_visible_core_count=self._support_visible_core_count,
-        support_disk_architecture=self._support_disk_architecture)
+        support_disk_architecture=self._support_disk_architecture,
+        support_key_revocation_action_type=self
+        ._support_key_revocation_action_type,
+        support_max_run_duration=self._support_max_run_duration)
 
 
 DETAILED_HELP = {

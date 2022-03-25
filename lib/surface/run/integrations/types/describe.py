@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from frozendict import frozendict
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import exceptions
@@ -91,11 +93,17 @@ class Describe(base.DescribeCommand):
     required_params = []
     optional_params = []
     # Per the PRD, required parameters should come first.
-    for param in type_def['parameters']:
+    for name, param in type_def['parameters'].items():
       required = param.get('required', False)
       if required:
-        required_params.append(param)
+        required_params.append(frozendict({
+            'name': name,
+            'description': param['description']
+        }))
       else:
-        optional_params.append(param)
+        optional_params.append(frozendict({
+            'name': name,
+            'description': param['description']
+        }))
 
     return Params(required=required_params, optional=optional_params)

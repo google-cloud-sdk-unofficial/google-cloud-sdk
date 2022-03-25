@@ -59,8 +59,7 @@
               help_text: |
                 Number of memcache nodes in this instance. Valid values range from 1 to 20.
             - group:
-                release_tracks: [ALPHA]
-                hidden: true
+                release_tracks: [ALPHA, BETA]
                 mutex: true
                 params:
                 - arg_name: maintenance-window-any
@@ -70,8 +69,7 @@
                 - group:
                     params:
                     - arg_name: maintenance-window-day
-                      release_tracks: [ALPHA]
-                      hidden: true
+                      release_tracks: [ALPHA, BETA]
                       api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.day
                       choices:
                       - arg_value: monday
@@ -91,14 +89,12 @@
                       help_text: |
                         The day of week when the window starts, e.g. 'sunday'.
                     - arg_name: maintenance-window-start-time
-                      release_tracks: [ALPHA]
-                      hidden: true
+                      release_tracks: [ALPHA, BETA]
                       api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.startTime.hours
                       help_text: |
                         Hour of day (0 to 23) for the start of maintenance window, in UTC time zone.
                     - arg_name: maintenance-window-duration
-                      release_tracks: [ALPHA]
-                      hidden: true
+                      release_tracks: [ALPHA, BETA]
                       type: int
                       api_field: instance.maintenancePolicy.weeklyMaintenanceWindow.duration
                       help_text: |
@@ -166,7 +162,7 @@
       modify_method_hook: googlecloudsdk.command_lib.memcache.instances_update_util:ChooseUpdateMethod
       # The two update methods uses different API calls with incompatible fields so we must create the
       # requests
-      create_request_hook: googlecloudsdk.command_lib.memcache.instances_update_util:CreateUpdateRequest
+      create_request_hook: googlecloudsdk.command_lib.memcache.instances_update_util:CreateUpdateRequestAlpha
     GA:
       method: patch
       api_version: v1

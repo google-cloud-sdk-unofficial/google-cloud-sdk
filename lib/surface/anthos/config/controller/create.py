@@ -55,6 +55,7 @@ class Create(base.CreateCommand):
     flags.AddServicesIPv4CIDRBlack(parser)
     flags.AddClusterNamedRangeFlag(parser)
     flags.AddServicesNamedRange(parser)
+    flags.AddUsePrivateEndpoint(parser)
 
   def Run(self, args):
     client = krmapihosting_api.GetClientInstance()
@@ -110,3 +111,4 @@ class CreateAlpha(Create):
     flags.AddClusterNamedRangeFlag(parser)
     flags.AddServicesNamedRange(parser)
     flags.AddFullManagement(parser)
+    flags.AddUsePrivateEndpoint(parser)

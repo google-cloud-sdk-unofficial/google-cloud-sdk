@@ -22,6 +22,7 @@ import textwrap
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core import properties
@@ -88,12 +89,49 @@ def _AddScopeFlags(parser):
   _AddRegionFlag(scope)
 
 
-def _MakeGlobalRequest(client, project, url_map):
-  return client.messages.ComputeUrlMapsValidateRequest(
-      project=project,
-      urlMap=url_map.name,
-      urlMapsValidateRequest=client.messages.UrlMapsValidateRequest(
-          resource=url_map))
+def _AddLoadBalancingSchemeFlag(parser):
+  """Add --load-balancing-scheme flag."""
+  help_text = """\
+  Specifies the load balancer type(s) this validation request is for. Use
+  `EXTERNAL_MANAGED` for HTTP/HTTPS External Global Load Balancer
+  with Advanced Traffic Management. Use `EXTERNAL` for Classic
+  HTTP/HTTPS External Global Load Balancer.
+
+  Other load balancer types are not supported. For more information, refer to
+  [Choosing a load balancer](https://cloud.google.com/load-balancing/docs/choosing-load-balancer/).
+
+  If unspecified, the load balancing scheme will be inferred from the backend
+  service resources this URL map references. If that can not be inferred (for
+  example, this URL map only references backend buckets, or this URL map is
+  for rewrites and redirects only and doesn't reference any backends),
+  `EXTERNAL` will be used as the default type.
+
+  If specified, the scheme must not conflict with the load balancing
+  scheme of the backend service resources this URL map references.
+  """
+  parser.add_argument(
+      '--load-balancing-scheme',
+      choices=['EXTERNAL', 'EXTERNAL_MANAGED'],
+      help=help_text,
+      required=False)
+
+
+def _MakeGlobalRequest(client, project, url_map, load_balancing_scheme):
+  """Construct (not send) and return the request for global UrlMap."""
+  if load_balancing_scheme is None:
+    return client.messages.ComputeUrlMapsValidateRequest(
+        project=project,
+        urlMap=url_map.name,
+        urlMapsValidateRequest=client.messages.UrlMapsValidateRequest(
+            resource=url_map))
+  else:
+    scheme_enum = client.messages.UrlMapsValidateRequest.LoadBalancingSchemesValueListEntryValuesEnum(
+        load_balancing_scheme)
+    return client.messages.ComputeUrlMapsValidateRequest(
+        project=project,
+        urlMap=url_map.name,
+        urlMapsValidateRequest=client.messages.UrlMapsValidateRequest(
+            resource=url_map, loadBalancingSchemes=[scheme_enum]))
 
 
 def _MakeRegionalRequest(client, project, region, url_map):
@@ -105,9 +143,9 @@ def _MakeRegionalRequest(client, project, region, url_map):
           resource=url_map))
 
 
-def _SendGlobalRequest(client, project, url_map):
+def _SendGlobalRequest(client, project, url_map, load_balancing_scheme):
   return client.apitools_client.urlMaps.Validate(
-      _MakeGlobalRequest(client, project, url_map))
+      _MakeGlobalRequest(client, project, url_map, load_balancing_scheme))
 
 
 def _SendRegionalRequest(client, project, region, url_map):
@@ -126,6 +164,7 @@ class Validate(base.Command):
   def Args(cls, parser):
     _AddSourceFlag(parser, _GetSchemaPath(cls.ReleaseTrack(), for_help=True))
     _AddScopeFlags(parser)
+    _AddLoadBalancingSchemeFlag(parser)
 
   def Run(self, args):
     """Runs the command.
@@ -141,6 +180,11 @@ class Validate(base.Command):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
+    if args.region is not None and args.load_balancing_scheme:
+      raise exceptions.InvalidArgumentException(
+          '--load-balancing-scheme',
+          'Cannot specify load balancing scheme for regional URL maps.')
+
     # Import UrlMap to be verified
     data = console_io.ReadFromFileOrStdin(args.source or '-', binary=False)
     try:
@@ -154,4 +198,5 @@ class Validate(base.Command):
     # Send UrlMap.validate request
     if args.region is not None:
       return _SendRegionalRequest(client, project, args.region, url_map)
-    return _SendGlobalRequest(client, project, url_map)
+    return _SendGlobalRequest(client, project, url_map,
+                              args.load_balancing_scheme)

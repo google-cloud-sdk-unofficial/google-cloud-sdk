@@ -19,9 +19,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.bms.bms_client import BmsClient
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bms import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
+
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -42,6 +45,7 @@ DETAILED_HELP = {
 }
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Restore(base.UpdateCommand):
   """Restore a Bare Metal Solution volume to an existing snapshot."""
@@ -53,14 +57,33 @@ class Restore(base.UpdateCommand):
     parser.add_argument('--snapshot',
                         required=True,
                         help='Name of the snapshot to restore.')
+    base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
     volume = args.CONCEPTS.volume.Parse()
     client = BmsClient()
     op_ref = client.RestoreVolumeSnapshot(volume, args.snapshot)
-    log.status.Print('Restore request issued for: [{}]\nThis may take several '
-                     'minutes to complete.'.format(volume.Name()))
 
-    return op_ref
+    if op_ref.done:
+      log.RestoredResource(volume.Name(), kind='volume')
+      return op_ref
+
+    if args.async_:
+      log.status.Print('Restore request issued for [{}]\nCheck operation '
+                       '[{}] for status.'.format(volume.Name(), op_ref.name))
+      return op_ref
+
+    op_resource = resources.REGISTRY.ParseRelativeName(
+        op_ref.name,
+        collection='baremetalsolution.operations',
+        api_version='v1')
+    poller = waiter.CloudOperationPollerNoResources(
+        client.operation_service)
+    res = waiter.WaitFor(poller, op_resource,
+                         'Waiting for operation [{}] to complete'.format(
+                             op_ref.name))
+    log.RestoredResource(volume.Name(), kind='volume')
+    return res
+
 
 Restore.detailed_help = DETAILED_HELP

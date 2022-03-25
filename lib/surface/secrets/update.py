@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import log as secrets_log
 from googlecloudsdk.command_lib.secrets import util as secrets_util
 from googlecloudsdk.command_lib.util.args import labels_util
+from googlecloudsdk.command_lib.util.args import map_util
 from googlecloudsdk.core.console import console_io
 
 
@@ -79,11 +80,16 @@ class Update(base.UpdateCommand):
   def Args(parser):
     secrets_args.AddSecret(
         parser, purpose='to update', positional=True, required=True)
+    alias = parser.add_group(mutex=True, help='Version Aliases')
     labels_util.AddUpdateLabelsFlags(parser)
     secrets_args.AddSecretEtag(parser)
     secrets_args.AddUpdateExpirationGroup(parser)
     secrets_args.AddUpdateTopicsGroup(parser)
     secrets_args.AddUpdateRotationGroup(parser)
+    map_util.AddMapUpdateFlag(alias, 'version-aliases', 'Version Aliases', str,
+                              int)
+    map_util.AddMapRemoveFlag(alias, 'version-aliases', 'Version Aliases', str)
+    map_util.AddMapClearFlag(alias, 'version-aliases', 'Version Aliases')
 
   def _RunUpdate(self, original, args):
     messages = secrets_api.GetMessages()
@@ -113,14 +119,20 @@ class Update(base.UpdateCommand):
         'remove_topics') or args.IsSpecified('clear_topics'):
       update_mask.append('topics')
 
+    if args.IsSpecified('update_version_aliases') or args.IsSpecified(
+        'remove_version_aliases') or args.IsSpecified('clear_version_aliases'):
+      update_mask.append('version_aliases')
+
     # Validations
     if not update_mask:
       raise exceptions.MinimumArgumentException([
           '--clear-labels', '--remove-labels', '--update-labels', '--ttl',
           '--expire-time', '--remove-expiration', '--clear-topics',
-          '--remove-topics', '--add-topics', '--next-rotation-time',
-          '--remove-next-rotation-time', '--rotation-period',
-          '--remove-rotation-period', '--remove-rotation-schedule'
+          '--remove-topics', '--add-topics', '--update-version-aliases',
+          '--remove-version-aliases', '--clear-version-aliases',
+          '--next-rotation-time', '--remove-next-rotation-time',
+          '--rotation-period', '--remove-rotation-period',
+          '--remove-rotation-schedule'
       ], self.NO_CHANGES_MESSAGE.format(secret=secret_ref.Name()))
 
     labels_update = labels_diff.Apply(messages.Secret.LabelsValue,
@@ -144,10 +156,23 @@ class Update(base.UpdateCommand):
       topics = secrets_util.ApplyTopicsUpdate(args, original.topics)
     else:
       topics = []
+    version_aliases = []
+    if 'version_aliases' in update_mask:
+      version_aliases = []
+      if original.versionAliases is None:
+        original.versionAliases = messages.Secret.VersionAliasesValue(
+            additionalProperties=[])
+      version_aliases_dict = secrets_util.ApplyAliasUpdate(
+          args, original.versionAliases.additionalProperties)
+      for alias, version in version_aliases_dict.items():
+        version_aliases.append(
+            messages.Secret.VersionAliasesValue.AdditionalProperty(
+                key=alias, value=version))
 
     secret = secrets_api.Secrets().Update(
         secret_ref=secret_ref,
         labels=labels,
+        version_aliases=version_aliases,
         update_mask=update_mask,
         etag=args.etag,
         expire_time=args.expire_time,
@@ -228,11 +253,16 @@ class UpdateBeta(Update):
   def Args(parser):
     secrets_args.AddSecret(
         parser, purpose='to update', positional=True, required=True)
+    alias = parser.add_group(mutex=True, help='Version Aliases')
     labels_util.AddUpdateLabelsFlags(parser)
     secrets_args.AddSecretEtag(parser)
     secrets_args.AddUpdateExpirationGroup(parser)
     secrets_args.AddUpdateRotationGroup(parser)
     secrets_args.AddUpdateTopicsGroup(parser)
+    map_util.AddMapUpdateFlag(alias, 'version-aliases', 'Version Aliases', str,
+                              int)
+    map_util.AddMapRemoveFlag(alias, 'version-aliases', 'Version Aliases', str)
+    map_util.AddMapClearFlag(alias, 'version-aliases', 'Version Aliases')
 
   def _RunUpdate(self, original, args):
     messages = secrets_api.GetMessages()
@@ -254,7 +284,6 @@ class UpdateBeta(Update):
     if args.IsSpecified('add_topics') or args.IsSpecified(
         'remove_topics') or args.IsSpecified('clear_topics'):
       update_mask.append('topics')
-
     if ((args.IsSpecified('next_rotation_time') or
          args.IsSpecified('remove_next_rotation_time')) or
         args.IsSpecified('remove_rotation_schedule')):
@@ -265,14 +294,20 @@ class UpdateBeta(Update):
         args.IsSpecified('remove_rotation_schedule')):
       update_mask.append('rotation.rotation_period')
 
+    if args.IsSpecified('update_version_aliases') or args.IsSpecified(
+        'remove_version_aliases') or args.IsSpecified('clear_version_aliases'):
+      update_mask.append('version_aliases')
+
     # Validations
     if not update_mask:
       raise exceptions.MinimumArgumentException([
           '--clear-labels', '--remove-labels', '--update-labels', '--ttl',
-          '--expire-time', '--remove-expiration', '--next-rotation-time',
-          '--remove-next-rotation-time', '--rotation-period',
-          '--remove-rotation-period', '--remove-rotation-schedule',
-          '--clear-topics', '--remove-topics', '--add-topics'
+          '--expire-time', '--remove-expiration', '--clear-topics',
+          '--remove-topics', '--add-topics', '--update-version-aliases',
+          '--remove-version-aliases', '--clear-version-aliases',
+          '--next-rotation-time', '--remove-next-rotation-time',
+          '--rotation-period', '--remove-rotation-period',
+          '--remove-rotation-schedule'
       ], self.NO_CHANGES_MESSAGE.format(secret=secret_ref.Name()))
 
     labels_update = labels_diff.Apply(messages.Secret.LabelsValue,
@@ -285,7 +320,17 @@ class UpdateBeta(Update):
       topics = secrets_util.ApplyTopicsUpdate(args, original.topics)
     else:
       topics = []
-
+    version_aliases = []
+    if 'version_aliases' in update_mask:
+      if original.versionAliases is None:
+        original.versionAliases = messages.Secret.VersionAliasesValue(
+            additionalProperties=[])
+      version_aliases_dict = secrets_util.ApplyAliasUpdate(
+          args, original.versionAliases.additionalProperties)
+      for alias, version in version_aliases_dict.items():
+        version_aliases.append(
+            messages.Secret.VersionAliasesValue.AdditionalProperty(
+                key=alias, value=version))
     if args.expire_time:
       msg = self.CONFIRM_EXPIRE_TIME_MESSAGE.format(
           expire_time=args.expire_time)
@@ -301,6 +346,7 @@ class UpdateBeta(Update):
         secret_ref=secret_ref,
         labels=labels,
         update_mask=update_mask,
+        version_aliases=version_aliases,
         etag=args.etag,
         expire_time=args.expire_time,
         ttl=args.ttl,

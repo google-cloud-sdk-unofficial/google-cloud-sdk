@@ -23,6 +23,7 @@ from dateutil import tz
 
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import request_utils
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.privateca import flags
 from googlecloudsdk.command_lib.privateca import flags_v1
@@ -31,6 +32,7 @@ from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import times
+import six
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -201,8 +203,15 @@ class Delete(base.DeleteCommand):
             skipGracePeriod=args.skip_grace_period,
             requestId=request_utils.GenerateRequestId()))
 
-    ca_response = operations.Await(
-        operation, 'Deleting Root CA', api_version='v1')
+    try:
+      ca_response = operations.Await(
+          operation, 'Deleting Root CA', api_version='v1')
+    except waiter.OperationError as e:
+      # API error message refers to the proto field name which is slightly
+      # different from the gcloud flag name.
+      raise operations.OperationError(
+          six.text_type(e).replace('`ignore_active_certificates` parameter',
+                                   '`--ignore-active-certificates` flag'))
     ca = operations.GetMessageFromResponse(ca_response,
                                            messages.CertificateAuthority)
 

@@ -99,6 +99,13 @@ class TerraformValidatorValidateOperation(
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated and will be removed in a future release. '
+        'Please use `gcloud alpha terraform vet` instead.'),
+    error=('This command has been removed. '
+           'Please use `gcloud alpha terraform vet` instead.'))
 class Terraform(base.BinaryBackedCommand):
   """Validate that a terraform plan complies with policies."""
 

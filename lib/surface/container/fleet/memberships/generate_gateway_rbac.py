@@ -32,7 +32,7 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files as file_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GenerateGatewayRbac(base.Command):
   # pylint: disable=line-too-long
   r"""Generate RBAC policy files for connected clusters by the user.

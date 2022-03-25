@@ -514,7 +514,7 @@ class CreateBeta(CreateGA):
   _support_advanced_load_balancing = False
   _support_service_bindings = True
   _support_dynamic_compression = True
-  _support_weighted_lb = False
+  _support_weighted_lb = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

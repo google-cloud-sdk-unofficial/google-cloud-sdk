@@ -1,4 +1,4 @@
-release_tracks: [BETA, ALPHA]
+release_tracks: [BETA, ALPHA, GA]
 
 help_text:
   brief: |
@@ -49,6 +49,10 @@ request:
     - googlecloudsdk.command_lib.redis.instances_reschedule_util:CheckSpecificTimeField
   BETA:
     api_version: v1beta1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.redis.instances_reschedule_util:CheckSpecificTimeField
+  GA:
+    api_version: v1
     modify_request_hooks:
     - googlecloudsdk.command_lib.redis.instances_reschedule_util:CheckSpecificTimeField
   collection: redis.projects.locations.instances

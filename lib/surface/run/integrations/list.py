@@ -58,9 +58,9 @@ class List(base.ListCommand):
     # TODO(b/217741829): Create printer to limit outputed services to 3.
     parser.display_info.AddFormat("""
         table(
-          name:label="Integration",
-          type:label="Type",
-          services:label="Service"
+          name:label="INTEGRATION",
+          type:label="TYPE",
+          services:label="SERVICE"
         )
       """)
 

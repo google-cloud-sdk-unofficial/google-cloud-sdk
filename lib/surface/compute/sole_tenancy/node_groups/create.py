@@ -110,6 +110,7 @@ class CreateBeta(Create):
     flags.AddAutoscalingPolicyArgToParser(parser, required_mode=True)
     flags.AddMaintenanceWindowArgToParser(parser)
     flags.AddLocationHintArgToParser(parser)
+    flags.AddShareSettingArgToParser(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

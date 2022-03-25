@@ -26,22 +26,28 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Auth(base.Group):
+  # pylint: disable=line-too-long
   """Manage oauth2 credentials for the Google Cloud CLI.
 
-  The gcloud auth command group lets you grant and revoke authorization to
-  Google Cloud CLI (gcloud) to access Google Cloud. Typically, when scripting
-  Google Cloud CLI tools for use on multiple machines, using `gcloud auth
-  activate-service-account` is recommended.
+  The `gcloud auth` command group lets you grant and revoke authorization to
+  Google Cloud CLI (`gcloud` CLI) to access Google Cloud. Typically, when
+  scripting Google Cloud CLI tools for use on multiple machines, using
+  `gcloud auth activate-service-account` is recommended.
 
-  For more information on authorization and credential types, see:
-  [](https://cloud.google.com/sdk/docs/authorizing).
+  For information about authorization and credential types, see
+  [Authorizing the gcloud CLI](https://cloud.google.com/sdk/docs/authorizing).
+  For information about authorizing a service account, see
+  [Authorizing with a service account](https://cloud.google.com/sdk/docs/authorizing#authorizing_with_a_service_account).
 
-  While running `gcloud auth` commands, the `--account` flag can be specified
-  to any command to use that account without activation.
+  After running `gcloud auth` commands, you can run other commands with
+  `--account`=``ACCOUNT'' to authenticate the command with the credentials
+  of the specified account. For information about `--account` and other `gcloud`
+  CLI global flags, see the
+  [gcloud CLI overview](https://cloud.google.com/sdk/gcloud/reference).
 
   ## EXAMPLES
 
-  To authenticate a user account with gcloud and minimal user output, run:
+  To authenticate a user account with `gcloud` and minimal user output, run:
 
     $ gcloud auth login --brief
 
@@ -54,6 +60,7 @@ class Auth(base.Group):
 
     $ gcloud auth revoke test@gmail.com
   """
+  # pylint: enable=line-too-long
 
   category = base.IDENTITY_AND_SECURITY_CATEGORY
 

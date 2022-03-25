@@ -48,14 +48,16 @@ class Update(base.UpdateCommand):
     flags.AddClusterVersion(parser, required=False)
     flags.AddValidateOnly(parser, 'update of the cluster')
     flags.AddAdminUsers(parser, create=False)
-
+    flags.AddRootVolumeSize(parser)
     aws_flags.AddInstanceType(parser)
     aws_flags.AddRoleArn(parser, required=False)
     aws_flags.AddRoleSessionName(parser)
     aws_flags.AddConfigEncryptionKmsKeyArn(parser, required=False)
-    aws_flags.AddSecurityGroupIds(parser, 'control plane replicas')
-    aws_flags.AddProxySecretArn(parser)
-    aws_flags.AddProxySecretVersionId(parser)
+    aws_flags.AddSecurityGroupFlagsForUpdate(parser, 'control plane replicas')
+    aws_flags.AddProxyConfigForUpdate(parser)
+    aws_flags.AddRootVolumeKmsKeyArn(parser)
+    aws_flags.AddRootVolumeType(parser)
+    aws_flags.AddRootVolumeIops(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(clusters.CLUSTERS_FORMAT)
@@ -68,14 +70,16 @@ class Update(base.UpdateCommand):
 
       cluster_ref = resource_args.ParseAwsClusterResourceArg(args)
       cluster_client = clusters.Client(track=self.ReleaseTrack())
+      args.root_volume_size = flags.GetRootVolumeSize(args)
+      args.root_volume_type = aws_flags.GetRootVolumeType(args)
       op = cluster_client.Update(cluster_ref, args)
-      op_ref = resource_args.GetOperationResource(op)
 
       validate_only = getattr(args, 'validate_only', False)
       if validate_only:
         args.format = 'disable'
         return
 
+      op_ref = resource_args.GetOperationResource(op)
       log.CreatedResource(op_ref, kind=constants.LRO_KIND)
 
       async_ = getattr(args, 'async_', False)

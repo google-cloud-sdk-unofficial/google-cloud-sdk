@@ -49,3 +49,6 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.attribute_condition
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_issuer_uri
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_client_id
+
+  async:
+    collection: iam.locations.workforcePools.providers.operations

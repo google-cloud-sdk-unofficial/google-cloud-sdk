@@ -27,14 +27,14 @@ from googlecloudsdk.core import properties
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Init(base.Command):
-  """Initialize a project for Eventarc for Cloud Run for Anthos destinations."""
+  """Initialize a project for Eventarc with Cloud Run for Anthos/GKE destinations."""
 
   detailed_help = {
       'DESCRIPTION':
           '{description}',
       'EXAMPLES':
           """
-          To initialize a project for Eventarc for Cloud Run for Anthos destinations:
+          To initialize a project for Eventarc with Cloud Run for Anthos/GKE destinations:
 
               $ {command}
           """,
@@ -50,6 +50,7 @@ class Init(base.Command):
 def _InitializedMessage():
   project = properties.VALUES.core.project.Get(required=True)
   trigger_cmd = 'gcloud eventarc triggers create'
-  return ('Initialized project [{}] for Cloud Run for Anthos destinations in '
-          'Eventarc. Next, create a trigger via `{}`.').format(
-              project, trigger_cmd)
+  return (
+      'Initialized project [{}] for Cloud Run for Anthos/GKE destinations in '
+      'Eventarc. Next, create a trigger via `{}`.').format(
+          project, trigger_cmd)

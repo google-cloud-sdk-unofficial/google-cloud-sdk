@@ -37,12 +37,11 @@ DETAILED_HELP = {
         temporary storage. An instance can only be suspended while it is in the
         RUNNING state. A suspended instance will be put in SUSPENDED state.
 
-        Note: A suspended instance can be resumed by running the gcloud beta
-        compute instances resume command.
+        Note: A suspended instance can be resumed by running the gcloud compute
+        instances resume command.
 
-        Beta restrictions: Suspending a Preemptible VM is not supported and will
-        result in an API error. Suspending a VM that is using CSEK or GPUs is
-        not supported and will result in an API error.
+        Limitations: See this feature's restrictions at
+        https://cloud.google.com/compute/docs/instances/suspend-resume-instance#limitations
         """,
     'EXAMPLES':
         """\
@@ -53,7 +52,8 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Suspend(base.SilentCommand):
   """Suspend a virtual machine instance.
 
@@ -65,29 +65,35 @@ class Suspend(base.SilentCommand):
   SUSPENDED state.
 
   Note: A suspended instance can be resumed by running the
-  `gcloud alpha compute instances resume` command.
+  `gcloud compute instances resume` command.
 
-  Alpha restrictions: Suspending a Preemptible VM is not supported and
-  will result in an API error. Suspending a VM that is using CSEK or GPUs
-  is not supported and will result in an API error.
+  Limitations: See this feature's restrictions at
+  https://cloud.google.com/compute/docs/instances/suspend-resume-instance#limitations
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.INSTANCES_ARG.AddArgument(parser)
-    parser.add_argument(
-        '--discard-local-ssd',
-        action='store_true',
-        help=('If provided, local SSD data is discarded.'))
+    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
+      parser.add_argument(
+          '--discard-local-ssd',
+          action='store_true',
+          help=('If provided, local SSD data is discarded.'))
     # TODO(b/36057354): consider adding detailed help.
     base.ASYNC_FLAG.AddToParser(parser)
 
   def _CreateSuspendRequest(self, client, instance_ref, discard_local_ssd):
-    return client.messages.ComputeInstancesSuspendRequest(
-        discardLocalSsd=discard_local_ssd,
-        instance=instance_ref.Name(),
-        project=instance_ref.project,
-        zone=instance_ref.zone)
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      return client.messages.ComputeInstancesSuspendRequest(
+          instance=instance_ref.Name(),
+          project=instance_ref.project,
+          zone=instance_ref.zone)
+    else:
+      return client.messages.ComputeInstancesSuspendRequest(
+          discardLocalSsd=discard_local_ssd,
+          instance=instance_ref.Name(),
+          project=instance_ref.project,
+          zone=instance_ref.zone)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -100,9 +106,12 @@ class Suspend(base.SilentCommand):
 
     requests = []
     for instance_ref in instance_refs:
-      requests.append((client.apitools_client.instances,
-                       'Suspend', self._CreateSuspendRequest(
-                           client, instance_ref, args.discard_local_ssd)))
+      discard_local_ssd = None
+      if self.ReleaseTrack() != base.ReleaseTrack.GA:
+        discard_local_ssd = args.discard_local_ssd
+      requests.append((client.apitools_client.instances, 'Suspend',
+                       self._CreateSuspendRequest(client, instance_ref,
+                                                  discard_local_ssd)))
 
     errors_to_collect = []
     responses = client.BatchRequests(requests, errors_to_collect)

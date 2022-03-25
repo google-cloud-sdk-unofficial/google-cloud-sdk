@@ -178,7 +178,7 @@ class Create(base.CreateCommand):
   def Args(parser):
     _Args(parser)
     flags.AddAcceleratorArgs(
-        parser, enable_gpu_partition=True, enable_gpu_time_sharing=False)
+        parser, enable_gpu_partition=True, enable_gpu_sharing=False)
     flags.AddBootDiskKmsKeyFlag(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)
@@ -267,7 +267,7 @@ class CreateBeta(Create):
   def Args(parser):
     _Args(parser)
     flags.AddAcceleratorArgs(
-        parser, enable_gpu_partition=True, enable_gpu_time_sharing=True)
+        parser, enable_gpu_partition=True, enable_gpu_sharing=True)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDsBetaFlags(parser, for_node_pool=True)
     flags.AddBootDiskKmsKeyFlag(parser)
@@ -362,7 +362,7 @@ class CreateAlpha(Create):
   def Args(parser):
     _Args(parser)
     flags.AddAcceleratorArgs(
-        parser, enable_gpu_partition=True, enable_gpu_time_sharing=True)
+        parser, enable_gpu_partition=True, enable_gpu_sharing=True)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=False)
     flags.AddLocalSSDsAlphaFlags(parser, for_node_pool=True)

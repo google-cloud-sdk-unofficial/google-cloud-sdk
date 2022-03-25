@@ -371,11 +371,11 @@ def AddPrivateIPv6Flag(api, parser):
   flags.AddPrivateIpv6GoogleAccessTypeFlag(api, parser)
 
 
-def AddAcceleratorFlag(parser, enable_gpu_partition, enable_gpu_time_sharing):
+def AddAcceleratorFlag(parser, enable_gpu_partition, enable_gpu_sharing):
   flags.AddAcceleratorArgs(
       parser,
       enable_gpu_partition=enable_gpu_partition,
-      enable_gpu_time_sharing=enable_gpu_time_sharing)
+      enable_gpu_sharing=enable_gpu_sharing)
 
 
 def AddKubernetesObjectsExportFlag(parser):

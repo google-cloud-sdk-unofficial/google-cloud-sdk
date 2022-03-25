@@ -39,3 +39,6 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool.description
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool.session_duration
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool.disabled
+
+  async:
+    collection: iam.locations.workforcePools.operations

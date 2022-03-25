@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Compute Engine node groups."""
 
@@ -50,7 +50,7 @@ class List(base.ListCommand):
     return lister.Invoke(request_data, list_implementation)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ListAlpha(List):
   """List Compute Engine node groups."""
 

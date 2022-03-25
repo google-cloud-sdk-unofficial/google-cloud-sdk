@@ -31,3 +31,6 @@
     resource:
       help_text: The workforce pool provider to delete.
       spec: !REF googlecloudsdk.command_lib.iam.resources:workforce_pool_provider
+
+  async:
+    collection: iam.locations.workforcePools.providers.operations

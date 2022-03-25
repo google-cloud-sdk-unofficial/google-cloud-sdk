@@ -29,3 +29,6 @@
     resource:
       help_text: The workforce pool to undelete.
       spec: !REF googlecloudsdk.command_lib.iam.resources:positional_workforce_pool
+
+  async:
+    collection: iam.locations.workforcePools.operations

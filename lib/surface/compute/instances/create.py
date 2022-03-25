@@ -108,7 +108,8 @@ def _CommonArgs(parser,
                 support_numa_node_count=False,
                 support_disk_architecture=False,
                 support_network_queue_count=False,
-                support_instance_kms=False):
+                support_instance_kms=False,
+                support_max_run_duration=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
@@ -210,6 +211,9 @@ def _CommonArgs(parser,
   if support_instance_kms:
     instances_flags.AddInstanceKmsArgs(parser)
 
+  if support_max_run_duration:
+    instances_flags.AddMaxRunDurationVmArgs(parser)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
@@ -240,6 +244,8 @@ class Create(base.CreateCommand):
   _support_disk_architecture = False
   _support_network_queue_count = False
   _support_instance_kms = False
+  _support_key_revocation_action_type = False
+  _support_max_run_duration = False
 
   @classmethod
   def Args(cls, parser):
@@ -255,7 +261,8 @@ class Create(base.CreateCommand):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
         support_disk_architecture=cls._support_disk_architecture,
-        support_instance_kms=cls._support_instance_kms)
+        support_instance_kms=cls._support_instance_kms,
+        support_max_run_duration=cls._support_max_run_duration)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -300,7 +307,8 @@ class Create(base.CreateCommand):
         support_node_affinity=True,
         support_node_project=self._support_node_project,
         support_host_error_timeout_seconds=self
-        ._support_host_error_timeout_seconds)
+        ._support_host_error_timeout_seconds,
+        support_max_run_duration=self._support_max_run_duration)
     tags = instance_utils.GetTags(args, compute_client)
     labels = instance_utils.GetLabels(args, compute_client)
     metadata = instance_utils.GetMetadata(args, compute_client, skip_defaults)
@@ -486,6 +494,12 @@ class Create(base.CreateCommand):
             args.post_key_revocation_action_type, compute_client.messages
             .Instance.PostKeyRevocationActionTypeValueValuesEnum)
 
+      if self._support_key_revocation_action_type and args.IsSpecified(
+          'key_revocation_action_type'):
+        instance.keyRevocationActionType = arg_utils.ChoiceToEnum(
+            args.key_revocation_action_type, compute_client.messages.Instance
+            .KeyRevocationActionTypeValueValuesEnum)
+
       if args.IsSpecified('network_performance_configs'):
         instance.networkPerformanceConfig = instance_utils.GetNetworkPerformanceConfig(
             args, compute_client)
@@ -539,7 +553,8 @@ class Create(base.CreateCommand):
     instances_flags.ValidateNetworkTierArgs(args)
     instances_flags.ValidateReservationAffinityGroup(args)
     instances_flags.ValidateNetworkPerformanceConfigsArgs(args)
-    instances_flags.ValidateInstanceScheduling(args)
+    instances_flags.ValidateInstanceScheduling(
+        args, support_max_run_duration=self._support_max_run_duration)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     compute_client = holder.client
@@ -621,12 +636,14 @@ class CreateBeta(Create):
   _support_multi_writer = True
   _support_subinterface = False
   _support_secure_tag = False
-  _support_node_project = False
+  _support_node_project = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_disk_architecture = False
   _support_network_queue_count = False
   _support_instance_kms = False
+  _support_key_revocation_action_type = False
+  _support_max_run_duration = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -659,7 +676,8 @@ class CreateBeta(Create):
         ._support_host_error_timeout_seconds,
         support_numa_node_count=cls._support_numa_node_count,
         support_disk_architecture=cls._support_disk_architecture,
-        support_instance_kms=cls._support_instance_kms)
+        support_instance_kms=cls._support_instance_kms,
+        support_max_run_duration=cls._support_max_run_duration)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -703,6 +721,8 @@ class CreateAlpha(CreateBeta):
   _support_disk_architecture = True
   _support_network_queue_count = True
   _support_instance_kms = True
+  _support_key_revocation_action_type = True
+  _support_max_run_duration = True
 
   @classmethod
   def Args(cls, parser):
@@ -723,7 +743,8 @@ class CreateAlpha(CreateBeta):
         support_numa_node_count=cls._support_numa_node_count,
         support_disk_architecture=cls._support_disk_architecture,
         support_network_queue_count=cls._support_network_queue_count,
-        support_instance_kms=cls._support_instance_kms)
+        support_instance_kms=cls._support_instance_kms,
+        support_max_run_duration=cls._support_max_run_duration)
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
@@ -742,6 +763,7 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddStableFleetArgs(parser)
     instances_flags.AddSecureTagsArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
+    instances_flags.AddKeyRevocationActionTypeArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

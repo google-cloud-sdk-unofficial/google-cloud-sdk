@@ -105,13 +105,13 @@ class Create(base.CreateCommand):
       args.main_volume_type = aws_flags.GetMainVolumeType(args)
       args.fleet_project = flags.GetFleetProject(args)
       op = cluster_client.Create(cluster_ref, args)
-      op_ref = resource_args.GetOperationResource(op)
 
       validate_only = getattr(args, 'validate_only', False)
       if validate_only:
         args.format = 'disable'
         return
 
+      op_ref = resource_args.GetOperationResource(op)
       log.CreatedResource(op_ref, kind=constants.LRO_KIND)
 
       async_ = getattr(args, 'async_', False)

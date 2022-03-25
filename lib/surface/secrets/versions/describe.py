@@ -39,7 +39,7 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddVersionOrLatest(
+    secrets_args.AddVersionOrAlias(
         parser, purpose='to describe', positional=True, required=True)
 
   def Run(self, args):
@@ -63,5 +63,5 @@ class DescribeBeta(Describe):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddVersionOrLatest(
+    secrets_args.AddVersionOrAlias(
         parser, purpose='to describe', positional=True, required=True)

@@ -34,9 +34,8 @@ from googlecloudsdk.core.util import files
 EXPECTED_USER_ROLES = frozenset([
     'roles/owner',
     'roles/storagetransfer.admin',
+    'roles/storagetransfer.transferAgent',
     'roles/storage.objectAdmin',
-    'roles/pubsub.publisher',
-    'roles/pubsub.subscriber',
     'roles/pubsub.editor',
 ])
 EXPECTED_P4SA_ROLES = frozenset([
@@ -177,6 +176,12 @@ class Authorize(base.Command):
           log.status.Print('Adding roles:\n{}'.format(all_missing_role_tuples))
           projects_api.AddIamPolicyBindings(parsed_project_id,
                                             all_missing_role_tuples)
+          log.status.Print('***')
+          # Source:
+          # https://cloud.google.com/iam/docs/granting-changing-revoking-access
+          log.status.Print(
+              'Done. Permissions typically take seconds to propagate, but,'
+              ' in some cases, it can take up to seven minutes.')
         else:
           log.status.Print('No missing roles to add.')
       else:

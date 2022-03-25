@@ -30,11 +30,30 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+        To list operations for instances with ID "prod-instance" , run:
+
+          $ {command} --instance=prod-instance
+
+        To list operations for instances with ID "prod-instance" that have 10 results, run:
+
+          $ {command} --instance=prod-instance --limit=10
+
+        To list operations for instances with ID "prod-instance" that have 10 results in a page, run:
+
+          $ {command} --instance=prod-instance --page-size=10
+        """,
+}
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """Lists all instance operations for the given Cloud SQL instance."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

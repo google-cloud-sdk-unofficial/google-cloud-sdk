@@ -46,7 +46,8 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Resume(base.SilentCommand):
   """Resume a virtual machine instance.
 
@@ -54,10 +55,11 @@ class Resume(base.SilentCommand):
   virtual machine.
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.INSTANCES_ARG.AddArgument(parser)
-    csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
+    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
+      csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def GetInstances(self, client, refs):
@@ -76,7 +78,6 @@ class Resume(base.SilentCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    csek_key_file = args.csek_key_file
     request_list = []
     instance_refs = flags.INSTANCES_ARG.ResolveAsResource(
         args,
@@ -87,6 +88,9 @@ class Resume(base.SilentCommand):
     # instances specified in the file to ensure that they exist.
     # Only then can we verify that the key specified in the file matches what
     # was used to create the instance.
+    csek_key_file = None
+    if self.ReleaseTrack() != base.ReleaseTrack.GA:
+      csek_key_file = args.csek_key_file
     if csek_key_file:
       instances = self.GetInstances(client, instance_refs)
     else:
@@ -98,6 +102,7 @@ class Resume(base.SilentCommand):
       if instance:
         allow_rsa_encrypted = self.ReleaseTrack() in [
             base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+            # Suspend/Resume will never support CSEK in GA.
         ]
         csek_keys = csek_utils.CsekKeyStore.FromArgs(args, allow_rsa_encrypted)
         for disk in instance.disks:

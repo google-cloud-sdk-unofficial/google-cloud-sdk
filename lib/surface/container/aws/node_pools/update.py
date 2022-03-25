@@ -49,9 +49,12 @@ class Update(base.UpdateCommand):
     flags.AddNodeVersion(parser, required=False)
     flags.AddValidateOnly(parser, 'node pool to update')
     flags.AddAutoscaling(parser, required=False)
-
-    aws_flags.AddSecurityGroupIds(parser, 'nodes')
-
+    aws_flags.AddSecurityGroupFlagsForUpdate(parser, 'nodes')
+    flags.AddRootVolumeSize(parser)
+    aws_flags.AddRootVolumeKmsKeyArn(parser)
+    aws_flags.AddRootVolumeType(parser)
+    aws_flags.AddRootVolumeIops(parser)
+    aws_flags.AddConfigEncryptionKmsKeyArn(parser, required=False)
     base.ASYNC_FLAG.AddToParser(parser)
 
     parser.display_info.AddFormat(node_pools.NODEPOOLS_FORMAT)
@@ -67,6 +70,8 @@ class Update(base.UpdateCommand):
       # Parsing again after endpoint override is set.
       node_pool_ref = resource_args.ParseAwsNodePoolResourceArg(args)
       node_pool_client = node_pools.NodePoolsClient(track=release_track)
+      args.root_volume_size = flags.GetRootVolumeSize(args)
+      args.root_volume_type = aws_flags.GetRootVolumeType(args)
       op = node_pool_client.Update(node_pool_ref, args)
       op_ref = resource_args.GetOperationResource(op)
 

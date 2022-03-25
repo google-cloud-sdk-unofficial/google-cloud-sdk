@@ -128,7 +128,7 @@ def _GetConfirmedClearedFields(args, patch_instance, original_instance):
   return cleared_fields
 
 
-def AddBaseArgs(parser, is_alpha=False):
+def AddBaseArgs(parser, is_alpha=False, is_beta=False):
   """Adds base args and flags to the parser."""
   # TODO(b/35705305): move common flags to command_lib.sql.flags
   flags.AddActivationPolicy(parser)
@@ -244,7 +244,7 @@ def AddBaseArgs(parser, is_alpha=False):
       parser,
       support_default_version=False,
       expose_mvs_versions=True,
-      expose_all_versions=is_alpha)
+      expose_all_versions=is_alpha or is_beta)
   flags.AddNetwork(parser)
   flags.AddMaintenanceVersion(parser)
 
@@ -381,7 +381,7 @@ class PatchBeta(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
-    AddBaseArgs(parser)
+    AddBaseArgs(parser, is_beta=True)
     flags.AddZone(
         parser,
         help_text=('Preferred Compute Engine zone (e.g. us-central1-a, '

@@ -159,6 +159,16 @@ class Register(base.CreateCommand):
           being registered on the Fleet.
          """),
     )
+    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+      parser.add_argument(
+          '--location',
+          type=str,
+          hidden=True,
+          help=textwrap.dedent("""\
+              The location for the membership resource, e.g. `us-central1`.
+              If not specified, defaults to `global`. Not supported for GKE clusters.
+            """),
+      )
     hub_util.AddClusterConnectionCommonArgs(parser)
     parser.add_argument(
         '--manifest-output-file',
@@ -314,6 +324,9 @@ class Register(base.CreateCommand):
         enable_workload_identity=getattr(args, 'enable_workload_identity',
                                          False),
     ) as kube_client:
+      location = getattr(args, 'location', 'global')
+      if location is None:
+        location = 'global'
       kube_client.CheckClusterAdminPermissions()
       kube_util.ValidateClusterIdentifierFlags(kube_client, args)
       if self.ReleaseTrack() is not base.ReleaseTrack.GA:
@@ -389,9 +402,9 @@ class Register(base.CreateCommand):
       obj = None
       # For backward compatiblity, check if a membership was previously created
       # using the cluster uuid.
-      parent = api_util.ParentRef(project, 'global')
+      parent = api_util.ParentRef(project, location)
       membership_id = uuid
-      resource_name = api_util.MembershipRef(project, 'global', uuid)
+      resource_name = api_util.MembershipRef(project, location, uuid)
       obj = self._CheckMembershipWithUUID(resource_name, args.CLUSTER_NAME)
 
       # get api version version to pass into create/update membership
@@ -402,12 +415,12 @@ class Register(base.CreateCommand):
       else:
         # Attempt to create a new membership using cluster_name.
         membership_id = args.CLUSTER_NAME
-        resource_name = api_util.MembershipRef(project, 'global',
+        resource_name = api_util.MembershipRef(project, location,
                                                args.CLUSTER_NAME)
         try:
           self._VerifyClusterExclusivity(kube_client, parent, membership_id)
           obj = api_util.CreateMembership(project, args.CLUSTER_NAME,
-                                          args.CLUSTER_NAME,
+                                          args.CLUSTER_NAME, location,
                                           gke_cluster_self_link, uuid,
                                           self.ReleaseTrack(), issuer_url,
                                           private_keyset_json,

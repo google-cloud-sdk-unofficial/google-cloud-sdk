@@ -19,11 +19,13 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.bms.bms_client import BmsClient
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bms import exceptions
 from googlecloudsdk.command_lib.bms import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -61,6 +63,7 @@ class Update(base.UpdateCommand):
     """Register flags for this command."""
     flags.AddNfsShareArgToParser(parser, positional=True)
     labels_util.AddUpdateLabelsFlags(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
@@ -77,9 +80,27 @@ class Update(base.UpdateCommand):
 
     op_ref = client.UpdateNfsShare(
         nfs_share_resource=nfs_share, labels=labels_update)
-    log.status.Print('Update request issued for: [{}]\nThis may take several '
-                     'minutes to complete.'.format(nfs_share.Name()))
-    return op_ref
+
+    if op_ref.done:
+      log.UpdatedResource(nfs_share.Name(), kind='NFS share')
+      return op_ref
+
+    if args.async_:
+      log.status.Print('Update request issued for: [{}]\nCheck operation '
+                       '[{}] for status.'.format(nfs_share.Name(),
+                                                 op_ref.name))
+      return op_ref
+
+    op_resource = resources.REGISTRY.ParseRelativeName(
+        op_ref.name,
+        collection='baremetalsolution.operations',
+        api_version='v1')
+    poller = waiter.CloudOperationPollerNoResources(client.operation_service)
+    res = waiter.WaitFor(
+        poller, op_resource,
+        'Waiting for operation [{}] to complete'.format(op_ref.name))
+    log.UpdatedResource(nfs_share.Name(), kind='NFS share')
+    return res
 
 
 Update.detailed_help = DETAILED_HELP

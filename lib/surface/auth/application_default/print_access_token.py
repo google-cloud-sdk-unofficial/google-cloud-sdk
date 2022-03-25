@@ -20,6 +20,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from google.auth import credentials
 from google.auth import exceptions as google_auth_exceptions
 from google.oauth2 import credentials as google_auth_creds
 from googlecloudsdk.api_lib.auth import util as auth_util
@@ -30,9 +31,9 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import requests
 from googlecloudsdk.core.credentials import creds as c_creds
+from googlecloudsdk.core.credentials import exceptions as creds_exceptions
 from googlecloudsdk.core.credentials import google_auth_credentials as c_google_auth
 from googlecloudsdk.core.credentials import store as c_store
-
 import six
 
 
@@ -80,14 +81,14 @@ class PrintAccessToken(base.Command):
         '--scopes',
         type=arg_parsers.ArgList(min_length=1),
         metavar='SCOPE',
-        help='The scopes to authorize for. By default [{0}] scopes are used. '
+        help='The scopes to authorize for. This flag is supported for user '
+        'accounts and service accounts only. '
         'The list of possible scopes can be found at: '
         '[](https://developers.google.com/identity/protocols/googlescopes).\n\n'
-        'This flag is not for end-user accounts. The scopes of end-user '
-        'credentials cannot change after authorization. '
-        'To request a different set of scopes for end-user accounts, '
-        'rerun `gcloud auth application-default login --scopes`.'.format(
-            auth_util.CLOUD_PLATFORM_SCOPE))
+        'For end-user accounts, the provided '
+        'scopes must be from {0}, or the scopes previously specified through '
+        '`gcloud auth application-default login --scopes`.'.format(
+            auth_util.DEFAULT_SCOPES))
     parser.display_info.AddFormat('value(token)')
 
   def Run(self, args):
@@ -108,21 +109,41 @@ class PrintAccessToken(base.Command):
       log.debug(e, exc_info=True)
       raise c_exc.ToolException(six.text_type(e))
 
-    if isinstance(creds, google_auth_creds.Credentials) and args.scopes:
-      raise c_exc.InvalidArgumentException(
-          '--scopes',
-          'Application default credentials (ADC) loads an end-user account '
-          'credential. `--scopes` flag is not supported by this '
-          'credential type. To request a different set of scopes, '
-          're-authorize by running '
-          '`gcloud auth application-default login --scopes` and print an '
-          'access token by running '
-          '`gcloud auth application-default print-access-token`')
+    if args.scopes:
+      cred_type = c_creds.CredentialTypeGoogleAuth.FromCredentials(creds)
+      if cred_type not in [
+          c_creds.CredentialTypeGoogleAuth.USER_ACCOUNT,
+          c_creds.CredentialTypeGoogleAuth.SERVICE_ACCOUNT
+      ]:
+        # TODO(b/223649175): Add support for other credential types(e.g GCE).
+        log.warning(
+            '`--scopes` flag may not working as expected and will be ignored '
+            'for account type {}.'.format(cred_type.key)
+        )
+      scopes = args.scopes + [auth_util.OPENID, auth_util.USER_EMAIL_SCOPE]
+
+      # non user account credential types
+      # pylint:disable=protected-access
+      if isinstance(creds, credentials.Scoped):
+        creds = creds.with_scopes(scopes)
+      else:
+        creds._scopes = scopes
 
     # Converts the user credentials so that it can handle reauth during refresh.
     if isinstance(creds, google_auth_creds.Credentials):
       creds = c_google_auth.Credentials.FromGoogleAuthUserCredentials(
           creds)
-    with c_store.HandleGoogleAuthCredentialsRefreshError(for_adc=True):
-      creds.refresh(requests.GoogleAuthRequest())
-    return creds
+    try:
+      with c_store.HandleGoogleAuthCredentialsRefreshError(for_adc=True):
+        creds.refresh(requests.GoogleAuthRequest())
+      return creds
+    except creds_exceptions.TokenRefreshError as e:
+      if args.scopes:
+        raise c_exc.InvalidArgumentException(
+            '--scopes',
+            'Invalid scopes value. Please make sure the scopes are from {0}, '
+            'or the scopes previously specified through '
+            '`gcloud auth application-default login --scopes`.'
+            .format(auth_util.DEFAULT_SCOPES))
+      else:
+        raise e

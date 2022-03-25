@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 import collections
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import iap_tunnel_websocket
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
@@ -98,6 +99,7 @@ class StartIapTunnel(base.Command):
   """Starts an IAP TCP forwarding tunnel."""
 
   enable_host_based_flags = False
+  fetch_instance_after_connect_error = False
 
   @classmethod
   def Args(cls, parser):
@@ -147,7 +149,23 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
     if args.listen_on_stdin and args.IsSpecified('local_host_port'):
       raise calliope_exceptions.ConflictingArgumentsException(
           '--listen-on-stdin', '--local-host-port')
+
     target = self._GetTargetArgs(args)
+    iap_tunnel_helper = self._CreateIapTunnelHelper(args, target)
+
+    self._CheckNumpyInstalled()
+    try:
+      iap_tunnel_helper.Run()
+    except iap_tunnel_websocket.ConnectionCreationError as e:
+      if self.fetch_instance_after_connect_error and not target.host:
+        # Try to fetch the instance, to see if we can get a more precise error
+        # message. If we can, then this will throw an exception, and we won't
+        # raise the ConnectionCreationError.
+        self._FetchInstance(args)
+
+      raise e
+
+  def _CreateIapTunnelHelper(self, args, target):
 
     if args.listen_on_stdin:
       iap_tunnel_helper = iap_tunnel.IapTunnelStdinHelper(args, target.project)
@@ -166,17 +184,7 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
     else:
       iap_tunnel_helper.ConfigureForInstance(target.zone, target.instance,
                                              target.interface, target.port)
-
-    # Check if user has numpy installed, show message asking them to install.
-    # Numpy will be used later inside the websocket library to speed up the
-    # transfer rate. Showing the message here before the process start looks
-    # better than showing when the actual import happen inside the websocket.
-    try:
-      import numpy  # pylint: disable=g-import-not-at-top, unused-import
-    except ImportError:
-      log.warning(_NUMPY_HELP_TEXT)
-
-    iap_tunnel_helper.Run()
+    return iap_tunnel_helper
 
   def _GetTargetArgs(self, args):
     # TODO(b/190426150): change to just "IsSpecified" when going to GA
@@ -193,14 +201,20 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
           instance=None,
           interface=None)
 
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    ssh_helper = ssh_utils.BaseSSHCLIHelper()
+    if self.fetch_instance_after_connect_error:
+      # Do not fetch instance prior to connecting.
+      return _CreateTargetArgs(
+          project=properties.VALUES.core.project.GetOrFail(),
+          zone=args.zone,
+          instance=args.instance_name,
+          interface='nic0',
+          port=args.instance_port,
+          region=None,
+          network=None,
+          host=None,
+          dest_group=None)
 
-    instance_ref = flags.SSH_INSTANCE_RESOLVER.ResolveResources(
-        [args.instance_name], scope.ScopeEnum.ZONE, args.zone, holder.resources,
-        scope_lister=flags.GetInstanceZoneScopeLister(client))[0]
-    instance_obj = ssh_helper.GetInstance(client, instance_ref)
+    instance_ref, instance_obj = self._FetchInstance(args)
 
     return _CreateTargetArgs(
         project=instance_ref.project,
@@ -213,6 +227,16 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
         host=None,
         dest_group=None)
 
+  def _FetchInstance(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    ssh_helper = ssh_utils.BaseSSHCLIHelper()
+
+    instance_ref = flags.SSH_INSTANCE_RESOLVER.ResolveResources(
+        [args.instance_name], scope.ScopeEnum.ZONE, args.zone, holder.resources,
+        scope_lister=flags.GetInstanceZoneScopeLister(client))[0]
+    return instance_ref, ssh_helper.GetInstance(client, instance_ref)
+
   def _GetLocalHostPort(self, args):
     local_host_arg = args.local_host_port.host or 'localhost'
     port_arg = (
@@ -222,17 +246,30 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
       log.status.Print('Picking local unused port [%d].' % local_port)
     return local_host_arg, local_port
 
+  def _CheckNumpyInstalled(self):
+    # Check if user has numpy installed, show message asking them to install.
+    # Numpy will be used later inside the websocket library to speed up the
+    # transfer rate. Showing the message here before the process start looks
+    # better than showing when the actual import happen inside the websocket.
+    try:
+      import numpy  # pylint: disable=g-import-not-at-top, unused-import
+    except ImportError:
+      log.warning(_NUMPY_HELP_TEXT)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class StartIapTunnelBeta(StartIapTunnel):
   """Starts an IAP TCP forwarding tunnel (Beta)."""
   enable_host_based_flags = False
+  fetch_instance_after_connect_error = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class StartIapTunnelAlpha(StartIapTunnelBeta):
   """Starts an IAP TCP forwarding tunnel (Alpha)."""
   enable_host_based_flags = True
+  # Make the Compute Engine instances.Get call only after failing to connect.
+  fetch_instance_after_connect_error = True
 
 
 StartIapTunnelAlpha.detailed_help = _DetailedHelp('ALPHA')

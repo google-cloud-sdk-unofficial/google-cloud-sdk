@@ -50,3 +50,6 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.attribute_condition
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.saml_idp_metadata_path
       required: true
+
+  async:
+    collection: iam.locations.workforcePools.providers.operations
