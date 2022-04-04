@@ -209,7 +209,8 @@ class Upgrade(base.Command):
         cluster=cluster,
         master=args.master,
         node_pool_name=args.node_pool,
-        new_version=args.cluster_version)
+        new_version=args.cluster_version,
+        new_image_type=args.image_type)
 
     if args.master:
       MaybeLog122UpgradeWarning(cluster)

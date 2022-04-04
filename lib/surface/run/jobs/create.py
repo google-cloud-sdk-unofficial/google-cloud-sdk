@@ -86,6 +86,7 @@ class Create(base.Command):
     flags.AddBinAuthzBreakglassFlag(parser)
     flags.AddCmekKeyFlag(parser, with_clear=False)
     flags.AddSandboxArg(parser, hidden=True)
+    flags.AddGeneralAnnotationFlags(parser)
 
     polling_group = parser.add_mutually_exclusive_group()
     flags.AddAsyncFlag(polling_group)
@@ -150,15 +151,17 @@ class Create(base.Command):
                              '{operation}.'.format(
                                  job=job.name, operation=operation))
 
-      log.Print(
-          '\nView details about this job by running '
-          '`gcloud{release_track} run jobs describe {job_name}`.'
-          '\nSee logs for this execution at: '
-          # TODO(b/180749348): Don't piggyback off of cloud_run_revision
-          'https://console.cloud.google.com/logs/viewer?project={project_id}&resource=cloud_run_revision/service_name/{job_name}'
-          .format(
-              release_track=(' {}'.format(self.ReleaseTrack().prefix)
-                             if self.ReleaseTrack().prefix is not None else ''),
-              project_id=job_ref.Parent().Name(),
-              job_name=job.name))
+      msg = ''
+      if run_now:
+        msg += messages_util.GetExecutionCreatedMessage(self.ReleaseTrack(),
+                                                        job_ref, execution.name)
+        msg += '\n'
+      msg += ('\nTo execute this job{repeat}, use:\n'
+              'gcloud{release_track} run jobs execute {job_name}'.format(
+                  repeat=' again' if run_now else '',
+                  release_track=(' {}'.format(self.ReleaseTrack().prefix)
+                                 if self.ReleaseTrack().prefix is not None
+                                 else ''),
+                  job_name=job.name))
+      log.Print(msg)
       return job

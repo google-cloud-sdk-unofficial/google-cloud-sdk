@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import flags
@@ -29,7 +30,39 @@ from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
 from googlecloudsdk.command_lib.storage.tasks import task_status
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_task_iterator
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
+
+
+_ALL_VERSIONS_HELP_TEXT = """\
+Copy all source versions from a source bucket or folder. If not set, only the
+live version of each source object is copied.
+
+Note: This option is only useful when the destination bucket has Object
+Versioning enabled. Additionally, the generation numbers of copied versions do
+not necessarily match the order of the original generation numbers.
+"""
+
+# TODO(b/223800321): Maybe offer ability to limit parallel encoding workers.
+_GZIP_IN_FLIGHT_EXTENSIONS_HELP_TEXT = """\
+Applies gzip transport encoding to any file upload whose
+extension matches the input extension list. This is useful when
+uploading files with compressible content such as .js, .css,
+or .html files. This also saves network bandwidth while
+leaving the data uncompressed in Cloud Storage.
+
+When you specify the `--gzip-in-flight` option, files being uploaded are
+compressed in-memory and on-the-wire only. Both the local
+files and Cloud Storage objects remain uncompressed. The
+uploaded objects retain the `Content-Type` and name of the
+original files."""
+_GZIP_IN_FLIGHT_ALL_HELP_TEXT = """\
+Applies gzip transport encoding to file uploads. This option
+works like the `--gzip-transfer` option described above, but it
+applies to all uploaded files, regardless of extension.
+
+CAUTION: If some of the source files don't compress well, such
+as binary data, using this option may result in longer uploads."""
 
 
 class Cp(base.Command):
@@ -71,6 +104,11 @@ class Cp(base.Command):
     parser.add_argument('source', nargs='+', help='The source path(s) to copy.')
     parser.add_argument('destination', help='The destination path.')
     parser.add_argument(
+        '-A',
+        '--all-versions',
+        action='store_true',
+        help=_ALL_VERSIONS_HELP_TEXT)
+    parser.add_argument(
         '-R',
         '-r',
         '--recursive',
@@ -87,12 +125,31 @@ class Cp(base.Command):
         help='Ignore file symlinks instead of copying what they point to.'
         ' Symlinks pointing to directories will always be ignored.')
     parser.add_argument(
+        '-U',
+        '--skip-unsupported',
+        action='store_true',
+        help='Skip objects with unsupported object types.'
+        'Currently, the only unsupported category is Amazon S3 objects with the'
+        ' GLACIER storage class.')
+    parser.add_argument(
         '-s',
         '--storage-class',
         help='Specifies the storage class of the destination object. If not'
         ' specified, the default storage class of the destination bucket is'
         ' used. This option is not valid for copying to non-cloud destinations.'
     )
+    gzip_flags_group = parser.add_group(mutex=True)
+    gzip_flags_group.add_argument(
+        '-J',
+        '--gzip-in-flight-all',
+        action='store_true',
+        help=_GZIP_IN_FLIGHT_ALL_HELP_TEXT)
+    gzip_flags_group.add_argument(
+        '-j',
+        '--gzip-in-flight-extensions',
+        metavar='FILE_EXTENSIONS',
+        type=arg_parsers.ArgList(),
+        help=_GZIP_IN_FLIGHT_EXTENSIONS_HELP_TEXT)
     flags.add_continue_on_error_flag(parser)
     flags.add_precondition_flags(parser)
     flags.add_object_metadata_flags(parser)
@@ -100,8 +157,10 @@ class Cp(base.Command):
 
   def Run(self, args):
     encryption_util.initialize_key_store(args)
+
     source_expansion_iterator = name_expansion.NameExpansionIterator(
         args.source,
+        all_versions=args.all_versions,
         recursion_requested=args.recursive,
         ignore_symlinks=args.ignore_symlinks)
     task_status_queue = task_graph_executor.multiprocessing_context.Queue()
@@ -113,15 +172,21 @@ class Cp(base.Command):
           'Cannot specify storage class for a non-cloud destination: {}'.format(
               raw_destination_url))
 
+    parallelizable = True
+    shared_stream = None
+    if (args.all_versions and
+        (properties.VALUES.storage.process_count.GetInt() != 1 or
+         properties.VALUES.storage.thread_count.GetInt() != 1)):
+      log.warning(
+          'Using sequential instead of parallel task execution. This will'
+          ' maintain version ordering when copying all versions of an object.')
+      parallelizable = False
     if (isinstance(raw_destination_url, storage_url.FileUrl) and
         raw_destination_url.is_pipe):
       log.warning('Downloading to a pipe.'
                   ' This command may stall until the pipe is read.')
-      shared_stream = files.BinaryFileWriter(args.destination)
       parallelizable = False
-    else:
-      shared_stream = None
-      parallelizable = True
+      shared_stream = files.BinaryFileWriter(args.destination)
 
     user_request_args = (
         user_request_args_factory.get_user_request_args_from_command_args(
@@ -132,6 +197,7 @@ class Cp(base.Command):
         custom_md5_digest=args.content_md5,
         do_not_decompress=args.do_not_decompress,
         shared_stream=shared_stream,
+        skip_unsupported=args.skip_unsupported,
         task_status_queue=task_status_queue,
         user_request_args=user_request_args,
     )

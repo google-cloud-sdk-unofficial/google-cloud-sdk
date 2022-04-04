@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags as run_flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run.integrations import flags
@@ -62,11 +63,15 @@ class Delete(base.Command):
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, self.ReleaseTrack())
     with run_apps_operations.Connect(conn_context) as client:
-      integration_type = client.DeleteIntegration(name=integration_name)
-
-      pretty_print.Info('')
-      pretty_print.Success(
-          messages_util.GetSuccessMessage(
-              integration_type=integration_type,
-              integration_name=integration_name,
-              action='deleted'))
+      try:
+        integration_type = client.DeleteIntegration(name=integration_name)
+      except exceptions.IntegrationsOperationError as err:
+        pretty_print.Info(messages_util.GetDeleteErrorMessage(integration_name))
+        raise err
+      else:
+        pretty_print.Info('')
+        pretty_print.Success(
+            messages_util.GetSuccessMessage(
+                integration_type=integration_type,
+                integration_name=integration_name,
+                action='deleted'))

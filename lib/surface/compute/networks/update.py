@@ -123,6 +123,14 @@ class Update(base.UpdateCommand):
       network_resource.mtu = args.mtu
       should_patch = True
 
+    if hasattr(args, 'enable_ula_internal_ipv6'):
+      network_resource.enableUlaInternalIpv6 = args.enable_ula_internal_ipv6
+      should_patch = True
+
+    if hasattr(args, 'internal_ipv6_range'):
+      network_resource.internalIpv6Range = args.internal_ipv6_range
+      should_patch = True
+
     if args.bgp_routing_mode:
       should_patch = True
       network_resource.routingConfig = messages.NetworkRoutingConfig()

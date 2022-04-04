@@ -21,80 +21,14 @@ import os.path
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.util.anthos import binary_operations
+from googlecloudsdk.core import log
 from googlecloudsdk.core import metrics
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.credentials.store import GetFreshAccessToken
 from googlecloudsdk.core.util import files
-
-MISSING_BINARY = ('Could not locate terraform-validator executable [{binary}]. '
-                  'Please ensure gcloud terraform-validator component is '
-                  'properly installed. '
-                  'See https://cloud.google.com/sdk/docs/components for '
-                  'more details.')
-
-
-class TerraformValidatorConvertOperation(
-    binary_operations.StreamingBinaryBackedOperation):
-  """Streaming operation for Terraform Validator convert binary."""
-  custom_errors = {}
-
-  def __init__(self, **kwargs):
-    custom_errors = {
-        'MISSING_EXEC': MISSING_BINARY.format(binary='terraform-validator'),
-    }
-    super(TerraformValidatorConvertOperation, self).__init__(
-        binary='terraform-validator',
-        check_hidden=True,
-        install_if_missing=True,
-        custom_errors=custom_errors,
-        structured_output=True,
-        **kwargs)
-
-  def _ParseArgsForCommand(self, command, terraform_plan_json, project,
-                           verbosity, output_path, **kwargs):
-    args = [
-        command,
-        terraform_plan_json,
-        '--output-path',
-        output_path,
-        '--verbosity',
-        verbosity,
-    ]
-    if project:
-      args += ['--project', project]
-    return args
-
-
-class TerraformValidatorValidateOperation(
-    binary_operations.BinaryBackedOperation):
-  """operation for Terraform Validator validate binary."""
-  custom_errors = {}
-
-  def __init__(self, **kwargs):
-    custom_errors = {
-        'MISSING_EXEC': MISSING_BINARY.format(binary='terraform-validator'),
-    }
-    super(TerraformValidatorValidateOperation, self).__init__(
-        binary='terraform-validator',
-        check_hidden=True,
-        install_if_missing=True,
-        custom_errors=custom_errors,
-        **kwargs)
-
-  def _ParseArgsForCommand(self, command, terraform_plan_json, policy_library,
-                           project, verbosity, **kwargs):
-    args = [
-        command,
-        terraform_plan_json,
-        '--verbosity',
-        verbosity,
-        '--policy-path',
-        os.path.expanduser(policy_library),
-    ]
-    if project:
-      args += ['--project', project]
-    return args
+from surface.terraform.vet import TerraformToolsTfplanToCaiOperation
+from surface.terraform.vet import TerraformToolsValidateOperation
 
 
 @base.Hidden
@@ -106,7 +40,7 @@ class TerraformValidatorValidateOperation(
         'Please use `gcloud alpha terraform vet` instead.'),
     error=('This command has been removed. '
            'Please use `gcloud alpha terraform vet` instead.'))
-class Terraform(base.BinaryBackedCommand):
+class Terraform(base.Command):
   """Validate that a terraform plan complies with policies."""
 
   detailed_help = {
@@ -134,8 +68,9 @@ class Terraform(base.BinaryBackedCommand):
     )
 
   def Run(self, args):
-    convert_operation = TerraformValidatorConvertOperation()
-    validate_operation = TerraformValidatorValidateOperation()
+    tfplan_to_cai_operation = TerraformToolsTfplanToCaiOperation()
+    validate_cai_operation = TerraformToolsValidateOperation()
+    validate_tfplan_operation = TerraformToolsValidateOperation()
 
     env_vars = {
         'GOOGLE_OAUTH_ACCESS_TOKEN':
@@ -147,29 +82,64 @@ class Terraform(base.BinaryBackedCommand):
     }
 
     with files.TemporaryDirectory() as tempdir:
-      filename = os.path.join(tempdir, 'converted.json')
+      cai_assets = os.path.join(tempdir, 'cai_assets.json')
 
-      response = convert_operation(
-          command='convert',
+      response = tfplan_to_cai_operation(
+          command='tfplan-to-cai',
           project=args.project or properties.VALUES.core.project.Get(),
           terraform_plan_json=args.terraform_plan_json,
           verbosity=args.verbosity,
-          output_path=filename,
+          output_path=cai_assets,
           env=env_vars)
       self.exit_code = response.exit_code
-      ret = self._DefaultOperationResponseHandler(response)
       if self.exit_code > 0:
-        return ret
+        # The streaming binary backed operation handles its own writing to
+        # stdout and stderr, so there's nothing left to do here.
+        return None
 
       with progress_tracker.ProgressTracker(
           message='Validating resources',
           aborted_message='Aborted validation.'):
-        response = validate_operation(
-            command='validate',
+        cai_response = validate_cai_operation(
+            command='validate-cai',
             policy_library=args.policy_library,
-            project=args.project or properties.VALUES.core.project.Get(),
-            terraform_plan_json=filename,
+            input_file=cai_assets,
             verbosity=args.verbosity,
             env=env_vars)
-        self.exit_code = response.exit_code
-        return self._DefaultOperationResponseHandler(response)
+        tfplan_response = validate_tfplan_operation(
+            command='validate-tfplan',
+            policy_library=args.policy_library,
+            input_file=args.terraform_plan_json,
+            verbosity=args.verbosity,
+            env=env_vars)
+
+    # exit code 2 from a validate_* command indicates violations; we need to
+    # pass that through to users so they can detect this case. However, if
+    # either command errors out (exit code 1) return that instead.
+    if cai_response.exit_code == 1 or tfplan_response.exit_code == 1:
+      self.exit_code = 1
+    elif cai_response.exit_code == 2 or tfplan_response.exit_code == 2:
+      self.exit_code = 2
+
+    # Output from validate commands uses "structured output", same as the
+    # streaming output from conversion. The final output should be a combined
+    # list of violations.
+    violations = []
+
+    for policy_type, response in (('CAI', cai_response), ('Terraform',
+                                                          tfplan_response)):
+      if response.stdout:
+        try:
+          msg = binary_operations.ReadStructuredOutput(
+              response.stdout, as_json=True)
+        except binary_operations.StructuredOutputError:
+          log.warning('Could not parse {} policy validation output.'.format(
+              policy_type))
+        else:
+          violations += msg.resource_body
+      if response.stderr:
+        handler = binary_operations.DefaultStreamStructuredErrHandler(None)
+        for line in response.stderr.split('\n'):
+          handler(line)
+
+    return violations

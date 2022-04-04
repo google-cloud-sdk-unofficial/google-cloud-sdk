@@ -81,6 +81,7 @@ class Update(base.Command):
     flags.AddBinAuthzBreakglassFlag(parser)
     flags.AddCmekKeyFlag(parser, with_clear=False)
     flags.AddSandboxArg(parser, hidden=True)
+    flags.AddGeneralAnnotationFlags(parser)
 
     polling_group = parser.add_mutually_exclusive_group()
     flags.AddAsyncFlag(polling_group)

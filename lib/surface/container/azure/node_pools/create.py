@@ -38,7 +38,7 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1 --node-version
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a node pool in an Anthos cluster on Azure."""
 
@@ -85,6 +85,7 @@ class Create(base.CreateCommand):
     config_encryption_public_key = args.config_encryption_public_key
     taints = flags.GetNodeTaints(args)
     labels = flags.GetNodeLabels(args)
+    image_type = flags.GetImageType(args)
 
     async_ = args.async_
 
@@ -112,7 +113,8 @@ class Create(base.CreateCommand):
           labels=labels,
           azure_availability_zone=azure_availability_zone,
           config_encryption_key_id=config_encryption_key_id,
-          config_encryption_public_key=config_encryption_public_key)
+          config_encryption_public_key=config_encryption_public_key,
+          image_type=image_type)
 
       if validate_only:
         args.format = 'disable'
@@ -132,3 +134,14 @@ class Create(base.CreateCommand):
       log.CreatedResource(
           nodepool_ref, kind=constants.AZURE_NODEPOOL_KIND, is_async=async_)
       return api_client.Get(nodepool_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a node pool in an Anthos cluster on Azure."""
+
+  @staticmethod
+  def Args(parser, track=base.ReleaseTrack.ALPHA):
+    """Registers alpha track flags for this command."""
+    Create.Args(parser)
+    flags.AddImageType(parser)

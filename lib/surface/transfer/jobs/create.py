@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.transfer import operations_util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.transfer import jobs_apitools_util
 from googlecloudsdk.command_lib.transfer import jobs_flag_util
 from googlecloudsdk.core import log
@@ -72,6 +73,21 @@ class Create(base.Command):
     jobs_flag_util.setup_parser(parser)
 
   def Run(self, args):
+    is_posix_source = args.source.startswith(
+        storage_url.ProviderPrefix.POSIX.value)
+    is_posix_destination = args.destination.startswith(
+        storage_url.ProviderPrefix.POSIX.value)
+    if is_posix_source and not args.source_agent_pool:
+      raise ValueError(
+          'Missing agent pool. Please add --source-agent-pool flag.')
+    if is_posix_destination and not args.destination_agent_pool:
+      raise ValueError(
+          'Missing agent pool. Please add --destination-agent-pool flag.')
+    if (is_posix_source and is_posix_destination and
+        not args.intermediate_storage_path):
+      raise ValueError('Missing intermediate storage path.'
+                       ' Please add --intermediate-storage-path flag.')
+
     client = apis.GetClientInstance('storagetransfer', 'v1')
     messages = apis.GetMessagesModule('storagetransfer', 'v1')
 

@@ -6,9 +6,9 @@
     description: |
       Delete the specified internal range.
     examples: |
-      Delete an internal range named ``my-hub'' in project ``my-project'' and region ``global'', run:
+      Delete an internal range named ``my-range'':
 
-        $ {command} my-range --project=my-project --region=global
+        $ {command} my-range
 
   arguments:
     resource:

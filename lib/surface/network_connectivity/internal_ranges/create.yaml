@@ -7,23 +7,20 @@
       Create a new internal range with the given name.
     examples: |
       Create an internal range with name ``my-range'' and ip-cidr-range ``192.168.0.0/25'' in
-      network ``https://www.googleapis.com/compute/v1/projects/my-project/locations/global/networks/my-network''
-      and region ``global'':
+      network ``https://www.googleapis.com/compute/v1/projects/my-project/locations/global/networks/my-network'':
 
         $ {command} my-range
           --ip-cidr-range="192.168.0.0/25"
           --network="https://www.googleapis.com/compute/v1/projects/my-project/locations/global/networks/my-network"
           --project=my-project
-          --region=global
 
       Create an internal range with name ``my-range'' and auto-allocated /25 block (prefix-length
-      ``25'') in network ``my-network'' and region ``global'':
+      ``25'') in network ``my-network'':
 
         $ {command} my-range
           --prefix-length=25
           --network="my-network"
           --project=my-project
-          --region=global
 
   arguments:
     resource:

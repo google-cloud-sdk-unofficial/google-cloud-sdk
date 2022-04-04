@@ -6,21 +6,15 @@
     description: |
       Update the detail of an internal range.
     examples: |
-      Update ip-cidr-range of an internal range named ``my-range'' in project ``my-project'' and
-      region ``global'':
+      Update ip-cidr-range of an internal range named ``my-range'':
 
         $ {command} my-range
           --ip-cidr-range="192.168.0.0/24"
-          --project=my-project
-          --region=global
 
-      Extend an internal range named ``my-range'' in project ``my-project'' and
-      region ``global'' to an address block of /24:
+      Extend an internal range named ``my-range'' to an address block of /24:
 
         $ {command} my-range
           --prefix-length=24
-          --project=my-project
-          --region=global
 
   arguments:
     resource:

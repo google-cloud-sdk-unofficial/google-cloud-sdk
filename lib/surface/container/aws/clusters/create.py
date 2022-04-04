@@ -38,7 +38,7 @@ $ {command} my-cluster --location=us-west1 --aws-region=AWS_REGION --cluster-ver
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create an Anthos cluster on AWS."""
 
@@ -103,7 +103,9 @@ class Create(base.CreateCommand):
       args.root_volume_type = aws_flags.GetRootVolumeType(args)
       args.main_volume_size = flags.GetMainVolumeSize(args)
       args.main_volume_type = aws_flags.GetMainVolumeType(args)
+      args.logging = flags.GetLogging(args)
       args.fleet_project = flags.GetFleetProject(args)
+      args.instance_placement = aws_flags.GetInstancePlacement(args)
       op = cluster_client.Create(cluster_ref, args)
 
       validate_only = getattr(args, 'validate_only', False)
@@ -124,3 +126,15 @@ class Create(base.CreateCommand):
       log.CreatedResource(
           cluster_ref, kind=constants.AWS_CLUSTER_KIND, is_async=async_)
       return cluster_client.Get(cluster_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create an Anthos cluster on AWS."""
+
+  @staticmethod
+  def Args(parser, track=base.ReleaseTrack.ALPHA):
+    """Registers alpha track flags for this command."""
+    Create.Args(parser)
+    flags.AddLogging(parser)
+    aws_flags.AddInstancePlacement(parser)

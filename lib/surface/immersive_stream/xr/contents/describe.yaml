@@ -1,9 +1,9 @@
 - release_tracks: [ALPHA]
 
   help_text:
-    brief: Describe a specific Immersive Stream for XR content.
+    brief: Describe a specific Immersive Stream for XR content resource.
     description: |
-      Describe a specific Immersive Stream for XR content.
+      Describe a specific Immersive Stream for XR content resource.
     examples: |
       To describe the content, run:
 
@@ -18,5 +18,5 @@
 
   arguments:
     resource:
-      help_text: The name of the content you want to describe.
+      help_text: The name of the content resource you want to describe.
       spec: !REF googlecloudsdk.command_lib.immersive_stream.xr.resources:content

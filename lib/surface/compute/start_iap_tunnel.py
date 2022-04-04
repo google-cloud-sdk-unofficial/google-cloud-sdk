@@ -157,13 +157,18 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
     try:
       iap_tunnel_helper.Run()
     except iap_tunnel_websocket.ConnectionCreationError as e:
-      if self.fetch_instance_after_connect_error and not target.host:
+      if (self._ShouldFetchInstanceAfterConnectError(args.zone)
+          and not target.host):
         # Try to fetch the instance, to see if we can get a more precise error
         # message. If we can, then this will throw an exception, and we won't
         # raise the ConnectionCreationError.
         self._FetchInstance(args)
 
       raise e
+
+  def _ShouldFetchInstanceAfterConnectError(self, zone):
+    # Zone must be set, otherwise we will need to use the instance resolver.
+    return self.fetch_instance_after_connect_error and zone
 
   def _CreateIapTunnelHelper(self, args, target):
 
@@ -201,7 +206,7 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
           instance=None,
           interface=None)
 
-    if self.fetch_instance_after_connect_error:
+    if self._ShouldFetchInstanceAfterConnectError(args.zone):
       # Do not fetch instance prior to connecting.
       return _CreateTargetArgs(
           project=properties.VALUES.core.project.GetOrFail(),

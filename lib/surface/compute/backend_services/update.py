@@ -613,6 +613,7 @@ class UpdateBeta(UpdateGA):
   _support_service_bindings = True
   _support_dynamic_compression = True
   _support_weighted_lb = True
+  _support_tcp_ssl_logging = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

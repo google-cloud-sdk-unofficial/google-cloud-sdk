@@ -22,11 +22,22 @@ from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+        To describe an operation with the name "prod-operation-id", run:
+
+          $ {command} prod-operation-id
+        """,
+}
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Get(base.DescribeCommand):
   """Retrieves information about a Cloud SQL instance operation."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

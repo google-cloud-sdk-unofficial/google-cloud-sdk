@@ -102,8 +102,8 @@ can be found at: https://cloud.google.com/speech-to-text/docs/quickstart-protoco
       Nothing.
     """
     client = apis.GetClientInstance(util.SPEECH_API, self.API_VERSION)
-    request = self.MakeRequest(args, client.MESSAGES_MODULE)
-    operation = client.speech.Longrunningrecognize(request)
+    self._request = self.MakeRequest(args, client.MESSAGES_MODULE)
+    operation = client.speech.Longrunningrecognize(self._request)
     if args.async_:
       return operation
 
@@ -113,6 +113,9 @@ can be found at: https://cloud.google.com/speech-to-text/docs/quickstart-protoco
         'Waiting for [{}] to complete. This may take several minutes.'.format(
             operation.name),
         wait_ceiling_ms=OPERATION_TIMEOUT_MS)
+
+  def Epilog(self, unused_resources_were_displayed):
+    util.MaybePrintSttUiLink(self._request)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

@@ -93,4 +93,6 @@ class Update(base.Command):
       if call_to_action:
         pretty_print.Info('')
         pretty_print.Info(call_to_action)
-
+        pretty_print.Info(
+            messages_util.CheckStatusMessage(self.ReleaseTrack(),
+                                             integration_name))

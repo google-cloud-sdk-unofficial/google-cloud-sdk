@@ -24,4 +24,7 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Terraform(base.Group):
-  """Terraform-related functionality for gcloud users."""
+  """Commands related to Terraform management of Google Cloud Platform resources.
+  """
+
+  category = base.DECLARATIVE_CONFIGURATION_CATEGORY

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The gcloud run revisions group."""
+"""The gcloud run executions group."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -41,8 +41,3 @@ class Executions(base.Group):
             $ {command} list --job=my-job
       """,
   }
-
-  @staticmethod
-  def Args(parser):
-    """Adds --region flag."""
-    flags.AddRegionArg(parser)

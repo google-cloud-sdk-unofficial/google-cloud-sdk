@@ -33,8 +33,8 @@ class Gcloud(base.Group):
 
   For a quick introduction to the `gcloud` CLI, a list of commonly
   used commands, and a look at how these commands are structured, run
-  `gcloud cheat-sheet` or refer to the [`gcloud` CLI cheat sheet]
-  (https://cloud.google.com/sdk/docs/cheatsheet)
+  `gcloud cheat-sheet` or refer to the
+  [`gcloud` CLI cheat sheet](https://cloud.google.com/sdk/docs/cheatsheet)
   """
 
   @staticmethod

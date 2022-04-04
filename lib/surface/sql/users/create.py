@@ -23,7 +23,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
-from googlecloudsdk.api_lib.sql import user_prop_reducers as reducers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.command_lib.sql import users
@@ -32,6 +31,13 @@ from googlecloudsdk.core import properties
 
 
 def AddBaseArgs(parser):
+  """AddBaseArgs is called to gather arguments for this command.
+
+  Args:
+    parser: An argparse parser that you can use it to add arguments that go on
+      the command line after this command. Positional arguments are allowed.
+  """
+
   flags.AddInstance(parser)
   flags.AddUsername(parser)
   flags.AddHost(parser)
@@ -49,13 +55,15 @@ def AddBetaArgs(parser):
 
 def AddAlphaArgs(parser):
   AddBetaArgs(parser)
+  flags.AddPasswordPolicyEnablePasswordVerification(parser)
 
 
-def RunBaseCreateCommand(args):
+def RunBaseCreateCommand(args, release_track):
   """Creates a user in a given instance.
 
   Args:
     args: argparse.Namespace, The arguments that this command was invoked with.
+    release_track: base.ReleaseTrack, the release track that this was run under.
 
   Returns:
     SQL user resource iterator.
@@ -71,6 +79,9 @@ def RunBaseCreateCommand(args):
   operation_ref = None
 
   user_type = users.ParseUserType(sql_messages, args)
+  password_policy = users.CreatePasswordPolicyFromArgs(
+      sql_messages, release_track, args)
+
   new_user = sql_messages.User(
       kind='sql#user',
       project=instance_ref.project,
@@ -78,10 +89,7 @@ def RunBaseCreateCommand(args):
       name=args.username,
       host=args.host,
       password=args.password,
-      passwordPolicy=reducers.ParsePasswordPolicy(
-          sql_messages, args.password_policy_allowed_failed_attempts,
-          args.password_policy_password_expiration_duration,
-          args.password_policy_enable_failed_attempts_check),
+      passwordPolicy=password_policy,
       type=user_type)
 
   result_operation = sql_client.users.Insert(new_user)
@@ -119,7 +127,7 @@ class Create(base.CreateCommand):
     parser.display_info.AddCacheUpdater(flags.UserCompleter)
 
   def Run(self, args):
-    return RunBaseCreateCommand(args)
+    return RunBaseCreateCommand(args, self.ReleaseTrack())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -137,6 +145,9 @@ class CreateBeta(Create):
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.UserCompleter)
 
+  def Run(self, args):
+    return RunBaseCreateCommand(args, self.ReleaseTrack())
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
@@ -152,3 +163,6 @@ class CreateAlpha(CreateBeta):
     AddAlphaArgs(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.UserCompleter)
+
+  def Run(self, args):
+    return RunBaseCreateCommand(args, self.ReleaseTrack())

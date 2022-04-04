@@ -37,7 +37,7 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1 --iam-instance
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a node pool in an Anthos cluster on AWS."""
 
@@ -83,16 +83,18 @@ class Create(base.CreateCommand):
       node_pool_client = node_pools.NodePoolsClient(track=release_track)
       args.root_volume_size = flags.GetRootVolumeSize(args)
       args.root_volume_type = aws_flags.GetRootVolumeType(args)
+      args.instance_placement = aws_flags.GetInstancePlacement(args)
       args.node_taints = flags.GetNodeTaints(args)
+      args.image_type = flags.GetImageType(args)
 
       op = node_pool_client.Create(node_pool_ref, args)
-      op_ref = resource_args.GetOperationResource(op)
 
       validate_only = getattr(args, 'validate_only', False)
       if validate_only:
         args.format = 'disable'
         return
 
+      op_ref = resource_args.GetOperationResource(op)
       log.CreatedResource(op_ref, kind=constants.LRO_KIND)
 
       async_ = getattr(args, 'async_', False)
@@ -105,3 +107,16 @@ class Create(base.CreateCommand):
       log.CreatedResource(
           node_pool_ref, kind=constants.AWS_NODEPOOL_KIND, is_async=async_)
       return node_pool_client.Get(node_pool_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a node pool in an Anthos cluster on AWS."""
+
+  @staticmethod
+  def Args(parser, track=base.ReleaseTrack.ALPHA):
+    """Registers alpha track flags for this command."""
+    Create.Args(parser)
+    aws_flags.AddInstancePlacement(parser)
+    flags.AddImageType(parser)
+

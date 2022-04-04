@@ -36,7 +36,7 @@ class Bak(base.Command):
   """Export data from a Cloud SQL instance to a BAK file.
 
   Export data from a Cloud SQL instance to a Google Cloud Storage
-  bucket as a BAK backup file.
+  bucket as a BAK backup file. This is only supported for SQL Server.
   """
 
   detailed_help = {

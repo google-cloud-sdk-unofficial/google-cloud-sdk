@@ -81,8 +81,11 @@ can be found at: https://cloud.google.com/speech-to-text/docs/quickstart-protoco
       Nothing.
     """
     client = apis.GetClientInstance(util.SPEECH_API, self.API_VERSION)
-    request = self.MakeRequest(args, client.MESSAGES_MODULE)
-    return client.speech.Recognize(request)
+    self._request = self.MakeRequest(args, client.MESSAGES_MODULE)
+    return client.speech.Recognize(self._request)
+
+  def Epilog(self, unused_resources_were_displayed):
+    util.MaybePrintSttUiLink(self._request)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

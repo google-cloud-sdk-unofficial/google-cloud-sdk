@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import functools
 import string
 
 from apitools.base.py import exceptions as apitools_exceptions
@@ -217,6 +218,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       disk_type=get_default('disk_type'),
       enable_autorepair=enable_autorepair,
       enable_autoscaling=get_default('enable_autoscaling'),
+      location_policy=get_default('location_policy'),
       enable_autoupgrade=(cmd_util.GetAutoUpgrade(args) if
                           hasattr(args, 'enable_autoupgrade')
                           else None),
@@ -425,8 +427,8 @@ flags_to_add = {
             flags.AddEnableCloudRunAlphaFlag,
         'cloudrunconfig':
             flags.AddCloudRunConfigFlag,
-        'clusterautoscaling':
-            flags.AddClusterAutoscalingFlags,
+        'clusterautoscaling': functools.partial(
+            flags.AddClusterAutoscalingFlags, location_policy_present=False),
         'clusterdns':
             flags.AddClusterDNSFlags,
         'clusterversion':
@@ -583,8 +585,8 @@ flags_to_add = {
             flags.AddEnableCloudRunAlphaFlag,
         'cloudrunconfig':
             flags.AddCloudRunConfigFlag,
-        'clusterautoscaling':
-            flags.AddClusterAutoscalingFlags,
+        'clusterautoscaling': functools.partial(
+            flags.AddClusterAutoscalingFlags, location_policy_present=True),
         'clusterdns':
             flags.AddClusterDNSFlags,
         'clusterversion':
@@ -741,6 +743,8 @@ flags_to_add = {
             flags.AddDisablePodCIDROverprovisionFlag,
         'enableworkloadconfigaudit':
             flags.AddWorkloadConfigAuditFlag,
+        'podautoscalingdirectmetricsoptin':
+            flags.AddPodAutoscalingDirectMetricsOptInFlag,
     },
     ALPHA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True)),
@@ -778,8 +782,8 @@ flags_to_add = {
             flags.AddEnableCloudRunAlphaFlag,
         'cloudrunconfig':
             flags.AddCloudRunConfigFlag,
-        'clusterautoscaling':
-            flags.AddClusterAutoscalingFlags,
+        'clusterautoscaling': functools.partial(
+            flags.AddClusterAutoscalingFlags, location_policy_present=True),
         'clusterdns':
             flags.AddClusterDNSFlags,
         'placementtype':
@@ -945,6 +949,8 @@ flags_to_add = {
             flags.AddDisablePodCIDROverprovisionFlag,
         'enableworkloadconfigaudit':
             flags.AddWorkloadConfigAuditFlag,
+        'podautoscalingdirectmetricsoptin':
+            flags.AddPodAutoscalingDirectMetricsOptInFlag,
     },
 }
 
@@ -1195,6 +1201,8 @@ class CreateBeta(Create):
     ops.ipv6_access_type = get_default('ipv6_access_type')
     ops.enable_workload_config_audit = get_default(
         'enable_workload_config_audit')
+    ops.pod_autoscaling_direct_metrics_opt_in = get_default(
+        'pod_autoscaling_direct_metrics_opt_in')
     return ops
 
 
@@ -1281,4 +1289,6 @@ class CreateAlpha(Create):
     ops.ipv6_access_type = get_default('ipv6_access_type')
     ops.enable_workload_config_audit = get_default(
         'enable_workload_config_audit')
+    ops.pod_autoscaling_direct_metrics_opt_in = get_default(
+        'pod_autoscaling_direct_metrics_opt_in')
     return ops

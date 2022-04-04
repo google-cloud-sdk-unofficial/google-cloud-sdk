@@ -20,8 +20,8 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import exceptions as serverless_exceptions
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -33,8 +33,8 @@ from googlecloudsdk.core.console import progress_tracker
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Run(base.Command):
-  """Run a job."""
+class Execute(base.Command):
+  """Execute a job."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -43,7 +43,7 @@ class Run(base.Command):
           """,
       'EXAMPLES':
           """
-          To run a job:
+          To execute a job:
 
               $ {command} my-job
           """,
@@ -54,7 +54,7 @@ class Run(base.Command):
     job_presentation = presentation_specs.ResourcePresentationSpec(
         'JOB',
         resource_args.GetJobResourceSpec(prompt=True),
-        'Job to run.',
+        'Job to execute.',
         required=True,
         prefixes=False)
     concept_parsers.ConceptParser([job_presentation]).AddToParser(parser)
@@ -65,22 +65,16 @@ class Run(base.Command):
     parser.display_info.AddFormat('none')
 
   def Run(self, args):
-    """Run a Job on Cloud Run."""
+    """Execute a Job on Cloud Run."""
     job_ref = args.CONCEPTS.job.Parse()
     flags.ValidateResource(job_ref)
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())
     with serverless_operations.Connect(conn_context) as operations:
-      j = operations.GetJob(job_ref)
-      if j is None:
-        raise serverless_exceptions.JobNotFoundError(
-            'Cannot find job [{}].'.format(job_ref.Name()))
-      header_msg = '{} execution...'.format(
-          'Running' if args.wait else 'Starting')
       with progress_tracker.StagedProgressTracker(
-          header_msg,
+          'Creating execution...',
           stages.ExecutionStages(include_completion=args.wait),
-          failure_message='Job failed',
+          failure_message='Executing job failed',
           suppress_output=args.async_) as tracker:
         e = operations.RunJob(job_ref, args.wait, tracker, asyn=args.async_)
 
@@ -96,15 +90,6 @@ class Run(base.Command):
                                  execution=e.name, operation=operation))
 
       log.Print(
-          '\nView details about this execution by running '
-          '`gcloud{release_track} run executions describe {ex_name}`.'
-          '\nSee logs for this execution at: '
-          # TODO(b/180749348): Don't piggyback off of cloud_run_revision
-          'https://console.cloud.google.com/logs/viewer?project={project_id}&resource=cloud_run_revision/service_name/{job_name}/revision_name/{ex_name}'
-          .format(
-              release_track=(' {}'.format(self.ReleaseTrack().prefix)
-                             if self.ReleaseTrack().prefix is not None else ''),
-              project_id=job_ref.Parent().Name(),
-              ex_name=e.name,
-              job_name=j.name))
+          messages_util.GetExecutionCreatedMessage(self.ReleaseTrack(),
+                                                   job_ref, e.name))
       return e

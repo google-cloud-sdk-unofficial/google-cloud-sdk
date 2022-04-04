@@ -38,36 +38,27 @@ def _GetUriFunction(api_version):
 
 def _ListArgs(parser):
   parser.add_argument(
-      '--deleted',
+      '--show-deleted',
       action='store_true',
-      help=('Return the keys that were deleted in past 30 days'))
-
-  parser.display_info.AddFormat("""
-          table(
-            name:label=NAME,
-            displayName:label=DISPLAY_NAME,
-            updateTime:label=LAST_UPDATE:sort=1:reverse
-          )
-        """)
+      help=('Show soft-deleted keys by specifying this flag.'))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """Lists API keys.
 
-  Lists all of the API keys that are active in a given project.
-  You can add the state filter `state:DELETED` to list API keys that were
-  deleted within past 30 days.
+  Lists the API keys of a given project.
 
   ## EXAMPLES
 
-   List active keys:
+   List keys of a given project:
 
     $ {command}
 
-   List keys that were deleted in the past 30 days of a given project.:
+   List keys of a given project, including keys that were soft-deleted in the
+   past 30 days.:
 
-    $ {command} --deleted --project=my_project
+    $ {command} --show-deleted --project=my_project
   """
 
   @staticmethod
@@ -87,5 +78,5 @@ class List(base.ListCommand):
     """
 
     project_id = properties.VALUES.core.project.GetOrFail()
-    return apikeys.ListKeys(project_id, args.deleted, args.page_size,
+    return apikeys.ListKeys(project_id, args.show_deleted, args.page_size,
                             args.limit)

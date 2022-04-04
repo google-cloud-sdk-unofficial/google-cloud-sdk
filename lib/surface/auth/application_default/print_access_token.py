@@ -86,9 +86,9 @@ class PrintAccessToken(base.Command):
         'The list of possible scopes can be found at: '
         '[](https://developers.google.com/identity/protocols/googlescopes).\n\n'
         'For end-user accounts, the provided '
-        'scopes must be from {0}, or the scopes previously specified through '
-        '`gcloud auth application-default login --scopes`.'.format(
-            auth_util.DEFAULT_SCOPES))
+        'scopes must be from [{0}], or the scopes previously specified through '
+        '`gcloud auth application-default login --scopes`.'.format(', '.join(
+            map('`{}`'.format, auth_util.DEFAULT_SCOPES))))
     parser.display_info.AddFormat('value(token)')
 
   def Run(self, args):
@@ -141,9 +141,9 @@ class PrintAccessToken(base.Command):
       if args.scopes:
         raise c_exc.InvalidArgumentException(
             '--scopes',
-            'Invalid scopes value. Please make sure the scopes are from {0}, '
+            'Invalid scopes value. Please make sure the scopes are from [{0}], '
             'or the scopes previously specified through '
             '`gcloud auth application-default login --scopes`.'
-            .format(auth_util.DEFAULT_SCOPES))
+            .format(', '.join(map('`{}`'.format, auth_util.DEFAULT_SCOPES))))
       else:
         raise e

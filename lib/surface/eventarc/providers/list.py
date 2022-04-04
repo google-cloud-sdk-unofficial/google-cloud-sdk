@@ -51,7 +51,6 @@ name.scope("locations").segment(0):label=LOCATION
 _FILTER = 'name:/providers/'
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List event providers available in Eventarc."""

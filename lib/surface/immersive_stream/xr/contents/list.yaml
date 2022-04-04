@@ -1,11 +1,11 @@
 - release_tracks: [ALPHA]
 
   help_text:
-    brief: List Immersive Stream for XR contents.
+    brief: List Immersive Stream for XR content resources.
     description: |
-      List Immersive Stream for XR contents.
+      List Immersive Stream for XR content resources.
     examples: |
-      To list Immersive Stream for XR contents, run:
+      To list Immersive Stream for XR content resources, run:
 
         $ {command}
 
@@ -18,5 +18,5 @@
 
   arguments:
     resource:
-      help_text: Location to list all Immersive Stream for XR contents, defaults to global.
+      help_text: Location to list all Immersive Stream for XR content resources, defaults to global.
       spec: !REF googlecloudsdk.command_lib.immersive_stream.xr.resources:location

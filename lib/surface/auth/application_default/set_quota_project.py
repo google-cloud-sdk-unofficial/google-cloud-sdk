@@ -27,15 +27,15 @@ class SetQuotaProject(base.SilentCommand):
   """Update or add a quota project in application default credentials (ADC).
 
   Before running this command, an ADC must already be generated using
-  $gcloud auth application-default login. The quota project can be used by
-  client libraries for the billing purpose. The existing application default
-  credentials must have the "serviceusage.services.use" permission on the
-  given project.
+  $ gcloud auth application-default login.
+  The quota project can be used by client libraries for the billing purpose.
+  The existing application default credentials must have the
+  `serviceusage.services.use` permission on the given project.
 
   ## EXAMPLES
 
   To update the quota project in application default credentials to
-  ``my-quota-project'', run:
+  `my-quota-project`, run:
 
     $ {command} my-quota-project
   """

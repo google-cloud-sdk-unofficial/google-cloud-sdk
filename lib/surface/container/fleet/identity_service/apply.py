@@ -33,6 +33,8 @@ EXAMPLES = """\
 
     $ {command} --membership=CLUSTER_NAME --config=/path/to/identity-service.yaml
 """
+# The max number of auth methods allowed per config.
+MAX_AUTH_PROVIDERS = 20
 
 
 class Apply(base.UpdateCommand):
@@ -127,6 +129,14 @@ def _parse_config(loaded_config, msg):
   clientconfig = loaded_config.data[0]
   _validate_clientconfig_meta(clientconfig)
   auth_providers = clientconfig.GetAuthProviders(name_only=False)
+
+  # Don't accept configs containing more auth providers than MAX_AUTH_PROVIDERS
+  auth_providers_count = len(auth_providers)
+  if auth_providers_count > MAX_AUTH_PROVIDERS:
+    err_msg = ('The provided configuration contains {} identity providers. '
+               'The maximum number that can be provided is {}.').format(
+                   auth_providers_count, MAX_AUTH_PROVIDERS)
+    raise exceptions.Error(err_msg)
 
   # Create empy MemberConfig and populate it with Auth_Provider configurations.
   member_config = msg.IdentityServiceMembershipSpec()

@@ -31,8 +31,8 @@ from googlecloudsdk.command_lib.projects import util as project_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
-KUBECONTEXT_FORMAT = 'connectgateway_{project}_{membership}'
-SERVER_FORMAT = 'https://{service_name}/{version}/projects/{project_number}/memberships/{membership}'
+KUBECONTEXT_FORMAT = 'connectgateway_{project}_{location}_{membership}'
+SERVER_FORMAT = 'https://{service_name}/{version}/projects/{project_number}/locations/{location}/memberships/{membership}'
 REQUIRED_PERMISSIONS = [
     'gkehub.memberships.get',
     'gkehub.gateway.get',
@@ -70,19 +70,33 @@ class GetCredentials(base.Command):
         help=textwrap.dedent("""\
           The membership name used to locate a cluster in your project. """),
     )
+    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+      parser.add_argument(
+          '--location',
+          type=str,
+          hidden=True,
+          help=textwrap.dedent("""\
+              The location for the membership resource, e.g. `us-central1`.
+              If not specified, defaults to `global`.
+            """),
+      )
 
   def Run(self, args):
     util.CheckKubectlInstalled()
     project_id = properties.VALUES.core.project.GetOrFail()
+    location = getattr(args, 'location', 'global')
+    if location is None:
+      location = 'global'
+
     log.status.Print('Starting to build Gateway kubeconfig...')
     log.status.Print('Current project_id: ' + project_id)
 
     self.RunIamCheck(project_id)
     cg_util.CheckGatewayApiEnablement(project_id, self.get_service_name())
-    self.ReadClusterMembership(project_id, args.MEMBERSHIP)
-    self.GenerateKubeconfig(project_id, args.MEMBERSHIP)
+    self.ReadClusterMembership(project_id, location, args.MEMBERSHIP)
+    self.GenerateKubeconfig(project_id, location, args.MEMBERSHIP)
     msg = 'A new kubeconfig entry \"' + KUBECONTEXT_FORMAT.format(
-        project=project_id, membership=args.MEMBERSHIP
+        project=project_id, location=location, membership=args.MEMBERSHIP
     ) + '\" has been generated and set as the current context.'
     log.status.Print(msg)
 
@@ -95,16 +109,18 @@ class GetCredentials(base.Command):
     if set(REQUIRED_PERMISSIONS) != set(granted_permissions):
       raise memberships_errors.InsufficientPermissionsError()
 
-  def ReadClusterMembership(self, project_id, membership):
-    resource_name = hubapi_util.MembershipRef(project_id, 'global', membership)
+  def ReadClusterMembership(self, project_id, location, membership):
+    resource_name = hubapi_util.MembershipRef(project_id, location, membership)
     # If membership doesn't exist, exception will be raised to caller.
     hubapi_util.GetMembership(resource_name)
 
-  def GenerateKubeconfig(self, project_id, membership):
+  def GenerateKubeconfig(self, project_id, location, membership):
     project_number = project_util.GetProjectNumber(project_id)
     kwargs = {
         'membership':
             membership,
+        'location':
+            location,
         'project_id':
             project_id,
         'server':
@@ -112,6 +128,7 @@ class GetCredentials(base.Command):
                 service_name=self.get_service_name(),
                 version=self.GetVersion(),
                 project_number=project_number,
+                location=location,
                 membership=membership),
         'auth_provider':
             'gcp',
@@ -122,7 +139,7 @@ class GetCredentials(base.Command):
 
     cluster_kwargs = {}
     context = KUBECONTEXT_FORMAT.format(
-        project=project_id, membership=membership)
+        project=project_id, location=location, membership=membership)
     kubeconfig = kconfig.Kubeconfig.Default()
     # Use same key for context, cluster, and user.
     kubeconfig.contexts[context] = kconfig.Context(context, context, context)

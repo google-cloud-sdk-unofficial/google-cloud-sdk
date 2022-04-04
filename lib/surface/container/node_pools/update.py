@@ -75,7 +75,8 @@ class Update(base.UpdateCommand):
     flags.AddEnableAutoRepairFlag(node_management_group, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
 
-    autoscaling_group = flags.AddClusterAutoscalingFlags(group, hidden=False)
+    autoscaling_group = flags.AddClusterAutoscalingFlags(
+        group, location_policy_present=False)
     flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=False)
     flags.AddWorkloadMetadataFlag(group)
 
@@ -186,7 +187,8 @@ class UpdateBeta(Update):
     flags.AddEnableAutoRepairFlag(node_management_group, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
 
-    autoscaling_group = flags.AddClusterAutoscalingFlags(group, hidden=False)
+    autoscaling_group = flags.AddClusterAutoscalingFlags(
+        group, location_policy_present=True)
     flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=False)
 
     upgrade_settings_group = group.add_argument_group('Upgrade settings')
@@ -226,6 +228,7 @@ class UpdateBeta(Update):
         enable_autoscaling=args.enable_autoscaling,
         max_nodes=args.max_nodes,
         min_nodes=args.min_nodes,
+        location_policy=args.location_policy,
         enable_autoprovisioning=args.enable_autoprovisioning,
         workload_metadata=args.workload_metadata,
         workload_metadata_from_node=args.workload_metadata_from_node,
@@ -262,7 +265,8 @@ class UpdateAlpha(Update):
     flags.AddEnableAutoRepairFlag(node_management_group, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
 
-    autoscaling_group = flags.AddClusterAutoscalingFlags(group, hidden=False)
+    autoscaling_group = flags.AddClusterAutoscalingFlags(
+        group, location_policy_present=True)
     flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=False)
 
     upgrade_settings_group = group.add_argument_group('Upgrade settings')
@@ -302,6 +306,7 @@ class UpdateAlpha(Update):
         enable_autoscaling=args.enable_autoscaling,
         max_nodes=args.max_nodes,
         min_nodes=args.min_nodes,
+        location_policy=args.location_policy,
         enable_autoprovisioning=args.enable_autoprovisioning,
         workload_metadata=args.workload_metadata,
         workload_metadata_from_node=args.workload_metadata_from_node,

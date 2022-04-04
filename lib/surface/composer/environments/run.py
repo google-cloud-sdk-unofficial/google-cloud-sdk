@@ -30,7 +30,7 @@ from googlecloudsdk.command_lib.composer import util as command_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
-WORKER_POD_SUBSTR = 'worker'
+WORKER_POD_SUBSTR = 'airflow-worker'
 WORKER_CONTAINER = 'airflow-worker'
 DEPRECATION_WARNING = ('Because Cloud Composer manages the Airflow metadata '
                        'database for your environment, support for the Airflow '

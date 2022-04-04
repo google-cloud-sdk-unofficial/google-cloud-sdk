@@ -6,10 +6,9 @@
     description: |
       Retrieve and display details about an internal range.
     examples: |
-      Display details about an internal range named ``my-range'' in project ``my-project'' and
-      region ``global'', run:
+      Display details about an internal range named ``my-range'':
 
-        $ {command} my-range --project=my-project --region=global
+        $ {command} my-range
 
   arguments:
     resource:

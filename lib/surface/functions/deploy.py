@@ -71,6 +71,10 @@ class Deploy(base.Command):
     # Add args for specifying ignore files to upload source
     flags.AddIgnoreFileFlag(parser)
 
+    # Add flags for CMEK
+    flags.AddKMSKeyFlags(parser)
+    flags.AddDockerRepositoryFlags(parser)
+
     # Add flags for secrets
     secrets_config.ConfigureFlags(parser)
 
@@ -96,9 +100,8 @@ class DeployBeta(Deploy):
     """Register beta flags for this command."""
     Deploy.Args(parser, track)
 
-    # Configure flags for CMEK
-    flags.AddKMSKeyFlags(parser)
-    flags.AddDockerRepositoryFlags(parser)
+    # Configure flags for Artifact Registry
+    flags.AddDockerRegistryFlags(parser)
 
     # Add additional flags for GCFv2
     flags.AddRunServiceAccountFlag(parser, track)

@@ -93,9 +93,13 @@ class _List(object):
     project_id = properties.VALUES.core.project.Get(required=True)
     profiles = cp_client.List(project_id, args)
 
-    return [_ConnectionProfileInfo(profile, self._GetHost(profile),
-                                   cp_client.GetEngineName(profile))
-            for profile in profiles]
+    if args.format is None or args.format.startswith('"table'):
+      return [
+          _ConnectionProfileInfo(profile, self._GetHost(profile),
+                                 cp_client.GetEngineName(profile))
+          for profile in profiles
+      ]
+    return profiles
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

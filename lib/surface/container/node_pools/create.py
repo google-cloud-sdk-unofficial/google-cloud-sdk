@@ -180,7 +180,7 @@ class Create(base.CreateCommand):
     flags.AddAcceleratorArgs(
         parser, enable_gpu_partition=True, enable_gpu_sharing=False)
     flags.AddBootDiskKmsKeyFlag(parser)
-    flags.AddClusterAutoscalingFlags(parser)
+    flags.AddClusterAutoscalingFlags(parser, location_policy_present=False)
     flags.AddLocalSSDFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, for_create=True)
@@ -268,7 +268,7 @@ class CreateBeta(Create):
     _Args(parser)
     flags.AddAcceleratorArgs(
         parser, enable_gpu_partition=True, enable_gpu_sharing=True)
-    flags.AddClusterAutoscalingFlags(parser)
+    flags.AddClusterAutoscalingFlags(parser, location_policy_present=True)
     flags.AddLocalSSDsBetaFlags(parser, for_node_pool=True)
     flags.AddBootDiskKmsKeyFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
@@ -317,6 +317,7 @@ class CreateBeta(Create):
     ops.enable_private_nodes = args.enable_private_nodes
     ops.spot = args.spot
     ops.placement_type = args.placement_type
+    ops.location_policy = args.location_policy
     ops.enable_blue_green_update = args.enable_blue_green_update
     ops.enable_rolling_update = args.enable_rolling_update
     ops.node_pool_soak_duration = args.node_pool_soak_duration
@@ -348,6 +349,7 @@ class CreateAlpha(Create):
     ops.enable_private_nodes = args.enable_private_nodes
     ops.spot = args.spot
     ops.placement_type = args.placement_type
+    ops.location_policy = args.location_policy
     ops.enable_blue_green_update = args.enable_blue_green_update
     ops.enable_rolling_update = args.enable_rolling_update
     ops.node_pool_soak_duration = args.node_pool_soak_duration
@@ -363,7 +365,7 @@ class CreateAlpha(Create):
     _Args(parser)
     flags.AddAcceleratorArgs(
         parser, enable_gpu_partition=True, enable_gpu_sharing=True)
-    flags.AddClusterAutoscalingFlags(parser)
+    flags.AddClusterAutoscalingFlags(parser, location_policy_present=True)
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=False)
     flags.AddLocalSSDsAlphaFlags(parser, for_node_pool=True)
     flags.AddBootDiskKmsKeyFlag(parser)

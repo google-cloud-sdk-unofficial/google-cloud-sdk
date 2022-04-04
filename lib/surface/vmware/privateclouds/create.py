@@ -75,11 +75,20 @@ class CreateAlpha(base.CreateCommand):
         help="""\
          IP address range in the private cloud to use for management appliances, in CIDR format. Use an IP address range that meets the [VMware Engine networking requirements](https://cloud.google.com/vmware-engine/docs/quickstart-networking-requirements).
         """)
-    parser.add_argument(
+
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
         '--network',
-        required=True,
+        required=False,
         help="""\
         Network ID of the Google Cloud VPC network to connect with your private cloud.
+        """)
+    group.add_argument(
+        '--vmware-engine-network',
+        required=False,
+        hidden=True,
+        help="""\
+        Network ID of the VMware Engine network attached to the private cloud.
         """)
     parser.add_argument(
         '--network-project',
@@ -110,7 +119,8 @@ class CreateAlpha(base.CreateCommand):
     operation = client.Create(privatecloud, args.labels, args.description,
                               args.cluster, args.node_type, args.node_count,
                               args.management_range, args.network,
-                              args.network_project, args.external_ip_access,
+                              args.vmware_engine_network, args.network_project,
+                              args.external_ip_access,
                               args.node_custom_core_count)
     log.CreatedResource(operation.name, kind='private cloud', is_async=True)
 

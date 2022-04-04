@@ -6,14 +6,15 @@
     description: |
       Retrieve and display a list of all internal ranges in the specified project.
     examples: |
-      List all internal ranges in project ``my-project'' and region ``global'', run:
+      List all internal ranges:
 
-        $ {command} --project=my-project --region=global
+        $ {command}
 
   arguments:
     resource:
-      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:region
-      help_text: Project of the internal ranges to display.
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:regionDefaultGlobal
+      help_text: |
+        Location of the internal ranges to display.
 
   output:
     format: table(name.basename(), description, network.basename(), ipCidrRange)

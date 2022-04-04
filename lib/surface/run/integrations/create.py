@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags as run_flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run.integrations import flags
@@ -70,6 +71,9 @@ class Create(base.Command):
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, self.ReleaseTrack())
     with run_apps_operations.Connect(conn_context) as client:
+      self._validateServiceNameAgainstIntegrations(
+          client, integration_type=integration_type,
+          service=service, integration_name=input_name)
       integration_name = client.CreateIntegration(
           integration_type, parameters, name=input_name, service=service)
       resource_config = client.GetIntegration(integration_name)
@@ -88,3 +92,19 @@ class Create(base.Command):
       if call_to_action:
         pretty_print.Info('')
         pretty_print.Info(call_to_action)
+        pretty_print.Info(
+            messages_util.CheckStatusMessage(self.ReleaseTrack(),
+                                             integration_name))
+
+  def _validateServiceNameAgainstIntegrations(
+      self, client, integration_type, integration_name, service):
+    """Checks if the service name matches an integration name."""
+    error = exceptions.ArgumentError('Service name cannot be the same as ' +
+                                     'the provided integration name or an ' +
+                                     'existing integration name')
+    if service == integration_name:
+      raise error
+    integrations = client.ListIntegrations(integration_type, None)
+    for integration in integrations:
+      if integration['name'] == service:
+        raise error

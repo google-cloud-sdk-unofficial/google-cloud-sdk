@@ -38,7 +38,7 @@ $ {command} my-cluster --location=us-west1 --azure-region=AZURE_REGION --cluster
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create an Anthos cluster on Azure."""
 
@@ -121,6 +121,7 @@ class Create(base.CreateCommand):
     database_encryption_key_id = args.database_encryption_key_id
     config_encryption_key_id = args.config_encryption_key_id
     config_encryption_public_key = args.config_encryption_public_key
+    logging = flags.GetLogging(args)
 
     with endpoint_util.GkemulticloudEndpointOverride(
         resource_args.ParseAzureClusterResourceArg(args).locationsId,
@@ -154,7 +155,8 @@ class Create(base.CreateCommand):
           endpoint_subnet_id=endpoint_subnet_id,
           database_encryption_key_id=database_encryption_key_id,
           config_encryption_key_id=config_encryption_key_id,
-          config_encryption_public_key=config_encryption_public_key)
+          config_encryption_public_key=config_encryption_public_key,
+          logging=logging)
 
       if validate_only:
         args.format = "disable"
@@ -172,3 +174,14 @@ class Create(base.CreateCommand):
       log.CreatedResource(
           cluster_ref, kind=constants.AZURE_CLUSTER_KIND, is_async=async_)
       return cluster_client.Get(cluster_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create an Anthos cluster on Azure."""
+
+  @staticmethod
+  def Args(parser, track=base.ReleaseTrack.ALPHA):
+    """Registers alpha track flags for this command."""
+    Create.Args(parser)
+    flags.AddLogging(parser)

@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Import(base.Command):
   """Import one or more Debian packages into an artifact repository."""
 
@@ -51,7 +51,8 @@ class Import(base.Command):
         type=arg_parsers.ArgList(),
         help="""\
             The Google Cloud Storage location of a package to import.
-            Wildcards may be added at the end to import multiple packages.""")
+            To import multiple packages, use wildcards at the end of the path.
+            """)
 
   def Run(self, args):
     """Run package import command."""

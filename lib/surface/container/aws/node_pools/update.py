@@ -73,13 +73,13 @@ class Update(base.UpdateCommand):
       args.root_volume_size = flags.GetRootVolumeSize(args)
       args.root_volume_type = aws_flags.GetRootVolumeType(args)
       op = node_pool_client.Update(node_pool_ref, args)
-      op_ref = resource_args.GetOperationResource(op)
 
       validate_only = getattr(args, 'validate_only', False)
       if validate_only:
         args.format = 'disable'
         return
 
+      op_ref = resource_args.GetOperationResource(op)
       log.CreatedResource(op_ref, kind=constants.LRO_KIND)
 
       async_ = getattr(args, 'async_', False)

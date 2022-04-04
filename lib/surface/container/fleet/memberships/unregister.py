@@ -97,6 +97,16 @@ class Unregister(base.DeleteCommand):
             consider using the command: `{parent_command} list`.
          """),
     )
+    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+      parser.add_argument(
+          '--location',
+          type=str,
+          hidden=True,
+          help=textwrap.dedent("""\
+              The location for the membership resource, e.g. `us-central1`.
+              If not specified, defaults to `global`. Not supported for GKE clusters.
+            """),
+      )
     hub_util.AddClusterConnectionCommonArgs(parser)
 
   def Run(self, args):
@@ -111,14 +121,17 @@ class Unregister(base.DeleteCommand):
         enable_workload_identity=getattr(args, 'enable_workload_identity',
                                          False),
     )
+    location = getattr(args, 'location', 'global')
+    if location is None:
+      location = 'global'
     kube_client.CheckClusterAdminPermissions()
     kube_util.ValidateClusterIdentifierFlags(kube_client, args)
     membership_id = args.CLUSTER_NAME
 
     # Delete membership from Fleet API.
     try:
-      name = 'projects/{}/locations/global/memberships/{}'.format(
-          project, membership_id)
+      name = 'projects/{}/locations/{}/memberships/{}'.format(
+          project, location, membership_id)
       obj = api_util.GetMembership(name, self.ReleaseTrack())
       if not obj.externalId:
         console_io.PromptContinue(
@@ -164,7 +177,7 @@ class Unregister(base.DeleteCommand):
 
     # Delete in-cluster membership resources.
     try:
-      parent = api_util.ParentRef(project, 'global')
+      parent = api_util.ParentRef(project, location)
       cr_manifest = kube_client.GetMembershipCR()
 
       res = api_util.ValidateExclusivity(cr_manifest, parent, membership_id,

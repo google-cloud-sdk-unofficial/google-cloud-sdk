@@ -35,6 +35,7 @@ auto_flags = [
     'databaseencryption',
     'bootdiskkms',
     'autoprovisioning_network_tags',
+    'enableworkloadconfigaudit',
 ]
 
 # Change default flag values in create-auto

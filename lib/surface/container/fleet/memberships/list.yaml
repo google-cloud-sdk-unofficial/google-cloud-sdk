@@ -30,7 +30,7 @@
 
   output:
     format: |
-        table(
-           name.basename():label=NAME,
-           externalId:label=EXTERNAL_ID
-         )
+      table(
+         name.basename():label=NAME,
+         externalId:label=EXTERNAL_ID
+       )
