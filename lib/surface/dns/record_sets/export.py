@@ -56,14 +56,18 @@ class Export(base.Command):
   """
 
   @classmethod
-  def _BetaOrAlpha(cls):
+  def _IsBetaOrAlpha(cls):
     return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
                                   base.ReleaseTrack.ALPHA)
 
   @classmethod
+  def _IsAlpha(cls):
+    return cls.ReleaseTrack() == base.ReleaseTrack.ALPHA
+
+  @classmethod
   def Args(cls, parser):
     flags.GetZoneArg().AddToParser(parser)
-    if cls._BetaOrAlpha():
+    if cls._IsBetaOrAlpha():
       flags.GetLocationArg().AddToParser(parser)
     parser.add_argument('records_file',
                         help='File to which record-sets should be exported.')
@@ -93,7 +97,7 @@ class Export(base.Command):
       get_request = dns.MESSAGES_MODULE.DnsManagedZonesGetRequest(
           project=zone_ref.project, managedZone=zone_ref.managedZone)
 
-      if api_version == 'v2' and self._BetaOrAlpha():
+      if api_version == 'v2' and self._IsBetaOrAlpha():
         get_request.location = args.location
 
       zone = dns.managedZones.Get(get_request)
@@ -105,11 +109,28 @@ class Export(base.Command):
     list_request = dns.MESSAGES_MODULE.DnsResourceRecordSetsListRequest(
         project=zone_ref.project, managedZone=zone_ref.Name())
 
-    if api_version == 'v2' and self._BetaOrAlpha():
+    if api_version == 'v2' and self._IsBetaOrAlpha():
       list_request.location = args.location
 
     for record_set in list_pager.YieldFromList(
         dns.resourceRecordSets, list_request, field='rrsets'):
+      # Alpha is handled differently as it supports ALIAS records.
+      if self._IsAlpha():
+        # For BIND file format, ALIAS record sets must be ignored, as they are
+        # not DNS standards. A zone will have at most one ALIAS record.
+        if args.zone_file_format:
+          if record_set.type == 'ALIAS':
+            log.warning(
+                'Skippig ALIAS record found in zone, as ALIAS record are custom'
+                ' to Cloud DNS and do not have a standard BIND format. To '
+                'export ALIAS records, use YAML format instead.'
+            )
+            continue
+      else:  # beta or GA
+        # Quietly ignore ALIAS records in beta/GA - they aren't supported yet.
+        if record_set.type == 'ALIAS':
+          continue
+
       record_sets.append(record_set)
 
     # Export the record-sets.

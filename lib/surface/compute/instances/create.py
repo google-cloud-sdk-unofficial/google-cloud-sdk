@@ -246,6 +246,7 @@ class Create(base.CreateCommand):
   _support_instance_kms = False
   _support_key_revocation_action_type = False
   _support_max_run_duration = False
+  _support_ipv6_assignment = False
 
   @classmethod
   def Args(cls, parser):
@@ -323,7 +324,8 @@ class Create(base.CreateCommand):
         location=zone,
         scope=compute_scopes.ScopeEnum.ZONE,
         skip_defaults=skip_defaults,
-        support_public_dns=self._support_public_dns)
+        support_public_dns=self._support_public_dns,
+        support_ipv6_assignment=self._support_ipv6_assignment)
 
     confidential_vm = (
         args.IsSpecified('confidential_compute') and args.confidential_compute)
@@ -644,6 +646,7 @@ class CreateBeta(Create):
   _support_instance_kms = False
   _support_key_revocation_action_type = False
   _support_max_run_duration = False
+  _support_ipv6_assignment = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -723,6 +726,7 @@ class CreateAlpha(CreateBeta):
   _support_instance_kms = True
   _support_key_revocation_action_type = True
   _support_max_run_duration = True
+  _support_ipv6_assignment = True
 
   @classmethod
   def Args(cls, parser):
@@ -764,6 +768,8 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddSecureTagsArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
+    instances_flags.AddIPv6AddressArgs(parser)
+    instances_flags.AddIPv6PrefixLengthArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

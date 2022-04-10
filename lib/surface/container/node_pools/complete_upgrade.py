@@ -27,7 +27,8 @@ from googlecloudsdk.core import log
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class CompleteUpgrade(base.Command):
   """Complete a node pool upgrade."""
 
@@ -41,9 +42,10 @@ class CompleteUpgrade(base.Command):
     """
 
     flags.AddNodePoolNameArg(
-        parser, 'Name of the node pool which upgrade is to be completed.')
+        parser,
+        'Name of the node pool for which the upgrade is to be completed.')
     flags.AddNodePoolClusterFlag(parser,
-                                 'Cluster from which the node pool belongs.')
+                                 'Cluster to which the node pool belongs.')
     parser.add_argument(
         '--timeout',
         type=int,

@@ -68,8 +68,7 @@ DETAILED_GA_HELP = {
 DETAILED_ALPHA_BETA_HELP = {
     'DESCRIPTION':
         """
-        Connects to Cloud SQL V2 instances through the Cloud SQL Proxy.
-        Connects to Cloud SQL V1 instances directly.
+        Connects to a Cloud SQL instance.
         """,
     'EXAMPLES': EXAMPLES,
 }

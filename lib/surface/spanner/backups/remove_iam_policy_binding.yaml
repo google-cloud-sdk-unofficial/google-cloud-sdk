@@ -1,38 +1,9 @@
-- release_tracks: [GA]
+- release_tracks: [ALPHA, BETA, GA]
+
   help_text:
     brief: Remove IAM policy binding of a Cloud Spanner backup.
     description: |
-      Remove an IAM policy binding of a Cloud Spanner backup.
-
-    examples: |
-      To remove an IAM policy binding for the role of 'roles/spanner.backupAdmin' for the user
-      'test-user@gmail.com' with backup 'example-backup' and instance 'example-instance', run:
-
-        $ {command} example-backup \
-            --instance='example-instance' \
-            --member='user:test-user@gmail.com' \
-            --role='roles/spanner.backupAdmin'
-
-      See https://cloud.google.com/iam/docs/managing-policies for details of
-      policy role and member types.
-
-  request:
-    collection: spanner.projects.instances.backups
-
-  arguments:
-    resource:
-      help_text: The Cloud Spanner backup to remove the IAM policy binding from.
-      spec: !REF googlecloudsdk.command_lib.spanner.resources:backup
-
-  iam:
-    policy_version: 3
-    get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion
-
-- release_tracks: [ALPHA, BETA]
-  help_text:
-    brief: Remove IAM policy binding of a Cloud Spanner backup.
-    description: |
-      Remove an IAM policy binding from the IAM policy of a Cloud Spanner backup. One binding
+      Remove an IAM policy binding of a Cloud Spanner backup. One binding
       consists of a member, a role, and an optional condition.
 
     examples: |
@@ -44,7 +15,7 @@
             --member='user:test-user@gmail.com' \
             --role='roles/spanner.backupAdmin'
 
-      To add an IAM policy binding which expires at the end of the year 2018 for the role of
+      To remove an IAM policy binding which expires at the end of the year 2018 for the role of
       'roles/spanner.backupAdmin' and the user 'test-user@gmail.com' with backup 'example-backup'
       and instance 'example-instance', run:
 
@@ -56,6 +27,7 @@
 
       See https://cloud.google.com/iam/docs/managing-policies for details of
       policy role and member types.
+
   request:
     collection: spanner.projects.instances.backups
 

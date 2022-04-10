@@ -383,6 +383,8 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
     instances_flags.AddNumaNodeCountArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
+    instances_flags.AddIPv6AddressArgs(parser)
+    instances_flags.AddIPv6PrefixLengthArgs(parser)
 
   def _ValidateTrackSpecificArgs(self, args):
     instances_flags.ValidateLocalSsdFlags(args)

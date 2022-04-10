@@ -158,7 +158,7 @@ class Create(base.CreateCommand):
         params={
             'projectsId': parent,
             'locationsId': wp_region,
-            'workerPoolsId': created_wp.name,
+            'workerPoolsId': wp_name,
         })
 
     log.CreatedResource(wp_resource)
@@ -340,7 +340,7 @@ class CreateAlpha(Create):
         params={
             'projectsId': parent,
             'locationsId': wp_region,
-            'workerPoolsId': created_wp.name,
+            'workerPoolsId': wp_name,
         })
 
     log.CreatedResource(wp_resource)

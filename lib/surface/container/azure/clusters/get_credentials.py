@@ -48,6 +48,10 @@ class GetCredentials(base.Command):
         self.ReleaseTrack()):
       cluster_ref = resource_args.ParseAzureClusterResourceArg(args)
       client = azure_api_util.ClustersClient(track=self.ReleaseTrack())
+      if not args.private_endpoint:
+        kubeconfig.CheckClusterHasNodePools(
+            azure_api_util.NodePoolsClient(track=self.ReleaseTrack()),
+            cluster_ref)
       resp = client.Get(cluster_ref)
       kubeconfig.ValidateClusterVersion(resp)
       context = kubeconfig.GenerateContext(

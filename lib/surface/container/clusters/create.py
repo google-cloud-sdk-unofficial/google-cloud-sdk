@@ -427,8 +427,10 @@ flags_to_add = {
             flags.AddEnableCloudRunAlphaFlag,
         'cloudrunconfig':
             flags.AddCloudRunConfigFlag,
-        'clusterautoscaling': functools.partial(
-            flags.AddClusterAutoscalingFlags, location_policy_present=False),
+        'clusterautoscaling':
+            functools.partial(
+                flags.AddClusterAutoscalingFlags,
+                location_policy_present=False),
         'clusterdns':
             flags.AddClusterDNSFlags,
         'clusterversion':
@@ -528,8 +530,7 @@ flags_to_add = {
             flags.AddEnableShieldedNodesFlags,
         'spot':
             lambda p: flags.AddSpotFlag(p, hidden=False),
-        'surgeupgrade':
-            flags.AddSurgeUpgradeFlag,
+        'surgeupgrade': (lambda p: flags.AddSurgeUpgradeFlag(p, default=1)),
         'systemconfig':
             lambda p: flags.AddSystemConfigFlag(p, hidden=False),
         'stackdriver':
@@ -585,8 +586,9 @@ flags_to_add = {
             flags.AddEnableCloudRunAlphaFlag,
         'cloudrunconfig':
             flags.AddCloudRunConfigFlag,
-        'clusterautoscaling': functools.partial(
-            flags.AddClusterAutoscalingFlags, location_policy_present=True),
+        'clusterautoscaling':
+            functools.partial(
+                flags.AddClusterAutoscalingFlags, location_policy_present=True),
         'clusterdns':
             flags.AddClusterDNSFlags,
         'clusterversion':
@@ -782,8 +784,9 @@ flags_to_add = {
             flags.AddEnableCloudRunAlphaFlag,
         'cloudrunconfig':
             flags.AddCloudRunConfigFlag,
-        'clusterautoscaling': functools.partial(
-            flags.AddClusterAutoscalingFlags, location_policy_present=True),
+        'clusterautoscaling':
+            functools.partial(
+                flags.AddClusterAutoscalingFlags, location_policy_present=True),
         'clusterdns':
             flags.AddClusterDNSFlags,
         'placementtype':

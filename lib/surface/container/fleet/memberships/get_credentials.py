@@ -21,12 +21,13 @@ from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
-from googlecloudsdk.api_lib.container import util
+from googlecloudsdk.api_lib.container import util as container_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import api_util as hubapi_util
 from googlecloudsdk.command_lib.container.fleet import connect_gateway_util as cg_util
 from googlecloudsdk.command_lib.container.fleet import gwkubeconfig_util as kconfig
 from googlecloudsdk.command_lib.container.fleet.memberships import errors as memberships_errors
+from googlecloudsdk.command_lib.container.fleet.memberships import util
 from googlecloudsdk.command_lib.projects import util as project_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -82,7 +83,7 @@ class GetCredentials(base.Command):
       )
 
   def Run(self, args):
-    util.CheckKubectlInstalled()
+    container_util.CheckKubectlInstalled()
     project_id = properties.VALUES.core.project.GetOrFail()
     location = getattr(args, 'location', 'global')
     if location is None:
@@ -92,9 +93,17 @@ class GetCredentials(base.Command):
     log.status.Print('Current project_id: ' + project_id)
 
     self.RunIamCheck(project_id)
-    cg_util.CheckGatewayApiEnablement(project_id, self.get_service_name())
+    hub_endpoint_override = properties.VALUES.api_endpoint_overrides.AllValues(
+    ).get('gkehub', '')
+    # API enablement is only done once per environment, regardless of which
+    # region is being accessed.
+    cg_util.CheckGatewayApiEnablement(
+        project_id,
+        util.GetConnectGatewayServiceName(hub_endpoint_override, None))
     self.ReadClusterMembership(project_id, location, args.MEMBERSHIP)
-    self.GenerateKubeconfig(project_id, location, args.MEMBERSHIP)
+    self.GenerateKubeconfig(
+        util.GetConnectGatewayServiceName(hub_endpoint_override, location),
+        project_id, location, args.MEMBERSHIP)
     msg = 'A new kubeconfig entry \"' + KUBECONTEXT_FORMAT.format(
         project=project_id, location=location, membership=args.MEMBERSHIP
     ) + '\" has been generated and set as the current context.'
@@ -114,7 +123,7 @@ class GetCredentials(base.Command):
     # If membership doesn't exist, exception will be raised to caller.
     hubapi_util.GetMembership(resource_name)
 
-  def GenerateKubeconfig(self, project_id, location, membership):
+  def GenerateKubeconfig(self, service_name, project_id, location, membership):
     project_number = project_util.GetProjectNumber(project_id)
     kwargs = {
         'membership':
@@ -125,7 +134,7 @@ class GetCredentials(base.Command):
             project_id,
         'server':
             SERVER_FORMAT.format(
-                service_name=self.get_service_name(),
+                service_name=service_name,
                 version=self.GetVersion(),
                 project_number=project_number,
                 location=location,
@@ -149,29 +158,6 @@ class GetCredentials(base.Command):
     kubeconfig.SetCurrentContext(context)
     kubeconfig.SaveToFile()
     return kubeconfig
-
-  def get_service_name(self):
-    # This function checks environment endpoint overidden configuration for
-    # gkehub. The overridden value will be like this:
-    # https://autopush-gkehub.sandbox.googleapis.com/.
-
-    # When there is no overridden set, this command will run against Hub prod
-    # endpoint and return an empty string. When the
-    # overrideen value is  https://autopush-gkehub.sandbox.googleapis.com/,
-    # the Gateway's server address in generated kubeconfig will be
-    # https://autopush-connectgateway.googleapis.com as a result.
-
-    endpoint_overrides = properties.VALUES.api_endpoint_overrides.AllValues()
-    hub_endpoint_override = endpoint_overrides.get('gkehub', '')
-    if not hub_endpoint_override:
-      # hub_endpoint_override will be empty string for Prod.
-      return 'connectgateway.googleapis.com'
-    elif 'autopush-gkehub' in hub_endpoint_override:
-      return 'autopush-connectgateway.sandbox.googleapis.com'
-    elif 'staging-gkehub' in hub_endpoint_override:
-      return 'staging-connectgateway.sandbox.googleapis.com'
-    else:
-      raise memberships_errors.UnknownApiEndpointOverrideError('gkehub')
 
   @classmethod
   def GetVersion(cls):

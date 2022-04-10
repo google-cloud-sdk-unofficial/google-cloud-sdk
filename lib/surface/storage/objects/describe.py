@@ -19,10 +19,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.storage import api_factory
+from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import wildcard_iterator
+from googlecloudsdk.core.resource import resource_projector
 
 
 class Describe(base.DescribeCommand):
@@ -58,5 +60,10 @@ class Describe(base.DescribeCommand):
           ' resource. Please use the `ls` or `objects list` command for'
           ' retrieving multiple resources.')
     url = storage_url.storage_url_from_string(args.url)
-    return api_factory.get_api(url.scheme).get_object_metadata(
-        url.bucket_name, url.object_name).metadata
+    object_resource = api_factory.get_api(url.scheme).get_object_metadata(
+        url.bucket_name,
+        url.object_name,
+        fields_scope=cloud_api.FieldsScope.FULL)
+    # MakeSerializable will omit all the None values.
+    return resource_projector.MakeSerializable(
+        object_resource.get_displayable_object_data())

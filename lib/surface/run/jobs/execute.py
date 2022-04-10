@@ -90,6 +90,5 @@ class Execute(base.Command):
                                  execution=e.name, operation=operation))
 
       log.Print(
-          messages_util.GetExecutionCreatedMessage(self.ReleaseTrack(),
-                                                   job_ref, e.name))
+          messages_util.GetExecutionCreatedMessage(self.ReleaseTrack(), e))
       return e

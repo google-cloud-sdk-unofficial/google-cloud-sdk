@@ -27,8 +27,6 @@ from googlecloudsdk.command_lib.spanner import resource_args
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Copy(base.Command):
   """Copies a backup of a Cloud Spanner database."""
 

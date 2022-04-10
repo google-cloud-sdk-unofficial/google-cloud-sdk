@@ -25,21 +25,13 @@ from googlecloudsdk.command_lib.compute.target_ssl_proxies import flags
 from googlecloudsdk.core import properties
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List target SSL proxies."""
 
   @staticmethod
   def Args(parser):
-
-    parser.display_info.AddFormat("""
-        table(
-          name,
-          proxyHeader,
-          service.basename(),
-          sslCertificates.map().basename().list():label=SSL_CERTIFICATES
-        )
-    """)
-
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     parser.display_info.AddCacheUpdater(flags.TargetSslProxiesCompleter)
 
   def Run(self, args):
@@ -57,6 +49,15 @@ class List(base.ListCommand):
     return list_pager.YieldFromList(
         client.targetSslProxies, request, field='items',
         limit=args.limit, batch_size=None)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class ListBeta(List):
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(flags.DEFAULT_BETA_LIST_FORMAT)
+    parser.display_info.AddCacheUpdater(flags.TargetSslProxiesCompleter)
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('target SSL proxies')

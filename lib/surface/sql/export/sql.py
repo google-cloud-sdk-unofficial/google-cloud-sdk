@@ -32,10 +32,15 @@ from googlecloudsdk.command_lib.sql import flags
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Sql(base.Command):
+  # pylint: disable=line-too-long
   """Exports data from a Cloud SQL instance to a SQL file.
 
   Exports data from a Cloud SQL instance to a Google Cloud Storage
   bucket as a SQL dump file.
+
+  NOTE: Certain roles and permissions are required to export data to Google
+  Cloud Storage. For more information on exporting data from Google Cloud SQL
+  see [Export from Cloud SQL to a SQL dump file](https://cloud.google.com/sql/docs/mysql/import-export/import-export-sql#gcloud).
   """
 
   @staticmethod

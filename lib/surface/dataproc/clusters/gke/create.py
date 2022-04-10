@@ -88,12 +88,6 @@ class Create(base.CreateCommand):
         dependencies, miscellaneous config files, and job driver console output
         when using this cluster.
         """)
-    parser.add_argument(
-        '--temp-bucket',
-        help="""\
-        The Cloud Storage bucket to use by default to store
-        ephemeral cluster and jobs data, such as Spark and MapReduce history files.
-        """)
 
     parser.add_argument(
         '--properties',
@@ -216,7 +210,6 @@ class Create(base.CreateCommand):
 
     virtual_cluster_config = dataproc.messages.VirtualClusterConfig(
         stagingBucket=args.staging_bucket,
-        tempBucket=args.temp_bucket,
         kubernetesClusterConfig=kubernetes_cluster_config,
         auxiliaryServicesConfig=auxiliary_services_config)
 

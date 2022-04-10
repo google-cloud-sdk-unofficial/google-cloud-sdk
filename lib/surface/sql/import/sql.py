@@ -41,6 +41,10 @@ class Sql(base.Command):
           {command} imports data into a Cloud SQL instance from a SQL dump file
           in Google Cloud Storage.
 
+          NOTE: Certain roles and permissions are required to import data into
+          Google Cloud SQL. For more information on importing data into Google
+          Cloud SQL see [Import a SQL dump file](https://cloud.google.com/sql/docs/mysql/import-export/import-export-sql#gcloud_1).
+
           For detailed help on importing data into Cloud SQL, refer to this
           guide: https://cloud.google.com/sql/docs/mysql/import-export/importing
           """),

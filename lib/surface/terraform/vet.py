@@ -96,7 +96,6 @@ class TerraformToolsValidateOperation(binary_operations.BinaryBackedOperation):
     return args
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Vet(base.Command):
   """Validate that a terraform plan complies with policies."""

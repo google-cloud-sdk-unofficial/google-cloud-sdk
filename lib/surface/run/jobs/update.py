@@ -126,15 +126,5 @@ class Update(base.Command):
             'Job [{{bold}}{job}{{reset}}] has been successfully updated'.format(
                 job=job.name))
 
-      log.Print(
-          '\nView details about this job by running '
-          '`gcloud{release_track} run jobs describe {job_name}`.'
-          '\nSee logs for this job at: '
-          # TODO(b/180749348): Don't piggyback off of cloud_run_revision
-          'https://console.cloud.google.com/logs/viewer?project={project_id}&resource=cloud_run_revision/service_name/{job_name}'
-          .format(
-              release_track=(' {}'.format(self.ReleaseTrack().prefix)
-                             if self.ReleaseTrack().prefix is not None else ''),
-              project_id=job_ref.Parent().Name(),
-              job_name=job.name))
+      log.Print(messages_util.GetRunJobMessage(self.ReleaseTrack(), job.name))
       return job

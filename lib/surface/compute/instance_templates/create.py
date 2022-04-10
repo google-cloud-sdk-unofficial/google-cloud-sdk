@@ -398,8 +398,8 @@ def AddServiceProxyArgsToMetadata(args):
     if 'project-number' in args.service_proxy:
       proxy_spec['project-number'] = args.service_proxy['project-number']
 
+    traffic_interception = collections.OrderedDict()
     if 'intercept-all-outbound-traffic' in args.service_proxy:
-      traffic_interception = collections.OrderedDict()
       traffic_interception['intercept-all-outbound'] = True
       if 'exclude-outbound-ip-ranges' in args.service_proxy:
         traffic_interception['exclude-outbound-ip-ranges'] = (
@@ -407,6 +407,9 @@ def AddServiceProxyArgsToMetadata(args):
       if 'exclude-outbound-port-ranges' in args.service_proxy:
         traffic_interception['exclude-outbound-port-ranges'] = (
             args.service_proxy['exclude-outbound-port-ranges'].split(';'))
+    if 'intercept-dns' in args.service_proxy:
+      traffic_interception['intercept-dns'] = True
+    if traffic_interception:
       service_proxy_config['traffic-interception'] = traffic_interception
 
     if getattr(args, 'service_proxy_xds_version', False):

@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import wildcard_iterator
 from googlecloudsdk.command_lib.storage.resources import resource_reference
+from googlecloudsdk.core.resource import resource_projector
 
 
 class List(base.ListCommand):
@@ -81,5 +82,6 @@ class List(base.ListCommand):
           all_versions=True,
           fields_scope=cloud_api.FieldsScope.FULL):
         if isinstance(resource, resource_reference.ObjectResource):
-          yield resource.metadata
-        # TODO(b/215404053): May change output format.
+          # MakeSerializable will omit all the None values.
+          yield resource_projector.MakeSerializable(
+              resource.get_displayable_object_data())

@@ -40,6 +40,7 @@ def _Args(parser):
   flags.AddNodePoolNameArg(parser, 'The name of the node pool to rollback.')
   flags.AddNodePoolClusterFlag(
       parser, 'The cluster from which to rollback the node pool.')
+  flags.AddRespectPodDisruptionBudgetFlag(parser)
   parser.add_argument(
       '--timeout',
       type=int,
@@ -110,7 +111,6 @@ class RollbackBeta(Rollback):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddRespectPodDisruptionBudgetFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -120,7 +120,6 @@ class RollbackAlpha(Rollback):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddRespectPodDisruptionBudgetFlag(parser)
 
 Rollback.detailed_help = {
     'brief':

@@ -167,7 +167,11 @@ def ParseCreateNodePoolOptionsBase(args):
       gvnic=args.enable_gvnic,
       enable_image_streaming=args.enable_image_streaming,
       spot=args.spot,
-      enable_confidential_nodes=args.enable_confidential_nodes)
+      enable_confidential_nodes=args.enable_confidential_nodes,
+      enable_blue_green_update=args.enable_blue_green_update,
+      enable_rolling_update=args.enable_rolling_update,
+      node_pool_soak_duration=args.node_pool_soak_duration,
+      standard_rollout_policy=args.standard_rollout_policy)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -194,7 +198,7 @@ class Create(base.CreateCommand):
     flags.AddReservationAffinityFlags(parser, for_node_pool=True)
     flags.AddSandboxFlag(parser)
     flags.AddNodePoolLocationsFlag(parser, for_create=True)
-    flags.AddSurgeUpgradeFlag(parser, for_node_pool=True)
+    flags.AddSurgeUpgradeFlag(parser, for_node_pool=True, default=1)
     flags.AddMaxUnavailableUpgradeFlag(
         parser, for_node_pool=True, is_create=True)
     flags.AddSystemConfigFlag(parser, hidden=False)
@@ -204,10 +208,16 @@ class Create(base.CreateCommand):
     flags.AddSpotFlag(parser, for_node_pool=True)
     flags.AddEnableConfidentialNodesFlag(
         parser, for_node_pool=True, hidden=True)
+    flags.AddNetworkPerformanceConfigFlags(parser, hidden=False)
+    flags.AddEnableRollingUpdateFlag(parser)
+    flags.AddEnableBlueGreenUpdateFlag(parser)
+    flags.AddStandardRolloutPolicyFlag(parser)
+    flags.AddNodePoolSoakDurationFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
     ops.node_locations = args.node_locations
+    ops.network_performance_config = args.network_performance_configs
     return ops
 
   def Run(self, args):
@@ -299,7 +309,7 @@ class CreateBeta(Create):
     flags.AddStandardRolloutPolicyFlag(parser)
     flags.AddNodePoolSoakDurationFlag(parser)
     flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)
-    flags.AddNetworkPerformanceConfigFlags(parser)
+    flags.AddNetworkPerformanceConfigFlags(parser, hidden=False)
     flags.AddEnableConfidentialNodesFlag(parser, for_node_pool=True)
     flags.AddDisablePodCIDROverprovisionFlag(parser)
 
@@ -397,7 +407,7 @@ class CreateAlpha(Create):
     flags.AddStandardRolloutPolicyFlag(parser, for_node_pool=True)
     flags.AddNodePoolSoakDurationFlag(parser, for_node_pool=True)
     flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)
-    flags.AddNetworkPerformanceConfigFlags(parser)
+    flags.AddNetworkPerformanceConfigFlags(parser, hidden=False)
     flags.AddEnableConfidentialNodesFlag(parser, for_node_pool=True)
     flags.AddDisablePodCIDROverprovisionFlag(parser)
 

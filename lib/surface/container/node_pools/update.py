@@ -80,15 +80,24 @@ class Update(base.UpdateCommand):
     flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=False)
     flags.AddWorkloadMetadataFlag(group)
 
-    surge_upgrade_group = group.add_argument_group('Upgrade settings')
-    flags.AddSurgeUpgradeFlag(surge_upgrade_group, for_node_pool=True)
-    flags.AddMaxUnavailableUpgradeFlag(surge_upgrade_group, for_node_pool=True)
+    upgrade_settings_group = group.add_argument_group('Upgrade settings')
+    flags.AddEnableRollingUpdateFlag(upgrade_settings_group)
+    flags.AddSurgeUpgradeFlag(upgrade_settings_group, for_node_pool=True)
+    flags.AddMaxUnavailableUpgradeFlag(
+        upgrade_settings_group, for_node_pool=True)
+
+    flags.AddEnableBlueGreenUpdateFlag(upgrade_settings_group)
+    flags.AddStandardRolloutPolicyFlag(
+        upgrade_settings_group, for_node_pool=True)
+    flags.AddNodePoolSoakDurationFlag(
+        upgrade_settings_group, for_node_pool=True)
 
     flags.AddSystemConfigFlag(group, hidden=False)
     flags.AddEnableGvnicFlag(group)
     flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
     flags.AddEnableConfidentialNodesFlag(
         group, for_node_pool=True, hidden=True, is_update=True)
+    flags.AddNetworkPerformanceConfigFlags(group, hidden=False)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -107,7 +116,12 @@ class Update(base.UpdateCommand):
         system_config_from_file=args.system_config_from_file,
         gvnic=args.enable_gvnic,
         enable_image_streaming=args.enable_image_streaming,
-        enable_confidential_nodes=args.enable_confidential_nodes)
+        network_performance_config=args.network_performance_configs,
+        enable_confidential_nodes=args.enable_confidential_nodes,
+        enable_blue_green_update=args.enable_blue_green_update,
+        enable_rolling_update=args.enable_rolling_update,
+        node_pool_soak_duration=args.node_pool_soak_duration,
+        standard_rollout_policy=args.standard_rollout_policy)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -216,7 +230,7 @@ class UpdateBeta(Update):
     flags.AddEnableGcfsFlag(group, for_node_pool=True)
     flags.AddEnableGvnicFlag(group)
     flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
-    flags.AddNetworkPerformanceConfigFlags(group)
+    flags.AddNetworkPerformanceConfigFlags(group, hidden=False)
     flags.AddEnableConfidentialNodesFlag(
         group, for_node_pool=True, is_update=True)
 
@@ -294,7 +308,7 @@ class UpdateAlpha(Update):
     flags.AddEnableGcfsFlag(group, for_node_pool=True)
     flags.AddEnableGvnicFlag(group)
     flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
-    flags.AddNetworkPerformanceConfigFlags(group)
+    flags.AddNetworkPerformanceConfigFlags(group, hidden=False)
     flags.AddEnableConfidentialNodesFlag(
         group, for_node_pool=True, is_update=True)
 

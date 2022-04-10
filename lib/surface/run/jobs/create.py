@@ -154,14 +154,9 @@ class Create(base.Command):
       msg = ''
       if run_now:
         msg += messages_util.GetExecutionCreatedMessage(self.ReleaseTrack(),
-                                                        job_ref, execution.name)
+                                                        execution)
         msg += '\n'
-      msg += ('\nTo execute this job{repeat}, use:\n'
-              'gcloud{release_track} run jobs execute {job_name}'.format(
-                  repeat=' again' if run_now else '',
-                  release_track=(' {}'.format(self.ReleaseTrack().prefix)
-                                 if self.ReleaseTrack().prefix is not None
-                                 else ''),
-                  job_name=job.name))
+      msg += messages_util.GetRunJobMessage(
+          self.ReleaseTrack(), job.name, repeat=run_now)
       log.Print(msg)
       return job

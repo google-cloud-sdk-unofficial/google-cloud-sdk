@@ -31,6 +31,7 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine virtual machine network interface.
 
@@ -42,6 +43,8 @@ class Update(base.UpdateCommand):
   sets 172.16.0.1/32 from range r1 of the default interface's subnetwork
   as the interface's alias IP.
   """
+
+  support_ipv6_assignment = False
 
   @classmethod
   def Args(cls, parser):
@@ -106,14 +109,29 @@ class Update(base.UpdateCommand):
 
     parser.add_argument(
         '--ipv6-network-tier',
-        choices={
-            'PREMIUM':
-                ('High quality, Google-grade network tier.')
-        },
+        choices={'PREMIUM': ('High quality, Google-grade network tier.')},
         type=arg_utils.ChoiceToEnumName,
-        help=(
-            'Specifies the IPv6 network tier that will be used to configure '
-            'the instance network interface IPv6 access config.'))
+        help=('Specifies the IPv6 network tier that will be used to configure '
+              'the instance network interface IPv6 access config.'))
+
+    if cls.support_ipv6_assignment:
+      parser.add_argument(
+          '--ipv6-address',
+          type=str,
+          help="""
+          Assigns the given external IPv6 address to an instance.
+          The address must be the first IP in the range. This option can only be
+          used on a IPv4 only dual stack instance.
+        """)
+
+      parser.add_argument(
+          '--ipv6-prefix-length',
+          type=int,
+          help="""
+          Prefix Length of the External IPv6 address range, should be used together
+          with --ipv6-address. Currently only /96 is supported and the default value
+          is 96.
+        """)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -122,7 +140,8 @@ class Update(base.UpdateCommand):
     resources = holder.resources
 
     instance_ref = instances_flags.INSTANCE_ARG.ResolveAsResource(
-        args, holder.resources,
+        args,
+        holder.resources,
         scope_lister=flags.GetDefaultScopeLister(holder.client))
 
     instance = client.instances.Get(
@@ -136,8 +155,8 @@ class Update(base.UpdateCommand):
           'network-interface',
           'Instance does not have a network interface [{}], '
           'present interfaces are [{}].'.format(
-              args.network_interface, ', '.join(
-                  [i.name for i in instance.networkInterfaces])))
+              args.network_interface,
+              ', '.join([i.name for i in instance.networkInterfaces])))
 
     network_uri = None
     if getattr(args, 'network', None) is not None:
@@ -158,6 +177,8 @@ class Update(base.UpdateCommand):
           collection='compute.subnetworks').SelfLink()
 
     stack_type = getattr(args, 'stack_type', None)
+    ipv6_address = getattr(args, 'ipv6_address', None)
+    ipv6_prefix_length = getattr(args, 'ipv6_prefix_length', None)
     if stack_type is not None:
       stack_type_enum = (
           messages.NetworkInterface.StackTypeValueValuesEnum(stack_type))
@@ -171,6 +192,12 @@ class Update(base.UpdateCommand):
             type=messages.AccessConfig.TypeValueValuesEnum.DIRECT_IPV6)
         ipv6_access_config.networkTier = (
             messages.AccessConfig.NetworkTierValueValuesEnum(ipv6_network_tier))
+        if ipv6_address:
+          ipv6_access_config.externalIpv6 = ipv6_address
+          if ipv6_prefix_length:
+            ipv6_access_config.externalIpv6PrefixLength = ipv6_prefix_length
+          else:
+            ipv6_access_config.externalIpv6PrefixLength = 96
         ipv6_access_configs = [ipv6_access_config]
       patch_network_interface = messages.NetworkInterface(
           aliasIpRanges=(
@@ -212,3 +239,19 @@ class Update(base.UpdateCommand):
         operation_poller, operation_ref,
         'Updating network interface [{0}] of instance [{1}]'.format(
             args.network_interface, instance_ref.Name()))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  r"""Update a Compute Engine virtual machine network interface.
+
+  *{command}* updates network interfaces of a Compute Engine
+  virtual machine. For example:
+
+    $ {command} example-instance --zone us-central1-a --aliases r1:172.16.0.1/32
+
+  sets 172.16.0.1/32 from range r1 of the default interface's subnetwork
+  as the interface's alias IP.
+  """
+
+  support_ipv6_assignment = True

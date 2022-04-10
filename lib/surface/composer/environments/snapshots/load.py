@@ -33,8 +33,8 @@ DETAILED_HELP = {
         """\
           To load a snapshot into the environment named env-1, run:
 
-          $ {command} env-1 --snapshot-path \
-          gs://my-bucket/path-to-the-specific-snapshot
+          $ {command} env-1 \
+          --snapshot-path=gs://my-bucket/path-to-the-specific-snapshot
         """
 }
 

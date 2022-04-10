@@ -26,11 +26,14 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import ssh_utils
+from googlecloudsdk.command_lib.compute.tpus.tpu_vm import exceptions as tpu_exceptions
 from googlecloudsdk.command_lib.compute.tpus.tpu_vm import ssh as tpu_ssh_utils
 from googlecloudsdk.command_lib.compute.tpus.tpu_vm import util as tpu_utils
 from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+
+import six
 
 
 def AddSCPArgs(parser):
@@ -118,8 +121,21 @@ class Scp(base.Command):
     tpu_ssh_utils.ValidateTPUState(node.state,
                                    tpu.messages.Node.StateValueValuesEnum)
 
-    host_key_suffixes = tpu_ssh_utils.GetHostKeySuffixes(
-        tpu, tpu_name, worker_ips, len(node.networkEndpoints), args.zone)
+    # Retrieve GuestAttributes.
+    single_pod_worker = len(node.networkEndpoints) > 1 and len(worker_ips) == 1
+    if single_pod_worker:
+      # Retrieve only that worker's GuestAttributes.
+      worker_id = list(worker_ips)[0]
+      guest_attributes_response = tpu.GetGuestAttributes(
+          tpu_name, args.zone, six.text_type((worker_id)))
+      host_key_suffixes = tpu_ssh_utils.GetHostKeySuffixes(
+          guest_attributes_response.guestAttributes, len(node.networkEndpoints),
+          worker_id)
+    else:
+      # Retrieve the GuestAttributes for all workers in that TPU.
+      guest_attributes_response = tpu.GetGuestAttributes(tpu_name, args.zone)
+      host_key_suffixes = tpu_ssh_utils.GetHostKeySuffixes(
+          guest_attributes_response.guestAttributes)
 
     # Generate the public key.
     ssh_helper = ssh_utils.BaseSSHCLIHelper()
@@ -174,6 +190,21 @@ class Scp(base.Command):
     if args.scp_flag:
       extra_flags.extend(args.scp_flag)
 
+    instance_names = {}
+    if args.tunnel_through_iap:
+      # Retrieve the instance names from the GuestAttributes.
+      for worker in worker_ips:
+        # The GuestAttributes will only have one entry if we're targeting a
+        # single worker.
+        index = 0 if single_pod_worker else worker
+        instance_name = tpu_ssh_utils.GetFromGuestAttributes(
+            guest_attributes_response.guestAttributes, index, 'hostname')
+        if instance_name is None:
+          log.status.Print('Failed to connect to TPU.')
+          log.status.Print(tpu_ssh_utils.IAP_TROUBLESHOOTING_HELP)
+          raise tpu_exceptions.IapTunnelingUnavailable()
+        instance_names[worker] = instance_name
+
     ssh_threads = []
     exit_statuses = [None] * len(worker_ips)
     for worker, ips in worker_ips.items():
@@ -183,6 +214,13 @@ class Scp(base.Command):
             tpu_ssh_utils.GetInstanceID(node.id, worker, host_key_suffixes),
             args.strict_host_key_checking, None)
 
+      iap_tunnel_args = None
+      if args.tunnel_through_iap:
+        # Retrieve the instance name from the GuestAttributes.
+        instance_name = instance_names[worker]
+        iap_tunnel_args = tpu_ssh_utils.CreateSshTunnelArgs(
+            args, self.ReleaseTrack(), project, args.zone, instance_name)
+
       remote.host = ips.ip_address
       cmd = ssh.SCPCommand(
           srcs,
@@ -191,7 +229,8 @@ class Scp(base.Command):
           options=options,
           recursive=args.recurse,
           compress=args.compress,
-          extra_flags=extra_flags)
+          extra_flags=extra_flags,
+          iap_tunnel_args=iap_tunnel_args)
 
       if args.dry_run:
         log.out.Print(' '.join(cmd.Build(ssh_helper.env)))

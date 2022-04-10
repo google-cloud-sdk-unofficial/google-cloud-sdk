@@ -125,6 +125,18 @@ class Cp(base.Command):
         help='Ignore file symlinks instead of copying what they point to.'
         ' Symlinks pointing to directories will always be ignored.')
     parser.add_argument(
+        '-v',
+        '--print-created-message',
+        action='store_true',
+        help='Prints the version-specific URL for each copied object.')
+    parser.add_argument(
+        '-n',
+        '--no-clobber',
+        action='store_true',
+        help='Do not overwrite existing files or objects at the destination.'
+        ' Skipped items will be printed. This option performs an additional GET'
+        ' request for cloud objects before attempting an upload.')
+    parser.add_argument(
         '-U',
         '--skip-unsupported',
         action='store_true',
@@ -134,7 +146,7 @@ class Cp(base.Command):
     parser.add_argument(
         '-s',
         '--storage-class',
-        help='Specifies the storage class of the destination object. If not'
+        help='Specify the storage class of the destination object. If not'
         ' specified, the default storage class of the destination bucket is'
         ' used. This option is not valid for copying to non-cloud destinations.'
     )
@@ -156,6 +168,10 @@ class Cp(base.Command):
     flags.add_encryption_flags(parser)
 
   def Run(self, args):
+    if args.no_clobber and args.if_generation_match:
+      raise ValueError(
+          'Cannot specify both generation precondition and no-clobber.')
+
     encryption_util.initialize_key_store(args)
 
     source_expansion_iterator = name_expansion.NameExpansionIterator(
@@ -196,6 +212,7 @@ class Cp(base.Command):
         args.destination,
         custom_md5_digest=args.content_md5,
         do_not_decompress=args.do_not_decompress,
+        print_created_message=args.print_created_message,
         shared_stream=shared_stream,
         skip_unsupported=args.skip_unsupported,
         task_status_queue=task_status_queue,
