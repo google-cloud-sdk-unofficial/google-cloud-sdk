@@ -49,8 +49,10 @@ def _Args(parser,
   instances_flags.AddCreateDiskArgs(
       parser, container_mount_enabled=container_mount_enabled,
       support_multi_writer=support_multi_writer)
-  if release_track != base.ReleaseTrack.GA:
+  if release_track == base.ReleaseTrack.ALPHA:
     instances_flags.AddLocalSsdArgsWithSize(parser)
+  elif release_track == base.ReleaseTrack.BETA:
+    instances_flags.AddLocalSsdArgs(parser)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddContainerMountDiskFlag(parser)
   instances_flags.AddAddressArgs(parser, instances=False, containers=True)

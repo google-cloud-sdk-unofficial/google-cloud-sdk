@@ -28,8 +28,8 @@ from googlecloudsdk.core import resources
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Failover(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class Failover(base.SilentCommand):
   """Failover an AlloyDB instance within a given cluster."""
 
   @staticmethod

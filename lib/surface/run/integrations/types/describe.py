@@ -38,7 +38,6 @@ class Params:
     self.optional = optional
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describes a Cloud Run Integration."""

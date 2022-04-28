@@ -342,7 +342,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         parser,
         container_mount_enabled=True)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
-    instances_flags.AddLocalSsdArgsWithSize(parser)
+    instances_flags.AddLocalSsdArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_BETA_API_VERSION)

@@ -22,9 +22,11 @@ import socket
 import threading
 
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
 import websocket
 
@@ -53,6 +55,18 @@ class StartTcpTunnel(base.Command):
         'workstation_port',
         type=int,
         help='The port on the workstation to which traffic should be sent.')
+    parser.add_argument(
+        '--local-host-port',
+        type=arg_parsers.HostPort.Parse,
+        default='localhost:0',
+        help="""\
+`LOCAL_HOST:LOCAL_PORT` on which gcloud should bind and listen for connections
+that should be tunneled.
+
+`LOCAL_PORT` may be omitted, in which case it is treated as 0 and an arbitrary
+unused local port is chosen. The colon also may be omitted in that case.
+
+If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen.""")
 
   def Run(self, args):
     messages = apis.GetMessagesModule('workstations', 'v1alpha1')
@@ -75,14 +89,24 @@ class StartTcpTunnel(base.Command):
     # Bind on the local TCP port
     self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    self.socket.bind(('localhost', 2222))
+    self.socket.bind(self._GetLocalHostPort(args))
     self.socket.listen(1)
 
     # Accept new client connections
-    log.status.Print('Awaiting connections...')
-    while True:
-      conn, addr = self.socket.accept()
-      self._AcceptConnection(conn, addr)
+    log.status.Print('Awaiting connections on port %d...' %
+                     self.socket.getsockname()[1])
+    try:
+      with execution_utils.RaisesKeyboardInterrupt():
+        while True:
+          conn, addr = self.socket.accept()
+          self._AcceptConnection(conn, addr)
+    except KeyboardInterrupt:
+      log.info('Keyboard interrupt received.')
+
+  def _GetLocalHostPort(self, args):
+    host = args.local_host_port.host or 'localhost'
+    port = args.local_host_port.port or '0'
+    return host, int(port)
 
   def _AcceptConnection(self, client, addr):
     server = websocket.WebSocketApp(

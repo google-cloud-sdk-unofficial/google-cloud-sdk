@@ -1,11 +1,11 @@
 - release_tracks: [ALPHA]
 
   help_text:
-    brief: List Edge Network networks.
+    brief: List Distributed Cloud Edge Network networks.
     description: |
-      List Edge Network networks.
+      List Distributed Cloud Edge Network networks.
     examples: |
-      To list the Edge Network networks in edge zone 'us-central1-edge-den1', run:
+      To list the Distributed Cloud Edge Network networks in edge zone 'us-central1-edge-den1', run:
 
         $ {command} --location=us-central1 --zone=us-central1-edge-den1
 

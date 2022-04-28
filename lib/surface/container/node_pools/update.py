@@ -93,6 +93,9 @@ class Update(base.UpdateCommand):
         upgrade_settings_group, for_node_pool=True)
 
     flags.AddSystemConfigFlag(group, hidden=False)
+    flags.AddNodeLabelsFlag(group, for_node_pool=True, for_update=True)
+    flags.AddNodeTaintsFlag(group, for_node_pool=True, for_update=True)
+    flags.AddTagsNodePoolUpdate(group)
     flags.AddEnableGvnicFlag(group)
     flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
     flags.AddEnableConfidentialNodesFlag(
@@ -114,6 +117,9 @@ class Update(base.UpdateCommand):
         max_surge_upgrade=args.max_surge_upgrade,
         max_unavailable_upgrade=args.max_unavailable_upgrade,
         system_config_from_file=args.system_config_from_file,
+        node_labels=args.node_labels,
+        node_taints=args.node_taints,
+        tags=args.tags,
         gvnic=args.enable_gvnic,
         enable_image_streaming=args.enable_image_streaming,
         network_performance_config=args.network_performance_configs,

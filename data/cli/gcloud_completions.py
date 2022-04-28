@@ -34,6 +34,18 @@ STATIC_COMPLETION_CLI_TREE = {
           },
           "flags": {}
         },
+        "service-account": {
+          "commands": {
+            "get": {
+              "commands": {},
+              "flags": {
+                "--folder": "value",
+                "--organization": "value"
+              }
+            }
+          },
+          "flags": {}
+        },
         "settings": {
           "commands": {
             "delete": {
@@ -4172,6 +4184,12 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--location": "dynamic"
                       }
                     },
+                    "get-config-connector-identity": {
+                      "commands": {},
+                      "flags": {
+                        "--location": "value"
+                      }
+                    },
                     "get-credentials": {
                       "commands": {},
                       "flags": {
@@ -6886,6 +6904,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 },
                 "gitlab": {
                   "commands": {
+                    "delete": {
+                      "commands": {},
+                      "flags": {}
+                    },
                     "describe": {
                       "commands": {},
                       "flags": {}
@@ -9345,6 +9367,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--backend-service": "value",
                     "--backend-service-region": "dynamic",
                     "--description": "value",
+                    "--disable-automate-dns-zone": "bool",
                     "--global": "bool",
                     "--global-address": "bool",
                     "--global-backend-service": "bool",
@@ -9482,6 +9505,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--allow-global-access": "bool",
+                    "--allow-psc-global-access": "bool",
                     "--clear-labels": "bool",
                     "--global": "bool",
                     "--network-tier": "value",
@@ -14193,6 +14217,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--description": "value",
                     "--dns-verification-ip": "value",
+                    "--pdp-scope": [
+                      "GLOBAL",
+                      "REGIONAL"
+                    ],
                     "--range": "value"
                   }
                 },
@@ -24383,6 +24411,13 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--zone": "dynamic"
                       }
                     },
+                    "get-diagnostics": {
+                      "commands": {},
+                      "flags": {
+                        "--location": "dynamic",
+                        "--zone": "dynamic"
+                      }
+                    },
                     "list": {
                       "commands": {},
                       "flags": {
@@ -24420,6 +24455,13 @@ STATIC_COMPLETION_CLI_TREE = {
                       }
                     },
                     "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--location": "dynamic",
+                        "--zone": "dynamic"
+                      }
+                    },
+                    "get-status": {
                       "commands": {},
                       "flags": {
                         "--location": "dynamic",
@@ -24507,6 +24549,13 @@ STATIC_COMPLETION_CLI_TREE = {
                       }
                     },
                     "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--location": "dynamic",
+                        "--zone": "dynamic"
+                      }
+                    },
+                    "get-status": {
                       "commands": {},
                       "flags": {
                         "--location": "dynamic",
@@ -35138,6 +35187,81 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--region": "value"
               }
             },
+            "integrations": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--name": "value",
+                    "--parameters": "value",
+                    "--region": "value",
+                    "--service": "value",
+                    "--type": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--service": "value",
+                    "--sort-by": "value",
+                    "--type": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "types": {
+                  "commands": {
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--region": "value"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--region": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    }
+                  },
+                  "flags": {
+                    "--region": "value"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--add-service": "value",
+                    "--parameters": "value",
+                    "--region": "value",
+                    "--remove-service": "value"
+                  }
+                }
+              },
+              "flags": {
+                "--region": "value"
+              }
+            },
             "jobs": {
               "commands": {
                 "add-iam-policy-binding": {
@@ -39649,6 +39773,12 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--location": "dynamic"
+                  }
+                },
+                "get-config-connector-identity": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
                   }
                 },
                 "get-credentials": {
@@ -63045,6 +63175,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--credential-source-headers": "value",
                     "--credential-source-type": "value",
                     "--credential-source-url": "value",
+                    "--enable-imdsv2": "bool",
                     "--output-file": "value",
                     "--service-account": "value",
                     "--subject-token-type": "value"
@@ -83339,9 +83470,12 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--max-unavailable-upgrade": "value",
                 "--min-nodes": "value",
                 "--network-performance-configs": "value",
+                "--node-labels": "value",
                 "--node-locations": "value",
+                "--node-taints": "value",
                 "--region": "value",
                 "--system-config-from-file": "value",
+                "--tags": "value",
                 "--workload-metadata": [
                   "GCE_METADATA",
                   "GKE_METADATA"
@@ -90238,6 +90372,12 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--iam-account": "value"
               }
             },
+            "sign-jwt": {
+              "commands": {},
+              "flags": {
+                "--iam-account": "value"
+              }
+            },
             "undelete": {
               "commands": {},
               "flags": {}
@@ -90283,6 +90423,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--credential-source-headers": "value",
                 "--credential-source-type": "value",
                 "--credential-source-url": "value",
+                "--enable-imdsv2": "bool",
                 "--output-file": "value",
                 "--service-account": "value",
                 "--subject-token-type": "value"

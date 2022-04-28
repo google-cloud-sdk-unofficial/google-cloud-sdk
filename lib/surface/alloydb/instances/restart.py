@@ -30,8 +30,8 @@ from googlecloudsdk.core import resources
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Restart(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class Restart(base.SilentCommand):
   """Restarts an AlloyDB instance within a given cluster."""
 
   @staticmethod

@@ -71,6 +71,7 @@ class UpdateBgpPeer(base.UpdateCommand):
     peer = router_utils.FindBgpPeerOrRaise(replacement, args.peer_name)
 
     md5_authentication_key_name = None
+    cleared_fields = []
     if support_md5_authentication_keys:
       if args.clear_md5_authentication_key and peer.md5AuthenticationKeyName is not None:
         replacement.md5AuthenticationKeys = [
@@ -78,6 +79,8 @@ class UpdateBgpPeer(base.UpdateCommand):
             for md5_authentication_key in replacement.md5AuthenticationKeys
             if md5_authentication_key.name != peer.md5AuthenticationKeyName
         ]
+        if not replacement.md5AuthenticationKeys:
+          cleared_fields.append('md5AuthenticationKeys')
       elif args.md5_authentication_key is not None:
         if peer.md5AuthenticationKeyName is not None:
           md5_authentication_key_name = peer.md5AuthenticationKeyName
@@ -158,12 +161,13 @@ class UpdateBgpPeer(base.UpdateCommand):
             ip_ranges=args.remove_advertisement_ranges)
 
     request_type = messages.ComputeRoutersPatchRequest
-    result = service.Patch(
-        request_type(
-            project=router_ref.project,
-            region=router_ref.region,
-            router=router_ref.Name(),
-            routerResource=replacement))
+    with holder.client.apitools_client.IncludeFields(cleared_fields):
+      result = service.Patch(
+          request_type(
+              project=router_ref.project,
+              region=router_ref.region,
+              router=router_ref.Name(),
+              routerResource=replacement))
 
     operation_ref = resources.REGISTRY.Parse(
         result.name,

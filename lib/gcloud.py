@@ -50,7 +50,7 @@ def _fix_google_module():
     importlib.reload(google)
 
 
-def _reorder_sys_path(sys_path):
+def reorder_sys_path(sys_path):
   """If site packages are enabled reorder them.
 
   Make sure bundled_python site-packages appear first in the sys.path.
@@ -85,7 +85,7 @@ def _import_gcloud_main():
 
 
 def main():
-  sys.path = _reorder_sys_path(sys.path)
+  sys.path = reorder_sys_path(sys.path)
   # pylint:disable=g-import-not-at-top
   from googlecloudsdk.core.util import encoding
 

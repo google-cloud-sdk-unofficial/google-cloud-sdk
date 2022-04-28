@@ -18,15 +18,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.container.gkemulticloud import aws as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.aws import flags as aws_flags
-from googlecloudsdk.command_lib.container.aws import node_pools
 from googlecloudsdk.command_lib.container.aws import resource_args
+from googlecloudsdk.command_lib.container.gkemulticloud import command_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
-from googlecloudsdk.command_lib.container.gkemulticloud import operations
-from googlecloudsdk.core import log
 
 # Command needs to be in one line for the docgen tool to format properly.
 _EXAMPLES = """
@@ -68,45 +67,24 @@ class Create(base.CreateCommand):
 
     base.ASYNC_FLAG.AddToParser(parser)
 
-    parser.display_info.AddFormat(node_pools.NODEPOOLS_FORMAT)
+    parser.display_info.AddFormat(constants.AWS_NODEPOOLS_FORMAT)
 
   def Run(self, args):
-    """Run the create command."""
-    release_track = self.ReleaseTrack()
-    node_pool_ref = resource_args.ParseAwsNodePoolResourceArg(args)
-
-    with endpoint_util.GkemulticloudEndpointOverride(
-        resource_args.ParseAwsNodePoolResourceArg(args).locationsId,
-        release_track):
-      # Parsing again after endpoint override is set.
+    """Runs the create command."""
+    location = resource_args.ParseAwsNodePoolResourceArg(args).locationsId
+    with endpoint_util.GkemulticloudEndpointOverride(location):
       node_pool_ref = resource_args.ParseAwsNodePoolResourceArg(args)
-      node_pool_client = node_pools.NodePoolsClient(track=release_track)
-      args.root_volume_size = flags.GetRootVolumeSize(args)
-      args.root_volume_type = aws_flags.GetRootVolumeType(args)
-      args.instance_placement = aws_flags.GetInstancePlacement(args)
-      args.node_taints = flags.GetNodeTaints(args)
-      args.image_type = flags.GetImageType(args)
-
-      op = node_pool_client.Create(node_pool_ref, args)
-
-      validate_only = getattr(args, 'validate_only', False)
-      if validate_only:
-        args.format = 'disable'
-        return
-
-      op_ref = resource_args.GetOperationResource(op)
-      log.CreatedResource(op_ref, kind=constants.LRO_KIND)
-
-      async_ = getattr(args, 'async_', False)
-      if not async_:
-        op_client = operations.Client(track=release_track)
-        op_client.Wait(
-            op_ref,
-            'Creating node pool {}'.format(node_pool_ref.awsNodePoolsId))
-
-      log.CreatedResource(
-          node_pool_ref, kind=constants.AWS_NODEPOOL_KIND, is_async=async_)
-      return node_pool_client.Get(node_pool_ref)
+      node_pool_client = api_util.NodePoolsClient()
+      message = command_util.NodePoolMessage(
+          node_pool_ref.awsNodePoolsId,
+          action='Creating',
+          cluster=node_pool_ref.awsClustersId)
+      return command_util.Create(
+          resource_ref=node_pool_ref,
+          resource_client=node_pool_client,
+          args=args,
+          message=message,
+          kind=constants.AWS_NODEPOOL_KIND)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -119,4 +97,3 @@ class CreateAlpha(Create):
     Create.Args(parser)
     aws_flags.AddInstancePlacement(parser)
     flags.AddImageType(parser)
-

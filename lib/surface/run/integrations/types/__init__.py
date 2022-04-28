@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import platforms
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class IntegrationsTypes(base.Group):
   """View available Cloud Run (fully managed) integrations types.

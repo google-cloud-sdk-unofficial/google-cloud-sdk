@@ -51,8 +51,26 @@ def _Update(zones_client,
             peering_config=None,
             reverse_lookup_config=None,
             cloud_logging_config=None,
-            api_version='v1'):
-  """Helper function to perform the update."""
+            api_version='v1',
+            cleared_fields=None):
+  """Helper function to perform the update.
+
+  Args:
+    zones_client: the managed zones API client.
+    args: the args provided by the user on the command line.
+    private_visibility_config: zone visibility config.
+    forwarding_config: zone forwarding config.
+    peering_config: zone peering config.
+    reverse_lookup_config: zone reverse lookup config.
+    cloud_logging_config: Stackdriver logging config.
+    api_version: the API version of this request.
+    cleared_fields: the fields that should be included in the request JSON as
+      their default value (fields that are their default value will be omitted
+      otherwise).
+
+  Returns:
+    The update labels and PATCH call response.
+  """
   registry = util.GetRegistry(api_version)
 
   zone_ref = registry.Parse(
@@ -86,13 +104,15 @@ def _Update(zones_client,
     kwargs['cloud_logging_config'] = cloud_logging_config
 
   if dnssec_config or args.description or kwargs:
-    update_results.append(zones_client.Patch(
-        zone_ref,
-        args.async_,
-        dnssec_config=dnssec_config,
-        description=args.description,
-        labels=None,
-        **kwargs))
+    update_results.append(
+        zones_client.Patch(
+            zone_ref,
+            args.async_,
+            dnssec_config=dnssec_config,
+            description=args.description,
+            labels=None,
+            cleared_fields=cleared_fields,
+            **kwargs))
 
   return update_results
 
@@ -139,8 +159,21 @@ class UpdateGA(base.UpdateCommand):
           networkUrl=peering_network)
 
     visibility_config = None
-    if args.networks:
-      networks = args.networks if args.networks != [''] else []
+    # When the Python object is converted to JSON for the HTTP request body, all
+    # fields that are their default value will be omitted by default.  This is
+    # problematic for list fields, as an empty list signals that the list field
+    # should be cleared in a PATCH request, but an empty list is also the
+    # default list value.
+    #
+    # Cleared fields tracks the fields that should be included as their default
+    # value in the HTTP request body's JSON.  Cleared fields is ultimately
+    # passed to the JSON encoder in the SDK library internals to achieve this.
+    cleared_fields = []
+    if args.networks is not None:
+      networks = args.networks
+      # If networks is an empty array, it should clear the networks value.
+      if not networks:
+        cleared_fields.append('privateVisibilityConfig.networks')
 
       def GetNetworkSelfLink(network):
         return util.GetRegistry('v1').Parse(
@@ -175,7 +208,8 @@ class UpdateGA(base.UpdateCommand):
         forwarding_config=forwarding_config,
         peering_config=peering_config,
         reverse_lookup_config=reverse_lookup_config,
-        cloud_logging_config=cloud_logging_config)
+        cloud_logging_config=cloud_logging_config,
+        cleared_fields=cleared_fields)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -227,8 +261,25 @@ class UpdateBeta(base.UpdateCommand):
           networkUrl=peering_network)
 
     visibility_config = None
-    if args.networks or args.gkeclusters:
-      networks = args.networks if args.networks != [''] else []
+
+    # When the Python object is converted to JSON for the HTTP request body, all
+    # fields that are their default value will be omitted by default.  This is
+    # problematic for list fields, as an empty list signals that the list field
+    # should be cleared in a PATCH request, but an empty list is also the
+    # default list value.
+    #
+    # Cleared fields tracks the fields that should be included as their default
+    # value in the HTTP request body's JSON.  Cleared fields is ultimately
+    # passed to the JSON encoder in the SDK library internals to achieve this.
+    cleared_fields = []
+    if args.networks is not None or args.gkeclusters is not None:
+      # If the user explicitly gave an empty value to networks, clear the field.
+      # Note that a value of 'None' means the user did not include the networks
+      # flag, so it should not be cleared in that case.
+      if args.networks == []:  # pylint: disable=g-explicit-bool-comparison
+        cleared_fields.append('privateVisibilityConfig.networks')
+
+      networks = args.networks if args.networks else []
 
       def GetNetworkSelfLink(network):
         return util.GetRegistry(api_version).Parse(
@@ -244,7 +295,11 @@ class UpdateBeta(base.UpdateCommand):
           for nurl in network_urls
       ]
 
-      gkeclusters = args.gkeclusters or []
+      # If the user explicitly gave an empty value to clusters, clear the field.
+      if args.gkeclusters == []:  # pylint: disable=g-explicit-bool-comparison
+        cleared_fields.append('privateVisibilityConfig.gkeClusters')
+
+      gkeclusters = args.gkeclusters if args.gkeclusters else []
 
       gkecluster_configs = [
           messages.ManagedZonePrivateVisibilityConfigGKECluster(
@@ -271,7 +326,8 @@ class UpdateBeta(base.UpdateCommand):
         peering_config=peering_config,
         reverse_lookup_config=reverse_lookup_config,
         cloud_logging_config=cloud_logging_config,
-        api_version=api_version)
+        api_version=api_version,
+        cleared_fields=cleared_fields)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

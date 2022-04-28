@@ -18,9 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.container.gkemulticloud import aws as api_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.aws import clusters
-from googlecloudsdk.command_lib.container.aws import node_pools
 from googlecloudsdk.command_lib.container.aws import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
@@ -48,10 +47,10 @@ class GetCredentials(base.Command):
         resource_args.ParseAwsClusterResourceArg(args).locationsId,
         self.ReleaseTrack()):
       cluster_ref = resource_args.ParseAwsClusterResourceArg(args)
-      cluster_client = clusters.Client(track=self.ReleaseTrack())
+      cluster_client = api_util.ClustersClient()
       if not args.private_endpoint:
         kubeconfig.CheckClusterHasNodePools(
-            node_pools.NodePoolsClient(track=self.ReleaseTrack()), cluster_ref)
+            api_util.NodePoolsClient(), cluster_ref)
       resp = cluster_client.Get(cluster_ref)
       kubeconfig.ValidateClusterVersion(resp)
       context = kubeconfig.GenerateContext('aws', cluster_ref.projectsId,

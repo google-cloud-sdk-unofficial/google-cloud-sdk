@@ -18,15 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container import util as gke_util
-from googlecloudsdk.api_lib.container.gkemulticloud import azure as azure_api_util
+from googlecloudsdk.api_lib.container.gkemulticloud import azure as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
+from googlecloudsdk.command_lib.container.gkemulticloud import command_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
-from googlecloudsdk.command_lib.container.gkemulticloud import operations
-from googlecloudsdk.core import log
-from googlecloudsdk.core.console import console_io
 
 _EXAMPLES = """
 To delete a cluster named ``my-cluster'' managed in location ``us-west1'', run:
@@ -47,37 +44,19 @@ class Delete(base.DeleteCommand):
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    """Run the delete command."""
-
-    with endpoint_util.GkemulticloudEndpointOverride(
-        resource_args.ParseAzureClusterResourceArg(args).locationsId,
-        self.ReleaseTrack()):
-      # Parsing again after endpoint override is set.
+    """Runs the delete command."""
+    location = resource_args.ParseAzureClusterResourceArg(args).locationsId
+    with endpoint_util.GkemulticloudEndpointOverride(location):
       cluster_ref = resource_args.ParseAzureClusterResourceArg(args)
-      api_client = azure_api_util.ClustersClient()
-
-      cluster = api_client.Get(cluster_ref)
-      console_io.PromptContinue(
-          message=gke_util.ConstructList(
-              'The following clusters will be deleted.', [
-                  '[{name}] in Azure region [{region}]'.format(
-                      name=cluster_ref.azureClustersId,
-                      region=cluster.azureRegion)
-              ]),
-          throw_if_unattended=True,
-          cancel_on_no=True)
-
-      op = api_client.Delete(cluster_ref)
-      op_ref = resource_args.GetOperationResource(op)
-      log.CreatedResource(op_ref, kind=constants.LRO_KIND)
-
-      async_ = args.async_
-      if not async_:
-        op_client = operations.Client()
-        op_client.Wait(
-            op_ref,
-            'Deleting cluster {} in Azure region {}'.format(
-                cluster_ref.azureClustersId, cluster.azureRegion))
-
-      log.DeletedResource(
-          cluster_ref, kind=constants.AZURE_CLUSTER_KIND, is_async=async_)
+      cluster_client = api_util.ClustersClient()
+      cluster = cluster_client.Get(cluster_ref)
+      message = command_util.ClusterMessage(
+          cluster_ref.azureClustersId,
+          kind=constants.AZURE,
+          region=cluster.azureRegion)
+      return command_util.Delete(
+          resource_ref=cluster_ref,
+          resource_client=cluster_client,
+          message=message,
+          args=args,
+          kind=constants.AZURE_CLUSTER_KIND)

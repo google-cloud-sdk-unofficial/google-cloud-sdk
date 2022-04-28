@@ -28,8 +28,8 @@ from googlecloudsdk.core import resources
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Restore(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class Restore(base.RestoreCommand):
   """Restores an AlloyDB cluster from a given backup."""
 
   @staticmethod
@@ -43,6 +43,7 @@ class Restore(base.Command):
     flags.AddCluster(parser)
     flags.AddBackup(parser, False)
     flags.AddRegion(parser)
+    flags.AddNetwork(parser)
 
   def Run(self, args):
     """Constructs and sends request.
@@ -67,12 +68,15 @@ class Restore(base.Command):
         locationsId=args.region,
         backupsId=args.backup)
 
+    cluster_resource = alloydb_messages.Cluster()
+    cluster_resource.network = args.network
     req = alloydb_messages.AlloydbProjectsLocationsClustersRestoreRequest(
         parent=location_ref.RelativeName(),
         restoreClusterRequest=alloydb_messages.RestoreClusterRequest(
             backupSource=alloydb_messages.BackupSource(
                 backupName=backup_ref.RelativeName()),
             clusterId=args.cluster,
+            cluster=cluster_resource,
         ))
     op = alloydb_client.projects_locations_clusters.Restore(req)
     op_ref = resources.REGISTRY.ParseRelativeName(

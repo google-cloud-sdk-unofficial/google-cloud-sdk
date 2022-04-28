@@ -49,12 +49,13 @@ class Create(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.get_overwatch_path_flag().AddToParser(parser)
+    flags.add_overwatch_path_flag(parser)
     flags.get_blueprint_plan_flag().AddToParser(parser)
 
   def Run(self, args):
-    overwatch_path = args.OVERWATCH
+    overwatch = args.CONCEPTS.overwatch.Parse()
     blueprint_base64 = util.base_64_encoding(args.blueprint_plan_file)
-    with util.override_endpoint(overwatch_path):
+    location = overwatch.AsDict()['locationsId']
+    with util.override_endpoint(location):
       client = api.SLZOverwatchClient()
-      return client.Create(overwatch_path, blueprint_base64)
+      return client.Create(overwatch, blueprint_base64)

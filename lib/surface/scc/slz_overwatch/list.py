@@ -24,7 +24,6 @@ from googlecloudsdk.api_lib.scc.slz_overwatch import overwatch as api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.scc.slz_overwatch import overwatch_flags as flags
 from googlecloudsdk.command_lib.scc.slz_overwatch import util
-from googlecloudsdk.core import properties
 
 _DETAILED_HELP = {
     'BRIEF':
@@ -32,14 +31,14 @@ _DETAILED_HELP = {
     'EXAMPLES':
         textwrap.dedent("""\
         The following command lists all overwatches
-        in an organization with ID `123`.
+        in an organization with ID `123` in location `us-west1`.
 
-        $ {command} organizations/123
+        $ {command} organizations/123/locations/us-west1
 
         The following command lists first 50 overwatches
-        in an organization with ID `123`.
+        in an organization with ID `123` in location `us-west1`.
 
-        $ {command} organizations/123 --size=50
+        $ {command} organizations/123/locations/us-west1 --size=50
 
         The following command lists next 50 overwatches
         based on the nextpage token received from the last command.
@@ -57,17 +56,15 @@ class List(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.get_organization_id_flag().AddToParser(parser)
+    flags.add_parent_flag(parser)
     flags.get_size_flag().AddToParser(parser)
     flags.get_page_token_flag().AddToParser(parser)
 
   def Run(self, args):
-    org_id = args.ORGANIZATION
+    parent = args.CONCEPTS.parent.Parse()
     size = args.size
     page_token = args.page_token
-    with util.override_endpoint():
+    location = parent.AsDict()['locationsId']
+    with util.override_endpoint(location):
       client = api.SLZOverwatchClient()
-      return client.List(
-          '{}/locations/{}'.format(
-              org_id, properties.VALUES.scc.slz_overwatch_location.Get()), size,
-          page_token)
+      return client.List(parent.RelativeName(), size, page_token)

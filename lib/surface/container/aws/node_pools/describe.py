@@ -18,8 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.container.gkemulticloud import aws as api_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.aws import node_pools
 from googlecloudsdk.command_lib.container.aws import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 
@@ -42,13 +42,9 @@ class Describe(base.DescribeCommand):
     resource_args.AddAwsNodePoolResourceArg(parser, 'to describe')
 
   def Run(self, args):
-    release_track = self.ReleaseTrack()
-
-    with endpoint_util.GkemulticloudEndpointOverride(
-        resource_args.ParseAwsNodePoolResourceArg(args).locationsId,
-        release_track):
-      # Parsing again after endpoint override is set.
+    """Runs the describe command."""
+    location = resource_args.ParseAwsNodePoolResourceArg(args).locationsId
+    with endpoint_util.GkemulticloudEndpointOverride(location):
       node_pool_ref = resource_args.ParseAwsNodePoolResourceArg(args)
-      node_pool_client = node_pools.NodePoolsClient(track=release_track)
-
+      node_pool_client = api_util.NodePoolsClient()
       return node_pool_client.Get(node_pool_ref)

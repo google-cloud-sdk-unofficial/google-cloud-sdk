@@ -18,10 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.gkemulticloud import azure as azure_api_util
+from googlecloudsdk.api_lib.container.gkemulticloud import azure as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
-from googlecloudsdk.command_lib.container.azure import util as command_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
@@ -57,23 +56,13 @@ class Create(base.CreateCommand):
         dest="app_id",
         help="Azure Active Directory (AAD) Application/Client ID (GUID).")
     flags.AddValidateOnly(parser, "creation of the client")
-    parser.display_info.AddFormat(command_util.CLIENT_FORMAT)
+    parser.display_info.AddFormat(constants.AZURE_CLIENT_FORMAT)
 
   def Run(self, args):
     """Runs the create command."""
-    tenant_id = args.tenant_id
-    app_id = args.app_id
-    validate_only = args.validate_only
-
-    track = base.ReleaseTrack.ALPHA
-    with endpoint_util.GkemulticloudEndpointOverride(
-        resource_args.ParseAzureClientResourceArg(args).locationsId, track):
+    location = resource_args.ParseAzureClientResourceArg(args).locationsId
+    with endpoint_util.GkemulticloudEndpointOverride(location):
       client_ref = resource_args.ParseAzureClientResourceArg(args)
-      api_client = azure_api_util.ClientsClient()
-      api_client.Create(
-          client_ref=client_ref,
-          tenant_id=tenant_id,
-          application_id=app_id,
-          validate_only=validate_only)
-
+      api_client = api_util.ClientsClient()
+      api_client.Create(client_ref, args)
       log.CreatedResource(client_ref, kind=constants.AZURE_CLIENT_KIND)

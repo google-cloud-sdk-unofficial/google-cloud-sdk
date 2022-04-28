@@ -18,15 +18,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.container.gkemulticloud import aws as api_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.aws import clusters
 from googlecloudsdk.command_lib.container.aws import flags as aws_flags
 from googlecloudsdk.command_lib.container.aws import resource_args
+from googlecloudsdk.command_lib.container.gkemulticloud import command_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
-from googlecloudsdk.command_lib.container.gkemulticloud import operations
-from googlecloudsdk.core import log
 
 # Command needs to be in one line for the docgen tool to format properly.
 _EXAMPLES = """
@@ -60,34 +59,19 @@ class Update(base.UpdateCommand):
     aws_flags.AddRootVolumeIops(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
-    parser.display_info.AddFormat(clusters.CLUSTERS_FORMAT)
+    parser.display_info.AddFormat(constants.AWS_CLUSTERS_FORMAT)
 
   def Run(self, args):
     """Runs the update command."""
-    with endpoint_util.GkemulticloudEndpointOverride(
-        resource_args.ParseAwsClusterResourceArg(args).locationsId,
-        self.ReleaseTrack()):
-
+    location = resource_args.ParseAwsClusterResourceArg(args).locationsId
+    with endpoint_util.GkemulticloudEndpointOverride(location):
       cluster_ref = resource_args.ParseAwsClusterResourceArg(args)
-      cluster_client = clusters.Client(track=self.ReleaseTrack())
-      args.root_volume_size = flags.GetRootVolumeSize(args)
-      args.root_volume_type = aws_flags.GetRootVolumeType(args)
-      op = cluster_client.Update(cluster_ref, args)
-
-      validate_only = getattr(args, 'validate_only', False)
-      if validate_only:
-        args.format = 'disable'
-        return
-
-      op_ref = resource_args.GetOperationResource(op)
-      log.CreatedResource(op_ref, kind=constants.LRO_KIND)
-
-      async_ = getattr(args, 'async_', False)
-      if not async_:
-        op_client = operations.Client(track=self.ReleaseTrack())
-        op_client.Wait(op_ref,
-                       'Updating cluster {}.'.format(cluster_ref.awsClustersId))
-
-      log.UpdatedResource(
-          cluster_ref, kind=constants.AWS_CLUSTER_KIND, is_async=async_)
-      return cluster_client.Get(cluster_ref)
+      cluster_client = api_util.ClustersClient()
+      message = command_util.ClusterMessage(
+          cluster_ref.awsClustersId, action='Updating')
+      return command_util.Update(
+          resource_ref=cluster_ref,
+          resource_client=cluster_client,
+          args=args,
+          message=message,
+          kind=constants.AWS_CLUSTER_KIND)

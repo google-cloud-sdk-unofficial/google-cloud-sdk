@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 import base64
 
 from apitools.base.py import encoding
-from googlecloudsdk.api_lib.container.gkemulticloud import azure as azure_api_util
+from googlecloudsdk.api_lib.container.gkemulticloud import azure as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
@@ -59,7 +59,7 @@ class GetPublicCert(base.DescribeCommand):
         resource_args.ParseAzureClientResourceArg(args).locationsId,
         self.ReleaseTrack()):
       client_ref = resource_args.ParseAzureClientResourceArg(args)
-      api_client = azure_api_util.ClientsClient()
+      api_client = api_util.ClientsClient()
       client = api_client.Get(client_ref)
       cert = self._GetCert(client)
       log.WriteToFileOrStdout(

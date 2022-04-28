@@ -18,9 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.container.gkemulticloud import aws as api_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.aws import node_pools
 from googlecloudsdk.command_lib.container.aws import resource_args
+from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 
 _EXAMPLES = """
@@ -40,14 +41,11 @@ class Describe(base.ListCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddAwsClusterResourceArg(parser, 'to list', positional=False)
-    parser.display_info.AddFormat(node_pools.NODEPOOLS_FORMAT)
+    parser.display_info.AddFormat(constants.AWS_NODEPOOLS_FORMAT)
 
   def Run(self, args):
-    release_track = self.ReleaseTrack()
-    node_pool_client = node_pools.NodePoolsClient(track=release_track)
+    """Runs the list command."""
     cluster_ref = args.CONCEPTS.cluster.Parse()
-
-    with endpoint_util.GkemulticloudEndpointOverride(cluster_ref.locationsId,
-                                                     release_track):
-      node_pool_client = node_pools.NodePoolsClient(track=release_track)
-      return node_pool_client.List(cluster_ref, args)
+    with endpoint_util.GkemulticloudEndpointOverride(cluster_ref.locationsId):
+      node_pool_client = api_util.NodePoolsClient()
+      return node_pool_client.List(cluster_ref, args.page_size, args.limit)

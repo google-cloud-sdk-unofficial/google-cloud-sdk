@@ -50,14 +50,16 @@ class Update(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.get_overwatch_path_flag().AddToParser(parser)
+    flags.add_overwatch_path_flag(parser)
     flags.get_blueprint_plan_flag().AddToParser(parser)
     flags.get_update_mask_flag().AddToParser(parser)
 
   def Run(self, args):
-    overwatch_path = args.OVERWATCH
+    overwatch_path = args.CONCEPTS.overwatch.Parse()
     blueprint_base64 = util.base_64_encoding(args.blueprint_plan_file)
     update_mask = args.update_mask
-    with util.override_endpoint(overwatch_path):
+    location = overwatch_path.AsDict()['locationsId']
+    with util.override_endpoint(location):
       client = api.SLZOverwatchClient()
-      return client.Patch(overwatch_path, blueprint_base64, update_mask)
+      return client.Patch(overwatch_path.RelativeName(), blueprint_base64,
+                          update_mask)

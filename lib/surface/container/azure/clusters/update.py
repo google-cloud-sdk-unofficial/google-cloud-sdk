@@ -18,16 +18,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.gkemulticloud import azure as azure_api_util
+from googlecloudsdk.api_lib.container.gkemulticloud import azure as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
-from googlecloudsdk.command_lib.container.azure import util as command_util
+from googlecloudsdk.command_lib.container.gkemulticloud import command_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
-from googlecloudsdk.command_lib.container.gkemulticloud import operations
-from googlecloudsdk.core import log
-
 
 # Command needs to be in one line for the docgen tool to format properly.
 _EXAMPLES = """
@@ -51,34 +48,19 @@ class Update(base.UpdateCommand):
     flags.AddAdminUsers(parser, create=False)
     flags.AddValidateOnly(parser, 'update of the cluster')
     base.ASYNC_FLAG.AddToParser(parser)
-    parser.display_info.AddFormat(command_util.CLUSTERS_FORMAT)
+    parser.display_info.AddFormat(constants.AZURE_CLUSTERS_FORMAT)
 
   def Run(self, args):
     """Runs the update command."""
-    validate_only = flags.GetValidateOnly(args)
-    async_ = getattr(args, 'async_', False)
-
-    with endpoint_util.GkemulticloudEndpointOverride(
-        resource_args.ParseAzureClusterResourceArg(args).locationsId,
-        self.ReleaseTrack()):
-      # Parsing again after endpoint override is set.
+    location = resource_args.ParseAzureClusterResourceArg(args).locationsId
+    with endpoint_util.GkemulticloudEndpointOverride(location):
       cluster_ref = resource_args.ParseAzureClusterResourceArg(args)
-      cluster_client = azure_api_util.ClustersClient()
-      op = cluster_client.Update(cluster_ref, args)
-
-      if validate_only:
-        args.format = 'disable'
-        return
-
-      op_ref = resource_args.GetOperationResource(op)
-      log.CreatedResource(op_ref, kind=constants.LRO_KIND)
-
-      if not async_:
-        op_client = operations.Client(track=self.ReleaseTrack())
-        op_client.Wait(
-            op_ref, 'Updating cluster {}'.format(
-                cluster_ref.azureClustersId))
-
-      log.UpdatedResource(
-          cluster_ref, kind=constants.AZURE_CLUSTER_KIND, is_async=async_)
-      return cluster_client.Get(cluster_ref)
+      cluster_client = api_util.ClustersClient()
+      message = command_util.ClusterMessage(
+          cluster_ref.azureClustersId, action='Updating')
+      return command_util.Update(
+          resource_ref=cluster_ref,
+          resource_client=cluster_client,
+          args=args,
+          message=message,
+          kind=constants.AZURE_CLUSTER_KIND)

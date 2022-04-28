@@ -62,11 +62,11 @@ class Set(base.Command):
 
   To set the `project` property in the core section, run:
 
-    $ {command} project myProject
+    $ {command} project PROJECT_ID
 
   To set the `zone` property in the `compute` section, run:
 
-    $ {command} compute/zone asia-east1-b
+    $ {command} compute/zone ZONE_NAME
 
   To disable prompting for scripting, run:
 

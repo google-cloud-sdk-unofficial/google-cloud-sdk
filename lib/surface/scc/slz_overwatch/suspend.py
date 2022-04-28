@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.scc.slz_overwatch import util
 
 _DETAILED_HELP = {
     'BRIEF':
-        'Suspend a Secured Landing Zone overwatch.',
+        'Suspend an active Secured Landing Zone overwatch.',
     'EXAMPLES':
         textwrap.dedent("""\
         The following command suspends an overwatch with ID `overwatch01`
@@ -40,16 +40,17 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Suspend(base.Command):
-  """Suspends a running overwatch."""
+  """Suspend an active overwatch."""
 
   detailed_help = _DETAILED_HELP
 
   @staticmethod
   def Args(parser):
-    flags.get_overwatch_path_flag().AddToParser(parser)
+    flags.add_overwatch_path_flag(parser)
 
   def Run(self, args):
-    overwatch_path = args.OVERWATCH
-    with util.override_endpoint(overwatch_path):
+    overwatch_path = args.CONCEPTS.overwatch.Parse()
+    location = overwatch_path.AsDict()['locationsId']
+    with util.override_endpoint(location):
       client = api.SLZOverwatchClient()
-      return client.Suspend(overwatch_path)
+      return client.Suspend(overwatch_path.RelativeName())

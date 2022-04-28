@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.anthos.config.controller import flags
 from googlecloudsdk.command_lib.anthos.config.controller import utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
+from surface.anthos.config.controller import get_config_connector_identity
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -86,10 +87,13 @@ class Create(base.CreateCommand):
     log.status.Print("Created instance [{}].".format(
         instance_ref.krmApiHostsId))
 
-    container_util.CheckKubectlInstalled()
     cluster, cluster_ref = utils.GetGKECluster(instance_ref.krmApiHostsId,
                                                instance_ref.locationsId)
     container_util.ClusterConfig.Persist(cluster, cluster_ref.projectId)
+    if container_util.CheckKubectlInstalled() is not None:
+      get_config_connector_identity.GetConfigConnectorIdentityForCluster(
+          instance_ref.locationsId, cluster_ref.clusterId,
+          cluster_ref.projectId)
 
     return result
 

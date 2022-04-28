@@ -28,7 +28,6 @@ from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 from googlecloudsdk.core.resource import resource_printer
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe a Cloud Run Integration."""

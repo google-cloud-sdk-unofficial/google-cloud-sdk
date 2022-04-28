@@ -38,7 +38,8 @@ from six.moves import range  # pylint: disable=redefined-builtin
 def _Args(parser, support_global_access, support_psc_global_access,
           support_l7_internal_load_balancing, support_psc_google_apis,
           support_all_protocol, support_target_service_attachment,
-          support_l3_default, support_source_ip_range):
+          support_l3_default, support_source_ip_range,
+          support_disable_automate_dns_zone):
   """Add the flags to create a forwarding rule."""
 
   flags.AddUpdateArgs(
@@ -60,6 +61,9 @@ def _Args(parser, support_global_access, support_psc_global_access,
 
   if support_source_ip_range:
     flags.AddSourceIpRanges(parser)
+
+  if support_disable_automate_dns_zone:
+    flags.AddDisableAutomateDnsZone(parser)
 
   flags.AddIsMirroringCollector(parser)
   flags.AddServiceDirectoryRegistration(parser)
@@ -94,7 +98,7 @@ class CreateHelper(object):
                support_l7_internal_load_balancing, support_psc_google_apis,
                support_all_protocol, support_target_service_attachment,
                _support_sd_registration_for_regional, support_l3_default,
-               support_source_ip_range):
+               support_source_ip_range, support_disable_automate_dns_zone):
     self._holder = holder
     self._support_global_access = support_global_access
     self._support_psc_global_access = support_psc_global_access
@@ -105,17 +109,20 @@ class CreateHelper(object):
     self._support_sd_registration_for_regional = _support_sd_registration_for_regional
     self._support_l3_default = support_l3_default
     self._support_source_ip_range = support_source_ip_range
+    self._support_disable_automate_dns_zone = support_disable_automate_dns_zone
 
   @classmethod
   def Args(cls, parser, support_global_access, support_psc_global_access,
            support_l7_internal_load_balancing, support_psc_google_apis,
            support_all_protocol, support_target_service_attachment,
-           support_l3_default, support_source_ip_range):
+           support_l3_default, support_source_ip_range,
+           support_disable_automate_dns_zone):
     cls.FORWARDING_RULE_ARG = _Args(
         parser, support_global_access, support_psc_global_access,
         support_l7_internal_load_balancing, support_psc_google_apis,
         support_all_protocol, support_target_service_attachment,
-        support_l3_default, support_source_ip_range)
+        support_l3_default, support_source_ip_range,
+        support_disable_automate_dns_zone)
 
   def ConstructProtocol(self, messages, args):
     if args.ip_protocol:
@@ -450,6 +457,10 @@ class CreateHelper(object):
         'allow_psc_global_access'):
       forwarding_rule.allowPscGlobalAccess = args.allow_psc_global_access
 
+    if self._support_disable_automate_dns_zone and args.IsSpecified(
+        'disable_automate_dns_zone'):
+      forwarding_rule.noAutomateDnsZone = args.disable_automate_dns_zone
+
     if hasattr(args, 'is_mirroring_collector'):
       forwarding_rule.isMirroringCollector = args.is_mirroring_collector
 
@@ -553,6 +564,7 @@ class Create(base.CreateCommand):
   _support_sd_registration_for_regional = False
   _support_l3_default = True
   _support_source_ip_range = False
+  _support_disable_automate_dns_zone = False
 
   @classmethod
   def Args(cls, parser):
@@ -561,7 +573,8 @@ class Create(base.CreateCommand):
                       cls._support_l7_internal_load_balancing,
                       cls._support_psc_google_apis, cls._support_all_protocol,
                       cls._support_target_service_attachment,
-                      cls._support_l3_default, cls._support_source_ip_range)
+                      cls._support_l3_default, cls._support_source_ip_range,
+                      cls._support_disable_automate_dns_zone)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -570,7 +583,8 @@ class Create(base.CreateCommand):
         self._support_l7_internal_load_balancing, self._support_psc_google_apis,
         self._support_all_protocol, self._support_target_service_attachment,
         self._support_sd_registration_for_regional, self._support_l3_default,
-        self._support_source_ip_range).Run(args)
+        self._support_source_ip_range,
+        self._support_disable_automate_dns_zone).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -584,6 +598,7 @@ class CreateBeta(Create):
   _support_sd_registration_for_regional = True
   _support_l3_default = True
   _support_source_ip_range = True
+  _support_disable_automate_dns_zone = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -597,6 +612,7 @@ class CreateAlpha(CreateBeta):
   _support_sd_registration_for_regional = True
   _support_l3_default = True
   _support_source_ip_range = True
+  _support_disable_automate_dns_zone = True
 
 
 Create.detailed_help = {

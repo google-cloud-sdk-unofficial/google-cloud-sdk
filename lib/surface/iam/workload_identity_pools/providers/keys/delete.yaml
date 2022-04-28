@@ -15,8 +15,8 @@
   hidden: true
 
   help_text:
-    brief: Delete a new workload identity pool provider key.
-    description: Delete a new workload identity pool provider key.
+    brief: Delete a workload identity pool provider key.
+    description: Delete a workload identity pool provider key.
     examples: |
       The following command deletes a workload identity pool provider key in the default
       project with the ID ``my-key''.

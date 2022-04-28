@@ -18,10 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.container.gkemulticloud import operations as op_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
-from googlecloudsdk.command_lib.container.gkemulticloud import operations
 
 
 _EXAMPLES = """
@@ -47,9 +47,9 @@ class Describe(base.DescribeCommand):
     with endpoint_util.GkemulticloudEndpointOverride(
         resource_args.ParseOperationResourceArg(args).locationsId,
         self.ReleaseTrack()):
-      op_client = operations.Client(track=self.ReleaseTrack())
+      op_client = op_api_util.OperationsClient()
       op_ref = resource_args.ParseOperationResourceArg(args)
       op_client.Wait(
           op_ref,
           'Waiting for operation {} to complete'.format(op_ref.RelativeName()))
-      return op_client.Describe(op_ref)
+      return op_client.Get(op_ref)

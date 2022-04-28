@@ -18,8 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.container.gkemulticloud import aws as api_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.aws import clusters
 from googlecloudsdk.command_lib.container.aws import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
@@ -38,13 +38,10 @@ class PrintAccessToken(base.Command):
     flags.AddExecCredential(parser)
 
   def Run(self, args):
-    """Run the command."""
+    """Runs the command."""
     cluster_ref = args.CONCEPTS.cluster.Parse()
-
-    with endpoint_util.GkemulticloudEndpointOverride(cluster_ref.locationsId,
-                                                     self.ReleaseTrack()):
-
-      cluster_client = clusters.Client(track=self.ReleaseTrack())
+    with endpoint_util.GkemulticloudEndpointOverride(cluster_ref.locationsId):
+      cluster_client = api_util.ClustersClient()
       response = cluster_client.GenerateAccessToken(cluster_ref)
       if args.exec_credential:
         return kubeconfig.ExecCredential(

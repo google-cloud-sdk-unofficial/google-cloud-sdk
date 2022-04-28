@@ -18,24 +18,22 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import re
 import textwrap
 
 from googlecloudsdk.api_lib.scc.slz_overwatch import overwatch as api
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.scc.slz_overwatch import overwatch_flags as flags
 from googlecloudsdk.command_lib.scc.slz_overwatch import util
-from googlecloudsdk.core import properties
 
 _DETAILED_HELP = {
     'BRIEF':
         'Enable Secured Landing Zone overwatch in an organization.',
     'EXAMPLES':
         textwrap.dedent("""\
-        The following command enables overwatch in organization with ID `123`.
+        The following command enables overwatch in organization with ID `123` in
+        location `us-west1`.
 
-        $ {command} organizations/123
+        $ {command} organizations/123/locations/us-west1
         """)
 }
 
@@ -48,15 +46,11 @@ class Enable(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.get_organization_id_flag().AddToParser(parser)
+    flags.add_parent_flag(parser)
 
   def Run(self, args):
-    org_id = args.ORGANIZATION
-    if not re.match('organizations/[0-9]+', org_id):
-      raise exceptions.InvalidArgumentException(
-          'ORGANIZATION', 'The organization id should be of the form'
-          ' organizations/<organization_id>, found {}'.format(org_id))
-    with util.override_endpoint():
+    parent = args.CONCEPTS.parent.Parse()
+    location = parent.AsDict()['locationsId']
+    with util.override_endpoint(location):
       client = api.SLZOverwatchClient()
-      return client.Enable(org_id,
-                           properties.VALUES.scc.slz_overwatch_location.Get())
+      return client.Enable(parent.RelativeName())

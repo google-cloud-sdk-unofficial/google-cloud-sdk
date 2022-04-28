@@ -18,10 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.gkemulticloud import azure as azure_api_util
+from googlecloudsdk.api_lib.container.gkemulticloud import azure as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
-from googlecloudsdk.command_lib.container.azure import util as command_util
+from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 
 
@@ -41,13 +41,12 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddLocationResourceArg(parser, 'to list Azure clusters')
-    parser.display_info.AddFormat(command_util.CLUSTERS_FORMAT)
+    parser.display_info.AddFormat(constants.AZURE_CLUSTERS_FORMAT)
 
   def Run(self, args):
-    """Run the list command."""
+    """Runs the list command."""
     location_ref = args.CONCEPTS.location.Parse()
-    with endpoint_util.GkemulticloudEndpointOverride(location_ref.locationsId,
-                                                     self.ReleaseTrack()):
-      api_client = azure_api_util.ClustersClient()
+    with endpoint_util.GkemulticloudEndpointOverride(location_ref.locationsId):
+      api_client = api_util.ClustersClient()
       return api_client.List(
           location_ref, page_size=args.page_size, limit=args.limit)

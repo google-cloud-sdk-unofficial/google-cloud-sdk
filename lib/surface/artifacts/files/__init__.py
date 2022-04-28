@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,37 +12,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command utilities for `gcloud container azure` commands."""
+"""Command group for Artifact Registry files."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-
-CLUSTERS_FORMAT = """
-  table(
-    name.segment(-1):label=NAME,
-    azureRegion,
-    controlPlane.version:label=CONTROL_PLANE_VERSION,
-    endpoint:label=CONTROL_PLANE_IP,
-    controlPlane.vmSize,
-    state)
-"""
+from googlecloudsdk.calliope import base
 
 
-CLIENT_FORMAT = """
-  table(
-    name.segment(-1),
-    tenantId,
-    applicationId)
-"""
+@base.Hidden
+class Files(base.Group):
+  """Manage Artifact Registry files.
 
+  ## EXAMPLES
+  To list all files in the current project and `artifacts/repository` and
+  `artifacts/location` properties are set,
+  run:
 
-NODE_POOL_FORMAT = """
-  table(name.segment(-1),
-    version:label=NODE_VERSION,
-    config.vmSize,
-    autoscaling.minNodeCount.yesno(no='0'):label=MIN_NODES,
-    autoscaling.maxNodeCount:label=MAX_NODES,
-    state)
-"""
+      $ {command} list
+
+  To list files under repository my-repo in the current project and location,
+  run:
+
+      $ {command} list --repository=my-repo
+  """

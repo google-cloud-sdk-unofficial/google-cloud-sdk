@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List Cloud Run Integrations."""
@@ -44,11 +43,11 @@ class List(base.ListCommand):
 
           List all Cloud Run Integrations of a particular type
 
-              $ {command} --type redis
+              $ {command} --type=redis
 
           List all Cloud Run Integrations attached to a particular Service
 
-              $ {command} --service my-service
+              $ {command} --service=my-service
 
          """,
   }

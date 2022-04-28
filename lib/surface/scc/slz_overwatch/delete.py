@@ -46,10 +46,11 @@ class Delete(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.get_overwatch_path_flag().AddToParser(parser)
+    flags.add_overwatch_path_flag(parser)
 
   def Run(self, args):
-    overwatch_path = args.OVERWATCH
-    with util.override_endpoint(overwatch_path):
+    overwatch_path = args.CONCEPTS.overwatch.Parse()
+    location = overwatch_path.AsDict()['locationsId']
+    with util.override_endpoint(location):
       client = api.SLZOverwatchClient()
-      return client.Delete(overwatch_path)
+      return client.Delete(overwatch_path.RelativeName())

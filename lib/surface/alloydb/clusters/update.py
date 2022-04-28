@@ -14,7 +14,6 @@
 # limitations under the License.
 """Updates a AlloyDB cluster."""
 
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -22,6 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.alloydb import api_util
 from googlecloudsdk.api_lib.alloydb import cluster_operations
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.alloydb import cluster_helper
 from googlecloudsdk.command_lib.alloydb import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -29,29 +30,29 @@ from googlecloudsdk.core import resources
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Updates an AlloyDB cluster within a given project and region."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Specifies additional command flags.
 
     Args:
       parser: argparse.Parser: Parser object for command line inputs.
-
     """
+    alloydb_messages = api_util.GetMessagesModule(cls.ReleaseTrack())
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddRegion(parser)
     flags.AddCluster(parser)
-    flags.AddNetwork(parser)
+    flags.AddAutomatedBackupFlags(parser, alloydb_messages, update=True)
 
   def Run(self, args):
     """Constructs and sends request.
 
     Args:
       args: argparse.Namespace, An object that contains the values for the
-          arguments specified in the .Args() method.
+        arguments specified in the .Args() method.
 
     Returns:
       ProcessHttpResponse of the request made.
@@ -62,17 +63,20 @@ class Update(base.UpdateCommand):
     cluster_ref = client.resource_parser.Create(
         'alloydb.projects.locations.clusters',
         projectsId=properties.VALUES.core.project.GetOrFail,
-        locationsId=args.region, clustersId=args.cluster)
-    cluster_resource = alloydb_messages.Cluster()
-    cluster_resource.network = args.network
-    req = alloydb_messages.AlloydbProjectsLocationsClustersPatchRequest(
-        cluster=cluster_resource,
-        name=cluster_ref.RelativeName())
+        locationsId=args.region,
+        clustersId=args.cluster)
+    req = cluster_helper.ConstructPatchRequestFromArgs(alloydb_messages,
+                                                       cluster_ref, args)
+    if not req.updateMask:
+      parameters = [('--automated-backup-* | --disable-automated-backup | '
+                     '--clear-automated-backup')]
+      raise exceptions.MinimumArgumentException(
+          parameters, 'Please specify at least one property to update')
     op = alloydb_client.projects_locations_clusters.Patch(req)
     op_ref = resources.REGISTRY.ParseRelativeName(
         op.name, collection='alloydb.projects.locations.operations')
     log.status.Print('Operation ID: {}'.format(op_ref.Name()))
     if not args.async_:
-      cluster_operations.Await(op_ref, 'Updating cluster', self.ReleaseTrack(), False)
+      cluster_operations.Await(op_ref, 'Updating cluster', self.ReleaseTrack(),
+                               False)
     return op
-

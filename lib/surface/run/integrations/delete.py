@@ -30,7 +30,6 @@ from googlecloudsdk.command_lib.run.integrations import stages
 from googlecloudsdk.core.console import progress_tracker
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.Command):
   """Delete a Cloud Run Integration and its associated resources."""

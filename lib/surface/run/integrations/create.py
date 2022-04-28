@@ -30,7 +30,6 @@ from googlecloudsdk.command_lib.run.integrations import stages
 from googlecloudsdk.core.console import progress_tracker
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
   """Create a Cloud Run Integration."""
@@ -44,11 +43,11 @@ class Create(base.Command):
           """\
           To create and attach a redis instance to a Cloud Run service
 
-              $ {command} --type redis --service myservice
+              $ {command} --type=redis --service=myservice
 
           To attach a custom domain to a Cloud Run service
 
-              $ {command} --type custom-domain --service myservice --parameters=domain=mydomain.com
+              $ {command} --type=custom-domain --service=myservice --parameters=domain=mydomain.com
 
          """,
   }

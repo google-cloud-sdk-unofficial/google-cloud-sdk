@@ -18,9 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.container.gkemulticloud import aws as api_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.aws import clusters
 from googlecloudsdk.command_lib.container.aws import resource_args
+from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 
 
@@ -40,13 +41,11 @@ class Describe(base.ListCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddLocationResourceArg(parser, 'to list')
-    parser.display_info.AddFormat(clusters.CLUSTERS_FORMAT)
+    parser.display_info.AddFormat(constants.AWS_CLUSTERS_FORMAT)
 
   def Run(self, args):
-    """Run the list command."""
+    """Runs the list command."""
     location_ref = args.CONCEPTS.location.Parse()
-
-    with endpoint_util.GkemulticloudEndpointOverride(location_ref.locationsId,
-                                                     self.ReleaseTrack()):
-      cluster_client = clusters.Client(track=self.ReleaseTrack())
-      return cluster_client.List(location_ref)
+    with endpoint_util.GkemulticloudEndpointOverride(location_ref.locationsId):
+      cluster_client = api_util.ClustersClient()
+      return cluster_client.List(location_ref, args.page_size, args.limit)

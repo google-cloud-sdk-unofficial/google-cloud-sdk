@@ -1,0 +1,37 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: |
+      List Artifact Registry files.
+    description: |
+      List all Artifact Registry files in the specified repository and project.
+
+      To specify the maximum number of files to list, use the --limit flag.
+    examples: |
+      The following command lists a maximum of five files:
+
+          $ {command} --limit=5
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.artifacts.resources:repository
+      help_text: |
+        The parent repository for the list of files.
+
+  request: &request
+    api_version: v1
+    collection: artifactregistry.projects.locations.repositories.files
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.artifacts.util:AppendParentInfoToListFilesResponse
+
+  output:
+    format: |
+      table(
+         name:label=FILE,
+         createTime.date(tz=LOCAL),
+         updateTime.date(tz=LOCAL),
+         sizeBytes.size(zero='0',precision=3,units_out=M):label="SIZE (MB)",
+         owner:label=OWNER
+       )

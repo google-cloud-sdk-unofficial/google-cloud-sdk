@@ -31,9 +31,15 @@ else:
   # PYTHONPATH (which is just this directory).
   import setup  # pylint:disable=g-import-not-at-top
 
-import json
-import os
+import gcloud
 import sys
+# Reorder sys.path if needed right now before more modules loaded and cached
+sys.path = gcloud.reorder_sys_path(sys.path)
+
+# pylint: disable=g-import-not-at-top
+import json
+# pylint: enable=g-import-not-at-top
+import os
 import platform
 
 from googlecloudsdk.core import config

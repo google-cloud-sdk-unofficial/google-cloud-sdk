@@ -18,16 +18,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.gkemulticloud import azure as azure_api_util
+from googlecloudsdk.api_lib.container.gkemulticloud import azure as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
-from googlecloudsdk.command_lib.container.azure import util as command_util
+from googlecloudsdk.command_lib.container.gkemulticloud import command_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
-from googlecloudsdk.command_lib.container.gkemulticloud import operations
-from googlecloudsdk.core import log
-
 
 # Command needs to be in one line for the docgen tool to format properly.
 _EXAMPLES = """
@@ -54,33 +51,21 @@ class Update(base.UpdateCommand):
     flags.AddValidateOnly(parser, 'update of the node pool')
 
     base.ASYNC_FLAG.AddToParser(parser)
-    parser.display_info.AddFormat(command_util.NODE_POOL_FORMAT)
+    parser.display_info.AddFormat(constants.AZURE_NODE_POOL_FORMAT)
 
   def Run(self, args):
     """Runs the update command."""
-    validate_only = flags.GetValidateOnly(args)
-    async_ = args.async_
-
-    with endpoint_util.GkemulticloudEndpointOverride(
-        resource_args.ParseAzureNodePoolResourceArg(args).locationsId,
-        self.ReleaseTrack()):
-      nodepool_ref = resource_args.ParseAzureNodePoolResourceArg(args)
-      api_client = azure_api_util.NodePoolsClient()
-      op = api_client.Update(nodepool_ref, args)
-
-      if validate_only:
-        args.format = 'disable'
-        return
-
-      op_ref = resource_args.GetOperationResource(op)
-      log.CreatedResource(op_ref, kind=constants.LRO_KIND)
-
-      if not async_:
-        op_client = operations.Client()
-        op_client.Wait(
-            op_ref,
-            'Updating node pool {}'.format(nodepool_ref.azureNodePoolsId))
-
-      log.UpdatedResource(
-          nodepool_ref, kind=constants.AZURE_NODEPOOL_KIND, is_async=async_)
-      return api_client.Get(nodepool_ref)
+    location = resource_args.ParseAzureNodePoolResourceArg(args).locationsId
+    with endpoint_util.GkemulticloudEndpointOverride(location):
+      node_pool_ref = resource_args.ParseAzureNodePoolResourceArg(args)
+      node_pool_client = api_util.NodePoolsClient()
+      message = command_util.NodePoolMessage(
+          node_pool_ref.azureNodePoolsId,
+          action='Updating',
+          cluster=node_pool_ref.azureClustersId)
+      return command_util.Update(
+          resource_ref=node_pool_ref,
+          resource_client=node_pool_client,
+          args=args,
+          message=message,
+          kind=constants.AZURE_NODEPOOL_KIND)

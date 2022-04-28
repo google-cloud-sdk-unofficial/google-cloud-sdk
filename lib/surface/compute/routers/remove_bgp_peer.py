@@ -105,11 +105,13 @@ class RemoveBgpPeer(base.UpdateCommand):
           cleared_fields.append('bgpPeers')
         actual_remove_list.append(peer.name)
 
-    if support_md5_authentication_keys:
+    if support_md5_authentication_keys and replacement.md5AuthenticationKeys:
       replacement.md5AuthenticationKeys = [
           md5_key for md5_key in replacement.md5AuthenticationKeys
           if md5_key.name not in md5_authentication_keys_to_remove
       ]
+      if not replacement.md5AuthenticationKeys:
+        cleared_fields.append('md5AuthenticationKeys')
 
     not_found_peers = list(set(input_remove_list) - set(actual_remove_list))
     if not_found_peers:

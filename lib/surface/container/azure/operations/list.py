@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.container.gkemulticloud import operations as op_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
@@ -51,5 +52,6 @@ class List(base.ListCommand):
     location_ref = args.CONCEPTS.location.Parse()
     with endpoint_util.GkemulticloudEndpointOverride(location_ref.locationsId,
                                                      release_track):
-      op_client = operations.Client(track=release_track)
-      return op_client.List(args, location_ref)
+      op_client = op_api_util.OperationsClient()
+      return op_client.List(
+          location_ref, args.page_size, args.limit, parent_field='name')

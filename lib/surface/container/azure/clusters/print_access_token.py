@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.gkemulticloud import azure as azure_api_util
+from googlecloudsdk.api_lib.container.gkemulticloud import azure as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
@@ -43,7 +43,7 @@ class PrintAccessToken(base.Command):
         resource_args.ParseAzureClusterResourceArg(args).locationsId,
         self.ReleaseTrack()):
       cluster_ref = resource_args.ParseAzureClusterResourceArg(args)
-      client = azure_api_util.ClustersClient()
+      client = api_util.ClustersClient()
       response = client.GenerateAccessToken(cluster_ref)
       if args.exec_credential:
         return kubeconfig.ExecCredential(

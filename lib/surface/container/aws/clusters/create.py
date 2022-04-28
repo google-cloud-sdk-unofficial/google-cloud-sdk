@@ -18,16 +18,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.container.gkemulticloud import aws as api_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.aws import clusters
 from googlecloudsdk.command_lib.container.aws import flags as aws_flags
 from googlecloudsdk.command_lib.container.aws import resource_args
+from googlecloudsdk.command_lib.container.gkemulticloud import command_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
-from googlecloudsdk.command_lib.container.gkemulticloud import operations
-from googlecloudsdk.core import log
 
 # Command needs to be in one line for the docgen tool to format properly.
 _EXAMPLES = """
@@ -87,45 +86,25 @@ class Create(base.CreateCommand):
 
     base.ASYNC_FLAG.AddToParser(parser)
 
-    parser.display_info.AddFormat(clusters.CLUSTERS_FORMAT)
+    parser.display_info.AddFormat(constants.AWS_CLUSTERS_FORMAT)
 
   def Run(self, args):
     """Runs the create command."""
-    release_track = self.ReleaseTrack()
-
-    with endpoint_util.GkemulticloudEndpointOverride(
-        resource_args.ParseAwsClusterResourceArg(args).locationsId,
-        release_track):
-      # Parsing again after endpoint override is set.
+    location = resource_args.ParseAwsClusterResourceArg(args).locationsId
+    with endpoint_util.GkemulticloudEndpointOverride(location):
       cluster_ref = resource_args.ParseAwsClusterResourceArg(args)
-      cluster_client = clusters.Client(track=release_track)
-      args.root_volume_size = flags.GetRootVolumeSize(args)
-      args.root_volume_type = aws_flags.GetRootVolumeType(args)
-      args.main_volume_size = flags.GetMainVolumeSize(args)
-      args.main_volume_type = aws_flags.GetMainVolumeType(args)
-      args.logging = flags.GetLogging(args)
-      args.fleet_project = flags.GetFleetProject(args)
-      args.instance_placement = aws_flags.GetInstancePlacement(args)
-      op = cluster_client.Create(cluster_ref, args)
-
-      validate_only = getattr(args, 'validate_only', False)
-      if validate_only:
-        args.format = 'disable'
-        return
-
-      op_ref = resource_args.GetOperationResource(op)
-      log.CreatedResource(op_ref, kind=constants.LRO_KIND)
-
-      async_ = getattr(args, 'async_', False)
-      if not async_:
-        op_client = operations.Client(track=release_track)
-        op_client.Wait(
-            op_ref, 'Creating cluster {} in AWS region {}'.format(
-                cluster_ref.awsClustersId, args.aws_region))
-
-      log.CreatedResource(
-          cluster_ref, kind=constants.AWS_CLUSTER_KIND, is_async=async_)
-      return cluster_client.Get(cluster_ref)
+      cluster_client = api_util.ClustersClient()
+      message = command_util.ClusterMessage(
+          cluster_ref.awsClustersId,
+          action='Creating',
+          kind=constants.AWS,
+          region=args.aws_region)
+      return command_util.Create(
+          resource_ref=cluster_ref,
+          resource_client=cluster_client,
+          args=args,
+          message=message,
+          kind=constants.AWS_CLUSTER_KIND)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

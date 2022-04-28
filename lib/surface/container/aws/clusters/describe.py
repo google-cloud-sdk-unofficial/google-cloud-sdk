@@ -18,8 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.container.gkemulticloud import aws as api_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.aws import clusters
 from googlecloudsdk.command_lib.container.aws import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 
@@ -44,11 +44,8 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Runs the describe command."""
-
-    with endpoint_util.GkemulticloudEndpointOverride(
-        resource_args.ParseAwsClusterResourceArg(args).locationsId,
-        self.ReleaseTrack()):
-      # Parsing again after endpoint override is set.
+    location = resource_args.ParseAwsClusterResourceArg(args).locationsId
+    with endpoint_util.GkemulticloudEndpointOverride(location):
       cluster_ref = resource_args.ParseAwsClusterResourceArg(args)
-      cluster_client = clusters.Client(track=self.ReleaseTrack())
+      cluster_client = api_util.ClustersClient()
       return cluster_client.Get(cluster_ref)

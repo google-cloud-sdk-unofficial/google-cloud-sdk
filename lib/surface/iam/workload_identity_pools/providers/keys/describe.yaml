@@ -15,8 +15,8 @@
   hidden: true
 
   help_text:
-    brief: Describes a new workload identity pool provider key.
-    description: Describe a new workload identity pool provider key.
+    brief: Describe a workload identity pool provider key.
+    description: Describe a workload identity pool provider key.
     examples: |
       The following command describes a workload identity pool provider key in the default
       project with the ID ``my-key''.

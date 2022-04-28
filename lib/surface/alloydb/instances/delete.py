@@ -31,7 +31,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Deletes an AlloyDB instance within a given cluster."""
 
