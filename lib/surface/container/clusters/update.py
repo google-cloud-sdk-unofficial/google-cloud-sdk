@@ -795,6 +795,7 @@ class UpdateBeta(Update):
     flags.AddDataplaneV2Flag(group, hidden=True)
     flags.AddWorkloadConfigAuditFlag(group)
     flags.AddPodAutoscalingDirectMetricsOptInFlag(group)
+    flags.AddWorkloadVulnScanningFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -885,6 +886,7 @@ class UpdateBeta(Update):
     opts.dataplane_v2 = args.enable_dataplane_v2
     opts.enable_workload_config_audit = args.enable_workload_config_audit
     opts.pod_autoscaling_direct_metrics_opt_in = args.pod_autoscaling_direct_metrics_opt_in
+    opts.enable_workload_vulnerability_scanning = args.enable_workload_vulnerability_scanning
     return opts
 
 
@@ -966,6 +968,7 @@ class UpdateAlpha(Update):
     flags.AddDataplaneV2Flag(group, hidden=True)
     flags.AddWorkloadConfigAuditFlag(group)
     flags.AddPodAutoscalingDirectMetricsOptInFlag(group)
+    flags.AddWorkloadVulnScanningFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1052,4 +1055,5 @@ class UpdateAlpha(Update):
     opts.dataplane_v2 = args.enable_dataplane_v2
     opts.enable_workload_config_audit = args.enable_workload_config_audit
     opts.pod_autoscaling_direct_metrics_opt_in = args.pod_autoscaling_direct_metrics_opt_in
+    opts.enable_workload_vulnerability_scanning = args.enable_workload_vulnerability_scanning
     return opts

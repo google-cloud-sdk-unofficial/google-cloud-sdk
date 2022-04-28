@@ -21,11 +21,11 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.ssl_policies import ssl_policies_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_policies import flags
 
-_SSL_POLICY_ARG = flags.GetSslPolicyArgument()
 
-
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a new Compute Engine SSL policy.
 
@@ -38,22 +38,32 @@ class Create(base.CreateCommand):
   backends.
   """
 
-  @staticmethod
-  def Args(parser):
+  _regional_ssl_policies = False
+
+  SSL_POLICY_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
     """Set up arguments for this command."""
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    _SSL_POLICY_ARG.AddArgument(parser, operation_type='create')
+    if cls._regional_ssl_policies:
+      parser.display_info.AddCacheUpdater(flags.SslPoliciesCompleter)
+      cls.SSL_POLICY_ARG = flags.GetSslPolicyMultiScopeArgument()
+    else:
+      parser.display_info.AddCacheUpdater(flags.LegacySslPoliciesCompleter)
+      cls.SSL_POLICY_ARG = flags.GetSslPolicyArgument()
+    cls.SSL_POLICY_ARG.AddArgument(parser, operation_type='create')
     flags.GetDescriptionFlag().AddToParser(parser)
     flags.GetProfileFlag(default='COMPATIBLE').AddToParser(parser)
     flags.GetMinTlsVersionFlag(default='1.0').AddToParser(parser)
     flags.GetCustomFeaturesFlag().AddToParser(parser)
-    parser.display_info.AddCacheUpdater(flags.SslPoliciesCompleter)
 
   def Run(self, args):
     """Issues the request to create a new SSL policy."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     helper = ssl_policies_utils.SslPolicyHelper(holder)
-    ssl_policy_ref = _SSL_POLICY_ARG.ResolveAsResource(args, holder.resources)
+    ssl_policy_ref = self.SSL_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
     custom_features = args.custom_features if args.IsSpecified(
         'custom_features') else []
 
@@ -66,3 +76,19 @@ class Create(base.CreateCommand):
     operation_ref = helper.Create(ssl_policy_ref, ssl_policy_to_insert)
     return helper.WaitForOperation(ssl_policy_ref, operation_ref,
                                    'Creating SSL policy')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a new Compute Engine SSL policy.
+
+  *{command}* creates a new SSL policy.
+
+  An SSL policy specifies the server-side support for SSL features. An SSL
+  policy can be attached to a TargetHttpsProxy or a TargetSslProxy. This affects
+  connections between clients and the HTTPS or SSL proxy load balancer. SSL
+  policies do not affect the connection between the load balancers and the
+  backends.
+  """
+
+  _regional_ssl_policies = True

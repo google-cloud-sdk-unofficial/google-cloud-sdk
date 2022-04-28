@@ -29,7 +29,7 @@ EXAMPLES = """\
     To create and add a BGP peer for the Distributed Cloud Edge Network router
     'my-router' in edge zone 'us-central1-edge-den1' , run:
 
-        $ {command} my-router --interface-name=my-int-r1 --peer-asn=33333 --peer-name=peer1 --peer-ipv4-range=208.117.254.232/31 --location=us-central1 --zone=us-central1-edge-den1
+        $ {command} my-router --interface=my-int-r1 --peer-asn=33333 --peer-name=peer1 --peer-ipv4-range=208.117.254.232/31 --location=us-central1 --zone=us-central1-edge-den1
 
    """
 

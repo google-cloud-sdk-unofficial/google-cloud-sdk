@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2020 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,11 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""'vmware nodetypes describe' command."""
+"""'vmware node-types list' command."""
+
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
+
 
 from googlecloudsdk.api_lib.vmware.nodetypes import NodeTypesClient
 from googlecloudsdk.calliope import base
@@ -25,17 +27,17 @@ from googlecloudsdk.command_lib.vmware import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          Display data associated with a VMware Engine node type, such as its compute, storage, and memory.
+          List VMware Engine node types.
         """,
     'EXAMPLES':
         """
-          To describe node type ``standard-72'' in location ``us-west1-a'', run:
+          To list VMware Engine node types, run:
 
-            $ {command} standard-72 --location=us-central1 --project=my-project
+            $ {command} --location=us-central1 --project=my-project
 
           Or:
 
-            $ {command} standard-72
+            $ {command}
 
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,
@@ -43,24 +45,32 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(base.DescribeCommand):
-  """Display data associated with a Google Cloud VMware Engine node type."""
+class ListAlpha(base.ListCommand):
+  """List supported Google Cloud VMware Engine node types."""
 
   detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    flags.AddNodeTypeArgToParser(parser, positional=True)
+
+    flags.AddLocationArgToParser(parser)
+    parser.display_info.AddFormat("""\
+            table(
+          nodeTypeId:label=ID,
+          displayName:label=NAME,
+          virtualCpuCount,
+          memoryGb,diskSizeGb
+      )""")
 
   def Run(self, args):
-    resource = args.CONCEPTS.node_type.Parse()
+    location = args.CONCEPTS.location.Parse()
     client = NodeTypesClient()
-    return client.Get(resource)
+    return client.List(location, limit=args.limit)
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(DescribeAlpha):
-  """Display data associated with a Google Cloud VMware Engine node type."""
+class ListBeta(ListAlpha):
+  """List supported Google Cloud VMware Engine node types."""
 

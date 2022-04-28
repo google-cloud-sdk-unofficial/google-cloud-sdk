@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from containerregistry.client.v2_2 import docker_image
 from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import http
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -101,7 +100,7 @@ class List(base.ListCommand):
       """Display the fully-qualified name."""
       return '{0}/{1}'.format(repository, c)
 
-    http_obj = http.Http()
+    http_obj = util.Http()
     with util.WrapExpectedDockerlessErrors(repository):
       with docker_image.FromRegistry(
           basic_creds=util.CredentialProvider(),

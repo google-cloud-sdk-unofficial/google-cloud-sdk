@@ -167,9 +167,13 @@ def _Run(args, holder, ssl_certificates_arg, target_https_proxy_arg,
                  client.messages.TargetHttpsProxiesSetQuicOverrideRequest(
                      quicOverride=quic_override)))))
 
-  ssl_policy = client.messages.SslPolicyReference(
-      sslPolicy=ssl_policy_arg.ResolveAsResource(args, holder.resources)
-      .SelfLink()) if args.IsSpecified('ssl_policy') else None
+  ssl_policy = None
+  if args.IsSpecified('ssl_policy'):
+    ssl_policy = client.messages.SslPolicyReference(
+        sslPolicy=ssl_policy_arg.ResolveAsResource(
+            args,
+            holder.resources,
+            default_scope=compute_scope.ScopeEnum.GLOBAL).SelfLink())
   clear_ssl_policy = args.IsSpecified('clear_ssl_policy')
 
   if ssl_policy or clear_ssl_policy:
@@ -202,6 +206,7 @@ class Update(base.SilentCommand):
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
   _include_l7_internal_load_balancing = True
   _certificate_map = False
+  _regional_ssl_policies = False
 
   SSL_CERTIFICATES_ARG = None
   TARGET_HTTPS_PROXY_ARG = None
@@ -250,9 +255,14 @@ class Update(base.SilentCommand):
           'HTTPS proxy').AddToParser(map_group)
 
     group = parser.add_mutually_exclusive_group()
-    cls.SSL_POLICY_ARG = (
-        ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
-            'HTTPS', required=False))
+
+    if cls._regional_ssl_policies:
+      cls.SSL_POLICY_ARG = ssl_policies_flags.GetSslPolicyMultiScopeArgumentForOtherResource(
+          'HTTPS', required=False)
+    else:
+      cls.SSL_POLICY_ARG = ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
+          'HTTPS', required=False)
+
     cls.SSL_POLICY_ARG.AddArgument(group)
     ssl_policies_flags.GetClearSslPolicyArgumentForOtherResource(
         'HTTPS', required=False).AddToParser(group)
@@ -276,4 +286,4 @@ class UpdateBeta(Update):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
-  _certificate_map = True
+  _regional_ssl_policies = True

@@ -43,7 +43,7 @@ DETAILED_HELP = {
         for backing up data, copying a persistent disk, and even, creating a
         custom image. Snapshots can be created from persistent disks even while
         they are attached to running instances. Once created, snapshots may be
-        managed (listed, deleted, resized etc.) via `gcloud compute snapshots`.
+        managed (listed, deleted, etc.) via `gcloud compute snapshots`.
 
         Refer to the Snapshot best practices guide. https://cloud.google.com/compute/docs/disks/snapshot-best-practices
 

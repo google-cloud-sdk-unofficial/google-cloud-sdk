@@ -745,6 +745,8 @@ flags_to_add = {
             flags.AddDisablePodCIDROverprovisionFlag,
         'enableworkloadconfigaudit':
             flags.AddWorkloadConfigAuditFlag,
+        'enableworkloadvulnscanning':
+            flags.AddWorkloadVulnScanningFlag,
         'podautoscalingdirectmetricsoptin':
             flags.AddPodAutoscalingDirectMetricsOptInFlag,
     },
@@ -952,6 +954,8 @@ flags_to_add = {
             flags.AddDisablePodCIDROverprovisionFlag,
         'enableworkloadconfigaudit':
             flags.AddWorkloadConfigAuditFlag,
+        'enableworkloadvulnscanning':
+            flags.AddWorkloadVulnScanningFlag,
         'podautoscalingdirectmetricsoptin':
             flags.AddPodAutoscalingDirectMetricsOptInFlag,
     },
@@ -1206,6 +1210,8 @@ class CreateBeta(Create):
         'enable_workload_config_audit')
     ops.pod_autoscaling_direct_metrics_opt_in = get_default(
         'pod_autoscaling_direct_metrics_opt_in')
+    ops.enable_workload_vulnerability_scanning = get_default(
+        'enable_workload_vulnerability_scanning')
     return ops
 
 
@@ -1294,4 +1300,6 @@ class CreateAlpha(Create):
         'enable_workload_config_audit')
     ops.pod_autoscaling_direct_metrics_opt_in = get_default(
         'pod_autoscaling_direct_metrics_opt_in')
+    ops.enable_workload_vulnerability_scanning = get_default(
+        'enable_workload_vulnerability_scanning')
     return ops

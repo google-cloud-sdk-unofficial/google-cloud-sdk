@@ -145,7 +145,9 @@ class Rm(base.Command):
         task_iterator_factory.object_iterator(),
         parallelizable=True,
         task_status_queue=task_status_queue,
-        progress_type=task_status.ProgressType.COUNT,
+        progress_manager_args=task_status.ProgressManagerArgs(
+            increment_type=task_status.IncrementType.INTEGER,
+            manifest_path=None),
         continue_on_error=args.continue_on_error)
 
     bucket_iterator = plurality_checkable_iterator.PluralityCheckableIterator(
@@ -158,7 +160,9 @@ class Rm(base.Command):
           bucket_iterator,
           parallelizable=True,
           task_status_queue=task_status_queue,
-          progress_type=task_status.ProgressType.COUNT,
+          progress_manager_args=task_status.ProgressManagerArgs(
+              increment_type=task_status.IncrementType.INTEGER,
+              manifest_path=None),
           continue_on_error=args.continue_on_error)
     else:
       bucket_exit_code = 0

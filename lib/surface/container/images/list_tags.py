@@ -28,7 +28,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import exceptions
-from googlecloudsdk.core import http
+
 
 # Add to this as we add columns.
 _DEFAULT_KINDS = [
@@ -126,7 +126,7 @@ class ListTagsGA(base.ListCommand):
       Some value that we want to have printed later.
     """
     repository = util.ValidateRepositoryPath(args.image_name)
-    http_obj = http.Http()
+    http_obj = util.Http()
     with util.WrapExpectedDockerlessErrors(repository):
       with docker_image.FromRegistry(
           basic_creds=util.CredentialProvider(),
@@ -190,7 +190,7 @@ class ListTagsALPHAandBETA(ListTagsGA, base.ListCommand):
           '--show-occurrences-from may only be set if --show-occurrences=True')
 
     repository = util.ValidateRepositoryPath(args.image_name)
-    http_obj = http.Http()
+    http_obj = util.Http()
     with util.WrapExpectedDockerlessErrors(repository):
       with docker_image.FromRegistry(
           basic_creds=util.CredentialProvider(),

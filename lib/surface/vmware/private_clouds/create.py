@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2020 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""'vmware privateclouds create' command."""
+"""'vmware private-clouds create' command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.vmware.privateclouds import PrivateCloudsClient
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.vmware import flags
 from googlecloudsdk.core import log
 
@@ -97,30 +96,21 @@ class CreateAlpha(base.CreateCommand):
          Project ID or project name of the VPC network. Use this flag when the VPC network is in another project.
         """)
     parser.add_argument(
-        '--external-ip-access',
-        action='store_true',
-        default=None,
-        help="""\
-        Enable public IP address service for management appliances so vCenter and NSX can be accessed via internet. Resolution of FQDNs requires local DNS configuration for the private cloud domain. NAT is set up on NSX for external IP ingress traffic, and users must manually configure NSX firewall to allow HTTPS traffic.
-        """)
-    parser.add_argument(
         '--node-custom-core-count',
         required=False,
         hidden=True,
         type=int,
         help="""\
-         Customized number of virtual cores to use for each node of the management cluster. To get a list of valid values for your node type, run the `{grandparent_command} nodetypes describe` command and reference the `availableCustomCoreCounts` field in the output.
+         Customized number of virtual cores to use for each node of the management cluster. To get a list of valid values for your node type, run the `{grandparent_command} node-types describe` command and reference the `availableCustomCoreCounts` field in the output.
         """)
-    labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
     privatecloud = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
-    operation = client.Create(privatecloud, args.labels, args.description,
+    operation = client.Create(privatecloud, args.description,
                               args.cluster, args.node_type, args.node_count,
                               args.management_range, args.network,
                               args.vmware_engine_network, args.network_project,
-                              args.external_ip_access,
                               args.node_custom_core_count)
     log.CreatedResource(operation.name, kind='private cloud', is_async=True)
 

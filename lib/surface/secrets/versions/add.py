@@ -73,7 +73,9 @@ class Create(base.CreateCommand):
     if args.data_file == '':  # pylint: disable=g-explicit-bool-comparison
       raise exceptions.BadFileException(self.EMPTY_DATA_FILE_MESSAGE)
 
-    version = secrets_api.Secrets().AddVersion(secret_ref, data)
+    data_crc32c = crc32c.get_crc32c(data)
+    version = secrets_api.Secrets().AddVersion(secret_ref, data,
+                                               crc32c.get_checksum(data_crc32c))
     version_ref = secrets_args.ParseVersionRef(version.name)
     secrets_log.Versions().Created(version_ref)
     return version
@@ -121,8 +123,8 @@ class CreateBeta(Create):
       raise exceptions.BadFileException(self.EMPTY_DATA_FILE_MESSAGE)
 
     data_crc32c = crc32c.get_crc32c(data)
-    version = secrets_api.Secrets().AddVersionBeta(
-        secret_ref, data, crc32c.get_checksum(data_crc32c))
+    version = secrets_api.Secrets().AddVersion(secret_ref, data,
+                                               crc32c.get_checksum(data_crc32c))
     version_ref = secrets_args.ParseVersionRef(version.name)
     secrets_log.Versions().Created(version_ref)
     if not version.clientSpecifiedPayloadChecksum:

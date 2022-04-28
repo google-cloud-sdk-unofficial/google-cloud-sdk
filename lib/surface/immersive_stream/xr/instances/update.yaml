@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Update an Immersive Stream for XR service instance.
+    description: Update an Immersive Stream for XR service instance.
+    examples: |
+      To update the content build version served by the service instance 'my-instance', to 'my-version' run:
+
+        $ {command} my-instance --version=my-version
+
+  request:
+    collection: stream.projects.locations.streamInstances
+    api_version: v1alpha1
+    method: patch
+
+  arguments:
+    resource:
+      help_text: Immersive Stream for XR service instance to be updated.
+      spec: !REF googlecloudsdk.command_lib.immersive_stream.xr.resources:instance
+
+    params:
+    - arg_name: version
+      api_field: streamInstance.contentBuildVersion
+      processor: "googlecloudsdk.command_lib.immersive_stream.xr.util:ParseContentVersionTag"
+      required: true
+      help_text: |
+        The name of the content build version.
+  async:
+    collection: stream.projects.locations.operations

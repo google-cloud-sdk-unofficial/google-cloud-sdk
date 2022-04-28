@@ -28,13 +28,13 @@ class Delete(base.Command):
   detailed_help = {
       'EXAMPLES':
           """\
-          To delete a DestGroup with name GROUP_NAME, in region REGION in the
-          current project run:
+          To delete a DestGroup with name ``GROUP_NAME'', in region ``REGION''
+          in the current project run:
 
           $ {command} DEST_GROUP_NAME --region=REGION
 
-          To delete a DestGroup with name GROUP_NAME, in region REGION in the
-          project PROJECT_ID run:
+          To delete a DestGroup with name ``GROUP_NAME'', in region ``REGION''
+          in the project ``PROJECT_ID'' run:
 
           $ {command} DEST_GROUP_NAME --region=REGION --project=PROJECT_ID
           """,

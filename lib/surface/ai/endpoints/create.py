@@ -33,15 +33,14 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-def _AddArgs(parser, version):
+def _AddArgs(parser):
   flags.GetDisplayNameArg('endpoint').AddToParser(parser)
   flags.AddRegionResourceArg(
       parser, 'to create endpoint', prompt_func=region_util.PromptForOpRegion)
   flags.GetDescriptionArg('endpoint').AddToParser(parser)
   flags.GetUserSpecifiedIdArg('endpoint').AddToParser(parser)
   labels_util.AddCreateLabelsFlags(parser)
-  if version == constants.BETA_VERSION:
-    flags.GetEndpointNetworkArg().AddToParser(parser)
+  flags.GetEndpointNetworkArg().AddToParser(parser)
 
 
 def _Run(args, version):
@@ -58,7 +57,7 @@ def _Run(args, version):
           region_ref, args.display_name,
           labels_util.ParseCreateArgs(
               args, endpoints_client.messages.GoogleCloudAiplatformV1Endpoint
-              .LabelsValue), args.description, args.endpoint_id)
+              .LabelsValue), args.description, args.network, args.endpoint_id)
     else:
       op = endpoints_client.CreateBeta(
           region_ref, args.display_name,
@@ -91,7 +90,7 @@ class CreateGa(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser, constants.GA_VERSION)
+    _AddArgs(parser)
 
   def Run(self, args):
     return _Run(args, constants.GA_VERSION)
@@ -109,10 +108,6 @@ class CreateBeta(CreateGa):
     $ {command} --project=example --region=us-central1
     --display-name=my_endpoint
   """
-
-  @staticmethod
-  def Args(parser):
-    _AddArgs(parser, constants.BETA_VERSION)
 
   def Run(self, args):
     return _Run(args, constants.BETA_VERSION)

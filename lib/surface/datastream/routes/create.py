@@ -36,7 +36,7 @@ EXAMPLES = """\
    """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Datastream private connection route."""
   detailed_help = {'DESCRIPTION': DESCRIPTION, 'EXAMPLES': EXAMPLES}
@@ -88,3 +88,14 @@ class Create(base.Command):
     return client.projects_locations_operations.Get(
         messages.DatastreamProjectsLocationsOperationsGetRequest(
             name=operation_ref.operationsId))
+
+
+@base.Deprecate(
+    is_removed=False,
+    warning=('Datastream beta version is deprecated. Please use`gcloud '
+             'datastream routes create` command instead.')
+)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a Datastream private connection route."""
+

@@ -90,9 +90,9 @@ class Create(base.Command):
 
     polling_group = parser.add_mutually_exclusive_group()
     flags.AddAsyncFlag(polling_group)
-    flags.AddWaitForCompletionFlag(polling_group, implies_run_now=True)
+    flags.AddWaitForCompletionFlag(polling_group, implies_execute_now=True)
 
-    flags.AddRunNowFlag(parser)
+    flags.AddExecuteNowFlag(parser)
 
     concept_parsers.ConceptParser([job_presentation]).AddToParser(parser)
     # No output by default, can be overridden by --format
@@ -113,29 +113,30 @@ class Create(base.Command):
     changes.append(
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()))
 
-    run_now = args.run_now or args.wait
+    execute_now = args.execute_now or args.wait
     execution = None
 
     with serverless_operations.Connect(conn_context) as operations:
       pretty_print.Info(
           messages_util.GetStartDeployMessage(conn_context, job_ref, 'Creating',
                                               'job'))
-      if run_now:
+      if execute_now:
         header_msg = 'Creating and running job...'
       else:
         header_msg = 'Creating job...'
       with progress_tracker.StagedProgressTracker(
           header_msg,
-          stages.JobStages(run_now=run_now, include_completion=args.wait),
+          stages.JobStages(
+              execute_now=execute_now, include_completion=args.wait),
           failure_message='Job failed to deploy',
           suppress_output=args.async_) as tracker:
         job = operations.CreateJob(
-            job_ref, changes, tracker, asyn=(args.async_ and not run_now))
-        if run_now:
+            job_ref, changes, tracker, asyn=(args.async_ and not execute_now))
+        if execute_now:
           execution = operations.RunJob(job_ref, args.wait, tracker,
                                         args.async_)
 
-      if args.async_ and not run_now:
+      if args.async_ and not execute_now:
         pretty_print.Success('Job [{{bold}}{job}{{reset}}] is being created '
                              'asynchronously.'.format(job=job.name))
       else:
@@ -143,7 +144,7 @@ class Create(base.Command):
         operation = 'been created'
         if args.wait:
           operation += ' and completed execution [{}]'.format(execution.name)
-        elif run_now:
+        elif execute_now:
           operation += ' and started running execution [{}]'.format(
               execution.name)
 
@@ -152,11 +153,11 @@ class Create(base.Command):
                                  job=job.name, operation=operation))
 
       msg = ''
-      if run_now:
+      if execute_now:
         msg += messages_util.GetExecutionCreatedMessage(self.ReleaseTrack(),
                                                         execution)
         msg += '\n'
       msg += messages_util.GetRunJobMessage(
-          self.ReleaseTrack(), job.name, repeat=run_now)
+          self.ReleaseTrack(), job.name, repeat=execute_now)
       log.Print(msg)
       return job

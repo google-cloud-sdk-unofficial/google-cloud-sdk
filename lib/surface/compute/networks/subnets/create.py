@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import subnets_utils
 from googlecloudsdk.api_lib.compute import utils as compute_api
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
@@ -27,7 +28,6 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 from googlecloudsdk.command_lib.compute.networks.subnets import flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
-import six
 
 
 def _DetailedHelp():
@@ -51,7 +51,8 @@ def _DetailedHelp():
 def _AddArgs(parser, include_alpha_logging, include_global_managed_proxy,
              include_l7_internal_load_balancing, include_aggregate_purpose,
              include_private_service_connect, include_internal_ipv6_access_type,
-             include_l2, include_private_nat, api_version):
+             include_l2, include_private_nat, include_reserved_internal_range,
+             api_version):
   """Add subnetwork create arguments to parser."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_WITH_IPV6_FIELD)
 
@@ -67,7 +68,7 @@ def _AddArgs(parser, include_alpha_logging, include_global_managed_proxy,
 
   parser.add_argument(
       '--range',
-      required=True,
+      required=not include_reserved_internal_range,
       help='The IP space allocated to this subnetwork in CIDR format.')
 
   parser.add_argument(
@@ -253,6 +254,43 @@ def _AddArgs(parser, include_alpha_logging, include_global_managed_proxy,
         Specifies ID of the vlan to tag the subnetwork.
         """)
 
+  if include_reserved_internal_range:
+    parser.add_argument(
+        '--reserved-internal-range',
+        help=("""
+        If set, the primary IP range of the subnetwork will be
+        associated with the given InternalRange resource.
+
+        If --range is set, the subnetwork will only use the given IP range.
+        It has to be contained by the IP range defined by the InternalRange resource.
+
+        For example,
+        --range=10.0.0.0/24
+        --reserved-internal-range //networkconnectivity.googleapis.com/projects/PROJECT/locations/global/internalRanges/RANGE
+
+        If --range is not set, the subnetwork will use the entire IP range
+        defined by the InternalRange resource.
+
+        For example, `--reserved-internal-range //networkconnectivity.googleapis.com/projects/PROJECT/locations/global/internalRanges/RANGE`
+
+        """))
+    parser.add_argument(
+        '--secondary-range-with-reserved-internal-range',
+        type=arg_parsers.ArgDict(min_length=1),
+        action='append',
+        metavar='RANGE_NAME=INTERNAL_RANGE_URL',
+        help="""\
+         Adds secondary IP ranges that are associated with InternalRange
+         resources.
+
+         For example, `--secondary-range-with-reserved-internal-range
+         range1=//networkconnectivity.googleapis.com/projects/PROJECT/locations/global/internalRanges/RANGE`
+         adds a secondary range with the reserved internal range resource.
+
+         * `RANGE_NAME` - Name of the secondary range.
+         * `INTERNAL_RANGE_URL` - `URL of an InternalRange resource.`
+        """)
+
 
 def GetPrivateIpv6GoogleAccessTypeFlagMapper(messages):
   return arg_utils.ChoiceEnumMapper(
@@ -273,14 +311,17 @@ def GetPrivateIpv6GoogleAccessTypeFlagMapper(messages):
 def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
                       include_alpha_logging, include_l7_internal_load_balancing,
                       include_global_managed_proxy, include_aggregate_purpose,
-                      include_private_service_connect, include_l2):
+                      include_private_service_connect, include_l2,
+                      include_reserved_internal_range):
   """Create the subnet resource."""
   subnetwork = messages.Subnetwork(
       name=subnet_ref.Name(),
       description=args.description,
       network=network_ref.SelfLink(),
-      ipCidrRange=args.range,
       privateIpGoogleAccess=args.enable_private_ip_google_access)
+
+  if args.range:
+    subnetwork.ipCidrRange = args.range
 
   if (args.enable_flow_logs is not None or
       args.logging_aggregation_interval is not None or
@@ -385,13 +426,17 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
     if args.vlan is not None:
       subnetwork.vlans.append(args.vlan)
 
+  if include_reserved_internal_range:
+    if args.reserved_internal_range:
+      subnetwork.reservedInternalRange = args.reserved_internal_range
+
   return subnetwork
 
 
 def _Run(args, holder, include_alpha_logging,
          include_l7_internal_load_balancing, include_global_managed_proxy,
-         include_aggregate_purpose, include_private_service_connect,
-         include_l2):
+         include_aggregate_purpose, include_private_service_connect, include_l2,
+         include_reserved_internal_range):
   """Issues a list of requests necessary for adding a subnetwork."""
   client = holder.client
 
@@ -403,24 +448,23 @@ def _Run(args, holder, include_alpha_logging,
       holder.resources,
       scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-  subnetwork = _CreateSubnetwork(client.messages, subnet_ref, network_ref, args,
-                                 include_alpha_logging,
-                                 include_l7_internal_load_balancing,
-                                 include_global_managed_proxy,
-                                 include_aggregate_purpose,
-                                 include_private_service_connect, include_l2)
+  subnetwork = _CreateSubnetwork(
+      client.messages, subnet_ref, network_ref, args, include_alpha_logging,
+      include_l7_internal_load_balancing, include_global_managed_proxy,
+      include_aggregate_purpose, include_private_service_connect, include_l2,
+      include_reserved_internal_range)
   request = client.messages.ComputeSubnetworksInsertRequest(
       subnetwork=subnetwork,
       region=subnet_ref.region,
       project=subnet_ref.project)
 
-  secondary_ranges = []
-  if args.secondary_range:
-    for secondary_range in args.secondary_range:
-      for range_name, ip_cidr_range in sorted(six.iteritems(secondary_range)):
-        secondary_ranges.append(
-            client.messages.SubnetworkSecondaryRange(
-                rangeName=range_name, ipCidrRange=ip_cidr_range))
+  if include_reserved_internal_range:
+    secondary_ranges = subnets_utils.CreateSecondaryRanges(
+        client, args.secondary_range,
+        args.secondary_range_with_reserved_internal_range)
+  else:
+    secondary_ranges = subnets_utils.CreateSecondaryRanges(
+        client, args.secondary_range, None)
 
   request.subnetwork.secondaryIpRanges = secondary_ranges
   return client.MakeRequests([(client.apitools_client.subnetworks, 'Insert',
@@ -440,6 +484,7 @@ class Create(base.CreateCommand):
   _include_internal_ipv6_access_type = False
   _include_l2 = False
   _include_private_nat = False
+  _include_reserved_internal_range = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
 
   detailed_help = _DetailedHelp()
@@ -452,7 +497,8 @@ class Create(base.CreateCommand):
              cls._include_aggregate_purpose,
              cls._include_private_service_connect,
              cls._include_internal_ipv6_access_type, cls._include_l2,
-             cls._include_private_nat, cls._api_version)
+             cls._include_private_nat, cls._include_reserved_internal_range,
+             cls._api_version)
 
   def Run(self, args):
     """Issues a list of requests necessary for adding a subnetwork."""
@@ -461,7 +507,8 @@ class Create(base.CreateCommand):
                 self._include_l7_internal_load_balancing,
                 self._include_global_managed_proxy,
                 self._include_aggregate_purpose,
-                self._include_private_service_connect, self._include_l2)
+                self._include_private_service_connect, self._include_l2,
+                self._include_reserved_internal_range)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -483,4 +530,5 @@ class CreateAlpha(CreateBeta):
   _include_l2 = True
   _include_internal_ipv6_access_type = True
   _include_private_nat = True
+  _include_reserved_internal_range = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION

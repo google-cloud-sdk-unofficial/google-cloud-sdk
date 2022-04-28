@@ -54,7 +54,6 @@ class Container(base.Group):
       The refined command context.
     """
     base.DisableUserProjectQuota()
-    base.OptOutRequests()  # TODO(b/169085077): Remove to migrate to requests.
     context['api_adapter'] = api_adapter.NewAPIAdapter('v1')
     return context
 
@@ -76,7 +75,6 @@ class ContainerBeta(Container):
       The refined command context.
     """
     base.DisableUserProjectQuota()
-    base.OptOutRequests()  # TODO(b/169085077): Remove to migrate to requests.
     context['api_adapter'] = api_adapter.NewAPIAdapter('v1beta1')
     return context
 
@@ -98,6 +96,5 @@ class ContainerAlpha(Container):
       The refined command context.
     """
     base.DisableUserProjectQuota()
-    base.OptOutRequests()  # TODO(b/169085077): Remove to migrate to requests.
     context['api_adapter'] = api_adapter.NewAPIAdapter('v1alpha1')
     return context

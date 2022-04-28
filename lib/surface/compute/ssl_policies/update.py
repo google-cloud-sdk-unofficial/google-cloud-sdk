@@ -22,11 +22,11 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.ssl_policies import ssl_policies_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_policies import flags
 
-_SSL_POLICY_ARG = flags.GetSslPolicyArgument()
 
-
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine SSL policy.
 
@@ -39,10 +39,18 @@ class Update(base.UpdateCommand):
   backends.
   """
 
-  @staticmethod
-  def Args(parser):
+  _regional_ssl_policies = False
+
+  SSL_POLICY_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    _SSL_POLICY_ARG.AddArgument(parser, operation_type='patch')
+    if cls._regional_ssl_policies:
+      cls.SSL_POLICY_ARG = flags.GetSslPolicyMultiScopeArgument()
+    else:
+      cls.SSL_POLICY_ARG = flags.GetSslPolicyArgument()
+    cls.SSL_POLICY_ARG.AddArgument(parser, operation_type='patch')
     flags.GetProfileFlag().AddToParser(parser)
     flags.GetMinTlsVersionFlag().AddToParser(parser)
     flags.GetCustomFeaturesFlag().AddToParser(parser)
@@ -51,7 +59,8 @@ class Update(base.UpdateCommand):
     """Issues the request to update a SSL policy."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     helper = ssl_policies_utils.SslPolicyHelper(holder)
-    ssl_policy_ref = _SSL_POLICY_ARG.ResolveAsResource(args, holder.resources)
+    ssl_policy_ref = self.SSL_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
 
     include_custom_features, custom_features = Update._GetCustomFeatures(args)
     existing_ssl_policy = helper.Describe(ssl_policy_ref)
@@ -97,3 +106,19 @@ class Update(base.UpdateCommand):
     else:
       # Custom features will not be sent as part of the patch request.
       return (False, [])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a Compute Engine SSL policy.
+
+  *{command}* is used to update SSL policies.
+
+  An SSL policy specifies the server-side support for SSL features. An SSL
+  policy can be attached to a TargetHttpsProxy or a TargetSslProxy. This affects
+  connections between clients and the HTTPS or SSL proxy load balancer. SSL
+  policies do not affect the connection between the load balancers and the
+  backends.
+  """
+
+  _regional_ssl_policies = True

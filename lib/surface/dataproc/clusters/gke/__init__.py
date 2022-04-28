@@ -21,8 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Gke(base.Group):
   """Create Dataproc GKE-based virtual clusters.
 
@@ -34,5 +32,5 @@ class Gke(base.Group):
   To create a cluster, run:
 
     $ {command} my-cluster --region='us-central1' --gke-cluster='my-gke-cluster'
-    --image-version='spark-1.5.75'
+    --spark-engine-version='latest' --pools='name=dp,roles=default'
   """

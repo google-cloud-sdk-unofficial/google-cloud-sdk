@@ -170,12 +170,14 @@ class Filters(base.TopicCommand):
           _key_ *~* _value_:::
 
           True if _key_ contains a match for the RE (regular expression) pattern
-          _value_.
+          _value_. Depending on your shell, you might have to escape or quote
+          _~_ to ensure it isn't consumed as HOME.
 
-          _key_ *!*~ _value_:::
+          _key_ *!~* _value_:::
 
           True if _key_ does not contain a match for the RE (regular expression)
-          pattern _value_.
+          pattern _value_. Depending on your shell, you might have to escape or
+          quote _~_ to ensure it isn't consumed as HOME.
 
           Regular expressions are evaluated using Python's standard library:
           https://docs.python.org/3/library/re.html#re-syntax.

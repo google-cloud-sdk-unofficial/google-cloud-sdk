@@ -60,6 +60,8 @@ class Update(base.UpdateCommand):
       flags.AddDestFqdns(parser)
       flags.AddSrcRegionCodes(parser)
       flags.AddDestRegionCodes(parser)
+      flags.AddSrcThreatIntelligence(parser)
+      flags.AddDestThreatIntelligence(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -90,6 +92,8 @@ class Update(base.UpdateCommand):
     dest_fqdns = []
     src_region_codes = []
     dest_region_codes = []
+    src_threat_intelligence = []
+    dest_threat_intelligence = []
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
       should_setup_match = True
@@ -135,6 +139,12 @@ class Update(base.UpdateCommand):
       if args.IsSpecified('dest_region_codes'):
         dest_region_codes = args.dest_region_codes
         should_setup_match = True
+      if args.IsSpecified('src_threat_intelligence'):
+        src_threat_intelligence = args.src_threat_intelligence
+        should_setup_match = True
+      if args.IsSpecified('dest_threat_intelligence'):
+        dest_threat_intelligence = args.dest_threat_intelligence
+        should_setup_match = True
     # If need to construct a new matcher.
     if should_setup_match:
       if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
@@ -148,7 +158,9 @@ class Update(base.UpdateCommand):
             srcFqdns=src_fqdns,
             destFqdns=dest_fqdns,
             srcRegionCodes=src_region_codes,
-            destRegionCodes=dest_region_codes)
+            destRegionCodes=dest_region_codes,
+            srcThreatIntelligences=src_threat_intelligence,
+            destThreatIntelligences=dest_threat_intelligence)
       else:
         matcher = holder.client.messages.FirewallPolicyRuleMatcher(
             srcIpRanges=src_ip_ranges,

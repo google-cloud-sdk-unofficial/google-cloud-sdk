@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam.byoid_utilities import cred_config
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class CreateCredConfig(base.CreateCommand):
   """Create a configuration file for generated credentials.
 
@@ -47,8 +48,10 @@ class CreateCredConfig(base.CreateCommand):
           """),
   }
 
-  @staticmethod
-  def Args(parser):
+  _use_pluggable_auth = False
+
+  @classmethod
+  def Args(cls, parser):
     # Required args. The audience is a positional arg, meaning it is required.
     parser.add_argument(
         'audience', help='The workforce pool provider resource name.')
@@ -62,6 +65,12 @@ class CreateCredConfig(base.CreateCommand):
     credential_types.add_argument(
         '--credential-source-url',
         help='The URL to obtain the credential from.')
+    if cls._use_pluggable_auth:
+      credential_types.add_argument(
+          '--executable-command',
+          hidden=True,
+          help='The full command to run to retrieve the credential. Must be an absolute path for the program.'
+      )
 
     parser.add_argument(
         '--workforce-pool-user-project',
@@ -95,6 +104,34 @@ class CreateCredConfig(base.CreateCommand):
         '--credential-source-field-name',
         help='The subject token field name (key) in a JSON credential source.')
 
+    if cls._use_pluggable_auth:
+      parser.add_argument(
+          '--executable-timeout-millis',
+          hidden=True,
+          type=arg_parsers.Duration(
+              default_unit='ms',
+              lower_bound='5s',
+              upper_bound='120s',
+              parsed_unit='ms'),
+          help='The timeout duration in milliseconds for waiting for the executable to finish.'
+      )
+      parser.add_argument(
+          '--executable-output-file',
+          hidden=True,
+          help='The absolute path to the file storing the executable response.'
+      )
+
   def Run(self, args):
     cred_config.create_credential_config(args,
                                          cred_config.ConfigType.WORKFORCE_POOLS)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateCredConfigAlpha(CreateCredConfig):
+  """Create a configuration file for generated credentials.
+
+  This command creates a configuration file to allow access to authenticated
+  Google Cloud actions from a variety of external user accounts.
+  """
+
+  _use_pluggable_auth = True

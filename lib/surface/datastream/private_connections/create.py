@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.datastream import flags
 from googlecloudsdk.command_lib.datastream import resource_args
 from googlecloudsdk.command_lib.datastream.private_connections import flags as pc_flags
 
-
 DESCRIPTION = ('Create a Datastream private connection')
 EXAMPLES = """\
     To create a privateConnection called 'my-privateConnection', run:
@@ -103,6 +102,11 @@ class Create(base.Command):
             name=operation_ref.operationsId))
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=('Datastream beta version is deprecated. Please use`gcloud '
+             'datastream private-connections create` command instead.')
+)
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a Datastream private connection."""

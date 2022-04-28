@@ -55,6 +55,8 @@ class Create(base.CreateCommand):
       flags.AddDestFqdns(parser)
       flags.AddSrcRegionCodes(parser)
       flags.AddDestRegionCodes(parser)
+      flags.AddSrcThreatIntelligence(parser)
+      flags.AddDestThreatIntelligence(parser)
     flags.AddDescription(parser)
     flags.AddOrganization(parser, required=False)
     parser.display_info.AddCacheUpdater(flags.FirewallPoliciesCompleter)
@@ -77,6 +79,8 @@ class Create(base.CreateCommand):
     dest_fqdns = []
     src_region_codes = []
     dest_region_codes = []
+    src_threat_intelligence = []
+    dest_threat_intelligence = []
     enable_logging = False
     disabled = False
     if args.IsSpecified('src_ip_ranges'):
@@ -98,6 +102,10 @@ class Create(base.CreateCommand):
         src_region_codes = args.src_region_codes
       if args.IsSpecified('dest_region_codes'):
         dest_region_codes = args.dest_region_codes
+      if args.IsSpecified('src_threat_intelligence'):
+        src_threat_intelligence = args.src_threat_intelligence
+      if args.IsSpecified('dest_threat_intelligence'):
+        dest_threat_intelligence = args.dest_threat_intelligence
     if args.IsSpecified('enable_logging'):
       enable_logging = args.enable_logging
     if args.IsSpecified('disabled'):
@@ -113,7 +121,9 @@ class Create(base.CreateCommand):
           srcFqdns=src_fqdns,
           destFqdns=dest_fqdns,
           srcRegionCodes=src_region_codes,
-          destRegionCodes=dest_region_codes)
+          destRegionCodes=dest_region_codes,
+          srcThreatIntelligences=src_threat_intelligence,
+          destThreatIntelligences=dest_threat_intelligence)
     else:
       matcher = holder.client.messages.FirewallPolicyRuleMatcher(
           srcIpRanges=src_ip_ranges,

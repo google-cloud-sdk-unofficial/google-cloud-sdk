@@ -55,6 +55,8 @@ class Update(base.UpdateCommand):
       flags.AddDestFqdns(parser)
       flags.AddSrcRegionCodes(parser)
       flags.AddDestRegionCodes(parser)
+      flags.AddSrcThreatIntelligence(parser)
+      flags.AddDestThreatIntelligence(parser)
     flags.AddDescription(parser)
     flags.AddNewPriority(parser, operation='update')
     flags.AddOrganization(parser, required=False)
@@ -78,6 +80,8 @@ class Update(base.UpdateCommand):
     dest_fqdns = []
     src_region_codes = []
     dest_region_codes = []
+    src_threat_intelligence = []
+    dest_threat_intelligence = []
     enable_logging = False
     disabled = False
     should_setup_match = False
@@ -110,6 +114,12 @@ class Update(base.UpdateCommand):
       if args.IsSpecified('dest_region_codes'):
         dest_region_codes = args.dest_region_codes
         should_setup_match = True
+      if args.IsSpecified('src_threat_intelligence'):
+        src_threat_intelligence = args.src_threat_intelligence
+        should_setup_match = True
+      if args.IsSpecified('dest_threat_intelligence'):
+        dest_threat_intelligence = args.dest_threat_intelligence
+        should_setup_match = True
     if args.IsSpecified('enable_logging'):
       enable_logging = args.enable_logging
     if args.IsSpecified('disabled'):
@@ -129,7 +139,9 @@ class Update(base.UpdateCommand):
             srcFqdns=src_fqdns,
             destFqdns=dest_fqdns,
             srcRegionCodes=src_region_codes,
-            destRegionCodes=dest_region_codes)
+            destRegionCodes=dest_region_codes,
+            srcThreatIntelligences=src_threat_intelligence,
+            destThreatIntelligences=dest_threat_intelligence)
       else:
         matcher = holder.client.messages.FirewallPolicyRuleMatcher(
             srcIpRanges=src_ip_ranges,

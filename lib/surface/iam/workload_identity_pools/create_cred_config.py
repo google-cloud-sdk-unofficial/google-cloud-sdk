@@ -58,6 +58,7 @@ class CreateCredConfig(base.CreateCommand):
   }
 
   _support_imdsv2 = False
+  _support_pluggable_auth = False
 
   @classmethod
   def Args(cls, parser):
@@ -71,6 +72,12 @@ class CreateCredConfig(base.CreateCommand):
         help='Location of the credential source file.')
     credential_types.add_argument(
         '--credential-source-url', help='URL to obtain the credential from.')
+    if cls._support_pluggable_auth:
+      credential_types.add_argument(
+          '--executable-command',
+          hidden=True,
+          help='The full command to run to retrieve the credential. Must be an absolute path for the program.'
+      )
     credential_types.add_argument('--aws', help='Use AWS.', action='store_true')
     credential_types.add_argument(
         '--azure', help='Use Azure.', action='store_true')
@@ -99,6 +106,22 @@ class CreateCredConfig(base.CreateCommand):
     parser.add_argument(
         '--subject-token-type',
         help='The type of token being used for authorization.')
+
+    if cls._support_pluggable_auth:
+      parser.add_argument(
+          '--executable-timeout-millis',
+          hidden=True,
+          type=arg_parsers.Duration(
+              default_unit='ms',
+              lower_bound='5s',
+              upper_bound='120s',
+              parsed_unit='ms'),
+          help='The timeout duration in milliseconds for waiting for the executable to finish.'
+      )
+      parser.add_argument(
+          '--executable-output-file',
+          hidden=True,
+          help='The absolute path to the file storing the executable response.')
 
     if cls._support_imdsv2:
       parser.add_argument(
@@ -147,6 +170,7 @@ class CreateCredConfigAlpha(CreateCredConfig):
   }
 
   _support_imdsv2 = True
+  _support_pluggable_auth = True
 
   def _ValidateArgs(self, args):
     if args.enable_imdsv2 and not args.aws:

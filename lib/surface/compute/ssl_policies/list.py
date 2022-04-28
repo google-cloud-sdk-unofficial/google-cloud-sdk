@@ -20,11 +20,13 @@ from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.ssl_policies import flags
 from googlecloudsdk.core import properties
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Compute Engine SSL policies."""
 
@@ -51,4 +53,30 @@ class List(base.ListCommand):
         batch_size=None)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(base.ListCommand):
+  """List SSL policies."""
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(flags.DEFAULT_AGGREGATED_LIST_FORMAT)
+    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
+
+    list_implementation = lister.MultiScopeLister(
+        client,
+        regional_service=client.apitools_client.regionSslPolicies,
+        global_service=client.apitools_client.sslPolicies,
+        aggregation_service=client.apitools_client.sslPolicies)
+
+    return lister.Invoke(request_data, list_implementation)
+
+
 List.detailed_help = base_classes.GetGlobalListerHelp('SSL policies')
+ListAlpha.detailed_help = base_classes.GetGlobalRegionalListerHelp(
+    'SSL policies')

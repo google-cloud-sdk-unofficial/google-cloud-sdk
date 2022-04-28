@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,32 +12,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""'vmware nodetypes list' command."""
-
+"""'vmware private-clouds describe' command."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-
-from googlecloudsdk.api_lib.vmware.nodetypes import NodeTypesClient
+from googlecloudsdk.api_lib.vmware.privateclouds import PrivateCloudsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
 
 DETAILED_HELP = {
     'DESCRIPTION':
         """
-          List VMware Engine node types.
+          Describe a VMware Engine private cloud.
         """,
     'EXAMPLES':
         """
-          To list VMware Engine node types, run:
+          To get a description of a private cloud called ``my-private-cloud'' in project ``my-project'' and zone ``us-west2-a'', run:
 
-            $ {command} --location=us-central1 --project=my-project
+            $ {command} my-private-cloud --location=us-west2-a --project=my-project
 
           Or:
 
-            $ {command}
+            $ {command} my-private-cloud
 
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
     """,
@@ -45,32 +43,23 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
-  """List supported Google Cloud VMware Engine node types."""
+class DescribeAlpha(base.DescribeCommand):
+  """Describe a Google Cloud VMware Engine private cloud."""
 
   detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-
-    flags.AddLocationArgToParser(parser)
-    parser.display_info.AddFormat("""\
-            table(
-          nodeTypeId:label=ID,
-          displayName:label=NAME,
-          virtualCpuCount,
-          memoryGb,diskSizeGb
-      )""")
+    flags.AddPrivatecloudArgToParser(parser, positional=True)
 
   def Run(self, args):
-    location = args.CONCEPTS.location.Parse()
-    client = NodeTypesClient()
-    return client.List(location, limit=args.limit)
+    privatecloud = args.CONCEPTS.private_cloud.Parse()
+    client = PrivateCloudsClient()
+    return client.Get(privatecloud)
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(ListAlpha):
-  """List supported Google Cloud VMware Engine node types."""
-
+class DescribeBeta(DescribeAlpha):
+  """Describe a Google Cloud VMware Engine private cloud."""

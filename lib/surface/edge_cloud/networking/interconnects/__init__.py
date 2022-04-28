@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Interconnects(base.Group):
   """Manage Distributed Cloud Edge Network interconnects."""

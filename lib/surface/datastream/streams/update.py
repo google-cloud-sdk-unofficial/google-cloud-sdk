@@ -117,6 +117,11 @@ class Update(base.Command):
             name=operation_ref.operationsId))
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=('Datastream beta version is deprecated. Please use`gcloud '
+             'datastream streams update` command instead.')
+)
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   """Updates a Datastream stream."""

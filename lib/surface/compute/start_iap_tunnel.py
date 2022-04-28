@@ -56,11 +56,8 @@ specify the `--region` and `--network` flags:
 
 _NUMPY_HELP_TEXT = """
 
-To increase the performance of the tunnel, consider installing NumPy. To install
-NumPy, see: https://numpy.org/install/.
-After installing NumPy, run the following command to allow gcloud to access
-external packages:
-  export CLOUDSDK_PYTHON_SITEPACKAGES=1
+To increase the performance of the tunnel, consider installing NumPy. For instructions,
+please see https://cloud.google.com/iap/docs/using-tcp-forwarding#increasing_the_tcp_upload_bandwidth
 """
 
 

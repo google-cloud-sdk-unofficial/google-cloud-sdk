@@ -93,7 +93,7 @@ _DESCRIPTION_TEXT = """
   all text files from the top-level of a bucket to your current directory:
 
     gsutil cp gs://my-bucket/*.txt .
-  
+
   You can use the ``-n`` option to prevent overwriting the content of
   existing files. The following example downloads text files from a bucket
   without clobbering the data in your directory:
@@ -608,8 +608,8 @@ _OPTIONS_TEXT = """
                  use these URLs to safely make concurrent upload requests, because
                  Cloud Storage refuses to perform an update if the current
                  object version doesn't match the version-specific URL. See
-                 `Generation numbers and preconditions
-                 <https://cloud.google.com/storage/docs/generations-preconditions>`_
+                 `generation numbers
+                 <https://cloud.google.com/storage/docs/metadata#generation-number>`_
                  for more details.
 
   -z <ext,...>   Applies gzip content-encoding to any file upload whose
@@ -757,9 +757,12 @@ class CpCommand(Command):
   gcloud_storage_map = GcloudStorageMap(
       gcloud_command='alpha storage cp',
       flag_map={
+          '-e': GcloudStorageFlag('--ignore-symlinks'),
+          '-n': GcloudStorageFlag('--no-clobber'),
           '-r': GcloudStorageFlag('-r'),
           '-R': GcloudStorageFlag('-r'),
-          '-e': GcloudStorageFlag('--ignore-symlinks')
+          '-s': GcloudStorageFlag('--storage-class'),
+          '-v': GcloudStorageFlag('--print-created-message'),
       },
   )
 
@@ -809,21 +812,13 @@ class CpCommand(Command):
         exp_src_url.url_string):
       return
 
-    if copy_helper_opts.perform_mv:
-      if copy_object_info.names_container:
-        # Use recursion_requested when performing name expansion for the
-        # directory mv case so we can determine if any of the source URLs are
-        # directories (and then use cp -r and rm -r to perform the move, to
-        # match the behavior of Linux mv (which when moving a directory moves
-        # all the contained files).
-        self.recursion_requested = True
-        # Disallow wildcard src URLs when moving directories, as supporting it
-        # would make the name transformation too complex and would also be
-        # dangerous (e.g., someone could accidentally move many objects to the
-        # wrong name, or accidentally overwrite many objects).
-        if ContainsWildcard(src_url.url_string):
-          raise CommandException('The mv command disallows naming source '
-                                 'directories using wildcards')
+    if copy_helper_opts.perform_mv and copy_object_info.names_container:
+      # Use recursion_requested when performing name expansion for the
+      # directory mv case so we can determine if any of the source URLs are
+      # directories (and then use cp -r and rm -r to perform the move, to
+      # match the behavior of Linux mv (which when moving a directory moves
+      # all the contained files).
+      self.recursion_requested = True
 
     if (copy_object_info.exp_dst_url.IsFileUrl() and
         not os.path.exists(copy_object_info.exp_dst_url.object_name) and
@@ -840,6 +835,7 @@ class CpCommand(Command):
         exp_src_url,
         src_url_names_container,
         have_multiple_srcs,
+        copy_object_info.is_multi_top_level_source_request,
         copy_object_info.exp_dst_url,
         copy_object_info.have_existing_dst_container,
         self.recursion_requested,
@@ -900,6 +896,35 @@ class CpCommand(Command):
     try:
       if copy_helper_opts.use_manifest:
         self.manifest.Initialize(exp_src_url.url_string, dst_url.url_string)
+
+      if (self.recursion_requested and
+          copy_object_info.exp_dst_url.object_name and dst_url.IsFileUrl()):
+
+        # exp_dst_url is the wildcard-expanded path passed by the user:
+        #   exp_dst_url => ~/dir
+        #   container => /usr/name/dir
+        container = os.path.abspath(copy_object_info.exp_dst_url.object_name)
+
+        # dst_url holds the complete path of the object's destination:
+        #   dst_url => /usr/name/dir/../file.txt
+        #   abspath => /usr/name/file.txt
+        #
+        # Taking the common path of this and container yields: /usr/name,
+        # which does not start with container when the inclusion of '..' strings
+        # results in a copy outside of the container.
+        if not os.path.commonpath([
+            container, os.path.abspath(dst_url.object_name)
+        ]).startswith(container):
+          self.logger.warn(
+              'Skipping copy of source URL %s because it would be copied '
+              'outside the expected destination directory: %s.' %
+              (exp_src_url, container))
+          if copy_helper_opts.use_manifest:
+            self.manifest.SetResult(
+                exp_src_url.url_string, 0, 'skip',
+                'Would have copied outside the destination directory.')
+          return
+
       _, bytes_transferred, result_url, md5 = copy_helper.PerformCopy(
           self.logger,
           exp_src_url,

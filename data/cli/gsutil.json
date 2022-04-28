@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "5.8",
+  "CLI_VERSION": "5.9",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -951,7 +951,7 @@
           "attr": {},
           "category": "",
           "default": "",
-          "description": "Prints the version-specific URL for each uploaded object. You can\n use these URLs to safely make concurrent upload requests, because\n Cloud Storage refuses to perform an update if the current\n object version doesn't match the version-specific URL. See\n `Generation numbers and preconditions\n <https://cloud.google.com/storage/docs/generations-preconditions>`_\n for more details.",
+          "description": "Prints the version-specific URL for each uploaded object. You can\n use these URLs to safely make concurrent upload requests, because\n Cloud Storage refuses to perform an update if the current\n object version doesn't match the version-specific URL. See\n `generation numbers\n <https://cloud.google.com/storage/docs/metadata#generation-number>`_\n for more details.",
           "group": "",
           "is_global": false,
           "is_hidden": false,
@@ -3093,20 +3093,6 @@
           "type": "bool",
           "value": ""
         },
-        "--placement": {
-          "attr": {},
-          "category": "",
-          "default": "",
-          "description": "reg1,reg2 Two regions that form the cutom dual-region.\n Only regions within the same continent are or will ever\n be valid. Invalid location pairs (such as\n mixed-continent, or with unsupported regions)\n will return an error.",
-          "group": "",
-          "is_global": false,
-          "is_hidden": false,
-          "is_required": false,
-          "name": "--placement",
-          "nargs": "0",
-          "type": "bool",
-          "value": ""
-        },
         "--retention": {
           "attr": {},
           "category": "",
@@ -3153,7 +3139,7 @@
           "attr": {},
           "category": "",
           "default": "",
-          "description": "class Specifies the default storage class.\n Default is \"Standard\".",
+          "description": "class Specifies the default storage class. Default is\n ``Standard``. See `Available storage classes\n <https://cloud.google.com/storage/docs/storage-classes#classes>`_\n for a list of possible values.",
           "group": "",
           "is_global": false,
           "is_hidden": false,

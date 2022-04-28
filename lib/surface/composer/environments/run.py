@@ -40,7 +40,6 @@ DEPRECATION_WARNING = ('Because Cloud Composer manages the Airflow metadata '
                        'you understand the outcome.')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Run(base.Command):
   """Run an Airflow sub-command remotely in a Cloud Composer environment.
 
@@ -59,6 +58,15 @@ class Run(base.Command):
   *my-environment* environment:
 
     airflow trigger_dag some_dag --run_id=foo
+
+  The following command (for environments with Airflow 2.0+):
+
+    {command} myenv dags list
+
+  is equivalent to running the following command from a shell inside the
+  *my-environment* environment:
+
+    airflow dags list
   """
 
   SUBCOMMAND_ALLOWLIST = command_util.SUBCOMMAND_ALLOWLIST
@@ -213,7 +221,15 @@ class Run(base.Command):
           'with Airflow version 2.0.0 or higher.')
 
   def ConvertKubectlError(self, error, env_obj):
-    del env_obj  # Unused argument.
+    is_private = (
+        env_obj.config.privateEnvironmentConfig and
+        env_obj.config.privateEnvironmentConfig.enablePrivateEnvironment)
+    if is_private:
+      return command_util.Error(
+          str(error) +
+          ' Make sure you have followed https://cloud.google.com/composer/docs/how-to/accessing/airflow-cli#private-ip '
+          'to enable access to your private Cloud Composer environment from '
+          'your machine.')
     return error
 
   def _ExtractAirflowVersion(self, image_version):
@@ -274,47 +290,3 @@ class Run(base.Command):
       except command_util.KubectlError as e:
         raise self.ConvertKubectlError(e, env_obj)
 
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class RunBeta(Run):
-  """Run an Airflow sub-command remotely in a Cloud Composer environment.
-
-  Executes an Airflow CLI sub-command remotely in an environment. If the
-  sub-command takes flags, separate the environment name from the sub-command
-  and its flags with ``--''. This command waits for the sub-command to
-  complete; its exit code will match the sub-command's exit code.
-
-  ## EXAMPLES
-
-    The following command:
-
-    {command} myenv trigger_dag -- some_dag --run_id=foo
-
-  is equivalent to running the following command from a shell inside the
-  *my-environment* environment:
-
-    airflow trigger_dag some_dag --run_id=foo
-
-  The following command (for environments with Airflow 2.0+):
-
-    {command} myenv dags list
-
-  is equivalent to running the following command from a shell inside the
-  *my-environment* environment:
-
-    airflow dags list
-  """
-
-  SUBCOMMAND_ALLOWLIST = command_util.SUBCOMMAND_ALLOWLIST_BETA
-
-  def ConvertKubectlError(self, error, env_obj):
-    is_private = (
-        env_obj.config.privateEnvironmentConfig and
-        env_obj.config.privateEnvironmentConfig.enablePrivateEnvironment)
-    if is_private:
-      return command_util.Error(
-          str(error) +
-          ' Make sure you have followed https://cloud.google.com/composer/docs/how-to/accessing/airflow-cli#running_commands_on_a_private_ip_environment '
-          'to enable access to your private Cloud Composer environment from '
-          'your machine.')
-    return error

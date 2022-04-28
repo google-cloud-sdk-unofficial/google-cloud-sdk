@@ -333,6 +333,8 @@ class CreateHelper(object):
         backend_service,
         support_strong_session_affinity=self._support_strong_session_affinity)
 
+    self._ApplyIapArgs(client.messages, args.iap, backend_service)
+
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
           client.messages.BackendService.SessionAffinityValueValuesEnum(

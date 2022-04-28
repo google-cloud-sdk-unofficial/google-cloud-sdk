@@ -26,7 +26,7 @@ from googlecloudsdk.core import properties
 
 
 def _CommonArgs(parser):
-  """Register flags for this command.
+  """Registers flags for this command.
 
   Args:
     parser: argparse.ArgumentParser to register arguments with.
@@ -45,6 +45,46 @@ def _CommonArgs(parser):
       '--image',
       help=('Path to the any image registry location of the prebuilt flex '
             'template image.'))
+
+  parser.add_argument(
+      '--image-repository-username-secret-id',
+      help=('Secret Manager secret id for the username to authenticate to '
+            'private registry. Should be in the format '
+            'projects/{project}/secrets/{secret}/versions/{secret_version} or '
+            'projects/{project}/secrets/{secret}. If the version is not '
+            'provided latest version will be used.'),
+      type=arg_parsers.RegexpValidator(
+          r'^projects\/[^\n\r\/]+\/secrets\/[^\n\r\/]+(\/versions\/[^\n\r\/]+)?$',
+          'Must be in the format '
+          '\'projects/{project}/secrets/{secret}\' or'
+          '\'projects/{project}/secrets/{secret}/versions/{secret_version}\'.'))
+
+  parser.add_argument(
+      '--image-repository-password-secret-id',
+      help=('Secret Manager secret id for the password to authenticate to '
+            'private registry. Should be in the format '
+            'projects/{project}/secrets/{secret}/versions/{secret_version} or '
+            'projects/{project}/secrets/{secret}. If the version is not '
+            'provided latest version will be used.'),
+      type=arg_parsers.RegexpValidator(
+          r'^projects\/[^\n\r\/]+\/secrets\/[^\n\r\/]+(\/versions\/[^\n\r\/]+)?$',
+          'Must be in the format '
+          '\'projects/{project}/secrets/{secret}\' or'
+          '\'projects/{project}/secrets/{secret}/versions/{secret_version}\'.'))
+
+  parser.add_argument(
+      '--image-repository-cert-path',
+      help=('The full URL to self-signed certificate of private registry in '
+            'Cloud Storage. For example, gs://mybucket/mycerts/selfsigned.crt. '
+            'The certificate provided in Cloud Storage must be DER-encoded and '
+            'may be supplied in binary or printable (Base64) encoding. If the '
+            'certificate is provided in Base64 encoding, it must be bounded at '
+            'the beginning by -----BEGIN CERTIFICATE-----, and must be bounded '
+            'at the end by -----END CERTIFICATE-----. If this parameter is '
+            'provided, the docker daemon in the template launcher will be '
+            'instructed to trust that certificate. '),
+      type=arg_parsers.RegexpValidator(r'^gs://.*',
+                                       'Must begin with \'gs://\''))
 
   parser.add_argument(
       '--sdk-language',
@@ -268,8 +308,10 @@ def _CommonRun(args):
                                                   args.gcs_log_dir)
 
   return apis.Templates.BuildAndStoreFlexTemplateFile(
-      args.template_file_gcs_path, image_path,
-      args.metadata_file, args.sdk_language, args.print_only, template_args)
+      args.template_file_gcs_path, image_path, args.metadata_file,
+      args.sdk_language, args.print_only, template_args,
+      args.image_repository_username_secret_id,
+      args.image_repository_password_secret_id, args.image_repository_cert_path)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)

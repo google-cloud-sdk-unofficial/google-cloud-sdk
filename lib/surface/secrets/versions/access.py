@@ -26,6 +26,14 @@ from googlecloudsdk.command_lib.secrets import fmt as secrets_fmt
 from googlecloudsdk.command_lib.util import crc32c
 
 
+CHECKSUM_VERIFICATION_FAILURE_MESSAGE = (
+    'An incorrect data_crc32c was calculated for the provided payload. This '
+    'might be a transient issue that resolves with a retry. If this is '
+    'happening repeatedly open an issue with Secret Manager at '
+    'https://issuetracker.google.com/issues/new?component=784854&template=1380926.'
+)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Access(base.DescribeCommand):
   # pylint: disable=line-too-long
@@ -55,7 +63,11 @@ class Access(base.DescribeCommand):
 
   def Run(self, args):
     version_ref = args.CONCEPTS.version.Parse()
-    return secrets_api.Versions().Access(version_ref)
+    version = secrets_api.Versions().Access(version_ref)
+    if version.payload.dataCrc32c is None or crc32c.does_data_match_checksum(
+        version.payload.data, version.payload.dataCrc32c):
+      return version
+    raise exceptions.HttpException(CHECKSUM_VERIFICATION_FAILURE_MESSAGE)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -88,8 +100,7 @@ class AccessBeta(Access):
   def Run(self, args):
     version_ref = args.CONCEPTS.version.Parse()
     version = secrets_api.Versions().Access(version_ref)
-    if crc32c.does_data_match_checksum(version.payload.data,
-                                       version.payload.dataCrc32c):
+    if version.payload.dataCrc32c is None or crc32c.does_data_match_checksum(
+        version.payload.data, version.payload.dataCrc32c):
       return version
-    raise exceptions.HttpException(
-        'Payload data corruption occurred, please retry.')
+    raise exceptions.HttpException(CHECKSUM_VERIFICATION_FAILURE_MESSAGE)

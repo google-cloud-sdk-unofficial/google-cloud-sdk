@@ -32,7 +32,7 @@ def _GetUri(connection_profile_info):
       connection_profile_info.name)
 
 
-class _ConnectionProfileInfo(object):
+class _ConnectionProfileInfo:
   """Container for connection profile data using in list display."""
 
   def __init__(self, message, db_type):
@@ -42,7 +42,7 @@ class _ConnectionProfileInfo(object):
     self.create_time = message.createTime
 
 
-class _List(object):
+class _List:
   """Base class for listing Datastream connection profiles."""
 
   @classmethod
@@ -77,15 +77,60 @@ class _List(object):
     project_id = properties.VALUES.core.project.Get(required=True)
     profiles = cp_client.List(project_id, args)
 
-    return [_ConnectionProfileInfo(profile, self._GetType(profile))
-            for profile in profiles]
+    return [
+        _ConnectionProfileInfo(profile, self._GetType(profile))
+        for profile in profiles
+    ]
 
   def _GetType(self, profile):
+    """Gets DB type of a connection profile.
+
+    Args:
+      profile: A connection configuration type of a connection profile.
+
+    Returns:
+      A String representation of the provided profile DB type.
+      Default is None.
+    """
     raise NotImplementedError
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class ListBETA(_List, base.ListCommand):
+@base.Deprecate(
+    is_removed=False,
+    warning=("Datastream beta version is deprecated. Please use`gcloud "
+             "datastream connection-profiles list` command instead.")
+)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(_List, base.ListCommand):
+  """List Datastream connection profiles.
+
+  List connection profiles.
+
+  ## API REFERENCE
+    This command uses the datastream/v1 API. The full documentation
+    for this API can be found at: https://cloud.google.com/datastream/
+
+  ## EXAMPLES
+    To list all connection profiles in a project and location 'us-central1',
+    run:
+
+        $ {command} --location=us-central1
+
+  """
+
+  def _GetType(self, profile):
+    if profile.mysqlProfile:
+      return "MySQL"
+    elif profile.oracleProfile:
+      return "Oracle"
+    elif profile.gcsProfile:
+      return "Google Cloud Storage"
+    else:
+      return None
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(_List, base.ListCommand):
   """List Datastream connection profiles.
 
   List connection profiles.

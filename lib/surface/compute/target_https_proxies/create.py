@@ -146,6 +146,7 @@ class Create(base.CreateCommand):
   _include_l7_internal_load_balancing = True
   _traffic_director_security = False
   _certificate_map = False
+  _regional_ssl_policies = False
   _list_format = flags.DEFAULT_LIST_FORMAT
 
   SSL_CERTIFICATES_ARG = None
@@ -178,9 +179,12 @@ class Create(base.CreateCommand):
         ._include_l7_internal_load_balancing)
     cls.URL_MAP_ARG.AddArgument(parser)
 
-    cls.SSL_POLICY_ARG = (
-        ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
-            'HTTPS', required=False))
+    if cls._regional_ssl_policies:
+      cls.SSL_POLICY_ARG = ssl_policies_flags.GetSslPolicyMultiScopeArgumentForOtherResource(
+          'HTTPS', required=False)
+    else:
+      cls.SSL_POLICY_ARG = ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
+          'HTTPS', required=False)
     cls.SSL_POLICY_ARG.AddArgument(parser)
 
     _Args(
@@ -201,7 +205,8 @@ class Create(base.CreateCommand):
         args, self.SSL_CERTIFICATES_ARG, target_https_proxy_ref,
         holder.resources)
     ssl_policy_ref = self.SSL_POLICY_ARG.ResolveAsResource(
-        args, holder.resources) if args.ssl_policy else None
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL
+    ) if args.ssl_policy else None
     certificate_map_ref = args.CONCEPTS.certificate_map.Parse(
     ) if self._certificate_map else None
     return _Run(args, holder, target_https_proxy_ref, url_map_ref,
@@ -216,7 +221,6 @@ class CreateBeta(Create):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+class CreateAlpha(CreateBeta):
   _traffic_director_security = True
-  _certificate_map = True
-  _list_format = flags.DEFAULT_BETA_LIST_FORMAT
+  _regional_ssl_policies = True

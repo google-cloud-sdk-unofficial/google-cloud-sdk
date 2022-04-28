@@ -35,33 +35,31 @@ from googlecloudsdk.command_lib.dataproc.gke_clusters import GkeNodePoolTargetsP
 from googlecloudsdk.core import log
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a GKE-based virtual cluster."""
 
   detailed_help = {
       'EXAMPLES':
           """\
-          Create a Dataproc on GKE Cluster in us-central1 on a GKE cluster in
+          Create a Dataproc on GKE cluster in us-central1 on a GKE cluster in
           the same project and region with default values:
 
-            $ {command} my-cluster --region=us-central1 --gke-cluster=my-gke-cluster --spark-engine-version=2.4
+            $ {command} my-cluster --region=us-central1 --gke-cluster=my-gke-cluster --spark-engine-version=latest --pools='name=dp,roles=default'
 
-          Create a Dataproc on GKE Cluster in us-central1 on a GKE cluster in
+          Create a Dataproc on GKE cluster in us-central1 on a GKE cluster in
           the same project and zone us-central1-f with default values:
 
-            $ {command} my-cluster --region=us-central1 --gke-cluster=my-gke-cluster --gke-cluster-location=us-central1-f --spark-engine-version=3.1
+            $ {command} my-cluster --region=us-central1 --gke-cluster=my-gke-cluster --gke-cluster-location=us-central1-f --spark-engine-version=3.1 --pools='name=dp,roles=default'
 
-          Create a Dataproc on GKE Cluster in us-central1 with machine type
-          'e2-standard-4', autoscaling 0-10 Nodes per zone.
+          Create a Dataproc on GKE cluster in us-central1 with machine type
+          'e2-standard-4', autoscaling 5-15 nodes per zone.
 
-            $ {command} my-cluster --region='us-central1' --gke-cluster='projects/my-project/locations/us-central1/clusters/my-gke-cluster' --spark-engine-version=dataproc-1.5 --pools='name=dp-default,roles=default,machineType=e2-standard-4,min=0,max=10'
+            $ {command} my-cluster --region='us-central1' --gke-cluster='projects/my-project/locations/us-central1/clusters/my-gke-cluster' --spark-engine-version=dataproc-1.5 --pools='name=dp-default,roles=default,machineType=e2-standard-4,min=5,max=15'
 
-          Create a Dataproc on GKE Cluster in us-central1 with two distinct
-          NodePools.
+          Create a Dataproc on GKE cluster in us-central1 with two distinct
+          node pools.
 
-            $ {command} my-cluster --region='us-central1' --gke-cluster='projects/my-project/locations/us-central1/clusters/my-gke-cluster' --spark-engine-version='dataproc-2.0' --pools='name=dp-default,roles=default,machineType=e2-standard-4' --pools='name=workers,roles=spark-drivers;spark-executors,machineType=n2-standard-8
+            $ {command} my-cluster --region='us-central1' --gke-cluster='my-gke-cluster' --spark-engine-version='dataproc-2.0' --pools='name=dp-default,roles=default,machineType=e2-standard-4' --pools='name=workers,roles=spark-drivers;spark-executors,machineType=n2-standard-8
           """
   }
 
@@ -84,9 +82,8 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--staging-bucket',
         help="""\
-        The Cloud Storage bucket to use by default to stage job
-        dependencies, miscellaneous config files, and job driver console output
-        when using this cluster.
+        The Cloud Storage bucket to use to stage job dependencies, miscellaneous
+        config files, and job driver console output when using this cluster.
         """)
 
     parser.add_argument(

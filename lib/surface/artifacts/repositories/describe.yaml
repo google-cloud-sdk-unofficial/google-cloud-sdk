@@ -23,3 +23,4 @@
   response:
     modify_response_hooks:
     - googlecloudsdk.command_lib.artifacts.util:AddEncryptionLogToRepositoryInfo
+    - googlecloudsdk.command_lib.artifacts.util:ConvertBytesToMB

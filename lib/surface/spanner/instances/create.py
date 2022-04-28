@@ -26,7 +26,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Cloud Spanner instance."""
 
@@ -53,39 +52,8 @@ class Create(base.CreateCommand):
     flags.Instance().AddToParser(parser)
     flags.Config().AddToParser(parser)
     flags.Description().AddToParser(parser)
-    flags.Nodes().AddToParser(parser)
-    base.ASYNC_FLAG.AddToParser(parser)
-    parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    op = instances.Create(
-        args.instance, args.config, args.description, args.nodes)
-    if args.async_:
-      return op
-    instance_operations.Await(op, 'Creating instance')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class BetaCreate(Create):
-  """Create a Cloud Spanner instance."""
-
-  @staticmethod
-  def Args(parser):
-    """See base class."""
-    flags.Instance().AddToParser(parser)
-    flags.Config().AddToParser(parser)
-    flags.Description().AddToParser(parser)
     group_parser = parser.add_argument_group(mutex=True, required=True)
-    flags.Nodes(required=False).AddToParser(group_parser)
+    flags.Nodes().AddToParser(group_parser)
     flags.ProcessingUnits().AddToParser(group_parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)

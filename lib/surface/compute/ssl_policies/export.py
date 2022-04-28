@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.ssl_policies import ssl_policies_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_policies import flags
 from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core.util import files
@@ -54,7 +55,7 @@ class Export(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    cls.SSL_POLICY_ARG = flags.GetSslPolicyArgument()
+    cls.SSL_POLICY_ARG = flags.GetSslPolicyMultiScopeArgument()
     cls.SSL_POLICY_ARG.AddArgument(parser, operation_type='export')
     export_util.AddExportFlags(parser, cls.GetSchemaPath(for_help=True))
 
@@ -66,7 +67,8 @@ class Export(base.Command):
     ssl_policy_ref = self.SSL_POLICY_ARG.ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+        scope_lister=compute_flags.GetDefaultScopeLister(client),
+        default_scope=compute_scope.ScopeEnum.GLOBAL)
 
     ssl_policy = helper.Describe(ssl_policy_ref)
 

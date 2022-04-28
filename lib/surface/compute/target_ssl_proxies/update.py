@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.certificate_manager import resource_args
 from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.backend_services import (
     flags as backend_service_flags)
 from googlecloudsdk.command_lib.compute.ssl_certificates import (
@@ -47,6 +48,7 @@ class Update(base.SilentCommand):
   """
 
   _certificate_map = False
+  _regional_ssl_policies = False
 
   BACKEND_SERVICE_ARG = None
   SSL_CERTIFICATES_ARG = None
@@ -71,9 +73,14 @@ class Update(base.SilentCommand):
           parser, cust_metavar='SSL_CERTIFICATE')
 
     group = parser.add_mutually_exclusive_group()
-    cls.SSL_POLICY_ARG = (
-        ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
-            'SSL', required=False))
+    if cls._regional_ssl_policies:
+      cls.SSL_POLICY_ARG = (
+          ssl_policies_flags.GetSslPolicyMultiScopeArgumentForOtherResource(
+              'SSL', required=False))
+    else:
+      cls.SSL_POLICY_ARG = (
+          ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
+              'SSL', required=False))
     cls.SSL_POLICY_ARG.AddArgument(group)
     ssl_policies_flags.GetClearSslPolicyArgumentForOtherResource(
         'SSL', required=False).AddToParser(group)
@@ -135,8 +142,9 @@ class Update(base.SilentCommand):
                        service=backend_service_ref.SelfLink())))))
 
     if args.proxy_header:
-      proxy_header = (messages.TargetSslProxiesSetProxyHeaderRequest.
-                      ProxyHeaderValueValuesEnum(args.proxy_header))
+      proxy_header = (
+          messages.TargetSslProxiesSetProxyHeaderRequest
+          .ProxyHeaderValueValuesEnum(args.proxy_header))
       requests.append((client.targetSslProxies, 'SetProxyHeader',
                        messages.ComputeTargetSslProxiesSetProxyHeaderRequest(
                            project=target_ssl_proxy_ref.project,
@@ -144,10 +152,13 @@ class Update(base.SilentCommand):
                            targetSslProxiesSetProxyHeaderRequest=(
                                messages.TargetSslProxiesSetProxyHeaderRequest(
                                    proxyHeader=proxy_header)))))
-
-    ssl_policy = messages.SslPolicyReference(
-        sslPolicy=self.SSL_POLICY_ARG.ResolveAsResource(args, holder.resources)
-        .SelfLink()) if args.IsSpecified('ssl_policy') else None
+    ssl_policy = None
+    if args.IsSpecified('ssl_policy'):
+      ssl_policy = messages.SslPolicyReference(
+          sslPolicy=self.SSL_POLICY_ARG.ResolveAsResource(
+              args,
+              holder.resources,
+              default_scope=compute_scope.ScopeEnum.GLOBAL).SelfLink())
     clear_ssl_policy = args.clear_ssl_policy
 
     if ssl_policy or clear_ssl_policy:
@@ -205,7 +216,7 @@ class Update(base.SilentCommand):
     return self._SendRequests(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   """Update a target SSL proxy.
 
@@ -220,3 +231,20 @@ class UpdateBeta(Update):
   """
 
   _certificate_map = True
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Update a target SSL proxy.
+
+  *{command}* is used to replace the SSL certificate, backend service, proxy
+  header or SSL policy of existing target SSL proxies. A target SSL proxy is
+  referenced by one or more forwarding rules which define which packets the
+  proxy is responsible for routing. The target SSL proxy in turn points to a
+  backend service which will handle the requests. The target SSL proxy also
+  points to at most 15 SSL certificates used for server-side authentication
+  or one certificate map. The target SSL proxy can be associated with at most
+  one SSL policy.
+  """
+
+  _regional_ssl_policies = True

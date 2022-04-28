@@ -76,4 +76,6 @@ class Delete(base.Command):
         plurality_checkable_bucket_iterator,
         parallelizable=True,
         task_status_queue=task_status_queue,
-        progress_type=task_status.ProgressType.COUNT)
+        progress_manager_args=task_status.ProgressManagerArgs(
+            increment_type=task_status.IncrementType.INTEGER,
+            manifest_path=None))

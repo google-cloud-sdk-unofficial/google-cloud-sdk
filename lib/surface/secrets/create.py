@@ -269,7 +269,9 @@ class Create(base.CreateCommand):
         rotation_period=args.rotation_period)
 
     if data:
-      version = secrets_api.Secrets().AddVersion(secret_ref, data)
+      data_crc32c = crc32c.get_crc32c(data)
+      version = secrets_api.Secrets().AddVersion(
+          secret_ref, data, crc32c.get_checksum(data_crc32c))
       version_ref = secrets_args.ParseVersionRef(version.name)
       secrets_log.Versions().Created(version_ref)
     else:
@@ -531,7 +533,7 @@ class CreateBeta(Create):
 
     if data:
       data_crc32c = crc32c.get_crc32c(data)
-      version = secrets_api.Secrets().AddVersionBeta(
+      version = secrets_api.Secrets().AddVersion(
           secret_ref, data, crc32c.get_checksum(data_crc32c))
       version_ref = secrets_args.ParseVersionRef(version.name)
       secrets_log.Versions().Created(version_ref)

@@ -28,26 +28,27 @@ class Create(base.Command):
   detailed_help = {
       'EXAMPLES':
           """\
-          To create a DestGroup with name GROUP_NAME, in region REGION in the
-          current project run:
+          To create a DestGroup with name ``GROUP_NAME'', in region ``REGION''
+          in the current project run:
 
           $ {command} DEST_GROUP_NAME --region=REGION
 
-          To create a DestGroup with name GROUP_NAME, in region REGION with ips
-          IP1, IP2 in the current project run:
+          To create a DestGroup with name ``GROUP_NAME'', in region ``REGION''
+          with ip ranges ``CIDR1'', ``CIDR2'' in the current project run:
 
-          $ {command} DEST_GROUP_NAME --region=REGION --ip-range-list=IP1,IP2
+          $ {command} DEST_GROUP_NAME --region=REGION --ip-range-list=CIDR1,CIDR2
 
-          To create a DestGroup with name GROUP_NAME, in region REGION with fqdns
-          FQDN1, FQDN2 in the current project run:
-
-          $ {command} DEST_GROUP_NAME --region=REGION --fqdn-list=FQDN1,FQDN2
-
-          To create a DestGroup with name GROUP_NAME, in region REGION with fqdns
-          FQDN1, FQDN2 and ips IP1,IP2 in the project  PROJECT_ID run:
+          To create a DestGroup with name ``GROUP_NAME'', in region ``REGION''
+          with fqdns ``FQDN1'', ``FQDN2'' in the current project run:
 
           $ {command} DEST_GROUP_NAME --region=REGION --fqdn-list=FQDN1,FQDN2
-          --ip-range-list=IP1,IP2 --project=PROJECT_ID
+
+          To create a DestGroup with name ``GROUP_NAME'', in region ``REGION''
+          with fqdns ``FQDN1'', ``FQDN2'' and ip ranges ``CIDR1'',``CIDR2'' in
+          the project ``PROJECT_ID'' run:
+
+          $ {command} DEST_GROUP_NAME --region=REGION --fqdn-list=FQDN1,FQDN2
+          --ip-range-list=CIDR1,CIDR2 --project=PROJECT_ID
           """,
   }
 
@@ -60,7 +61,7 @@ class Create(base.Command):
         to capture some information, but behaves like an ArgumentParser.
     """
     iap_util.AddDestGroupArgs(parser)
-    iap_util.AddDestGroupIpAndFqdnArgs(parser)
+    iap_util.AddDestGroupCreateIpAndFqdnArgs(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):

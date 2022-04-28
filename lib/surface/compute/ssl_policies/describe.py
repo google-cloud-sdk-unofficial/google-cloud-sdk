@@ -22,12 +22,11 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.ssl_policies import ssl_policies_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_policies import flags
 
 
-_SSL_POLICY_ARG = flags.GetSslPolicyArgument()
-
-
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine ssl policy.
 
@@ -41,16 +40,42 @@ class Describe(base.DescribeCommand):
   backends.
   """
 
-  @staticmethod
-  def Args(parser):
-    _SSL_POLICY_ARG.AddArgument(parser, operation_type='describe')
+  _regional_ssl_policies = False
+
+  SSL_POLICY_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    if cls._regional_ssl_policies:
+      cls.SSL_POLICY_ARG = flags.GetSslPolicyMultiScopeArgument()
+    else:
+      cls.SSL_POLICY_ARG = flags.GetSslPolicyArgument()
+    cls.SSL_POLICY_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):
     """Issues the request to describe a SSL policy."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     helper = ssl_policies_utils.SslPolicyHelper(holder)
-    ref = _SSL_POLICY_ARG.ResolveAsResource(
+    ref = self.SSL_POLICY_ARG.ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
+        scope_lister=compute_flags.GetDefaultScopeLister(holder.client),
+        default_scope=compute_scope.ScopeEnum.GLOBAL)
     return helper.Describe(ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(Describe):
+  """Describe a Compute Engine ssl policy.
+
+  *{command}* is used to display all data associated with a Compute Engine
+  SSL policy in a project.
+
+  An SSL policy specifies the server-side support for SSL features. An SSL
+  policy can be attached to a TargetHttpsProxy or a TargetSslProxy. This affects
+  connections between clients and the HTTPS or SSL proxy load balancer. SSL
+  policies do not affect the connection between the load balancers and the
+  backends.
+  """
+
+  _regional_ssl_policies = True

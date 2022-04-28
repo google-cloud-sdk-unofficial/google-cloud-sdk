@@ -25,8 +25,7 @@ from googlecloudsdk.command_lib.compute.networks.peerings import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.Command):
   r"""Update a Compute Engine network peering.
 
@@ -48,6 +47,8 @@ class Update(base.Command):
       --import-subnet-routes-with-public-ip
   """
 
+  _support_stack_type = False
+
   @classmethod
   def Args(cls, parser):
     parser.add_argument('name', help='The name of the peering.')
@@ -62,19 +63,15 @@ class Update(base.Command):
     flags.AddImportSubnetRoutesWithPublicIpFlag(parser)
     flags.AddExportSubnetRoutesWithPublicIpFlag(parser)
 
+    if cls._support_stack_type:
+      flags.AddStackType(parser)
+
   def Run(self, args):
     """Issues the request necessary for updating the peering."""
     self.ValidateArgs(args)
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
-    messages = holder.client.messages
-    network_peering = messages.NetworkPeering(
-        name=args.name,
-        exportCustomRoutes=args.export_custom_routes,
-        importCustomRoutes=args.import_custom_routes)
-
-    network_peering.exportSubnetRoutesWithPublicIp = args.export_subnet_routes_with_public_ip
-    network_peering.importSubnetRoutesWithPublicIp = args.import_subnet_routes_with_public_ip
+    network_peering = self._CreateNetworkPeeringForRequest(client, args)
 
     request = client.messages.ComputeNetworksUpdatePeeringRequest(
         network=args.network,
@@ -85,16 +82,63 @@ class Update(base.Command):
     return client.MakeRequests([(client.apitools_client.networks,
                                  'UpdatePeering', request)])
 
+  def _CreateNetworkPeeringForRequest(self, client, args):
+    network_peering = client.messages.NetworkPeering(
+        name=args.name,
+        exportCustomRoutes=args.export_custom_routes,
+        importCustomRoutes=args.import_custom_routes,
+        exportSubnetRoutesWithPublicIp=args.export_subnet_routes_with_public_ip,
+        importSubnetRoutesWithPublicIp=args.import_subnet_routes_with_public_ip)
+
+    if self._support_stack_type and getattr(args, 'stack_type'):
+      network_peering.stackType = client.messages.NetworkPeering.StackTypeValueValuesEnum(
+          args.stack_type)
+
+    return network_peering
+
   def ValidateArgs(self, args):
     """Validate arguments."""
     check_args = [
-        args.export_custom_routes is None,
-        args.import_custom_routes is None]
+        args.export_custom_routes is None, args.import_custom_routes is None
+    ]
 
     check_args.extend([
         args.export_subnet_routes_with_public_ip is None,
-        args.import_subnet_routes_with_public_ip is None])
+        args.import_subnet_routes_with_public_ip is None
+    ])
+
+    if self._support_stack_type:
+      check_args.append(args.stack_type is None)
 
     if all(check_args):
       raise exceptions.UpdatePropertyError(
           'At least one property must be modified.')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  r"""Update a Compute Engine network peering.
+
+  ## EXAMPLES
+
+  To update the peering named peering-name to both export and import custom
+  routes, run:
+
+    $ {command} peering-name \
+      --export-custom-routes \
+      --import-custom-routes
+
+
+  To update the peering named peering-name to both export and import subnet
+  routes with public ip, run:
+
+    $ {command} peering-name \
+      --export-subnet-routes-with-public-ip \
+      --import-subnet-routes-with-public-ip
+  """
+
+  _support_stack_type = True
+
+  def ValidateArgs(self, args):
+    if not getattr(args, 'stack_type'):
+      super(UpdateAlpha, self).ValidateArgs(args)

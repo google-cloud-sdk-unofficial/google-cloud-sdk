@@ -186,9 +186,12 @@ class Deploy(base.DescribeCommand):
       if "organization" not in operation or "uuid" not in operation:
         raise waiter.OperationError(
             "Unknown operation response: {}".format(operation))
+      if "warnings" in operation["metadata"]:
+        for warning in operation["metadata"]["warnings"]:
+          log.warning(warning)
+      log.info("Started archives deploy operation %s", operation["name"])
       if args.async_:
         return operation
-      log.info("Started archives deploy operation %s", operation["name"])
       waiter.WaitFor(
           apigee.LROPoller(operation["organization"]),
           operation["uuid"],

@@ -31,7 +31,8 @@ DEFAULT_LIST_FORMAT = """\
          labels.list():label=LABELS,
          kmsKeyName.yesno(yes='Customer-managed key', no='Google-managed key'):label=ENCRYPTION,
          createTime.date(tz=LOCAL),
-         updateTime.date(tz=LOCAL)
+         updateTime.date(tz=LOCAL),
+         sizeBytes.size(zero='0',precision=3,units_out=M):label="SIZE (MB)"
     )"""
 
 

@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.datastream import resource_args
 from googlecloudsdk.core import properties
 
 
-class _StreamObjectInfo(object):
+class _StreamObjectInfo:
   """Container for stream object data using in list display."""
 
   def __init__(self, message, source_object):

@@ -23,7 +23,6 @@ from containerregistry.client.v2_2 import docker_session
 from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container import flags
-from googlecloudsdk.core import http
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 import six
@@ -78,7 +77,7 @@ class Untag(base.DeleteCommand):
     # IMAGE_NAME: The fully-qualified image name to delete (with a tag).
     # Removes the tag from the image. Ex. gcr.io/google-appengine/java:TAG.
 
-    http_obj = http.Http()
+    http_obj = util.Http()
     # collect input/validate
     tags = self._ParseArgs(args.image_names)
 

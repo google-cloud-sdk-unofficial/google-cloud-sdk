@@ -35,7 +35,7 @@ class CreatePubSub(base.CreateCommand):
           """\
             To create a Pub/Sub trigger that listens to topic `my-topic` and builds off branch `my-branch` in a GitHub repository named `my-repo`:
 
-              $ {command} --name=my-pubsub-trigger --service-account="projects/my-project/serviceAccounts/my-byosa@my-project.iam.gserviceaccount.com" --topic=projects/my-project/topics/my-topic --repo=https://www.github.com/owner/repo --branch=my-branch
+              $ {command} --name=my-pubsub-trigger --service-account="projects/my-project/serviceAccounts/my-byosa@my-project.iam.gserviceaccount.com" --topic=projects/my-project/topics/my-topic --repo=https://www.github.com/owner/repo --repo-type=GITHUB --branch=my-branch
           """,
   }
 

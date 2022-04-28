@@ -62,8 +62,8 @@ class _List(object):
     concept_parsers.ConceptParser.ForResource(
         '--region',
         resource_args.GetRegionResourceSpec(),
-        group_help='The location you want to list the connection profiles for.',
-        required=True).AddToParser(parser)
+        group_help='The location you want to list the connection profiles for.'
+    ).AddToParser(parser)
 
     parser.display_info.AddFormat("""
           table(

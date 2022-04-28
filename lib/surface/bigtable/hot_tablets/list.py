@@ -28,9 +28,10 @@ from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core.util import times
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class ListHotTablets(base.ListCommand):
-  """List Hottablets in Bigtable cluster."""
+  """List hot tablets in a Cloud Bigtable cluster."""
 
   detailed_help = {
       'EXAMPLES':

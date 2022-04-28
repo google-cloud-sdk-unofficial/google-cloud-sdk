@@ -222,7 +222,10 @@ class Cp(base.Command):
         task_iterator,
         parallelizable=parallelizable,
         task_status_queue=task_status_queue,
-        progress_type=task_status.ProgressType.FILES_AND_BYTES,
+        progress_manager_args=task_status.ProgressManagerArgs(
+            task_status.IncrementType.FILES_AND_BYTES,
+            manifest_path=user_request_args.manifest_path,
+        ),
         continue_on_error=args.continue_on_error,
     )
 

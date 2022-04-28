@@ -24,10 +24,8 @@ from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.compute.ssl_policies import ssl_policies_utils
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_policies import flags
-
-
-_SSL_POLICY_ARG = flags.GetSslPolicyArgument(plural=True)
 
 
 class DeleteBatchPoller(poller.BatchPoller):
@@ -42,6 +40,7 @@ class DeleteBatchPoller(poller.BatchPoller):
     return
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete Compute Engine SSL policies.
 
@@ -56,17 +55,27 @@ class Delete(base.DeleteCommand):
   backends.
   """
 
-  @staticmethod
-  def Args(parser):
-    _SSL_POLICY_ARG.AddArgument(parser, operation_type='delete')
-    parser.display_info.AddCacheUpdater(flags.SslPoliciesCompleter)
+  _regional_ssl_policies = False
+
+  SSL_POLICY_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    if cls._regional_ssl_policies:
+      parser.display_info.AddCacheUpdater(flags.SslPoliciesCompleter)
+      cls.SSL_POLICY_ARG = flags.GetSslPolicyMultiScopeArgument(plural=True)
+    else:
+      parser.display_info.AddCacheUpdater(flags.LegacySslPoliciesCompleter)
+      cls.SSL_POLICY_ARG = flags.GetSslPolicyArgument(plural=True)
+    cls.SSL_POLICY_ARG.AddArgument(parser, operation_type='delete')
 
   def Run(self, args):
     """Issues the request to delete a SSL policy."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     helper = ssl_policies_utils.SslPolicyHelper(holder)
     client = holder.client.apitools_client
-    refs = _SSL_POLICY_ARG.ResolveAsResource(args, holder.resources)
+    refs = self.SSL_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
     utils.PromptForDeletion(refs)
 
     operation_refs = [helper.Delete(ref) for ref in refs]
@@ -75,3 +84,21 @@ class Delete(base.DeleteCommand):
     operation_poller = DeleteBatchPoller(holder.client, client.sslPolicies)
     return waiter.WaitFor(operation_poller,
                           poller.OperationBatch(operation_refs), wait_message)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(Delete):
+  """Delete Compute Engine SSL policies.
+
+  *{command}* is used to delete one or more Compute Engine SSL policies.
+  SSL policies can only be deleted when no other resources (e.g.,
+  Target HTTPS proxies, Target SSL proxies) refer to them.
+
+  An SSL policy specifies the server-side support for SSL features. An SSL
+  policy can be attached to a TargetHttpsProxy or a TargetSslProxy. This affects
+  connections between clients and the HTTPS or SSL proxy load balancer. SSL
+  policies do not affect the connection between the load balancers and the
+  backends.
+  """
+
+  _regional_ssl_policies = True

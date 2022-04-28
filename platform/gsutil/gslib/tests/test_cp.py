@@ -604,12 +604,12 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     fpath = self.CreateTempFile(contents=b'bar')
     stderr = self.RunGsUtil(
         ['cp', '-n', fpath, suri(key_uri)], return_stderr=True)
-    self.assertIn('Skipping existing item: %s' % suri(key_uri), stderr)
+    self.assertRegex(stderr, r'Skipping.*: {}'.format(re.escape(suri(key_uri))))
     self.assertEqual(key_uri.get_contents_as_string(), b'foo')
     stderr = self.RunGsUtil(['cp', '-n', suri(key_uri), fpath],
                             return_stderr=True)
     with open(fpath, 'rb') as f:
-      self.assertIn('Skipping existing item: %s' % suri(f), stderr)
+      self.assertRegex(stderr, r'Skipping.*: {}'.format(re.escape(suri(f))))
       self.assertEqual(f.read(), b'bar')
 
   @SequentialAndParallelTransfer
@@ -618,12 +618,12 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     fpath = self.CreateTempFile(contents=b'quux')
     stderr = self.RunGsUtil(
         ['cp', '-n', fpath, suri(key_uri)], return_stderr=True)
-    self.assertIn('Skipping existing item: %s' % suri(key_uri), stderr)
+    self.assertRegex(stderr, r'Skipping.*: {}'.format(re.escape(suri(key_uri))))
     self.assertEqual(key_uri.get_contents_as_string(), b'foo')
     stderr = self.RunGsUtil(['cp', '-n', suri(key_uri), fpath],
                             return_stderr=True)
     with open(fpath, 'rb') as f:
-      self.assertIn('Skipping existing item: %s' % suri(f), stderr)
+      self.assertRegex(stderr, r'Skipping.*: {}'.format(re.escape(suri(f))))
       self.assertEqual(f.read(), b'quux')
 
   def test_dest_bucket_not_exist(self):
@@ -655,9 +655,112 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     stderr = self.RunGsUtil(
         ['cp', '-n', suri(key_uri),
          suri(bucket2_uri)], return_stderr=True)
+    self.assertRegex(
+        stderr, r'Skipping.*: {}'.format(suri(bucket2_uri,
+                                              key_uri.object_name)))
+
+  @SequentialAndParallelTransfer
+  @SkipForXML('Boto library does not handle objects with .. in them.')
+  def test_skip_object_with_parent_directory_symbol_in_name(self):
+    bucket_uri = self.CreateBucket()
+    key_uri = self.CreateObject(bucket_uri=bucket_uri,
+                                object_name='dir/../../../file',
+                                contents=b'data',
+                                prefer_json_api=True)
+    self.CreateObject(bucket_uri=bucket_uri,
+                      object_name='file2',
+                      contents=b'data')
+    directory = self.CreateTempDir()
+
+    stderr = self.RunGsUtil(
+        ['cp', '-r', suri(bucket_uri), directory], return_stderr=True)
+
+    # By default, deletes in the tearDown method run with the XML API. Boto
+    # does not handle names with '..', so we need to delete problematic
+    # objects with the json API. Delete happens before assertions, in case they
+    # raise errors and prevent cleanup.
+    self.json_api.DeleteObject(bucket_uri.bucket_name, key_uri.object_name)
+
     self.assertIn(
-        'Skipping existing item: %s' % suri(bucket2_uri, key_uri.object_name),
-        stderr)
+        'Skipping copy of source URL %s because it would be copied '
+        'outside the expected destination directory: %s.' %
+        (suri(key_uri), os.path.abspath(directory)), stderr)
+    self.assertFalse(os.path.exists(os.path.join(directory, 'file')))
+    self.assertTrue(
+        os.path.exists(os.path.join(directory, bucket_uri.bucket_name,
+                                    'file2')))
+
+  @SequentialAndParallelTransfer
+  @SkipForXML('Boto library does not handle objects with .. in them.')
+  def test_skip_parent_directory_symbol_in_name_is_reflected_in_manifest(self):
+    bucket_uri = self.CreateBucket()
+    key_uri = self.CreateObject(bucket_uri=bucket_uri,
+                                object_name='dir/../../../file',
+                                contents=b'data',
+                                prefer_json_api=True)
+    directory = self.CreateTempDir()
+    log_path = os.path.join(directory, 'log.csv')
+
+    stderr = self.RunGsUtil(
+        ['cp', '-r', '-L', log_path,
+         suri(bucket_uri), directory],
+        return_stderr=True)
+
+    # By default, deletes in the tearDown method run with the XML API. Boto
+    # does not handle names with '..', so we need to delete problematic
+    # objects with the json API. Delete happens before assertions, in case they
+    # raise errors and prevent cleanup.
+    self.json_api.DeleteObject(bucket_uri.bucket_name, key_uri.object_name)
+
+    self.assertIn(
+        'Skipping copy of source URL %s because it would be copied '
+        'outside the expected destination directory: %s.' %
+        (suri(key_uri), os.path.abspath(directory)), stderr)
+    self.assertFalse(os.path.exists(os.path.join(directory, 'file')))
+    with open(log_path, 'r') as f:
+      lines = f.readlines()
+      results = lines[1].strip().split(',')
+      self.assertEqual(results[0], suri(key_uri))  # The 'Source' column.
+      self.assertEqual(results[8], 'skip')  # The 'Result' column.
+
+  @SequentialAndParallelTransfer
+  @SkipForXML('Boto library does not handle objects with .. in them.')
+  @unittest.skipIf(IS_WINDOWS, 'os.symlink() is not available on Windows.')
+  def test_skip_parent_directory_symbol_object_with_symlink_destination(self):
+    bucket_uri = self.CreateBucket()
+    key_uri = self.CreateObject(bucket_uri=bucket_uri,
+                                object_name='dir/../../../file',
+                                contents=b'data',
+                                prefer_json_api=True)
+    second_key_uri = self.CreateObject(bucket_uri=bucket_uri,
+                                       object_name='file2',
+                                       contents=b'data')
+
+    directory = self.CreateTempDir()
+    linked_destination = os.path.join(directory, 'linked_destination')
+    destination = os.path.join(directory, 'destination')
+    os.mkdir(destination)
+    os.symlink(destination, linked_destination)
+
+    stderr = self.RunGsUtil([
+        '-D', 'cp', '-r',
+        suri(bucket_uri),
+        suri(second_key_uri), linked_destination
+    ],
+                            return_stderr=True)
+
+    # By default, deletes in the tearDown method run with the XML API. Boto
+    # does not handle names with '..', so we need to delete problematic
+    # objects with the json API. Delete happens before assertions, in case they
+    # raise errors and prevent cleanup.
+    self.json_api.DeleteObject(bucket_uri.bucket_name, key_uri.object_name)
+
+    self.assertIn(
+        'Skipping copy of source URL %s because it would be copied '
+        'outside the expected destination directory: %s.' %
+        (suri(key_uri), linked_destination), stderr)
+    self.assertFalse(os.path.exists(os.path.join(linked_destination, 'file')))
+    self.assertTrue(os.path.exists(os.path.join(linked_destination, 'file2')))
 
   @unittest.skipIf(IS_WINDOWS, 'os.mkfifo not available on Windows.')
   @SequentialAndParallelTransfer
@@ -1316,7 +1419,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     # Second copy should skip copying.
     stderr = self.RunGsUtil(
         ['cp', '-nv', fpath1, suri(k1_uri)], return_stderr=True)
-    self.assertIn('Skipping existing item:', stderr)
+    self.assertIn('Skipping existing', stderr)
 
   @SequentialAndParallelTransfer
   @SkipForS3('S3 lists versioned objects in reverse timestamp order.')
@@ -1700,6 +1803,56 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
           '%s%s/obj0\n' % (dst_bucket_uri, src_bucket_uri.bucket_name), stdout)
       self.assertIn(
           '%s%s/obj1\n' % (dst_bucket_uri, src_bucket_uri.bucket_name), stdout)
+
+    _CopyAndCheck()
+
+  def test_copy_duplicate_nested_object_names_to_new_cloud_dir(self):
+    """Tests copying from bucket to same bucket preserves file structure."""
+    bucket_uri = self.CreateBucket()
+    self.CreateObject(bucket_uri=bucket_uri,
+                      object_name='dir1/file.txt',
+                      contents=b'data')
+    self.CreateObject(bucket_uri=bucket_uri,
+                      object_name='dir2/file.txt',
+                      contents=b'data')
+
+    # Use @Retry as hedge against bucket listing eventual consistency.
+    @Retry(AssertionError, tries=3, timeout_secs=1)
+    def _CopyAndCheck():
+      self.RunGsUtil(
+          ['cp', '-R',
+           suri(bucket_uri) + '/*',
+           suri(bucket_uri) + '/dst'])
+      stdout = self.RunGsUtil(['ls', '-R', bucket_uri.uri], return_stdout=True)
+      self.assertIn(suri(bucket_uri) + '/dst/dir1/file.txt', stdout)
+      self.assertIn(suri(bucket_uri) + '/dst/dir2/file.txt', stdout)
+
+    _CopyAndCheck()
+
+  def test_copy_duplicate_nested_object_names_to_existing_cloud_dir(self):
+    """Tests copying from bucket to same bucket preserves file structure."""
+    bucket_uri = self.CreateBucket()
+    self.CreateObject(bucket_uri=bucket_uri,
+                      object_name='dir1/file.txt',
+                      contents=b'data')
+    self.CreateObject(bucket_uri=bucket_uri,
+                      object_name='dir2/file.txt',
+                      contents=b'data')
+    self.CreateObject(bucket_uri=bucket_uri,
+                      object_name='dst/existing_file.txt',
+                      contents=b'data')
+
+    # Use @Retry as hedge against bucket listing eventual consistency.
+    @Retry(AssertionError, tries=3, timeout_secs=1)
+    def _CopyAndCheck():
+      self.RunGsUtil(
+          ['cp', '-R',
+           suri(bucket_uri) + '/*',
+           suri(bucket_uri) + '/dst'])
+      stdout = self.RunGsUtil(['ls', '-R', bucket_uri.uri], return_stdout=True)
+      self.assertIn(suri(bucket_uri) + '/dst/dir1/file.txt', stdout)
+      self.assertIn(suri(bucket_uri) + '/dst/dir2/file.txt', stdout)
+      self.assertIn(suri(bucket_uri) + '/dst/existing_file.txt', stdout)
 
     _CopyAndCheck()
 
@@ -4684,14 +4837,16 @@ class TestCpUnitTests(testcase.GsUtilUnitTestCase):
           'CLOUDSDK_CORE_PASS_CREDENTIALS_TO_GSUTIL': 'True',
           'CLOUDSDK_ROOT_DIR': 'fake_dir',
       }):
-        mock_log_handler = self.RunCommand(
-            'cp',
-            ['-r', '-R', '-e', fpath, suri(bucket_uri)],
-            return_log_handler=True)
+        mock_log_handler = self.RunCommand('cp', [
+            '-e', '-n', '-r', '-R', '-s', 'some-class', '-v', fpath,
+            suri(bucket_uri)
+        ],
+                                           return_log_handler=True)
         info_lines = '\n'.join(mock_log_handler.messages['info'])
         self.assertIn(
             'Gcloud Storage Command: {} alpha storage cp'
-            ' -r -r --ignore-symlinks {} {}'.format(
+            ' --ignore-symlinks --no-clobber -r -r --storage-class some-class'
+            ' --print-created-message {} {}'.format(
                 os.path.join('fake_dir', 'bin', 'gcloud'), fpath,
                 suri(bucket_uri)), info_lines)
 

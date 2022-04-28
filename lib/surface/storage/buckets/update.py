@@ -212,6 +212,7 @@ class Update(base.Command):
         ' usual bucket listing.')
     parser.add_argument(
         '--clear-web-main-page-suffix',
+        action='store_true',
         help='Clear website main page suffix if bucket is hosting website.')
     parser.add_argument(
         '--web-error-page',
@@ -221,6 +222,7 @@ class Update(base.Command):
         ' instead of the standard Cloud Storage error.')
     parser.add_argument(
         '--clear-web-error-page',
+        action='store_true',
         help='Clear website error page if bucket is hosting website.')
     flags.add_continue_on_error_flag(parser)
 
@@ -239,6 +241,8 @@ class Update(base.Command):
         self.update_task_iterator(args),
         parallelizable=True,
         task_status_queue=task_status_queue,
-        progress_type=task_status.ProgressType.COUNT,
+        progress_manager_args=task_status.ProgressManagerArgs(
+            increment_type=task_status.IncrementType.INTEGER,
+            manifest_path=None),
         continue_on_error=args.continue_on_error,
     )

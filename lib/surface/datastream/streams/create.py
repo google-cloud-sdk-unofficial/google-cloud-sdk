@@ -109,6 +109,11 @@ class Create(base.Command):
             name=operation_ref.operationsId))
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=('Datastream beta version is deprecated. Please use`gcloud '
+             'datastream streams create` command instead.')
+)
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Creates a Datastream stream."""

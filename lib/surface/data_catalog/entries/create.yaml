@@ -8,7 +8,7 @@
         $ {command} entry1 \
             --location=us-central1 --entry-group=group1 \
             --gcs-file-patterns="gs://bucket1/abc/*,gs://bucket1/file1" \
-            --display-name="analytics data" type=FILESET
+            --display-name="analytics data" --type=FILESET
 
       To create an entry for a Google Cloud Storage fileset with an inline schema, run:
 

@@ -54,6 +54,7 @@ class Update(base.UpdateCommand):
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
   _include_l7_internal_load_balancing = True
   _include_internal_ipv6_access_type = False
+  _include_reserved_internal_range = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
   detailed_help = _DetailedHelp()
 
@@ -70,7 +71,7 @@ class Update(base.UpdateCommand):
     flags.AddUpdateArgs(parser, cls._include_alpha_logging,
                         cls._include_l7_internal_load_balancing,
                         cls._include_internal_ipv6_access_type,
-                        cls._api_version)
+                        cls._include_reserved_internal_range, cls._api_version)
 
   def Run(self, args):
     """Issues requests necessary to update Subnetworks."""
@@ -108,11 +109,15 @@ class Update(base.UpdateCommand):
     stack_type = getattr(args, 'stack_type', None)
     ipv6_access_type = getattr(args, 'ipv6_access_type', None)
 
+    reserved_internal_ranges = getattr(
+        args, 'add_secondary_ranges_with_reserved_internal_range', None)
+
     return subnets_utils.MakeSubnetworkUpdateRequest(
         client,
         subnet_ref,
         enable_private_ip_google_access=args.enable_private_ip_google_access,
         add_secondary_ranges=args.add_secondary_ranges,
+        add_secondary_ranges_with_reserved_internal_range=reserved_internal_ranges,
         remove_secondary_ranges=args.remove_secondary_ranges,
         enable_flow_logs=args.enable_flow_logs,
         aggregation_interval=aggregation_interval,
@@ -142,4 +147,5 @@ class UpdateAlpha(UpdateBeta):
 
   _include_alpha_logging = True
   _include_internal_ipv6_access_type = True
+  _include_reserved_internal_range = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION

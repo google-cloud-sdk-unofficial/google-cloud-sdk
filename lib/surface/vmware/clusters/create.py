@@ -22,7 +22,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.vmware.clusters import ClustersClient
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.vmware import flags
 from googlecloudsdk.core import log
 
@@ -70,10 +69,8 @@ class CreateAlpha(base.CreateCommand):
         type=int,
         hidden=True,
         help="""\
-         Customized number of virtual cores to use for each node of the cluster. To get a list of valid values for your node type, run the `{grandparent_command} nodetypes describe` command and reference the `availableCustomCoreCounts` field in the output.
+         Customized number of virtual cores to use for each node of the cluster. To get a list of valid values for your node type, run the `{grandparent_command} node-types describe` command and reference the `availableCustomCoreCounts` field in the output.
         """)
-
-    labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
     cluster = args.CONCEPTS.cluster.Parse()

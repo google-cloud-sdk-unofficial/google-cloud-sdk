@@ -188,6 +188,13 @@
         private service access connection. If not provided, the service will choose an unused /29
         block, for example, 10.0.0.0/29 or 192.168.0.0/29. If READ_REPLICAS_ENABLED is used for the
         --read-replicas-mode flag, then the block size required for this flag is /28.
+    - arg_name: customer-managed-key
+      api_field: instance.customerManagedKey
+      release_tracks: [ALPHA]
+      hidden: true
+      help_text: |
+        The KMS key reference that you want to use to encrypt the data at rest for this Redis
+        instance. If this is provided, CMEK is enabled.
     - arg_name: size
       api_field: instance.memorySizeGb
       help_text: |

@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command for removing a BGP peer from a Compute Engine router."""
 
 from __future__ import absolute_import
@@ -37,6 +36,7 @@ class PeerNotFoundError(exceptions.Error):
     super(PeerNotFoundError, self).__init__(error_msg)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveBgpPeer(base.UpdateCommand):
   """Remove a BGP peer from a Compute Engine router.
 
@@ -65,23 +65,22 @@ class RemoveBgpPeer(base.UpdateCommand):
     cls._Args(parser)
 
   def GetGetRequest(self, client, router_ref):
-    return (client.apitools_client.routers,
-            'Get',
+    return (client.apitools_client.routers, 'Get',
             client.messages.ComputeRoutersGetRequest(
                 router=router_ref.Name(),
                 region=router_ref.region,
                 project=router_ref.project))
 
   def GetSetRequest(self, client, router_ref, replacement):
-    return (client.apitools_client.routers,
-            'Patch',
+    return (client.apitools_client.routers, 'Patch',
             client.messages.ComputeRoutersPatchRequest(
                 router=router_ref.Name(),
                 routerResource=replacement,
                 region=router_ref.region,
                 project=router_ref.project))
 
-  def Modify(self, args, existing, cleared_fields):
+  def Modify(self, args, existing, cleared_fields,
+             support_md5_authentication_keys):
     """Mutate the router and record any cleared_fields for Patch request."""
     replacement = encoding.CopyProtoMessage(existing)
 
@@ -94,13 +93,23 @@ class RemoveBgpPeer(base.UpdateCommand):
     replacement = encoding.CopyProtoMessage(existing)
     existing_router = encoding.CopyProtoMessage(existing)
     # remove peer if exists
+
+    md5_authentication_keys_to_remove = set()
     for p in existing_router.bgpPeers:
       if p.name in input_remove_list:
         peer = p
+        if support_md5_authentication_keys and peer.md5AuthenticationKeyName is not None:
+          md5_authentication_keys_to_remove.add(peer.md5AuthenticationKeyName)
         replacement.bgpPeers.remove(peer)
         if not replacement.bgpPeers:
           cleared_fields.append('bgpPeers')
         actual_remove_list.append(peer.name)
+
+    if support_md5_authentication_keys:
+      replacement.md5AuthenticationKeys = [
+          md5_key for md5_key in replacement.md5AuthenticationKeys
+          if md5_key.name not in md5_authentication_keys_to_remove
+      ]
 
     not_found_peers = list(set(input_remove_list) - set(actual_remove_list))
     if not_found_peers:
@@ -108,7 +117,7 @@ class RemoveBgpPeer(base.UpdateCommand):
 
     return replacement
 
-  def _Run(self, args):
+  def _Run(self, args, support_md5_authentication_keys=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
@@ -119,7 +128,8 @@ class RemoveBgpPeer(base.UpdateCommand):
 
     # Cleared list fields need to be explicitly identified for Patch API.
     cleared_fields = []
-    new_object = self.Modify(args, objects[0], cleared_fields)
+    new_object = self.Modify(args, objects[0], cleared_fields,
+                             support_md5_authentication_keys)
 
     with client.apitools_client.IncludeFields(cleared_fields):
       # There is only one response because one request is made above
@@ -129,3 +139,39 @@ class RemoveBgpPeer(base.UpdateCommand):
 
   def Run(self, args):
     return self._Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class RemoveBgpPeerBeta(RemoveBgpPeer):
+  """Remove a BGP peer from a Compute Engine router."""
+
+  ROUTER_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls._Args(parser)
+
+  def Run(self, args):
+    return self._Run(args, support_md5_authentication_keys=False)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RemoveBgpPeerAlpha(RemoveBgpPeerBeta):
+  """Remove a BGP peer from a Compute Engine router."""
+
+  ROUTER_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls._Args(parser)
+
+  def Run(self, args):
+    return self._Run(args, support_md5_authentication_keys=True)
+
+
+RemoveBgpPeer.detailed_help = {
+    'DESCRIPTION':
+        """
+        *{command}* removes a BGP peer from a Compute Engine router.
+        """,
+}

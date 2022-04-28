@@ -48,7 +48,7 @@ class Create(base.CreateCommand):
     flags.AddDatabaseFlags(parser)
     flags.AddInstance(parser)
     flags.AddInstanceType(parser)
-    flags.AddMachineCPU(parser)
+    flags.AddCPUCount(parser)
     flags.AddReadPoolNodeCount(parser)
     flags.AddRegion(parser)
     flags.AddZone(parser)

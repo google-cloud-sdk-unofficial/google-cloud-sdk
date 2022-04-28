@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.compute import target_proxies_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.certificate_manager import resource_args
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.backend_services import (
     flags as backend_service_flags)
 from googlecloudsdk.command_lib.compute.ssl_certificates import (
@@ -45,6 +46,7 @@ class Create(base.CreateCommand):
   """
 
   _certificate_map = False
+  _regional_ssl_policies = False
   _list_format = flags.DEFAULT_LIST_FORMAT
 
   BACKEND_SERVICE_ARG = None
@@ -69,9 +71,12 @@ class Create(base.CreateCommand):
       cls.SSL_CERTIFICATES_ARG.AddArgument(
           parser, cust_metavar='SSL_CERTIFICATE')
 
-    cls.SSL_POLICY_ARG = (
-        ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
-            'SSL', required=False))
+    if cls._regional_ssl_policies:
+      cls.SSL_POLICY_ARG = ssl_policies_flags.GetSslPolicyMultiScopeArgumentForOtherResource(
+          'SSL', required=False)
+    else:
+      cls.SSL_POLICY_ARG = ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
+          'SSL', required=False)
     cls.SSL_POLICY_ARG.AddArgument(parser)
 
     parser.add_argument(
@@ -128,7 +133,8 @@ class Create(base.CreateCommand):
 
     if args.ssl_policy:
       target_ssl_proxy.sslPolicy = self.SSL_POLICY_ARG.ResolveAsResource(
-          args, holder.resources).SelfLink()
+          args, holder.resources,
+          default_scope=compute_scope.ScopeEnum.GLOBAL).SelfLink()
 
     if self._certificate_map:
       certificate_map_ref = args.CONCEPTS.certificate_map.Parse()
@@ -139,8 +145,8 @@ class Create(base.CreateCommand):
         project=target_ssl_proxy_ref.project, targetSslProxy=target_ssl_proxy)
 
     errors = []
-    resources = holder.client.MakeRequests([(client.targetSslProxies, 'Insert',
-                                             request)], errors)
+    resources = holder.client.MakeRequests(
+        [(client.targetSslProxies, 'Insert', request)], errors)
 
     if errors:
       utils.RaiseToolException(errors)
@@ -150,7 +156,7 @@ class Create(base.CreateCommand):
     return self._CreateResource(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a target SSL proxy.
 
@@ -165,3 +171,19 @@ class CreateBeta(Create):
 
   _certificate_map = True
   _list_format = flags.DEFAULT_BETA_LIST_FORMAT
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a target SSL proxy.
+
+  *{command}* is used to create target SSL proxies. A target SSL proxy is
+  referenced by one or more forwarding rules which define which packets the
+  proxy is responsible for routing. The target SSL proxy points to a backend
+  service which handle the actual requests. The target SSL proxy also points
+  to at most 15 SSL certificates used for server-side authentication or one
+  certificate map. The target SSL proxy can be associated with at most one SSL
+  policy.
+  """
+
+  _regional_ssl_policies = True

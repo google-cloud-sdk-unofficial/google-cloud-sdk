@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.datastream.connection_profiles import flags as c
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import properties
 
-
 DESCRIPTION = (
     'Discover data objects accessible from a Datastream connection profile')
 EXAMPLES = """\
@@ -41,9 +40,9 @@ EXAMPLES = """\
    """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class Discover(base.Command):
-  """Discover a Datastream connection profile."""
+class _Discover:
+  """Base class for discovering Datastream connection profiles."""
+
   detailed_help = {'DESCRIPTION': DESCRIPTION, 'EXAMPLES': EXAMPLES}
 
   @staticmethod
@@ -80,3 +79,18 @@ class Discover(base.Command):
 
     cp_client = connection_profiles.ConnectionProfilesClient()
     return cp_client.Discover(parent_ref, self.ReleaseTrack(), args)
+
+
+@base.Deprecate(
+    is_removed=False,
+    warning=('Datastream beta version is deprecated. Please use`gcloud '
+             'datastream connection-profiles discover` command instead.')
+)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DiscoverBeta(_Discover, base.Command):
+  """Discover a Datastream connection profile."""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Discover(_Discover, base.Command):
+  """Discover a Datastream connection profile."""

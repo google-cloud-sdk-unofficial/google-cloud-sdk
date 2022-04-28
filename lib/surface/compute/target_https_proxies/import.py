@@ -42,9 +42,13 @@ def _DetailedHelp():
           """,
       'EXAMPLES':
           """\
-          A target HTTPS proxy can be imported by running:
+          A global target HTTPS proxy can be imported by running:
 
             $ {command} NAME --source=<path-to-file>
+
+          A regional target HTTPS proxy can be imported by running:
+
+            $ {command} NAME --source=<path-to-file> --region=REGION_NAME
           """
   }
 
@@ -94,16 +98,21 @@ def _SendPatchRequest(client, resources, target_https_proxy_ref,
   """Make target HTTP proxy patch request."""
   if target_https_proxies_utils.IsRegionalTargetHttpsProxiesRef(
       target_https_proxy_ref):
-    console_message = ('Target HTTPS Proxy [{0}] cannot be updated'.format(
-        target_https_proxy_ref.Name()))
-    raise NotImplementedError(console_message)
-
-  service = client.apitools_client.targetHttpsProxies
-  operation = service.Patch(
-      client.messages.ComputeTargetHttpsProxiesPatchRequest(
-          project=target_https_proxy_ref.project,
-          targetHttpsProxy=target_https_proxy_ref.Name(),
-          targetHttpsProxyResource=target_https_proxy))
+    service = client.apitools_client.regionTargetHttpsProxies
+    operation = service.Patch(
+        client.messages.ComputeRegionTargetHttpsProxiesPatchRequest(
+            project=target_https_proxy_ref.project,
+            region=target_https_proxy_ref.region,
+            targetHttpsProxy=target_https_proxy_ref.Name(),
+            targetHttpsProxyResource=target_https_proxy
+        ))
+  else:
+    service = client.apitools_client.targetHttpsProxies
+    operation = service.Patch(
+        client.messages.ComputeTargetHttpsProxiesPatchRequest(
+            project=target_https_proxy_ref.project,
+            targetHttpsProxy=target_https_proxy_ref.Name(),
+            targetHttpsProxyResource=target_https_proxy))
 
   return _WaitForOperation(resources, service, operation,
                            target_https_proxy_ref, 'Updating TargetHttpsProxy')

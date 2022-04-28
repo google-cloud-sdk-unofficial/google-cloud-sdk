@@ -31,8 +31,9 @@ from googlecloudsdk.command_lib.compute.sole_tenancy import util as sole_tenancy
 class SetSchedulingInstances(base.SilentCommand):
   """Set scheduling options for Compute Engine virtual machines.
 
-    *${command}* is used to configure scheduling options for
-  Compute Engine virtual machines.
+    *${command}* is used to update scheduling options for VM instances.
+    You can only call this method on a VM instance that is stopped
+    (a VM instance in a `TERMINATED` state).
   """
 
   detailed_help = {
@@ -45,6 +46,8 @@ class SetSchedulingInstances(base.SilentCommand):
   }
 
   _support_host_error_timeout_seconds = False
+  _support_provisioning_model = False
+  _support_termination_action = False
 
   @classmethod
   def Args(cls, parser):
@@ -57,7 +60,7 @@ class SetSchedulingInstances(base.SilentCommand):
         This option is mutually exclusive with --preemptible.
         """)
 
-    flags.AddPreemptibleVmArgs(parser)
+    flags.AddPreemptibleVmArgs(parser, is_update=True)
     flags.AddMaintenancePolicyArgs(parser)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
     flags.INSTANCE_ARG.AddArgument(parser)
@@ -84,7 +87,25 @@ class SetSchedulingInstances(base.SilentCommand):
         args, 'host_error_timeout_seconds'):
       scheduling_options.hostErrorTimeoutSeconds = args.host_error_timeout_seconds
 
+    if (self._support_provisioning_model and
+        hasattr(args, 'provisioning_model') and
+        args.IsSpecified('provisioning_model')):
+      scheduling_options.provisioningModel = (
+          client.messages.Scheduling.ProvisioningModelValueValuesEnum(
+              args.provisioning_model))
+
     cleared_fields = []
+
+    if self._support_termination_action:
+      if (hasattr(args, 'instance_termination_action') and
+          args.IsSpecified('instance_termination_action')):
+        flags.ValidateInstanceScheduling(args)
+        scheduling_options.instanceTerminationAction = (
+            client.messages.Scheduling.InstanceTerminationActionValueValuesEnum(
+                args.instance_termination_action))
+      elif args.IsSpecified('clear_instance_termination_action'):
+        scheduling_options.instanceTerminationAction = None
+        cleared_fields.append('instanceTerminationAction')
 
     if args.IsSpecified('min_node_cpu'):
       scheduling_options.minNodeCpus = int(args.min_node_cpu)
@@ -124,10 +145,13 @@ class SetSchedulingInstances(base.SilentCommand):
 class SetSchedulingInstancesBeta(SetSchedulingInstances):
   """Set scheduling options for Compute Engine virtual machines.
 
-    *${command}* is used to configure scheduling options for
-  Compute Engine virtual machines.
+    *${command}* is used to update scheduling options for VM instances.
+    You can only call this method on a VM instance that is stopped
+    (a VM instance in a `TERMINATED` state).
   """
   _support_host_error_timeout_seconds = True
+  _support_provisioning_model = True
+  _support_termination_action = True
 
   @classmethod
   def Args(cls, parser):
@@ -140,7 +164,9 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
         This option is mutually exclusive with --preemptible.
         """)
 
-    flags.AddPreemptibleVmArgs(parser)
+    flags.AddPreemptibleVmArgs(parser, is_update=True)
+    flags.AddProvisioningModelVmArgs(parser)
+    flags.AddInstanceTerminationActionVmArgs(parser, is_update=True)
     flags.AddMaintenancePolicyArgs(parser)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
     flags.INSTANCE_ARG.AddArgument(parser)
@@ -155,10 +181,13 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
 class SetSchedulingInstancesAlpha(SetSchedulingInstancesBeta):
   """Set scheduling options for Compute Engine virtual machines.
 
-    *${command}* is used to configure scheduling options for
-  Compute Engine virtual machines.
+    *${command}* is used to update scheduling options for VM instances.
+    You can only call this method on a VM instance that is stopped
+    (a VM instance in a `TERMINATED` state).
   """
   _support_host_error_timeout_seconds = True
+  _support_provisioning_model = True
+  _support_termination_action = True
 
   @classmethod
   def Args(cls, parser):
@@ -171,7 +200,9 @@ class SetSchedulingInstancesAlpha(SetSchedulingInstancesBeta):
         This option is mutually exclusive with --preemptible.
         """)
 
-    flags.AddPreemptibleVmArgs(parser)
+    flags.AddPreemptibleVmArgs(parser, is_update=True)
+    flags.AddProvisioningModelVmArgs(parser)
+    flags.AddInstanceTerminationActionVmArgs(parser, is_update=True)
     # Deprecated in Alpha
     flags.AddMaintenancePolicyArgs(parser, deprecate=True)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
