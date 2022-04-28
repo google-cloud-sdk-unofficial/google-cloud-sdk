@@ -247,6 +247,7 @@ class Login(base.Command):
     # No valid creds, do the web flow.
     creds = auth_util.DoInstalledAppBrowserFlowGoogleAuth(
         scopes,
+        no_launch_browser=not args.launch_browser,
         no_browser=args.no_browser,
         remote_bootstrap=args.remote_bootstrap)
     if not creds:

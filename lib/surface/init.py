@@ -98,9 +98,10 @@ class Init(base.Command):
               'authorization.'),
         action=actions.DeprecationAction(
             '--console-only',
-            error='`--console-only/--no-launch-browser` are removed. '
-            'Use `--no-browser` to replace it.',
-            removed=True,
+            warn='The `--console-only/--no-launch-browser` are deprecated '
+            'and will be removed in future updates. '
+            'Use `--no-browser` as a replacement.',
+            removed=False,
             action='store_true'))
     parser.add_argument(
         '--no-browser',
@@ -154,7 +155,7 @@ class Init(base.Command):
     # legacy APIs where it should be disabled.
     with base.WithLegacyQuota():
       if not self._PickAccount(
-          args.no_browser, preselected=args.account):
+          args.console_only, args.no_browser, preselected=args.account):
         return
 
       if not self._PickProject(preselected=args.project):
@@ -166,10 +167,11 @@ class Init(base.Command):
 
       self._Summarize(configuration_name)
 
-  def _PickAccount(self, no_browser, preselected=None):
+  def _PickAccount(self, console_only, no_browser, preselected=None):
     """Checks if current credentials are valid, if not runs auth login.
 
     Args:
+      console_only: bool, True if the auth flow shouldn't use the browser
       no_browser: bool, True if the auth flow shouldn't use the browser and
         should ask another gcloud installation to help with the browser flow.
       preselected: str, disable prompts and use this value if not None
@@ -218,7 +220,9 @@ class Init(base.Command):
     if new_credentials:
       # Call `gcloud auth login` to get new credentials.
       # `gcloud auth login` may have user interaction, do not suppress it.
-      if no_browser:
+      if console_only:
+        browser_args = ['--no-launch-browser']
+      elif no_browser:
         browser_args = ['--no-browser']
       else:
         browser_args = []
