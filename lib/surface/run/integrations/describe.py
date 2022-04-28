@@ -42,7 +42,7 @@ class Describe(base.DescribeCommand):
           """\
           To describe an integration
 
-              $ {command} [INTEGRATION NAME]
+              $ {command} my-redis-integration
 
          """,
   }
@@ -70,7 +70,7 @@ class Describe(base.DescribeCommand):
     with run_apps_operations.Connect(conn_context) as client:
       resource_config = client.GetIntegration(name)
       resource_status = client.GetIntegrationStatus(name)
-      resource_type = client.GetIntegrationTypeFromConfig(resource_config)
+      resource_type = client.GetResourceTypeFromConfig(resource_config)
       integration_type = types_utils.GetIntegrationType(resource_type)
       return {
           'name': name,

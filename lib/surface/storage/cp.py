@@ -42,7 +42,6 @@ Note: This option is only useful when the destination bucket has Object
 Versioning enabled. Additionally, the generation numbers of copied versions do
 not necessarily match the order of the original generation numbers.
 """
-
 # TODO(b/223800321): Maybe offer ability to limit parallel encoding workers.
 _GZIP_IN_FLIGHT_EXTENSIONS_HELP_TEXT = """\
 Applies gzip transport encoding to any file upload whose
@@ -63,6 +62,26 @@ applies to all uploaded files, regardless of extension.
 
 CAUTION: If some of the source files don't compress well, such
 as binary data, using this option may result in longer uploads."""
+_MANIFEST_HELP_TEXT = """\
+Outputs a manifest log file with detailed information about each item that
+was copied. This manifest contains the following information for each item:
+
+- Source path.
+- Destination path.
+- Source size.
+- Bytes transferred.
+- MD5 hash.
+- Transfer start time and date in UTC and ISO 8601 format.
+- Transfer completion time and date in UTC and ISO 8601 format.
+- Final result of the attempted transfer: OK, error, or skipped.
+- Details, if any.
+
+If the manifest file already exists, gcloud storage appends log items to the
+existing file.
+
+Objects that are marked as "OK" or "skipped" in the existing manifest file
+are not retried by future commands. Objects marked as "error" are retried.
+"""
 
 
 class Cp(base.Command):
@@ -124,11 +143,7 @@ class Cp(base.Command):
         action='store_true',
         help='Ignore file symlinks instead of copying what they point to.'
         ' Symlinks pointing to directories will always be ignored.')
-    parser.add_argument(
-        '-v',
-        '--print-created-message',
-        action='store_true',
-        help='Prints the version-specific URL for each copied object.')
+    parser.add_argument('-L', '--manifest-path', help=_MANIFEST_HELP_TEXT)
     parser.add_argument(
         '-n',
         '--no-clobber',
@@ -136,6 +151,11 @@ class Cp(base.Command):
         help='Do not overwrite existing files or objects at the destination.'
         ' Skipped items will be printed. This option performs an additional GET'
         ' request for cloud objects before attempting an upload.')
+    parser.add_argument(
+        '-v',
+        '--print-created-message',
+        action='store_true',
+        help='Prints the version-specific URL for each copied object.')
     parser.add_argument(
         '-U',
         '--skip-unsupported',

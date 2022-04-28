@@ -26,6 +26,8 @@ from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import messages_util
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
+from googlecloudsdk.command_lib.run.integrations import stages
+from googlecloudsdk.core.console import progress_tracker
 
 
 @base.Hidden
@@ -40,9 +42,13 @@ class Create(base.Command):
           """,
       'EXAMPLES':
           """\
-          To create an application from specification
+          To create and attach a redis instance to a Cloud Run service
 
-              $ {command} --type [TYPE] --service [SERVICE]
+              $ {command} --type redis --service myservice
+
+          To attach a custom domain to a Cloud Run service
+
+              $ {command} --type custom-domain --service myservice --parameters=domain=mydomain.com
 
          """,
   }
@@ -74,8 +80,17 @@ class Create(base.Command):
       self._validateServiceNameAgainstIntegrations(
           client, integration_type=integration_type,
           service=service, integration_name=input_name)
-      integration_name = client.CreateIntegration(
-          integration_type, parameters, name=input_name, service=service)
+
+      with progress_tracker.StagedProgressTracker(
+          'Creating new Integration...',
+          stages.IntegrationStages(create=True),
+          failure_message='Failed to create new integration.') as tracker:
+        integration_name = client.CreateIntegration(
+            tracker=tracker,
+            integration_type=integration_type,
+            parameters=parameters,
+            service=service,
+            name=input_name)
       resource_config = client.GetIntegration(integration_name)
       resource_status = client.GetIntegrationStatus(integration_name)
 

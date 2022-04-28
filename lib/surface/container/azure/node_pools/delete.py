@@ -20,12 +20,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container import util as gke_util
-from googlecloudsdk.api_lib.container.azure import util as azure_api_util
-from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.api_lib.container.gkemulticloud import azure as azure_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
+from googlecloudsdk.command_lib.container.gkemulticloud import operations
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -57,10 +57,9 @@ class Delete(base.DeleteCommand):
         self.ReleaseTrack()):
       # Parsing again after endpoint override is set.
       nodepool_ref = resource_args.ParseAzureNodePoolResourceArg(args)
-      api_client = azure_api_util.NodePoolsClient(track=self.ReleaseTrack())
+      api_client = azure_api_util.NodePoolsClient()
       api_client.Delete(nodepool_ref, validate_only=True)
-      cluster = azure_api_util.ClustersClient(
-          track=self.ReleaseTrack()).Get(nodepool_ref.Parent())
+      cluster = azure_api_util.ClustersClient().Get(nodepool_ref.Parent())
       console_io.PromptContinue(
           message=gke_util.ConstructList(
               'The following node pool will be deleted:', [
@@ -78,12 +77,10 @@ class Delete(base.DeleteCommand):
 
       async_ = args.async_
       if not async_:
-        waiter.WaitFor(
-            waiter.CloudOperationPollerNoResources(
-                api_client.client.projects_locations_operations),
+        op_client = operations.Client()
+        op_client.Wait(
             op_ref,
-            'Deleting node pool {}'.format(nodepool_ref.azureNodePoolsId),
-            wait_ceiling_ms=constants.MAX_LRO_POLL_INTERVAL_MS)
+            'Deleting node pool {}'.format(nodepool_ref.azureNodePoolsId))
 
       log.DeletedResource(
           nodepool_ref, kind=constants.AZURE_NODEPOOL_KIND, is_async=async_)

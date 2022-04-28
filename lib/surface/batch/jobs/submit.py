@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.batch import jobs
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.batch import resource_args
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
@@ -58,13 +59,57 @@ class Submit(base.Command):
         help="""The URL for the subnetwork resource.
         Must specify network as well if subnetwork is specified""")
 
-    parser.add_argument(
-        '--config', required=True, help='The config file of a job.')
+    task_spec_group = parser.add_group(required=True)
+    task_spec_group.add_argument(
+        '--config', help='The JSON file of the job config.')
+    runnable_group = task_spec_group.add_group(
+        mutex=True,
+        help="""Either specify the config file for the job or
+        the first runnable in the task spec. Specify either a script file or
+        container arguments for the first runnable in the task spec.""")
+
+    script_group = runnable_group.add_group(
+        mutex=True,
+        help="""Either specify a path to a script file to run or provide
+        inline text to execute directly.""")
+    script_group.add_argument(
+        '--script-file-path',
+        help="""Path to script file to run as first runnable in task spec.
+        File path should be a valid path on the instance volume.""")
+    script_group.add_argument(
+        '--script-text',
+        type=str,
+        help="""Text to run as first runnable in task spec.""")
+
+    container_group = runnable_group.add_group(
+        help="""Options to specify the container arguments for the first
+        runnable in the task spec.""")
+    container_group.add_argument(
+        '--container-image-uri',
+        help="""The URI to pull the container image from.""")
+    container_group.add_argument(
+        '--container-entrypoint',
+        help="""Overrides the `ENTRYPOINT` specified in the container.""")
+    container_group.add_argument(
+        '--container-commands-file',
+        help="""Overrides the `CMD` specified in the container. If there is an
+      ENTRYPOINT (either in the container image or with the entrypoint field
+      below) then commands are appended as arguments to the ENTRYPOINT.""")
 
     parser.add_argument(
         '--priority',
         type=arg_parsers.BoundedInt(0, 99),
         help='Job priority [0-99] 0 is the lowest priority.')
+
+    parser.add_argument(
+        '--provisioning-model',
+        choices={
+            'STANDARD': 'The STANDARD VM provisioning model',
+            'SPOT': 'The SPOT VM provisioning model'
+        },
+        type=arg_utils.ChoiceToEnumName,
+        help=(
+            'Specify the allowed provisioning model for the compute instances'))
 
     parser.add_argument(
         '--allowed-machine-types',
@@ -80,8 +125,37 @@ class Submit(base.Command):
 
     batch_client = jobs.JobsClient()
     batch_msgs = jobs.GetMessagesModule()
+    job_msg = batch_msgs.Job()
 
-    job_msg = self._CreateJobMessage(batch_msgs, args.config)
+    if args.config:
+      job_msg = self._CreateJobMessage(batch_msgs, args.config)
+
+    if job_msg.taskGroups is None:
+      job_msg.taskGroups = []
+    if not job_msg.taskGroups:
+      job_msg.taskGroups.insert(
+          0, batch_msgs.TaskGroup(taskSpec=batch_msgs.TaskSpec(runnables=[])))
+    if args.script_file_path:
+      job_msg.taskGroups[0].taskSpec.runnables.insert(
+          0,
+          batch_msgs.Runnable(
+              script=batch_msgs.Script(path=args.script_file_path)))
+    if args.script_text:
+      job_msg.taskGroups[0].taskSpec.runnables.insert(
+          0,
+          batch_msgs.Runnable(script=batch_msgs.Script(text=args.script_text)))
+    if args.container_commands_file or args.container_image_uri or args.container_entrypoint:
+      container_cmds = []
+      if args.container_commands_file:
+        container_cmds = files.ReadFileContents(
+            args.container_commands_file).splitlines()
+      job_msg.taskGroups[0].taskSpec.runnables.insert(
+          0,
+          batch_msgs.Runnable(
+              container=batch_msgs.Container(
+                  entrypoint=args.container_entrypoint,
+                  imageUri=args.container_image_uri,
+                  commands=container_cmds)))
 
     if args.priority:
       job_msg.priority = args.priority
@@ -104,6 +178,15 @@ class Submit(base.Command):
           0,
           batch_msgs.NetworkInterface(
               network=args.network, subnetwork=args.subnetwork))
+
+    if args.provisioning_model:
+      if job_msg.allocationPolicy.provisioningModels is None:
+        job_msg.allocationPolicy.provisioningModels = []
+      job_msg.allocationPolicy.provisioningModels.insert(
+          0,
+          arg_utils.ChoiceToEnum(
+              args.provisioning_model, batch_msgs.AllocationPolicy
+              .ProvisioningModelsValueListEntryValuesEnum))
 
     resp = batch_client.Create(job_id, location_ref, job_msg)
     log.status.Print(

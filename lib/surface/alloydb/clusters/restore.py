@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import encoding
 from googlecloudsdk.api_lib.alloydb import api_util
 from googlecloudsdk.api_lib.alloydb import cluster_operations
 from googlecloudsdk.calliope import base
@@ -26,21 +25,6 @@ from googlecloudsdk.command_lib.alloydb import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
-
-
-_CUSTOM_JSON_FIELD_MAPPINGS = {
-    'backupSource_backupName': 'backupSource.backupName',
-}
-
-
-def ClusterRestoreBackupRequestHook(alloydb_messages, req):
-  updated_requests_type = (
-      alloydb_messages.AlloydbProjectsLocationsClustersRestoreRequest)
-  for req_field, mapped_param in _CUSTOM_JSON_FIELD_MAPPINGS.items():
-    encoding.AddCustomJsonFieldMapping(updated_requests_type,
-                                       req_field,
-                                       mapped_param)
-  return req
 
 
 @base.Hidden
@@ -65,12 +49,12 @@ class Restore(base.Command):
 
     Args:
       args: argparse.Namespace, An object that contains the values for the
-          arguments specified in the .Args() method.
+        arguments specified in the .Args() method.
 
     Returns:
       ProcessHttpResponse of the request made.
     """
-    client = api_util.AlloyDBClient(api_util.API_VERSION_DEFAULT)
+    client = api_util.AlloyDBClient(self.ReleaseTrack())
     alloydb_client = client.alloydb_client
     alloydb_messages = client.alloydb_messages
     location_ref = client.resource_parser.Create(
@@ -84,14 +68,16 @@ class Restore(base.Command):
         backupsId=args.backup)
 
     req = alloydb_messages.AlloydbProjectsLocationsClustersRestoreRequest(
-        backupSource_backupName=backup_ref.RelativeName(),
-        clusterId=args.cluster,
-        parent=location_ref.RelativeName())
-    ClusterRestoreBackupRequestHook(alloydb_messages, req)
+        parent=location_ref.RelativeName(),
+        restoreClusterRequest=alloydb_messages.RestoreClusterRequest(
+            backupSource=alloydb_messages.BackupSource(
+                backupName=backup_ref.RelativeName()),
+            clusterId=args.cluster,
+        ))
     op = alloydb_client.projects_locations_clusters.Restore(req)
     op_ref = resources.REGISTRY.ParseRelativeName(
         op.name, collection='alloydb.projects.locations.operations')
     log.status.Print('Operation ID: {}'.format(op_ref.Name()))
     if not args.async_:
-      cluster_operations.Await(op_ref, 'Restoring cluster')
+      cluster_operations.Await(op_ref, 'Restoring cluster', self.ReleaseTrack())
     return op

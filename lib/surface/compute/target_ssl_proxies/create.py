@@ -23,7 +23,6 @@ from googlecloudsdk.api_lib.compute import target_proxies_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.certificate_manager import resource_args
-from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.backend_services import (
     flags as backend_service_flags)
 from googlecloudsdk.command_lib.compute.ssl_certificates import (
@@ -31,6 +30,7 @@ from googlecloudsdk.command_lib.compute.ssl_certificates import (
 from googlecloudsdk.command_lib.compute.ssl_policies import (flags as
                                                              ssl_policies_flags)
 from googlecloudsdk.command_lib.compute.target_ssl_proxies import flags
+from googlecloudsdk.command_lib.compute.target_ssl_proxies import target_ssl_proxies_utils
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -132,9 +132,9 @@ class Create(base.CreateCommand):
       ]
 
     if args.ssl_policy:
-      target_ssl_proxy.sslPolicy = self.SSL_POLICY_ARG.ResolveAsResource(
-          args, holder.resources,
-          default_scope=compute_scope.ScopeEnum.GLOBAL).SelfLink()
+      target_ssl_proxy.sslPolicy = target_ssl_proxies_utils.ResolveSslPolicy(
+          args, self.SSL_POLICY_ARG, target_ssl_proxy_ref,
+          holder.resources).SelfLink()
 
     if self._certificate_map:
       certificate_map_ref = args.CONCEPTS.certificate_map.Parse()

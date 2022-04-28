@@ -38,6 +38,10 @@ class List(base.ListCommand):
 
     $ {command}
 
+  To list all logs for a view:
+
+    $ {command} --bucket=[BUCKET_ID] --location=[LOCATION] --view=[VIEW_ID]
+
   """
 
   @staticmethod
@@ -45,6 +49,22 @@ class List(base.ListCommand):
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     parser.display_info.AddFormat('table(.:label=NAME)')
+    view_group = parser.add_argument_group(
+        help='These arguments are used in conjunction with the parent to '
+        'construct a view resource.')
+    view_group.add_argument(
+        '--location',
+        required=True,
+        metavar='LOCATION',
+        help='Location of the log bucket.')
+    view_group.add_argument(
+        '--bucket',
+        required=True,
+        help='Id of the log bucket.')
+    view_group.add_argument(
+        '--view',
+        required=True,
+        help='Id of the view.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -60,9 +80,25 @@ class List(base.ListCommand):
 
     project_ref = resources.REGISTRY.Parse(
         project, collection='cloudresourcemanager.projects')
-    request = util.GetMessages().LoggingProjectsLogsListRequest(
-        parent=project_ref.RelativeName())
+    parent = project_ref.RelativeName()
 
-    return list_pager.YieldFromList(
-        util.GetClient().projects_logs, request, field='logNames',
-        limit=args.limit, batch_size=None, batch_size_attribute='pageSize')
+    if args.IsSpecified('view'):
+      # We are replacing the parent with the resourceName path for a view
+      # instead of populating the resourceNames field.
+      # This is due to the parent being a legacy required field.
+      parent = util.CreateResourceName(
+          util.CreateResourceName(
+              util.CreateResourceName(parent, 'locations', args.location),
+              'buckets', args.bucket), 'views', args.view)
+
+    request = util.GetMessages().LoggingProjectsLogsListRequest(parent=parent)
+
+    result = list_pager.YieldFromList(
+        util.GetClient().projects_logs,
+        request,
+        field='logNames',
+        limit=args.limit,
+        batch_size=None,
+        batch_size_attribute='pageSize')
+
+    return result

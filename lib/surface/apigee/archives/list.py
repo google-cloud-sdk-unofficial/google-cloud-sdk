@@ -94,11 +94,8 @@ class List(base.ListCommand):
     org = identifiers["organizationsId"]
 
     archive_response = apigee.ArchivesClient.List(identifiers)
-    if "archiveDeployments" not in archive_response or not archive_response[
-        "archiveDeployments"]:
-      return archive_response
 
     extended_archives = archive_helper.ListArchives(org).ExtendedArchives(
-        archive_response["archiveDeployments"])
+        archive_response)
 
     return {"archiveDeployments": extended_archives}

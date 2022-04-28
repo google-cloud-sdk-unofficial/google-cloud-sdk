@@ -552,7 +552,7 @@ class UpdateGA(base.UpdateCommand):
   _support_tcp_ssl_logging = False
   _support_failover = True
   _support_client_only = True
-  _support_unspecified_protocol = False
+  _support_unspecified_protocol = True
   _support_grpc_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = False

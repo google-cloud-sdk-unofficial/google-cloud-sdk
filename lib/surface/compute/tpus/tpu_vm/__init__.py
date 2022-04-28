@@ -21,6 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class TpuVMNodes(base.Group):
   """List, create, and manage Cloud TPU VM nodes."""

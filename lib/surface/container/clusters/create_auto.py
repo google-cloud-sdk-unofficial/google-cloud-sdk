@@ -36,6 +36,7 @@ auto_flags = [
     'bootdiskkms',
     'autoprovisioning_network_tags',
     'enableworkloadconfigaudit',
+    'enableworkloadvulnscanning',
 ]
 
 # Change default flag values in create-auto

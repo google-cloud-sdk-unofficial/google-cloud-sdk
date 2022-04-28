@@ -50,10 +50,19 @@ class SshGa(base.Command):
   """SSH into the VM of an App Engine Flexible instance."""
 
   detailed_help = {
-      'DESCRIPTION': textwrap.dedent("""\
+      'DESCRIPTION':
+          textwrap.dedent("""\
         *{command}* lets you remotely log in to your running App Engine Flexible
-        instances.""") + ssh_common.DETAILED_HELP,
-      'EXAMPLES': """\
+        instances under two conditions:
+        * The instance is running.
+        * The instance has an external IP address. To check from the Cloud
+        Console, go to the Instances page and confirm that there is an IP
+        address listed in the VM IP column. To check from your app.yaml, open
+        your app.yaml and look at the network settings. The *instance_ip_mode*
+        field must be either not listed or set to ``external''.""") +
+          ssh_common.DETAILED_HELP,
+      'EXAMPLES':
+          """\
           To SSH into an App Engine Flexible instance, run:
 
               $ {command} --service=s1 --version=v1 i1

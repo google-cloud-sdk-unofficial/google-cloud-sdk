@@ -24,7 +24,6 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.certificate_manager import resource_args
 from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
-from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.backend_services import (
     flags as backend_service_flags)
 from googlecloudsdk.command_lib.compute.ssl_certificates import (
@@ -32,6 +31,7 @@ from googlecloudsdk.command_lib.compute.ssl_certificates import (
 from googlecloudsdk.command_lib.compute.ssl_policies import (flags as
                                                              ssl_policies_flags)
 from googlecloudsdk.command_lib.compute.target_ssl_proxies import flags
+from googlecloudsdk.command_lib.compute.target_ssl_proxies import target_ssl_proxies_utils
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -72,7 +72,6 @@ class Update(base.SilentCommand):
       cls.SSL_CERTIFICATES_ARG.AddArgument(
           parser, cust_metavar='SSL_CERTIFICATE')
 
-    group = parser.add_mutually_exclusive_group()
     if cls._regional_ssl_policies:
       cls.SSL_POLICY_ARG = (
           ssl_policies_flags.GetSslPolicyMultiScopeArgumentForOtherResource(
@@ -81,7 +80,11 @@ class Update(base.SilentCommand):
       cls.SSL_POLICY_ARG = (
           ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
               'SSL', required=False))
-    cls.SSL_POLICY_ARG.AddArgument(group)
+
+    group = parser.add_mutually_exclusive_group()
+    ssl_policy_group = group.add_argument_group()
+    cls.SSL_POLICY_ARG.AddArgument(ssl_policy_group)
+
     ssl_policies_flags.GetClearSslPolicyArgumentForOtherResource(
         'SSL', required=False).AddToParser(group)
     if cls._certificate_map:
@@ -152,13 +155,13 @@ class Update(base.SilentCommand):
                            targetSslProxiesSetProxyHeaderRequest=(
                                messages.TargetSslProxiesSetProxyHeaderRequest(
                                    proxyHeader=proxy_header)))))
-    ssl_policy = None
-    if args.IsSpecified('ssl_policy'):
+    if args.ssl_policy:
+      ssl_policy_ref = target_ssl_proxies_utils.ResolveSslPolicy(
+          args, self.SSL_POLICY_ARG, target_ssl_proxy_ref, holder.resources)
       ssl_policy = messages.SslPolicyReference(
-          sslPolicy=self.SSL_POLICY_ARG.ResolveAsResource(
-              args,
-              holder.resources,
-              default_scope=compute_scope.ScopeEnum.GLOBAL).SelfLink())
+          sslPolicy=ssl_policy_ref.SelfLink())
+    else:
+      ssl_policy = None
     clear_ssl_policy = args.clear_ssl_policy
 
     if ssl_policy or clear_ssl_policy:

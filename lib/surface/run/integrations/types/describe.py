@@ -94,7 +94,10 @@ class Describe(base.DescribeCommand):
     optional_params = []
     # Per the PRD, required parameters should come first.
     for name, param in type_def['parameters'].items():
+      hidden = param.get('hidden', False)
       required = param.get('required', False)
+      if hidden:
+        continue
       if required:
         required_params.append(frozendict({
             'name': name,

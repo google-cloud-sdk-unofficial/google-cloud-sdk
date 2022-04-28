@@ -50,7 +50,7 @@ class Describe(base.DescribeCommand):
     Returns:
       ProcessHttpResponse of the request made.
     """
-    client = api_util.AlloyDBClient(api_util.API_VERSION_DEFAULT)
+    client = api_util.AlloyDBClient(self.ReleaseTrack())
     operation_ref = client.resource_parser.Create(
         'alloydb.projects.locations.operations',
         projectsId=properties.VALUES.core.project.GetOrFail,

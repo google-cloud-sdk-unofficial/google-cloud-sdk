@@ -29,8 +29,22 @@
     id_field: name
 
   output:
-    format: |
-      table(
-         name.basename():label=NAME,
-         externalId:label=EXTERNAL_ID
-       )
+    ALPHA:
+      format: |
+        table(
+          name.basename():label=NAME,
+          externalId:label=EXTERNAL_ID,
+          name.scope().segment(-3):label=LOCATION
+        )
+    BETA:
+      format: |
+        table(
+          name.basename():label=NAME,
+          externalId:label=EXTERNAL_ID
+        )
+    GA:
+      format: |
+        table(
+          name.basename():label=NAME,
+          externalId:label=EXTERNAL_ID
+        )

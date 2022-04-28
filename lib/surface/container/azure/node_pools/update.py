@@ -18,14 +18,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.azure import util as azure_api_util
-from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.api_lib.container.gkemulticloud import azure as azure_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.azure import util as command_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
+from googlecloudsdk.command_lib.container.gkemulticloud import operations
 from googlecloudsdk.core import log
 
 
@@ -58,23 +58,15 @@ class Update(base.UpdateCommand):
 
   def Run(self, args):
     """Runs the update command."""
-
-    node_version = flags.GetNodeVersion(args)
     validate_only = flags.GetValidateOnly(args)
-    min_nodes, max_nodes = flags.GetAutoscalingParams(args)
     async_ = args.async_
 
     with endpoint_util.GkemulticloudEndpointOverride(
         resource_args.ParseAzureNodePoolResourceArg(args).locationsId,
         self.ReleaseTrack()):
       nodepool_ref = resource_args.ParseAzureNodePoolResourceArg(args)
-      api_client = azure_api_util.NodePoolsClient(track=self.ReleaseTrack())
-      op = api_client.Update(
-          nodepool_ref=nodepool_ref,
-          node_version=node_version,
-          min_nodes=min_nodes,
-          max_nodes=max_nodes,
-          validate_only=validate_only)
+      api_client = azure_api_util.NodePoolsClient()
+      op = api_client.Update(nodepool_ref, args)
 
       if validate_only:
         args.format = 'disable'
@@ -84,12 +76,10 @@ class Update(base.UpdateCommand):
       log.CreatedResource(op_ref, kind=constants.LRO_KIND)
 
       if not async_:
-        waiter.WaitFor(
-            waiter.CloudOperationPollerNoResources(
-                api_client.client.projects_locations_operations),
+        op_client = operations.Client()
+        op_client.Wait(
             op_ref,
-            'Updating node pool {}'.format(nodepool_ref.azureNodePoolsId),
-            wait_ceiling_ms=constants.MAX_LRO_POLL_INTERVAL_MS)
+            'Updating node pool {}'.format(nodepool_ref.azureNodePoolsId))
 
       log.UpdatedResource(
           nodepool_ref, kind=constants.AZURE_NODEPOOL_KIND, is_async=async_)

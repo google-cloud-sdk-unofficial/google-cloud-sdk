@@ -120,7 +120,7 @@ class AttachDisk(base.Command):
 
     # Retrieve the TPU node.
     tpu_name_ref = args.CONCEPTS.tpu.Parse()
-    tpu = tpu_utils.TPUNode()
+    tpu = tpu_utils.TPUNode(self.ReleaseTrack())
     node = tpu.Get(tpu_name_ref.Name(), args.zone)
 
     if not tpu_utils.IsTPUVMNode(node):

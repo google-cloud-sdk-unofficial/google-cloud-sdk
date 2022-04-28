@@ -551,7 +551,7 @@ class Create(base.CreateCommand):
   _support_all_protocol = False
   _support_target_service_attachment = True
   _support_sd_registration_for_regional = False
-  _support_l3_default = False
+  _support_l3_default = True
   _support_source_ip_range = False
 
   @classmethod

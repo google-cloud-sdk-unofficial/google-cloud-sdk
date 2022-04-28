@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.azure import util as azure_api_util
+from googlecloudsdk.api_lib.container.gkemulticloud import azure as azure_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.azure import util as command_util
@@ -55,9 +55,6 @@ class Update(base.UpdateCommand):
 
   def Run(self, args):
     """Runs the update command."""
-    cluster_version = flags.GetClusterVersion(args)
-    vm_size = flags.GetVMSize(args)
-    admin_users = args.admin_users
     validate_only = flags.GetValidateOnly(args)
     async_ = getattr(args, 'async_', False)
 
@@ -66,17 +63,8 @@ class Update(base.UpdateCommand):
         self.ReleaseTrack()):
       # Parsing again after endpoint override is set.
       cluster_ref = resource_args.ParseAzureClusterResourceArg(args)
-      client_ref = resource_args.ParseAzureClientResourceArg(
-          args) if args.client else None
-
-      cluster_client = azure_api_util.ClustersClient(track=self.ReleaseTrack())
-      op = cluster_client.Update(
-          cluster_ref=cluster_ref,
-          client_ref=client_ref,
-          cluster_version=cluster_version,
-          vm_size=vm_size,
-          admin_users=admin_users,
-          validate_only=validate_only)
+      cluster_client = azure_api_util.ClustersClient()
+      op = cluster_client.Update(cluster_ref, args)
 
       if validate_only:
         args.format = 'disable'

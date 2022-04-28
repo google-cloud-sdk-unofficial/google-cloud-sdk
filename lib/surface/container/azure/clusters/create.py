@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.azure import util as azure_api_util
+from googlecloudsdk.api_lib.container.gkemulticloud import azure as azure_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.azure import util as command_util
@@ -129,7 +129,7 @@ class Create(base.CreateCommand):
       # Parsing again after endpoint override is set.
       cluster_ref = resource_args.ParseAzureClusterResourceArg(args)
       client_ref = resource_args.ParseAzureClientResourceArg(args)
-      cluster_client = azure_api_util.ClustersClient(track=self.ReleaseTrack())
+      cluster_client = azure_api_util.ClustersClient()
       op = cluster_client.Create(
           cluster_ref=cluster_ref,
           client_ref=client_ref,
@@ -166,7 +166,7 @@ class Create(base.CreateCommand):
       log.CreatedResource(op_ref, kind=constants.LRO_KIND)
 
       if not async_:
-        op_client = operations.Client(track=self.ReleaseTrack())
+        op_client = operations.Client()
         op_client.Wait(
             op_ref, "Creating cluster {} in Azure region {}".format(
                 cluster_ref.azureClustersId, azure_region))

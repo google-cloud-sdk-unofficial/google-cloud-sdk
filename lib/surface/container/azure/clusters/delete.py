@@ -19,12 +19,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container import util as gke_util
-from googlecloudsdk.api_lib.container.azure import util as azure_api_util
-from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.api_lib.container.gkemulticloud import azure as azure_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
+from googlecloudsdk.command_lib.container.gkemulticloud import operations
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -54,7 +54,7 @@ class Delete(base.DeleteCommand):
         self.ReleaseTrack()):
       # Parsing again after endpoint override is set.
       cluster_ref = resource_args.ParseAzureClusterResourceArg(args)
-      api_client = azure_api_util.ClustersClient(track=self.ReleaseTrack())
+      api_client = azure_api_util.ClustersClient()
 
       cluster = api_client.Get(cluster_ref)
       console_io.PromptContinue(
@@ -73,13 +73,11 @@ class Delete(base.DeleteCommand):
 
       async_ = args.async_
       if not async_:
-        waiter.WaitFor(
-            waiter.CloudOperationPollerNoResources(
-                api_client.client.projects_locations_operations),
+        op_client = operations.Client()
+        op_client.Wait(
             op_ref,
             'Deleting cluster {} in Azure region {}'.format(
-                cluster_ref.azureClustersId, cluster.azureRegion),
-            wait_ceiling_ms=constants.MAX_LRO_POLL_INTERVAL_MS)
+                cluster_ref.azureClustersId, cluster.azureRegion))
 
       log.DeletedResource(
           cluster_ref, kind=constants.AZURE_CLUSTER_KIND, is_async=async_)

@@ -59,7 +59,7 @@ class Run(base.Command):
 
     airflow trigger_dag some_dag --run_id=foo
 
-  The following command (for environments with Airflow 2.0+):
+  The following command (for environments with Airflow 1.10.14+):
 
     {command} myenv dags list
 
@@ -215,10 +215,10 @@ class Run(base.Command):
   def CheckSubcommandNestedAirflowSupport(self, args, airflow_version):
     if (args.subcommand_nested and
         not image_versions_command_util.IsVersionInRange(
-            airflow_version, '2.0.0', None)):
+            airflow_version, '1.10.14', None)):
       raise command_util.Error(
           'Nested subcommands are supported only for Composer environments '
-          'with Airflow version 2.0.0 or higher.')
+          'with Airflow version 1.10.14 or higher.')
 
   def ConvertKubectlError(self, error, env_obj):
     is_private = (

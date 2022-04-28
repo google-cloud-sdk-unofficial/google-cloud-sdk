@@ -65,7 +65,7 @@ class Create(base.CreateCommand):
     Returns:
       ProcessHttpResponse of the request made.
     """
-    client = api_util.AlloyDBClient(api_util.API_VERSION_DEFAULT)
+    client = api_util.AlloyDBClient(self.ReleaseTrack())
     alloydb_client = client.alloydb_client
     alloydb_messages = client.alloydb_messages
     cluster_ref = client.resource_parser.Create(
@@ -80,5 +80,6 @@ class Create(base.CreateCommand):
         op.name, collection='alloydb.projects.locations.operations')
     log.status.Print('Operation ID: {}'.format(op_ref.Name()))
     if not args.async_:
-      instance_operations.Await(op_ref, 'Creating instance')
+      instance_operations.Await(op_ref, 'Creating instance',
+                                self.ReleaseTrack())
     return op

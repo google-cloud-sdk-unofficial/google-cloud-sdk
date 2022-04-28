@@ -438,7 +438,7 @@ class CreateGA(base.CreateCommand):
   _support_multinic = True
   _support_client_only = True
   _support_grpc_protocol = True
-  _support_unspecified_protocol = False
+  _support_unspecified_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = False
   _support_strong_session_affinity = False

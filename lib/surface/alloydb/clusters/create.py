@@ -56,7 +56,7 @@ class Create(base.CreateCommand):
     Returns:
       ProcessHttpResponse of the request made.
     """
-    client = api_util.AlloyDBClient(api_util.API_VERSION_DEFAULT)
+    client = api_util.AlloyDBClient(self.ReleaseTrack())
     alloydb_client = client.alloydb_client
     alloydb_messages = client.alloydb_messages
     location_ref = client.resource_parser.Create(
@@ -65,16 +65,17 @@ class Create(base.CreateCommand):
         locationsId=args.region)
     cluster_resource = alloydb_messages.Cluster()
     cluster_resource.network = args.network
-    cluster_resource.initialUser = client.alloydb_messages.UserPassword(
+    cluster_resource.initialUser = alloydb_messages.UserPassword(
         password=args.password, user='postgres')
     req = alloydb_messages.AlloydbProjectsLocationsClustersCreateRequest(
         cluster=cluster_resource,
         clusterId=args.cluster,
-        parent=location_ref.RelativeName())
+        parent=location_ref.RelativeName()
+        )
     op = alloydb_client.projects_locations_clusters.Create(req)
     op_ref = resources.REGISTRY.ParseRelativeName(
         op.name, collection='alloydb.projects.locations.operations')
     log.status.Print('Operation ID: {}'.format(op_ref.Name()))
     if not args.async_:
-      cluster_operations.Await(op_ref, 'Creating cluster')
+      cluster_operations.Await(op_ref, 'Creating cluster', self.ReleaseTrack())
     return op

@@ -204,9 +204,11 @@ class Create(base.CreateCommand):
     ssl_cert_refs = target_https_proxies_utils.ResolveSslCertificates(
         args, self.SSL_CERTIFICATES_ARG, target_https_proxy_ref,
         holder.resources)
-    ssl_policy_ref = self.SSL_POLICY_ARG.ResolveAsResource(
-        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL
-    ) if args.ssl_policy else None
+    if args.ssl_policy:
+      ssl_policy_ref = target_https_proxies_utils.ResolveSslPolicy(
+          args, self.SSL_POLICY_ARG, target_https_proxy_ref, holder.resources)
+    else:
+      ssl_policy_ref = None
     certificate_map_ref = args.CONCEPTS.certificate_map.Parse(
     ) if self._certificate_map else None
     return _Run(args, holder, target_https_proxy_ref, url_map_ref,

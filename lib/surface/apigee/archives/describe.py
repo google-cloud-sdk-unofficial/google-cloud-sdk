@@ -71,12 +71,11 @@ class Describe(base.DescribeCommand):
             identifiers["archiveDeploymentsId"]))
 
     archive_list_response = apigee.ArchivesClient.List(identifiers)
-    if "archiveDeployments" not in archive_list_response or not archive_list_response[
-        "archiveDeployments"]:
+    if not archive_list_response:
       return apigee.ArchivesClient.Describe(identifiers)
 
     extended_archives = archive_helper.ListArchives(org).ExtendedArchives(
-        archive_list_response["archiveDeployments"])
+        archive_list_response)
     for a in extended_archives:
       if a["name"] == archive_name:
         return a

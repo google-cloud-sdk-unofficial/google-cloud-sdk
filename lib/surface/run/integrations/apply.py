@@ -25,7 +25,9 @@ from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags as run_flags
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
+from googlecloudsdk.command_lib.run.integrations import stages
 from googlecloudsdk.core import yaml
+from googlecloudsdk.core.console import progress_tracker
 
 
 @base.Hidden
@@ -66,4 +68,10 @@ class Apply(base.Command):
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, self.ReleaseTrack())
     with run_apps_operations.Connect(conn_context) as client:
-      return client.ApplyAppConfig(name, appconfig)
+
+      with progress_tracker.StagedProgressTracker(
+          'Applying Configuration...',
+          stages.ApplyStages(),
+          failure_message='Failed to apply application configuration.'
+      ) as tracker:
+        return client.ApplyAppConfig(tracker, name, appconfig)

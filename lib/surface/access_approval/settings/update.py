@@ -37,18 +37,22 @@ class Update(base.Command):
   detailed_help = {
       'EXAMPLES':
           textwrap.dedent("""\
-    Update notification emails associated with project 'p1', run:
+    Update notification emails associated with project `p1`, run:
 
         $ {command} --project=p1 --notification_emails='foo@example.com, bar@example.com'
 
-    Enable Access Approval enforcement for folder 'f1':
+    Enable Access Approval enforcement for folder `f1`:
 
         $ {command} --folder=f1 --enrolled_services=all
 
-    Enable Access Approval enforcement for organization 'org1' for only Cloud Storage and Compute
+    Enable Access Approval enforcement for organization `org1` for only Cloud Storage and Compute
     products and set the notification emails at the same time:
 
         $ {command} --organization=org1 --enrolled_services='storage.googleapis.com,compute.googleapis.com' --notification_emails='security_team@example.com'
+
+    Update active key version for project `p1`:
+
+        $ {command} --project=p1 --active_key_version='projects/p1/locations/global/keyRings/signing-keys/cryptoKeys/signing-key/cryptoKeyVersions/1'
         """),
   }
 
@@ -64,6 +68,10 @@ class Update(base.Command):
         '--enrolled_services',
         help='Comma-separated list of services to enroll for Access Approval or \'all\' for all supported services. Note for project and folder enrollments, only \'all\' is supported. Use \'\' to clear all enrolled services.'
     )
+    parser.add_argument(
+        '--active_key_version',
+        help='The asymmetric crypto key version to use for signing approval requests. Use `\'\'` to remove the custom signing key.'
+    )
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -77,10 +85,11 @@ class Update(base.Command):
     """
     p = parent.GetParent(args)
 
-    if args.notification_emails is None and args.enrolled_services is None:
-      raise exceptions.MinimumArgumentException(
-          ['--notification_emails', '--enrolled_services'],
-          'must specify at least one of these flags')
+    if (args.notification_emails is None and args.enrolled_services is None and
+        args.active_key_version is None):
+      raise exceptions.MinimumArgumentException([
+          '--notification_emails', '--enrolled_services', '--active_key_version'
+      ], 'must specify at least one of these flags')
 
     update_mask = []
     emails_list = []
@@ -97,8 +106,12 @@ class Update(base.Command):
         services_list = args.enrolled_services.split(',')
         services_list = [i.strip() for i in services_list]
 
+    if args.active_key_version is not None:
+      update_mask.append('active_key_version')
+
     return settings.Update(
         name=('%s/accessApprovalSettings' % p),
         notification_emails=emails_list,
         enrolled_services=services_list,
+        active_key_version=args.active_key_version,
         update_mask=','.join(update_mask))

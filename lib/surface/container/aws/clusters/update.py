@@ -54,7 +54,7 @@ class Update(base.UpdateCommand):
     aws_flags.AddRoleSessionName(parser)
     aws_flags.AddConfigEncryptionKmsKeyArn(parser, required=False)
     aws_flags.AddSecurityGroupFlagsForUpdate(parser, 'control plane replicas')
-    aws_flags.AddProxyConfigForUpdate(parser)
+    aws_flags.AddProxyConfigForUpdate(parser, 'cluster')
     aws_flags.AddRootVolumeKmsKeyArn(parser)
     aws_flags.AddRootVolumeType(parser)
     aws_flags.AddRootVolumeIops(parser)

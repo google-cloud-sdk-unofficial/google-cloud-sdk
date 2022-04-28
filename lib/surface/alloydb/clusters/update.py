@@ -56,7 +56,7 @@ class Update(base.UpdateCommand):
     Returns:
       ProcessHttpResponse of the request made.
     """
-    client = api_util.AlloyDBClient(api_util.API_VERSION_DEFAULT)
+    client = api_util.AlloyDBClient(self.ReleaseTrack())
     alloydb_client = client.alloydb_client
     alloydb_messages = client.alloydb_messages
     cluster_ref = client.resource_parser.Create(
@@ -73,6 +73,6 @@ class Update(base.UpdateCommand):
         op.name, collection='alloydb.projects.locations.operations')
     log.status.Print('Operation ID: {}'.format(op_ref.Name()))
     if not args.async_:
-      cluster_operations.Await(op_ref, 'Updating cluster', False)
+      cluster_operations.Await(op_ref, 'Updating cluster', self.ReleaseTrack(), False)
     return op
 

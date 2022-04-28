@@ -121,12 +121,15 @@ def SSHRunCmd(env, cmd, output_file_writer):
       explicit_error_file=output_file_writer)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Ssh(base.Command):
   """SSH into a Cloud TPU VM."""
 
-  @staticmethod
-  def Args(parser):
+  # IAP is not available for GA.
+  enable_iap = False
+
+  @classmethod
+  def Args(cls, parser):
     """Set up arguments for this command.
 
     Args:
@@ -134,7 +137,7 @@ class Ssh(base.Command):
     """
     ssh_utils.BaseSSHCLIHelper.Args(parser)
     AddSSHArgs(parser)
-    tpu_ssh_utils.AddTPUSSHArgs(parser)
+    tpu_ssh_utils.AddTPUSSHArgs(parser, enable_iap=cls.enable_iap)
     AddCommandArgGroup(parser)
     flags.AddZoneFlag(parser, resource_type='tpu', operation_type='ssh')
 
@@ -159,7 +162,7 @@ class Ssh(base.Command):
             'it or specify another directory'.format(output_directory_path))
 
     # Retrieve the node.
-    tpu = tpu_utils.TPUNode()
+    tpu = tpu_utils.TPUNode(self.ReleaseTrack())
     node = tpu.Get(tpu_name, args.zone)
     if not tpu_utils.IsTPUVMNode(node):
       raise exceptions.BadArgumentException(
@@ -237,7 +240,8 @@ class Ssh(base.Command):
                        'to {}'.format(output_directory_path))
 
     instance_names = {}
-    if args.tunnel_through_iap:
+    if (args.IsKnownAndSpecified('tunnel_through_iap')
+        and args.tunnel_through_iap):
       # Retrieve the instance names from the GuestAttributes.
       for worker in worker_ips:
         # The GuestAttributes will only have one entry if we're targeting a
@@ -267,7 +271,8 @@ class Ssh(base.Command):
                                                    ips.internal_address)
 
       iap_tunnel_args = None
-      if args.tunnel_through_iap:
+      if (args.IsKnownAndSpecified('tunnel_through_iap')
+          and args.tunnel_through_iap):
         # Retrieve the instance name from the GuestAttributes.
         instance_name = instance_names[worker]
         iap_tunnel_args = tpu_ssh_utils.CreateSshTunnelArgs(
@@ -316,3 +321,35 @@ class Ssh(base.Command):
       for status in exit_statuses:
         if status:
           sys.exit(status)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SshAlpha(Ssh):
+  """SSH into a Cloud TPU VM (Alpha)."""
+  enable_iap = True
+
+
+Ssh.detailed_help = {
+    'brief':
+        'SSH into a Cloud TPU VM.',
+    'EXAMPLES':
+        """
+        To SSH into a Cloud TPU VM, run:
+
+            $ {command} my-tpu
+
+        To SSH into worker 1 on a Cloud TPU VM Pod, run:
+
+            $ {command} my-tpu --worker=1
+
+        To run an SSH command in a Cloud TPU VM (for example, to print the
+        time since last boot), run:
+
+            $ {command} my-tpu --command="last boot"
+
+        To run the same command in all workers in a Cloud TPU VM simultaneously,
+        run:
+
+            $ {command} my-tpu --command="last boot" --worker=all
+        """
+}

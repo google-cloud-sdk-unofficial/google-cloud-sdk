@@ -34,6 +34,9 @@ from googlecloudsdk.command_lib.util.args import labels_util
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a cluster."""
+
+  # DEPRECATED Beta release track should no longer be used, Google Cloud
+  # no longer supports it.
   BETA = False
 
   detailed_help = {
@@ -138,6 +141,8 @@ class Create(base.CreateCommand):
                                                  messages.Cluster.LabelsValue)
 
 
+# DEPRECATED Beta & Alpha release tracks should no longer be used, Google Cloud
+# no longer supports them.
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a cluster."""

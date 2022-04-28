@@ -18,14 +18,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.azure import util as azure_api_util
-from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.api_lib.container.gkemulticloud import azure as azure_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.azure import util as command_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
 from googlecloudsdk.command_lib.container.gkemulticloud import endpoint_util
 from googlecloudsdk.command_lib.container.gkemulticloud import flags
+from googlecloudsdk.command_lib.container.gkemulticloud import operations
 from googlecloudsdk.core import log
 
 
@@ -94,7 +94,7 @@ class Create(base.CreateCommand):
         self.ReleaseTrack()):
       # Parsing again after endpoint override is set.
       nodepool_ref = resource_args.ParseAzureNodePoolResourceArg(args)
-      api_client = azure_api_util.NodePoolsClient(track=self.ReleaseTrack())
+      api_client = azure_api_util.NodePoolsClient()
       op = api_client.Create(
           nodepool_ref=nodepool_ref,
           node_version=node_version,
@@ -124,12 +124,10 @@ class Create(base.CreateCommand):
       log.CreatedResource(op_ref, kind=constants.LRO_KIND)
 
       if not async_:
-        waiter.WaitFor(
-            waiter.CloudOperationPollerNoResources(
-                api_client.client.projects_locations_operations),
+        op_client = operations.Client()
+        op_client.Wait(
             op_ref,
-            'Creating node pool {}'.format(nodepool_ref.azureNodePoolsId),
-            wait_ceiling_ms=constants.MAX_LRO_POLL_INTERVAL_MS)
+            'Creating node pool {}'.format(nodepool_ref.azureNodePoolsId))
 
       log.CreatedResource(
           nodepool_ref, kind=constants.AZURE_NODEPOOL_KIND, is_async=async_)

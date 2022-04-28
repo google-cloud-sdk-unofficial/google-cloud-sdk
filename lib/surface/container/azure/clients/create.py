@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.container.azure import util as azure_api_util
+from googlecloudsdk.api_lib.container.gkemulticloud import azure as azure_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.azure import util as command_util
@@ -69,7 +69,7 @@ class Create(base.CreateCommand):
     with endpoint_util.GkemulticloudEndpointOverride(
         resource_args.ParseAzureClientResourceArg(args).locationsId, track):
       client_ref = resource_args.ParseAzureClientResourceArg(args)
-      api_client = azure_api_util.ClientsClient(track=track)
+      api_client = azure_api_util.ClientsClient()
       api_client.Create(
           client_ref=client_ref,
           tenant_id=tenant_id,

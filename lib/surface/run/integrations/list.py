@@ -38,9 +38,17 @@ class List(base.ListCommand):
           """,
       'EXAMPLES':
           """\
-          List Cloud Run Integrations within project
+          List all Cloud Run Integrations within the current project
 
-              $ {command} --type [TYPE] --service [SERVICE]
+              $ {command}
+
+          List all Cloud Run Integrations of a particular type
+
+              $ {command} --type redis
+
+          List all Cloud Run Integrations attached to a particular Service
+
+              $ {command} --service my-service
 
          """,
   }

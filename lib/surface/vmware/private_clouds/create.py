@@ -66,7 +66,7 @@ class CreateAlpha(base.CreateCommand):
         required=True,
         type=int,
         help="""\
-        Node type to use for management cluster nodes. To get a list of available node types, run `{grandparent_command} nodetypes list`.
+        Number of nodes in the management cluster.
         """)
     parser.add_argument(
         '--management-range',

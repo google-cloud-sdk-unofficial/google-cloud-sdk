@@ -64,14 +64,18 @@ class Import(base.Command):
   """
 
   @classmethod
-  def _BetaOrAlpha(cls):
+  def _IsBetaOrAlpha(cls):
     return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
                                   base.ReleaseTrack.ALPHA)
 
   @classmethod
+  def _IsAlpha(cls):
+    return cls.ReleaseTrack() == base.ReleaseTrack.ALPHA
+
+  @classmethod
   def Args(cls, parser):
     flags.GetZoneArg().AddToParser(parser)
-    if cls._BetaOrAlpha():
+    if cls._IsBetaOrAlpha():
       flags.GetLocationArg().AddToParser(parser)
     parser.add_argument('records_file',
                         help='File from which record-sets should be '
@@ -122,7 +126,7 @@ class Import(base.Command):
       get_request = dns.MESSAGES_MODULE.DnsManagedZonesGetRequest(
           project=zone_ref.project, managedZone=zone_ref.managedZone)
 
-      if api_version == 'v2' and self._BetaOrAlpha():
+      if api_version == 'v2' and self._IsBetaOrAlpha():
         get_request.location = args.location
 
       zone = dns.managedZones.Get(get_request)
@@ -149,7 +153,9 @@ class Import(base.Command):
               import_file, zone.dnsName, api_version=api_version)
         else:
           imported = import_util.RecordSetsFromYamlFile(
-              import_file, api_version=api_version)
+              import_file,
+              include_extended_records=self._IsAlpha(),
+              api_version=api_version)
     except Exception as exp:
       msg = ('Unable to read record-sets from specified records-file [{0}] '
              'because [{1}]')
@@ -157,10 +163,13 @@ class Import(base.Command):
       raise import_util.UnableToReadRecordsFile(msg)
 
     # Get the change resulting from the imported record-sets.
-    change = import_util.ComputeChange(current, imported,
-                                       args.delete_all_existing,
-                                       zone.dnsName, args.replace_origin_ns,
-                                       api_version=api_version)
+    change = import_util.ComputeChange(
+        current,
+        imported,
+        args.delete_all_existing,
+        zone.dnsName,
+        args.replace_origin_ns,
+        api_version=api_version)
     if not change:
       msg = 'Nothing to do, all the records in [{0}] already exist.'.format(
           args.records_file)
@@ -171,7 +180,7 @@ class Import(base.Command):
     create_request = dns.MESSAGES_MODULE.DnsChangesCreateRequest(
         change=change, managedZone=zone.name, project=zone_ref.project)
 
-    if api_version == 'v2' and self._BetaOrAlpha():
+    if api_version == 'v2' and self._IsBetaOrAlpha():
       create_request.location = args.location
 
     result = dns.changes.Create(create_request)

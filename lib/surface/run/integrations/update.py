@@ -26,6 +26,8 @@ from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import messages_util
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
+from googlecloudsdk.command_lib.run.integrations import stages
+from googlecloudsdk.core.console import progress_tracker
 
 
 @base.Hidden
@@ -40,9 +42,9 @@ class Update(base.Command):
           """,
       'EXAMPLES':
           """\
-          To update an application from specification
+          To update a redis integration to change the cache size
 
-              $ {command} my-cloudsql --parameters size=100
+              $ {command} redis-integration --parameters=memory-size-gb=5
 
          """,
   }
@@ -69,15 +71,21 @@ class Update(base.Command):
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, self.ReleaseTrack())
     with run_apps_operations.Connect(conn_context) as client:
-      client.UpdateIntegration(
-          name=integration_name,
-          parameters=parameters,
-          add_service=add_service,
-          remove_service=remove_service)
+
+      with progress_tracker.StagedProgressTracker(
+          'Updating Integration...',
+          stages.IntegrationStages(create=False),
+          failure_message='Failed to update integration.') as tracker:
+        client.UpdateIntegration(
+            tracker=tracker,
+            name=integration_name,
+            parameters=parameters,
+            add_service=add_service,
+            remove_service=remove_service)
 
       resource_config = client.GetIntegration(integration_name)
       resource_status = client.GetIntegrationStatus(integration_name)
-      resource_type = client.GetIntegrationTypeFromConfig(resource_config)
+      resource_type = client.GetResourceTypeFromConfig(resource_config)
       integration_type = types_utils.GetIntegrationType(resource_type)
 
       pretty_print.Info('')

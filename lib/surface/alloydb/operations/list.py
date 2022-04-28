@@ -55,7 +55,7 @@ class List(base.ListCommand):
     Returns:
       ProcessHttpResponse of the request made.
     """
-    client = api_util.AlloyDBClient(api_util.API_VERSION_DEFAULT)
+    client = api_util.AlloyDBClient(self.ReleaseTrack())
     location_ref = client.resource_parser.Create(
         'alloydb.projects.locations',
         projectsId=properties.VALUES.core.project.GetOrFail,

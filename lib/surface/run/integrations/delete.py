@@ -26,12 +26,14 @@ from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import messages_util
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
+from googlecloudsdk.command_lib.run.integrations import stages
+from googlecloudsdk.core.console import progress_tracker
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.Command):
-  """Delete a Cloud Run Integration."""
+  """Delete a Cloud Run Integration and its associated resources."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -40,9 +42,9 @@ class Delete(base.Command):
           """,
       'EXAMPLES':
           """\
-          To delete an integration
+          To delete a redis integration and the associated resources
 
-              $ {command} my-cloudsql
+              $ {command} my-redis-integration
 
          """,
   }
@@ -63,15 +65,21 @@ class Delete(base.Command):
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, self.ReleaseTrack())
     with run_apps_operations.Connect(conn_context) as client:
-      try:
-        integration_type = client.DeleteIntegration(name=integration_name)
-      except exceptions.IntegrationsOperationError as err:
-        pretty_print.Info(messages_util.GetDeleteErrorMessage(integration_name))
-        raise err
-      else:
-        pretty_print.Info('')
-        pretty_print.Success(
-            messages_util.GetSuccessMessage(
-                integration_type=integration_type,
-                integration_name=integration_name,
-                action='deleted'))
+      with progress_tracker.StagedProgressTracker(
+          'Deleting Integration...',
+          stages.IntegrationDeleteStages(),
+          failure_message='Failed to delete integration.') as tracker:
+        try:
+          integration_type = client.DeleteIntegration(
+              name=integration_name, tracker=tracker)
+        except exceptions.IntegrationsOperationError as err:
+          pretty_print.Info(
+              messages_util.GetDeleteErrorMessage(integration_name))
+          raise err
+        else:
+          pretty_print.Info('')
+          pretty_print.Success(
+              messages_util.GetSuccessMessage(
+                  integration_type=integration_type,
+                  integration_name=integration_name,
+                  action='deleted'))

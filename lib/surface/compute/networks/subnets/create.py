@@ -50,7 +50,7 @@ def _DetailedHelp():
 
 def _AddArgs(parser, include_alpha_logging, include_global_managed_proxy,
              include_l7_internal_load_balancing, include_aggregate_purpose,
-             include_private_service_connect, include_internal_ipv6_access_type,
+             include_private_service_connect,
              include_l2, include_private_nat, include_reserved_internal_range,
              api_version):
   """Add subnetwork create arguments to parser."""
@@ -222,11 +222,9 @@ def _AddArgs(parser, include_alpha_logging, include_global_managed_proxy,
             'on the subnet. If not specified IPV4_ONLY will be used.'))
 
   ipv6_access_type_choices = {
-      'EXTERNAL': 'VMs in this subnet can have external IPv6.'
+      'EXTERNAL': 'VMs in this subnet can have external IPv6.',
+      'INTERNAL': 'VMs in this subnet can have internal IPv6.'
   }
-  if include_internal_ipv6_access_type:
-    ipv6_access_type_choices['INTERNAL'] = (
-        'VMs in this subnet can have internal IPv6.')
   parser.add_argument(
       '--ipv6-access-type',
       choices=ipv6_access_type_choices,
@@ -481,7 +479,6 @@ class Create(base.CreateCommand):
   _include_global_managed_proxy = False
   _include_aggregate_purpose = False
   _include_private_service_connect = True
-  _include_internal_ipv6_access_type = False
   _include_l2 = False
   _include_private_nat = False
   _include_reserved_internal_range = False
@@ -495,8 +492,7 @@ class Create(base.CreateCommand):
              cls._include_global_managed_proxy,
              cls._include_l7_internal_load_balancing,
              cls._include_aggregate_purpose,
-             cls._include_private_service_connect,
-             cls._include_internal_ipv6_access_type, cls._include_l2,
+             cls._include_private_service_connect, cls._include_l2,
              cls._include_private_nat, cls._include_reserved_internal_range,
              cls._api_version)
 
@@ -528,7 +524,6 @@ class CreateAlpha(CreateBeta):
   _include_private_service_connect = True
   _include_global_managed_proxy = True
   _include_l2 = True
-  _include_internal_ipv6_access_type = True
   _include_private_nat = True
   _include_reserved_internal_range = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION

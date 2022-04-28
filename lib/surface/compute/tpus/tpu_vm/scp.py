@@ -70,19 +70,22 @@ def SCPRunCmd(env, cmd, *args):
   return cmd.Run(env, force_connect=True)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Scp(base.Command):
-  """SCP into a Cloud TPU VM."""
+  """Copy files to and from a Cloud TPU VM via SCP."""
 
-  @staticmethod
-  def Args(parser):
+  # IAP is not available for GA.
+  enable_iap = False
+
+  @classmethod
+  def Args(cls, parser):
     """Set up arguments for this command.
 
     Args:
       parser: An argparse.ArgumentParser.
     """
     ssh_utils.BaseSSHCLIHelper.Args(parser)
-    tpu_ssh_utils.AddTPUSSHArgs(parser)
+    tpu_ssh_utils.AddTPUSSHArgs(parser, cls.enable_iap)
     AddSCPArgs(parser)
     flags.AddZoneFlag(parser, resource_type='tpu', operation_type='scp')
 
@@ -100,7 +103,7 @@ class Scp(base.Command):
       args.zone = properties.VALUES.compute.zone.Get(required=True)
 
     # Retrieve the node.
-    tpu = tpu_utils.TPUNode()
+    tpu = tpu_utils.TPUNode(self.ReleaseTrack())
     node = tpu.Get(tpu_name, args.zone)
     if not tpu_utils.IsTPUVMNode(node):
       raise exceptions.BadArgumentException(
@@ -191,7 +194,8 @@ class Scp(base.Command):
       extra_flags.extend(args.scp_flag)
 
     instance_names = {}
-    if args.tunnel_through_iap:
+    if (args.IsKnownAndSpecified('tunnel_through_iap')
+        and args.tunnel_through_iap):
       # Retrieve the instance names from the GuestAttributes.
       for worker in worker_ips:
         # The GuestAttributes will only have one entry if we're targeting a
@@ -215,7 +219,8 @@ class Scp(base.Command):
             args.strict_host_key_checking, None)
 
       iap_tunnel_args = None
-      if args.tunnel_through_iap:
+      if (args.IsKnownAndSpecified('tunnel_through_iap')
+          and args.tunnel_through_iap):
         # Retrieve the instance name from the GuestAttributes.
         instance_name = instance_names[worker]
         iap_tunnel_args = tpu_ssh_utils.CreateSshTunnelArgs(
@@ -262,3 +267,34 @@ class Scp(base.Command):
         if status:
           sys.exit(status)
 
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ScpAlpha(Scp):
+  """Copy files to and from a Cloud TPU VM via SCP (Alpha)."""
+  enable_iap = True
+
+
+Scp.detailed_help = {
+    'brief':
+        'Copy files to and from a Cloud TPU VM via SCP.',
+    'EXAMPLES':
+        """
+        To copy a file (for example, a text file in the local home directory) to
+        a Cloud TPU VM, run:
+
+            $ {command} ~/my-file my-tpu:
+
+        To copy a file into all workers in a Cloud TPU VM, run:
+
+            $ {command} ~/my-file my-tpu: --worker=all
+
+        To copy a file from a Cloud TPU VM to the home directory of the local
+        computer, run:
+
+            $ {command} my-tpu:~/my-file ~/
+
+        To copy all files in a folder to a Cloud TPU VM, run:
+
+            $ {command} ~/my-folder/ my-tpu: --recurse
+        """
+}

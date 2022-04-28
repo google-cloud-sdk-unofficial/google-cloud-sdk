@@ -91,6 +91,12 @@ class Update(base.UpdateCommand):
         help='The new number of secondary worker nodes in the cluster.')
 
     parser.add_argument(
+        '--driver-pool-size',
+        type=int,
+        hidden=True,
+        help='The new size of the driver pool in the cluster.')
+
+    parser.add_argument(
         '--graceful-decommission-timeout',
         type=arg_parsers.Duration(lower_bound='0s', upper_bound='1d'),
         help="""
@@ -223,11 +229,8 @@ class Update(base.UpdateCommand):
       cluster_config.lifecycleConfig = lifecycle_config
       has_changes = True
 
-    # Put in a thunk so we only make this call if needed
-    def _GetCurrentLabels():
-      # We need to fetch cluster first so we know what the labels look like. The
-      # labels_util will fill out the proto for us with all the updates and
-      # removals, but first we need to provide the current state of the labels
+    def _GetCurrentCluster():
+      # This is used for labels and auxiliary_node_pool_configs
       get_cluster_request = (
           dataproc.messages.DataprocProjectsRegionsClustersGetRequest(
               projectId=cluster_ref.projectId,
@@ -235,6 +238,14 @@ class Update(base.UpdateCommand):
               clusterName=cluster_ref.clusterName))
       current_cluster = dataproc.client.projects_regions_clusters.Get(
           get_cluster_request)
+      return current_cluster
+
+    # Put in a thunk so we only make this call if needed
+    def _GetCurrentLabels():
+      # We need to fetch cluster first so we know what the labels look like. The
+      # labels_util will fill out the proto for us with all the updates and
+      # removals, but first we need to provide the current state of the labels
+      current_cluster = _GetCurrentCluster()
       return current_cluster.labels
     labels_update = labels_util.ProcessUpdateArgsLazy(
         args, dataproc.messages.Cluster.LabelsValue,
@@ -243,6 +254,48 @@ class Update(base.UpdateCommand):
       has_changes = True
       changed_fields.append('labels')
     labels = labels_update.GetOrNone()
+
+    if args.driver_pool_size is not None:
+      # Getting the node_pool_ids from the current node_pools and other attrs
+      # that are not shared with the user
+      # Driver pools can only be updated currently with NO other updates
+      # We are relying on our frontend validation to prevent this until
+      # the change is made to allow driver pools to be updated with other fields
+      auxiliary_node_pools = _GetCurrentCluster(
+      ).config.auxiliaryNodePoolConfigs
+
+      # get the index of the current cluster's driver pool in the auxiliary
+      # node pools list, index_driver_pools is also a list that should have a
+      # length of 1
+      index_driver_pools = [
+          i for i, n in enumerate(auxiliary_node_pools) if dataproc.messages
+          .NodePoolConfig.RolesValueListEntryValuesEnum.DRIVER in n.roles
+      ]
+
+      if len(index_driver_pools) > 1:
+        raise exceptions.ArgumentError(
+            'At most one driver pool can be specified per cluster.')
+      elif len(index_driver_pools) == 1:
+        index = index_driver_pools[0]
+        auxiliary_node_pools[
+            index].nodePoolConfig.numInstances = args.driver_pool_size
+      else:
+        # This case is only relevant for scaling from 0 -> N nodes
+        # this will not be supported initially, but will be relying on our
+        # front end validation to prevent or allow
+        worker_config = dataproc.messages.InstanceGroupConfig(
+            numInstances=args.driver_pool_size)
+        node_config = dataproc.messages.NodePoolConfig(
+            nodePoolConfig=worker_config,
+            roles=[
+                dataproc.messages.NodePoolConfig.RolesValueListEntryValuesEnum
+                .DRIVER
+            ])
+        auxiliary_node_pools.append(node_config)
+
+      cluster_config.auxiliaryNodePoolConfigs = auxiliary_node_pools
+      changed_fields.append('config.auxiliary_node_pool_configs')
+      has_changes = True
 
     if not has_changes:
       raise exceptions.ArgumentError(

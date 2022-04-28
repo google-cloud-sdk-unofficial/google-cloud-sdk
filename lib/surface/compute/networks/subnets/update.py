@@ -53,7 +53,6 @@ class Update(base.UpdateCommand):
   _include_alpha_logging = False
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
   _include_l7_internal_load_balancing = True
-  _include_internal_ipv6_access_type = False
   _include_reserved_internal_range = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
   detailed_help = _DetailedHelp()
@@ -70,7 +69,6 @@ class Update(base.UpdateCommand):
 
     flags.AddUpdateArgs(parser, cls._include_alpha_logging,
                         cls._include_l7_internal_load_balancing,
-                        cls._include_internal_ipv6_access_type,
                         cls._include_reserved_internal_range, cls._api_version)
 
   def Run(self, args):
@@ -146,6 +144,5 @@ class UpdateAlpha(UpdateBeta):
   """Updates properties of an existing Compute Engine subnetwork."""
 
   _include_alpha_logging = True
-  _include_internal_ipv6_access_type = True
   _include_reserved_internal_range = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION

@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container import util as gke_util
-from googlecloudsdk.api_lib.container.azure import util as azure_api_util
+from googlecloudsdk.api_lib.container.gkemulticloud import azure as azure_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.azure import resource_args
 from googlecloudsdk.command_lib.container.gkemulticloud import constants
@@ -50,7 +50,7 @@ class Delete(base.DeleteCommand):
         resource_args.ParseAzureClientResourceArg(args).locationsId,
         self.ReleaseTrack()):
       client_ref = resource_args.ParseAzureClientResourceArg(args)
-      api_client = azure_api_util.ClientsClient(track=self.ReleaseTrack())
+      api_client = azure_api_util.ClientsClient()
       api_client.Delete(client_ref, validate_only=True)
 
       console_io.PromptContinue(
