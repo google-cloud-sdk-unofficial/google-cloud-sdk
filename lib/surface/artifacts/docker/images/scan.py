@@ -98,6 +98,7 @@ class ScanBeta(base.Command):
     flags.GetOnDemandScanningLocationFlag().AddToParser(parser)
     flags.GetAdditionalPackageTypesFlag().AddToParser(parser)
     flags.GetExperimentalPackageTypesFlag().AddToParser(parser)
+    flags.GetVerboseErrorsFlag().AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -164,6 +165,7 @@ class ScanBeta(base.Command):
           fake_extraction=args.fake_extraction,
           additional_package_types=args.additional_package_types,
           experimental_package_types=args.experimental_package_types,
+          verbose_errors=args.verbose_errors,
       )
       if operation_result.exit_code:
         # Filter out any log messages on std err and only include any actual
@@ -275,7 +277,7 @@ class Command(binary_operations.BinaryBackedOperation):
 
   def _ParseArgsForCommand(self, resource_uri, remote, fake_extraction,
                            additional_package_types, experimental_package_types,
-                           **kwargs):
+                           verbose_errors, **kwargs):
     args = [
         '--resource_uri=' + resource_uri,
         '--remote=' + six.text_type(remote),
@@ -286,6 +288,7 @@ class Command(binary_operations.BinaryBackedOperation):
         # versions of the command can invoke old versions of the binary.
         '--undefok=' + ','.join([
             'additional_package_types',
+            'verbose_errors',
         ]),
     ]
 
@@ -298,5 +301,8 @@ class Command(binary_operations.BinaryBackedOperation):
     if package_types:
       args.append('--additional_package_types=' +
                   six.text_type(','.join(package_types)))
+
+    if verbose_errors:
+      args.append('--verbose_errors=' + six.text_type(verbose_errors))
 
     return args

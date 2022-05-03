@@ -435,8 +435,19 @@ def load_joblib_or_pickle_model(model_path):
           logging.exception(error_msg)
           raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
 
-      logging.info("Loading model %s using joblib.", model_file_name)
-      return joblib.load(model_file_name)
+      try:
+        logging.info("Loading model %s using joblib.", model_file_name)
+        return joblib.load(model_file_name)
+      except KeyError:
+        logging.info(
+            ("Loading model %s using joblib failed. Loading model using "
+             "xgboost.Booster instead."), model_file_name)
+        # Load xgboost only when needed. If we put this at the top, we need to
+        # add a dependency to xgboost anywhere that prediction_lib is called.
+        import xgboost  # pylint: disable=g-import-not-at-top
+        booster = xgboost.Booster()
+        booster.load_model(model_file_name)
+        return booster
 
     elif os.path.exists(model_file_name_pickle):
       model_file_name = model_file_name_pickle

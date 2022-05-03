@@ -20,14 +20,17 @@ from __future__ import unicode_literals
 
 
 from googlecloudsdk.api_lib.iam import util
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as gcloud_exceptions
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.iam.workforce_pools import flags
+from googlecloudsdk.command_lib.iam.workforce_pools import workforce_pool_waiter
 from googlecloudsdk.command_lib.util.apis import yaml_data
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 
 
 class Create(base.CreateCommand):
@@ -82,6 +85,7 @@ class Create(base.CreateCommand):
               'less than 12 hours (43200s). If not configured, minted ' +
               'credentials will have a default duration of one hour (3600s).')
     )
+    base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
     client, messages = util.GetClientAndMessages()
@@ -103,7 +107,29 @@ class Create(base.CreateCommand):
             location=flags.ParseLocation(args),
             workforcePoolId=workforce_pool_ref.workforcePoolsId,
             workforcePool=new_workforce_pool))
+
     log.status.Print('Create request issued for: [{}]'.format(
         workforce_pool_ref.workforcePoolsId))
-    log.status.Print('Check operation [{}] for status.'.format(lro_ref.name))
-    return lro_ref
+
+    if args.async_:
+      log.status.Print('Check operation [{}] for status.'.format(lro_ref.name))
+      return lro_ref
+
+    lro_resource = resources.REGISTRY.ParseRelativeName(
+        lro_ref.name, collection='iam.locations.workforcePools.operations')
+    poller = workforce_pool_waiter.WorkforcePoolOperationPoller(
+        client.locations_workforcePools,
+        client.locations_workforcePools_operations)
+
+    # Wait for a maximum of 5 minutes, as the IAM replication has a lag of up to
+    # 80 seconds. GetOperation has a dependency on IAMInternal.CheckPolicy, and
+    # requires the caller to have `workforcePools.get` permission on the created
+    # resource to return as `done`. See b/203589135.
+    result = waiter.WaitFor(
+        poller, lro_resource,
+        'Waiting for operations [{}] to complete'.format(lro_ref.name),
+        max_wait_ms=300000)
+    log.status.Print('Created workforce pool [{}].'.format(
+        workforce_pool_ref.workforcePoolsId))
+
+    return result

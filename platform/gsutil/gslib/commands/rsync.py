@@ -334,10 +334,9 @@ _DETAILED_HELP_TEXT = ("""
 
   Note that by default, the gsutil rsync command does not copy the ACLs of
   objects being synchronized and instead will use the default bucket ACL (see
-  "gsutil help defacl"). You can override this behavior with the -p option. See
-  the `Options section
-  <https://cloud.google.com/storage/docs/gsutil/commands/rsync#options>`_ to
-  learn how.
+  "gsutil help defacl"). You can override this behavior with the -p option. See the
+  <a href="https://cloud.google.com/storage/docs/gsutil/commands/rsync#options">Options section</a>
+  to learn how.
 
 
 <B>SLOW CHECKSUMS</B>
@@ -1220,14 +1219,8 @@ class _DiffIterator(object):
           src_url_str_to_check = _EncodeUrl(
               src_url_str[base_src_url_len:].replace('\\', '/'))
           dst_url_str_would_copy_to = copy_helper.ConstructDstUrl(
-              src_url=self.base_src_url,
-              exp_src_url=StorageUrlFromString(src_url_str),
-              src_url_names_container=True,
-              have_multiple_srcs=True,
-              has_multiple_top_level_srcs=False,
-              exp_dst_url=self.base_dst_url,
-              have_existing_dest_subdir=False,
-              recursion_requested=self.recursion_requested).url_string
+              self.base_src_url, StorageUrlFromString(src_url_str), True, True,
+              self.base_dst_url, False, self.recursion_requested).url_string
       if dst_url_str is None:
         if not self.sorted_dst_urls_it.IsEmpty():
           # We don't need time created at the destination.

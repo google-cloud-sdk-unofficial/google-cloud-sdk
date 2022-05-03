@@ -28,13 +28,18 @@
             name.segment(3):label=REGION,
             hub.basename(),
             format(
-                "{0}{1}{2}",
+                "{0}{1}{2}{3}",
                 linkedVpnTunnels.yesno(yes="VPN tunnel", no=""),
                 linkedInterconnectAttachments.yesno(yes="VLAN attachment", no=""),
-                linkedRouterApplianceInstances.yesno(yes="Router appliance", no="")
+                linkedRouterApplianceInstances.yesno(yes="Router appliance", no=""),
+                linkedVpcNetwork.yesno(yes="VPC network", no="")
             ):label=TYPE,
-            firstof(linkedVpnTunnels.uris, linkedInterconnectAttachments.uris, linkedRouterApplianceInstances.instances).len():label="RESOURCE COUNT",
-            firstof(linkedVpnTunnels.siteToSiteDataTransfer, linkedInterconnectAttachments.siteToSiteDataTransfer, linkedRouterApplianceInstances.siteToSiteDataTransfer).yesno(yes="On", no="Off"):label="DATA TRANSFER",
+            firstof(linkedVpnTunnels.uris, linkedInterconnectAttachments.uris, linkedRouterApplianceInstances.instances, linkedVpcNetwork).len():label="RESOURCE COUNT",
+            format(
+                "{0}{1}",
+                linkedVpcNetwork.yesno(yes="N/A", no=""),
+                firstof(linkedVpnTunnels.siteToSiteDataTransfer, linkedInterconnectAttachments.siteToSiteDataTransfer, linkedRouterApplianceInstances.siteToSiteDataTransfer).yesno(yes="On", no="")
+            ).yesno(no="Off"):label="DATA TRANSFER",
             description
         )
     ALPHA:

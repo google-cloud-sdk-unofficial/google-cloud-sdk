@@ -1,4 +1,3 @@
-# Lint as: python2, python3
 """ @package antlr3.tree
 @brief ANTLR3 runtime package, tree module
 

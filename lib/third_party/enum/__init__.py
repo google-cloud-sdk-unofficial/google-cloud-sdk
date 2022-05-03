@@ -19,13 +19,13 @@ def no_third_party_dir_on_path():
 if sys.version_info < (3, 4,):
   from enum.less_than_python_3_4 import *
 else:
-  import importlib.util
-  import types
   del sys.modules['enum']
   with no_third_party_dir_on_path():
     if sys.version_info[0] == 3 and sys.version_info[1] == 9:
       import enum
     else:
+      import importlib.util
+      import types
       spec = importlib.util.find_spec('enum')
       if sys.version_info < (3, 5,):
         enum_module = types.ModuleType('enum')

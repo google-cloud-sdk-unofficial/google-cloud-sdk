@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_certificates import flags
 from googlecloudsdk.command_lib.compute.ssl_certificates import ssl_certificates_utils
@@ -77,6 +78,9 @@ def _Run(args, holder, ssl_certificate_ref):
   client = holder.client
 
   if args.domains:
+    if ssl_certificates_utils.IsRegionalSslCertificatesRef(ssl_certificate_ref):
+      raise compute_exceptions.ArgumentError(
+          '--domains flag is not supported for regional certificates')
     request = client.messages.ComputeSslCertificatesInsertRequest(
         sslCertificate=client.messages.SslCertificate(
             type=client.messages.SslCertificate.TypeValueValuesEnum.MANAGED,

@@ -1,4 +1,3 @@
-# Lint as: python2, python3
 """ @package antlr3
 @brief ANTLR3 runtime package
 

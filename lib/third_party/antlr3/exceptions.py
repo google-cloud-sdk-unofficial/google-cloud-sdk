@@ -1,4 +1,3 @@
-# Lint as: python2, python3
 """ANTLR3 exception hierarchy"""
 
 # begin[licence]

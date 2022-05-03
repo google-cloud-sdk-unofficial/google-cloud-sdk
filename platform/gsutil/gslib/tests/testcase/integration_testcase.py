@@ -144,8 +144,6 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
 
     self.multiregional_buckets = util.USE_MULTIREGIONAL_BUCKETS
 
-    self._use_gcloud_storage = config.get('GSUtil', 'use_gcloud_storage', False)
-
     if util.RUN_S3_TESTS:
       self.nonexistent_bucket_name = (
           'nonexistentbucket-asf801rj3r9as90mfnnkjxpo02')
@@ -402,9 +400,7 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
       encryption_key: expected CSEK key.
     """
     with SetBotoConfigForTest([('GSUtil', 'prefer_api', 'json')]):
-      stdout = self.RunGsUtil(['stat', object_uri_str],
-                              return_stdout=True,
-                              force_gsutil=True)
+      stdout = self.RunGsUtil(['stat', object_uri_str], return_stdout=True)
     self.assertIn(
         Base64Sha256FromBase64EncryptionKey(encryption_key).decode('ascii'),
         stdout, 'Object %s did not use expected encryption key with hash %s. '
@@ -423,9 +419,7 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
       encryption_key: expected CMEK key.
     """
     with SetBotoConfigForTest([('GSUtil', 'prefer_api', 'json')]):
-      stdout = self.RunGsUtil(['stat', object_uri_str],
-                              return_stdout=True,
-                              force_gsutil=True)
+      stdout = self.RunGsUtil(['stat', object_uri_str], return_stdout=True)
     self.assertRegexpMatches(stdout, r'KMS key:\s+%s' % encryption_key)
 
   def AssertObjectUnencrypted(self, object_uri_str):
@@ -438,9 +432,7 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
       object_uri_str: uri for the object.
     """
     with SetBotoConfigForTest([('GSUtil', 'prefer_api', 'json')]):
-      stdout = self.RunGsUtil(['stat', object_uri_str],
-                              return_stdout=True,
-                              force_gsutil=True)
+      stdout = self.RunGsUtil(['stat', object_uri_str], return_stdout=True)
     self.assertNotIn('Encryption key SHA256', stdout)
     self.assertNotIn('KMS key', stdout)
 
@@ -975,8 +967,7 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
                 return_stderr=False,
                 expected_status=0,
                 stdin=None,
-                env_vars=None,
-                force_gsutil=False):
+                env_vars=None):
     """Runs the gsutil command.
 
     Args:
@@ -990,8 +981,6 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
       stdin: A string of data to pipe to the process as standard input.
       env_vars: A dictionary of variables to extend the subprocess's os.environ
                 with.
-      force_gsutil: If True, will always run the command using gsutil,
-        irrespective of the value provided for use_gcloud_storage.
 
     Returns:
       If multiple return_* values were specified, this method returns a tuple
@@ -1000,22 +989,10 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
       If only one return_* value was specified, that value is returned directly
       rather than being returned within a 1-tuple.
     """
-    # TODO(b/203250512) Remove this once all the commands are supported
-    # via gcloud storage.
-    if force_gsutil:
-      use_gcloud_storage = False
-    else:
-      use_gcloud_storage = config.getbool('GSUtil', 'use_gcloud_storage', False)
-    gcloud_storage_setting = [
-        '-o',
-        'GSUtil:use_gcloud_storage={}'.format(use_gcloud_storage),
-        '-o',
-        'GSUtil:hidden_shim_mode=no_fallback',
-    ]
     cmd = [
         gslib.GSUTIL_PATH, '--testexceptiontraces', '-o',
         'GSUtil:default_project_id=' + PopulateProjectId()
-    ] + gcloud_storage_setting + cmd
+    ] + cmd
     if stdin is not None:
       if six.PY3:
         if not isinstance(stdin, bytes):
@@ -1199,10 +1176,7 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
       # variables.
       with SetEnvironmentForTest({
           'DEVSHELL_CLIENT_PORT': None,
-          'AWS_SECRET_ACCESS_KEY': '_',
-          'AWS_ACCESS_KEY_ID': '_',
-          # If shim is used, gcloud might attempt to load credentials.
-          'CLOUDSDK_AUTH_DISABLE_CREDENTIALS': 'True',
+          'AWS_SECRET_ACCESS_KEY': '_'
       }):
         yield
 

@@ -644,7 +644,7 @@ class CreateBeta(Create):
   _support_disk_architecture = False
   _support_network_queue_count = False
   _support_instance_kms = False
-  _support_key_revocation_action_type = False
+  _support_key_revocation_action_type = True
   _support_max_run_duration = False
   _support_ipv6_assignment = False
 
@@ -693,6 +693,7 @@ class CreateBeta(Create):
         parser, utils.COMPUTE_BETA_API_VERSION)
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
+    instances_flags.AddKeyRevocationActionTypeArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

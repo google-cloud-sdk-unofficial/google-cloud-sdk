@@ -24,7 +24,7 @@ required_install_packages = [
     'numpy >= 1.10.4',  # Don't pin numpy, as it requires a recompile.
     'crcmod >= 1.7, < 2.0',
     'nltk >= 3.2.1, <= 3.4',
-    'pyyaml >= 3.11, < 4.0',
+    'pyyaml >= 3.11, < 7.0',
     'protobuf >= 3.1.0, < 4.0',
     # isort is avro dependency which picks the latest.
     # We do not want use latest because of b/160639883.

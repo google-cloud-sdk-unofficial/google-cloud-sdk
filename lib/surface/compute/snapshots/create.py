@@ -61,6 +61,7 @@ def _BetaArgs(parser):
 def _AlphaArgs(parser):
   _GAArgs(parser)
   snap_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(parser)
+  snap_flags.AddSnapshotType(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -74,7 +75,10 @@ class Create(base.CreateCommand):
   def Run(self, args):
     return self._Run(args)
 
-  def _Run(self, args, support_source_instant_snapshot=False):
+  def _Run(self,
+           args,
+           support_source_instant_snapshot=False,
+           support_snapshot_type=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
@@ -121,6 +125,10 @@ class Create(base.CreateCommand):
           scope_lister=flags.GetDefaultScopeLister(holder.client))
       snapshot_message.sourceInstantSnapshot = iss_ref.SelfLink()
 
+    if support_snapshot_type and args.IsSpecified('snapshot_type'):
+      snapshot_message.snapshotType = snapshot_message.SnapshotTypeValueValuesEnum(
+          args.snapshot_type)
+
     request = messages.ComputeSnapshotsInsertRequest(
         snapshot=snapshot_message,
         project=snap_ref.project
@@ -164,7 +172,8 @@ class CreateAlpha(Create):
     _AlphaArgs(parser)
 
   def Run(self, args):
-    return self._Run(args, support_source_instant_snapshot=True)
+    return self._Run(
+        args, support_source_instant_snapshot=True, support_snapshot_type=True)
 
 
 Create.detailed_help = {

@@ -92,7 +92,6 @@ from gslib.utils.parallelism_framework_util import ShouldProhibitMultiprocessing
 from gslib.utils.parallelism_framework_util import UI_THREAD_JOIN_TIMEOUT
 from gslib.utils.parallelism_framework_util import ZERO_TASKS_TO_DO_ARGUMENT
 from gslib.utils.rsync_util import RsyncDiffToApply
-from gslib.utils.shim_util import GcloudStorageCommandMixin
 from gslib.utils.system_util import GetTermLines
 from gslib.utils.system_util import IS_WINDOWS
 from gslib.utils.translation_helper import AclTranslation
@@ -491,7 +490,7 @@ CommandSpec = namedtuple(
     ])
 
 
-class Command(HelpProvider, GcloudStorageCommandMixin):
+class Command(HelpProvider):
   """Base class for all gsutil commands."""
 
   # Each subclass must override this with an instance of CommandSpec.
@@ -643,8 +642,8 @@ class Command(HelpProvider, GcloudStorageCommandMixin):
       raise CommandException('"%s" command implementation is missing a '
                              'command_spec definition.' % self.command_name)
 
-    self.quiet_mode = not self.logger.isEnabledFor(logging.INFO)
-    ui_controller = UIController(quiet_mode=self.quiet_mode,
+    quiet_mode = not self.logger.isEnabledFor(logging.INFO)
+    ui_controller = UIController(quiet_mode=quiet_mode,
                                  dump_status_messages_file=boto.config.get(
                                      'GSUtil', 'dump_status_messages_file',
                                      None))
@@ -737,7 +736,7 @@ class Command(HelpProvider, GcloudStorageCommandMixin):
       check_args: True to have CheckArguments() called after parsing.
       args: List of args. If None, self.args will be used.
       should_update_sub_opts_and_args: True if self.sub_opts and self.args
-        should be updated with the values returned after parsing. Else return a
+        should be updated with the values returned after parsing. Else return a 
         tuple of sub_opts, args returned by getopt.getopt. This is done
         to allow this method to be called from get_gcloud_storage_args in which
         case we do not want to update self.sub_opts and self.args.
@@ -896,12 +895,7 @@ class Command(HelpProvider, GcloudStorageCommandMixin):
           for blr in self.WildcardIterator(
               url.url_string).IterBuckets(bucket_fields=['id']):
             name_expansion_for_url = NameExpansionResult(
-                source_storage_url=url,
-                is_multi_source_request=False,
-                is_multi_top_level_source_request=False,
-                names_container=False,
-                expanded_storage_url=blr.storage_url,
-                expanded_result=None)
+                url, False, False, blr.storage_url, None)
             acl_func(self, name_expansion_for_url)
       else:
         multi_threaded_url_args.append(url_str)
@@ -976,8 +970,8 @@ class Command(HelpProvider, GcloudStorageCommandMixin):
       gsutil_api: gsutil Cloud API to use for the ACL set. Must support XML
           passthrough functions.
     """
-    orig_prefer_api = gsutil_api.prefer_api
     try:
+      orig_prefer_api = gsutil_api.prefer_api
       gsutil_api.prefer_api = ApiSelector.XML
       gsutil_api.XmlPassThroughSetAcl(self.acl_arg,
                                       url,

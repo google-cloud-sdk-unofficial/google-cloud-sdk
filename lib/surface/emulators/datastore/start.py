@@ -60,7 +60,8 @@ To start a local datastore emulator, run:
         default=True,
         action='store_true',
         help='Whether data should be persisted to disk.')
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
         '--consistency',
         required=False,
         type=float,
@@ -69,6 +70,13 @@ To start a local datastore emulator, run:
              'should succeed immediately. Setting to 1.0 can be useful '
              'for unit tests, but may mask incorrect assumptions about '
              'non-ancestor queries which are eventually consistent.')
+    group.add_argument(
+        '--use-firestore-in-datastore-mode',
+        default=False,
+        action='store_true',
+        help='Runs the emulator in Cloud Firestore in Datastore Mode. '
+        'Reads are always strongly consistent and --consistency flag may not '
+        'be specified.')
 
   # TODO(b/221477106): Remove this warning after b/221477106 is fixed.
   def LogJavaVersionWarning(self):

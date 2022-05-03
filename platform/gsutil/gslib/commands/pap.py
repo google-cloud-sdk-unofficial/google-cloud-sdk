@@ -30,7 +30,7 @@ from gslib.third_party.storage_apitools import storage_v1_messages as apitools_m
 from gslib.utils.constants import NO_MAX
 
 _SET_SYNOPSIS = """
-  gsutil pap set (enforced|inherited) gs://<bucket_name>...
+  gsutil pap set (enforced|unspecified) gs://<bucket_name>...
 """
 
 _GET_SYNOPSIS = """
@@ -43,10 +43,10 @@ _SET_DESCRIPTION = """
 <B>SET</B>
   The ``pap set`` command configures public access prevention
   for Cloud Storage buckets. If you set a bucket to be
-  ``inherited``, it uses public access prevention only if
+  ``unspecified``, it uses public access prevention only if
   the bucket is subject to the `public access prevention
   <https://cloud.google.com/storage/docs/org-policy-constraints#public-access-prevention>`_
-  organization policy constraint.
+  organization policy.
 
 <B>SET EXAMPLES</B>
   Configure ``redbucket`` and ``bluebucket`` to use public
@@ -100,7 +100,8 @@ class PapCommand(Command):
       argparse_arguments={
           'get': [CommandArgument.MakeNCloudURLsArgument(1),],
           'set': [
-              CommandArgument('mode', choices=['enforced', 'inherited']),
+              CommandArgument('mode',
+                              choices=['enforced', 'unspecified', 'inherited']),
               CommandArgument.MakeZeroOrMoreCloudBucketURLsArgument()
           ],
       })
@@ -131,12 +132,12 @@ class PapCommand(Command):
                                                 fields=['iamConfiguration'],
                                                 provider=bucket_url.scheme)
     iam_config = bucket_metadata.iamConfiguration
-    public_access_prevention = iam_config.publicAccessPrevention or 'inherited'
+    public_access_prevention = iam_config.publicAccessPrevention or 'unspecified'
     bucket = str(bucket_url).rstrip('/')
     print('%s: %s' % (bucket, public_access_prevention))
 
   def _SetPublicAccessPrevention(self, blr, setting_arg):
-    """Sets the Public Access Prevention setting for a bucket enforced or inherited."""
+    """Sets the Public Access Prevention setting for a bucket enforced or unspecified."""
     bucket_url = blr.storage_url
 
     iam_config = IamConfigurationValue()

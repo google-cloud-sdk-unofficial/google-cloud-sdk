@@ -154,7 +154,7 @@ class RemoveBgpPeerBeta(RemoveBgpPeer):
     cls._Args(parser)
 
   def Run(self, args):
-    return self._Run(args, support_md5_authentication_keys=False)
+    return self._Run(args, support_md5_authentication_keys=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

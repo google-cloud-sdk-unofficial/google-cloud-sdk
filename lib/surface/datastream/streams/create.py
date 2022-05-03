@@ -27,21 +27,21 @@ from googlecloudsdk.command_lib.datastream.streams import flags as streams_flags
 
 DESCRIPTION = ('Create a Datastream stream')
 EXAMPLES = """\
-    To create a stream with an Oracle source and Google Cloud Storage destination:
+    To create a stream with an Oracle source and a Google Cloud Storage destination:
 
         $ {command} STREAM --location=us-central1 --display-name=my-stream --source=source --oracle-source-config=source_config.json --destination=destination --gcs-destination-config=destination_config.json --backfill-none
 
-    To create a connection profile for Mysql with a backfill all strategy that contains some excluded objects:
+    To create a stream with a MySQL source and a Cloud Storage destination and that excludes some objects from being backfilled:
 
         $ {command} STREAM --location=us-central1 --display-name=my-stream --source=source --mysql-source-config=source_config.json --destination=destination --gcs-destination-config=destination_config.json --backfill-all --mysql-excluded-objects=excluded_objects.json
 
    """
 EXAMPLES_BETA = """\
-    To create a stream with an Oracle source and Google Cloud Storage destination:
+    To create a stream with an Oracle source and a Google Cloud Storage destination:
 
         $ {command} STREAM --location=us-central1 --display-name=my-stream --source-name=source --oracle-source-config=source_config.json --destination-name=destination --gcs-destination-config=destination_config.json --backfill-none
 
-    To create a connection profile for Mysql with a backfill all strategy that contains some excluded objects:
+    To create a stream with a MySQL source and a Cloud Storage destination and that excludes some objects from being backfilled:
 
         $ {command} STREAM --location=us-central1 --display-name=my-stream --source-name=source --mysql-source-config=source_config.json --destination-name=destination --gcs-destination-config=destination_config.json --backfill-all --mysql-excluded-objects=excluded_objects.json
 
@@ -112,8 +112,7 @@ class Create(base.Command):
 @base.Deprecate(
     is_removed=False,
     warning=('Datastream beta version is deprecated. Please use`gcloud '
-             'datastream streams create` command instead.')
-)
+             'datastream streams create` command instead.'))
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Creates a Datastream stream."""

@@ -377,11 +377,13 @@ def AddPrivateIPv6Flag(api, parser):
   flags.AddPrivateIpv6GoogleAccessTypeFlag(api, parser)
 
 
-def AddAcceleratorFlag(parser, enable_gpu_partition, enable_gpu_sharing):
+def AddAcceleratorFlag(parser, enable_gpu_partition, enable_gpu_sharing,
+                       enable_gpu_deprecated_fields):
   flags.AddAcceleratorArgs(
       parser,
       enable_gpu_partition=enable_gpu_partition,
-      enable_gpu_sharing=enable_gpu_sharing)
+      enable_gpu_sharing=enable_gpu_sharing,
+      enable_gpu_deprecated_fields=enable_gpu_deprecated_fields)
 
 
 def AddKubernetesObjectsExportFlag(parser):
@@ -400,7 +402,7 @@ def AttrValue(args, flagname, flag_defaults):
 
 flags_to_add = {
     GA: {
-        'accelerator': (lambda p: AddAcceleratorFlag(p, True, False)),
+        'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, False)),
         'additionalzones':
             _AddAdditionalZonesFlag,
         'addons':
@@ -557,7 +559,7 @@ flags_to_add = {
             flags.AddEnableServiceExternalIPs,
     },
     BETA: {
-        'accelerator': (lambda p: AddAcceleratorFlag(p, True, True)),
+        'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
         'additionalzones':
             _AddAdditionalZonesGroup,
         'addons':
@@ -755,7 +757,7 @@ flags_to_add = {
             flags.AddPodAutoscalingDirectMetricsOptInFlag,
     },
     ALPHA: {
-        'accelerator': (lambda p: AddAcceleratorFlag(p, True, True)),
+        'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
         'additionalzones':
             _AddAdditionalZonesGroup,
         'addons':

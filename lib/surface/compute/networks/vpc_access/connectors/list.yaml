@@ -68,6 +68,9 @@
            ipCidrRange,
            subnet.name:label=SUBNET,
            subnet.projectId:label=SUBNET_PROJECT,
+           machineType,
+           minInstances,
+           maxInstances,
            minThroughput,
            maxThroughput,
            state

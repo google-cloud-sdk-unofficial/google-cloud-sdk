@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -136,21 +137,27 @@ class MigrateAlpha(base.CreateCommand):
   """Migrate from legacy firewall rules to network firewall policies."""
 
   NETWORK_ARG = None
-  FIREWALL_POLICY_ARG_NAME = 'FIREWALL_POLICY'
 
   @classmethod
   def Args(cls, parser):
-    # positional FIREWALL_POLICY argument
+    # required --target-firewall-policy=TARGET_FIREWALL_POLICY argument
     parser.add_argument(
-        cls.FIREWALL_POLICY_ARG_NAME,
+        '--target-firewall-policy',
+        required=True,
         help="""\
       Name of the new Network Firewall Policy used to store the migration
       result.
       """)
-    # positional required --network=NETWORK flag
-    cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
-        'The VPC Network for which the migration should be performed.',
-        required=True)
+    # required --source-network=NETWORK flag
+    cls.NETWORK_ARG = compute_flags.ResourceArgument(
+        name='--source-network',
+        resource_name='network',
+        completer=network_flags.NetworksCompleter,
+        plural=False,
+        required=True,
+        global_collection='compute.networks',
+        short_help='The VPC Network for which the migration should be performed.',
+        detailed_help=None)
     cls.NETWORK_ARG.AddArgument(parser)
 
   def Run(self, args):
@@ -166,8 +173,8 @@ class MigrateAlpha(base.CreateCommand):
       project = properties.VALUES.core.project.GetOrFail()
 
     # Get Input Parameters
-    network_name = getattr(args, 'network')
-    policy_name = getattr(args, self.FIREWALL_POLICY_ARG_NAME)
+    network_name = getattr(args, 'source_network')
+    policy_name = getattr(args, 'target_firewall_policy')
 
     # Get VPC Network
     network = client.networks.Get(
@@ -388,6 +395,6 @@ that VPC Network.
 To execute the migration for VPC Network 'my-network' which stores the result
 in 'my-policy' Network Firewall Policy, run:
 
-  $ {command} my-policy --network=my-network
+  $ {command} --source-network=my-network --target-firewall-policy=my-policy
   """,
 }

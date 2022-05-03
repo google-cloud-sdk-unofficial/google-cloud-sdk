@@ -49,11 +49,11 @@ _DETAILED_HELP = {
 
       $ {command} 'my-release-$DATE-$TIME' --delivery-pipeline=my-pipeline --region=us-central1
 
-      If the current UTC date and time is set to 2021-12-21 12:02, then the created release
-      will have its name set as my-release-20211221-1202.
+    If the current UTC date and time is set to 2021-12-21 12:02, then the created release
+    will have its name set as my-release-20211221-1202.
 
-      When using these parameters, please be sure to wrap the release name in single quotes
-      or else the template parameters will be overriden by environment variables.
+    When using these parameters, please be sure to wrap the release name in single quotes
+    or else the template parameters will be overridden by environment variables.
     """,
 }
 _RELEASE = 'release'

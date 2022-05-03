@@ -25,8 +25,7 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.public_advertised_prefixes import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Updates a Compute Engine public advertised prefix.
 
@@ -36,11 +35,18 @@ class Update(base.UpdateCommand):
 
     $ {command} my-pap --status=ptr-configured
   """
+  support_pap_announce_withdraw = False
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.MakePublicAdvertisedPrefixesArg().AddArgument(parser)
-    flags.AddUpdatePapArgsToParser(parser)
+    if cls.support_pap_announce_withdraw:
+      announce_withdraw_parser = parser.add_mutually_exclusive_group(
+          required=True)
+      flags.AddUpdatePapArgsToParser(announce_withdraw_parser,
+                                     cls.support_pap_announce_withdraw)
+    else:
+      flags.AddUpdatePapArgsToParser(parser, cls.support_pap_announce_withdraw)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -55,4 +61,34 @@ class Update(base.UpdateCommand):
 
     pap_client = public_advertised_prefixes.PublicAdvertisedPrefixesClient(
         client, messages, resources)
-    return pap_client.Patch(pap_ref, status=args.status)
+
+    if self.support_pap_announce_withdraw:
+      if args.status is not None:
+        return pap_client.Patch(pap_ref, status=args.status)
+      if args.announce_prefix:
+        return pap_client.Announce(pap_ref)
+      if args.withdraw_prefix:
+        return pap_client.Withdraw(pap_ref)
+    else:
+      return pap_client.Patch(pap_ref, status=args.status)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  r"""Updates a Compute Engine public advertised prefix.
+
+  ## EXAMPLES
+
+  To update a public advertised prefix:
+
+    $ {command} my-pap --status=ptr-configured
+
+  To announce a public advertised prefix:
+
+    $ {command} my-pap --announce-prefix
+
+  To withdraw a public advertised prefix:
+
+    $ {command} my-pap --withdraw-prefix
+  """
+  support_pap_announce_withdraw = True

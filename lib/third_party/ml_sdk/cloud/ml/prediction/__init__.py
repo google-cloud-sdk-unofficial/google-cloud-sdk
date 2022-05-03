@@ -16,14 +16,11 @@
 """
 from ._interfaces import Model
 from ._interfaces import PredictionClient
-
 from .custom_code_utils import create_user_model
 from .custom_code_utils import load_custom_class
-
 from .prediction_lib import create_client
 from .prediction_lib import create_model
 from .prediction_lib import local_predict
-
 from .prediction_utils import ALIAS_TIME
 from .prediction_utils import BaseModel
 from .prediction_utils import COLUMNARIZE_TIME
@@ -33,6 +30,7 @@ from .prediction_utils import detect_framework
 from .prediction_utils import does_signature_contain_str
 from .prediction_utils import ENCODE_TIME
 from .prediction_utils import ENGINE
+from .prediction_utils import ENGINE_RUN_TIME
 from .prediction_utils import FRAMEWORK
 from .prediction_utils import LOCAL_MODEL_PATH
 from .prediction_utils import PredictionError

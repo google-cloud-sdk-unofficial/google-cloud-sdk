@@ -161,12 +161,12 @@ class AddBgpPeerBeta(AddBgpPeer):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser, support_md5_authentication_keys=False)
+    cls._Args(parser, support_md5_authentication_keys=True)
 
   def Run(self, args):
     """See base.UpdateCommand."""
     return self._Run(
-        args, support_bfd_mode=False, support_md5_authentication_keys=False)
+        args, support_bfd_mode=False, support_md5_authentication_keys=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

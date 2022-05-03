@@ -40,8 +40,6 @@ from gslib.utils import constants
 from gslib.utils import parallelism_framework_util
 from gslib.utils.cloud_api_helper import GetCloudApiInstance
 from gslib.utils.retry_util import Retry
-from gslib.utils.shim_util import GcloudStorageFlag
-from gslib.utils.shim_util import GcloudStorageMap
 from gslib.utils.system_util import StdinIterator
 from gslib.utils.translation_helper import PreconditionsFromHeaders
 
@@ -83,11 +81,6 @@ _DETAILED_HELP_TEXT = ("""
   then deletes the bucket:
 
     gsutil rm -r gs://bucket
-    
-  To remove all objects and their versions from a bucket without deleting the
-  bucket, use the ``-a`` option:
-   
-    gsutil rm -a gs://bucket/**
 
   If you have a large number of objects to remove, use the ``gsutil -m`` option,
   which enables multi-threading/multi-processing:
@@ -112,8 +105,8 @@ _DETAILED_HELP_TEXT = ("""
   Google maintains strict controls over the processing and purging of deleted
   data. If you have concerns that your application software or your users may
   at some point erroneously delete or replace data, see
-  `Options for controlling data lifecycles
-  <https://cloud.google.com/storage/docs/control-data-lifecycles>`_ for ways to
+  `Best practices for deleting data
+  <https://cloud.google.com/storage/docs/best-practices#deleting>`_ for ways to
   protect your data from accidental data deletion.
 
 
@@ -221,17 +214,6 @@ class RmCommand(Command):
       help_one_line_summary='Remove objects',
       help_text=_DETAILED_HELP_TEXT,
       subcommand_help_text={},
-  )
-
-  gcloud_storage_map = GcloudStorageMap(
-      gcloud_command='alpha storage rm',
-      flag_map={
-          '-r': GcloudStorageFlag('-r'),
-          '-R': GcloudStorageFlag('-r'),
-          '-a': GcloudStorageFlag('-a'),
-          '-I': GcloudStorageFlag('-I'),
-          '-f': GcloudStorageFlag('--continue-on-error'),
-      },
   )
 
   def RunCommand(self):

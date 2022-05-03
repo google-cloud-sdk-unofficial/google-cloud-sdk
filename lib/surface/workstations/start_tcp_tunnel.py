@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import socket
+import sys
 import threading
 
 from googlecloudsdk.api_lib.util import apis
@@ -74,11 +75,15 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen.""")
     workstation_ref = args.CONCEPTS.workstation.Parse()
 
     # Look up the workstation host and determine port
-    self.host = client.projects_locations_workstationClusters_workstations.Get(
+    workstation = client.projects_locations_workstationClusters_workstations.Get(
         messages
         .WorkstationsProjectsLocationsWorkstationClustersWorkstationsGetRequest(
-            name=workstation_ref.RelativeName())).host
+            name=workstation_ref.RelativeName()))
+    self.host = workstation.host
     self.port = args.workstation_port
+    if workstation.state != messages.Workstation.StateValueValuesEnum.STATE_RUNNING:
+      log.error('Workstation is not running.')
+      sys.exit(1)
 
     # Generate an access token
     self.access_token = client.projects_locations_workstationClusters_workstations.GenerateAccessToken(
@@ -114,6 +119,7 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen.""")
         header={'Authorization': 'Bearer %s' % self.access_token},
         on_open=lambda ws: self._ForwardClientToServer(client, ws),
         on_data=lambda ws, data, op, finished: client.send(data),
+        on_error=lambda ws, e: self._OnWebsocketError(e),
     )
     t = threading.Thread(target=server.run_forever)
     t.daemon = True
@@ -132,3 +138,6 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen.""")
     t = threading.Thread(target=forward)
     t.daemon = True
     t.start()
+
+  def _OnWebsocketError(self, error):
+    log.error('Received error from workstation: {0}'.format(error))

@@ -40,8 +40,9 @@ from gslib.utils.text_util import NormalizeStorageClass
 from gslib.utils.encryption_helper import ValidateCMEK
 
 _SYNOPSIS = """
-  gsutil mb [-b (on|off)] [-c <class>] [-k <key>] [-l <location>] [-p <project>]
+  gsutil mb [-b (on|off)] [-c <class>] [-l <location>] [-p <project>]
             [--autoclass] [--retention <time>] [--pap <setting>]
+            [--placement <region1>,<region2>]
             [--rpo {}] gs://<bucket_name>...
 """.format(VALID_RPO_VALUES_STRING)
 
@@ -128,10 +129,8 @@ _DETAILED_HELP_TEXT = ("""
                          not evaluated. Consequently, only IAM policies grant
                          access to objects in these buckets. Default is "off".
 
-  -c class               Specifies the default storage class. Default is
-                         ``Standard``. See `Available storage classes
-                         <https://cloud.google.com/storage/docs/storage-classes#classes>`_
-                         for a list of possible values.
+  -c class               Specifies the default storage class.
+                         Default is "Standard".
 
   -k <key>               Set the default KMS key using the full path to the key,
                          which has the following form:
@@ -153,9 +152,15 @@ _DETAILED_HELP_TEXT = ("""
                          retention policy see "gsutil help retention"
 
   --pap setting          Specifies the public access prevention setting. Valid
-                         values are "enforced" or "inherited". When
+                         values are "enforced" or "unspecified". When
                          "enforced", objects in this bucket cannot be made
-                         publicly accessible. Default is "inherited".
+                         publicly accessible. Default is "unspecified".
+
+  --placement reg1,reg2  Two regions that form the cutom dual-region.
+                         Only regions within the same continent are or will ever
+                         be valid. Invalid location pairs (such as
+                         mixed-continent, or with unsupported regions)
+                         will return an error.
 
   --rpo setting          Specifies the `replication setting <https://cloud.google.com/storage/docs/turbo-replication>`_.
                          This flag is not valid for single-region buckets,
@@ -186,7 +191,9 @@ class MbCommand(Command):
       min_args=1,
       max_args=NO_MAX,
       supported_sub_args='b:c:l:p:s:k:',
-      supported_private_args=['autoclass', 'retention=', 'pap=', 'rpo='],
+      supported_private_args=[
+          'autoclass', 'retention=', 'pap=', 'placement=', 'rpo='
+      ],
       file_url_ok=False,
       provider_url_ok=False,
       urls_start_arg=0,
@@ -233,6 +240,7 @@ class MbCommand(Command):
     public_access_prevention = None
     rpo = None
     json_only_flags_in_command = []
+    placements = None
     if self.sub_opts:
       for o, a in self.sub_opts:
         if o == '--autoclass':
@@ -266,6 +274,13 @@ class MbCommand(Command):
         elif o == '--pap':
           public_access_prevention = a
           json_only_flags_in_command.append(o)
+        elif o == '--placement':
+          placements = a.split(',')
+          if len(placements) != 2:
+            raise CommandException(
+                'Please specify two regions separated by comma without space.'
+                ' Specified: {}'.format(a))
+          json_only_flags_in_command.append(o)
 
     bucket_metadata = apitools_messages.Bucket(location=location,
                                                rpo=rpo,
@@ -286,6 +301,11 @@ class MbCommand(Command):
       encryption = apitools_messages.Bucket.EncryptionValue()
       encryption.defaultKmsKeyName = kms_key
       bucket_metadata.encryption = encryption
+
+    if placements:
+      placement_config = apitools_messages.Bucket.CustomPlacementConfigValue()
+      placement_config.dataLocations = placements
+      bucket_metadata.customPlacementConfig = placement_config
 
     for bucket_url_str in self.args:
       bucket_url = StorageUrlFromString(bucket_url_str)

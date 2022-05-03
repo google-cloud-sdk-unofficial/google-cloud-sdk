@@ -20,8 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
+from googlecloudsdk.command_lib.cloudbuild import run_flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -36,6 +35,7 @@ class ListAlpha(base.ListCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
+    run_flags.AddsRegionResourceArg(parser)
 
     parser.display_info.AddFormat("""
           table(
@@ -59,17 +59,13 @@ class ListAlpha(base.ListCommand):
     client = cloudbuild_util.GetClientInstance()
     messages = cloudbuild_util.GetMessagesModule()
 
-    parent = properties.VALUES.core.project.Get(required=True)
     # Get the parent project ref
-    parent_resource = resources.REGISTRY.Create(
-        collection='cloudbuild.projects.locations',
-        projectsId=parent,
-        # Use default region global until Proctor is fully regionalized.
-        locationsId=cloudbuild_util.DEFAULT_REGION)
+    region_ref = args.CONCEPTS.region.Parse()
+    parent = region_ref.RelativeName()
 
     # Send the List request
     gitlab_config_list = client.projects_locations_gitLabConfigs.List(
         messages.CloudbuildProjectsLocationsGitLabConfigsListRequest(
-            parent=parent_resource.RelativeName())).gitlabConfigs
+            parent=parent)).gitlabConfigs
 
     return gitlab_config_list

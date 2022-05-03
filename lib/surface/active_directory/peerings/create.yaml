@@ -48,4 +48,4 @@
       required: true
       api_field: peering.authorizedNetwork
       help_text: |
-          Name of the managed Managed Microsoft AD domain you want to peer to.
+          Name of the Network that is authorized to communicate with Managed Microsoft AD domain. This is usually the full path name of the network in the peer project.

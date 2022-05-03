@@ -209,8 +209,12 @@ class UpdateHelper(object):
       replacement.description = args.description
 
     health_checks = flags.GetHealthCheckUris(args, self, resources)
-    if health_checks or args.IsSpecified('no_health_checks'):
+    if health_checks:
       replacement.healthChecks = health_checks
+
+    if args.IsSpecified('no_health_checks'):
+      replacement.healthChecks = []
+      cleared_fields.append('healthChecks')
 
     if args.timeout:
       replacement.timeoutSec = args.timeout

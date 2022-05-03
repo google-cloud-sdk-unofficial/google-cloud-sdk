@@ -20,6 +20,8 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.cloudbuild import resource_args
+from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -36,7 +38,11 @@ class DescribeAlpha(base.DescribeCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    parser.add_argument('CONFIG', help='The id of the GitLab Enterprise Config')
+    concept_parsers.ConceptParser.ForResource(
+        'CONFIG',
+        resource_args.GetGitLabConfigResourceSpec(),
+        'GitLab Enterprise config.',
+        required=True).AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -61,8 +67,7 @@ class DescribeAlpha(base.DescribeCommand):
         api_version='v1',
         params={
             'projectsId': parent,
-            # Use default region global until Proctor is fully regionalized.
-            'locationsId': cloudbuild_util.DEFAULT_REGION,
+            'locationsId': args.region,
             'gitLabConfigsId': config_id,
         })
 

@@ -18,24 +18,59 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base as gbase
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.container.fleet.features import base
-from googlecloudsdk.core import exceptions
-from googlecloudsdk.core.console import console_io
+from googlecloudsdk.command_lib.container.fleet.mesh import utils
+
+
+def _RunUpdate(cmd, args):
+  """Runs the update command implementation that is common across release tracks.
+
+  Args:
+    cmd: the release track specific command
+    args: the args passed to the command
+  """
+  memberships = utils.ParseMemberships(args)
+  f = cmd.GetFeature()
+  membership_specs = {}
+  for membership in memberships:
+    membership = cmd.MembershipResourceName(membership)
+    patch = cmd.messages.MembershipFeatureSpec()
+
+    for name, spec in cmd.hubclient.ToPyDict(f.membershipSpecs).items():
+      if name == membership and spec:
+        patch = spec
+    if not patch.mesh:
+      patch.mesh = cmd.messages.ServiceMeshMembershipSpec()
+
+    control_plane = (
+        cmd.messages.ServiceMeshMembershipSpec.ControlPlaneValueValuesEnum(
+            'MANUAL'))
+    if args.control_plane == 'automatic':
+      control_plane = (
+          cmd.messages.ServiceMeshMembershipSpec
+          .ControlPlaneValueValuesEnum('AUTOMATIC'))
+    patch.mesh.controlPlane = control_plane
+    membership_specs[membership] = patch
+
+  f = cmd.messages.Feature(
+      membershipSpecs=cmd.hubclient.ToMembershipSpecs(membership_specs))
+  cmd.Update(['membershipSpecs'], f)
 
 
 @gbase.ReleaseTracks(gbase.ReleaseTrack.ALPHA)
-class Update(base.UpdateCommand):
+class UpdateAlpha(base.UpdateCommand):
   """Update the configuration of the Service Mesh Feature.
 
   Update the Service Mesh Feature Spec of a Membership.
 
   ## EXAMPLES
 
-  To update the control plane management of a Membership named MEMBERSHIP, run:
+  To update the control plane management of comma separated Memberships like
+  `membership1,membership2`, run:
 
-    $ {command} --membership=MEMBERSHIP
+    $ {command} --memberships=membership1,membership2
       --control-plane=CONTROL_PLANE
   """
 
@@ -43,11 +78,21 @@ class Update(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        '--memberships',
+        type=str,
+        help='Membership names to update, separated by commas if multiple are supplied.',
+    )
+    group.add_argument(
         '--membership',
         type=str,
-        help='The Membership name to update.',
-    )
+        help='Membership name to update.',
+        action=actions.DeprecationAction(
+            '--membership',
+            warn='The {flag_name} flag is now '
+            'deprecated. Please use `--memberships` '
+            'instead.'))
     parser.add_argument(
         '--control-plane',
         choices=['automatic', 'manual'],
@@ -56,46 +101,40 @@ class Update(base.UpdateCommand):
     )
 
   def Run(self, args):
-    memberships = base.ListMemberships()
-    if not memberships:
-      raise exceptions.Error('No Memberships available in the fleet.')
-    membership = args.membership
-    if not membership:
-      if console_io.CanPrompt():
-        index = console_io.PromptChoice(
-            options=memberships,
-            message='Please specify a Membership:\n',
-            cancel_option=True)
-        membership = memberships[index]
-      else:
-        raise calliope_exceptions.RequiredArgumentException(
-            '--membership',
-            ('Cannot prompt a console for membership. Membership is required. '
-             'Please specify `--membership` to select a membership.'))
-    else:
-      if membership not in memberships:
-        raise exceptions.Error(
-            'Membership {} does not exist in the fleet.'.format(membership))
-    membership = self.MembershipResourceName(membership)
+    _RunUpdate(self, args)
 
-    f = self.GetFeature()
-    patch = self.messages.MembershipFeatureSpec()
 
-    for name, spec in self.hubclient.ToPyDict(f.membershipSpecs).items():
-      if name == membership and spec:
-        patch = spec
-    if not patch.mesh:
-      patch.mesh = self.messages.ServiceMeshMembershipSpec()
+@gbase.ReleaseTracks(gbase.ReleaseTrack.GA)
+class UpdateGA(base.UpdateCommand):
+  """Update the configuration of the Service Mesh Feature.
 
-    control_plane = (
-        self.messages.ServiceMeshMembershipSpec.ControlPlaneValueValuesEnum(
-            'MANUAL'))
-    if args.control_plane == 'automatic':
-      control_plane = (
-          self.messages.ServiceMeshMembershipSpec.ControlPlaneValueValuesEnum(
-              'AUTOMATIC'))
-    patch.mesh.controlPlane = control_plane
+  Update the Service Mesh Feature Spec of a Membership.
 
-    f = self.messages.Feature(
-        membershipSpecs=self.hubclient.ToMembershipSpecs({membership: patch}))
-    self.Update(['membershipSpecs'], f)
+  ## EXAMPLES
+
+  To update the control plane management of comma separated Memberships like
+  `membership1,membership2`, run:
+
+    $ {command} --memberships=membership1,membership2
+      --control-plane=CONTROL_PLANE
+  """
+
+  feature_name = 'servicemesh'
+
+  @staticmethod
+  def Args(parser):
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        '--memberships',
+        type=str,
+        help='Membership names to update, separated by commas if multiple are supplied.',
+    )
+    parser.add_argument(
+        '--control-plane',
+        choices=['automatic', 'manual'],
+        help='Control plane management to update to.',
+        required=True
+    )
+
+  def Run(self, args):
+    _RunUpdate(self, args)
