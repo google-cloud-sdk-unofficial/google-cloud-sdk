@@ -128,7 +128,7 @@ def _GetConfirmedClearedFields(args, patch_instance, original_instance):
   return cleared_fields
 
 
-def AddBaseArgs(parser, is_alpha=False, is_beta=False):
+def AddBaseArgs(parser, is_alpha=False):
   """Adds base args and flags to the parser."""
   # TODO(b/35705305): move common flags to command_lib.sql.flags
   flags.AddActivationPolicy(parser)
@@ -222,6 +222,7 @@ def AddBaseArgs(parser, is_alpha=False, is_beta=False):
   flags.AddPasswordPolicyReuseInterval(parser)
   flags.AddPasswordPolicyDisallowUsernameSubstring(parser)
   flags.AddPasswordPolicyPasswordChangeInterval(parser)
+  flags.AddPasswordPolicyEnablePasswordPolicy(parser)
   flags.AddPasswordPolicyClearPasswordPolicy(parser)
   parser.add_argument(
       '--pricing-plan',
@@ -238,13 +239,8 @@ def AddBaseArgs(parser, is_alpha=False, is_beta=False):
             'over IP.'))
   flags.AddStorageAutoIncrease(parser)
   flags.AddStorageSize(parser)
-  flags.AddTier(parser, is_patch=True)
+  flags.AddTier(parser, is_patch=True, is_alpha=is_alpha)
   flags.AddEnablePointInTimeRecovery(parser)
-  flags.AddDatabaseVersion(
-      parser,
-      support_default_version=False,
-      expose_mvs_versions=True,
-      expose_all_versions=is_alpha or is_beta)
   flags.AddNetwork(parser)
   flags.AddMaintenanceVersion(parser)
 
@@ -369,6 +365,7 @@ class Patch(base.UpdateCommand):
         parser,
         help_text=('Preferred Compute Engine zone (e.g. us-central1-a, '
                    'us-central1-b, etc.). WARNING: Instance may be restarted.'))
+    flags.AddDatabaseVersion(parser, support_default_version=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -381,12 +378,16 @@ class PatchBeta(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
-    AddBaseArgs(parser, is_beta=True)
+    AddBaseArgs(parser)
     flags.AddZone(
         parser,
         help_text=('Preferred Compute Engine zone (e.g. us-central1-a, '
                    'us-central1-b, etc.). WARNING: Instance may be restarted.'))
     AddBetaArgs(parser)
+    flags.AddDatabaseVersion(
+        parser,
+        restrict_choices=False,
+        support_default_version=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -406,3 +407,7 @@ class PatchAlpha(base.UpdateCommand):
                    'us-central1-b, etc.). WARNING: Instance may be restarted.'))
     AddBetaArgs(parser)
     AddAlphaArgs(parser)
+    flags.AddDatabaseVersion(
+        parser,
+        restrict_choices=False,
+        support_default_version=False)

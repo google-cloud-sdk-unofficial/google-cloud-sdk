@@ -47,7 +47,6 @@ CHANNEL_FLAG = base.Argument(
     required=True)
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create an Eventarc channel connection."""

@@ -82,6 +82,19 @@ existing file.
 Objects that are marked as "OK" or "skipped" in the existing manifest file
 are not retried by future commands. Objects marked as "error" are retried.
 """
+_PRESERVE_POSIX_HELP_TEXT = """\
+Causes POSIX attributes to be preserved when objects are copied. With this feature enabled,
+gcloud storage will copy several fields provided by the stat command:
+access time, modification time, owner UID, owner group GID, and the mode
+(permissions) of the file.
+
+For uploads, these attributes are read off of local files and stored in the
+cloud as custom metadata. For downloads, custom cloud metadata is set as POSIX
+attributes on files after they are downloaded.
+
+On Windows, this flag will only set and restore access time and modification
+time because Windows doesn't have a notion of POSIX UID, GID, and mode.
+"""
 
 
 class Cp(base.Command):
@@ -151,6 +164,11 @@ class Cp(base.Command):
         help='Do not overwrite existing files or objects at the destination.'
         ' Skipped items will be printed. This option performs an additional GET'
         ' request for cloud objects before attempting an upload.')
+    parser.add_argument(
+        '-P',
+        '--preserve-posix',
+        action='store_true',
+        help=_PRESERVE_POSIX_HELP_TEXT)
     parser.add_argument(
         '-v',
         '--print-created-message',

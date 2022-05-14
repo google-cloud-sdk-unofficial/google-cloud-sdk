@@ -944,7 +944,7 @@ class CreateBeta(Create):
   _support_numa_node_count = False
   _support_visible_core_count = False
   _support_disk_architecture = False
-  _support_key_revocation_action_type = False
+  _support_key_revocation_action_type = True
   _support_max_run_duration = False
 
   @classmethod
@@ -967,6 +967,7 @@ class CreateBeta(Create):
         parser, utils.COMPUTE_BETA_API_VERSION)
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
+    instance_templates_flags.AddKeyRevocationActionTypeArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.

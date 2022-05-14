@@ -105,7 +105,11 @@ class CreateCredConfig(base.CreateCommand):
         help='The subject token field name (key) in a JSON credential source.')
 
     if cls._use_pluggable_auth:
-      parser.add_argument(
+      executable_args = parser.add_group(
+          hidden=True,
+          help='Arguments for an executable type credential source.')
+
+      executable_args.add_argument(
           '--executable-timeout-millis',
           hidden=True,
           type=arg_parsers.Duration(
@@ -115,11 +119,10 @@ class CreateCredConfig(base.CreateCommand):
               parsed_unit='ms'),
           help='The timeout duration in milliseconds for waiting for the executable to finish.'
       )
-      parser.add_argument(
+      executable_args.add_argument(
           '--executable-output-file',
           hidden=True,
-          help='The absolute path to the file storing the executable response.'
-      )
+          help='The absolute path to the file storing the executable response.')
 
   def Run(self, args):
     cred_config.create_credential_config(args,

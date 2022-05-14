@@ -32,7 +32,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import progress_tracker
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Execute(base.Command):
   """Execute a job."""
 
@@ -89,6 +88,6 @@ class Execute(base.Command):
                              'successfully {operation}.'.format(
                                  execution=e.name, operation=operation))
 
-      log.Print(
+      log.status.Print(
           messages_util.GetExecutionCreatedMessage(self.ReleaseTrack(), e))
       return e

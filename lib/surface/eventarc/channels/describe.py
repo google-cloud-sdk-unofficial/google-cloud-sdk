@@ -29,12 +29,11 @@ _DETAILED_HELP = {
         """ \
         To describe the channel ``my-channel'' in location ``us-central1'', run:
 
-          $ {command} my-channel --location us-central1
+          $ {command} my-channel --location=us-central1
         """,
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describes an Eventarc channel."""

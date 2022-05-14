@@ -34,7 +34,7 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     parser.add_argument(
         '--default-network-tier',
-        choices=['PREMIUM', 'STANDARD'],
+        choices=['PREMIUM', 'STANDARD', 'FIXED_STANDARD'],
         type=lambda x: x.upper(),
         help='The default network tier to assign to the project.')
 

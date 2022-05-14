@@ -335,7 +335,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_image_streaming=get_default('enable_image_streaming'),
       spot=get_default('spot'),
       enable_service_externalips=get_default('enable_service_externalips'),
-      disable_pod_cidr_overprovision=get_default('disable_pod_cidr_overprovision'))
+      disable_pod_cidr_overprovision=get_default('disable_pod_cidr_overprovision'),
+      private_endpoint_subnetwork=get_default('private_endpoint_subnetwork'))
 
 
 GA = 'ga'
@@ -557,6 +558,8 @@ flags_to_add = {
             flags.AddWorkloadMetadataFlag,
         'enableserviceexternalips':
             flags.AddEnableServiceExternalIPs,
+        'privateEndpointSubnetwork':
+            flags.AddPrivateEndpointSubnetworkFlag,
     },
     BETA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),

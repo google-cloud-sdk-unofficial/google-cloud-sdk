@@ -21,6 +21,9 @@ from __future__ import unicode_literals
 import socket
 import sys
 import threading
+import time
+
+from apitools.base.py.exceptions import Error
 
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
@@ -70,26 +73,24 @@ unused local port is chosen. The colon also may be omitted in that case.
 If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen.""")
 
   def Run(self, args):
-    messages = apis.GetMessagesModule('workstations', 'v1alpha1')
-    client = apis.GetClientInstance('workstations', 'v1alpha1')
+    self.messages = apis.GetMessagesModule('workstations', 'v1alpha1')
+    self.client = apis.GetClientInstance('workstations', 'v1alpha1')
     workstation_ref = args.CONCEPTS.workstation.Parse()
 
     # Look up the workstation host and determine port
-    workstation = client.projects_locations_workstationClusters_workstations.Get(
-        messages
+    workstation = self.client.projects_locations_workstationClusters_workstations.Get(
+        self.messages
         .WorkstationsProjectsLocationsWorkstationClustersWorkstationsGetRequest(
             name=workstation_ref.RelativeName()))
     self.host = workstation.host
     self.port = args.workstation_port
-    if workstation.state != messages.Workstation.StateValueValuesEnum.STATE_RUNNING:
+    if workstation.state != self.messages.Workstation.StateValueValuesEnum.STATE_RUNNING:
       log.error('Workstation is not running.')
       sys.exit(1)
 
-    # Generate an access token
-    self.access_token = client.projects_locations_workstationClusters_workstations.GenerateAccessToken(
-        messages.
-        WorkstationsProjectsLocationsWorkstationClustersWorkstationsGenerateAccessTokenRequest(
-            workstation=workstation_ref.RelativeName())).accessToken
+    # Generate an access token and refresh it periodically
+    self._FetchAccessToken(workstation_ref)
+    self._RefreshAccessToken(workstation_ref)
 
     # Bind on the local TCP port
     self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -107,6 +108,27 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen.""")
           self._AcceptConnection(conn, addr)
     except KeyboardInterrupt:
       log.info('Keyboard interrupt received.')
+
+  def _FetchAccessToken(self, workstation):
+    try:
+      self.access_token = self.client.projects_locations_workstationClusters_workstations.GenerateAccessToken(
+          self.messages.
+          WorkstationsProjectsLocationsWorkstationClustersWorkstationsGenerateAccessTokenRequest(
+              workstation=workstation.RelativeName(),)).accessToken
+    except Error as e:
+      log.error('Error fetching access token: {0}'.format(e))
+      sys.exit(1)
+
+  def _RefreshAccessToken(self, workstation):
+
+    def refresh():
+      while True:
+        time.sleep(2700)  # 45 minutes
+        self._FetchAccessToken(workstation)
+
+    t = threading.Thread(target=refresh)
+    t.daemon = True
+    t.start()
 
   def _GetLocalHostPort(self, args):
     host = args.local_host_port.host or 'localhost'

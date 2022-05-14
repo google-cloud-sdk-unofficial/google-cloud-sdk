@@ -31,7 +31,13 @@ class ListBeta(base.ListCommand):
   @staticmethod
   def Args(parser, track=base.ReleaseTrack.BETA):
     """Registers flags for this command."""
-    parser.display_info.AddFormat('table(name, stage)')
+    parser.display_info.AddFormat("""
+      table(
+        name,
+        stage,
+        environments()
+      )
+    """)
     parser.display_info.AddUriFunc(flags.GetLocationsUri)
 
     flags.AddRegionFlag(
@@ -40,11 +46,7 @@ class ListBeta(base.ListCommand):
     flags.AddGen2Flag(parser, track)
 
   def Run(self, args):
-    if flags.ShouldUseGen2():
-      return command_v2.Run(args, self.ReleaseTrack())
-    else:
-      raise NotImplementedError('The `runtimes list` command is only available '
-                                'for GCF (2nd Gen).')
+    return command_v2.Run(args, self.ReleaseTrack())
 
 
 @base.Hidden

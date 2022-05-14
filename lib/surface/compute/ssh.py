@@ -379,7 +379,9 @@ class Ssh(base.Command):
     cmd = ssh.SSHCommand(**ssh_cmd_args)
 
     if args.dry_run:
-      log.out.Print(' '.join(cmd.Build(ssh_helper.env)))
+      # Add quotes around any arguments that contain spaces.
+      log.out.Print(' '.join('"{0}"'.format(arg) if ' ' in arg else arg
+                             for arg in cmd.Build(ssh_helper.env)))
       return
 
     # Raise errors if instance requires a security key but the local
@@ -417,8 +419,9 @@ class Ssh(base.Command):
           ssh_helper.env,
           force_connect=properties.VALUES.ssh.putty_force_connect.GetBool())
     except ssh.CommandError as e:
-      log.status.Print(self.createRecommendMessage(args, instance_name,
-                                                   instance_ref, project))
+      if not on_prem:
+        log.status.Print(self.createRecommendMessage(args, instance_name,
+                                                     instance_ref, project))
       raise e
 
     if return_code:
@@ -426,7 +429,6 @@ class Ssh(base.Command):
       # will result in ssh.CommandError being raised above.
       sys.exit(return_code)
 
-  # TODO(b/196572980): Update this to work with on-prem. Can't expect instance.
   def createRecommendMessage(self, args, instance_name, instance_ref, project):
     release_track = ReleaseTrack.get(str(self.ReleaseTrack()).lower())
     release_track = release_track + ' ' if release_track else ''

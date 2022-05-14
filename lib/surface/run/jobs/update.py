@@ -34,7 +34,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import progress_tracker
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.Command):
   """Update a Cloud Run Job."""
 
@@ -126,5 +125,6 @@ class Update(base.Command):
             'Job [{{bold}}{job}{{reset}}] has been successfully updated'.format(
                 job=job.name))
 
-      log.Print(messages_util.GetRunJobMessage(self.ReleaseTrack(), job.name))
+      log.status.Print(
+          messages_util.GetRunJobMessage(self.ReleaseTrack(), job.name))
       return job

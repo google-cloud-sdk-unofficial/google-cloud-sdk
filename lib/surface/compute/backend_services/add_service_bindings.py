@@ -74,6 +74,7 @@ class AddServiceBindings(base.UpdateCommand):
                                                'global', binding_name)
         for binding_name in args.service_bindings
     ]
+    new_bindings = reference_utils.FilterReferences(new_bindings, old_bindings)
     replacement.serviceBindings = sorted(
         list(set(old_bindings) | set(new_bindings)))
 

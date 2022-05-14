@@ -1,4 +1,4 @@
-release_tracks: [BETA, ALPHA]
+release_tracks: [GA, BETA, ALPHA]
 
 help_text:
   brief: |
@@ -37,6 +37,8 @@ request: &request
     api_version: v1alpha1
   BETA:
     api_version: v1beta1
+  GA:
+    api_version: v1
   collection: networkservices.projects.locations.serviceBindings
   method: create
   modify_request_hooks:

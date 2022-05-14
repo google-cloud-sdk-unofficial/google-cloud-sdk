@@ -71,6 +71,7 @@ def _Args(parser):
   flags.GetMonitoringLogTtlArg(required=False).AddToParser(parser)
   flags.AddObjectiveConfigGroupForCreate(parser, required=False)
   flags.AddKmsKeyResourceArg(parser, 'model deployment monitoring job')
+  flags.GetAnomalyCloudLoggingArg(required=False).AddToParser(parser)
   labels_util.AddCreateLabelsFlags(parser)
 
 

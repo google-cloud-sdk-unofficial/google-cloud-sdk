@@ -56,7 +56,7 @@ class Create(base.CreateCommand):
     flags.AddNodeTaints(parser)
 
     aws_flags.AddInstanceType(parser)
-    aws_flags.AddSshEC2KeyPair(parser)
+    aws_flags.AddSshEC2KeyPair(parser, kind='node pool')
     aws_flags.AddIamInstanceProfile(parser)
     aws_flags.AddSecurityGroupIds(parser, 'nodes')
     aws_flags.AddRootVolumeType(parser)

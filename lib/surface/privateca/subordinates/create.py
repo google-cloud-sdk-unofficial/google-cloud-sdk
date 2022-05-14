@@ -471,6 +471,14 @@ class Create(base.CreateCommand):
           'issuer resource is specified. You can use the \'--auto-enable\' '
           'command in the subordinate CA activate command.'))
 
+    if args.issuer_pool == args.pool:
+      if not console_io.PromptContinue(
+          message='The new CA will be in the same CA pool as the issuer CA. All'
+          ' certificate authorities within a CA pool should be interchangeable.'
+          ' Do you want to continue?',
+          default=True):
+        log.status.Print('Aborted by user.')
+        return
     iam_v1.CheckCreateCertificateAuthorityPermissions(project_ref, kms_key_ref)
     if issuer_ref:
       iam_v1.CheckCreateCertificatePermissions(issuer_ref)

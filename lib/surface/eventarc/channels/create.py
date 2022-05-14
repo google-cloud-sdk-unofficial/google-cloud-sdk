@@ -29,14 +29,13 @@ _DETAILED_HELP = {
         '{description}',
     'EXAMPLES':
         """ \
-        To create a new channel ``my-channel'' for provider ``event-provider'' in location ``us-central1'', run:
+        To create a new channel ``my-channel'' in location ``us-central1'', run:
 
-          $ {command} my-channel --provider event-provider --location us-central1
+          $ {command} my-channel --location=us-central1
         """,
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create an Eventarc channel."""

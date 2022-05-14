@@ -74,9 +74,8 @@ class RemoveServiceBindings(base.UpdateCommand):
                                                'global', binding_name)
         for binding_name in args.service_bindings
     ]
-    replacement.serviceBindings = sorted(
-        list(set(old_bindings) - set(bindings_to_remove)))
-
+    replacement.serviceBindings = reference_utils.FilterReferences(
+        old_bindings, bindings_to_remove)
     return replacement
 
   def Run(self, args):
@@ -95,5 +94,9 @@ class RemoveServiceBindings(base.UpdateCommand):
 
     new_object = self._Modify(backend_service_ref, args, objects[0])
 
-    return client.MakeRequests(
-        [self._SetRequest(client, backend_service_ref, new_object)])
+    cleared_fields = []
+    if not new_object.serviceBindings:
+      cleared_fields.append('serviceBindings')
+    with client.apitools_client.IncludeFields(cleared_fields):
+      return client.MakeRequests(
+          [self._SetRequest(client, backend_service_ref, new_object)])

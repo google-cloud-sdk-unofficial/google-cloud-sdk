@@ -34,7 +34,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import progress_tracker
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
   """Deploy a new job to Cloud Run."""
 
@@ -159,5 +158,5 @@ class Create(base.Command):
         msg += '\n'
       msg += messages_util.GetRunJobMessage(
           self.ReleaseTrack(), job.name, repeat=execute_now)
-      log.Print(msg)
+      log.status.Print(msg)
       return job

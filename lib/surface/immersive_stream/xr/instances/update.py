@@ -40,7 +40,8 @@ class Update(base.Command):
           This command can either be used to update the capacity for an existing
           realm of the service instance or to update the content build version
           served by the instance.
-          If updating the capacity, only one realm may be updated for each command execution.
+          If updating the capacity, only one realm may be updated for each command execution, and
+          the new capacity may not be 0 or exceed the quota limit.
       """),
       'EXAMPLES': ("""
           To update the service instance 'my-instance' to have capacity 2 for realm REALM_NA_WEST, run:

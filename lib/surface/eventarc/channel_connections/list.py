@@ -49,7 +49,6 @@ table(
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Eventarc channel connections."""

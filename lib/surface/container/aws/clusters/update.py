@@ -57,6 +57,7 @@ class Update(base.UpdateCommand):
     aws_flags.AddRootVolumeKmsKeyArn(parser)
     aws_flags.AddRootVolumeType(parser)
     aws_flags.AddRootVolumeIops(parser)
+    aws_flags.AddSshEC2KeyPairForUpdate(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(constants.AWS_CLUSTERS_FORMAT)

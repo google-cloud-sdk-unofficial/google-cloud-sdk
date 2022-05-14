@@ -30,7 +30,7 @@ _DETAILED_HELP = {
         """ \
         To delete the channel ``my-channel'' in location ``us-central1'', run:
 
-          $ {command} my-channel --location us-central1
+          $ {command} my-channel --location=us-central1
         """,
 }
 

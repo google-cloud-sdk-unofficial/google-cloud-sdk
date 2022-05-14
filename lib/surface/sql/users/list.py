@@ -32,11 +32,12 @@ def AddBaseArgs(parser):
   parser.display_info.AddCacheUpdater(flags.UserCompleter)
 
 
-def RunBaseListCommand(args):
+def RunBaseListCommand(args, release_track):
   """Lists Cloud SQL users in a given instance.
 
   Args:
     args: argparse.Namespace, The arguments that this command was invoked with.
+    release_track: base.ReleaseTrack, the release track that this was run under.
 
   Returns:
     SQL user resource iterator.
@@ -47,9 +48,44 @@ def RunBaseListCommand(args):
 
   project_id = properties.VALUES.core.project.Get(required=True)
 
-  return sql_client.users.List(
+  users = sql_client.users.List(
       sql_messages.SqlUsersListRequest(
           project=project_id, instance=args.instance)).items
+
+  # We will not display dual passwords if no user in the instance
+  # has information about this field. This an implicit way of saying that we
+  # will only show dual password type on MySQL 8.0, as no other instance type
+  # will have dual password information.
+  show_dual_password_type = any(map(lambda user: user.dualPasswordType, users))
+  dual_password_type = "dualPasswordType," if show_dual_password_type else ""
+
+  # Dual Password types is exposed in all release tracks, but we will not
+  # expose the column early to customers, because returning the Dual Password
+  # status is gated by a flag upstream.
+  if release_track == base.ReleaseTrack.GA:
+    # Because there are tests running against Python 3.5, I can't use f-Strings.
+    args.GetDisplayInfo().AddFormat("""
+      table(
+        name.yesno(no='(anonymous)'),
+        host,
+        type.yesno(no='BUILT_IN'),
+        {dualPasswordType}
+        passwordPolicy
+      )
+    """.format(dualPasswordType=dual_password_type))
+  else:
+    args.GetDisplayInfo().AddFormat("""
+      table(
+        name.yesno(no='(anonymous)'),
+        host,
+        type.yesno(no='BUILT_IN'),
+        {dualPasswordType}
+        iamEmail,
+        passwordPolicy
+      )
+    """.format(dualPasswordType=dual_password_type))
+
+  return users
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -63,10 +99,9 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     AddBaseArgs(parser)
-    parser.display_info.AddFormat(flags.USERS_FORMAT)
 
   def Run(self, args):
-    return RunBaseListCommand(args)
+    return RunBaseListCommand(args, self.ReleaseTrack())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -80,7 +115,6 @@ class ListBeta(List):
   @staticmethod
   def Args(parser):
     AddBaseArgs(parser)
-    parser.display_info.AddFormat(flags.USERS_FORMAT_BETA)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -94,4 +128,3 @@ class ListAlpha(ListBeta):
   @staticmethod
   def Args(parser):
     AddBaseArgs(parser)
-    parser.display_info.AddFormat(flags.USERS_FORMAT_ALPHA)

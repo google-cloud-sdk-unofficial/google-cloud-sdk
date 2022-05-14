@@ -64,7 +64,7 @@ DETAILED_HELP = {
 }
 
 
-def AddBaseArgs(parser):
+def AddBaseArgs(parser, is_alpha=False):
   """Declare flag and positional arguments for this command parser."""
   # TODO(b/35705305): move common flags to command_lib.sql.flags
   base.ASYNC_FLAG.AddToParser(parser)
@@ -121,6 +121,7 @@ def AddBaseArgs(parser):
   flags.AddPasswordPolicyReuseInterval(parser)
   flags.AddPasswordPolicyDisallowUsernameSubstring(parser)
   flags.AddPasswordPolicyPasswordChangeInterval(parser)
+  flags.AddPasswordPolicyEnablePasswordPolicy(parser)
   parser.add_argument(
       '--replica-type',
       choices=['READ', 'FAILOVER'],
@@ -141,7 +142,7 @@ def AddBaseArgs(parser):
       choices=['SSD', 'HDD'],
       default=None,
       help='The storage type for the instance. The default is SSD.')
-  flags.AddTier(parser)
+  flags.AddTier(parser, is_alpha=is_alpha)
   kms_flag_overrides = {
       'kms-key': '--disk-encryption-key',
       'kms-keyring': '--disk-encryption-key-keyring',
@@ -270,6 +271,11 @@ def RunBaseCreateCommand(args, release_track):
       raise sql_exceptions.ArgumentError(
           '`--enable-point-in-time-recovery` cannot be specified when '
           '--no-backup is specified')
+  if release_track == base.ReleaseTrack.ALPHA:
+    if args.IsSpecified('workload_tier'):
+      if not (args.IsSpecified('cpu') and args.IsSpecified('memory')):
+        raise sql_exceptions.ArgumentError(
+            '`--workload-tier` requires `--cpu` and `--memory`')
 
   instance_resource = (
       command_util.InstancesV1Beta4.ConstructCreateInstanceFromArgs(
@@ -378,7 +384,7 @@ class CreateAlpha(base.Command):
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
-    AddBaseArgs(parser)
+    AddBaseArgs(parser, is_alpha=True)
     flags.AddLocationGroup(parser)
     AddBetaArgs(parser)
     AddAlphaArgs(parser)

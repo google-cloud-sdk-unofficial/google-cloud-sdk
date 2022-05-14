@@ -1024,6 +1024,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--analysis-instance-schema": "value",
+                "--anomaly-cloud-logging": "bool",
                 "--bigquery-uri": "value",
                 "--data-format": "value",
                 "--dataset": "value",
@@ -1088,6 +1089,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--analysis-instance-schema": "value",
+                "--anomaly-cloud-logging": "bool",
                 "--clear-labels": "bool",
                 "--display-name": "value",
                 "--emails": "value",
@@ -3005,6 +3007,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--analysis-instance-schema": "value",
+                    "--anomaly-cloud-logging": "bool",
                     "--bigquery-uri": "value",
                     "--data-format": "value",
                     "--dataset": "value",
@@ -3069,6 +3072,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--analysis-instance-schema": "value",
+                    "--anomaly-cloud-logging": "bool",
                     "--clear-labels": "bool",
                     "--display-name": "value",
                     "--emails": "value",
@@ -14262,6 +14266,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--default-network-tier": [
+                      "FIXED_STANDARD",
                       "PREMIUM",
                       "STANDARD"
                     ]
@@ -17562,6 +17567,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--async": "bool",
                         "--clear-proxy-config": "bool",
                         "--clear-security-group-ids": "bool",
+                        "--clear-ssh-ec2-key-pair": "bool",
                         "--cluster-version": "value",
                         "--config-encryption-kms-key-arn": "value",
                         "--instance-type": "value",
@@ -17578,6 +17584,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "gp3"
                         ],
                         "--security-group-ids": "value",
+                        "--ssh-ec2-key-pair": "value",
                         "--validate-only": "bool"
                       }
                     }
@@ -17663,6 +17670,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--async": "bool",
                         "--clear-proxy-config": "bool",
                         "--clear-security-group-ids": "bool",
+                        "--clear-ssh-ec2-key-pair": "bool",
                         "--cluster": "value",
                         "--config-encryption-kms-key-arn": "value",
                         "--location": "value",
@@ -17679,6 +17687,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "gp3"
                         ],
                         "--security-group-ids": "value",
+                        "--ssh-ec2-key-pair": "value",
                         "--validate-only": "bool"
                       }
                     }
@@ -38176,6 +38185,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--disk-encryption-key-location": "dynamic",
                     "--disk-encryption-key-project": "dynamic",
                     "--enable-bin-log": "bool",
+                    "--enable-password-policy": "bool",
                     "--enable-point-in-time-recovery": "bool",
                     "--failover-replica-name": "value",
                     "--gce-zone": "value",
@@ -38310,35 +38320,14 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--clear-password-policy": "bool",
                     "--cpu": "value",
                     "--database-flags": "value",
-                    "--database-version": [
-                      "MYSQL_5_6",
-                      "MYSQL_5_7",
-                      "MYSQL_8_0",
-                      "MYSQL_8_0_18",
-                      "MYSQL_8_0_26",
-                      "MYSQL_8_0_27",
-                      "MYSQL_8_0_28",
-                      "POSTGRES_10",
-                      "POSTGRES_11",
-                      "POSTGRES_12",
-                      "POSTGRES_13",
-                      "POSTGRES_14",
-                      "POSTGRES_9_6",
-                      "SQLSERVER_2017_ENTERPRISE",
-                      "SQLSERVER_2017_EXPRESS",
-                      "SQLSERVER_2017_STANDARD",
-                      "SQLSERVER_2017_WEB",
-                      "SQLSERVER_2019_ENTERPRISE",
-                      "SQLSERVER_2019_EXPRESS",
-                      "SQLSERVER_2019_STANDARD",
-                      "SQLSERVER_2019_WEB"
-                    ],
+                    "--database-version": "value",
                     "--deny-maintenance-period-end-date": "value",
                     "--deny-maintenance-period-start-date": "value",
                     "--deny-maintenance-period-time": "value",
                     "--diff": "bool",
                     "--enable-bin-log": "bool",
                     "--enable-database-replication": "bool",
+                    "--enable-password-policy": "bool",
                     "--enable-point-in-time-recovery": "bool",
                     "--follow-gae-app": "value",
                     "--gce-zone": "value",
@@ -38674,6 +38663,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--ignore-symlinks": "bool",
                 "--manifest-path": "value",
                 "--no-clobber": "bool",
+                "--preserve-posix": "bool",
                 "--print-created-message": "bool",
                 "--recursive": "bool",
                 "--skip-unsupported": "bool",
@@ -42668,6 +42658,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--analysis-instance-schema": "value",
+                    "--anomaly-cloud-logging": "bool",
                     "--bigquery-uri": "value",
                     "--data-format": "value",
                     "--dataset": "value",
@@ -42732,6 +42723,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--analysis-instance-schema": "value",
+                    "--anomaly-cloud-logging": "bool",
                     "--clear-labels": "bool",
                     "--display-name": "value",
                     "--emails": "value",
@@ -49795,6 +49787,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--ipv6-network-tier": [
                       "PREMIUM"
                     ],
+                    "--key-revocation-action-type": [
+                      "none",
+                      "stop"
+                    ],
                     "--labels": "value",
                     "--local-ssd": "value",
                     "--machine-type": "dynamic",
@@ -52332,6 +52328,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--default-network-tier": [
+                      "FIXED_STANDARD",
                       "PREMIUM",
                       "STANDARD"
                     ]
@@ -70211,18 +70208,93 @@ STATIC_COMPLETION_CLI_TREE = {
             },
             "jobs": {
               "commands": {
+                "add-iam-policy-binding": {
+                  "commands": {},
+                  "flags": {
+                    "--condition": "value",
+                    "--condition-from-file": "value",
+                    "--member": "value",
+                    "--region": "value",
+                    "--role": "dynamic"
+                  }
+                },
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--args": "value",
+                    "--async": "bool",
+                    "--binary-authorization": "value",
+                    "--breakglass": "value",
+                    "--command": "value",
+                    "--cpu": "value",
+                    "--execute-now": "bool",
+                    "--image": "value",
+                    "--key": "value",
+                    "--labels": "value",
+                    "--max-retries": "value",
+                    "--memory": "value",
+                    "--parallelism": "value",
+                    "--region": "value",
+                    "--service-account": "value",
+                    "--set-cloudsql-instances": "value",
+                    "--set-env-vars": "value",
+                    "--set-secrets": "value",
+                    "--task-timeout": "value",
+                    "--tasks": "value",
+                    "--vpc-connector": "value",
+                    "--vpc-egress": [
+                      "all",
+                      "all-traffic",
+                      "private-ranges-only"
+                    ],
+                    "--wait": "bool"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "value"
+                  }
+                },
                 "describe": {
                   "commands": {},
                   "flags": {
                     "--region": "value"
                   }
                 },
+                "execute": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--region": "value",
+                    "--wait": "bool"
+                  }
+                },
                 "executions": {
                   "commands": {
+                    "delete": {
+                      "commands": {},
+                      "flags": {
+                        "--region": "value"
+                      }
+                    },
                     "describe": {
                       "commands": {},
                       "flags": {
                         "--region": "value"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--job": "value",
+                        "--limit": "value",
+                        "--namespace": "value",
+                        "--page-size": "value",
+                        "--region": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
                       }
                     },
                     "tasks": {
@@ -70231,6 +70303,28 @@ STATIC_COMPLETION_CLI_TREE = {
                           "commands": {},
                           "flags": {
                             "--region": "value"
+                          }
+                        },
+                        "list": {
+                          "commands": {},
+                          "flags": {
+                            "--abandoned": "bool",
+                            "--cancelled": "bool",
+                            "--completed": "bool",
+                            "--execution": "value",
+                            "--failed": "bool",
+                            "--filter": "value",
+                            "--limit": "value",
+                            "--no-completed": "bool",
+                            "--no-started": "bool",
+                            "--page-size": "value",
+                            "--pending": "bool",
+                            "--region": "value",
+                            "--running": "bool",
+                            "--sort-by": "value",
+                            "--started": "bool",
+                            "--succeeded": "bool",
+                            "--uri": "bool"
                           }
                         }
                       },
@@ -70251,6 +70345,80 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--region": "value",
                     "--sort-by": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--namespace": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "remove-iam-policy-binding": {
+                  "commands": {},
+                  "flags": {
+                    "--all": "bool",
+                    "--condition": "value",
+                    "--condition-from-file": "value",
+                    "--member": "value",
+                    "--region": "value",
+                    "--role": "dynamic"
+                  }
+                },
+                "set-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "value"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--add-cloudsql-instances": "value",
+                    "--args": "value",
+                    "--async": "bool",
+                    "--binary-authorization": "value",
+                    "--breakglass": "value",
+                    "--clear-binary-authorization": "bool",
+                    "--clear-cloudsql-instances": "bool",
+                    "--clear-env-vars": "bool",
+                    "--clear-labels": "bool",
+                    "--clear-secrets": "bool",
+                    "--clear-vpc-connector": "bool",
+                    "--command": "value",
+                    "--cpu": "value",
+                    "--env-vars-file": "value",
+                    "--image": "value",
+                    "--key": "value",
+                    "--labels": "value",
+                    "--max-retries": "value",
+                    "--memory": "value",
+                    "--parallelism": "value",
+                    "--region": "value",
+                    "--remove-cloudsql-instances": "value",
+                    "--remove-env-vars": "value",
+                    "--remove-labels": "value",
+                    "--remove-secrets": "value",
+                    "--service-account": "value",
+                    "--set-cloudsql-instances": "value",
+                    "--set-env-vars": "value",
+                    "--set-secrets": "value",
+                    "--task-timeout": "value",
+                    "--tasks": "value",
+                    "--update-env-vars": "value",
+                    "--update-labels": "value",
+                    "--update-secrets": "value",
+                    "--vpc-connector": "value",
+                    "--vpc-egress": [
+                      "all",
+                      "all-traffic",
+                      "private-ranges-only"
+                    ]
                   }
                 }
               },
@@ -72644,6 +72812,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--disk-encryption-key-location": "dynamic",
                     "--disk-encryption-key-project": "dynamic",
                     "--enable-bin-log": "bool",
+                    "--enable-password-policy": "bool",
                     "--enable-point-in-time-recovery": "bool",
                     "--failover-replica-name": "value",
                     "--gce-zone": "value",
@@ -72778,35 +72947,14 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--clear-password-policy": "bool",
                     "--cpu": "value",
                     "--database-flags": "value",
-                    "--database-version": [
-                      "MYSQL_5_6",
-                      "MYSQL_5_7",
-                      "MYSQL_8_0",
-                      "MYSQL_8_0_18",
-                      "MYSQL_8_0_26",
-                      "MYSQL_8_0_27",
-                      "MYSQL_8_0_28",
-                      "POSTGRES_10",
-                      "POSTGRES_11",
-                      "POSTGRES_12",
-                      "POSTGRES_13",
-                      "POSTGRES_14",
-                      "POSTGRES_9_6",
-                      "SQLSERVER_2017_ENTERPRISE",
-                      "SQLSERVER_2017_EXPRESS",
-                      "SQLSERVER_2017_STANDARD",
-                      "SQLSERVER_2017_WEB",
-                      "SQLSERVER_2019_ENTERPRISE",
-                      "SQLSERVER_2019_EXPRESS",
-                      "SQLSERVER_2019_STANDARD",
-                      "SQLSERVER_2019_WEB"
-                    ],
+                    "--database-version": "value",
                     "--deny-maintenance-period-end-date": "value",
                     "--deny-maintenance-period-start-date": "value",
                     "--deny-maintenance-period-time": "value",
                     "--diff": "bool",
                     "--enable-bin-log": "bool",
                     "--enable-database-replication": "bool",
+                    "--enable-password-policy": "bool",
                     "--enable-point-in-time-recovery": "bool",
                     "--follow-gae-app": "value",
                     "--gce-zone": "value",
@@ -79572,6 +79720,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--default-network-tier": [
+                  "FIXED_STANDARD",
                   "PREMIUM",
                   "STANDARD"
                 ]
@@ -82347,6 +82496,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--async": "bool",
                     "--clear-proxy-config": "bool",
                     "--clear-security-group-ids": "bool",
+                    "--clear-ssh-ec2-key-pair": "bool",
                     "--cluster-version": "value",
                     "--config-encryption-kms-key-arn": "value",
                     "--instance-type": "value",
@@ -82363,6 +82513,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "gp3"
                     ],
                     "--security-group-ids": "value",
+                    "--ssh-ec2-key-pair": "value",
                     "--validate-only": "bool"
                   }
                 }
@@ -82442,6 +82593,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--async": "bool",
                     "--clear-proxy-config": "bool",
                     "--clear-security-group-ids": "bool",
+                    "--clear-ssh-ec2-key-pair": "bool",
                     "--cluster": "value",
                     "--config-encryption-kms-key-arn": "value",
                     "--location": "value",
@@ -82458,6 +82610,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "gp3"
                     ],
                     "--security-group-ids": "value",
+                    "--ssh-ec2-key-pair": "value",
                     "--validate-only": "bool"
                   }
                 }
@@ -88650,6 +88803,81 @@ STATIC_COMPLETION_CLI_TREE = {
     },
     "eventarc": {
       "commands": {
+        "channel-connections": {
+          "commands": {
+            "create": {
+              "commands": {},
+              "flags": {
+                "--activation-token": "value",
+                "--async": "bool",
+                "--channel": "value",
+                "--location": "value"
+              }
+            },
+            "delete": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--location": "value"
+              }
+            },
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--location": "value"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--location": "value",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "channels": {
+          "commands": {
+            "create": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--location": "value",
+                "--provider": "value"
+              }
+            },
+            "delete": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--location": "value"
+              }
+            },
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--location": "value"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--location": "value",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
+              }
+            }
+          },
+          "flags": {}
+        },
         "locations": {
           "commands": {
             "list": {
@@ -88694,6 +88922,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--async": "bool",
+                "--channel": "value",
                 "--destination-gke-cluster": "value",
                 "--destination-gke-location": "value",
                 "--destination-gke-namespace": "value",
@@ -94568,6 +94797,46 @@ STATIC_COMPLETION_CLI_TREE = {
             }
           },
           "flags": {}
+        },
+        "service-bindings": {
+          "commands": {
+            "create": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--description": "value",
+                "--location": "value",
+                "--service-directory-namespace": "value",
+                "--service-directory-region": "value",
+                "--service-directory-service": "value"
+              }
+            },
+            "delete": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--location": "value"
+              }
+            },
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--location": "value"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--location": "value",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
+              }
+            }
+          },
+          "flags": {}
         }
       },
       "flags": {}
@@ -99583,6 +99852,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--disk-encryption-key-location": "dynamic",
                 "--disk-encryption-key-project": "dynamic",
                 "--enable-bin-log": "bool",
+                "--enable-password-policy": "bool",
                 "--enable-point-in-time-recovery": "bool",
                 "--failover-replica-name": "value",
                 "--gce-zone": "value",
@@ -99707,10 +99977,23 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--cpu": "value",
                 "--database-flags": "value",
                 "--database-version": [
-                  "MYSQL_8_0_18",
-                  "MYSQL_8_0_26",
-                  "MYSQL_8_0_27",
-                  "MYSQL_8_0_28"
+                  "MYSQL_5_6",
+                  "MYSQL_5_7",
+                  "MYSQL_8_0",
+                  "POSTGRES_10",
+                  "POSTGRES_11",
+                  "POSTGRES_12",
+                  "POSTGRES_13",
+                  "POSTGRES_14",
+                  "POSTGRES_9_6",
+                  "SQLSERVER_2017_ENTERPRISE",
+                  "SQLSERVER_2017_EXPRESS",
+                  "SQLSERVER_2017_STANDARD",
+                  "SQLSERVER_2017_WEB",
+                  "SQLSERVER_2019_ENTERPRISE",
+                  "SQLSERVER_2019_EXPRESS",
+                  "SQLSERVER_2019_STANDARD",
+                  "SQLSERVER_2019_WEB"
                 ],
                 "--deny-maintenance-period-end-date": "value",
                 "--deny-maintenance-period-start-date": "value",
@@ -99718,6 +100001,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--diff": "bool",
                 "--enable-bin-log": "bool",
                 "--enable-database-replication": "bool",
+                "--enable-password-policy": "bool",
                 "--enable-point-in-time-recovery": "bool",
                 "--follow-gae-app": "value",
                 "--gce-zone": "value",

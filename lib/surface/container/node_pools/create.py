@@ -171,7 +171,8 @@ def ParseCreateNodePoolOptionsBase(args):
       enable_blue_green_update=args.enable_blue_green_update,
       enable_rolling_update=args.enable_rolling_update,
       node_pool_soak_duration=args.node_pool_soak_duration,
-      standard_rollout_policy=args.standard_rollout_policy)
+      standard_rollout_policy=args.standard_rollout_policy,
+      enable_private_nodes=args.enable_private_nodes)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -216,6 +217,7 @@ class Create(base.CreateCommand):
     flags.AddEnableBlueGreenUpdateFlag(parser)
     flags.AddStandardRolloutPolicyFlag(parser)
     flags.AddNodePoolSoakDurationFlag(parser)
+    flags.AddNodePoolEnablePrivateNodes(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -306,7 +308,7 @@ class CreateBeta(Create):
     flags.AddNodeGroupFlag(parser)
     flags.AddEnableGcfsFlag(parser, for_node_pool=True)
     flags.AddEnableImageStreamingFlag(parser, for_node_pool=True)
-    flags.AddNodePoolEnablePrivateNodes(parser, hidden=True)
+    flags.AddNodePoolEnablePrivateNodes(parser)
     flags.AddEnableGvnicFlag(parser)
     flags.AddSpotFlag(parser, for_node_pool=True)
     flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=False)
@@ -330,7 +332,6 @@ class CreateBeta(Create):
     ops.enable_gcfs = args.enable_gcfs
     ops.enable_image_streaming = args.enable_image_streaming
     ops.ephemeral_storage = args.ephemeral_storage
-    ops.enable_private_nodes = args.enable_private_nodes
     ops.spot = args.spot
     ops.placement_type = args.placement_type
     ops.location_policy = args.location_policy
@@ -362,7 +363,6 @@ class CreateAlpha(Create):
     ops.system_config_from_file = args.system_config_from_file
     ops.enable_gcfs = args.enable_gcfs
     ops.enable_image_streaming = args.enable_image_streaming
-    ops.enable_private_nodes = args.enable_private_nodes
     ops.spot = args.spot
     ops.placement_type = args.placement_type
     ops.location_policy = args.location_policy
@@ -407,7 +407,7 @@ class CreateAlpha(Create):
     flags.AddReservationAffinityFlags(parser, for_node_pool=True)
     flags.AddEnableGcfsFlag(parser, for_node_pool=True)
     flags.AddEnableImageStreamingFlag(parser, for_node_pool=True)
-    flags.AddNodePoolEnablePrivateNodes(parser, hidden=True)
+    flags.AddNodePoolEnablePrivateNodes(parser)
     flags.AddEnableGvnicFlag(parser)
     flags.AddSpotFlag(parser, for_node_pool=True)
     flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=False)

@@ -51,6 +51,7 @@ def _Args(parser):
   flags.GetAnalysisInstanceSchemaArg(required=False).AddToParser(parser)
   flags.GetMonitoringLogTtlArg(required=False).AddToParser(parser)
   flags.AddObjectiveConfigGroupForUpdate(parser, required=False)
+  flags.GetAnomalyCloudLoggingArg(required=False).AddToParser(parser)
   labels_util.AddUpdateLabelsFlags(parser)
 
 
@@ -76,6 +77,7 @@ def _Run(args, version):
           'update_labels',
           'clear_labels',
           'remove_labels',
+          'anomaly_cloud_logging',
       ]
       if not any(args.IsSpecified(arg) for arg in available_update_args):
         raise

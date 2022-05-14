@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
@@ -54,7 +53,6 @@ def _ByStartAndCreationTime(ex):
           if ex.started_condition else ex.creation_timestamp)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(commands.List):
   """List executions."""
 

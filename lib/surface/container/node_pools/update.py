@@ -101,6 +101,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableConfidentialNodesFlag(
         group, for_node_pool=True, hidden=True, is_update=True)
     flags.AddNetworkPerformanceConfigFlags(group, hidden=False)
+    flags.AddNodePoolEnablePrivateNodes(group)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -127,7 +128,8 @@ class Update(base.UpdateCommand):
         enable_blue_green_update=args.enable_blue_green_update,
         enable_rolling_update=args.enable_rolling_update,
         node_pool_soak_duration=args.node_pool_soak_duration,
-        standard_rollout_policy=args.standard_rollout_policy)
+        standard_rollout_policy=args.standard_rollout_policy,
+        enable_private_nodes=args.enable_private_nodes)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -232,7 +234,7 @@ class UpdateBeta(Update):
     flags.AddNodeLabelsFlag(group, for_node_pool=True, for_update=True)
     flags.AddNodeTaintsFlag(group, for_node_pool=True, for_update=True)
     flags.AddTagsNodePoolUpdate(group)
-    flags.AddNodePoolEnablePrivateNodes(group, for_update=True, hidden=True)
+    flags.AddNodePoolEnablePrivateNodes(group)
     flags.AddEnableGcfsFlag(group, for_node_pool=True)
     flags.AddEnableGvnicFlag(group)
     flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
@@ -310,7 +312,7 @@ class UpdateAlpha(Update):
     flags.AddNodeLabelsFlag(group, for_node_pool=True, for_update=True)
     flags.AddNodeTaintsFlag(group, for_node_pool=True, for_update=True)
     flags.AddTagsNodePoolUpdate(group)
-    flags.AddNodePoolEnablePrivateNodes(group, for_update=True, hidden=True)
+    flags.AddNodePoolEnablePrivateNodes(group)
     flags.AddEnableGcfsFlag(group, for_node_pool=True)
     flags.AddEnableGvnicFlag(group)
     flags.AddEnableImageStreamingFlag(group, for_node_pool=True)

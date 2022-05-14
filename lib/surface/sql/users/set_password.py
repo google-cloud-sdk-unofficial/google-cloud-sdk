@@ -23,15 +23,83 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
+from googlecloudsdk.api_lib.sql import users_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.command_lib.sql import users
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
-class SetPassword(base.CreateCommand):
+def AddBaseArgs(parser):
+  flags.AddInstance(parser)
+  flags.AddUsername(parser)
+  flags.AddHost(parser)
+  password_group = parser.add_mutually_exclusive_group()
+  flags.AddPassword(password_group)
+  flags.AddPromptForPassword(password_group)
+
+
+def AddBetaArgs(parser):
+  del parser  # unused
+  pass
+
+
+def AddAlphaArgs(parser):
+  AddBetaArgs(parser)
+  password_group = parser.add_mutually_exclusive_group(hidden=True)
+  flags.AddUserDiscardDualPassword(password_group)
+  flags.AddUserRetainPassword(password_group)
+  pass
+
+
+def RunBaseSetPasswordCommand(args, release_track):
+  """Changes a user's password in a given instance.
+
+  Args:
+    args: argparse.Namespace, The arguments that this command was invoked with.
+    release_track: base.ReleaseTrack, the release track that this was run under.
+
+  Returns:
+    SQL user resource iterator.
+  """
+  client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+  sql_client = client.sql_client
+
+  if args.prompt_for_password:
+    args.password = console_io.PromptPassword('Instance Password: ')
+
+  users.ValidateSetPasswordRequest(args)
+
+  sql_messages = client.sql_messages
+  instance_ref = client.resource_parser.Parse(
+      args.instance,
+      params={'project': properties.VALUES.core.project.GetOrFail},
+      collection='sql.instances')
+
+  dual_password_type = None
+  if release_track == base.ReleaseTrack.ALPHA:
+    dual_password_type = users.ParseDualPasswordType(sql_messages, args)
+
+  request = users_util.CreateSetPasswordRequest(sql_messages,
+                                                args,
+                                                dual_password_type,
+                                                instance_ref.project)
+  result_operation = sql_client.users.Update(request)
+  operation_ref = client.resource_parser.Create(
+      'sql.operations',
+      operation=result_operation.name,
+      project=instance_ref.project)
+  if args.async_:
+    return sql_client.operations.Get(
+        sql_messages.SqlOperationsGetRequest(
+            project=operation_ref.project, operation=operation_ref.operation))
+  operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
+                                                'Updating Cloud SQL user')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
   """Changes a user's password in a given instance.
 
   Changes a user's password in a given instance with specified username and
@@ -40,64 +108,47 @@ class SetPassword(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use it to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    flags.AddInstance(parser)
-    flags.AddUsername(parser)
-    flags.AddHost(parser)
-    password_group = parser.add_mutually_exclusive_group()
-    flags.AddPassword(password_group)
-    flags.AddPromptForPassword(password_group)
+    AddBaseArgs(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
-    """Changes a user's password in a given instance.
+    return RunBaseSetPasswordCommand(args, self.ReleaseTrack())
 
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-          with.
 
-    Returns:
-      SQL user resource iterator.
-    """
-    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
-    sql_client = client.sql_client
-    sql_messages = client.sql_messages
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Changes a user's password in a given instance.
 
-    if args.prompt_for_password:
-      args.password = console_io.PromptPassword('Instance Password: ')
+  Changes a user's password in a given instance with specified username and
+  host.
+  """
 
-    instance_ref = client.resource_parser.Parse(
-        args.instance,
-        params={'project': properties.VALUES.core.project.GetOrFail},
-        collection='sql.instances')
-    operation_ref = None
+  @staticmethod
+  def Args(parser):
+    AddBaseArgs(parser)
+    AddBetaArgs(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+    parser.display_info.AddCacheUpdater(None)
 
-    result_operation = sql_client.users.Update(
-        sql_messages.SqlUsersUpdateRequest(
-            project=instance_ref.project,
-            instance=args.instance,
-            name=args.username,
-            host=args.host,
-            user=sql_messages.User(
-                project=instance_ref.project,
-                instance=args.instance,
-                name=args.username,
-                host=args.host,
-                password=args.password)))
-    operation_ref = client.resource_parser.Create(
-        'sql.operations',
-        operation=result_operation.name,
-        project=instance_ref.project)
-    if args.async_:
-      return sql_client.operations.Get(
-          sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project, operation=operation_ref.operation))
-    operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
-                                                  'Updating Cloud SQL user')
+  def Run(self, args):
+    return RunBaseSetPasswordCommand(args, self.ReleaseTrack())
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Changes a user's password in a given instance.
+
+  Changes a user's password in a given instance with specified username and
+  host.
+  """
+
+  @staticmethod
+  def Args(parser):
+    AddBaseArgs(parser)
+    AddAlphaArgs(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+    parser.display_info.AddCacheUpdater(None)
+
+  def Run(self, args):
+    return RunBaseSetPasswordCommand(args, self.ReleaseTrack())

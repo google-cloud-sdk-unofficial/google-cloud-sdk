@@ -36,12 +36,8 @@ class Describe(base.DescribeCommand):
       parser: argparse.ArgumentParser to register arguments with.
     """
     operation_name_group = parser.add_mutually_exclusive_group(required=True)
-    resource_args.AddFreeTrialOperationResourceArg(
-        operation_name_group, 'Free trial operation to describe.')
     resource_args.AddOrderOperationResourceArg(operation_name_group,
                                                'Order operation to describe.')
-    resource_args.AddOrderAllocationOperationResourceArg(
-        operation_name_group, 'Order Allocation operation to describe.')
 
   def Run(self, args):
     """Runs the command.
@@ -52,18 +48,9 @@ class Describe(base.DescribeCommand):
     Returns:
       An Operation message.
     """
-    free_trial_operation_ref = args.CONCEPTS.free_trial_operation.Parse()
     order_operation_ref = args.CONCEPTS.order_operation.Parse()
-    order_allocation_operation_ref = args.CONCEPTS.order_allocation_operation.Parse(
-    )
-    if free_trial_operation_ref:
-      return apis.Operations.GetFreeTrialOperation(
-          free_trial_operation_ref.RelativeName())
-    elif order_operation_ref:
+    if order_operation_ref:
       return apis.Operations.GetOrderOperation(
           order_operation_ref.RelativeName())
-    elif order_allocation_operation_ref:
-      return apis.Operations.GetOrderAllocationOperation(
-          order_allocation_operation_ref.RelativeName())
     else:
       raise ValueError('No matching operation spoecified')
