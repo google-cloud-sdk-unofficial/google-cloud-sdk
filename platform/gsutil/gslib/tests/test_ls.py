@@ -40,6 +40,7 @@ from gslib.tests.util import CaptureStdout
 from gslib.tests.util import ObjectToURI as suri
 from gslib.tests.util import RUN_S3_TESTS
 from gslib.tests.util import SetBotoConfigForTest
+from gslib.tests.util import SetEnvironmentForTest
 from gslib.tests.util import TEST_ENCRYPTION_CONTENT1
 from gslib.tests.util import TEST_ENCRYPTION_CONTENT1_CRC32C
 from gslib.tests.util import TEST_ENCRYPTION_CONTENT1_MD5
@@ -188,6 +189,21 @@ class TestLsUnit(testcase.GsUtilUnitTestCase):
       stdout = self.RunCommand('ls', ['-Lb', suri(bucket_uri)],
                                return_stdout=True)
     self.assertNotRegex(stdout, 'Placement locations:')
+
+  def test_shim_translates_flags(self):
+    with SetBotoConfigForTest([('GSUtil', 'use_gcloud_storage', 'True'),
+                               ('GSUtil', 'hidden_shim_mode', 'dry_run')]):
+      with SetEnvironmentForTest({
+          'CLOUDSDK_CORE_PASS_CREDENTIALS_TO_GSUTIL': 'True',
+          'CLOUDSDK_ROOT_DIR': 'fake_dir',
+      }):
+        mock_log_handler = self.RunCommand('ls', ['-rRlLbeah', '-p foo'],
+                                           return_log_handler=True)
+        self.assertIn(
+            'Gcloud Storage Command: {} alpha storage ls'
+            ' -r -r -l -L -b -e -a --readable-sizes --project  foo'.format(
+                os.path.join('fake_dir', 'bin', 'gcloud')),
+            mock_log_handler.messages['info'])
 
 
 class TestLs(testcase.GsUtilIntegrationTestCase):
@@ -579,7 +595,8 @@ class TestLs(testcase.GsUtilIntegrationTestCase):
     self.assertRegex(stdout, r'Labels:\s+None')
 
     # Add a label and check that it shows up.
-    self.RunGsUtil(['label', 'ch', '-l', 'labelkey:labelvalue', bucket_suri])
+    self.RunGsUtil(['label', 'ch', '-l', 'labelkey:labelvalue', bucket_suri],
+                   force_gsutil=True)
     stdout = self.RunGsUtil(['ls', '-Lb', bucket_suri], return_stdout=True)
     label_regex = re.compile(r'Labels:\s+\{\s+"labelkey":\s+"labelvalue"\s+\}',
                              re.MULTILINE)
@@ -897,7 +914,9 @@ class TestLs(testcase.GsUtilIntegrationTestCase):
                                    object_name='permitted',
                                    contents=b'foo')
     # Set this object to be publicly readable.
-    self.RunGsUtil(['acl', 'set', 'public-read', suri(object_uri)])
+    self.RunGsUtil(['acl', 'set', 'public-read',
+                    suri(object_uri)],
+                   force_gsutil=True)
     # Drop credentials.
     with self.SetAnonymousBotoCreds():
       stdout = self.RunGsUtil(['ls', '-L', suri(object_uri)],
@@ -1124,15 +1143,13 @@ class TestLs(testcase.GsUtilIntegrationTestCase):
     stdout = self.RunGsUtil(['ls', '-Lb', suri(bucket_uri)], return_stdout=True)
     self.assertRegex(stdout, r'RPO:\t\t\t\tASYNC_TURBO')
 
-  @SkipForXML('Custom Dual Region is not supported for the XML API.')
   @SkipForS3('Custom Dual Region is not supported for S3 buckets.')
-  def test_list_Lb_displays_custom_dual_region_placement_info(self):
+  def test_list_Lb_displays_custom_dual_region_info(self):
     bucket_name = 'gs://' + self.MakeTempName('bucket')
-    self.RunGsUtil(['mb', '--placement', 'us-central1,us-west1', bucket_name],
+    self.RunGsUtil(['mb', '-l', 'us-central1+us-west1', bucket_name],
                    expected_status=0)
     stdout = self.RunGsUtil(['ls', '-Lb', bucket_name], return_stdout=True)
-    self.assertRegex(stdout,
-                     r"Placement locations:\t\t\['US-CENTRAL1', 'US-WEST1'\]")
+    self.assertRegex(stdout, r"Location constraint:\t\tUS-CENTRAL1\+US-WEST1")
 
   @SkipForXML('Autoclass is not supported for the XML API.')
   @SkipForS3('Autoclass is not supported for S3 buckets.')

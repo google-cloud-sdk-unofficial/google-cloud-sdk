@@ -36,6 +36,8 @@ from gslib.utils.ls_helper import ENCRYPTED_FIELDS
 from gslib.utils.ls_helper import LsHelper
 from gslib.utils.ls_helper import PrintFullInfoAboutObject
 from gslib.utils.ls_helper import UNENCRYPTED_FULL_LISTING_FIELDS
+from gslib.utils.shim_util import GcloudStorageFlag
+from gslib.utils.shim_util import GcloudStorageMap
 from gslib.utils.text_util import InsistAscii
 from gslib.utils import text_util
 from gslib.utils.translation_helper import AclTranslation
@@ -328,6 +330,22 @@ class LsCommand(Command):
       subcommand_help_text={},
   )
 
+  # TODO(b/206151616) Add mappings for remaining flags.
+  gcloud_storage_map = GcloudStorageMap(
+      gcloud_command=['alpha', 'storage', 'ls'],
+      flag_map={
+          '-r': GcloudStorageFlag('-r'),
+          '-R': GcloudStorageFlag('-r'),
+          '-l': GcloudStorageFlag('-l'),
+          '-L': GcloudStorageFlag('-L'),
+          '-b': GcloudStorageFlag('-b'),
+          '-e': GcloudStorageFlag('-e'),
+          '-a': GcloudStorageFlag('-a'),
+          '-h': GcloudStorageFlag('--readable-sizes'),
+          '-p': GcloudStorageFlag('--project'),
+      },
+  )
+
   def _PrintBucketInfo(self, bucket_blr, listing_style):
     """Print listing info for given bucket.
 
@@ -378,9 +396,6 @@ class LsCommand(Command):
           bucket.autoclass.toggleTime.strftime('%a, %d %b %Y'))
     if bucket.locationType:
       fields['location_type'] = bucket.locationType
-    if bucket.customPlacementConfig:
-      fields['custom_placement_locations'] = (
-          bucket.customPlacementConfig.dataLocations)
     if bucket.metageneration:
       fields['metageneration'] = bucket.metageneration
     if bucket.timeCreated:
@@ -419,7 +434,6 @@ class LsCommand(Command):
     # returns many fields that the XML API does not).
     autoclass_line = ''
     location_type_line = ''
-    custom_placement_locations_line = ''
     metageneration_line = ''
     time_created_line = ''
     time_updated_line = ''
@@ -433,9 +447,6 @@ class LsCommand(Command):
       autoclass_line = '\tAutoclass:\t\t\tEnabled on {autoclass_enabled_date}\n'
     if 'location_type' in fields:
       location_type_line = '\tLocation type:\t\t\t{location_type}\n'
-    if 'custom_placement_locations' in fields:
-      custom_placement_locations_line = (
-          '\tPlacement locations:\t\t{custom_placement_locations}\n')
     if 'metageneration' in fields:
       metageneration_line = '\tMetageneration:\t\t\t{metageneration}\n'
     if 'time_created' in fields:
@@ -462,7 +473,6 @@ class LsCommand(Command):
         ('{bucket} :\n'
          '\tStorage class:\t\t\t{storage_class}\n' + location_type_line +
          '\tLocation constraint:\t\t{location_constraint}\n' +
-         custom_placement_locations_line +
          '\tVersioning enabled:\t\t{versioning}\n'
          '\tLogging configuration:\t\t{logging_config}\n'
          '\tWebsite configuration:\t\t{website_config}\n'
@@ -582,7 +592,6 @@ class LsCommand(Command):
             'autoclass',
             'billing',
             'cors',
-            'customPlacementConfig',
             'defaultObjectAcl',
             'encryption',
             'iamConfiguration',

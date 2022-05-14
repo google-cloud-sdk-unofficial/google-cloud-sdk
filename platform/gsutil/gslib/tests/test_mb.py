@@ -145,19 +145,15 @@ class TestMb(testcase.GsUtilIntegrationTestCase):
     self.VerifyPublicAccessPreventionValue(bucket_uri, 'enforced')
 
   @SkipForXML('Public access prevention only runs on GCS JSON API.')
-  def test_create_with_pap_unspecified(self):
+  def test_create_with_pap_inherited(self):
     bucket_name = self.MakeTempName('bucket')
     bucket_uri = boto.storage_uri('gs://%s' % (bucket_name.lower()),
                                   suppress_consec_slashes=False)
-    self.RunGsUtil(['mb', '--pap', 'unspecified', suri(bucket_uri)])
-    # TODO(b/201683262) Replace all calls to this method
-    # with self.VerifyPublicAccessPreventionValue(bucket_uri, 'inherited')
-    # once the backend rollout is completed.
+    self.RunGsUtil(['mb', '--pap', 'inherited', suri(bucket_uri)])
     stdout = self.RunGsUtil(['publicaccessprevention', 'get',
                              suri(bucket_uri)],
                             return_stdout=True)
-    self.assertRegex(stdout,
-                     r'%s:\s+(unspecified|inherited)' % suri(bucket_uri))
+    self.assertRegex(stdout, r'%s:\s+inherited' % suri(bucket_uri))
 
   @SkipForXML('Public access prevention only runs on GCS JSON API.')
   def test_create_with_pap_invalid_arg(self):
@@ -270,45 +266,26 @@ class TestMb(testcase.GsUtilIntegrationTestCase):
     ],
                    expected_status=0)
 
-  @SkipForXML('The --placement flag only works for GCS JSON API.')
-  def test_create_with_placement_flag(self):
+  @SkipForS3('Custom Dual Region is not supported for S3 buckets.')
+  def test_create_with_custom_dual_regions(self):
     bucket_name = self.MakeTempName('bucket')
     bucket_uri = boto.storage_uri('gs://%s' % (bucket_name.lower()),
                                   suppress_consec_slashes=False)
-    self.RunGsUtil(
-        ['mb', '--placement', 'us-central1,us-west1',
-         suri(bucket_uri)])
+    self.RunGsUtil(['mb', '-l', 'us-central1+us-west1', suri(bucket_uri)])
     stdout = self.RunGsUtil(['ls', '-Lb', suri(bucket_uri)], return_stdout=True)
-    self.assertRegex(stdout,
-                     r"Placement locations:\t\t\['US-CENTRAL1', 'US-WEST1'\]")
+    self.assertRegex(stdout, r"Location constraint:\t\tUS-CENTRAL1\+US-WEST1")
 
-  @SkipForXML('The --placement flag only works for GCS JSON API.')
-  def test_create_with_invalid_placement_flag_raises_error(self):
+  @SkipForS3('Custom Dual Region is not supported for S3 buckets.')
+  def test_create_with_invalid_dual_regions_raises_error(self):
     bucket_name = self.MakeTempName('bucket')
     bucket_uri = boto.storage_uri('gs://%s' % (bucket_name.lower()),
                                   suppress_consec_slashes=False)
     stderr = self.RunGsUtil(
-        ['mb', '--placement', 'invalid_reg1,invalid_reg2',
+        ['mb', '-l', 'invalid_reg1+invalid_reg2',
          suri(bucket_uri)],
         return_stderr=True,
         expected_status=1)
-    self.assertIn('BadRequestException: 400 Invalid custom placement config',
-                  stderr)
-
-  @SkipForXML('The --placement flag only works for GCS JSON API.')
-  def test_create_with_incorrect_number_of_placement_values_raises_error(self):
-    bucket_name = self.MakeTempName('bucket')
-    bucket_uri = boto.storage_uri('gs://%s' % (bucket_name.lower()),
-                                  suppress_consec_slashes=False)
-    # Location nam4 is used for dual-region.
-    stderr = self.RunGsUtil(
-        ['mb', '--placement', 'val1,val2,val3',
-         suri(bucket_uri)],
-        return_stderr=True,
-        expected_status=1)
-    self.assertIn(
-        'CommandException: Please specify two regions separated by comma'
-        ' without space. Specified: val1,val2,val3', stderr)
+    self.assertIn('The specified location constraint is not valid', stderr)
 
   @SkipForJSON('Testing XML only behavior.')
   def test_single_json_only_flag_raises_error_with_xml_api(self):
@@ -329,13 +306,13 @@ class TestMb(testcase.GsUtilIntegrationTestCase):
     bucket_uri = boto.storage_uri('gs://%s' % (bucket_name.lower()),
                                   suppress_consec_slashes=False)
     stderr = self.RunGsUtil([
-        'mb', '--autoclass', '--pap', 'enabled', '--placement',
-        'uscentral-1,us-asia1', '--rpo', 'ASYNC_TURBO', '-b', 'on',
+        'mb', '--autoclass', '--pap', 'enabled', '--rpo', 'ASYNC_TURBO', '-b',
+        'on',
         suri(bucket_uri)
     ],
                             return_stderr=True,
                             expected_status=1)
     self.assertIn(
-        'CommandException: The --autoclass, --pap, --placement, --rpo,'
+        'CommandException: The --autoclass, --pap, --rpo,'
         ' -b option(s) can only be used for GCS Buckets with the JSON API',
         stderr)

@@ -15,17 +15,22 @@
 """Integration tests for top-level gsutil command."""
 
 from __future__ import absolute_import
-from __future__ import print_function
 from __future__ import division
+from __future__ import print_function
 from __future__ import unicode_literals
 
-import six
+import importlib
+import unittest
+from unittest import mock
 
 import gslib
 import gslib.tests.testcase as testcase
 
-if six.PY3:
-  long = int
+try:
+  from gsutil import _fix_google_module  # pylint: disable=g-import-not-at-top
+  FIX_GOOGLE_MODULE_FUNCTION_AVAILABLE = True
+except ImportError:
+  FIX_GOOGLE_MODULE_FUNCTION_AVAILABLE = False
 
 
 class TestGsUtil(testcase.GsUtilIntegrationTestCase):
@@ -46,3 +51,26 @@ class TestGsUtil(testcase.GsUtilIntegrationTestCase):
     self.assertIn('checksum', stdout)
     self.assertIn('config path', stdout)
     self.assertIn('gsutil path', stdout)
+
+
+class TestGsUtilUnit(testcase.GsUtilUnitTestCase):
+  """Unit tests for top-level gsutil command."""
+
+  @unittest.skipUnless(
+      FIX_GOOGLE_MODULE_FUNCTION_AVAILABLE,
+      'The gsutil.py file is not available for certain installations like pip.')
+  @mock.patch.object(importlib, 'reload', autospec=True)
+  def test_fix_google_module(self, mock_reload):
+    with mock.patch.dict('sys.modules', {'google': 'google'}):
+      _fix_google_module()
+      mock_reload.assert_called_once_with('google')
+
+  @unittest.skipUnless(
+      FIX_GOOGLE_MODULE_FUNCTION_AVAILABLE,
+      'The gsutil.py file is not available for certain installations like pip.')
+  @mock.patch.object(importlib, 'reload', autospec=True)
+  def test_fix_google_module_does_not_reload_if_module_missing(
+      self, mock_reload):
+    with mock.patch.dict('sys.modules', {}, clear=True):
+      _fix_google_module()
+      self.assertFalse(mock_reload.called)
