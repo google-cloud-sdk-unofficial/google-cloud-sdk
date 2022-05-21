@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Update the database configuration of a Cloud Firestore database.
+    description: |
+      Update the database configuration of a Cloud Firestore database.
+    examples: |
+      The following command updates the database type of a Cloud Firestore database.
+
+        $ {command} --type=firestore-native
+
+  async:
+    collection: firestore.projects.databases.operations
+    api_version: v1
+    extract_resource_result: false
+
+  request:
+    collection: firestore.projects.databases
+    create_request_hook: googlecloudsdk.command_lib.firestore.util:CreateDatabaseUpdateRequest
+
+  arguments:
+    resource:
+      help_text: Cloud Firestore database to update
+      # The resource arg specification itself. Imported from firestore/resources.yaml
+      spec: !REF googlecloudsdk.command_lib.firestore.resources:database
+      removed_flags:
+      - database
+    params:
+    - _REF_: googlecloudsdk.command_lib.firestore.flags:type

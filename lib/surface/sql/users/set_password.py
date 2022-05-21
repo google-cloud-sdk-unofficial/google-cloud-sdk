@@ -67,7 +67,7 @@ def RunBaseSetPasswordCommand(args, release_track):
   sql_client = client.sql_client
 
   if args.prompt_for_password:
-    args.password = console_io.PromptPassword('Instance Password: ')
+    args.password = console_io.PromptPassword('New Password: ')
 
   users.ValidateSetPasswordRequest(args)
 

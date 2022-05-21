@@ -38,9 +38,6 @@ class Delete(base.DeleteCommand):
           with etag ``abc'':
 
             $ {command} my-deny-policy --attachment-point=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies --etag=abc
-
-          If etag isn't provided, the command will try to get the etag using the
-          calling user permissions.
           """),
   }
 

@@ -30,10 +30,20 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Updates an AlloyDB instance within a given cluster."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To update the number of nodes in the read pool, run:
+
+          $ {command} my-read-instance --cluster=my-cluster --region=us-central1 --read-pool-node-count=3
+        """,
+  }
 
   @staticmethod
   def Args(parser):

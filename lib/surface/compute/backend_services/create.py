@@ -95,8 +95,8 @@ class CreateHelper(object):
            support_client_only, support_grpc_protocol,
            support_unspecified_protocol, support_subsetting,
            support_subsetting_subset_size, support_strong_session_affinity,
-           support_advanced_load_balancing, support_service_bindings,
-           support_dynamic_compression, support_weighted_lb):
+           support_advanced_load_balancing, support_dynamic_compression,
+           support_weighted_lb):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -114,8 +114,7 @@ class CreateHelper(object):
         parser, cust_metavar='HTTPS_HEALTH_CHECK')
     if support_advanced_load_balancing:
       flags.AddServiceLoadBalancingPolicy(parser)
-    if support_service_bindings:
-      flags.AddServiceBindings(parser)
+    flags.AddServiceBindings(parser)
     flags.AddTimeout(parser)
     flags.AddPortName(parser)
     flags.AddProtocol(
@@ -177,8 +176,7 @@ class CreateHelper(object):
                support_logging, support_tcp_ssl_logging, support_multinic,
                support_subsetting, support_subsetting_subset_size,
                support_strong_session_affinity, support_advanced_load_balancing,
-               support_service_bindings, support_dynamic_compression,
-               support_weighted_lb):
+               support_dynamic_compression, support_weighted_lb):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
@@ -188,7 +186,6 @@ class CreateHelper(object):
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_strong_session_affinity = support_strong_session_affinity
     self._support_advanced_load_balancing = support_advanced_load_balancing
-    self._support_service_bindings = support_service_bindings
     self._support_dynamic_compression = support_dynamic_compression
     self._support_weighted_lb = support_weighted_lb
 
@@ -230,7 +227,7 @@ class CreateHelper(object):
           project_name=backend_services_ref.project,
           location='global',
           policy_name=args.service_lb_policy)
-    if self._support_service_bindings and args.service_bindings is not None:
+    if args.service_bindings is not None:
       backend_service.serviceBindings = [
           reference_utils.BuildServiceBindingUrl(backend_services_ref.project,
                                                  'global', binding_name)
@@ -318,7 +315,7 @@ class CreateHelper(object):
           location=backend_services_ref.region,
           policy_name=args.service_lb_policy)
 
-    if self._support_service_bindings and args.service_bindings is not None:
+    if args.service_bindings is not None:
       raise exceptions.InvalidArgumentException(
           '--service-bindings',
           'Service bindings are allowed only for global backend services.')
@@ -443,7 +440,6 @@ class CreateGA(base.CreateCommand):
   _support_subsetting_subset_size = False
   _support_strong_session_affinity = False
   _support_advanced_load_balancing = False
-  _support_service_bindings = False
   _support_dynamic_compression = False
   _support_weighted_lb = False
 
@@ -464,7 +460,6 @@ class CreateGA(base.CreateCommand):
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_strong_session_affinity=cls._support_strong_session_affinity,
         support_advanced_load_balancing=cls._support_advanced_load_balancing,
-        support_service_bindings=cls._support_service_bindings,
         support_dynamic_compression=cls._support_dynamic_compression,
         support_weighted_lb=cls._support_weighted_lb)
 
@@ -483,7 +478,6 @@ class CreateGA(base.CreateCommand):
         support_subsetting_subset_size=self._support_subsetting_subset_size,
         support_strong_session_affinity=self._support_strong_session_affinity,
         support_advanced_load_balancing=self._support_advanced_load_balancing,
-        support_service_bindings=self._support_service_bindings,
         support_dynamic_compression=self._support_dynamic_compression,
         support_weighted_lb=self._support_weighted_lb).Run(args, holder)
 
@@ -514,7 +508,6 @@ class CreateBeta(CreateGA):
   _support_subsetting_subset_size = True
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = False
-  _support_service_bindings = True
   _support_dynamic_compression = True
   _support_weighted_lb = True
   _support_tcp_ssl_logging = True
@@ -545,7 +538,6 @@ class CreateAlpha(CreateBeta):
   _support_subsetting_subset_size = True
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = True
-  _support_service_bindings = True
   _support_dynamic_compression = True
   _support_weighted_lb = True
   _support_tcp_ssl_logging = True

@@ -19,7 +19,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-
 from googlecloudsdk.api_lib.vmware.clusters import ClustersClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
@@ -56,6 +55,8 @@ class CreateAlpha(base.CreateCommand):
     """Register flags for this command."""
     flags.AddClusterArgToParser(parser, positional=True)
     flags.AddNodeTypeArgToParser(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, True)
     parser.add_argument(
         '--node-count',
         required=True,
@@ -75,9 +76,20 @@ class CreateAlpha(base.CreateCommand):
   def Run(self, args):
     cluster = args.CONCEPTS.cluster.Parse()
     client = ClustersClient()
+    is_async = args.async_
     operation = client.Create(cluster, args.node_type,
                               args.node_count, args.node_custom_core_count)
-    log.CreatedResource(operation.name, kind='cluster', is_async=True)
+    if is_async:
+      log.CreatedResource(operation.name, kind='cluster', is_async=True)
+      return operation
+
+    resource = client.WaitForOperation(
+        operation_ref=client.GetOperationRef(operation),
+        message='waiting for cluster [{}] to be created'.format(
+            cluster.RelativeName()))
+    log.CreatedResource(resource, kind='cluster')
+
+    return resource
 
 
 @base.Hidden

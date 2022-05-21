@@ -63,6 +63,7 @@ class List(base.ListCommand):
         parser,
         'The location in which to list event providers.',
         required=False)
+    flags.AddProjectResourceArg(parser)
     flags.AddProviderNameArg(parser)
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(providers.GetProvidersURI)
@@ -70,6 +71,7 @@ class List(base.ListCommand):
   def Run(self, args):
     """Run the list command."""
     client = providers.ProvidersClient(self.ReleaseTrack())
+    args.CONCEPTS.project.Parse()
     location_ref = args.CONCEPTS.location.Parse()
     if args.name:
       args.GetDisplayInfo().AddFilter(_FILTER + args.name)

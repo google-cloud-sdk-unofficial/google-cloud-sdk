@@ -56,6 +56,8 @@ class CreateAlpha(base.CreateCommand):
     flags.AddPrivatecloudArgToParser(parser, positional=True)
     flags.AddClusterArgToParser(parser, positional=False)
     flags.AddNodeTypeArgToParser(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, True)
     parser.add_argument(
         '--description',
         help="""\
@@ -107,12 +109,23 @@ class CreateAlpha(base.CreateCommand):
   def Run(self, args):
     privatecloud = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
+    is_async = args.async_
     operation = client.Create(privatecloud, args.description,
                               args.cluster, args.node_type, args.node_count,
                               args.management_range, args.network,
                               args.vmware_engine_network, args.network_project,
                               args.node_custom_core_count)
-    log.CreatedResource(operation.name, kind='private cloud', is_async=True)
+    if is_async:
+      log.CreatedResource(operation.name, kind='private cloud', is_async=True)
+      return operation
+
+    resource = client.WaitForOperation(
+        operation_ref=client.GetOperationRef(operation),
+        message='waiting for private cloud [{}] to be created'.format(
+            privatecloud.RelativeName()))
+    log.CreatedResource(resource, kind='private cloud')
+
+    return resource
 
 
 @base.Hidden

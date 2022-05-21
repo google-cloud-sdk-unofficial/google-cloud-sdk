@@ -54,6 +54,8 @@ class UpdateAlpha(base.UpdateCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddPrivatecloudArgToParser(parser, positional=True)
+    base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, True)
     parser.add_argument(
         '--description',
         help="""\
@@ -63,10 +65,21 @@ class UpdateAlpha(base.UpdateCommand):
   def Run(self, args):
     privatecloud = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
+    is_async = args.async_
     operation = client.Update(
         privatecloud,
         description=args.description)
-    log.UpdatedResource(operation.name, kind='private cloud', is_async=True)
+    if is_async:
+      log.UpdatedResource(operation.name, kind='private cloud', is_async=True)
+      return operation
+
+    resource = client.WaitForOperation(
+        operation_ref=client.GetOperationRef(operation),
+        message='waiting for private cloud [{}] to be updated'.format(
+            privatecloud.RelativeName()))
+    log.UpdatedResource(resource, kind='private cloud')
+
+    return resource
 
 
 @base.Hidden

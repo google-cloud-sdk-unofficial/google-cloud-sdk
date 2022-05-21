@@ -46,8 +46,6 @@ class SetSchedulingInstances(base.SilentCommand):
   }
 
   _support_host_error_timeout_seconds = False
-  _support_provisioning_model = False
-  _support_termination_action = False
 
   @classmethod
   def Args(cls, parser):
@@ -61,6 +59,8 @@ class SetSchedulingInstances(base.SilentCommand):
         """)
 
     flags.AddPreemptibleVmArgs(parser, is_update=True)
+    flags.AddProvisioningModelVmArgs(parser)
+    flags.AddInstanceTerminationActionVmArgs(parser, is_update=True)
     flags.AddMaintenancePolicyArgs(parser)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
     flags.INSTANCE_ARG.AddArgument(parser)
@@ -87,8 +87,7 @@ class SetSchedulingInstances(base.SilentCommand):
         args, 'host_error_timeout_seconds'):
       scheduling_options.hostErrorTimeoutSeconds = args.host_error_timeout_seconds
 
-    if (self._support_provisioning_model and
-        hasattr(args, 'provisioning_model') and
+    if (hasattr(args, 'provisioning_model') and
         args.IsSpecified('provisioning_model')):
       scheduling_options.provisioningModel = (
           client.messages.Scheduling.ProvisioningModelValueValuesEnum(
@@ -96,16 +95,15 @@ class SetSchedulingInstances(base.SilentCommand):
 
     cleared_fields = []
 
-    if self._support_termination_action:
-      if (hasattr(args, 'instance_termination_action') and
-          args.IsSpecified('instance_termination_action')):
-        flags.ValidateInstanceScheduling(args)
-        scheduling_options.instanceTerminationAction = (
-            client.messages.Scheduling.InstanceTerminationActionValueValuesEnum(
-                args.instance_termination_action))
-      elif args.IsSpecified('clear_instance_termination_action'):
-        scheduling_options.instanceTerminationAction = None
-        cleared_fields.append('instanceTerminationAction')
+    if (hasattr(args, 'instance_termination_action') and
+        args.IsSpecified('instance_termination_action')):
+      flags.ValidateInstanceScheduling(args)
+      scheduling_options.instanceTerminationAction = (
+          client.messages.Scheduling.InstanceTerminationActionValueValuesEnum(
+              args.instance_termination_action))
+    elif args.IsSpecified('clear_instance_termination_action'):
+      scheduling_options.instanceTerminationAction = None
+      cleared_fields.append('instanceTerminationAction')
 
     if args.IsSpecified('min_node_cpu'):
       scheduling_options.minNodeCpus = int(args.min_node_cpu)
@@ -150,8 +148,6 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
     (a VM instance in a `TERMINATED` state).
   """
   _support_host_error_timeout_seconds = True
-  _support_provisioning_model = True
-  _support_termination_action = True
 
   @classmethod
   def Args(cls, parser):
@@ -186,8 +182,6 @@ class SetSchedulingInstancesAlpha(SetSchedulingInstancesBeta):
     (a VM instance in a `TERMINATED` state).
   """
   _support_host_error_timeout_seconds = True
-  _support_provisioning_model = True
-  _support_termination_action = True
 
   @classmethod
   def Args(cls, parser):

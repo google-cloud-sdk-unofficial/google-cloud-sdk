@@ -29,10 +29,20 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Deletes an AlloyDB cluster in a given region."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To delete a cluster, run:
+
+          $ {command} my-cluster --region=us-central1
+        """,
+  }
 
   @staticmethod
   def Args(parser):

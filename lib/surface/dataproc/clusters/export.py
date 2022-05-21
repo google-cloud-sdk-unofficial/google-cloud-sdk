@@ -77,7 +77,6 @@ To export a cluster to standard output, run:
     clusters.DeleteGeneratedProperties(cluster, dataproc)
 
     RemoveNonImportableFields(cluster)
-
     if args.destination:
       with files.FileWriter(args.destination) as stream:
         export_util.Export(message=cluster, stream=stream)
@@ -108,8 +107,14 @@ def RemoveNonImportableFields(cluster):
       # templates, at least until that FR is resolved.
       config.lifecycleConfig.autoDeleteTime = None
 
-    for group in (config.masterConfig, config.workerConfig,
-                  config.secondaryWorkerConfig):
+    instance_group_configs = [
+        config.masterConfig, config.workerConfig, config.secondaryWorkerConfig
+    ]
+
+    for aux_config in config.auxiliaryNodePoolConfigs:
+      instance_group_configs.append(aux_config.nodePoolConfig)
+
+    for group in instance_group_configs:
       if group is not None:
         group.instanceNames = []
         group.isPreemptible = None

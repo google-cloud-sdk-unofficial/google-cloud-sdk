@@ -345,6 +345,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableImageStreamingFlag(group)
     flags.AddClusterDNSFlags(group, hidden=False)
     flags.AddEnableServiceExternalIPs(group)
+    flags.AddEnableGoogleCloudAccess(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -407,6 +408,7 @@ class Update(base.UpdateCommand):
           cancel_on_no=True)
     opts.enable_service_externalips = args.enable_service_externalips
     opts.enable_identity_service = args.enable_identity_service
+    opts.enable_google_cloud_access = args.enable_google_cloud_access
     return opts
 
   def Run(self, args):
@@ -659,6 +661,13 @@ to completion."""
             clear_all_subnetworks=True)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'enable_google_cloud_access', None) is not None:
+      try:
+        op_ref = adapter.ModifyGoogleCloudAccess(
+            cluster_ref, cluster.masterAuthorizedNetworksConfig,
+            args.enable_google_cloud_access)
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     else:
       if args.enable_legacy_authorization is not None:
         op_ref = adapter.SetLegacyAuthorization(
@@ -703,7 +712,8 @@ to completion."""
         getattr(args, 'remove_maintenance_exclusion', False) or
         getattr(args, 'add_cross_connect_subnetworks', False) or
         getattr(args, 'remove_cross_connect_subnetworks', False) or
-        getattr(args, 'clear_cross_connect_subnetworks', False))
+        getattr(args, 'clear_cross_connect_subnetworks', False) or
+        getattr(args, 'enable_google_cloud_access', False))
 
   def MaybeLogDataplaneV2ScaleWarning(self, cluster):
     if (cluster.networkConfig is not None and
@@ -796,6 +806,7 @@ class UpdateBeta(Update):
     flags.AddWorkloadConfigAuditFlag(group)
     flags.AddPodAutoscalingDirectMetricsOptInFlag(group)
     flags.AddWorkloadVulnScanningFlag(group)
+    flags.AddEnableGoogleCloudAccess(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -887,6 +898,7 @@ class UpdateBeta(Update):
     opts.enable_workload_config_audit = args.enable_workload_config_audit
     opts.pod_autoscaling_direct_metrics_opt_in = args.pod_autoscaling_direct_metrics_opt_in
     opts.enable_workload_vulnerability_scanning = args.enable_workload_vulnerability_scanning
+    opts.enable_google_cloud_access = args.enable_google_cloud_access
     return opts
 
 
@@ -969,6 +981,7 @@ class UpdateAlpha(Update):
     flags.AddWorkloadConfigAuditFlag(group)
     flags.AddPodAutoscalingDirectMetricsOptInFlag(group)
     flags.AddWorkloadVulnScanningFlag(group)
+    flags.AddEnableGoogleCloudAccess(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1056,4 +1069,5 @@ class UpdateAlpha(Update):
     opts.enable_workload_config_audit = args.enable_workload_config_audit
     opts.pod_autoscaling_direct_metrics_opt_in = args.pod_autoscaling_direct_metrics_opt_in
     opts.enable_workload_vulnerability_scanning = args.enable_workload_vulnerability_scanning
+    opts.enable_google_cloud_access = args.enable_google_cloud_access
     return opts

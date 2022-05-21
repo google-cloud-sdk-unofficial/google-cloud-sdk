@@ -54,8 +54,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(base.DescribeCommand):
   """Delete a Google Cloud VMware Engine network."""
 
   detailed_help = DETAILED_HELP
@@ -64,16 +64,25 @@ class DescribeAlpha(base.DescribeCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddNetworkToParser(parser, positional=True)
+    base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, True)
 
   def Run(self, args):
     network = args.CONCEPTS.vmware_engine_network.Parse()
     client = NetworksClient()
+    is_async = args.async_
     operation = client.Delete(network)
-    log.DeletedResource(
-        operation.name, kind='VMware Engine network', is_async=True)
+    if is_async:
+      log.DeletedResource(
+          operation.name, kind='VMware Engine network', is_async=True)
+      return operation
+
+    return client.WaitForOperation(
+        operation_ref=client.GetOperationRef(operation),
+        message='waiting for VMware Engine network [{}] to be deleted'.format(
+            network.RelativeName()))
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(DescribeAlpha):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(DeleteBeta):
   """Delete a Google Cloud VMware Engine network."""

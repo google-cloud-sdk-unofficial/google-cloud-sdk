@@ -60,7 +60,8 @@ class Create(base.Command):
     mj_flags.AddDisplayNameFlag(parser)
     mj_flags.AddTypeFlag(parser, required=True)
     mj_flags.AddDumpPathFlag(parser)
-    mj_flags.AddConnectivityGroupFlag(parser, required=True)
+    mj_flags.AddConnectivityGroupFlag(
+        parser, mj_flags.ApiType.CREATE, required=True)
     flags.AddLabelsCreateFlags(parser)
 
   def Run(self, args):

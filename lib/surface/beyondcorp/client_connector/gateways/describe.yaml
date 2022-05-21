@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Describe a single BeyondCorp client gateway.
+    description: Describe a single BeyondCorp client gateway.
+    examples: |
+      To describe a client gateway ``my-client-gateway'' run:
+
+      $ {command} my-client-gateway --project=${PROJECT_ID} --location=${LOCATION_ID}
+
+      To describe a client gateway in a project for location us-central1 in table form, run:
+
+        $ {command} --project=projectId \
+            --location=us-central1 \
+            --format=table(name, state, clientConnectorService, createTime, updateTime)
+
+  async:
+    collection: beyondcorp.projects.locations.operations
+
+  request:
+    collection: beyondcorp.projects.locations.clientGateways
+
+  arguments:
+    resource:
+      help_text: The BeyondCorp client gateway you want to get details about.
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.client_connector.resources:client_gateway
+
+  output:
+    format: json

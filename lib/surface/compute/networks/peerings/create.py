@@ -52,7 +52,8 @@ def _MakeRequests(client, requests, is_async):
   return responses
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Create(base.Command):
   r"""Create a Compute Engine network peering.
 
@@ -107,8 +108,7 @@ class Create(base.Command):
     flags.AddImportSubnetRoutesWithPublicIpFlag(parser)
     flags.AddExportSubnetRoutesWithPublicIpFlag(parser)
 
-    if cls._support_stack_type:
-      flags.AddStackType(parser)
+    flags.AddStackType(parser)
 
   @classmethod
   def Args(cls, parser):
@@ -144,7 +144,7 @@ class Create(base.Command):
     network_peering.exportSubnetRoutesWithPublicIp = args.export_subnet_routes_with_public_ip
     network_peering.importSubnetRoutesWithPublicIp = args.import_subnet_routes_with_public_ip
 
-    if self._support_stack_type and getattr(args, 'stack_type'):
+    if getattr(args, 'stack_type'):
       network_peering.stackType = client.messages.NetworkPeering.StackTypeValueValuesEnum(
           args.stack_type)
 
@@ -163,29 +163,3 @@ class Create(base.Command):
 
     requests = [(client.apitools_client.networks, 'AddPeering', request)]
     return _MakeRequests(client, requests, args.async_)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
-  r"""Create a Compute Engine network peering.
-
-  *{command}* is used to create peerings between virtual networks. Each side of
-  a peering association is set up independently. Peering will be active only
-  when the configuration from both sides matches.
-
-  ## EXAMPLES
-
-  To create a network peering with the name 'peering-name' between the network
-  'local-network' and the network 'peer-network' which exports and imports
-  custom routes and subnet routes with public IPs, run:
-
-    $ {command} peering-name \
-      --network=local-network \
-      --peer-network=peer-network \
-      --export-custom-routes \
-      --import-custom-routes \
-      --export-subnet-routes-with-public-ip \
-      --import-subnet-routes-with-public-ip
-  """
-
-  _support_stack_type = True

@@ -33,7 +33,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 KUBECONTEXT_FORMAT = 'connectgateway_{project}_{location}_{membership}'
-SERVER_FORMAT = 'https://{service_name}/{version}/projects/{project_number}/locations/{location}/memberships/{membership}'
+SERVER_FORMAT = 'https://{service_name}/{version}/projects/{project_number}/locations/{location}/{resource_type}/{membership}'
 REQUIRED_PERMISSIONS = [
     'gkehub.memberships.get',
     'gkehub.gateway.get',
@@ -81,6 +81,14 @@ class GetCredentials(base.Command):
               If not specified, defaults to `global`.
             """),
       )
+      parser.add_argument(
+          '--fleetgke',
+          action='store_true',
+          hidden=True,
+          help=textwrap.dedent("""\
+              Whether the registered cluster is a GKE cluster.
+            """),
+      )
 
   def Run(self, args):
     container_util.CheckKubectlInstalled()
@@ -100,10 +108,26 @@ class GetCredentials(base.Command):
     cg_util.CheckGatewayApiEnablement(
         project_id,
         util.GetConnectGatewayServiceName(hub_endpoint_override, None))
-    self.ReadClusterMembership(project_id, location, args.MEMBERSHIP)
+
+    membership = self.ReadClusterMembership(project_id, location,
+                                            args.MEMBERSHIP)
+
+    resource_type = 'memberships'
+    fleetgke = getattr(args, 'fleetgke', False)
+    # TODO(b/232276553): Blocklist prober project upon promotion of this flag to
+    # default behavior.
+    if fleetgke:
+      if not (hasattr(membership, 'endpoint') and
+              hasattr(membership.endpoint, 'gkeCluster') and
+              membership.endpoint.gkeCluster):
+        raise memberships_errors.InvalidFlagValueError(
+            "Flag '--fleetgke' provided, but cluster is not a registered GKE cluster."
+        )
+      resource_type = 'fleetgke'
+
     self.GenerateKubeconfig(
         util.GetConnectGatewayServiceName(hub_endpoint_override, location),
-        project_id, location, args.MEMBERSHIP)
+        project_id, location, resource_type, args.MEMBERSHIP)
     msg = 'A new kubeconfig entry \"' + KUBECONTEXT_FORMAT.format(
         project=project_id, location=location, membership=args.MEMBERSHIP
     ) + '\" has been generated and set as the current context.'
@@ -121,9 +145,10 @@ class GetCredentials(base.Command):
   def ReadClusterMembership(self, project_id, location, membership):
     resource_name = hubapi_util.MembershipRef(project_id, location, membership)
     # If membership doesn't exist, exception will be raised to caller.
-    hubapi_util.GetMembership(resource_name)
+    return hubapi_util.GetMembership(resource_name)
 
-  def GenerateKubeconfig(self, service_name, project_id, location, membership):
+  def GenerateKubeconfig(self, service_name, project_id, location,
+                         resource_type, membership):
     project_number = project_util.GetProjectNumber(project_id)
     kwargs = {
         'membership':
@@ -138,6 +163,7 @@ class GetCredentials(base.Command):
                 version=self.GetVersion(),
                 project_number=project_number,
                 location=location,
+                resource_type=resource_type,
                 membership=membership),
         'auth_provider':
             'gcp',

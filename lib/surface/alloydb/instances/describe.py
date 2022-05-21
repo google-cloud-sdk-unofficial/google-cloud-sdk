@@ -26,10 +26,20 @@ from googlecloudsdk.command_lib.alloydb import flags
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describes an AlloyDB instance within a given cluster."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To describe an instance, run:
+
+          $ {command} my-instance --cluster=my-cluster --region=us-central1
+        """,
+  }
 
   @staticmethod
   def Args(parser):

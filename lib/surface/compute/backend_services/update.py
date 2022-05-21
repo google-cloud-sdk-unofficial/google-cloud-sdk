@@ -74,8 +74,7 @@ class UpdateHelper(object):
            support_grpc_protocol, support_subsetting,
            support_subsetting_subset_size, support_unspecified_protocol,
            support_strong_session_affinity, support_advanced_load_balancing,
-           support_service_bindings, support_dynamic_compression,
-           support_weighted_lb):
+           support_dynamic_compression, support_weighted_lb):
     """Add all arguments for updating a backend service."""
 
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
@@ -153,8 +152,7 @@ class UpdateHelper(object):
       flags.AddServiceLoadBalancingPolicy(
           parser, required=False, is_update=True)
 
-    if support_service_bindings:
-      flags.AddServiceBindings(parser, required=False, is_update=True)
+    flags.AddServiceBindings(parser, required=False, is_update=True)
 
     if support_weighted_lb:
       flags.AddLocalityLbPolicy(parser)
@@ -168,7 +166,6 @@ class UpdateHelper(object):
                support_subsetting_subset_size,
                support_strong_session_affinity=False,
                support_advanced_load_balancing=False,
-               support_service_bindings=False,
                support_dynamic_compression=False,
                support_weighted_lb=False):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
@@ -179,7 +176,6 @@ class UpdateHelper(object):
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_strong_session_affinity = support_strong_session_affinity
     self._support_advanced_load_balancing = support_advanced_load_balancing
-    self._support_service_bindings = support_service_bindings
     self._support_dynamic_compression = support_dynamic_compression
     self._support_weighted_lb = support_weighted_lb
 
@@ -306,16 +302,15 @@ class UpdateHelper(object):
         replacement.serviceLbPolicy = None
         cleared_fields.append('serviceLbPolicy')
 
-    if self._support_service_bindings:
-      if args.service_bindings is not None:
-        replacement.serviceBindings = [
-            reference_utils.BuildServiceBindingUrl(backend_service_ref.project,
-                                                   'global', binding_name)
-            for binding_name in args.service_bindings
-        ]
-      if args.no_service_bindings is not None:
-        replacement.serviceBindings = []
-        cleared_fields.append('serviceBindings')
+    if args.service_bindings is not None:
+      replacement.serviceBindings = [
+          reference_utils.BuildServiceBindingUrl(backend_service_ref.project,
+                                                 'global', binding_name)
+          for binding_name in args.service_bindings
+      ]
+    if args.no_service_bindings is not None:
+      replacement.serviceBindings = []
+      cleared_fields.append('serviceBindings')
 
     return replacement, cleared_fields
 
@@ -387,10 +382,8 @@ class UpdateHelper(object):
         if self._support_advanced_load_balancing else False,
         args.IsSpecified('no_service_lb_policy')
         if self._support_advanced_load_balancing else False,
-        args.IsSpecified('service_bindings')
-        if self._support_service_bindings else False,
-        args.IsSpecified('no_service_bindings')
-        if self._support_service_bindings else False,
+        args.IsSpecified('service_bindings'),
+        args.IsSpecified('no_service_bindings'),
         args.IsSpecified('locality_lb_policy')
         if self._support_weighted_lb else False
     ]):
@@ -562,7 +555,6 @@ class UpdateGA(base.UpdateCommand):
   _support_subsetting_subset_size = False
   _support_strong_session_affinity = False
   _support_advanced_load_balancing = False
-  _support_service_bindings = False
   _support_dynamic_compression = False
   _support_weighted_lb = False
 
@@ -582,7 +574,6 @@ class UpdateGA(base.UpdateCommand):
         support_unspecified_protocol=cls._support_unspecified_protocol,
         support_strong_session_affinity=cls._support_strong_session_affinity,
         support_advanced_load_balancing=cls._support_advanced_load_balancing,
-        support_service_bindings=cls._support_service_bindings,
         support_dynamic_compression=cls._support_dynamic_compression,
         support_weighted_lb=cls._support_weighted_lb)
 
@@ -595,7 +586,6 @@ class UpdateGA(base.UpdateCommand):
                         self._support_subsetting_subset_size,
                         self._support_strong_session_affinity,
                         self._support_advanced_load_balancing,
-                        self._support_service_bindings,
                         self._support_dynamic_compression,
                         self._support_weighted_lb).Run(args, holder)
 
@@ -614,7 +604,6 @@ class UpdateBeta(UpdateGA):
   _support_subsetting_subset_size = True
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = False
-  _support_service_bindings = True
   _support_dynamic_compression = True
   _support_weighted_lb = True
   _support_tcp_ssl_logging = True
@@ -634,7 +623,6 @@ class UpdateAlpha(UpdateBeta):
   _support_subsetting_subset_size = True
   _support_strong_session_affinity = True
   _support_advanced_load_balancing = True
-  _support_service_bindings = True
   _support_dynamic_compression = True
   _support_weighted_lb = True
   _support_tcp_ssl_logging = True

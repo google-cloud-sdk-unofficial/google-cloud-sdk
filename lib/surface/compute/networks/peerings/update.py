@@ -25,7 +25,8 @@ from googlecloudsdk.command_lib.compute.networks.peerings import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Update(base.Command):
   r"""Update a Compute Engine network peering.
 
@@ -63,8 +64,7 @@ class Update(base.Command):
     flags.AddImportSubnetRoutesWithPublicIpFlag(parser)
     flags.AddExportSubnetRoutesWithPublicIpFlag(parser)
 
-    if cls._support_stack_type:
-      flags.AddStackType(parser)
+    flags.AddStackType(parser)
 
   def Run(self, args):
     """Issues the request necessary for updating the peering."""
@@ -90,7 +90,7 @@ class Update(base.Command):
         exportSubnetRoutesWithPublicIp=args.export_subnet_routes_with_public_ip,
         importSubnetRoutesWithPublicIp=args.import_subnet_routes_with_public_ip)
 
-    if self._support_stack_type and getattr(args, 'stack_type'):
+    if getattr(args, 'stack_type'):
       network_peering.stackType = client.messages.NetworkPeering.StackTypeValueValuesEnum(
           args.stack_type)
 
@@ -107,38 +107,8 @@ class Update(base.Command):
         args.import_subnet_routes_with_public_ip is None
     ])
 
-    if self._support_stack_type:
-      check_args.append(args.stack_type is None)
+    check_args.append(args.stack_type is None)
 
     if all(check_args):
       raise exceptions.UpdatePropertyError(
           'At least one property must be modified.')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
-  r"""Update a Compute Engine network peering.
-
-  ## EXAMPLES
-
-  To update the peering named peering-name to both export and import custom
-  routes, run:
-
-    $ {command} peering-name \
-      --export-custom-routes \
-      --import-custom-routes
-
-
-  To update the peering named peering-name to both export and import subnet
-  routes with public ip, run:
-
-    $ {command} peering-name \
-      --export-subnet-routes-with-public-ip \
-      --import-subnet-routes-with-public-ip
-  """
-
-  _support_stack_type = True
-
-  def ValidateArgs(self, args):
-    if not getattr(args, 'stack_type'):
-      super(UpdateAlpha, self).ValidateArgs(args)

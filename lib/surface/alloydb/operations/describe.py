@@ -25,10 +25,20 @@ from googlecloudsdk.command_lib.alloydb import flags
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe an AlloyDB operation."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To describe an operation, run:
+
+          $ {command} operation-123456789 --region=us-central1
+        """,
+  }
 
   @staticmethod
   def Args(parser):

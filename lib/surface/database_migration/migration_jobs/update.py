@@ -59,7 +59,7 @@ class Update(base.Command):
     mj_flags.AddDisplayNameFlag(parser)
     mj_flags.AddTypeFlag(parser)
     mj_flags.AddDumpPathFlag(parser)
-    mj_flags.AddConnectivityGroupFlag(parser)
+    mj_flags.AddConnectivityGroupFlag(parser, mj_flags.ApiType.UPDATE)
     flags.AddLabelsUpdateFlags(parser)
 
   def Run(self, args):

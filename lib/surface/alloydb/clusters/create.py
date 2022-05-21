@@ -28,10 +28,20 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Creates a new AlloyDB cluster within a given project."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To create a new cluster, run:
+
+          $ {command} my-cluster --region=us-central1 --password=postgres
+        """,
+  }
 
   @staticmethod
   def Args(parser):

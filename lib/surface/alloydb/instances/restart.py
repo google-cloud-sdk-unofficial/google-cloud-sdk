@@ -29,10 +29,20 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Restart(base.SilentCommand):
   """Restarts an AlloyDB instance within a given cluster."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To describe an instance, run:
+
+          $ {command} my-instance --cluster=my-cluster --region=us-central1
+        """,
+  }
 
   @staticmethod
   def Args(parser):

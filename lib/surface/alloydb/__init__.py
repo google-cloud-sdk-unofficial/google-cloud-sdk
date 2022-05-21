@@ -39,7 +39,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AlloyDB(base.Group):
   """Create and manage AlloyDB databases."""

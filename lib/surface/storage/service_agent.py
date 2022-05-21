@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import requests
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 @base.Hidden
@@ -71,5 +72,8 @@ class ServiceAgent(base.Command):
     if args.authorize_cmek:
       requests.AddCryptoKeyPermission(args.authorize_cmek,
                                       'serviceAccount:' + service_agent)
+      log.Print(
+          'Authorized project {} to encrypt and decrypt with key:\n{}'.format(
+              properties.VALUES.core.project.Get(), args.authorize_cmek))
     else:
       log.Print(service_agent)

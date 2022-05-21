@@ -30,10 +30,24 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Creates a new AlloyDB instance within a given cluster."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To create a new primary instance, run:
+
+          $ {command} my-instance --cluster=my-cluster --region=us-central1 --instance-type=PRIMARY --cpu-count=4
+
+        To create a new read pool instance, run:
+
+          $ {command} my-instance --cluster=my-cluster --region=us-central1 --instance-type=READ_POOL --read-pool-node-count=1 --cpu-count=4
+        """,
+  }
 
   @staticmethod
   def Args(parser):

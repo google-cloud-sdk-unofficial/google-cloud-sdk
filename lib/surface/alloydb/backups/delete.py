@@ -30,10 +30,20 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Deletes an AlloyDB backup within a given project."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To delete a backup, run:
+
+          $ {command} my-backup --region=us-central1
+        """,
+  }
 
   @staticmethod
   def Args(parser):

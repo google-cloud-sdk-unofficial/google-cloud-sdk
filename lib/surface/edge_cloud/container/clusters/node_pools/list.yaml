@@ -22,12 +22,13 @@
   arguments:
     resource:
       help_text: Parent Edge Container location to list all contained Edge Container nodePools.
-      spec: !REF googlecloudsdk.command_lib.edge_cloud.container.resources:cluster
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.container.resources:cluster_with_default
 
   output:
     format: |
       table(
         name.basename():label=NAME,
+        name.scope(clusters).segment(0):label=CLUSTER,
         nodeCount:label=NODE_COUNT,
         nodeLocation:label=NODE_LOCATION,
         labels:label=LABELS,

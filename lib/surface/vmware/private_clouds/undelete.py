@@ -56,12 +56,25 @@ class UnDeleteAlpha(base.DeleteCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddPrivatecloudArgToParser(parser, positional=True)
+    base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, True)
 
   def Run(self, args):
     privatecloud = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
+    is_async = args.async_
     operation = client.UnDelete(privatecloud)
-    log.RestoredResource(operation.name, kind='private cloud', is_async=True)
+    if is_async:
+      log.RestoredResource(operation.name, kind='private cloud', is_async=True)
+      return operation
+
+    resource = client.WaitForOperation(
+        operation_ref=client.GetOperationRef(operation),
+        message='waiting for private cloud deletion [{}] to be canceled'.format(
+            privatecloud.RelativeName()))
+    log.RestoredResource(resource, kind='private cloud')
+
+    return resource
 
 
 @base.Hidden

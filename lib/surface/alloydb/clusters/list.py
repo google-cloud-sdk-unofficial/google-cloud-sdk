@@ -32,7 +32,6 @@ CLUSTER_FORMAT = """
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """Lists AlloyDB clusters in a given project and region.
@@ -40,6 +39,17 @@ class List(base.ListCommand):
   Lists AlloyDB clusters in a given project in the alphabetical
   order of the cluster name.
   """
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To list clusters, run:
+
+          $ {command} --region=us-central1
+        """,
+  }
 
   @staticmethod
   def Args(parser):

@@ -8,6 +8,10 @@
 
         $ {command} my-queued-resource --accelerator-type=v2-8 --runtime-version=v2-alpha --node-id=my-node-001 --zone=us-central1-b --project=my-project
 
+        To create a Queued Resource with multiple nodes, run:
+
+        $ {command} my-queued-resource --accelerator-type=v2-8 --runtime-version=v2-alpha --node-id=my-node-001,my-node-002 --zone=us-central1-b --project=my-project
+
   request:
     collection: tpu.projects.locations.queuedResources
     api_version: v2alpha1
@@ -16,7 +20,7 @@
     use_relative_name: false
     modify_request_hooks:
     - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetParentRequestHook
-    - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:CreateSingletonNodeSpec
+    - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:CreateNodeSpec
     - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetBestEffort
     - googlecloudsdk.command_lib.compute.tpus.queued_resources.util:SetGuaranteed
 

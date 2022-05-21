@@ -235,11 +235,8 @@ def _provision_oidc_config(auth_method, msg):
     auth_method_proto.oidcConfig.userClaim = oidc_config['userClaim']
   if 'userPrefix' in oidc_config:
     auth_method_proto.oidcConfig.userPrefix = oidc_config['userPrefix']
-  # Notify user that the Client Secret field is not copied to the feature spec.
   if 'clientSecret' in oidc_config:
-    sys.stderr.write(
-        'Note: the clientSecret field for method [{}] is not applied by this command.\n'
-        .format(auth_method['name']))
+    auth_method_proto.oidcConfig.clientSecret = oidc_config['clientSecret']
 
   return auth_method_proto
 

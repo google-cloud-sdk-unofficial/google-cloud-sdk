@@ -53,17 +53,29 @@ class CreateAlpha(base.CreateCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddHcxActivationKeyArgToParser(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, True)
 
   def Run(self, args):
     hcx_activation_key = args.CONCEPTS.hcx_activation_key.Parse()
     client = HcxActivationKeysClient()
+    is_async = args.async_
     operation = client.Create(hcx_activation_key)
-    log.CreatedResource(
-        operation.name, kind='hcx activation key', is_async=True)
+    if is_async:
+      log.CreatedResource(
+          operation.name, kind='hcx activation key', is_async=True)
+      return operation
+
+    resource = client.WaitForOperation(
+        operation_ref=client.GetOperationRef(operation),
+        message='waiting for hcx activation key [{}] to be created'.format(
+            hcx_activation_key.RelativeName()))
+    log.CreatedResource(resource, kind='hcx activation key')
+
+    return resource
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(CreateAlpha):
   """Create a Google Cloud VMware HCX activation key."""
-

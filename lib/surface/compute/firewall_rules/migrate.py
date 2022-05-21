@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import json
 import re
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -28,6 +29,7 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import files
 
 
 def _GetFirewallPoliciesAssociatedWithNetwork(network, firewall_policies):
@@ -50,6 +52,14 @@ def _GetFirewallsAssociatedWithNetwork(network, firewalls):
   return filtered_firewalls
 
 
+def _GetLegacyTags(firewalls):
+  tags = set()
+  for firewall in firewalls:
+    tags.update(firewall.sourceTags)
+    tags.update(firewall.targetTags)
+  return tags
+
+
 def _IsDefaultFirewallPolicyRule(rule):
   # Default egress/ingress IPv4/IPv6 rules
   if 2147483644 <= rule.priority <= 2147483647:
@@ -58,17 +68,23 @@ def _IsDefaultFirewallPolicyRule(rule):
   return False
 
 
-def _IsFirewallSupported(firewall):
+def _UnsupportedTagResult(field, tag):
+  return (False, 'Mapping for {} \'{}\' was not found.'.format(field, tag))
+
+
+def _IsFirewallSupported(firewall, tag_mapping):
   """Checks if the given VPC Firewall can be converted by the Migration Tool."""
   # Source Service Accounts
   if firewall.sourceServiceAccounts:
     return (False, 'Firewalls with source_service_accounts are not supported.')
   # Source Tags
-  if firewall.sourceTags:
-    return (False, 'Firewalls with source_tags are not supported.')
+  for tag in firewall.sourceTags:
+    if tag not in tag_mapping:
+      return _UnsupportedTagResult('source_tag', tag)
   # Target Tags
-  if firewall.targetTags:
-    return (False, 'Firewalls with target_tags are not supported.')
+  for tag in firewall.targetTags:
+    if tag not in tag_mapping:
+      return _UnsupportedTagResult('target_tag', tag)
   # Logging is not supported in Network Firewall Policies MVP
   if firewall.logConfig and firewall.logConfig.enable:
     return (False, 'Logging is not supported in Network Firewall Policy MVP.')
@@ -89,13 +105,23 @@ def _ConvertRuleDirection(messages, direction):
   return messages.FirewallPolicyRule.DirectionValueValuesEnum.EGRESS
 
 
-def _ConvertRuleInternal(messages, firewall, action, l4_configs):
+def _ConvertLayer4Configs(messages, l4_configs):
   layer4_configs = []
   for config in l4_configs:
     layer4_configs.append(
         messages.FirewallPolicyRuleMatcherLayer4Config(
             ipProtocol=config.IPProtocol, ports=config.ports))
+  return layer4_configs
 
+
+def _ConvertTags(messages, tag_mapping, tags):
+  return [
+      messages.FirewallPolicyRuleSecureTag(name=tag_mapping[tag])
+      for tag in tags
+  ]
+
+
+def _ConvertRuleInternal(messages, firewall, action, l4_configs, tag_mapping):
   return messages.FirewallPolicyRule(
       disabled=firewall.disabled,
       ruleName=firewall.name,  # Allow and deny cannot be in the same rule
@@ -107,14 +133,19 @@ def _ConvertRuleInternal(messages, firewall, action, l4_configs):
       match=messages.FirewallPolicyRuleMatcher(
           destIpRanges=firewall.destinationRanges,
           srcIpRanges=firewall.sourceRanges,
-          layer4Configs=layer4_configs),
+          srcSecureTags=_ConvertTags(messages, tag_mapping,
+                                     firewall.sourceTags),
+          layer4Configs=_ConvertLayer4Configs(messages, l4_configs)),
+      targetSecureTags=_ConvertTags(messages, tag_mapping, firewall.targetTags),
       targetServiceAccounts=firewall.targetServiceAccounts)
 
 
-def _ConvertRule(messages, firewall):
+def _ConvertRule(messages, firewall, tag_mapping):
   if firewall.denied:
-    return _ConvertRuleInternal(messages, firewall, 'deny', firewall.denied)
-  return _ConvertRuleInternal(messages, firewall, 'allow', firewall.allowed)
+    return _ConvertRuleInternal(messages, firewall, 'deny', firewall.denied,
+                                tag_mapping)
+  return _ConvertRuleInternal(messages, firewall, 'allow', firewall.allowed,
+                              tag_mapping)
 
 
 def _IsPrefixTrue(statuses):
@@ -132,6 +163,50 @@ def _IsSuffixTrue(statuses):
   return _IsPrefixTrue(statuses_copy)
 
 
+def _ReadTagMapping(file_name):
+  """Imports legacy to secure tag mapping from a JSON file."""
+  try:
+    with files.FileReader(file_name) as f:
+      data = json.load(f)
+  except FileNotFoundError:
+    log.status.Print(
+        'File \'{file}\' was not found. Tag mapping was not imported.'.format(
+            file=file_name))
+    return None
+  except OSError:
+    log.status.Print(
+        'OS error occurred when opening the file \'{file}\'. Tag mapping was not imported.'
+        .format(file=file_name))
+    return None
+  except Exception as e:  # pylint: disable=broad-except
+    log.status.Print(
+        'Unexpected error occurred when reading the JSON file \'{file}\'. Tag mapping was not imported.'
+        .format(file=file_name))
+    log.status.Print(repr(e))
+    return None
+
+  return data
+
+
+def _WriteTagMapping(file_name, tags):
+  """Exports legacy to secure tag mapping to a JSON file."""
+  mapping = dict.fromkeys(tags)
+
+  try:
+    with files.FileWriter(path=file_name, create_path=True) as f:
+      json.dump(mapping, f)
+  except OSError:
+    log.status.Print(
+        'OS error occurred when opening the file \'{file}\'. Tag mapping was not exported.'
+        .format(file=file_name))
+    return
+  except Exception as e:  # pylint: disable=broad-except
+    log.status.Print(
+        'Unexpected error occurred when writing the JSON file \'{file}\'. Tag mapping was not exported.'
+        .format(file=file_name))
+    log.status.Print(repr(e))
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class MigrateAlpha(base.CreateCommand):
   """Migrate from legacy firewall rules to network firewall policies."""
@@ -141,12 +216,20 @@ class MigrateAlpha(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     # required --target-firewall-policy=TARGET_FIREWALL_POLICY argument
-    parser.add_argument(
+    group = parser.add_group(mutex=True, required=True)
+    group.add_argument(
         '--target-firewall-policy',
-        required=True,
         help="""\
       Name of the new Network Firewall Policy used to store the migration
       result.
+      """)
+    group.add_argument(
+        '--export-tag-mapping',
+        action='store_true',
+        help="""\
+      If set, migration tool will inspect all VPC Firewalls attached to
+      SOURCE_NETWORK, collect all source and target tags, and store them in
+      TAG_MAPPING_FILE.
       """)
     # required --source-network=NETWORK flag
     cls.NETWORK_ARG = compute_flags.ResourceArgument(
@@ -159,6 +242,11 @@ class MigrateAlpha(base.CreateCommand):
         short_help='The VPC Network for which the migration should be performed.',
         detailed_help=None)
     cls.NETWORK_ARG.AddArgument(parser)
+    # optional --tag-mapping-file=TAG_MAPPING_FILE argument
+    parser.add_argument(
+        '--tag-mapping-file',
+        required=False,
+        help='Path to a JSON file with legacy to secure tag mapping.')
 
   def Run(self, args):
     """Run the migration logic."""
@@ -174,7 +262,15 @@ class MigrateAlpha(base.CreateCommand):
 
     # Get Input Parameters
     network_name = getattr(args, 'source_network')
-    policy_name = getattr(args, 'target_firewall_policy')
+    policy_name = getattr(args, 'target_firewall_policy', None)
+    export_tag_mapping = getattr(args, 'export_tag_mapping', False)
+    tag_mapping_file_name = getattr(args, 'tag_mapping_file', None)
+
+    # In the export tag mode, the tag mapping file must be provided
+    if export_tag_mapping and not tag_mapping_file_name:
+      raise Exception(
+          '--tag-mapping-file must be specified if --export-tag-mapping is set.'
+      )
 
     # Get VPC Network
     network = client.networks.Get(
@@ -220,6 +316,26 @@ class MigrateAlpha(base.CreateCommand):
         'Found {} VPC Firewalls associated with the VPC Network \'{}\'.\n'
         .format(len(firewalls), network_name))
 
+    # Now we fetched all VPC Firewalls and Firewall Policies attached to the
+    # given VPC Network.
+
+    # Branch 1: Just generate pre-mapping for legacy tags
+    if export_tag_mapping:
+      legacy_tags = _GetLegacyTags(firewalls)
+      _WriteTagMapping(tag_mapping_file_name, legacy_tags)
+      log.status.Print(
+          'Legacy tags were exported to \'{}\''.format(tag_mapping_file_name))
+      return
+
+    # Branch 2: Do the actual migration
+
+    # Read tag mapping if provided
+    tag_mapping = dict()
+    if tag_mapping_file_name:
+      tag_mapping = _ReadTagMapping(tag_mapping_file_name)
+      if not tag_mapping:
+        return
+
     # Sort VPC Firewalls by priorities. If two Firewalls have the same priority
     # then deny rules should precede allow rules. Third coordinate is unique to
     # avoid comparison between Firewall objects which is undefined.
@@ -247,9 +363,9 @@ class MigrateAlpha(base.CreateCommand):
       # Convert only supported customer defined VPC Firewalls
       if is_custom:
         customer_defined_firewalls = customer_defined_firewalls + 1
-        (status, error) = _IsFirewallSupported(firewall)
+        (status, error) = _IsFirewallSupported(firewall, tag_mapping)
         if status:
-          converted_firewall = _ConvertRule(messages, firewall)
+          converted_firewall = _ConvertRule(messages, firewall, tag_mapping)
         else:
           conversion_failures = conversion_failures + 1
       converted_firewalls.append(

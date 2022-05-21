@@ -134,6 +134,7 @@ class List(base.ListCommand):
         "The location for which to list triggers. This should be either "
         "``global'' or one of the supported regions.",
         required=False)
+    flags.AddProjectResourceArg(parser)
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(triggers.GetTriggerURI)
     parser.display_info.AddTransforms({
@@ -145,6 +146,7 @@ class List(base.ListCommand):
   def Run(self, args):
     """Run the list command."""
     client = triggers.CreateTriggersClient(self.ReleaseTrack())
+    args.CONCEPTS.project.Parse()
     location_ref = args.CONCEPTS.location.Parse()
     return client.List(location_ref, args.limit, args.page_size)
 

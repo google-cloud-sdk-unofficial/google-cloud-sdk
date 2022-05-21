@@ -336,7 +336,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       spot=get_default('spot'),
       enable_service_externalips=get_default('enable_service_externalips'),
       disable_pod_cidr_overprovision=get_default('disable_pod_cidr_overprovision'),
-      private_endpoint_subnetwork=get_default('private_endpoint_subnetwork'))
+      private_endpoint_subnetwork=get_default('private_endpoint_subnetwork'),
+      enable_google_cloud_access=get_default('enable_google_cloud_access'))
 
 
 GA = 'ga'
@@ -560,6 +561,8 @@ flags_to_add = {
             flags.AddEnableServiceExternalIPs,
         'privateEndpointSubnetwork':
             flags.AddPrivateEndpointSubnetworkFlag,
+        'enableGoogleCloudAccess:':
+            flags.AddEnableGoogleCloudAccess,
     },
     BETA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
@@ -758,6 +761,8 @@ flags_to_add = {
             flags.AddWorkloadVulnScanningFlag,
         'podautoscalingdirectmetricsoptin':
             flags.AddPodAutoscalingDirectMetricsOptInFlag,
+        'enableGoogleCloudAccess:':
+            flags.AddEnableGoogleCloudAccess,
     },
     ALPHA: {
         'accelerator': (lambda p: AddAcceleratorFlag(p, True, True, True)),
@@ -967,6 +972,8 @@ flags_to_add = {
             flags.AddWorkloadVulnScanningFlag,
         'podautoscalingdirectmetricsoptin':
             flags.AddPodAutoscalingDirectMetricsOptInFlag,
+        'enableGoogleCloudAccess:':
+            flags.AddEnableGoogleCloudAccess,
     },
 }
 

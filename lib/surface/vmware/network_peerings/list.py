@@ -39,8 +39,9 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
   """List Google Cloud VMware Engine VPC network peerings."""
 
   detailed_help = DETAILED_HELP
@@ -60,7 +61,7 @@ class ListAlpha(base.ListCommand):
     return client.List(location, limit=args.limit)
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(ListAlpha):
-  """List Google Cloud VMware Engine VPC network peering."""
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+  """List Google Cloud VMware Engine VPC network peerings."""
+  _is_hidden = False

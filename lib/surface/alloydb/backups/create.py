@@ -35,10 +35,20 @@ def _ParseBackupType(alloydb_messages, backup_type):
   return None
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Creates a new AlloyDB backup within a given project."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To create a new backup, run:
+
+          $ {command} my-backup --cluster=my-cluster --region=us-central1
+        """,
+  }
 
   @staticmethod
   def Args(parser):

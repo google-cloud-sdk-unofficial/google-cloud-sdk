@@ -1,0 +1,20 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Delete a single BeyondCorp client gateway.
+    description: Delete a single BeyondCorp client gateway.
+    examples: |
+      To delete a client gateway with ID ``my-client-gateway'' run:
+
+      $ {command} my-client-gateway --project=${PROJECT_ID} --location=${LOCATION_ID}
+
+  async:
+    collection: beyondcorp.projects.locations.operations
+
+  request:
+    collection: beyondcorp.projects.locations.clientGateways
+
+  arguments:
+    resource:
+      help_text: The BeyondCorp client gateway you want to delete.
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.client_connector.resources:client_gateway

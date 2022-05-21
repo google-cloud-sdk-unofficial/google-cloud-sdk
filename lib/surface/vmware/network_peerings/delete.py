@@ -39,8 +39,9 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(base.DescribeCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(base.DescribeCommand):
   """Delete a Google Cloud VMware Engine VPC network peering."""
 
   detailed_help = DETAILED_HELP
@@ -49,16 +50,27 @@ class DescribeAlpha(base.DescribeCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddNetworkPeeringToParser(parser, positional=True)
+    base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, True)
 
   def Run(self, args):
     peering = args.CONCEPTS.network_peering.Parse()
     client = NetworkPeeringClient()
+    is_async = args.async_
     operation = client.Delete(peering)
-    log.DeletedResource(
-        operation.name, kind='VPC network peering', is_async=True)
+    if is_async:
+      log.DeletedResource(
+          operation.name, kind='VPC network peering', is_async=True)
+      return operation
+
+    return client.WaitForOperation(
+        operation_ref=client.GetOperationRef(operation),
+        message='waiting for vpc peering [{}] to be deleted'.format(
+            peering.RelativeName()),
+        has_result=False)
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(DescribeAlpha):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(DeleteBeta):
   """Delete a Google Cloud VMware Engine VPC network peering."""
+  _is_hidden = False

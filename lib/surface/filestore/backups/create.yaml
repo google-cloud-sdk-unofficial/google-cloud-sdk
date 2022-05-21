@@ -26,14 +26,22 @@
       required: true
       help_text: |
         Share name of the Filestore instance you want to backup.
-    - arg_name: instance-zone
-      required: true
-      help_text: |
-        Zone of the Filestore instance.
     - arg_name: region
       required: true
       help_text: |
         Region (e.g. us-central1) for the backup.
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: instance-zone
+          help_text: |
+            Zone of the Filestore instance.
+        - arg_name: instance-location
+          release_tracks: [BETA]
+          hidden: true
+          help_text: |
+            Region of the Filestore instance.
     - api_field: backup.description
       arg_name: description
       required: false

@@ -54,12 +54,25 @@ class ResetAlpha(base.UpdateCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddPrivatecloudArgToParser(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, True)
 
   def Run(self, args):
     resource = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
+    is_async = args.async_
     operation = client.ResetNsxCredentials(resource)
-    log.UpdatedResource(operation.name, kind='nsx credentials', is_async=True)
+    if is_async:
+      log.UpdatedResource(operation.name, kind='nsx credentials', is_async=True)
+      return operation
+
+    resource = client.WaitForOperation(
+        operation_ref=client.GetOperationRef(operation),
+        message='waiting for nsx credentials [{}] to be reset'.format(
+            resource.RelativeName()))
+    log.UpdatedResource(resource, kind='nsx credentials')
+
+    return resource
 
 
 @base.Hidden

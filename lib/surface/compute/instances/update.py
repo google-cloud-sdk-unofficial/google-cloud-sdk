@@ -67,11 +67,12 @@ class Update(base.UpdateCommand):
         parser, use_default_value=False, for_update=True)
     flags.AddShieldedInstanceIntegrityPolicyArgs(parser)
     flags.AddDisplayDeviceArg(parser, is_update=True)
+    sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
 
   def Run(self, args):
     return self._Run(args)
 
-  def _Run(self, args, supports_manual_rescheduling=False):
+  def _Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
@@ -141,15 +142,14 @@ class Update(base.UpdateCommand):
                                    'Updating display device of instance [{0}]',
                                    instance_ref.Name()) or result
 
-    if supports_manual_rescheduling:
-      if instance_utils.IsAnySpecified(args, 'node', 'node_affinity_file',
-                                       'node_group', 'clear_node_affinities'):
-        update_scheduling_ref = self._GetUpdateInstanceSchedulingRef(
-            instance_ref, args, holder)
-        result = self._WaitForResult(
-            operation_poller,
-            update_scheduling_ref, 'Updating the scheduling of instance [{0}]',
-            instance_ref.Name()) or result
+    if instance_utils.IsAnySpecified(args, 'node', 'node_affinity_file',
+                                     'node_group', 'clear_node_affinities'):
+      update_scheduling_ref = self._GetUpdateInstanceSchedulingRef(
+          instance_ref, args, holder)
+      result = self._WaitForResult(
+          operation_poller,
+          update_scheduling_ref, 'Updating the scheduling of instance [{0}]',
+          instance_ref.Name()) or result
 
     return result
 
@@ -312,7 +312,7 @@ class UpdateBeta(Update):
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
 
   def Run(self, args):
-    return self._Run(args, supports_manual_rescheduling=True)
+    return self._Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -29,10 +29,20 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Updates an AlloyDB cluster within a given project and region."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To update a cluster, run:
+
+          $ {command} my-cluster --region=us-central1 --automated-backup-start-times=12:00 --automated-backup-days-of-week=MONDAY --automated-backup-retention-count=10
+        """,
+  }
 
   @classmethod
   def Args(cls, parser):

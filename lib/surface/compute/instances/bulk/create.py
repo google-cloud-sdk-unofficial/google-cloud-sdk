@@ -94,6 +94,7 @@ def _CommonArgs(parser,
   instances_flags.AddNoRestartOnFailureArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
   instances_flags.AddProvisioningModelVmArgs(parser)
+  instances_flags.AddNetworkPerformanceConfigsArgs(parser)
   instances_flags.AddInstanceTerminationActionVmArgs(parser)
   instances_flags.AddServiceAccountAndScopeArgs(
       parser,
@@ -487,6 +488,10 @@ class Create(base.Command):
           args.post_key_revocation_action_type, compute_client.messages.Instance
           .PostKeyRevocationActionTypeValueValuesEnum)
 
+    if args.IsSpecified('network_performance_configs'):
+      instance_properties.networkPerformanceConfig = (
+          instance_utils.GetNetworkPerformanceConfig(args, compute_client))
+
     bulk_instance_resource = compute_client.messages.BulkInsertInstanceResource(
         count=instance_count,
         instanceProperties=instance_properties,
@@ -535,6 +540,7 @@ class Create(base.Command):
     instances_flags.ValidateAcceleratorArgs(args)
     instances_flags.ValidateNetworkTierArgs(args)
     instances_flags.ValidateReservationAffinityGroup(args)
+    instances_flags.ValidateNetworkPerformanceConfigsArgs(args)
     instances_flags.ValidateInstanceScheduling(
         args, support_max_run_duration=self._support_max_run_duration)
 

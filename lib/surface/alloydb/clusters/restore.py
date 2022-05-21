@@ -27,10 +27,20 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Restore(base.RestoreCommand):
   """Restores an AlloyDB cluster from a given backup."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To restore a cluster from a backup, run:
+
+          $ {command} my-cluster --region=us-central1 --backup=my-backup
+        """,
+  }
 
   @staticmethod
   def Args(parser):

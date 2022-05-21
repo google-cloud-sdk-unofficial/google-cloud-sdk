@@ -25,10 +25,20 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """Lists AlloyDB operations."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To list operations, run:
+
+          $ {command} --region=us-central1
+        """,
+  }
 
   @staticmethod
   def Args(parser):

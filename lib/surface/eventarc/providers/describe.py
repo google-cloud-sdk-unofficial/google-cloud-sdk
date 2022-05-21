@@ -43,7 +43,7 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     flags.AddProviderResourceArg(
-        parser, 'The event provider to describe.', required=True)
+        parser, 'The event provider to describe.', True)
 
   def Run(self, args):
     """Run the describe command."""

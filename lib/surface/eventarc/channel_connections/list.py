@@ -61,10 +61,12 @@ class List(base.ListCommand):
         parser,
         "Location for which to list channel connections. This should be one of the supported regions.",
         required=False)
+    flags.AddProjectResourceArg(parser)
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(channel_connections.GetChannelConnectionsURI)
 
   def Run(self, args):
     client = channel_connections.ChannelConnectionClientV1()
+    args.CONCEPTS.project.Parse()
     location_ref = args.CONCEPTS.location.Parse()
     return client.List(location_ref, args.limit, args.page_size)

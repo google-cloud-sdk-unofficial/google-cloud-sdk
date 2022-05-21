@@ -34,10 +34,20 @@ _INSTANCE_FORMAT = """
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """Lists AlloyDB instances in a given cluster."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To list instances, run:
+
+          $ {command} --cluster=my-cluster --region=us-central1
+        """,
+  }
 
   @staticmethod
   def Args(parser):

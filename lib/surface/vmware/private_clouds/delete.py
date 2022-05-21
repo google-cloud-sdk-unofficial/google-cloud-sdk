@@ -53,6 +53,8 @@ class DeleteAlpha(base.DeleteCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddPrivatecloudArgToParser(parser, positional=True)
+    base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, True)
     parser.add_argument(
         '--delay-hours',
         required=False,
@@ -66,8 +68,17 @@ class DeleteAlpha(base.DeleteCommand):
   def Run(self, args):
     privatecloud = args.CONCEPTS.private_cloud.Parse()
     client = PrivateCloudsClient()
+    is_async = args.async_
     operation = client.Delete(privatecloud, args.delay_hours)
-    log.DeletedResource(operation.name, kind='private cloud', is_async=True)
+    if is_async:
+      log.DeletedResource(operation.name, kind='private cloud', is_async=True)
+      return operation
+
+    return client.WaitForOperation(
+        operation_ref=client.GetOperationRef(operation),
+        message='waiting for private cloud [{}] to be deleted'.format(
+            privatecloud.RelativeName()),
+        has_result=False)
 
 
 @base.Hidden

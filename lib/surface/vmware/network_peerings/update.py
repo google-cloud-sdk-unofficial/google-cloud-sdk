@@ -41,8 +41,9 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(base.UpdateCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(base.UpdateCommand):
   """Update a Google Cloud VMware Engine VPC network peering."""
 
   detailed_help = DETAILED_HELP
@@ -51,6 +52,8 @@ class UpdateAlpha(base.UpdateCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddNetworkPeeringToParser(parser, positional=True)
+    base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, True)
     parser.add_argument(
         '--description',
         required=False,
@@ -61,12 +64,23 @@ class UpdateAlpha(base.UpdateCommand):
   def Run(self, args):
     peering = args.CONCEPTS.network_peering.Parse()
     client = NetworkPeeringClient()
+    is_async = args.async_
     operation = client.Update(peering, description=args.description)
-    log.UpdatedResource(
-        operation.name, kind='VPC network peering', is_async=True)
+    if is_async:
+      log.UpdatedResource(
+          operation.name, kind='VPC network peering', is_async=True)
+      return operation
+
+    resource = client.WaitForOperation(
+        operation_ref=client.GetOperationRef(operation),
+        message='waiting for vpc peering [{}] to be updated'.format(
+            peering.RelativeName()))
+    log.UpdatedResource(resource, kind='VPC network peering')
+
+    return resource
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(UpdateAlpha):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
   """Update a Google Cloud VMware Engine VPC network peering."""
+  _is_hidden = False

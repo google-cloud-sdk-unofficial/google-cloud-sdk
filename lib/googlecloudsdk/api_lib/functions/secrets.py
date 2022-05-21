@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Utility for working with secret environment variables and volumes for v1."""
+"""Utility for working with secret environment variables and volumes."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 import collections
 import re
 
-from googlecloudsdk.api_lib.functions.v1 import util
+from googlecloudsdk.command_lib.functions import secrets_config
 import six
 
 
@@ -35,24 +35,44 @@ def _GetSecretVersionResource(project, secret, version):
       project=project or '*', secret=secret, version=version)
 
 
-def GetSecretsAsDict(function):
+def _CanonicalizedDict(secrets_dict):
+  """Canonicalizes all keys in the dict and returns a new dict.
+
+  Args:
+    secrets_dict: Existing secrets configuration dict.
+
+  Returns:
+    Canonicalized secrets configuration dict.
+  """
+  return collections.OrderedDict(
+      sorted(
+          six.iteritems({
+              secrets_config.CanonicalizeKey(key): value
+              for (key, value) in secrets_dict.items()
+          })))
+
+
+def GetSecretsAsDict(secret_env_vars, secret_volumes):
   """Converts secrets from message to flattened secrets configuration dict.
 
   Args:
-    function: Cloud function message.
+    secret_env_vars: list of cloudfunctions_v1|v2alpha|v2beta.SecretEnvVars
+    secret_volumes: list of cloudfunctions_v1|v2alpha|v2beta.SecretVolumes
 
   Returns:
-    Secrets configuration sorted ordered dict.
+    OrderedDict[str, str], Secrets configuration sorted ordered dict.
   """
   secrets_dict = {}
-  if function.secretEnvironmentVariables:
+
+  if secret_env_vars:
     secrets_dict.update({
         sev.key: _GetSecretVersionResource(sev.projectId, sev.secret,
                                            sev.version)
-        for sev in function.secretEnvironmentVariables
+        for sev in secret_env_vars
     })
-  if function.secretVolumes:
-    for secret_volume in function.secretVolumes:
+
+  if secret_volumes:
+    for secret_volume in secret_volumes:
       mount_path = secret_volume.mountPath
       project = secret_volume.projectId
       secret = secret_volume.secret
@@ -67,7 +87,8 @@ def GetSecretsAsDict(function):
         secrets_config_value = _GetSecretVersionResource(
             project, secret, 'latest')
         secrets_dict[secrets_config_key] = secrets_config_value
-  return collections.OrderedDict(sorted(six.iteritems(secrets_dict)))
+
+  return _CanonicalizedDict(secrets_dict)
 
 
 def _ParseSecretRef(secret_ref):
@@ -79,26 +100,21 @@ def _ParseSecretRef(secret_ref):
   Returns:
     A dict with entries for project, secret and version.
   """
-  secret_ref_match = _SECRET_VERSION_RESOURCE_PATTERN.search(secret_ref)
-  return {
-      'project': secret_ref_match.group('project'),
-      'secret': secret_ref_match.group('secret'),
-      'version': secret_ref_match.group('version'),
-  }
+  return _SECRET_VERSION_RESOURCE_PATTERN.search(secret_ref).groupdict()
 
 
-def SecretEnvVarsToMessages(secret_env_vars_dict):
+def SecretEnvVarsToMessages(secret_env_vars_dict, messages):
   """Converts secrets from dict to cloud function SecretEnvVar message list.
 
   Args:
     secret_env_vars_dict: Secret environment variables configuration dict.
       Prefers a sorted ordered dict for consistency.
+    messages: The GCF messages module to use.
 
   Returns:
     A list of cloud function SecretEnvVar message.
   """
   secret_environment_variables = []
-  messages = util.GetApiMessagesModule()
   for secret_env_var_key, secret_env_var_value in six.iteritems(
       secret_env_vars_dict):
     secret_ref = _ParseSecretRef(secret_env_var_value)
@@ -111,18 +127,18 @@ def SecretEnvVarsToMessages(secret_env_vars_dict):
   return secret_environment_variables
 
 
-def SecretVolumesToMessages(secret_volumes_dict):
+def SecretVolumesToMessages(secret_volumes_dict, messages):
   """Converts secrets from dict to cloud function SecretVolume message list.
 
   Args:
     secret_volumes_dict: Secrets volumes configuration dict. Prefers a sorted
       ordered dict for consistency.
+    messages: The GCF messages module to use.
 
   Returns:
     A list of cloud function SecretVolume message.
   """
   secret_volumes_messages = []
-  messages = util.GetApiMessagesModule()
   mount_path_to_secrets = collections.defaultdict(list)
   for secret_volume_key, secret_volume_value in six.iteritems(
       secret_volumes_dict):

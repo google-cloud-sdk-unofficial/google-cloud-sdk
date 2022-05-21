@@ -19,7 +19,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-
 from googlecloudsdk.api_lib.vmware.clusters import ClustersClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
@@ -55,6 +54,8 @@ class UpdateAlpha(base.UpdateCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddClusterArgToParser(parser, positional=True)
+    base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, True)
     parser.add_argument(
         '--node-count',
         required=True,
@@ -67,7 +68,19 @@ class UpdateAlpha(base.UpdateCommand):
     cluster = args.CONCEPTS.cluster.Parse()
     client = ClustersClient()
     operation = client.Update(cluster, args.node_count)
-    log.UpdatedResource(operation.name, kind='cluster', is_async=True)
+    is_async = args.async_
+
+    if is_async:
+      log.UpdatedResource(operation.name, kind='cluster', is_async=True)
+      return operation
+
+    resource = client.WaitForOperation(
+        operation_ref=client.GetOperationRef(operation),
+        message='waiting for cluster [{}] to be updated'.format(
+            cluster.RelativeName()))
+    log.UpdatedResource(resource, kind='cluster')
+
+    return resource
 
 
 @base.Hidden

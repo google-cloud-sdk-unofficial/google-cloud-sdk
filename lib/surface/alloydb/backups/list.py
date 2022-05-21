@@ -31,7 +31,6 @@ BACKUP_FORMAT = """
 """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """Lists AlloyDB backups in a given project.
@@ -39,6 +38,17 @@ class List(base.ListCommand):
   Lists AlloyDB backups in a given project in the alphabetical order of the
     backup name.
   """
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To list backups, run:
+
+          $ {command} --region=us-central1
+        """,
+  }
 
   @staticmethod
   def Args(parser):

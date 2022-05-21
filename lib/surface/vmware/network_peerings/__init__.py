@@ -21,14 +21,15 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class NetworkPeeringAlpha(base.Group):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class NetworkPeeringBeta(base.Group):
   """Manage VMware Engine VPC peering using Google Cloud VMware Engine."""
 
   category = base.COMPUTE_CATEGORY
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class NetworkPeeringBeta(NetworkPeeringAlpha):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class NetworkPeeringAlpha(NetworkPeeringBeta):
   """Manage VMware Engine VPC peering using Google Cloud VMware Engine."""
+  _is_hidden = False

@@ -54,8 +54,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(base.CreateCommand):
   """Create a Google Cloud VMware Engine network."""
 
   detailed_help = DETAILED_HELP
@@ -63,7 +63,19 @@ class CreateAlpha(base.CreateCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
+    type_choices = {
+        'STANDARD':
+            'Standard network type used for private cloud connectivity. A '
+            'VMware Engine network of type STANDARD is a global resource.',
+        'LEGACY':
+            'Network type used by private clouds created in projects without a'
+            ' network of type STANDARD. This network type is only used for new'
+            ' PCs in existing projects that continue to use LEGACY network. A '
+            'VMware Engine network of type LEGACY is a regional resource.'
+    }
     flags.AddNetworkToParser(parser, positional=True)
+    base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, True)
     parser.add_argument(
         '--description',
         help="""\
@@ -72,22 +84,29 @@ class CreateAlpha(base.CreateCommand):
     parser.add_argument(
         '--type',
         required=False,
-        help="""\
-        Type of the VMware Engine network, which can be one of the following:\n
-          STANDARD: Standard network type used for private cloud connectivity. A VMware Engine network of type STANDARD is a global resource.\n
-          LEGACY: Network type used by private clouds created in projects without a network of type STANDARD. This network type is only used for new PCs in existing projects that continue to use LEGACY network. A VMware Engine network of type LEGACY is a regional resource.\n
-        If no value is provided, the value is set to STANDARD
-        """)
+        choices=type_choices,
+        default='STANDARD',
+        help="""Type of the VMware Engine network.""")
 
   def Run(self, args):
     network = args.CONCEPTS.vmware_engine_network.Parse()
     client = NetworksClient()
+    is_async = args.async_
     operation = client.Create(network, args.description, args.type)
-    log.CreatedResource(
-        operation.name, kind='VMware Engine network', is_async=True)
+    if is_async:
+      log.CreatedResource(
+          operation.name, kind='VMware Engine network', is_async=True)
+      return operation
+
+    resource = client.WaitForOperation(
+        operation_ref=client.GetOperationRef(operation),
+        message='waiting for VMware Engine network [{}] to be created'.format(
+            network.RelativeName()),
+        has_result=True)
+    log.CreatedResource(resource, kind='VMware Engine network', is_async=False)
+    return resource
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(CreateAlpha):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
   """Create a Google Cloud VMware Engine network."""

@@ -53,12 +53,23 @@ class DeleteAlpha(base.DeleteCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddClusterArgToParser(parser, positional=True)
+    base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, True)
 
   def Run(self, args):
     cluster = args.CONCEPTS.cluster.Parse()
     client = ClustersClient()
+    is_async = args.async_
     operation = client.Delete(cluster)
-    log.DeletedResource(operation.name, kind='cluster', is_async=True)
+    if is_async:
+      log.DeletedResource(operation.name, kind='cluster', is_async=True)
+      return operation
+
+    return client.WaitForOperation(
+        operation_ref=client.GetOperationRef(operation),
+        message='waiting for cluster [{}] to be deleted'.format(
+            cluster.RelativeName()),
+        has_result=False)
 
 
 @base.Hidden

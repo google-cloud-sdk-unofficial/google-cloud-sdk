@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import socket
+import ssl
 import sys
 import threading
 import time
@@ -32,6 +33,8 @@ from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
+from requests import certs
 import websocket
 
 
@@ -136,6 +139,12 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen.""")
     return host, int(port)
 
   def _AcceptConnection(self, client, addr):
+    custom_ca_certs = properties.VALUES.core.custom_ca_certs_file.Get()
+    if custom_ca_certs:
+      ca_certs = custom_ca_certs
+    else:
+      ca_certs = certs.where()
+
     server = websocket.WebSocketApp(
         'wss://%s/_workstation/tcp/%d' % (self.host, self.port),
         header={'Authorization': 'Bearer %s' % self.access_token},
@@ -143,7 +152,14 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen.""")
         on_data=lambda ws, data, op, finished: client.send(data),
         on_error=lambda ws, e: self._OnWebsocketError(e),
     )
-    t = threading.Thread(target=server.run_forever)
+
+    def run():
+      server.run_forever(sslopt={
+          'cert_reqs': ssl.CERT_REQUIRED,
+          'ca_certs': ca_certs,
+      })
+
+    t = threading.Thread(target=run)
     t.daemon = True
     t.start()
 

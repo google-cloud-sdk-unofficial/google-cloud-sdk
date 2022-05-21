@@ -36,3 +36,6 @@
     BETA:
       modify_response_hooks:
       - googlecloudsdk.command_lib.memcache.instances_describe_util:FormatResponse
+    GA:
+      modify_response_hooks:
+      - googlecloudsdk.command_lib.memcache.instances_describe_util:FormatResponse

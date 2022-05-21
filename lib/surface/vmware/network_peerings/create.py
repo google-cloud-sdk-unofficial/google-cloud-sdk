@@ -41,8 +41,9 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(base.CreateCommand):
   """Create a VMware Engine VPC network peering."""
 
   detailed_help = DETAILED_HELP
@@ -56,6 +57,8 @@ class CreateAlpha(base.CreateCommand):
     ]
     flags.AddNetworkPeeringToParser(parser, positional=True)
     flags.AddNetworkToParser(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, True)
     parser.add_argument(
         '--peer-network',
         required=True,
@@ -135,17 +138,29 @@ class CreateAlpha(base.CreateCommand):
   def Run(self, args):
     peering = args.CONCEPTS.network_peering.Parse()
     client = NetworkPeeringClient()
+    is_async = args.async_
+
     operation = client.Create(
         peering, args.description, args.vmware_engine_network,
         args.peer_network, args.peer_network_type, args.peer_mtu,
         args.export_custom_routes, args.import_custom_routes,
         args.export_custom_routes_with_public_ip,
         args.import_custom_routes_with_public_ip, args.exchange_subnet_routes)
-    log.CreatedResource(
-        operation.name, kind='VPC network peering', is_async=True)
+    if is_async:
+      log.CreatedResource(
+          operation.name, kind='VPC network peering', is_async=True)
+      return operation
+
+    resource = client.WaitForOperation(
+        operation_ref=client.GetOperationRef(operation),
+        message='waiting for vpc peering [{}] to be created'.format(
+            peering.RelativeName()))
+    log.CreatedResource(resource, kind='VPC network peering')
+
+    return resource
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(CreateAlpha):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
   """Create a VMware Engine VPC network peering."""
+  _is_hidden = False

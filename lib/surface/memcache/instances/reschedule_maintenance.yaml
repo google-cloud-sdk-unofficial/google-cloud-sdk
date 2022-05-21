@@ -1,4 +1,4 @@
-release_tracks: [ALPHA, BETA]
+release_tracks: [ALPHA, BETA, GA]
 
 help_text:
   brief: |
@@ -48,6 +48,10 @@ request:
     - googlecloudsdk.command_lib.memcache.instances_reschedule_util:CheckSpecificTimeField
   BETA:
     api_version: v1beta2
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.memcache.instances_reschedule_util:CheckSpecificTimeField
+  GA:
+    api_version: v1
     modify_request_hooks:
     - googlecloudsdk.command_lib.memcache.instances_reschedule_util:CheckSpecificTimeField
   collection: memcache.projects.locations.instances

@@ -54,8 +54,8 @@ DETAILED_HELP = {
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(base.UpdateCommand):
   """Update a Google Cloud VMware Engine network."""
 
   detailed_help = DETAILED_HELP
@@ -64,6 +64,8 @@ class UpdateAlpha(base.UpdateCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddNetworkToParser(parser, positional=True)
+    base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, True)
     parser.add_argument(
         '--description',
         help="""\
@@ -73,12 +75,22 @@ class UpdateAlpha(base.UpdateCommand):
   def Run(self, args):
     network = args.CONCEPTS.vmware_engine_network.Parse()
     client = NetworksClient()
+    is_async = args.async_
     operation = client.Update(network, description=args.description)
-    log.UpdatedResource(
-        operation.name, kind='VMware Engine network', is_async=True)
+    if is_async:
+      log.UpdatedResource(
+          operation.name, kind='VMware Engine network', is_async=True)
+      return operation
+
+    resource = client.WaitForOperation(
+        operation_ref=client.GetOperationRef(operation),
+        message='waiting for VMware Engine network [{}] to be updated'.format(
+            network.RelativeName()),
+        has_result=True)
+    log.UpdatedResource(resource, kind='VMware Engine network', is_async=False)
+    return resource
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(UpdateAlpha):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
   """Update a Google Cloud VMware Engine network."""

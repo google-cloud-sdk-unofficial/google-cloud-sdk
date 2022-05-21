@@ -53,6 +53,18 @@ class List(base.ListCommand):
       The following command lists a maximum of five files:
 
           $ {command} --repository=my-repo --location=us-central1 --limit=5
+
+      To list files in the current project under repository `my-repo` in `us-central1` owned by package `my-package`:
+
+          $ {command} --repository=my-repo --location=us-central1 --package=my-package
+
+      To list files in the current project under repository `my-repo` in `us-central1` owned by package `my-package` and version `1.0.0`:
+
+          $ {command} --repository=my-repo --location=us-central1 --package=my-package --version=1.0.0
+
+      To list files in the current project under repository `my-repo` in `us-central1` owned by package `my-package` and tag name `my-tag`:
+
+          $ {command} --repository=my-repo --location=us-central1 --package=my-package --tag=my-tag
       """,
   }
 
@@ -61,6 +73,21 @@ class List(base.ListCommand):
     parser.display_info.AddFormat(DEFAULT_LIST_FORMAT)
     base.URI_FLAG.RemoveFromParser(parser)
     flags.GetRepoFlag().AddToParser(parser)
+    parser.add_argument(
+        '--package',
+        required=False,
+        help='List all files in a specified artifact, such as a container image or a language package. If you do not use --tag or --version in the command, the command lists files in all versions of the artifact.'
+    )
+    parser.add_argument(
+        '--version',
+        required=False,
+        help='List all files in the specified artifact version. Use the --package flag to specify the artifact.'
+    )
+    parser.add_argument(
+        '--tag',
+        required=False,
+        help='List all files in the artifact version with the specified tag. This flag only works with formats that use tags, such as container images. Use the --package flag to specify the artifact.'
+    )
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
