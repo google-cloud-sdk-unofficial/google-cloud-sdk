@@ -36,6 +36,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from requests import certs
 import websocket
+import websocket._exceptions as websocket_exceptions
 
 
 class StartTcpTunnel(base.Command):
@@ -96,14 +97,18 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen.""")
     self._RefreshAccessToken(workstation_ref)
 
     # Bind on the local TCP port
+    (host, port) = self._GetLocalHostPort(args)
     self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    self.socket.bind(self._GetLocalHostPort(args))
+    self.socket.bind((host, port))
     self.socket.listen(1)
+    if port == 0:
+      log.status.Print('Picking local unused port [{0}].'.format(
+          self.socket.getsockname()[1]))
 
     # Accept new client connections
-    log.status.Print('Awaiting connections on port %d...' %
-                     self.socket.getsockname()[1])
+    log.status.Print('Listening on port [{0}].'.format(
+        self.socket.getsockname()[1]))
     try:
       with execution_utils.RaisesKeyboardInterrupt():
         while True:
@@ -111,6 +116,7 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen.""")
           self._AcceptConnection(conn, addr)
     except KeyboardInterrupt:
       log.info('Keyboard interrupt received.')
+    log.status.Print('Server shutdown complete.')
 
   def _FetchAccessToken(self, workstation):
     try:
@@ -150,7 +156,7 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen.""")
         header={'Authorization': 'Bearer %s' % self.access_token},
         on_open=lambda ws: self._ForwardClientToServer(client, ws),
         on_data=lambda ws, data, op, finished: client.send(data),
-        on_error=lambda ws, e: self._OnWebsocketError(e),
+        on_error=lambda ws, e: self._OnWebsocketError(client, e),
     )
 
     def run():
@@ -172,10 +178,19 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen.""")
           break
         server.send(data)
 
-    log.status.Print('Connected to server')
     t = threading.Thread(target=forward)
     t.daemon = True
     t.start()
 
-  def _OnWebsocketError(self, error):
-    log.error('Received error from workstation: {0}'.format(error))
+  def _OnWebsocketError(self, client, error):
+    if isinstance(error, websocket_exceptions.WebSocketBadStatusException
+                 ) and error.status_code == 503:
+      log.error(
+          'The workstation does not have a server running on port {0}.'.format(
+              self.port))
+      client.close()
+    elif isinstance(error,
+                    websocket_exceptions.WebSocketConnectionClosedException):
+      pass
+    else:
+      log.error('Received error from workstation: {0}'.format(error))

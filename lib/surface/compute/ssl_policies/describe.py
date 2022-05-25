@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_policies import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine ssl policy.
 
@@ -64,8 +64,8 @@ class Describe(base.DescribeCommand):
     return helper.Describe(ref)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(Describe):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DescribeAlphaBeta(Describe):
   """Describe a Compute Engine ssl policy.
 
   *{command}* is used to display all data associated with a Compute Engine

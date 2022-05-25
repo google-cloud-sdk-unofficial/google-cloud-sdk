@@ -22,14 +22,15 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ClustersAlpha(base.Group):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ClustersBeta(base.Group):
   """Manage clusters in Google Cloud VMware Engine."""
 
   category = base.COMPUTE_CATEGORY
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ClustersBeta(ClustersAlpha):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ClustersAlpha(ClustersBeta):
   """Manage clusters in Google Cloud VMware Engine."""
+  _is_hidden = False

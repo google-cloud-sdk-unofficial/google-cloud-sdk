@@ -57,6 +57,7 @@ class GetCredentials(base.Command):
                                            cluster_ref.locationsId,
                                            cluster_ref.awsClustersId)
       cmd_args = kubeconfig.GenerateAuthProviderCmdArgs(
-          'aws', cluster_ref.awsClustersId, cluster_ref.locationsId)
+          'aws', cluster_ref.awsClustersId, cluster_ref.locationsId,
+          cluster_ref.projectsId)
       kubeconfig.GenerateKubeconfig(resp, context, args.auth_provider_cmd_path,
                                     cmd_args, args.private_endpoint)

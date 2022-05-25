@@ -20,8 +20,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.logging import common
+from googlecloudsdk.api_lib.logging.formatter import FormatLog
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.logs import read as read_logs_lib
+from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -31,7 +34,7 @@ class Read(base.Command):
   detailed_help = {
       'DESCRIPTION':
           """\
-          {command} reads log entries.  Log entries matching *--log-filter* are
+          {command} reads log entries. Log entries matching *--log-filter* are
           returned according to the specified --order.
           If the log entries come from multiple logs, then entries from
           different logs might be intermingled in the results.
@@ -63,16 +66,29 @@ class Read(base.Command):
   @staticmethod
   def Args(parser):
     parser.add_argument('service', help='Name for a Cloud Run service.')
-
     read_logs_lib.LogFilterArgs(parser)
     read_logs_lib.LoggingReadArgs(parser)
 
   def Run(self, args):
     filters = [args.log_filter] if args.IsSpecified('log_filter') else []
-    filters.append('resource.labels.service_name = "%s"' % args.service)
+    filters.append('resource.type = %s \n' % 'cloud_run_revision')
+    filters.append('resource.labels.service_name = %s \n' % args.service)
+    filters.append('resource.labels.location = %s \n' %
+                   flags.GetRegion(args, prompt=False))
+    filters.append('severity >= DEFAULT')
     filters += read_logs_lib.MakeTimestampFilters(args)
 
-    return common.FetchLogs(
+    lines = []
+
+    logs = common.FetchLogs(
         read_logs_lib.JoinFilters(filters),
         order_by=args.order,
         limit=args.limit)
+
+    for log_line in logs:
+      output_log = FormatLog(log_line)
+      if output_log:
+        lines.append(output_log)
+
+    for line in reversed(lines):
+      log.out.Print(line)

@@ -88,7 +88,7 @@ class Rollback(base.CreateCommand):
 
     rollout_description = args.description or 'Rollback from {}'.format(
         current_release_ref.Name())
-    promote_util.Promote(
+    return promote_util.Promote(
         rollback_release_ref,
         release_obj,
         target_ref.Name(),

@@ -21,23 +21,33 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.target_tcp_proxies import flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete target TCP proxy."""
 
   TARGET_TCP_PROXY_ARG = None
 
-  @staticmethod
-  def Args(parser):
-    Delete.TARGET_TCP_PROXY_ARG = flags.TargetTcpProxyArgument(plural=True)
-    Delete.TARGET_TCP_PROXY_ARG.AddArgument(parser, operation_type='delete')
-    parser.display_info.AddCacheUpdater(flags.TargetTcpProxiesCompleter)
+  _enable_region_target_tcp_proxy = False
+
+  @classmethod
+  def Args(cls, parser):
+    cls.TARGET_TCP_PROXY_ARG = flags.TargetTcpProxyArgument(
+        plural=True, allow_regional=cls._enable_region_target_tcp_proxy)
+    cls.TARGET_TCP_PROXY_ARG.AddArgument(parser, operation_type='delete')
+
+    if cls._enable_region_target_tcp_proxy:
+      parser.display_info.AddCacheUpdater(flags.TargetTcpProxiesCompleter)
+    else:
+      parser.display_info.AddCacheUpdater(flags.GATargetTcpProxiesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    refs = self.TARGET_TCP_PROXY_ARG.ResolveAsResource(args, holder.resources)
+    refs = self.TARGET_TCP_PROXY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
     utils.PromptForDeletion(refs)
 
     client = holder.client.apitools_client
@@ -45,11 +55,16 @@ class Delete(base.DeleteCommand):
 
     requests = []
     for ref in refs:
-      requests.append(
-          (client.targetTcpProxies,
-           'Delete',
-           messages.ComputeTargetTcpProxiesDeleteRequest(
-               project=ref.project, targetTcpProxy=ref.Name())))
+      if ref.Collection() == 'compute.regionTargetTcpProxies':
+        requests.append((client.regionTargetTcpProxies, 'Delete',
+                         messages.ComputeRegionTargetTcpProxiesDeleteRequest(
+                             project=ref.project,
+                             region=ref.region,
+                             targetTcpProxy=ref.Name())))
+      else:
+        requests.append((client.targetTcpProxies, 'Delete',
+                         messages.ComputeTargetTcpProxiesDeleteRequest(
+                             project=ref.project, targetTcpProxy=ref.Name())))
 
     errors = []
     resources = holder.client.MakeRequests(requests, errors)
@@ -59,9 +74,16 @@ class Delete(base.DeleteCommand):
     return resources
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DeleteAlphaBeta(Delete):
+  _enable_region_target_tcp_proxy = True
+
+
 Delete.detailed_help = {
-    'brief': 'Delete target TCP proxies',
-    'DESCRIPTION': """\
+    'brief':
+        'Delete target TCP proxies',
+    'DESCRIPTION':
+        """\
         *{command}* deletes one or more target TCP proxies.
         """,
 }

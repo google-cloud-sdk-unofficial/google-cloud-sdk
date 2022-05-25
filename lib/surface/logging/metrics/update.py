@@ -24,18 +24,14 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
-
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
-class Update(base.UpdateCommand):
-  """Updates the definition of a logs-based metric."""
-
-  detailed_help = {
-      'DESCRIPTION': """\
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """\
           Updates the description or the filter expression of an existing
           logs-based metric.
       """,
-      'EXAMPLES': """\
+    'EXAMPLES':
+        """\
           To update the description of a metric called high_severity_count, run:
 
             $ {command} high_severity_count --description="Count of high-severity log entries."
@@ -57,40 +53,56 @@ class Update(base.UpdateCommand):
           Any top-level fields in the LogMetric definition that aren't specified
           in the config file will not be updated in the metric.
       """,
-  }
+}
+
+
+def AddArguments(parser, bucket_metric_enabled=False):
+  """Add arguments for logging metrics update command."""
+  parser.add_argument(
+      'metric_name', help='The name of the log-based metric to update.')
+  config_group = parser.add_argument_group(
+      help='Data about the metric to update.', mutex=True, required=True)
+  legacy_mode_group = config_group.add_argument_group(
+      help=('Arguments to specify information about simple counter logs-'
+            'based metrics.'))
+  legacy_mode_group.add_argument(
+      '--description',
+      required=False,
+      help=('A new description for the metric. '
+            'If omitted, the description is not changed.'))
+  legacy_mode_group.add_argument(
+      '--log-filter',
+      required=False,
+      help=('A new filter string for the metric. '
+            'If omitted, the filter is not changed.'))
+  config_group.add_argument(
+      '--config-from-file',
+      help=('A path to a YAML file specifying the '
+            'updates to be made to the logs-based '
+            'metric.'),
+      type=arg_parsers.FileContents())
+
+  if bucket_metric_enabled:
+    legacy_mode_group.add_argument(
+        '--bucket-name',
+        help='The Log Bucket name which owns the log-based metric.')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class Update(base.UpdateCommand):
+  """Updates the definition of a logs-based metric."""
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    parser.add_argument(
-        'metric_name', help='The name of the log-based metric to update.')
-    config_group = parser.add_argument_group(
-        help='Data about the metric to update.',
-        mutex=True,
-        required=True)
-    legacy_mode_group = config_group.add_argument_group(
-        help=('Arguments to specify information about simple counter logs-'
-              'based metrics.'))
-    legacy_mode_group.add_argument(
-        '--description', required=False,
-        help=('A new description for the metric. '
-              'If omitted, the description is not changed.'))
-    legacy_mode_group.add_argument(
-        '--log-filter', required=False,
-        help=('A new filter string for the metric. '
-              'If omitted, the filter is not changed.'))
-    config_group.add_argument('--config-from-file',
-                              help=('A path to a YAML file specifying the '
-                                    'updates to be made to the logs-based '
-                                    'metric.'),
-                              type=arg_parsers.FileContents())
+    AddArguments(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
     Args:
-      args: an argparse namespace. All the arguments that were provided to
-        this command invocation.
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
 
     Returns:
       The updated metric.
@@ -100,18 +112,66 @@ class Update(base.UpdateCommand):
     # Make sure the metric exists so we don't accidentally create it.
     metric = util.GetClient().projects_metrics.Get(
         util.GetMessages().LoggingProjectsMetricsGetRequest(
-            metricName=util.CreateResourceName(
-                util.GetCurrentProjectParent(), 'metrics', args.metric_name)))
+            metricName=util.CreateResourceName(util.GetCurrentProjectParent(),
+                                               'metrics', args.metric_name)))
 
-    updated_metric = util.UpdateLogMetric(metric,
-                                          args.description,
-                                          args.log_filter,
-                                          args.config_from_file)
+    updated_metric = util.UpdateLogMetric(
+        metric,
+        description=args.description,
+        log_filter=args.log_filter,
+        data=args.config_from_file)
 
     result = util.GetClient().projects_metrics.Update(
         util.GetMessages().LoggingProjectsMetricsUpdateRequest(
-            metricName=util.CreateResourceName(
-                util.GetCurrentProjectParent(), 'metrics', args.metric_name),
+            metricName=util.CreateResourceName(util.GetCurrentProjectParent(),
+                                               'metrics', args.metric_name),
             logMetric=updated_metric))
     log.UpdatedResource(args.metric_name)
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(base.UpdateCommand):
+  """Updates the definition of a logs-based metric."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    AddArguments(parser, True)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      The updated metric.
+    """
+
+    # Calling the API's Update method on a non-existing metric creates it.
+    # Make sure the metric exists so we don't accidentally create it.
+    metric = util.GetClient().projects_metrics.Get(
+        util.GetMessages().LoggingProjectsMetricsGetRequest(
+            metricName=util.CreateResourceName(util.GetCurrentProjectParent(),
+                                               'metrics', args.metric_name)))
+
+    updated_metric = util.UpdateLogMetric(
+        metric,
+        description=args.description,
+        log_filter=args.log_filter,
+        bucket_name=args.bucket_name,
+        data=args.config_from_file)
+
+    result = util.GetClient().projects_metrics.Update(
+        util.GetMessages().LoggingProjectsMetricsUpdateRequest(
+            metricName=util.CreateResourceName(util.GetCurrentProjectParent(),
+                                               'metrics', args.metric_name),
+            logMetric=updated_metric))
+    log.UpdatedResource(args.metric_name)
+    return result
+
+
+Update.detailed_help = DETAILED_HELP
+UpdateAlpha.detailed_help = DETAILED_HELP

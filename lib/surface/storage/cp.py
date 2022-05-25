@@ -50,18 +50,43 @@ uploading files with compressible content such as .js, .css,
 or .html files. This also saves network bandwidth while
 leaving the data uncompressed in Cloud Storage.
 
-When you specify the `--gzip-in-flight` option, files being uploaded are
-compressed in-memory and on-the-wire only. Both the local
+When you specify the `--gzip-in-flight` option, files being
+uploaded are compressed in-memory and on-the-wire only. Both the local
 files and Cloud Storage objects remain uncompressed. The
 uploaded objects retain the `Content-Type` and name of the
 original files."""
 _GZIP_IN_FLIGHT_ALL_HELP_TEXT = """\
 Applies gzip transport encoding to file uploads. This option
-works like the `--gzip-transfer` option described above, but it
-applies to all uploaded files, regardless of extension.
+works like the `--gzip-in-flight` option described above,
+but it applies to all uploaded files, regardless of extension.
 
 CAUTION: If some of the source files don't compress well, such
 as binary data, using this option may result in longer uploads."""
+_GZIP_LOCAL_EXTENSIONS_HELP_TEXT = """\
+Applies gzip content encoding to any file upload whose
+extension matches the input extension list. This is useful when
+uploading files with compressible content such as .js, .css,
+or .html files. This saves network bandwidth and space in Cloud Storage.
+
+When you specify the `--gzip-local` option, the data from
+files is compressed before it is uploaded, but the original files are left
+uncompressed on the local disk. The uploaded objects retain the `Content-Type`
+and name of the original files. However, the `Content-Encoding` metadata
+is set to `gzip` and the `Cache-Control` metadata set to `no-transform`.
+The data remains compressed on Cloud Storage servers and will not be
+decompressed on download by gcloud stroage because of the `no-transform`
+field.
+
+Since the local gzip option compresses data prior to upload, it is not subject
+to the same compression buffer bottleneck of the in-flight gzip option."""
+_GZIP_LOCAL_ALL_HELP_TEXT = """\
+Applies gzip content encoding to file uploads. This option
+works like the `--gzip-local` option described above,
+but it applies to all uploaded files, regardless of extension.
+
+CAUTION: If some of the source files don't compress well, such as binary data,
+using this option may result in files taking up more space in the cloud than
+they would if left uncompressed."""
 _MANIFEST_HELP_TEXT = """\
 Outputs a manifest log file with detailed information about each item that
 was copied. This manifest contains the following information for each item:
@@ -165,6 +190,13 @@ class Cp(base.Command):
         ' Skipped items will be printed. This option performs an additional GET'
         ' request for cloud objects before attempting an upload.')
     parser.add_argument(
+        '-a',
+        '--canned-acl',
+        '--predefined-acl',
+        help='Applies predefined, or "canned," ACLs to a copied object. See'
+        ' docs for a list of predefined ACL constants: https://cloud.google.com'
+        '/storage/docs/access-control/lists#predefined-acl')
+    parser.add_argument(
         '-P',
         '--preserve-posix',
         action='store_true',
@@ -196,10 +228,21 @@ class Cp(base.Command):
         help=_GZIP_IN_FLIGHT_ALL_HELP_TEXT)
     gzip_flags_group.add_argument(
         '-j',
-        '--gzip-in-flight-extensions',
+        '--gzip-in-flight',
         metavar='FILE_EXTENSIONS',
         type=arg_parsers.ArgList(),
         help=_GZIP_IN_FLIGHT_EXTENSIONS_HELP_TEXT)
+    gzip_flags_group.add_argument(
+        '-Z',
+        '--gzip-local-all',
+        action='store_true',
+        help=_GZIP_LOCAL_ALL_HELP_TEXT)
+    gzip_flags_group.add_argument(
+        '-z',
+        '--gzip-local',
+        metavar='FILE_EXTENSIONS',
+        type=arg_parsers.ArgList(),
+        help=_GZIP_LOCAL_EXTENSIONS_HELP_TEXT)
     flags.add_continue_on_error_flag(parser)
     flags.add_precondition_flags(parser)
     flags.add_object_metadata_flags(parser)

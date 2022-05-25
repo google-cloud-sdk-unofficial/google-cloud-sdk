@@ -192,7 +192,7 @@ information on how to structure KEYs and VALUEs, run
       Airflow version supported in the given Cloud Composer version. The
       resolved versions are stored in the created environment.""")
   flags.AddIpAliasEnvironmentFlags(parser, support_max_pods_per_node)
-  flags.AddPrivateIpEnvironmentFlags(parser, release_track)
+  flags.AddPrivateIpEnvironmentFlags(parser)
   web_server_group = parser.add_mutually_exclusive_group()
   flags.WEB_SERVER_ALLOW_IP.AddToParser(web_server_group)
   flags.WEB_SERVER_ALLOW_ALL.AddToParser(web_server_group)
@@ -376,6 +376,13 @@ class Create(base.Command):
               prerequisite='enable-private-environment',
               opt='enable-private-endpoint'))
 
+    if (args.enable_privately_used_public_ips and
+        not args.enable_private_environment):
+      raise command_util.InvalidUserInputError(
+          PREREQUISITE_OPTION_ERROR_MSG.format(
+              prerequisite='enable-private-environment',
+              opt='enable-privately-used-public-ips'))
+
     if args.master_ipv4_cidr and not args.enable_private_environment:
       raise command_util.InvalidUserInputError(
           PREREQUISITE_OPTION_ERROR_MSG.format(
@@ -415,9 +422,8 @@ class Create(base.Command):
               opt='composer-network-ipv4-cidr'))
 
   def ParseWebServerAccessControlConfigOptions(self, args, image_version):
-    if (args.enable_private_environment and
-        not args.web_server_allow_ip and not args.web_server_allow_all and
-        not args.web_server_deny_all):
+    if (args.enable_private_environment and not args.web_server_allow_ip and
+        not args.web_server_allow_all and not args.web_server_deny_all):
       raise command_util.InvalidUserInputError(
           'Cannot specify --enable-private-environment without one of: ' +
           '--web-server-allow-ip, --web-server-allow-all ' +
@@ -508,6 +514,7 @@ class Create(base.Command):
         kms_key=self.kms_key,
         private_environment=args.enable_private_environment,
         private_endpoint=args.enable_private_endpoint,
+        privately_used_public_ips=args.enable_privately_used_public_ips,
         master_ipv4_cidr=args.master_ipv4_cidr,
         web_server_ipv4_cidr=args.web_server_ipv4_cidr,
         cloud_sql_ipv4_cidr=args.cloud_sql_ipv4_cidr,

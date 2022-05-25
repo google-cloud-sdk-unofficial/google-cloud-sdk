@@ -219,8 +219,8 @@ class Update(base.SilentCommand):
     return self._SendRequests(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateAlphaBeta(Update):
   """Update a target SSL proxy.
 
   *{command}* is used to replace the SSL certificate, backend service, proxy
@@ -234,20 +234,4 @@ class UpdateBeta(Update):
   """
 
   _certificate_map = True
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
-  """Update a target SSL proxy.
-
-  *{command}* is used to replace the SSL certificate, backend service, proxy
-  header or SSL policy of existing target SSL proxies. A target SSL proxy is
-  referenced by one or more forwarding rules which define which packets the
-  proxy is responsible for routing. The target SSL proxy in turn points to a
-  backend service which will handle the requests. The target SSL proxy also
-  points to at most 15 SSL certificates used for server-side authentication
-  or one certificate map. The target SSL proxy can be associated with at most
-  one SSL policy.
-  """
-
   _regional_ssl_policies = True

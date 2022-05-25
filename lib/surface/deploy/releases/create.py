@@ -100,7 +100,8 @@ class Create(base.CreateCommand):
     release_config = release_util.CreateReleaseConfig(
         args.source, args.gcs_source_staging_dir, args.ignore_file, args.images,
         args.build_artifacts, args.description, args.skaffold_version,
-        args.skaffold_file, release_ref.AsDict()['locationsId'])
+        args.skaffold_file,
+        release_ref.AsDict()['locationsId'])
     deploy_util.SetMetadata(client.messages, release_config,
                             deploy_util.ResourceType.RELEASE, args.annotations,
                             args.labels)
@@ -113,4 +114,6 @@ class Create(base.CreateCommand):
         release_ref.Name()))
 
     release_obj = release.ReleaseClient().Get(release_ref.RelativeName())
-    promote_util.Promote(release_ref, release_obj, args.to_target, True)
+    rollout_resource = promote_util.Promote(release_ref, release_obj,
+                                            args.to_target, True)
+    return release_obj, rollout_resource

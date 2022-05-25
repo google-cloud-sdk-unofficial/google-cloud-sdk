@@ -36,7 +36,6 @@ _DETAILED_HELP = {
 _FORMAT = 'table(method_name)'
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List values for the methodName attribute for event type `google.cloud.audit.log.v1.written`."""

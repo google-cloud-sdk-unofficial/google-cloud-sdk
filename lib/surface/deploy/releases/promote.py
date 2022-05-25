@@ -65,7 +65,6 @@ class Promote(base.CreateCommand):
   If to-target is not specified the command promotes the release from the target
   that is farthest along in the promotion sequence to its next stage in the
   promotion sequence.
-
   """
   detailed_help = _DETAILED_HELP
 
@@ -96,6 +95,8 @@ class Promote(base.CreateCommand):
         'Promoting release {} to target {}.'.format(release_ref.Name(),
                                                     to_target_id),
         cancel_on_no=True)
-
-    promote_util.Promote(release_ref, release_obj, to_target_id, False,
-                         args.rollout_id, args.annotations, args.labels)
+    rollout_resource = promote_util.Promote(release_ref, release_obj,
+                                            to_target_id, False,
+                                            args.rollout_id, args.annotations,
+                                            args.labels)
+    return rollout_resource

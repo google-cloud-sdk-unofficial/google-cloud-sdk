@@ -81,6 +81,7 @@ class GetCredentials(base.Command):
               If not specified, defaults to `global`.
             """),
       )
+      # TODO(b/232891240) Do not promote this flag past alpha.
       parser.add_argument(
           '--fleetgke',
           action='store_true',

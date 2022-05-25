@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as managed_instance_groups_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
   """Update all-instances-config of a managed instance group."""
 
@@ -33,7 +33,7 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     instance_groups_flags.GetInstanceGroupManagerArg(
         region_flag=True).AddArgument(
-            parser, operation_type='update all-instances\' config for')
+            parser, operation_type='update the all instances configuration for')
     managed_instance_groups_flags.AddFlagsForUpdateAllInstancesConfig(parser)
 
   def Run(self, args):
@@ -97,7 +97,7 @@ class Update(base.UpdateCommand):
 
 Update.detailed_help = {
     'brief':
-        'Update all-instances configuration of a managed instance group.',
+        'Update the all-instances configuration of a managed instance group.',
     'DESCRIPTION':
         """\
         *{command}* updates the group's all-instances configuration and applies
@@ -110,5 +110,15 @@ Update.detailed_help = {
         - Recreate instances using the `recreate-instances` command.
         - Use the `rolling-action start-update` command.
         - Use the API to set the group's `updatePolicy.type` to `PROACTIVE`.
+        """,
+    'EXAMPLES':
+        """\
+        To update an all-instances configuration in order to override the
+        group's instance template for a label with the key `label-key`
+        and metadata with the key `metadata-key` in group `my-group`, run:
+
+          $ {command} my-group
+            --metadata=metadata-key=metadata-override-value
+            --labels=qlabel-key=label-override-value
         """
 }

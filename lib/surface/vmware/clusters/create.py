@@ -44,8 +44,9 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(base.CreateCommand):
   """Create a Google Cloud VMware Engine cluster."""
 
   detailed_help = DETAILED_HELP
@@ -92,7 +93,7 @@ class CreateAlpha(base.CreateCommand):
     return resource
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(CreateAlpha):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
   """Create a Google Cloud VMware Engine cluster."""
+  _is_hidden = False

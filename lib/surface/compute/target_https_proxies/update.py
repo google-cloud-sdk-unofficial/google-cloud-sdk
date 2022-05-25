@@ -262,11 +262,7 @@ class Update(base.SilentCommand):
                 self.SSL_POLICY_ARG, certificate_map_ref)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateAlphaBeta(Update):
   _certificate_map = True
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
   _regional_ssl_policies = True

@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListAvailableFeatures(base.ListCommand):
   """List available features that can be specified in an SSL policy.
 
@@ -62,8 +62,8 @@ class ListAvailableFeatures(base.ListCommand):
       return helper.ListAvailableFeatures(project, None)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAvailableFeaturesAlpha(ListAvailableFeatures):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ListAvailableFeaturesAlphaBeta(ListAvailableFeatures):
   """List available features that can be specified in an SSL policy.
 
   *{command}* lists available features that can be specified as part of the

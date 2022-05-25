@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as managed_instance_groups_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Delete all-instances-config of a managed instance group."""
 
@@ -34,7 +34,7 @@ class Delete(base.DeleteCommand):
   def Args(cls, parser):
     instance_groups_flags.GetInstanceGroupManagerArg(
         region_flag=True).AddArgument(
-            parser, operation_type='delete all-instances\' config for')
+            parser, operation_type='delete the all instances configuration for')
     managed_instance_groups_flags.AddFlagsForDeleteAllInstancesConfig(parser)
 
   def Run(self, args):
@@ -104,11 +104,11 @@ class Delete(base.DeleteCommand):
 
 Delete.detailed_help = {
     'brief':
-        'Delete values defined in all-instances configuration of a managed '
+        'Delete values defined in the all-instances configuration of a managed '
         'instance group.',
     'DESCRIPTION':
         """\
-        *{command}* deletes one or more values defined in all-instances
+        *{command}* deletes one or more values defined in the all-instances
         configuration of a managed instance group.
 
         To apply a revised all-instances configuration to existing instances
@@ -118,5 +118,16 @@ Delete.detailed_help = {
         - Recreate instances using the `recreate-instances` command.
         - Use the `rolling-action start-update` command.
         - Use the API to set the group's `updatePolicy.type` to `PROACTIVE`.
+        """,
+    'EXAMPLES':
+        """\
+        To delete the group's all-instances configuration in order to stop
+        overriding the group's instance template for a label with the key
+        `label-key` and metadata with the key `metadata-key` in group
+        `my-group`, run:
+
+          $ {command} my-group
+            --metadata=metadata-key
+            --labels=label-key
         """
 }

@@ -44,8 +44,9 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
   """List supported Google Cloud VMware Engine node types."""
 
   detailed_help = DETAILED_HELP
@@ -69,8 +70,8 @@ class ListAlpha(base.ListCommand):
     return client.List(location, limit=args.limit)
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(ListAlpha):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
   """List supported Google Cloud VMware Engine node types."""
+  _is_hidden = False
 

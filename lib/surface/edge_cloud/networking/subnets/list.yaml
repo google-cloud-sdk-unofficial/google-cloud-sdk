@@ -30,5 +30,6 @@
         network.basename():label=NETWORK,
         vlanId:label=VLANID,
         ipv4Cidr.list():label=IPV4CIDR,
-        ipv6Cidr.list():label=IPV6CIDR
+        ipv6Cidr.list():label=IPV6CIDR,
+        state:label=STATE
       )

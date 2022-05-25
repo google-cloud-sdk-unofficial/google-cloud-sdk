@@ -29,6 +29,7 @@ kpt: google-cloud-sdk-kpt
 kubectl: kubectl
 kubectl-oidc: google-cloud-sdk-kubectl-oidc
 local-extract: google-cloud-sdk-local-extract
+package-go-module: google-cloud-sdk-package-go-module
 minikube: google-cloud-sdk-minikube
 nomos: google-cloud-sdk-nomos
 pubsub-emulator: google-cloud-sdk-pubsub-emulator

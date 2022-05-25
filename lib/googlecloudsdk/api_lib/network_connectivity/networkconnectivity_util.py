@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2020 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,15 +12,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Useful commands for interacting with the Cloud Identity Groups API."""
+
+"""Useful commands for interacting with the Network Connectivity API."""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.calliope import base
 
 API_NAME = 'networkconnectivity'
+VERSION_MAP = {base.ReleaseTrack.GA: 'v1'}
 
 
-def GetMessages(version):
-  return apis.GetMessagesModule(API_NAME, version)
+def GetMessagesModule(release_track=base.ReleaseTrack.GA):
+  api_version = VERSION_MAP[release_track]
+  return apis.GetMessagesModule(API_NAME, api_version)
+
+
+def GetClientInstance(release_track=base.ReleaseTrack.GA):
+  api_version = VERSION_MAP[release_track]
+  return apis.GetClientInstance(API_NAME, api_version)

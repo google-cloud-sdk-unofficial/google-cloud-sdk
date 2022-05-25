@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.ssl_policies import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Compute Engine SSL policies."""
 
@@ -53,8 +53,8 @@ class List(base.ListCommand):
         batch_size=None)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ListAlphaBeta(base.ListCommand):
   """List SSL policies."""
 
   @staticmethod
@@ -78,5 +78,5 @@ class ListAlpha(base.ListCommand):
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('SSL policies')
-ListAlpha.detailed_help = base_classes.GetGlobalRegionalListerHelp(
+ListAlphaBeta.detailed_help = base_classes.GetGlobalRegionalListerHelp(
     'SSL policies')

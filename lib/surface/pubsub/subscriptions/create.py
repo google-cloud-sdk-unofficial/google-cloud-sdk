@@ -56,6 +56,10 @@ def _Run(args, enable_labels=False, legacy_output=False):
   max_retry_delay = getattr(args, 'max_retry_delay', None)
   if max_retry_delay:
     max_retry_delay = util.FormatDuration(max_retry_delay)
+  bigquery_table = getattr(args, 'bigquery_table', None)
+  use_topic_schema = getattr(args, 'use_topic_schema', None)
+  write_metadata = getattr(args, 'write_metadata', None)
+  drop_unknown_fields = getattr(args, 'drop_unknown_fields', None)
 
   no_expiration = False
   expiration_period = getattr(args, 'expiration_period', None)
@@ -92,7 +96,11 @@ def _Run(args, enable_labels=False, legacy_output=False):
           max_delivery_attempts=max_delivery_attempts,
           min_retry_delay=min_retry_delay,
           max_retry_delay=max_retry_delay,
-          enable_exactly_once_delivery=enable_exactly_once_delivery)
+          enable_exactly_once_delivery=enable_exactly_once_delivery,
+          bigquery_table=bigquery_table,
+          use_topic_schema=use_topic_schema,
+          write_metadata=write_metadata,
+          drop_unknown_fields=drop_unknown_fields)
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
       log.CreatedResource(subscription_ref.RelativeName(),

@@ -37,6 +37,8 @@ auto_flags = [
     'autoprovisioning_network_tags',
     'enableworkloadconfigaudit',
     'enableworkloadvulnscanning',
+    'enableGoogleCloudAccess',
+    'privateEndpointSubnetwork',
 ]
 
 # Change default flag values in create-auto

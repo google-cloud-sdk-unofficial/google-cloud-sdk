@@ -156,8 +156,8 @@ class Create(base.CreateCommand):
     return self._CreateResource(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateAlphaBeta(Create):
   """Create a target SSL proxy.
 
   *{command}* is used to create target SSL proxies. A target SSL proxy is
@@ -170,20 +170,5 @@ class CreateBeta(Create):
   """
 
   _certificate_map = True
-  _list_format = flags.DEFAULT_BETA_LIST_FORMAT
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create a target SSL proxy.
-
-  *{command}* is used to create target SSL proxies. A target SSL proxy is
-  referenced by one or more forwarding rules which define which packets the
-  proxy is responsible for routing. The target SSL proxy points to a backend
-  service which handle the actual requests. The target SSL proxy also points
-  to at most 15 SSL certificates used for server-side authentication or one
-  certificate map. The target SSL proxy can be associated with at most one SSL
-  policy.
-  """
-
   _regional_ssl_policies = True
+  _list_format = flags.DEFAULT_BETA_LIST_FORMAT

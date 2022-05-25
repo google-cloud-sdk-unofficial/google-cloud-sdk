@@ -42,8 +42,9 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(base.DescribeCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(base.DescribeCommand):
   """Describe a Google Cloud VMware Engine private cloud."""
 
   detailed_help = DETAILED_HELP
@@ -59,7 +60,7 @@ class DescribeAlpha(base.DescribeCommand):
     return client.Get(privatecloud)
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(DescribeAlpha):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(DescribeBeta):
   """Describe a Google Cloud VMware Engine private cloud."""
+  _is_hidden = False

@@ -27,8 +27,7 @@ from googlecloudsdk.command_lib.sql import generate_login_token_util
 
 _SQL_LOGIN = 'https://www.googleapis.com/auth/sqlservice.login'
 
-# TODO(b/230010281): Add _SQL_LOGIN scope to the list after b/230010281 fixed.
-_SCOPES = [auth_util.OPENID, auth_util.USER_EMAIL_SCOPE]
+_SCOPES = [auth_util.OPENID, auth_util.USER_EMAIL_SCOPE, _SQL_LOGIN]
 
 
 # TODO(b/230010281): Unhide the command after b/230010281 fixed.

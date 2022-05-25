@@ -29,7 +29,6 @@
         name.basename():label=NAME,
         mtu:label=MTU,
         description:label=DESCRIPTION,
-        labels.list():label=LABELS,
         createTime:label=CREATETIME,
         updateTime:label=UPDATETIME
       )

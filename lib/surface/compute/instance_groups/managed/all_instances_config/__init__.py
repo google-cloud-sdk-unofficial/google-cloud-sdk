@@ -22,6 +22,6 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ManagedInstanceGroupsAllInstancesConfig(base.Group):
   """Override instance template settings for all instances in a managed instance group."""

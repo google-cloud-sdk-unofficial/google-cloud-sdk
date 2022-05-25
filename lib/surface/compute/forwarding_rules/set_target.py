@@ -30,17 +30,21 @@ class SetTargetHelper(object):
 
   FORWARDING_RULE_ARG = None
 
-  def __init__(self, holder, include_l7_internal_load_balancing):
+  def __init__(self, holder, include_l7_internal_load_balancing,
+               include_regional_tcp_proxy):
     self._holder = holder
     self._include_l7_internal_load_balancing = include_l7_internal_load_balancing
+    self._include_regional_tcp_proxy = include_regional_tcp_proxy
 
   @classmethod
-  def Args(cls, parser, include_l7_internal_load_balancing):
+  def Args(cls, parser, include_l7_internal_load_balancing,
+           include_regional_tcp_proxy):
     """Adds flags to set the target of a forwarding rule."""
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
     flags.AddUpdateArgs(
         parser,
-        include_l7_internal_load_balancing=include_l7_internal_load_balancing)
+        include_l7_internal_load_balancing=include_l7_internal_load_balancing,
+        include_regional_tcp_proxy=include_regional_tcp_proxy)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
   def Run(self, args):
@@ -69,26 +73,28 @@ class SetTargetHelper(object):
         forwardingRule=forwarding_rule_ref.Name(),
         project=forwarding_rule_ref.project,
         targetReference=client.messages.TargetReference(
-            target=target_ref.SelfLink(),
-        ),
+            target=target_ref.SelfLink(),),
     )
 
-    return [(client.apitools_client.globalForwardingRules, 'SetTarget',
-             request)]
+    return [(client.apitools_client.globalForwardingRules, 'SetTarget', request)
+           ]
 
   def CreateRegionalRequests(self, client, resources, forwarding_rule_ref,
                              args):
     """Create a regionally scoped request."""
     target_ref, _ = utils.GetRegionalTarget(
-        client, resources, args, forwarding_rule_ref=forwarding_rule_ref)
+        client,
+        resources,
+        args,
+        forwarding_rule_ref=forwarding_rule_ref,
+        include_regional_tcp_proxy=self._include_regional_tcp_proxy)
 
     request = client.messages.ComputeForwardingRulesSetTargetRequest(
         forwardingRule=forwarding_rule_ref.Name(),
         project=forwarding_rule_ref.project,
         region=forwarding_rule_ref.region,
         targetReference=client.messages.TargetReference(
-            target=target_ref.SelfLink(),
-        ),
+            target=target_ref.SelfLink(),),
     )
 
     return [(client.apitools_client.forwardingRules, 'SetTarget', request)]
@@ -101,6 +107,7 @@ class Set(base.UpdateCommand):
   FORWARDING_RULE_ARG = None
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
   _include_l7_internal_load_balancing = True
+  _include_regional_tcp_proxy = False
 
   detailed_help = {
       'DESCRIPTION': ("""
@@ -117,21 +124,24 @@ class Set(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    SetTargetHelper.Args(parser, cls._include_l7_internal_load_balancing)
+    SetTargetHelper.Args(parser, cls._include_l7_internal_load_balancing,
+                         cls._include_regional_tcp_proxy)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return SetTargetHelper(holder,
-                           self._include_l7_internal_load_balancing).Run(args)
+    return SetTargetHelper(holder, self._include_l7_internal_load_balancing,
+                           self._include_regional_tcp_proxy).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SetBeta(Set):
   """Modify a forwarding rule to direct network traffic to a new target."""
   _include_l7_internal_load_balancing = True
+  _include_regional_tcp_proxy = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetAlpha(SetBeta):
   """Modify a forwarding rule to direct network traffic to a new target."""
   _include_l7_internal_load_balancing = True
+  _include_regional_tcp_proxy = True

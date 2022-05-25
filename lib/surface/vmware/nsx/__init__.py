@@ -22,13 +22,15 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class NsxAlpha(base.Group):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class NsxBeta(base.Group):
   """Manage NSX using Google Cloud VMware Engine."""
 
   category = base.COMPUTE_CATEGORY
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class NsxBeta(NsxAlpha):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class NsxAlpha(NsxBeta):
   """Manage NSX using Google Cloud VMware Engine."""
+  _is_hidden = False

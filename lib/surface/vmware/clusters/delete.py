@@ -43,8 +43,9 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(base.DeleteCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(base.DeleteCommand):
   """Delete a Google Cloud VMware Engine cluster."""
 
   detailed_help = DETAILED_HELP
@@ -72,7 +73,7 @@ class DeleteAlpha(base.DeleteCommand):
         has_result=False)
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeleteBeta(DeleteAlpha):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(DeleteBeta):
   """Delete a Google Cloud VMware Engine cluster."""
+  _is_hidden = False

@@ -39,14 +39,15 @@ def _Args(parser, support_global_access, support_psc_global_access,
           support_l7_internal_load_balancing, support_psc_google_apis,
           support_all_protocol, support_target_service_attachment,
           support_l3_default, support_source_ip_range,
-          support_disable_automate_dns_zone):
+          support_disable_automate_dns_zone, support_regional_tcp_proxy):
   """Add the flags to create a forwarding rule."""
 
   flags.AddUpdateArgs(
       parser,
       include_l7_internal_load_balancing=support_l7_internal_load_balancing,
       include_psc_google_apis=support_psc_google_apis,
-      include_target_service_attachment=support_target_service_attachment)
+      include_target_service_attachment=support_target_service_attachment,
+      include_regional_tcp_proxy=support_regional_tcp_proxy)
   flags.AddIPProtocols(parser, support_all_protocol, support_l3_default)
   flags.AddDescription(parser)
   flags.AddPortsAndPortRange(parser)
@@ -98,7 +99,8 @@ class CreateHelper(object):
                support_l7_internal_load_balancing, support_psc_google_apis,
                support_all_protocol, support_target_service_attachment,
                _support_sd_registration_for_regional, support_l3_default,
-               support_source_ip_range, support_disable_automate_dns_zone):
+               support_source_ip_range, support_disable_automate_dns_zone,
+               support_regional_tcp_proxy):
     self._holder = holder
     self._support_global_access = support_global_access
     self._support_psc_global_access = support_psc_global_access
@@ -110,19 +112,20 @@ class CreateHelper(object):
     self._support_l3_default = support_l3_default
     self._support_source_ip_range = support_source_ip_range
     self._support_disable_automate_dns_zone = support_disable_automate_dns_zone
+    self._support_regional_tcp_proxy = support_regional_tcp_proxy
 
   @classmethod
   def Args(cls, parser, support_global_access, support_psc_global_access,
            support_l7_internal_load_balancing, support_psc_google_apis,
            support_all_protocol, support_target_service_attachment,
            support_l3_default, support_source_ip_range,
-           support_disable_automate_dns_zone):
+           support_disable_automate_dns_zone, support_regional_tcp_proxy):
     cls.FORWARDING_RULE_ARG = _Args(
         parser, support_global_access, support_psc_global_access,
         support_l7_internal_load_balancing, support_psc_google_apis,
         support_all_protocol, support_target_service_attachment,
         support_l3_default, support_source_ip_range,
-        support_disable_automate_dns_zone)
+        support_disable_automate_dns_zone, support_regional_tcp_proxy)
 
   def ConstructProtocol(self, messages, args):
     if args.ip_protocol:
@@ -293,6 +296,7 @@ class CreateHelper(object):
         resources,
         args,
         forwarding_rule_ref,
+        include_regional_tcp_proxy=self._support_regional_tcp_proxy,
         include_l7_internal_load_balancing=self
         ._support_l7_internal_load_balancing,
         include_target_service_attachment=self
@@ -565,16 +569,16 @@ class Create(base.CreateCommand):
   _support_l3_default = True
   _support_source_ip_range = False
   _support_disable_automate_dns_zone = True
+  _support_regional_tcp_proxy = False
 
   @classmethod
   def Args(cls, parser):
-    CreateHelper.Args(parser, cls._support_global_access,
-                      cls._support_psc_global_access,
-                      cls._support_l7_internal_load_balancing,
-                      cls._support_psc_google_apis, cls._support_all_protocol,
-                      cls._support_target_service_attachment,
-                      cls._support_l3_default, cls._support_source_ip_range,
-                      cls._support_disable_automate_dns_zone)
+    CreateHelper.Args(
+        parser, cls._support_global_access, cls._support_psc_global_access,
+        cls._support_l7_internal_load_balancing, cls._support_psc_google_apis,
+        cls._support_all_protocol, cls._support_target_service_attachment,
+        cls._support_l3_default, cls._support_source_ip_range,
+        cls._support_disable_automate_dns_zone, cls._support_regional_tcp_proxy)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -583,8 +587,8 @@ class Create(base.CreateCommand):
         self._support_l7_internal_load_balancing, self._support_psc_google_apis,
         self._support_all_protocol, self._support_target_service_attachment,
         self._support_sd_registration_for_regional, self._support_l3_default,
-        self._support_source_ip_range,
-        self._support_disable_automate_dns_zone).Run(args)
+        self._support_source_ip_range, self._support_disable_automate_dns_zone,
+        self._support_regional_tcp_proxy).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -599,6 +603,7 @@ class CreateBeta(Create):
   _support_l3_default = True
   _support_source_ip_range = True
   _support_disable_automate_dns_zone = True
+  _support_regional_tcp_proxy = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -613,6 +618,7 @@ class CreateAlpha(CreateBeta):
   _support_l3_default = True
   _support_source_ip_range = True
   _support_disable_automate_dns_zone = True
+  _support_regional_tcp_proxy = True
 
 
 Create.detailed_help = {

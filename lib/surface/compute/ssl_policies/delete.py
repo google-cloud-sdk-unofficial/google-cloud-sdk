@@ -40,7 +40,7 @@ class DeleteBatchPoller(poller.BatchPoller):
     return
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete Compute Engine SSL policies.
 
@@ -86,8 +86,8 @@ class Delete(base.DeleteCommand):
                           poller.OperationBatch(operation_refs), wait_message)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(Delete):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DeleteAlphaBeta(Delete):
   """Delete Compute Engine SSL policies.
 
   *{command}* is used to delete one or more Compute Engine SSL policies.

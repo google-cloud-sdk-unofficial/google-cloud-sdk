@@ -561,7 +561,7 @@ flags_to_add = {
             flags.AddEnableServiceExternalIPs,
         'privateEndpointSubnetwork':
             flags.AddPrivateEndpointSubnetworkFlag,
-        'enableGoogleCloudAccess:':
+        'enableGoogleCloudAccess':
             flags.AddEnableGoogleCloudAccess,
     },
     BETA: {
@@ -761,7 +761,7 @@ flags_to_add = {
             flags.AddWorkloadVulnScanningFlag,
         'podautoscalingdirectmetricsoptin':
             flags.AddPodAutoscalingDirectMetricsOptInFlag,
-        'enableGoogleCloudAccess:':
+        'enableGoogleCloudAccess':
             flags.AddEnableGoogleCloudAccess,
     },
     ALPHA: {
@@ -972,7 +972,7 @@ flags_to_add = {
             flags.AddWorkloadVulnScanningFlag,
         'podautoscalingdirectmetricsoptin':
             flags.AddPodAutoscalingDirectMetricsOptInFlag,
-        'enableGoogleCloudAccess:':
+        'enableGoogleCloudAccess':
             flags.AddEnableGoogleCloudAccess,
     },
 }

@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class MethodNames(base.Group):
   """Explore values for the methodName attribute for event type `google.cloud.audit.log.v1.written`."""

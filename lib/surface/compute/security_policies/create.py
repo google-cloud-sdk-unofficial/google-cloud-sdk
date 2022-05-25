@@ -202,7 +202,10 @@ class CreateAlpha(Create):
 
     group.add_argument(
         '--type',
-        choices=['CLOUD_ARMOR', 'CLOUD_ARMOR_EDGE', 'CLOUD_ARMOR_NETWORK'],
+        choices=[
+            'CLOUD_ARMOR', 'CLOUD_ARMOR_EDGE', 'CLOUD_ARMOR_NETWORK',
+            'CLOUD_ARMOR_INTERNAL_SERVICE'
+        ],
         type=lambda x: x.upper(),
         metavar='SECURITY_POLICY_TYPE',
         help=('The type indicates the intended use of the security policy.'))

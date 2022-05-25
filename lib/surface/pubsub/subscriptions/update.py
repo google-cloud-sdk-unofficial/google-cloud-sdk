@@ -64,6 +64,7 @@ class Update(base.UpdateCommand):
     max_delivery_attempts = getattr(args, 'max_delivery_attempts', None)
     clear_dead_letter_policy = getattr(args, 'clear_dead_letter_policy', None)
     clear_retry_policy = getattr(args, 'clear_retry_policy', None)
+    clear_bigquery_config = getattr(args, 'clear_bigquery_config', None)
 
     labels_update = labels_util.ProcessUpdateArgsLazy(
         args, client.messages.Subscription.LabelsValue,
@@ -85,6 +86,10 @@ class Update(base.UpdateCommand):
     max_retry_delay = getattr(args, 'max_retry_delay', None)
     if max_retry_delay:
       max_retry_delay = util.FormatDuration(max_retry_delay)
+    bigquery_table = getattr(args, 'bigquery_table', None)
+    use_topic_schema = getattr(args, 'use_topic_schema', None)
+    write_metadata = getattr(args, 'write_metadata', None)
+    drop_unknown_fields = getattr(args, 'drop_unknown_fields', None)
 
     enable_exactly_once_delivery = getattr(args, 'enable_exactly_once_delivery',
                                            None)
@@ -105,7 +110,12 @@ class Update(base.UpdateCommand):
           clear_retry_policy=clear_retry_policy,
           min_retry_delay=min_retry_delay,
           max_retry_delay=max_retry_delay,
-          enable_exactly_once_delivery=enable_exactly_once_delivery)
+          enable_exactly_once_delivery=enable_exactly_once_delivery,
+          bigquery_table=bigquery_table,
+          use_topic_schema=use_topic_schema,
+          write_metadata=write_metadata,
+          drop_unknown_fields=drop_unknown_fields,
+          clear_bigquery_config=clear_bigquery_config)
     except subscriptions.NoFieldsSpecifiedError:
       if not any(args.IsSpecified(arg) for arg in ('clear_labels',
                                                    'update_labels',

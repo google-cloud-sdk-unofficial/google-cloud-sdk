@@ -219,10 +219,10 @@ class Create(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   _certificate_map = True
+  _regional_ssl_policies = True
   _list_format = flags.DEFAULT_BETA_LIST_FORMAT
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   _traffic_director_security = True
-  _regional_ssl_policies = True

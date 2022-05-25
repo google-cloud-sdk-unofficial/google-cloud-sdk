@@ -42,8 +42,9 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(base.DescribeCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(base.DescribeCommand):
   """Display data associated with a Google Cloud VMware Engine node type."""
 
   detailed_help = DETAILED_HELP
@@ -59,8 +60,8 @@ class DescribeAlpha(base.DescribeCommand):
     return client.Get(resource)
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(DescribeAlpha):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(DescribeBeta):
   """Display data associated with a Google Cloud VMware Engine node type."""
+  _is_hidden = False
 

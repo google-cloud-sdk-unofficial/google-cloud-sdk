@@ -38,8 +38,9 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
   """List Google Cloud VMware Engine locations."""
 
   detailed_help = DETAILED_HELP
@@ -60,7 +61,7 @@ class ListAlpha(base.ListCommand):
     return client.List(project, limit=args.limit)
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(ListAlpha):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
   """List Google Cloud VMware Engine locations."""
+  _is_hidden = False

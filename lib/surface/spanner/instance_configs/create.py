@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import textwrap
-
+from googlecloudsdk.api_lib.spanner import instance_config_operations
 from googlecloudsdk.api_lib.spanner import instance_configs
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
@@ -81,6 +81,7 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--etag', help='Used for optimistic concurrency control.')
 
+    base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
     parser.add_argument(
@@ -190,12 +191,16 @@ class Create(base.CreateCommand):
       # If the config exists, it's cloned, otherwise, we display the
       # error from instanceConfigs.Get.
       config = instance_configs.Get(args.clone_config)
-      return instance_configs.CreateUsingExistingConfig(args, config)
+      op = instance_configs.CreateUsingExistingConfig(args, config)
     else:
       if not args.IsSpecified('display_name'):
         raise c_exceptions.InvalidArgumentException(
             '--display-name', 'Must specify --display-name.')
 
-      return instance_configs.CreateUsingReplicas(
-          args.config, args.display_name, args.base_config, args.replicas,
-          args.validate_only, args.labels, args.etag)
+      op = instance_configs.CreateUsingReplicas(args.config, args.display_name,
+                                                args.base_config, args.replicas,
+                                                args.validate_only, args.labels,
+                                                args.etag)
+    if args.async_:
+      return op
+    return instance_config_operations.Await(op, 'Creating instance-config')

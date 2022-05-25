@@ -74,7 +74,8 @@ def _CommonArgs(parser,
                 support_local_ssd_size=False,
                 support_numa_node_count=False,
                 support_visible_core_count=False,
-                support_max_run_duration=False):
+                support_max_run_duration=False,
+                support_enable_target_shape=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgsForBulk(parser)
@@ -162,6 +163,9 @@ def _CommonArgs(parser,
   if support_max_run_duration:
     instances_flags.AddMaxRunDurationVmArgs(parser)
 
+  if support_enable_target_shape:
+    instances_flags.AddDistributionTargetShapeArgs(parser)
+
 
 def _GetOperations(compute_client, project, operation_group_id):
   """Requests operations with group id matching the given one."""
@@ -237,6 +241,7 @@ class Create(base.Command):
   _support_numa_node_count = False
   _support_visible_core_count = False
   _support_max_run_duration = False
+  _support_enable_target_shape = False
 
   _log_async = False
 
@@ -253,7 +258,8 @@ class Create(base.Command):
         support_local_ssd_size=cls._support_local_ssd_size,
         support_numa_node_count=cls._support_numa_node_count,
         support_visible_core_count=cls._support_visible_core_count,
-        support_max_run_duration=cls._support_max_run_duration)
+        support_max_run_duration=cls._support_max_run_duration,
+        support_enable_target_shape=cls._support_enable_target_shape)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeBulkSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -274,8 +280,25 @@ class Create(base.Command):
     return ref.SelfLink()
 
   def GetLocationPolicy(self, args, messages):
-    if not args.IsSpecified('location_policy'):
+    if not args.IsSpecified('location_policy') and (
+        not self._support_enable_target_shape or
+        not args.IsSpecified('target_distribution_shape')):
       return None
+
+    location_policy = messages.LocationPolicy()
+    if args.IsSpecified('location_policy'):
+      location_policy.locations = self.GetLocationPolicyLocations(
+          args, messages)
+
+    if (self._support_enable_target_shape
+        and args.IsSpecified('target_distribution_shape')):
+      location_policy.targetShape = arg_utils.ChoiceToEnum(
+          args.target_distribution_shape,
+          messages.LocationPolicy.TargetShapeValueValuesEnum)
+
+    return location_policy
+
+  def GetLocationPolicyLocations(self, args, messages):
     locations = []
     for zone, policy in args.location_policy.items():
       zone_policy = arg_utils.ChoiceToEnum(
@@ -284,11 +307,8 @@ class Create(base.Command):
           messages.LocationPolicy.LocationsValue.AdditionalProperty(
               key='zones/{}'.format(zone),
               value=messages.LocationPolicyLocation(preference=zone_policy)))
-
-    location_policy = messages.LocationPolicy(
-        locations=messages.LocationPolicy.LocationsValue(
-            additionalProperties=locations))
-    return location_policy
+    return messages.LocationPolicy.LocationsValue(
+        additionalProperties=locations)
 
   def _CreateRequests(self, args, holder, compute_client, resource_parser,
                       project, location, scope):
@@ -528,6 +548,8 @@ class Create(base.Command):
     """
 
     instances_flags.ValidateBulkCreateArgs(args)
+    if self._support_enable_target_shape:
+      instances_flags.ValidateBulkTargetShapeArgs(args)
     instances_flags.ValidateLocationPolicyArgs(args)
     instances_flags.ValidateBulkDiskFlags(
         args,
@@ -621,6 +643,7 @@ class CreateBeta(Create):
   _support_numa_node_count = False
   _support_visible_core_count = False
   _support_max_run_duration = False
+  _support_enable_target_shape = True
 
   @classmethod
   def Args(cls, parser):
@@ -635,7 +658,8 @@ class CreateBeta(Create):
         support_local_ssd_size=cls._support_local_ssd_size,
         support_numa_node_count=cls._support_numa_node_count,
         support_visible_core_count=cls._support_visible_core_count,
-        support_max_run_duration=cls._support_max_run_duration)
+        support_max_run_duration=cls._support_max_run_duration,
+        support_enable_target_shape=cls._support_enable_target_shape)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeBulkSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -658,6 +682,7 @@ class CreateAlpha(Create):
   _support_numa_node_count = True
   _support_visible_core_count = True
   _support_max_run_duration = True
+  _support_enable_target_shape = True
 
   @classmethod
   def Args(cls, parser):
@@ -672,7 +697,8 @@ class CreateAlpha(Create):
         support_local_ssd_size=cls._support_local_ssd_size,
         support_numa_node_count=cls._support_numa_node_count,
         support_visible_core_count=cls._support_visible_core_count,
-        support_max_run_duration=cls._support_max_run_duration)
+        support_max_run_duration=cls._support_max_run_duration,
+        support_enable_target_shape=cls._support_enable_target_shape)
 
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeBulkSourceInstanceTemplateArg())

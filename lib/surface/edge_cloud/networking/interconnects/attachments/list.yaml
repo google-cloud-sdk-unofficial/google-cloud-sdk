@@ -30,5 +30,6 @@
         mtu:label=MTU,
         vlanId:label=VLANID,
         interconnect.basename():label=INTERCONNECT,
-        router.basename():label=ROUTER
+        router.basename():label=ROUTER,
+        state:label=STATE
       )

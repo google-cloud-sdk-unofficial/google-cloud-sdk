@@ -29,5 +29,6 @@
         name.basename():label=NAME,
         network.basename():label=NETWORK,
         bgp.asn:label=ASN,
-        bgp.keepaliveIntervalInSeconds:label=KEEPALIVEINTERVAL
+        bgp.keepaliveIntervalInSeconds:label=KEEPALIVEINTERVAL,
+        state:label=STATE
       )

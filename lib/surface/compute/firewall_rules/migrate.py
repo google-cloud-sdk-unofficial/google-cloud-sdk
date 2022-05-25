@@ -72,7 +72,7 @@ def _UnsupportedTagResult(field, tag):
   return (False, 'Mapping for {} \'{}\' was not found.'.format(field, tag))
 
 
-def _IsFirewallSupported(firewall, tag_mapping):
+def _IsFirewallSupported(firewall, tag_mapping, disable_logging):
   """Checks if the given VPC Firewall can be converted by the Migration Tool."""
   # Source Service Accounts
   if firewall.sourceServiceAccounts:
@@ -86,7 +86,7 @@ def _IsFirewallSupported(firewall, tag_mapping):
     if tag not in tag_mapping:
       return _UnsupportedTagResult('target_tag', tag)
   # Logging is not supported in Network Firewall Policies MVP
-  if firewall.logConfig and firewall.logConfig.enable:
+  if not disable_logging and firewall.logConfig and firewall.logConfig.enable:
     return (False, 'Logging is not supported in Network Firewall Policy MVP.')
   return (True, '')
 
@@ -121,7 +121,8 @@ def _ConvertTags(messages, tag_mapping, tags):
   ]
 
 
-def _ConvertRuleInternal(messages, firewall, action, l4_configs, tag_mapping):
+def _ConvertRuleInternal(messages, firewall, action, l4_configs, tag_mapping,
+                         disable_logging):
   return messages.FirewallPolicyRule(
       disabled=firewall.disabled,
       ruleName=firewall.name,  # Allow and deny cannot be in the same rule
@@ -129,7 +130,7 @@ def _ConvertRuleInternal(messages, firewall, action, l4_configs, tag_mapping):
       direction=_ConvertRuleDirection(messages, firewall.direction),
       priority=firewall.priority,
       action=action,
-      enableLogging=False,  # =firewall.logConfig.enable : is not supported yet
+      enableLogging=(not disable_logging and firewall.logConfig.enable),
       match=messages.FirewallPolicyRuleMatcher(
           destIpRanges=firewall.destinationRanges,
           srcIpRanges=firewall.sourceRanges,
@@ -140,12 +141,12 @@ def _ConvertRuleInternal(messages, firewall, action, l4_configs, tag_mapping):
       targetServiceAccounts=firewall.targetServiceAccounts)
 
 
-def _ConvertRule(messages, firewall, tag_mapping):
+def _ConvertRule(messages, firewall, tag_mapping, disable_logging):
   if firewall.denied:
     return _ConvertRuleInternal(messages, firewall, 'deny', firewall.denied,
-                                tag_mapping)
+                                tag_mapping, disable_logging)
   return _ConvertRuleInternal(messages, firewall, 'allow', firewall.allowed,
-                              tag_mapping)
+                              tag_mapping, disable_logging)
 
 
 def _IsPrefixTrue(statuses):
@@ -247,6 +248,15 @@ class MigrateAlpha(base.CreateCommand):
         '--tag-mapping-file',
         required=False,
         help='Path to a JSON file with legacy to secure tag mapping.')
+    # optional --disable-logging argument
+    parser.add_argument(
+        '--disable-logging',
+        action='store_true',
+        required=False,
+        help="""\
+      If set, migration tool will not migrate logging config. This is a
+      workaround to use before Network Firewall Policies support logging.
+      """)
 
   def Run(self, args):
     """Run the migration logic."""
@@ -265,6 +275,7 @@ class MigrateAlpha(base.CreateCommand):
     policy_name = getattr(args, 'target_firewall_policy', None)
     export_tag_mapping = getattr(args, 'export_tag_mapping', False)
     tag_mapping_file_name = getattr(args, 'tag_mapping_file', None)
+    disable_logging = getattr(args, 'disable_logging', False)
 
     # In the export tag mode, the tag mapping file must be provided
     if export_tag_mapping and not tag_mapping_file_name:
@@ -363,9 +374,11 @@ class MigrateAlpha(base.CreateCommand):
       # Convert only supported customer defined VPC Firewalls
       if is_custom:
         customer_defined_firewalls = customer_defined_firewalls + 1
-        (status, error) = _IsFirewallSupported(firewall, tag_mapping)
+        (status, error) = _IsFirewallSupported(firewall, tag_mapping,
+                                               disable_logging)
         if status:
-          converted_firewall = _ConvertRule(messages, firewall, tag_mapping)
+          converted_firewall = _ConvertRule(messages, firewall, tag_mapping,
+                                            disable_logging)
         else:
           conversion_failures = conversion_failures + 1
       converted_firewalls.append(
