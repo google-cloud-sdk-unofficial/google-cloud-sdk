@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cloud Pub/Sub snapshots create command."""
 
 from __future__ import absolute_import
@@ -36,11 +35,12 @@ class Create(base.CreateCommand):
   def Args(parser):
     """Registers flags for this command."""
 
-    parser.add_argument('snapshot', nargs='+',
-                        help='One or more snapshot names to create.')
+    parser.add_argument(
+        'snapshot', nargs='+', help='One or more snapshot names to create.')
 
     parser.add_argument(
-        '--subscription', required=True,
+        '--subscription',
+        required=True,
         help=('The subscription whose backlog the snapshot retains. '
               ' Specifically, the created snapshot is guaranteed to retain a)'
               ' The existing backlog on the subscription, i.e., the set of'
@@ -50,7 +50,8 @@ class Create(base.CreateCommand):
               ' successful creation of the snapshot.'))
 
     parser.add_argument(
-        '--subscription-project', default='',
+        '--subscription-project',
+        default='',
         help=('The name of the project the provided subscription belongs to.'
               ' If not set, it defaults to the currently selected'
               ' cloud project.'))
@@ -74,8 +75,8 @@ class Create(base.CreateCommand):
     """
     client = snapshots.SnapshotsClient()
 
-    subscription_ref = util.ParseSubscription(
-        args.subscription, args.subscription_project)
+    subscription_ref = util.ParseSubscription(args.subscription,
+                                              args.subscription_project)
 
     labels = labels_util.ParseCreateArgs(
         args, client.messages.CreateSnapshotRequest.LabelsValue)
@@ -88,8 +89,10 @@ class Create(base.CreateCommand):
         result = client.Create(snapshot_ref, subscription_ref, labels=labels)
       except api_ex.HttpError as error:
         exc = exceptions.HttpException(error)
-        log.CreatedResource(snapshot_ref.RelativeName(), kind='snapshot',
-                            failed=exc.payload.status_message)
+        log.CreatedResource(
+            snapshot_ref.RelativeName(),
+            kind='snapshot',
+            failed=exc.payload.status_message)
         failed.append(snapshot_name)
         continue
 

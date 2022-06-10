@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
 from googlecloudsdk.command_lib.compute.network_firewall_policies import secure_tags_utils
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   r"""Creates a Compute Engine network firewall policy rule.
 
@@ -34,6 +35,10 @@ class Create(base.CreateCommand):
   """
 
   NETWORK_FIREWALL_POLICY_ARG = None
+  _support_address_group = False
+  _support_fqdn = False
+  _support_geo = False
+  _support_nti = False
 
   @classmethod
   def Args(cls, parser):
@@ -52,13 +57,16 @@ class Create(base.CreateCommand):
     flags.AddDescription(parser)
     flags.AddSrcSecureTags(parser)
     flags.AddTargetSecureTags(parser)
-    flags.AddSrcAddressGroups(parser)
-    flags.AddDestAddressGroups(parser)
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if cls._support_address_group:
+      flags.AddSrcAddressGroups(parser)
+      flags.AddDestAddressGroups(parser)
+    if cls._support_fqdn:
       flags.AddSrcFqdns(parser)
       flags.AddDestFqdns(parser)
+    if cls._support_geo:
       flags.AddSrcRegionCodes(parser)
       flags.AddDestRegionCodes(parser)
+    if cls._support_nti:
       flags.AddSrcThreatIntelligence(parser)
       flags.AddDestThreatIntelligence(parser)
     parser.display_info.AddCacheUpdater(flags.NetworkFirewallPoliciesCompleter)
@@ -81,14 +89,6 @@ class Create(base.CreateCommand):
     disabled = False
     src_secure_tags = []
     target_secure_tags = []
-    src_address_groups = []
-    dest_address_groups = []
-    src_fqdns = []
-    dest_fqdns = []
-    src_region_codes = []
-    dest_region_codes = []
-    src_threat_intelligence = []
-    dest_threat_intelligence = []
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
     if args.IsSpecified('dest_ip_ranges'):
@@ -107,47 +107,29 @@ class Create(base.CreateCommand):
     if args.IsSpecified('target_secure_tags'):
       target_secure_tags = secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
           holder.client, args.target_secure_tags)
-    if args.IsSpecified('src_address_groups'):
-      src_address_groups = args.src_address_groups
-    if args.IsSpecified('dest_address_groups'):
-      dest_address_groups = args.dest_address_groups
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      if args.IsSpecified('src_fqdns'):
-        src_fqdns = args.src_fqdns
-      if args.IsSpecified('dest_fqdns'):
-        dest_fqdns = args.dest_fqdns
-      if args.IsSpecified('src_region_codes'):
-        src_region_codes = args.src_region_codes
-      if args.IsSpecified('dest_region_codes'):
-        dest_region_codes = args.dest_region_codes
-      if args.IsSpecified('src_threat_intelligence'):
-        src_threat_intelligence = args.src_threat_intelligence
-      if args.IsSpecified('dest_threat_intelligence'):
-        dest_threat_intelligence = args.dest_threat_intelligence
     layer4_config_list = rule_utils.ParseLayer4Configs(layer4_configs,
                                                        holder.client.messages)
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      matcher = holder.client.messages.FirewallPolicyRuleMatcher(
-          srcIpRanges=src_ip_ranges,
-          destIpRanges=dest_ip_ranges,
-          layer4Configs=layer4_config_list,
-          srcSecureTags=src_secure_tags,
-          srcAddressGroups=src_address_groups,
-          destAddressGroups=dest_address_groups,
-          srcFqdns=src_fqdns,
-          destFqdns=dest_fqdns,
-          srcRegionCodes=src_region_codes,
-          destRegionCodes=dest_region_codes,
-          srcThreatIntelligences=src_threat_intelligence,
-          destThreatIntelligences=dest_threat_intelligence)
-    else:
-      matcher = holder.client.messages.FirewallPolicyRuleMatcher(
-          srcIpRanges=src_ip_ranges,
-          destIpRanges=dest_ip_ranges,
-          layer4Configs=layer4_config_list,
-          srcSecureTags=src_secure_tags,
-          srcAddressGroups=src_address_groups,
-          destAddressGroups=dest_address_groups)
+    matcher = holder.client.messages.FirewallPolicyRuleMatcher(
+        srcIpRanges=src_ip_ranges,
+        destIpRanges=dest_ip_ranges,
+        layer4Configs=layer4_config_list,
+        srcSecureTags=src_secure_tags)
+    if self._support_address_group and args.IsSpecified('src_address_groups'):
+      matcher.srcAddressGroups = args.src_address_groups
+    if self._support_address_group and args.IsSpecified('dest_address_groups'):
+      matcher.destAddressGroups = args.dest_address_groups
+    if self._support_fqdn and args.IsSpecified('src_fqdns'):
+      matcher.srcFqdns = args.src_fqdns
+    if self._support_fqdn and args.IsSpecified('dest_fqdns'):
+      matcher.destFqdns = args.dest_fqdns
+    if self._support_geo and args.IsSpecified('src_region_codes'):
+      matcher.srcRegionCodes = args.src_region_codes
+    if self._support_geo and args.IsSpecified('dest_region_codes'):
+      matcher.destRegionCodes = args.dest_region_codes
+    if self._support_nti and args.IsSpecified('src_threat_intelligence'):
+      matcher.srcThreatIntelligences = args.src_threat_intelligence
+    if self._support_nti and args.IsSpecified('dest_threat_intelligence'):
+      matcher.destThreatIntelligences = args.dest_threat_intelligence
     traffic_direct = (
         holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum
         .INGRESS)
@@ -175,6 +157,18 @@ class Create(base.CreateCommand):
     return network_firewall_policy_rule_client.Create(
         firewall_policy=args.firewall_policy,
         firewall_policy_rule=firewall_policy_rule)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  r"""Creates a Compute Engine network firewall policy rule.
+
+  *{command}* is used to create network firewall policy rules.
+  """
+  _support_address_group = True
+  _support_fqdn = True
+  _support_geo = True
+  _support_nti = True
 
 
 Create.detailed_help = {

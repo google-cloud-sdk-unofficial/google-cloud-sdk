@@ -1,0 +1,25 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Update a BeyondCorp client connector service.
+    description: Update a BeyondCorp client connector service.
+    examples: |
+      The following command updates a client connector service with ID ``my-resource'' in the default user project and location us-central1:
+
+        $ {command} my-resource \
+            --location=us-central1 --project=${PROJECT_ID} --display-name="my-new-resource"
+
+  request:
+    collection: beyondcorp.projects.locations.clientConnectorServices
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.beyondcorp.client_connector.services.hooks:CheckUpdateFieldsSpecified
+
+  async:
+    collection: beyondcorp.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: The BeyondCorp client connector service you want to update.
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.client_connector.resources:client_connector_service
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.beyondcorp.client_connector.services.flags:display_name

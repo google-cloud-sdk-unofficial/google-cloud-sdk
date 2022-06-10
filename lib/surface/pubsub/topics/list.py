@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cloud Pub/Sub topics list command."""
 
 from __future__ import absolute_import
@@ -38,10 +37,12 @@ class List(base.ListCommand):
   """Lists Cloud Pub/Sub topics within a project."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           Lists all of the Cloud Pub/Sub topics that exist in a given project that
           match the given topic name filter.""",
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           To filter results by topic name (ie. only show topic 'my-topic'), run:
 
             $ {command} --filter="name.scope(topic):'my-topic'"

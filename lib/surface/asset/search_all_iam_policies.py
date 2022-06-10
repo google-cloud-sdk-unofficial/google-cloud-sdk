@@ -35,7 +35,7 @@ DETAILED_HELP = {
       Note: The query is compared against each IAM policy binding, including its
       principals, roles and conditions. The returned IAM policies, will only
       contain the bindings that match your query. To learn more about the IAM
-      policy structure, see [IAM policy doc](https://cloud.google.com/iam/docs/policies#structure).
+      policy structure, see the [IAM policy documentation](https://cloud.google.com/iam/help/allow-policies/structure).
       """,
     'EXAMPLES':
         """\
@@ -85,7 +85,7 @@ def AddQueryArgument(parser):
         string is compared against each Cloud IAM policy binding, including its
         principals, roles, and Cloud IAM conditions. The returned Cloud IAM
         policies will only contain the bindings that match your query. To learn
-        more about the IAM policy structure, see [IAM policy doc](https://cloud.google.com/iam/docs/policies#structure).
+        more about the IAM policy structure, see the [IAM policy documentation](https://cloud.google.com/iam/help/allow-policies/structure).
 
         Examples:
 

@@ -71,7 +71,7 @@ class Create(base.CreateCommand):
   """
 
   NETWORK_ARG = None
-  _support_firewall_order = False
+  _support_firewall_order = True
 
   @classmethod
   def Args(cls, parser):
@@ -85,6 +85,7 @@ class Create(base.CreateCommand):
     network_utils.AddMtuArg(parser)
     network_utils.AddInternalIpv6RangeArg(parser)
     network_utils.AddEnableUlaInternalIpv6Arg(parser)
+    network_utils.AddNetworkFirewallPolicyEnforcementOrderArg(parser)
 
     parser.display_info.AddCacheUpdater(flags.NetworksCompleter)
 

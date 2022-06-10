@@ -319,8 +319,14 @@ class Ssh(base.Command):
         # to connect as a specific user. This may get overridden by OS Login.
         username_requested = '@' in args.user_host
         oslogin_state = ssh.GetOsloginState(
-            instance, project, user, public_key, expiration_micros,
-            self.ReleaseTrack(), username_requested=username_requested)
+            instance,
+            project,
+            user,
+            public_key,
+            expiration_micros,
+            self.ReleaseTrack(),
+            username_requested=username_requested,
+            messages=holder.client.messages)
         user = oslogin_state.user
 
       log.debug(oslogin_state)

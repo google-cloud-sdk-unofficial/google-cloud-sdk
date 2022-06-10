@@ -23,6 +23,7 @@ import os.path
 import sys
 import threading
 
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
@@ -219,7 +220,9 @@ class Ssh(base.Command):
           expiration_micros,
           self.ReleaseTrack(),
           username_requested=username_requested,
-          instance_enable_oslogin=tpu_ssh_utils.TpuHasOsLoginEnabled(node))
+          instance_enable_oslogin=tpu_ssh_utils.TpuHasOsLoginEnabled(node),
+          messages=base_classes.ComputeApiHolder(
+              self.ReleaseTrack()).client.messages)
       user = oslogin_state.user
 
     # Format the key correctly.

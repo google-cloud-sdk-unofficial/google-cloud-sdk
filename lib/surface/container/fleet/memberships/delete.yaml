@@ -9,9 +9,14 @@
       resources and agent connections to Google. To completely unregister the cluster, consider
       using the command: `{parent_command} unregister`.
     examples: |
+      First retrieve the ID of the membership using the command below. The output of this command
+      lists all the fleet's members, with their unique IDs in the Names column:
+
+        $ {parent_command} list
+
       Delete a membership from Fleet:
 
-        $ {command} a-membership
+        $ {command} MEMBERSHIP_NAME
 
   request:
     collection: gkehub.projects.locations.memberships

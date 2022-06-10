@@ -44,6 +44,8 @@ class Delete(base.DeleteCommand):
     resource_args.AddJobResourceArgs(parser)
 
   def Run(self, args):
-    client = jobs.JobsClient()
+    release_track = self.ReleaseTrack()
+
+    client = jobs.JobsClient(release_track)
     job_ref = args.CONCEPTS.job.Parse()
     return client.Delete(job_ref)

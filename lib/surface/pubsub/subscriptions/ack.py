@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cloud Pub/Sub subscriptions ack command."""
 
 from __future__ import absolute_import
@@ -78,7 +77,8 @@ class Ack(base.Command):
   """Acknowledges one or more messages on the specified subscription."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           Acknowledges one or more messages as having been successfully received.
           If a delivered message is not acknowledged within the Subscription's
           ack deadline, Cloud Pub/Sub will attempt to deliver it again.

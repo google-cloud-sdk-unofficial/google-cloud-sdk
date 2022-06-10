@@ -26,7 +26,9 @@ from googlecloudsdk.core import properties
 BACKUP_FORMAT = """
     table(
         name,
-        state:label=STATUS
+        state:label=STATUS,
+        cluster_name,
+        create_time
     )
 """
 
@@ -47,6 +49,11 @@ class List(base.ListCommand):
         To list backups, run:
 
           $ {command} --region=us-central1
+
+        Use the --format flag to customize the fields that are outputted. For
+        example, to list backups with their names and sizes, run:
+
+          $ {command} --region=us-central1 --format="table(name, size_bytes)"
         """,
   }
 

@@ -31,24 +31,26 @@ class Create(base.Command):
           To create a DestGroup with name ``GROUP_NAME'', in region ``REGION''
           in the current project run:
 
-          $ {command} DEST_GROUP_NAME --region=REGION
+          $ {command} GROUP_NAME --region=REGION
 
           To create a DestGroup with name ``GROUP_NAME'', in region ``REGION''
           with ip ranges ``CIDR1'', ``CIDR2'' in the current project run:
 
-          $ {command} DEST_GROUP_NAME --region=REGION --ip-range-list=CIDR1,CIDR2
+          $ {command} GROUP_NAME --region=REGION --ip-range-list=CIDR1,CIDR2
 
           To create a DestGroup with name ``GROUP_NAME'', in region ``REGION''
           with fqdns ``FQDN1'', ``FQDN2'' in the current project run:
 
-          $ {command} DEST_GROUP_NAME --region=REGION --fqdn-list=FQDN1,FQDN2
+          $ {command} GROUP_NAME --region=REGION --fqdn-list=FQDN1,FQDN2
 
           To create a DestGroup with name ``GROUP_NAME'', in region ``REGION''
           with fqdns ``FQDN1'', ``FQDN2'' and ip ranges ``CIDR1'',``CIDR2'' in
           the project ``PROJECT_ID'' run:
 
-          $ {command} DEST_GROUP_NAME --region=REGION --fqdn-list=FQDN1,FQDN2
+          $ {command} GROUP_NAME --region=REGION --fqdn-list=FQDN1,FQDN2
           --ip-range-list=CIDR1,CIDR2 --project=PROJECT_ID
+
+          GROUP_NAME can only contain lower-case letters (a-z) and dashes (-).
           """,
   }
 

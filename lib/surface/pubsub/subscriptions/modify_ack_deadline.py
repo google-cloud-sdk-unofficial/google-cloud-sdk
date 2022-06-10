@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cloud Pub/Sub subscription modify command."""
 
 from __future__ import absolute_import
@@ -34,7 +33,7 @@ from googlecloudsdk.core import properties
 @base.Deprecate(
     is_removed=False,
     warning='This command has been renamed. Please use '
-            '`modify-message-ack-deadline` instead.')
+    '`modify-message-ack-deadline` instead.')
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ModifyAckDeadline(base.Command):
   """Modifies the ACK deadline for a specific Cloud Pub/Sub message.

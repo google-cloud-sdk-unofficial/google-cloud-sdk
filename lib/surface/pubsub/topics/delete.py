@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cloud Pub/Sub topics delete command."""
 
 from __future__ import absolute_import
@@ -41,8 +40,10 @@ def _Run(args, legacy_output=False):
       result = client.Delete(topic_ref)
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
-      log.DeletedResource(topic_ref.RelativeName(), kind='topic',
-                          failed=exc.payload.status_message)
+      log.DeletedResource(
+          topic_ref.RelativeName(),
+          kind='topic',
+          failed=exc.payload.status_message)
       failed.append(topic_ref.topicsId)
       continue
 
@@ -61,7 +62,8 @@ class Delete(base.DeleteCommand):
   """Deletes one or more Cloud Pub/Sub topics."""
 
   detailed_help = {
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           To delete a Cloud Pub/Sub topic, run:
 
               $ {command} mytopic"""

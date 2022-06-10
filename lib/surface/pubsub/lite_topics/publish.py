@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Pub/Sub lite-topics publish command."""
 
 from __future__ import absolute_import
@@ -74,10 +73,7 @@ def _AddPublishFlags(parser):
 class Publish(base.Command):
   """Publish Pub/Sub Lite messages."""
 
-  detailed_help = {
-      'DESCRIPTION': _DESCRIPTION,
-      'EXAMPLES': _EXAMPLES
-  }
+  detailed_help = {'DESCRIPTION': _DESCRIPTION, 'EXAMPLES': _EXAMPLES}
 
   @staticmethod
   def Args(parser):
@@ -106,8 +102,10 @@ class PublishAlphBeta(Publish):
   """Publish Pub/Sub Lite messages."""
 
   detailed_help = {
-      'DESCRIPTION': _DESCRIPTION,
-      'EXAMPLES': _EXAMPLES + """\
+      'DESCRIPTION':
+          _DESCRIPTION,
+      'EXAMPLES':
+          _EXAMPLES + """\
 
 To publish a message to a Pub/Sub Lite topic with an event time, run:
 
@@ -119,7 +117,8 @@ To publish a message to a Pub/Sub Lite topic with an event time, run:
   def Args(parser):
     _AddPublishFlags(parser)
     parser.add_argument(
-        '--event-time', type=arg_parsers.Datetime.Parse, metavar='DATETIME',
+        '--event-time',
+        type=arg_parsers.Datetime.Parse,
+        metavar='DATETIME',
         help="""A user-specified event time. Run `gcloud topic datetimes` for
             information on time formats.""")
-

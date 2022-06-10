@@ -61,12 +61,12 @@ class Delete(base.DeleteCommand):
 Delete.detailed_help = {
     'EXAMPLES':
         """\
-    To delete a rule with priority ``10" in a global network firewall policy
+    To delete a rule with priority ``10'' in a global network firewall policy
     with name ``my-policy'', run:
 
       $ {command} 10 --firewall-policy=my-policy --global-firewall-policy
 
-    To delete a rule with priority ``10" in a regional network firewall policy
+    To delete a rule with priority ``10'' in a regional network firewall policy
     with name ``my-policy'', in region ``region-a'', run:
 
       $ {command} 10 --firewall-policy=my-policy \

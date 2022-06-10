@@ -39,8 +39,8 @@ _DETAILED_HELP = {
       --principal-email=my-iam-account@somedomain.com \
       --permission=resourcemanager.projects.get
 
-    See https://cloud.google.com/iam/docs/policies for more information about
-    IAM policies.
+    See https://cloud.google.com/iam/help/allow-policies/overview for more
+    information about IAM policies.
       """
 }
 
@@ -62,8 +62,8 @@ _DETAILED_HELP_ALPHA = {
         --principal-email=my-iam-account@somedomain.com
         --permission=resourcemanager.projects.get
 
-      See https://cloud.google.com/iam/docs/policies for more information about
-      IAM policies.
+      See https://cloud.google.com/iam/help/allow-policies/overview for more
+      information about IAM policies.
 
       To troubleshoot a permission of a principal on a resource with conditional binding, run:
 
@@ -75,8 +75,8 @@ _DETAILED_HELP_ALPHA = {
         --resource-type='compute.googleapis.com/Image' \
         --destination-ip='192.2.2.2'--destination-port=8080 --request-time='2021-01-01T00:00:00Z'
 
-      See https://cloud.google.com/iam/docs/policies for more information about
-      IAM policies.
+      See https://cloud.google.com/iam/help/allow-policies/overview for more
+      information about IAM policies.
       """
 }
 

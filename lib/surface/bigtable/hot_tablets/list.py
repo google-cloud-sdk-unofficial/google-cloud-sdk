@@ -62,7 +62,6 @@ class ListHotTablets(base.ListCommand):
     # `sort=1:reverse` sorts the display order of hot tablets by cpu usage.
     parser.display_info.AddFormat("""
       table(
-        name.basename():label=NAME,
         tableName.basename():label=TABLE,
         nodeCpuUsagePercent:label=CPU_USAGE:sort=1:reverse,
         startTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'):label=START_TIME,

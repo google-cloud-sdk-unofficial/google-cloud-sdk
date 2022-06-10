@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cloud Pub/Sub subscription modify command."""
 
 from __future__ import absolute_import
@@ -88,7 +87,8 @@ class ModifyMessageAckDeadline(base.Command):
   """Modifies the ACK deadline for a specific Cloud Pub/Sub message."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           This method is useful to indicate that more time is needed to process
           a message by the subscriber, or to make the message available for
           redelivery if the processing was interrupted."""

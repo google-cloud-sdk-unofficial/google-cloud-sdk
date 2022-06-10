@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,16 +12,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The gcloud anthos config validate command group."""
+
+"""A library to support batch commands."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Validate(base.Group):
-  """Validate that declarative configurations comply with policies."""
+VERSION_MAP = {base.ReleaseTrack.ALPHA: 'v1',
+               base.ReleaseTrack.BETA: 'v1',
+               base.ReleaseTrack.GA: 'v1'}
+
+
+# The messages module can also be accessed from client.MESSAGES_MODULE
+def GetMessagesModule(release_track=base.ReleaseTrack.ALPHA):
+  api_version = VERSION_MAP.get(release_track)
+  return apis.GetMessagesModule('batch', api_version)
+
+
+def GetClientInstance(release_track=base.ReleaseTrack.ALPHA):
+  api_version = VERSION_MAP.get(release_track)
+  return apis.GetClientInstance('batch', api_version)

@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cloud Pub/Sub subscriptions create command."""
 
 from __future__ import absolute_import
@@ -103,9 +102,10 @@ def _Run(args, enable_labels=False, legacy_output=False):
           drop_unknown_fields=drop_unknown_fields)
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
-      log.CreatedResource(subscription_ref.RelativeName(),
-                          kind='subscription',
-                          failed=exc.payload.status_message)
+      log.CreatedResource(
+          subscription_ref.RelativeName(),
+          kind='subscription',
+          failed=exc.payload.status_message)
       failed.append(subscription_ref.subscriptionsId)
       continue
 
@@ -124,7 +124,8 @@ class Create(base.CreateCommand):
   """Creates one or more Cloud Pub/Sub subscriptions."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           Creates one or more Cloud Pub/Sub subscriptions for a given topic.
           The new subscription defaults to a PULL subscription unless a push
           endpoint is specified."""
@@ -134,11 +135,10 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     topic_help_text = ('from which this subscription is receiving messages. '
                        'Each subscription is attached to a single topic.')
-    topic = resource_args.CreateTopicResourceArg(topic_help_text,
-                                                 positional=False)
+    topic = resource_args.CreateTopicResourceArg(
+        topic_help_text, positional=False)
     subscription = resource_args.CreateSubscriptionResourceArg(
-        'to create.',
-        plural=True)
+        'to create.', plural=True)
     resource_args.AddResourceArgs(parser, [topic, subscription])
     flags.AddSubscriptionSettingsFlags(parser)
     labels_util.AddCreateLabelsFlags(parser)
@@ -156,11 +156,10 @@ class CreateBeta(Create):
   def Args(cls, parser):
     topic_help_text = ('from which this subscription is receiving messages. '
                        'Each subscription is attached to a single topic.')
-    topic = resource_args.CreateTopicResourceArg(topic_help_text,
-                                                 positional=False)
+    topic = resource_args.CreateTopicResourceArg(
+        topic_help_text, positional=False)
     subscription = resource_args.CreateSubscriptionResourceArg(
-        'to create.',
-        plural=True)
+        'to create.', plural=True)
     resource_args.AddResourceArgs(parser, [topic, subscription])
     flags.AddSubscriptionSettingsFlags(
         parser, support_enable_exactly_once_delivery=True)

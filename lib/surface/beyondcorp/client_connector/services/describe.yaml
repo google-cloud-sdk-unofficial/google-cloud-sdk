@@ -1,0 +1,23 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Describe a BeyondCorp client connector service.
+    description: Describe a BeyondCorp client connector service.
+    examples: |
+      To describe a client connector service with ID ``my-resource'' run:
+
+      $ {command} my-resource --project=${PROJECT_ID} --location=${LOCATION_ID}
+
+  async:
+    collection: beyondcorp.projects.locations.operations
+
+  request:
+    collection: beyondcorp.projects.locations.clientConnectorServices
+
+  arguments:
+    resource:
+      help_text: The BeyondCorp client connector service you want to get details about.
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.client_connector.resources:client_connector_service
+
+  output:
+    format: json

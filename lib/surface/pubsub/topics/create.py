@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cloud Pub/Sub topics create command."""
 
 from __future__ import absolute_import
@@ -109,8 +108,10 @@ def _Run(args, legacy_output=False):
           message_encoding=message_encoding)
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
-      log.CreatedResource(topic_ref.RelativeName(), kind='topic',
-                          failed=exc.payload.status_message)
+      log.CreatedResource(
+          topic_ref.RelativeName(),
+          kind='topic',
+          failed=exc.payload.status_message)
       failed.append(topic_ref.topicsId)
       continue
 
@@ -128,7 +129,8 @@ class Create(base.CreateCommand):
   """Creates one or more Cloud Pub/Sub topics."""
 
   detailed_help = {
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           To create a Cloud Pub/Sub topic, run:
 
               $ {command} mytopic"""

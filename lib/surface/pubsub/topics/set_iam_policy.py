@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cloud Pub/Sub topics set-iam-policy command."""
 
 from __future__ import absolute_import
@@ -45,9 +44,7 @@ class SetIamPolicy(base.Command):
     topic_ref = args.CONCEPTS.topic.Parse()
     policy = iam_util.ParsePolicyFile(args.policy_file, messages.Policy)
 
-    response = client.SetIamPolicy(
-        topic_ref,
-        policy=policy)
-    log.status.Print(
-        'Updated IAM policy for topic [{}].'.format(topic_ref.Name()))
+    response = client.SetIamPolicy(topic_ref, policy=policy)
+    log.status.Print('Updated IAM policy for topic [{}].'.format(
+        topic_ref.Name()))
     return response

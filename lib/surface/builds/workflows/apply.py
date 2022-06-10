@@ -23,10 +23,8 @@ from googlecloudsdk.api_lib.cloudbuild.v2 import input_util
 from googlecloudsdk.api_lib.cloudbuild.v2 import workflow_input_util
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.cloudbuild import resource_args
-from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.command_lib.cloudbuild import run_flags
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -43,15 +41,11 @@ class Create(base.CreateCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    concept_parsers.ConceptParser.ForResource(
-        'WORKFLOW_ID',
-        resource_args.GetWorkflowResourceSpec(),
-        'Workflow.',
-        required=True).AddToParser(parser)
     parser.add_argument(
         '--file',
         required=True,
         help='The YAML file to use as the Workflow configuration file.')
+    run_flags.AddsRegionResourceArg(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""
@@ -61,9 +55,10 @@ class Create(base.CreateCommand):
     yaml_data = input_util.LoadYamlFromPath(args.file)
     workflow = workflow_input_util.CloudBuildYamlDataToWorkflow(yaml_data)
 
-    project = properties.VALUES.core.project.Get(required=True)
-    parent = 'projects/%s/locations/%s' % (project, args.region)
-    name = '%s/workflows/%s' % (parent, args.WORKFLOW_ID)
+    region_ref = args.CONCEPTS.region.Parse()
+    parent = region_ref.RelativeName()
+    workflow_id = yaml_data['name']
+    name = '%s/workflows/%s' % (parent, workflow_id)
 
     # Update workflow (or create if missing).
     workflow.name = name

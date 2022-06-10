@@ -45,6 +45,8 @@ class Describe(base.DescribeCommand):
     resource_args.AddTaskResourceArgs(parser)
 
   def Run(self, args):
-    client = tasks.TasksClient()
+    release_track = self.ReleaseTrack()
+
+    client = tasks.TasksClient(release_track)
     task_ref = args.CONCEPTS.task.Parse()
     return client.Get(task_ref)

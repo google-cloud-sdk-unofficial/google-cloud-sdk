@@ -12,20 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command to create migration jobs for a database migration."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-
 from googlecloudsdk.api_lib.database_migration import api_util
 from googlecloudsdk.api_lib.database_migration import migration_jobs
 from googlecloudsdk.api_lib.database_migration import resource_args
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.database_migration import flags
 from googlecloudsdk.command_lib.database_migration.migration_jobs import flags as mj_flags
+from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -51,12 +52,12 @@ class Create(base.Command):
     """Args is called by calliope to gather arguments for this command.
 
     Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
     """
     resource_args.AddMigrationJobResourceArgs(
         parser, 'to create', required=True)
+    mj_flags.AddAsyncFlag(parser)
     mj_flags.AddDisplayNameFlag(parser)
     mj_flags.AddTypeFlag(parser, required=True)
     mj_flags.AddDumpPathFlag(parser)
@@ -69,7 +70,7 @@ class Create(base.Command):
 
     Args:
       args: argparse.Namespace, The arguments that this command was invoked
-          with.
+        with.
 
     Returns:
       A dict object representing the operations resource describing the create
@@ -82,16 +83,39 @@ class Create(base.Command):
     destination_ref = args.CONCEPTS.destination.Parse()
 
     cp_client = migration_jobs.MigrationJobsClient(self.ReleaseTrack())
-    result_operation = cp_client.Create(
-        parent_ref,
-        migration_job_ref.migrationJobsId,
-        source_ref,
-        destination_ref,
-        args)
+    result_operation = cp_client.Create(parent_ref,
+                                        migration_job_ref.migrationJobsId,
+                                        source_ref, destination_ref, args)
 
     client = api_util.GetClientInstance(self.ReleaseTrack())
     messages = api_util.GetMessagesModule(self.ReleaseTrack())
     resource_parser = api_util.GetResourceParser(self.ReleaseTrack())
+
+    if args.IsKnownAndSpecified('sync'):
+      log.status.Print(
+          'Waiting for migration job [{}] to be created with [{}]'.format(
+              migration_job_ref.migrationJobsId, result_operation.name))
+
+      op_resource = resources.REGISTRY.ParseRelativeName(
+          result_operation.name,
+          collection='datamigration.projects.locations.operations')
+      poller = waiter.CloudOperationPoller(
+          client.projects_locations_migrationJobs,
+          client.projects_locations_operations)
+      try:
+        waiter.WaitFor(
+            poller, op_resource,
+            'Waiting for operation [{}] to complete'.format(
+                result_operation.name))
+      except waiter.TimeoutError:
+        log.status.Print(
+            'The operations may still be underway remotely and may still succeed. You may check the operation status for the following operation  [{}]'
+            .format(result_operation.name))
+        return
+
+      log.status.Print('Created migration job {} [{}]'.format(
+          migration_job_ref.migrationJobsId, result_operation.name))
+      return
 
     operation_ref = resource_parser.Create(
         'datamigration.projects.locations.operations',

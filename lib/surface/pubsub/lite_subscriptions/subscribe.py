@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Pub/Sub Lite lite-subscriptions subscribe command."""
 
 from __future__ import absolute_import
@@ -70,17 +69,24 @@ class Subscribe(base.Command):
   @staticmethod
   def Args(parser):
     resource_args.AddResourceArgToParser(
-        parser, resource_path='pubsub.lite_subscription', required=True,
+        parser,
+        resource_path='pubsub.lite_subscription',
+        required=True,
         help_text='The Pub/Sub Lite subscription to receive messages from.')
     parser.add_argument(
-        '--num-messages', type=arg_parsers.BoundedInt(1, 1000), default=1,
+        '--num-messages',
+        type=arg_parsers.BoundedInt(1, 1000),
+        default=1,
         help="""The number of messages to stream before exiting. This value must
         be less than or equal to 1000.""")
     parser.add_argument(
-        '--auto-ack', action='store_true', default=False,
+        '--auto-ack',
+        action='store_true',
+        default=False,
         help='Automatically ACK every message received on this subscription.')
     parser.add_argument(
-        '--partitions', metavar='INT',
+        '--partitions',
+        metavar='INT',
         type=arg_parsers.ArgList(element_type=int),
         help="""The partitions this subscriber should connect to to receive
         messages. If empty, partitions will be automatically assigned.""")
@@ -98,16 +104,14 @@ class Subscribe(base.Command):
         'Initializing the Subscriber stream... This may take up to 30 seconds.')
     printer = resource_printer.Printer(args.format or MESSAGE_FORMAT)
     with lite_subscriptions.SubscriberClient(
-        args.CONCEPTS.subscription.Parse(),
-        args.partitions or [],
-        args.num_messages,
-        args.auto_ack) as subscriber_client:
+        args.CONCEPTS.subscription.Parse(), args.partitions or [],
+        args.num_messages, args.auto_ack) as subscriber_client:
       received = 0
       while received < args.num_messages:
         message = subscriber_client.Pull()
         if message:
           splits = message.message_id.split(',')
-          message.message_id = 'Partition: {}, Offset: {}'.format(splits[0],
-                                                                  splits[1])
+          message.message_id = 'Partition: {}, Offset: {}'.format(
+              splits[0], splits[1])
           printer.Print([message])
           received += 1

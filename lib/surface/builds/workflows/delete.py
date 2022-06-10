@@ -21,10 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudbuild.v2 import client_util
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.cloudbuild import resource_args
-from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.command_lib.cloudbuild import run_flags
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -41,19 +39,16 @@ class Delete(base.DeleteCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    concept_parsers.ConceptParser.ForResource(
-        'WORKFLOW_ID',
-        resource_args.GetWorkflowResourceSpec(),
-        'Workflow.',
-        required=True).AddToParser(parser)
+    parser.add_argument('WORKFLOW_ID', help='The ID of the Workflow.')
+    run_flags.AddsRegionResourceArg(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""
     client = client_util.GetClientInstance()
     messages = client_util.GetMessagesModule()
 
-    project = properties.VALUES.core.project.Get(required=True)
-    parent = 'projects/%s/locations/%s' % (project, args.region)
+    region_ref = args.CONCEPTS.region.Parse()
+    parent = region_ref.RelativeName()
     resource_name = '%s/workflows/%s' % (parent, args.WORKFLOW_ID)
 
     # Delete workflow.

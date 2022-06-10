@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cloud Pub/Sub subscriptions seek command."""
 
 from __future__ import absolute_import
@@ -28,8 +27,7 @@ from googlecloudsdk.command_lib.pubsub import util
 
 
 class Seek(base.Command):
-  """Resets a subscription's backlog to a point in time or to a given snapshot.
-  """
+  """Resets a subscription's backlog to a point in time or to a given snapshot."""
 
   @staticmethod
   def Args(parser):
@@ -56,8 +54,7 @@ class Seek(base.Command):
     snapshot_ref = None
     time = None
     if args.snapshot:
-      snapshot_ref = util.ParseSnapshot(
-          args.snapshot, args.snapshot_project)
+      snapshot_ref = util.ParseSnapshot(args.snapshot, args.snapshot_project)
       result['snapshotId'] = snapshot_ref.RelativeName()
     else:
       time = util.FormatSeekTime(args.time)

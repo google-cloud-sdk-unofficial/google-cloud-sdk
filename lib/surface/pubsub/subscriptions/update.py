@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cloud Pub/Sub subscriptions update command."""
 
 from __future__ import absolute_import
@@ -67,7 +66,8 @@ class Update(base.UpdateCommand):
     clear_bigquery_config = getattr(args, 'clear_bigquery_config', None)
 
     labels_update = labels_util.ProcessUpdateArgsLazy(
-        args, client.messages.Subscription.LabelsValue,
+        args,
+        client.messages.Subscription.LabelsValue,
         orig_labels_thunk=lambda: client.Get(subscription_ref).labels)
 
     no_expiration = False
@@ -117,9 +117,9 @@ class Update(base.UpdateCommand):
           drop_unknown_fields=drop_unknown_fields,
           clear_bigquery_config=clear_bigquery_config)
     except subscriptions.NoFieldsSpecifiedError:
-      if not any(args.IsSpecified(arg) for arg in ('clear_labels',
-                                                   'update_labels',
-                                                   'remove_labels')):
+      if not any(
+          args.IsSpecified(arg)
+          for arg in ('clear_labels', 'update_labels', 'remove_labels')):
         raise
       log.status.Print('No update to perform.')
       result = None

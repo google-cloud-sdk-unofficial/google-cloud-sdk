@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cloud Pub/Sub subscription pull command."""
 
 from __future__ import absolute_import
@@ -107,7 +106,8 @@ class Pull(base.ListCommand):
   """Pulls one or more Cloud Pub/Sub messages from a subscription."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           Returns one or more messages from the specified Cloud Pub/Sub
           subscription, if there are any messages enqueued.
 

@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cloud Pub/Sub topics list_subscriptions command."""
 
 from __future__ import absolute_import
@@ -30,8 +29,8 @@ def _Run(args, legacy_output=False):
   client = topics.TopicsClient()
 
   topic_ref = args.CONCEPTS.topic.Parse()
-  for topic_sub in client.ListSubscriptions(topic_ref,
-                                            page_size=args.page_size):
+  for topic_sub in client.ListSubscriptions(
+      topic_ref, page_size=args.page_size):
     if legacy_output:
       topic_sub = util.ListTopicSubscriptionDisplayDict(topic_sub)
     yield topic_sub
@@ -42,10 +41,12 @@ class ListSubscriptions(base.ListCommand):
   """Lists Cloud Pub/Sub subscriptions from a given topic."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           Lists all of the Cloud Pub/Sub subscriptions attached to the given
           topic and that match the given filter.""",
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           To filter results by subscription name
           (ie. only show subscription 'mysubs'), run:
 

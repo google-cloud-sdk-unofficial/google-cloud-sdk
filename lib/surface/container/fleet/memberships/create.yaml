@@ -11,11 +11,11 @@
     examples: |
       Create a new membership for a cluster in Fleet:
 
-        $ {command} a-membership
+        $ {command} MEMBERSHIP_NAME
 
       Create a new membership for a GKE cluster:
 
-        $ {command} a-membership --gke-cluster-self-link=my-gke-cluster-self-link
+        $ {command} MEMBERSHIP_NAME --gke-cluster-self-link=my-gke-cluster-self-link
 
   request:
     collection: gkehub.projects.locations.memberships

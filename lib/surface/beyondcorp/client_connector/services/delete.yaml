@@ -1,0 +1,20 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Delete a BeyondCorp client connector service.
+    description: Delete a BeyondCorp client connector service.
+    examples: |
+      To delete a client connector service with ID ``my-resource'' run:
+
+      $ {command} my-resource --project=${PROJECT_ID} --location=${LOCATION_ID}
+
+  async:
+    collection: beyondcorp.projects.locations.operations
+
+  request:
+    collection: beyondcorp.projects.locations.clientConnectorServices
+
+  arguments:
+    resource:
+      help_text: The BeyondCorp client connector service you want to delete.
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.client_connector.resources:client_connector_service

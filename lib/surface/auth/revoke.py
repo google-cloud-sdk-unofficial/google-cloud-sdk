@@ -42,7 +42,10 @@ class Revoke(base.Command):
 
   When given a service account, this command does not revoke the service account
   token on the server because service account tokens are not revocable. Instead,
-  it will print a warning and remove the credential from the local machine.
+  it will print a warning and remove the credential from the local machine. When
+  used with a service account, this command has only a local effect and the key
+  associated with the service account is not deleted. This can be done by
+  executing `gcloud iam service-accounts keys delete` after `revoke`.
 
   When given an external account (workload identity pool), whether impersonated
   or not, the command does not revoke the corresponding token on the server
@@ -113,8 +116,10 @@ class Revoke(base.Command):
               '[{}] appears to be a service account. Service account tokens '
               'cannot be revoked, but they will expire automatically. To '
               'prevent use of the service account token earlier than the '
-              'expiration, delete or disable the parent service account.'
-              .format(account))
+              'expiration, delete or disable the parent service account. To '
+              'explicitly delete the key associated with the service account '
+              'use `gcloud iam service-accounts keys delete` instead`.'.format(
+                  account))
         elif c_creds.IsExternalAccountCredentials(creds):
           log.warning(
               '[{}] appears to be an external account. External account '

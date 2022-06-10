@@ -249,6 +249,7 @@ def AddBetaArgs(parser):
   """Adds beta args and flags to the parser."""
   flags.AddInstanceResizeLimit(parser)
   flags.AddAllocatedIpRangeName(parser)
+  flags.AddDeletionProtection(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
 
 

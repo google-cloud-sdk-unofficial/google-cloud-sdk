@@ -46,7 +46,9 @@ class List(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
-    client = tasks.TasksClient()
+    release_track = self.ReleaseTrack()
+
+    client = tasks.TasksClient(release_track)
     task_group_ref = args.CONCEPTS.task_group.Parse()
 
     return list_pager.YieldFromList(

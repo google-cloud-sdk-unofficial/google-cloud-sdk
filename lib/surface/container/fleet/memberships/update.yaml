@@ -4,9 +4,14 @@
     brief: Update a membership.
     description: Update an existing membership in Fleet.
     examples: |
+      First retrieve the ID of the membership using the command below. The output of this command
+      lists all the fleet's members, with their unique IDs in the Names column:
+
+        $ {parent_command} list
+
       Update a membership for a cluster:
 
-        $ {command} a-membership
+        $ {command} MEMBERSHIP_ID
 
   request:
     collection: gkehub.projects.locations.memberships

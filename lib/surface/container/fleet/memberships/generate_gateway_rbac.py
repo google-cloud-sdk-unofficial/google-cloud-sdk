@@ -78,7 +78,7 @@ class GenerateGatewayRbac(base.Command):
       $ {command} --membership=my-cluster
       --users=foo@example.com,test-acct@test-project.iam.gserviceaccount.com
       --role=clusterrole/cluster-admin --context=my-cluster-contex
-      --kubeconfig=/home/user/custom_kubeconfig --apply
+      --kubeconfig=/home/user/custom_kubeconfig --revoke
   """
 
   @classmethod

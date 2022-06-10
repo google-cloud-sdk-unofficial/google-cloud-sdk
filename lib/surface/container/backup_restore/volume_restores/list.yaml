@@ -33,12 +33,14 @@
 
   output:
     ALPHA:
-      # TODO(b/191807690): Finalize the columns and formats with UX.
       format: |
         table(
            name.basename():label=NAME,
-           createTime,
-           completeTime,
-           volumeBackup,
+           name.segment(3):label=LOCATION,
+           name.segment(5):label=RESTORE_PLAN,
+           name.segment(7):label=RESTORE,
+           format('{0}/{1}', targetPvc.namespace, targetPvc.name):label=TARGET_PVC,
+           createTime.date('%Y-%m-%dT%H:%M:%S %Z', tz=LOCAL),
+           completeTime.date('%Y-%m-%dT%H:%M:%S %Z', tz=LOCAL),
            state
          )

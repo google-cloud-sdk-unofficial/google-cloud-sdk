@@ -112,19 +112,20 @@ class Submit(base.Command):
             'Specify the allowed provisioning model for the compute instances'))
 
     parser.add_argument(
-        '--allowed-machine-types',
-        metavar='MACHINE_TYPE',
-        type=arg_parsers.ArgList(),
-        help="""A list of allowed Compute Engine machine types, for
-      example, e2-standard-4. Default is empty which means allowing all.""")
+        '--machine-type',
+        type=str,
+        help="""Specify the Compute Engine machine type, for
+      example, e2-standard-4. Currently only one machine type is supported.""")
 
   def Run(self, args):
     job_ref = args.CONCEPTS.job.Parse()
     job_id = job_ref.RelativeName().split('/')[-1]
     location_ref = job_ref.Parent()
 
-    batch_client = jobs.JobsClient()
-    batch_msgs = jobs.GetMessagesModule()
+    release_track = self.ReleaseTrack()
+
+    batch_client = jobs.JobsClient(release_track)
+    batch_msgs = batch_client.messages
     job_msg = batch_msgs.Job()
 
     if args.config:
@@ -163,12 +164,18 @@ class Submit(base.Command):
     if job_msg.allocationPolicy is None:
       job_msg.allocationPolicy = batch_msgs.AllocationPolicy()
 
-    if args.allowed_machine_types:
-      if job_msg.allocationPolicy.instance is None:
-        job_msg.allocationPolicy.instance = batch_msgs.InstancePolicy(
-            allowedMachineTypes=[])
-      combined_allowed_machine_types = args.allowed_machine_types + job_msg.allocationPolicy.instance.allowedMachineTypes
-      job_msg.allocationPolicy.instance.allowedMachineTypes = combined_allowed_machine_types
+    if args.machine_type:
+      if job_msg.allocationPolicy.instances is None:
+        job_msg.allocationPolicy.instances = []
+      if not job_msg.allocationPolicy.instances:
+        job_msg.allocationPolicy.instances.insert(
+            0,
+            batch_msgs.InstancePolicyOrTemplate())
+      if job_msg.allocationPolicy.instances[0].policy is None:
+        job_msg.allocationPolicy.instances[
+            0].policy = batch_msgs.InstancePolicy()
+      job_msg.allocationPolicy.instances[
+          0].policy.machineType = args.machine_type
 
     if args.network and args.subnetwork:
       if job_msg.allocationPolicy.network is None:
@@ -180,13 +187,19 @@ class Submit(base.Command):
               network=args.network, subnetwork=args.subnetwork))
 
     if args.provisioning_model:
-      if job_msg.allocationPolicy.provisioningModels is None:
-        job_msg.allocationPolicy.provisioningModels = []
-      job_msg.allocationPolicy.provisioningModels.insert(
-          0,
-          arg_utils.ChoiceToEnum(
-              args.provisioning_model, batch_msgs.AllocationPolicy
-              .ProvisioningModelsValueListEntryValuesEnum))
+      if job_msg.allocationPolicy.instances is None:
+        job_msg.allocationPolicy.instances = []
+      if not job_msg.allocationPolicy.instances:
+        job_msg.allocationPolicy.instances.insert(
+            0,
+            batch_msgs.InstancePolicyOrTemplate())
+      if job_msg.allocationPolicy.instances[0].policy is None:
+        job_msg.allocationPolicy.instances[
+            0].policy = batch_msgs.InstancePolicy()
+      job_msg.allocationPolicy.instances[
+          0].policy.provisioningModel = arg_utils.ChoiceToEnum(
+              args.provisioning_model,
+              batch_msgs.InstancePolicy.ProvisioningModelValueValuesEnum)
 
     resp = batch_client.Create(job_id, location_ref, job_msg)
     log.status.Print(

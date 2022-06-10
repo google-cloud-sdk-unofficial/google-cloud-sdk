@@ -75,7 +75,7 @@ class Create(base.CreateCommand):
     aws_flags.AddRoleArn(parser)
     aws_flags.AddRoleSessionName(parser)
     aws_flags.AddVpcId(parser)
-    aws_flags.AddSecurityGroupIds(parser, 'control plane replicas')
+    aws_flags.AddSecurityGroupIds(parser, kind='control plane')
     aws_flags.AddRootVolumeType(parser)
     aws_flags.AddRootVolumeIops(parser)
     aws_flags.AddRootVolumeKmsKeyArn(parser)

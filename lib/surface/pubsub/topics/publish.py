@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cloud Pub/Sub topics publish command."""
 
 from __future__ import absolute_import
@@ -53,13 +52,15 @@ class Publish(base.Command):
   """Publishes a message to the specified topic."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           Publishes a message to the specified topic name for testing and
           troubleshooting. Use with caution: all associated subscribers must
           be able to consume and acknowledge any message you publish,
           otherwise the system will continuously re-attempt delivery of the
           bad message for 7 days.""",
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           To publish messages in a batch to a specific Cloud Pub/Sub topic,
           run:
 

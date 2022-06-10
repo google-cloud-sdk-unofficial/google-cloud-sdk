@@ -16,6 +16,9 @@
       help_text: Cloud Bigtable table to undelete.
       spec: !REF googlecloudsdk.command_lib.bigtable.resources:table
 
+  async:
+    collection: bigtableadmin.operations
+
 - release_tracks: [BETA, GA]
   hidden: true  # TODO(b/203697846): unhide after the UndeleteTable feature is released in prod.
 
@@ -35,3 +38,6 @@
     resource:
       help_text: Cloud Bigtable table to undelete.
       spec: !REF googlecloudsdk.command_lib.bigtable.resources:table
+
+  async:
+    collection: bigtableadmin.operations

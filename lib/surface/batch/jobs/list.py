@@ -47,7 +47,9 @@ class List(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
-    client = jobs.JobsClient()
+    release_track = self.ReleaseTrack()
+
+    client = jobs.JobsClient(release_track)
     location_ref = args.CONCEPTS.location.Parse()
 
     return list_pager.YieldFromList(

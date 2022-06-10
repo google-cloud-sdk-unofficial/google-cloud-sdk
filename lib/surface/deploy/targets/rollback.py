@@ -134,16 +134,17 @@ def _GetCurrentAndRollbackRelease(release_id, pipeline_id, target_ref):
       raise core_exceptions.Error(
           'unable to rollback target {}. Target has less than 2 rollouts.'
           .format(target_ref.Name()))
+    current_deployed_rollout, previous_deployed_rollout = prior_rollouts
 
     current_release_ref = resources.REGISTRY.ParseRelativeName(
         resources.REGISTRY.Parse(
-            prior_rollouts[1].name,
+            current_deployed_rollout.name,
             collection='clouddeploy.projects.locations.deliveryPipelines.releases.rollouts'
         ).Parent().RelativeName(),
         collection='clouddeploy.projects.locations.deliveryPipelines.releases')
     rollback_release_ref = resources.REGISTRY.ParseRelativeName(
         resources.REGISTRY.Parse(
-            prior_rollouts[0].name,
+            previous_deployed_rollout.name,
             collection='clouddeploy.projects.locations.deliveryPipelines.releases.rollouts'
         ).Parent().RelativeName(),
         collection='clouddeploy.projects.locations.deliveryPipelines.releases')

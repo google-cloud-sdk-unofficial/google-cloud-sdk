@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.alloydb import api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.alloydb import flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
@@ -69,4 +70,5 @@ class Cancel(base.Command):
         operationsId=args.operation)
     req = client.alloydb_messages.AlloydbProjectsLocationsOperationsCancelRequest(
         name=operation_ref.RelativeName())
-    return client.alloydb_client.projects_locations_operations.Cancel(req)
+    client.alloydb_client.projects_locations_operations.Cancel(req)
+    log.status.write('Operation cancelled.\n')

@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.bms.bms_client import BmsClient
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.bms import exceptions
 from googlecloudsdk.command_lib.bms import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
@@ -50,7 +49,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Bare Metal Solution instance."""
 
@@ -64,26 +63,21 @@ class Update(base.UpdateCommand):
   def Run(self, args):
     client = BmsClient()
     instance = args.CONCEPTS.instance.Parse()
-    labels_update = None
-    labels_diff = labels_util.Diff.FromUpdateArgs(args)
-    if labels_diff.MayHaveUpdates():
-      orig_resource = client.GetInstance(instance)
-      labels_update = labels_diff.Apply(
-          client.messages.Instance.LabelsValue,
-          orig_resource.labels).GetOrNone()
 
-    if not labels_diff.MayHaveUpdates():
-      raise exceptions.NoConfigurationChangeError(
-          'No configuration change was requested. Did you mean to include the '
-          'flags `--update-labels` `--remove-labels` or `--clear-labels`?')
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    orig_resource = client.GetInstance(instance)
+    labels_update = labels_diff.Apply(client.messages.Instance.LabelsValue,
+                                      orig_resource.labels).GetOrNone()
+    os_image = getattr(args, 'os_image', None)
+    enable_hyperthreading = getattr(args, 'enable_hyperthreading', None)
 
     op_ref = client.UpdateInstance(
-        instance_resource=instance, labels=labels_update)
+        instance_resource=instance, labels=labels_update, os_image=os_image,
+        enable_hyperthreading=enable_hyperthreading)
 
     if op_ref.done:
       log.UpdatedResource(instance.Name(), kind='instance')
       return op_ref
-
     if args.async_:
       log.status.Print('Update request issued for: [{}]\nCheck operation '
                        '[{}] for status.'.format(instance.Name(),
@@ -100,6 +94,17 @@ class Update(base.UpdateCommand):
         'Waiting for operation [{}] to complete'.format(op_ref.name))
     log.UpdatedResource(instance.Name(), kind='instance')
     return res
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a Bare Metal Solution instance."""
+
+  @staticmethod
+  def Args(parser):
+    Update.Args(parser)
+    flags.AddInstanceOsImageToParser(parser, hidden=False)
+    flags.AddInstanceEnableHyperthreadingToParser(parser, hidden=False)
 
 
 Update.detailed_help = DETAILED_HELP

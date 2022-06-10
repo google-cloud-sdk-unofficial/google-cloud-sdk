@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cloud Pub/Sub snapshots delete command."""
 
 from __future__ import absolute_import
@@ -35,8 +34,8 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     """Registers flags for this command."""
 
-    parser.add_argument('snapshot', nargs='+',
-                        help='One or more snapshot names to delete.')
+    parser.add_argument(
+        'snapshot', nargs='+', help='One or more snapshot names to delete.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -63,8 +62,10 @@ class Delete(base.DeleteCommand):
         client.Delete(snapshot_ref)
       except api_ex.HttpError as error:
         exc = exceptions.HttpException(error)
-        log.DeletedResource(snapshot_ref.RelativeName(), kind='snapshot',
-                            failed=exc.payload.status_message)
+        log.DeletedResource(
+            snapshot_ref.RelativeName(),
+            kind='snapshot',
+            failed=exc.payload.status_message)
         failed.append(snapshot_name)
         continue
 

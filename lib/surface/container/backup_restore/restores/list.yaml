@@ -33,12 +33,13 @@
 
   output:
     ALPHA:
-      # TODO(b/191807690): Finalize the columns and formats with UX.
       format: |
         table(
-           name.basename():label=NAME,
-           backup,
-           createTime,
-           completeTime,
-           state
-         )
+          name.basename():label=NAME,
+          name.segment(3):label=LOCATION,
+          name.segment(5):label=RESTORE_PLAN,
+          backup.basename(),
+          createTime.date('%Y-%m-%dT%H:%M:%S %Z', tz=LOCAL),
+          completeTime.date('%Y-%m-%dT%H:%M:%S %Z', tz=LOCAL),
+          state
+        )

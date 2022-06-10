@@ -162,6 +162,7 @@ def AddBetaArgs(parser):
   flags.AddExternalMasterGroup(parser)
   flags.AddInstanceResizeLimit(parser)
   flags.AddAllocatedIpRangeName(parser)
+  flags.AddDeletionProtection(parser)
   labels_util.AddCreateLabelsFlags(parser)
 
 

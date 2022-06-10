@@ -196,8 +196,13 @@ class ConnectToSerialPort(base.Command):
     expiration, expiration_micros = ssh_utils.GetSSHKeyExpirationFromArgs(args)
 
     oslogin_state = ssh.GetOsloginState(
-        instance, project, remote.user, public_key, expiration_micros,
-        self.ReleaseTrack())
+        instance,
+        project,
+        remote.user,
+        public_key,
+        expiration_micros,
+        self.ReleaseTrack(),
+        messages=holder.client.messages)
     remote.user = oslogin_state.user
 
     # Determine the serial user, host tuple (remote)

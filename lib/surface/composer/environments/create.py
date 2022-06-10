@@ -665,6 +665,8 @@ class CreateAlpha(CreateBeta):
         help="""The type of executor by which task instances are run on Airflow;
         currently supported executor types are CELERY and KUBERNETES.
         Defaults to CELERY. Cannot be updated.""")
+    flags.AIRFLOW_DATABASE_RETENTION_DAYS.AddToParser(
+        parser.add_argument_group(hidden=True))
 
   def GetOperationMessage(self, args, is_composer_v1):
     """See base class."""
@@ -729,6 +731,7 @@ class CreateAlpha(CreateBeta):
         enable_master_authorized_networks=args
         .enable_master_authorized_networks,
         master_authorized_networks=args.master_authorized_networks,
+        airflow_database_retention_days=args.airflow_database_retention_days,
         release_track=self.ReleaseTrack())
 
     return environments_api_util.Create(self.env_ref, create_flags,

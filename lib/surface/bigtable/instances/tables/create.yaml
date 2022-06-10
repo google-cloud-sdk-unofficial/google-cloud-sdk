@@ -1,0 +1,57 @@
+- release_tracks: [GA, BETA, ALPHA]
+  hidden: true  # TODO(b/227217711): unhide this CLI after the feature is released.
+
+  help_text:
+    brief: Create a new Cloud Bigtable table.
+    description: Create a new Cloud Bigtable table, with the options to indicate initial tablet
+      splits and enable a change stream.
+    examples: |
+      To create a table `my-table` in instance `my-instance` with a column family `my-family`, run:
+
+      $ {command} my-table --instance=my-instance --column-families="my-family"
+
+      To create a table with a column family and splits, run:
+
+      $ {command} my-table --instance=my-instance --column-families="my-family:maxage=864000s" --splits=car,key
+
+      To create a table with multiple column families with garbage collection rules, run:
+
+      $ {command} my-table --instance=my-instance --column-families="my-family-1:maxage=10d,my-family-2:maxversions=5||maxage=5d"
+
+      To create a table that has one column family and a change stream enabled, run:
+
+      $ {command} my-table --instance=my-instance --column-families="my-family:maxage=10d" --change-stream-retention-period=7d
+
+  request:
+    collection: bigtableadmin.projects.instances.tables
+    modify_request_hooks:
+    - googlecloudsdk.api_lib.bigtable.tables:UpdateRequestWithInput
+
+  arguments:
+    resource:
+      help_text: Cloud Bigtable table to create.
+      spec: !REF googlecloudsdk.command_lib.bigtable.resources:table
+
+    params:
+    - api_field: createTableRequest.table.columnFamilies
+      arg_name: column-families
+      required: true
+      type: "arg_list"
+      help_text: |
+        A double-quote (`"`) wrapped list of family name and corresponding garbage collection rules
+        concatenated by `:`, where the rules are optional. For example: \
+        `"family_1,family_2:maxage=5d&&maxversions=2,family_3:maxage=10d||maxversions=5"`
+      processor: googlecloudsdk.api_lib.bigtable.tables:ParseColumnFamilies
+    - api_field: createTableRequest.initialSplits
+      arg_name: splits
+      help_text: |
+        Initial keys to split the tablets. For example: `car,key`
+      type: "arg_list"
+      processor: googlecloudsdk.api_lib.bigtable.tables:MakeSplits
+    - api_field: createTableRequest.table.changeStreamConfig.retentionPeriod
+      arg_name: change-stream-retention-period
+      help_text: |
+        Once a value is passed in, the Bigtable table is created with a change stream enabled;
+        the value indicates how long the replication logs are kept and should be in the range of
+        [1 day, 7 days]. For example: `5d` or `48h`
+      processor: googlecloudsdk.api_lib.bigtable.tables:ConvertDurationToSeconds

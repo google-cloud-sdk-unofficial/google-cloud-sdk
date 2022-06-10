@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cloud Pub/Sub subscription delete command."""
 
 from __future__ import absolute_import
@@ -41,9 +40,10 @@ def _Run(args, legacy_output=False):
       result = client.Delete(subscription_ref)
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
-      log.DeletedResource(subscription_ref.RelativeName(),
-                          kind='subscription',
-                          failed=exc.payload.status_message)
+      log.DeletedResource(
+          subscription_ref.RelativeName(),
+          kind='subscription',
+          failed=exc.payload.status_message)
       failed.append(subscription_ref.subscriptionsId)
       continue
 

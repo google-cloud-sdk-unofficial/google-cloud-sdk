@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cloud Pub/Sub topics list-snapshots command."""
 
 from __future__ import absolute_import
@@ -30,10 +29,12 @@ class ListSnapshots(base.ListCommand):
   """Lists Cloud Pub/Sub snapshots from a given topic."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           Lists all of the Cloud Pub/Sub snapshots attached to the given
           topic and that match the given filter.""",
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           To filter results by snapshot name
           (ie. only show snapshot 'mysnaps'), run:
 

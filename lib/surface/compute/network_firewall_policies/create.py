@@ -62,14 +62,14 @@ class Create(base.CreateCommand):
 Create.detailed_help = {
     'EXAMPLES':
         """\
-    To create a global network firewall policy named ``my-policy" under project
+    To create a global network firewall policy named ``my-policy'' under project
     with ID ``test-project'', run:
 
       $ {command} my-policy \
           --project=test-project \
           --global
 
-    To create a regional network firewall policy named ``my-region-policy" under project
+    To create a regional network firewall policy named ``my-region-policy'' under project
     with ID ``test-project'', in region ``my-region'', run:
 
       $ {command} my-region-policy \

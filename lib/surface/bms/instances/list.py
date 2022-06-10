@@ -105,6 +105,20 @@ class List(base.ListCommand):
         client_networks.append(network)
       elif client.IsPrivateNetwork(network):
         private_networks.append(network)
+
+    # If the IPs are not available in networks, look up logical interfaces. This
+    # normally would only happen for new multi-vlan customers who use network
+    # templates other than the default bondaa-bondaa for their instances.
+    if (not client_networks and not private_networks and
+       instance.logicalInterfaces):
+      for logical_interface in instance.logicalInterfaces:
+        for logical_network_interface in logical_interface.logicalNetworkInterfaces:
+          if client.IsClientLogicalNetworkInterface(logical_network_interface):
+            client_networks.append(logical_network_interface)
+          elif client.IsPrivateLogicalNetworkInterface(
+              logical_network_interface):
+            private_networks.append(logical_network_interface)
+
     synthesized_instance['clientNetworks'] = client_networks
     synthesized_instance['privateNetworks'] = private_networks
     return synthesized_instance

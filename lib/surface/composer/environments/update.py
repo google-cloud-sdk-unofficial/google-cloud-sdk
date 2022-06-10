@@ -53,6 +53,7 @@ class Update(base.Command):
   _support_autoscaling = True
   _support_maintenance_window = False
   _support_environment_size = True
+  _support_airflow_database_retention = False
 
   @staticmethod
   def Args(parser, release_track=base.ReleaseTrack.GA):
@@ -79,6 +80,9 @@ class Update(base.Command):
     if release_track != base.ReleaseTrack.GA:
       flags.AddMasterAuthorizedNetworksUpdateFlagsToGroup(
           Update.update_type_group)
+    if release_track == base.ReleaseTrack.ALPHA:
+      flags.AIRFLOW_DATABASE_RETENTION_DAYS.AddToParser(
+          Update.update_type_group.add_argument_group(hidden=True))
 
   def _ConstructPatch(self, env_ref, args, support_environment_upgrades=False):
     env_obj = environments_api_util.Get(
@@ -174,6 +178,9 @@ class Update(base.Command):
       params['maintenance_window_end'] = args.maintenance_window_end
       params[
           'maintenance_window_recurrence'] = args.maintenance_window_recurrence
+    if self._support_airflow_database_retention:
+      params[
+          'airflow_database_retention_days'] = args.airflow_database_retention_days
     if self.ReleaseTrack() != base.ReleaseTrack.GA:
       if args.enable_master_authorized_networks and args.disable_master_authorized_networks:
         raise command_util.InvalidUserInputError(
@@ -268,6 +275,7 @@ class UpdateAlpha(UpdateBeta):
   """Update properties of a Cloud Composer environment."""
 
   _support_autoscaling = True
+  _support_airflow_database_retention = True
 
   @staticmethod
   def Args(parser):

@@ -4,9 +4,14 @@
     brief: Describe a membership.
     description: Describe a membership in Fleet.
     examples: |
-      Describe a membership in Fleet:
+      First retrieve the ID of the membership using the command below. The output of this command
+      lists all the fleet's members, with their unique IDs in the Names column:
 
-        $ {command} a-membership
+        $ {parent_command} list
+
+      Then describe it:
+
+        $ {command} MEMBERSHIP_NAME
 
   request:
     collection: gkehub.projects.locations.memberships

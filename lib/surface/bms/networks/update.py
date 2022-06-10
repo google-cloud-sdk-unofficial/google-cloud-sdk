@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.bms.bms_client import BmsClient
+from googlecloudsdk.api_lib.bms.bms_client import IpRangeReservation
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bms import exceptions
@@ -50,7 +51,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Bare Metal Solution network."""
 
@@ -66,19 +67,16 @@ class Update(base.UpdateCommand):
     network = args.CONCEPTS.network.Parse()
     labels_update = None
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
-    if labels_diff.MayHaveUpdates():
-      orig_resource = client.GetNetwork(network)
-      labels_update = labels_diff.Apply(
-          client.messages.Network.LabelsValue,
-          orig_resource.labels).GetOrNone()
 
-    if not labels_diff.MayHaveUpdates():
-      raise exceptions.NoConfigurationChangeError(
-          'No configuration change was requested. Did you mean to include the '
-          'flags `--update-labels` `--remove-labels` or `--clear-labels`?')
+    orig_resource = client.GetNetwork(network)
+    labels_update = labels_diff.Apply(
+        client.messages.Network.LabelsValue,
+        orig_resource.labels).GetOrNone()
+    ip_reservations = _ApplyIpReservationsUpdates(args, orig_resource)
 
     op_ref = client.UpdateNetwork(
-        network_resource=network, labels=labels_update)
+        network_resource=network, labels=labels_update,
+        ip_reservations=ip_reservations)
 
     if op_ref.done:
       log.UpdatedResource(network.Name(), kind='network')
@@ -101,5 +99,74 @@ class Update(base.UpdateCommand):
     log.UpdatedResource(network.Name(), kind='network')
     return res
 
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a Bare Metal Solution network."""
+
+  @staticmethod
+  def Args(parser):
+    Update.Args(parser)
+    flags.AddNetworkIpReservationToParser(parser, hidden=False)
+
+
+def _ApplyIpReservationsUpdates(args, existing_network):
+  """Applies the changes in args to the reservations in existing_network.
+
+  Returns None if no changes were to be applied.
+
+  Args:
+    args: The arguments passed to the command.
+    existing_network: The existing network.
+
+  Returns:
+    List of IP range reservations after applying updates or None if there are
+    no changes.
+  """
+
+  if _IsSpecified(args, 'clear_ip_range_reservations'):
+    return []
+
+  existing_reservations = [
+      IpRangeReservation(res.startAddress, res.endAddress, res.note)
+      for res in existing_network.reservations
+  ]
+
+  if _IsSpecified(args, 'add_ip_range_reservation'):
+    res_dict = args.add_ip_range_reservation
+    _ValidateAgainstSpec(res_dict, flags.IP_RESERVATION_SPEC,
+                         'add-ip-range-reservation')
+    return existing_reservations + [
+        IpRangeReservation(res_dict['start-address'], res_dict['end-address'],
+                           res_dict['note'])
+    ]
+
+  if _IsSpecified(args, 'remove_ip_range_reservation'):
+    return _RemoveReservation(existing_reservations,
+                              args.remove_ip_range_reservation)
+
+
+def _RemoveReservation(reservations, remove_key_dict):
+  _ValidateAgainstSpec(remove_key_dict, flags.IP_RESERVATION_KEY_SPEC,
+                       'remove-ip-range-reservation')
+  start_address = remove_key_dict['start-address']
+  end_address = remove_key_dict['end-address']
+  for i, res in enumerate(reservations):
+    if res.start_address == start_address and res.end_address == end_address:
+      return reservations[:i] + reservations[i + 1:]
+  raise LookupError('Cannot find an IP range reservation with start-address'
+                    ' [{}] and end-address [{}]'.format(start_address,
+                                                        end_address))
+
+
+def _ValidateAgainstSpec(dict_to_validate, spec, flag_name):
+  for prop in spec.keys():
+    if prop not in dict_to_validate:
+      raise exceptions.MissingPropertyError(flag_name, prop)
+
+
+def _IsSpecified(args, name):
+  """Returns true if an arg is defined and specified, false otherwise."""
+  return args.IsKnownAndSpecified(name)
 
 Update.detailed_help = DETAILED_HELP

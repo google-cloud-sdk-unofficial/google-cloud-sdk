@@ -55,10 +55,10 @@ class Create(base.CreateCommand):
     flags.AddNodeLabels(parser)
     flags.AddNodeTaints(parser)
 
-    aws_flags.AddInstanceType(parser)
+    aws_flags.AddInstanceType(parser, kind='node pool')
     aws_flags.AddSshEC2KeyPair(parser, kind='node pool')
-    aws_flags.AddIamInstanceProfile(parser)
-    aws_flags.AddSecurityGroupIds(parser, 'nodes')
+    aws_flags.AddIamInstanceProfile(parser, kind='node pool')
+    aws_flags.AddSecurityGroupIds(parser, kind='node pool')
     aws_flags.AddRootVolumeType(parser)
     aws_flags.AddRootVolumeIops(parser)
     aws_flags.AddRootVolumeKmsKeyArn(parser)

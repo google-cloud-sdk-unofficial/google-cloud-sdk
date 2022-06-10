@@ -22,6 +22,7 @@ import sys
 import threading
 
 from argcomplete.completers import FilesCompleter
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
@@ -103,7 +104,8 @@ class Scp(base.Command):
       args.zone = properties.VALUES.compute.zone.Get(required=True)
 
     # Retrieve the node.
-    tpu = tpu_utils.TPUNode(self.ReleaseTrack())
+    release_track = self.ReleaseTrack()
+    tpu = tpu_utils.TPUNode(release_track)
     node = tpu.Get(tpu_name, args.zone)
     if not tpu_utils.IsTPUVMNode(node):
       raise exceptions.BadArgumentException(
@@ -170,7 +172,8 @@ class Scp(base.Command):
           expiration_micros,
           self.ReleaseTrack(),
           username_requested=username_requested,
-          instance_enable_oslogin=tpu_ssh_utils.TpuHasOsLoginEnabled(node))
+          instance_enable_oslogin=tpu_ssh_utils.TpuHasOsLoginEnabled(node),
+          messages=base_classes.ComputeApiHolder(release_track).client.messages)
       remote.user = oslogin_state.user
 
     # Format the key correctly.

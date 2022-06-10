@@ -216,6 +216,10 @@ Export.detailed_help = {
         The `--export-format` flag exports the image to a format supported
         by QEMU using qemu-img. Valid formats include `vmdk`, `vhdx`, `vpc`,
         `vdi`, and `qcow2`.
+
+        Before exporting an image, set up access to Cloud Storage and grant
+        required roles to the user accounts and service accounts. For more
+        information, see [](https://cloud.google.com/compute/docs/import/requirements-export-import-images).
         """,
     'EXAMPLES':
         """\

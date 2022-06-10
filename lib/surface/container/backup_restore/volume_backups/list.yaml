@@ -38,13 +38,14 @@
 
   output:
     ALPHA:
-      # TODO(zuhaochen): Finalize the columns and formats with UX.
       format: |
         table(
            name.basename():label=NAME,
-           createTime,
-           completeTime,
-           format,
-           volumeBackupHandle,
+           name.segment(3):label=LOCATION,
+           name.segment(5):label=BACKUP_PLAN,
+           name.segment(7):label=BACKUP,
+           format('{0}/{1}', sourcePvc.namespace, sourcePvc.name):label=SOURCE_PVC,
+           createTime.date('%Y-%m-%dT%H:%M:%S %Z', tz=LOCAL),
+           completeTime.date('%Y-%m-%dT%H:%M:%S %Z', tz=LOCAL),
            state
          )

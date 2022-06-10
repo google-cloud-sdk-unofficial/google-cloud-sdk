@@ -48,7 +48,7 @@ class Update(base.UpdateCommand):
     flags.AddNodeVersion(parser, required=False)
     flags.AddValidateOnly(parser, 'node pool to update')
     flags.AddAutoscaling(parser, required=False)
-    aws_flags.AddSecurityGroupFlagsForUpdate(parser, 'nodes')
+    aws_flags.AddSecurityGroupFlagsForUpdate(parser, 'node pool')
     flags.AddRootVolumeSize(parser)
     aws_flags.AddRootVolumeKmsKeyArn(parser)
     aws_flags.AddRootVolumeType(parser)

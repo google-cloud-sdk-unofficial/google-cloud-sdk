@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 import textwrap
 
+from googlecloudsdk.api_lib.spanner import instance_config_operations
 from googlecloudsdk.api_lib.spanner import instance_configs
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
@@ -73,6 +74,7 @@ class Update(base.UpdateCommand):
     parser.add_argument(
         '--etag', help='Used for optimistic concurrency control.')
 
+    base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddUpdateLabelsFlags(parser)
 
     parser.add_argument(
@@ -91,4 +93,7 @@ class Update(base.UpdateCommand):
     Returns:
       Instance config update response.
     """
-    return instance_configs.Patch(args)
+    op = instance_configs.Patch(args)
+    if args.async_:
+      return op
+    return instance_config_operations.Await(op, 'Updating instance-config')

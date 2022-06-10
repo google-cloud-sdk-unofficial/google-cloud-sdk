@@ -55,7 +55,7 @@ class Update(base.UpdateCommand):
   """
 
   NETWORK_ARG = None
-  _support_firewall_order = False
+  _support_firewall_order = True
 
   MIGRATION_STAGES = dict(
       VALIDATING_NETWORK='Validating Network',
