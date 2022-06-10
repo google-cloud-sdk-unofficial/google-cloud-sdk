@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import name_expansion
+from googlecloudsdk.command_lib.storage import stdin_iterator
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import user_request_args_factory
 from googlecloudsdk.command_lib.storage.tasks import task_executor
@@ -159,7 +160,7 @@ class Cp(base.Command):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('source', nargs='+', help='The source path(s) to copy.')
+    parser.add_argument('source', nargs='*', help='The source path(s) to copy.')
     parser.add_argument('destination', help='The destination path.')
     parser.add_argument(
         '-A',
@@ -200,6 +201,15 @@ class Cp(base.Command):
         '--print-created-message',
         action='store_true',
         help='Prints the version-specific URL for each copied object.')
+    parser.add_argument(
+        '--read-paths-from-stdin',
+        '-I',
+        action='store_true',
+        help='Read the list of resources to copy from stdin. No need to enter'
+        ' a source argument if this flag is present.\nExample:'
+        ' "storage cp -I gs://bucket/destination"\n'
+        ' Note: To copy the contents of one file directly from stdin, use "-"'
+        ' as the source argument without the "-I" flag.')
     parser.add_argument(
         '-U',
         '--skip-unsupported',
@@ -274,7 +284,8 @@ class Cp(base.Command):
     else:
       fields_scope = cloud_api.FieldsScope.NO_ACL
     source_expansion_iterator = name_expansion.NameExpansionIterator(
-        args.source,
+        stdin_iterator.get_urls_iterable(args.source,
+                                         args.read_paths_from_stdin),
         all_versions=args.all_versions,
         fields_scope=fields_scope,
         ignore_symlinks=args.ignore_symlinks,

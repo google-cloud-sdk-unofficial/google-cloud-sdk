@@ -39,9 +39,9 @@ class Delete(unmanage.Unmanage):
 
   ## EXAMPLES
 
-  To remove the Config Management Feature spec for a Membership, run:
+  To remove the Config Management Feature spec for a membership, run:
 
-    $ {command} --membership=CLUSTER_NAME
+    $ {command} --membership=MEMBERSHIP_NAME
   """
   # Intentionally left blank; until removed is an alias for `unmanage`.
   pass

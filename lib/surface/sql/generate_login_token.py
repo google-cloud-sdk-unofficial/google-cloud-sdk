@@ -30,8 +30,8 @@ _SQL_LOGIN = 'https://www.googleapis.com/auth/sqlservice.login'
 _SCOPES = [auth_util.OPENID, auth_util.USER_EMAIL_SCOPE, _SQL_LOGIN]
 
 
-# TODO(b/230010281): Unhide the command after b/230010281 fixed.
-@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class GenerateLoginToken(base.Command):
   """Generate an IAM login token for Cloud SQL."""
 
@@ -48,7 +48,7 @@ class GenerateLoginToken(base.Command):
 
           To generate an IAM login token using application default credentials, run:
 
-            $ {command} --application-default-credentials
+            $ {command} --application-default-credential
 
           To generate an IAM login token using gcloud credentials for instance `my-instance`, run:
 
@@ -56,7 +56,7 @@ class GenerateLoginToken(base.Command):
 
           To generate an IAM login token using application default credentials for instance `my-instance`, run:
 
-            $ {command} --instance=my-instance --application-default-credentials
+            $ {command} --instance=my-instance --application-default-credential
           """),
   }
 

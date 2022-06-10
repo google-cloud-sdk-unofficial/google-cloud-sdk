@@ -80,7 +80,7 @@ class Set(base.Command):
     $ {command} proxy/port 8080
 
   For a full list of accepted values, see the Google Cloud CLI properties
-  page: https://cloud.google.com/sdk/docs/properties
+  page: https://cloud.google.com/sdk/docs/properties.
   """
 
   detailed_help = {'properties': properties.VALUES.GetHelpString()}

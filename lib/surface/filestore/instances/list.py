@@ -78,7 +78,7 @@ class ListBeta(List):
     ]).AddToParser(parser)
     instances_flags.AddLocationArg(parser)
     instances_flags.AddRegionArg(parser)
-    parser.display_info.AddFormat(instances_flags.INSTANCES_LIST_FORMAT)
+    parser.display_info.AddFormat(instances_flags.INSTANCES_LIST_FORMAT_BETA)
 
     def UriFunc(resource):
       registry = filestore_client.GetFilestoreRegistry(

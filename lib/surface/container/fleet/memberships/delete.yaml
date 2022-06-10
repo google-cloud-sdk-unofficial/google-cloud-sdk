@@ -2,7 +2,7 @@
   help_text:
     brief: Delete a membership.
     description: |
-      This command deletes the Fleet membership resource corresponding to the cluster.
+      This command deletes the Fleet Membership resource corresponding to the cluster.
 
       This command is intended to delete stale Fleet Membership resources as doing so on a fully
       registered cluster will skip uninstalling the Connect Agent and and orphan in-cluster
@@ -14,7 +14,7 @@
 
         $ {parent_command} list
 
-      Delete a membership from Fleet:
+      Delete a membership from the active project's fleet:
 
         $ {command} MEMBERSHIP_NAME
 

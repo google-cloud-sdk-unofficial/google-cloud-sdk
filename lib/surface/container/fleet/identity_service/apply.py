@@ -31,7 +31,7 @@ import urllib3
 EXAMPLES = """\
     To apply an Identity Service configuration for a membership, run:
 
-    $ {command} --membership=CLUSTER_NAME --config=/path/to/identity-service.yaml
+    $ {command} --membership=MEMBERSHIP_NAME --config=/path/to/identity-service.yaml
 """
 # The max number of auth methods allowed per config.
 MAX_AUTH_PROVIDERS = 20

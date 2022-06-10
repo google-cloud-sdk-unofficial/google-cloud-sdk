@@ -2,7 +2,7 @@
 
   help_text:
     brief: Create a new Router appliance spoke.
-    description: Create a new [Router appliance spoke](https://cloud.google.com/network-connectivity/docs/network-connectivity-center/how-to/working-with-hubs-spokes#create-ra-spoke) with the specified properties.
+    description: Create a new [Router appliance spoke](https://cloud.google.com/network-connectivity/docs/network-connectivity-center/how-to/working-with-hubs-spokes#create-ra-spoke).
     examples: |
       To create a spoke in region ``us-central1'' that uses data transfer and has
       two router appliance instances, run:
@@ -20,7 +20,7 @@
       help_text: Hub that the spoke will attach to. The hub must already exist.
     - arg_name: description
       api_field: spoke.description
-      help_text: Description of the spoke to be created.
+      help_text: Description of the spoke to create.
     - arg_name: router-appliance
       required: true
       api_field: spoke.linkedRouterApplianceInstances.instances
@@ -35,7 +35,7 @@
             arg_name: ip
             type: str
       help_text: |
-        Router appliance instance(s) to which this spoke links.
+        Router appliance instance(s) that the spoke provides connectivity to. The resources must already exist.
 
         For example, use `--router-appliance=instance=ins_uri_1,ip=10.10.0.1` to add a single router appliance instance,
         or `--router-appliance=instance=ins_uri_1,ip=10.10.0.1 --router-appliance=instance=ins_uri_2,ip=10.10.0.2 ...`

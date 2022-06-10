@@ -31,9 +31,9 @@ class Update(base.UpdateCommand):
   ## EXAMPLES
 
   To update the observability configuration on a membership named
-  [MEMBERSHIP-ID], run:
+  `MEMBERSHIP_NAME`, run:
 
-    $ {command} --membership=[MEMBERSHIP-ID]
+    $ {command} --membership=MEMBERSHIP_NAME
     --enable-stackdriver-on-applications=true
   """
 

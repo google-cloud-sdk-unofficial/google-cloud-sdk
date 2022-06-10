@@ -12,13 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command to create connection profiles for a database migration."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
-
 
 from googlecloudsdk.api_lib.database_migration import api_util
 from googlecloudsdk.api_lib.database_migration import connection_profiles
@@ -27,16 +25,26 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.database_migration import flags
 from googlecloudsdk.command_lib.database_migration.connection_profiles import cloudsql_flags as cs_flags
 from googlecloudsdk.command_lib.database_migration.connection_profiles import flags as cp_flags
-
+from googlecloudsdk.core import log
 
 DETAILED_HELP = {
     'DESCRIPTION':
-        'Create a Database Migration Service connection profile for Cloud SQL.',
+        'Create a Database Migration Service destination connection profile '
+        'for Cloud SQL. This will create a Cloud SQL replica.',
     'EXAMPLES':
         """\
-          To create a connection profile for Cloud SQL with database version MySQL 5.6:
+          To create a connection profile for Cloud SQL with database version
+          MySQL 5.6:
 
-              $ {command} CONNECTION_PROFILE --region=us-central1 --display-name=my-profile --database-version=MYSQL_5_6
+              $ {command} my-profile --region=us-central1
+              --database-version=MYSQL_5_6 --source-id=cp1 --tier=db-n1-standard-1
+
+          To create a connection profile for Cloud SQL and a Cloud SQL replica
+          with database version PostgreSQL 10:
+
+              $ {command} my-profile --region=us-central1
+              --database-version=POSTGRES_10 --source-id=cp1
+              --tier=db-custom-1-3840 --zone=us-central1-a
         """,
 }
 
@@ -52,12 +60,12 @@ class CloudSQL(base.Command):
     """Args is called by calliope to gather arguments for this command.
 
     Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
     """
     resource_args.AddCloudSqlConnectionProfileResouceArgs(parser, 'to create')
 
+    cp_flags.AddNoAsyncFlag(parser)
     cp_flags.AddDisplayNameFlag(parser)
     cp_flags.AddProviderFlag(parser)
     cs_flags.AddActivationPolicylag(parser)
@@ -74,6 +82,7 @@ class CloudSQL(base.Command):
     cs_flags.AddStorageAutoResizeLimitFlag(parser)
     cs_flags.AddTierFlag(parser)
     cs_flags.AddZoneFlag(parser)
+    cs_flags.AddRootPassword(parser)
     flags.AddLabelsCreateFlags(parser)
 
   def Run(self, args):
@@ -81,7 +90,7 @@ class CloudSQL(base.Command):
 
     Args:
       args: argparse.Namespace, The arguments that this command was invoked
-          with.
+        with.
 
     Returns:
       A dict object representing the operations resource describing the create
@@ -93,14 +102,25 @@ class CloudSQL(base.Command):
     cp_client = connection_profiles.ConnectionProfilesClient(
         self.ReleaseTrack())
     result_operation = cp_client.Create(
-        parent_ref,
-        connection_profile_ref.connectionProfilesId,
-        'CLOUDSQL',
+        parent_ref, connection_profile_ref.connectionProfilesId, 'CLOUDSQL',
         args)
 
     client = api_util.GetClientInstance(self.ReleaseTrack())
     messages = api_util.GetMessagesModule(self.ReleaseTrack())
     resource_parser = api_util.GetResourceParser(self.ReleaseTrack())
+
+    if args.IsKnownAndSpecified('no_async'):
+      log.status.Print(
+          'Waiting for connection profile [{}] to be created with [{}]'.format(
+              connection_profile_ref.connectionProfilesId,
+              result_operation.name))
+
+      api_util.HandleLRO(client, result_operation,
+                         client.projects_locations_connectionProfiles)
+
+      log.status.Print('Created connection profile {} [{}]'.format(
+          connection_profile_ref.connectionProfilesId, result_operation.name))
+      return
 
     operation_ref = resource_parser.Create(
         'datamigration.projects.locations.operations',

@@ -32,3 +32,5 @@ class Operations(base.Group):
     $ {command} describe 13166c87-a9c0-4b5f-8ccf-c5343a93eb2b
 
   """
+
+  category = base.CI_CD_CATEGORY

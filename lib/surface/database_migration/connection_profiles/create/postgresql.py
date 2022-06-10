@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.database_migration import resource_args
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.database_migration import flags
 from googlecloudsdk.command_lib.database_migration.connection_profiles import flags as cp_flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 DETAILED_HELP = {
@@ -33,11 +34,15 @@ DETAILED_HELP = {
         """\
         To create a connection profile for PostgreSQL:
 
-            $ {command} CONNECTION_PROFILE --region=us-central1 --password=123456 --username=fakeuser --display-name=my-profile --host=1.2.3.4 --port=1111
+            $ {command} my-profile --region=us-central1
+            --password=123456 --username=my-user
+            --host=1.2.3.4 --port=5432
 
         If the source is a Cloud SQL database, run:
 
-            $ {command} CONNECTION_PROFILE --region=us-central1 --password=123456 --username=fakeuser --display-name=my-profile --host=1.2.3.4 --port=1111 --cloudsql-instance=my-instance
+            $ {command} my-profile --region=us-central1
+            --password=123456 --username=my-user
+            --host=1.2.3.4 --port=5432 --cloudsql-instance=my-instance
         """,
 }
 
@@ -58,6 +63,7 @@ class PostgreSQL(base.Command):
     """
     resource_args.AddConnectionProfileResourceArg(parser, 'to create')
 
+    cp_flags.AddNoAsyncFlag(parser)
     cp_flags.AddDisplayNameFlag(parser)
     cp_flags.AddUsernameFlag(parser, required=True)
     cp_flags.AddPasswordFlagGroup(parser, required=True)
@@ -93,6 +99,19 @@ class PostgreSQL(base.Command):
     client = api_util.GetClientInstance(self.ReleaseTrack())
     messages = api_util.GetMessagesModule(self.ReleaseTrack())
     resource_parser = api_util.GetResourceParser(self.ReleaseTrack())
+
+    if args.IsKnownAndSpecified('no_async'):
+      log.status.Print(
+          'Waiting for connection profile [{}] to be created with [{}]'.format(
+              connection_profile_ref.connectionProfilesId,
+              result_operation.name))
+
+      api_util.HandleLRO(client, result_operation,
+                         client.projects_locations_connectionProfiles)
+
+      log.status.Print('Created connection profile {} [{}]'.format(
+          connection_profile_ref.connectionProfilesId, result_operation.name))
+      return
 
     operation_ref = resource_parser.Create(
         'datamigration.projects.locations.operations',

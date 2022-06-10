@@ -26,10 +26,10 @@ from googlecloudsdk.command_lib.compute.reservations import resource_args
 from googlecloudsdk.command_lib.compute.reservations import util
 
 
-def _MakeCreateRequest(args, messages, project, reservation_ref):
+def _MakeCreateRequest(args, messages, project, reservation_ref, resources):
   """Common routine for creating reservation request."""
   reservation = util.MakeReservationMessageFromArgs(messages, args,
-                                                    reservation_ref)
+                                                    reservation_ref, resources)
   reservation.description = args.description
   return messages.ComputeReservationsInsertRequest(
       reservation=reservation, project=project, zone=reservation_ref.zone)
@@ -45,7 +45,8 @@ def _RunCreate(compute_api, args):
 
   messages = compute_api.client.messages
   project = reservation_ref.project
-  create_request = _MakeCreateRequest(args, messages, project, reservation_ref)
+  create_request = _MakeCreateRequest(args, messages, project, reservation_ref,
+                                      resources)
 
   service = compute_api.client.apitools_client.reservations
   return compute_api.client.MakeRequests([(service, 'Insert', create_request)])
@@ -55,13 +56,15 @@ def _RunCreate(compute_api, args):
 class Create(base.CreateCommand):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
+  _support_resource_policies = False
 
   @classmethod
   def Args(cls, parser):
     resource_args.GetReservationResourceArg().AddArgument(
         parser, operation_type='create')
     flags.AddCreateFlags(
-        parser, support_share_setting=cls._support_share_setting)
+        parser, support_share_setting=cls._support_share_setting,
+        support_resource_policies=cls._support_resource_policies)
 
   def Run(self, args):
     return _RunCreate(base_classes.ComputeApiHolder(base.ReleaseTrack.GA), args)
@@ -71,13 +74,15 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
+  _support_resource_policies = False
 
   @classmethod
   def Args(cls, parser):
     resource_args.GetReservationResourceArg().AddArgument(
         parser, operation_type='create')
     flags.AddCreateFlags(
-        parser, support_share_setting=cls._support_share_setting)
+        parser, support_share_setting=cls._support_share_setting,
+        support_resource_policies=cls._support_resource_policies)
 
   def Run(self, args):
     return _RunCreate(
@@ -88,6 +93,7 @@ class CreateBeta(Create):
 class CreateAlpha(CreateBeta):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
+  _support_resource_policies = True
 
   @classmethod
   def Args(cls, parser):
@@ -96,7 +102,8 @@ class CreateAlpha(CreateBeta):
     flags.AddCreateFlags(
         parser,
         support_share_setting=cls._support_share_setting,
-        support_fleet=True)
+        support_fleet=True,
+        support_resource_policies=cls._support_resource_policies)
 
   def Run(self, args):
     return _RunCreate(

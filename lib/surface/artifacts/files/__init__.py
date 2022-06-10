@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 class Files(base.Group):
   """Manage Artifact Registry files.
 
@@ -37,3 +36,5 @@ class Files(base.Group):
 
       $ {command} list --repository=my-repo
   """
+
+  category = base.CI_CD_CATEGORY

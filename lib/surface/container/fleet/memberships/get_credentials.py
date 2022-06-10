@@ -42,10 +42,10 @@ REQUIRED_PERMISSIONS = [
 
 
 class GetCredentials(base.Command):
-  """Fetch credentials for a Fleet-registered cluster to be used in Connect Gateway.
+  """Fetch credentials for a fleet-registered cluster to be used in Connect Gateway.
 
   {command} updates the `kubeconfig` file with the appropriate credentials and
-  endpoint information to send `kubectl` commands to a Fleet-registered and
+  endpoint information to send `kubectl` commands to a fleet-registered and
   connected cluster through Connect Gateway Service.
 
   It takes a project, passed through by set defaults or flags. By default,

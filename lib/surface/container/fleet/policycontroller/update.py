@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
+from googlecloudsdk.core import exceptions
 
 
 class Update(base.UpdateCommand):
@@ -62,19 +63,20 @@ class Update(base.UpdateCommand):
     )
     parser.add_argument(
         '--log-denies-enabled',
-        action='store_true',
-        help='Log all denies and dry run failures. (To disable, use --no-log-denies-enabled)',
-        default=False)
+        action=utils.BooleanOptionalAction,
+        const=None,
+        help='If set, log all denies and dry run failures. (To disable, use --no-log-denies-enabled)'
+    )
     parser.add_argument(
         '--referential-rules-enabled',
-        action='store_true',
-        help='Enable support for referential constraints. (To disable, use --no-referential-rules-enabled)',
-        default=False)
+        action=utils.BooleanOptionalAction,
+        help='If set, enable support for referential constraints. (To disable, use --no-referential-rules-enabled)'
+    )
     parser.add_argument(
         '--template-library-installed',
-        action='store_true',
-        help='Install a library of constraint templates for common policy types. (To disable, use --no-template-library-installed)',
-        default=False)
+        action=utils.BooleanOptionalAction,
+        help='If set, install a library of constraint templates for common policy types. (To disable, use --no-template-library-installed)'
+    )
     parser.add_argument(
         '--version',
         type=str,
@@ -82,18 +84,29 @@ class Update(base.UpdateCommand):
     )
 
   def Run(self, args):
-    membership_specs = {}
+    membership_specs = self.hubclient.ToPyDict(
+        self.GetFeature().membershipSpecs)
     poco_hub_config = utils.set_poco_hub_config_parameters_from_args(
         args, self.messages)
     memberships = utils.select_memberships(args)
     for membership in memberships:
+      full_membership_name = self.MembershipResourceName(
+          membership, use_number=True)
+      if full_membership_name not in membership_specs:
+        raise exceptions.Error(
+            'Policy Controller is not enabled for membership {}'.format(
+                membership))
+      poco_hub_config = membership_specs[
+          full_membership_name].policycontroller.policyControllerHubConfig
+      utils.merge_args_with_poco_hub_config(args, poco_hub_config,
+                                            self.messages)
       poco_membership_spec = self.messages.PolicyControllerMembershipSpec(
           policyControllerHubConfig=poco_hub_config)
       if args.version:
         poco_membership_spec.version = args.version
 
-      membership_specs[self.MembershipResourceName(
-          membership)] = self.messages.MembershipFeatureSpec(
+      membership_specs[
+          full_membership_name] = self.messages.MembershipFeatureSpec(
               policycontroller=poco_membership_spec)
 
     patch = self.messages.Feature(

@@ -34,9 +34,9 @@ class Upgrade(base.UpdateCommand):
 
   ## EXAMPLES
 
-  To upgrade a membership named CLUSTER_NAME, run:
+  To upgrade a membership named `MEMBERSHIP_NAME`, run:
 
-    $ {command} --membership=CLUSTER_NAME --version=VERSION
+    $ {command} --membership=MEMBERSHIP_NAME --version=VERSION
   """
 
   feature_name = 'configmanagement'
@@ -52,8 +52,7 @@ class Upgrade(base.UpdateCommand):
         '--version',
         type=str,
         help='The version of ACM to change to.',
-        required=True
-    )
+        required=True)
 
   def Run(self, args):
     f = self.GetFeature()
@@ -117,4 +116,3 @@ def _get_or_prompt_membership(membership):
     raise exceptions.Error(
         'Membership {} is not in the fleet.'.format(membership))
   return membership
-

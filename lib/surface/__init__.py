@@ -33,8 +33,8 @@ class Gcloud(base.Group):
 
   For a quick introduction to the `gcloud` CLI, a list of commonly
   used commands, and a look at how these commands are structured, run
-  `gcloud cheat-sheet` or refer to the
-  [`gcloud` CLI cheat sheet](https://cloud.google.com/sdk/docs/cheatsheet)
+  `gcloud cheat-sheet` or see the
+  [`gcloud` CLI cheat sheet](https://cloud.google.com/sdk/docs/cheatsheet).
   """
 
   @staticmethod
@@ -56,40 +56,40 @@ class Gcloud(base.Group):
         '--impersonate-service-account',
         metavar='SERVICE_ACCOUNT_EMAILS',
         help="""\
-             For this `gcloud` invocation, all API requests will be
-             made as the given service account or target service account in an
-             impersonation delegation chain instead of the currently selected
-             account. You can specify either a single service account as the
-             impersonator, or a comma-separated list of service accounts to
-             create an impersonation delegation chain. The impersonation is done
-             without needing to create, download, and activate a key for the
-             service account or accounts.
+        For this `gcloud` invocation, all API requests will be
+        made as the given service account or target service account in an
+        impersonation delegation chain instead of the currently selected
+        account. You can specify either a single service account as the
+        impersonator, or a comma-separated list of service accounts to
+        create an impersonation delegation chain. The impersonation is done
+        without needing to create, download, and activate a key for the
+        service account or accounts.
 
-             In order to make API requests as a service account, your
-             currently selected account must have an IAM role that includes
-             the `iam.serviceAccounts.getAccessToken` permission for the
-             service account or accounts.
+        In order to make API requests as a service account, your
+        currently selected account must have an IAM role that includes
+        the `iam.serviceAccounts.getAccessToken` permission for the
+        service account or accounts.
 
-             The `roles/iam.serviceAccountTokenCreator` role has
-             the `iam.serviceAccounts.getAccessToken permission`. You can
-             also create a custom role.
+        The `roles/iam.serviceAccountTokenCreator` role has
+        the `iam.serviceAccounts.getAccessToken permission`. You can
+        also create a custom role.
 
-             You can specify a list of service accounts, separated with
-             commas. This creates an impersonation delegation chain in which
-             each service account delegates its permissions to the next
-             service account in the chain. Each service account in the list
-             must have the `roles/iam.serviceAccountTokenCreator` role on the
-             next service account in the list. For example, when
-             `--impersonate-service-account=`
-             ``SERVICE_ACCOUNT_1'',``SERVICE_ACCOUNT_2'',
-             the active account must have the
-             `roles/iam.serviceAccountTokenCreator` role on
-             ``SERVICE_ACCOUNT_1'', which must have the
-             `roles/iam.serviceAccountTokenCreator` role on
-             ``SERVICE_ACCOUNT_2''.
-             ``SERVICE_ACCOUNT_1'' is the impersonated service
-             account and ``SERVICE_ACCOUNT_2'' is the delegate.
-             """,
+        You can specify a list of service accounts, separated with
+        commas. This creates an impersonation delegation chain in which
+        each service account delegates its permissions to the next
+        service account in the chain. Each service account in the list
+        must have the `roles/iam.serviceAccountTokenCreator` role on the
+        next service account in the list. For example, when
+        `--impersonate-service-account=`
+        ``SERVICE_ACCOUNT_1'',``SERVICE_ACCOUNT_2'',
+        the active account must have the
+        `roles/iam.serviceAccountTokenCreator` role on
+        ``SERVICE_ACCOUNT_1'', which must have the
+        `roles/iam.serviceAccountTokenCreator` role on
+        ``SERVICE_ACCOUNT_2''.
+        ``SERVICE_ACCOUNT_1'' is the impersonated service
+        account and ``SERVICE_ACCOUNT_2'' is the delegate.
+        """,
         action=actions.StoreProperty(
             properties.VALUES.auth.impersonate_service_account))
     parser.add_argument(

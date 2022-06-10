@@ -28,6 +28,7 @@ from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.command_lib.auth import auth_util as command_auth_util
 from googlecloudsdk.command_lib.auth import flags
 from googlecloudsdk.core import config
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import gce as c_gce
@@ -98,6 +99,16 @@ class Login(base.Command):
 
   def Run(self, args):
     """Run the authentication command."""
+    if not args.launch_browser:
+      log.warning(
+          'The login flow that you are using with the '
+          '--no-launch-browser flag will be updated by July 12, 2022 to '
+          'address a security issue. No immediate action is required '
+          'to continue using this flag, but be sure to upgrade your '
+          'gcloud installation by running `gcloud components update` '
+          'between July 12, 2022 and August 2, 2022.\n'
+      )
+
     # TODO(b/203102970): Remove this condition check after the bug is resolved
     if properties.VALUES.auth.access_token_file.Get():
       raise c_store.FlowError(

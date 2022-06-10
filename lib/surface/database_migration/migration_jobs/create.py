@@ -21,12 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.database_migration import api_util
 from googlecloudsdk.api_lib.database_migration import migration_jobs
 from googlecloudsdk.api_lib.database_migration import resource_args
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.database_migration import flags
 from googlecloudsdk.command_lib.database_migration.migration_jobs import flags as mj_flags
 from googlecloudsdk.core import log
-from googlecloudsdk.core import resources
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -57,7 +55,7 @@ class Create(base.Command):
     """
     resource_args.AddMigrationJobResourceArgs(
         parser, 'to create', required=True)
-    mj_flags.AddAsyncFlag(parser)
+    mj_flags.AddNoAsyncFlag(parser)
     mj_flags.AddDisplayNameFlag(parser)
     mj_flags.AddTypeFlag(parser, required=True)
     mj_flags.AddDumpPathFlag(parser)
@@ -91,27 +89,13 @@ class Create(base.Command):
     messages = api_util.GetMessagesModule(self.ReleaseTrack())
     resource_parser = api_util.GetResourceParser(self.ReleaseTrack())
 
-    if args.IsKnownAndSpecified('sync'):
+    if args.IsKnownAndSpecified('no_async'):
       log.status.Print(
           'Waiting for migration job [{}] to be created with [{}]'.format(
               migration_job_ref.migrationJobsId, result_operation.name))
 
-      op_resource = resources.REGISTRY.ParseRelativeName(
-          result_operation.name,
-          collection='datamigration.projects.locations.operations')
-      poller = waiter.CloudOperationPoller(
-          client.projects_locations_migrationJobs,
-          client.projects_locations_operations)
-      try:
-        waiter.WaitFor(
-            poller, op_resource,
-            'Waiting for operation [{}] to complete'.format(
-                result_operation.name))
-      except waiter.TimeoutError:
-        log.status.Print(
-            'The operations may still be underway remotely and may still succeed. You may check the operation status for the following operation  [{}]'
-            .format(result_operation.name))
-        return
+      api_util.HandleLRO(client, result_operation,
+                         client.projects_locations_migrationJobs)
 
       log.status.Print('Created migration job {} [{}]'.format(
           migration_job_ref.migrationJobsId, result_operation.name))

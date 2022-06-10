@@ -2,9 +2,9 @@
 
   help_text:
     brief: List memberships.
-    description: List memberships in Fleet.
+    description: List memberships in a fleet.
     examples: |
-      List memberships in Fleet:
+      List memberships in the active project's fleet:
 
         $ {command}
 

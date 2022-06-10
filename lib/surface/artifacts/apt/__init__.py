@@ -26,3 +26,5 @@ from googlecloudsdk.calliope import base
 class Apt(base.Group):
   """Manage Artifact Registry Debian packages.
   """
+
+  category = base.CI_CD_CATEGORY

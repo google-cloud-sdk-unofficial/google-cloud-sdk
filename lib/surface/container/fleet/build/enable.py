@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.container.fleet.features import base
 class Enable(base.EnableCommand):
   """Enable the Cloud Build hybrid pools feature.
 
-  Enables the Cloud Build Hybrid Feature in the fleet.
+  Enables the Cloud Build hybrid pools feature in the fleet.
 
   ## EXAMPLES
 

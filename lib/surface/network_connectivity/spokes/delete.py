@@ -39,7 +39,7 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     flags.AddSpokeResourceArg(parser, 'to delete')
-    flags.AddRegionGroup(parser)
+    flags.AddRegionGroup(parser, hide_global_arg=True)
     flags.AddAsyncFlag(parser)
 
   def Run(self, args):

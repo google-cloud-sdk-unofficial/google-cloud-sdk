@@ -30,7 +30,7 @@ EXAMPLES = r"""
     To apply a YAML config file to a membership, prepare
     [apply-spec.yaml](https://cloud.google.com/anthos-config-management/docs/reference/gcloud-apply-fields#example_gcloud_apply_spec) then run:
 
-      $ {command} --membership=CLUSTER_NAME --config=APPLY-SPEC.YAML --version=VERSION
+      $ {command} --membership=MEMBERSHIP_NAME --config=APPLY-SPEC.YAML --version=VERSION
 """
 
 

@@ -70,8 +70,8 @@ class UpdateHelper(object):
 
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
-           support_logging, support_tcp_ssl_logging, support_client_only,
-           support_grpc_protocol, support_subsetting,
+           support_logging, support_tcp_ssl_logging, support_net_lb_ilb_logging,
+           support_client_only, support_grpc_protocol, support_subsetting,
            support_subsetting_subset_size, support_unspecified_protocol,
            support_strong_session_affinity, support_advanced_load_balancing,
            support_dynamic_compression, support_weighted_lb):
@@ -128,9 +128,21 @@ class UpdateHelper(object):
       flags.AddFailoverRatio(parser)
 
     if support_logging:
-      if support_tcp_ssl_logging:
-        flags.AddEnableLoggingProtocols(parser)
-        flags.AddLoggingSampleRateProtocols(parser)
+      if support_net_lb_ilb_logging and support_tcp_ssl_logging:
+        flags.AddEnableLoggingProtocols(
+            parser, 'HTTP, HTTPS, HTTP2, TCP, SSL, UDP, or UNSPECIFIED')
+        flags.AddLoggingSampleRateProtocols(
+            parser, 'HTTP, HTTPS, HTTP2, TCP, SSL, UDP, or UNSPECIFIED')
+      elif support_net_lb_ilb_logging:
+        flags.AddEnableLoggingProtocols(
+            parser, 'HTTP, HTTPS, HTTP2, TCP, UDP, or UNSPECIFIED')
+        flags.AddLoggingSampleRateProtocols(
+            parser, 'HTTP, HTTPS, HTTP2, TCP, UDP, or UNSPECIFIED')
+      elif support_tcp_ssl_logging:
+        flags.AddEnableLoggingProtocols(parser,
+                                        'HTTP, HTTPS, HTTP2, TCP, or SSL')
+        flags.AddLoggingSampleRateProtocols(parser,
+                                            'HTTP, HTTPS, HTTP2, TCP, or SSL')
       else:
         flags.AddEnableLogging(parser)
         flags.AddLoggingSampleRate(parser)
@@ -162,6 +174,7 @@ class UpdateHelper(object):
                support_failover,
                support_logging,
                support_tcp_ssl_logging,
+               support_net_lb_ilb_logging,
                support_subsetting,
                support_subsetting_subset_size,
                support_strong_session_affinity=False,
@@ -172,6 +185,7 @@ class UpdateHelper(object):
     self._support_failover = support_failover
     self._support_logging = support_logging
     self._support_tcp_ssl_logging = support_tcp_ssl_logging
+    self._support_net_lb_ilb_logging = support_net_lb_ilb_logging
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_strong_session_affinity = support_strong_session_affinity
@@ -287,7 +301,8 @@ class UpdateHelper(object):
         args,
         replacement,
         support_logging=self._support_logging,
-        support_tcp_ssl_logging=self._support_tcp_ssl_logging)
+        support_tcp_ssl_logging=self._support_tcp_ssl_logging,
+        support_net_lb_ilb_logging=self._support_net_lb_ilb_logging)
 
     if self._support_advanced_load_balancing:
       if args.service_lb_policy is not None:
@@ -547,6 +562,7 @@ class UpdateGA(base.UpdateCommand):
   _support_l7_internal_load_balancer = True
   _support_logging = True
   _support_tcp_ssl_logging = False
+  _support_net_lb_ilb_logging = False
   _support_failover = True
   _support_client_only = True
   _support_unspecified_protocol = True
@@ -567,6 +583,7 @@ class UpdateGA(base.UpdateCommand):
         support_failover=cls._support_failover,
         support_logging=cls._support_logging,
         support_tcp_ssl_logging=cls._support_tcp_ssl_logging,
+        support_net_lb_ilb_logging=cls._support_net_lb_ilb_logging,
         support_client_only=cls._support_client_only,
         support_grpc_protocol=cls._support_grpc_protocol,
         support_subsetting=cls._support_subsetting,
@@ -582,7 +599,9 @@ class UpdateGA(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return UpdateHelper(self._support_l7_internal_load_balancer,
                         self._support_failover, self._support_logging,
-                        self._support_tcp_ssl_logging, self._support_subsetting,
+                        self._support_tcp_ssl_logging,
+                        self._support_net_lb_ilb_logging,
+                        self._support_subsetting,
                         self._support_subsetting_subset_size,
                         self._support_strong_session_affinity,
                         self._support_advanced_load_balancing,
@@ -607,6 +626,7 @@ class UpdateBeta(UpdateGA):
   _support_dynamic_compression = True
   _support_weighted_lb = True
   _support_tcp_ssl_logging = True
+  _support_net_lb_ilb_logging = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -626,3 +646,4 @@ class UpdateAlpha(UpdateBeta):
   _support_dynamic_compression = True
   _support_weighted_lb = True
   _support_tcp_ssl_logging = True
+  _support_net_lb_ilb_logging = True

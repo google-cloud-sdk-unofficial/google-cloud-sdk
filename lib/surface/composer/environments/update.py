@@ -77,9 +77,8 @@ class Update(base.Command):
 
     flags.AddAutoscalingUpdateFlagsToGroup(Update.update_type_group,
                                            release_track)
-    if release_track != base.ReleaseTrack.GA:
-      flags.AddMasterAuthorizedNetworksUpdateFlagsToGroup(
-          Update.update_type_group)
+    flags.AddMasterAuthorizedNetworksUpdateFlagsToGroup(
+        Update.update_type_group)
     if release_track == base.ReleaseTrack.ALPHA:
       flags.AIRFLOW_DATABASE_RETENTION_DAYS.AddToParser(
           Update.update_type_group.add_argument_group(hidden=True))
@@ -181,25 +180,24 @@ class Update(base.Command):
     if self._support_airflow_database_retention:
       params[
           'airflow_database_retention_days'] = args.airflow_database_retention_days
-    if self.ReleaseTrack() != base.ReleaseTrack.GA:
-      if args.enable_master_authorized_networks and args.disable_master_authorized_networks:
-        raise command_util.InvalidUserInputError(
-            'Cannot specify --enable-master-authorized-networks with --disable-master-authorized-networks'
-        )
-      if args.disable_master_authorized_networks and args.master_authorized_networks:
-        raise command_util.InvalidUserInputError(
-            'Cannot specify --disable-master-authorized-networks with --master-authorized-networks'
-        )
-      if args.enable_master_authorized_networks is None and args.master_authorized_networks:
-        raise command_util.InvalidUserInputError(
-            'Cannot specify --master-authorized-networks without --enable-master-authorized-networks'
-        )
-      if args.enable_master_authorized_networks or args.disable_master_authorized_networks:
-        params[
-            'master_authorized_networks_enabled'] = True if args.enable_master_authorized_networks else False
-      command_util.ValidateMasterAuthorizedNetworks(
-          args.master_authorized_networks)
-      params['master_authorized_networks'] = args.master_authorized_networks
+    if args.enable_master_authorized_networks and args.disable_master_authorized_networks:
+      raise command_util.InvalidUserInputError(
+          'Cannot specify --enable-master-authorized-networks with --disable-master-authorized-networks'
+      )
+    if args.disable_master_authorized_networks and args.master_authorized_networks:
+      raise command_util.InvalidUserInputError(
+          'Cannot specify --disable-master-authorized-networks with --master-authorized-networks'
+      )
+    if args.enable_master_authorized_networks is None and args.master_authorized_networks:
+      raise command_util.InvalidUserInputError(
+          'Cannot specify --master-authorized-networks without --enable-master-authorized-networks'
+      )
+    if args.enable_master_authorized_networks or args.disable_master_authorized_networks:
+      params[
+          'master_authorized_networks_enabled'] = True if args.enable_master_authorized_networks else False
+    command_util.ValidateMasterAuthorizedNetworks(
+        args.master_authorized_networks)
+    params['master_authorized_networks'] = args.master_authorized_networks
     return patch_util.ConstructPatch(**params)
 
   def Run(self, args):

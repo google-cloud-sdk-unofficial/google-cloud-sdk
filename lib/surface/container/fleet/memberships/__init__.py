@@ -24,5 +24,5 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Memberships(base.Group):
-  """Manage memberships of all your GKE and other Kubernetes cluster with Fleet."""
+  """Manage memberships of all your GKE and other Kubernetes cluster with fleets."""
   pass

@@ -45,3 +45,5 @@ class Repositories(base.Group):
 
     $ {command} delete my-tag --package=my-pkg
   """
+
+  category = base.CI_CD_CATEGORY

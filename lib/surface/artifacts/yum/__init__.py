@@ -26,3 +26,5 @@ from googlecloudsdk.calliope import base
 class Yum(base.Group):
   """Manage Artifact Registry RPM packages.
   """
+
+  category = base.CI_CD_CATEGORY

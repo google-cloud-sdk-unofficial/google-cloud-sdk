@@ -139,6 +139,8 @@ def ParseCreateNodePoolOptionsBase(args):
       max_nodes=args.max_nodes,
       min_cpu_platform=args.min_cpu_platform,
       min_nodes=args.min_nodes,
+      total_max_nodes=args.total_max_nodes,
+      total_min_nodes=args.total_min_nodes,
       image_type=args.image_type,
       image=args.image,
       image_project=args.image_project,

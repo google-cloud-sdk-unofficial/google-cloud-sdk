@@ -62,3 +62,5 @@ class Repositories(base.Group):
     $ {command} remove-iam-policy-binding my-repo
     --member='user:test-user@gmail.com' --role='roles/editor'
   """
+
+  category = base.CI_CD_CATEGORY

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The unregister-cluster command for removing clusters from the Fleet."""
+"""The unregister-cluster command for removing clusters from the fleet."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -36,12 +36,12 @@ from googlecloudsdk.core.console import console_io
 class Unregister(base.DeleteCommand):
   r"""Unregister a cluster from Fleet.
 
-  This command unregisters a cluster with the Fleet by:
+  This command unregisters a cluster with the fleet by:
 
     1. Deleting the Fleet Membership resource for this cluster (a.k.a
        `{parent_command} delete`).
     2. Removing the corresponding in-cluster Kubernetes Resources that make the
-       cluster exclusive to one Fleet (a.k.a `kubectl delete memberships
+       cluster exclusive to one fleet (a.k.a `kubectl delete memberships
        membership`).
     3. Uninstalling the Connect Agent from this cluster (a.k.a
        `kubectl delete on the gke-connect namespace`).
@@ -89,7 +89,7 @@ class Unregister(base.DeleteCommand):
   @classmethod
   def Args(cls, parser):
     parser.add_argument(
-        'CLUSTER_NAME',
+        'MEMBERSHIP_NAME',
         type=str,
         help=textwrap.dedent("""\
             The membership name that corresponds to the cluster being
@@ -126,7 +126,7 @@ class Unregister(base.DeleteCommand):
       location = 'global'
     kube_client.CheckClusterAdminPermissions()
     kube_util.ValidateClusterIdentifierFlags(kube_client, args)
-    membership_id = args.CLUSTER_NAME
+    membership_id = args.MEMBERSHIP_NAME
 
     # Delete membership from Fleet API.
     try:
@@ -161,7 +161,7 @@ class Unregister(base.DeleteCommand):
       log.status.Print(
           'Membership [{}] for the cluster [{}] was not found on the Fleet. '
           'It may already have been deleted, or it may never have existed.'
-          .format(name, args.CLUSTER_NAME))
+          .format(name, args.MEMBERSHIP_NAME))
 
     # Get namespace for the connect resource label.
     selector = '{}={}'.format(agent_util.CONNECT_RESOURCE_LABEL, project)

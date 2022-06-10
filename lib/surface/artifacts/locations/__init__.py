@@ -29,3 +29,5 @@ class Locations(base.Group):
 
       $ {command} list
   """
+
+  category = base.CI_CD_CATEGORY

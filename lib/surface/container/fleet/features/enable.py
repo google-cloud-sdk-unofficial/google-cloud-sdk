@@ -28,7 +28,7 @@ class Enable(base.EnableCommand):
 
   ## EXAMPLES
 
-  To enable the ``metering'' feature, run:
+  To enable the `metering` feature, run:
 
     $ {command} metering
   """

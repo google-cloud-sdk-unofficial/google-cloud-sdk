@@ -49,3 +49,5 @@ class PrintSettings(base.Group):
 
       $ {command} python --repository=my-repo
   """
+
+  category = base.CI_CD_CATEGORY

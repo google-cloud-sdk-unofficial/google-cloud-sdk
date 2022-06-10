@@ -41,3 +41,5 @@ class Packages(base.Group):
 
       $ {command} delete my-pkg --repository=my-repo
   """
+
+  category = base.CI_CD_CATEGORY

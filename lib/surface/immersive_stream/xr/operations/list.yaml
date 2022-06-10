@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List Immersive Stream for XR operations.
+    description: |
+      List Immersive Stream for XR operations.
+    examples: |
+      To list Immersive Stream for XR operations, run:
+
+        $ {command}
+
+  request:
+    collection: stream.projects.locations.operations
+    api_version: v1alpha1
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Location to list all Immersive Stream for XR operations, defaults to global.
+      spec: !REF googlecloudsdk.command_lib.immersive_stream.xr.resources:location

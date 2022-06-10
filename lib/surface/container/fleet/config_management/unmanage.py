@@ -31,9 +31,9 @@ class Unmanage(base.UpdateCommand):
 
   ## EXAMPLES
 
-  To remove the Config Management Feature spec for a Membership, run:
+  To remove the Config Management Feature spec for a membership, run:
 
-    $ {command} --membership=CLUSTER_NAME
+    $ {command} --membership=MEMBERSHIP_NAME
   """
 
   feature_name = 'configmanagement'
@@ -55,7 +55,7 @@ class Unmanage(base.UpdateCommand):
       index = console_io.PromptChoice(
           options=memberships,
           message='Please specify a membership to '
-                  'unmanage in configmanagement:\n')
+          'unmanage in configmanagement:\n')
       membership = memberships[index]
     else:
       membership = args.membership

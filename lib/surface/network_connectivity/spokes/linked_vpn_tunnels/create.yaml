@@ -2,7 +2,7 @@
 
   help_text:
     brief: Create a new VPN spoke.
-    description: Create a new [VPN spoke](https://cloud.google.com/network-connectivity/docs/network-connectivity-center/how-to/working-with-hubs-spokes#create-vpn-spoke) with the specified properties.
+    description: Create a new [VPN spoke](https://cloud.google.com/network-connectivity/docs/network-connectivity-center/how-to/working-with-hubs-spokes#create-vpn-spoke).
     examples: |
       To create a VPN spoke in region ``us-central1'' that uses data transfer and has
       two tunnels, run:
@@ -20,12 +20,12 @@
       help_text: Hub that the spoke will attach to. The hub must already exist.
     - arg_name: description
       api_field: spoke.description
-      help_text: Description of the spoke to be created.
+      help_text: Description of the spoke to create.
     - arg_name: vpn-tunnels
       required: true
       api_field: spoke.linkedVpnTunnels.uris
       type: arg_list
-      help_text: HA VPN tunnels that this spoke links to. The resources must already exist.
+      help_text: HA VPN tunnels that the spoke provides connectivity to. The resources must already exist.
     - arg_name: site-to-site-data-transfer
       api_field: spoke.linkedVpnTunnels.siteToSiteDataTransfer
       help_text: |

@@ -28,7 +28,7 @@ class Disable(base.DisableCommand):
 
   ## EXAMPLES
 
-  To disable the ``metering'' feature, run:
+  To disable the `metering` feature, run:
 
     $ {command} metering
   """

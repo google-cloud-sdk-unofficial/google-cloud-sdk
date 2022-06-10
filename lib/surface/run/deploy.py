@@ -295,6 +295,7 @@ class BetaDeploy(Deploy):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddSandboxArg(managed_group)
+    flags.AddSessionAffinityFlag(managed_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

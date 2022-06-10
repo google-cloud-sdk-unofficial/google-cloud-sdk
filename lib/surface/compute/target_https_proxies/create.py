@@ -54,11 +54,11 @@ def _DetailedHelp():
       and a SSL certificate named SSL_CERTIFICATE, create a
       global target HTTPS proxy pointing to this map by running:
 
-        $ {command} PROXY_NAME --url-map=URL_MAP --ssl-certificates=SSL_CERTIFIFCATE
+        $ {command} PROXY_NAME --url-map=URL_MAP --ssl-certificates=SSL_CERTIFICATE
 
       Create a regional target HTTPS proxy by running:
 
-        $ {command} PROXY_NAME --url-map=URL_MAP --ssl-certificates=SSL_CERTIFIFCATE --region=REGION_NAME
+        $ {command} PROXY_NAME --url-map=URL_MAP --ssl-certificates=SSL_CERTIFICATE --region=REGION_NAME
       """,
   }
 
@@ -68,7 +68,7 @@ def _Args(parser,
           traffic_director_security=False,
           certificate_map=False,
           list_format=None):
-  """Add the target https proxies comamnd line flags to the parser."""
+  """Add the target https proxies command line flags to the parser."""
 
   parser.display_info.AddFormat(list_format)
   parser.add_argument(
@@ -157,13 +157,10 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    ssl_certificates_required = (not cls._traffic_director_security) and (
-        not cls._certificate_map)
-
     cls.SSL_CERTIFICATES_ARG = (
         ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
             'target HTTPS proxy',
-            required=ssl_certificates_required,
+            required=False,
             include_l7_internal_load_balancing=cls
             ._include_l7_internal_load_balancing))
     cls.SSL_CERTIFICATES_ARG.AddArgument(parser, cust_metavar='SSL_CERTIFICATE')

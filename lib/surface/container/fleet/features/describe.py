@@ -28,7 +28,7 @@ class Describe(base.DescribeCommand):
 
   ## EXAMPLES
 
-  To describe the ``metering'' feature, run:
+  To describe the `metering` feature, run:
 
     $ {command} metering
   """

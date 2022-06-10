@@ -32,7 +32,6 @@ DEFAULT_LIST_FORMAT = """\
     )"""
 
 
-@base.Hidden
 class List(base.ListCommand):
   """List Artifact Registry files.
 

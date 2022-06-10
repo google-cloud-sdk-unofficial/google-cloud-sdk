@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import name_expansion
 from googlecloudsdk.command_lib.storage import plurality_checkable_iterator
@@ -87,7 +86,7 @@ class Rm(base.Command):
         nargs='*',
         help='The URLs of the resources to delete.')
     parser.add_argument(
-        '--stdin',
+        '--read-paths-from-stdin',
         '-I',
         action='store_true',
         help='Read the list of resources to remove from stdin.')
@@ -113,20 +112,8 @@ class Rm(base.Command):
     flags.add_continue_on_error_flag(parser)
 
   def Run(self, args):
-    if args.stdin:
-      if args.urls:
-        raise errors.Error(
-            'No URL arguments allowed when reading URLs from stdin.')
-      urls = stdin_iterator.StdinIterator()
-    else:
-      if not args.urls:
-        raise errors.Error(
-            'Without the --stdin flag, the rm command requires at least one URL'
-            ' argument.')
-      urls = args.urls
-
     name_expansion_iterator = name_expansion.NameExpansionIterator(
-        urls,
+        stdin_iterator.get_urls_iterable(args.urls, args.read_paths_from_stdin),
         all_versions=args.all_versions or args.recursive,
         include_buckets=args.recursive,
         recursion_requested=args.recursive)

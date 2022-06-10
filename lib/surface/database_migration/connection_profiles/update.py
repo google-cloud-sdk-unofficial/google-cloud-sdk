@@ -12,13 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command to update connection profiles for a database migration."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
-
 
 from googlecloudsdk.api_lib.database_migration import api_util
 from googlecloudsdk.api_lib.database_migration import connection_profiles
@@ -30,12 +28,22 @@ from googlecloudsdk.core.console import console_io
 
 DETAILED_HELP = {
     'DESCRIPTION':
-        'Update a Database Migration Service connection profile.',
+        """
+        Update a Database Migration Service connection profile.
+        - Draft connection profile: the user can update all flags available in
+        `connection-profiles create` command.
+        - Existing connection profile: the user can update a limited list of
+        flags, see `connection-profiles update` Synopsis.
+        - If a migration job is using the connection profile, then updates to
+        fields `host`, `port`, `username`, and `password` will propagate to the
+        destination instance.
+        """,
     'EXAMPLES':
         """\
-        To update the display name of a connection profile:
+        To update the username of a connection profile:
 
-            $ {command} CONNECTION_PROFILE --region=us-central1 --display-name=new-name
+            $ {command} my-profile --region=us-central1
+            --username=new-user
         """,
 }
 
@@ -50,9 +58,8 @@ class _Update(object):
     """Args is called by calliope to gather arguments for this command.
 
     Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
     """
     resource_args.AddConnectionProfileResourceArg(parser, 'to update')
 
@@ -70,7 +77,7 @@ class _Update(object):
 
     Args:
       args: argparse.Namespace, The arguments that this command was invoked
-          with.
+        with.
 
     Returns:
       A dict object representing the operations resource describing the create
@@ -83,9 +90,8 @@ class _Update(object):
 
     cp_client = connection_profiles.ConnectionProfilesClient(
         self.ReleaseTrack())
-    result_operation = cp_client.Update(
-        connection_profile_ref.RelativeName(),
-        args)
+    result_operation = cp_client.Update(connection_profile_ref.RelativeName(),
+                                        args)
 
     client = api_util.GetClientInstance(self.ReleaseTrack())
     messages = api_util.GetMessagesModule(self.ReleaseTrack())
@@ -122,4 +128,3 @@ class UpdateGA(_Update, base.Command):
     _Update.Args(parser)
     cp_flags.AddClientCertificateFlag(parser)
     cp_flags.AddCloudSQLInstanceFlag(parser)
-

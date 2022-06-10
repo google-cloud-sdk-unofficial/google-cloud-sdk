@@ -40,3 +40,5 @@ class Versions(base.Group):
 
       $ {command} delete 1.0.0 --package=my-pkg --delete-tags
   """
+
+  category = base.CI_CD_CATEGORY

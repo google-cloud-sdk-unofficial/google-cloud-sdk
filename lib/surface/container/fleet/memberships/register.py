@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The register command for registering a clusters with the Fleet."""
+"""The register command for registering a clusters with the fleet."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -43,17 +43,17 @@ DOCKER_CREDENTIAL_FILE_FLAG = '--docker-credential-file'
 
 
 class Register(base.CreateCommand):
-  r"""Register a cluster with Fleet.
+  r"""Register a cluster with a fleet.
 
-  This command registers a cluster with the Fleet by:
+  This command registers a cluster with the fleet by:
 
     1. Creating a Fleet Membership resource corresponding to the cluster.
     2. Adding in-cluster Kubernetes Resources that make the cluster exclusive
-       to one Fleet.
+       to one fleet.
     3. Installing the Connect Agent into this cluster.
 
   A successful registration implies that the cluster is now exclusive to a
-  single Fleet.
+  single fleet.
 
   For more information about Connect Agent, go to:
   https://cloud.google.com/anthos/multicluster-management/connect/overview/
@@ -71,8 +71,9 @@ class Register(base.CreateCommand):
   If the cluster is already registered to another Fleet, the registration is not
   successful.
 
-  Rerunning this command against the same cluster with the same CLUSTER_NAME and
-  target GKEFleet is successful and upgrades the Connect Agent if a new agent is
+  Rerunning this command against the same cluster with the same MEMBERSHIP_NAME
+  and  target GKEFleet is successful and upgrades the Connect Agent if a new
+  agent is
   available.
 
   ## EXAMPLES
@@ -152,11 +153,11 @@ class Register(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     parser.add_argument(
-        'CLUSTER_NAME',
+        'MEMBERSHIP_NAME',
         type=str,
         help=textwrap.dedent("""\
           The membership name that you choose to uniquely represents the cluster
-          being registered on the Fleet.
+          being registered on the fleet.
          """),
     )
     if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
@@ -257,7 +258,7 @@ class Register(base.CreateCommand):
         required=True,
         action='store_true',
         help=textwrap.dedent("""\
-          Enable Workload Identity when registering the cluster with Fleet.
+          Enable Workload Identity when registering the cluster with a fleet.
           Ensure that GKE Workload Identity is enabled on your GKE cluster, it
           is a requirement for using Workload Identity with memberships. Refer
           to the `Registering a cluster using Workload Identity` section in
@@ -405,7 +406,7 @@ class Register(base.CreateCommand):
       parent = api_util.ParentRef(project, location)
       membership_id = uuid
       resource_name = api_util.MembershipRef(project, location, uuid)
-      obj = self._CheckMembershipWithUUID(resource_name, args.CLUSTER_NAME)
+      obj = self._CheckMembershipWithUUID(resource_name, args.MEMBERSHIP_NAME)
 
       # get api version version to pass into create/update membership
       api_server_version = kube_util.GetClusterServerVersion(kube_client)
@@ -413,14 +414,14 @@ class Register(base.CreateCommand):
         # The membership exists and has the same description.
         already_exists = True
       else:
-        # Attempt to create a new membership using cluster_name.
-        membership_id = args.CLUSTER_NAME
+        # Attempt to create a new membership using MEMBERSHIP_NAME.
+        membership_id = args.MEMBERSHIP_NAME
         resource_name = api_util.MembershipRef(project, location,
-                                               args.CLUSTER_NAME)
+                                               args.MEMBERSHIP_NAME)
         try:
           self._VerifyClusterExclusivity(kube_client, parent, membership_id)
-          obj = api_util.CreateMembership(project, args.CLUSTER_NAME,
-                                          args.CLUSTER_NAME, location,
+          obj = api_util.CreateMembership(project, args.MEMBERSHIP_NAME,
+                                          args.MEMBERSHIP_NAME, location,
                                           gke_cluster_self_link, uuid,
                                           self.ReleaseTrack(), issuer_url,
                                           private_keyset_json,
@@ -452,7 +453,7 @@ class Register(base.CreateCommand):
                 'fleet memberships delete {0}` and register '
                 'again.'.format(membership_id))
 
-          # The membership exists with same cluster_name.
+          # The membership exists with same MEMBERSHIP_NAME.
           already_exists = True
 
       # In case of an existing membership, check with the user to upgrade the
@@ -483,7 +484,7 @@ class Register(base.CreateCommand):
              ))):
           console_io.PromptContinue(
               message=hub_util.GenerateWIUpdateMsgString(
-                  obj, issuer_url, resource_name, args.CLUSTER_NAME),
+                  obj, issuer_url, resource_name, args.MEMBERSHIP_NAME),
               cancel_on_no=True)
           try:
             api_util.UpdateMembership(
@@ -498,7 +499,7 @@ class Register(base.CreateCommand):
                                                       resource_name)
             log.status.Print(
                 'Updated the membership [{}] for the cluster [{}]'.format(
-                    resource_name, args.CLUSTER_NAME))
+                    resource_name, args.MEMBERSHIP_NAME))
           except Exception as e:
             raise exceptions.Error(
                 'Error in updating the membership [{}]:{}'.format(
@@ -508,12 +509,12 @@ class Register(base.CreateCommand):
               message='A membership [{}] for the cluster [{}] already exists. '
               'Continuing will reinstall the Connect agent deployment to use a '
               'new image (if one is available).'.format(resource_name,
-                                                        args.CLUSTER_NAME),
+                                                        args.MEMBERSHIP_NAME),
               cancel_on_no=True)
       else:
         log.status.Print(
             'Created a new membership [{}] for the cluster [{}]'.format(
-                resource_name, args.CLUSTER_NAME))
+                resource_name, args.MEMBERSHIP_NAME))
 
       # Attempt to update the existing agent deployment, or install a new agent
       # if necessary.
@@ -532,19 +533,19 @@ class Register(base.CreateCommand):
         raise
       log.status.Print(
           'Finished registering the cluster [{}] with the Fleet.'.format(
-              args.CLUSTER_NAME))
+              args.MEMBERSHIP_NAME))
       return obj
 
-  def _CheckMembershipWithUUID(self, resource_name, cluster_name):
+  def _CheckMembershipWithUUID(self, resource_name, membership_name):
     """Checks for an existing Membership with UUID.
 
     In the past, by default we used Cluster UUID to create a membership. Now
-    we use user supplied cluster_name. This check ensures that we don't
+    we use user supplied membership_name. This check ensures that we don't
     reregister a cluster.
 
     Args:
       resource_name: The full membership resource name using the cluster uuid.
-      cluster_name: User supplied cluster_name.
+      membership_name: User supplied membership_name.
 
     Returns:
      The Membership resource or None.
@@ -555,17 +556,17 @@ class Register(base.CreateCommand):
     obj = None
     try:
       obj = api_util.GetMembership(resource_name, self.ReleaseTrack())
-      if (hasattr(obj, 'description') and obj.description != cluster_name):
-        # A membership exists, but does not have the same cluster_name.
+      if (hasattr(obj, 'description') and obj.description != membership_name):
+        # A membership exists, but does not have the same membership_name.
         # This is possible if two different users attempt to register the same
         # cluster, or if the user is upgrading and has passed a different
-        # cluster_name. Treat this as an error: even in the upgrade case,
+        # membership_name. Treat this as an error: even in the upgrade case,
         # this is useful to prevent the user from upgrading the wrong cluster.
         raise exceptions.Error(
             'There is an existing membership, [{}], that conflicts with [{}]. '
             'Please delete it before continuing:\n\n'
             '  gcloud {}container fleet memberships delete {}'.format(
-                obj.description, cluster_name,
+                obj.description, membership_name,
                 hub_util.ReleaseTrackCommandPrefix(self.ReleaseTrack()),
                 resource_name))
     except apitools_exceptions.HttpNotFoundError:

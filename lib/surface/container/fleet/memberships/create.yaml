@@ -3,17 +3,17 @@
   help_text:
     brief: Create a new membership for a cluster.
     description: |
-      Create a Fleet membership resource corresponding to the cluster.
+      Create a Fleet Membership resource corresponding to the cluster.
 
       This command does not install the Connect Agent or in-cluster Kubernetes Resources that are
       required to connect the cluster with Google. For complete cluster registration, consider using
       the command: `{parent_command} register --help`.
     examples: |
-      Create a new membership for a cluster in Fleet:
+      Create a new membership `MEMBERSHIP_NAME` in the active project's fleet:
 
         $ {command} MEMBERSHIP_NAME
 
-      Create a new membership for a GKE cluster:
+      Create a new membership `MEMBERSHIP_NAME` for a GKE cluster:
 
         $ {command} MEMBERSHIP_NAME --gke-cluster-self-link=my-gke-cluster-self-link
 

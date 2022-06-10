@@ -26,6 +26,7 @@ from googlecloudsdk.api_lib.database_migration import resource_args
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.database_migration import flags
 from googlecloudsdk.command_lib.database_migration.migration_jobs import flags as mj_flags
+from googlecloudsdk.core import log
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -56,6 +57,7 @@ class Update(base.Command):
           allowed.
     """
     resource_args.AddMigrationJobResourceArgs(parser, 'to update')
+    mj_flags.AddNoAsyncFlag(parser)
     mj_flags.AddDisplayNameFlag(parser)
     mj_flags.AddTypeFlag(parser)
     mj_flags.AddDumpPathFlag(parser)
@@ -88,6 +90,18 @@ class Update(base.Command):
     client = api_util.GetClientInstance(self.ReleaseTrack())
     messages = api_util.GetMessagesModule(self.ReleaseTrack())
     resource_parser = api_util.GetResourceParser(self.ReleaseTrack())
+
+    if args.IsKnownAndSpecified('no_async'):
+      log.status.Print(
+          'Waiting for migration job [{}] to be updated with [{}]'.format(
+              migration_job_ref.migrationJobsId, result_operation.name))
+
+      api_util.HandleLRO(client, result_operation,
+                         client.projects_locations_migrationJobs)
+
+      log.status.Print('Updated migration job {} [{}]'.format(
+          migration_job_ref.migrationJobsId, result_operation.name))
+      return
 
     operation_ref = resource_parser.Create(
         'datamigration.projects.locations.operations',

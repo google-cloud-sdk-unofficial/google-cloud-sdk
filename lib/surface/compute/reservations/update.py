@@ -114,7 +114,7 @@ def _GetShareSettingUpdateRequest(
 
   # Build reservation object using new share-settings.
   r_resource = util.MakeReservationMessage(messages, reservation_ref.Name(),
-                                           share_settings, None, None,
+                                           share_settings, None, None, None,
                                            reservation_ref.zone)
   # Build update request.
   r_update_request = messages.ComputeReservationsUpdateRequest(

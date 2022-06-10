@@ -34,7 +34,7 @@ class Delete(base.UpdateCommand):
 
   To delete an Identity Service configuration for a membership, run:
 
-    $ {command} --membership=CLUSTER_NAME
+    $ {command} --membership=MEMBERSHIP_NAME
   """
 
   feature_name = 'identityservice'
