@@ -191,10 +191,12 @@ class AlphaUpdate(Update):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddSandboxArg(managed_group)
-    flags.AddConfidentialFlag(managed_group)
     flags.AddCustomAudiencesFlag(managed_group)
     flags.AddSessionAffinityFlag(managed_group)
     flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
+    flags.AddVpcNetworkFlags(managed_group)
+    flags.AddVpcSubnetFlags(managed_group)
+    flags.AddVpcNetworkTagsFlags(managed_group)
 
 
 AlphaUpdate.__doc__ = Update.__doc__

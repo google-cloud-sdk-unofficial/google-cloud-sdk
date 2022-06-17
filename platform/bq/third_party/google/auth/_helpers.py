@@ -18,13 +18,17 @@
 import base64
 import calendar
 import datetime
+import sys
 
 import six
 from six.moves import urllib
 
 
-CLOCK_SKEW_SECS = 10  # 10 seconds
-CLOCK_SKEW = datetime.timedelta(seconds=CLOCK_SKEW_SECS)
+# Token server doesn't provide a new a token when doing refresh unless the
+# token is expiring within 30 seconds, so refresh threshold should not be
+# more than 30 seconds. Otherwise auth lib will send tons of refresh requests
+# until 30 seconds before the expiration, and cause a spike of CPU usage.
+REFRESH_THRESHOLD = datetime.timedelta(seconds=20)
 
 
 def copy_docstring(source_class):
@@ -231,3 +235,12 @@ def unpadded_urlsafe_b64encode(value):
         Union[str|bytes]: The encoded value
     """
     return base64.urlsafe_b64encode(value).rstrip(b"=")
+
+
+def is_python_3():
+    """Check if the Python interpreter is Python 2 or 3.
+
+    Returns:
+        bool: True if the Python interpreter is Python 3 and False otherwise.
+    """
+    return sys.version_info > (3, 0)

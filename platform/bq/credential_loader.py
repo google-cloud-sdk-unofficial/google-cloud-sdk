@@ -16,19 +16,15 @@ import oauth2client_4_0.contrib.multiprocess_file_storage
 import oauth2client_4_0.file
 import oauth2client_4_0.service_account
 import oauth2client_4_0.tools
+import requests
 
 import bigquery_client
 import bq_auth_flags
 import bq_utils
+import wrapped_credentials
 
 
 FLAGS = flags.FLAGS
-
-_GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive'
-_BIGQUERY_SCOPE = 'https://www.googleapis.com/auth/bigquery'
-_CLOUD_PLATFORM_SCOPE = 'https://www.googleapis.com/auth/cloud-platform'
-_REAUTH_SCOPE = 'https://www.googleapis.com/auth/accounts.reauth'
-
 
 if os.environ.get('CLOUDSDK_WRAPPER') == '1':
   _CLIENT_ID = '32555940559.apps.googleusercontent.com'
@@ -83,7 +79,7 @@ class CachedCredentialLoader(CredentialLoader):
     self._read_cache_first = read_cache_first
     # MultiprocessFileStorage recommends using scopes as the key for single-user
     # credentials storage.
-    self._scopes_key = ','.join(sorted(_GetClientScopeFromFlags()))
+    self._scopes_key = ','.join(sorted(bq_utils.GetClientScopeFromFlags()))
     try:
       self._storage = oauth2client_4_0.contrib.multiprocess_file_storage.MultiprocessFileStorage(
           credential_cache_file, self._scopes_key)
@@ -131,7 +127,7 @@ class CachedCredentialLoader(CredentialLoader):
     if not creds:
       return None  # Nothing cached.
 
-    scopes = _GetClientScopeFromFlags()
+    scopes = bq_utils.GetClientScopeFromFlags()
     if not creds.has_scopes(scopes):
       # Our cached credentials do not cover the required scopes.
       return None
@@ -186,7 +182,7 @@ class ServiceAccountPrivateKeyFileLoader(ServiceAccountPrivateKeyLoader):
               .from_p12_keyfile(
                   service_account_email=self._service_account,
                   filename=self._file_path,
-                  scopes=_GetClientScopeFromFlags(),
+                  scopes=bq_utils.GetClientScopeFromFlags(),
                   private_key_password=self._password,
                   token_uri=oauth2client_4_0.GOOGLE_TOKEN_URI,
                   revoke_uri=oauth2client_4_0.GOOGLE_REVOKE_URI))
@@ -218,7 +214,7 @@ class ApplicationDefaultCredentialFileLoader(CachedCredentialLoader):
     with open(self._credential_file) as file_obj:
       credentials = json.load(file_obj)
 
-    client_scope = _GetClientScopeFromFlags()
+    client_scope = bq_utils.GetClientScopeFromFlags()
     if credentials['type'] == oauth2client_4_0.client.AUTHORIZED_USER:
       return Oauth2WithReauthCredentials(
           access_token=None,
@@ -229,6 +225,9 @@ class ApplicationDefaultCredentialFileLoader(CachedCredentialLoader):
           token_uri=oauth2client_4_0.GOOGLE_TOKEN_URI,
           user_agent=_CLIENT_USER_AGENT,
           scopes=client_scope)
+    elif credentials['type'] == 'external_account':
+      return wrapped_credentials.WrappedCredentials.for_external_account(
+          self._credential_file)
     else:  # Service account
       credentials['type'] = oauth2client_4_0.client.SERVICE_ACCOUNT
       service_account_credentials = (
@@ -240,15 +239,6 @@ class ApplicationDefaultCredentialFileLoader(CachedCredentialLoader):
               revoke_uri=oauth2client_4_0.GOOGLE_REVOKE_URI))
       service_account_credentials._user_agent = _CLIENT_USER_AGENT  # pylint: disable=protected-access
       return service_account_credentials
-
-
-def _GetClientScopeFromFlags():
-  """Returns auth scopes based on user supplied flags."""
-  client_scope = [_BIGQUERY_SCOPE, _CLOUD_PLATFORM_SCOPE]
-  if FLAGS.enable_gdrive:
-    client_scope.append(_GDRIVE_SCOPE)
-  client_scope.append(_REAUTH_SCOPE)
-  return client_scope
 
 
 def _GetCredentialsLoaderFromFlags():

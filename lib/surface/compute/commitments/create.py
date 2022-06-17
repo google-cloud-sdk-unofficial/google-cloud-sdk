@@ -46,6 +46,8 @@ def _CommonArgs(track, parser):
 class Create(base.Command):
   """Create Compute Engine commitments."""
   _support_share_setting = True
+  _support_stable_fleet = False
+
   detailed_help = {
       'EXAMPLES': '''
         To create a commitment called ``commitment-1'' in the ``us-central1''
@@ -60,7 +62,9 @@ class Create(base.Command):
   def Args(cls, parser):
     _CommonArgs('v1', parser)
     flags.AddCreateFlags(
-        parser, support_share_setting=cls._support_share_setting)
+        parser,
+        support_share_setting=cls._support_share_setting,
+        support_stable_fleet=cls._support_stable_fleet)
 
   def _MakeCreateRequest(
       self, args, messages, project, region, commitment_ref, holder):
@@ -119,12 +123,15 @@ class Create(base.Command):
 class CreateBeta(Create):
   """Create Compute Engine commitments."""
   _support_share_setting = True
+  _support_stable_fleet = False
 
   @classmethod
   def Args(cls, parser):
     _CommonArgs('beta', parser)
     flags.AddCreateFlags(
-        parser, support_share_setting=cls._support_share_setting)
+        parser,
+        support_share_setting=cls._support_share_setting,
+        support_stable_fleet=cls._support_stable_fleet)
 
   def _MakeCreateRequest(self, args, messages, project, region, commitment_ref,
                          holder):
@@ -149,12 +156,14 @@ class CreateBeta(Create):
 class CreateAlpha(CreateBeta):
   """Create Compute Engine commitments."""
   _support_share_setting = True
+  _support_stable_fleet = True
 
   @classmethod
   def Args(cls, parser):
     _CommonArgs('alpha', parser)
     flags.AddCreateFlags(
-        parser, support_share_setting=cls._support_share_setting)
+        parser, support_share_setting=cls._support_share_setting,
+        support_stable_fleet=cls._support_stable_fleet)
     flags.AddSplitSourceCommitment(parser)
     flags.AddMergeSourceCommitments(parser)
 

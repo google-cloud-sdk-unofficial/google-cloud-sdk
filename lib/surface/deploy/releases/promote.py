@@ -22,6 +22,8 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.clouddeploy import release
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
+from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
 from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import promote_util
 from googlecloudsdk.command_lib.deploy import release_util
@@ -74,10 +76,18 @@ class Promote(base.CreateCommand):
 
   def Run(self, args):
     release_ref = args.CONCEPTS.release.Parse()
+    failed_activity_msg = 'Cannot promote release {}.'.format(
+        release_ref.RelativeName())
+    delivery_pipeline_util.ThrowIfPipelineSuspended(release_ref.Parent(),
+                                                    failed_activity_msg)
     try:
       release_obj = release.ReleaseClient().Get(release_ref.RelativeName())
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error)
+
+    if release_obj.abandoned:
+      raise deploy_exceptions.AbandonedReleaseError('Cannot promote release.',
+                                                    release_ref.RelativeName())
 
     # Get the to_target id if the argument is not specified.
     to_target_id = args.to_target

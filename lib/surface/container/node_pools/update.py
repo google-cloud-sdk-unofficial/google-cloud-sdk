@@ -99,7 +99,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableGvnicFlag(group)
     flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
     flags.AddEnableConfidentialNodesFlag(
-        group, for_node_pool=True, hidden=True, is_update=True)
+        group, for_node_pool=True, is_update=True)
     flags.AddNetworkPerformanceConfigFlags(group, hidden=False)
     flags.AddNodePoolEnablePrivateNodes(group)
 

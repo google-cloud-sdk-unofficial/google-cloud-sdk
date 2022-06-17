@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.clouddeploy import release
 from googlecloudsdk.api_lib.clouddeploy import rollout
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
 from googlecloudsdk.command_lib.deploy import release_util
 from googlecloudsdk.command_lib.deploy import resource_args
 from googlecloudsdk.core import resources
@@ -53,6 +54,11 @@ class Approve(base.CreateCommand):
 
   def Run(self, args):
     rollout_ref = args.CONCEPTS.rollout.Parse()
+    pipeline_ref = rollout_ref.Parent().Parent()
+    failed_activity_msg = 'Cannot approve rollout {}.'.format(
+        rollout_ref.RelativeName())
+    delivery_pipeline_util.ThrowIfPipelineSuspended(pipeline_ref,
+                                                    failed_activity_msg)
     try:
       rollout_obj = rollout.RolloutClient().Get(rollout_ref.RelativeName())
     except apitools_exceptions.HttpError as error:

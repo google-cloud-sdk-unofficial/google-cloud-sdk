@@ -37,9 +37,13 @@ class CreateAlpha(base.CreateCommand):
   # pylint: disable=line-too-long
   detailed_help = {
       'EXAMPLES': ("""
-        Create a deployment named ``my-deployment'' from local files:
+        Create a clusterless deployment named ``my-deployment'' from local files:
 
           $ {command} --source="./path/to/blueprint" my-deployment
+
+        Create a clusterful deployment named ``my-deployment'' from local files:
+
+          $ {command} --source="./path/to/blueprint" --no-clusterless my-deployment
 
         Create a deployment named ``my-deployment'' from local files and control
         which storage bucket the files are uploaded to:
@@ -54,7 +58,7 @@ class CreateAlpha(base.CreateCommand):
         Create a deployment named ``my-deployment'' from local files and control
         which Config Controller instance the deployment is actuated with:
 
-          $ {command} --source="./path/to/blueprint" --config-controller=my-instance my-deployment
+          $ {command} --source="./path/to/blueprint" --config-controller=my-instance --no-clusterless my-deployment
 
         Update a deployment's labels:
 
@@ -70,6 +74,7 @@ class CreateAlpha(base.CreateCommand):
     flags.AddSourceFlag(parser)
     flags.AddIgnoreFileFlag(parser)
     flags.AddTimeoutFlag(parser)
+    flags.AddClusterlessFlag(parser)
 
     target_group = parser.add_mutually_exclusive_group()
     flags.AddGitTargetFlag(target_group)
@@ -102,11 +107,12 @@ class CreateAlpha(base.CreateCommand):
 
     config_controller_ref = args.CONCEPTS.config_controller.Parse()
     config_controller_full_name = (
-        config_controller_ref.RelativeName() if config_controller_ref else None)
+        config_controller_ref.RelativeName()
+        if config_controller_ref and not args.clusterless else None)
 
     return deploy_util.Apply(args.source, deployment_full_name,
                              args.stage_bucket, args.labels, messages,
                              args.ignore_file, args.async_,
                              args.reconcile_timeout, args.source_git_subdir,
                              config_controller_full_name, args.target_git,
-                             args.target_git_subdir)
+                             args.target_git_subdir, args.clusterless)

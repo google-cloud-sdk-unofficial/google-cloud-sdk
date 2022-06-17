@@ -3,10 +3,9 @@
     brief: Update a BeyondCorp client connector service.
     description: Update a BeyondCorp client connector service.
     examples: |
-      The following command updates a client connector service with ID ``my-resource'' in the default user project and location us-central1:
+      The following command updates a client connector service with ID ``my-service-resource'' in location us-central1:
 
-        $ {command} my-resource \
-            --location=us-central1 --project=${PROJECT_ID} --display-name="my-new-resource"
+        $ {command} my-service-resource --project=consumer-project-id --location=us-central1 --display-name="my-new-resource"
 
   request:
     collection: beyondcorp.projects.locations.clientConnectorServices

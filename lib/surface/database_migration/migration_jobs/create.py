@@ -28,13 +28,31 @@ from googlecloudsdk.core import log
 
 DETAILED_HELP = {
     'DESCRIPTION':
-        'Create a Database Migration Service migration job.',
+        """
+        Create a Database Migration Service migration job.
+        Recommended steps before creating the migration job:
+        - Create a source connection profile. See prerequisites [here](https://cloud.google.com/database-migration/docs/mysql/configure-source-database).
+        - Create a destination connection profile.
+        - Configure the connectivity method. See prerequisites [here](https://cloud.google.com/database-migration/docs/mysql/configure-connectivity).
+        """,
     'EXAMPLES':
         """\
-        To create a migration job with vpc peering connectivity:
+        To create a continuous migration job with IP allowlist connectivity:
 
-            $ {command} MIGRATION_JOB --region=us-central1 --display-name=my-job  --source=cp1 --destination=cp2 --peer-vpc=network1
+            $ {command} my-migration-job --region=us-central1 --type=CONTINUOUS
+            --source=cp1 --destination=cp2
 
+        To create a continuous migration job with VPC peering connectivity:
+
+            $ {command} my-migration-job --region=us-central1 --type=CONTINUOUS
+            --source=cp1 --destination=cp2
+            --peer-vpc=projects/my-project/global/networks/my-network
+
+        To create a one-time migration job with reverse-SSH tunnel connectivity:
+
+            $ {command} my-migration-job --region=us-central1 --type=ONE_TIME
+            --source=cp1 --destination=cp2 --vm=vm1 --vm-ip=1.1.1.1
+            --vm-port=1111 --vpc=projects/my-project/global/networks/my-network
         """,
 }
 

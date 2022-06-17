@@ -641,6 +641,7 @@ class CreateBeta(Create):
   _support_node_project = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
+  _support_visible_core_count = True
   _support_disk_architecture = False
   _support_network_queue_count = False
   _support_instance_kms = False
@@ -694,6 +695,7 @@ class CreateBeta(Create):
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
+    instances_flags.AddVisibleCoreCountArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

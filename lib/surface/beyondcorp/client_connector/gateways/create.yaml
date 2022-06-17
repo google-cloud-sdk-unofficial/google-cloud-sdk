@@ -5,18 +5,14 @@
     examples: |
       The following command creates a client gateway with ID ``my-client-gateway'' in the default user project and location us-central1:
 
-        $ {command} my-client-gateway \
-            --location=us-central1 \
-            --client-connector-service=projects/${PROJECT_ID}/locations/${LOCATION_ID}/client_connector_services/${CLIENT_CONNECTOR_SERVICE_ID}
+        $ {command} my-client-gateway --location=us-central1 \
+        --client-connector-service=projects/consumer-project-id/locations/us-central1/clientConnectorServices/my-service-resource
 
       The following command creates a client gateway with ID ``my-client-gateway'' with explicit values
       for all required and optional parameters:
 
-        $ {command} my-client-gateway \
-            --project=${PROJECT_ID} \
-            --location=us-central1 \
-            --client-connector-service=projects/${PROJECT_ID}/locations/${LOCATION_ID}/client_connector_services/${CLIENT_CONNECTOR_SERVICE_ID} \
-            --async
+        $ {command} my-client-gateway --project=consumer-project-id --location=us-central1 \
+        --client-connector-service=projects/consumer-project-id/locations/us-central1/clientConnectorServices/my-service-resource
 
   request:
     collection: beyondcorp.projects.locations.clientGateways

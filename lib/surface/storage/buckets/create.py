@@ -62,6 +62,13 @@ class Create(base.Command):
               ' Storage is ``us\'\'. A bucket\'s location cannot be changed'
               ' after creation.'))
     parser.add_argument(
+        '--public-access-prevention',
+        '--pap',
+        action='store_true',
+        help='Sets public access prevention to "enforced".'
+        ' For details on how exactly public access is blocked, see:'
+        ' http://cloud/storage/docs/public-access-prevention')
+    parser.add_argument(
         '--uniform-bucket-level-access',
         '-b',
         action=arg_parsers.StoreTrueFalseAction,

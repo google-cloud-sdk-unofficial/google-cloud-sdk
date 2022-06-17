@@ -42,13 +42,13 @@ table[box](
 
 MESSAGE_FORMAT_WITH_ACK_STATUS = """\
 table[box](
-  received_message.message.data.decode(base64).decode(utf-8),
-  received_message.message.messageId,
-  received_message.message.orderingKey,
-  received_message.message.attributes.list(separator='\n'),
-  received_message.deliveryAttempt,
-  received_message.ackId.if(NOT auto_ack),
-  ack_status.if(auto_ack)
+  message.data.decode(base64).decode(utf-8),
+  message.messageId,
+  message.orderingKey,
+  message.attributes.list(separator='\n'),
+  deliveryAttempt,
+  ackId.if(NOT auto_ack),
+  ackStatus.if(auto_ack)
 )
 """
 
@@ -92,12 +92,23 @@ def _Run(args,
   if not exactly_once_failure_handling:
     return pull_response.receivedMessages
 
+  if not args.auto_ack:
+    return pull_response.receivedMessages
+
+  # We attempted to auto-ack this message. Augment the response with ackStatus.
   return_val = []
   for message in pull_response.receivedMessages:
-    ack_status = 'SUCCESS'
+    # Copy the message into a separate object so we can mutate it.
+    message_copy = {}
+    for field in message.all_fields():
+      value = getattr(message, field.name)
+      if value:
+        message_copy[field.name] = value
     if message.ackId in failed_ack_ids:
-      ack_status = failed_ack_ids[message.ackId]
-    return_val.append({'received_message': message, 'ack_status': ack_status})
+      message_copy['ackStatus'] = failed_ack_ids[message.ackId]
+    else:
+      message_copy['ackStatus'] = 'SUCCESS'
+    return_val.append(message_copy)
   return return_val
 
 

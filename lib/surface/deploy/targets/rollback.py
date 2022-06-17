@@ -22,6 +22,8 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.clouddeploy import release
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
+from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
 from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import promote_util
 from googlecloudsdk.command_lib.deploy import release_util
@@ -68,17 +70,32 @@ class Rollback(base.CreateCommand):
 
   def Run(self, args):
     target_ref = args.CONCEPTS.target.Parse()
+    ref_dict = target_ref.AsDict()
+    pipeline_ref = resources.REGISTRY.Parse(
+        args.delivery_pipeline,
+        collection='clouddeploy.projects.locations.deliveryPipelines',
+        params={
+            'projectsId': ref_dict['projectsId'],
+            'locationsId': ref_dict['locationsId'],
+            'deliveryPipelinesId': args.delivery_pipeline,
+        })
+    failed_activity_error_annotation_prefix = 'Cannot perform rollback.'
+    delivery_pipeline_util.ThrowIfPipelineSuspended(
+        pipeline_ref, failed_activity_error_annotation_prefix)
     # Check if target exists
     target_util.GetTarget(target_ref)
 
     current_release_ref, rollback_release_ref = _GetCurrentAndRollbackRelease(
-        args.release, args.delivery_pipeline, target_ref)
+        args.release, pipeline_ref, target_ref)
     try:
       release_obj = release.ReleaseClient().Get(
           rollback_release_ref.RelativeName())
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error)
-
+    if release_obj.abandoned:
+      error_msg_annotation_prefix = 'Cannot perform rollback.'
+      raise deploy_exceptions.AbandonedReleaseError(
+          error_msg_annotation_prefix, rollback_release_ref.RelativeName())
     prompt = 'Rolling back target {} to release {}.\n\n'.format(
         target_ref.Name(), rollback_release_ref.Name())
     release_util.PrintDiff(rollback_release_ref, release_obj, target_ref.Name(),
@@ -97,18 +114,10 @@ class Rollback(base.CreateCommand):
         description=rollout_description)
 
 
-def _GetCurrentAndRollbackRelease(release_id, pipeline_id, target_ref):
+def _GetCurrentAndRollbackRelease(release_id, pipeline_ref, target_ref):
   """Gets the current deployed release and the release that will be used by promote API to create the rollback rollout."""
-  ref_dict = target_ref.AsDict()
-  pipeline_ref = resources.REGISTRY.Parse(
-      pipeline_id,
-      collection='clouddeploy.projects.locations.deliveryPipelines',
-      params={
-          'projectsId': ref_dict['projectsId'],
-          'locationsId': ref_dict['locationsId'],
-          'deliveryPipelinesId': pipeline_id,
-      })
   if release_id:
+    ref_dict = target_ref.AsDict()
     current_rollout = target_util.GetCurrentRollout(target_ref, pipeline_ref)
     current_release_ref = resources.REGISTRY.ParseRelativeName(
         resources.REGISTRY.Parse(
@@ -122,14 +131,13 @@ def _GetCurrentAndRollbackRelease(release_id, pipeline_id, target_ref):
         params={
             'projectsId': ref_dict['projectsId'],
             'locationsId': ref_dict['locationsId'],
-            'deliveryPipelinesId': pipeline_id,
+            'deliveryPipelinesId': pipeline_ref.Name(),
             'releasesId': release_id
         })
     return current_release_ref, rollback_release_ref
   else:
-    prior_rollouts = list(
-        rollout_util.GetSucceededRollout(
-            target_ref=target_ref, pipeline_ref=pipeline_ref, limit=2))
+    prior_rollouts = rollout_util.GetValidRollBackCandidate(
+        target_ref, pipeline_ref)
     if len(prior_rollouts) < 2:
       raise core_exceptions.Error(
           'unable to rollback target {}. Target has less than 2 rollouts.'

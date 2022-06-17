@@ -6,13 +6,7 @@
     examples: |
       To describe a client gateway ``my-client-gateway'' run:
 
-      $ {command} my-client-gateway --project=${PROJECT_ID} --location=${LOCATION_ID}
-
-      To describe a client gateway in a project for location us-central1 in table form, run:
-
-        $ {command} --project=projectId \
-            --location=us-central1 \
-            --format=table(name, state, clientConnectorService, createTime, updateTime)
+      $ {command} my-client-gateway --project=consumer-project-id --location=us-central1
 
   async:
     collection: beyondcorp.projects.locations.operations

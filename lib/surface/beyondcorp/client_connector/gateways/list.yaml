@@ -8,14 +8,7 @@
     examples: |
       To list all client gateways in a project for location us-central1 in table form, run:
 
-        $ {command} --project=${PROJECT_ID} \
-            --location=us-central1
-
-      To list all client gateways in a project for location us-central1 in json form, run:
-
-        $ {command} --project=${PROJECT_ID} \
-            --location=us-central1 \
-            --format=json(name, state, clientConnectorService, createTime, updateTime)
+        $ {command} --project=consumer-project-id --location=us-central1
 
   request:
     collection: beyondcorp.projects.locations.clientGateways

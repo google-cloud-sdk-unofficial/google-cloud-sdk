@@ -69,7 +69,8 @@ class DeleteBeta(base.DeleteCommand):
     return client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
         message='waiting for network policy [{}] to be deleted'.format(
-            network_policy.RelativeName()))
+            network_policy.RelativeName()),
+        has_result=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -57,6 +57,9 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
 
         credentials = credentials.with_quota_project('myproject-123)
 
+    Reauth is disabled by default. To enable reauth, set the
+    `enable_reauth_refresh` parameter to True in the constructor. Note that
+    reauth feature is intended for gcloud to use only.
     If reauth is enabled, `pyu2f` dependency has to be installed in order to use security
     key reauth feature. Dependency can be installed via `pip install pyu2f` or `pip install
     google-auth[reauth]`.
@@ -76,6 +79,7 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
         expiry=None,
         rapt_token=None,
         refresh_handler=None,
+        enable_reauth_refresh=False,
     ):
         """
         Args:
@@ -112,6 +116,8 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
                 refresh tokens are provided and tokens are obtained by calling
                 some external process on demand. It is particularly useful for
                 retrieving downscoped tokens from a token broker.
+            enable_reauth_refresh (Optional[bool]): Whether reauth refresh flow
+                should be used. This flag is for gcloud to use only.
         """
         super(Credentials, self).__init__()
         self.token = token
@@ -126,6 +132,7 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
         self._quota_project_id = quota_project_id
         self._rapt_token = rapt_token
         self.refresh_handler = refresh_handler
+        self._enable_reauth_refresh = enable_reauth_refresh
 
     def __getstate__(self):
         """A __getstate__ method must exist for the __setstate__ to be called
@@ -154,6 +161,7 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
         self._client_secret = d.get("_client_secret")
         self._quota_project_id = d.get("_quota_project_id")
         self._rapt_token = d.get("_rapt_token")
+        self._enable_reauth_refresh = d.get("_enable_reauth_refresh")
         # The refresh_handler setter should be used to repopulate this.
         self._refresh_handler = None
 
@@ -244,6 +252,7 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
             default_scopes=self.default_scopes,
             quota_project_id=quota_project_id,
             rapt_token=self.rapt_token,
+            enable_reauth_refresh=self._enable_reauth_refresh,
         )
 
     @_helpers.copy_docstring(credentials.Credentials)
@@ -256,7 +265,7 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
         if self._refresh_token is None and self.refresh_handler:
             token, expiry = self.refresh_handler(request, scopes=scopes)
             # Validate returned data.
-            if not isinstance(token, str):
+            if not isinstance(token, six.string_types):
                 raise exceptions.RefreshError(
                     "The refresh_handler returned token is not a string."
                 )
@@ -264,7 +273,7 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
                 raise exceptions.RefreshError(
                     "The refresh_handler returned expiry is not a datetime object."
                 )
-            if _helpers.utcnow() >= expiry - _helpers.CLOCK_SKEW:
+            if _helpers.utcnow() >= expiry - _helpers.REFRESH_THRESHOLD:
                 raise exceptions.RefreshError(
                     "The credentials returned by the refresh_handler are "
                     "already expired."
@@ -299,6 +308,7 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
             self._client_secret,
             scopes=scopes,
             rapt_token=self._rapt_token,
+            enable_reauth_refresh=self._enable_reauth_refresh,
         )
 
         self.token = access_token
@@ -352,12 +362,12 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
                 expiry.rstrip("Z").split(".")[0], "%Y-%m-%dT%H:%M:%S"
             )
         else:
-            expiry = _helpers.utcnow() - _helpers.CLOCK_SKEW
+            expiry = _helpers.utcnow() - _helpers.REFRESH_THRESHOLD
 
         # process scopes, which needs to be a seq
         if scopes is None and "scopes" in info:
             scopes = info.get("scopes")
-            if isinstance(scopes, str):
+            if isinstance(scopes, six.string_types):
                 scopes = scopes.split(" ")
 
         return cls(
@@ -369,6 +379,7 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
             client_secret=info.get("client_secret"),
             quota_project_id=info.get("quota_project_id"),  # may not exist
             expiry=expiry,
+            rapt_token=info.get("rapt_token"),  # may not exist
         )
 
     @classmethod

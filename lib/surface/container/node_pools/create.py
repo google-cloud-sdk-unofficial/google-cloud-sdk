@@ -212,8 +212,7 @@ class Create(base.CreateCommand):
     flags.AddEnableGvnicFlag(parser)
     flags.AddEnableImageStreamingFlag(parser, for_node_pool=True)
     flags.AddSpotFlag(parser, for_node_pool=True)
-    flags.AddEnableConfidentialNodesFlag(
-        parser, for_node_pool=True, hidden=True)
+    flags.AddEnableConfidentialNodesFlag(parser, for_node_pool=True)
     flags.AddNetworkPerformanceConfigFlags(parser, hidden=False)
     flags.AddEnableRollingUpdateFlag(parser)
     flags.AddEnableBlueGreenUpdateFlag(parser)

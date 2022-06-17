@@ -72,6 +72,7 @@ class Create(base.Command):
     input_name = args.name
     parameters = flags.GetParameters(args)
     flags.ValidateCreateParameters(integration_type, parameters)
+    flags.ValidateEnabledGcpApis(integration_type)
 
     conn_context = connection_context.GetConnectionContext(
         args, run_flags.Product.RUN_APPS, self.ReleaseTrack())
@@ -79,7 +80,6 @@ class Create(base.Command):
       self._validateServiceNameAgainstIntegrations(
           client, integration_type=integration_type,
           service=service, integration_name=input_name)
-
       with progress_tracker.StagedProgressTracker(
           'Creating new Integration...',
           stages.IntegrationStages(create=True),

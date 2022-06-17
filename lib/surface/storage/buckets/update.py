@@ -161,6 +161,20 @@ class Update(base.Command):
         help='Clears prefix used to determine what usage data to send to'
         ' logging bucket.')
     parser.add_argument(
+        '--public-access-prevention',
+        '--pap',
+        action=arg_parsers.StoreTrueFalseAction,
+        help='If True, sets public access prevention to "enforced".'
+        ' If False, sets public access prevention to "inherited".'
+        ' For details on how exactly public access is blocked, see:'
+        ' http://cloud/storage/docs/public-access-prevention')
+    parser.add_argument(
+        '--clear-public-access-prevention',
+        '--clear-pap',
+        action='store_true',
+        help='Unsets the public access prevention setting on a bucket.',
+    )
+    parser.add_argument(
         '--requester-pays',
         action=arg_parsers.StoreTrueFalseAction,
         help='Allows you to configure a Cloud Storage bucket so that the'

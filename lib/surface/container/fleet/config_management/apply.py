@@ -235,11 +235,15 @@ def _parse_policy_controller(configmanagement, msg):
     if field not in [
         'enabled', 'templateLibraryInstalled', 'auditIntervalSeconds',
         'referentialRulesEnabled', 'exemptableNamespaces', 'logDeniesEnabled',
-        'mutationEnabled'
+        'mutationEnabled', 'monitoring'
     ]:
       raise exceptions.Error(
           'Please remove illegal field .spec.policyController.{}'.format(field))
-    setattr(policy_controller, field, spec_policy_controller[field])
+    if field == 'monitoring':
+      monitoring = _build_monitoring_msg(spec_policy_controller[field], msg)
+      setattr(policy_controller, field, monitoring)
+    else:
+      setattr(policy_controller, field, spec_policy_controller[field])
 
   return policy_controller
 
@@ -288,3 +292,34 @@ def _parse_hierarchy_controller_config(configmanagement, msg):
     setattr(config_proto, field, spec[field])
 
   return config_proto
+
+
+def _build_monitoring_msg(spec_monitoring, msg):
+  """Build PolicyControllerMonitoring message from the parsed spec.
+
+  Args:
+    spec_monitoring: dict, The monitoring data loaded from the
+      config-management.yaml given by user.
+    msg: The Hub messages package.
+
+  Returns:
+    monitoring: The Policy Controller Monitoring configuration for
+    MembershipConfigs, filled in the data parsed from
+    configmanagement.spec.policyController.monitoring
+  Raises: Error, if Policy Controller Monitoring Backend is not recognized
+  """
+  spec_backends = spec_monitoring['backends']
+  backends = []
+  for backend in spec_backends:
+    if backend == 'prometheus':
+      backends.append(msg.ConfigManagementPolicyControllerMonitoring
+                      .BackendsValueListEntryValuesEnum.PROMETHEUS)
+    elif backend == 'cloudmonitoring':
+      backends.append(msg.ConfigManagementPolicyControllerMonitoring
+                      .BackendsValueListEntryValuesEnum.CLOUD_MONITORING)
+    else:
+      raise exceptions.Error('policyController.monitoring.backend ' + backend +
+                             ' is not recognized')
+  monitoring = msg.ConfigManagementPolicyControllerMonitoring()
+  monitoring.backends = backends
+  return monitoring

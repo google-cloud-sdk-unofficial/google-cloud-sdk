@@ -87,7 +87,8 @@ class Fetch(base.DescribeCommand):
     template = yaml.load(utils.APPLY_SPEC_VERSION_1)
     full_config = template['spec']
     merge_config_sync(membership_spec, full_config, version)
-    merge_non_cs_components(membership_spec, full_config)
+    merge_policy_controller(membership_spec, full_config, version)
+    merge_hierarchy_controller(membership_spec, full_config)
 
     return template
 
@@ -132,12 +133,38 @@ def merge_config_sync(spec, config, version):
       cs[field] = getattr(git, field)
 
 
-def merge_non_cs_components(spec, config):
-  for components in [utils.POLICY_CONTROLLER, utils.HNC]:
-    if not spec or not getattr(spec, components):
-      continue
-    c = config[components]
-    for field in list(config[components]):
-      if hasattr(getattr(spec, components), field) and getattr(
-          getattr(spec, components), field) is not None:
-        c[field] = getattr(getattr(spec, components), field)
+def merge_policy_controller(spec, config, version):
+  """Merge configSync set in feature spec with the config template.
+
+  ConfigSync has nested object structs need to be flatten.
+
+  Args:
+    spec: the ConfigManagementMembershipSpec message
+    config: the dict loaded from full config template
+    version: the version string of the membership
+  """
+  if not spec or not spec.policyController:
+    return
+  c = config[utils.POLICY_CONTROLLER]
+  for field in list(config[utils.POLICY_CONTROLLER]):
+    if hasattr(spec.policyController, field) and getattr(
+        spec.policyController, field) is not None:
+      c[field] = getattr(spec.policyController, field)
+
+  valid_version = not version or semver.SemVer(version) >= semver.SemVer(
+      utils.MONITORING_VERSION)
+  spec_monitoring = spec.policyController.monitoring
+  if not valid_version:
+    c.pop('monitoring', None)
+  elif spec_monitoring:
+    c['monitoring'] = spec_monitoring
+
+
+def merge_hierarchy_controller(spec, config):
+  if not spec or not spec.hierarchyController:
+    return
+  c = config[utils.HNC]
+  for field in list(config[utils.HNC]):
+    if hasattr(spec.hierarchyController, field) and getattr(
+        spec.hierarchyController, field) is not None:
+      c[field] = getattr(spec.hierarchyController, field)

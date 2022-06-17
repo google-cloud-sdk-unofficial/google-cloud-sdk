@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: List backups.
@@ -18,8 +18,7 @@
 
   request:
     collection: gkebackup.projects.locations.backupPlans.backups
-    ALPHA:
-      api_version: v1
+    api_version: v1
 
   response:
     id_field: name
@@ -33,13 +32,12 @@
       spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:default_backup_plan
 
   output:
-    ALPHA:
-      format: |
-        table(
-          name.basename():label=NAME,
-          name.segment(3):label=LOCATION,
-          name.segment(5):label=BACKUP_PLAN,
-          createTime.date('%Y-%m-%dT%H:%M:%S %Z', tz=LOCAL),
-          completeTime.date('%Y-%m-%dT%H:%M:%S %Z', tz=LOCAL),
-          state
-        )
+    format: |
+      table(
+        name.basename():label=NAME,
+        name.segment(3):label=LOCATION,
+        name.segment(5):label=BACKUP_PLAN,
+        createTime.date('%Y-%m-%dT%H:%M:%S %Z', tz=LOCAL),
+        completeTime.date('%Y-%m-%dT%H:%M:%S %Z', tz=LOCAL),
+        state
+      )

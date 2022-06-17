@@ -67,13 +67,18 @@ class List(commands.List):
   def Args(cls, parser):
     cls.CommonArgs(parser)
 
-  def _SetFormat(self, args, show_region=False, show_namespace=False):
+  def _SetFormat(self,
+                 args,
+                 show_region=False,
+                 show_namespace=False,
+                 show_description=False):
     """Set display format for output.
 
     Args:
       args: Namespace, the args namespace
       show_region: bool, True to show region of listed services
       show_namespace: bool, True to show namespace of listed services
+      show_description: bool, True to show description of listed services
     """
     columns = [
         pretty_print.READY_COLUMN,
@@ -83,6 +88,8 @@ class List(commands.List):
       columns.append('region:label=REGION')
     if show_namespace:
       columns.append('namespace:label=NAMESPACE')
+    if show_description:
+      columns.append('description:label=DESCRIPTION')
     columns.extend([
         'domain:label=URL',
         'last_modifier:label="LAST DEPLOYED BY"',

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.clouddeploy import client_util
 from googlecloudsdk.api_lib.clouddeploy import release
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
 from googlecloudsdk.command_lib.deploy import deploy_util
 from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import promote_util
@@ -95,6 +96,10 @@ class Create(base.CreateCommand):
     args.CONCEPTS.parsed_args.release = release_util.RenderPattern(
         args.CONCEPTS.parsed_args.release)
     release_ref = args.CONCEPTS.release.Parse()
+    failed_activity_msg = 'Cannot create release {}.'.format(
+        release_ref.RelativeName())
+    delivery_pipeline_util.ThrowIfPipelineSuspended(release_ref.Parent(),
+                                                    failed_activity_msg)
     client = release.ReleaseClient()
     # Create the release create request.
     release_config = release_util.CreateReleaseConfig(

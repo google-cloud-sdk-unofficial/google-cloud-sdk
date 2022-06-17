@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: List locations.
@@ -13,8 +13,7 @@
 
   request:
     collection: gkebackup.projects.locations
-    ALPHA:
-      api_version: v1
+    api_version: v1
 
   response:
     id_field: name
@@ -25,9 +24,7 @@
       spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:default_project
 
   output:
-    ALPHA:
-      # TODO(b/191807690): Finalize the columns and formats with UX.
-      format: |
-        table(
-           name
-         )
+    format: |
+      table(
+         name
+       )

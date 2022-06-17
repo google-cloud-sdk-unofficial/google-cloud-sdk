@@ -55,7 +55,7 @@ DETAILED_HELP = {
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeleteBeta(base.DescribeCommand):
+class DeleteBeta(base.DeleteCommand):
   """Delete a Google Cloud VMware Engine network."""
 
   detailed_help = DETAILED_HELP
@@ -80,7 +80,8 @@ class DeleteBeta(base.DescribeCommand):
     return client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
         message='waiting for VMware Engine network [{}] to be deleted'.format(
-            network.RelativeName()))
+            network.RelativeName()),
+        has_result=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

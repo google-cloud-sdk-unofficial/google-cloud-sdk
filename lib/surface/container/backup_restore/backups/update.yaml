@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Update a backup.
@@ -13,8 +13,7 @@
 
   request:
     collection: gkebackup.projects.locations.backupPlans.backups
-    ALPHA:
-      api_version: v1
+    api_version: v1
 
   async:
     collection: gkebackup.projects.locations.operations

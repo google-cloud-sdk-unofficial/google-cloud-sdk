@@ -39,7 +39,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 import six
 
-
 DETAILED_HELP = {
     'brief':
         """
@@ -290,8 +289,8 @@ class Create(base.Command):
       location_policy.locations = self.GetLocationPolicyLocations(
           args, messages)
 
-    if (self._support_enable_target_shape
-        and args.IsSpecified('target_distribution_shape')):
+    if (self._support_enable_target_shape and
+        args.IsSpecified('target_distribution_shape')):
       location_policy.targetShape = arg_utils.ChoiceToEnum(
           args.target_distribution_shape,
           messages.LocationPolicy.TargetShapeValueValuesEnum)
@@ -641,7 +640,7 @@ class CreateBeta(Create):
   _support_secure_tags = False
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
-  _support_visible_core_count = False
+  _support_visible_core_count = True
   _support_max_run_duration = False
   _support_enable_target_shape = True
 

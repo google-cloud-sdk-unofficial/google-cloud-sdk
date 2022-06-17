@@ -98,11 +98,14 @@ class AccessToken(base.Command):
                              google_auth_exceptions.GoogleAuthError)
   def Run(self, args):
     """Run the helper command."""
-
+    # Do not auto cache the custom scoped access token. Otherwise, it'll
+    # affect other gcloud CLIs that depends on cloud-platform scopes.
+    with_access_token_cache = not args.scopes
     cred = c_store.Load(
         args.account,
         allow_account_impersonation=True,
-        use_google_auth=True)
+        use_google_auth=True,
+        with_access_token_cache=with_access_token_cache)
     if args.scopes:
       cred_type = c_creds.CredentialTypeGoogleAuth.FromCredentials(cred)
       if cred_type not in [

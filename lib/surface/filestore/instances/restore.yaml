@@ -52,6 +52,10 @@
       spec: !REF googlecloudsdk.command_lib.filestore.resources:instance
       help_text: |
         Arguments and flags that specify the Filestore instance to restore.
+      command_level_fallthroughs:
+        zone:
+        - arg_name: location
+          release_tracks: [BETA]
     params:
     - arg_name: file-share
       required: true
@@ -75,7 +79,11 @@
       required: true
       help_text: |
         Region of the Filestore backup to restore from.
-
+    - arg_name: location
+      hidden: true
+      release_tracks: [BETA]
+      help_text: |
+        Location of the Filestore instance to restore this backup to.
     - group:
         release_tracks: [ALPHA]
         required: true

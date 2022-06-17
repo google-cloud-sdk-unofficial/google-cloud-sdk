@@ -189,11 +189,9 @@ The type of reservation for instances created from this template.
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
 
 
-def _ValidateInstancesFlags(
-    args,
-    support_kms=False,
-    support_max_run_duration=False
-):
+def _ValidateInstancesFlags(args,
+                            support_kms=False,
+                            support_max_run_duration=False):
   """Validate flags for instance template that affects instance creation.
 
   Args:
@@ -497,10 +495,12 @@ def ConfigureMeshTemplate(args, instance_template_ref, network_interfaces):
         log.status.Print(
             'Configuring the instance template for Anthos Service Mesh...')
         project_id = instance_template_ref.project
-        mesh_util.ConfigureInstanceTemplate(
-            args, kube_client, project_id, network_interfaces[0].network,
-            workload_namespace, workload_name, workload_manifest,
-            membership_manifest, asm_revision, mesh_config)
+        mesh_util.ConfigureInstanceTemplate(args, kube_client, project_id,
+                                            network_interfaces[0].network,
+                                            workload_namespace, workload_name,
+                                            workload_manifest,
+                                            membership_manifest, asm_revision,
+                                            mesh_config)
 
 
 def _RunCreate(compute_api,
@@ -917,8 +917,7 @@ class Create(base.CreateCommand):
         support_disk_architecture=self._support_disk_architecture,
         support_key_revocation_action_type=self
         ._support_key_revocation_action_type,
-        support_max_run_duration=self._support_max_run_duration
-    )
+        support_max_run_duration=self._support_max_run_duration)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -942,7 +941,7 @@ class CreateBeta(Create):
   _support_mesh = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
-  _support_visible_core_count = False
+  _support_visible_core_count = True
   _support_disk_architecture = False
   _support_key_revocation_action_type = True
   _support_max_run_duration = False

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Set the IAM policy for a backup.
     description: |
@@ -12,8 +12,7 @@
 
   request:
     collection: gkebackup.projects.locations.backupPlans.backups
-    ALPHA:
-      api_version: v1
+    api_version: v1
 
   arguments:
     resource:

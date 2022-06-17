@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Describe a restore.
     description: |
@@ -8,12 +8,11 @@
 
       To describe a restore 'my-restore' in project 'my-project' in location 'us-central1' under restore plan ``my-restore-plan'', run:
 
-        s$ {command} my-restore --project=my-project --location=us-central1 --restore-plan=my-restore-plan
+        $ {command} my-restore --project=my-project --location=us-central1 --restore-plan=my-restore-plan
 
   request:
     collection: gkebackup.projects.locations.restorePlans.restores
-    ALPHA:
-      api_version: v1
+    api_version: v1
 
   arguments:
     resource:

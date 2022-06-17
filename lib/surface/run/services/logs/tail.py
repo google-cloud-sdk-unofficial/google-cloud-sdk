@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.cloudbuild import logs as logs_util
 from googlecloudsdk.api_lib.logging.formatter import FormatLog
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.logs import read as read_logs_lib
@@ -67,10 +68,7 @@ class Tail(base.Command):
     parent = 'projects/{project_id}'.format(
         project_id=properties.VALUES.core.project.Get(required=True))
     filter_str = ''.join(str(filter) for filter in filters)
-    # pylint: disable=g-import-not-at-top
-    from googlecloudsdk.api_lib.logging import tailing
-    # pylint: enable=g-import-not-at-top
-    tailer = tailing.LogTailer()
+    tailer = logs_util.GetGCLLogTailer()
     logs = tailer.TailLogs([parent], filter_str)
 
     for log_line in logs:

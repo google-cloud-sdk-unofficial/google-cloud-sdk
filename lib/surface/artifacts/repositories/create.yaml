@@ -50,6 +50,9 @@
       - arg_value: PYTHON
         enum_value: PYTHON
         help_text: Python package format.
+      - arg_value: KFP
+        enum_value: KFP
+        help_text: KFP package format.
     - arg_name: description
       api_field: repository.description
       help_text: |
@@ -79,6 +82,70 @@
       - arg_value: SNAPSHOT
         enum_value: SNAPSHOT
         help_text: (Maven only) The repository accepts snapshot versions only.
+    - arg_name: mode
+      api_field: repository.mode
+      default: NONE
+      hidden: true
+      help_text: |
+        Mode is the type of the repository - Standard, Virtual or Remote.
+      choices:
+      - arg_value: NONE
+        enum_value: MODE_UNSPECIFIED
+        help_text: Repository mode not specified.
+      - arg_value: STANDARD-REPOSITORY
+        enum_value: STANDARD_REPOSITORY
+        help_text: Standard repository mode - should be possible to write/read data to this repo.
+      - arg_value: VIRTUAL-REPOSITORY
+        enum_value: VIRTUAL_REPOSITORY
+        help_text: Virtual repository mode - aggregates data from several upstreams.
+      - arg_value: REMOTE-REPOSITORY
+        enum_value: REMOTE_REPOSITORY
+        help_text: Remote repository mode - fetches data from upstream and caches it.
+    - arg_name: remote-repo-config-desc
+      api_field: repository.remoteRepositoryConfig.description
+      hidden: true
+      help_text: |
+        The description for the remote repository config.
+    - arg_name: remote-mvn-repo
+      api_field: repository.remoteRepositoryConfig.mavenRepository.publicRepository
+      hidden: true
+      help_text: |
+        (Maven only) Repo upstream for maven remote repository.
+      choices:
+      - arg_value: NONE
+        enum_value: PUBLIC_REPOSITORY_UNSPECIFIED
+      - arg_value: MAVEN-CENTRAL
+        enum_value: MAVEN_CENTRAL
+    - arg_name: remote-docker-repo
+      api_field: repository.remoteRepositoryConfig.dockerRepository.publicRepository
+      hidden: true
+      help_text: |
+        (Docker only) Repo upstream for docker remote repository.
+      choices:
+      - arg_value: NONE
+        enum_value: PUBLIC_REPOSITORY_UNSPECIFIED
+      - arg_value: DOCKER-HUB
+        enum_value: DOCKER_HUB
+    - arg_name: remote-npm-repo
+      api_field: repository.remoteRepositoryConfig.npmRepository.publicRepository
+      hidden: true
+      help_text: |
+        (npm only) Repo upstream for npm remote repository.
+      choices:
+      - arg_value: NONE
+        enum_value: PUBLIC_REPOSITORY_UNSPECIFIED
+      - arg_value: NPMJS
+        enum_value: NPMJS
+    - arg_name: remote-python-repo
+      api_field: repository.remoteRepositoryConfig.pythonRepository.publicRepository
+      hidden: true
+      help_text: |
+        (Python only) Repo upstream for python remote repository.
+      choices:
+      - arg_value: NONE
+        enum_value: PUBLIC_REPOSITORY_UNSPECIFIED
+      - arg_value: PYPI
+        enum_value: PYPI
     labels:
       api_field: repository.labels
 
@@ -91,6 +158,7 @@
     modify_request_hooks:
     - googlecloudsdk.command_lib.artifacts.util:CheckServiceAccountPermission
     - googlecloudsdk.command_lib.artifacts.util:AppendRepoDataToRequest
+    - googlecloudsdk.command_lib.artifacts.util:SanitizeRemoteRepositoryConfig
 
 - release_tracks: [ALPHA, BETA]
 

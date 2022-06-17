@@ -6,7 +6,7 @@
     examples: |
       To delete a client gateway with ID ``my-client-gateway'' run:
 
-      $ {command} my-client-gateway --project=${PROJECT_ID} --location=${LOCATION_ID}
+      $ {command} my-client-gateway --project=consumer-project-id --location=us-central1
 
   async:
     collection: beyondcorp.projects.locations.operations

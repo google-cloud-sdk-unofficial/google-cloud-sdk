@@ -11,7 +11,7 @@
     examples: |
       The following command lists a maximum of five operations:
 
-          $ {command} --project=${PROJECT_ID} --location=${LOCATION_ID} --limit=5
+          $ {command} --project=consumer-project-id --location=us-central1 --limit=5
 
   arguments:
     resource:

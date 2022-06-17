@@ -253,7 +253,16 @@ def _PrintDryRunInfo(job):
   elif FLAGS.format == 'csv':
     print(num_bytes)
   else:
-    if num_bytes_accuracy == 'PRECISE':
+    if job['statistics']['query'].get('statementType', '') == 'LOAD_DATA':
+      print(
+          'Query successfully validated. Assuming the files are not modified, '
+          'running this query will process %s files loading %s bytes of data.' %
+          (
+              job['statistics']['query']['loadQueryStatistics']['inputFiles'],
+              job['statistics']['query']['loadQueryStatistics']
+              ['inputFileBytes'],
+          ))
+    elif num_bytes_accuracy == 'PRECISE':
       print(
           'Query successfully validated. Assuming the tables are not modified, '
           'running this query will process %s bytes of data.' % (num_bytes,))
@@ -340,19 +349,6 @@ def _NormalizeFieldDelimiter(field_delimiter):
   # no field delimiter specified by the user.
   if field_delimiter is None:
     return field_delimiter
-
-  if six.PY2:
-    try:
-      # We check the field delimiter flag specifically, since a
-      # mis-entered Thorn character generates a difficult to
-      # understand error during request serialization time.
-      _ = field_delimiter.decode(sys.stdin.encoding or 'utf8')
-    except UnicodeDecodeError:
-      raise app.UsageError(
-          'The field delimiter flag is not valid. Flags must be '
-          'specified in your default locale. For example, '
-          'the Latin 1 representation of Thorn is byte code FE, '
-          'which in the UTF-8 locale would be expressed as C3 BE.')
 
   # Allow TAB and \\t substitution.
   key = field_delimiter.lower()
@@ -921,6 +917,12 @@ class _Load(BigqueryCmd):
         'in CSV import data.',
         flag_values=fv)
     flags.DEFINE_boolean(
+        'preserve_ascii_control_characters',
+        None,
+        'Whether to preserve embedded Ascii Control characters in CSV import '
+        'data.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
         'ignore_unknown_values',
         None,
         'Whether to allow and ignore extra, unrecognized values in CSV or JSON '
@@ -1179,6 +1181,9 @@ class _Load(BigqueryCmd):
       opts['quote'] = _NormalizeFieldDelimiter(self.quote)
     if self.allow_jagged_rows is not None:
       opts['allow_jagged_rows'] = self.allow_jagged_rows
+    if self.preserve_ascii_control_characters is not None:
+      opts[
+          'preserve_ascii_control_characters'] = self.preserve_ascii_control_characters
     if self.ignore_unknown_values is not None:
       opts['ignore_unknown_values'] = self.ignore_unknown_values
     if self.autodetect is not None:
@@ -1266,14 +1271,16 @@ def _CreateExternalTableDefinition(
     require_hive_partition_filter=None,
     use_avro_logical_types=False,
     parquet_enum_as_string=False,
-    parquet_enable_list_inference=False):
+    parquet_enable_list_inference=False,
+    ):
   """Create an external table definition with the given URIs and the schema.
 
   Arguments:
     source_format: Format of source data. For CSV files, specify 'CSV'. For
       Google spreadsheet files, specify 'GOOGLE_SHEETS'. For newline-delimited
       JSON, specify 'NEWLINE_DELIMITED_JSON'. For Cloud Datastore backup,
-      specify 'DATASTORE_BACKUP'. For Avro files, specify 'AVRO'.
+      specify 'DATASTORE_BACKUP'. For Avro files, specify 'AVRO'. For Orc files,
+      specify 'ORC'. For Parquet files, specify 'PARQUET'.
     source_uris: Comma separated list of URIs that contain data for this table.
     schema: Either an inline schema or path to a schema file.
     autodetect: Indicates if format options, compression mode and schema be auto
@@ -1304,13 +1311,20 @@ def _CreateExternalTableDefinition(
   """
   try:
     supported_formats = [
-        'CSV', 'NEWLINE_DELIMITED_JSON', 'DATASTORE_BACKUP', 'AVRO', 'ORC',
-        'PARQUET', 'GOOGLE_SHEETS'
+        'CSV',
+        'NEWLINE_DELIMITED_JSON',
+        'DATASTORE_BACKUP',
+        'AVRO',
+        'ORC',
+        'PARQUET',
+        'GOOGLE_SHEETS'
     ]
 
     if source_format not in supported_formats:
       raise app.UsageError(('%s is not a supported format.') % source_format)
+
     external_table_def = {'sourceFormat': source_format}
+
 
     if external_table_def['sourceFormat'] == 'CSV':
       if autodetect:
@@ -1355,8 +1369,11 @@ def _CreateExternalTableDefinition(
           'enumAsString': parquet_enum_as_string,
           'enableListInference': parquet_enable_list_inference
       }
+
     if ignore_unknown_values:
       external_table_def['ignoreUnknownValues'] = True
+
+
     if hive_partitioning_mode is not None:
       _ValidateHivePartitioningOptions(hive_partitioning_mode)
       hive_partitioning_options = {}
@@ -1367,6 +1384,7 @@ def _CreateExternalTableDefinition(
       external_table_def['hivePartitioningOptions'] = hive_partitioning_options
       if require_hive_partition_filter:
         hive_partitioning_options['requirePartitionFilter'] = True
+
     if schema:
       fields = BigqueryClient.ReadSchema(schema)
       external_table_def['schema'] = {'fields': fields}
@@ -1375,7 +1393,9 @@ def _CreateExternalTableDefinition(
       external_table_def['connectionId'] = connection_id
 
     external_table_def['sourceUris'] = source_uris.split(',')
+
     return external_table_def
+
   except ValueError as e:
     raise app.UsageError(
         ('Error occurred while creating table definition: %s') % e)
@@ -1386,6 +1406,7 @@ class _MakeExternalTableDefinition(BigqueryCmd):
 
   def __init__(self, name, fv):
     super(_MakeExternalTableDefinition, self).__init__(name, fv)
+
     flags.DEFINE_boolean(
         'autodetect',
         None,
@@ -1417,22 +1438,33 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'source_format',
-        'CSV', [
-            'CSV', 'GOOGLE_SHEETS', 'NEWLINE_DELIMITED_JSON',
-            'DATASTORE_BACKUP', 'ORC', 'PARQUET', 'AVRO'
-        ], 'Format of source data. Options include:'
+        'CSV',
+        [
+            'CSV',
+            'GOOGLE_SHEETS',
+            'NEWLINE_DELIMITED_JSON',
+            'DATASTORE_BACKUP',
+            'ORC',
+            'PARQUET',
+            'AVRO'
+        ],
+        'Format of source data. Options include:'
         '\n CSV'
         '\n GOOGLE_SHEETS'
         '\n NEWLINE_DELIMITED_JSON'
         '\n DATASTORE_BACKUP'
-        '\n ORC (experimental)'
-        '\n PARQUET (experimental)'
+        '\n ORC'
+        '\n PARQUET'
         '\n AVRO',
         flag_values=fv)
     flags.DEFINE_string(
         'connection_id',
         None,
-        '[Experimental] Specifies a connection for accessing an external table',
+        'The connection specifying the credentials to be used to read external '
+        'storage, such as Azure Blob, Cloud Storage, or S3. The connection_id '
+        'can have the form "<project_id>.<location_id>.<connection_id>" or '
+        '"projects/<project_id>/locations/<location_id>/connections/'
+        '<connection_id>".',
         flag_values=fv)
     flags.DEFINE_boolean(
         'use_avro_logical_types',
@@ -1450,6 +1482,7 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         False,
         _PARQUET_LIST_INFERENCE_DESCRIPTION,
         flag_values=fv)
+
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, source_uris, schema=None):
@@ -1504,7 +1537,8 @@ class _MakeExternalTableDefinition(BigqueryCmd):
             require_hive_partition_filter=self.require_hive_partition_filter,
             use_avro_logical_types=self.use_avro_logical_types,
             parquet_enum_as_string=self.parquet_enum_as_string,
-            parquet_enable_list_inference=self.parquet_enable_list_inference),
+            parquet_enable_list_inference=self.parquet_enable_list_inference,
+            ),
         sys.stdout,
         sort_keys=True,
         indent=2)
@@ -1902,6 +1936,8 @@ class _Query(BigqueryCmd):
         params['write_disposition'] = 'WRITE_TRUNCATE'
       if self.time_partitioning_field:
         params['partitioning_field'] = self.time_partitioning_field
+      if self.time_partitioning_type:
+        params['partitioning_type'] = self.time_partitioning_type
 
       transfer_name = client.CreateTransferConfig(
           reference=reference,
@@ -2131,7 +2167,8 @@ class _Query(BigqueryCmd):
 def _GetExternalDataConfig(file_path_or_simple_spec,
                            use_avro_logical_types=False,
                            parquet_enum_as_string=False,
-                           parquet_enable_list_inference=False):
+                           parquet_enable_list_inference=False,
+                           ):
   """Returns a ExternalDataConfiguration from the file or specification string.
 
   Determines if the input string is a file path or a string,
@@ -2203,6 +2240,7 @@ def _GetExternalDataConfig(file_path_or_simple_spec,
       raise app.UsageError(error_msg)
     # When using short notation for external table definition
     # autodetect is always performed.
+
     return _CreateExternalTableDefinition(
         source_format,
         uri,
@@ -2211,7 +2249,8 @@ def _GetExternalDataConfig(file_path_or_simple_spec,
         connection_id,
         use_avro_logical_types=use_avro_logical_types,
         parquet_enum_as_string=parquet_enum_as_string,
-        parquet_enable_list_inference=parquet_enable_list_inference)
+        parquet_enable_list_inference=parquet_enable_list_inference,
+        )
 
 
 class _Extract(BigqueryCmd):
@@ -2233,7 +2272,7 @@ class _Extract(BigqueryCmd):
             'CSV', 'NEWLINE_DELIMITED_JSON', 'AVRO', 'PARQUET',
             'ML_TF_SAVED_MODEL', 'ML_XGBOOST_BOOSTER'
         ], 'The extracted file format. Format CSV, NEWLINE_DELIMITED_JSON, '
-        'PARQUET (experimental) and AVRO are applicable for extracting tables. '
+        'PARQUET and AVRO are applicable for extracting tables. '
         'Formats ML_TF_SAVED_MODEL and ML_XGBOOST_BOOSTER are applicable for '
         'extracting models. The default value for tables is CSV. Tables with '
         'nested or repeated fields cannot be exported as CSV. The default '
@@ -2813,22 +2852,27 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
           default_location=FLAGS.location,
           default_reservation_id=' ')
       try:
-        bi_response = client.ListBiReservations(reference)
-        has_bi_response = 'size' in bi_response
-        if has_bi_response:
-          size_in_bytes = int(bi_response['size'])
-          size_in_gbytes = size_in_bytes / (1024 * 1024 * 1024)
-          print('BI Engine reservation: %sGB' % size_in_gbytes)
+        list_bi_reservations = True
+        if list_bi_reservations:
+          bi_response = client.ListBiReservations(reference)
+          has_bi_response = 'size' in bi_response
+          if has_bi_response:
+            size_in_bytes = int(bi_response['size'])
+            size_in_gbytes = size_in_bytes / (1024 * 1024 * 1024)
+            print('BI Engine reservation: %sGB' % size_in_gbytes)
       except bigquery_client.BigqueryNotFoundError:
         pass
       except BaseException as e:
-        print("Failed to list BI reservations '%s': %s" % (identifier, e))
+        raise bigquery_client.BigqueryError(
+            "Failed to list BI reservations '%s': %s" % (identifier, e))
 
       try:
-        response = client.ListReservations(
-            reference=reference,
-            page_size=self.max_results,
-            page_token=self.page_token)
+        list_slot_reservations = True
+        if list_slot_reservations:
+          response = client.ListReservations(
+              reference=reference,
+              page_size=self.max_results,
+              page_token=self.page_token)
       except BaseException as e:
         raise bigquery_client.BigqueryError(
             "Failed to list reservations '%s': %s" % (identifier, e))
@@ -3078,7 +3122,9 @@ class _Delete(BigqueryCmd):
       try:
         reference = client.GetReservationReference(
             identifier=identifier, default_location=FLAGS.location)
-        client.DeleteReservation(reference)
+        client.DeleteReservation(
+            reference
+        )
         print("Reservation '%s' successfully deleted." % identifier)
       except BaseException as e:
         raise bigquery_client.BigqueryError(
@@ -3190,7 +3236,8 @@ class _Copy(BigqueryCmd):
     flags.DEFINE_boolean(
         'restore',
         False,
-        'Restore table snapshot to a live table.',
+        'Restore table snapshot to a live table. Deprecated, please use clone '
+        ' instead.',
         short_name='r',
         flag_values=fv)
     flags.DEFINE_integer(
@@ -3798,8 +3845,8 @@ class _Make(BigqueryCmd):
             'HIGH',
             'INTERACTIVE',
             'BATCH',
-        ], 'Reservation assignment default job priority. Reservation must be '
-        'whitelisted in order to set this flag. Options include:'
+        ], 'Reservation assignment default job priority. Only available for '
+        'whitelisted reservations. Options include:'
         '\n HIGH'
         '\n INTERACTIVE'
         '\n BATCH',
@@ -3850,13 +3897,26 @@ class _Make(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_string(
         'iam_role_id', None, '[Experimental] IAM role id.', flag_values=fv)
+    # TODO(b/231712311): look into cleaning up this flag now that only federated
+    # aws connections are supported.
     flags.DEFINE_boolean(
         'federated_aws',
         True,
         '[Experimental] Federated identity.',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'federated_azure',
+        None,
+        '[Experimental] Federated identity for Azure.',
+        flag_values=fv)
     flags.DEFINE_string(
         'tenant_id', None, '[Experimental] Tenant id.', flag_values=fv)
+    flags.DEFINE_string(
+        'federated_app_client_id',
+        None,
+        '[Experimental] The application (client) id of the Active Directory '
+        'application to use with Azure federated identity.',
+        flag_values=fv)
     flags.DEFINE_string(
         'default_kms_key',
         None,
@@ -3884,6 +3944,13 @@ class _Make(BigqueryCmd):
         'parquet_enable_list_inference',
         False,
         _PARQUET_LIST_INFERENCE_DESCRIPTION,
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'max_time_travel_hours',
+        None,
+        'Optional. Define the max time travel in hours. The value can be from '
+        '48 to 168 hours (2 to 7 days). The default value is 168 hours if this '
+        'is not set.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -4071,8 +4138,16 @@ class _Make(BigqueryCmd):
         if not self.federated_aws:
           raise app.UsageError('Non-federated AWS connections are deprecated.')
       if self.connection_type == 'Azure' and self.tenant_id:
-        self.properties = bigquery_client.MakeTenantIdPropertiesJson(
-            self.tenant_id)
+        if self.federated_azure:
+          if not self.federated_app_client_id:
+            raise app.UsageError(
+                'Must specify --federated_app_client_id for federated Azure connections.'
+            )
+          self.properties = bigquery_client.MakeAzureFederatedAppClientAndTenantIdPropertiesJson(
+              self.tenant_id, self.federated_app_client_id)
+        else:
+          self.properties = bigquery_client.MakeTenantIdPropertiesJson(
+              self.tenant_id)
 
       param_properties = self.properties
       # All connection types require properties, except CLOUD_RESOURCE as
@@ -4147,6 +4222,8 @@ class _Make(BigqueryCmd):
           default_kms_key=self.default_kms_key,
           labels=labels,
           source_dataset_reference=source_dataset_reference
+          ,
+          max_time_travel_hours=self.max_time_travel_hours
       )
       print("Dataset '%s' successfully created." % (reference,))
     elif isinstance(reference, TableReference):
@@ -4184,11 +4261,16 @@ class _Make(BigqueryCmd):
         expiration = int(self.expiration + time.time()) * 1000
       view_query_arg = self.view or None
       materialized_view_query_arg = self.materialized_view or None
+
       external_data_config = None
       if self.external_table_definition is not None:
         external_data_config = _GetExternalDataConfig(
-            self.external_table_definition, self.use_avro_logical_types,
-            self.parquet_enum_as_string, self.parquet_enable_list_inference)
+            self.external_table_definition,
+            self.use_avro_logical_types,
+            self.parquet_enum_as_string,
+            self.parquet_enable_list_inference,
+            )
+
       view_udf_resources = None
       if self.view_udf_resource:
         view_udf_resources = _ParseUdfResources(self.view_udf_resource)
@@ -4561,8 +4643,8 @@ class _Update(BigqueryCmd):
             'INTERACTIVE',
             'BATCH',
             '',
-        ], 'Reservation assignment default job priority. Reservation must be '
-        'whitelisted in order to set this flag. Options include:'
+        ], 'Reservation assignment default job priority. Only available for '
+        'whitelisted reservations. Options include:'
         '\n HIGH'
         '\n INTERACTIVE'
         '\n BATCH'
@@ -4854,6 +4936,8 @@ class _Update(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_string(
         'iam_role_id', None, '[Experimental] IAM role id.', flag_values=fv)
+    # TODO(b/231712311): look into cleaning up this flag now that only federated
+    # aws connections are supported.
     flags.DEFINE_boolean(
         'federated_aws',
         True,
@@ -4861,6 +4945,12 @@ class _Update(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_string(
         'tenant_id', None, '[Experimental] Tenant id.', flag_values=fv)
+    flags.DEFINE_string(
+        'federated_app_client_id',
+        None,
+        '[Experimental] The application (client) id of the Active Directory '
+        'application to use with Azure federated identity.',
+        flag_values=fv)
     flags.DEFINE_string(
         'range_partitioning',
         None, 'Enables range partitioning on the table. The format should be '
@@ -4873,6 +4963,18 @@ class _Update(BigqueryCmd):
         None,
         'Defines default KMS key name for all newly objects created in the '
         'dataset. Table/Model creation request can override this default.',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'max_time_travel_hours',
+        None,
+        'Optional. Define the max time travel in hours. The value can be from '
+        '48 to 168 hours (2 to 7 days). The default value is 168 hours if this '
+        'is not set.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'autodetect_schema',
+        False,
+        'Optional. If true, schema is autodetected; else schema is unchanged.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -5027,9 +5129,16 @@ class _Update(BigqueryCmd):
       if self.connection_type == 'AWS' and self.iam_role_id:
         self.properties = bigquery_client.MakeAccessRolePropertiesJson(
             self.iam_role_id)
-      if self.connection_type == 'Azure' and self.tenant_id:
-        self.properties = bigquery_client.MakeTenantIdPropertiesJson(
-            self.tenant_id)
+      if self.connection_type == 'Azure':
+        if self.tenant_id and self.federated_app_client_id:
+          self.properties = bigquery_client.MakeAzureFederatedAppClientAndTenantIdPropertiesJson(
+              self.tenant_id, self.federated_app_client_id)
+        elif self.federated_app_client_id:
+          self.properties = bigquery_client.MakeAzureFederatedAppClientIdPropertiesJson(
+              self.federated_app_client_id)
+        elif self.tenant_id:
+          self.properties = bigquery_client.MakeTenantIdPropertiesJson(
+              self.tenant_id)
       if self.properties or self.display_name or self.description \
           or self.connection_credential:
         updated_connection = client.UpdateConnection(
@@ -5085,6 +5194,8 @@ class _Update(BigqueryCmd):
           label_keys_to_remove=label_keys_to_remove,
           default_kms_key=self.default_kms_key,
           etag=self.etag
+          ,
+          max_time_travel_hours=self.max_time_travel_hours
       )
       print("Dataset '%s' successfully updated." % (reference,))
     elif isinstance(reference, TableReference):
@@ -5159,7 +5270,8 @@ class _Update(BigqueryCmd):
           clustering=clustering,
           require_partition_filter=self.require_partition_filter,
           etag=self.etag,
-          encryption_configuration=encryption_configuration
+          encryption_configuration=encryption_configuration,
+          autodetect_schema=self.autodetect_schema
       )
 
       print("%s '%s' successfully updated." % (
@@ -5307,6 +5419,8 @@ def _UpdateDataset(
     label_keys_to_remove=None,
     etag=None,
     default_kms_key=None
+    ,
+    max_time_travel_hours=None
 ):
   """Updates a dataset.
 
@@ -5328,6 +5442,9 @@ def _UpdateDataset(
       dataset.
     default_kms_key: an optional CMEK encryption key for all new tables in the
       dataset.
+    max_time_travel_hours: Optional. Define the max time travel in hours. The
+      value can be from 48 to 168 hours (2 to 7 days). The default value is 168
+      hours if this is not set.
 
   Raises:
     UsageError: when incorrect usage or invalid args are used.
@@ -5358,6 +5475,8 @@ def _UpdateDataset(
       label_keys_to_remove=label_keys_to_remove,
       etag=etag,
       default_kms_key=default_kms_key
+      ,
+      max_time_travel_hours=max_time_travel_hours
   )
 
 
@@ -5534,11 +5653,13 @@ class _Show(BigqueryCmd):
           identifier=identifier, default_location=FLAGS.location)
       object_info = client.GetReservation(reference)
     elif self.reservation_assignment:
-      object_info = client.SearchReservationAssignments(
-          location=FLAGS.location,
-          job_type=self.job_type,
-          assignee_type=self.assignee_type,
-          assignee_id=self.assignee_id)
+      search_all_projects = True
+      if search_all_projects:
+        object_info = client.SearchAllReservationAssignments(
+            location=FLAGS.location,
+            job_type=self.job_type,
+            assignee_type=self.assignee_type,
+            assignee_id=self.assignee_id)
       # Here we just need any object of ReservationAssignmentReference type, but
       # the value of the object doesn't matter here.
       # _PrintObjectInfo() will use the type and object_info to format the

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright 2014 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +23,6 @@ from google.appengine.api import memcache
 from . import base
 from ..discovery_cache import DISCOVERY_DOC_MAX_AGE
 
-
 LOGGER = logging.getLogger(__name__)
 
 NAMESPACE = "google-api-client"
@@ -36,9 +34,9 @@ class Cache(base.Cache):
     def __init__(self, max_age):
         """Constructor.
 
-      Args:
-        max_age: Cache expiration in seconds.
-      """
+        Args:
+          max_age: Cache expiration in seconds.
+        """
         self._max_age = max_age
 
     def get(self, url):

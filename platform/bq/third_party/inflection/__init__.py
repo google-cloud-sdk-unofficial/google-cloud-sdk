@@ -142,7 +142,7 @@ def _irregular(singular, plural):
         ))
 
 
-def camelize(string, uppercase_first_letter=True):
+def camelize(string, uppercase_first_letter = True):
     """
     Convert strings to CamelCase.
 
@@ -258,7 +258,7 @@ def ordinalize(number):
     return "{}{}".format(number, ordinal(number))
 
 
-def parameterize(string, separator='-'):
+def parameterize(string, separator = '-'):
     """
     Replace special characters in a string so that it may be used as part of a
     'pretty' URL.

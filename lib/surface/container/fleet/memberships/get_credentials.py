@@ -124,7 +124,7 @@ class GetCredentials(base.Command):
         raise memberships_errors.InvalidFlagValueError(
             "Flag '--fleetgke' provided, but cluster is not a registered GKE cluster."
         )
-      resource_type = 'fleetgke'
+      resource_type = 'gkeMemberships'
 
     self.GenerateKubeconfig(
         util.GetConnectGatewayServiceName(hub_endpoint_override, location),

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright 2014 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,21 +26,21 @@ class Cache(object):
     def get(self, url):
         """Gets the content from the memcache with a given key.
 
-    Args:
-      url: string, the key for the cache.
+        Args:
+          url: string, the key for the cache.
 
-    Returns:
-      object, the value in the cache for the given key, or None if the key is
-      not in the cache.
-    """
+        Returns:
+          object, the value in the cache for the given key, or None if the key is
+          not in the cache.
+        """
         raise NotImplementedError()
 
     @abc.abstractmethod
     def set(self, url, content):
         """Sets the given key and content in the cache.
 
-    Args:
-      url: string, the key for the cache.
-      content: string, the discovery document.
-    """
+        Args:
+          url: string, the key for the cache.
+          content: string, the discovery document.
+        """
         raise NotImplementedError()

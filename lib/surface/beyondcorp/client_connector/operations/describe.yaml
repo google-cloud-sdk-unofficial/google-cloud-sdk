@@ -9,7 +9,8 @@
       The following command describes an operation called
       `operation-1484002552235-425b144f8c3f8-81aa4b49-0830d1e9`:
 
-        $ {command} operation-1484002552235-425b144f8c3f8-81aa4b49-0830d1e9 --project=${PROJECT_ID} --location=${LOCATION_ID}
+        $ {command} operation-1484002552235-425b144f8c3f8-81aa4b49-0830d1e9 \
+        --project=consumer-project-id --location=us-central1
 
   arguments:
     resource:

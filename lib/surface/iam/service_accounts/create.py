@@ -61,7 +61,6 @@ class Create(base.CreateCommand):
     parser.add_argument(
         'name',
         metavar='NAME',
-        type=iam_util.AccountNameValidator(),
         help='The internal name of the new service account. '
         'Used to generate an IAM_ACCOUNT (an IAM internal '
         'email address used as an identifier of service '

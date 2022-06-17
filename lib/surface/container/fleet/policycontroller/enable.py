@@ -20,9 +20,10 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
+from googlecloudsdk.core import exceptions
 
 
-class Enable(base.EnableCommand):
+class Enable(base.UpdateCommand, base.EnableCommand):
   """Enable Policy Controller Feature.
 
   Enables the Policy Controller Feature in a fleet.
@@ -100,4 +101,12 @@ class Enable(base.EnableCommand):
 
     f = self.messages.Feature(
         membershipSpecs=self.hubclient.ToMembershipSpecs(membership_specs))
-    return self.Enable(f)
+
+    try:
+      return self.Update(['membership_specs'], f)
+    except exceptions.Error as e:
+      fne = self.FeatureNotEnabledError()
+      if str(e) == str(fne):
+        return self.Enable(f)
+      else:
+        raise e

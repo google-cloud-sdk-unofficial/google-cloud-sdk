@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Update a backup plan.
@@ -15,8 +15,7 @@
     collection: gkebackup.projects.locations.backupPlans
     modify_request_hooks:
     - googlecloudsdk.command_lib.container.backup_restore.hooks:PreprocessUpdateBackupPlan
-    ALPHA:
-      api_version: v1
+    api_version: v1
 
   async:
     collection: gkebackup.projects.locations.operations

@@ -21,6 +21,13 @@ import six
 import bigquery_client
 
 FLAGS = flags.FLAGS
+
+_GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive'
+_BIGQUERY_SCOPE = 'https://www.googleapis.com/auth/bigquery'
+_CLOUD_PLATFORM_SCOPE = 'https://www.googleapis.com/auth/cloud-platform'
+_REAUTH_SCOPE = 'https://www.googleapis.com/auth/accounts.reauth'
+
+
 _BIGQUERY_TOS_MESSAGE = (
     'In order to get started, please visit the Google APIs Console to '
     'create a project and agree to our Terms of Service:\n'
@@ -251,3 +258,12 @@ def PrintFormattedJsonObject(obj, default_format='json'):
     raise ValueError(
         'Invalid json format for printing: \'%s\', expected one of: %s' %
         (use_format, json_formats))
+
+
+def GetClientScopeFromFlags():
+  """Returns auth scopes based on user supplied flags."""
+  client_scope = [_BIGQUERY_SCOPE, _CLOUD_PLATFORM_SCOPE]
+  if FLAGS.enable_gdrive:
+    client_scope.append(_GDRIVE_SCOPE)
+  client_scope.append(_REAUTH_SCOPE)
+  return client_scope

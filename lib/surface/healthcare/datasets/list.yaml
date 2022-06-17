@@ -29,25 +29,9 @@
       help_text: Parent Cloud Healthcare API location to list all contained Cloud Healthcare API datasets.
       spec: !REF googlecloudsdk.command_lib.healthcare.resources:location
   output:
-    ALPHA:
-      format: |
-        table(
-            name.scope("datasets"):label=ID,
-            name.scope("locations").segment(0):label=LOCATION,
-            timeZone:label=TIMEZONE,
-            storageOptions.defaultBlobStorageClass:label=STORAGECLASS
-        )
-    BETA:
-      format: |
-        table(
-            name.scope("datasets"):label=ID,
-            name.scope("locations").segment(0):label=LOCATION,
-            timeZone:label=TIMEZONE
-        )
-    GA:
-      format: |
-        table(
-            name.scope("datasets"):label=ID,
-            name.scope("locations").segment(0):label=LOCATION,
-            timeZone:label=TIMEZONE
-        )
+    format: |
+      table(
+          name.scope("datasets"):label=ID,
+          name.scope("locations").segment(0):label=LOCATION,
+          timeZone:label=TIMEZONE
+      )

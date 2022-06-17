@@ -12,13 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command to update migration jobs for a database migration."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
-
 
 from googlecloudsdk.api_lib.database_migration import api_util
 from googlecloudsdk.api_lib.database_migration import migration_jobs
@@ -30,12 +28,24 @@ from googlecloudsdk.core import log
 
 DETAILED_HELP = {
     'DESCRIPTION':
-        'Update a Database Migration Service migration job.',
+        """
+        Update a Database Migration Service migration job.
+        - Draft migration job: user can update all available flags.
+        - Any other state can only update flags: `--display-name`,
+        `--dump-path`, and connectivity method flags.
+        """,
     'EXAMPLES':
         """\
-        To update a migration job in draft with new display name, source and destination connection profiles:
+        To update the source and destination connection profiles of a draft
+        migration job:
 
-            $ {command} MIGRATION_JOB --region=us-central1 --display-name=new-name  --source=new-src --destination=new-dest
+            $ {command} my-migration-job --region=us-central1 --source=new-src
+            --destination=new-dest
+
+        To update the display name of a running migration job:
+
+            $ {command} my-migration-job --region=us-central1
+            --display-name=new-name
 
         """,
 }
@@ -52,9 +62,8 @@ class Update(base.Command):
     """Args is called by calliope to gather arguments for this command.
 
     Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
     """
     resource_args.AddMigrationJobResourceArgs(parser, 'to update')
     mj_flags.AddNoAsyncFlag(parser)
@@ -69,7 +78,7 @@ class Update(base.Command):
 
     Args:
       args: argparse.Namespace, The arguments that this command was invoked
-          with.
+        with.
 
     Returns:
       A dict object representing the operations resource describing the update
@@ -81,11 +90,8 @@ class Update(base.Command):
     destination_ref = args.CONCEPTS.destination.Parse()
 
     cp_client = migration_jobs.MigrationJobsClient(self.ReleaseTrack())
-    result_operation = cp_client.Update(
-        migration_job_ref.RelativeName(),
-        source_ref,
-        destination_ref,
-        args)
+    result_operation = cp_client.Update(migration_job_ref.RelativeName(),
+                                        source_ref, destination_ref, args)
 
     client = api_util.GetClientInstance(self.ReleaseTrack())
     messages = api_util.GetMessagesModule(self.ReleaseTrack())

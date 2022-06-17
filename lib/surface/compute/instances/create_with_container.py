@@ -100,10 +100,7 @@ class CreateWithContainer(base.CreateCommand):
   @staticmethod
   def Args(parser):
     """Register parser args."""
-    _Args(
-        parser,
-        container_mount_enabled=True,
-        support_multi_writer=False)
+    _Args(parser, container_mount_enabled=True, support_multi_writer=False)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArg(parser,
@@ -331,22 +328,21 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_create_boot_disk = True
   _support_match_container_mount_disks = True
   _support_nvdimm = False
-  _support_visible_core_count = False
+  _support_visible_core_count = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
 
   @staticmethod
   def Args(parser):
     """Register parser args."""
-    _Args(
-        parser,
-        container_mount_enabled=True)
+    _Args(parser, container_mount_enabled=True)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_BETA_API_VERSION)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
+    instances_flags.AddVisibleCoreCountArgs(parser)
 
   def _ValidateTrackSpecificArgs(self, args):
     instances_flags.ValidateLocalSsdFlags(args)
@@ -367,9 +363,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   @staticmethod
   def Args(parser):
     _Args(
-        parser,
-        deprecate_maintenance_policy=True,
-        container_mount_enabled=True)
+        parser, deprecate_maintenance_policy=True, container_mount_enabled=True)
 
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgsWithSize(parser)

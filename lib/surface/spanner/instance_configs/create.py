@@ -39,21 +39,21 @@ class Create(base.CreateCommand):
 
           $ {command} custom-instance-config
             --display-name=custom-instance-config-name
-            --base-config=projects/{projectID}/instanceConfigs/{google_managed_config_id}
-            --replicas="location=us-east4,type=READ_WRITE;location=us-east4,type=READ_WRITE;location=us-east1,type=READ_WRITE;location=us-east1,type=READ_WRITE;location=us-central1,type=READ_ONLY"
+            --base-config=nam3
+            --replicas=location=us-east4,type=READ_WRITE:location=us-east4,type=READ_WRITE:location=us-east1,type=READ_WRITE:location=us-east1,type=READ_WRITE:location=us-central1,type=WITNESS
 
-        To create a Cloud Spanner instance config based on an existing Google managed configs and user managed configs with adding replica 'us-east4' of type 'READ_WRITE', run:
-
-          $ {command} custom-instance-config
-            --clone-config=projects/{projectID}/instanceConfigs/{config_id}
-            --add-replicas="location=us-east4,type=READ_WRITE"
-
-        To create a Cloud Spanner instance config based on an existing Google managed configs and user managed configs with adding replica 'us-east4' of type 'READ_WRITE' and removing replica 'us-central1' of type 'READ_ONLY', run:
+        To create a Cloud Spanner instance config based on an existing Google managed configs (nam3) and user managed configs with adding replica 'us-east4' of type 'READ_WRITE', run:
 
           $ {command} custom-instance-config
-            --clone-config=projects/{projectID}/instanceConfigs/{config_id}
-            --add-replicas="location=us-east4,type=READ_WRITE"
-            --skip-replicas="location=us-central1,type=READ_ONLY"
+            --clone-config=nam3
+            --add-replicas=location=us-east4,type=READ_WRITE
+
+        To create a Cloud Spanner instance config based on an existing Google managed configs (nam3) and user managed configs with adding replica 'us-east4' of type 'READ_WRITE' and removing replica 'us-central1' of type 'READ_ONLY', run:
+
+          $ {command} custom-instance-config
+            --clone-config=nam3
+            --add-replicas=location=us-east4,type=READ_WRITE
+            --skip-replicas=location=us-central1,type=READ_ONLY
         """),
   }
 
@@ -98,7 +98,8 @@ class Create(base.CreateCommand):
 
         *type*::: The type of replica.
 
-        The allowed values and formats are as follows.
+        Items in the list are separated by ":". The allowed values and formats
+        are as follows.
 
         *READ_ONLY*::::
 
@@ -150,9 +151,8 @@ class Create(base.CreateCommand):
     manual_flags.add_argument(
         '--base-config',
         required=True,
-        help='Base configuration name. '
-        'e.g. projects/<projectID>/instanceConfigs/<google_managed_config_id>, '
-        'based on which this configuration is created.')
+        help='The ID of the instance config, based on which this configuration '
+        'is created.')
 
     clone_flags = clone_or_manual.add_argument_group(
         'Command-line flags to setup an instance-config using clone options:')
@@ -161,7 +161,7 @@ class Create(base.CreateCommand):
         required=True,
         metavar='INSTANCE_CONFIG',
         completer=flags.InstanceConfigCompleter,
-        help='Cloud Spanner instance config name, based on which this '
+        help='The ID of the instance config, based on which this '
         'configuration is created. The clone is an independent copy of this '
         'config. Available configurations can be found by running '
         '"gcloud spanner instance-configs list"')

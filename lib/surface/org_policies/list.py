@@ -38,11 +38,22 @@ DETAILED_HELP = {
 
 
 def HasListPolicy(spec):
-  if spec:
-    for rule in spec.rules:
-      if (rule.values is not None or rule.allowAll is not None or
-          rule.denyAll is not None):
-        return True
+  if not spec:
+    return False
+  for rule in spec.rules:
+    if (rule.values is not None or rule.allowAll is not None or
+        rule.denyAll is not None):
+      return True
+  return False
+
+
+def HasDryRunListPolicy(dry_run_spec):
+  if not dry_run_spec:
+    return False
+  for rule in dry_run_spec.rules:
+    if (rule.values is not None or rule.allowAll is not None or
+        rule.denyAll is not None):
+      return True
   return False
 
 
@@ -56,6 +67,16 @@ def HasDryRunBooleanPolicy(dry_run_spec):
   if dry_run_spec:
     return any([rule.enforce is not None for rule in dry_run_spec.rules])
   return False
+
+
+def PolicyOutput(is_policy_set, is_dry_run_policy_set):
+  if is_policy_set and is_dry_run_policy_set:
+    return 'LIVE_AND_DRY_RUN_SET'
+  elif is_policy_set:
+    return 'SET'
+  elif is_dry_run_policy_set:
+    return 'DRY_RUN_SET'
+  return '-'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -85,16 +106,14 @@ class List(base.ListCommand):
       list_policy_set = HasListPolicy(spec)
       boolean_policy_set = HasBooleanPolicy(spec)
       dry_run_boolean_policy_set = HasDryRunBooleanPolicy(dry_run_spec)
-      boolean_policy_output = '-'
-      if boolean_policy_set and dry_run_boolean_policy_set:
-        boolean_policy_output = 'LIVE_AND_DRY_RUN_SET'
-      elif boolean_policy_set:
-        boolean_policy_output = 'SET'
-      elif dry_run_boolean_policy_set:
-        boolean_policy_output = 'DRY_RUN_SET'
+      dry_run_list_policy_set = HasDryRunListPolicy(dry_run_spec)
+      boolean_policy_output = PolicyOutput(boolean_policy_set,
+                                           dry_run_boolean_policy_set)
+      list_policy_output = PolicyOutput(list_policy_set,
+                                        dry_run_list_policy_set)
       output.append({
           'constraint': policy.name.split('/')[-1],
-          'listPolicy': 'SET' if list_policy_set else '-',
+          'listPolicy': list_policy_output,
           'booleanPolicy': boolean_policy_output,
           'etag': spec.etag if spec else dry_run_spec.etag
       })

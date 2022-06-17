@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: List restore plans.
@@ -17,8 +17,7 @@
 
   request:
     collection: gkebackup.projects.locations.restorePlans
-    ALPHA:
-      api_version: v1
+    api_version: v1
 
   response:
     id_field: name
@@ -32,11 +31,10 @@
       spec: !REF googlecloudsdk.command_lib.container.backup_restore.resources:default_location
 
   output:
-    ALPHA:
-      format: |
-        table(
-          name.basename():label=NAME,
-          name.segment(3):label=LOCATION,
-          cluster.basename(),
-          backupPlan.basename()
-        )
+    format: |
+      table(
+        name.basename():label=NAME,
+        name.segment(3):label=LOCATION,
+        cluster.basename(),
+        backupPlan.basename()
+      )

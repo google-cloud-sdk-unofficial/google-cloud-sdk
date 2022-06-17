@@ -327,6 +327,8 @@ class Update(base.UpdateCommand):
     flags.AddReleaseChannelFlag(group, is_update=True, hidden=False)
     flags.AddWorkloadIdentityFlags(group)
     flags.AddWorkloadIdentityUpdateFlags(group)
+    flags.AddWorkloadIdentityCPUFlags(group)
+    flags.AddWorkloadIdentityMemoryFlags(group)
     flags.AddIdentityServiceFlag(group)
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
@@ -668,6 +670,38 @@ to completion."""
             args.enable_google_cloud_access)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'tune_gke_metadata_server_cpu', None) is not None:
+      if cluster.workloadIdentityConfig is None:
+        raise util.Error(
+            'Cannot specify --tune-gke-metadata-server-cpu without workload identity enabled.'
+        )
+      elif not cluster.workloadIdentityConfig.workloadPool:
+        raise util.Error(
+            'Cannot specify --tune-gke-metadata-server-cpu without workloadPool.'
+        )
+      else:
+        try:
+          op_ref = adapter.TuneGkeMetadataServerCpu(
+              cluster_ref, cluster,
+              args.tune_gke_metadata_server_cpu)
+        except apitools_exceptions.HttpError as error:
+          raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'tune_gke_metadata_server_memory', None) is not None:
+      if cluster.workloadIdentityConfig is None:
+        raise util.Error(
+            'Cannot specify --tune-gke-metadata-server-memory without workload identity enabled.'
+        )
+      elif not cluster.workloadIdentityConfig.workloadPool:
+        raise util.Error(
+            'Cannot specify --tune-gke-metadata-server-memory without workloadPool.'
+        )
+      else:
+        try:
+          op_ref = adapter.TuneGkeMetadataServerMemory(
+              cluster_ref, cluster,
+              args.tune_gke_metadata_server_memory)
+        except apitools_exceptions.HttpError as error:
+          raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     else:
       if args.enable_legacy_authorization is not None:
         op_ref = adapter.SetLegacyAuthorization(
@@ -780,6 +814,8 @@ class UpdateBeta(Update):
     flags.AddMeshCertificatesFlags(group)
     flags.AddWorkloadIdentityFlags(group, use_identity_provider=True)
     flags.AddWorkloadIdentityUpdateFlags(group)
+    flags.AddWorkloadIdentityCPUFlags(group)
+    flags.AddWorkloadIdentityMemoryFlags(group)
     flags.AddGkeOidcFlag(group)
     flags.AddIdentityServiceFlag(group)
     flags.AddDatabaseEncryptionFlag(group)
@@ -954,6 +990,8 @@ class UpdateAlpha(Update):
     flags.AddMeshCertificatesFlags(group)
     flags.AddWorkloadIdentityFlags(group, use_identity_provider=True)
     flags.AddWorkloadIdentityUpdateFlags(group)
+    flags.AddWorkloadIdentityCPUFlags(group)
+    flags.AddWorkloadIdentityMemoryFlags(group)
     flags.AddGkeOidcFlag(group)
     flags.AddIdentityServiceFlag(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)

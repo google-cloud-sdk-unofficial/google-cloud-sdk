@@ -24,6 +24,7 @@ import textwrap
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import csek_utils
+from googlecloudsdk.api_lib.compute import disks_util
 from googlecloudsdk.api_lib.compute import image_utils
 from googlecloudsdk.api_lib.compute import kms_utils
 from googlecloudsdk.api_lib.compute import utils
@@ -556,9 +557,9 @@ class Create(base.Command):
         disk.sourceInstantSnapshot = self.GetSourceInstantSnapshotUri(
             args, compute_holder)
 
-      if (support_multiwriter_disk
-          and disk_ref.Collection() in ['compute.disks', 'compute.regionDisks']
-          and args.IsSpecified('multi_writer')):
+      if (support_multiwriter_disk and
+          disk_ref.Collection() in ['compute.disks', 'compute.regionDisks'] and
+          args.IsSpecified('multi_writer')):
         disk.multiWriter = args.multi_writer
 
       if guest_os_feature_messages:
@@ -570,12 +571,12 @@ class Create(base.Command):
       disk.licenses = self.ParseLicenses(args)
 
       if args.IsSpecified('provisioned_iops'):
-        if type_uri and type_uri.endswith('/pd-extreme'):
+        if type_uri and disks_util.IsProvisioingTypeIops(type_uri):
           disk.provisionedIops = args.provisioned_iops
         else:
           raise exceptions.InvalidArgumentException(
               '--provisioned-iops',
-              '--provisioned-iops can be used only with pd-extreme disk type.')
+              '--provisioned-iops cannot be used with the given disk type.')
 
       if support_architecture and args.IsSpecified('architecture'):
         disk.architecture = disk.ArchitectureValueValuesEnum(args.architecture)
@@ -585,17 +586,13 @@ class Create(base.Command):
 
       if disk_ref.Collection() == 'compute.disks':
         request = client.messages.ComputeDisksInsertRequest(
-            disk=disk,
-            project=disk_ref.project,
-            zone=disk_ref.zone)
+            disk=disk, project=disk_ref.project, zone=disk_ref.zone)
 
         request = (client.apitools_client.disks, 'Insert', request)
       elif disk_ref.Collection() == 'compute.regionDisks':
         disk.replicaZones = self.GetReplicaZones(args, compute_holder, disk_ref)
         request = client.messages.ComputeRegionDisksInsertRequest(
-            disk=disk,
-            project=disk_ref.project,
-            region=disk_ref.region)
+            disk=disk, project=disk_ref.project, region=disk_ref.region)
 
         request = (client.apitools_client.regionDisks, 'Insert', request)
 

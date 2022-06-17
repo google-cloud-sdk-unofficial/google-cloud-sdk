@@ -83,6 +83,8 @@ Formatters that require non-empty output to be valid should override
 For example JsonFormatter must emit '[]' to produce valid json.
 """
 
+# These are required by the BigQuery "bq" CLI which still supports Python 2.
+# See b/234740725.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -136,12 +138,9 @@ class TableFormatter(object):
     raise NotImplementedError('__unicode__ must be implemented by subclass')
 
   def _EncodedStr(self, encoding):
-    if six.PY2:
-      return self.__unicode__().encode(encoding, 'backslashreplace')
-    else:
-      # Hack to avoid UnicodeEncodeErrors when printing the encoded string.
-      return self.__unicode__().encode(encoding,
-                                       'backslashreplace').decode(encoding)
+    # Hack to avoid UnicodeEncodeErrors when printing the encoded string.
+    return self.__unicode__().encode(encoding,
+                                     'backslashreplace').decode(encoding)
 
   def Print(self, output=None):
     if self or self._empty_output_meaningful:
@@ -493,8 +492,6 @@ class CsvFormatter(TableFormatter):
       lines = []
     # Note that we need to explicitly decode here to work around
     # the fact that the CSV module does not work with unicode.
-    if six.PY2:
-      lines = [line.decode('utf8') for line in lines]
     return '\n'.join(lines).rstrip()
 
   @property
@@ -508,11 +505,6 @@ class CsvFormatter(TableFormatter):
     self._header.append(column_name)
 
   def AddRow(self, row):
-    if six.PY2:
-      row = [
-          six.text_type(entry).encode('utf8', 'backslashreplace')
-          for entry in row
-      ]
     self._table.writerow(row)
 
 

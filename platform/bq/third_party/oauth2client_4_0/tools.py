@@ -85,6 +85,9 @@ def _CreateArgumentParser():
                         help='Hostname when running a local web server.')
     parser.add_argument('--noauth_local_webserver', action='store_true',
                         default=False, help='Do not run a local web server.')
+    parser.add_argument('--noopen_browser',
+                        default=False,
+                        help='Do not attempt to open a browser window.')
     parser.add_argument('--auth_host_port', default=[8080, 8090], type=int,
                         nargs='*', help='Port web server should listen on.')
     parser.add_argument(
@@ -219,12 +222,12 @@ def run_flow(flow, storage, flags=None, http=None):
     flow.redirect_uri = oauth_callback
     authorize_url = flow.step1_get_authorize_url()
 
-    if not flags.noauth_local_webserver:
+    if flags.noauth_local_webserver or flags.noopen_browser:
+        print(_GO_TO_LINK_MESSAGE.format(address=authorize_url))
+    else:
         import webbrowser
         webbrowser.open(authorize_url, new=1, autoraise=True)
         print(_BROWSER_OPENED_MESSAGE.format(address=authorize_url))
-    else:
-        print(_GO_TO_LINK_MESSAGE.format(address=authorize_url))
 
     code = None
     if not flags.noauth_local_webserver:

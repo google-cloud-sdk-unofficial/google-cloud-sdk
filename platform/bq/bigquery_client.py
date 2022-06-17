@@ -113,6 +113,38 @@ def MakeTenantIdPropertiesJson(tenant_id):
   return '{"customerTenantId": "%s"}' % tenant_id
 
 
+def MakeAzureFederatedAppClientIdPropertiesJson(
+    federated_app_client_id):
+  """Returns properties for a connection with a federated app (client) id.
+
+  Args:
+    federated_app_client_id: federated application (client) id.
+
+  Returns:
+    JSON string with properties to create a connection with customer's federated
+    application (client) id.
+  """
+
+  return '{"federatedApplicationClientId": "%s"}' % federated_app_client_id
+
+
+def MakeAzureFederatedAppClientAndTenantIdPropertiesJson(
+    tenant_id, federated_app_client_id):
+  """Returns properties for a connection with tenant and federated app ids.
+
+  Args:
+    tenant_id: tenant id
+    federated_app_client_id: federated application (client) id.
+
+  Returns:
+    JSON string with properties to create a connection with customer's tenant
+    and federated application (client) ids.
+  """
+
+  return '{"customerTenantId": "%s", "federatedApplicationClientId" : "%s"}' % (
+      tenant_id, federated_app_client_id)
+
+
 def _PrintFormattedJsonObject(obj, obj_format='json'):
   """Prints obj in a JSON format according to the format argument.
 
@@ -167,7 +199,23 @@ def MaybePrintManualInstructionsForConnection(connection, flag_format=None):
             (connection['aws']['accessRole'].get('iamRoleId'),
              connection['aws']['accessRole'].get('identity')))
 
-  if connection.get('azure'):
+  if connection.get('azure') and connection['azure'].get(
+      'federatedApplicationClientId'):
+    obj = {
+        'federatedApplicationClientId':
+            connection['azure'].get('federatedApplicationClientId'),
+        'identity':
+            connection['azure'].get('identity')
+    }
+    if flag_format in ['prettyjson', 'json']:
+      _PrintFormattedJsonObject(obj, obj_format=flag_format)
+    else:
+      print((
+          'Please add the following identity to your Azure application \'%s\'\n'
+          'Identity: \'%s\'\n') %
+            (connection['azure'].get('federatedApplicationClientId'),
+             connection['azure'].get('identity')))
+  elif connection.get('azure'):
     obj = {
         'clientId': connection['azure'].get('clientId'),
         'application': connection['azure'].get('application')
@@ -254,6 +302,15 @@ def _FormatLabels(labels):
   for key, value in six.iteritems(labels):
     label_str = '%s:%s' % (key, value)
     result_lines.extend([label_str])
+  return '\n'.join(result_lines)
+
+
+def _FormatTags(tags):
+  """Format a resource's tags for printing."""
+  # When Python 3.6 is supported in client libraries use f-strings
+  result_lines = [
+      '{}:{}'.format(tag.get('tagKey'), tag.get('tagValue')) for tag in tags
+  ]
   return '\n'.join(result_lines)
 
 
@@ -1386,11 +1443,7 @@ class BigqueryClient(object):
   def GetReservationApiClient(self, reservationserver_address=None):
     """Return the apiclient that supports reservation operations."""
     path = reservationserver_address
-    if self.api_version == 'v1beta1':
-      reservation_version = 'v1beta1'
-    # Alpha feature actually is hosted in v1 endpoint.
-    else:
-      reservation_version = 'v1'
+    reservation_version = 'v1'
     if path is None:
       path = 'https://bigqueryreservation.googleapis.com'
     if not self._op_reservation_client:
@@ -1727,11 +1780,15 @@ class BigqueryClient(object):
   def GetReservationReference(self,
                               identifier=None,
                               default_location=None,
-                              default_reservation_id=None):
+                              default_reservation_id=None,
+                              check_reservation_project=True):
     """Determine a ReservationReference from an identifier and location."""
     project_id, location, reservation_id = _ParseReservationIdentifier(
         identifier=identifier)
-    if project_id and self.project_id and project_id != self.project_id:
+    # For MoveAssignment rpc, reservation reference project can be different
+    # from the self.project_id. We'll skip this check in this case.
+    if (check_reservation_project and project_id and self.project_id and
+        project_id != self.project_id):
       raise BigqueryError(
           "Specified project '%s' should be the same as the project of the "
           "reservation '%s'." % (self.project_id, project_id))
@@ -1955,8 +2012,8 @@ class BigqueryClient(object):
       concurrency,
       enable_queuing_and_priorities,
       multi_region_auxiliary,
-      autoscale_max_slots,
-      autoscale_budget_slot_hours):
+      autoscale_max_slots = None,
+      autoscale_budget_slot_hours = None):
     # pylint: disable=g-doc-args
     """Return the request body for CreateReservation.
 
@@ -1985,11 +2042,6 @@ class BigqueryClient(object):
     if multi_region_auxiliary is not None:
       reservation['multi_region_auxiliary'] = multi_region_auxiliary
     if concurrency is not None:
-      if (self.api_version != 'v1beta1'
-         ):
-        raise BigqueryError(
-            'concurrency is only supported in v1beta1. Please specify'
-            '\'--api_version=v1beta1\' and retry.')
       reservation['concurrency'] = concurrency
 
     if enable_queuing_and_priorities is not None:
@@ -2030,8 +2082,8 @@ class BigqueryClient(object):
       concurrency,
       enable_queuing_and_priorities,
       multi_region_auxiliary,
-      autoscale_max_slots,
-      autoscale_budget_slot_hours):
+      autoscale_max_slots = None,
+      autoscale_budget_slot_hours = None):
     # pylint: disable=g-doc-args
     """Create a reservation with the given reservation reference.
 
@@ -2116,7 +2168,10 @@ class BigqueryClient(object):
     return client.projects().locations().reservations().get(
         name=reference.path()).execute()
 
-  def DeleteReservation(self, reference):
+  def DeleteReservation(
+      self,
+      reference
+  ):
     """Deletes a reservation with the given reservation reference.
 
     Arguments:
@@ -2124,7 +2179,8 @@ class BigqueryClient(object):
     """
     client = self.GetReservationApiClient()
     client.projects().locations().reservations().delete(
-        name=reference.path()).execute()
+        name=reference.path()
+    ).execute()
 
   def UpdateBiReservation(self, reference, reservation_size):
     """Updates a BI reservation with the given reservation reference.
@@ -2203,11 +2259,6 @@ class BigqueryClient(object):
       update_mask += 'ignore_idle_slots,'
 
     if concurrency is not None:
-      if (self.api_version != 'v1beta1'
-         ):
-        raise BigqueryError(
-            'concurrency is only supported in v1beta1. Please specify'
-            '\'--api_version=v1beta1\' and retry.')
       reservation['concurrency'] = concurrency
       update_mask += 'concurrency,'
 
@@ -2473,11 +2524,6 @@ class BigqueryClient(object):
       raise BigqueryError('job_type not specified.')
     reservation_assignment['job_type'] = job_type
     if priority:
-      if (self.api_version != 'v1beta1'
-         ):
-        raise BigqueryError(
-            'priority is only supported in v1beta1. Please specify'
-            '\'--api_version=v1beta1\' and retry.')
       reservation_assignment['priority'] = priority
     if not assignee_type:
       raise BigqueryError('assignee_type not specified.')
@@ -2506,7 +2552,8 @@ class BigqueryClient(object):
     """Moves given reservation assignment under another reservation."""
     destination_reservation_reference = self.GetReservationReference(
         identifier=destination_reservation_id,
-        default_location=default_location)
+        default_location=default_location,
+        check_reservation_project=False)
     client = self.GetReservationApiClient()
     body = {'destinationId': destination_reservation_reference.path()}
 
@@ -2529,11 +2576,6 @@ class BigqueryClient(object):
     reservation_assignment = {}
     update_mask = ''
     if priority is not None:
-      if (self.api_version != 'v1beta1'
-         ):
-        raise BigqueryError(
-            'priority is only supported in v1beta1. Please specify'
-            '\'--api_version=v1beta1\' and retry.')
       if not priority:
         priority = 'JOB_PRIORITY_UNSPECIFIED'
       reservation_assignment['priority'] = priority
@@ -2561,9 +2603,14 @@ class BigqueryClient(object):
         parent=reference.path(), pageSize=page_size,
         pageToken=page_token).execute()
 
-  def SearchReservationAssignments(self, location, job_type, assignee_type,
-                                   assignee_id):
-    """Searchs reservations assignments for given assignee.
+
+  def SearchAllReservationAssignments(
+      self,
+      location,
+      job_type,
+      assignee_type,
+      assignee_id):
+    """Searches reservations assignments for given assignee.
 
     Arguments:
       location: location of interest.
@@ -2573,10 +2620,11 @@ class BigqueryClient(object):
         assigned.
 
     Returns:
-      ReservationAssignment object that was created.
+      ReservationAssignment object if it exists.
 
     Raises:
-      BigqueryError: If required parameters are not passed in.
+      BigqueryError: If required parameters are not passed in or reservation
+      assignment not found.
     """
     if not location:
       raise BigqueryError('location not specified.')
@@ -2595,12 +2643,10 @@ class BigqueryClient(object):
 
     response = client.projects().locations().searchAllAssignments(
         parent=parent, query=query).execute()
-    assignments = []
     if 'assignments' in response:
-      assignments = response['assignments']
-    for assignment in assignments:
-      if assignment['jobType'] == job_type:
-        return assignment
+      for assignment in response['assignments']:
+        if assignment['jobType'] == job_type:
+          return assignment
     raise BigqueryError('Reservation assignment not found')
 
   def GetConnection(self, reference):
@@ -2752,7 +2798,10 @@ class BigqueryClient(object):
       if properties:
         azure_properties = json.loads(properties)
         connection['azure'] = azure_properties
-        update_mask.append('azure.customerTenantId')
+        if azure_properties.get('customerTenantId'):
+          update_mask.append('azure.customer_tenant_id')
+        if azure_properties.get('federatedApplicationClientId'):
+          update_mask.append('azure.federated_application_client_id')
 
     elif connection_type == 'SQL_DATA_SOURCE':
       if properties:
@@ -2778,6 +2827,7 @@ class BigqueryClient(object):
             GetUpdateMask(connection_type.lower(), cloudspanner_properties))
       else:
         connection['cloudSpanner'] = {}
+
 
     client = self.GetConnectionV1ApiClient()
 
@@ -2924,12 +2974,16 @@ class BigqueryClient(object):
             'ACLs',
         ))
         formatter.AddColumns(('Labels',))
+        if 'tags' in object_info:
+          formatter.AddColumns(('Tags',))
         if 'defaultEncryptionConfiguration' in object_info:
           formatter.AddColumns(('kmsKeyName',))
         if 'type' in object_info:
           formatter.AddColumns(('Type',))
         if 'linkedDatasetSource' in object_info:
           formatter.AddColumns(('Source dataset',))
+        if 'maxTimeTravelHours' in object_info:
+          formatter.AddColumns(('Max time travel (Hours)',))
     elif reference_type == ApiClientHelper.TransferConfigReference:
       if print_format == 'list':
         formatter.AddColumns(('name',))
@@ -2972,10 +3026,17 @@ class BigqueryClient(object):
       if print_format == 'list':
         formatter.AddColumns(('Id', 'Routine Type', 'Language', 'Creation Time',
                               'Last Modified Time'))
+        formatter.AddColumns((
+            'Is Remote',
+        ))
       if print_format == 'show':
         formatter.AddColumns(
             ('Id', 'Routine Type', 'Language', 'Signature', 'Definition',
              'Creation Time', 'Last Modified Time'))
+        if 'remoteFunctionOptions' in object_info:
+          formatter.AddColumns((
+              'Remote Function Endpoint', 'Connection', 'User Defined Context',
+          ))
     elif reference_type == ApiClientHelper.RowAccessPolicyReference:
       if print_format == 'list':
         formatter.AddColumns(('Id', 'Filter Predicate', 'Grantees',
@@ -2999,12 +3060,18 @@ class BigqueryClient(object):
             formatter.AddColumns(
                 ('Last modified', 'Schema', 'Type', 'Total URIs', 'Expiration'))
             use_default = False
-          elif object_info['type'] == 'SNAPSHOT':
+          elif 'snapshotDefinition' in object_info:
             formatter.AddColumns(('Base Table', 'Snapshot TimeStamp'))
+          elif 'cloneDefinition' in object_info:
+            formatter.AddColumns(('Base Table', 'Clone TimeStamp'))
         if use_default:
+          # Other potentially available columns are: 'Long-Term Logical Bytes',
+          # 'Active Logical Bytes', 'Total Partitions', 'Active Physical Bytes',
+          # 'Long-Term Physical Bytes', 'Time Travel Bytes'.
           formatter.AddColumns(
               ('Last modified', 'Schema', 'Total Rows', 'Total Bytes',
-               'Expiration', 'Time Partitioning', 'Clustered Fields'))
+               'Expiration', 'Time Partitioning', 'Clustered Fields',
+               'Total Logical Bytes', 'Total Physical Bytes'))
         formatter.AddColumns(('Labels',))
         if 'encryptionConfiguration' in object_info:
           formatter.AddColumns(('kmsKeyName',))
@@ -3019,9 +3086,9 @@ class BigqueryClient(object):
     elif reference_type == ApiClientHelper.EncryptionServiceAccount:
       formatter.AddColumns(list(object_info.keys()))
     elif reference_type == ApiClientHelper.ReservationReference:
-      formatter.AddColumns(('name', 'slotCapacity', 'ignoreIdleSlots',
-                            'creationTime', 'updateTime',
-                            'multiRegionAuxiliary'))
+      formatter.AddColumns(
+          ('name', 'slotCapacity', 'concurrency', 'ignoreIdleSlots',
+           'creationTime', 'updateTime', 'multiRegionAuxiliary'))
     elif reference_type == ApiClientHelper.BetaReservationReference:
       formatter.AddColumns((
           'name',
@@ -3034,12 +3101,12 @@ class BigqueryClient(object):
           'multiRegionAuxiliary'))
     elif reference_type == ApiClientHelper.AutoscaleAlphaReservationReference:
       formatter.AddColumns(
-          ('name', 'slotCapacity', 'ignoreIdleSlots', 'autoscaleMaxSlots',
-           'autoscaleCurrentSlots', 'creationTime', 'updateTime',
-           'multiRegionAuxiliary'))
+          ('name', 'slotCapacity', 'concurrency', 'ignoreIdleSlots',
+           'autoscaleMaxSlots', 'autoscaleCurrentSlots', 'creationTime',
+           'updateTime', 'multiRegionAuxiliary'))
     elif reference_type == ApiClientHelper.AutoscalePreviewReservationReference:
       formatter.AddColumns(
-          ('name', 'slotCapacity', 'ignoreIdleSlots',
+          ('name', 'slotCapacity', 'concurrency', 'ignoreIdleSlots',
            'autoscaleBudgetSlotHours', 'autoscaleUsedBudgetSlotHours',
            'creationTime', 'updateTime', 'multiRegionAuxiliary'))
     elif reference_type == ApiClientHelper.CapacityCommitmentReference:
@@ -3479,6 +3546,14 @@ class BigqueryClient(object):
     if 'lastModifiedTime' in routine_info:
       result['Last Modified Time'] = BigqueryClient.FormatTime(
           int(routine_info['lastModifiedTime']) / 1000)
+    result['Is Remote'] = 'No'
+    if 'remoteFunctionOptions' in routine_info:
+      result['Is Remote'] = 'Yes'
+      result['Remote Function Endpoint'] = routine_info[
+          'remoteFunctionOptions']['endpoint']
+      result['Connection'] = routine_info['remoteFunctionOptions']['connection']
+      result['User Defined Context'] = routine_info[
+          'remoteFunctionOptions'].get('userDefinedContext', '')
     return result
 
   @staticmethod
@@ -3526,6 +3601,8 @@ class BigqueryClient(object):
       result['ACLs'] = BigqueryClient.FormatAcl(result['access'])
     if 'labels' in result:
       result['Labels'] = _FormatLabels(result['labels'])
+    if 'tags' in result:
+      result['Tags'] = _FormatTags(result['tags'])
     if 'defaultEncryptionConfiguration' in result:
       result['kmsKeyName'] = result['defaultEncryptionConfiguration'][
           'kmsKeyName']
@@ -3535,6 +3612,8 @@ class BigqueryClient(object):
         source_dataset = result['linkedDatasetSource']['sourceDataset']
         result['Source dataset'] = str(
             ApiClientHelper.DatasetReference.Create(**source_dataset))
+    if 'maxTimeTravelHours' in result:
+      result['Max time travel (Hours)'] = result['maxTimeTravelHours']
     return result
 
   @staticmethod
@@ -3557,6 +3636,22 @@ class BigqueryClient(object):
       result['Schema'] = BigqueryClient.FormatSchema(result['schema'])
     if 'numBytes' in result:
       result['Total Bytes'] = result['numBytes']
+    if 'numTotalLogicalBytes' in result:
+      result['Total Logical Bytes'] = result['numTotalLogicalBytes']
+    if 'numLongTermLogicalBytes' in result:
+      result['Long-Term Logical Bytes'] = result['numLongTermLogicalBytes']
+    if 'numActiveLogicalBytes' in result:
+      result['Active Logical Bytes'] = result['numActiveLogicalBytes']
+    if 'numPartitions' in result:
+      result['Total Partitions'] = result['numPartitions']
+    if 'numTotalPhysicalBytes' in result:
+      result['Total Physical Bytes'] = result['numTotalPhysicalBytes']
+    if 'numActivePhysicalBytes' in result:
+      result['Active Physical Bytes'] = result['numActivePhysicalBytes']
+    if 'numLongTermPhysicalBytes' in result:
+      result['Long-Term Physical Bytes'] = result['numLongTermPhysicalBytes']
+    if 'numTimeTravelBytes' in result:
+      result['Time Travel Bytes'] = result['numTimeTravelBytes']
     if 'numRows' in result:
       result['Total Rows'] = result['numRows']
     if 'expirationTime' in result:
@@ -3604,8 +3699,14 @@ class BigqueryClient(object):
       result['kmsKeyName'] = result['encryptionConfiguration']['kmsKeyName']
     if 'snapshotDefinition' in result:
       result['Base Table'] = result['snapshotDefinition']['baseTableReference']
-      result['Snapshot TimeStamp'] = result['snapshotDefinition'][
-          'snapshotTime']
+      result['Snapshot TimeStamp'] = (
+          BigqueryClient.FormatTimeFromProtoTimestampJsonString(
+              result['snapshotDefinition']['snapshotTime']))
+    if 'cloneDefinition' in result:
+      result['Base Table'] = result['cloneDefinition']['baseTableReference']
+      result['Clone TimeStamp'] = (
+          BigqueryClient.FormatTimeFromProtoTimestampJsonString(
+              result['cloneDefinition']['cloneTime']))
     return result
 
 
@@ -4598,6 +4699,8 @@ class BigqueryClient(object):
     except BigqueryNotFoundError:
       return False
 
+  # TODO(b/191712821): add tags modification here. For the Preview Tags are not
+  # modifiable using BigQuery UI/Cli, only using ResourceManager.
   def CreateDataset(
       self,
       reference,
@@ -4611,7 +4714,8 @@ class BigqueryClient(object):
       labels=None,
       default_kms_key=None,
       source_dataset_reference=None
-
+      ,
+      max_time_travel_hours=None
   ):
     """Create a dataset corresponding to DatasetReference.
 
@@ -4635,6 +4739,9 @@ class BigqueryClient(object):
         request.
       source_dataset_reference: An optional ApiClientHelper.DatasetReference
         that will be the source of this linked dataset.
+      max_time_travel_hours: Optional. Define the max time travel in hours. The
+        value can be from 48 to 168 hours (2 to 7 days). The default value is
+        168 hours if this is not set.
 
     Raises:
       TypeError: if reference is not an ApiClientHelper.DatasetReference
@@ -4676,6 +4783,8 @@ class BigqueryClient(object):
               ['datasetReference']
       }
 
+    if max_time_travel_hours is not None:
+      body['maxTimeTravelHours'] = max_time_travel_hours
 
     try:
       self.apiclient.datasets().insert(
@@ -5075,7 +5184,8 @@ class BigqueryClient(object):
       require_partition_filter=None,
       etag=None,
       encryption_configuration=None,
-      location=None
+      location=None,
+      autodetect_schema=False
   ):
     """Updates a table.
 
@@ -5113,6 +5223,7 @@ class BigqueryClient(object):
       etag: if set, checks that etag in the existing table matches.
       encryption_configuration: Updates the encryption configuration.
       location: an optional location for which to update tables or views.
+      autodetect_schema: an optional flag to perform autodetect of file schema.
 
     Raises:
       TypeError: if reference is not a TableReference.
@@ -5178,6 +5289,7 @@ class BigqueryClient(object):
       table['location'] = location
 
     request = self.apiclient.tables().patch(
+        autodetect_schema=autodetect_schema,
         body=table,
         **dict(reference))
 
@@ -5241,6 +5353,8 @@ class BigqueryClient(object):
       request.headers['If-Match'] = etag if etag else updated_model['etag']
     request.execute()
 
+  # TODO(b/191712821): add tags modification here. For the Preview Tags are not
+  # modifiable using BigQuery UI/Cli, only using ResourceManager.
   def UpdateDataset(
       self,
       reference,
@@ -5253,6 +5367,8 @@ class BigqueryClient(object):
       label_keys_to_remove=None,
       etag=None,
       default_kms_key=None
+      ,
+      max_time_travel_hours=None
   ):
     """Updates a dataset.
 
@@ -5273,6 +5389,9 @@ class BigqueryClient(object):
       default_kms_key: An optional kms dey that will apply to all newly created
         tables in the dataset, if no explicit key is supplied in the creating
         request.
+      max_time_travel_hours: Optional. Define the max time travel in hours. The
+        value can be from 48 to 168 hours (2 to 7 days). The default value is
+        168 hours if this is not set.
 
     Raises:
       TypeError: if reference is not a DatasetReference.
@@ -5313,6 +5432,8 @@ class BigqueryClient(object):
     if label_keys_to_remove:
       for label_key in label_keys_to_remove:
         dataset['labels'].pop(label_key, None)
+    if max_time_travel_hours is not None:
+      dataset['maxTimeTravelHours'] = max_time_travel_hours
 
     request = self.apiclient.datasets().update(body=dataset, **dict(reference))
 
@@ -6291,6 +6412,7 @@ class BigqueryClient(object):
       allow_quoted_newlines=None,
       source_format=None,
       allow_jagged_rows=None,
+      preserve_ascii_control_characters=None,
       ignore_unknown_values=None,
       projection_fields=None,
       autodetect=None,
@@ -6335,6 +6457,8 @@ class BigqueryClient(object):
         "DATASTORE_BACKUP", or "NEWLINE_DELIMITED_JSON".
       allow_jagged_rows: Optional. Whether to allow missing trailing optional
         columns in CSV import data.
+      preserve_ascii_control_characters: Optional. Whether to preserve embedded
+        Ascii Control characters in CSV import data.
       ignore_unknown_values: Optional. Whether to allow extra, unrecognized
         values in CSV or JSON data.
       projection_fields: Optional. If sourceFormat is set to "DATASTORE_BACKUP",
@@ -6422,6 +6546,7 @@ class BigqueryClient(object):
         source_format=source_format,
         allow_quoted_newlines=allow_quoted_newlines,
         allow_jagged_rows=allow_jagged_rows,
+        preserve_ascii_control_characters=preserve_ascii_control_characters,
         ignore_unknown_values=ignore_unknown_values,
         projection_fields=projection_fields,
         schema_update_options=schema_update_options,

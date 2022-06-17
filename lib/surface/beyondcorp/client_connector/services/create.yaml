@@ -3,19 +3,17 @@
     brief: Create a new BeyondCorp client connector service.
     description: Create a new BeyondCorp client connector service.
     examples: |
-      The following command creates a client connector service with ID ``my-resource'' in the default user project and location us-central1:
+      The following command creates a client connector service with ID ``my-service-resource'' using ingress/egress config provided:
 
-        $ {command} my-resource \
-            --location=us-central1 --project=${PROJECT_ID} --ingress-config=${INGRESS_CONFIG}\
-            --egress-peered-vpc=${PEERED_VPC}
+        $ {command} my-service-resource --location=us-central1 --project=consumer-project-id \
+        --ingress-config='{"transportProtocol":"TCP", "destinationRoutes":[{"address":"196.0.0.1", "netmask":"255.255.255.0"}]}' \
+        --egress-peered-vpc='{"networkVpc":"projects/consumer-project-id/global/networks/my-vpc-network"}'
 
-      The following command creates a client connector service with ID ``my-resource'' with configuration from file:
+      The following command creates a client connector service with ID ``my-service-resource'' with configuration from file:
 
-        $ {command} my-resource \
-            --project=${PROJECT_ID} \
-            --location=us-central1 \
-            --config-from-file=${CONFIG_FILE_PATH} \
-            --async
+        $ {command} my-service-resource \
+        --project=consumer-project-id --location=us-central1 \
+        --config-from-file=/path/to/file/configJson.txt
 
   request:
     collection: beyondcorp.projects.locations.clientConnectorServices

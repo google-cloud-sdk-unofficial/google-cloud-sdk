@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Delete a backup.
@@ -15,8 +15,7 @@
     collection: gkebackup.projects.locations.backupPlans.backups
     modify_request_hooks:
     - googlecloudsdk.command_lib.container.backup_restore.hooks:AddForceToDeleteRequest
-    ALPHA:
-      api_version: v1
+    api_version: v1
 
   arguments:
     resource:
@@ -34,6 +33,5 @@
 
   async:
     collection: gkebackup.projects.locations.operations
-    ALPHA:
-      api_version: v1alpha1
-      extract_resource_result: false
+    api_version: v1alpha1
+    extract_resource_result: false

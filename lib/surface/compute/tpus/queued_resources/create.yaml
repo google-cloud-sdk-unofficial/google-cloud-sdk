@@ -40,18 +40,11 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:runtime_version
 
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:best_effort
-      hidden: true
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:guaranteed
-      hidden: true
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:min_duration
       hidden: true
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reserved
-      hidden: true
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:valid_after_duration
-      hidden: true
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:valid_after_time
-      hidden: true
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:valid_until_duration
-      hidden: true
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:valid_until_time
-      hidden: true

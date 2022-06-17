@@ -296,6 +296,7 @@ class BetaDeploy(Deploy):
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddSandboxArg(managed_group)
     flags.AddSessionAffinityFlag(managed_group)
+    flags.AddDescriptionFlag(managed_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -309,9 +310,12 @@ class AlphaDeploy(Deploy):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddSandboxArg(managed_group)
-    flags.AddConfidentialFlag(managed_group)
     flags.AddCustomAudiencesFlag(managed_group)
     flags.AddSessionAffinityFlag(managed_group)
     flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
+    flags.AddVpcNetworkFlags(managed_group)
+    flags.AddVpcSubnetFlags(managed_group)
+    flags.AddVpcNetworkTagsFlags(managed_group)
+    flags.AddDescriptionFlag(managed_group)
 
 AlphaDeploy.__doc__ = Deploy.__doc__

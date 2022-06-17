@@ -4,9 +4,9 @@
     brief: Delete a BeyondCorp client connector service.
     description: Delete a BeyondCorp client connector service.
     examples: |
-      To delete a client connector service with ID ``my-resource'' run:
+      To delete a client connector service with ID ``my-service-resource'' run:
 
-      $ {command} my-resource --project=${PROJECT_ID} --location=${LOCATION_ID}
+      $ {command} my-service-resource --project=consumer-project-id --location=us-central1
 
   async:
     collection: beyondcorp.projects.locations.operations

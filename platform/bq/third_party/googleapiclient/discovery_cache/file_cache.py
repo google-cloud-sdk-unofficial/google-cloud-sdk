@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright 2014 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +27,6 @@ import json
 import logging
 import os
 import tempfile
-import threading
 
 try:
     from oauth2client.contrib.locked_file import LockedFile
@@ -59,8 +57,8 @@ def _to_timestamp(date):
         # See also: https://docs.python.org/2/library/datetime.html
         delta = date - EPOCH
         return (
-            delta.microseconds + (delta.seconds + delta.days * 24 * 3600) * 10 ** 6
-        ) / 10 ** 6
+            delta.microseconds + (delta.seconds + delta.days * 24 * 3600) * 10**6
+        ) / 10**6
 
 
 def _read_or_initialize_cache(f):
@@ -83,9 +81,9 @@ class Cache(base.Cache):
     def __init__(self, max_age):
         """Constructor.
 
-      Args:
-        max_age: Cache expiration in seconds.
-      """
+        Args:
+          max_age: Cache expiration in seconds.
+        """
         self._max_age = max_age
         self._file = os.path.join(tempfile.gettempdir(), FILENAME)
         f = LockedFile(self._file, "a+", "r")

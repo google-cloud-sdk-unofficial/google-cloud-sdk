@@ -51,14 +51,16 @@ class Deploy(base.CacheCommand):
           """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
     flags.AddWorkflowResourceArg(parser, verb='to deploy')
     flags.AddSourceArg(parser)
     flags.AddDescriptionArg(parser)
     flags.AddServiceAccountArg(parser)
+    if cls.ReleaseTrack() is base.ReleaseTrack.GA:
+      flags.AddKmsKeyFlags(parser)
 
   def Run(self, args):
     """Deploy a workflow."""
@@ -69,7 +71,8 @@ class Deploy(base.CacheCommand):
     validate.WorkflowNameConforms(workflow_ref.Name())
     old_workflow = client.Get(workflow_ref)
     first_deployment = old_workflow is None
-    workflow, updated_fields = client.BuildWorkflowFromArgs(args)
+    workflow, updated_fields = client.BuildWorkflowFromArgs(args,
+                                                            self.ReleaseTrack())
     validate.ValidateWorkflow(workflow, first_deployment=first_deployment)
     if first_deployment:
       operation = client.Create(workflow_ref, workflow)
@@ -82,5 +85,3 @@ class Deploy(base.CacheCommand):
       return operation
     else:
       return client.WaitForOperation(operation, workflow_ref)
-
-

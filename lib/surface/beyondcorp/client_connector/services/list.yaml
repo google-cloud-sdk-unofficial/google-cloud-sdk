@@ -8,12 +8,11 @@
     examples: |
       To list all client connector services in a project for location us-central1 in table form, run:
 
-        $ {command} --project=${PROJECT_ID} --location=us-central1
+        $ {command} --project=consumer-project-id --location=us-central1
 
       To list all client connector service in a project for location us-central1 with limit=1, run:
 
-        $ {command} --project=${PROJECT_ID} \
-            --location=${LOCATION_ID} --limit=1
+        $ {command} --project=consumer-project-id --location=us-central1 --limit=1
 
   request:
     collection: beyondcorp.projects.locations.clientConnectorServices

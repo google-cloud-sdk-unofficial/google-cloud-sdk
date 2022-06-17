@@ -34,6 +34,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import progress_tracker
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.Command):
   """Update a Cloud Run Job."""
 
@@ -128,3 +129,15 @@ class Update(base.Command):
       log.status.Print(
           messages_util.GetRunJobMessage(self.ReleaseTrack(), job.name))
       return job
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaUpdate(Update):
+  """Update a Cloud Run Job."""
+
+  @staticmethod
+  def Args(parser):
+    Update.CommonArgs(parser)
+    flags.AddVpcNetworkFlags(parser, resource_kind='Job')
+    flags.AddVpcSubnetFlags(parser, resource_kind='Job')
+    flags.AddVpcNetworkTagsFlags(parser, resource_kind='Job')

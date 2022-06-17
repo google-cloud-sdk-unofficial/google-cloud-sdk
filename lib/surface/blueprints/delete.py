@@ -65,9 +65,13 @@ class CreateAlpha(base.DeleteCommand):
     deployment_name = deployment_ref.Name()
     deployment_full_name = deployment_ref.RelativeName()
 
+    message = ('You are about to delete deployment [{0}]\n'
+               'Warning: If this is a clusterless deployment, the deployment '
+               'will be deleted, but the underlying resources will be '
+               'orphaned. Resource deletion and pruning is not implemented.')
+
     console_io.PromptContinue(
-        message='You are about to delete deployment [{0}]'.format(
-            deployment_name),
+        message=message.format(deployment_name),
         cancel_on_no=True)
 
     op = blueprints_util.DeleteDeployment(deployment_full_name)
