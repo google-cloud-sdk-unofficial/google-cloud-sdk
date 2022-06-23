@@ -243,6 +243,7 @@ def AddBaseArgs(parser, is_alpha=False):
   flags.AddEnablePointInTimeRecovery(parser)
   flags.AddNetwork(parser)
   flags.AddMaintenanceVersion(parser)
+  flags.AddSqlServerAudit(parser)
 
 
 def AddBetaArgs(parser):
@@ -253,9 +254,9 @@ def AddBetaArgs(parser):
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
 
 
-def AddAlphaArgs(parser):
+def AddAlphaArgs(unused_parser):
   """Adds alpha args and flags to the parser."""
-  flags.AddSqlServerAudit(parser)
+  pass
 
 
 def RunBasePatchCommand(args, release_track):

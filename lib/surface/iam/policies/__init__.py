@@ -22,8 +22,17 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class PoliciesGA(base.Group):
+  """Manage IAM policies.
+
+  Commands for managing Google Cloud IAM policies.
+  """
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Policies(base.Group):
+class PoliciesAlphaBeta(base.Group):
   """Manage IAM policies.
 
   Commands for managing Google Cloud IAM policies.

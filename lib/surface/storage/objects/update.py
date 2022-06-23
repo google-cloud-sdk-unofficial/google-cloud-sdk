@@ -59,6 +59,15 @@ class Update(base.Command):
         action=arg_parsers.StoreTrueFalseAction,
         help='Enables or disables an event-based hold on objects.')
     parser.add_argument(
+        '-p',
+        '--preserve-acl',
+        action='store_true',
+        default=True,
+        help='Preserves ACLs when copying in the cloud. This feature is'
+        ' supported for only Google Cloud Storage and requires OWNER access'
+        " to all copied objects. To use the destination bucket's default policy"
+        ' (necessary for uniform bucket-level access), use --no-preserve-acl.')
+    parser.add_argument(
         '--temporary-hold',
         action=arg_parsers.StoreTrueFalseAction,
         help='Enables or disables a temporary hold on objects.')

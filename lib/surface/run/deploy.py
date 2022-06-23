@@ -312,6 +312,7 @@ class AlphaDeploy(Deploy):
     flags.AddSandboxArg(managed_group)
     flags.AddCustomAudiencesFlag(managed_group)
     flags.AddSessionAffinityFlag(managed_group)
+    flags.AddStartupCpuBoostFlag(managed_group)
     flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
     flags.AddVpcNetworkFlags(managed_group)
     flags.AddVpcSubnetFlags(managed_group)

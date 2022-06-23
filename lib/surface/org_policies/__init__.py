@@ -51,6 +51,10 @@ class OrgPolicies(base.Group):
 
 
 @base.Hidden
+@base.Deprecate(
+    is_removed=True,
+    error=('This command group has been removed. '
+           'Please use `gcloud org-policies COMMAND` instead.'))
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class OrgPoliciesALPHA(OrgPolicies):
   """Create and manage Organization Policies."""

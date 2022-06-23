@@ -81,15 +81,6 @@ class GetCredentials(base.Command):
               If not specified, defaults to `global`.
             """),
       )
-      # TODO(b/232891240) Do not promote this flag past alpha.
-      parser.add_argument(
-          '--fleetgke',
-          action='store_true',
-          hidden=True,
-          help=textwrap.dedent("""\
-              Whether the registered cluster is a GKE cluster.
-            """),
-      )
 
   def Run(self, args):
     container_util.CheckKubectlInstalled()
@@ -114,17 +105,17 @@ class GetCredentials(base.Command):
                                             args.MEMBERSHIP)
 
     resource_type = 'memberships'
-    fleetgke = getattr(args, 'fleetgke', False)
-    # TODO(b/232276553): Blocklist prober project upon promotion of this flag to
-    # default behavior.
-    if fleetgke:
-      if not (hasattr(membership, 'endpoint') and
-              hasattr(membership.endpoint, 'gkeCluster') and
-              membership.endpoint.gkeCluster):
-        raise memberships_errors.InvalidFlagValueError(
-            "Flag '--fleetgke' provided, but cluster is not a registered GKE cluster."
-        )
-      resource_type = 'gkeMemberships'
+    # Change the URL for registered GKE clusters
+    if self.ReleaseTrack() is base.ReleaseTrack.ALPHA or self.ReleaseTrack(
+    ) is base.ReleaseTrack.BETA:
+      # Probers use GKE clusters to emulate attached clusters, and so must be
+      # exempt.
+      if project_id == 'gkeconnect-prober':
+        pass
+      if (hasattr(membership, 'endpoint') and
+          hasattr(membership.endpoint, 'gkeCluster') and
+          membership.endpoint.gkeCluster):
+        resource_type = 'gkeMemberships'
 
     self.GenerateKubeconfig(
         util.GetConnectGatewayServiceName(hub_endpoint_override, location),

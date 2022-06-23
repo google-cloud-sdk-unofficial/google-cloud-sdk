@@ -26,7 +26,8 @@ from googlecloudsdk.command_lib.iam import policies_flags as flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete a policy on the given attachment point with the given name."""
 
@@ -64,7 +65,11 @@ class Delete(base.DeleteCommand):
       if release_track == base.ReleaseTrack.ALPHA and isinstance(
           get_result, messages.GoogleIamV2alphaPolicy):
         etag = get_result.etag
-      elif isinstance(get_result, messages.GoogleIamV2betaPolicy):
+      elif release_track == base.ReleaseTrack.BETA and isinstance(
+          get_result, messages.GoogleIamV2betaPolicy):
+        etag = get_result.etag
+      elif release_track == base.ReleaseTrack.GA and isinstance(
+          get_result, messages.GoogleIamV2Policy):
         etag = get_result.etag
       else:
         raise Exception('Unexpected response from policies client.')

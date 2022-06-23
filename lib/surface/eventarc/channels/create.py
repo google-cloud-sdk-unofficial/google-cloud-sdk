@@ -32,6 +32,10 @@ _DETAILED_HELP = {
         To create a new channel ``my-channel'' in location ``us-central1'', run:
 
           $ {command} my-channel --location=us-central1
+
+        To create a new channel ``my-channel'' in location ``us-central1'' with a Cloud KMS CryptoKey, run:
+
+          $ {command} my-channel --location=us-central1 --crypto-key=projects/PROJECT_ID/locations/KMS_LOCATION/keyRings/KEYRING/cryptoKeys/KEY
         """,
 }
 
@@ -45,6 +49,7 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     flags.AddCreateChannelArg(parser)
+    flags.AddCryptoKeyArg(parser, with_clear=False, hidden=True)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -57,8 +62,9 @@ class Create(base.CreateCommand):
     log.debug('Creating channel {} for project {} in location {}'.format(
         channel_ref.Name(), project_name, location_name))
     provider_ref = args.CONCEPTS.provider.Parse()
-    operation = client.Create(channel_ref,
-                              client.BuildChannel(channel_ref, provider_ref))
+    operation = client.Create(
+        channel_ref,
+        client.BuildChannel(channel_ref, provider_ref, args.crypto_key))
 
     if args.async_:
       return operation

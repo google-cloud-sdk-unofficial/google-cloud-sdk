@@ -43,7 +43,13 @@ class ListUsableSubnets(base.ListCommand):
           network.segment(-1):label=NETWORK,
           subnetwork.segment(-1):label=SUBNET,
           ipCidrRange:label=RANGE,
-          secondaryIpRanges.map().format("{0} {1}", rangeName, ipCidrRange).list(separator="\n"):label=SECONDARY_RANGES
+          secondaryIpRanges.map().format("{0} {1}", rangeName, ipCidrRange).list(separator="\n"):label=SECONDARY_RANGES,
+          purpose,
+          role,
+          stackType,
+          ipv6AccessType,
+          internalIpv6Prefix,
+          externalIpv6Prefix
         )""")
 
     if cls.enable_service_project:

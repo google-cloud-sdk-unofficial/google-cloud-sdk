@@ -42,5 +42,6 @@
         backup:label=BACKUP,
         state:label=STATE,
         type:label=TYPE,
+        description:label=DESCRIPTION,
         createTime.date()
       )

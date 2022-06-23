@@ -87,7 +87,7 @@ class Create(base.CreateCommand):
     instance_ref = args.CONCEPTS.instance.Parse()
     client = filestore_client.FilestoreClient(self._API_VERSION)
     tier = instances_flags.GetTierArg(
-        client.messages, self._API_VERSION).GetEnumForChoice(args.tier)
+        client.messages).GetEnumForChoice(args.tier)
     labels = labels_util.ParseCreateArgs(args,
                                          client.messages.Instance.LabelsValue)
     try:
@@ -226,7 +226,7 @@ class CreateAlpha(Create):
     instance_ref = args.CONCEPTS.instance.Parse()
     client = filestore_client.FilestoreClient(self._API_VERSION)
     tier = instances_flags.GetTierArg(
-        client.messages, self._API_VERSION).GetEnumForChoice(args.tier)
+        client.messages).GetEnumForChoice(args.tier)
     labels = labels_util.ParseCreateArgs(args,
                                          client.messages.Instance.LabelsValue)
     try:

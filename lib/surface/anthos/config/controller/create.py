@@ -33,6 +33,8 @@ from googlecloudsdk.core import resources
 class Create(base.CreateCommand):
   """Create Anthos Config Controller instances."""
 
+  _API_VERSION = "v1"
+
   detailed_help = {
       "DESCRIPTION":
           "Create an Anthos Config Controller instance.",
@@ -45,7 +47,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    utils.AddInstanceResourceArg(parser)
+    utils.AddInstanceResourceArg(parser, Create._API_VERSION)
     flags.AddAsyncFlag(parser)
     flags.AddMasterIPv4CIDRBlock(parser)
     flags.AddNetworkFlag(parser)
@@ -58,7 +60,7 @@ class Create(base.CreateCommand):
     flags.AddUsePrivateEndpoint(parser)
 
   def Run(self, args):
-    client = krmapihosting_api.GetClientInstance()
+    client = krmapihosting_api.GetClientInstance(api_version=self._API_VERSION)
 
     instance_ref = args.CONCEPTS.name.Parse()
 
@@ -77,7 +79,8 @@ class Create(base.CreateCommand):
       return op_ref
 
     op_resource = resources.REGISTRY.ParseRelativeName(
-        op_ref.name, collection="krmapihosting.projects.locations.operations")
+        op_ref.name, collection="krmapihosting.projects.locations.operations",
+        api_version=self._API_VERSION)
     poller = waiter.CloudOperationPoller(client.projects_locations_krmApiHosts,
                                          client.projects_locations_operations)
     result = waiter.WaitFor(
@@ -98,9 +101,11 @@ class Create(base.CreateCommand):
 class CreateAlpha(Create):
   """Create Anthos Config Controller instances."""
 
+  _API_VERSION = "v1alpha1"
+
   @staticmethod
   def Args(parser):
-    utils.AddInstanceResourceArg(parser)
+    utils.AddInstanceResourceArg(parser, CreateAlpha._API_VERSION)
     flags.AddAsyncFlag(parser)
     flags.AddMasterIPv4CIDRBlock(parser)
     flags.AddNetworkFlag(parser)
@@ -112,3 +117,4 @@ class CreateAlpha(Create):
     flags.AddServicesNamedRange(parser)
     flags.AddFullManagement(parser)
     flags.AddUsePrivateEndpoint(parser)
+    flags.AddExperimentalFeaturesFlag(parser)

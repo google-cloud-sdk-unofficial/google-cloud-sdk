@@ -262,7 +262,7 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class StartIapTunnelBeta(StartIapTunnel):
   """Starts an IAP TCP forwarding tunnel (Beta)."""
-  enable_host_based_flags = False
+  enable_host_based_flags = True
   # Make the Compute Engine instances.Get call only after failing to connect.
   fetch_instance_after_connect_error = True
 

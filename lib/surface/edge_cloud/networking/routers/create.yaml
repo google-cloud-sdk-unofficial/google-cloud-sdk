@@ -36,6 +36,9 @@
         The locally assigned BGP ASN.
     - arg_name: keepalive-interval-in-seconds
       api_field: router.bgp.keepaliveIntervalInSeconds
+      type: int
+      default: 20
+      hidden: true
       help_text: |
         The interval in seconds between BGP keepalive messages that are sent to the peer.
     - arg_name: description

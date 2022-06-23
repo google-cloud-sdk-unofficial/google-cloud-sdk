@@ -1,4 +1,4 @@
-release_tracks: [ALPHA, BETA]
+release_tracks: [ALPHA, BETA, GA]
 help_text:
   brief: |
     Delete a Cloud IAP OAuth client.
@@ -7,11 +7,11 @@ help_text:
   examples: |
     To delete a Cloud OAuth client named CLIENT for the current project and brand BRAND, run:
 
-        $ gcloud beta iap oauth-clients delete CLIENT --brand=BRAND
+        $ {command} CLIENT --brand=BRAND
 
     To delete a Cloud OAuth client named CLIENT for a specific project PROJECT_ID and brand BRAND, run:
 
-        $ gcloud beta iap oauth-clients delete CLIENT --brand=BRAND --project=PROJECT_ID
+        $ {command} CLIENT --brand=BRAND --project=PROJECT_ID
 
 request:
   collection: iap.projects.brands.identityAwareProxyClients

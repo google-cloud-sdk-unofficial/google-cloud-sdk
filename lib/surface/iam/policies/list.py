@@ -25,7 +25,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import policies_flags as flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List the policies on the given attachment point."""
 

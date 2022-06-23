@@ -155,6 +155,7 @@ def AddBaseArgs(parser, is_alpha=False):
       flag_overrides=kms_flag_overrides)
   flags.AddEnablePointInTimeRecovery(parser)
   flags.AddNetwork(parser)
+  flags.AddSqlServerAudit(parser)
 
 
 def AddBetaArgs(parser):
@@ -166,9 +167,9 @@ def AddBetaArgs(parser):
   labels_util.AddCreateLabelsFlags(parser)
 
 
-def AddAlphaArgs(parser):
+def AddAlphaArgs(unused_parser):
   """Declare alpha flags for this command parser."""
-  flags.AddSqlServerAudit(parser)
+  pass
 
 
 def RunBaseCreateCommand(args, release_track):
@@ -316,7 +317,7 @@ def RunBaseCreateCommand(args, release_track):
     operations.OperationsV1Beta4.WaitForOperation(
         sql_client,
         operation_ref,
-        'Creating Cloud SQL instance',
+        'Creating Cloud SQL instance for ' + args.database_version,
         # TODO(b/138403566): Remove the override once we improve creation times.
         max_wait_seconds=680)
 

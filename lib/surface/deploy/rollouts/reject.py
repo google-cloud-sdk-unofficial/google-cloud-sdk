@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.clouddeploy import rollout
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
 from googlecloudsdk.command_lib.deploy import resource_args
 from googlecloudsdk.core.console import console_io
 
@@ -48,6 +49,11 @@ class Reject(base.CreateCommand):
 
   def Run(self, args):
     rollout_ref = args.CONCEPTS.rollout.Parse()
+    pipeline_ref = rollout_ref.Parent().Parent()
+    failed_activity_msg = 'Cannot reject rollout {}.'.format(
+        rollout_ref.RelativeName())
+    delivery_pipeline_util.ThrowIfPipelineSuspended(pipeline_ref,
+                                                    failed_activity_msg)
 
     console_io.PromptContinue(
         message='Rejecting rollout {}.\n'.format(rollout_ref.RelativeName()),

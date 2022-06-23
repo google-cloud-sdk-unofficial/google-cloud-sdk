@@ -26,7 +26,8 @@ from googlecloudsdk.command_lib.iam import policies_flags as flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a policy on the given attachment point with the given name."""
 
@@ -63,12 +64,20 @@ class Create(base.CreateCommand):
               policyId=args.policy_id,
               googleIamV2alphaPolicy=apis.ParseYamlOrJsonPolicyFile(
                   args.policy_file, messages.GoogleIamV2alphaPolicy)))
-    else:
+    elif release_track == base.ReleaseTrack.BETA:
       result = client.policies.CreatePolicy(
           messages.IamPoliciesCreatePolicyRequest(
               parent='policies/{}/{}'.format(attachment_point, args.kind),
               policyId=args.policy_id,
               googleIamV2betaPolicy=apis.ParseYamlOrJsonPolicyFile(
                   args.policy_file, messages.GoogleIamV2betaPolicy)))
+    else:
+      # GA
+      result = client.policies.CreatePolicy(
+          messages.IamPoliciesCreatePolicyRequest(
+              parent='policies/{}/{}'.format(attachment_point, args.kind),
+              policyId=args.policy_id,
+              googleIamV2Policy=apis.ParseYamlOrJsonPolicyFile(
+                  args.policy_file, messages.GoogleIamV2Policy)))
     log.CreatedResource(result.name, 'denyPolicy', is_async=True)
     return result

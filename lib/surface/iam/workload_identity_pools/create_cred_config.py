@@ -26,7 +26,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.iam.byoid_utilities import cred_config
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class CreateCredConfig(base.CreateCommand):
   """Create a configuration file for generated credentials.
 
@@ -45,6 +44,10 @@ class CreateCredConfig(base.CreateCommand):
 
             $ {command} projects/$PROJECT_NUMBER/locations/$REGION/workloadIdentityPools/$WORKLOAD_POOL_ID/providers/$PROVIDER_ID --service-account=$EMAIL --credential-source-url=$URL_FOR_OIDC_TOKEN --credential-source-headers=Key=Value --output-file=credentials.json
 
+          To create an executable-source credential configuration for your project, run the following command:
+
+            $ {command} locations/$REGION/workforcePools/$WORKFORCE_POOL_ID/providers/$PROVIDER_ID --executable-command=$EXECUTABLE_COMMAND --executable-timeout-millis=30000 --executable-output-file=$CACHE_FILE --output-file=credentials.json
+
           To create an AWS-based credential configuration for your project, run:
 
             $ {command} projects/$PROJECT_NUMBER/locations/$REGION/workloadIdentityPools/$WORKLOAD_POOL_ID/providers/$PROVIDER_ID --service-account=$EMAIL --aws --enable-imdsv2 --output-file=credentials.json
@@ -56,8 +59,6 @@ class CreateCredConfig(base.CreateCommand):
           To use the resulting file for any of these commands, set the GOOGLE_APPLICATION_CREDENTIALS environment variable to point to the generated file
           """),
   }
-
-  _support_pluggable_auth = False
 
   @classmethod
   def Args(cls, parser):
@@ -71,12 +72,10 @@ class CreateCredConfig(base.CreateCommand):
         help='Location of the credential source file.')
     credential_types.add_argument(
         '--credential-source-url', help='URL to obtain the credential from.')
-    if cls._support_pluggable_auth:
-      credential_types.add_argument(
-          '--executable-command',
-          hidden=True,
-          help='The full command to run to retrieve the credential. Must be an absolute path for the program.'
-      )
+    credential_types.add_argument(
+        '--executable-command',
+        help='The full command to run to retrieve the credential. Must be an absolute path for the program including arguments.'
+    )
     credential_types.add_argument('--aws', help='Use AWS.', action='store_true')
     credential_types.add_argument(
         '--azure', help='Use Azure.', action='store_true')
@@ -110,25 +109,21 @@ class CreateCredConfig(base.CreateCommand):
         help='Adds the AWS IMDSv2 session token Url to the credential source to enforce the AWS IMDSv2 flow.',
         action='store_true')
 
-    if cls._support_pluggable_auth:
-      executable_args = parser.add_group(
-          hidden=True,
-          help='Arguments for an executable type credential source.')
+    executable_args = parser.add_group(
+        help='Arguments for an executable type credential source.')
 
-      executable_args.add_argument(
-          '--executable-timeout-millis',
-          hidden=True,
-          type=arg_parsers.Duration(
-              default_unit='ms',
-              lower_bound='5s',
-              upper_bound='120s',
-              parsed_unit='ms'),
-          help='The timeout duration in milliseconds for waiting for the executable to finish.'
-      )
-      executable_args.add_argument(
-          '--executable-output-file',
-          hidden=True,
-          help='The absolute path to the file storing the executable response.')
+    executable_args.add_argument(
+        '--executable-timeout-millis',
+        type=arg_parsers.Duration(
+            default_unit='ms',
+            lower_bound='5s',
+            upper_bound='120s',
+            parsed_unit='ms'),
+        help='The timeout duration in milliseconds for waiting for the executable to finish.'
+    )
+    executable_args.add_argument(
+        '--executable-output-file',
+        help='The absolute path to the file storing the executable response.')
 
   def _ValidateArgs(self, args):
     if args.enable_imdsv2 and not args.aws:
@@ -139,14 +134,3 @@ class CreateCredConfig(base.CreateCommand):
     self._ValidateArgs(args)
     cred_config.create_credential_config(
         args, cred_config.ConfigType.WORKLOAD_IDENTITY_POOLS)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateCredConfigAlpha(CreateCredConfig):
-  """Create a configuration file for generated credentials.
-
-  This command creates a configuration file to allow access to authenticated
-  Google Cloud actions from a variety of external accounts.
-  """
-
-  _support_pluggable_auth = True

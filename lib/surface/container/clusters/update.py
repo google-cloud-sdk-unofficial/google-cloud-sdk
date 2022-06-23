@@ -347,6 +347,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableImageStreamingFlag(group)
     flags.AddClusterDNSFlags(group, hidden=False)
     flags.AddEnableServiceExternalIPs(group)
+    flags.AddEnablePrivateEndpoint(group)
     flags.AddEnableGoogleCloudAccess(group)
 
   def ParseUpdateOptions(self, args, locations):
@@ -410,6 +411,7 @@ class Update(base.UpdateCommand):
           cancel_on_no=True)
     opts.enable_service_externalips = args.enable_service_externalips
     opts.enable_identity_service = args.enable_identity_service
+    opts.enable_private_endpoint = args.enable_private_endpoint
     opts.enable_google_cloud_access = args.enable_google_cloud_access
     return opts
 
@@ -842,6 +844,7 @@ class UpdateBeta(Update):
     flags.AddWorkloadConfigAuditFlag(group)
     flags.AddPodAutoscalingDirectMetricsOptInFlag(group)
     flags.AddWorkloadVulnScanningFlag(group)
+    flags.AddEnablePrivateEndpoint(group)
     flags.AddEnableGoogleCloudAccess(group)
 
   def ParseUpdateOptions(self, args, locations):
@@ -934,6 +937,7 @@ class UpdateBeta(Update):
     opts.enable_workload_config_audit = args.enable_workload_config_audit
     opts.pod_autoscaling_direct_metrics_opt_in = args.pod_autoscaling_direct_metrics_opt_in
     opts.enable_workload_vulnerability_scanning = args.enable_workload_vulnerability_scanning
+    opts.enable_private_endpoint = args.enable_private_endpoint
     opts.enable_google_cloud_access = args.enable_google_cloud_access
     return opts
 
@@ -1019,6 +1023,7 @@ class UpdateAlpha(Update):
     flags.AddWorkloadConfigAuditFlag(group)
     flags.AddPodAutoscalingDirectMetricsOptInFlag(group)
     flags.AddWorkloadVulnScanningFlag(group)
+    flags.AddEnablePrivateEndpoint(group)
     flags.AddEnableGoogleCloudAccess(group)
 
   def ParseUpdateOptions(self, args, locations):
@@ -1107,5 +1112,6 @@ class UpdateAlpha(Update):
     opts.enable_workload_config_audit = args.enable_workload_config_audit
     opts.pod_autoscaling_direct_metrics_opt_in = args.pod_autoscaling_direct_metrics_opt_in
     opts.enable_workload_vulnerability_scanning = args.enable_workload_vulnerability_scanning
+    opts.enable_private_endpoint = args.enable_private_endpoint
     opts.enable_google_cloud_access = args.enable_google_cloud_access
     return opts

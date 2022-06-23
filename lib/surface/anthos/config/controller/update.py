@@ -29,6 +29,7 @@ from googlecloudsdk.command_lib.anthos.config.controller import utils
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
   """Update an Anthos Config Controller instance."""
+  _API_VERSION = "v1alpha1"
 
   detailed_help = {
       "DESCRIPTION":
@@ -45,13 +46,14 @@ class Update(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    utils.AddInstanceResourceArg(parser)
+    utils.AddInstanceResourceArg(parser, Update._API_VERSION)
     flags.AddAsyncFlag(parser)
     flags.AddManBlockFlag(parser)
 
   def Run(self, args):
-    op = util.GetClientInstance().projects_locations_krmApiHosts.Patch(
-        utils.PatchRequest(args))
+    op = util.GetClientInstance(
+        api_version=self._API_VERSION).projects_locations_krmApiHosts.Patch(
+            utils.PatchRequest(args))
 
     if args.async_:
       return utils.AsyncLog(op)
