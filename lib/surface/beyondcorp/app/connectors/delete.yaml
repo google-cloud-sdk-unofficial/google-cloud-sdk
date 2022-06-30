@@ -12,9 +12,14 @@
     collection: beyondcorp.projects.locations.operations
 
   request:
-    collection: beyondcorp.projects.locations.connectors
+    collection: beyondcorp.projects.locations.appConnectors
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.beyondcorp.app.connectors.hooks:PrintMessageInResponse
 
   arguments:
     resource:
+      arg_name: connector
+      spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:appconnector
       help_text: The Beyondcorp connector you want to delete.
-      spec: !REF googlecloudsdk.command_lib.beyondcorp.app.resources:connector

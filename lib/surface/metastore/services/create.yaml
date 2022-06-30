@@ -36,6 +36,9 @@
       - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfig
     GA:
       api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.metastore.services.util:GenerateNetworkConfigFromSubnetList
+      - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfigForV1
     collection: metastore.projects.locations.services
 
   arguments:
@@ -228,17 +231,6 @@
         mutex: true
         params:
         - arg_name: network
-          release_tracks: [GA]
-          api_field: service.network
-          processor: googlecloudsdk.command_lib.metastore.parsers:ParseNetwork
-          help_text: |
-            The name of the network on which the service can be accessed.
-            This can be the network's ID, fully-qualified URL, or relative name in
-            the form `projects/{project_id}/global/networks/{network}`.
-            If unspecified, the "default" network will be used.
-          default: default
-        - arg_name: network
-          release_tracks: [ALPHA, BETA]
           api_field: service.network
           processor: googlecloudsdk.command_lib.metastore.parsers:ParseNetwork
           help_text: |
@@ -248,14 +240,12 @@
             If "network", "consumer-subnetworks" and "network-config" are unspecified,
             the "default" network will be used.
         - arg_name: consumer-subnetworks
-          release_tracks: [ALPHA, BETA]
           help_text: |
             The list of subnetworks from which the service can be accessed.
             This can be the subnetwork's ID, fully-qualified URL, or relative name in
             the form `projects/{project_id}/regions/{region_id}/subnetworks/{subnetwork}`.
           type: "arg_list"
         - arg_name: network-config-from-file
-          release_tracks: [ALPHA, BETA]
           api_field: service.networkConfig
           type: "googlecloudsdk.calliope.arg_parsers:YAMLFileContents:"
           help_text: |

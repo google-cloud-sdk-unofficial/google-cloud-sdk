@@ -28,7 +28,8 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a certificate.
 

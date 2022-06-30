@@ -25,6 +25,19 @@ from googlecloudsdk.command_lib.functions.v2.add_iam_policy_binding import comma
 from googlecloudsdk.command_lib.iam import iam_util
 
 
+def _CommonArgs(parser, track):
+  """Registers flags for this command.
+
+  Args:
+    parser: The argparse parser.
+    track: base.ReleaseTrack, calliope release track.
+  """
+  flags.AddFunctionResourceArg(parser, 'to add IAM policy binding for')
+  iam_util.AddArgsForAddIamPolicyBinding(parser)
+
+  flags.AddGen2Flag(parser, track)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddIamPolicyBinding(base.Command):
   """Adds an IAM policy binding for a Google Cloud Function."""
@@ -42,45 +55,13 @@ class AddIamPolicyBinding(base.Command):
   }
 
   @staticmethod
-  def Args(parser, track=base.ReleaseTrack.GA):
+  def Args(parser):
     """Registers flags for this command.
 
     Args:
       parser: The argparse parser.
-      track: base.ReleaseTrack, calliope release track.
     """
-    flags.AddFunctionResourceArg(parser, 'to add IAM policy binding for')
-    iam_util.AddArgsForAddIamPolicyBinding(parser)
-
-  def Run(self, args):
-    """Runs the command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The updated IAM policy.
-    """
-    return command_v1.Run(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class AddIamPolicyBindingBeta(AddIamPolicyBinding):
-  """Adds an IAM policy binding for a Google Cloud Function."""
-
-  @staticmethod
-  def Args(parser, track=base.ReleaseTrack.BETA):
-    """Registers flags for this command.
-
-    Args:
-      parser: The argparse parser.
-      track: base.ReleaseTrack, calliope release track.
-    """
-    AddIamPolicyBinding.Args(parser, track)
-
-    # Add additional flags for GCFv2.
-    flags.AddGen2Flag(parser, track)
+    _CommonArgs(parser, base.ReleaseTrack.GA)
 
   def Run(self, args):
     """Runs the command.
@@ -98,16 +79,29 @@ class AddIamPolicyBindingBeta(AddIamPolicyBinding):
       return command_v1.Run(args)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class AddIamPolicyBindingBeta(AddIamPolicyBinding):
+  """Adds an IAM policy binding for a Google Cloud Function."""
+
+  @staticmethod
+  def Args(parser):
+    """Registers flags for this command.
+
+    Args:
+      parser: The argparse parser.
+    """
+    _CommonArgs(parser, base.ReleaseTrack.BETA)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AddIamPolicyBindingAlpha(AddIamPolicyBindingBeta):
   """Adds an IAM policy binding for a Google Cloud Function."""
 
   @staticmethod
-  def Args(parser, track=base.ReleaseTrack.ALPHA):
+  def Args(parser):
     """Registers flags for this command.
 
     Args:
       parser: The argparse parser.
-      track: base.ReleaseTrack, calliope release track.
     """
-    AddIamPolicyBindingBeta.Args(parser, track)
+    _CommonArgs(parser, base.ReleaseTrack.ALPHA)

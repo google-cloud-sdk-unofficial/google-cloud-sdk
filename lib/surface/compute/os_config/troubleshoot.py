@@ -66,7 +66,10 @@ class Troubleshoot(base.Command):
 
     instance_ref = self._ResolveInstance(holder, compute_client, args)
     log.Print(
-        troubleshooter.Troubleshoot(instance_ref, self.ReleaseTrack().prefix))
+        troubleshooter.Troubleshoot(
+            compute_client,
+            instance_ref,
+            self.ReleaseTrack().prefix))
     return
 
 Troubleshoot.detailed_help = {
@@ -78,7 +81,9 @@ Troubleshoot.detailed_help = {
     *{command}* troubleshoots issues with the setup of VM Manager on a specified
     VM instance
 
-    Troubleshoot checks if the OS Config API is enabled for the instance.
+    The troubleshoot command investigates the following issues with VM Manager:\n
+    + Checks if the OS Config API is enabled in the project.\n
+    + Checks if the required metadata is set up correctly in the VM instance.
     """,
     'EXAMPLES': """
     To troubleshoot an instance named `my-instance` in zone `us-west1-a`, run

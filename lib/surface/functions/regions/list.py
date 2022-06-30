@@ -26,6 +26,12 @@ from googlecloudsdk.command_lib.functions.v1.regions.list import command as comm
 from googlecloudsdk.command_lib.functions.v2.regions.list import command as command_v2
 
 
+def _CommonArgs(parser, track):
+  parser.display_info.AddFormat('table(name)')
+  parser.display_info.AddUriFunc(flags.GetLocationsUri)
+  flags.AddGen2Flag(parser, track)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List regions available to Google Cloud Functions."""
@@ -33,8 +39,7 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    parser.display_info.AddFormat('table(name)')
-    parser.display_info.AddUriFunc(flags.GetLocationsUri)
+    _CommonArgs(parser, base.ReleaseTrack.GA)
 
   @util.CatchHTTPErrorRaiseHTTPException
   def Run(self, args):
@@ -45,35 +50,7 @@ class List(base.ListCommand):
         command invocation.
 
     Returns:
-      List of cloudfunctions_v1.Location or cloudfunctions_v2alpha.Location:
-        List of GCF regions
-
-    Raises:
-      FunctionsError: If the user doesn't confirm on prompt.
-    """
-    return command_v1.Run(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(List):
-  """List regions available to Google Cloud Functions."""
-
-  @staticmethod
-  def Args(parser, track=base.ReleaseTrack.BETA):
-    """Registers flags for this command."""
-    List.Args(parser)
-    flags.AddGen2Flag(parser, track)
-
-  @util.CatchHTTPErrorRaiseHTTPException
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      List of cloudfunctions_v1.Location or cloudfunctions_v2alpha.Location:
+      List of cloudfunctions_v1.Location or cloudfunctions_v2.Location:
         List of GCF regions
 
     Raises:
@@ -85,11 +62,21 @@ class ListBeta(List):
       return command_v1.Run(args)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """List regions available to Google Cloud Functions."""
+
+  @staticmethod
+  def Args(parser):
+    """Registers flags for this command."""
+    _CommonArgs(parser, base.ReleaseTrack.BETA)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(ListBeta):
   """List regions available to Google Cloud Functions."""
 
   @staticmethod
-  def Args(parser, track=base.ReleaseTrack.ALPHA):
+  def Args(parser):
     """Registers flags for this command."""
-    ListBeta.Args(parser, track)
+    _CommonArgs(parser, base.ReleaseTrack.ALPHA)

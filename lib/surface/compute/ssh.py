@@ -489,10 +489,8 @@ def _DetailedHelp(version):
 takes care of authentication and the translation of the
 instance name into an IP address.
 
-Note, this command does not work when connecting to Windows VMs. To
-connect to a Windows instance, including connecting using a command-line method,
-refer to this guide:
-https://cloud.google.com/compute/docs/instances/connecting-to-windows
+To use SSH to connect to a Windows VM, refer to this guide:
+https://cloud.google.com/compute/docs/connect/windows-ssh
 
 The default network comes preconfigured to allow ssh access to
 all VMs. If the default network was edited, or if not using the

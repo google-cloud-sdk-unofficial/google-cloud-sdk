@@ -18,7 +18,12 @@
             --format=json(displayName, name, state, principalInfo.serviceAccount.email,createTime,updateTime,labels)
 
   request:
-    collection: beyondcorp.projects.locations.connectors
+    collection: beyondcorp.projects.locations.appConnectors
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.beyondcorp.app.connectors.hooks:PrintMessageInResponse
+
   arguments:
     resource:
       help_text: |

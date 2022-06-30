@@ -34,7 +34,7 @@ $ {command} my-cluster --location=us-west1 --cluster-version=CLUSTER_VERSION --c
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update an Anthos cluster on Azure."""
 
@@ -46,6 +46,7 @@ class Update(base.UpdateCommand):
     flags.AddClusterVersion(parser, required=False)
     flags.AddVMSize(parser)
     flags.AddAdminUsers(parser, create=False)
+    flags.AddSSHPublicKey(parser, required=False)
     flags.AddValidateOnly(parser, 'update of the cluster')
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(constants.AZURE_CLUSTERS_FORMAT)
@@ -64,3 +65,14 @@ class Update(base.UpdateCommand):
           args=args,
           message=message,
           kind=constants.AZURE_CLUSTER_KIND)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update an Anthos cluster on Azure."""
+
+  @staticmethod
+  def Args(parser, track=base.ReleaseTrack.ALPHA):
+    """Registers alpha track flags for this command."""
+    Update.Args(parser)
+    flags.AddLogging(parser)

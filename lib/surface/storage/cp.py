@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import name_expansion
+from googlecloudsdk.command_lib.storage import plurality_checkable_iterator
 from googlecloudsdk.command_lib.storage import stdin_iterator
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import user_request_args_factory
@@ -283,14 +284,17 @@ class Cp(base.Command):
       fields_scope = cloud_api.FieldsScope.FULL
     else:
       fields_scope = cloud_api.FieldsScope.NO_ACL
+
+    raw_source_string_iterator = (
+        plurality_checkable_iterator.PluralityCheckableIterator(
+            stdin_iterator.get_urls_iterable(
+                args.source, args.read_paths_from_stdin)))
     source_expansion_iterator = name_expansion.NameExpansionIterator(
-        stdin_iterator.get_urls_iterable(args.source,
-                                         args.read_paths_from_stdin),
+        raw_source_string_iterator,
         all_versions=args.all_versions,
         fields_scope=fields_scope,
         ignore_symlinks=args.ignore_symlinks,
         recursion_requested=args.recursive)
-    task_status_queue = task_graph_executor.multiprocessing_context.Queue()
 
     raw_destination_url = storage_url.storage_url_from_string(args.destination)
     if (isinstance(raw_destination_url, storage_url.FileUrl) and
@@ -299,11 +303,13 @@ class Cp(base.Command):
           'Cannot specify storage class for a non-cloud destination: {}'.format(
               raw_destination_url))
 
+    configured_for_parallelism = (
+        properties.VALUES.storage.process_count.GetInt() != 1 or
+        properties.VALUES.storage.thread_count.GetInt() != 1)
+
     parallelizable = True
     shared_stream = None
-    if (args.all_versions and
-        (properties.VALUES.storage.process_count.GetInt() != 1 or
-         properties.VALUES.storage.thread_count.GetInt() != 1)):
+    if (args.all_versions and configured_for_parallelism):
       log.warning(
           'Using sequential instead of parallel task execution. This will'
           ' maintain version ordering when copying all versions of an object.')
@@ -315,9 +321,22 @@ class Cp(base.Command):
       parallelizable = False
       shared_stream = files.BinaryFileWriter(args.destination)
 
+    # Only the first url needs to be checked since multiple sources aren't
+    # allowed with stdin.
+    first_raw_source_string = raw_source_string_iterator.peek()
+    first_source_url = storage_url.storage_url_from_string(
+        first_raw_source_string)
+    if (isinstance(first_source_url, storage_url.FileUrl) and
+        first_source_url.is_stream and configured_for_parallelism):
+      log.warning(
+          'Using sequential instead of parallel task execution to'
+          ' transfer from stdin.')
+      parallelizable = False
+
     user_request_args = (
         user_request_args_factory.get_user_request_args_from_command_args(
             args, metadata_type=user_request_args_factory.MetadataType.OBJECT))
+    task_status_queue = task_graph_executor.multiprocessing_context.Queue()
     task_iterator = copy_task_iterator.CopyTaskIterator(
         source_expansion_iterator,
         args.destination,

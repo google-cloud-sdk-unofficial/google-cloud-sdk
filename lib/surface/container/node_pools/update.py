@@ -34,7 +34,7 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """\
-        To turn on node auto repair in "node-pool-1" in the cluster
+        To turn on node autoupgrade in "node-pool-1" in the cluster
         "sample-cluster", run:
 
           $ {command} node-pool-1 --cluster=sample-cluster --enable-autoupgrade
@@ -81,12 +81,12 @@ class Update(base.UpdateCommand):
     flags.AddWorkloadMetadataFlag(group)
 
     upgrade_settings_group = group.add_argument_group('Upgrade settings')
-    flags.AddEnableRollingUpdateFlag(upgrade_settings_group)
+    flags.AddEnableSurgeUpgradeFlag(upgrade_settings_group)
     flags.AddSurgeUpgradeFlag(upgrade_settings_group, for_node_pool=True)
     flags.AddMaxUnavailableUpgradeFlag(
         upgrade_settings_group, for_node_pool=True)
 
-    flags.AddEnableBlueGreenUpdateFlag(upgrade_settings_group)
+    flags.AddEnableBlueGreenUpgradeFlag(upgrade_settings_group)
     flags.AddStandardRolloutPolicyFlag(
         upgrade_settings_group, for_node_pool=True)
     flags.AddNodePoolSoakDurationFlag(
@@ -127,8 +127,8 @@ class Update(base.UpdateCommand):
         enable_image_streaming=args.enable_image_streaming,
         network_performance_config=args.network_performance_configs,
         enable_confidential_nodes=args.enable_confidential_nodes,
-        enable_blue_green_update=args.enable_blue_green_update,
-        enable_rolling_update=args.enable_rolling_update,
+        enable_blue_green_upgrade=args.enable_blue_green_upgrade,
+        enable_surge_upgrade=args.enable_surge_upgrade,
         node_pool_soak_duration=args.node_pool_soak_duration,
         standard_rollout_policy=args.standard_rollout_policy,
         enable_private_nodes=args.enable_private_nodes)
@@ -216,12 +216,12 @@ class UpdateBeta(Update):
     flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=False)
 
     upgrade_settings_group = group.add_argument_group('Upgrade settings')
-    flags.AddEnableRollingUpdateFlag(upgrade_settings_group)
+    flags.AddEnableSurgeUpgradeFlag(upgrade_settings_group)
     flags.AddSurgeUpgradeFlag(upgrade_settings_group, for_node_pool=True)
     flags.AddMaxUnavailableUpgradeFlag(
         upgrade_settings_group, for_node_pool=True)
 
-    flags.AddEnableBlueGreenUpdateFlag(upgrade_settings_group)
+    flags.AddEnableBlueGreenUpgradeFlag(upgrade_settings_group)
     flags.AddStandardRolloutPolicyFlag(
         upgrade_settings_group, for_node_pool=True)
     flags.AddNodePoolSoakDurationFlag(
@@ -269,8 +269,8 @@ class UpdateBeta(Update):
         enable_gcfs=args.enable_gcfs,
         gvnic=args.enable_gvnic,
         enable_image_streaming=args.enable_image_streaming,
-        enable_blue_green_update=args.enable_blue_green_update,
-        enable_rolling_update=args.enable_rolling_update,
+        enable_blue_green_upgrade=args.enable_blue_green_upgrade,
+        enable_surge_upgrade=args.enable_surge_upgrade,
         node_pool_soak_duration=args.node_pool_soak_duration,
         standard_rollout_policy=args.standard_rollout_policy,
         network_performance_config=args.network_performance_configs,
@@ -296,12 +296,12 @@ class UpdateAlpha(Update):
     flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=False)
 
     upgrade_settings_group = group.add_argument_group('Upgrade settings')
-    flags.AddEnableRollingUpdateFlag(upgrade_settings_group)
+    flags.AddEnableSurgeUpgradeFlag(upgrade_settings_group)
     flags.AddSurgeUpgradeFlag(upgrade_settings_group, for_node_pool=True)
     flags.AddMaxUnavailableUpgradeFlag(
         upgrade_settings_group, for_node_pool=True)
 
-    flags.AddEnableBlueGreenUpdateFlag(upgrade_settings_group)
+    flags.AddEnableBlueGreenUpgradeFlag(upgrade_settings_group)
     flags.AddStandardRolloutPolicyFlag(
         upgrade_settings_group, for_node_pool=True)
     flags.AddNodePoolSoakDurationFlag(
@@ -349,8 +349,8 @@ class UpdateAlpha(Update):
         enable_gcfs=args.enable_gcfs,
         gvnic=args.enable_gvnic,
         enable_image_streaming=args.enable_image_streaming,
-        enable_blue_green_update=args.enable_blue_green_update,
-        enable_rolling_update=args.enable_rolling_update,
+        enable_blue_green_upgrade=args.enable_blue_green_upgrade,
+        enable_surge_upgrade=args.enable_surge_upgrade,
         node_pool_soak_duration=args.node_pool_soak_duration,
         standard_rollout_policy=args.standard_rollout_policy,
         network_performance_config=args.network_performance_configs,

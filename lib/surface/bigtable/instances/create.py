@@ -155,10 +155,17 @@ class CreateInstance(base.CreateCommand):
         if ('autoscaling-min-nodes' in cluster_dict or
             'autoscaling-max-nodes' in cluster_dict or
             'autoscaling-cpu-target' in cluster_dict):
+          # autoscaling-storage-target is optional.
+          if 'autoscaling-storage-target' in cluster_dict:
+            storage_target = cluster_dict['autoscaling-storage-target']
+          else:
+            storage_target = None
+
           cluster.clusterConfig = clusters.BuildClusterConfig(
               autoscaling_min=cluster_dict['autoscaling-min-nodes'],
               autoscaling_max=cluster_dict['autoscaling-max-nodes'],
-              autoscaling_cpu_target=cluster_dict['autoscaling-cpu-target'])
+              autoscaling_cpu_target=cluster_dict['autoscaling-cpu-target'],
+              autoscaling_storage_target=storage_target)
           # serveNodes must be set to None or 0 to enable Autoscaling.
           # go/cbt-autoscaler-api
           cluster.serveNodes = None
@@ -187,15 +194,16 @@ class CreateInstance(base.CreateCommand):
     for cluster_dict in cluster_config:
       if ('autoscaling-min-nodes' in cluster_dict or
           'autoscaling-max-nodes' in cluster_dict or
-          'autoscaling-cpu-target' in cluster_dict):
+          'autoscaling-cpu-target' in cluster_dict or
+          'autoscaling-storage-target' in cluster_dict):
         # nodes and autoscaling args are mutual exclusive.
         if 'nodes' in cluster_dict:
           raise exceptions.InvalidArgumentException(
               '--autoscaling-min-nodes --autoscaling-max-nodes '
-              '--autoscaling-cpu-target',
-              'At most one of nodes | autoscaling-cpu-target '
-              'autoscaling-max-nodes autoscaling-min-nodes may be specified '
-              'in --cluster-config')
+              '--autoscaling-cpu-target --autoscaling-storage-target',
+              'At most one of nodes | autoscaling-min-nodes '
+              'autoscaling-max-nodes autoscaling-cpu-target '
+              'autoscaling-storage-target may be specified in --cluster-config')
         # To enable autoscaling, all related args must be set.
         if ('autoscaling-min-nodes' not in cluster_dict or
             'autoscaling-max-nodes' not in cluster_dict or

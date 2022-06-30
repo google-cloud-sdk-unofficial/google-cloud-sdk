@@ -170,8 +170,8 @@ def ParseCreateNodePoolOptionsBase(args):
       enable_image_streaming=args.enable_image_streaming,
       spot=args.spot,
       enable_confidential_nodes=args.enable_confidential_nodes,
-      enable_blue_green_update=args.enable_blue_green_update,
-      enable_rolling_update=args.enable_rolling_update,
+      enable_blue_green_upgrade=args.enable_blue_green_upgrade,
+      enable_surge_upgrade=args.enable_surge_upgrade,
       node_pool_soak_duration=args.node_pool_soak_duration,
       standard_rollout_policy=args.standard_rollout_policy,
       enable_private_nodes=args.enable_private_nodes)
@@ -214,8 +214,8 @@ class Create(base.CreateCommand):
     flags.AddSpotFlag(parser, for_node_pool=True)
     flags.AddEnableConfidentialNodesFlag(parser, for_node_pool=True)
     flags.AddNetworkPerformanceConfigFlags(parser, hidden=False)
-    flags.AddEnableRollingUpdateFlag(parser)
-    flags.AddEnableBlueGreenUpdateFlag(parser)
+    flags.AddEnableSurgeUpgradeFlag(parser)
+    flags.AddEnableBlueGreenUpgradeFlag(parser)
     flags.AddStandardRolloutPolicyFlag(parser)
     flags.AddNodePoolSoakDurationFlag(parser)
     flags.AddNodePoolEnablePrivateNodes(parser)
@@ -313,8 +313,8 @@ class CreateBeta(Create):
     flags.AddEnableGvnicFlag(parser)
     flags.AddSpotFlag(parser, for_node_pool=True)
     flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=False)
-    flags.AddEnableRollingUpdateFlag(parser)
-    flags.AddEnableBlueGreenUpdateFlag(parser)
+    flags.AddEnableSurgeUpgradeFlag(parser)
+    flags.AddEnableBlueGreenUpgradeFlag(parser)
     flags.AddStandardRolloutPolicyFlag(parser)
     flags.AddNodePoolSoakDurationFlag(parser)
     flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)
@@ -336,8 +336,8 @@ class CreateBeta(Create):
     ops.spot = args.spot
     ops.placement_type = args.placement_type
     ops.location_policy = args.location_policy
-    ops.enable_blue_green_update = args.enable_blue_green_update
-    ops.enable_rolling_update = args.enable_rolling_update
+    ops.enable_blue_green_upgrade = args.enable_blue_green_upgrade
+    ops.enable_surge_upgrade = args.enable_surge_upgrade
     ops.node_pool_soak_duration = args.node_pool_soak_duration
     ops.standard_rollout_policy = args.standard_rollout_policy
     ops.maintenance_interval = args.maintenance_interval
@@ -367,8 +367,8 @@ class CreateAlpha(Create):
     ops.spot = args.spot
     ops.placement_type = args.placement_type
     ops.location_policy = args.location_policy
-    ops.enable_blue_green_update = args.enable_blue_green_update
-    ops.enable_rolling_update = args.enable_rolling_update
+    ops.enable_blue_green_upgrade = args.enable_blue_green_upgrade
+    ops.enable_surge_upgrade = args.enable_surge_upgrade
     ops.node_pool_soak_duration = args.node_pool_soak_duration
     ops.standard_rollout_policy = args.standard_rollout_policy
     ops.maintenance_interval = args.maintenance_interval
@@ -412,8 +412,8 @@ class CreateAlpha(Create):
     flags.AddEnableGvnicFlag(parser)
     flags.AddSpotFlag(parser, for_node_pool=True)
     flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=False)
-    flags.AddEnableRollingUpdateFlag(parser)
-    flags.AddEnableBlueGreenUpdateFlag(parser)
+    flags.AddEnableSurgeUpgradeFlag(parser)
+    flags.AddEnableBlueGreenUpgradeFlag(parser)
     flags.AddStandardRolloutPolicyFlag(parser, for_node_pool=True)
     flags.AddNodePoolSoakDurationFlag(parser, for_node_pool=True)
     flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)

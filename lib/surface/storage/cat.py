@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 import textwrap
 
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
 
@@ -57,6 +58,7 @@ class Cat(base.Command):
       The following command outputs the last 5 bytes of file.txt:
 
         $ {command} -r -5 gs://my-bucket/file.txt
+
       """,
   }
 
@@ -65,22 +67,27 @@ class Cat(base.Command):
     parser.add_argument('url', nargs='+', help='The url of objects to list.')
     parser.add_argument(
         '-d',
-        '--description',
+        '--display-url',
         action='store_true',
-        help='Prints a short description before each object.')
+        help='Prints the header before each object.')
     parser.add_argument(
         '-r',
         '--range',
+        type=arg_parsers.Range.Parse,
         help=textwrap.dedent("""\
             Causes gcloud storage to output just the specified byte range of
-            the object. Ranges are can be of these forms:
-            `start-end` (e.g., `-r 256-5939`), `start-` (e.g., `-r 256-`),
-            `-numbytes` (e.g., `-r -5`)
+            the object. In a case where "start" = 'x', and "end" = 'y',
+            ranges take the form:
+            `x-y` (e.g., `-r 256-5939`), `x-` (e.g., `-r 256-`),
+            `-y` (e.g., `-r -5`)
 
-            When offsets start at 0, start-end means to return bytes start
-            through end (inclusive), start- means to return bytes start through
-            the end of the object, and -numbytes means to return the last
-            numbytes of the object."""))
+            When offsets start at 0, x-y means to return bytes x
+            through y (inclusive), x- means to return bytes x through
+            the end of the object, and -y changes the role of y.
+            If -y is present, then it returns the last y bytes of the object.
+
+            If the bytes are out of range of the object,
+            then nothing is printed"""))
 
   def Run(self, args):
     raise NotImplementedError

@@ -61,6 +61,8 @@ class TerraformToolsTfplanToCaiOperation(
         output_path,
         '--verbosity',
         verbosity,
+        '--user-agent',
+        metrics.GetUserAgent(),
     ]
     if project:
       args += ['--project', project]
@@ -134,8 +136,6 @@ class Vet(base.Command):
             GetFreshAccessToken(account=properties.VALUES.core.account.Get()),
         'USE_STRUCTURED_LOGGING':
             'true',
-        'GOOGLE_TERRAFORM_VALIDATOR_USERAGENT_EXTENSION':
-            metrics.GetUserAgent(),
     }
 
     with files.TemporaryDirectory() as tempdir:

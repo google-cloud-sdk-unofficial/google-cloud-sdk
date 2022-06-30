@@ -28,7 +28,6 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Copy(base.Command):
   """Copy a Cloud Bigtable backup to a new backup."""
   detailed_help = {

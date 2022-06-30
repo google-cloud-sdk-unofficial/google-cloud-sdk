@@ -105,7 +105,8 @@ class Submit(base.Command):
         '--provisioning-model',
         choices={
             'STANDARD': 'The STANDARD VM provisioning model',
-            'SPOT': 'The SPOT VM provisioning model'
+            'SPOT': """The SPOT VM provisioning model. Ideal for fault-tolerant
+            workloads that can withstand preemption."""
         },
         type=arg_utils.ChoiceToEnumName,
         help=(

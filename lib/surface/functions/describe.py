@@ -26,6 +26,12 @@ from googlecloudsdk.command_lib.functions.v1.describe import command as command_
 from googlecloudsdk.command_lib.functions.v2.describe import command as command_v2
 
 
+def _CommonArgs(parser, track):
+  """Registers flags for this command."""
+  flags.AddFunctionResourceArg(parser, 'to describe')
+  flags.AddGen2Flag(parser, track)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Display details of a Google Cloud Function."""
@@ -33,7 +39,7 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    flags.AddFunctionResourceArg(parser, 'to describe')
+    _CommonArgs(parser, base.ReleaseTrack.GA)
 
   @util.CatchHTTPErrorRaiseHTTPException
   def Run(self, args):
@@ -46,31 +52,19 @@ class Describe(base.DescribeCommand):
     Returns:
       The specified function with its description and configured filter.
     """
-    return command_v1.Run(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
-  """Display details of a Google Cloud Function."""
-
-  @staticmethod
-  def CommonArgs(parser, track):
-    """Register flags for this command."""
-    Describe.Args(parser)
-
-    # Add additional flags for GCFv2
-    flags.AddGen2Flag(parser, track)
-
-  @staticmethod
-  def Args(parser):
-    DescribeBeta.CommonArgs(parser, base.ReleaseTrack.BETA)
-
-  @util.CatchHTTPErrorRaiseHTTPException
-  def Run(self, args):
     if flags.ShouldUseGen2():
       return command_v2.Run(args, self.ReleaseTrack())
     else:
       return command_v1.Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+  """Display details of a Google Cloud Function."""
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser, base.ReleaseTrack.BETA)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -80,4 +74,4 @@ class DescribeAlpha(DescribeBeta):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    DescribeBeta.CommonArgs(parser, base.ReleaseTrack.ALPHA)
+    _CommonArgs(parser, base.ReleaseTrack.ALPHA)

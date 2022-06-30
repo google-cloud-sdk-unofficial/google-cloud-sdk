@@ -846,6 +846,7 @@ class UpdateBeta(Update):
     flags.AddWorkloadVulnScanningFlag(group)
     flags.AddEnablePrivateEndpoint(group)
     flags.AddEnableGoogleCloudAccess(group)
+    flags.AddCostManagementConfigFlag(group, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -939,6 +940,7 @@ class UpdateBeta(Update):
     opts.enable_workload_vulnerability_scanning = args.enable_workload_vulnerability_scanning
     opts.enable_private_endpoint = args.enable_private_endpoint
     opts.enable_google_cloud_access = args.enable_google_cloud_access
+    opts.enable_cost_allocation = args.enable_cost_allocation
     return opts
 
 
@@ -1073,7 +1075,7 @@ class UpdateAlpha(Update):
     opts.identity_provider = args.identity_provider
     opts.enable_shielded_nodes = args.enable_shielded_nodes
     opts.disable_default_snat = args.disable_default_snat
-    opts.enable_cost_management = args.enable_cost_management
+    opts.enable_cost_allocation = args.enable_cost_allocation
     opts.enable_master_global_access = args.enable_master_global_access
     opts.notification_config = args.notification_config
     opts.kubernetes_objects_changes_target = args.kubernetes_objects_changes_target

@@ -50,7 +50,6 @@ def _CommonArgs(parser):
   resource_args.AddReleaseResourceArg(parser, positional=True, required=True)
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Abandon(base.CreateCommand):

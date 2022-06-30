@@ -49,7 +49,7 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     flags.AddCreateChannelArg(parser)
-    flags.AddCryptoKeyArg(parser, with_clear=False, hidden=True)
+    flags.AddCryptoKeyArg(parser, with_clear=False, hidden=False)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

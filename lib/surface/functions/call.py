@@ -43,6 +43,17 @@ _DETAILED_HELP = {
 }
 
 
+def _CommonArgs(parser, track):
+  """Registers flags for this command."""
+  flags.AddFunctionResourceArg(parser, 'to execute')
+  data_flag_group = parser.add_mutually_exclusive_group()
+  flags.AddDataFlag(data_flag_group)
+
+  # Flags for GCFv2
+  flags.AddGen2Flag(parser, track)
+  flags.AddCloudEventsFlag(data_flag_group, track)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Call(base.Command):
   """Triggers execution of a Google Cloud Function."""
@@ -52,8 +63,7 @@ class Call(base.Command):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    flags.AddFunctionResourceArg(parser, 'to execute')
-    flags.AddDataFlag(parser)
+    _CommonArgs(parser, base.ReleaseTrack.GA)
 
   @util.CatchHTTPErrorRaiseHTTPException
   def Run(self, args):
@@ -66,31 +76,21 @@ class Call(base.Command):
     Returns:
       Function call results (error or result with execution id)
     """
-    return command_v1.Run(args)
+    if flags.ShouldUseGen2():
+      return command_v2.Run(args, self.ReleaseTrack())
+    else:
+      return command_v1.Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CallBeta(base.Command):
+class CallBeta(Call):
   """Triggers execution of a Google Cloud Function."""
 
   detailed_help = _DETAILED_HELP
 
   @staticmethod
-  def Args(parser, track=base.ReleaseTrack.BETA):
-    """Registers flags for this command."""
-    flags.AddFunctionResourceArg(parser, 'to execute')
-    flags.AddGen2Flag(parser, track)
-
-    # Add additional flags for GCFv2
-    data_flag_group = parser.add_mutually_exclusive_group()
-    flags.AddDataFlag(data_flag_group)
-    flags.AddCloudEventsFlag(data_flag_group, track)
-
-  def Run(self, args):
-    if flags.ShouldUseGen2():
-      return command_v2.Run(args, self.ReleaseTrack())
-    else:
-      return command_v1.Run(args)
+  def Args(parser):
+    _CommonArgs(parser, base.ReleaseTrack.BETA)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -98,5 +98,5 @@ class CallAlpha(CallBeta):
   """Triggers execution of a Google Cloud Function."""
 
   @staticmethod
-  def Args(parser, track=base.ReleaseTrack.ALPHA):
-    CallBeta.Args(parser, track)
+  def Args(parser):
+    _CommonArgs(parser, base.ReleaseTrack.ALPHA)

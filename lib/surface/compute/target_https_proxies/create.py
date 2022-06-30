@@ -145,7 +145,7 @@ class Create(base.CreateCommand):
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
   _include_l7_internal_load_balancing = True
   _traffic_director_security = False
-  _certificate_map = False
+  _certificate_map = True
   _regional_ssl_policies = False
   _list_format = flags.DEFAULT_LIST_FORMAT
 
@@ -215,9 +215,7 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
-  _certificate_map = True
   _regional_ssl_policies = True
-  _list_format = flags.DEFAULT_BETA_LIST_FORMAT
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

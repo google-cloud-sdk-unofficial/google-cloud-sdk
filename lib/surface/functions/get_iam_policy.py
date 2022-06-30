@@ -24,6 +24,12 @@ from googlecloudsdk.command_lib.functions.v1.get_iam_policy import command as co
 from googlecloudsdk.command_lib.functions.v2.get_iam_policy import command as command_v2
 
 
+def _CommonArgs(parser, track):
+  """Registers flags for this command."""
+  flags.AddFunctionResourceArg(parser, 'to get IAM policy for')
+  flags.AddGen2Flag(parser, track)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetIamPolicy(base.ListCommand):
   """Get IAM policy for a Google Cloud Function."""
@@ -42,43 +48,7 @@ class GetIamPolicy(base.ListCommand):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    flags.AddFunctionResourceArg(parser, 'to get IAM policy for')
-
-  def Run(self, args):
-    """Runs the command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The specified function with its description and configured filter.
-    """
-    return command_v1.Run(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class GetIamPolicyBeta(base.ListCommand):
-  """Gets IAM policy for a Google Cloud Function."""
-
-  detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
-          To get the iam policy for `FUNCTION-1` run:
-
-            $ {command} FUNCTION-1
-          """,
-  }
-
-  @staticmethod
-  def Args(parser, track=base.ReleaseTrack.BETA):
-    """Registers flags for this command."""
-    flags.AddFunctionResourceArg(parser, 'to get IAM policy for')
-
-    # Add additional flags for GCFv2
-    flags.AddGen2Flag(parser, track)
+    _CommonArgs(parser, base.ReleaseTrack.GA)
 
   def Run(self, args):
     """Runs the command.
@@ -96,10 +66,20 @@ class GetIamPolicyBeta(base.ListCommand):
       return command_v1.Run(args)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class GetIamPolicyBeta(GetIamPolicy):
+  """Gets IAM policy for a Google Cloud Function."""
+
+  @staticmethod
+  def Args(parser):
+    """Registers flags for this command."""
+    _CommonArgs(parser, base.ReleaseTrack.BETA)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetIamPolicyAlpha(GetIamPolicyBeta):
   """Gets IAM policy for a Google Cloud Function."""
 
   @staticmethod
-  def Args(parser, track=base.ReleaseTrack.ALPHA):
-    GetIamPolicyBeta.Args(parser, track)
+  def Args(parser):
+    _CommonArgs(parser, base.ReleaseTrack.ALPHA)

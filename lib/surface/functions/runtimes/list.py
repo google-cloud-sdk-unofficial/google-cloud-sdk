@@ -23,30 +23,44 @@ from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.command_lib.functions.v2.runtimes.list import command as command_v2
 
 
+def _CommonArgs(parser, track):
+  """Registers flags for this command."""
+  parser.display_info.AddFormat("""
+    table(
+      name,
+      stage,
+      environments()
+    )
+  """)
+  parser.display_info.AddUriFunc(flags.GetLocationsUri)
+
+  flags.AddRegionFlag(
+      parser, help_text='Only show runtimes within the region.')
+
+  flags.AddGen2Flag(parser, track)
+
+
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
   """List runtimes available to Google Cloud Functions."""
 
   @staticmethod
-  def Args(parser, track=base.ReleaseTrack.BETA):
-    """Registers flags for this command."""
-    parser.display_info.AddFormat("""
-      table(
-        name,
-        stage,
-        environments()
-      )
-    """)
-    parser.display_info.AddUriFunc(flags.GetLocationsUri)
-
-    flags.AddRegionFlag(
-        parser, help_text='Only show runtimes within the region.')
-
-    flags.AddGen2Flag(parser, track)
+  def Args(parser):
+    _CommonArgs(parser, base.ReleaseTrack.GA)
 
   def Run(self, args):
     return command_v2.Run(args, self.ReleaseTrack())
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """List runtimes available to Google Cloud Functions."""
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser, base.ReleaseTrack.BETA)
 
 
 @base.Hidden
@@ -57,4 +71,4 @@ class ListAlpha(ListBeta):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    ListBeta.Args(parser, base.ReleaseTrack.ALPHA)
+    _CommonArgs(parser, base.ReleaseTrack.ALPHA)

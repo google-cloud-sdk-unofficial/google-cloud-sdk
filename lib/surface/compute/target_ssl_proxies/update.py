@@ -47,7 +47,7 @@ class Update(base.SilentCommand):
   The target SSL proxy can be associated with at most one SSL policy.
   """
 
-  _certificate_map = False
+  _certificate_map = True
   _regional_ssl_policies = False
 
   BACKEND_SERVICE_ARG = None
@@ -233,5 +233,4 @@ class UpdateAlphaBeta(Update):
   one SSL policy.
   """
 
-  _certificate_map = True
   _regional_ssl_policies = True

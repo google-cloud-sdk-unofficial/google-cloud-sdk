@@ -95,11 +95,13 @@ class CreateCluster(base.CreateCommand):
 
     if (args.autoscaling_min_nodes is not None or
         args.autoscaling_max_nodes is not None or
-        args.autoscaling_cpu_target is not None):
+        args.autoscaling_cpu_target is not None or
+        args.autoscaling_storage_target is not None):
       cluster.clusterConfig = clusters.BuildClusterConfig(
           autoscaling_min=args.autoscaling_min_nodes,
           autoscaling_max=args.autoscaling_max_nodes,
-          autoscaling_cpu_target=args.autoscaling_cpu_target)
+          autoscaling_cpu_target=args.autoscaling_cpu_target,
+          autoscaling_storage_target=args.autoscaling_storage_target)
       # serveNodes must be set to None or 0 to enable Autoscaling.
       # go/cbt-autoscaler-api
       cluster.serveNodes = None

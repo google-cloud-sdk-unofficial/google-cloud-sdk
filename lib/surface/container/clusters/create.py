@@ -311,8 +311,8 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       autoprovisioning_locations=get_default('autoprovisioning_locations'),
       autoprovisioning_max_surge_upgrade=get_default('autoprovisioning_max_surge_upgrade'),
       autoprovisioning_max_unavailable_upgrade=get_default('autoprovisioning_max_unavailable_upgrade'),
-      enable_autoprovisioning_rolling_update=get_default('enable_autoprovisioning_rolling_update'),
-      enable_autoprovisioning_blue_green_update=get_default('enable_autoprovisioning_blue_green_update'),
+      enable_autoprovisioning_surge_upgrade=get_default('enable_autoprovisioning_surge_upgrade'),
+      enable_autoprovisioning_blue_green_upgrade=get_default('enable_autoprovisioning_blue_green_upgrade'),
       autoprovisioning_standard_rollout_policy=get_default('autoprovisioning_standard_rollout_policy'),
       autoprovisioning_node_pool_soak_duration=get_default('autoprovisioning_node_pool_soak_duration'),
       enable_autoprovisioning_autorepair=get_default('enable_autoprovisioning_autorepair'),
@@ -613,6 +613,8 @@ flags_to_add = {
             flags.AddClusterDNSFlags,
         'clusterversion':
             flags.AddClusterVersionFlag,
+        'costmanagementconfig':
+            flags.AddCostManagementConfigFlag,
         'placementtype':
             flags.AddPlacementTypeFlag,
         'confidentialnodes':
@@ -1244,6 +1246,7 @@ class CreateBeta(Create):
         'pod_autoscaling_direct_metrics_opt_in')
     ops.enable_workload_vulnerability_scanning = get_default(
         'enable_workload_vulnerability_scanning')
+    ops.enable_cost_allocation = get_default('enable_cost_allocation')
     return ops
 
 
@@ -1295,7 +1298,7 @@ class CreateAlpha(Create):
     ops.linux_sysctls = get_default('linux_sysctls')
     ops.disable_default_snat = get_default('disable_default_snat')
     ops.system_config_from_file = get_default('system_config_from_file')
-    ops.enable_cost_management = get_default('enable_cost_management')
+    ops.enable_cost_allocation = get_default('enable_cost_allocation')
     ops.enable_logging_monitoring_system_only = \
         get_default('enable_logging_monitoring_system_only')
     ops.datapath_provider = get_default('datapath_provider')

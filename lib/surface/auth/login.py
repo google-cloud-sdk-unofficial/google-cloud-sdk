@@ -121,7 +121,6 @@ def ExtractAndValidateAccount(account, creds):
   return web_flow_account
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Login(base.Command):
   """Authorize gcloud to access the Cloud Platform with Google user credentials.
 
@@ -224,16 +223,6 @@ class Login(base.Command):
 
   def Run(self, args):
     """Run the authentication command."""
-    if not args.launch_browser:
-      log.warning(
-          'The login flow that you are using with the '
-          '--no-launch-browser flag will be updated by July 12, 2022 to '
-          'address a security issue. No immediate action is required '
-          'to continue using this flag, but be sure to upgrade your '
-          'gcloud installation by running `gcloud components update` '
-          'between July 12, 2022 and August 2, 2022.\n'
-      )
-
     if args.cred_file:
       cred_config = auth_util.GetCredentialsConfigFromFile(args.cred_file)
     else:
@@ -255,14 +244,13 @@ class Login(base.Command):
       return LoginAs(args.account, creds, args.project, args.activate,
                      args.brief, args.update_adc, args.add_quota_project_to_adc)
 
-    redirect_uri = 'https://sdk.cloud.google.com/authcode.html' if self._remote_login_with_auth_proxy and not args.launch_browser else None
+    redirect_uri = 'https://sdk.cloud.google.com/authcode.html' if not args.launch_browser else None
     # No valid creds, do the web flow.
     creds = auth_util.DoInstalledAppBrowserFlowGoogleAuth(
         scopes,
         no_launch_browser=not args.launch_browser,
         no_browser=args.no_browser,
         remote_bootstrap=args.remote_bootstrap,
-        remote_login_with_auth_proxy=self._remote_login_with_auth_proxy,
         redirect_uri=redirect_uri)
     if not creds:
       return
@@ -271,56 +259,6 @@ class Login(base.Command):
     c_store.Store(creds, account, scopes)
     return LoginAs(account, creds, args.project, args.activate, args.brief,
                    args.update_adc, args.add_quota_project_to_adc)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class LoginAlpha(Login):
-  """Authorize gcloud to access the Cloud Platform with Google user credentials.
-
-  Obtains access credentials for your user account via a web-based authorization
-  flow. When this command completes successfully, it sets the active account
-  in the current configuration to the account specified. If no configuration
-  exists, it creates a configuration named default.
-
-  If valid credentials for an account are already available from a prior
-  authorization, the account is set to active without rerunning the flow.
-
-  Use `gcloud auth list` to view credentialed accounts.
-
-  If you'd rather authorize without a web browser but still interact with
-  the command line, use the `--no-browser` flag. To authorize without
-  a web browser and non-interactively, create a service account with the
-  appropriate scopes using the
-  [Google Cloud Console](https://console.cloud.google.com) and use
-  `gcloud auth activate-service-account` with the corresponding JSON key file.
-
-  In addition to Google user credentials, authorization using workload identity
-  federation or service account keys is also supported.
-
-  For authorization with external accounts (workload identity pools) or
-  service accounts, the `--cred-file` flag must be specified with the path
-  to the workload identity credential configuration file or service account key
-  file (JSON).
-  Login with workload identity federation is also supported in gsutil
-  and this command is the recommended way of using external accounts.
-  For more information on workload identity federation, see:
-  [](https://cloud.google.com/iam/docs/workload-identity-federation).
-
-  For more information on authorization and credential types, see:
-  [](https://cloud.google.com/sdk/docs/authorizing).
-
-  ## EXAMPLES
-
-  To obtain access credentials for your user account, run:
-
-    $ {command}
-
-  To obtain access credentials using workload identity federation, run:
-
-    $ {command} --cred-file=/path/to/workload/configuration/file
-  """
-
-  _remote_login_with_auth_proxy = True
 
 
 def LoginWithCredFileConfig(cred_config, scopes, project, activate, brief,

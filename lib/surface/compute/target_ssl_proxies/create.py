@@ -45,7 +45,7 @@ class Create(base.CreateCommand):
   target SSL proxy can be associated with at most one SSL policy.
   """
 
-  _certificate_map = False
+  _certificate_map = True
   _regional_ssl_policies = False
   _list_format = flags.DEFAULT_LIST_FORMAT
 
@@ -169,6 +169,4 @@ class CreateAlphaBeta(Create):
   policy.
   """
 
-  _certificate_map = True
   _regional_ssl_policies = True
-  _list_format = flags.DEFAULT_BETA_LIST_FORMAT

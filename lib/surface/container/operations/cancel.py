@@ -32,7 +32,6 @@ CANCEL_OPERATION_MESSAGE = (
     'check if the operation has been canceled successfully.')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Cancel(base.Command):
   """Cancel an operation."""
 

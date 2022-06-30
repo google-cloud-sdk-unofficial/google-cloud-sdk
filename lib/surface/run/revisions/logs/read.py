@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2020 Google LLC. All Rights Reserved.
+# Copyright 2022 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,8 +20,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.logging import common
+from googlecloudsdk.api_lib.logging.formatter import FormatLog
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.logs import read as read_logs_lib
+from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -68,10 +71,25 @@ class Read(base.Command):
 
   def Run(self, args):
     filters = [args.log_filter] if args.IsSpecified('log_filter') else []
-    filters.append('resource.labels.revision_name = "%s"' % args.revision)
+    filters.append('resource.labels.revision_name = %s' % args.revision)
+    filters.append('resource.type = %s \n' % 'cloud_run_revision')
+    filters.append('resource.labels.location = %s \n' %
+                   flags.GetRegion(args, prompt=False))
+    filters.append('severity >= DEFAULT \n')
+
     filters += read_logs_lib.MakeTimestampFilters(args)
 
-    return common.FetchLogs(
+    lines = []
+
+    logs = common.FetchLogs(
         read_logs_lib.JoinFilters(filters),
         order_by=args.order,
         limit=args.limit)
+
+    for log_line in logs:
+      output_log = FormatLog(log_line)
+      if output_log:
+        lines.append(output_log)
+
+    for line in reversed(lines):
+      log.out.Print(line)

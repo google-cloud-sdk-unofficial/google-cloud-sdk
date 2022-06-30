@@ -340,6 +340,22 @@ class CreateBeta(CreateGA):
   def Args(cls, parser):
     CreateGA.Args(parser)
     instance_groups_flags.AddMigCreateStatefulIPsFlags(parser)
+    managed_flags.AddMigListManagedInstancesResultsFlag(parser)
+
+  def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
+                                  holder):
+    instance_group_manager = super(CreateBeta,
+                                   self)._CreateInstanceGroupManager(
+                                       args, group_ref, template_ref, client,
+                                       holder)
+
+    if args.list_managed_instances_results:
+      instance_group_manager.listManagedInstancesResults = (
+          client.messages.InstanceGroupManager
+          .ListManagedInstancesResultsValueValuesEnum)(
+              args.list_managed_instances_results)
+
+    return instance_group_manager
 
   def _HandleStatefulArgs(self, instance_group_manager, args, client):
     instance_groups_flags.ValidateManagedInstanceGroupStatefulDisksProperties(

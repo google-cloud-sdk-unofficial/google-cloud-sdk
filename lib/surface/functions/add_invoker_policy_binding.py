@@ -44,8 +44,9 @@ def _CommonArgs(parser, track):
   iam_util.AddMemberFlag(parser, 'to add to the IAM policy', False)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class AddInvokerPolicyBindingBeta(base.Command):
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class AddInvokerPolicyBinding(base.Command):
   """Adds an invoker binding to the IAM policy of a Google Cloud Function.
 
   This command applies to Cloud Functions V2 only.
@@ -56,6 +57,31 @@ class AddInvokerPolicyBindingBeta(base.Command):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
+    _CommonArgs(parser, base.ReleaseTrack.GA)
+
+  def Run(self, args):
+    """Runs the command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      The updated IAM policy for the service.
+    """
+    return command.Run(args, self.ReleaseTrack())
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class AddInvokerPolicyBindingBeta(base.Command):
+  """Adds an invoker binding to the IAM policy of a Google Cloud Function.
+
+  This command applies to Cloud Functions V2 only.
+  """
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
     _CommonArgs(parser, base.ReleaseTrack.BETA)
 
   def Run(self, args):
@@ -81,15 +107,3 @@ class AddInvokerPolicyBindingAlpha(AddInvokerPolicyBindingBeta):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, base.ReleaseTrack.ALPHA)
-
-  def Run(self, args):
-    """Runs the command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The updated IAM policy for the service.
-    """
-    return command.Run(args, self.ReleaseTrack())

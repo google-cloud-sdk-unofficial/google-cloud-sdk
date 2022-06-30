@@ -75,7 +75,7 @@ class Read(base.Command):
     filters.append('resource.labels.service_name = %s \n' % args.service)
     filters.append('resource.labels.location = %s \n' %
                    flags.GetRegion(args, prompt=False))
-    filters.append('severity >= DEFAULT')
+    filters.append('severity >= DEFAULT \n')
     filters += read_logs_lib.MakeTimestampFilters(args)
 
     lines = []

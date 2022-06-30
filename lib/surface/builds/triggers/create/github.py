@@ -50,7 +50,6 @@ class CreateGitHub(base.CreateCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    messages = cloudbuild_util.GetMessagesModule()
     flag_config = trigger_utils.AddTriggerArgs(parser)
     flag_config.add_argument(
         '--repo-owner', help='Owner of the GitHub Repository.', required=True)
@@ -77,8 +76,15 @@ RE2 and described at https://github.com/google/re2/wiki/Syntax.
 """)
     pr_config.add_argument(
         '--comment-control',
-        default=messages.PullRequestFilter.CommentControlValueValuesEnum
-        .COMMENTS_ENABLED,
+        choices={
+            'COMMENTS_DISABLED':
+                'Do not require comments on Pull Requests before builds are triggered.',
+            'COMMENTS_ENABLED':
+                'Enforce that repository owners or collaborators must comment on Pull Requests before builds are triggered.',
+            'COMMENTS_ENABLED_FOR_EXTERNAL_CONTRIBUTORS_ONLY':
+                'Enforce that repository owners or collaborators must comment on external contributors\' Pull Requests before builds are triggered.'
+        },
+        default='COMMENTS_ENABLED',
         help='Require a repository collaborator or owner to comment \'/gcbrun\' on a pull request before running the build.'
     )
 

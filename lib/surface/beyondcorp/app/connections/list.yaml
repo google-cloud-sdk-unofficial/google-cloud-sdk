@@ -17,7 +17,12 @@
             --format=json(displayName, name.basename(), state, applicationEndpoint.host, applicationEndpoint.port, updateTime, labels)
 
   request:
-    collection: beyondcorp.projects.locations.connections
+    collection: beyondcorp.projects.locations.appConnections
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.beyondcorp.app.connections.hooks:PrintMessageInResponse
+
   arguments:
     resource:
       help_text: |

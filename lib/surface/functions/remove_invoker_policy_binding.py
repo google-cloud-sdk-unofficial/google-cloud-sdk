@@ -44,13 +44,40 @@ def _CommonArgs(parser, track):
   iam_util.AddMemberFlag(parser, 'to remove from the IAM policy', False)
 
 
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class RemoveInvokerPolicyBinding(base.Command):
+  """Removes an invoker binding from the IAM policy of a Google Cloud Function.
+
+  This command applies to Cloud Functions V2 only.
+  """
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    """Registers flags for this command."""
+    _CommonArgs(parser, base.ReleaseTrack.GA)
+
+  def Run(self, args):
+    """Runs the command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      The updated IAM policy for the service.
+    """
+    return command.Run(args, self.ReleaseTrack())
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class RemoveInvokerPolicyBindingBeta(base.Command):
   """Removes an invoker binding from the IAM policy of a Google Cloud Function.
 
   This command applies to Cloud Functions V2 only.
   """
-
   detailed_help = _DETAILED_HELP
 
   @staticmethod
@@ -82,15 +109,3 @@ class RemoveInvokerPolicyBindingAlpha(RemoveInvokerPolicyBindingBeta):
   def Args(parser):
     """Registers flags for this command."""
     _CommonArgs(parser, base.ReleaseTrack.ALPHA)
-
-  def Run(self, args):
-    """Runs the command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The updated IAM policy for the service.
-    """
-    return command.Run(args, self.ReleaseTrack())

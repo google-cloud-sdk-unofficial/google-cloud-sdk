@@ -69,6 +69,7 @@ class UpdateCluster(base.UpdateCommand):
         autoscaling_min=args.autoscaling_min_nodes,
         autoscaling_max=args.autoscaling_max_nodes,
         autoscaling_cpu_target=args.autoscaling_cpu_target,
+        autoscaling_storage_target=args.autoscaling_storage_target,
         disable_autoscaling=args.disable_autoscaling)
     if not args.async_:
       operation_ref = util.GetOperationRef(operation)

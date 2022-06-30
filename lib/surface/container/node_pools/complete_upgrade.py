@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class CompleteUpgrade(base.Command):

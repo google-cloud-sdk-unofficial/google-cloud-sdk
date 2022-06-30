@@ -126,6 +126,16 @@ class Create(base.CreateCommand):
           destination_workflow_location)
       dest_str = 'Workflow [{}]'.format(args.destination_workflow)
       loading_msg = ''
+    # Destination Cloud Function
+    elif args.IsSpecified('destination_function'):
+      destination_function_location = self.GetDestinationLocation(
+          args, trigger_ref, 'destination_function_location', 'Function')
+
+      destination_message = client.BuildFunctionDestinationMessage(
+          trigger_ref.Parent().Parent().Name(), args.destination_function,
+          destination_function_location)
+      dest_str = 'Cloud Function [{}]'.format(args.destination_function)
+      loading_msg = ''
     else:
       raise UnsupportedDestinationError('Must specify a valid destination.')
     trigger_message = client.BuildTriggerMessage(trigger_ref, event_filters,

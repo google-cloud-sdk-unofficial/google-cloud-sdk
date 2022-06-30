@@ -304,7 +304,7 @@ def _install_highlighting():
         _install_fallback()
 
 
-_install_highlighting()
+_install_fallback()
 
 
 def html_error_template():

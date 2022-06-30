@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import utils
 from googlecloudsdk.core import exceptions
@@ -64,6 +65,12 @@ class Enable(base.UpdateCommand, base.EnableCommand):
         action='store_true',
         help='Log all denies and dry run failures.',
         default=False)
+    if cls.ReleaseTrack() is calliope_base.ReleaseTrack.ALPHA:
+      parser.add_argument(
+          '--mutation-enabled',
+          action='store_true',
+          help='Enable support for mutation.',
+          default=False)
     parser.add_argument(
         '--referential-rules-enabled',
         action='store_true',
@@ -74,6 +81,16 @@ class Enable(base.UpdateCommand, base.EnableCommand):
         action='store_true',
         help='Install a library of constraint templates for common policy types.',
         default=False)
+    parser.add_argument(
+        '--monitoring',
+        type=str,
+        help='Monitoring backend options Policy Controller should export metrics to, separated by commas if multiple are supplied. Options: prometheus, cloudmonitoring'
+    )
+    parser.add_argument(
+        '--no-monitoring',
+        action='store_true',
+        help='Include this flag to disable the monitoring configuration of Policy Controller'
+    )
     parser.add_argument(
         '--version',
         type=str,

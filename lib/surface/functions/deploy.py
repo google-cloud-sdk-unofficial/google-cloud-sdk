@@ -28,87 +28,76 @@ from googlecloudsdk.command_lib.functions.v2.deploy import env_vars_util
 from googlecloudsdk.command_lib.util.args import labels_util as args_labels_util
 
 
+def _CommonArgs(parser, track):
+  """Register base flags for this command."""
+  # Add a positional "resource argument" for the name of the function
+  flags.AddFunctionResourceArg(parser, 'to deploy')
+
+  # Add `args.memory` as str. Converted at runtime to int for v1.
+  flags.AddFunctionMemoryFlag(parser, track)
+
+  # Add args for function properties
+  flags.AddAllowUnauthenticatedFlag(parser)
+  flags.AddFunctionRetryFlag(parser)
+  flags.AddFunctionTimeoutFlag(parser, track)
+  flags.AddMaxInstancesFlag(parser)
+  flags.AddMinInstancesFlag(parser)
+  flags.AddRuntimeFlag(parser)
+  flags.AddServiceAccountFlag(parser)
+  args_labels_util.AddUpdateLabelsFlags(
+      parser,
+      extra_update_message=labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE,
+      extra_remove_message=labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE)
+
+  # Add args for specifying the function source code
+  flags.AddSourceFlag(parser)
+  flags.AddStageBucketFlag(parser)
+  flags.AddEntryPointFlag(parser)
+
+  # Add args for specifying the function trigger
+  flags.AddTriggerFlagGroup(parser, track)
+
+  # Add args for specifying environment variables
+  env_vars_util.AddUpdateEnvVarsFlags(parser)
+
+  # Add flags for specifying build environment variables
+  env_vars_util.AddBuildEnvVarsFlags(parser)
+
+  # Add args for specifying ignore files to upload source
+  flags.AddIgnoreFileFlag(parser)
+
+  # Add flags for CMEK
+  flags.AddKMSKeyFlags(parser)
+  flags.AddDockerRepositoryFlags(parser)
+
+  # Add flags for secrets
+  secrets_config.ConfigureFlags(parser)
+
+  # Add flags for network settings
+  flags.AddVPCConnectorMutexGroup(parser)
+  flags.AddEgressSettingsFlag(parser)
+  flags.AddIngressSettingsFlag(parser)
+  flags.AddSecurityLevelFlag(parser)
+  flags.AddBuildWorkerPoolMutexGroup(parser)
+
+  # Configure flags for Artifact Registry
+  flags.AddDockerRegistryFlags(parser, track)
+
+  # Add additional flags for GCFv2
+  flags.AddRunServiceAccountFlag(parser, track)
+  flags.AddTriggerLocationFlag(parser, track)
+  flags.AddTriggerServiceAccountFlag(parser, track)
+  flags.AddGen2Flag(parser, track)
+  flags.AddServeAllTrafficLatestRevisionFlag(parser, track)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Deploy(base.Command):
   """Create or update a Google Cloud Function."""
 
   @staticmethod
-  def Args(parser, track=base.ReleaseTrack.GA):
-    """Register base flags for this command."""
-    # Add a positional "resource argument" for the name of the function
-    flags.AddFunctionResourceArg(parser, 'to deploy')
-
-    # Add `args.memory` as str. Converted at runtime to int for v1.
-    flags.AddFunctionMemoryFlag(parser, track)
-
-    # Add args for function properties
-    flags.AddAllowUnauthenticatedFlag(parser)
-    flags.AddFunctionRetryFlag(parser)
-    flags.AddFunctionTimeoutFlag(parser, track)
-    flags.AddMaxInstancesFlag(parser)
-    flags.AddMinInstancesFlag(parser)
-    flags.AddRuntimeFlag(parser)
-    flags.AddServiceAccountFlag(parser)
-    args_labels_util.AddUpdateLabelsFlags(
-        parser,
-        extra_update_message=labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE,
-        extra_remove_message=labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE)
-
-    # Add args for specifying the function source code
-    flags.AddSourceFlag(parser)
-    flags.AddStageBucketFlag(parser)
-    flags.AddEntryPointFlag(parser)
-
-    # Add args for specifying the function trigger
-    flags.AddTriggerFlagGroup(parser, track)
-
-    # Add args for specifying environment variables
-    env_vars_util.AddUpdateEnvVarsFlags(parser)
-
-    # Add flags for specifying build environment variables
-    env_vars_util.AddBuildEnvVarsFlags(parser)
-
-    # Add args for specifying ignore files to upload source
-    flags.AddIgnoreFileFlag(parser)
-
-    # Add flags for CMEK
-    flags.AddKMSKeyFlags(parser)
-    flags.AddDockerRepositoryFlags(parser)
-
-    # Add flags for secrets
-    secrets_config.ConfigureFlags(parser)
-
-    # Add flags for network settings
-    flags.AddVPCConnectorMutexGroup(parser)
-    flags.AddEgressSettingsFlag(parser)
-    flags.AddIngressSettingsFlag(parser)
-    flags.AddSecurityLevelFlag(parser)
-    flags.AddBuildWorkerPoolMutexGroup(parser)
-
-  def Run(self, args):
-    # For v1 convert args.memory from str to number of bytes in int
-    args.memory = flags.ParseMemoryStrToNumBytes(args.memory)
-    return command_v1.Run(args, track=self.ReleaseTrack())
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeployBeta(Deploy):
-  """Create or update a Google Cloud Function."""
-
-  @staticmethod
-  def Args(parser, track=base.ReleaseTrack.BETA):
-    """Register beta flags for this command."""
-    Deploy.Args(parser, track)
-
-    # Configure flags for Artifact Registry
-    flags.AddDockerRegistryFlags(parser)
-
-    # Add additional flags for GCFv2
-    flags.AddRunServiceAccountFlag(parser, track)
-    flags.AddTriggerLocationFlag(parser, track)
-    flags.AddTriggerServiceAccountFlag(parser, track)
-    flags.AddGen2Flag(parser, track)
-    flags.AddServeAllTrafficLatestRevisionFlag(parser)
+  def Args(parser):
+    _CommonArgs(parser, base.ReleaseTrack.GA)
 
   def Run(self, args):
     if flags.ShouldUseGen2():
@@ -119,22 +108,24 @@ class DeployBeta(Deploy):
       return command_v1.Run(args, track=self.ReleaseTrack())
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeployBeta(Deploy):
+  """Create or update a Google Cloud Function."""
+
+  @staticmethod
+  def Args(parser):
+    """Register beta flags for this command."""
+    _CommonArgs(parser, base.ReleaseTrack.BETA)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeployAlpha(DeployBeta):
   """Create or update a Google Cloud Function."""
 
   @staticmethod
-  def Args(parser, track=base.ReleaseTrack.ALPHA):
+  def Args(parser):
     """Register alpha (and implicitly beta) flags for this command."""
-    DeployBeta.Args(parser, track)
-
-  def Run(self, args):
-    if flags.ShouldUseGen2():
-      return command_v2.Run(args, self.ReleaseTrack())
-    else:
-      # Convert args.memory from str to number of bytes in int
-      args.memory = flags.ParseMemoryStrToNumBytes(args.memory)
-      return command_v1.Run(args, track=self.ReleaseTrack())
+    _CommonArgs(parser, base.ReleaseTrack.ALPHA)
 
 
 DETAILED_HELP = {

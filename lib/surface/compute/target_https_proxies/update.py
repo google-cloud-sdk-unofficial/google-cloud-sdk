@@ -187,7 +187,7 @@ class Update(base.SilentCommand):
 
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
   _include_l7_internal_load_balancing = True
-  _certificate_map = False
+  _certificate_map = True
   _regional_ssl_policies = False
 
   SSL_CERTIFICATES_ARG = None
@@ -264,5 +264,4 @@ class Update(base.SilentCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpdateAlphaBeta(Update):
-  _certificate_map = True
   _regional_ssl_policies = True

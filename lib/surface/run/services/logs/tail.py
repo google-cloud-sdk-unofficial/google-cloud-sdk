@@ -38,16 +38,18 @@ class Tail(base.Command):
           Cloud Run service in real time.  The log entries are formatted for
           consumption in a terminal.
           """,
-      'SYNOPSIS':
+      'EXAMPLES':
           """\
-          {command} (SERVICE)
-          """,
-      'FLAGS':
-          """\
-          --region=REGION
-          Region of the Cloud Run service.
-          If not specified, will take its value from the gcloud property
-          "run/region" or prompt.
+          To tail log entries for a Cloud Run Service, run:
+
+            $ {command} my-service
+
+          To tail log entries with severity ERROR or higher, run:
+
+            $ {command} my-service --log-filter="severity>=ERROR"
+
+          Detailed information about filters can be found at:
+          [](https://cloud.google.com/logging/docs/view/advanced_filters)
           """,
   }
 
@@ -59,15 +61,15 @@ class Tail(base.Command):
   def Run(self, args):
     filters = []
     if args.IsSpecified('log_filter'):
-      filters.append(args.log_filter + ' \n')
-    filters.append('resource.type = %s \n' % 'cloud_run_revision')
-    filters.append('resource.labels.service_name = %s \n' % args.service)
-    filters.append('resource.labels.location = %s \n' %
+      filters.append(args.log_filter)
+    filters.append('resource.type = %s' % 'cloud_run_revision')
+    filters.append('resource.labels.service_name = %s' % args.service)
+    filters.append('resource.labels.location = %s' %
                    flags.GetRegion(args, prompt=False))
     filters.append('severity >= DEFAULT')
     parent = 'projects/{project_id}'.format(
         project_id=properties.VALUES.core.project.Get(required=True))
-    filter_str = ''.join(str(filter) for filter in filters)
+    filter_str = '\n'.join(filters)
     tailer = logs_util.GetGCLLogTailer()
     logs = tailer.TailLogs([parent], filter_str)
 

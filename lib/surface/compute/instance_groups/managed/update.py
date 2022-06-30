@@ -261,6 +261,22 @@ class UpdateBeta(UpdateGA):
   def Args(cls, parser):
     UpdateGA.Args(parser)
     instance_groups_flags.AddMigUpdateStatefulFlagsIPs(parser)
+    managed_flags.AddMigListManagedInstancesResultsFlag(parser)
+
+  def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,
+                                       client, holder):
+    patch_instance_group_manager = super(UpdateBeta,
+                                         self)._CreateInstanceGroupManagerPatch(
+                                             args, igm_ref, igm_resource,
+                                             client, holder)
+
+    if args.list_managed_instances_results:
+      patch_instance_group_manager.listManagedInstancesResults = (
+          client.messages.InstanceGroupManager
+          .ListManagedInstancesResultsValueValuesEnum)(
+              args.list_managed_instances_results)
+
+    return patch_instance_group_manager
 
   def _StatefulArgsSet(self, args):
     return (super(UpdateBeta, self)._StatefulArgsSet(args) or

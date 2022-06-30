@@ -78,7 +78,10 @@ class Update(base.UpdateCommand):
         args.clear_destination_gke_path,
         destination_workflow=args.IsSpecified('destination_workflow'),
         destination_workflow_location=args.IsSpecified(
-            'destination_workflow_location'))
+            'destination_workflow_location'),
+        destination_function=args.IsSpecified('destination_function'),
+        destination_function_location=args.IsSpecified(
+            'destination_function_location'))
     old_trigger = client.Get(trigger_ref)
     # The type can't be updated, so it's safe to use the old trigger's type.
     # In the async case, this is the only way to get the type.
@@ -105,6 +108,12 @@ class Update(base.UpdateCommand):
       workflow = self.GetWorkflowDestination(args, old_trigger)
       destination_message = client.BuildWorkflowDestinationMessage(
           trigger_ref.Parent().Parent().Name(), workflow, location)
+    elif (args.IsSpecified('destination_function') or
+          args.IsSpecified('destination_function_location')):
+      location = self.GetFunctionDestinationLocation(args, old_trigger)
+      function = self.GetFunctionDestination(args, old_trigger)
+      destination_message = client.BuildFunctionDestinationMessage(
+          trigger_ref.Parent().Parent().Name(), function, location)
     trigger_message = client.BuildTriggerMessage(trigger_ref, event_filters,
                                                  event_filters_path_pattern,
                                                  args.service_account,
@@ -138,6 +147,24 @@ class Update(base.UpdateCommand):
     raise exceptions.InvalidArgumentException(
         '--destination-workflow-location',
         'The specified trigger is not for a workflow destination.')
+
+  def GetFunctionDestinationLocation(self, args, old_trigger):
+    if args.IsSpecified('destination_function_location'):
+      return args.destination_function_location
+    if old_trigger.destination.cloudFunction:
+      return old_trigger.destination.cloudFunction.split('/')[3]
+    raise exceptions.InvalidArgumentException(
+        '--destination-function',
+        'The specified trigger is not for a function destination.')
+
+  def GetFunctionDestination(self, args, old_trigger):
+    if args.IsSpecified('destination_function'):
+      return args.destination_function
+    if old_trigger.destination.cloudFunction:
+      return old_trigger.destination.cloudFunction.split('/')[5]
+    raise exceptions.InvalidArgumentException(
+        '--destination-function-location',
+        'The specified trigger is not for a function destination.')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

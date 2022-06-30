@@ -97,7 +97,9 @@ def _TransformShareSettings(share_setting):
   if not share_setting or share_setting['shareType'] == 'LOCAL':
     return 'local'
   elif share_setting['shareType'] == 'SPECIFIC_PROJECTS':
-    return 'specific_project:' + ','.join(share_setting['projects'])
+    projects = share_setting[
+        'projectMap'] if 'projectMap' in share_setting else []
+    return 'specific_project:' + ','.join(projects)
   elif share_setting['shareType'] == 'ORGANIZATION':
     return 'org'
   return ''

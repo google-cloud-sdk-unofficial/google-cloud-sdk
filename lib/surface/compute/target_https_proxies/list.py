@@ -36,8 +36,8 @@ def _DetailedHelp(include_l7_internal_load_balancing):
     return base_classes.GetGlobalListerHelp('target HTTPS proxies')
 
 
-def _Args(parser, include_l7_internal_load_balancing, list_format):
-  parser.display_info.AddFormat(list_format)
+def _Args(parser, include_l7_internal_load_balancing):
+  parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
   if include_l7_internal_load_balancing:
     parser.display_info.AddCacheUpdater(flags.TargetHttpsProxiesCompleterAlpha)
     lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
@@ -64,7 +64,8 @@ def _Run(args, holder, include_l7_internal_load_balancing):
   return lister.Invoke(request_data, list_implementation)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA,
+                    base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List target HTTPS proxies."""
 
@@ -75,18 +76,8 @@ class List(base.ListCommand):
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, cls._include_l7_internal_load_balancing,
-          flags.DEFAULT_LIST_FORMAT)
+    _Args(parser, cls._include_l7_internal_load_balancing)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self._include_l7_internal_load_balancing)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class ListBeta(List):
-
-  @classmethod
-  def Args(cls, parser):
-    _Args(parser, cls._include_l7_internal_load_balancing,
-          flags.DEFAULT_BETA_LIST_FORMAT)

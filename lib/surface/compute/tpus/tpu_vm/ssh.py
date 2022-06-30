@@ -186,19 +186,23 @@ class Ssh(base.Command):
 
     # Retrieve GuestAttributes.
     single_pod_worker = len(node.networkEndpoints) > 1 and len(worker_ips) == 1
-    if single_pod_worker:
-      # Retrieve only that worker's GuestAttributes.
-      worker_id = list(worker_ips)[0]
-      guest_attributes_response = tpu.GetGuestAttributes(
-          tpu_name, args.zone, six.text_type((worker_id)))
-      host_key_suffixes = tpu_ssh_utils.GetHostKeySuffixes(
-          guest_attributes_response.guestAttributes, len(node.networkEndpoints),
-          worker_id)
+    guest_attributes_response = (
+        tpu_ssh_utils.GetGuestAttributes(tpu, single_pod_worker, worker_ips,
+                                         tpu_name, args.zone))
+    if guest_attributes_response is None:
+      if (args.IsKnownAndSpecified('tunnel_through_iap')
+          and args.tunnel_through_iap):
+        log.debug('Unable to retrieve host information from guest attributes.')
+        log.status.Print('Failed to connect to TPU.')
+        log.status.Print(tpu_ssh_utils.IAP_TROUBLESHOOTING_HELP)
+        raise tpu_exceptions.IapTunnelingUnavailable()
+      log.debug('Unable to retrieve host keys from guest attributes. '
+                'Continuing.')
+      host_key_suffixes = None
     else:
-      # Retrieve the GuestAttributes for all workers in that TPU.
-      guest_attributes_response = tpu.GetGuestAttributes(tpu_name, args.zone)
-      host_key_suffixes = tpu_ssh_utils.GetHostKeySuffixes(
-          guest_attributes_response.guestAttributes)
+      host_key_suffixes = (
+          tpu_ssh_utils.GetHostKeySuffixesFromGuestAttributes(
+              guest_attributes_response, single_pod_worker, worker_ips, node))
 
     # Generate the public key.
     ssh_helper = ssh_utils.BaseSSHCLIHelper()
